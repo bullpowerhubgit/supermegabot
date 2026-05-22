@@ -1,0 +1,9 @@
+.env
+__pycache__/
+*.pyc
+*.db
+*.log
+logs/
+.DS_Store
+*.sqlite
+nohup.out
