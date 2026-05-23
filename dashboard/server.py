@@ -49,6 +49,28 @@ SERVICES = [
     {"id": "openclaw", "name": "OpenClaw Gateway", "port": 18789,
      "start_cmd": "openclaw gateway run",
      "pattern": "openclaw", "icon": "🦞"},
+    # ── Heute gebaut ────────────────────────────────────────────────────────
+    {"id": "shopify_ai_suite", "name": "Shopify AI Suite (Railway)", "port": 0,
+     "start_cmd": "echo 'Deployed on Railway: https://shopify-suite-v2-production.up.railway.app'",
+     "pattern": "RAILWAY_REMOTE",
+     "url": "https://shopify-suite-v2-production.up.railway.app",
+     "health_url": "https://shopify-suite-v2-production.up.railway.app/health",
+     "icon": "🛍️"},
+    {"id": "windsurf_shopify", "name": "Windsurf API Gateway", "port": 18789,
+     "start_cmd": "cd /Users/rudolfsarkany/windsurf-api-gateway && nohup node src/index.js >> /tmp/windsurf-api-gateway.log 2>&1 &",
+     "pattern": "windsurf-api-gateway.*index.js", "icon": "🌊"},
+    {"id": "windsurf_autoheal", "name": "Windsurf Auto-Heal", "port": 9000,
+     "start_cmd": "cd /Users/rudolfsarkany/windsurf-auto-heal && nohup npm start >> /tmp/windsurf-autoheal.log 2>&1 &",
+     "pattern": "windsurf-auto-heal.*index.js", "icon": "🏥"},
+    {"id": "password_sync", "name": "Password Sync", "port": 3005,
+     "start_cmd": "cd /Users/rudolfsarkany/password-sync-suite/web-app && PORT=3005 nohup npm start >> /tmp/password-sync.log 2>&1 &",
+     "pattern": "password-sync-suite.*server.js", "icon": "🔐"},
+    {"id": "rudibot_eternal", "name": "RudiBot Eternal", "port": 0,
+     "start_cmd": "cd /Users/rudolfsarkany/rudibot-eternal && nohup python3 immortal_bot.py >> /tmp/rudibot-eternal.log 2>&1 &",
+     "pattern": "immortal_bot.py", "icon": "♾️"},
+    {"id": "kivo", "name": "KIVO Voice", "port": 0,
+     "start_cmd": "cd /Users/rudolfsarkany/kivo && nohup python3 kivo.py >> /tmp/kivo.log 2>&1 &",
+     "pattern": "kivo.py", "icon": "🎙️"},
 ]
 
 # ---------------------------------------------------------------------------
@@ -621,7 +643,7 @@ async function loadServices() {
       <div class="svc-dot ${s.running ? 'on' : 'off'}"></div>
       <span style="font-size:1rem">${s.icon}</span>
       <span class="svc-name">${s.name}</span>
-      <span class="svc-port">:${s.port}</span>
+      <span class="svc-port">${s.port > 0 ? ':' + s.port : ''}</span>
       <div class="svc-btns">
         <button class="btn btn-green btn-xs" onclick="svcAction('${s.id}','start')">▶</button>
         <button class="btn btn-red btn-xs" onclick="svcAction('${s.id}','stop')">■</button>
@@ -1268,12 +1290,13 @@ async def handle_services_status(req):
     result = []
     for svc in SERVICES:
         port_ok = False
-        try:
-            sock = socket.create_connection(("localhost", svc["port"]), timeout=0.5)
-            sock.close()
-            port_ok = True
-        except Exception:
-            pass
+        if svc.get("port", 0) > 0:
+            try:
+                sock = socket.create_connection(("localhost", svc["port"]), timeout=0.5)
+                sock.close()
+                port_ok = True
+            except Exception:
+                pass
         pid = None
         try:
             ps = subprocess.run(["pgrep", "-f", svc["pattern"]], capture_output=True, text=True)

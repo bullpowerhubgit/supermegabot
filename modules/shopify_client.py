@@ -16,9 +16,12 @@ logger = logging.getLogger(__name__)
 # Config aus .env
 STORE_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 STORE_URL = f"https://{STORE_DOMAIN}"
-SHPAT_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+# Suite-Token bevorzugt (volle Scopes: products, orders, inventory, analytics, customers)
+SHPAT_TOKEN = os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 CLI_CLIENT_ID = os.getenv("SHOPIFY_CLI_CLIENT_ID", "fbdb2649-e327-4907-8f67-908d24cfd7e3")
 CLI_REFRESH_TOKEN = os.getenv("SHOPIFY_CLI_REFRESH_TOKEN", "")
+# Railway Suite Dashboard URL
+SUITE_URL = os.getenv("SHOPIFY_SUITE_URL", "https://shopify-suite-v2-production.up.railway.app")
 
 try:
     import aiohttp
