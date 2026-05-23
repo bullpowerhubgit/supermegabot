@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Password Sync Suite",
+  "version": "1.0.0",
+  "description": "Synchronisiere Passwörter sicher zwischen Browsern und Gmail-Konten.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "identity",
+    "alarms",
+    "notifications"
+  ],
+  "host_permissions": [
+    "https://accounts.google.com/*",
+    "https://mail.google.com/*",
+    "https://*.google.com/*",
+    "http://localhost:3000/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "48": "icons/icon.svg",
+      "128": "icons/icon.svg"
+    }
+  },
+  "icons": {
+    "16": "icons/icon.svg",
+    "48": "icons/icon.svg",
+    "128": "icons/icon.svg"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Password Sync</h1>
+      <span id="sync-status" class="badge">Bereit</span>
+    </header>
+
+    <section id="auth-section">
+      <h2>Gmail-Konten</h2>
+      <div id="accounts-list"></div>
+      <button id="btn-add-account" class="btn primary">Konto hinzufügen</button>
+    </section>
+
+    <section id="passwords-section">
+      <h2>Gespeicherte Passwörter</h2>
+      <div id="passwords-list"></div>
+      <button id="btn-add-password" class="btn secondary">+ Passwort</button>
+    </section>
+
+    <section id="add-password-form" class="hidden">
+      <h2>Passwort speichern</h2>
+      <input type="text" id="inp-url" placeholder="Website URL" />
+      <input type="text" id="inp-username" placeholder="Benutzername / E-Mail" />
+      <input type="password" id="inp-password" placeholder="Passwort" />
+      <div class="row">
+        <button id="btn-save-password" class="btn primary">Speichern</button>
+        <button id="btn-cancel" class="btn ghost">Abbrechen</button>
+      </div>
+    </section>
+
+    <footer>
+      <button id="btn-sync-now" class="btn sync">Jetzt synchronisieren</button>
+      <button id="btn-open-web" class="btn link">Web-App öffnen</button>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
