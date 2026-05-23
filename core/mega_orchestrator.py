@@ -18,6 +18,12 @@ from typing import Any, Dict, List, Optional
 import aiohttp
 import sqlite3
 
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent / ".env")
+except ImportError:
+    pass  # python-dotenv not installed; env vars must be set externally
+
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 LOGS_DIR = BASE_DIR / "logs"
@@ -333,6 +339,10 @@ class CommandRouter:
             "help": self._cmd_help,
             "/help": self._cmd_help,
             "/start": self._cmd_start,
+            # GMC / Google Merchant Center
+            "/gmc_status": self._cmd_gmc_status,
+            "/produkte": self._cmd_produkte,
+            "/ads": self._cmd_ads,
         }
 
     async def route(self, text: str, session_id: str) -> str:
@@ -472,6 +482,37 @@ class CommandRouter:
 
         return response
 
+    async def _cmd_gmc_status(self, text, session_id) -> str:
+        try:
+            from modules.gmc_monitor import format_telegram_status
+            return await format_telegram_status()
+        except Exception as e:
+            return f"GMC Status Fehler: {e}"
+
+    async def _cmd_produkte(self, text, session_id) -> str:
+        try:
+            from modules.gmc_monitor import get_shopify_product_count
+            products = await get_shopify_product_count()
+            total = products.get("total", products.get("count", "?"))
+            active = products.get("active", "?")
+            draft = products.get("draft", "?")
+            return (
+                f"Produkte:\n"
+                f"  Gesamt: {total}\n"
+                f"  Aktiv: {active}\n"
+                f"  Entwurf: {draft}"
+            )
+        except Exception as e:
+            return f"Produkte Fehler: {e}"
+
+    async def _cmd_ads(self, text, session_id) -> str:
+        try:
+            from modules.campaign_manager import get_campaigns, format_telegram_ads
+            campaigns = await get_campaigns()
+            return format_telegram_ads(campaigns)
+        except Exception as e:
+            return f"Ads Fehler: {e}"
+
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle:
 
@@ -491,6 +532,11 @@ class CommandRouter:
 
   KI-Chat:
     Alles andere → Ollama KI (100% lokal, kostenlos)
+
+  GMC & Ads:
+    /gmc_status     - Google Merchant Center Status
+    /produkte       - Shopify Produktanzahl
+    /ads            - Google Ads Kampagnen
 
   Kosten: 95% lokal (Ollama), 5% externe APIs"""
 

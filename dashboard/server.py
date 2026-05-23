@@ -20,6 +20,21 @@ import aiohttp
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 LOGS_DIR = BASE_DIR / "logs"
+
+# Load .env
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / ".env")
+except ImportError:
+    # fallback: manual parse
+    _env_file = BASE_DIR / ".env"
+    if _env_file.exists():
+        for _line in _env_file.read_text().splitlines():
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _, _v = _line.partition("=")
+                os.environ.setdefault(_k.strip(), _v.strip())
+
 PORT = int(os.getenv("DASHBOARD_PORT", "8888"))
 
 log = logging.getLogger("Dashboard")
@@ -455,6 +470,16 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
     </div>
   </div>
 
+  <!-- ── GMC Status (1 col) ── -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-icon" style="background:linear-gradient(135deg,#4285f4,#34a853)">🛒</div>
+      <div><div class="card-title">Google Merchant Center</div><div class="card-subtitle">GMC Status & Produkte</div></div>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="loadGMC()">↺</button>
+    </div>
+    <div id="gmc-data"><div class="loading">Lade GMC...</div></div>
+  </div>
+
   <!-- ── Ollama Models (1 col) ── -->
   <div class="card">
     <div class="card-header">
@@ -858,6 +883,58 @@ function setModel(name) {
   showToast('Model: ' + name, true);
 }
 
+// ── GMC ──
+async function loadGMC() {
+  const r = await api('/gmc');
+  const el = document.getElementById('gmc-data');
+  if (r.error) {
+    el.innerHTML = `<div class="error-text">${escHtml(r.error)}</div>`;
+    return;
+  }
+  const gmc = r.gmc || r;
+  const suspended = gmc.suspended || false;
+  const suspendIcon = suspended ? '🔴' : '🟢';
+  const suspendText = suspended ? 'Gesperrt ⛔' : 'Aktiv ✅';
+  const shopifyProds = r.shopify_products || {};
+  const total = shopifyProds.total ?? shopifyProds.count ?? (gmc.shopify_products ?? '?');
+  const active = shopifyProds.active ?? '?';
+  const gmcApproved = gmc.products_approved ?? 0;
+  const gmcDisapproved = gmc.products_disapproved ?? 0;
+  const shipping = gmc.shipping_policies_count ?? (r.policies?.shipping_services ?? 15);
+  const returns = gmc.return_policies_count ?? (r.policies?.return_policies ?? 2);
+  const identityPending = gmc.identity_verification_pending ?? !gmc.identity_verified;
+  const identityIcon = identityPending ? '⏳' : '✅';
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+      <span style="font-size:1.2rem">${suspendIcon}</span>
+      <span style="font-weight:600;font-size:0.88rem">${suspendText}</span>
+      <span style="margin-left:auto;font-size:0.68rem;color:var(--muted)">ID ${gmc.merchant_id||'?'}</span>
+    </div>
+    <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Produkte</div>
+    <div class="stats-2" style="margin-bottom:8px">
+      <div class="stat-box"><div class="stat-value" style="font-size:1.1rem">${total}</div><div class="stat-label-sm">Shopify aktiv</div></div>
+      <div class="stat-box"><div class="stat-value" style="font-size:1.1rem;color:var(--green)">${gmcApproved}</div><div class="stat-label-sm">GMC ✅</div></div>
+    </div>
+    <div style="font-size:0.78rem;display:flex;flex-direction:column;gap:4px">
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">GMC abgelehnt</span>
+        <span style="color:${gmcDisapproved>0?'var(--red)':'var(--green)'}">${gmcDisapproved}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Versandrichtlinien</span>
+        <span>${shipping} ✓</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Rückgaberichtlinien</span>
+        <span>${returns} ✓</span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:var(--muted)">Identität</span>
+        <span>${identityIcon} ${identityPending ? 'Ausstehend' : 'Verifiziert'}</span>
+      </div>
+    </div>`;
+}
+
 // ── Logs ──
 async function loadLogs() {
   const r = await api('/logs');
@@ -999,7 +1076,7 @@ async function init() {
   await Promise.all([
     loadSystem(), loadServices(), loadPrices(),
     loadTgStatus(), loadShopify(), loadModels(),
-    loadAgentGrid(), loadLogs()
+    loadAgentGrid(), loadLogs(), loadGMC()
   ]);
   scanArbitrage();
   loadAgentLogs();
@@ -1011,6 +1088,7 @@ setInterval(loadServices, 30000);
 setInterval(loadPrices,   30000);
 setInterval(scanArbitrage, 60000);
 setInterval(loadLogs,     8000);
+setInterval(loadGMC,      60000);
 </script>
 </body>
 </html>'''
@@ -1220,6 +1298,16 @@ async def handle_geheimwaffe_content(req):
         return web.json_response({"error": str(e)}, status=500)
 
 
+async def handle_gmc(req):
+    try:
+        sys.path.insert(0, str(BASE_DIR))
+        from modules.gmc_monitor import get_full_status
+        status = await get_full_status()
+        return web.json_response(status)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 async def handle_backup_status(req):
     backups = []
     backup_paths = [
@@ -1347,6 +1435,15 @@ async def handle_logs(req):
     return web.json_response({"lines": lines[-80:]})
 
 
+async def handle_health(req):
+    return web.json_response({
+        "status": "ok",
+        "service": "supermegabot-dashboard",
+        "port": PORT,
+        "uptime": time.time(),
+    })
+
+
 async def handle_processes(req):
     try:
         import psutil
@@ -1400,19 +1497,31 @@ async def create_app():
     app.router.add_get("/api/backup/status", handle_backup_status)
     app.router.add_post("/api/backup/run", handle_backup_run)
 
+    # GMC route
+    app.router.add_get("/api/gmc", handle_gmc)
+
     # New routes
     app.router.add_post("/api/mac/action", handle_mac_action)
     app.router.add_get("/api/services/status", handle_services_status)
     app.router.add_post("/api/services/action", handle_service_action)
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_get("/api/processes", handle_processes)
+    app.router.add_get("/health", handle_health)
 
     return app
 
 
 if __name__ == "__main__":
-    print(f"\n{'='*50}")
-    print(f"  SuperMegaBot Dashboard")
-    print(f"  http://localhost:{PORT}")
-    print(f"{'='*50}\n")
-    web.run_app(create_app(), port=PORT, print=lambda x: None)
+    async def _main():
+        app = await create_app()
+        runner = web.AppRunner(app, access_log=None)
+        await runner.setup()
+        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_port=True)
+        await site.start()
+        print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
+        try:
+            await asyncio.Event().wait()
+        finally:
+            await runner.cleanup()
+
+    asyncio.run(_main())
