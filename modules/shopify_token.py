@@ -3,6 +3,11 @@ import os, time, logging
 from urllib.request import urlopen, Request
 from urllib.parse import urlencode
 import json
+try:
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+except ImportError:
+    pass
 
 log = logging.getLogger("ShopifyToken")
 

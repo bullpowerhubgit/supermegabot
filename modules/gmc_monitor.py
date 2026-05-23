@@ -13,10 +13,20 @@ from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
 
-# Config aus .env
+# Config aus .env — read lazily inside functions so dotenv changes are always picked up
 GMC_MERCHANT_ID = os.getenv("GMC_MERCHANT_ID", "5734366162")
-SHOPIFY_SUITE_ACCESS_TOKEN = os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN", "")
 SHOPIFY_SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+
+def _shopify_token() -> str:
+    """Always read fresh from env so dotenv loaded after import is honoured."""
+    return (
+        os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN")
+        or os.getenv("SHOPIFY_ACCESS_TOKEN")
+        or ""
+    )
+
+# Keep module-level name for backward compat (set once on import)
+SHOPIFY_SUITE_ACCESS_TOKEN = _shopify_token()
 
 try:
     import aiohttp
@@ -39,7 +49,8 @@ async def get_shopify_product_count() -> dict:
     if not HAS_AIOHTTP:
         return {"error": "aiohttp not installed", "count": 0}
 
-    if not SHOPIFY_SUITE_ACCESS_TOKEN:
+    token = _shopify_token()
+    if not token:
         return {"error": "SHOPIFY_SUITE_ACCESS_TOKEN not set", "count": 0}
 
     query = """
@@ -59,7 +70,7 @@ async def get_shopify_product_count() -> dict:
     url = f"https://{SHOPIFY_SHOP_DOMAIN}/admin/api/2024-10/graphql.json"
     headers = {
         "Content-Type": "application/json",
-        "X-Shopify-Access-Token": SHOPIFY_SUITE_ACCESS_TOKEN,
+        "X-Shopify-Access-Token": token,
     }
 
     try:
