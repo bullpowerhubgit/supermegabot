@@ -64,6 +64,12 @@ SERVICES = [
     {"id": "openclaw", "name": "OpenClaw Gateway", "port": 18789,
      "start_cmd": "openclaw gateway run",
      "pattern": "openclaw", "icon": "🦞"},
+    {"id": "windsurf_shopify_suite", "name": "Shopify Webhook Suite", "port": 3001,
+     "start_cmd": "cd /Users/rudolfsarkany/windsurf-shopify-suite && nohup npm start >> /tmp/windsurf-shopify-suite.log 2>&1 &",
+     "pattern": "windsurf-shopify-suite", "icon": "🛒"},
+    {"id": "windsurf_telegram_bot", "name": "Windsurf Telegram Bot", "port": 8000,
+     "start_cmd": "cd /Users/rudolfsarkany/windsurf-telegram-bot && nohup npm start >> /tmp/windsurf-telegram-bot.log 2>&1 &",
+     "pattern": "windsurf-telegram-bot.*index.js", "icon": "🤖"},
     # ── Heute gebaut ────────────────────────────────────────────────────────
     {"id": "shopify_ai_suite", "name": "Shopify AI Suite (Railway)", "port": 0,
      "start_cmd": "echo 'Deployed on Railway: https://shopify-suite-v2-production.up.railway.app'",
