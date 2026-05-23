@@ -71,7 +71,7 @@ SERVICES = [
      "url": "https://shopify-suite-v2-production.up.railway.app",
      "health_url": "https://shopify-suite-v2-production.up.railway.app/health",
      "icon": "🛍️"},
-    {"id": "windsurf_shopify", "name": "Windsurf API Gateway", "port": 18789,
+    {"id": "windsurf_shopify", "name": "Windsurf API Gateway", "port": 8080,
      "start_cmd": "cd /Users/rudolfsarkany/windsurf-api-gateway && nohup node src/index.js >> /tmp/windsurf-api-gateway.log 2>&1 &",
      "pattern": "windsurf-api-gateway.*index.js", "icon": "🌊"},
     {"id": "windsurf_autoheal", "name": "Windsurf Auto-Heal", "port": 9000,

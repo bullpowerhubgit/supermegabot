@@ -13,13 +13,28 @@ from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
 
-# Config aus .env
-STORE_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
-STORE_URL = f"https://{STORE_DOMAIN}"
-# Suite-Token bevorzugt (volle Scopes: products, orders, inventory, analytics, customers)
-SHPAT_TOKEN = os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-CLI_CLIENT_ID = os.getenv("SHOPIFY_CLI_CLIENT_ID", "fbdb2649-e327-4907-8f67-908d24cfd7e3")
-CLI_REFRESH_TOKEN = os.getenv("SHOPIFY_CLI_REFRESH_TOKEN", "")
+# Config aus .env (lazy via helpers — nie bei Import)
+def _store_domain() -> str:
+    return os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+
+def _store_url() -> str:
+    return f"https://{_store_domain()}"
+
+def _shpat_token() -> str:
+    return os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+
+def _cli_client_id() -> str:
+    return os.getenv("SHOPIFY_CLI_CLIENT_ID", "fbdb2649-e327-4907-8f67-908d24cfd7e3")
+
+def _cli_refresh_token() -> str:
+    return os.getenv("SHOPIFY_CLI_REFRESH_TOKEN", "")
+
+def _cred_client_id() -> str:
+    return os.getenv("SHOPIFY_CREDENTIALS_CLIENT_ID", "72e210c7e655bc31d1057226b23818b9")
+
+def _cred_client_secret() -> str:
+    return os.getenv("SHOPIFY_CREDENTIALS_CLIENT_SECRET", "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")
+
 # Railway Suite Dashboard URL
 SUITE_URL = os.getenv("SHOPIFY_SUITE_URL", "https://shopify-suite-v2-production.up.railway.app")
 
@@ -29,28 +44,63 @@ try:
 except ImportError:
     HAS_AIOHTTP = False
 
-# Token-Cache (im Speicher)
+# Token-Cache (im Speicher) — für atkn_ und client-credentials tokens
 _token_cache: Dict[str, Any] = {
-    "access_token": None,
+    "access_token": None,    # client-credentials shpat_ (auto-refresh)
     "expires_at": 0,
-    "refresh_token": CLI_REFRESH_TOKEN,
+    "bearer_token": None,    # atkn_ bearer
+    "bearer_expires": 0,
+    "refresh_token": "",     # atkn_ refresh (legacy)
 }
+
+
+async def _refresh_client_credentials() -> Optional[str]:
+    """Holt frischen shpat_ via Client Credentials Grant (auto-refresh, 24h gültig)"""
+    if not HAS_AIOHTTP:
+        return None
+    try:
+        payload = {
+            "grant_type": "client_credentials",
+            "client_id": _cred_client_id(),
+            "client_secret": _cred_client_secret(),
+        }
+        shop = os.getenv("SHOPIFY_SHOP", "autopilot-store-suite-fmbka")
+        url = f"https://{shop}.myshopify.com/admin/oauth/access_token"
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                url, data=payload,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as resp:
+                if resp.status == 200:
+                    data = await resp.json()
+                    token = data.get("access_token")
+                    expires_in = data.get("expires_in", 86399)
+                    if token:
+                        _token_cache["access_token"] = token
+                        _token_cache["expires_at"] = time.time() + expires_in - 300
+                        logger.info("Shopify client-credentials token refreshed, expires in %ds", expires_in)
+                        return token
+                else:
+                    body = await resp.text()
+                    logger.warning("Client credentials refresh failed %d: %s", resp.status, body[:200])
+    except Exception as e:
+        logger.warning("Client credentials refresh error: %s", e)
+    return None
 
 
 async def _refresh_atkn_token() -> Optional[str]:
     """Refreshed den Shopify CLI identity token via accounts.shopify.com"""
-    refresh_tok = _token_cache["refresh_token"] or CLI_REFRESH_TOKEN
+    refresh_tok = _token_cache["refresh_token"] or _cli_refresh_token()
     if not refresh_tok:
         return None
-
     if not HAS_AIOHTTP:
         return None
-
     try:
         payload = {
             "grant_type": "refresh_token",
             "refresh_token": refresh_tok,
-            "client_id": CLI_CLIENT_ID,
+            "client_id": _cli_client_id(),
         }
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -64,37 +114,49 @@ async def _refresh_atkn_token() -> Optional[str]:
                     new_token = data.get("access_token")
                     new_refresh = data.get("refresh_token")
                     expires_in = data.get("expires_in", 7199)
-
                     if new_token:
-                        _token_cache["access_token"] = new_token
-                        _token_cache["expires_at"] = time.time() + expires_in - 60
+                        _token_cache["bearer_token"] = new_token
+                        _token_cache["bearer_expires"] = time.time() + expires_in - 60
                         if new_refresh:
                             _token_cache["refresh_token"] = new_refresh
-                        logger.info("Shopify CLI token refreshed, expires in %ds", expires_in)
+                        logger.info("Shopify CLI bearer token refreshed, expires in %ds", expires_in)
                         return new_token
                 else:
                     body = await resp.text()
-                    logger.warning("Token refresh failed %d: %s", resp.status, body[:200])
+                    logger.warning("atkn_ refresh failed %d: %s", resp.status, body[:200])
     except Exception as e:
-        logger.warning("Token refresh error: %s", e)
+        logger.warning("atkn_ refresh error: %s", e)
     return None
 
 
-async def _get_bearer_token() -> Optional[str]:
-    """Gibt einen gültigen Bearer token zurück (refreshed bei Bedarf)"""
-    # Noch gültig?
+async def _get_best_token() -> Dict[str, str]:
+    """
+    Gibt den besten verfügbaren Auth-Header zurück.
+    Priorität: atkn_ bearer > client-credentials shpat_ > env shpat_
+    """
+    # 1) atkn_ bearer (wenn noch gültig)
+    if _token_cache["bearer_token"] and time.time() < _token_cache["bearer_expires"]:
+        return {"Authorization": f"Bearer {_token_cache['bearer_token']}"}
+
+    # 2) client-credentials shpat_ (noch gültig oder refresh)
     if _token_cache["access_token"] and time.time() < _token_cache["expires_at"]:
-        return _token_cache["access_token"]
-    # Refresh
-    return await _refresh_atkn_token()
+        return {"X-Shopify-Access-Token": _token_cache["access_token"]}
 
+    # 3) Versuche client-credentials refresh
+    cc_token = await _refresh_client_credentials()
+    if cc_token:
+        return {"X-Shopify-Access-Token": cc_token}
 
-def _get_auth_headers(bearer: Optional[str]) -> Dict[str, str]:
-    """Wählt den besten verfügbaren Auth-Header"""
+    # 4) Versuche atkn_ refresh
+    bearer = await _refresh_atkn_token()
     if bearer:
         return {"Authorization": f"Bearer {bearer}"}
-    elif SHPAT_TOKEN and SHPAT_TOKEN != "NEUER_TOKEN_ERFORDERLICH":
-        return {"X-Shopify-Access-Token": SHPAT_TOKEN}
+
+    # 5) Fallback auf statischen env-Token
+    shpat = _shpat_token()
+    if shpat and shpat != "NEUER_TOKEN_ERFORDERLICH":
+        return {"X-Shopify-Access-Token": shpat}
+
     return {}
 
 
@@ -103,16 +165,13 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
     if not HAS_AIOHTTP:
         return {"errors": "aiohttp not installed"}
 
-    bearer = await _get_bearer_token()
-    headers = {
-        "Content-Type": "application/json",
-        **_get_auth_headers(bearer),
-    }
+    auth = await _get_best_token()
+    headers = {"Content-Type": "application/json", **auth}
     payload = {"query": query}
     if variables:
         payload["variables"] = variables
 
-    url = f"{STORE_URL}/admin/api/2024-10/graphql.json"
+    url = f"{_store_url()}/admin/api/2024-10/graphql.json"
     async with aiohttp.ClientSession() as session:
         async with session.post(url, json=payload, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
             data = await resp.json()
@@ -124,11 +183,10 @@ async def rest_get(endpoint: str) -> Dict:
     if not HAS_AIOHTTP:
         return {"error": "aiohttp not installed"}
 
-    bearer = await _get_bearer_token()
-    headers = _get_auth_headers(bearer)
-    url = f"{STORE_URL}/admin/api/2024-10/{endpoint}"
+    auth = await _get_best_token()
+    url = f"{_store_url()}/admin/api/2024-10/{endpoint}"
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+        async with session.get(url, headers=auth, timeout=aiohttp.ClientTimeout(total=15)) as resp:
             return await resp.json()
 
 

@@ -176,12 +176,30 @@ check_port "CreatorHub"             3000 "cratorhub"
 check_port "Windsurf Shopify"       3001 "windsurf-shopify"
 check_port "Password Sync"          3005 "password-sync"
 check_port "Windsurf Auto-Heal"     9000 "windsurf-autoheal"
+check_port "Windsurf API Gateway"   8080 "windsurf-api-gateway"
 
 # Ollama (eigener Daemon, kein PM2)
 check_process \
     "Ollama LLM (Port 11434)" \
     "ollama serve" \
     "ollama serve"
+
+# OpenClaw Gateway (LaunchAgent, kein PM2)
+if nc -z localhost 18789 2>/dev/null; then
+    log "✅ OpenClaw Gateway (:18789) läuft"
+else
+    log "⚠️ OpenClaw Gateway (:18789) gestoppt — starte neu..."
+    send_telegram "⚠️ *OpenClaw Gateway gestoppt!* Starte automatisch neu..."
+    /opt/homebrew/bin/openclaw gateway start >> "$LOG_FILE" 2>&1
+    sleep 5
+    if nc -z localhost 18789 2>/dev/null; then
+        log "✅ OpenClaw Gateway erfolgreich neugestartet"
+        send_telegram "✅ *OpenClaw Gateway wieder online! (:18789)*"
+    else
+        log "❌ OpenClaw Gateway Neustart fehlgeschlagen"
+        send_telegram "❌ *OpenClaw Gateway Neustart fehlgeschlagen!* Bitte manuell prüfen."
+    fi
+fi
 
 # Logs auf Fehler prüfen
 check_log_errors "/tmp/supermegabot-pm2.log" "SuperMegaBot"

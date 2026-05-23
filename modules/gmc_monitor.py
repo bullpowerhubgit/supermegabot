@@ -45,55 +45,27 @@ CACHE_TTL = 300  # seconds
 # ─── Shopify Data ─────────────────────────────────────────────────────────────
 
 async def get_shopify_product_count() -> dict:
-    """Calls Shopify GraphQL to get total product count (active + all)."""
-    if not HAS_AIOHTTP:
-        return {"error": "aiohttp not installed", "count": 0}
-
-    token = _shopify_token()
-    if not token:
-        return {"error": "SHOPIFY_SUITE_ACCESS_TOKEN not set", "count": 0}
-
-    query = """
-    {
-        productsCount {
-            count
-        }
-        activeProducts: productsCount(query: "status:active") {
-            count
-        }
-        draftProducts: productsCount(query: "status:draft") {
-            count
-        }
-    }
-    """
-
-    url = f"https://{SHOPIFY_SHOP_DOMAIN}/admin/api/2024-10/graphql.json"
-    headers = {
-        "Content-Type": "application/json",
-        "X-Shopify-Access-Token": token,
-    }
-
+    """Calls Shopify GraphQL to get total product count. Uses shopify_client (auto-refresh)."""
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                url,
-                json={"query": query},
-                headers=headers,
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as resp:
-                if resp.status == 200:
-                    data = await resp.json()
-                    d = data.get("data", {})
-                    return {
-                        "total": d.get("productsCount", {}).get("count", 0),
-                        "active": d.get("activeProducts", {}).get("count", 0),
-                        "draft": d.get("draftProducts", {}).get("count", 0),
-                        "source": "shopify_graphql",
-                    }
-                else:
-                    body = await resp.text()
-                    logger.warning("Shopify product count failed %d: %s", resp.status, body[:200])
-                    return {"error": f"HTTP {resp.status}", "count": 0}
+        from modules import shopify_client as _sc
+        query = """
+        {
+            productsCount { count }
+            activeProducts: productsCount(query: "status:active") { count }
+            draftProducts: productsCount(query: "status:draft") { count }
+        }
+        """
+        data = await _sc.graphql(query)
+        if "errors" in data:
+            logger.warning("Shopify product count GraphQL error: %s", data["errors"])
+            return {"error": str(data["errors"]), "count": 0}
+        d = data.get("data", {})
+        return {
+            "total": d.get("productsCount", {}).get("count", 0),
+            "active": d.get("activeProducts", {}).get("count", 0),
+            "draft": d.get("draftProducts", {}).get("count", 0),
+            "source": "shopify_graphql",
+        }
     except Exception as e:
         logger.error("get_shopify_product_count error: %s", e)
         return {"error": str(e), "count": 0}

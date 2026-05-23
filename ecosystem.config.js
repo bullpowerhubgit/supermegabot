@@ -70,5 +70,17 @@ module.exports = {
       max_restarts: 10,
       log_file: "/tmp/windsurf-autoheal-pm2.log",
     },
+    {
+      name: "windsurf-api-gateway",
+      script: "node",
+      args: "src/index.js",
+      cwd: "/Users/rudolfsarkany/windsurf-api-gateway",
+      interpreter: "none",
+      env: { PORT: 8080 },
+      restart_delay: 5000,
+      kill_timeout: 5000,
+      max_restarts: 10,
+      log_file: "/tmp/windsurf-api-gateway-pm2.log",
+    },
   ],
 };
