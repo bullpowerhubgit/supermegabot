@@ -343,6 +343,78 @@ class CommandRouter:
             "/gmc_status": self._cmd_gmc_status,
             "/produkte": self._cmd_produkte,
             "/ads": self._cmd_ads,
+            # API Builder
+            "/api_liste": self._cmd_api,
+            "/api_list": self._cmd_api,
+            "/api_test": self._cmd_api,
+            "/api_test_alle": self._cmd_api,
+            "/api_info": self._cmd_api,
+            "/api_neu": self._cmd_api,
+            "/api_ersetze": self._cmd_api,
+            "/api_regeln": self._cmd_api,
+            "/api_hilfe": self._cmd_api,
+            "/api_help": self._cmd_api,
+            "api liste": self._cmd_api,
+            "api test": self._cmd_api,
+            "api hilfe": self._cmd_api,
+            # ── MEGA HUB ────────────────────────────────────────────────────
+            "/hub": self._cmd_hub,
+            "/hub_status": self._cmd_hub,
+            "/prozesse": self._cmd_hub,
+            "/procs": self._cmd_hub,
+            "hub": self._cmd_hub,
+            "alles": self._cmd_hub,
+            "alle systeme": self._cmd_hub,
+            # PM2
+            "/pm2": self._cmd_hub,
+            "/pm2_status": self._cmd_hub,
+            "/pm2_restart": self._cmd_hub,
+            "/pm2_start": self._cmd_hub,
+            "/pm2_stop": self._cmd_hub,
+            "/pm2_logs": self._cmd_hub,
+            "/pm2_save": self._cmd_hub,
+            # Geheimwaffe
+            "/waffe": self._cmd_hub,
+            "/geheimwaffe": self._cmd_hub,
+            "/waffe_run": self._cmd_hub,
+            "/waffe_produkte": self._cmd_hub,
+            "/waffe_content": self._cmd_hub,
+            "/waffe_analytics": self._cmd_hub,
+            "/waffe_seo": self._cmd_hub,
+            "/shopify_analytics": self._cmd_hub,
+            "/seo": self._cmd_hub,
+            # Autopilot Agents
+            "/autopilot": self._cmd_hub,
+            "/autopilot_run": self._cmd_hub,
+            "/autopilot_logs": self._cmd_hub,
+            "/agenten": self._cmd_hub,
+            "/agent": self._cmd_hub,
+            # RudiBot Army
+            "/army": self._cmd_hub,
+            "/army_status": self._cmd_hub,
+            "/army_start": self._cmd_hub,
+            "/army_stop": self._cmd_hub,
+            "/army_events": self._cmd_hub,
+            "army": self._cmd_hub,
+            # ImmortalBot
+            "/immortal": self._cmd_hub,
+            "/immortal_status": self._cmd_hub,
+            "/immortal_start": self._cmd_hub,
+            "/immortal_stop": self._cmd_hub,
+            "/immortal_brain": self._cmd_hub,
+            "/brain": self._cmd_hub,
+            # Password-Sync
+            "/pw": self._cmd_hub,
+            "/pw_status": self._cmd_hub,
+            "/pw_stats": self._cmd_hub,
+            "/passwortsync": self._cmd_hub,
+            # Self-Learner
+            "/learner": self._cmd_hub,
+            "/learner_status": self._cmd_hub,
+            # Hub Hilfe
+            "/hub_hilfe": self._cmd_hub,
+            "/hub_help": self._cmd_hub,
+            "hub hilfe": self._cmd_hub,
         }
 
     async def route(self, text: str, session_id: str) -> str:
@@ -513,6 +585,22 @@ class CommandRouter:
         except Exception as e:
             return f"Ads Fehler: {e}"
 
+    async def _cmd_api(self, text: str, session_id: str) -> str:
+        try:
+            from modules.api_builder import get_manager
+            mgr = get_manager()
+            return await mgr.dispatch(text)
+        except Exception as e:
+            return f"API Builder Fehler: {e}"
+
+    async def _cmd_hub(self, text: str, session_id: str) -> str:
+        try:
+            from modules.mega_hub import get_hub
+            hub = get_hub()
+            return await hub.dispatch(text)
+        except Exception as e:
+            return f"Hub Fehler: {e}"
+
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle:
 
@@ -537,6 +625,34 @@ class CommandRouter:
     /gmc_status     - Google Merchant Center Status
     /produkte       - Shopify Produktanzahl
     /ads            - Google Ads Kampagnen
+
+  API Builder:
+    /api_liste        - alle konfigurierten APIs
+    /api_test <name>  - API live testen
+    /api_test_alle    - alle APIs auf einmal testen
+    /api_info <name>  - Details & Env-Keys
+    /api_neu <id> <url> <auth> [key]  - neuen Client generieren
+    /api_ersetze <datei> <alt> <neu>  - API in Modul tauschen
+    /api_regeln       - Ersetzungsregeln anzeigen
+
+  🏠 MEGA HUB (alles steuern):
+    /hub              - Komplett-Status aller Systeme
+    /pm2              - PM2 Prozesse
+    /pm2_restart <name> /pm2_start <name> /pm2_stop <name>
+    /pm2_logs <name>  - Logs eines Prozesses
+    /waffe_run <nische> - Geheimwaffe Full-Automation
+    /waffe_produkte   - Winning Products finden
+    /waffe_content <produkt> - Content generieren
+    /waffe_analytics  - Shopify Analytics
+    /autopilot        - KI-Agenten anzeigen
+    /agent <id> <aufgabe> - Agenten beauftragen
+    /army             - RudiBot Army Status
+    /army_start       - Army starten
+    /immortal         - EternalImmortalBot Status
+    /immortal_brain   - Brain-Statistiken
+    /pw               - Password-Sync Status
+    /learner          - Self-Learner Status
+    /hub_hilfe        - alle Hub-Befehle
 
   Kosten: 95% lokal (Ollama), 5% externe APIs"""
 

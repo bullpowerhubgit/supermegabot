@@ -13,9 +13,18 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path.home()))
 
 from aiohttp import web
 import aiohttp
+
+# Self-Learner integration
+try:
+    from self_learner_core import SelfLearner
+    _self_learner = SelfLearner("supermegabot", telegram_notify=True)
+    _self_learner.load_learned_skills()
+except Exception:
+    _self_learner = None
 
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -754,7 +763,7 @@ async function loadProcesses() {
   if (r.error) { out.textContent = '✗ ' + r.error; return; }
   out.textContent = (r.processes || []).map(p =>
     `${String(p.cpu).padStart(5)}% CPU  ${String(p.mem).padStart(4)}% MEM  ${p.name}`
-  ).join('\n');
+  ).join('\\n');
 }
 
 // ── Chat ──
@@ -1046,7 +1055,7 @@ async function runGeheimwaffe() {
       if (p.why_winning) text += `   → ${p.why_winning}\n`;
       if (p.profit_margin) text += `   Marge: ${p.profit_margin}\n`;
     });
-    text += '\n';
+    text += '\\n';
   }
   if (r.listing?.title) text += `📝 LISTING:\n${r.listing.title}\n${r.listing.seo_description||''}\n\n`;
   if (r.social?.tiktok?.content) text += `🎵 TIKTOK:\n${r.social.tiktok.content?.substring(0,200)}...\n\n`;
@@ -1450,6 +1459,42 @@ async def handle_health(req):
     })
 
 
+async def handle_monitor(req):
+    """Mega Monitoring Dashboard"""
+    html_path = Path(__file__).parent / "mega_monitor.html"
+    if html_path.exists():
+        return web.Response(
+            text=html_path.read_text(encoding="utf-8"),
+            content_type="text/html",
+            charset="utf-8",
+        )
+    # Wenn HTML fehlt → neu generieren
+    try:
+        import subprocess
+        py = Path(__file__).parent / "mega_monitor.py"
+        subprocess.run(["python3", str(py)], timeout=30)
+        if html_path.exists():
+            return web.Response(
+                text=html_path.read_text(encoding="utf-8"),
+                content_type="text/html",
+                charset="utf-8",
+            )
+    except Exception as e:
+        pass
+    return web.Response(text=f"<h2>Monitor wird generiert... <a href='/monitor'>Reload</a></h2>", content_type="text/html")
+
+
+async def handle_monitor_refresh(req):
+    """Dashboard neu generieren und zurückgeben"""
+    try:
+        import subprocess
+        py = Path(__file__).parent / "mega_monitor.py"
+        subprocess.run(["python3", str(py)], timeout=60, check=True)
+        return web.json_response({"ok": True, "msg": "Dashboard aktualisiert"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_processes(req):
     try:
         import psutil
@@ -1513,6 +1558,15 @@ async def create_app():
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
+    app.router.add_get("/monitor", handle_monitor)
+    app.router.add_post("/api/monitor/refresh", handle_monitor_refresh)
+
+    # Self-Learner routes
+    app.router.add_get("/api/self-learner/status", handle_self_learner_status)
+    app.router.add_post("/api/self-learner/learn", handle_self_learner_learn)
+    app.router.add_post("/api/self-learner/skills", handle_self_learner_skills)
+    app.router.add_post("/api/self-learner/delete", handle_self_learner_delete)
+    app.router.add_post("/api/self-learner/find-api", handle_self_learner_find_api)
 
     return app
 
