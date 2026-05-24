@@ -1,0 +1,368 @@
+{
+  "agents": {
+    "shopify": {
+      "status": "ok",
+      "message": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "data": {
+        "orders": 0,
+        "revenue": "0",
+        "today": 0,
+        "today_revenue": "0",
+        "printify": 0
+      },
+      "ts": "2026-05-24 16:13:30"
+    },
+    "social": {
+      "status": "ok",
+      "message": "Social: 0/8 Plattformen verbunden",
+      "data": {
+        "connected": 0,
+        "total": 8,
+        "last_autopost": "nie"
+      },
+      "ts": "2026-05-24 16:11:31"
+    },
+    "monitor": {
+      "status": "ok",
+      "message": "Services: 5/5 OK",
+      "data": {
+        "RudiBot Server": true,
+        "SuperMegaBot": true,
+        "Ollama LLM": true,
+        "Redis": true,
+        "OpenClaw": true
+      },
+      "ts": "2026-05-24 16:14:30"
+    },
+    "finance": {
+      "status": "ok",
+      "message": "Finance: \u20ac0.00 heute | \u20ac0.00 gesamt",
+      "data": {
+        "today_revenue": 0.0,
+        "total_revenue": 0.0,
+        "printify_orders": 0,
+        "yesterday_revenue": 0
+      },
+      "ts": "2026-05-24 16:11:32"
+    },
+    "security": {
+      "status": "ok",
+      "message": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "data": {
+        "vpn": "verbunden",
+        "vpn_location": "Connected\n    Relay:                  de-ber-wg-007\n    Features:               Quantum Resistance\n    Visible location:       Germany, Berlin. IPv4: 193.32.248.247, IPv6: 2a03:1b20:b:f011::e723",
+        "missing_keys": [],
+        "suspicious_count": 0,
+        "issues": []
+      },
+      "ts": "2026-05-24 16:14:34"
+    },
+    "learner": {
+      "status": "ok",
+      "message": "Skills: 13 gelernt | 0 heute",
+      "data": {
+        "total_skills": 13,
+        "learned_today": 0,
+        "last_learn": "2026-05-24"
+      },
+      "ts": "2026-05-24 16:11:53"
+    },
+    "optimizer": {
+      "status": "ok",
+      "message": "CPU:34% RAM:67% Disk:10%",
+      "data": {
+        "ram_percent": 67.3,
+        "cpu_percent": 33.6,
+        "disk_percent": 9.9,
+        "ram_free_gb": 16.8,
+        "issues": [],
+        "suggestions": []
+      },
+      "ts": "2026-05-24 16:13:39"
+    }
+  },
+  "events": [
+    {
+      "agent": "shopify",
+      "msg": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "ts": "16:02:41"
+    },
+    {
+      "agent": "social",
+      "msg": "Social: 0/8 Plattformen verbunden",
+      "ts": "16:02:42"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:02:43"
+    },
+    {
+      "agent": "finance",
+      "msg": "Finance: \u20ac0.00 heute | \u20ac0.00 gesamt",
+      "ts": "16:02:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:02:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:03:13"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:03:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:03:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:04:13"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "ts": "16:04:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:04:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:04:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:05:16"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:05:45"
+    },
+    {
+      "agent": "learner",
+      "msg": "Skills: 13 gelernt | 4 heute",
+      "ts": "16:05:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:05:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:06:16"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "ts": "16:06:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:06:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:06:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:07:16"
+    },
+    {
+      "agent": "social",
+      "msg": "Social: 0/8 Plattformen verbunden",
+      "ts": "16:07:42"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:07:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:07:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:08:16"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "ts": "16:08:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:08:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:08:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:09:16"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:43% RAM:80% Disk:10%",
+      "ts": "16:09:21"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:09:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:09:48"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:10:18"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "ts": "16:10:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:10:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:10:48"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:11:20"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:32% RAM:64% Disk:10%",
+      "ts": "16:11:23"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:11:29"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "ts": "16:11:30"
+    },
+    {
+      "agent": "social",
+      "msg": "Social: 0/8 Plattformen verbunden",
+      "ts": "16:11:31"
+    },
+    {
+      "agent": "finance",
+      "msg": "Finance: \u20ac0.00 heute | \u20ac0.00 gesamt",
+      "ts": "16:11:32"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:11:34"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:42% RAM:64% Disk:10%",
+      "ts": "16:11:37"
+    },
+    {
+      "agent": "learner",
+      "msg": "Skills: 13 gelernt | 0 heute",
+      "ts": "16:11:53"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:11:59"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:12:29"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:12:34"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:12:59"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:13:30"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "ts": "16:13:30"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:13:34"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:34% RAM:67% Disk:10%",
+      "ts": "16:13:39"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:14:00"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "16:14:30"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "16:14:34"
+    }
+  ],
+  "fixes": [],
+  "stats": {}
+}
