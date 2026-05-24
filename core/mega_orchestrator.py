@@ -408,9 +408,19 @@ class CommandRouter:
             "/pw_status": self._cmd_hub,
             "/pw_stats": self._cmd_hub,
             "/passwortsync": self._cmd_hub,
-            # Self-Learner
-            "/learner": self._cmd_hub,
-            "/learner_status": self._cmd_hub,
+            # Self-Learner (eigene Routen — NICHT Hub)
+            "/learner": self._cmd_learner,
+            "/learner_status": self._cmd_learner,
+            "/skills": self._cmd_learner,
+            "/kann_ich": self._cmd_learner,
+            "/lerne": self._cmd_learner,
+            "/lerne_api": self._cmd_learner,
+            "/api_finde": self._cmd_learner,
+            "/skill_del": self._cmd_learner,
+            "/micro": self._cmd_micro,
+            "/micro_status": self._cmd_micro,
+            "/micro_ping": self._cmd_micro,
+            "/army_micro": self._cmd_micro,
             # Hub Hilfe
             "/hub_hilfe": self._cmd_hub,
             "/hub_help": self._cmd_hub,
@@ -601,6 +611,51 @@ class CommandRouter:
         except Exception as e:
             return f"Hub Fehler: {e}"
 
+    async def _cmd_learner(self, text: str, session_id: str) -> str:
+        try:
+            import sys, os
+            sys.path.insert(0, os.path.expanduser("~"))
+            # Tokens laden
+            from pathlib import Path
+            env_file = Path("/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot/.env")
+            if env_file.exists():
+                for line in env_file.read_text(errors="ignore").splitlines():
+                    if "=" in line and not line.strip().startswith("#"):
+                        k, _, v = line.partition("=")
+                        if not os.environ.get(k.strip()):
+                            os.environ[k.strip()] = v.strip()
+            from self_learner_core import SelfLearner
+            if not hasattr(self, "_learner"):
+                self._learner = SelfLearner("supermegabot", telegram_notify=True)
+                self._learner.load_learned_skills()
+            # Befehl extrahieren: "/learner" → "/status", direkter Befehl weiterleiten
+            cmd = text.strip()
+            if cmd in ("/learner", "/learner_status"):
+                cmd = "/status"
+            return self._learner.handle_command(cmd)
+        except Exception as e:
+            return f"Learner Fehler: {e}"
+
+    async def _cmd_micro(self, text: str, session_id: str) -> str:
+        try:
+            import json, os
+            from pathlib import Path
+            state_file = Path(os.path.expanduser("~/rudibot-army/shared/army_state.json"))
+            state = json.loads(state_file.read_text(errors="ignore")) if state_file.exists() else {}
+            agents = state.get("agents", {})
+            micro_ids = ["micro_ping", "micro_revenue", "micro_backup", "micro_clean", "micro_ai"]
+            lines = ["🤖 <b>Micro Bots Status:</b>\n"]
+            icons = {"micro_ping":"🏓","micro_revenue":"💸","micro_backup":"💾","micro_clean":"🧹","micro_ai":"🤖"}
+            for mid in micro_ids:
+                info = agents.get(mid, {})
+                s = info.get("status", "?")
+                si = {"ok":"✅","warning":"⚠️","error":"❌"}.get(s, "❓")
+                msg = info.get("message", "Keine Daten")[:50]
+                lines.append(f"{icons.get(mid,'•')} {mid}: {si} {msg}")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"Micro Status Fehler: {e}"
+
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle:
 
@@ -653,6 +708,18 @@ class CommandRouter:
     /pw               - Password-Sync Status
     /learner          - Self-Learner Status
     /hub_hilfe        - alle Hub-Befehle
+
+  🧠 SELF-LEARNER (Skills anlernen):
+    /skills           - alle gelernten Skills
+    /kann_ich         - Selbstanalyse aller Fähigkeiten
+    /lerne <beschr>   - neuen Skill anlernen
+    /lerne_api <beschr> - API-Integration hinzufügen
+    /api_finde <aufg> - beste freie API finden
+    /skill_del <name> - Skill löschen
+
+  🤖 MICRO BOTS:
+    /micro            - Status aller 5 Micro Bots
+    /micro_status     - Ping, Revenue, Backup, Clean, AI
 
   Kosten: 95% lokal (Ollama), 5% externe APIs"""
 

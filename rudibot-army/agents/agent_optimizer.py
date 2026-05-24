@@ -3,6 +3,7 @@
 import sys, os, time, json, subprocess, psutil, datetime
 sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
 from bus import report, notify_telegram, load_state
+from learner_mixin import AgentLearner
 
 ID = "optimizer"
 BOT_DIR = os.path.expanduser("~/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot")
@@ -49,23 +50,26 @@ def analyze_performance():
 
 def run():
     print(f"[{ID}] ⚡ Optimizer Agent gestartet")
+    learner = AgentLearner(ID)
+    learner.register("performance", lambda: str(analyze_performance()[2]), "Aktuelle System-Metriken")
+
     last_report_day = None
     while True:
         try:
             issues, suggestions, metrics = analyze_performance()
             today = datetime.date.today()
-            
+
             if today != last_report_day and suggestions:
                 notify_telegram(f"⚡ <b>Optimizer:</b> {len(suggestions)} Optimierungen\n" + "\n".join(f"• {s}" for s in suggestions[:5]))
                 last_report_day = today
-            
+
             status = "warning" if issues else "ok"
             cpu_p  = metrics["cpu_percent"]
             ram_p  = metrics["ram_percent"]
             disk_p = metrics["disk_percent"]
-            report(ID, status, f"CPU:{cpu_p:.0f}% RAM:{ram_p:.0f}% Disk:{disk_p:.0f}%", {
-                **metrics, "issues": issues, "suggestions": suggestions
-            })
+            msg = f"CPU:{cpu_p:.0f}% RAM:{ram_p:.0f}% Disk:{disk_p:.0f}%"
+            report(ID, status, msg, {**metrics, "issues": issues, "suggestions": suggestions})
+            learner.log_cycle(status, msg, metrics)
         except Exception as e:
             report(ID, "error", str(e)[:80])
         time.sleep(120)
