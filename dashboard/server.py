@@ -327,6 +327,36 @@ body {
 .error-text { color: var(--red); font-size: 0.78rem; }
 .vol-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 input[type=range] { flex: 1; accent-color: var(--accent); }
+
+/* ── Tabs ── */
+.tab-nav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex; gap: 2px; padding: 0 16px;
+  overflow-x: auto; scrollbar-width: none;
+}
+.tab-nav::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 11px 16px; background: none; border: none; border-bottom: 2px solid transparent;
+  color: var(--muted); cursor: pointer; font-size: 0.82rem; white-space: nowrap;
+  font-family: inherit; transition: color 0.15s, border-color 0.15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+.tab-iframe {
+  width: 100%; height: calc(100vh - 118px); border: none;
+  background: var(--surface); display: block;
+}
+/* ── Remote Desktop Card ── */
+.crd-input {
+  width: 100%; background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 10px; font-size: 0.78rem; font-family: monospace;
+  margin-bottom: 8px; resize: vertical; min-height: 54px;
+}
+.crd-input:focus { outline: none; border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -350,6 +380,24 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
   <button class="quick-btn" onclick="quickMac('lock')">🔒 Sperren</button>
   <button class="quick-btn" onclick="quickMac('sleep_display')">🌙 Display aus</button>
 </div>
+
+<!-- ══ TAB NAV ══ -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="home" onclick="switchTab('home')">🤖 SuperMegaBot</button>
+  <button class="tab-btn" data-tab="telegram" onclick="switchTab('telegram')">✈️ Telegram Bot</button>
+  <button class="tab-btn" data-tab="shopify-apps" onclick="switchTab('shopify-apps')">🛒 Shopify Apps</button>
+  <button class="tab-btn" data-tab="nailschip" onclick="switchTab('nailschip')">💅 NailsChip</button>
+  <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')">💰 Revenue Hub</button>
+  <button class="tab-btn" data-tab="income" onclick="switchTab('income')">📊 Income Engine</button>
+  <button class="tab-btn" data-tab="social" onclick="switchTab('social')">🌐 Social</button>
+  <button class="tab-btn" data-tab="windsurf-shopify" onclick="switchTab('windsurf-shopify')">🏪 Windsurf Shop</button>
+  <button class="tab-btn" data-tab="password-sync" onclick="switchTab('password-sync')">🔑 Passwort Sync</button>
+  <button class="tab-btn" data-tab="cratorhub" onclick="switchTab('cratorhub')">🎨 CreatorHub</button>
+  <button class="tab-btn" data-tab="remote" onclick="switchTab('remote')">🖥️ Remote Desktop</button>
+</div>
+
+<!-- ══ TAB: HOME (SuperMegaBot Dashboard) ══ -->
+<div id="tab-home" class="tab-panel active">
 
 <!-- ══ MAIN GRID ══ -->
 <div class="grid">
@@ -636,6 +684,85 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
   </div>
 
 </div><!-- /grid -->
+</div><!-- /tab-home -->
+
+<!-- ══ TAB: Telegram Bot ══ -->
+<div id="tab-telegram" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3200" title="Telegram Bot"></iframe>
+</div>
+
+<!-- ══ TAB: Shopify Apps Suite ══ -->
+<div id="tab-shopify-apps" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3200/shopify-apps" title="Shopify Apps"></iframe>
+</div>
+
+<!-- ══ TAB: NailsChip Studio ══ -->
+<div id="tab-nailschip" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3200/nailschip" title="NailsChip"></iframe>
+</div>
+
+<!-- ══ TAB: Revenue Hub ══ -->
+<div id="tab-revenue" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3200/revenue" title="Revenue Hub"></iframe>
+</div>
+
+<!-- ══ TAB: Income Engine ══ -->
+<div id="tab-income" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3200/income" title="Income Engine"></iframe>
+</div>
+
+<!-- ══ TAB: Social ══ -->
+<div id="tab-social" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3200/social" title="Social"></iframe>
+</div>
+
+<!-- ══ TAB: Windsurf Shopify ══ -->
+<div id="tab-windsurf-shopify" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3001" title="Windsurf Shopify"></iframe>
+</div>
+
+<!-- ══ TAB: Password Sync ══ -->
+<div id="tab-password-sync" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3005" title="Password Sync"></iframe>
+</div>
+
+<!-- ══ TAB: CreatorHub ══ -->
+<div id="tab-cratorhub" class="tab-panel">
+  <iframe class="tab-iframe" src="http://localhost:3002" title="CreatorHub"></iframe>
+</div>
+
+<!-- ══ TAB: Remote Desktop ══ -->
+<div id="tab-remote" class="tab-panel">
+  <div style="padding:32px;max-width:700px;margin:0 auto">
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">🖥️</div>
+        <div><div class="card-title">Chrome Remote Desktop</div><div class="card-subtitle">Host-Registrierung</div></div>
+      </div>
+      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">
+        Hole den Auth-Code von <a href="https://remotedesktop.google.com/headless" target="_blank" style="color:var(--accent)">remotedesktop.google.com/headless</a>
+        und füge ihn hier ein.
+      </p>
+      <label style="font-size:0.75rem;color:var(--muted);display:block;margin-bottom:4px">Auth Code (--code=...)</label>
+      <textarea class="crd-input" id="crd-code" placeholder="4/0AeoWuM_bnLD2e3zP8tn2..."></textarea>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="registerCRD()">🖥️ Remote Desktop registrieren</button>
+      <div id="crd-result" style="font-size:0.78rem;font-family:monospace;background:var(--surface);border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap;display:none"></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#43d98c,#00b894)">ℹ️</div>
+        <div><div class="card-title">Anleitung</div></div>
+      </div>
+      <ol style="font-size:0.82rem;color:var(--muted);line-height:1.8;padding-left:18px">
+        <li>Öffne <strong style="color:var(--text)">remotedesktop.google.com/headless</strong></li>
+        <li>Klicke auf <strong style="color:var(--text)">Set up via SSH</strong> → <strong style="color:var(--text)">Begin</strong></li>
+        <li>Kopiere den Auth-Code (beginnt mit <code style="color:var(--accent)">4/0A...</code>)</li>
+        <li>Füge ihn oben ein und klicke <strong style="color:var(--text)">registrieren</strong></li>
+        <li>Verbinde dich dann über <strong style="color:var(--text)">remotedesktop.google.com</strong></li>
+      </ol>
+    </div>
+  </div>
+</div>
 
 <script>
 const session = 'dashboard_' + Date.now();
@@ -1104,6 +1231,40 @@ setInterval(loadPrices,   30000);
 setInterval(scanArbitrage, 60000);
 setInterval(loadLogs,     8000);
 setInterval(loadGMC,      60000);
+
+// ── Tab Navigation ──
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  const panel = document.getElementById('tab-' + tabId);
+  if (panel) panel.classList.add('active');
+  const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
+  if (btn) btn.classList.add('active');
+  // lazy-load iframe on first visit
+  if (panel) {
+    const iframe = panel.querySelector('iframe');
+    if (iframe && !iframe.src && iframe.dataset.src) {
+      iframe.src = iframe.dataset.src;
+    }
+  }
+}
+
+// ── Chrome Remote Desktop ──
+async function registerCRD() {
+  const code = document.getElementById('crd-code').value.trim();
+  if (!code) { showToast('Auth-Code fehlt', false); return; }
+  const result = document.getElementById('crd-result');
+  result.style.display = 'block';
+  result.textContent = '⏳ Registriere Remote Desktop Host...';
+  const r = await api('/remote-desktop/register', { code });
+  if (r.ok) {
+    result.textContent = '✅ Erfolgreich registriert!\\n\\n' + (r.output || '');
+    showToast('Remote Desktop registriert!', true);
+  } else {
+    result.textContent = '❌ Fehler: ' + (r.error || 'Unbekannt') + '\\n\\n' + (r.output || '');
+    showToast(r.error || 'Fehler', false);
+  }
+}
 </script>
 </body>
 </html>'''
@@ -1175,23 +1336,33 @@ async def handle_services_legacy(req):
 
 
 async def handle_trading_prices(req):
+    # ccxt market-loading deaktiviert — verursacht 83% CPU + PM2-Crashloop
+    # Lightweight Binance public API stattdessen
     try:
-        from modules.trading_bot import TradingBot
-        bot = TradingBot()
-        prices = await bot.get_quick_prices()
-        return web.json_response({"prices": prices})
+        pairs = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
+        prices = {}
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as session:
+            for pair in pairs:
+                try:
+                    async with session.get(
+                        f"https://api.binance.com/api/v3/ticker/price?symbol={pair}"
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json()
+                            prices[pair] = float(d.get("price", 0))
+                except Exception:
+                    pass
+        return web.json_response({"prices": prices, "source": "binance-public"})
     except Exception as e:
-        return web.json_response({"error": str(e)})
+        return web.json_response({"prices": {}, "error": str(e)})
 
 
 async def handle_trading_arbitrage(req):
-    try:
-        from modules.trading_bot import TradingBot
-        bot = TradingBot()
-        opps = await bot.scan_quick()
-        return web.json_response({"opportunities": opps})
-    except Exception as e:
-        return web.json_response({"error": str(e)})
+    # ccxt arbitrage-scan deaktiviert — zu CPU-intensiv für Production
+    return web.json_response({
+        "opportunities": [],
+        "info": "Arbitrage-Scan pausiert (CPU-Schutz). Via Telegram /trading aktivieren."
+    })
 
 
 async def handle_telegram_status(req):
@@ -1232,6 +1403,35 @@ async def handle_shopify_status(req):
                     d = await r.json()
                     return web.json_response({"ok": True, "store": d.get("shop", {}).get("name", store)})
                 return web.json_response({"ok": False, "error": f"HTTP {r.status}"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_remote_desktop_register(req):
+    try:
+        data = await req.json()
+        code = data.get("code", "").strip()
+        if not code:
+            return web.json_response({"ok": False, "error": "Auth-Code fehlt"})
+        redirect_url = "https://remotedesktop.google.com/_/oauthredirect"
+        cmd = (
+            f'DISPLAY= /opt/google/chrome-remote-desktop/start-host '
+            f'--code="{code}" '
+            f'--redirect-url="{redirect_url}" '
+            f'--name="$(hostname)"'
+        )
+        proc = await asyncio.create_subprocess_shell(
+            cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        try:
+            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
+        except asyncio.TimeoutError:
+            return web.json_response({"ok": False, "error": "Timeout (30s)"})
+        output = (stdout.decode() + stderr.decode()).strip()
+        success = proc.returncode == 0
+        return web.json_response({"ok": success, "output": output, "returncode": proc.returncode})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -1518,13 +1718,133 @@ async def handle_processes(req):
 
 
 # ---------------------------------------------------------------------------
+# Self-Learner Handlers
+# ---------------------------------------------------------------------------
+
+async def handle_self_learner_status(req):
+    try:
+        if _self_learner:
+            skills = _self_learner.skills
+            built_ins = [s for s in skills.values() if s.source == "built-in"]
+            learned  = [s for s in skills.values() if s.source in ("learned","api")]
+            return web.json_response({
+                "ok": True,
+                "tool": _self_learner.tool_name,
+                "total_skills": len(skills),
+                "built_in": len(built_ins),
+                "learned": len(learned),
+                "telegram": _self_learner.telegram_notify,
+                "skills_list": [{"name":s.name,"desc":s.desc,"source":s.source,"usage":s.usage_count}
+                                 for s in skills.values()],
+            })
+        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_self_learner_learn(req):
+    try:
+        data = await req.json()
+        desc = data.get("description", "")
+        if not desc:
+            return web.json_response({"ok": False, "error": "description fehlt"})
+        if _self_learner:
+            result = _self_learner.handle_command(f"/lerne {desc}")
+            return web.json_response({"ok": True, "result": result})
+        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_self_learner_skills(req):
+    try:
+        if _self_learner:
+            result = _self_learner.handle_command("/skills")
+            return web.json_response({"ok": True, "result": result})
+        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_self_learner_delete(req):
+    try:
+        data = await req.json()
+        name = data.get("name", "")
+        if not name:
+            return web.json_response({"ok": False, "error": "name fehlt"})
+        if _self_learner:
+            result = _self_learner.handle_command(f"/skill_del {name}")
+            return web.json_response({"ok": True, "result": result})
+        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_self_learner_find_api(req):
+    try:
+        data = await req.json()
+        task = data.get("task", "")
+        if not task:
+            return web.json_response({"ok": False, "error": "task fehlt"})
+        if _self_learner:
+            result = _self_learner.handle_command(f"/api_finde {task}")
+            return web.json_response({"ok": True, "result": result})
+        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ---------------------------------------------------------------------------
+# Army / Micro Bot Status Handler
+# ---------------------------------------------------------------------------
+
+async def handle_army_status(req):
+    try:
+        import json as _json
+        state_file = BASE_DIR.parent / "rudibot-army" / "shared" / "army_state.json"
+        if state_file.exists():
+            state = _json.loads(state_file.read_text(errors="ignore"))
+            return web.json_response({"ok": True, "agents": state.get("agents", {}),
+                                       "events": state.get("events", [])[-20:]})
+        return web.json_response({"ok": False, "error": "army_state.json nicht gefunden"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ---------------------------------------------------------------------------
 # App Factory
 # ---------------------------------------------------------------------------
 
 async def create_app():
-    from core.mega_orchestrator import MegaOrchestrator
-    bot = MegaOrchestrator()
-    await bot.start()
+    # Mega-Orchestrator nur starten wenn KEIN eigenständiger Prozess läuft
+    # (verhindert 409-Konflikt bei doppeltem Telegram-Polling)
+    import subprocess as _sp
+    _orch_running = _sp.run(
+        ["pgrep", "-f", "core/mega_orchestrator.py"],
+        capture_output=True
+    ).returncode == 0
+
+    if not _orch_running:
+        from core.mega_orchestrator import MegaOrchestrator
+        bot = MegaOrchestrator()
+        await bot.start()
+    else:
+        # Dummy-Objekt — Dashboard leitet Chat-Requests per HTTP weiter
+        class _BotProxy:
+            async def process(self, text, session_id="default"):
+                try:
+                    import aiohttp as _aio
+                    async with _aio.ClientSession() as s:
+                        async with s.post(
+                            "http://localhost:8889/api/chat",
+                            json={"text": text, "session_id": session_id},
+                            timeout=_aio.ClientTimeout(total=30)
+                        ) as r:
+                            d = await r.json()
+                            return d.get("response", d.get("result", str(d)))
+                except Exception as ex:
+                    return f"Orchestrator antwortet nicht: {ex}"
+        bot = _BotProxy()
 
     app = web.Application()
     app["bot"] = bot
@@ -1562,6 +1882,7 @@ async def create_app():
     app.router.add_post("/api/monitor/refresh", handle_monitor_refresh)
 
     # Self-Learner routes
+    app.router.add_post("/api/remote-desktop/register", handle_remote_desktop_register)
     app.router.add_get("/api/self-learner/status", handle_self_learner_status)
     app.router.add_post("/api/self-learner/learn", handle_self_learner_learn)
     app.router.add_post("/api/self-learner/skills", handle_self_learner_skills)

@@ -4,6 +4,7 @@
 ║  MEGA HUB — Master-Kontrollzentrale für das komplette RudiBot-System       ║
 ║  Verbindet: SuperMegaBot · RudiBot-Army · Eternal-Bot · PasswordSync       ║
 ║             Geheimwaffe · Autopilot · PM2 · API-Builder · SelfLearner      ║
+║             Tailscale DNS                                                   ║
 ║  Alle Funktionen per Telegram steuerbar                                     ║
 ╚══════════════════════════════════════════════════════════════════════════════╝
 """
@@ -621,6 +622,8 @@ class MegaHub:
         self.immortal  = ImmortalController()
         self.pw_sync   = PasswordSyncController()
         self.learner   = SelfLearnerController()
+        from modules.tailscale import TailscaleController
+        self.tailscale = TailscaleController()
 
     async def dispatch(self, text: str) -> str:
         t = text.strip()
@@ -752,6 +755,58 @@ class MegaHub:
         if lower.startswith("/learner "):
             return self.learner.run_cli(t[9:].strip())
 
+        # ── Tailscale DNS ─────────────────────────────────────────────────────────
+        if lower in ("/ts", "/ts_dns", "tailscale", "ts dns"):
+            return await self.tailscale.dns_status()
+
+        if lower in ("/ts_devices", "/ts_geraete"):
+            return await self.tailscale.devices()
+
+        if lower in ("/ts_ns", "/ts_nameservers"):
+            return await self.tailscale.nameservers_get()
+
+        if lower.startswith("/ts_ns_add "):
+            server = t[11:].strip()
+            if not server:
+                return "Verwendung: /ts_ns_add &lt;ip&gt;  z.B. /ts_ns_add 1.1.1.1"
+            return await self.tailscale.nameservers_add(server)
+
+        if lower.startswith("/ts_ns_del "):
+            server = t[11:].strip()
+            if not server:
+                return "Verwendung: /ts_ns_del &lt;ip&gt;"
+            return await self.tailscale.nameservers_remove(server)
+
+        if lower.startswith("/ts_ns_set "):
+            servers = t[11:].strip().split()
+            if not servers:
+                return "Verwendung: /ts_ns_set &lt;ip1&gt; [ip2...]"
+            return await self.tailscale.nameservers_set(servers)
+
+        if lower in ("/ts_search", "/ts_searchpaths"):
+            return await self.tailscale.search_domains_get()
+
+        if lower.startswith("/ts_search_add "):
+            domain = t[15:].strip()
+            if not domain:
+                return "Verwendung: /ts_search_add &lt;domain&gt;"
+            return await self.tailscale.search_domains_add(domain)
+
+        if lower.startswith("/ts_search_del "):
+            domain = t[15:].strip()
+            if not domain:
+                return "Verwendung: /ts_search_del &lt;domain&gt;"
+            return await self.tailscale.search_domains_remove(domain)
+
+        if lower in ("/ts_magic_on", "/ts_magicdns_on"):
+            return await self.tailscale.magicdns_enable()
+
+        if lower in ("/ts_magic_off", "/ts_magicdns_off"):
+            return await self.tailscale.magicdns_disable()
+
+        if lower in ("/ts_help", "/ts_hilfe"):
+            return self.tailscale.cmd_help()
+
         # ── Hilfe ────────────────────────────────────────────────────────────────
         if lower in ("/hub_hilfe", "/hub_help", "hub hilfe"):
             return self.cmd_help()
@@ -785,7 +840,16 @@ class MegaHub:
             "/immortal — ImmortalBot Status\n"
             "/immortal_brain — Brain-Statistiken\n"
             "/pw — Password-Sync Status\n"
-            "/learner — Self-Learner Status\n"
+            "/learner — Self-Learner Status\n\n"
+            "<b>🌐 Tailscale DNS:</b>\n"
+            "/ts — DNS-Übersicht\n"
+            "/ts_devices — Geräte im Tailnet\n"
+            "/ts_ns — Nameserver anzeigen\n"
+            "/ts_ns_add &lt;ip&gt; / /ts_ns_del &lt;ip&gt;\n"
+            "/ts_search — Search Domains\n"
+            "/ts_search_add &lt;domain&gt; / /ts_search_del &lt;domain&gt;\n"
+            "/ts_magic_on / /ts_magic_off — MagicDNS\n"
+            "/ts_help — Alle Tailscale Befehle\n"
         )
 
 
