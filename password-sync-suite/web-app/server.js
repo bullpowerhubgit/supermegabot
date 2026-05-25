@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const path = require('path');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3005;
 
 const DEFAULT_EMAILS = 'dragonadnp@gmail.com,aiitecbuuss@gmail.com,bullpowersrtkennels@gmail.com';
 const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS || DEFAULT_EMAILS)
@@ -137,7 +137,34 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Health endpoint (für PM2 + SuperMegaBot Hub)
+app.get('/health', (req, res) => {
+  res.json({
+    ok: true,
+    service: 'password-sync-suite',
+    port: PORT,
+    uptime: Math.floor(process.uptime()),
+    clients: syncStore.size,
+    oauth: !!(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET),
+    allowedEmails: ALLOWED_EMAILS.length
+  });
+});
+
+// API Stats (öffentlich — kein Login nötig für Monitoring)
+app.get('/api/stats', (req, res) => {
+  let totalPasswords = 0;
+  for (const [, data] of syncStore) {
+    totalPasswords += data.passwords?.length || 0;
+  }
+  res.json({
+    totalPasswords,
+    clients: syncStore.size,
+    uptime: Math.floor(process.uptime())
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`[Password Sync Web] http://localhost:${PORT}`);
   console.log(`[Allowed emails] ${ALLOWED_EMAILS.join(', ')}`);
+  console.log(`[Health] http://localhost:${PORT}/health`);
 });

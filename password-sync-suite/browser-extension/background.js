@@ -2,7 +2,7 @@ chrome.runtime.onInstalled.addListener(() => {
   chrome.storage.local.set({
     accounts: [],
     passwords: [],
-    syncEndpoint: 'http://localhost:3000/api/sync',
+    syncEndpoint: 'http://localhost:3005/api/sync',
     lastSync: null
   });
   console.log('[Password Sync] Extension installiert.');

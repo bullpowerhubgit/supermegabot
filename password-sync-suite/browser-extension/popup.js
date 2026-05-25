@@ -150,11 +150,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   $('btn-sync-now').addEventListener('click', syncNow);
   $('btn-open-web').addEventListener('click', () => {
-    chrome.tabs.create({ url: 'http://localhost:3000' });
+    chrome.tabs.create({ url: 'http://localhost:3005' });
   });
 
   $('btn-add-account').addEventListener('click', () => {
-    chrome.tabs.create({ url: 'http://localhost:3000/auth/google' });
+    chrome.tabs.create({ url: 'http://localhost:3005/auth/google' });
   });
 
   loadData();
