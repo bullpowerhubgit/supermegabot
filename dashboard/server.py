@@ -1518,6 +1518,68 @@ async def handle_processes(req):
 
 
 # ---------------------------------------------------------------------------
+# Storage Monitor API
+# ---------------------------------------------------------------------------
+
+async def handle_storage_status(req):
+    try:
+        from modules.storage_monitor import get_status_dict
+        return web.json_response(get_status_dict())
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_storage_cleanup(req):
+    try:
+        data = await req.json() if req.can_read_body else {}
+        max_age = int(data.get("max_age_hours", 24))
+        from modules.storage_monitor import run_cleanup
+        result = run_cleanup(max_age_hours=max_age)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_storage_offload(req):
+    try:
+        data = await req.json() if req.can_read_body else {}
+        mountpoint = data.get("mountpoint", "/")
+        min_mb = float(data.get("min_file_mb", 50.0))
+        from modules.storage_monitor import run_offload
+        result = run_offload(source_mountpoint=mountpoint, min_file_mb=min_mb)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_storage_large_files(req):
+    try:
+        directory = req.rel_url.query.get("dir", str(BASE_DIR))
+        min_mb = float(req.rel_url.query.get("min_mb", "50"))
+        from modules.storage_monitor import find_large_files
+        files = find_large_files(Path(directory), min_size_mb=min_mb, limit=30)
+        return web.json_response({"files": files, "directory": directory})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_storage_history(req):
+    try:
+        limit = int(req.rel_url.query.get("limit", "50"))
+        from modules.storage_monitor import get_event_history
+        return web.json_response({"events": get_event_history(limit)})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_storage_widget(req):
+    widget = Path(__file__).parent / "storage_widget.html"
+    if widget.exists():
+        return web.Response(text=widget.read_text(), content_type="text/html")
+    return web.Response(text="Storage widget not found", status=404)
+
+
+# ---------------------------------------------------------------------------
 # App Factory
 # ---------------------------------------------------------------------------
 
@@ -1567,6 +1629,14 @@ async def create_app():
     app.router.add_post("/api/self-learner/skills", handle_self_learner_skills)
     app.router.add_post("/api/self-learner/delete", handle_self_learner_delete)
     app.router.add_post("/api/self-learner/find-api", handle_self_learner_find_api)
+
+    # Storage Monitor routes
+    app.router.add_get("/api/storage/status",      handle_storage_status)
+    app.router.add_post("/api/storage/cleanup",    handle_storage_cleanup)
+    app.router.add_post("/api/storage/offload",    handle_storage_offload)
+    app.router.add_get("/api/storage/large-files", handle_storage_large_files)
+    app.router.add_get("/api/storage/history",     handle_storage_history)
+    app.router.add_get("/storage", handle_storage_widget)
 
     return app
 
