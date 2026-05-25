@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """🏓 Micro-Ping — Überwacht alle Services, sofort-Alert per Telegram"""
-import sys, os, time, socket, urllib.request
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+import sys, os
+import pathlib, pathlib, time, socket, urllib.request
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram
 
 ID = "micro_ping"
