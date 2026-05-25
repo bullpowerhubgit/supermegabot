@@ -394,6 +394,7 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
   <button class="tab-btn" data-tab="password-sync" onclick="switchTab('password-sync')">🔑 Passwort Sync</button>
   <button class="tab-btn" data-tab="cratorhub" onclick="switchTab('cratorhub')">🎨 CreatorHub</button>
   <button class="tab-btn" data-tab="remote" onclick="switchTab('remote')">🖥️ Remote Desktop</button>
+  <button class="tab-btn" data-tab="rudiclone" onclick="switchTab('rudiclone')">🧬 Rudiclone</button>
 </div>
 
 <!-- ══ TAB: HOME (SuperMegaBot Dashboard) ══ -->
@@ -761,6 +762,57 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
         <li>Verbinde dich dann über <strong style="color:var(--text)">remotedesktop.google.com</strong></li>
       </ol>
     </div>
+  </div>
+</div>
+
+<!-- ══ TAB: Rudiclone ══ -->
+<div id="tab-rudiclone" class="tab-panel">
+  <div style="padding:24px;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+
+    <!-- A: Persona -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c)">🧬</div>
+        <div><div class="card-title">A — Rudi Persona</div><div class="card-subtitle">KI-Klon · Rudi's Sprache</div></div>
+      </div>
+      <textarea id="persona-input" class="crd-input" placeholder="Was würde Rudi zu diesem Problem sagen..."></textarea>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="personaAsk()">🧬 Rudi fragen</button>
+      <div id="persona-result" style="font-size:0.82rem;background:var(--surface);border-radius:8px;padding:12px;min-height:60px;white-space:pre-wrap;display:none"></div>
+    </div>
+
+    <!-- B: System Clone -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#43d98c,#00b894)">💾</div>
+        <div><div class="card-title">B — System Clone</div><div class="card-subtitle">Backup · Restore · Diff</div></div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="createSnapshot()">📸 Snapshot erstellen</button>
+      <button class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:8px" onclick="loadSnapshots()">📋 Snapshots anzeigen</button>
+      <div id="snapshot-result" style="font-size:0.75rem;font-family:monospace;background:var(--surface);border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap;display:none"></div>
+      <div id="snapshots-list" style="margin-top:8px;font-size:0.75rem"></div>
+    </div>
+
+    <!-- C: Sub-Agents (full width) -->
+    <div class="card col-2" style="grid-column:span 2">
+      <div class="card-header">
+        <div class="card-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)">🤖</div>
+        <div><div class="card-title">C — Sub-Agenten</div><div class="card-subtitle">SystemDiagnose · Shopify · Trade · LoadMonitor</div></div>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <button class="btn btn-green btn-sm" onclick="startAgents()">▶ Alle starten</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadAgentStatus()">↺ Status</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+        <button class="btn btn-ghost btn-sm" onclick="runAgent('SystemDiagnoseAgent')">🔍 System Diagnose</button>
+        <button class="btn btn-ghost btn-sm" onclick="runAgent('ShopifyAgent')">🛒 Shopify Check</button>
+        <button class="btn btn-ghost btn-sm" onclick="runAgent('TradeAgent')">📈 Trade Scan</button>
+        <button class="btn btn-ghost btn-sm" onclick="runAgent('LoadMonitor')">⚡ Load Monitor</button>
+      </div>
+      <div id="agents-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+        <div class="loading">Lade Status...</div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -1232,6 +1284,66 @@ setInterval(scanArbitrage, 60000);
 setInterval(loadLogs,     8000);
 setInterval(loadGMC,      60000);
 
+// ── Rudiclone ──
+async function personaAsk() {
+  const text = document.getElementById('persona-input').value.trim();
+  if (!text) return;
+  const res = document.getElementById('persona-result');
+  res.style.display = 'block';
+  res.textContent = '⏳ Rudi denkt nach...';
+  const r = await api('/rudiclone/persona', { text });
+  res.textContent = r.ok ? r.response : ('❌ ' + (r.error || 'Fehler'));
+}
+
+async function createSnapshot() {
+  const el = document.getElementById('snapshot-result');
+  el.style.display = 'block';
+  el.textContent = '⏳ Erstelle System-Snapshot...';
+  const r = await api('/rudiclone/snapshot', {});
+  el.textContent = r.ok ? ('✅ Snapshot: ' + r.path) : ('❌ ' + r.error);
+  if (r.ok) showToast('Snapshot erstellt', true);
+  loadSnapshots();
+}
+
+async function loadSnapshots() {
+  const r = await api('/rudiclone/snapshots');
+  const el = document.getElementById('snapshots-list');
+  if (!r.ok || !r.snapshots?.length) { el.innerHTML = '<div class="loading">Keine Snapshots</div>'; return; }
+  el.innerHTML = r.snapshots.map(s => `
+    <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--surface);border-radius:6px;margin-bottom:4px;font-size:0.72rem">
+      <span style="color:var(--text)">${s.name}</span>
+      <span style="color:var(--muted)">${s.size_kb}KB · ${new Date(s.created).toLocaleString('de-DE')}</span>
+    </div>`).join('');
+}
+
+async function loadAgentStatus() {
+  const r = await api('/rudiclone/agents');
+  const el = document.getElementById('agents-grid');
+  if (!r.ok) { el.innerHTML = '<div class="error-text">' + (r.error||'Fehler') + '</div>'; return; }
+  const agents = r.agents || {};
+  el.innerHTML = Object.entries(agents).map(([name, s]) => `
+    <div style="background:var(--surface);border-radius:10px;padding:10px;font-size:0.75rem">
+      <div style="font-weight:600;margin-bottom:4px">${name}</div>
+      <div style="color:${s.running?'var(--green)':'var(--muted)'}">${s.running?'🟢 läuft':'⚪ gestoppt'}</div>
+      <div style="color:var(--muted);font-size:0.7rem">Läufe: ${s.run_count||0} · Fehler: ${s.error_count||0}</div>
+      <div style="color:var(--muted);font-size:0.68rem;margin-top:2px">${s.last_run?new Date(s.last_run*1000).toLocaleTimeString('de-DE'):'-'}</div>
+    </div>`).join('');
+}
+
+async function startAgents() {
+  const r = await api('/rudiclone/agents/start', {});
+  showToast(r.ok ? r.message : r.error, r.ok);
+  setTimeout(loadAgentStatus, 2000);
+}
+
+async function runAgent(name) {
+  showToast('▶ ' + name + '...', true);
+  const r = await api('/rudiclone/agents/run', { agent: name });
+  if (r.ok) showToast('✓ ' + name + ' fertig', true);
+  else showToast('✗ ' + (r.error||'Fehler'), false);
+  setTimeout(loadAgentStatus, 1000);
+}
+
 // ── Tab Navigation ──
 function switchTab(tabId) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
@@ -1403,6 +1515,87 @@ async def handle_shopify_status(req):
                     d = await r.json()
                     return web.json_response({"ok": True, "store": d.get("shop", {}).get("name", store)})
                 return web.json_response({"ok": False, "error": f"HTTP {r.status}"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Rudiclone handlers ──────────────────────────────────────────────────────
+
+_rudiclone_agents = None
+
+def _get_rudiclone():
+    try:
+        from modules.rudiclone import RudiPersona, RudiSystemClone, RudiAgents
+        return RudiPersona(), RudiSystemClone(), RudiAgents()
+    except Exception as e:
+        return None, None, None
+
+async def handle_rudiclone_persona(req):
+    try:
+        data = await req.json()
+        text = data.get("text", "").strip()
+        if not text:
+            return web.json_response({"ok": False, "error": "text fehlt"})
+        persona, _, _ = _get_rudiclone()
+        if not persona:
+            return web.json_response({"ok": False, "error": "RudiPersona nicht verfügbar"})
+        response = await persona.respond(text)
+        return web.json_response({"ok": True, "response": response, "stats": persona.get_stats()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_rudiclone_snapshot(req):
+    try:
+        _, clone, _ = _get_rudiclone()
+        if not clone:
+            return web.json_response({"ok": False, "error": "RudiSystemClone nicht verfügbar"})
+        path = await clone.snapshot()
+        return web.json_response({"ok": True, "path": str(path)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_rudiclone_snapshots(req):
+    try:
+        _, clone, _ = _get_rudiclone()
+        if not clone:
+            return web.json_response({"ok": False, "snapshots": []})
+        snaps = clone.list_snapshots()
+        return web.json_response({"ok": True, "snapshots": snaps})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e), "snapshots": []})
+
+async def handle_rudiclone_agents_status(req):
+    global _rudiclone_agents
+    try:
+        from modules.rudiclone import RudiAgents
+        if _rudiclone_agents is None:
+            _rudiclone_agents = RudiAgents()
+        status = _rudiclone_agents.get_status()
+        return web.json_response({"ok": True, "agents": status})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_rudiclone_agents_start(req):
+    global _rudiclone_agents
+    try:
+        from modules.rudiclone import RudiAgents
+        if _rudiclone_agents is None:
+            _rudiclone_agents = RudiAgents()
+        asyncio.create_task(_rudiclone_agents.start_all())
+        return web.json_response({"ok": True, "message": "Alle Sub-Agenten gestartet"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_rudiclone_run_once(req):
+    global _rudiclone_agents
+    try:
+        data = await req.json()
+        name = data.get("agent", "").strip()
+        from modules.rudiclone import RudiAgents
+        if _rudiclone_agents is None:
+            _rudiclone_agents = RudiAgents()
+        result = await _rudiclone_agents.run_once(name)
+        return web.json_response({"ok": True, "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -1883,6 +2076,13 @@ async def create_app():
 
     # Self-Learner routes
     app.router.add_post("/api/remote-desktop/register", handle_remote_desktop_register)
+    # Rudiclone routes
+    app.router.add_post("/api/rudiclone/persona", handle_rudiclone_persona)
+    app.router.add_post("/api/rudiclone/snapshot", handle_rudiclone_snapshot)
+    app.router.add_get("/api/rudiclone/snapshots", handle_rudiclone_snapshots)
+    app.router.add_get("/api/rudiclone/agents", handle_rudiclone_agents_status)
+    app.router.add_post("/api/rudiclone/agents/start", handle_rudiclone_agents_start)
+    app.router.add_post("/api/rudiclone/agents/run", handle_rudiclone_run_once)
     app.router.add_get("/api/self-learner/status", handle_self_learner_status)
     app.router.add_post("/api/self-learner/learn", handle_self_learner_learn)
     app.router.add_post("/api/self-learner/skills", handle_self_learner_skills)
