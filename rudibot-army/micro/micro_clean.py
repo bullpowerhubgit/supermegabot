@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """🧹 Micro-Clean — Stündliche Log-Rotation + Disk-Schutz"""
-import sys, os, time, glob
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+import sys, os
+import pathlib, pathlib, time, glob
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram
 
 ID = "micro_clean"
@@ -52,7 +53,7 @@ def clean_logs() -> tuple:
                    shell=True, timeout=15)
 
     # Army-eigene Logs
-    army_logs = glob.glob(os.path.expanduser("~/rudibot-army/logs/*.log"))
+    army_logs = glob.glob(str(pathlib.Path(__file__).parent.parent / "logs" / "*.log"))
     for path in army_logs:
         try:
             size_mb = os.path.getsize(path) / 1_048_576
