@@ -2,15 +2,16 @@
   "agents": {
     "shopify": {
       "status": "ok",
-      "message": "Shopify: 0 Orders \u20ac0 | Printify: 0",
+      "message": "Shopify: 0 Orders \u20ac0.00 | Produkte: 20",
       "data": {
         "orders": 0,
-        "revenue": "0",
+        "revenue": 0,
         "today": 0,
-        "today_revenue": "0",
-        "printify": 0
+        "today_revenue": 0,
+        "products": 20,
+        "shop": "I Want That! I Need It!"
       },
-      "ts": "2026-05-24 16:13:30"
+      "ts": "2026-05-25 14:38:15"
     },
     "social": {
       "status": "ok",
@@ -41,9 +42,9 @@
         "today_revenue": 0.0,
         "total_revenue": 0.0,
         "printify_orders": 0,
-        "yesterday_revenue": 0
+        "yesterday_revenue": 0.0
       },
-      "ts": "2026-05-24 16:11:32"
+      "ts": "2026-05-25 14:38:23"
     },
     "security": {
       "status": "ok",
@@ -79,6 +80,16 @@
         "suggestions": []
       },
       "ts": "2026-05-24 16:13:39"
+    },
+    "micro_revenue": {
+      "status": "ok",
+      "message": "Umsatz heute: \u20ac0.00 (0 Orders)",
+      "data": {
+        "revenue": 0.0,
+        "orders": 0,
+        "date": "2026-05-25"
+      },
+      "ts": "2026-05-25 14:38:30"
     }
   },
   "events": [
@@ -361,6 +372,21 @@
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
       "ts": "16:14:34"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify: 0 Orders \u20ac0.00 | Produkte: 20",
+      "ts": "14:38:15"
+    },
+    {
+      "agent": "finance",
+      "msg": "Finance: \u20ac0.00 heute | \u20ac0.00 gesamt",
+      "ts": "14:38:23"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Umsatz heute: \u20ac0.00 (0 Orders)",
+      "ts": "14:38:30"
     }
   ],
   "fixes": [],

@@ -1791,14 +1791,28 @@ function updateVolumeLabel(v) {
 
 async function setVolume(v) {
   try {
-    const d = await api('POST', '/api/mac/action', { action: 'set_volume', volume: parseInt(v) });
+    const d = await api('POST', '/api/mac/action', { action: 'volume', level: parseInt(v) });
     appendMacOutput(`Volume set to ${v}%`);
   } catch(e) { appendMacOutput(`Error: ${e.message}`); }
 }
 
 async function macAction(action) {
   try {
-    const d = await api('POST', '/api/mac/action', { action });
+    const actionMap = {
+      notification: 'notify',
+      sleep: 'sleep_display',
+      open_finder: 'open_url',
+      open_terminal: 'running_apps',
+      wifi_toggle: 'system_info',
+    };
+    const mapped = actionMap[action] || action;
+    const payload = { action: mapped };
+    if (action === 'open_finder') payload.url = 'file:///';
+    if (action === 'notify' || action === 'notification') {
+      payload.title = 'SuperMegaBot';
+      payload.message = 'Quick notification from dashboard';
+    }
+    const d = await api('POST', '/api/mac/action', payload);
     appendMacOutput(`[${action}] ${d.result || d.ok ? 'OK' : 'Done'}`);
     toast(`Mac action: ${action}`, 'success');
   } catch(e) {

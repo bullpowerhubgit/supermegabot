@@ -44,6 +44,14 @@ try:
 except ImportError:
     HAS_AIOHTTP = False
 
+
+def _client_session(total_timeout: int = 15):
+    """Use threaded DNS resolution to avoid broken async DNS providers."""
+    resolver = aiohttp.resolver.ThreadedResolver()
+    connector = aiohttp.TCPConnector(resolver=resolver, ttl_dns_cache=300)
+    timeout = aiohttp.ClientTimeout(total=total_timeout)
+    return aiohttp.ClientSession(timeout=timeout, connector=connector)
+
 # Token-Cache (im Speicher) — für atkn_ und client-credentials tokens
 _token_cache: Dict[str, Any] = {
     "access_token": None,    # client-credentials shpat_ (auto-refresh)
@@ -66,11 +74,10 @@ async def _refresh_client_credentials() -> Optional[str]:
         }
         shop = os.getenv("SHOPIFY_SHOP", "autopilot-store-suite-fmbka")
         url = f"https://{shop}.myshopify.com/admin/oauth/access_token"
-        async with aiohttp.ClientSession() as session:
+        async with _client_session(10) as session:
             async with session.post(
                 url, data=payload,
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
-                timeout=aiohttp.ClientTimeout(total=10),
             ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
@@ -102,12 +109,11 @@ async def _refresh_atkn_token() -> Optional[str]:
             "refresh_token": refresh_tok,
             "client_id": _cli_client_id(),
         }
-        async with aiohttp.ClientSession() as session:
+        async with _client_session(10) as session:
             async with session.post(
                 "https://accounts.shopify.com/oauth/token",
                 data=payload,
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
-                timeout=aiohttp.ClientTimeout(total=10),
             ) as resp:
                 if resp.status == 200:
                     data = await resp.json()
@@ -172,8 +178,8 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
         payload["variables"] = variables
 
     url = f"{_store_url()}/admin/api/2024-10/graphql.json"
-    async with aiohttp.ClientSession() as session:
-        async with session.post(url, json=payload, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+    async with _client_session(15) as session:
+        async with session.post(url, json=payload, headers=headers) as resp:
             data = await resp.json()
             return data
 
@@ -185,8 +191,8 @@ async def rest_get(endpoint: str) -> Dict:
 
     auth = await _get_best_token()
     url = f"{_store_url()}/admin/api/2024-10/{endpoint}"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url, headers=auth, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+    async with _client_session(15) as session:
+        async with session.get(url, headers=auth) as resp:
             return await resp.json()
 
 
@@ -316,7 +322,7 @@ async def sync_products_to_github(repo: str = "shopify-products-backup") -> Dict
     }
 
     sha = None
-    async with aiohttp.ClientSession() as session:
+    async with _client_session(20) as session:
         async with session.get(api_url, headers=headers) as resp:
             if resp.status == 200:
                 existing = await resp.json()
@@ -348,7 +354,7 @@ async def github_shopify_webhook_deploy(repo: str, branch: str = "main") -> Dict
     }
     payload = {"ref": branch}
 
-    async with aiohttp.ClientSession() as session:
+    async with _client_session(20) as session:
         async with session.post(url, json=payload, headers=headers) as resp:
             if resp.status == 204:
                 return {"ok": True, "message": f"Deploy-Workflow gestartet für {repo}@{branch}"}

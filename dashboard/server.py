@@ -18,6 +18,13 @@ sys.path.insert(0, str(Path.home()))
 from aiohttp import web
 import aiohttp
 
+
+def _client_session(total_timeout: int = 15):
+  resolver = aiohttp.resolver.ThreadedResolver()
+  connector = aiohttp.TCPConnector(resolver=resolver, ttl_dns_cache=300)
+  timeout = aiohttp.ClientTimeout(total=total_timeout)
+  return aiohttp.ClientSession(timeout=timeout, connector=connector)
+
 # Self-Learner integration
 try:
     from self_learner_core import SelfLearner
@@ -719,7 +726,7 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
 
 <!-- ══ TAB: Windsurf Shopify ══ -->
 <div id="tab-windsurf-shopify" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3001" title="Windsurf Shopify"></iframe>
+  <iframe class="tab-iframe" src="https://shopify-suite-v2-production.up.railway.app" title="Windsurf Shopify"></iframe>
 </div>
 
 <!-- ══ TAB: Password Sync ══ -->
@@ -1022,7 +1029,7 @@ async function sendTelegram() {
 
 // ── Shopify ──
 async function loadShopify() {
-  const r = await api('/shopify/status');
+  const r = await api('/shopify/status?section=summary');
   const el = document.getElementById('shopify-data');
   if (r.ok) {
     el.innerHTML = `<div>Store: <strong>${r.store || 'N/A'}</strong></div>
@@ -1040,9 +1047,24 @@ async function loadShopify() {
 async function shopifyAction(type) {
   showToast(type + ' wird geladen...', true);
   const el = document.getElementById('shopify-data');
-  const r = await api('/shopify/status');
+  const r = await api('/shopify/status?section=' + encodeURIComponent(type));
   if (!r.ok) { showToast(r.error || 'Shopify Fehler', false); return; }
-  el.innerHTML = `<div style="color:var(--muted);font-size:0.75rem">${type} – Daten kommen direkt vom Shopify API</div>`;
+  if (type === 'products') {
+    const items = r.products || [];
+    el.innerHTML = `<div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">${items.length} Produkte aus der echten Shopify Admin API</div>` +
+      items.slice(0, 8).map(p => `<div style="padding:6px 0;border-bottom:1px solid var(--border)"><strong>${p.title || 'Untitled'}</strong><div style="font-size:0.7rem;color:var(--muted)">${p.status || ''} · ${p.vendor || ''}</div></div>`).join('');
+  } else if (type === 'orders') {
+    const items = r.orders || [];
+    el.innerHTML = `<div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">${items.length} Bestellungen aus der echten Shopify Admin API</div>` +
+      items.slice(0, 8).map(o => `<div style="padding:6px 0;border-bottom:1px solid var(--border)"><strong>${o.name || 'Order'}</strong><div style="font-size:0.7rem;color:var(--muted)">${o.displayFinancialStatus || ''} · ${o.displayFulfillmentStatus || ''}</div></div>`).join('');
+  } else if (type === 'analytics') {
+    const a = r.analytics || {};
+    el.innerHTML = `<div>Shop: <strong>${a.shop || r.store || 'N/A'}</strong></div>
+      <div>Umsatz: <strong>€${Number(a.revenue || 0).toFixed(2)}</strong></div>
+      <div>Orders: ${a.orders_total || 0} · Paid: ${a.orders_paid || 0}</div>`;
+  } else {
+    el.innerHTML = `<div style="color:var(--muted);font-size:0.75rem">${type} – Daten kommen direkt von der echten Shopify Admin API</div>`;
+  }
 }
 
 // ── Ollama Models ──
@@ -1493,7 +1515,7 @@ async def handle_telegram_send(req):
         message = data.get("message", "")
         chat_id = TELEGRAM_CHAT_ID
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        async with aiohttp.ClientSession() as s:
+        async with _client_session(15) as s:
             async with s.post(url, json={"chat_id": chat_id, "text": message}) as r:
                 ok = r.status == 200
                 return web.json_response({"ok": ok})
@@ -1502,19 +1524,80 @@ async def handle_telegram_send(req):
 
 
 async def handle_shopify_status(req):
-    store = os.getenv("SHOPIFY_STORE_URL", "")
-    token = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-    if not store or not token:
-        return web.json_response({"ok": False, "error": "SHOPIFY_STORE_URL / SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
-            url = f"{store}/admin/api/2024-01/shop.json"
-            headers = {"X-Shopify-Access-Token": token}
-            async with s.get(url, headers=headers) as r:
-                if r.status == 200:
-                    d = await r.json()
-                    return web.json_response({"ok": True, "store": d.get("shop", {}).get("name", store)})
-                return web.json_response({"ok": False, "error": f"HTTP {r.status}"})
+        section = (req.query.get("section") or "summary").strip().lower()
+        from modules import shopify_client
+
+        if section == "products":
+            products = await shopify_client.get_products(limit=20)
+            return web.json_response({"ok": True, "section": section, "products": products, "count": len(products)})
+
+        if section == "orders":
+            orders = await shopify_client.get_orders(limit=20)
+            return web.json_response({"ok": True, "section": section, "orders": orders, "count": len(orders)})
+
+        if section == "analytics":
+            analytics = await shopify_client.get_analytics_summary()
+            return web.json_response({"ok": True, "section": section, "analytics": analytics})
+
+        shop = await shopify_client.get_shop_info()
+        analytics = await shopify_client.get_analytics_summary()
+        products = await shopify_client.get_products(limit=5)
+        orders = await shopify_client.get_orders(limit=5)
+        return web.json_response({
+            "ok": True,
+            "store": shop.get("name") or shop.get("myshopifyDomain") or os.getenv("SHOPIFY_SHOP_DOMAIN", ""),
+            "currency": shop.get("currencyCode", "EUR"),
+            "products": len(products),
+            "orders": len(orders),
+            "revenue": analytics.get("revenue", 0),
+            "section": section,
+            "shop": shop,
+            "analytics": analytics,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_printify_status(req):
+    token = os.getenv("PRINTIFY_TOKEN", "")
+    shop_id = os.getenv("PRINTIFY_SHOP_ID", "")
+    if not token:
+        return web.json_response({"ok": False, "error": "PRINTIFY_TOKEN fehlt"})
+    try:
+        headers = {"Authorization": f"Bearer {token}"}
+        async with _client_session(10) as session:
+            async with session.get("https://api.printify.com/v1/shops.json", headers=headers) as r:
+                body = await r.text()
+                if r.status != 200:
+                    return web.json_response({"ok": False, "error": f"HTTP {r.status}", "detail": body[:200]})
+                shops = json.loads(body)
+                shop = shops[0] if isinstance(shops, list) and shops else {}
+                if not shop_id:
+                    shop_id = str(shop.get("id", ""))
+
+                orders = []
+                products = []
+                if shop_id:
+                    async with session.get(f"https://api.printify.com/v1/shops/{shop_id}/orders.json", headers=headers) as ro:
+                        if ro.status == 200:
+                            orders_body = await ro.text()
+                            orders = json.loads(orders_body) or []
+                    async with session.get(f"https://api.printify.com/v1/shops/{shop_id}/products.json", headers=headers) as rp:
+                        if rp.status == 200:
+                            products_body = await rp.text()
+                            products = json.loads(products_body) or []
+
+                return web.json_response({
+                    "ok": True,
+                    "shop": shop,
+                    "shop_id": shop_id,
+                    "shops_count": len(shops) if isinstance(shops, list) else 0,
+                    "orders_count": len(orders) if isinstance(orders, list) else 0,
+                    "products_count": len(products) if isinstance(products, list) else 0,
+                    "orders": orders[:10] if isinstance(orders, list) else [],
+                    "products": products[:10] if isinstance(products, list) else [],
+                })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -1567,10 +1650,13 @@ async def handle_rudiclone_snapshots(req):
 async def handle_rudiclone_agents_status(req):
     global _rudiclone_agents
     try:
+        import inspect
         from modules.rudiclone import RudiAgents
         if _rudiclone_agents is None:
             _rudiclone_agents = RudiAgents()
         status = _rudiclone_agents.get_status()
+        if inspect.isawaitable(status):
+            status = await status
         return web.json_response({"ok": True, "agents": status})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
@@ -1601,17 +1687,48 @@ async def handle_rudiclone_run_once(req):
 
 
 async def handle_remote_desktop_register(req):
+    """Register Chrome Remote Desktop host on macOS using one-time auth code from remotedesktop.google.com/headless"""
+    import shutil, platform
     try:
         data = await req.json()
         code = data.get("code", "").strip()
+
+        # Status-only request (no code) — return installation status
         if not code:
-            return web.json_response({"ok": False, "error": "Auth-Code fehlt"})
+            host_binary = _find_crd_binary()
+            installed = host_binary is not None
+            return web.json_response({
+                "ok": True,
+                "installed": installed,
+                "binary": host_binary,
+                "platform": platform.system(),
+                "instructions": (
+                    "Besuche https://remotedesktop.google.com/headless → "
+                    "'Einrichten' → Auth-Code kopieren → hier einfügen"
+                ) if installed else (
+                    "Chrome Remote Desktop Host nicht installiert. "
+                    "Download: https://remotedesktop.google.com/access → 'Remote-Zugriff einrichten'"
+                ),
+            })
+
+        host_binary = _find_crd_binary()
+        if not host_binary:
+            return web.json_response({
+                "ok": False,
+                "error": "Chrome Remote Desktop Host nicht installiert.",
+                "fix": "Download unter https://remotedesktop.google.com/access → 'Remote-Zugriff einrichten'",
+            })
+
         redirect_url = "https://remotedesktop.google.com/_/oauthredirect"
+        import socket
+        hostname = socket.gethostname()
+
+        # macOS: use the installed host binary directly
         cmd = (
-            f'DISPLAY= /opt/google/chrome-remote-desktop/start-host '
+            f'"{host_binary}" '
             f'--code="{code}" '
             f'--redirect-url="{redirect_url}" '
-            f'--name="$(hostname)"'
+            f'--name="{hostname}"'
         )
         proc = await asyncio.create_subprocess_shell(
             cmd,
@@ -1624,9 +1741,32 @@ async def handle_remote_desktop_register(req):
             return web.json_response({"ok": False, "error": "Timeout (30s)"})
         output = (stdout.decode() + stderr.decode()).strip()
         success = proc.returncode == 0
-        return web.json_response({"ok": success, "output": output, "returncode": proc.returncode})
+        return web.json_response({
+            "ok": success,
+            "output": output or ("Erfolgreich registriert!" if success else "Fehler beim Registrieren"),
+            "returncode": proc.returncode,
+            "access_url": "https://remotedesktop.google.com/access" if success else None,
+        })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
+
+
+def _find_crd_binary():
+    """Find Chrome Remote Desktop host binary on macOS or Linux."""
+    import shutil
+    candidates = [
+        # macOS (Chrome)
+        "/Library/Application Support/Google/Chrome Remote Desktop/chrome-remote-desktop-host",
+        # macOS (alternative path)
+        "/Applications/Chrome Remote Desktop Host.app/Contents/MacOS/chrome-remote-desktop-host",
+        # Linux
+        "/opt/google/chrome-remote-desktop/start-host",
+        "/usr/bin/chrome-remote-desktop",
+    ]
+    for path in candidates:
+        if os.path.isfile(path) and os.access(path, os.X_OK):
+            return path
+    return shutil.which("chrome-remote-desktop") or shutil.which("chrome-remote-desktop-host")
 
 
 async def handle_ollama_models(req):
@@ -2017,7 +2157,16 @@ async def create_app():
         capture_output=True
     ).returncode == 0
 
-    if not _orch_running:
+    _orch_api_up = False
+    if _orch_running:
+        try:
+            import socket as _socket
+            with _socket.create_connection(("127.0.0.1", 8889), timeout=1.0):
+                _orch_api_up = True
+        except Exception:
+            _orch_api_up = False
+
+    if not (_orch_running and _orch_api_up):
         from core.mega_orchestrator import MegaOrchestrator
         bot = MegaOrchestrator()
         await bot.start()
@@ -2029,7 +2178,7 @@ async def create_app():
                     import aiohttp as _aio
                     async with _aio.ClientSession() as s:
                         async with s.post(
-                            "http://localhost:8889/api/chat",
+                            "http://127.0.0.1:8889/api/chat",
                             json={"text": text, "session_id": session_id},
                             timeout=_aio.ClientTimeout(total=30)
                         ) as r:
@@ -2052,6 +2201,7 @@ async def create_app():
     app.router.add_get("/api/telegram/status", handle_telegram_status)
     app.router.add_post("/api/telegram/send", handle_telegram_send)
     app.router.add_get("/api/shopify/status", handle_shopify_status)
+    app.router.add_get("/api/printify/status", handle_printify_status)
     app.router.add_get("/api/ollama/models", handle_ollama_models)
     app.router.add_get("/api/autopilot/agents", handle_autopilot_agents)
     app.router.add_post("/api/autopilot/run", handle_autopilot_run)

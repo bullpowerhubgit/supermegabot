@@ -194,14 +194,25 @@ class OllamaClient:
     async def chat(self, messages: List[Dict], task: str = "smart", stream: bool = False) -> str:
         model = self._pick_model(task)
         payload = {"model": model, "messages": messages, "stream": False}
+        prompt_fallback = "\n".join(
+            f"{m.get('role', 'user')}: {m.get('content', '')}" for m in messages
+        ) + "\nassistant:"
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
                 async with s.post(f"{self.base}/api/chat", json=payload) as r:
                     if r.status == 200:
                         data = await r.json()
                         return data.get("message", {}).get("content", "")
-                    return f"Ollama error: HTTP {r.status}"
+                    # Fallback: try generate endpoint before returning a hard error.
+                    alt = await self.generate(prompt_fallback, task="fast")
+                    if alt and not alt.startswith("Error:") and not alt.startswith("Offline:"):
+                        return alt
+                    detail = await r.text()
+                    return f"Ollama temporär nicht verfügbar (HTTP {r.status}): {detail[:160]}"
         except Exception as e:
+            alt = await self.generate(prompt_fallback, task="fast")
+            if alt and not alt.startswith("Error:") and not alt.startswith("Offline:"):
+                return alt
             return f"Ollama unavailable: {e}"
 
     async def generate(self, prompt: str, task: str = "fast") -> str:

@@ -553,6 +553,10 @@ class RudiAgents:
             name: _AgentState(name) for name in AGENT_NAMES
         }
         self._price_cache: Dict[str, float] = {}
+        # tracks last-seen PM2 restart counts → only alert on NEW restarts
+        self._pm2_restart_baseline: Dict[str, int] = {}
+        # how many NEW restarts in one cycle triggers an alert
+        self._pm2_new_restart_threshold: int = 3
 
     # ------------------------------------------------------------------
     # Public API
@@ -707,7 +711,7 @@ class RudiAgents:
         except Exception as exc:
             result["disk_error"] = str(exc)
 
-        # PM2 restart counts
+        # PM2 restart counts — alert only on NEW restarts since last check
         try:
             proc = await asyncio.create_subprocess_exec(
                 "pm2", "jlist",
@@ -717,13 +721,34 @@ class RudiAgents:
             stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=15)
             pm2_list = json.loads(stdout.decode("utf-8", errors="replace") or "[]")
             restarts_info = []
+            new_crash_alerts = []
             for app in pm2_list:
                 name = app.get("name", "?")
                 restarts = app.get("pm2_env", {}).get("restart_time", 0)
                 status = app.get("pm2_env", {}).get("status", "?")
                 restarts_info.append({"name": name, "restarts": restarts, "status": status})
-                if restarts > PM2_RESTART_THRESHOLD:
-                    alerts.append(f"PM2 RESTART: {name} hat {restarts}x neu gestartet!")
+
+                baseline = self._pm2_restart_baseline.get(name)
+                if baseline is None:
+                    # First run — record baseline, no alert (avoids spam on startup)
+                    self._pm2_restart_baseline[name] = restarts
+                else:
+                    delta = restarts - baseline
+                    if delta >= self._pm2_new_restart_threshold:
+                        new_crash_alerts.append(
+                            f"PM2 CRASH-LOOP: {name} +{delta} Neustarts (total: {restarts})"
+                        )
+                        # Update baseline so next check is relative to now
+                        self._pm2_restart_baseline[name] = restarts
+                    elif delta > 0:
+                        # Small increment — update baseline silently
+                        self._pm2_restart_baseline[name] = restarts
+
+                # Always alert if process is in errored state
+                if status == "errored":
+                    alerts.append(f"PM2 ERRORED: {name} ist im Fehlerzustand!")
+
+            alerts.extend(new_crash_alerts)
             result["pm2"] = restarts_info
         except (FileNotFoundError, asyncio.TimeoutError) as exc:
             result["pm2_error"] = str(exc)
