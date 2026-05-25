@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """🛒 Shopify Agent — Überwacht Orders, Products, Revenue in Echtzeit"""
 import sys, os, time, json
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from pathlib import Path
+
+ARMY_DIR = Path(__file__).resolve().parent.parent
+SHARED_DIR = ARMY_DIR / "shared"
+sys.path.insert(0, str(SHARED_DIR))
 from bus import report, notify_telegram, get_env, load_state
 
 ID = "shopify"
@@ -19,6 +23,12 @@ def run():
     while True:
         try:
             data = call_api("/api/shopify/live-orders")
+            if data.get("error"):
+                report(ID, "warning", f"Shopify API Fehler: {str(data.get('error'))[:60]}", {
+                    "error": data.get("error")
+                })
+                time.sleep(120)
+                continue
             orders = data.get("total", 0)
             revenue = data.get("revenue", "0")
             today_rev = data.get("todayRevenue", "0")
@@ -32,6 +42,12 @@ def run():
             
             # Printify check
             pdata = call_api("/api/printify/orders")
+            if pdata.get("error"):
+                report(ID, "warning", f"Printify API Fehler: {str(pdata.get('error'))[:60]}", {
+                    "error": pdata.get("error")
+                })
+                time.sleep(120)
+                continue
             printify_orders = pdata.get("total", 0)
             
             report(ID, "ok", f"Shopify: {orders} Orders €{revenue} | Printify: {printify_orders}", {

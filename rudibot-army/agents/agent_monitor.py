@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """🔴 Monitor Agent — Überwacht alle Services, Ports und Prozesse"""
 import sys, os, time, socket, subprocess, urllib.request
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from pathlib import Path
+
+ARMY_DIR = Path(__file__).resolve().parent.parent
+SHARED_DIR = ARMY_DIR / "shared"
+sys.path.insert(0, str(SHARED_DIR))
 from bus import report, notify_telegram, load_state
 
 ID = "monitor"
@@ -24,11 +28,16 @@ def check(port, url=None):
     except: return False
 
 def fix_service(name, port):
-    BOT_DIR = os.path.expanduser("~/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot")
-    MEGA_DIR = os.path.expanduser("~/supermegabot")
+    BOT_DIR = os.path.expanduser(
+        os.getenv(
+            "RUDIBOT_MAIN_DIR",
+            "~/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot",
+        )
+    )
+    MEGA_DIR = str(ARMY_DIR.parent)
     cmds = {
         "RudiBot Server":  f"cd \"{BOT_DIR}\" && nohup node server.js >> /tmp/bot-server.log 2>&1 &",
-        "SuperMegaBot":    f"cd {MEGA_DIR} && nohup python3 dashboard/server.py >> /tmp/mega.log 2>&1 &",
+        "SuperMegaBot":    f"cd \"{MEGA_DIR}\" && nohup python3 dashboard/server.py >> /tmp/mega.log 2>&1 &",
         "Ollama LLM":      "ollama serve >> /tmp/ollama.log 2>&1 &",
     }
     cmd = cmds.get(name)

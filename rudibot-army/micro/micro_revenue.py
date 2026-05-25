@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """💸 Micro-Revenue — Stündlicher Shopify-Umsatz-Check + Tages-Zusammenfassung"""
 import sys, os, time, json, datetime, urllib.request
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from pathlib import Path
+
+ARMY_DIR = Path(__file__).resolve().parent.parent
+SHARED_DIR = ARMY_DIR / "shared"
+sys.path.insert(0, str(SHARED_DIR))
 from bus import report, notify_telegram, get_env
 
 ID = "micro_revenue"
@@ -11,7 +15,10 @@ def fetch_revenue():
     """Holt Umsatz-Daten vom lokalen Bot-Server oder Shopify API."""
     try:
         r = urllib.request.urlopen("http://localhost:3200/api/shopify/revenue", timeout=10)
-        return json.loads(r.read())
+        data = json.loads(r.read())
+        if isinstance(data, dict) and data.get("error"):
+            return None
+        return data
     except:
         pass
     # Fallback: Shopify API direkt

@@ -281,7 +281,7 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
     </div>
     <div class="card-body">
       <div class="actions-grid">
-        <button class="action-btn" onclick="runAction('GET','/api/monitor/refresh','System Refresh',this)">
+        <button class="action-btn" onclick="runAction('POST','/api/monitor/refresh','System Refresh',this)">
           <div class="action-spin"></div><span class="action-icon">🔄</span><span class="action-label">System Refresh</span>
         </button>
         <button class="action-btn" onclick="runAction('POST','/api/geheimwaffe/run','Geheimwaffe Run',this)">
@@ -622,6 +622,54 @@ async function manualRefresh(){
   toast('Refreshing all data...','info');
   await updateAll();
   toast('Dashboard refreshed','success');
+}
+
+async function quickMac(action){
+  try{
+    const r=await fetch(BASE+'/api/mac/action',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action}),
+      signal:AbortSignal.timeout(8000)
+    });
+    const d=await r.json();
+    if(r.ok && d.ok!==false){
+      toast('Mac action OK: '+action,'success');
+      pushLog('SUCCESS','Mac quick action: '+action);
+    }else{
+      toast('Mac action failed: '+(d.error||action),'warning');
+      pushLog('WARNING','Mac quick action failed: '+action);
+    }
+  }catch{
+    toast('Mac action API offline','warning');
+    pushLog('WARNING','Mac quick action API offline: '+action);
+  }
+}
+
+async function quickNotify(){
+  try{
+    const r=await fetch(BASE+'/api/mac/action',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        action:'notify',
+        title:'SuperMegaBot',
+        message:'Quick notification from monitor dashboard'
+      }),
+      signal:AbortSignal.timeout(8000)
+    });
+    const d=await r.json();
+    if(r.ok && d.ok!==false){
+      toast('Notification sent','success');
+      pushLog('SUCCESS','Quick notification sent');
+    }else{
+      toast('Notification failed','warning');
+      pushLog('WARNING','Quick notification failed');
+    }
+  }catch{
+    toast('Notification API offline','warning');
+    pushLog('WARNING','Notification API offline');
+  }
 }
 
 // Action buttons

@@ -1,19 +1,25 @@
 #!/usr/bin/env python3
 """💰 Finance Agent — Trackt Einnahmen, Ausgaben, warnt bei Anomalien"""
 import sys, os, time, json, datetime
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from pathlib import Path
+
+ARMY_DIR = Path(__file__).resolve().parent.parent
+SHARED_DIR = ARMY_DIR / "shared"
+sys.path.insert(0, str(SHARED_DIR))
 from bus import report, notify_telegram, load_state
 
 ID = "finance"
-DATA_FILE = os.path.expanduser("~/rudibot-army/shared/finance_cache.json")
+DATA_FILE = SHARED_DIR / "finance_cache.json"
 
 def load_cache():
     try:
-        if os.path.exists(DATA_FILE): return json.loads(open(DATA_FILE).read())
+        if DATA_FILE.exists():
+            return json.loads(DATA_FILE.read_text(errors="ignore"))
     except: pass
     return {"daily": {}, "alerts": [], "total_revenue": 0}
 
-def save_cache(d): open(DATA_FILE,"w").write(json.dumps(d, indent=2))
+def save_cache(d):
+    DATA_FILE.write_text(json.dumps(d, indent=2))
 
 def call_api(path):
     import urllib.request
@@ -31,11 +37,23 @@ def run():
             
             # Shopify Revenue
             shopify = call_api("/api/shopify/live-orders")
+            if shopify.get("error"):
+                report(ID, "warning", f"Shopify API Fehler: {str(shopify.get('error'))[:60]}", {
+                    "error": shopify.get("error")
+                })
+                time.sleep(600)
+                continue
             today_rev = float(shopify.get("todayRevenue", 0))
             total_rev = float(shopify.get("revenue", 0))
             
             # Printify Revenue  
             printify = call_api("/api/printify/orders")
+            if printify.get("error"):
+                report(ID, "warning", f"Printify API Fehler: {str(printify.get('error'))[:60]}", {
+                    "error": printify.get("error")
+                })
+                time.sleep(600)
+                continue
             p_orders = printify.get("total", 0)
             
             # Tagesvergleich
