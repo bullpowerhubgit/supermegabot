@@ -4,29 +4,21 @@ import sys, os, time, json, datetime
 from pathlib import Path
 
 ARMY_DIR = Path(__file__).resolve().parent.parent
-SHARED_DIR = ARMY_DIR / "shared"
-sys.path.insert(0, str(SHARED_DIR))
+sys.path.insert(0, str(ARMY_DIR / "shared"))
+sys.path.insert(0, str(ARMY_DIR.parent))
 from bus import report, notify_telegram, load_state
+from modules import shopify_client
 
 ID = "finance"
-DATA_FILE = SHARED_DIR / "finance_cache.json"
+DATA_FILE = ARMY_DIR / "shared" / "finance_cache.json"
 
 def load_cache():
     try:
-        if DATA_FILE.exists():
-            return json.loads(DATA_FILE.read_text(errors="ignore"))
+        if DATA_FILE.exists(): return json.loads(DATA_FILE.read_text())
     except: pass
     return {"daily": {}, "alerts": [], "total_revenue": 0}
 
-def save_cache(d):
-    DATA_FILE.write_text(json.dumps(d, indent=2))
-
-def call_api(path):
-    import urllib.request
-    try:
-        r = urllib.request.urlopen(f"http://localhost:3200{path}", timeout=10)
-        return json.loads(r.read())
-    except: return {}
+def save_cache(d): DATA_FILE.write_text(json.dumps(d, indent=2, default=str))
 
 def run():
     print(f"[{ID}] 💰 Finance Agent gestartet")
@@ -35,26 +27,15 @@ def run():
             today = datetime.date.today().isoformat()
             cache = load_cache()
             
-            # Shopify Revenue
-            shopify = call_api("/api/shopify/live-orders")
-            if shopify.get("error"):
-                report(ID, "warning", f"Shopify API Fehler: {str(shopify.get('error'))[:60]}", {
-                    "error": shopify.get("error")
-                })
-                time.sleep(600)
-                continue
-            today_rev = float(shopify.get("todayRevenue", 0))
-            total_rev = float(shopify.get("revenue", 0))
-            
-            # Printify Revenue  
-            printify = call_api("/api/printify/orders")
-            if printify.get("error"):
-                report(ID, "warning", f"Printify API Fehler: {str(printify.get('error'))[:60]}", {
-                    "error": printify.get("error")
-                })
-                time.sleep(600)
-                continue
-            p_orders = printify.get("total", 0)
+            analytics = asyncio.run(shopify_client.get_analytics_summary()) if False else None
+            import asyncio
+            shop = asyncio.run(shopify_client.get_shop_info())
+            orders = asyncio.run(shopify_client.get_orders(limit=50))
+            analytics = asyncio.run(shopify_client.get_analytics_summary())
+
+            today_rev = float(analytics.get("revenue", 0))
+            total_rev = float(analytics.get("revenue", 0))
+            p_orders = len(orders)
             
             # Tagesvergleich
             yesterday = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
@@ -67,7 +48,7 @@ def run():
                 elif change_pct < -50:
                     notify_telegram(f"📉 <b>Umsatz -{abs(change_pct):.0f}%</b> Heute nur €{today_rev:.2f}")
             
-            cache["daily"][today] = {"shopify": today_rev, "printify": p_orders}
+            cache["daily"][today] = {"shopify": today_rev, "orders": p_orders, "shop": shop.get("name", "")}
             cache["total_revenue"] = total_rev
             cache["daily"] = {k:v for k,v in cache["daily"].items() if k >= (datetime.date.today() - datetime.timedelta(days=30)).isoformat()}
             save_cache(cache)
