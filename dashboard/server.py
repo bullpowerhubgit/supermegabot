@@ -71,7 +71,7 @@ SERVICES = [
     {"id": "telegram_bot", "name": "Telegram Bot", "port": 3200,
      "start_cmd": "cd '/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot' && nohup node server.js >> logs/server.log 2>&1 &",
      "pattern": "telegram-automation-bot.*server.js", "icon": "✈️"},
-    {"id": "cratorhub", "name": "CreatorHub", "port": 3000,
+    {"id": "cratorhub", "name": "CreatorHub", "port": 3002,
      "start_cmd": "cd '/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/digifabrik' && nohup npx tsx server.ts >> /tmp/cratorhub.log 2>&1 &",
      "pattern": "digifabrik.*server", "icon": "🎨"},
     {"id": "ollama", "name": "Ollama LLM", "port": 11434,
@@ -476,8 +476,8 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
       <div><div class="card-title">KI-Assistent</div><div class="card-subtitle">Ollama · 100% lokal</div></div>
       <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
         <select id="model-select" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.72rem">
-          <option value="fast">llama3.2 (schnell)</option>
-          <option value="gemma4">gemma4</option>
+          <option value="gemma4" selected>gemma4 (schnell)</option>
+          <option value="fast">llama3.2</option>
           <option value="code">codellama</option>
           <option value="analysis">mistral</option>
         </select>
@@ -668,7 +668,7 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
         <span>windsurf-auto-heal</span><span class="badge badge-green">✓ Aktiv</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span>CreatorHub Server</span><span class="badge badge-yellow">Port 3000</span>
+        <span>CreatorHub Server</span><span class="badge badge-yellow">Port 3002</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span>Shopify AI Suite</span><span class="badge badge-green">✓ Keys OK</span>
@@ -696,32 +696,32 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
 
 <!-- ══ TAB: Telegram Bot ══ -->
 <div id="tab-telegram" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3200" title="Telegram Bot"></iframe>
+  <iframe class="tab-iframe" data-local-url="http://localhost:3200" title="Telegram Bot"></iframe>
 </div>
 
 <!-- ══ TAB: Shopify Apps Suite ══ -->
 <div id="tab-shopify-apps" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3200/shopify-apps" title="Shopify Apps"></iframe>
+  <iframe class="tab-iframe" data-path="/shopify-apps" title="Shopify Apps"></iframe>
 </div>
 
 <!-- ══ TAB: NailsChip Studio ══ -->
 <div id="tab-nailschip" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3200/nailschip" title="NailsChip"></iframe>
+  <iframe class="tab-iframe" data-path="/nailschip" title="NailsChip"></iframe>
 </div>
 
 <!-- ══ TAB: Revenue Hub ══ -->
 <div id="tab-revenue" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3200/revenue" title="Revenue Hub"></iframe>
+  <iframe class="tab-iframe" data-path="/revenue" title="Revenue Hub"></iframe>
 </div>
 
 <!-- ══ TAB: Income Engine ══ -->
 <div id="tab-income" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3200/income" title="Income Engine"></iframe>
+  <iframe class="tab-iframe" data-path="/income" title="Income Engine"></iframe>
 </div>
 
 <!-- ══ TAB: Social ══ -->
 <div id="tab-social" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3200/social" title="Social"></iframe>
+  <iframe class="tab-iframe" data-path="/social" title="Social"></iframe>
 </div>
 
 <!-- ══ TAB: Windsurf Shopify ══ -->
@@ -842,14 +842,47 @@ setInterval(() => {
 document.getElementById('clock').textContent = new Date().toLocaleTimeString('de-DE');
 
 // ── API helper ──
+const RAILWAY_SUITE_URL = 'https://shopify-suite-v2-production.up.railway.app';
+
+function isLocalHost() {
+  const h = window.location.hostname;
+  return h === 'localhost' || h === '127.0.0.1';
+}
+
+function resolveSuiteUrl(path='') {
+  const base = isLocalHost() ? 'http://localhost:3200' : RAILWAY_SUITE_URL;
+  return base + path;
+}
+
+function resolveTabIframeUrl(iframe) {
+  if (iframe.dataset.localUrl) {
+    return isLocalHost() ? iframe.dataset.localUrl : '';
+  }
+  if (iframe.dataset.path) {
+    return resolveSuiteUrl(iframe.dataset.path);
+  }
+  return iframe.dataset.src || '';
+}
+
 async function api(path, data=null) {
   try {
     const opts = data
-      ? { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }
-      : {};
+      ? { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(data), cache:'no-store' }
+      : { headers:{'Accept':'application/json'}, cache:'no-store' };
     const r = await fetch('/api' + path, opts);
-    return await r.json();
-  } catch(e) { return { error: e.message }; }
+    const raw = await r.text();
+    let parsed;
+    try {
+      parsed = raw ? JSON.parse(raw) : {};
+    } catch (_) {
+      parsed = { ok: r.ok, error: raw || ('HTTP ' + r.status) };
+    }
+    if (typeof parsed.ok === 'undefined') parsed.ok = r.ok;
+    if (!parsed.ok && !parsed.error) parsed.error = 'HTTP ' + r.status;
+    return parsed;
+  } catch(e) {
+    return { ok: false, error: e?.message || 'Failed to fetch' };
+  }
 }
 
 // ── Services ──
@@ -1014,6 +1047,10 @@ async function scanArbitrage() {
 // ── Telegram ──
 async function loadTgStatus() {
   const r = await api('/telegram/status');
+  if (!r.ok && r.error) {
+    document.getElementById('tg-status').innerHTML = `<span class="badge badge-red">✗ Verbindungsfehler</span> ${r.error}`;
+    return;
+  }
   document.getElementById('tg-status').innerHTML = r.configured
     ? `<span class="badge badge-green">✓ Konfiguriert</span> Chat ID: ${r.chat_id || '?'}`
     : '<span class="badge badge-red">✗ Nicht konfiguriert</span> TELEGRAM_BOT_TOKEN setzen';
@@ -1038,6 +1075,9 @@ async function loadShopify() {
   } else if (r.error && r.error.includes('401')) {
     el.innerHTML = `<span class="badge badge-orange">⚠ Token abgelaufen</span>
       <div style="margin-top:6px;font-size:0.72rem;color:var(--muted)">Neu generieren: suitenew.myshopify.com → Admin → Apps → API-Zugangsdaten</div>`;
+  } else if (r.error && r.error.toLowerCase().includes('failed to fetch')) {
+    el.innerHTML = `<div class="error-text">Dashboard API nicht erreichbar (${r.error})</div>
+      <div style="margin-top:4px"><span class="badge badge-yellow">⚠ Verbindung prüfen</span></div>`;
   } else {
     el.innerHTML = `<div class="error-text">${r.error || 'Nicht verbunden'}</div>
       <div style="margin-top:4px"><span class="badge badge-yellow">⚠ Setup erforderlich</span></div>`;
@@ -1377,8 +1417,13 @@ function switchTab(tabId) {
   // lazy-load iframe on first visit
   if (panel) {
     const iframe = panel.querySelector('iframe');
-    if (iframe && !iframe.src && iframe.dataset.src) {
-      iframe.src = iframe.dataset.src;
+    if (iframe && !iframe.src) {
+      const targetUrl = resolveTabIframeUrl(iframe);
+      if (targetUrl) {
+        iframe.src = targetUrl;
+      } else if (tabId === 'telegram') {
+        panel.innerHTML = '<div style="padding:24px;color:var(--muted)">Telegram Bot ist nur lokal auf diesem Mac unter <strong>http://localhost:3200</strong> verfuegbar.</div>';
+      }
     }
   }
 }
@@ -1451,7 +1496,7 @@ async def handle_services_legacy(req):
     service_list = [
         {"name": "SuperMegaBot Dashboard", "port": PORT},
         {"name": "Telegram-Automation-Bot", "port": 3200},
-        {"name": "CreatorHub", "port": 3000},
+        {"name": "CreatorHub", "port": 3002},
         {"name": "Ollama", "port": 11434},
         {"name": "OpenClaw Gateway", "port": 18789},
         {"name": "Windsurf API Gateway", "port": 8080},
@@ -1508,19 +1553,37 @@ async def handle_telegram_status(req):
 
 
 async def handle_telegram_send(req):
-    if not TELEGRAM_TOKEN:
-        return web.json_response({"ok": False, "error": "No token configured"})
-    try:
-        data = await req.json()
-        message = data.get("message", "")
-        chat_id = TELEGRAM_CHAT_ID
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        async with _client_session(15) as s:
-            async with s.post(url, json={"chat_id": chat_id, "text": message}) as r:
-                ok = r.status == 200
-                return web.json_response({"ok": ok})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+  if not TELEGRAM_TOKEN:
+    return web.json_response({"ok": False, "error": "No token configured"})
+
+  message = ""
+  try:
+    data = await req.json()
+    message = data.get("message", "")
+    chat_id = TELEGRAM_CHAT_ID
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    async with _client_session(15) as s:
+      async with s.post(url, json={"chat_id": chat_id, "text": message}) as r:
+        if r.status == 200:
+          return web.json_response({"ok": True})
+  except Exception:
+    pass
+
+  # DNS/network fallback via urllib
+  try:
+    import urllib.request
+
+    payload = json.dumps({"chat_id": TELEGRAM_CHAT_ID, "text": message}).encode("utf-8")
+    req_u = urllib.request.Request(
+      f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+      data=payload,
+      headers={"Content-Type": "application/json"},
+      method="POST",
+    )
+    with urllib.request.urlopen(req_u, timeout=15) as resp:
+      return web.json_response({"ok": 200 <= getattr(resp, "status", 0) < 300})
+  except Exception as e:
+    return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_shopify_status(req):
@@ -1920,32 +1983,60 @@ async def handle_mac_action(req):
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
-
 async def handle_services_status(req):
-    import socket
-    result = []
-    for svc in SERVICES:
-        port_ok = False
-        if svc.get("port", 0) > 0:
-            try:
-                sock = socket.create_connection(("localhost", svc["port"]), timeout=0.5)
-                sock.close()
-                port_ok = True
-            except Exception:
-                pass
-        pid = None
+  import socket
+  import urllib.request
+
+  result = []
+  for svc in SERVICES:
+    port_ok = False
+    remote_ok = False
+
+    if svc.get("port", 0) > 0:
+      try:
+        sock = socket.create_connection(("localhost", svc["port"]), timeout=0.5)
+        sock.close()
+        port_ok = True
+      except Exception:
+        pass
+
+    if svc.get("health_url") or svc.get("url"):
+      check_url = svc.get("health_url") or svc.get("url")
+      try:
+        with urllib.request.urlopen(check_url, timeout=3) as resp:
+          remote_ok = 200 <= getattr(resp, "status", 0) < 400
+      except Exception:
+        # Fallback via curl because Python DNS can intermittently fail in this process.
         try:
-            ps = subprocess.run(["pgrep", "-f", svc["pattern"]], capture_output=True, text=True)
-            if ps.returncode == 0 and ps.stdout.strip():
-                pid = ps.stdout.strip().split('\n')[0]
+          cp = subprocess.run(
+            ["curl", "-sS", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "5", check_url],
+            capture_output=True,
+            text=True,
+          )
+          code = int((cp.stdout or "0").strip() or "0")
+          remote_ok = 200 <= code < 400
         except Exception:
-            pass
-        result.append({
-            "id": svc["id"], "name": svc["name"], "port": svc["port"],
-            "icon": svc["icon"], "ok": port_ok, "pid": pid,
-            "running": port_ok or bool(pid),
-        })
-    return web.json_response({"services": result})
+          remote_ok = False
+
+    pid = None
+    try:
+      ps = subprocess.run(["pgrep", "-f", svc["pattern"]], capture_output=True, text=True)
+      if ps.returncode == 0 and ps.stdout.strip():
+        pid = ps.stdout.strip().split('\n')[0]
+    except Exception:
+      pass
+
+    result.append({
+      "id": svc["id"],
+      "name": svc["name"],
+      "port": svc["port"],
+      "icon": svc["icon"],
+      "ok": port_ok or remote_ok,
+      "pid": pid,
+      "running": port_ok or remote_ok or bool(pid),
+    })
+
+  return web.json_response({"services": result})
 
 
 async def handle_service_action(req):
@@ -2193,6 +2284,7 @@ async def create_app():
 
     # Existing routes
     app.router.add_get("/", handle_index)
+    app.router.add_get("/dashboard", handle_index)
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_get("/api/system", handle_system)
     app.router.add_get("/api/services", handle_services_legacy)

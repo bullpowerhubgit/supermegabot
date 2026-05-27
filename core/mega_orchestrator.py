@@ -160,8 +160,9 @@ class MemorySystem:
 
 class OllamaClient:
     MODELS = {
-        "fast": "llama3.2:latest",
-        "smart": "llama3.2:latest",
+        "fast": "gemma4:latest",
+        "smart": "gemma4:latest",
+        "gemma4": "gemma4:latest",
         "code": "codellama:latest",
         "analysis": "mistral:latest",
     }

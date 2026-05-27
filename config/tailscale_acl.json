@@ -1,0 +1,13 @@
+{
+  "_comment": "Tailscale ACL fuer automationsuite - via Tailscale Admin Portal anwenden",
+  "acls": [
+    {
+      "_name": "automationsuite",
+      "action": "accept",
+      "src": ["*"],
+      "dst": ["*:*"]
+    }
+  ],
+  "tagOwners": {},
+  "hosts": {}
+}

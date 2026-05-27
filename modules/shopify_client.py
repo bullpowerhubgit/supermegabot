@@ -9,6 +9,7 @@ import time
 import json
 import logging
 import asyncio
+import urllib.request
 from typing import Optional, Dict, Any
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,19 @@ def _client_session(total_timeout: int = 15):
     connector = aiohttp.TCPConnector(resolver=resolver, ttl_dns_cache=300)
     timeout = aiohttp.ClientTimeout(total=total_timeout)
     return aiohttp.ClientSession(timeout=timeout, connector=connector)
+
+
+def _sync_json_request(url: str, method: str = "GET", headers: Optional[Dict[str, str]] = None,
+                       payload: Optional[Dict] = None, timeout: int = 20) -> Dict:
+    req_headers = headers or {}
+    data = None
+    if payload is not None:
+        data = json.dumps(payload).encode("utf-8")
+        req_headers = {"Content-Type": "application/json", **req_headers}
+    req = urllib.request.Request(url, data=data, headers=req_headers, method=method)
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        raw = resp.read().decode("utf-8", "ignore")
+        return json.loads(raw) if raw else {}
 
 # Token-Cache (im Speicher) — für atkn_ und client-credentials tokens
 _token_cache: Dict[str, Any] = {
@@ -178,10 +192,17 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
         payload["variables"] = variables
 
     url = f"{_store_url()}/admin/api/2024-10/graphql.json"
-    async with _client_session(15) as session:
-        async with session.post(url, json=payload, headers=headers) as resp:
-            data = await resp.json()
-            return data
+    try:
+        async with _client_session(15) as session:
+            async with session.post(url, json=payload, headers=headers) as resp:
+                data = await resp.json()
+                return data
+    except Exception as e:
+        logger.warning("Shopify GraphQL aiohttp fallback to urllib: %s", e)
+        try:
+            return await asyncio.to_thread(_sync_json_request, url, "POST", headers, payload, 20)
+        except Exception as ex:
+            return {"errors": str(ex)}
 
 
 async def rest_get(endpoint: str) -> Dict:
@@ -191,9 +212,16 @@ async def rest_get(endpoint: str) -> Dict:
 
     auth = await _get_best_token()
     url = f"{_store_url()}/admin/api/2024-10/{endpoint}"
-    async with _client_session(15) as session:
-        async with session.get(url, headers=auth) as resp:
-            return await resp.json()
+    try:
+        async with _client_session(15) as session:
+            async with session.get(url, headers=auth) as resp:
+                return await resp.json()
+    except Exception as e:
+        logger.warning("Shopify REST aiohttp fallback to urllib: %s", e)
+        try:
+            return await asyncio.to_thread(_sync_json_request, url, "GET", auth, None, 20)
+        except Exception as ex:
+            return {"error": str(ex)}
 
 
 # ─── Convenience Functions ────────────────────────────────────────────────────
