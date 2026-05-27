@@ -25,16 +25,16 @@ def _shpat_token() -> str:
     return os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 
 def _cli_client_id() -> str:
-    return os.getenv("SHOPIFY_CLI_CLIENT_ID", "fbdb2649-e327-4907-8f67-908d24cfd7e3")
+    return os.getenv("SHOPIFY_CLI_CLIENT_ID", "")
 
 def _cli_refresh_token() -> str:
     return os.getenv("SHOPIFY_CLI_REFRESH_TOKEN", "")
 
 def _cred_client_id() -> str:
-    return os.getenv("SHOPIFY_CREDENTIALS_CLIENT_ID", "72e210c7e655bc31d1057226b23818b9")
+    return os.getenv("SHOPIFY_CREDENTIALS_CLIENT_ID", "")
 
 def _cred_client_secret() -> str:
-    return os.getenv("SHOPIFY_CREDENTIALS_CLIENT_SECRET", "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")
+    return os.getenv("SHOPIFY_CREDENTIALS_CLIENT_SECRET", "")
 
 # Railway Suite Dashboard URL
 SUITE_URL = os.getenv("SHOPIFY_SUITE_URL", "https://shopify-suite-v2-production.up.railway.app")

@@ -198,12 +198,13 @@ async def ai_complete(system: str, prompt: str, model_hint: str = "fast") -> str
     # Try Ollama first (local, free)
     if HAS_AIOHTTP:
         try:
+            default_model = os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:latest")
             model_map = {
-                "fast": "llama3.2:latest",
-                "smart": "gemma4:latest",
-                "code": "codellama:latest",
+                "fast": os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest"),
+                "smart": os.getenv("OLLAMA_SMART_MODEL", "gemma2:latest"),
+                "code": os.getenv("OLLAMA_CODE_MODEL", "codellama:latest"),
             }
-            model = model_map.get(model_hint, "llama3.2:latest")
+            model = model_map.get(model_hint, default_model)
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
                 payload = {
                     "model": model,
