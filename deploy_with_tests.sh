@@ -92,24 +92,21 @@ echo "════════════════════════�
 echo "PHASE 4: Deployment..."
 echo "═══════════════════════════════════════════════════════════════"
 
-# Restart all services
-SERVICES=(
-    "3200:/Users/rudolfsarkany/local-projects/telegram-automation-bot:node server.js:Telegram Bot"
-    "3001:/Users/rudolfsarkany/windsurf-shopify-suite:node src/index.js:Shopify Suite"
-    "3002:/Users/rudolfsarkany/shopify-ai-suite:node server.js:Shopify AI"
+# Restart all services via PM2 (avoids port conflicts with PM2-managed processes)
+PM2_SERVICES=(
+    "telegram-bot:Telegram Bot"
+    "windsurf-shopify:Shopify Suite"
+    "windsurf-api-gateway:Shopify AI"
 )
 
-for svc in "${SERVICES[@]}"; do
-    IFS=':' read -r port dir cmd name <<< "$svc"
-    
-    # Kill existing
-    lsof -ti:$port | xargs kill -9 2>/dev/null || true
-    sleep 1
-    
-    # Start new
-    cd "$dir" && nohup $cmd > /tmp/$(echo "$name" | tr ' ' '_').log 2>&1 &
-    echo "  ✅ $name restarted (port $port)"
-    sleep 2
+for svc in "${PM2_SERVICES[@]}"; do
+    IFS=':' read -r pm2name display <<< "$svc"
+    if pm2 describe "$pm2name" > /dev/null 2>&1; then
+        pm2 restart "$pm2name" --update-env
+        echo "  ✅ $display restarted via PM2"
+    else
+        echo "  ⚠️  $display not found in PM2, skipping"
+    fi
 done
 
 # ═══════════════════════════════════════════════════════════════════════
