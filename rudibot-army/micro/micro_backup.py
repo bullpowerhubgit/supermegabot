@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 """💾 Micro-Backup — Täglicher Auto-Commit + GitHub Push"""
 import sys, os, time, subprocess, datetime
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from pathlib import Path
+
+ARMY_DIR = Path(__file__).resolve().parent.parent
+SHARED_DIR = ARMY_DIR / "shared"
+sys.path.insert(0, str(SHARED_DIR))
 from bus import report, notify_telegram
 
 ID = "micro_backup"
 INTERVAL = 86400  # Täglich
-MEGA_DIR = os.path.expanduser("~/supermegabot")
+MEGA_DIR = str(ARMY_DIR.parent)
 
 REPOS = [
     {

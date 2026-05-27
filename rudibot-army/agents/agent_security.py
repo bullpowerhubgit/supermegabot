@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """🔐 Security Agent — VPN-Status, API-Keys, verdächtige Aktivitäten"""
 import sys, os, time, subprocess, json
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from pathlib import Path
+
+ARMY_DIR = Path(__file__).resolve().parent.parent
+SHARED_DIR = ARMY_DIR / "shared"
+sys.path.insert(0, str(SHARED_DIR))
 from bus import report, notify_telegram, get_env
 
 ID = "security"

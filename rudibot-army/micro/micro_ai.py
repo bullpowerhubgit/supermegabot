@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 """🤖 Micro-AI — Tägliche KI-Trends, E-Commerce Tipps via Ollama"""
 import sys, os, time, json, datetime, urllib.request
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from pathlib import Path
+
+ARMY_DIR = Path(__file__).resolve().parent.parent
+SHARED_DIR = ARMY_DIR / "shared"
+sys.path.insert(0, str(SHARED_DIR))
 from bus import report, notify_telegram
 
 ID = "micro_ai"

@@ -6,6 +6,15 @@
     },
     "2026-05-25": {
       "shopify": 0.0,
+      "printify": 0
+    },
+    "2026-05-26": {
+      "shopify": 0.0,
+      "orders": 0,
+      "shop": "I Want That! I Need It!"
+    },
+    "2026-05-27": {
+      "shopify": 0.0,
       "orders": 0,
       "shop": "I Want That! I Need It!"
     }

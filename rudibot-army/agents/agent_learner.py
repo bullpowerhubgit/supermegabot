@@ -1,12 +1,21 @@
 #!/usr/bin/env python3
 """🧠 Learner Agent — Lernt täglich neue Skills, analysiert was nützlich wäre"""
 import sys, os, time, json, datetime, subprocess
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from pathlib import Path
+
+ARMY_DIR = Path(__file__).resolve().parent.parent
+SHARED_DIR = ARMY_DIR / "shared"
+sys.path.insert(0, str(SHARED_DIR))
 from bus import report, notify_telegram, get_env
 
 ID = "learner"
-BOT_DIR = os.path.expanduser("~/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot")
-LEARN_LOG = os.path.expanduser("~/rudibot-army/shared/learned_today.json")
+BOT_DIR = os.path.expanduser(
+    os.getenv(
+        "RUDIBOT_MAIN_DIR",
+        "~/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot",
+    )
+)
+LEARN_LOG = SHARED_DIR / "learned_today.json"
 
 DAILY_SKILLS = [
     ("trending_products", "trending produkte für shopify dropshipping heute analysieren"),
@@ -17,6 +26,8 @@ DAILY_SKILLS = [
 
 def node_learn(description, name):
     """Ruft den self-learner im bot auf"""
+    if not os.path.isdir(BOT_DIR):
+        return {"success": False, "error": f"BOT_DIR fehlt: {BOT_DIR}"}
     script = f"""
 const sl = require('{BOT_DIR}/modules/self-learner');
 sl.learnNewSkill({json.dumps(description)}, {{name: {json.dumps(name)}}})
@@ -48,7 +59,7 @@ def run():
                 notify_telegram(f"🧠 <b>Learner:</b> {len(results)} neue Skills heute gelernt\n" + "\n".join(f"• /{r}" for r in results))
             last_learn = today
             try:
-                open(LEARN_LOG,"w").write(json.dumps({"date":str(today),"learned":results,"total":learned_count}))
+                LEARN_LOG.write_text(json.dumps({"date":str(today),"learned":results,"total":learned_count}))
             except: pass
         
         # Skills-Status reporten
