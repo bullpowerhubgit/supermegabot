@@ -1,0 +1,110 @@
+{
+  "timestamp": "2026-05-27T16:18:42.849838",
+  "fix_mode": false,
+  "syntax": {
+    "ok": 36,
+    "errors": []
+  },
+  "imports": {
+    "ok": 24,
+    "errors": []
+  },
+  "api": {
+    "server_up": false,
+    "endpoints": [
+      {
+        "method": "GET",
+        "path": "/api/status",
+        "status": 404,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/services",
+        "status": 200,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/health",
+        "status": 404,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/shopify",
+        "status": 404,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/analytics",
+        "status": 404,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/revenue",
+        "status": 404,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/kpis",
+        "status": 404,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/agents",
+        "status": 404,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/logs",
+        "status": 200,
+        "reachable": true
+      },
+      {
+        "method": "GET",
+        "path": "/api/metrics",
+        "status": 404,
+        "reachable": true
+      },
+      {
+        "method": "POST",
+        "path": "/api/chat",
+        "status": 0,
+        "reachable": false
+      }
+    ]
+  },
+  "env": {
+    "present": [
+      "TELEGRAM_BOT_TOKEN"
+    ],
+    "missing": [
+      "TELEGRAM_CHAT_ID",
+      "OPENAI_API_KEY",
+      "ANTHROPIC_API_KEY",
+      "SHOPIFY_STORE_URL",
+      "SHOPIFY_ADMIN_API_TOKEN"
+    ]
+  },
+  "patterns": {
+    "findings": [
+      {
+        "file": "deep_scan_repair.py",
+        "line": 57,
+        "issue": "os.system() usage",
+        "snippet": "\"os_system\":        (r\"os\\.system\\(\",   \"os.system() usage\"),"
+      }
+    ]
+  },
+  "history": {
+    "stuck_hashes": [],
+    "fixed": false
+  },
+  "overall_pass": false
+}
