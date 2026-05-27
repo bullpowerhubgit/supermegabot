@@ -279,24 +279,41 @@ Provide a SHORT repair solution (1-3 steps, Python code if needed):"""
 
         return result
 
-    def _parse_repair_actions(self, solution: str) -> List[str]:
+    # Erlaubte Package-Manager und ihre Executables
+    _REPAIR_MANAGERS = {
+        "pip":    [sys.executable, "-m", "pip", "install"],
+        "pip3":   [sys.executable, "-m", "pip", "install"],
+        "brew":   ["brew", "install"],
+        "npm":    ["npm", "install", "-g"],
+    }
+
+    def _parse_repair_actions(self, solution: str) -> List[List[str]]:
+        """Gibt validierte Befehle als Listen zurück (kein shell=True)."""
         actions = []
-        lines = solution.strip().split("\n")
-        for line in lines:
-            line = line.strip()
-            if line.startswith("pip install") or line.startswith("pip3 install"):
-                actions.append(line)
-            elif line.startswith("brew install"):
-                actions.append(line)
-            elif line.startswith("npm install"):
-                actions.append(line)
+        import re
+        pkg_re = re.compile(r'^[a-zA-Z0-9_\-\.\[\]>=<!\s]+$')
+        for raw in solution.strip().split("\n"):
+            raw = raw.strip()
+            parts = raw.split()
+            if len(parts) < 3:
+                continue
+            manager = parts[0]
+            if parts[1] != "install":
+                continue
+            packages = parts[2:]
+            # Paket-Namen validieren (nur sichere Zeichen)
+            if not all(pkg_re.match(p) for p in packages):
+                continue
+            base = self._REPAIR_MANAGERS.get(manager)
+            if base:
+                actions.append(base + packages)
         return actions
 
-    async def _execute_repair_action(self, action: str) -> bool:
+    async def _execute_repair_action(self, action: List[str]) -> bool:
         import subprocess
         try:
             result = subprocess.run(
-                action, shell=True, capture_output=True, text=True, timeout=120
+                action, shell=False, capture_output=True, text=True, timeout=120
             )
             return result.returncode == 0
         except Exception:
