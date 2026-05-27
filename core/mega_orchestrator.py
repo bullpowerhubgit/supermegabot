@@ -438,6 +438,10 @@ class CommandRouter:
             "/micro_status": self._cmd_micro,
             "/micro_ping": self._cmd_micro,
             "/army_micro": self._cmd_micro,
+            # ── Control Panel ────────────────────────────────────────────────
+            "/menu": self._cmd_menu,
+            "/steuerung": self._cmd_menu,
+            "/control": self._cmd_menu,
             # Hub Hilfe
             "/hub_hilfe": self._cmd_hub,
             "/hub_help": self._cmd_hub,
@@ -630,26 +634,12 @@ class CommandRouter:
 
     async def _cmd_learner(self, text: str, session_id: str) -> str:
         try:
-            import sys, os
-            sys.path.insert(0, os.path.expanduser("~"))
-            # Tokens laden
-            from pathlib import Path
-            env_file = Path("/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot/.env")
-            if env_file.exists():
-                for line in env_file.read_text(errors="ignore").splitlines():
-                    if "=" in line and not line.strip().startswith("#"):
-                        k, _, v = line.partition("=")
-                        if not os.environ.get(k.strip()):
-                            os.environ[k.strip()] = v.strip()
-            from self_learner_core import SelfLearner
-            if not hasattr(self, "_learner"):
-                self._learner = SelfLearner("supermegabot", telegram_notify=True)
-                self._learner.load_learned_skills()
-            # Befehl extrahieren: "/learner" → "/status", direkter Befehl weiterleiten
+            from self_learner_bridge import get_learner
+            learner = get_learner()
             cmd = text.strip()
             if cmd in ("/learner", "/learner_status"):
                 cmd = "/status"
-            return self._learner.handle_command(cmd)
+            return learner.handle_command(cmd)
         except Exception as e:
             return f"Learner Fehler: {e}"
 
@@ -672,6 +662,13 @@ class CommandRouter:
             return "\n".join(lines)
         except Exception as e:
             return f"Micro Status Fehler: {e}"
+
+    async def _cmd_menu(self, text: str, session_id: str) -> str:
+        return (
+            "🤖 <b>Control Panel</b>\n\n"
+            "Tippe /menu um das interaktive Steuerungsmenü mit Buttons zu öffnen.\n\n"
+            "📊 Status · 🪖 Army · 🔧 Services · 🩺 Repair · 📋 Logs · ⚡ Actions"
+        )
 
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle:
@@ -897,6 +894,24 @@ class MegaOrchestrator:
 
     async def _handle_telegram_update(self, update: Dict):
         try:
+            # ── Inline-Keyboard Button-Klick ──────────────────────────────
+            cq = update.get("callback_query")
+            if cq:
+                try:
+                    from modules.telegram_control import handle_callback
+                    chat_id   = str(cq.get("message", {}).get("chat", {}).get("id", ""))
+                    message_id = cq.get("message", {}).get("message_id", 0)
+                    cq_id     = cq.get("id", "")
+                    data      = cq.get("data", "")
+                    log.info(f"Callback: {data}")
+                    await asyncio.get_event_loop().run_in_executor(
+                        None, handle_callback, data, chat_id, message_id, cq_id
+                    )
+                except Exception as e:
+                    log.error(f"Callback handler error: {e}")
+                return
+
+            # ── Normale Textnachricht ─────────────────────────────────────
             msg = update.get("message", {})
             text = msg.get("text", "")
             chat_id = str(msg.get("chat", {}).get("id", ""))
@@ -907,6 +922,17 @@ class MegaOrchestrator:
 
             session_id = f"telegram_{chat_id}"
             log.info(f"Telegram [{user}]: {text[:60]}")
+
+            # /menu — zeigt Inline-Keyboard Control Panel
+            if text.strip().lower() in ("/menu", "/steuerung", "/control"):
+                try:
+                    from modules.telegram_control import send_main_menu
+                    await asyncio.get_event_loop().run_in_executor(
+                        None, send_main_menu, chat_id
+                    )
+                except Exception as e:
+                    await send_telegram(f"Menü-Fehler: {e}", chat_id=chat_id)
+                return
 
             response = await self.process(text, session_id)
             await send_telegram(response, chat_id=chat_id)
