@@ -64,49 +64,60 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 # Service definitions for Start/Stop control
 # ---------------------------------------------------------------------------
 
+_HOME = Path.home()
+
+def _ext(env_var: str, default_rel: str) -> str:
+    """Gibt Pfad aus Env-Var zurück, sonst HOME/default_rel."""
+    return os.getenv(env_var, str(_HOME / default_rel))
+
 SERVICES = [
     {"id": "dashboard", "name": "SuperMegaBot", "port": 8888,
-     "start_cmd": "cd /Users/rudolfsarkany/supermegabot && python3 dashboard/server.py",
+     "start_cmd": f"cd {BASE_DIR} && nohup python3 dashboard/server.py >> /tmp/supermegabot.log 2>&1 &",
      "pattern": "dashboard/server.py", "icon": "🤖"},
+    {"id": "rudibot_army", "name": "RudiBot Army", "port": 0,
+     "start_cmd": f"cd {BASE_DIR} && nohup python3 rudibot-army/army_commander.py >> /tmp/rudibot-army.log 2>&1 &",
+     "pattern": "army_commander.py", "icon": "🪖"},
+    {"id": "mega_orchestrator", "name": "Mega Orchestrator", "port": 0,
+     "start_cmd": f"cd {BASE_DIR} && nohup python3 core/mega_orchestrator.py >> /tmp/mega-orchestrator.log 2>&1 &",
+     "pattern": "mega_orchestrator.py", "icon": "🧩"},
     {"id": "telegram_bot", "name": "Telegram Bot", "port": 3200,
-     "start_cmd": "cd '/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot' && nohup node server.js >> logs/server.log 2>&1 &",
+     "start_cmd": f"cd {_ext('TELEGRAM_BOT_DIR','telegram-automation-bot')} && nohup node server.js >> /tmp/telegram-bot.log 2>&1 &",
      "pattern": "telegram-automation-bot.*server.js", "icon": "✈️"},
-    {"id": "cratorhub", "name": "CreatorHub", "port": 3002,
-     "start_cmd": "cd '/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/digifabrik' && nohup npx tsx server.ts >> /tmp/cratorhub.log 2>&1 &",
+    {"id": "cratorhub", "name": "CreatorHub", "port": 3000,
+     "start_cmd": f"cd {_ext('DIGIFABRIK_DIR','digifabrik')} && nohup npx tsx server.ts >> /tmp/cratorhub.log 2>&1 &",
      "pattern": "digifabrik.*server", "icon": "🎨"},
     {"id": "ollama", "name": "Ollama LLM", "port": 11434,
-     "start_cmd": "ollama serve &",
+     "start_cmd": "ollama serve >> /tmp/ollama.log 2>&1 &",
      "pattern": "ollama serve", "icon": "🧠"},
     {"id": "openclaw", "name": "OpenClaw Gateway", "port": 18789,
      "start_cmd": "openclaw gateway run",
      "pattern": "openclaw", "icon": "🦞"},
     {"id": "windsurf_shopify_suite", "name": "Shopify Webhook Suite", "port": 3001,
-     "start_cmd": "cd /Users/rudolfsarkany/windsurf-shopify-suite && nohup npm start >> /tmp/windsurf-shopify-suite.log 2>&1 &",
+     "start_cmd": f"cd {_ext('SHOPIFY_SUITE_DIR','windsurf-shopify-suite')} && nohup npm start >> /tmp/windsurf-shopify-suite.log 2>&1 &",
      "pattern": "windsurf-shopify-suite", "icon": "🛒"},
     {"id": "windsurf_telegram_bot", "name": "Windsurf Telegram Bot", "port": 8000,
-     "start_cmd": "cd /Users/rudolfsarkany/windsurf-telegram-bot && nohup npm start >> /tmp/windsurf-telegram-bot.log 2>&1 &",
+     "start_cmd": f"cd {_ext('WS_TELEGRAM_DIR','windsurf-telegram-bot')} && nohup npm start >> /tmp/windsurf-telegram-bot.log 2>&1 &",
      "pattern": "windsurf-telegram-bot.*index.js", "icon": "🤖"},
-    # ── Heute gebaut ────────────────────────────────────────────────────────
     {"id": "shopify_ai_suite", "name": "Shopify AI Suite (Railway)", "port": 0,
-     "start_cmd": "echo 'Deployed on Railway: https://shopify-suite-v2-production.up.railway.app'",
+     "start_cmd": "echo 'Deployed on Railway'",
      "pattern": "RAILWAY_REMOTE",
      "url": "https://shopify-suite-v2-production.up.railway.app",
      "health_url": "https://shopify-suite-v2-production.up.railway.app/health",
      "icon": "🛍️"},
     {"id": "windsurf_shopify", "name": "Windsurf API Gateway", "port": 8080,
-     "start_cmd": "cd /Users/rudolfsarkany/windsurf-api-gateway && nohup node src/index.js >> /tmp/windsurf-api-gateway.log 2>&1 &",
+     "start_cmd": f"cd {_ext('API_GATEWAY_DIR','windsurf-api-gateway')} && nohup node src/index.js >> /tmp/windsurf-api-gateway.log 2>&1 &",
      "pattern": "windsurf-api-gateway.*index.js", "icon": "🌊"},
     {"id": "windsurf_autoheal", "name": "Windsurf Auto-Heal", "port": 9000,
-     "start_cmd": "cd /Users/rudolfsarkany/windsurf-auto-heal && nohup npm start >> /tmp/windsurf-autoheal.log 2>&1 &",
+     "start_cmd": f"cd {_ext('AUTO_HEAL_DIR','windsurf-auto-heal')} && nohup npm start >> /tmp/windsurf-autoheal.log 2>&1 &",
      "pattern": "windsurf-auto-heal.*index.js", "icon": "🏥"},
     {"id": "password_sync", "name": "Password Sync", "port": 3005,
-     "start_cmd": "cd /Users/rudolfsarkany/password-sync-suite/web-app && PORT=3005 nohup npm start >> /tmp/password-sync.log 2>&1 &",
+     "start_cmd": f"cd {_ext('PASSWORD_SYNC_DIR','password-sync-suite/web-app')} && PORT=3005 nohup npm start >> /tmp/password-sync.log 2>&1 &",
      "pattern": "password-sync-suite.*server.js", "icon": "🔐"},
     {"id": "rudibot_eternal", "name": "RudiBot Eternal", "port": 0,
-     "start_cmd": "cd /Users/rudolfsarkany/rudibot-eternal && nohup python3 immortal_bot.py >> /tmp/rudibot-eternal.log 2>&1 &",
+     "start_cmd": f"cd {_ext('ETERNAL_BOT_DIR','rudibot-eternal')} && nohup python3 immortal_bot.py >> /tmp/rudibot-eternal.log 2>&1 &",
      "pattern": "immortal_bot.py", "icon": "♾️"},
     {"id": "kivo", "name": "KIVO Voice", "port": 0,
-     "start_cmd": "cd /Users/rudolfsarkany/kivo && nohup python3 kivo.py >> /tmp/kivo.log 2>&1 &",
+     "start_cmd": f"cd {_ext('KIVO_DIR','kivo')} && nohup python3 kivo.py >> /tmp/kivo.log 2>&1 &",
      "pattern": "kivo.py", "icon": "🎙️"},
 ]
 
@@ -2148,6 +2159,54 @@ async def handle_health(req):
     })
 
 
+# ── RudiBot Army Integration ─────────────────────────────────────────────────
+
+ARMY_STATE_FILE = BASE_DIR / "rudibot-army" / "shared" / "army_state.json"
+
+async def handle_army_status(req):
+    """Gibt den aktuellen Status aller Army-Agenten zurück."""
+    try:
+        if ARMY_STATE_FILE.exists():
+            state = json.loads(ARMY_STATE_FILE.read_text(errors='ignore'))
+        else:
+            state = {"agents": {}, "events": [], "fixes": [], "stats": {}}
+        # Laufende Prozesse prüfen
+        army_running = False
+        try:
+            r = subprocess.run(["pgrep", "-f", "army_commander.py"],
+                               capture_output=True, text=True)
+            army_running = r.returncode == 0 and bool(r.stdout.strip())
+        except Exception:
+            pass
+        return web.json_response({
+            "ok": True,
+            "army_running": army_running,
+            "agents": state.get("agents", {}),
+            "events": state.get("events", [])[-20:],
+            "agent_count": len(state.get("agents", {})),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_army_start(req):
+    """Startet die Army wenn sie nicht läuft."""
+    try:
+        r = subprocess.run(["pgrep", "-f", "army_commander.py"],
+                           capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return web.json_response({"ok": True, "msg": "Army läuft bereits"})
+        log_path = Path("/tmp/rudibot-army.log")
+        with open(log_path, "a") as lf:
+            subprocess.Popen(
+                [sys.executable, str(BASE_DIR / "rudibot-army" / "army_commander.py")],
+                stdout=lf, stderr=lf, start_new_session=True,
+            )
+        return web.json_response({"ok": True, "msg": "Army gestartet"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_monitor(req):
     """Mega Monitoring Dashboard"""
     html_path = Path(__file__).parent / "mega_monitor.html"
@@ -2518,6 +2577,8 @@ async def create_app():
     app.router.add_post("/api/logs/clear", handle_logs_clear)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
+    app.router.add_get("/api/army/status", handle_army_status)
+    app.router.add_post("/api/army/start", handle_army_start)
     app.router.add_get("/monitor", handle_monitor)
     app.router.add_post("/api/monitor/refresh", handle_monitor_refresh)
 
