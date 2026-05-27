@@ -73,12 +73,18 @@ NOTIFICATION_CONFIG = {
 }
 
 # ── Service Registry ─────────────────────────────────────────────────────────
+# Pfade über Umgebungsvariablen → portable (macOS, Linux, Docker)
+HOME_DIR   = os.path.expanduser('~')
+BOT_DIR    = os.getenv('TELEGRAM_BOT_DIR', os.path.join(HOME_DIR, 'local-projects', 'telegram-automation-bot'))
+OLLAMA_DIR = os.getenv('OLLAMA_DIR', HOME_DIR)
+REDIS_DIR  = os.getenv('REDIS_DIR', HOME_DIR)
+
 SERVICES = [
     {
         'name':     'RudiBot Main',
         'port':     3200,
         'url':      'http://localhost:3200/health',
-        'cwd':      '/Users/rudolfsarkany/Documents/GitHub/telegram-automation-bot',
+        'cwd':      BOT_DIR,
         'start':    ['node', 'server.js'],
         'check':    'http',
         'critical': True,
@@ -87,7 +93,7 @@ SERVICES = [
         'name':     'Ollama LLM',
         'port':     11434,
         'url':      'http://localhost:11434/api/tags',
-        'cwd':      '/Users/rudolfsarkany',
+        'cwd':      OLLAMA_DIR,
         'start':    ['ollama', 'serve'],
         'check':    'http',
         'critical': True,
@@ -96,7 +102,7 @@ SERVICES = [
         'name':     'Redis',
         'port':     6379,
         'url':      None,
-        'cwd':      '/Users/rudolfsarkany',
+        'cwd':      REDIS_DIR,
         'start':    ['redis-server', '--daemonize', 'yes'],
         'check':    'port',
         'critical': False,
@@ -195,12 +201,12 @@ def start_service(svc):
     """Start einen Dienst und warte bis er läuft."""
     log.info(f'  🔧 Starte {svc["name"]} auf Port {svc["port"]}...')
     try:
-        cwd = svc.get('cwd', '/Users/rudolfsarkany')
+        cwd = svc.get('cwd', os.path.expanduser('~'))
         if not Path(cwd).exists():
             log.error(f'  ❌ CWD nicht gefunden: {cwd}')
             return False
         env = os.environ.copy()
-        env['PATH'] = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + env.get('PATH', '')
+        env['PATH'] = os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else env.get('PATH', '')
 
         # Load .env if exists
         env_file = Path(cwd) / '.env'
@@ -272,7 +278,7 @@ def heal_service(svc, attempt=1):
                     subprocess.run(['npm', 'install', '--omit=dev'],
                         cwd=cwd, capture_output=True, timeout=120, env={
                             **os.environ,
-                            'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + os.environ.get('PATH','')
+                            'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')
                         })
                 except: pass
 
@@ -300,7 +306,7 @@ class SelfImprover:
         today = str(datetime.date.today())
 
         # 1. Server-Logs auf Fehler analysieren
-        bot_log = Path('/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot/logs')
+        bot_log = Path(os.getenv('TELEGRAM_BOT_DIR', os.path.join(os.path.expanduser('~'), 'local-projects', 'telegram-automation-bot'))) / 'logs'
         if not bot_log.exists():
             bot_log = BASE_DIR / 'logs'
 
@@ -338,7 +344,7 @@ class SelfImprover:
                             result = subprocess.run(
                                 ['npm', 'install', '--omit=dev'],
                                 cwd=cwd, capture_output=True, timeout=120,
-                                env={**os.environ, 'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:'+os.environ.get('PATH','')}
+                                env={**os.environ, 'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')}
                             )
                             if result.returncode == 0:
                                 fixes_applied.append(f'npm install in {cwd}')
@@ -362,21 +368,30 @@ class SelfImprover:
                     improvements.append(f'Disk cleanup bei {use_pct}% Auslastung')
         except: pass
 
-        # 4. Memory pressure check
+        # 4. Memory pressure check (portabel: psutil wenn verfügbar, sonst Fallback)
         try:
-            result = subprocess.run(
-                ["vm_stat"], capture_output=True, text=True
-            )
-            if 'page' in result.stdout.lower():
-                # Check swap usage
-                swap = subprocess.run(['sysctl', 'vm.swapusage'], capture_output=True, text=True)
-                if 'used = ' in swap.stdout:
-                    used_str = swap.stdout.split('used = ')[1].split('M')[0]
-                    try:
-                        used_mb = float(used_str.strip())
-                        if used_mb > 2000:
-                            improvements.append(f'⚠️ Hoher Swap: {used_mb:.0f}MB — Neustart empfohlen')
-                    except: pass
+            import psutil
+            swap = psutil.swap_memory()
+            if swap.used > 2 * 1024 * 1024 * 1024:  # > 2GB
+                improvements.append(f'⚠️ Hoher Swap: {swap.used / 1e9:.1f}GB — Neustart empfohlen')
+            mem = psutil.virtual_memory()
+            if mem.percent > 90:
+                improvements.append(f'⚠️ RAM kritisch: {mem.percent}% — Cleanup empfohlen')
+        except ImportError:
+            # Fallback: nur auf macOS
+            if sys.platform == 'darwin':
+                try:
+                    result = subprocess.run(["vm_stat"], capture_output=True, text=True)
+                    if 'page' in result.stdout.lower():
+                        swap = subprocess.run(['sysctl', 'vm.swapusage'], capture_output=True, text=True)
+                        if 'used = ' in swap.stdout:
+                            used_str = swap.stdout.split('used = ')[1].split('M')[0]
+                            try:
+                                used_mb = float(used_str.strip())
+                                if used_mb > 2000:
+                                    improvements.append(f'⚠️ Hoher Swap: {used_mb:.0f}MB — Neustart empfohlen')
+                            except: pass
+                except: pass
         except: pass
 
         # 5. Check for outdated npm packages (weekly)
@@ -390,7 +405,7 @@ class SelfImprover:
                         result = subprocess.run(
                             ['npm', 'audit', '--json'],
                             cwd=cwd, capture_output=True, timeout=60,
-                            env={**os.environ, 'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:'+os.environ.get('PATH','')}
+                            env={**os.environ, 'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')}
                         )
                         audit = json.loads(result.stdout) if result.stdout else {}
                         vuln = audit.get('metadata', {}).get('vulnerabilities', {})
