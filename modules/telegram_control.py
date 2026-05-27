@@ -13,11 +13,18 @@ import urllib.parse
 from pathlib import Path
 from typing import Dict, Any
 
-BASE_DIR  = Path(__file__).parent.parent
+BASE_DIR   = Path(__file__).parent.parent
 ARMY_STATE = BASE_DIR / "rudibot-army" / "shared" / "army_state.json"
+_HOME      = Path.home()
 
-TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
-DASHBOARD_URL    = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+DASHBOARD_URL  = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+
+# Externe Projekte — aus Env oder Standard-Home-Pfad
+_ETERNAL_DIR  = Path(os.getenv("ETERNAL_BOT_DIR",  str(_HOME / "rudibot-eternal")))
+_KIVO_DIR     = Path(os.getenv("KIVO_DIR",          str(_HOME / "kivo")))
+_SHOPIFY_SUITE_URL = os.getenv("SHOPIFY_SUITE_URL",
+                                "https://shopify-suite-v2-production.up.railway.app")
 
 
 # ── Low-level Telegram helpers ───────────────────────────────────────────────
@@ -86,6 +93,9 @@ def kb_main() -> list:
          {"text": "⚡ Quick Actions",   "callback_data": "menu:actions"}],
         [{"text": "🛒 Shopify",         "callback_data": "menu:shopify"},
          {"text": "🤖 KI-Modelle",      "callback_data": "menu:models"}],
+        [{"text": "♾️ RudiBot Eternal", "callback_data": "menu:eternal"},
+         {"text": "🎙️ KIVO Voice",      "callback_data": "menu:kivo"}],
+        [{"text": "🛍️ Shopify AI Suite","callback_data": "menu:railway"}],
     ]
 
 def kb_back() -> list:
@@ -128,6 +138,34 @@ def kb_actions() -> list:
         [{"text": "📊 PM2 Status",       "callback_data": "action:pm2_status"},
          {"text": "🏥 Health Check",     "callback_data": "action:health"}],
         [{"text": "◀️ Hauptmenü",        "callback_data": "menu:main"}],
+    ]
+
+def kb_eternal() -> list:
+    return [
+        [{"text": "▶️ Starten",   "callback_data": "eternal:start"},
+         {"text": "⏹ Stoppen",   "callback_data": "eternal:stop"}],
+        [{"text": "↺ Restart",   "callback_data": "eternal:restart"},
+         {"text": "📊 Status",   "callback_data": "eternal:status"}],
+        [{"text": "📋 Logs",     "callback_data": "eternal:logs"}],
+        [{"text": "◀️ Hauptmenü","callback_data": "menu:main"}],
+    ]
+
+def kb_kivo() -> list:
+    return [
+        [{"text": "▶️ Starten",   "callback_data": "kivo:start"},
+         {"text": "⏹ Stoppen",   "callback_data": "kivo:stop"}],
+        [{"text": "↺ Restart",   "callback_data": "kivo:restart"},
+         {"text": "📊 Status",   "callback_data": "kivo:status"}],
+        [{"text": "📋 Logs",     "callback_data": "kivo:logs"}],
+        [{"text": "◀️ Hauptmenü","callback_data": "menu:main"}],
+    ]
+
+def kb_railway() -> list:
+    return [
+        [{"text": "🌐 Status prüfen",  "callback_data": "railway:status"},
+         {"text": "🔄 Health-Check",   "callback_data": "railway:health"}],
+        [{"text": "📋 Logs (Railway)", "callback_data": "railway:logs"}],
+        [{"text": "◀️ Hauptmenü",      "callback_data": "menu:main"}],
     ]
 
 
@@ -365,6 +403,73 @@ def _pm2_status() -> str:
         return f"PM2 Fehler: {e}"
 
 
+def _external_service_control(name: str, script_path: Path, log_path: str,
+                               action: str) -> str:
+    """Generischer Start/Stop/Status für externe Python-Services."""
+    pattern = script_path.name
+    if action == "status":
+        try:
+            r = subprocess.run(["pgrep", "-f", pattern], capture_output=True, text=True)
+            running = r.returncode == 0 and bool(r.stdout.strip())
+            pid = r.stdout.strip().split("\n")[0] if running else "-"
+            return (f"{'🟢' if running else '🔴'} <b>{name}</b>\n"
+                    f"Status: {'Läuft' if running else 'Gestoppt'}"
+                    + (f" (PID {pid})" if running else "")
+                    + f"\nPfad: <code>{script_path.parent}</code>"
+                    + ("" if script_path.parent.exists() else "\n⚠️ Verzeichnis nicht gefunden"))
+        except Exception as e:
+            return f"❌ Status-Fehler: {e}"
+
+    elif action == "start":
+        if not script_path.exists():
+            return f"❌ {name}: Skript nicht gefunden\n<code>{script_path}</code>"
+        try:
+            r = subprocess.run(["pgrep", "-f", pattern], capture_output=True)
+            if r.returncode == 0 and r.stdout.strip():
+                return f"ℹ️ {name} läuft bereits"
+            with open(log_path, "a") as lf:
+                subprocess.Popen([sys.executable, str(script_path)],
+                                 stdout=lf, stderr=lf, start_new_session=True,
+                                 cwd=str(script_path.parent))
+            return f"▶️ {name} gestartet"
+        except Exception as e:
+            return f"❌ Start-Fehler: {e}"
+
+    elif action == "stop":
+        try:
+            r = subprocess.run(["pkill", "-f", pattern], capture_output=True)
+            return f"⏹ {name} {'gestoppt' if r.returncode == 0 else 'war nicht aktiv'}"
+        except Exception as e:
+            return f"❌ Stop-Fehler: {e}"
+
+    elif action == "restart":
+        stop_msg = _external_service_control(name, script_path, log_path, "stop")
+        time.sleep(1)
+        start_msg = _external_service_control(name, script_path, log_path, "start")
+        return f"{stop_msg}\n{start_msg}"
+
+    elif action == "logs":
+        return f"📋 {name} Logs:\n<pre>{_get_log_tail(log_path, 20)}</pre>"
+
+    return f"Unbekannte Aktion: {action}"
+
+
+def _railway_status() -> str:
+    """Prüft Railway Shopify AI Suite Verfügbarkeit."""
+    lines = [f"🛍️ <b>Shopify AI Suite (Railway)</b>", f"URL: {_SHOPIFY_SUITE_URL}", ""]
+    try:
+        r = urllib.request.urlopen(f"{_SHOPIFY_SUITE_URL}/health", timeout=8)
+        data = json.loads(r.read())
+        lines.append(f"🟢 Online — Status: {data.get('status', 'ok')}")
+        if data.get("version"):
+            lines.append(f"Version: {data['version']}")
+    except urllib.error.HTTPError as e:
+        lines.append(f"🟡 HTTP {e.code} — Service antwortet")
+    except Exception as e:
+        lines.append(f"🔴 Nicht erreichbar: {type(e).__name__}")
+    return "\n".join(lines)
+
+
 def _shopify_status() -> str:
     d = _call_dashboard("/api/shopify/status")
     if not d:
@@ -429,6 +534,20 @@ def handle_callback(data: str, chat_id: str, message_id: int,
                     f"Ändern: in .env setzen\n"
                     f"OLLAMA_FAST_MODEL=modell:latest")
             edit_message(chat_id, message_id, text, kb_back())
+        elif param == "eternal":
+            status = _external_service_control(
+                "RudiBot Eternal",
+                _ETERNAL_DIR / "eternal_immortal_bot.py",
+                "/tmp/rudibot-eternal.log", "status")
+            edit_message(chat_id, message_id, status, kb_eternal())
+        elif param == "kivo":
+            status = _external_service_control(
+                "KIVO Voice",
+                _KIVO_DIR / "kivo.py",
+                "/tmp/kivo.log", "status")
+            edit_message(chat_id, message_id, status, kb_kivo())
+        elif param == "railway":
+            edit_message(chat_id, message_id, _railway_status(), kb_railway())
 
     # ── Army Actions ─────────────────────────────────────────────────────────
     elif action == "army":
@@ -505,6 +624,41 @@ def handle_callback(data: str, chat_id: str, message_id: int,
             edit_message(chat_id, message_id, _pm2_status(), kb_actions())
         elif param == "health":
             edit_message(chat_id, message_id, _get_system_status(), kb_actions())
+
+    # ── RudiBot Eternal ──────────────────────────────────────────────────────
+    elif action == "eternal":
+        script = _ETERNAL_DIR / "eternal_immortal_bot.py"
+        msg = _external_service_control("RudiBot Eternal", script,
+                                        "/tmp/rudibot-eternal.log", param)
+        edit_message(chat_id, message_id, msg, kb_eternal())
+
+    # ── KIVO Voice ───────────────────────────────────────────────────────────
+    elif action == "kivo":
+        script = _KIVO_DIR / "kivo.py"
+        msg = _external_service_control("KIVO Voice", script,
+                                        "/tmp/kivo.log", param)
+        edit_message(chat_id, message_id, msg, kb_kivo())
+
+    # ── Railway Shopify AI Suite ─────────────────────────────────────────────
+    elif action == "railway":
+        if param == "status":
+            edit_message(chat_id, message_id, _railway_status(), kb_railway())
+        elif param == "health":
+            try:
+                r = urllib.request.urlopen(
+                    f"{_SHOPIFY_SUITE_URL}/health", timeout=8)
+                body = r.read().decode()[:500]
+                edit_message(chat_id, message_id,
+                             f"🏥 <b>Railway Health</b>\n<pre>{body}</pre>",
+                             kb_railway())
+            except Exception as e:
+                edit_message(chat_id, message_id,
+                             f"❌ Health-Check fehlgeschlagen: {e}", kb_railway())
+        elif param == "logs":
+            edit_message(chat_id, message_id,
+                         f"ℹ️ Railway Logs sind nur im Railway Dashboard verfügbar:\n"
+                         f"<code>railway logs</code> (CLI)\n"
+                         f"Oder: {_SHOPIFY_SUITE_URL}/logs", kb_railway())
 
 
 def send_main_menu(chat_id: str) -> None:
