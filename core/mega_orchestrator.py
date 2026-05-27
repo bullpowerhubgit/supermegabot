@@ -30,6 +30,15 @@ LOGS_DIR = BASE_DIR / "logs"
 DATA_DIR.mkdir(exist_ok=True)
 LOGS_DIR.mkdir(exist_ok=True)
 
+# Guardian Integration
+GUARDIAN_AVAILABLE = False
+try:
+    sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+    from guardian_integration import guardian
+    GUARDIAN_AVAILABLE = True
+except ImportError:
+    pass
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
@@ -39,6 +48,12 @@ logging.basicConfig(
     ],
 )
 log = logging.getLogger("MegaOrchestrator")
+
+# Guardian Status melden
+if GUARDIAN_AVAILABLE:
+    log.info("✅ Guardian Integration loaded")
+else:
+    log.warning("⚠️ Guardian Integration not available")
 
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -433,6 +448,21 @@ class CommandRouter:
             "/micro_status": self._cmd_micro,
             "/micro_ping": self._cmd_micro,
             "/army_micro": self._cmd_micro,
+            # Guardian / Eternal
+            "/guardian": self._cmd_guardian,
+            "/guardian_status": self._cmd_guardian,
+            "/guardian_health": self._cmd_guardian,
+            "/guardian_services": self._cmd_guardian,
+            "/guardian_agents": self._cmd_guardian,
+            "/guardian_brain": self._cmd_guardian,
+            "/guardian_heal": self._cmd_guardian,
+            "/guardian_backup": self._cmd_guardian,
+            "/guardian_restore": self._cmd_guardian,
+            "/guardian_backups": self._cmd_guardian,
+            "/eternal": self._cmd_guardian,
+            "/eternal_status": self._cmd_guardian,
+            "guardian": self._cmd_guardian,
+            "eternal": self._cmd_guardian,
             # Hub Hilfe
             "/hub_hilfe": self._cmd_hub,
             "/hub_help": self._cmd_hub,
@@ -668,6 +698,119 @@ class CommandRouter:
         except Exception as e:
             return f"Micro Status Fehler: {e}"
 
+    async def _cmd_guardian(self, text: str, session_id: str) -> str:
+        """Guardian/Eternal API Commands"""
+        try:
+            if not self.bot.guardian:
+                return "⚠️ Guardian API nicht verfügbar. API läuft auf Port 3201?"
+            
+            cmd = text.strip().lower()
+            
+            # Health check
+            if any(x in cmd for x in ["health", "status", "guardian", "eternal"]):
+                health = self.bot.guardian.health()
+                status_icon = "🟢" if health.get('status') == 'healthy' else "🔴"
+                return f"{status_icon} Guardian Health: {health.get('status', 'unknown')}\n🕐 {health.get('timestamp', 'N/A')[:19]}"
+            
+            # Services
+            if "services" in cmd or "service" in cmd:
+                status = self.bot.guardian.status()
+                services = status.get('services', [])
+                lines = ["📋 Guardian Services:\n"]
+                for svc in services:
+                    icon = "🟢" if svc['healthy'] else "🔴"
+                    crit = " [CRITICAL]" if svc.get('critical') else ""
+                    lines.append(f"{icon} {svc['name']} (Port {svc['port']}){crit}")
+                lines.append(f"\nOverall: {status.get('overall_health', 'unknown')}")
+                return "\n".join(lines)
+            
+            # Agents
+            if "agents" in cmd or "agent" in cmd:
+                agents = self.bot.guardian.list_agents()
+                if not agents:
+                    return "🤖 Keine Agenten registriert"
+                lines = [f"🤖 Registrierte Agenten ({len(agents)}):\n"]
+                for agent in agents[:10]:  # Max 10
+                    last = agent.get('last_seen', 'never')[:16] if agent.get('last_seen') else 'never'
+                    lines.append(f"• {agent['agent_id'][:25]} ({agent['type']}) - {last}")
+                return "\n".join(lines)
+            
+            # Brain
+            if "brain" in cmd:
+                brain = self.bot.guardian.brain_summary()
+                return (
+                    f"🧠 Guardian Brain:\n"
+                    f"  Patterns: {brain.get('patterns_learned', 0)}\n"
+                    f"  Repairs: {brain.get('total_repairs', 0)}\n"
+                    f"  Permanently resolved: {brain.get('permanently_resolved', 0)}"
+                )
+            
+            # Heal service
+            if "heal" in cmd:
+                # Extract service name if provided
+                parts = text.split()
+                service_name = "rudibot_main"
+                for i, p in enumerate(parts):
+                    if p in ["heal", "heilen"] and i + 1 < len(parts):
+                        service_name = parts[i + 1]
+                        break
+                result = self.bot.guardian.heal_service(service_name)
+                if result.get('healed'):
+                    return f"✅ Service {service_name} wurde geheilt"
+                return f"⚠️ Heilen von {service_name} fehlgeschlagen oder nicht nötig"
+            
+            # Backup
+            if "backup" in cmd:
+                result = self.bot.guardian.create_backup()
+                if result.get('results'):
+                    return f"✅ Backup erstellt: {len(result['results'])} Projekte"
+                return f"⚠️ Backup fehlgeschlagen: {result.get('error', 'unknown')}"
+            
+            # Restore
+            if "restore" in cmd:
+                # Extract project name and optional date
+                parts = text.split()
+                project = None
+                date = None
+                for i, p in enumerate(parts):
+                    if p in ["restore", "wiederherstellen"]:
+                        if i + 1 < len(parts):
+                            project = parts[i + 1]
+                        if i + 2 < len(parts):
+                            date = parts[i + 2]
+                        break
+                if not project:
+                    return "⚠️ Usage: /guardian_restore <project> [YYYY-MM-DD]\nBeispiel: /guardian_restore supermegabot"
+                result = self.bot.guardian.restore_project(project, date)
+                if result.get('success'):
+                    return f"✅ {project} von {result.get('from', 'backup')} wiederhergestellt"
+                return f"⚠️ Restore fehlgeschlagen: {result.get('error', 'unknown')}"
+            
+            # List backups
+            if "backups" in cmd:
+                backups = self.bot.guardian.list_backups()
+                if backups:
+                    lines = [f"💾 Verfügbare Backups ({len(backups)}):"]
+                    for b in backups[:10]:
+                        lines.append(f"  • {b}")
+                    return "\n".join(lines)
+                return "⚠️ Keine Backups gefunden"
+            
+            # Default: show all info
+            return (
+                "🤖 Guardian Commands:\n"
+                "  /guardian_health - Health Status\n"
+                "  /guardian_services - Alle Services\n"
+                "  /guardian_agents - Registrierte Agenten\n"
+                "  /guardian_brain - Brain Stats\n"
+                "  /guardian_heal [service] - Service heilen\n"
+                "  /guardian_backup - Backup erstellen\n"
+                "  /guardian_restore <projekt> [datum] - Restore\n"
+                "  /guardian_backups - Liste Backups"
+            )
+        except Exception as e:
+            return f"Guardian Fehler: {e}"
+
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle:
 
@@ -733,6 +876,17 @@ class CommandRouter:
     /micro            - Status aller 5 Micro Bots
     /micro_status     - Ping, Revenue, Backup, Clean, AI
 
+  🛡️ GUARDIAN (RudiBot Eternal):
+    /guardian         - Guardian Status
+    /guardian_health  - Health Check
+    /guardian_services - Alle Services
+    /guardian_agents  - Registrierte Agenten
+    /guardian_brain   - Brain Statistiken
+    /guardian_heal [svc] - Service heilen
+    /guardian_backup  - Backup erstellen
+    /guardian_restore <proj> [datum] - Restore
+    /guardian_backups - Liste alle Backups
+
   Kosten: 95% lokal (Ollama), 5% externe APIs"""
 
     async def _cmd_start(self, text, session_id) -> str:
@@ -746,7 +900,8 @@ class CommandRouter:
             "✓ Browser Automation\n"
             "✓ Trading Bot\n"
             "✓ Self-Healing\n"
-            "✓ Persistentes Gedächtnis"
+            "✓ Persistentes Gedächtnis\n"
+            "✓ Guardian API (RudiBot Eternal)"
         )
 
 
@@ -779,7 +934,23 @@ class MegaOrchestrator:
         self.healer = SelfHealingEngine(self.memory, self.ai)
         self.router = CommandRouter(self)
         self.running = True
+        
+        # Guardian Integration
+        self.guardian = None
+        self._init_guardian()
+        
         log.info("MegaOrchestrator initialized")
+    
+    def _init_guardian(self):
+        """Initialize Guardian API client"""
+        try:
+            sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+            from guardian_client import GuardianClient
+            self.guardian = GuardianClient()
+            log.info("Guardian API client initialized")
+        except Exception as e:
+            log.warning(f"Guardian client not available: {e}")
+            self.guardian = None
 
     async def start(self):
         log.info("Starting SuperMegaBot...")
@@ -790,11 +961,26 @@ class MegaOrchestrator:
             log.info(f"Ollama OK - Models: {self.ai.available_models}")
         else:
             log.warning("Ollama offline - will retry in background")
+        
+        # Register with Guardian
+        if self.guardian:
+            try:
+                self.guardian.register_agent(
+                    agent_id="supermegabot-core",
+                    agent_type="orchestrator",
+                    endpoint="http://localhost:3200"
+                )
+                self.guardian.notify("🚀 SuperMegaBot Orchestrator gestartet!")
+                log.info("Registered with Guardian API")
+            except Exception as e:
+                log.warning(f"Guardian registration failed: {e}")
 
         # Start health monitor
         asyncio.create_task(self._health_loop())
         # Start Telegram polling
         asyncio.create_task(self._telegram_polling_loop())
+        # Start Guardian monitor
+        asyncio.create_task(self._guardian_monitor_loop())
 
         log.info("SuperMegaBot is RUNNING")
         await send_telegram("SuperMegaBot gestartet! Tippe /help")
@@ -814,6 +1000,17 @@ class MegaOrchestrator:
             return result
         except Exception as e:
             log.error(f"Process error: {e}")
+            
+            # Notify Guardian about error
+            if self.guardian:
+                try:
+                    self.guardian.notify(
+                        f"🔴 SuperMegaBot Fehler: {type(e).__name__}: {str(e)[:150]}",
+                        priority="high"
+                    )
+                except:
+                    pass
+            
             repair = await self.healer.heal(e, f"processing command: {text[:100]}")
             if repair["success"]:
                 return await self.router.route(text, session_id)
@@ -830,6 +1027,40 @@ class MegaOrchestrator:
                     subprocess.Popen(["ollama", "serve"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             except Exception as e:
                 log.error(f"Health loop error: {e}")
+
+    async def _guardian_monitor_loop(self):
+        """Monitor Guardian API health and services"""
+        while self.running:
+            try:
+                await asyncio.sleep(300)  # Check every 5 minutes
+                
+                if not self.guardian:
+                    continue
+                
+                # Check Guardian health
+                health = self.guardian.health()
+                if health.get('status') != 'healthy':
+                    log.warning(f"Guardian not healthy: {health}")
+                    continue
+                
+                # Check all services
+                status = self.guardian.status()
+                services = status.get('services', [])
+                
+                for svc in services:
+                    if not svc['healthy'] and svc.get('critical', False):
+                        log.error(f"Critical service down: {svc['name']}")
+                        # Auto-heal critical services
+                        self.guardian.heal_service(svc['name'])
+                        self.guardian.notify(
+                            f"🔴 Auto-heal triggered for {svc['name']}",
+                            priority="high"
+                        )
+                
+                log.info(f"Guardian monitor: {len([s for s in services if s['healthy']])}/{len(services)} services healthy")
+                
+            except Exception as e:
+                log.error(f"Guardian monitor error: {e}")
 
     async def _telegram_polling_loop(self):
         if not TELEGRAM_TOKEN:

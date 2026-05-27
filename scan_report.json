@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-05-27T16:18:42.849838",
+  "timestamp": "2026-05-27T19:51:12.062066",
   "fix_mode": false,
   "syntax": {
-    "ok": 36,
+    "ok": 44,
     "errors": []
   },
   "imports": {
-    "ok": 24,
+    "ok": 27,
     "errors": []
   },
   "api": {
@@ -95,10 +95,34 @@
   "patterns": {
     "findings": [
       {
-        "file": "deep_scan_repair.py",
-        "line": 57,
-        "issue": "os.system() usage",
-        "snippet": "\"os_system\":        (r\"os\\.system\\(\",   \"os.system() usage\"),"
+        "file": "bot_integrator.py",
+        "line": 47,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "bot_integrator.py",
+        "line": 207,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "bot_integrator.py",
+        "line": 216,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "core/mega_orchestrator.py",
+        "line": 960,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "guardian_client.py",
+        "line": 54,
+        "issue": "possible hardcoded credential",
+        "snippet": "\"1. export GUARDIAN_API_SECRET='dein-secret'\\n\""
       }
     ]
   },

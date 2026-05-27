@@ -9,8 +9,29 @@ import json
 import sys
 import urllib.request
 import urllib.error
+import hashlib
+import os
 
 BASE_URL = "http://localhost:8888"
+GUARDIAN_URL = "http://localhost:3201"
+
+# Guardian API Key aus Umgebung laden
+GUARDIAN_SECRET = os.getenv('GUARDIAN_API_SECRET', '')
+GUARDIAN_API_KEY = hashlib.sha256(GUARDIAN_SECRET.encode()).hexdigest()[:32] if GUARDIAN_SECRET else ''
+
+def guardian_api_call(method, path, body=None):
+    """Call Guardian API with authentication"""
+    url = GUARDIAN_URL + path
+    headers = {"Content-Type": "application/json", "X-API-Key": GUARDIAN_API_KEY}
+    data = json.dumps(body).encode() if body else None
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return json.loads(resp.read().decode())
+    except urllib.error.HTTPError as e:
+        return {"error": f"HTTP {e.code}", "detail": e.read().decode()[:200]}
+    except Exception as e:
+        return {"error": str(e), "guardian": "unavailable"}
 
 
 def api_call(method, path, body=None):
@@ -132,6 +153,76 @@ def send_tools_list():
             "name": "run_backup",
             "description": "Trigger a system backup",
             "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "guardian_health",
+            "description": "Check Guardian API health status",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "guardian_status",
+            "description": "Get full Guardian system status with all services",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "guardian_services",
+            "description": "List all services monitored by Guardian",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "guardian_heal",
+            "description": "Heal/restart a service via Guardian",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "service": {"type": "string", "description": "Service name to heal (e.g., rudibot_main, ollama)"}
+                },
+                "required": ["service"]
+            }
+        },
+        {
+            "name": "guardian_agents",
+            "description": "List all registered Guardian agents",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "guardian_notify",
+            "description": "Send notification via Guardian to all channels",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "message": {"type": "string", "description": "Message to send"},
+                    "priority": {"type": "string", "enum": ["normal", "high", "critical"], "default": "normal"}
+                },
+                "required": ["message"]
+            }
+        },
+        {
+            "name": "guardian_brain",
+            "description": "Get Guardian brain statistics (learned patterns)",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "guardian_backup",
+            "description": "Trigger manual backup of all projects",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "guardian_backups_list",
+            "description": "List all available backup dates",
+            "inputSchema": {"type": "object", "properties": {}}
+        },
+        {
+            "name": "guardian_restore",
+            "description": "Restore project from backup",
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "project": {"type": "string", "description": "Project name (e.g., supermegabot, telegram-automation-bot)"},
+                    "date": {"type": "string", "description": "Backup date YYYY-MM-DD (optional, uses latest if not specified)"}
+                },
+                "required": ["project"]
+            }
         }
     ]
     send_message({"jsonrpc": "2.0", "id": req_id, "result": {"tools": tools}})
@@ -164,6 +255,34 @@ def handle_tool_call(name, args):
         return api_call("GET", "/api/shopify/status")
     elif name == "run_backup":
         return api_call("POST", "/api/backup/run")
+    # Guardian Tools
+    elif name == "guardian_health":
+        return guardian_api_call("GET", "/api/v1/health")
+    elif name == "guardian_status":
+        return guardian_api_call("GET", "/api/v1/status")
+    elif name == "guardian_services":
+        status = guardian_api_call("GET", "/api/v1/status")
+        return {"services": status.get("services", []), "overall": status.get("overall_health")}
+    elif name == "guardian_heal":
+        return guardian_api_call("POST", "/api/v1/services/heal", {"service": args["service"]})
+    elif name == "guardian_agents":
+        return guardian_api_call("GET", "/api/v1/agents")
+    elif name == "guardian_notify":
+        return guardian_api_call("POST", "/api/v1/notify", {
+            "message": args["message"],
+            "priority": args.get("priority", "normal")
+        })
+    elif name == "guardian_brain":
+        return guardian_api_call("GET", "/api/v1/brain/summary")
+    elif name == "guardian_backup":
+        return guardian_api_call("POST", "/api/v1/backup")
+    elif name == "guardian_backups_list":
+        return guardian_api_call("GET", "/api/v1/backups")
+    elif name == "guardian_restore":
+        return guardian_api_call("POST", "/api/v1/restore", {
+            "project": args["project"],
+            "date": args.get("date")
+        })
     return {"error": "Unknown tool"}
 
 
@@ -188,7 +307,7 @@ async def main():
                 "result": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "supermegabot-mcp", "version": "1.0.0"}
+                    "serverInfo": {"name": "supermegabot-mcp-guardian", "version": "1.1.0"}
                 }
             })
         elif msg.get("method") == "tools/list":
