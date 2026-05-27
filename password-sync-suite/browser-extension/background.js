@@ -57,7 +57,16 @@ async function performSync() {
 
 async function getPasswordForDomain(domain) {
   const { passwords = [] } = await chrome.storage.local.get('passwords');
-  return passwords.filter(p => p.url.includes(domain));
+  return passwords.filter(p => {
+    try {
+      const urlObj = new URL(p.url.startsWith('http') ? p.url : 'https://' + p.url);
+      // Match exact hostname or eTLD+1 (e.g. google.com matches accounts.google.com)
+      const pwHost = urlObj.hostname;
+      return pwHost === domain || pwHost.endsWith('.' + domain) || domain.endsWith('.' + pwHost);
+    } catch {
+      return p.url.includes(domain);
+    }
+  });
 }
 
 async function getClientId() {
