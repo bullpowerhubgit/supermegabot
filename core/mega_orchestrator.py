@@ -812,7 +812,7 @@ class MegaOrchestrator:
             conn = sqlite3.connect(DATA_DIR / "memory.db")
             conn.execute(
                 "INSERT INTO task_history (task,result,duration_ms,timestamp) VALUES (?,?,?,?)",
-                (text[:200], result[:500], ms, datetime.now().isoformat()),
+                (text[:2000], result[:4000], ms, datetime.now().isoformat()),
             )
             conn.commit()
             conn.close()
