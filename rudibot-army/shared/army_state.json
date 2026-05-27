@@ -23,7 +23,7 @@
         "Redis": true,
         "OpenClaw": true
       },
-      "ts": "2026-05-27 14:29:57"
+      "ts": "2026-05-27 21:34:00"
     },
     "security": {
       "status": "ok",
@@ -35,7 +35,7 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-05-27 14:29:36"
+      "ts": "2026-05-27 21:33:35"
     },
     "micro_ping": {
       "status": "ok",
@@ -43,7 +43,7 @@
       "data": {
         "down": []
       },
-      "ts": "2026-05-27 14:29:42"
+      "ts": "2026-05-27 21:33:37"
     },
     "optimizer": {
       "status": "ok",
@@ -107,26 +107,6 @@
     }
   },
   "events": [
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "14:10:35"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 4/5 OK",
-      "ts": "14:10:37"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 4/5 OK",
-      "ts": "14:11:02"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "14:11:05"
-    },
     {
       "agent": "monitor",
       "msg": "Services: 4/5 OK",
@@ -1106,6 +1086,26 @@
       "agent": "finance",
       "msg": "Finance: \u20ac0.00 heute | \u20ac0.00 gesamt",
       "ts": "14:30:03"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "21:33:30"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "21:33:35"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "6/6 Services UP",
+      "ts": "21:33:37"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 5/5 OK",
+      "ts": "21:34:00"
     }
   ],
   "fixes": [],
