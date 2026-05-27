@@ -47,7 +47,7 @@ def clean_logs() -> tuple:
                 saved = size_mb - (os.path.getsize(path) / 1_048_576)
                 total_saved_mb += saved
                 cleaned.append(f"{os.path.basename(path)}: {size_mb:.0f}MB→{KEEP_LINES} Zeilen")
-        except:
+        except OSError:
             pass
 
     # /tmp alte .log Dateien (>7 Tage) löschen
@@ -66,7 +66,7 @@ def clean_logs() -> tuple:
                 with open(path, "w") as f:
                     f.writelines(lines)
                 cleaned.append(f"army/{os.path.basename(path)}: rotiert")
-        except:
+        except OSError:
             pass
 
     return cleaned, total_saved_mb

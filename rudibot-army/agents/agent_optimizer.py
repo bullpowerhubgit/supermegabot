@@ -45,10 +45,13 @@ def analyze_performance():
         try:
             size_mb = os.path.getsize(logfile) / 1048576
             if size_mb > 50:
-                content = open(logfile, errors="ignore").readlines()[-5000:]
-                open(logfile, "w").writelines(content)
+                with open(logfile, errors="ignore") as f:
+                    content = f.readlines()[-5000:]
+                with open(logfile, "w") as f:
+                    f.writelines(content)
                 suggestions.append(f"Log rotiert: {os.path.basename(logfile)} ({size_mb:.0f}MB → 5000 Zeilen)")
-        except: pass
+        except OSError:
+            pass
     
     return issues, suggestions, {
         "ram_percent": mem.percent,

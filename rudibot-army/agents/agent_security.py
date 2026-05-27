@@ -19,7 +19,7 @@ def check_vpn():
         connected = "connected" in r.stdout.lower()
         location = r.stdout.strip()
         return connected, location
-    except:
+    except Exception:
         return None, "Mullvad nicht installiert/erreichbar"
 
 def check_api_keys():
@@ -35,10 +35,12 @@ def check_api_keys():
 def check_failed_logins():
     """Prüft Bot-Logs auf verdächtige Aktivität"""
     try:
-        log = open("/tmp/bot-full.log", errors="ignore").read()[-5000:]
+        with open("/tmp/bot-full.log", errors="ignore") as f:
+            log = f.read()[-5000:]
         suspicious = log.count("Unauthorized") + log.count("403") + log.count("blocked")
         return suspicious
-    except: return 0
+    except Exception:
+        return 0
 
 def run():
     global WARNED_VPN, WARNED_KEYS

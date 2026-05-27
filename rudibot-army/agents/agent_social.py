@@ -18,7 +18,8 @@ def call_api(path, method="GET", body=None):
         if data: req.add_header("Content-Type","application/json")
         r = urllib.request.urlopen(req, timeout=15)
         return json.loads(r.read())
-    except: return {}
+    except Exception:
+        return {}
 
 def run():
     print(f"[{ID}] 📱 Social Agent gestartet")

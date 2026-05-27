@@ -26,7 +26,7 @@ def check_service(name, url):
     try:
         req = urllib.request.urlopen(url, timeout=5)
         return req.getcode() < 500
-    except:
+    except Exception:
         return False
 
 def run():

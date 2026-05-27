@@ -22,10 +22,12 @@ def check(port, url=None):
         try:
             urllib.request.urlopen(url, timeout=3)
             return True
-        except: pass
+        except Exception:
+            pass
     try:
         s = socket.socket(); s.settimeout(1); s.connect(("127.0.0.1", port)); s.close(); return True
-    except: return False
+    except Exception:
+        return False
 
 def fix_service(name, port):
     BOT_DIR = os.path.expanduser(

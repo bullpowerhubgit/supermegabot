@@ -15,7 +15,8 @@ DATA_FILE = ARMY_DIR / "shared" / "finance_cache.json"
 def load_cache():
     try:
         if DATA_FILE.exists(): return json.loads(DATA_FILE.read_text())
-    except: pass
+    except (json.JSONDecodeError, OSError):
+        pass
     return {"daily": {}, "alerts": [], "total_revenue": 0}
 
 def save_cache(d): DATA_FILE.write_text(json.dumps(d, indent=2, default=str))

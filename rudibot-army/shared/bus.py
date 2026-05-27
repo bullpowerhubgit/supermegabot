@@ -9,13 +9,15 @@ def load_state():
     try:
         if STATE_FILE.exists():
             return json.loads(STATE_FILE.read_text(errors='ignore'))
-    except: pass
+    except (json.JSONDecodeError, OSError):
+        pass
     return {"agents":{}, "events":[], "fixes":[], "stats":{}}
 
 def save_state(s):
     try:
         STATE_FILE.write_text(json.dumps(s, indent=2, default=str))
-    except: pass
+    except OSError:
+        pass
 
 def report(agent_id, status, message, data=None):
     try:
@@ -28,7 +30,8 @@ def report(agent_id, status, message, data=None):
         s["events"] = s["events"][-200:]
         save_state(s)
     except Exception:
-        pass
+        import logging
+        logging.getLogger('bus').warning('report failed', exc_info=True)
 
 def get_agents():
     return load_state().get("agents", {})
@@ -40,7 +43,8 @@ def get_env(key):
         for line in (BOT_DIR / ".env").read_text(errors='ignore').splitlines():
             if line.strip().startswith(key + "="):
                 return line.split("=",1)[1].strip()
-    except: pass
+    except OSError:
+        pass
     return None
 
 def notify_telegram(msg):
@@ -61,4 +65,5 @@ def notify_telegram(msg):
         req.add_header("Content-Type", "application/x-www-form-urlencoded")
         urllib.request.urlopen(req, timeout=8)
     except Exception:
-        pass
+        import logging
+        logging.getLogger('bus').warning('notify_telegram failed', exc_info=True)

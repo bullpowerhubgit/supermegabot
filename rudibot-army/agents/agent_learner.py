@@ -37,7 +37,8 @@ sl.learnNewSkill({json.dumps(description)}, {{name: {json.dumps(name)}}})
     try:
         result = subprocess.run(["node", "-e", script], cwd=BOT_DIR, capture_output=True, text=True, timeout=60)
         return json.loads(result.stdout) if result.stdout else {"success": False}
-    except: return {"success": False}
+    except Exception:
+        return {"success": False}
 
 def run():
     print(f"[{ID}] 🧠 Learner Agent gestartet")
@@ -60,7 +61,8 @@ def run():
             last_learn = today
             try:
                 LEARN_LOG.write_text(json.dumps({"date":str(today),"learned":results,"total":learned_count}))
-            except: pass
+            except OSError:
+                pass
         
         # Skills-Status reporten
         try:
@@ -71,7 +73,8 @@ def run():
                 "total_skills": total_skills, "learned_today": learned_count,
                 "last_learn": str(last_learn)
             })
-        except: pass
+        except Exception:
+            pass
         time.sleep(3600)  # stündlich prüfen
 
 if __name__ == "__main__":
