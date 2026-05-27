@@ -7,8 +7,18 @@
 ╚══════════════════════════════════════════════════════════════════╝
 """
 
-import os, sys, json, time, logging, subprocess, datetime, signal, traceback
+import os, sys, json, time, logging, subprocess, datetime, signal, traceback, threading, hashlib, hmac
 from pathlib import Path
+from functools import wraps
+
+# Flask API Imports (optional, falls nicht installiert wird API deaktiviert)
+try:
+    from flask import Flask, request, jsonify, abort
+    from flask.views import MethodView
+    FLASK_AVAILABLE = True
+except ImportError:
+    FLASK_AVAILABLE = False
+    logging.warning("Flask nicht installiert - API wird deaktiviert. Installieren: pip install flask")
 
 BASE_DIR    = Path(__file__).parent
 BRAIN_FILE  = BASE_DIR / 'brain' / 'learned_fixes.json'
@@ -18,6 +28,7 @@ LOG_FILE    = BASE_DIR / 'logs' / 'eternal.log'
 LOCK_FILE   = BASE_DIR / '.running.lock'
 
 # ── Logging ──────────────────────────────────────────────────────────────────
+(BASE_DIR / 'logs').mkdir(parents=True, exist_ok=True)  # Ordner sicherstellen vor FileHandler
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
@@ -42,6 +53,24 @@ def save_json(path, data):
         Path(path).write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str))
     except Exception as e:
         log.error(f'save_json {path}: {e}')
+
+# ── API Configuration ────────────────────────────────────────────────────────
+API_CONFIG = {
+    'host': os.getenv('GUARDIAN_API_HOST', '0.0.0.0'),
+    'port': int(os.getenv('GUARDIAN_API_PORT', 3201)),
+    'secret_key': os.getenv('GUARDIAN_API_SECRET', 'rudibot-secret-key-change-in-production'),
+    'webhook_secret': os.getenv('GUARDIAN_WEBHOOK_SECRET', 'webhook-secret-change-me'),
+    'auth_enabled': os.getenv('GUARDIAN_API_AUTH', 'true').lower() == 'true',
+}
+
+# ── Discord/Slack Webhook URLs ─────────────────────────────────────────────
+NOTIFICATION_CONFIG = {
+    'telegram_enabled': True,
+    'discord_webhook': os.getenv('DISCORD_WEBHOOK_URL', ''),
+    'slack_webhook': os.getenv('SLACK_WEBHOOK_URL', ''),
+    'github_webhook_secret': os.getenv('GITHUB_WEBHOOK_SECRET', ''),
+    'prometheus_enabled': os.getenv('PROMETHEUS_ENABLED', 'true').lower() == 'true',
+}
 
 # ── Service Registry ─────────────────────────────────────────────────────────
 SERVICES = [
@@ -97,7 +126,7 @@ class Brain:
         if success:
             self.data['stats']['total_repairs'] += 1
             e['success_rate'] = min(100, e.get('success_rate', 0) + 10)
-            if e['count'] >= 3 and e['success_rate'] == 100:
+            if e['count'] >= 3 and e['success_rate'] >= 100:
                 e['resolved_permanently'] = True
                 if error_key not in self.data['stats']['never_recurring']:
                     self.data['stats']['never_recurring'].append(error_key)
@@ -124,12 +153,12 @@ brain = Brain()
 def check_port(port):
     import socket
     try:
-        s = socket.socket()
-        s.settimeout(2)
-        s.connect(('127.0.0.1', port))
-        s.close()
+        with socket.socket() as s:
+            s.settimeout(2)
+            s.connect(('127.0.0.1', port))
         return True
-    except: return False
+    except:
+        return False
 
 def check_http(url):
     import urllib.request, urllib.error
@@ -209,58 +238,57 @@ def start_service(svc):
         return False
 
 def heal_service(svc, attempt=1):
-    """Heilt einen fehlerhaften Dienst — versucht es bis es klappt."""
+    """Heilt einen fehlerhaften Dienst — versucht es bis es klappt (iterativ)."""
     name = svc['name']
     error_key = f'{name}_down'
+    MAX_ATTEMPTS = 5
 
-    if attempt > 5:
-        log.error(f'❌ {name}: Konnte nach 5 Versuchen nicht reparieren')
-        brain.record_error(name, error_key, 'manual_restart_needed', False)
-        return False
+    for attempt in range(1, MAX_ATTEMPTS + 1):
+        log.warning(f'🔴 {name} ist down (Versuch {attempt}/{MAX_ATTEMPTS})')
 
-    log.warning(f'🔴 {name} ist down (Versuch {attempt}/5)')
+        # Strategie je Versuch
+        if attempt >= 2:
+            log.info(f'  🔫 Beende Prozess auf Port {svc["port"]}')
+            kill_port(svc['port'])
+            time.sleep(2)
 
-    # Strategie je Versuch
-    if attempt >= 2:
-        log.info(f'  🔫 Beende Prozess auf Port {svc["port"]}')
-        kill_port(svc['port'])
-        time.sleep(2)
+        if attempt >= 3:
+            cmd = svc['start']
+            cmd0 = cmd[0] if isinstance(cmd, list) else cmd.split()[0]
+            if cmd0 in ('node', 'npm', 'npx'):
+                cwd = svc.get('cwd', '')
+                log.info(f'  🧹 Cleanup node_modules cache in {cwd}')
+                try:
+                    subprocess.run(['npm', 'cache', 'clean', '--force'],
+                        cwd=cwd, capture_output=True, timeout=30)
+                except Exception as e:
+                    log.debug(f'npm cache clean failed: {e}')
 
-    if attempt >= 3:
-        # Clear npm/node cache wenn Node-Dienst
-        cmd = svc['start']
-        cmd0 = cmd[0] if isinstance(cmd, list) else cmd.split()[0]
-        if cmd0 in ('node', 'npm', 'npx'):
+        if attempt >= 4:
             cwd = svc.get('cwd', '')
-            log.info(f'  🧹 Cleanup node_modules cache in {cwd}')
-            try:
-                subprocess.run(['npm', 'cache', 'clean', '--force'],
-                    cwd=cwd, capture_output=True, timeout=30)
-            except Exception as e:
-                log.debug(f'npm cache clean failed: {e}')
+            if cwd and Path(cwd).joinpath('package.json').exists():
+                log.info(f'  📦 npm install in {cwd}')
+                try:
+                    subprocess.run(['npm', 'install', '--omit=dev'],
+                        cwd=cwd, capture_output=True, timeout=120, env={
+                            **os.environ,
+                            'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + os.environ.get('PATH','')
+                        })
+                except: pass
 
-    if attempt >= 4:
-        # Reinstall dependencies
-        cwd = svc.get('cwd', '')
-        if cwd and Path(cwd).joinpath('package.json').exists():
-            log.info(f'  📦 npm install in {cwd}')
-            try:
-                subprocess.run(['npm', 'install', '--omit=dev'],
-                    cwd=cwd, capture_output=True, timeout=120, env={
-                        **os.environ,
-                        'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + os.environ.get('PATH','')
-                    })
-            except: pass
+        success = start_service(svc)
+        brain.record_error(name, error_key, f'restart_attempt_{attempt}', success)
 
-    success = start_service(svc)
-    brain.record_error(name, error_key, f'restart_attempt_{attempt}', success)
+        if success:
+            log.info(f'✅ {name} erfolgreich repariert nach {attempt} Versuch(en)')
+            return True
 
-    if not success:
-        time.sleep(5 * attempt)
-        return heal_service(svc, attempt + 1)
+        if attempt < MAX_ATTEMPTS:
+            time.sleep(5 * attempt)
 
-    log.info(f'✅ {name} erfolgreich repariert nach {attempt} Versuch(en)')
-    return True
+    log.error(f'❌ {name}: Konnte nach {MAX_ATTEMPTS} Versuchen nicht reparieren')
+    brain.record_error(name, error_key, 'manual_restart_needed', False)
+    return False
 
 # ── Self Improver: Verbessert sich täglich ────────────────────────────────────
 class SelfImprover:
@@ -322,7 +350,7 @@ class SelfImprover:
 
         # 3. Disk Space Check + Cleanup
         try:
-            result = subprocess.run(['df', '-h', '/'], capture_output=True, text=True)
+            result = subprocess.run(['df', '-Ph', '/'], capture_output=True, text=True)
             line = [l for l in result.stdout.splitlines() if '/dev/' in l]
             if line:
                 parts = line[0].split()
@@ -459,13 +487,14 @@ class BackupMaster:
         local_today.mkdir(parents=True, exist_ok=True)
 
         # iCloud backup dir
+        icloud_today = None  # vor try initialisieren um NameError zu vermeiden
+        icloud_ok = False
         try:
             self.ICLOUD_BACKUP.mkdir(parents=True, exist_ok=True)
             icloud_today = self.ICLOUD_BACKUP / today
             icloud_today.mkdir(parents=True, exist_ok=True)
             icloud_ok = True
         except (OSError, PermissionError) as e:
-            icloud_ok = False
             log.warning(f'⚠️  iCloud Backup nicht verfügbar ({e}) — nur lokal')
 
         for source in self.BACKUP_SOURCES:
@@ -549,10 +578,21 @@ class BackupMaster:
             p = Path(ep)
             if p.exists():
                 dest_name = p.parent.name + '_' + p.name
-                # Encrypt sensitive files (base64 obfuscation)
                 content = p.read_bytes()
-                import base64
-                (env_dir / (dest_name + '.b64')).write_bytes(base64.b64encode(content))
+                # Echte Verschlüsselung mit Fernet (AES-128-CBC + HMAC)
+                try:
+                    from cryptography.fernet import Fernet
+                    key_file = BASE_DIR / 'brain' / '.backup_key'
+                    if not key_file.exists():
+                        key_file.write_bytes(Fernet.generate_key())
+                        key_file.chmod(0o600)
+                    fernet = Fernet(key_file.read_bytes())
+                    encrypted = fernet.encrypt(content)
+                    (env_dir / (dest_name + '.enc')).write_bytes(encrypted)
+                except ImportError:
+                    import base64
+                    log.warning('⚠️  cryptography nicht installiert — verwende Base64 (unsicher!)')
+                    (env_dir / (dest_name + '.b64')).write_bytes(base64.b64encode(content))
                 backed_up += 1
 
         if icloud_dst:
@@ -616,6 +656,8 @@ class BackupMaster:
 # ── Telegram Notifier ─────────────────────────────────────────────────────────
 def notify_telegram(message, parse_mode='Markdown'):
     """Sendet eine Nachricht via Telegram Bot."""
+    if not NOTIFICATION_CONFIG['telegram_enabled']:
+        return False
     try:
         token = os.getenv('TELEGRAM_BOT_TOKEN') or _read_env_var('TELEGRAM_BOT_TOKEN')
         chat_id = os.getenv('AUTHORIZED_USER_ID') or _read_env_var('AUTHORIZED_USER_ID')
@@ -634,13 +676,551 @@ def notify_telegram(message, parse_mode='Markdown'):
         return True
     except: return False
 
+def notify_discord(message, embeds=None):
+    """Sendet eine Nachricht via Discord Webhook."""
+    webhook = NOTIFICATION_CONFIG.get('discord_webhook', '')
+    if not webhook:
+        return False
+    try:
+        import urllib.request
+        payload = {'content': message[:2000]}  # Discord limit
+        if embeds:
+            payload['embeds'] = embeds
+        data = json.dumps(payload).encode()
+        req = urllib.request.Request(webhook, data=data, method='POST')
+        req.add_header('Content-Type', 'application/json')
+        urllib.request.urlopen(req, timeout=10)
+        return True
+    except Exception as e:
+        log.debug(f'Discord notify failed: {e}')
+        return False
+
+def notify_slack(message, attachments=None):
+    """Sendet eine Nachricht via Slack Webhook."""
+    webhook = NOTIFICATION_CONFIG.get('slack_webhook', '')
+    if not webhook:
+        return False
+    try:
+        import urllib.request
+        payload = {'text': message[:4000]}  # Slack limit
+        if attachments:
+            payload['attachments'] = attachments
+        data = json.dumps(payload).encode()
+        req = urllib.request.Request(webhook, data=data, method='POST')
+        req.add_header('Content-Type', 'application/json')
+        urllib.request.urlopen(req, timeout=10)
+        return True
+    except Exception as e:
+        log.debug(f'Slack notify failed: {e}')
+        return False
+
+def notify_all(message, priority='normal'):
+    """Sendet Nachricht an alle konfigurierten Kanäle."""
+    results = {
+        'telegram': notify_telegram(message),
+        'discord': notify_discord(message),
+        'slack': notify_slack(message)
+    }
+    return results
+
+# ═══════════════════════════════════════════════════════════════════════════
+# ═══ REST API & Multi-Agent Integration ═══════════════════════════════════════
+# ═══════════════════════════════════════════════════════════════════════════
+
+class GuardianAPI:
+    """REST API für Guardian - Multi-Agent Integration & Remote Control"""
+    
+    def __init__(self):
+        self.app = Flask('GuardianAPI') if FLASK_AVAILABLE else None
+        self.api_thread = None
+        self.metrics_cache = {'data': {}, 'timestamp': 0}
+        self.webhook_handlers = {}
+        self._setup_routes()
+    
+    def require_auth(self, f):
+        """API Key Authentication Decorator"""
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            if not API_CONFIG['auth_enabled']:
+                return f(*args, **kwargs)
+            
+            auth_header = request.headers.get('X-API-Key', '')
+            expected = hashlib.sha256(API_CONFIG['secret_key'].encode()).hexdigest()[:32]
+            
+            if not hmac.compare_digest(auth_header, expected):
+                # Also check query param for webhooks
+                api_key = request.args.get('api_key', '')
+                if not hmac.compare_digest(api_key, expected):
+                    abort(401, 'Unauthorized - Invalid API Key')
+            return f(*args, **kwargs)
+        return decorated
+    
+    def _setup_routes(self):
+        """Alle API Endpunkte definieren"""
+        if not self.app:
+            return
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 1. STATUS & HEALTH ENDPUNKTE
+        # ═══════════════════════════════════════════════════════════════════
+        
+        @self.app.route('/api/v1/status', methods=['GET'])
+        @self.require_auth
+        def api_status():
+            """Gesamtstatus aller Services"""
+            services_status = []
+            for svc in SERVICES:
+                healthy = health_check_service(svc)
+                services_status.append({
+                    'name': svc['name'],
+                    'port': svc['port'],
+                    'healthy': healthy,
+                    'critical': svc.get('critical', False)
+                })
+            
+            return jsonify({
+                'guardian': 'running',
+                'timestamp': datetime.datetime.now().isoformat(),
+                'services': services_status,
+                'brain': brain.get_summary(),
+                'overall_health': 'healthy' if all(s['healthy'] for s in services_status if s['critical']) else 'degraded'
+            })
+        
+        @self.app.route('/api/v1/health', methods=['GET'])
+        def health_check():
+            """Einfacher Health Check (kein Auth für Load Balancer)"""
+            all_healthy = all(health_check_service(svc) for svc in SERVICES if svc.get('critical'))
+            status_code = 200 if all_healthy else 503
+            return jsonify({
+                'status': 'healthy' if all_healthy else 'unhealthy',
+                'timestamp': datetime.datetime.now().isoformat()
+            }), status_code
+        
+        @self.app.route('/api/v1/services', methods=['GET'])
+        @self.require_auth
+        def list_services():
+            """Alle konfigurierten Services auflisten"""
+            return jsonify({
+                'services': [
+                    {
+                        'name': s['name'],
+                        'port': s['port'],
+                        'url': s.get('url'),
+                        'critical': s.get('critical', False),
+                        'status': 'running' if health_check_service(s) else 'down',
+                        'cwd': s.get('cwd', ''),
+                        'start_command': s.get('start', [])
+                    } for s in SERVICES
+                ]
+            })
+        
+        @self.app.route('/api/v1/services/<service_name>/status', methods=['GET'])
+        @self.require_auth
+        def service_status(service_name):
+            """Status eines spezifischen Service"""
+            svc = next((s for s in SERVICES if s['name'].lower().replace(' ', '_') == service_name.lower()), None)
+            if not svc:
+                abort(404, 'Service not found')
+            
+            return jsonify({
+                'name': svc['name'],
+                'port': svc['port'],
+                'healthy': health_check_service(svc),
+                'critical': svc.get('critical', False),
+                'last_check': datetime.datetime.now().isoformat()
+            })
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 2. REMOTE CONTROL API - Services steuern
+        # ═══════════════════════════════════════════════════════════════════
+        
+        @self.app.route('/api/v1/services/<service_name>/start', methods=['POST'])
+        @self.require_auth
+        def start_service_api(service_name):
+            """Service manuell starten"""
+            svc = next((s for s in SERVICES if s['name'].lower().replace(' ', '_') == service_name.lower()), None)
+            if not svc:
+                abort(404, 'Service not found')
+            
+            success = start_service(svc)
+            msg = f"🔧 API: {svc['name']} {'gestartet ✅' if success else 'Start fehlgeschlagen ❌'}"
+            notify_all(msg, priority='high')
+            
+            return jsonify({
+                'success': success,
+                'service': svc['name'],
+                'action': 'start',
+                'timestamp': datetime.datetime.now().isoformat()
+            })
+        
+        @self.app.route('/api/v1/services/<service_name>/stop', methods=['POST'])
+        @self.require_auth
+        def stop_service_api(service_name):
+            """Service manuell stoppen (Port kill)"""
+            svc = next((s for s in SERVICES if s['name'].lower().replace(' ', '_') == service_name.lower()), None)
+            if not svc:
+                abort(404, 'Service not found')
+            
+            success = kill_port(svc['port'])
+            msg = f"🛑 API: {svc['name']} gestoppt {'✅' if success else '❌'}"
+            notify_all(msg, priority='high')
+            
+            return jsonify({
+                'success': success,
+                'service': svc['name'],
+                'action': 'stop',
+                'timestamp': datetime.datetime.now().isoformat()
+            })
+        
+        @self.app.route('/api/v1/services/<service_name>/restart', methods=['POST'])
+        @self.require_auth
+        def restart_service_api(service_name):
+            """Service restart (stop + start)"""
+            svc = next((s for s in SERVICES if s['name'].lower().replace(' ', '_') == service_name.lower()), None)
+            if not svc:
+                abort(404, 'Service not found')
+            
+            # Stop
+            kill_port(svc['port'])
+            time.sleep(2)
+            # Start
+            success = start_service(svc)
+            
+            msg = f"🔄 API: {svc['name']} restart {'✅' if success else '❌'}"
+            notify_all(msg, priority='high')
+            
+            return jsonify({
+                'success': success,
+                'service': svc['name'],
+                'action': 'restart',
+                'timestamp': datetime.datetime.now().isoformat()
+            })
+        
+        @self.app.route('/api/v1/services/<service_name>/heal', methods=['POST'])
+        @self.require_auth
+        def heal_service_api(service_name):
+            """Service mit vollem Heal-Prozess reparieren"""
+            svc = next((s for s in SERVICES if s['name'].lower().replace(' ', '_') == service_name.lower()), None)
+            if not svc:
+                abort(404, 'Service not found')
+            
+            if health_check_service(svc):
+                return jsonify({'success': True, 'message': 'Service already healthy', 'service': svc['name']})
+            
+            success = heal_service(svc)
+            return jsonify({
+                'success': success,
+                'service': svc['name'],
+                'action': 'heal',
+                'timestamp': datetime.datetime.now().isoformat()
+            })
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 3. BRAIN API - Gelerntes Wissen
+        # ═══════════════════════════════════════════════════════════════════
+        
+        @self.app.route('/api/v1/brain', methods=['GET'])
+        @self.require_auth
+        def brain_summary():
+            """Brain Summary - gelernte Muster"""
+            return jsonify(brain.get_summary())
+        
+        @self.app.route('/api/v1/brain/fixes', methods=['GET'])
+        @self.require_auth
+        def brain_fixes():
+            """Alle gelernten Fixes abrufen"""
+            return jsonify({
+                'fixes': brain.data.get('fixes', {}),
+                'stats': brain.data.get('stats', {}),
+                'patterns_learned': len(brain.data.get('fixes', {}))
+            })
+        
+        @self.app.route('/api/v1/brain/fixes/<error_key>', methods=['GET'])
+        @self.require_auth
+        def get_fix(error_key):
+            """Spezifischen Fix abrufen"""
+            fix = brain.get_known_fix(error_key)
+            if not fix:
+                abort(404, 'Fix not found')
+            return jsonify({
+                'error_key': error_key,
+                'fix': fix,
+                'permanently_resolved': brain.is_permanently_resolved(error_key)
+            })
+        
+        @self.app.route('/api/v1/brain/fixes', methods=['POST'])
+        @self.require_auth
+        def add_fix():
+            """Neuen Fix manuell hinzufügen"""
+            data = request.get_json() or {}
+            error_key = data.get('error_key')
+            service = data.get('service', 'manual')
+            fix = data.get('fix')
+            
+            if not error_key or not fix:
+                abort(400, 'error_key and fix required')
+            
+            brain.record_error(service, error_key, fix, data.get('success', True))
+            return jsonify({
+                'success': True,
+                'error_key': error_key,
+                'message': 'Fix recorded'
+            }), 201
+        
+        @self.app.route('/api/v1/brain/patterns', methods=['GET'])
+        @self.require_auth
+        def brain_patterns():
+            """Erkannte Fehler-Muster"""
+            return jsonify(brain.data.get('patterns', {}))
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 4. PROMETHEUS METRICS - Für Grafana
+        # ═══════════════════════════════════════════════════════════════════
+        
+        @self.app.route('/metrics', methods=['GET'])
+        def prometheus_metrics():
+            """Prometheus-kompatible Metrics"""
+            if not NOTIFICATION_CONFIG['prometheus_enabled']:
+                return 'Prometheus disabled', 404
+            
+            # Generate metrics
+            lines = []
+            lines.append('# HELP guardian_service_up Service health status (1=up, 0=down)')
+            lines.append('# TYPE guardian_service_up gauge')
+            
+            for svc in SERVICES:
+                healthy = health_check_service(svc)
+                service_label = svc['name'].lower().replace(' ', '_')
+                lines.append(f'guardian_service_up{{service="{service_label}",port="{svc["port"]}",critical="{str(svc.get("critical", False)).lower()}"}} {1 if healthy else 0}')
+            
+            lines.append('')
+            lines.append('# HELP guardian_brain_repairs_total Total repairs made')
+            lines.append('# TYPE guardian_brain_repairs_total counter')
+            stats = brain.get_summary()
+            lines.append(f'guardian_brain_repairs_total {stats.get("total_repairs", 0)}')
+            
+            lines.append('')
+            lines.append('# HELP guardian_brain_patterns_learned Learned error patterns')
+            lines.append('# TYPE guardian_brain_patterns_learned gauge')
+            lines.append(f'guardian_brain_patterns_learned {stats.get("patterns_learned", 0)}')
+            
+            lines.append('')
+            lines.append('# HELP guardian_brain_permanently_resolved Permanently resolved issues')
+            lines.append('# TYPE guardian_brain_permanently_resolved gauge')
+            lines.append(f'guardian_brain_permanently_resolved {stats.get("permanently_resolved", 0)}')
+            
+            return '\n'.join(lines), 200, {'Content-Type': 'text/plain'}
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 5. WEBHOOK ENDPUNKTE - Für externe Events
+        # ═══════════════════════════════════════════════════════════════════
+        
+        @self.app.route('/webhooks/github', methods=['POST'])
+        def webhook_github():
+            """GitHub Webhook für Deploy Events"""
+            signature = request.headers.get('X-Hub-Signature-256', '')
+            payload = request.get_data()
+            
+            # Verify signature if secret configured
+            secret = NOTIFICATION_CONFIG.get('github_webhook_secret', '')
+            if secret:
+                expected = 'sha256=' + hmac.new(secret.encode(), payload, hashlib.sha256).hexdigest()
+                if not hmac.compare_digest(signature, expected):
+                    abort(401, 'Invalid signature')
+            
+            event_type = request.headers.get('X-GitHub-Event', 'push')
+            data = request.get_json() or {}
+            
+            if event_type == 'push':
+                repo = data.get('repository', {}).get('name', 'unknown')
+                ref = data.get('ref', '')
+                if 'main' in ref or 'master' in ref:
+                    notify_all(f'🚀 GitHub Push zu {repo}/{ref} - prüfe auf Updates...')
+                    # Trigger heal für relevante Services
+                    for svc in SERVICES:
+                        if repo.lower() in svc.get('cwd', '').lower():
+                            heal_service(svc)
+            
+            elif event_type == 'issues':
+                action = data.get('action', '')
+                issue = data.get('issue', {})
+                notify_all(f'🐛 GitHub Issue {action}: {issue.get("title", "")[:50]}')
+            
+            return jsonify({'received': True, 'event': event_type}), 200
+        
+        @self.app.route('/webhooks/alertmanager', methods=['POST'])
+        def webhook_alertmanager():
+            """Prometheus Alertmanager Webhook"""
+            data = request.get_json() or {}
+            alerts = data.get('alerts', [])
+            
+            for alert in alerts:
+                status = alert.get('status', 'unknown')
+                name = alert.get('labels', {}).get('alertname', 'unknown')
+                severity = alert.get('labels', {}).get('severity', 'warning')
+                summary = alert.get('annotations', {}).get('summary', '')
+                
+                emoji = '🔴' if status == 'firing' else '🟢'
+                msg = f"{emoji} Alertmanager [{severity.upper()}]: {name}\n{summary}"
+                notify_all(msg, priority='high' if severity == 'critical' else 'normal')
+                
+                # Auto-heal if service down
+                for svc in SERVICES:
+                    if svc['name'].lower() in name.lower() or str(svc['port']) in name:
+                        if status == 'firing':
+                            threading.Thread(target=heal_service, args=(svc,), daemon=True).start()
+            
+            return jsonify({'received': True, 'alerts_processed': len(alerts)}), 200
+        
+        @self.app.route('/webhooks/custom', methods=['POST'])
+        @self.require_auth
+        def webhook_custom():
+            """Custom Webhook für beliebige Events"""
+            data = request.get_json() or {}
+            event_type = data.get('event_type', 'unknown')
+            message = data.get('message', '')
+            priority = data.get('priority', 'normal')
+            
+            # Log event
+            log.info(f'Custom webhook received: {event_type}')
+            
+            # Notify
+            if message:
+                notify_all(f'📡 Webhook [{event_type}]: {message}', priority=priority)
+            
+            # Handle specific actions
+            action = data.get('action', '')
+            if action == 'restart_service':
+                service_name = data.get('service_name', '')
+                svc = next((s for s in SERVICES if s['name'].lower() == service_name.lower()), None)
+                if svc:
+                    threading.Thread(target=heal_service, args=(svc,), daemon=True).start()
+                    return jsonify({'received': True, 'action': 'restart_initiated', 'service': service_name})
+            
+            return jsonify({'received': True, 'event_type': event_type}), 200
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 6. BACKUP & REPORT API
+        # ═══════════════════════════════════════════════════════════════════
+        
+        @self.app.route('/api/v1/backup', methods=['POST'])
+        @self.require_auth
+        def trigger_backup():
+            """Manuelles Backup starten"""
+            bm = BackupMaster()
+            result = bm.run_daily_backup()
+            notify_all(f'💾 API Backup ausgelöst: {result}')
+            return jsonify(result)
+        
+        @self.app.route('/api/v1/reports', methods=['GET'])
+        @self.require_auth
+        def get_reports():
+            """Daily Reports abrufen"""
+            reports = load_json(REPORT_FILE, [])
+            limit = request.args.get('limit', 10, type=int)
+            return jsonify({'reports': reports[-limit:], 'total': len(reports)})
+        
+        @self.app.route('/api/v1/reports/latest', methods=['GET'])
+        @self.require_auth
+        def get_latest_report():
+            """Letzten Report abrufen"""
+            reports = load_json(REPORT_FILE, [])
+            if reports:
+                return jsonify(reports[-1])
+            return jsonify({'error': 'No reports yet'}), 404
+        
+        # ═══════════════════════════════════════════════════════════════════
+        # 7. AGENT COMMUNICATION - Für andere Agenten
+        # ═══════════════════════════════════════════════════════════════════
+        
+        @self.app.route('/api/v1/agents/register', methods=['POST'])
+        @self.require_auth
+        def register_agent():
+            """Anderer Agent registriert sich"""
+            data = request.get_json() or {}
+            agent_id = data.get('agent_id')
+            agent_type = data.get('type', 'unknown')
+            endpoint = data.get('endpoint', '')
+            
+            # Store agent info (in brain or separate file)
+            agents = load_json(BASE_DIR / 'brain' / 'registered_agents.json', [])
+            agents = [a for a in agents if a.get('agent_id') != agent_id]  # Remove old
+            agents.append({
+                'agent_id': agent_id,
+                'type': agent_type,
+                'endpoint': endpoint,
+                'registered_at': datetime.datetime.now().isoformat(),
+                'last_seen': datetime.datetime.now().isoformat()
+            })
+            save_json(BASE_DIR / 'brain' / 'registered_agents.json', agents)
+            
+            notify_all(f'🤖 Neuer Agent registriert: {agent_id} ({agent_type})')
+            return jsonify({'registered': True, 'agent_id': agent_id}), 201
+        
+        @self.app.route('/api/v1/agents', methods=['GET'])
+        @self.require_auth
+        def list_agents():
+            """Registrierte Agenten auflisten"""
+            agents = load_json(BASE_DIR / 'brain' / 'registered_agents.json', [])
+            return jsonify({'agents': agents, 'count': len(agents)})
+        
+        @self.app.route('/api/v1/notify', methods=['POST'])
+        @self.require_auth
+        def api_notify():
+            """Nachricht über alle Kanäle senden"""
+            data = request.get_json() or {}
+            message = data.get('message', '')
+            priority = data.get('priority', 'normal')
+            channels = data.get('channels', ['all'])  # telegram, discord, slack, all
+            
+            results = {}
+            if 'all' in channels or 'telegram' in channels:
+                results['telegram'] = notify_telegram(message)
+            if 'all' in channels or 'discord' in channels:
+                results['discord'] = notify_discord(message)
+            if 'all' in channels or 'slack' in channels:
+                results['slack'] = notify_slack(message)
+            
+            return jsonify({'sent': True, 'channels': results})
+    
+    def start(self):
+        """Startet API Server in separatem Thread"""
+        if not FLASK_AVAILABLE or not self.app:
+            log.warning('Flask nicht verfügbar - API wird nicht gestartet')
+            return False
+        
+        def run_api():
+            try:
+                log.info(f'🌐 Guardian API startet auf http://{API_CONFIG["host"]}:{API_CONFIG["port"]}')
+                self.app.run(
+                    host=API_CONFIG['host'],
+                    port=API_CONFIG['port'],
+                    debug=False,
+                    threaded=True
+                )
+            except Exception as e:
+                log.error(f'API Server Fehler: {e}')
+        
+        self.api_thread = threading.Thread(target=run_api, daemon=True)
+        self.api_thread.start()
+        return True
+
+# Global API instance
+guardian_api = GuardianAPI()
+
 def _read_env_var(key):
     env_path = Path('/Users/rudolfsarkany/Documents/GitHub/telegram-automation-bot/.env')
     try:
         for line in env_path.read_text().splitlines():
+            line = line.strip()
+            if not line or line.startswith('#'):
+                continue
             if line.startswith(key + '='):
-                return line.split('=', 1)[1].strip()
-    except: pass
+                _, _, v = line.partition('=')
+                v = v.split('#')[0].strip().strip('"').strip("'")
+                return v
+    except:
+        pass
     return None
 
 
@@ -833,5 +1413,21 @@ if __name__ == '__main__':
         for svc in SERVICES:
             if not health_check_service(svc):
                 heal_service(svc)
+    elif '--api-only' in sys.argv:
+        # Nur API Server starten (für externes Monitoring)
+        log.info('🌐 Starte nur API Server...')
+        guardian_api.start()
+        # Keep main thread alive
+        try:
+            while True:
+                time.sleep(60)
+        except KeyboardInterrupt:
+            log.info('API Server gestoppt')
+    elif '--api' in sys.argv:
+        # Guardian mit API starten
+        guardian_api.start()
+        run_guardian()
     else:
+        # Standard: API automatisch starten
+        guardian_api.start()
         run_guardian()
