@@ -1,19 +1,28 @@
 #!/usr/bin/env python3
 """💸 Micro-Revenue — Stündlicher Shopify-Umsatz-Check + Tages-Zusammenfassung"""
 import sys, os
-import pathlib, pathlib, time, json, datetime, urllib.request
+import pathlib, time, json, datetime, urllib.request
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram, get_env
 
 ID = "micro_revenue"
 INTERVAL = 3600  # Stündlich
 
+DASHBOARD_URL = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+SHOPIFY_API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+
 def fetch_revenue():
-    """Holt Umsatz-Daten vom lokalen Bot-Server oder Shopify API."""
+    """Holt Umsatz-Daten: Dashboard → Shopify API direkt."""
+    # Primär: SuperMegaBot Dashboard
     try:
-        r = urllib.request.urlopen("http://localhost:3200/api/shopify/revenue", timeout=10)
-        return json.loads(r.read())
-    except:
+        r = urllib.request.urlopen(f"{DASHBOARD_URL}/api/shopify/status", timeout=10)
+        data = json.loads(r.read())
+        if data:
+            return {
+                "today_revenue": float(data.get("today_revenue", data.get("todayRevenue", 0)) or 0),
+                "order_count":   int(data.get("today_orders", data.get("todayOrders", 0)) or 0),
+            }
+    except Exception:
         pass
     # Fallback: Shopify API direkt
     token = get_env("SHOPIFY_ACCESS_TOKEN")
@@ -22,7 +31,8 @@ def fetch_revenue():
         return None
     try:
         today = datetime.date.today().isoformat()
-        url = f"https://{shop}/admin/api/2024-01/orders.json?status=paid&created_at_min={today}T00:00:00Z&fields=total_price"
+        url = (f"https://{shop}/admin/api/{SHOPIFY_API_VERSION}/orders.json"
+               f"?status=paid&created_at_min={today}T00:00:00Z&fields=total_price")
         req = urllib.request.Request(url)
         req.add_header("X-Shopify-Access-Token", token)
         r = urllib.request.urlopen(req, timeout=10)
@@ -30,7 +40,7 @@ def fetch_revenue():
         orders = data.get("orders", [])
         total = sum(float(o.get("total_price", 0)) for o in orders)
         return {"today_revenue": round(total, 2), "order_count": len(orders)}
-    except:
+    except Exception:
         return None
 
 def run():
