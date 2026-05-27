@@ -3,57 +3,65 @@
 import sys, os, time, socket, subprocess, urllib.request
 from pathlib import Path
 
-ARMY_DIR = Path(__file__).resolve().parent.parent
-SHARED_DIR = ARMY_DIR / "shared"
-sys.path.insert(0, str(SHARED_DIR))
-from bus import report, notify_telegram, load_state
+sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
+from bus import report, notify_telegram
 
 ID = "monitor"
+
+# Projekt-Root dynamisch ermitteln
+ARMY_DIR  = Path(__file__).parent.parent
+MEGA_DIR  = ARMY_DIR.parent  # supermegabot/
+
 SERVICES = [
-    ("RudiBot Server",   3200, "http://localhost:3200/api/status"),
-    ("SuperMegaBot",     8888, "http://localhost:8888/health"),
-    ("Ollama LLM",      11434, "http://localhost:11434/api/tags"),
-    ("Redis",            6379, None),
-    ("OpenClaw",        18789, None),
+    ("SuperMegaBot",  8888,  "http://localhost:8888/health"),
+    ("Ollama LLM",   11434,  "http://localhost:11434/api/tags"),
+    ("RudiBot Army",     0,   None),   # Kein Port — nur als Platzhalter
 ]
 
-def check(port, url=None):
-    if url:
-        try:
-            urllib.request.urlopen(url, timeout=3)
-            return True
-        except Exception:
-            pass
+def check_port(port: int) -> bool:
     try:
-        s = socket.socket(); s.settimeout(1); s.connect(("127.0.0.1", port)); s.close(); return True
+        s = socket.socket()
+        s.settimeout(1)
+        s.connect(("127.0.0.1", port))
+        s.close()
+        return True
     except Exception:
         return False
 
-def fix_service(name, port):
-    BOT_DIR = os.path.expanduser(
-        os.getenv(
-            "RUDIBOT_MAIN_DIR",
-            "~/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot",
-        )
-    )
-    MEGA_DIR = str(ARMY_DIR.parent)
-    cmds = {
-        "RudiBot Server":  f"cd \"{BOT_DIR}\" && nohup node server.js >> /tmp/bot-server.log 2>&1 &",
-        "SuperMegaBot":    f"cd \"{MEGA_DIR}\" && nohup python3 dashboard/server.py >> /tmp/mega.log 2>&1 &",
-        "Ollama LLM":      "ollama serve >> /tmp/ollama.log 2>&1 &",
+def check_url(url: str) -> bool:
+    try:
+        urllib.request.urlopen(url, timeout=3)
+        return True
+    except Exception:
+        return False
+
+def check(port: int, url: str | None) -> bool:
+    if port == 0:
+        return True  # Interner Check, immer OK solange dieser Agent läuft
+    if url:
+        return check_url(url)
+    return check_port(port)
+
+def fix_service(name: str, port: int) -> bool:
+    """Versucht einen Service neu zu starten. Plattform-unabhängig."""
+    cmds: dict[str, str] = {
+        "SuperMegaBot": f"nohup python3 {MEGA_DIR}/dashboard/server.py >> /tmp/mega.log 2>&1 &",
+        "Ollama LLM":   "ollama serve >> /tmp/ollama.log 2>&1 &",
     }
     cmd = cmds.get(name)
-    if cmd:
-        subprocess.run(cmd, shell=True, timeout=10)
-        time.sleep(3)
-        return check(port)
-    return False
+    if not cmd:
+        return False
+    subprocess.run(cmd, shell=True, timeout=15, cwd=str(MEGA_DIR))
+    time.sleep(4)
+    return check(port, None)
+
 
 def run():
     print(f"[{ID}] 🔴 Monitor Agent gestartet")
     fail_count = {s[0]: 0 for s in SERVICES}
+
     while True:
-        summary = {}
+        summary: dict[str, bool] = {}
         for name, port, url in SERVICES:
             ok = check(port, url)
             summary[name] = ok
@@ -68,10 +76,13 @@ def run():
                         report(ID, "repaired", f"{name} repariert", summary)
             else:
                 fail_count[name] = 0
-        ok_count = sum(summary.values())
-        report(ID, "ok" if ok_count == len(SERVICES) else "warning",
-               f"Services: {ok_count}/{len(SERVICES)} OK", summary)
+
+        ok_count = sum(v for k, v in summary.items() if k != "RudiBot Army")
+        total = sum(1 for k, _ in summary.items() if k != "RudiBot Army")
+        report(ID, "ok" if ok_count == total else "warning",
+               f"Services: {ok_count}/{total} OK", summary)
         time.sleep(30)
+
 
 if __name__ == "__main__":
     run()

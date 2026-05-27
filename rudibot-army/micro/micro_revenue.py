@@ -1,37 +1,36 @@
 #!/usr/bin/env python3
 """💸 Micro-Revenue — Stündlicher Shopify-Umsatz-Check + Tages-Zusammenfassung"""
-import sys, os, time, json, datetime, urllib.request
-from pathlib import Path
-
-ARMY_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ARMY_DIR / "shared"))
-sys.path.insert(0, str(ARMY_DIR.parent))
+import sys, os
+import pathlib, pathlib, time, json, datetime, urllib.request
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram, get_env
-from modules import shopify_client
 
 ID = "micro_revenue"
 INTERVAL = 3600  # Stündlich
 
 def fetch_revenue():
-    """Holt Umsatz-Daten direkt aus der Shopify Admin API."""
+    """Holt Umsatz-Daten vom lokalen Bot-Server oder Shopify API."""
     try:
-        import asyncio
-        analytics = asyncio.run(shopify_client.get_analytics_summary())
-        orders = asyncio.run(shopify_client.get_orders(limit=50))
-        if not analytics:
-            return None
-        return {
-            "today_revenue": float(analytics.get("revenue", 0)),
-            "order_count": len(orders),
-            "shop": analytics.get("shop", ""),
-        }
-    except Exception:
+        r = urllib.request.urlopen("http://localhost:3200/api/shopify/revenue", timeout=10)
+        return json.loads(r.read())
+    except:
         pass
+    # Fallback: Shopify API direkt
+    token = get_env("SHOPIFY_ACCESS_TOKEN")
+    shop  = get_env("SHOPIFY_SHOP_DOMAIN")
+    if not token or not shop:
+        return None
     try:
-        import asyncio
-        analytics = asyncio.run(shopify_client.get_analytics_summary())
-        return {"today_revenue": float(analytics.get("revenue", 0)), "order_count": int(analytics.get("orders_paid", 0))}
-    except Exception:
+        today = datetime.date.today().isoformat()
+        url = f"https://{shop}/admin/api/2024-01/orders.json?status=paid&created_at_min={today}T00:00:00Z&fields=total_price"
+        req = urllib.request.Request(url)
+        req.add_header("X-Shopify-Access-Token", token)
+        r = urllib.request.urlopen(req, timeout=10)
+        data = json.loads(r.read())
+        orders = data.get("orders", [])
+        total = sum(float(o.get("total_price", 0)) for o in orders)
+        return {"today_revenue": round(total, 2), "order_count": len(orders)}
+    except:
         return None
 
 def run():
