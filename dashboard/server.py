@@ -1100,12 +1100,34 @@ async def create_app():
     return app
 
 
+def _free_port(port: int) -> None:
+    """Kill whatever holds the port (macOS + Linux)."""
+    try:
+        result = subprocess.run(
+            ["lsof", "-ti", f":{port}"], capture_output=True, text=True
+        )
+        pids = result.stdout.strip().split()
+        for pid in pids:
+            try:
+                os.kill(int(pid), 9)
+                print(f"  Killed PID {pid} on port {port}")
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
 if __name__ == "__main__":
     async def _main():
+        print(f"\n🔍 Prüfe Port {PORT}...")
+        _free_port(PORT)
+        import asyncio as _aio
+        await _aio.sleep(0.5)   # kurz warten damit OS den Port freigibt
+
         app = await create_app()
         runner = web.AppRunner(app, access_log=None)
         await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_port=True)
+        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True, reuse_port=True)
         await site.start()
         print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
         try:
