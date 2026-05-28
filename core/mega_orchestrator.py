@@ -1099,7 +1099,7 @@ class MegaOrchestrator:
         while self.running:
             try:
                 url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates"
-                params = {"offset": offset, "timeout": 30, "limit": 10, "allowed_updates": ["message"]}
+                params = {"offset": offset, "timeout": 30, "limit": 10, "allowed_updates": ["message", "callback_query"]}
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=35)) as s:
                     async with s.get(url, params=params) as r:
                         if r.status == 200:
@@ -1142,6 +1142,9 @@ class MegaOrchestrator:
                 try:
                     from modules.telegram_control import handle_callback
                     chat_id   = str(cq.get("message", {}).get("chat", {}).get("id", ""))
+                    if TELEGRAM_CHAT_ID and chat_id != str(TELEGRAM_CHAT_ID):
+                        log.warning(f"Callback von unautorisiertem Chat {chat_id} ignoriert")
+                        return
                     message_id = cq.get("message", {}).get("message_id", 0)
                     cq_id     = cq.get("id", "")
                     data      = cq.get("data", "")
@@ -1160,6 +1163,10 @@ class MegaOrchestrator:
             user = msg.get("from", {}).get("username", "unknown")
 
             if not text or not chat_id:
+                return
+
+            if TELEGRAM_CHAT_ID and chat_id != str(TELEGRAM_CHAT_ID):
+                log.warning(f"Nachricht von unautorisiertem Chat {chat_id} ignoriert")
                 return
 
             session_id = f"telegram_{chat_id}"
