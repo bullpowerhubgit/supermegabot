@@ -311,7 +311,7 @@ Provide a SHORT repair solution (1-3 steps, Python code if needed):"""
         "pip":    [sys.executable, "-m", "pip", "install"],
         "pip3":   [sys.executable, "-m", "pip", "install"],
         "brew":   ["brew", "install"],
-        "npm":    ["npm", "install", "-g"],
+        "npm":    ["npm", "install"],
     }
 
     def _parse_repair_actions(self, solution: str) -> List[List[str]]:
