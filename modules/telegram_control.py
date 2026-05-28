@@ -20,9 +20,16 @@ _HOME      = Path.home()
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 DASHBOARD_URL  = os.getenv("DASHBOARD_URL", "http://localhost:8888")
 
-# Externe Projekte — aus Env oder Standard-Home-Pfad
+# Externe Projekte — aus Env oder Standard-Pfad
 _ETERNAL_DIR  = Path(os.getenv("ETERNAL_BOT_DIR",  str(_HOME / "rudibot-eternal")))
-_KIVO_DIR     = Path(os.getenv("KIVO_DIR",          str(_HOME / "kivo")))
+
+# KIVO: liegt im telegram-automation-bot Verzeichnis, startet via .command
+_KIVO_BASE    = Path(os.getenv("KIVO_DIR",
+                                "/Users/rudolfsarkany/local-projects/telegram-automation-bot"))
+_KIVO_SCRIPT  = _KIVO_BASE / "kivo.py"
+_KIVO_COMMAND = _KIVO_BASE / "KIVO.command"
+_KIVO_LOG     = str(_KIVO_BASE / "logs" / "kivo.log")
+
 _SHOPIFY_SUITE_URL = os.getenv("SHOPIFY_SUITE_URL",
                                 "https://shopify-suite-v2-production.up.railway.app")
 
@@ -454,6 +461,47 @@ def _external_service_control(name: str, script_path: Path, log_path: str,
     return f"Unbekannte Aktion: {action}"
 
 
+def _kivo_status() -> str:
+    lines = ["🎙️ <b>KIVO Voice</b>", ""]
+    try:
+        r = subprocess.run(["pgrep", "-f", "kivo.py"], capture_output=True, text=True)
+        running = r.returncode == 0 and bool(r.stdout.strip())
+        pid = r.stdout.strip().split("\n")[0] if running else "-"
+        lines.append(f"{'🟢 Läuft' if running else '🔴 Gestoppt'}"
+                     + (f" (PID {pid})" if running else ""))
+    except Exception as e:
+        lines.append(f"❓ Status-Fehler: {e}")
+    lines += [
+        f"📁 Basis: <code>{_KIVO_BASE}</code>",
+        f"📜 Skript: {'✅' if _KIVO_SCRIPT.exists() else '❌'} kivo.py",
+        f"🖱 Launcher: {'✅' if _KIVO_COMMAND.exists() else '❌'} KIVO.command",
+    ]
+    if not _KIVO_BASE.exists():
+        lines.append("⚠️ Verzeichnis nicht gefunden — setze KIVO_DIR in .env")
+    return "\n".join(lines)
+
+
+def _kivo_start() -> str:
+    if not _KIVO_SCRIPT.exists():
+        if _KIVO_COMMAND.exists():
+            return (f"🎙️ KIVO starten:\n"
+                    f"Doppelklick auf:\n<code>{_KIVO_COMMAND}</code>\n\n"
+                    f"(Öffnet Terminal mit Mikrofonzugriff)")
+        return f"❌ KIVO nicht gefunden\n<code>{_KIVO_BASE}</code>"
+    try:
+        r = subprocess.run(["pgrep", "-f", "kivo.py"], capture_output=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return "🎙️ KIVO läuft bereits"
+        # Mikrofon-Zugriff braucht Terminal — Info-Meldung
+        return (f"🎙️ <b>KIVO starten</b>\n\n"
+                f"KIVO braucht Terminal-Mikrofonzugriff.\n"
+                f"Doppelklick auf:\n<code>{_KIVO_COMMAND}</code>\n\n"
+                f"Oder im Terminal:\n"
+                f"<code>open '{_KIVO_COMMAND}'</code>")
+    except Exception as e:
+        return f"❌ Fehler: {e}"
+
+
 def _railway_status() -> str:
     """Prüft Railway Shopify AI Suite Verfügbarkeit."""
     lines = [f"🛍️ <b>Shopify AI Suite (Railway)</b>", f"URL: {_SHOPIFY_SUITE_URL}", ""]
@@ -541,11 +589,7 @@ def handle_callback(data: str, chat_id: str, message_id: int,
                 "/tmp/rudibot-eternal.log", "status")
             edit_message(chat_id, message_id, status, kb_eternal())
         elif param == "kivo":
-            status = _external_service_control(
-                "KIVO Voice",
-                _KIVO_DIR / "kivo.py",
-                "/tmp/kivo.log", "status")
-            edit_message(chat_id, message_id, status, kb_kivo())
+            edit_message(chat_id, message_id, _kivo_status(), kb_kivo())
         elif param == "railway":
             edit_message(chat_id, message_id, _railway_status(), kb_railway())
 
@@ -634,10 +678,24 @@ def handle_callback(data: str, chat_id: str, message_id: int,
 
     # ── KIVO Voice ───────────────────────────────────────────────────────────
     elif action == "kivo":
-        script = _KIVO_DIR / "kivo.py"
-        msg = _external_service_control("KIVO Voice", script,
-                                        "/tmp/kivo.log", param)
-        edit_message(chat_id, message_id, msg, kb_kivo())
+        if param == "status":
+            edit_message(chat_id, message_id, _kivo_status(), kb_kivo())
+        elif param == "start":
+            edit_message(chat_id, message_id, _kivo_start(), kb_kivo())
+        elif param == "stop":
+            msg = _external_service_control("KIVO Voice", _KIVO_SCRIPT,
+                                            _KIVO_LOG, "stop")
+            edit_message(chat_id, message_id, msg, kb_kivo())
+        elif param == "restart":
+            _external_service_control("KIVO Voice", _KIVO_SCRIPT, _KIVO_LOG, "stop")
+            time.sleep(1)
+            edit_message(chat_id, message_id, _kivo_start(), kb_kivo())
+        elif param == "logs":
+            tail = _get_log_tail(_KIVO_LOG, 25)
+            if len(tail) > 3800:
+                tail = "...\n" + tail[-3800:]
+            edit_message(chat_id, message_id,
+                         f"📋 <b>KIVO Logs</b>\n<pre>{tail}</pre>", kb_kivo())
 
     # ── Railway Shopify AI Suite ─────────────────────────────────────────────
     elif action == "railway":
