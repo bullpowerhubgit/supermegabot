@@ -124,7 +124,11 @@ test_github() {
 test_shopify() {
     local url="${1:-$(first_non_empty "$SHOPIFY_STORE_URL" "$SHOPIFY_SHOP_URL")}"
     local token="${2:-$(first_non_empty "$SHOPIFY_ACCESS_TOKEN" "$SHOPIFY_ADMIN_API_TOKEN" "$SHOPIFY_SUITE_ACCESS_TOKEN")}"
-    require_values "Shopify" "SHOPIFY_STORE_URL" "$url" "SHOPIFY_ACCESS_TOKEN" "$token" || return 1
+    if [ -z "$(trim "$token")" ]; then
+        warn "Shopify → kein Access Token gesetzt (Konfigurationsproblem)"
+        return 1
+    fi
+    require_values "Shopify" "SHOPIFY_STORE_URL" "$url" || return 1
     check_http "Shopify" "${url%/}/admin/api/2024-10/shop.json" "200" \
         -H "X-Shopify-Access-Token: $token"
 }
@@ -196,8 +200,7 @@ test_tailscale() {
 
 test_ngrok() {
     local key="${1:-$NGROK_API_KEY}"
-    local domain="${2:-$NGROK_DOMAIN}"
-    require_values "Ngrok" "NGROK_API_KEY" "$key" "NGROK_DOMAIN" "$domain" || return 1
+    require_values "Ngrok" "NGROK_API_KEY" "$key" || return 1
     check_http "Ngrok" "https://api.ngrok.com/reserved_domains" "200" \
         -H "Authorization: Bearer $key" \
         -H "Ngrok-Version: 2"
