@@ -1,20 +1,44 @@
 #!/usr/bin/env python3
 """
 🤖 SuperMegaBot + Guardian Integration
+
+Lazy-loads the GuardianClient so importing this module never crashes the
+dashboard / orchestrator when GUARDIAN_API_SECRET isn't set.
 """
 
 import sys
 import os
-sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+from pathlib import Path
+
+# Portable: try project-local first, then the rudibot-eternal sibling repo,
+# overridable via $ETERNAL_BOT_DIR.
+_HERE = Path(__file__).resolve().parent
+for _cand in (
+    _HERE,
+    Path(os.environ.get("ETERNAL_BOT_DIR", "")) if os.environ.get("ETERNAL_BOT_DIR") else None,
+    Path.home() / "rudibot-eternal",
+):
+    if _cand and (_cand / "guardian_client.py").exists():
+        sys.path.insert(0, str(_cand))
+        break
 
 from guardian_client import GuardianClient
 
+
 class SuperMegaBotGuardian:
-    """SuperMegaBot mit Guardian Überwachung"""
-    
+    """SuperMegaBot mit Guardian Überwachung (Client wird lazy initialisiert)."""
+
     def __init__(self):
-        self.client = GuardianClient()
+        self._client = None
         self.project_name = "supermegabot"
+
+    @property
+    def client(self) -> GuardianClient:
+        """Create the GuardianClient on first use so missing env vars don't
+        crash module import."""
+        if self._client is None:
+            self._client = GuardianClient()
+        return self._client
         
     def startup(self):
         """Start melden"""

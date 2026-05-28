@@ -112,6 +112,9 @@ SERVICES = [
     {"id": "kivo", "name": "KIVO Voice", "port": 0,
      "start_cmd": f"cd {_ext('KIVO_DIR','kivo')} && nohup python3 kivo.py >> /tmp/kivo.log 2>&1 &",
      "pattern": "kivo.py", "icon": "🎙️"},
+    {"id": "tg_hub_bridge", "name": "Telegram Hub Bridge", "port": 0,
+     "start_cmd": f"cd {BASE_DIR} && nohup python3 telegram_hub_bridge.py >> /tmp/tg-hub-bridge.log 2>&1 &",
+     "pattern": "telegram_hub_bridge.py", "icon": "🛰️"},
 ]
 
 # ---------------------------------------------------------------------------
@@ -1129,17 +1132,262 @@ async def handle_index(req):
 
 
 async def handle_chat(req):
+    """Process a chat / command message.
+
+    Accepts JSON body with either {"text": "..."} or {"message": "..."} for
+    backwards compatibility with the deep_scan_repair.py test harness.
+    """
     try:
-        data = await req.json()
-        text = data.get("text", "")
+        data = await req.json() if req.can_read_body else {}
+        # accept both "text" (dashboard) and "message" (scan-runner) keys
+        text = data.get("text") or data.get("message") or ""
         session_id = data.get("session_id", "dashboard")
-        sys.path.insert(0, str(BASE_DIR))
-        from core.mega_orchestrator import MegaOrchestrator
+        if not text:
+            return web.json_response(
+                {"ok": False, "error": "Missing 'text' or 'message' field"},
+                status=400,
+            )
         bot = req.app["bot"]
         response = await bot.process(text, session_id)
-        return web.json_response({"response": response, "session_id": session_id})
+        return web.json_response({
+            "ok": True,
+            "response": response,
+            "session_id": session_id,
+        })
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ---------------------------------------------------------------------------
+# Alias endpoints — kept to keep the scan / external dashboards happy
+# ---------------------------------------------------------------------------
+
+async def handle_status_alias(req):
+    """Alias for /api/services/status — convenience for monitoring tools."""
+    return await handle_services_status(req)
+
+
+async def handle_health_alias(req):
+    """Alias for /health under /api/health (mirrors other API endpoints)."""
+    return await handle_health(req)
+
+
+async def handle_shopify_alias(req):
+    """Alias for /api/shopify/status."""
+    return await handle_shopify_status(req)
+
+
+async def handle_metrics_alias(req):
+    """Alias for /api/system — returns CPU/memory/disk metrics."""
+    return await handle_system(req)
+
+
+async def handle_agents_alias(req):
+    """Aggregate all "agent" sources (army + autopilot)."""
+    army_resp = await handle_army_status(req)
+    autopilot_resp = await handle_autopilot_agents(req)
+    try:
+        army_data = json.loads(army_resp.text)
+    except Exception:
+        army_data = {"agents": {}}
+    try:
+        autopilot_data = json.loads(autopilot_resp.text)
+    except Exception:
+        autopilot_data = {"agents": []}
+    return web.json_response({
+        "ok": True,
+        "army": army_data,
+        "autopilot": autopilot_data,
+        "total": len(army_data.get("agents", {})) + len(autopilot_data.get("agents", [])),
+    })
+
+
+async def handle_analytics_summary(req):
+    """Quick analytics roll-up combining trading + shopify + system signals."""
+    summary = {"ok": True, "timestamp": datetime.now().isoformat()}
+    # System
+    try:
+        sys_resp = await handle_system(req)
+        summary["system"] = json.loads(sys_resp.text)
+    except Exception as e:
+        summary["system"] = {"error": str(e)}
+    # Shopify
+    try:
+        shop_resp = await handle_shopify_status(req)
+        summary["shopify"] = json.loads(shop_resp.text)
+    except Exception as e:
+        summary["shopify"] = {"error": str(e)}
+    # Trading prices
+    try:
+        prices_resp = await handle_trading_prices(req)
+        summary["trading"] = json.loads(prices_resp.text)
+    except Exception as e:
+        summary["trading"] = {"error": str(e)}
+    return web.json_response(summary)
+
+
+async def handle_revenue_summary(req):
+    """Revenue placeholder — surfaces Shopify status + autopilot context."""
+    out = {"ok": True, "timestamp": datetime.now().isoformat(), "currency": "EUR"}
+    try:
+        shop_resp = await handle_shopify_status(req)
+        out["shopify"] = json.loads(shop_resp.text)
+    except Exception as e:
+        out["shopify"] = {"error": str(e)}
+    # KPI hook: try to load any cached revenue snapshot under data/revenue.json
+    snapshot = DATA_DIR / "revenue.json"
+    if snapshot.exists():
+        try:
+            out["snapshot"] = json.loads(snapshot.read_text(errors="ignore"))
+        except Exception as e:
+            out["snapshot_error"] = str(e)
+    return web.json_response(out)
+
+
+async def handle_kpis_summary(req):
+    """Combine system + revenue + agents into a single KPI payload."""
+    out = {"ok": True, "timestamp": datetime.now().isoformat()}
+    for key, handler in (
+        ("system", handle_system),
+        ("revenue", handle_revenue_summary),
+        ("agents", handle_agents_alias),
+    ):
+        try:
+            resp = await handler(req)
+            out[key] = json.loads(resp.text)
+        except Exception as e:
+            out[key] = {"error": str(e)}
+    return web.json_response(out)
+
+
+async def handle_chat_clear(req):
+    """Clear the in-memory chat history for a session_id."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        session_id = data.get("session_id", "dashboard")
+        bot = req.app["bot"]
+        # MegaOrchestrator stores history in its MemorySystem (SQLite).
+        # Best-effort wipe for the given session_id.
+        try:
+            conn = sqlite3.connect(bot.memory.db_path)
+            conn.execute("DELETE FROM conversations WHERE session_id=?", (session_id,))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"ok": True, "session_id": session_id})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_logs_clear(req):
+    """Truncate the local dashboard log file (does not touch /tmp logs)."""
+    try:
+        log_file = BASE_DIR / "logs" / "supermegabot.log"
+        if log_file.exists():
+            log_file.write_text("")
+        return web.json_response({"ok": True, "cleared": str(log_file)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_service_start_alias(req):
+    """POST /api/service/start — alias to /api/services/action with action=start."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        new_req_data = dict(data)
+        new_req_data["action"] = "start"
+        # Forward via internal helper rather than mutating req
+        from aiohttp.test_utils import make_mocked_request
+        # Simpler: re-run handle_service_action with the data already parsed.
+        return await _service_action_inner(req.app, new_req_data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_service_stop_alias(req):
+    """POST /api/service/stop — alias to /api/services/action with action=stop."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        new_req_data = dict(data)
+        new_req_data["action"] = "stop"
+        return await _service_action_inner(req.app, new_req_data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def _service_action_inner(app, data):
+    """Internal: run a service action given an already-parsed JSON body."""
+    sid = data.get("id")
+    action = data.get("action")
+    svc = next((s for s in SERVICES if s["id"] == sid), None)
+    if not svc:
+        return web.json_response({"ok": False, "error": f"unknown service {sid}"}, status=404)
+    if action == "start":
+        try:
+            subprocess.Popen(svc["start_cmd"], shell=True, start_new_session=True)
+            return web.json_response({"ok": True, "msg": f"{svc['name']} startet"})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+    if action == "stop":
+        try:
+            subprocess.run(["pkill", "-f", svc["pattern"]], check=False)
+            return web.json_response({"ok": True, "msg": f"{svc['name']} gestoppt"})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+    return web.json_response({"ok": False, "error": f"unknown action {action}"}, status=400)
+
+
+# ---------------------------------------------------------------------------
+# Bot Control Hub — exposes the CommandRouter so the bot is the single point of
+# control for the entire system.  Every dashboard button can be triggered as a
+# bot command, and every bot command can be triggered as an HTTP call.
+# ---------------------------------------------------------------------------
+
+async def handle_bot_commands(req):
+    """Return the list of registered bot commands."""
+    try:
+        bot = req.app["bot"]
+        routes = getattr(bot.router, "routes", {})
+        # Group by handler name so the dashboard / bot help can render a clean menu.
+        grouped: dict[str, list[str]] = {}
+        for command, handler in routes.items():
+            name = getattr(handler, "__name__", str(handler))
+            grouped.setdefault(name, []).append(command)
+        return web.json_response({
+            "ok": True,
+            "count": len(routes),
+            "groups": grouped,
+            "all": sorted(routes.keys()),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bot_execute(req):
+    """Execute a bot command via the CommandRouter.
+
+    Body: {"command": "/army_status", "session_id": "dashboard"}
+    """
+    try:
+        data = await req.json() if req.can_read_body else {}
+        command = data.get("command") or data.get("text") or data.get("message") or ""
+        if not command:
+            return web.json_response(
+                {"ok": False, "error": "Missing 'command' field"},
+                status=400,
+            )
+        session_id = data.get("session_id", "dashboard")
+        bot = req.app["bot"]
+        response = await bot.process(command, session_id)
+        return web.json_response({
+            "ok": True,
+            "command": command,
+            "response": response,
+            "session_id": session_id,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_system(req):
@@ -1336,10 +1584,11 @@ async def handle_gmc(req):
 
 async def handle_backup_status(req):
     backups = []
+    # Portable: HOME-relative defaults, overridable via env vars
     backup_paths = [
         BASE_DIR / "data",
-        Path("/Users/rudolfsarkany/windsurf-telegram-bot"),
-        Path("/Users/rudolfsarkany/CreatorHub Anonym & Profitabel"),
+        Path(os.getenv("WS_TELEGRAM_DIR", str(_HOME / "windsurf-telegram-bot"))),
+        Path(os.getenv("CREATORHUB_DIR", str(_HOME / "CreatorHub Anonym & Profitabel"))),
     ]
     for p in backup_paths:
         if p.exists():
@@ -1767,6 +2016,24 @@ async def create_app():
     app.router.add_get("/api/storage/large-files", handle_storage_large_files)
     app.router.add_get("/api/storage/history",     handle_storage_history)
     app.router.add_get("/storage", handle_storage_widget)
+
+    # Alias / convenience endpoints (keep the scan + monitoring tools happy)
+    app.router.add_get ("/api/status",    handle_status_alias)
+    app.router.add_get ("/api/health",    handle_health_alias)
+    app.router.add_get ("/api/shopify",   handle_shopify_alias)
+    app.router.add_get ("/api/metrics",   handle_metrics_alias)
+    app.router.add_get ("/api/agents",    handle_agents_alias)
+    app.router.add_get ("/api/analytics", handle_analytics_summary)
+    app.router.add_get ("/api/revenue",   handle_revenue_summary)
+    app.router.add_get ("/api/kpis",      handle_kpis_summary)
+    app.router.add_post("/api/chat/clear",  handle_chat_clear)
+    app.router.add_post("/api/logs/clear",  handle_logs_clear)
+    app.router.add_post("/api/service/start", handle_service_start_alias)
+    app.router.add_post("/api/service/stop",  handle_service_stop_alias)
+
+    # Bot Control Hub — every dashboard button is also a bot command.
+    app.router.add_get ("/api/bot/commands", handle_bot_commands)
+    app.router.add_post("/api/bot/execute",  handle_bot_execute)
 
     return app
 

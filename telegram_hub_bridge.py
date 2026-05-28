@@ -1,0 +1,230 @@
+#!/usr/bin/env python3
+"""
+telegram_hub_bridge.py — Macht den Telegram-Bot zum zentralen Steuerungs-Hub.
+
+Jede Nachricht, die der Bot empfängt, wird an den SuperMegaBot Dashboard-Server
+(`/api/bot/execute`) weitergeleitet.  Die Antwort wird im selben Chat zurück-
+gesendet.  Damit kann **jede** Dashboard-Funktion (107+ Commands) direkt über
+Telegram aufgerufen werden — der Bot ist das Hauptzentrum für Steuerung.
+
+Voraussetzungen:
+    - SuperMegaBot Dashboard läuft (Default: http://localhost:8888)
+    - TELEGRAM_BOT_TOKEN ist gesetzt
+
+Start:
+    python3 telegram_hub_bridge.py
+
+Stoppen:
+    Ctrl+C oder `pkill -f telegram_hub_bridge.py`
+"""
+from __future__ import annotations
+
+import json
+import logging
+import os
+import signal
+import sys
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from pathlib import Path
+from typing import Any
+
+# .env laden
+_THIS_DIR = Path(__file__).resolve().parent
+try:
+    from dotenv import load_dotenv
+    load_dotenv(_THIS_DIR / ".env")
+except ImportError:
+    _env_file = _THIS_DIR / ".env"
+    if _env_file.exists():
+        for _line in _env_file.read_text(errors="ignore").splitlines():
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _, _v = _line.partition("=")
+                os.environ.setdefault(_k.strip(), _v.strip())
+
+TELEGRAM_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+DASHBOARD_URL = os.environ.get(
+    "SUPERMEGABOT_DASHBOARD_URL", "http://localhost:8888"
+).rstrip("/")
+POLL_TIMEOUT = int(os.environ.get("TELEGRAM_POLL_TIMEOUT", "20"))
+ALLOWED_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
+log = logging.getLogger("hub-bridge")
+
+_TG_BASE = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}"
+
+
+def _http(
+    method: str, url: str, body: dict[str, Any] | None = None, timeout: int = 15
+) -> dict[str, Any]:
+    data = json.dumps(body).encode() if body is not None else None
+    headers = {"Content-Type": "application/json"} if data else {}
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.loads(r.read().decode(errors="replace"))
+
+
+def telegram_call(method: str, **params: Any) -> dict[str, Any]:
+    """Call a Telegram Bot API method."""
+    url = f"{_TG_BASE}/{method}"
+    try:
+        return _http("POST", url, params, timeout=POLL_TIMEOUT + 5)
+    except urllib.error.HTTPError as e:
+        body = e.read().decode(errors="replace")
+        log.error("telegram %s HTTPError %s: %s", method, e.code, body[:200])
+        return {"ok": False, "error": body}
+    except Exception as e:
+        log.error("telegram %s error: %s", method, e)
+        return {"ok": False, "error": str(e)}
+
+
+def dashboard_execute(command: str, session_id: str) -> str:
+    """Forward a command to the dashboard CommandRouter."""
+    url = f"{DASHBOARD_URL}/api/bot/execute"
+    try:
+        resp = _http(
+            "POST",
+            url,
+            {"command": command, "session_id": session_id},
+            timeout=60,
+        )
+        if not resp.get("ok"):
+            return f"Fehler vom Dashboard: {resp.get('error', 'unbekannt')}"
+        return str(resp.get("response", ""))
+    except urllib.error.URLError as e:
+        return (
+            f"Dashboard nicht erreichbar ({DASHBOARD_URL}): {e}\n"
+            "Starte das Dashboard mit `python3 dashboard/server.py` und versuche es erneut."
+        )
+    except Exception as e:
+        return f"Bridge-Fehler: {e}"
+
+
+def fetch_commands() -> list[str]:
+    """Get the canonical list of bot commands from the dashboard."""
+    url = f"{DASHBOARD_URL}/api/bot/commands"
+    try:
+        resp = _http("GET", url, timeout=10)
+        return list(resp.get("all", []))
+    except Exception as e:
+        log.warning("could not fetch commands: %s", e)
+        return []
+
+
+def is_allowed(chat_id: int | str) -> bool:
+    """Restrict access to a single chat_id if TELEGRAM_CHAT_ID is configured."""
+    if not ALLOWED_CHAT_ID:
+        return True
+    return str(chat_id) == str(ALLOWED_CHAT_ID)
+
+
+def handle_message(message: dict[str, Any]) -> None:
+    chat = message.get("chat", {})
+    chat_id = chat.get("id")
+    text = (message.get("text") or "").strip()
+    if not chat_id or not text:
+        return
+
+    if not is_allowed(chat_id):
+        telegram_call(
+            "sendMessage",
+            chat_id=chat_id,
+            text="Zugriff verweigert — dieser Chat ist nicht autorisiert.",
+        )
+        return
+
+    # Commands like "/army_status@MyBot" → "/army_status"
+    if text.startswith("/") and "@" in text.split()[0]:
+        head, *rest = text.split()
+        text = head.split("@", 1)[0] + (" " + " ".join(rest) if rest else "")
+
+    log.info("[chat=%s] %s", chat_id, text[:120])
+
+    # /commands as a meta-command returns the catalog
+    if text in ("/commands", "/befehle"):
+        cmds = fetch_commands()
+        if not cmds:
+            reply = "Konnte Command-Liste vom Dashboard nicht laden."
+        else:
+            reply = "Verfügbare Bot-Commands ({}):\n{}".format(
+                len(cmds), "\n".join(cmds[:80])
+            )
+        telegram_call("sendMessage", chat_id=chat_id, text=reply)
+        return
+
+    response = dashboard_execute(text, f"tg-{chat_id}")
+    # Telegram has a 4096-char message limit
+    for chunk_start in range(0, len(response), 3800):
+        telegram_call(
+            "sendMessage",
+            chat_id=chat_id,
+            text=response[chunk_start : chunk_start + 3800] or "(leere Antwort)",
+            disable_web_page_preview=True,
+        )
+
+
+def main_loop() -> None:
+    if not TELEGRAM_TOKEN:
+        log.error("TELEGRAM_BOT_TOKEN not set — bridge cannot start.")
+        sys.exit(2)
+
+    log.info("Telegram Hub Bridge gestartet")
+    log.info("Dashboard: %s", DASHBOARD_URL)
+    log.info("Allowed chat: %s", ALLOWED_CHAT_ID or "(any)")
+
+    offset: int | None = None
+    running = True
+
+    def _shutdown(signum, frame):
+        nonlocal running
+        running = False
+        log.info("Stopping (signal %s)…", signum)
+
+    signal.signal(signal.SIGTERM, _shutdown)
+    signal.signal(signal.SIGINT, _shutdown)
+
+    while running:
+        params: dict[str, Any] = {"timeout": POLL_TIMEOUT, "allowed_updates": ["message"]}
+        if offset is not None:
+            params["offset"] = offset
+        try:
+            resp = _http(
+                "GET",
+                f"{_TG_BASE}/getUpdates?{urllib.parse.urlencode(params)}",
+                timeout=POLL_TIMEOUT + 5,
+            )
+        except urllib.error.HTTPError as e:
+            log.error("getUpdates HTTPError %s — retrying in 5s", e.code)
+            time.sleep(5)
+            continue
+        except Exception as e:
+            log.error("getUpdates error: %s — retrying in 5s", e)
+            time.sleep(5)
+            continue
+
+        if not resp.get("ok"):
+            log.error("getUpdates not ok: %s — retrying in 5s", resp)
+            time.sleep(5)
+            continue
+
+        for update in resp.get("result", []):
+            offset = update["update_id"] + 1
+            msg = update.get("message")
+            if msg:
+                try:
+                    handle_message(msg)
+                except Exception as e:
+                    log.exception("handle_message error: %s", e)
+
+    log.info("Bridge stopped cleanly.")
+
+
+if __name__ == "__main__":
+    main_loop()
