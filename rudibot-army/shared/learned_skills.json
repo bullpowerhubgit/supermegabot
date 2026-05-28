@@ -41,7 +41,37 @@
       "description": "3 KI-Tools die 2025 für Online-Shops am nützlichsten sind. Name + 1-Satz Erklärung.",
       "content": "Hier sind drei KI-Tools, die 2025 für Online-Shops am nützlichsten sind:\n\n1. **Product Recommendations-Engine**: \"Mit dieser Technologie können Kunden auf Basis ihrer Bestellungen und Vorlieben relevante Produkte empfohlen werden.\"\n2. **Chatbot-Plattform**: \"Eine KI-gesteuerte Chatbot-Plattform ermöglicht es Kunden, schnell und einfach Fragen zu Online-Shops zu stellen und zu erhalten.\"\n3. **Personalisierter Empfehlungsservice**: \"Ein KI-basiertes System kann Kunden auf Basis ihrer Einkaufsgeschichte und Vorlieben personalisierte Empfehlungen für Produkte in Online-Shops geben.\"\n\nDiese Tools können den Kundenerlebnis und die Verkaufszahlen von Online-Shops erheblich verbessern.",
       "learned_at": "2026-05-28"
+    },
+    {
+      "name": "competitor_check",
+      "description": "Wie analysiere ich Wettbewerber-Preise automatisch für Shopify? 3 konkrete Methoden.",
+      "content": "Ein wichtiger Aspekt bei der Preisanalyse von Wettbewerbern auf Shopify!\n\nHier sind drei konkrete Methoden, um Wettbewerber-Preise automatisch für Shopify zu analysieren:\n\n**1. Benutze die API von Google Trends**\n\nGoogle Trends bietet eine API, mit der du die Suchbäume und Preise von Produkten in Echtzeit überwachst. Du kannst diese API nutzen, um die Preise von Wettbewerbern auf Shopify zu analysieren.\n\n* Voraussetzung: Du musst ein Google-Developers-Konto besitzen.\n* Schritt-für-Schritt-Prozess:\n 1. Erstelle ein neues Google-Developers-Konto, wenn du noch eines nicht hast.\n 2. Registriere dich für die API von Google Trends.\n 3. Nutze eine Bibliothek wie Python oder JavaScript, um die API zu nutzen und die Preise von Wettbewerbern auf Shopify zu analysieren.\n\n**2. Benutze die Preis-Analyse-Funktion von Algopix**\n\nAlgopix ist ein Tool, das für die Preisanalyse von Produkten auf Shopify",
+      "learned_at": "2026-05-28"
+    },
+    {
+      "name": "social_trends",
+      "description": "3 aktuell trendende Hashtag-Gruppen für E-Commerce auf Instagram/TikTok.",
+      "content": "**Aktuelle Trendende Hashtag-Gruppen für E-Commerce auf Instagram und TikTok**\n\nDie sozialen Medienplattformen Instagram und TikTok sind idealer Ort, um dein E-Commerce-Unternehmen zu präsentieren und neue Kunden anzuziehen. Hier sind drei aktuell trendende Hashtag-Gruppen, die du für deine Produkte und Inhalte nutzen kannst:\n\n1. **#Sustainability** (ca. 1,5 Milliarden Verwendungszahlen)\n Dieser Hashtag ist besonders bei jüngeren Generationen beliebt und zeigt, dass dein Unternehmen sich um Umwelt und Nachhaltigkeit kümmert. Du kannst damit Inhalte über deine eigenen Umweltinitiativen, nachhaltige Materialien oder reduzierte Versandkosten teilen.\n\n2. **#Ecommerce** (ca. 420 Millionen Verwendungszahlen)\n Dieser Hashtag ist ein Klassiker und wird von vielen E-Commerce-Unternehmen verwendet. Du kannst damit Inhalte über deine Produkte, Rabatte, Sonderangebote oder neue Erreichbarkeiten teilen.\n\n3. **#ShopSmall** (ca. 240 Millionen Verwendung",
+      "learned_at": "2026-05-28"
+    },
+    {
+      "name": "automation_tips",
+      "description": "Welche 3 Automatisierungen bringen im E-Commerce den größten Zeitgewinn?",
+      "content": "In einem E-Commerce-Unternehmen können verschiedene Automatisierungen zu einer erheblichen Verbesserung der Produktivität und des Umgangs mit Kunden führen. Hier sind drei Automatisierungen, die in vielen Fällen einen großen Zeitgewinn im E-Commerce bringen können:\n\n1. **Automatische Produktkategorisierung**: Mit der automatisierten Kategorisierung von Produkten können Sie Ihre Produkte schnell und effizient in verschiedene Kategorien einordnen. Dies kann durch die Verwendung von maschinellen Lernalgorithmen oder Algorithmen basierend auf den Metadaten der Artikel (z.B. Produktbeschreibung, Bild) erreicht werden.\n\nDie Vorteile dieses Ansatzes sind:\n\n*   Schnelle und effiziente Kategorisierung von Produkten\n*   Verbesserung der Suchfunktion für Kunden\n*   Reduzierung der Verwaltungsaufwendungen im Produktverwaltungsprozess\n\n2. **Automatisierte Bestellverarbeitung**: Die automatische Verarbeitung von Bestellungen kann den Prozess für Unternehmen erheblich vereinfachen und effizienter",
+      "learned_at": "2026-05-28"
+    },
+    {
+      "name": "seo_optimization",
+      "description": "3 konkrete Shopify-SEO-Optimierungen die heute sofort helfen.",
+      "content": "Hier sind drei konkrete Shopify-SEO-Optimierungen, die heute sofort helfen können:\n\n1. **Überprüfung und Aktualisierung von Produktbeschreibungen**:\n\nStellen Sie sicher, dass Ihre Produktbeschreibungen korrekt und vollständig sind. Verwenden Sie relevante Schlüsselwörter (KW), die in Ihrem Produktkategorien- und Produktbeschreibungen verwendet werden. Vermeiden Sie jedoch unnötige Wiederholungen von KW.\n\nTippe: \"Shopify SEO Optimierung\" und recherchiere nach \"Produktbeschreibung SEO\" für weitere Informationen.\n\n2. **Verwaltung von Metadaten**:\n\nMetadaten sind wichtige Informationen, die sich im Browserfenster anzeigt, wenn Sie eine Webseite besuchen. Stellen Sie sicher, dass Ihre Shopify-Seite korrekte und optimierte Metadaten hat, wie z.B.:\n\n* Titel: Eine kurze Zusammenfassung Ihrer Webseite oder Produktseite\n* Beschreibung: Eine kurze Zusammenfassung Ihrer Webseite oder Produktseite (maximal 160 Zeichen)\n* Keywords: relevante KW, die in Ihrem Produkt",
+      "learned_at": "2026-05-28"
+    },
+    {
+      "name": "ai_tools",
+      "description": "3 KI-Tools die 2025 für Online-Shops am nützlichsten sind. Name + 1-Satz Erklärung.",
+      "content": "Hier sind drei Ki-Tools, die im Jahr 2025 für Online-Shops am nützlichsten sind:\n\n1. **Ki-Tool K10**: Der K10 ist ein Multitool, das viele verschiedene Funktionen wie z.B. Schraubenzieher, Pflug, Messer und mehr bietet. Im Online-Business kann er zum Beispiel zum Schnitzen von Kartonagen oder zum Öffnen von Verschlägern verwendet werden.\n\n2. **Ki-Tool K3**: Der K3 ist ein 3-in-1-Tool, das sich aus drei verschiedenen Teilen besteht: einem Schraubenzieher, einem Pflug und einem Hammer. Im Online-Business kann er zum Beispiel zum Beilegen von Verschlägern oder zum Öffnen von Verpackungen verwendet werden.\n\n3. **Ki-Tool K5**: Der K5 ist ein 5-in-1-Tool, das sich aus fünf verschiedenen Teilen besteht: einem Schraubenzieher, einem Pflug, einem Hammer, einem Messer und einem Werkzeug zum Entfernen von Klebeband. Im Online-Business kann er zum Beispiel zum Schnitzen von",
+      "learned_at": "2026-05-28"
     }
   ],
-  "total": 7
+  "total": 12
 }
