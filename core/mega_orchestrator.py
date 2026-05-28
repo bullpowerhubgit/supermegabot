@@ -1080,11 +1080,35 @@ class MegaOrchestrator:
             log.warning("No Telegram token - polling disabled")
             return
 
+        # PID-Lock: verhindert doppeltes Polling bei mehrfachem Start
+        lock_path = DATA_DIR / "telegram_polling.pid"
+        my_pid = os.getpid()
+        if lock_path.exists():
+            try:
+                old_pid = int(lock_path.read_text().strip())
+                import signal
+                os.kill(old_pid, 0)  # prüft ob Prozess noch läuft
+                if old_pid != my_pid:
+                    log.warning(f"Telegram-Polling läuft bereits in PID {old_pid} — überspringe")
+                    return
+            except (ValueError, ProcessLookupError, PermissionError):
+                pass  # alter PID tot → Lock überschreiben
+        lock_path.write_text(str(my_pid))
+
+        try:
+            await self._do_telegram_polling()
+        finally:
+            try:
+                lock_path.unlink(missing_ok=True)
+            except Exception:
+                pass
+
+    async def _do_telegram_polling(self):
         # Webhook löschen (verhindert Konflikt mit Polling)
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
                 del_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/deleteWebhook"
-                async with s.post(del_url, json={"drop_pending_updates": False}) as r:
+                async with s.post(del_url, json={"drop_pending_updates": True}) as r:
                     result = await r.json()
                     if result.get("ok"):
                         log.info("Telegram webhook gelöscht - Polling aktiv")
@@ -1095,6 +1119,7 @@ class MegaOrchestrator:
 
         offset = 0
         retry_wait = 5
+        conflict_wait = 15
         log.info("Telegram polling gestartet")
         while self.running:
             try:
@@ -1113,14 +1138,16 @@ class MegaOrchestrator:
                                     continue
                                 await asyncio.sleep(retry_wait)
                                 continue
-                            retry_wait = 5  # Reset bei Erfolg
+                            retry_wait = 5       # Reset bei Erfolg
+                            conflict_wait = 15   # Reset nach erfolgreichem Poll
                             for update in data.get("result", []):
                                 offset = update["update_id"] + 1
                                 asyncio.create_task(self._handle_telegram_update(update))
                         elif r.status == 409:
                             body = await r.text()
-                            log.warning(f"Token-Konflikt (409): {body[:200]} — pausiere 60s")
-                            await asyncio.sleep(60)
+                            log.warning(f"Token-Konflikt (409): {body[:100]} — pausiere {conflict_wait}s")
+                            await asyncio.sleep(conflict_wait)
+                            conflict_wait = min(conflict_wait * 2, 300)
                         else:
                             body = await r.text()
                             log.error(f"Telegram HTTP {r.status}: {body[:200]}")
