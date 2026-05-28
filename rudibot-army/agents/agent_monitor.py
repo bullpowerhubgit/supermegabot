@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """🔴 Monitor Agent — Überwacht alle Services, Ports und Prozesse"""
 import sys, os, time, socket, subprocess, urllib.request
+from typing import Optional
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
@@ -35,7 +36,7 @@ def check_url(url: str) -> bool:
     except Exception:
         return False
 
-def check(port: int, url: str | None) -> bool:
+def check(port: int, url: Optional[str]) -> bool:
     if port == 0:
         return True  # Interner Check, immer OK solange dieser Agent läuft
     if url:

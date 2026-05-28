@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """📱 Social Agent — Autopilot für Social Media, plant Posts, überwacht Plattformen"""
 import sys, os, time, json
+from typing import Optional
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
@@ -12,7 +13,7 @@ DASHBOARD_URL = os.getenv("DASHBOARD_URL", "http://localhost:8888")
 AUTOPOST_INTERVAL = int(os.getenv("SOCIAL_AUTOPOST_INTERVAL", str(6 * 3600)))  # 6h default
 
 
-def call_api(path: str, method: str = "GET", body: dict | None = None) -> dict:
+def call_api(path: str, method: str = "GET", body: Optional[dict] = None) -> dict:
     import urllib.request
     try:
         data = json.dumps(body).encode() if body else None

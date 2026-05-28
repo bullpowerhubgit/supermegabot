@@ -79,7 +79,8 @@ def stop_all():
         try:
             proc.terminate()
             proc.wait(timeout=5)
-        except: proc.kill()
+        except Exception:
+            proc.kill()
     print("✅ Alle gestoppt")
 
 def status_report():

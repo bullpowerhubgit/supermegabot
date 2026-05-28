@@ -1639,6 +1639,75 @@ async def handle_storage_widget(req):
 
 
 # ---------------------------------------------------------------------------
+# Self-Learner API
+# ---------------------------------------------------------------------------
+
+async def handle_self_learner_status(req):
+    try:
+        if _self_learner is None:
+            return web.json_response({"ok": False, "status": "disabled", "reason": "self_learner_core not available"})
+        skills = _self_learner.learned_skills if hasattr(_self_learner, 'learned_skills') else {}
+        return web.json_response({"ok": True, "status": "active", "skills_count": len(skills), "skills": list(skills.keys())})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_self_learner_learn(req):
+    try:
+        if _self_learner is None:
+            return web.json_response({"ok": False, "error": "self_learner_core not available"}, status=503)
+        data = await req.json() if req.can_read_body else {}
+        skill_name = data.get("skill")
+        skill_data = data.get("data", {})
+        if not skill_name:
+            return web.json_response({"ok": False, "error": "skill name required"}, status=400)
+        _self_learner.learn(skill_name, skill_data)
+        return web.json_response({"ok": True, "learned": skill_name})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_self_learner_skills(req):
+    try:
+        if _self_learner is None:
+            return web.json_response({"ok": False, "skills": [], "error": "self_learner_core not available"})
+        skills = _self_learner.learned_skills if hasattr(_self_learner, 'learned_skills') else {}
+        return web.json_response({"ok": True, "skills": list(skills.keys()), "count": len(skills)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_self_learner_delete(req):
+    try:
+        if _self_learner is None:
+            return web.json_response({"ok": False, "error": "self_learner_core not available"}, status=503)
+        data = await req.json() if req.can_read_body else {}
+        skill_name = data.get("skill")
+        if not skill_name:
+            return web.json_response({"ok": False, "error": "skill name required"}, status=400)
+        skills = _self_learner.learned_skills if hasattr(_self_learner, 'learned_skills') else {}
+        if skill_name in skills:
+            del skills[skill_name]
+            return web.json_response({"ok": True, "deleted": skill_name})
+        return web.json_response({"ok": False, "error": f"skill '{skill_name}' not found"}, status=404)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_self_learner_find_api(req):
+    try:
+        if _self_learner is None:
+            return web.json_response({"ok": False, "error": "self_learner_core not available"}, status=503)
+        data = await req.json() if req.can_read_body else {}
+        query = data.get("query", "")
+        skills = _self_learner.learned_skills if hasattr(_self_learner, 'learned_skills') else {}
+        matches = [k for k in skills.keys() if query.lower() in k.lower()] if query else list(skills.keys())
+        return web.json_response({"ok": True, "query": query, "matches": matches, "count": len(matches)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ---------------------------------------------------------------------------
 # App Factory
 # ---------------------------------------------------------------------------
 
