@@ -197,10 +197,13 @@ case "$SERVICE" in
     echo "═══════════════════════════════════════"
     echo "  API KEY VALIDATOR — alle Services"
     echo "═══════════════════════════════════════"
-    # Lade .env
-    ENV_FILE="/Users/rudolfsarkany/supermegabot/.env"
+    # Lade .env (portabel: sucht im Script-Verzeichnis)
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    ENV_FILE="${ENV_FILE:-$SCRIPT_DIR/.env}"
     if [ -f "$ENV_FILE" ]; then
       set -a; source "$ENV_FILE" 2>/dev/null; set +a
+    else
+      warn ".env nicht gefunden: $ENV_FILE"
     fi
     test_openai
     test_anthropic
