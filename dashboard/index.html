@@ -818,16 +818,19 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="nav-item" data-section="chat">
         <span class="nav-icon">◎</span> AI Chat
       </div>
-      <div class="nav-item" data-section="autopilot">
-        <span class="nav-icon">◐</span> AutoPilot
-      </div>
-      <div class="nav-item" data-section="geheimwaffe">
-        <span class="nav-icon">⬡</span> GEHEIMWAFFE
-      </div>
 
       <div class="nav-group-label">Business</div>
       <div class="nav-item" data-section="shopify">
         <span class="nav-icon">◆</span> Shopify
+      </div>
+      <div class="nav-item" data-section="analytics">
+        <span class="nav-icon">📊</span> Analytics
+      </div>
+      <div class="nav-item" data-section="aitools">
+        <span class="nav-icon">🤖</span> AI Tools
+      </div>
+      <div class="nav-item" data-section="geheimwaffe">
+        <span class="nav-icon">⬡</span> Geheimwaffe
       </div>
       <div class="nav-item" data-section="gmc">
         <span class="nav-icon">◇</span> Google Merchant
@@ -837,6 +840,40 @@ input[type="range"]::-webkit-slider-thumb {
       </div>
       <div class="nav-item" data-section="telegram">
         <span class="nav-icon">✈</span> Telegram
+      </div>
+
+      <div class="nav-group-label">Automation</div>
+      <div class="nav-item" data-section="autopilot">
+        <span class="nav-icon">◐</span> Agents &amp; Autopilot
+      </div>
+      <div class="nav-item" data-section="botrepair">
+        <span class="nav-icon">🔧</span> Bot Repair
+      </div>
+
+      <div class="nav-group-label">Daten</div>
+      <div class="nav-item" data-section="memory">
+        <span class="nav-icon">🗒</span> Memory &amp; Notes
+      </div>
+      <div class="nav-item" data-section="github">
+        <span class="nav-icon">🐙</span> GitHub
+      </div>
+      <div class="nav-item" data-section="cloud">
+        <span class="nav-icon">☁</span> Cloud
+      </div>
+      <div class="nav-item" data-section="apikeys">
+        <span class="nav-icon">🔑</span> API Keys
+      </div>
+      <div class="nav-item" data-section="claudeassistant">
+        <span class="nav-icon">◎</span> Claude Assistant
+      </div>
+      <div class="nav-item" data-section="openclaw">
+        <span class="nav-icon">🦞</span> OpenClaw Hub
+      </div>
+      <div class="nav-item" data-section="remotedesktop">
+        <span class="nav-icon">🖥</span> Remote Desktop
+      </div>
+      <div class="nav-item" data-section="datenschutz">
+        <span class="nav-icon">🛡</span> Datenschutz
       </div>
 
       <div class="nav-group-label">Infrastructure</div>
@@ -1019,6 +1056,15 @@ input[type="range"]::-webkit-slider-thumb {
         <div><h2>Shopify</h2><p>Store management and analytics</p></div>
         <div class="section-header-actions">
           <button class="btn btn-secondary btn-sm" onclick="loadShopify()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div id="sh-setup-banner" style="display:none" class="tg-status-banner not-configured mb-16">
+        <span style="font-size:24px">⚠</span>
+        <div>
+          <div class="tg-status-title">Shopify Setup erforderlich — DNS / Verbindungsfehler</div>
+          <div class="tg-status-sub">Shop-Domain in .env setzen: <strong>SHOPIFY_SHOP_DOMAIN=yourshop.myshopify.com</strong></div>
+          <div class="tg-status-sub" style="margin-top:4px">Ausserdem <strong>SHOPIFY_ACCESS_TOKEN</strong> aus dem Shopify Partner-Dashboard eintragen.</div>
         </div>
       </div>
 
@@ -1469,8 +1515,12 @@ function nav(section) {
   document.getElementById(`section-${section}`)?.classList.add('active');
   const titles = {
     overview:'Overview', services:'Services', chat:'AI Chat', shopify:'Shopify',
-    trading:'Trading', system:'System', logs:'Logs', autopilot:'AutoPilot',
-    geheimwaffe:'GEHEIMWAFFE', telegram:'Telegram', gmc:'Google Merchant'
+    trading:'Trading', system:'System', logs:'Logs', autopilot:'Agents & Autopilot',
+    geheimwaffe:'GEHEIMWAFFE', telegram:'Telegram', gmc:'Google Merchant',
+    analytics:'Analytics', aitools:'AI Tools', botrepair:'Bot Repair',
+    memory:'Memory & Notes', github:'GitHub', cloud:'Cloud', apikeys:'API Keys',
+    claudeassistant:'Claude Assistant', openclaw:'OpenClaw Hub',
+    remotedesktop:'Remote Desktop', datenschutz:'Datenschutz'
   };
   document.getElementById('topbar-title').textContent = titles[section] || section;
   currentSection = section;
@@ -1487,6 +1537,17 @@ function sectionInit(section) {
     autopilot: () => { loadAgents(); loadAutopilotLogs(); },
     telegram: loadTelegram,
     gmc: loadGMC,
+    analytics: loadAnalytics,
+    aitools: loadAITools,
+    botrepair: loadBotRepair,
+    memory: loadMemory,
+    github: loadGitHub,
+    cloud: loadCloud,
+    apikeys: loadAPIKeys,
+    claudeassistant: () => {},
+    openclaw: () => {},
+    remotedesktop: loadRemoteDesktop,
+    datenschutz: () => {},
   };
   if (loaders[section]) loaders[section]();
 }
@@ -1740,12 +1801,19 @@ async function loadShopify() {
     const d = await api('GET', '/api/shopify/status');
     document.getElementById('sh-products').textContent = d.products ?? '—';
     document.getElementById('sh-orders').textContent = d.orders ?? '—';
-    document.getElementById('sh-store-name').textContent = d.store || 'Connected';
-    const badge = d.ok ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Error</span>';
+    document.getElementById('sh-store-name').textContent = d.store || (d.ok ? 'Connected' : 'Not configured');
+    const badge = d.ok ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Setup Error</span>';
     document.getElementById('sh-status-badge').innerHTML = badge;
+    const banner = document.getElementById('sh-setup-banner');
+    if (!d.ok) {
+      banner.style.display = 'flex';
+    } else {
+      banner.style.display = 'none';
+    }
   } catch(e) {
     toast('Failed to load Shopify data', 'error');
     document.getElementById('sh-store-name').textContent = 'Error';
+    document.getElementById('sh-setup-banner').style.display = 'flex';
   }
 }
 
