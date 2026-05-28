@@ -782,24 +782,101 @@ _WATCHED_ENV_KEYS = [
     "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
     "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_STORE_URL", "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_API_VERSION",
     "OLLAMA_HOST", "OLLAMA_FAST_MODEL", "OLLAMA_SMART_MODEL", "OLLAMA_CODE_MODEL",
-    "OPENAI_API_KEY", "PERPLEXITY_API_KEY",
+    "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "PERPLEXITY_API_KEY",
+    "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY",
     "GOOGLE_ADS_CLIENT_ID", "GMC_MERCHANT_ID",
     "ETERNAL_BOT_DIR", "KIVO_DIR",
     "DASHBOARD_PORT", "SHOPIFY_SUITE_URL",
 ]
 
+# Key format validators (no network needed)
+_KEY_FORMATS = {
+    "OPENAI_API_KEY":        lambda v: v.startswith("sk-"),
+    "ANTHROPIC_API_KEY":     lambda v: v.startswith("sk-ant-"),
+    "PERPLEXITY_API_KEY":    lambda v: v.startswith("pplx-") or len(v) > 20,
+    "TELEGRAM_BOT_TOKEN":    lambda v: ":" in v and len(v) > 20,
+    "SHOPIFY_ACCESS_TOKEN":  lambda v: v.startswith("shpat_") or v.startswith("shpss_") or len(v) > 20,
+    "SUPABASE_URL":          lambda v: "supabase" in v or v.startswith("http"),
+    "SUPABASE_ANON_KEY":     lambda v: len(v) > 50,
+    "SUPABASE_SERVICE_ROLE_KEY": lambda v: len(v) > 50,
+}
+
+
+async def _validate_key(session: aiohttp.ClientSession, key: str, val: str) -> str:
+    """Returns 'valid', 'present', or 'missing'."""
+    if not val:
+        return "missing"
+
+    # Format check first (fast, no network)
+    fmt_check = _KEY_FORMATS.get(key)
+    if fmt_check and not fmt_check(val):
+        return "present"  # set but wrong format
+
+    # Network validation for critical keys
+    timeout = aiohttp.ClientTimeout(total=5)
+    try:
+        if key == "OPENAI_API_KEY":
+            async with session.get(
+                "https://api.openai.com/v1/models",
+                headers={"Authorization": f"Bearer {val}"},
+                timeout=timeout
+            ) as r:
+                return "valid" if r.status == 200 else "present"
+
+        elif key == "ANTHROPIC_API_KEY":
+            async with session.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": val,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1,
+                      "messages": [{"role": "user", "content": "hi"}]},
+                timeout=timeout
+            ) as r:
+                return "valid" if r.status in (200, 400) else "present"
+
+        elif key == "SUPABASE_URL" and os.environ.get("SUPABASE_ANON_KEY"):
+            async with session.get(
+                f"{val}/rest/v1/",
+                headers={"apikey": os.environ["SUPABASE_ANON_KEY"]},
+                timeout=timeout
+            ) as r:
+                return "valid" if r.status < 500 else "present"
+
+    except Exception:
+        pass
+
+    # Not validated via network — but set + format ok
+    return "present"
+
 
 async def handle_api_keys(req):
-    """Returns which env keys are set (never the values)."""
+    """Returns validation status for all tracked env keys."""
+    validate = req.rel_url.query.get("validate", "1") == "1"
     result = {}
-    for key in _WATCHED_ENV_KEYS:
-        val = os.environ.get(key, "")
-        result[key] = {
-            "set": bool(val),
-            "length": len(val) if val else 0,
-            "preview": val[:4] + "..." if len(val) > 4 else ("(set)" if val else ""),
-        }
-    return web.json_response({"ok": True, "keys": result})
+    async with aiohttp.ClientSession() as session:
+        for key in _WATCHED_ENV_KEYS:
+            val = os.environ.get(key, "")
+            if not val:
+                status = "missing"
+            elif validate:
+                status = await _validate_key(session, key, val)
+            else:
+                status = "present"
+            result[key] = {
+                "status": status,          # "valid" | "present" | "missing"
+                "set": bool(val),
+                "length": len(val),
+                "preview": val[:4] + "..." if len(val) > 4 else ("(set)" if val else ""),
+            }
+    set_count    = sum(1 for v in result.values() if v["set"])
+    valid_count  = sum(1 for v in result.values() if v["status"] == "valid")
+    return web.json_response({
+        "ok": True, "keys": result,
+        "summary": {"total": len(result), "set": set_count, "valid": valid_count}
+    })
 
 
 async def handle_github_status(req):
