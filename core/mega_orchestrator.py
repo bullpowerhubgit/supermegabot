@@ -32,8 +32,9 @@ LOGS_DIR.mkdir(exist_ok=True)
 
 # Guardian Integration
 GUARDIAN_AVAILABLE = False
+_ETERNAL_DIR = os.getenv("ETERNAL_BOT_DIR", str(Path.home() / "rudibot-eternal"))
 try:
-    sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+    sys.path.insert(0, _ETERNAL_DIR)
     from guardian_integration import guardian
     GUARDIAN_AVAILABLE = True
 except ImportError:
@@ -175,11 +176,10 @@ class MemorySystem:
 
 class OllamaClient:
     MODELS = {
-        "fast": "gemma4:latest",
-        "smart": "gemma4:latest",
-        "gemma4": "gemma4:latest",
-        "code": "codellama:latest",
-        "analysis": "mistral:latest",
+        "fast":     os.getenv("OLLAMA_FAST_MODEL",     "llama3.2:latest"),
+        "smart":    os.getenv("OLLAMA_SMART_MODEL",    "gemma2:latest"),
+        "code":     os.getenv("OLLAMA_CODE_MODEL",     "codellama:latest"),
+        "analysis": os.getenv("OLLAMA_ANALYSIS_MODEL", "mistral:latest"),
     }
 
     def __init__(self):
@@ -957,7 +957,7 @@ class MegaOrchestrator:
     def _init_guardian(self):
         """Initialize Guardian API client"""
         try:
-            sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+            sys.path.insert(0, _ETERNAL_DIR)
             from guardian_client import GuardianClient
             self.guardian = GuardianClient()
             log.info("Guardian API client initialized")
@@ -981,7 +981,7 @@ class MegaOrchestrator:
                 self.guardian.register_agent(
                     agent_id="supermegabot-core",
                     agent_type="orchestrator",
-                    endpoint="http://localhost:3200"
+                    endpoint=f"http://localhost:{os.getenv('DASHBOARD_PORT', '8888')}"
                 )
                 self.guardian.notify("🚀 SuperMegaBot Orchestrator gestartet!")
                 log.info("Registered with Guardian API")

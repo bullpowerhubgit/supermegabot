@@ -1230,19 +1230,73 @@ async def handle_telegram_send(req):
 
 
 async def handle_shopify_status(req):
-    store = os.getenv("SHOPIFY_STORE_URL", "")
-    token = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-    if not store or not token:
-        return web.json_response({"ok": False, "error": "SHOPIFY_STORE_URL / SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
+    store = os.getenv("SHOPIFY_STORE_URL", "").strip().rstrip("/")
+    token = os.getenv("SHOPIFY_ACCESS_TOKEN", "").strip()
+    domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip().rstrip("/")
+
+    if not token:
+        return web.json_response({"ok": False, "error": "SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
+
+    # Build base URL: prefer explicit domain, fall back to SHOPIFY_STORE_URL
+    if domain:
+        if not domain.startswith("http"):
+            domain = f"https://{domain}"
+        base = domain
+    elif store:
+        if not store.startswith("http"):
+            store = f"https://{store}"
+        base = store
+    else:
+        return web.json_response({"ok": False, "error": "SHOPIFY_STORE_URL oder SHOPIFY_SHOP_DOMAIN nicht gesetzt"})
+
+    api_version = os.getenv("SHOPIFY_API_VERSION", "2024-10")
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
-            url = f"{store}/admin/api/2024-01/shop.json"
-            headers = {"X-Shopify-Access-Token": token}
+        connector = aiohttp.TCPConnector(ssl=True, limit=5)
+        timeout = aiohttp.ClientTimeout(total=10, connect=6)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as s:
+            url = f"{base}/admin/api/{api_version}/shop.json"
+            headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
             async with s.get(url, headers=headers) as r:
                 if r.status == 200:
                     d = await r.json()
-                    return web.json_response({"ok": True, "store": d.get("shop", {}).get("name", store)})
-                return web.json_response({"ok": False, "error": f"HTTP {r.status}"})
+                    shop = d.get("shop", {})
+                    # Also fetch product + order counts
+                    prod_url = f"{base}/admin/api/{api_version}/products/count.json"
+                    order_url = f"{base}/admin/api/{api_version}/orders/count.json?status=any"
+                    prod_count = order_count = "?"
+                    try:
+                        async with s.get(prod_url, headers=headers) as pr:
+                            if pr.status == 200:
+                                prod_count = (await pr.json()).get("count", "?")
+                    except Exception:
+                        pass
+                    try:
+                        async with s.get(order_url, headers=headers) as or_:
+                            if or_.status == 200:
+                                order_count = (await or_.json()).get("count", "?")
+                    except Exception:
+                        pass
+                    return web.json_response({
+                        "ok": True,
+                        "store": shop.get("name", base),
+                        "domain": shop.get("domain", ""),
+                        "email": shop.get("email", ""),
+                        "currency": shop.get("currency", ""),
+                        "plan": shop.get("plan_display_name", ""),
+                        "product_count": prod_count,
+                        "order_count": order_count,
+                    })
+                elif r.status == 401:
+                    return web.json_response({"ok": False, "error": "Token ungültig (401) — neu generieren"})
+                elif r.status == 402:
+                    return web.json_response({"ok": False, "error": "Shop gesperrt (402)"})
+                else:
+                    body = await r.text()
+                    return web.json_response({"ok": False, "error": f"HTTP {r.status}: {body[:100]}"})
+    except aiohttp.ClientConnectorError as e:
+        return web.json_response({"ok": False, "error": f"DNS/Verbindung fehlgeschlagen: {e.host} — Shop-URL prüfen"})
+    except aiohttp.ServerTimeoutError:
+        return web.json_response({"ok": False, "error": "Timeout — Shopify nicht erreichbar"})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -1711,6 +1765,261 @@ async def handle_self_learner_find_api(req):
 # App Factory
 # ---------------------------------------------------------------------------
 
+
+# ---------------------------------------------------------------------------
+# New section handlers: API Keys, GitHub, Cloud, Bot Repair, Notes, Railway
+# ---------------------------------------------------------------------------
+
+_WATCHED_ENV_KEYS = [
+    "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
+    "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_STORE_URL", "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_API_VERSION",
+    "OLLAMA_HOST", "OLLAMA_FAST_MODEL", "OLLAMA_SMART_MODEL", "OLLAMA_CODE_MODEL",
+    "OPENAI_API_KEY", "PERPLEXITY_API_KEY",
+    "GOOGLE_ADS_CLIENT_ID", "GMC_MERCHANT_ID",
+    "ETERNAL_BOT_DIR", "KIVO_DIR",
+    "DASHBOARD_PORT", "SHOPIFY_SUITE_URL",
+]
+
+
+async def handle_api_keys(req):
+    """Returns which env keys are set (never the values)."""
+    result = {}
+    for key in _WATCHED_ENV_KEYS:
+        val = os.environ.get(key, "")
+        result[key] = {
+            "set": bool(val),
+            "length": len(val) if val else 0,
+            "preview": val[:4] + "..." if len(val) > 4 else ("(set)" if val else ""),
+        }
+    return web.json_response({"ok": True, "keys": result})
+
+
+async def handle_github_status(req):
+    """Returns current git branch, last commit, and remote URL."""
+    try:
+        def _git(args):
+            r = subprocess.run(["git", "-C", str(BASE_DIR)] + args,
+                               capture_output=True, text=True, timeout=8)
+            return r.stdout.strip() if r.returncode == 0 else ""
+        branch = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        commit = _git(["log", "-1", "--oneline"])
+        remote = _git(["remote", "get-url", "origin"])
+        status = _git(["status", "--porcelain"])
+        staged = len([l for l in status.splitlines() if l and l[0] in "MADRCU"])
+        unstaged = len([l for l in status.splitlines() if l and l[1] in "MADRCU?"])
+        return web.json_response({
+            "ok": True,
+            "branch": branch,
+            "commit": commit,
+            "remote": remote,
+            "staged": staged,
+            "unstaged": unstaged,
+            "clean": not bool(status.strip()),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_github_push(req):
+    """Git add -A, commit with timestamp, push to current branch."""
+    try:
+        def _git(args):
+            r = subprocess.run(["git", "-C", str(BASE_DIR)] + args,
+                               capture_output=True, text=True, timeout=30)
+            return r.returncode == 0, r.stdout.strip(), r.stderr.strip()
+
+        ok, out, err = _git(["status", "--porcelain"])
+        if not out.strip():
+            return web.json_response({"ok": True, "message": "Nichts zu committen"})
+
+        ts = time.strftime("%Y-%m-%d %H:%M")
+        _git(["add", "-A"])
+        ok, out, err = _git(["commit", "-m", f"Dashboard auto-commit {ts}"])
+        if not ok:
+            return web.json_response({"ok": False, "error": f"Commit: {err}"})
+
+        branch_ok, branch, _ = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        push_ok, push_out, push_err = _git(["push", "origin", branch])
+        if push_ok:
+            return web.json_response({"ok": True, "message": f"Gepusht: {branch} ✅"})
+        return web.json_response({"ok": False, "error": push_err[:200]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_cloud_status(req):
+    """Check Railway + ngrok availability."""
+    railway_url = os.getenv("SHOPIFY_SUITE_URL",
+                            "https://shopify-suite-v2-production.up.railway.app")
+    results = {}
+    timeout = aiohttp.ClientTimeout(total=8)
+    async with aiohttp.ClientSession(timeout=timeout) as s:
+        # Railway
+        try:
+            async with s.get(f"{railway_url}/health") as r:
+                results["railway"] = {"ok": r.status < 400, "status": r.status, "url": railway_url}
+        except Exception as e:
+            results["railway"] = {"ok": False, "error": str(e)[:80], "url": railway_url}
+        # ngrok
+        try:
+            async with s.get("http://localhost:4040/api/tunnels") as r:
+                d = await r.json()
+                tunnels = [t.get("public_url", "") for t in d.get("tunnels", [])]
+                results["ngrok"] = {"ok": True, "tunnels": tunnels}
+        except Exception:
+            results["ngrok"] = {"ok": False, "tunnels": []}
+    return web.json_response({"ok": True, "services": results})
+
+
+async def handle_bot_repair_status(req):
+    """Returns self-healer status + recent heal history."""
+    try:
+        heal_log = DATA_DIR / "heal_history.json"
+        history = []
+        if heal_log.exists():
+            history = json.loads(heal_log.read_text())[-20:]
+        known = {}
+        known_file = DATA_DIR / "known_fixes.json"
+        if known_file.exists():
+            known = json.loads(known_file.read_text())
+        return web.json_response({
+            "ok": True,
+            "total_fixes": len(history),
+            "known_problems": len(known),
+            "recent": history[-5:],
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_bot_repair_run(req):
+    """Trigger self-healer scan."""
+    try:
+        sys.path.insert(0, str(BASE_DIR / "core"))
+        from self_healer import SelfHealer
+        healer = SelfHealer()
+        fixes = await healer.run_auto_fixes()
+        errors = await healer.scan_logs_for_errors()
+        return web.json_response({
+            "ok": True,
+            "fixes_applied": fixes,
+            "log_errors": [e["error"] for e in errors],
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_notes_get(req):
+    """Get saved notes."""
+    notes_file = DATA_DIR / "notes.json"
+    notes = []
+    if notes_file.exists():
+        try:
+            notes = json.loads(notes_file.read_text())
+        except Exception:
+            pass
+    return web.json_response({"ok": True, "notes": notes})
+
+
+async def handle_notes_save(req):
+    """Save a note."""
+    try:
+        data = await req.json()
+        text = str(data.get("text", "")).strip()[:2000]
+        if not text:
+            return web.json_response({"ok": False, "error": "Leere Notiz"})
+        notes_file = DATA_DIR / "notes.json"
+        notes = []
+        if notes_file.exists():
+            try:
+                notes = json.loads(notes_file.read_text())
+            except Exception:
+                pass
+        notes.append({"text": text, "created": datetime.now().isoformat()})
+        notes = notes[-100:]
+        notes_file.write_text(json.dumps(notes, indent=2, ensure_ascii=False))
+        return web.json_response({"ok": True, "count": len(notes)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_notes_delete(req):
+    """Delete a note by index."""
+    try:
+        data = await req.json()
+        idx = int(data.get("index", -1))
+        notes_file = DATA_DIR / "notes.json"
+        notes = []
+        if notes_file.exists():
+            notes = json.loads(notes_file.read_text())
+        if 0 <= idx < len(notes):
+            notes.pop(idx)
+            notes_file.write_text(json.dumps(notes, indent=2, ensure_ascii=False))
+        return web.json_response({"ok": True, "count": len(notes)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_deepscan(req):
+    """Run a comprehensive system deep scan."""
+    results = {"timestamp": datetime.now().isoformat(), "checks": {}}
+
+    # 1. Python syntax check on key files
+    key_files = [
+        BASE_DIR / "core" / "mega_orchestrator.py",
+        BASE_DIR / "core" / "self_healer.py",
+        BASE_DIR / "dashboard" / "server.py",
+        BASE_DIR / "modules" / "telegram_control.py",
+    ]
+    syntax_ok = []
+    syntax_err = []
+    for f in key_files:
+        if not f.exists():
+            continue
+        try:
+            import ast
+            ast.parse(f.read_text())
+            syntax_ok.append(f.name)
+        except SyntaxError as e:
+            syntax_err.append(f"{f.name}: {e}")
+    results["checks"]["syntax"] = {"ok": not syntax_err, "ok_files": syntax_ok, "errors": syntax_err}
+
+    # 2. Env vars
+    required_env = ["TELEGRAM_BOT_TOKEN", "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_SHOP_DOMAIN"]
+    missing_env = [k for k in required_env if not os.environ.get(k)]
+    results["checks"]["env"] = {"ok": not missing_env, "missing": missing_env}
+
+    # 3. Ollama
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=3)) as s:
+            async with s.get(f"{OLLAMA_BASE}/api/tags") as r:
+                results["checks"]["ollama"] = {"ok": r.status == 200}
+    except Exception:
+        results["checks"]["ollama"] = {"ok": False}
+
+    # 4. Army state
+    army_state = BASE_DIR / "rudibot-army" / "shared" / "army_state.json"
+    results["checks"]["army_state"] = {"ok": army_state.exists()}
+
+    # 5. Disk
+    try:
+        import psutil
+        disk = psutil.disk_usage("/")
+        results["checks"]["disk"] = {
+            "ok": disk.percent < 90,
+            "percent": disk.percent,
+            "free_gb": disk.free // 1024 ** 3,
+        }
+    except ImportError:
+        results["checks"]["disk"] = {"ok": True, "note": "psutil nicht installiert"}
+
+    # Summary
+    total = len(results["checks"])
+    passed = sum(1 for v in results["checks"].values() if v.get("ok"))
+    results["summary"] = {"total": total, "passed": passed, "failed": total - passed}
+    return web.json_response(results)
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -1767,6 +2076,18 @@ async def create_app():
     app.router.add_get("/api/storage/large-files", handle_storage_large_files)
     app.router.add_get("/api/storage/history",     handle_storage_history)
     app.router.add_get("/storage", handle_storage_widget)
+
+    # ── New section routes ────────────────────────────────────────────────────
+    app.router.add_get("/api/keys",               handle_api_keys)
+    app.router.add_get("/api/github/status",      handle_github_status)
+    app.router.add_post("/api/github/push",       handle_github_push)
+    app.router.add_get("/api/cloud/status",       handle_cloud_status)
+    app.router.add_get("/api/bot-repair/status",  handle_bot_repair_status)
+    app.router.add_post("/api/bot-repair/run",    handle_bot_repair_run)
+    app.router.add_get("/api/notes",              handle_notes_get)
+    app.router.add_post("/api/notes",             handle_notes_save)
+    app.router.add_delete("/api/notes",           handle_notes_delete)
+    app.router.add_get("/api/deepscan",           handle_deepscan)
 
     return app
 
