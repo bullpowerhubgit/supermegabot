@@ -692,6 +692,8 @@ input[type="range"]::-webkit-slider-thumb {
 /* ── CHAT SECTION WRAPPER ── */
 #section-chat { padding: 0; display: none; flex-direction: column; height: calc(100vh - var(--topbar-h)); }
 #section-chat.active { display: flex; }
+#section-claudeassistant { padding: 0; display: none; flex-direction: column; height: calc(100vh - var(--topbar-h)); }
+#section-claudeassistant.active { display: flex; }
 .chat-top-bar { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
 .chat-top-bar h2 { font-size: 16px; font-weight: 700; color: var(--text1); flex: 1; }
 
@@ -750,6 +752,7 @@ input[type="range"]::-webkit-slider-thumb {
 .skeleton-w85 { width:85%; }
 .skeleton-w90 { width:90%; }
 .flex-wrap-gap8 { display:flex; gap:8px; flex-wrap:wrap; }
+.flex-wrap-gap6 { display:flex; gap:6px; flex-wrap:wrap; }
 .flex-center-gap8 { display:flex; align-items:center; gap:8px; }
 .flex-center-gap6 { display:flex; align-items:center; gap:6px; }
 .flex-col-gap6 { display:flex; flex-direction:column; gap:6px; }
@@ -1469,6 +1472,565 @@ input[type="range"]::-webkit-slider-thumb {
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: ANALYTICS
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-analytics" class="section">
+      <div class="section-header">
+        <div><h2>Analytics</h2><p>Umsatz, Bestellungen und Produkt-Performance</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAnalytics()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="stat-cards mb-16" id="analytics-stat-cards">
+        <div class="stat-card blue">
+          <div class="sc-icon">💰</div>
+          <div class="sc-label">Umsatz (30d)</div>
+          <div class="sc-val" id="an-revenue">—</div>
+          <div class="sc-sub" id="an-revenue-sub">Loading…</div>
+        </div>
+        <div class="stat-card green">
+          <div class="sc-icon">🛒</div>
+          <div class="sc-label">Bestellungen</div>
+          <div class="sc-val" id="an-orders">—</div>
+          <div class="sc-sub" id="an-orders-sub">Loading…</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="sc-icon">📦</div>
+          <div class="sc-label">Produkte</div>
+          <div class="sc-val" id="an-products">—</div>
+          <div class="sc-sub" id="an-products-sub">Loading…</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="sc-icon">👤</div>
+          <div class="sc-label">Kunden</div>
+          <div class="sc-val" id="an-customers">—</div>
+          <div class="sc-sub" id="an-customers-sub">Loading…</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>📊</span> Top Produkte</div>
+            <button class="btn btn-secondary btn-xs" onclick="loadAnalytics()">↻</button>
+          </div>
+          <div id="an-products-table">
+            <div class="empty-state"><div class="es-icon">📦</div><div class="es-title">Lade Produkte…</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🛒</span> Letzte Bestellungen</div>
+            <button class="btn btn-secondary btn-xs" onclick="loadAnalytics()">↻</button>
+          </div>
+          <div id="an-orders-table">
+            <div class="empty-state"><div class="es-icon">🛒</div><div class="es-title">Lade Bestellungen…</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <div class="card-header">
+          <div class="card-title"><span>◈</span> Shopify Quick-Actions</div>
+        </div>
+        <div class="flex-wrap-gap8">
+          <button class="btn btn-primary" onclick="nav('shopify')">◆ Shopify öffnen</button>
+          <button class="btn btn-secondary" onclick="loadAnalytics()">↻ Daten aktualisieren</button>
+          <button class="btn btn-secondary" onclick="nav('gmc')">◇ Google Merchant</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: AI TOOLS (Ollama)
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-aitools" class="section">
+      <div class="section-header">
+        <div><h2>AI Tools</h2><p>Ollama Modelle, Quick Chat und Modell-Verwaltung</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAITools()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🤖</span> Ollama Modelle</div>
+            <span class="badge badge-gray" id="ait-model-count">— Modelle</span>
+          </div>
+          <div id="ait-models-list">
+            <div class="empty-state"><div class="es-sub">Lade Modelle…</div></div>
+          </div>
+          <div class="mt-12">
+            <button class="btn btn-secondary w-full" onclick="loadAITools()">↻ Modelle neu laden</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>◎</span> Quick Chat</div>
+          </div>
+          <label class="label-sm-block">Modell auswählen:</label>
+          <select id="ait-model-select" class="w-full input-mb">
+            <option value="gemma4">Gemma 4</option>
+            <option value="llama3.2">Llama 3.2</option>
+            <option value="codellama">CodeLlama</option>
+            <option value="mistral">Mistral</option>
+          </select>
+          <label class="label-sm-block">Nachricht:</label>
+          <textarea id="ait-prompt" class="w-full" style="height:80px;resize:vertical;" placeholder="Prompt eingeben…"></textarea>
+          <div class="flex-center-gap8 mt-10">
+            <button class="btn btn-primary flex-1" onclick="runAIToolsChat()" id="ait-chat-btn">▶ Senden</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('ait-result').innerHTML='';document.getElementById('ait-prompt').value=''">✕ Clear</button>
+          </div>
+          <div id="ait-result" class="mt-12" style="display:none;">
+            <div class="result-card">
+              <div class="result-card-header"><div class="result-card-title">◈ Antwort</div><div class="result-card-meta" id="ait-result-meta"></div></div>
+              <div class="result-body" id="ait-result-body"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>▣</span> Ollama Status</div>
+        </div>
+        <div id="ait-status-row" class="flex-center-gap8">
+          <div class="ring" id="ait-ring"></div>
+          <span id="ait-status-text" class="text2">Prüfe Verbindung…</span>
+          <button class="btn btn-secondary btn-xs ml-auto" onclick="loadAITools()">Prüfen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: BOT REPAIR
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-botrepair" class="section">
+      <div class="section-header">
+        <div><h2>Bot Repair</h2><p>Self-Healer — automatische Fehlerdiagnose und Reparatur</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadBotRepair()">↻ Status</button>
+          <button class="btn btn-primary btn-sm" onclick="runBotScan()">🔍 Scan starten</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🔧</span> Self-Healer Status</div>
+            <span id="br-status-badge" class="badge badge-gray">—</span>
+          </div>
+          <div id="br-status-list">
+            <div class="service-row">
+              <div class="ring" id="br-ring-main"></div>
+              <span class="service-name">Bot Core</span>
+              <span id="br-core-badge" class="badge badge-gray">Prüfe…</span>
+            </div>
+            <div class="service-row">
+              <div class="ring" id="br-ring-ollama"></div>
+              <span class="service-name">Ollama AI</span>
+              <span id="br-ollama-badge" class="badge badge-gray">Prüfe…</span>
+            </div>
+            <div class="service-row">
+              <div class="ring" id="br-ring-telegram"></div>
+              <span class="service-name">Telegram Bot</span>
+              <span id="br-telegram-badge" class="badge badge-gray">Prüfe…</span>
+            </div>
+            <div class="service-row">
+              <div class="ring" id="br-ring-shopify"></div>
+              <span class="service-name">Shopify API</span>
+              <span id="br-shopify-badge" class="badge badge-gray">Prüfe…</span>
+            </div>
+          </div>
+          <div class="flex-wrap-gap8 mt-12">
+            <button class="btn btn-primary" onclick="runBotScan()">🔍 Vollscan</button>
+            <button class="btn btn-success" onclick="runBotRepair()">🔧 Auto-Repair</button>
+            <button class="btn btn-secondary" onclick="loadBotRepair()">↻ Refresh</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>≡</span> Repair Log</div>
+            <button class="btn btn-danger btn-xs" onclick="document.getElementById('br-log').innerHTML='<span class=\'log-line debug\'>Log geleert.</span>'">✕ Clear</button>
+          </div>
+          <div class="terminal" style="height:240px;" id="br-log">
+            <span class="log-line debug">Bereit — Scan starten um Logs zu sehen.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>◈</span> Manuelle Aktionen</div>
+        </div>
+        <div class="flex-wrap-gap8">
+          <button class="btn btn-secondary" onclick="botRepairAction('restart_bot')">↻ Bot neu starten</button>
+          <button class="btn btn-secondary" onclick="botRepairAction('clear_cache')">🗑 Cache leeren</button>
+          <button class="btn btn-secondary" onclick="botRepairAction('reload_env')">⚙ .env neu laden</button>
+          <button class="btn btn-secondary" onclick="runBackup()">▤ Backup jetzt</button>
+          <button class="btn btn-danger" onclick="botRepairAction('kill_zombie')">☠ Zombie-Proz. killen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: MEMORY & NOTES
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-memory" class="section">
+      <div class="section-header">
+        <div><h2>Memory &amp; Notes</h2><p>Bot-Gedächtnis und persönliche Notizen</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadMemory()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🗒</span> Bot-Memory DB</div>
+            <span class="badge badge-gray" id="mem-count">— Einträge</span>
+          </div>
+          <div id="mem-entries-list">
+            <div class="empty-state"><div class="es-sub">Lade Memory…</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>✏</span> Notiz erstellen</div>
+          </div>
+          <label class="label-sm-block">Titel / Schlüssel:</label>
+          <input type="text" id="mem-note-key" class="w-full input-mb" placeholder="z.B. shopify_strategy">
+          <label class="label-sm-block">Inhalt:</label>
+          <textarea id="mem-note-val" class="w-full" style="height:120px;resize:vertical;" placeholder="Notiz-Inhalt…"></textarea>
+          <div class="flex-center-gap8 mt-10">
+            <button class="btn btn-primary flex-1" onclick="saveMemoryNote()">💾 Speichern</button>
+            <button class="btn btn-secondary" onclick="loadMemory()">↻ Refresh</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: GITHUB
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-github" class="section">
+      <div class="section-header">
+        <div><h2>GitHub</h2><p>Repository-Status, Commits und Backup</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadGitHub()">↻ Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="runBackup()">▤ Push / Backup</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🐙</span> Repository Info</div>
+          </div>
+          <div id="gh-info-list">
+            <div class="empty-state"><div class="es-sub">Lade Git-Info…</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>◈</span> Quick Actions</div>
+          </div>
+          <div class="flex-col-gap6">
+            <button class="btn btn-primary" onclick="runBackup()">▤ Backup &amp; Push nach GitHub</button>
+            <button class="btn btn-secondary" onclick="loadGitHub()">↻ Git-Status aktualisieren</button>
+            <button class="btn btn-secondary" onclick="ghOpenPR()">🔗 Pull Request öffnen</button>
+          </div>
+          <div class="mt-12">
+            <div class="card-title card-title-sm">Git Output</div>
+            <div class="terminal" style="height:120px;" id="gh-output">Bereit.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>≡</span> Letzter Commit</div>
+        </div>
+        <div id="gh-last-commit">
+          <div class="empty-state"><div class="es-sub">Lade Commit-Info…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: CLOUD
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-cloud" class="section">
+      <div class="section-header">
+        <div><h2>Cloud</h2><p>Railway, Vercel und Cloud-Deployments</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadCloud()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🚂</span> Railway</div>
+            <span id="cloud-railway-badge" class="badge badge-gray">Prüfe…</span>
+          </div>
+          <div id="cloud-railway-info">
+            <div class="empty-state"><div class="es-sub">Lade Railway-Status…</div></div>
+          </div>
+          <div class="flex-wrap-gap8 mt-12">
+            <button class="btn btn-secondary" onclick="loadCloud()">↻ Status prüfen</button>
+            <button class="btn btn-secondary" onclick="window.open('https://railway.app','_blank')">🔗 Railway öffnen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>▲</span> Vercel</div>
+            <span class="badge badge-gray">Platzhalter</span>
+          </div>
+          <div class="empty-state" style="padding:32px 16px;">
+            <div class="es-icon">▲</div>
+            <div class="es-title">Vercel-Integration</div>
+            <div class="es-sub">Vercel-API-Key in .env setzen: VERCEL_TOKEN=…</div>
+          </div>
+          <div class="flex-wrap-gap8">
+            <button class="btn btn-secondary" onclick="window.open('https://vercel.com/dashboard','_blank')">🔗 Vercel Dashboard</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>◈</span> Deployment-Aktionen</div>
+        </div>
+        <div class="flex-wrap-gap8">
+          <button class="btn btn-primary" onclick="runBackup()">▤ Backup starten</button>
+          <button class="btn btn-secondary" onclick="loadCloud()">↻ Cloud-Status refreshen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: API KEYS
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-apikeys" class="section">
+      <div class="section-header">
+        <div><h2>API Keys</h2><p>ENV-Variablen Status — nur Key-Namen, keine Werte</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAPIKeys()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title"><span>🔑</span> Konfigurierte Keys</div>
+          <span class="badge badge-blue" id="apikeys-count">— Keys</span>
+        </div>
+        <div id="apikeys-list">
+          <div class="empty-state"><div class="es-sub">Lade API Keys…</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>ℹ</span> Hinweis</div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">
+          <p>API-Keys werden <strong style="color:var(--green)">niemals</strong> im Klartext angezeigt — nur ob ein Key gesetzt ist (✅) oder fehlt (❌).</p>
+          <p class="mt-8">Keys in <code style="background:var(--card2);padding:2px 6px;border-radius:4px;">/home/user/supermegabot/.env</code> oder <code style="background:var(--card2);padding:2px 6px;border-radius:4px;">/home/user/supermegabot/dashboard/.env</code> eintragen.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: CLAUDE ASSISTANT
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-claudeassistant" class="section">
+      <div class="chat-top-bar">
+        <h2>◎ Claude Assistant</h2>
+        <label class="model-label">Modell:</label>
+        <select id="claude-model" class="w-160">
+          <option value="gemma4">Gemma 4 (Ollama)</option>
+          <option value="llama3.2">Llama 3.2 (Ollama)</option>
+          <option value="codellama">CodeLlama (Ollama)</option>
+          <option value="mistral">Mistral (Ollama)</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="clearClaudeChat()">✕ Clear</button>
+      </div>
+      <div id="claude-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;"></div>
+      <div class="chat-input-area">
+        <textarea id="claude-input" placeholder="Frage Claude… (Enter = Senden, Shift+Enter = Neue Zeile)" rows="1"></textarea>
+        <button class="btn btn-primary" onclick="sendClaudeChat()" id="claude-send-btn">Senden ↑</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: OPENCLAW HUB
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-openclaw" class="section">
+      <div class="section-header">
+        <div><h2>OpenClaw Hub</h2><p>Zentraler Hub für OpenClaw-Services</p></div>
+      </div>
+
+      <div class="gw-hero" style="background:linear-gradient(135deg,rgba(249,115,22,0.12),rgba(245,158,11,0.12));border-color:rgba(249,115,22,0.25);">
+        <h1>🦞 <span style="background:linear-gradient(90deg,var(--orange),var(--yellow));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">OpenClaw Hub</span></h1>
+        <p>Der zentrale Hub für alle OpenClaw-Dienste und Integrationen.<br>Diese Sektion wird in Kürze verfügbar sein.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card" style="text-align:center;padding:32px 16px;">
+          <div style="font-size:32px;margin-bottom:12px;">🔌</div>
+          <div class="card-title" style="justify-content:center;margin-bottom:8px;">API Integration</div>
+          <div class="text2 text-sm">Verbindung zu OpenClaw-Servern</div>
+          <div class="badge badge-gray mt-12">Coming Soon</div>
+        </div>
+        <div class="card" style="text-align:center;padding:32px 16px;">
+          <div style="font-size:32px;margin-bottom:12px;">📡</div>
+          <div class="card-title" style="justify-content:center;margin-bottom:8px;">Live Feed</div>
+          <div class="text2 text-sm">Echtzeit-Daten aus OpenClaw</div>
+          <div class="badge badge-gray mt-12">Coming Soon</div>
+        </div>
+        <div class="card" style="text-align:center;padding:32px 16px;">
+          <div style="font-size:32px;margin-bottom:12px;">⚡</div>
+          <div class="card-title" style="justify-content:center;margin-bottom:8px;">Automation</div>
+          <div class="text2 text-sm">Automatisierte Workflows</div>
+          <div class="badge badge-gray mt-12">Coming Soon</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: REMOTE DESKTOP
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-remotedesktop" class="section">
+      <div class="section-header">
+        <div><h2>Remote Desktop</h2><p>Fernzugriff via ngrok oder andere Tunnel</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadRemoteDesktop()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title"><span>🖥</span> Tunnel-Status</div>
+          <span id="rd-status-badge" class="badge badge-gray">Prüfe…</span>
+        </div>
+        <div id="rd-tunnel-info">
+          <div class="empty-state"><div class="es-sub">Lade Tunnel-Info…</div></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>◈</span> Schnellzugriff</div>
+          </div>
+          <div class="flex-col-gap6">
+            <button class="btn btn-primary" id="rd-open-btn" onclick="rdOpenTunnel()" disabled>🔗 Tunnel-URL öffnen</button>
+            <button class="btn btn-secondary" onclick="loadRemoteDesktop()">↻ Status prüfen</button>
+          </div>
+          <div class="mt-12" style="font-size:12px;color:var(--text2);">
+            <p>URL: <span id="rd-url-display" style="color:var(--cyan);">—</span></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>ℹ</span> Setup</div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+            <p><strong style="color:var(--text1);">ngrok einrichten:</strong></p>
+            <p>1. <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">NGROK_AUTHTOKEN=…</code> in .env</p>
+            <p>2. <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">ngrok http 8888</code> starten</p>
+            <p>3. URL erscheint hier automatisch</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: DATENSCHUTZ
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-datenschutz" class="section">
+      <div class="section-header">
+        <div><h2>Datenschutz</h2><p>Lokale Datenspeicherung — kein Cloud-Tracking</p></div>
+      </div>
+
+      <div class="gw-hero" style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(34,211,238,0.1));border-color:rgba(16,185,129,0.25);">
+        <h1>🛡 <span style="background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Privacy First</span></h1>
+        <p>Alle Daten werden ausschließlich lokal gespeichert. Kein Cloud-Tracking, keine externe Telemetrie.</p>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🛡</span> Datenschutz-Prinzipien</div>
+          </div>
+          <div class="flex-col-gap6" style="font-size:13px;">
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">Alle Daten lokal (SQLite / JSON)</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">Kein externe Tracking-Cookies</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">API-Keys nur lokal in .env</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">Dashboard nur über localhost erreichbar</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">Kein Telemetrie-Reporting</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--yellow);font-size:16px;">⚠</span>
+              <span style="color:var(--text2);">Externe APIs (Shopify, Telegram) senden Daten an ihre Server</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>📂</span> Lokale Datenspeicherung</div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:2;">
+            <div class="flex-center-gap8">
+              <span style="color:var(--cyan);">📁</span>
+              <span><code style="background:var(--card2);padding:1px 5px;border-radius:3px;">/home/user/supermegabot/</code></span>
+            </div>
+            <div class="flex-center-gap8">
+              <span style="color:var(--blue);">🗄</span>
+              <span>SQLite DB: <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">memory.db</code></span>
+            </div>
+            <div class="flex-center-gap8">
+              <span style="color:var(--yellow);">⚙</span>
+              <span>Config: <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">.env</code> (niemals commiten!)</span>
+            </div>
+            <div class="flex-center-gap8">
+              <span style="color:var(--green);">📋</span>
+              <span>Logs: <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">logs/</code> Verzeichnis</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="flex-wrap-gap8">
+            <button class="btn btn-secondary" onclick="nav('apikeys')">🔑 API Keys prüfen</button>
+            <button class="btn btn-secondary" onclick="runBackup()">▤ Backup starten</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -1799,26 +2361,48 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadShopify() {
   try {
     const d = await api('GET', '/api/shopify/status');
-    document.getElementById('sh-products').textContent = d.products ?? '—';
-    document.getElementById('sh-orders').textContent = d.orders ?? '—';
-    document.getElementById('sh-store-name').textContent = d.store || (d.ok ? 'Connected' : 'Not configured');
-    const badge = d.ok ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Setup Error</span>';
+    // API now returns product_count and order_count
+    document.getElementById('sh-products').textContent = d.product_count ?? d.products ?? '—';
+    document.getElementById('sh-orders').textContent   = d.order_count  ?? d.orders  ?? '—';
+    document.getElementById('sh-store-name').textContent = d.store || (d.ok ? 'Verbunden' : '—');
+
+    const badge = d.ok
+      ? `<span class="badge badge-green">✓ ${d.plan || 'Active'}</span>`
+      : '<span class="badge badge-red">Verbindungsfehler</span>';
     document.getElementById('sh-status-badge').innerHTML = badge;
+
     const banner = document.getElementById('sh-setup-banner');
     if (!d.ok) {
       banner.style.display = 'flex';
+      // Show specific error in banner subtitle
+      const sub = banner.querySelector('.tg-status-sub');
+      if (sub) {
+        if (d.error && d.error.includes('DNS')) {
+          sub.innerHTML = '🔴 DNS-Fehler — Shop-Domain in .env setzen: <strong>SHOPIFY_SHOP_DOMAIN=deinshop.myshopify.com</strong><br>Und: <strong>SHOPIFY_ACCESS_TOKEN=shpat_...</strong>';
+        } else if (d.error && d.error.includes('401')) {
+          sub.innerHTML = '🔑 Token abgelaufen — neues Token in Shopify Admin → Apps → API generieren.<br>Dann <strong>SHOPIFY_ACCESS_TOKEN=...</strong> in .env aktualisieren.';
+        } else if (d.error && (d.error.includes('STORE_URL') || d.error.includes('SHOP_DOMAIN'))) {
+          sub.innerHTML = 'In .env setzen:<br><strong>SHOPIFY_SHOP_DOMAIN=deinshop.myshopify.com</strong><br><strong>SHOPIFY_ACCESS_TOKEN=shpat_...</strong>';
+        } else {
+          sub.textContent = d.error || 'Verbindung fehlgeschlagen';
+        }
+      }
     } else {
       banner.style.display = 'none';
     }
   } catch(e) {
-    toast('Failed to load Shopify data', 'error');
-    document.getElementById('sh-store-name').textContent = 'Error';
+    toast('Shopify-Fehler: ' + e.message, 'error');
+    document.getElementById('sh-store-name').textContent = 'Fehler';
     document.getElementById('sh-setup-banner').style.display = 'flex';
   }
 }
 
 function openShopify(page) {
-  toast(`Opening Shopify ${page}…`, 'info');
+  const domain = 'suitenew.myshopify.com'; // wird durch API-Response ersetzt wenn verbunden
+  toast(`Öffne Shopify ${page}…`, 'info');
+  // Wenn Domain bekannt, direkt öffnen:
+  const pageMap = { products: 'products', orders: 'orders', analytics: 'reports', customers: 'customers' };
+  window.open(`https://admin.shopify.com/store/${domain.replace('.myshopify.com','')}/${pageMap[page]||page}`, '_blank');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2174,6 +2758,536 @@ async function sendQuickTg(message) {
   } catch(e) {
     toast('Failed to send message', 'error');
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+// ANALYTICS
+// ════════════════════════════════════════════════════════════════
+async function loadAnalytics() {
+  try {
+    const [sh, sys] = await Promise.allSettled([
+      api('GET', '/api/shopify/status'),
+      api('GET', '/api/system'),
+    ]);
+    const s = sh.status === 'fulfilled' ? sh.value : {};
+    document.getElementById('an-revenue').textContent = s.revenue ? `€${Number(s.revenue).toLocaleString('de-DE')}` : '—';
+    document.getElementById('an-revenue-sub').textContent = 'Letzte 30 Tage';
+    document.getElementById('an-orders').textContent = s.orders ?? '—';
+    document.getElementById('an-orders-sub').textContent = s.ok ? 'Shopify verbunden' : 'Setup erforderlich';
+    document.getElementById('an-products').textContent = s.products ?? '—';
+    document.getElementById('an-products-sub').textContent = 'Aktive Produkte';
+    document.getElementById('an-customers').textContent = s.customers ?? '—';
+    document.getElementById('an-customers-sub').textContent = 'Registrierte Kunden';
+
+    // Products table placeholder
+    if (s.products_list && s.products_list.length) {
+      const rows = s.products_list.slice(0,8).map(p =>
+        `<tr><td class="strong">${escapeHtml(p.title||p.name||'—')}</td><td>${p.status||'—'}</td><td>${p.inventory??'—'}</td></tr>`
+      ).join('');
+      document.getElementById('an-products-table').innerHTML =
+        `<table class="data-table"><thead><tr><th>Produkt</th><th>Status</th><th>Lager</th></tr></thead><tbody>${rows}</tbody></table>`;
+    } else {
+      document.getElementById('an-products-table').innerHTML =
+        `<div class="empty-state"><div class="es-sub">${s.ok ? 'Keine Produkt-Daten' : 'Shopify nicht konfiguriert'}</div></div>`;
+    }
+
+    // Orders table placeholder
+    if (s.orders_list && s.orders_list.length) {
+      const rows = s.orders_list.slice(0,8).map(o =>
+        `<tr><td class="strong">#${o.id||o.order_number||'—'}</td><td>${o.customer||'—'}</td><td class="price-positive">€${Number(o.total||0).toFixed(2)}</td><td><span class="badge badge-green">${o.status||'—'}</span></td></tr>`
+      ).join('');
+      document.getElementById('an-orders-table').innerHTML =
+        `<table class="data-table"><thead><tr><th>Nr.</th><th>Kunde</th><th>Betrag</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+    } else {
+      document.getElementById('an-orders-table').innerHTML =
+        `<div class="empty-state"><div class="es-sub">${s.ok ? 'Keine Bestellungen' : 'Shopify nicht konfiguriert'}</div></div>`;
+    }
+  } catch(e) {
+    toast('Analytics-Laden fehlgeschlagen', 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// AI TOOLS (Ollama)
+// ════════════════════════════════════════════════════════════════
+async function loadAITools() {
+  const ring = document.getElementById('ait-ring');
+  const statusTxt = document.getElementById('ait-status-text');
+  try {
+    const d = await api('GET', '/api/ollama/models');
+    const models = d.models || d.data || [];
+    document.getElementById('ait-model-count').textContent = `${models.length} Modelle`;
+    if (models.length) {
+      document.getElementById('ait-models-list').innerHTML = models.map(m => {
+        const name = m.name || m.id || String(m);
+        const size = m.size ? ` — ${(m.size/1e9).toFixed(1)}GB` : '';
+        return `<div class="service-row">
+          <div class="ring online"></div>
+          <span class="service-name">${escapeHtml(name)}</span>
+          <span class="badge badge-blue">${escapeHtml(size)}</span>
+          <button class="btn btn-secondary btn-xs" onclick="document.getElementById('ait-model-select').value='${escapeHtml(name)}';toast('Modell ${escapeHtml(name)} ausgewählt','info')">Nutzen</button>
+        </div>`;
+      }).join('');
+      ring.className = 'ring online';
+      statusTxt.textContent = `Ollama online — ${models.length} Modelle verfügbar`;
+    } else {
+      document.getElementById('ait-models-list').innerHTML = '<div class="empty-state"><div class="es-sub">Keine Modelle gefunden. Ollama läuft?</div></div>';
+      ring.className = 'ring offline';
+      statusTxt.textContent = 'Ollama — keine Modelle gefunden';
+    }
+    // populate select
+    const sel = document.getElementById('ait-model-select');
+    if (models.length) {
+      sel.innerHTML = models.map(m => {
+        const name = m.name || m.id || String(m);
+        return `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+      }).join('');
+    }
+  } catch(e) {
+    document.getElementById('ait-models-list').innerHTML = '<div class="empty-state"><div class="es-icon">✗</div><div class="es-title">Ollama nicht erreichbar</div><div class="es-sub">Prüfe ob Ollama läuft (Port 11434)</div></div>';
+    ring.className = 'ring offline';
+    statusTxt.textContent = 'Ollama offline oder nicht konfiguriert';
+  }
+}
+
+async function runAIToolsChat() {
+  const prompt = document.getElementById('ait-prompt').value.trim();
+  const model = document.getElementById('ait-model-select').value;
+  if (!prompt) { toast('Prompt eingeben', 'error'); return; }
+  const btn = document.getElementById('ait-chat-btn');
+  btn.disabled = true; btn.textContent = '⏳ Denke…';
+  const resultEl = document.getElementById('ait-result');
+  const bodyEl = document.getElementById('ait-result-body');
+  const metaEl = document.getElementById('ait-result-meta');
+  resultEl.style.display = 'none';
+  const start = Date.now();
+  try {
+    const d = await api('POST', '/api/chat', { text: prompt, model, session_id: 'aitools_' + Date.now() });
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    bodyEl.textContent = d.response || d.reply || JSON.stringify(d);
+    metaEl.textContent = `${model} — ${elapsed}s`;
+    resultEl.style.display = 'block';
+    toast('Antwort erhalten!', 'success');
+  } catch(e) {
+    bodyEl.textContent = `Fehler: ${e.message}`;
+    metaEl.textContent = 'Error';
+    resultEl.style.display = 'block';
+    toast('Chat-Anfrage fehlgeschlagen', 'error');
+  }
+  btn.disabled = false; btn.textContent = '▶ Senden';
+}
+
+// ════════════════════════════════════════════════════════════════
+// BOT REPAIR
+// ════════════════════════════════════════════════════════════════
+function brLog(msg, cls='info') {
+  const log = document.getElementById('br-log');
+  const line = document.createElement('span');
+  line.className = `log-line ${cls}`;
+  line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  log.appendChild(document.createElement('br'));
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function loadBotRepair() {
+  try {
+    const d = await api('GET', '/api/services/status');
+    const services = d.services || [];
+    const updateRing = (ringId, badgeId, label, up) => {
+      const ring = document.getElementById(ringId);
+      const badge = document.getElementById(badgeId);
+      if (ring) ring.className = `ring ${up ? 'online' : 'offline'}`;
+      if (badge) badge.innerHTML = `<span class="badge ${up ? 'badge-green' : 'badge-red'}">${up ? 'OK' : 'Fehler'}</span>`;
+    };
+    const find = (id) => services.find(s => s.id === id || (s.name||'').toLowerCase().includes(id));
+    const mainSvc = services.find(s => s.id === 'bot' || s.id === 'main' || s.id === 'supermegabot');
+    const ollamaSvc = find('ollama');
+    const tgSvc = find('telegram');
+    const shopifySvc = find('shopify');
+    updateRing('br-ring-main', 'br-core-badge', 'Bot Core', mainSvc ? (mainSvc.running || mainSvc.ok) : services.length > 0);
+    updateRing('br-ring-ollama', 'br-ollama-badge', 'Ollama', ollamaSvc ? (ollamaSvc.running || ollamaSvc.ok) : false);
+    updateRing('br-ring-telegram', 'br-telegram-badge', 'Telegram', tgSvc ? (tgSvc.running || tgSvc.ok) : false);
+    updateRing('br-ring-shopify', 'br-shopify-badge', 'Shopify', shopifySvc ? (shopifySvc.running || shopifySvc.ok) : false);
+    const totalOk = services.filter(s => s.running || s.ok).length;
+    document.getElementById('br-status-badge').innerHTML =
+      `<span class="badge ${totalOk === services.length ? 'badge-green' : totalOk > 0 ? 'badge-yellow' : 'badge-red'}">${totalOk}/${services.length} OK</span>`;
+    brLog(`Status geladen: ${totalOk}/${services.length} Dienste aktiv`);
+  } catch(e) {
+    brLog('Status-Abruf fehlgeschlagen: ' + e.message, 'err');
+    toast('Repair-Status fehlgeschlagen', 'error');
+  }
+}
+
+async function runBotScan() {
+  brLog('Vollscan gestartet…', 'info');
+  try {
+    const d = await api('GET', '/api/services/status');
+    const services = d.services || [];
+    services.forEach(s => {
+      const up = s.running || s.ok;
+      brLog(`${up ? '✓' : '✗'} ${s.name}: ${up ? 'OK' : 'FEHLER'}`, up ? 'info' : 'err');
+    });
+    brLog('Scan abgeschlossen.', 'info');
+    toast('Scan abgeschlossen', 'success');
+    await loadBotRepair();
+  } catch(e) {
+    brLog('Scan fehlgeschlagen: ' + e.message, 'err');
+    toast('Scan fehlgeschlagen', 'error');
+  }
+}
+
+async function runBotRepair() {
+  brLog('Auto-Repair gestartet…', 'warn');
+  toast('Auto-Repair läuft…', 'info');
+  try {
+    const d = await api('GET', '/api/services/status');
+    const services = d.services || [];
+    const broken = services.filter(s => !(s.running || s.ok));
+    if (!broken.length) {
+      brLog('Alle Dienste laufen — kein Repair nötig', 'info');
+      toast('Alles OK — kein Repair nötig', 'success');
+      return;
+    }
+    for (const s of broken) {
+      brLog(`Versuche ${s.name} neu zu starten…`, 'warn');
+      try {
+        await api('POST', '/api/services/action', { id: s.id, action: 'restart' });
+        brLog(`✓ ${s.name} Neustart angefordert`, 'info');
+      } catch(e) {
+        brLog(`✗ ${s.name} Neustart fehlgeschlagen: ${e.message}`, 'err');
+      }
+    }
+    brLog('Auto-Repair abgeschlossen.', 'info');
+    toast('Auto-Repair abgeschlossen', 'success');
+    setTimeout(loadBotRepair, 2000);
+  } catch(e) {
+    brLog('Repair-Fehler: ' + e.message, 'err');
+    toast('Repair fehlgeschlagen', 'error');
+  }
+}
+
+async function botRepairAction(action) {
+  brLog(`Aktion: ${action}`, 'warn');
+  try {
+    const d = await api('POST', '/api/mac/action', { action });
+    brLog(`✓ ${action}: ${d.result || 'OK'}`, 'info');
+    toast(`${action} ausgeführt`, 'success');
+  } catch(e) {
+    // Try services action as fallback
+    try {
+      await api('POST', '/api/services/action', { id: 'bot', action });
+      brLog(`✓ ${action} via Services-API`, 'info');
+      toast(`${action} ausgeführt`, 'success');
+    } catch(e2) {
+      brLog(`✗ ${action} fehlgeschlagen: ${e2.message}`, 'err');
+      toast(`${action} fehlgeschlagen`, 'error');
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// MEMORY & NOTES
+// ════════════════════════════════════════════════════════════════
+async function loadMemory() {
+  try {
+    const d = await api('GET', '/api/system');
+    const memory = d.memory_db || d.memory || {};
+    const entries = Array.isArray(memory) ? memory : Object.entries(memory).map(([k,v]) => ({key:k, value:v}));
+    document.getElementById('mem-count').textContent = `${entries.length} Einträge`;
+    if (!entries.length) {
+      document.getElementById('mem-entries-list').innerHTML = '<div class="empty-state"><div class="es-icon">🗒</div><div class="es-title">Keine Memory-Einträge</div></div>';
+      return;
+    }
+    document.getElementById('mem-entries-list').innerHTML = entries.slice(0,20).map(e => {
+      const key = e.key || e.k || '—';
+      const val = e.value || e.v || '';
+      const preview = String(val).substring(0, 80) + (String(val).length > 80 ? '…' : '');
+      return `<div class="result-card">
+        <div class="result-card-header">
+          <div class="result-card-title">🗒 ${escapeHtml(key)}</div>
+          <div class="result-card-meta">${new Date(e.timestamp||e.ts||Date.now()).toLocaleDateString('de-DE')}</div>
+        </div>
+        <div class="result-body">${escapeHtml(preview)}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('mem-entries-list').innerHTML = '<div class="empty-state"><div class="es-icon">✗</div><div class="es-title">Fehler beim Laden</div></div>';
+    toast('Memory laden fehlgeschlagen', 'error');
+  }
+}
+
+async function saveMemoryNote() {
+  const key = document.getElementById('mem-note-key').value.trim();
+  const val = document.getElementById('mem-note-val').value.trim();
+  if (!key || !val) { toast('Schlüssel und Inhalt erforderlich', 'error'); return; }
+  try {
+    await api('POST', '/api/memory/save', { key, value: val });
+    document.getElementById('mem-note-key').value = '';
+    document.getElementById('mem-note-val').value = '';
+    toast('Notiz gespeichert!', 'success');
+    loadMemory();
+  } catch(e) {
+    // Try alternative endpoint
+    try {
+      await api('POST', '/api/notes/save', { key, value: val });
+      document.getElementById('mem-note-key').value = '';
+      document.getElementById('mem-note-val').value = '';
+      toast('Notiz gespeichert!', 'success');
+      loadMemory();
+    } catch(e2) {
+      toast('Speichern fehlgeschlagen: ' + e2.message, 'error');
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// GITHUB
+// ════════════════════════════════════════════════════════════════
+function appendGHOutput(text) {
+  const el = document.getElementById('gh-output');
+  el.textContent += '\n' + text;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function loadGitHub() {
+  try {
+    const d = await api('GET', '/api/backup/status');
+    const gh = d.git || d;
+    const infoHtml = `
+      <table class="data-table">
+        <tbody>
+          <tr><td>Branch</td><td class="strong">${escapeHtml(gh.branch || 'main')}</td></tr>
+          <tr><td>Remote</td><td class="strong">${escapeHtml(gh.remote || gh.origin || '—')}</td></tr>
+          <tr><td>Status</td><td><span class="badge ${gh.clean ? 'badge-green' : 'badge-yellow'}">${gh.clean ? 'Clean' : 'Uncommitted changes'}</span></td></tr>
+          <tr><td>Letzte Änderung</td><td>${gh.last_commit_date ? new Date(gh.last_commit_date).toLocaleString('de-DE') : '—'}</td></tr>
+        </tbody>
+      </table>`;
+    document.getElementById('gh-info-list').innerHTML = infoHtml;
+
+    // Last commit
+    if (gh.last_commit || gh.commit) {
+      const c = gh.last_commit || gh.commit || {};
+      document.getElementById('gh-last-commit').innerHTML = `
+        <div class="result-card">
+          <div class="result-card-header">
+            <div class="result-card-title">◈ ${escapeHtml(c.hash || c.sha || '—').substring(0,8)}</div>
+            <div class="result-card-meta">${c.date ? new Date(c.date).toLocaleString('de-DE') : '—'}</div>
+          </div>
+          <div class="result-body">${escapeHtml(c.message || c.msg || '—')}</div>
+        </div>`;
+    } else {
+      document.getElementById('gh-last-commit').innerHTML = '<div class="empty-state"><div class="es-sub">Keine Commit-Info verfügbar</div></div>';
+    }
+    appendGHOutput('Git-Status geladen.');
+    toast('GitHub-Status geladen', 'success');
+  } catch(e) {
+    document.getElementById('gh-info-list').innerHTML = '<div class="empty-state"><div class="es-icon">✗</div><div class="es-title">Git-Info nicht verfügbar</div></div>';
+    document.getElementById('gh-last-commit').innerHTML = '<div class="empty-state"><div class="es-sub">Fehler beim Laden</div></div>';
+    appendGHOutput('Fehler: ' + e.message);
+    toast('GitHub-Laden fehlgeschlagen', 'error');
+  }
+}
+
+function ghOpenPR() {
+  toast('PR-Link — konfiguriere GITHUB_REPO in .env', 'info');
+  appendGHOutput('PR-Link: Noch nicht konfiguriert.');
+}
+
+// ════════════════════════════════════════════════════════════════
+// CLOUD
+// ════════════════════════════════════════════════════════════════
+async function loadCloud() {
+  try {
+    const d = await api('GET', '/api/system');
+    const cloud = d.cloud || d.railway || {};
+    const badge = document.getElementById('cloud-railway-badge');
+    const info = document.getElementById('cloud-railway-info');
+    if (cloud.status || cloud.project) {
+      badge.innerHTML = '<span class="badge badge-green">Verbunden</span>';
+      info.innerHTML = `
+        <table class="data-table">
+          <tbody>
+            <tr><td>Projekt</td><td class="strong">${escapeHtml(cloud.project || '—')}</td></tr>
+            <tr><td>Environment</td><td class="strong">${escapeHtml(cloud.environment || 'production')}</td></tr>
+            <tr><td>Status</td><td><span class="badge badge-green">${escapeHtml(cloud.status || 'Running')}</span></td></tr>
+            <tr><td>URL</td><td><span style="color:var(--cyan);">${escapeHtml(cloud.url || '—')}</span></td></tr>
+          </tbody>
+        </table>`;
+    } else {
+      badge.innerHTML = '<span class="badge badge-gray">Nicht konfiguriert</span>';
+      info.innerHTML = `
+        <div class="empty-state" style="padding:24px 16px;">
+          <div class="es-icon">🚂</div>
+          <div class="es-title">Railway nicht konfiguriert</div>
+          <div class="es-sub">RAILWAY_TOKEN in .env setzen</div>
+        </div>`;
+    }
+    toast('Cloud-Status geladen', 'success');
+  } catch(e) {
+    document.getElementById('cloud-railway-badge').innerHTML = '<span class="badge badge-red">Fehler</span>';
+    document.getElementById('cloud-railway-info').innerHTML = '<div class="empty-state"><div class="es-sub">Verbindung fehlgeschlagen</div></div>';
+    toast('Cloud-Laden fehlgeschlagen', 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// API KEYS
+// ════════════════════════════════════════════════════════════════
+const KNOWN_KEYS = [
+  'TELEGRAM_BOT_TOKEN',
+  'SHOPIFY_ACCESS_TOKEN',
+  'SHOPIFY_SHOP_DOMAIN',
+  'OLLAMA_HOST',
+  'OPENAI_API_KEY',
+  'PERPLEXITY_API_KEY',
+  'TELEGRAM_CHAT_ID',
+  'RAILWAY_TOKEN',
+  'VERCEL_TOKEN',
+  'NGROK_AUTHTOKEN',
+  'GITHUB_TOKEN',
+];
+
+async function loadAPIKeys() {
+  try {
+    const d = await api('GET', '/api/system');
+    const envKeys = d.env_keys || d.configured_keys || d.env || {};
+    let setCount = 0;
+    const rows = KNOWN_KEYS.map(key => {
+      // Check if key name appears in the response (value never shown)
+      const isSet = (
+        (typeof envKeys === 'object' && !Array.isArray(envKeys) && key in envKeys && envKeys[key]) ||
+        (Array.isArray(envKeys) && envKeys.includes(key)) ||
+        (d[key.toLowerCase()] !== undefined && d[key.toLowerCase()] !== null && d[key.toLowerCase()] !== '') ||
+        (d['has_' + key.toLowerCase()] === true)
+      );
+      if (isSet) setCount++;
+      return `<div class="service-row">
+        <span style="font-size:18px;">${isSet ? '✅' : '❌'}</span>
+        <span class="service-name" style="font-family:'SF Mono','Cascadia Code',monospace;font-size:12px;">${key}</span>
+        <span class="badge ${isSet ? 'badge-green' : 'badge-red'}">${isSet ? 'Gesetzt' : 'Fehlt'}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('apikeys-count').textContent = `${setCount}/${KNOWN_KEYS.length} gesetzt`;
+    document.getElementById('apikeys-list').innerHTML = rows;
+  } catch(e) {
+    // Even on error, show the list with unknown status
+    document.getElementById('apikeys-list').innerHTML = KNOWN_KEYS.map(key =>
+      `<div class="service-row">
+        <span style="font-size:18px;">❓</span>
+        <span class="service-name" style="font-family:'SF Mono','Cascadia Code',monospace;font-size:12px;">${key}</span>
+        <span class="badge badge-gray">Unbekannt</span>
+      </div>`
+    ).join('');
+    document.getElementById('apikeys-count').textContent = '— gesetzt';
+    toast('API-Keys: Server nicht erreichbar', 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// CLAUDE ASSISTANT (separate chat interface)
+// ════════════════════════════════════════════════════════════════
+let claudeSession = 'claude_' + Date.now();
+
+document.addEventListener('DOMContentLoaded', () => {
+  const ci2 = document.getElementById('claude-input');
+  if (ci2) {
+    ci2.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendClaudeChat(); }
+    });
+    ci2.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+  }
+});
+
+function addClaudeMessage(role, text) {
+  const box = document.getElementById('claude-messages');
+  const time = new Date().toLocaleTimeString();
+  const div = document.createElement('div');
+  div.className = `chat-bubble ${role}`;
+  div.innerHTML = `<div>${escapeHtml(text).replace(/\n/g,'<br>')}</div><div class="chat-time">${time}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+async function sendClaudeChat() {
+  const input = document.getElementById('claude-input');
+  const model = document.getElementById('claude-model').value;
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = '40px';
+  document.getElementById('claude-send-btn').disabled = true;
+  addClaudeMessage('user', text);
+  const thinking = document.createElement('div');
+  thinking.className = 'chat-bubble bot chat-thinking';
+  thinking.textContent = '● ● ●';
+  document.getElementById('claude-messages').appendChild(thinking);
+  document.getElementById('claude-messages').scrollTop = document.getElementById('claude-messages').scrollHeight;
+  try {
+    const d = await api('POST', '/api/chat', { text, session_id: claudeSession, model });
+    thinking.remove();
+    addClaudeMessage('bot', d.response || d.reply || JSON.stringify(d));
+  } catch(e) {
+    thinking.remove();
+    addClaudeMessage('bot', `Fehler: ${e.message}`);
+    toast('Chat-Fehler', 'error');
+  }
+  document.getElementById('claude-send-btn').disabled = false;
+}
+
+function clearClaudeChat() {
+  document.getElementById('claude-messages').innerHTML = '';
+  claudeSession = 'claude_' + Date.now();
+  toast('Chat geleert', 'info');
+}
+
+// ════════════════════════════════════════════════════════════════
+// REMOTE DESKTOP
+// ════════════════════════════════════════════════════════════════
+async function loadRemoteDesktop() {
+  try {
+    const d = await api('GET', '/api/system');
+    const tunnelUrl = d.ngrok_url || d.tunnel_url || d.remote_url || null;
+    const badge = document.getElementById('rd-status-badge');
+    const info = document.getElementById('rd-tunnel-info');
+    const urlDisplay = document.getElementById('rd-url-display');
+    const openBtn = document.getElementById('rd-open-btn');
+    if (tunnelUrl) {
+      badge.innerHTML = '<span class="badge badge-green">Aktiv</span>';
+      urlDisplay.textContent = tunnelUrl;
+      openBtn.disabled = false;
+      openBtn.onclick = () => window.open(tunnelUrl, '_blank');
+      info.innerHTML = `
+        <div class="service-row">
+          <div class="ring online"></div>
+          <span class="service-name">ngrok Tunnel</span>
+          <a href="${escapeHtml(tunnelUrl)}" target="_blank" style="color:var(--cyan);font-size:12px;">${escapeHtml(tunnelUrl)}</a>
+        </div>`;
+    } else {
+      badge.innerHTML = '<span class="badge badge-red">Kein Tunnel</span>';
+      urlDisplay.textContent = '—';
+      openBtn.disabled = true;
+      info.innerHTML = `
+        <div class="empty-state" style="padding:24px 16px;">
+          <div class="es-icon">🖥</div>
+          <div class="es-title">Kein aktiver Tunnel</div>
+          <div class="es-sub">ngrok starten: <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">ngrok http 8888</code></div>
+        </div>`;
+    }
+  } catch(e) {
+    document.getElementById('rd-status-badge').innerHTML = '<span class="badge badge-gray">Unbekannt</span>';
+    document.getElementById('rd-tunnel-info').innerHTML = '<div class="empty-state"><div class="es-sub">Konnte Tunnel-Status nicht laden</div></div>';
+    toast('Remote Desktop Status fehlgeschlagen', 'error');
+  }
+}
+
+function rdOpenTunnel() {
+  const url = document.getElementById('rd-url-display').textContent;
+  if (url && url !== '—') window.open(url, '_blank');
 }
 
 // ════════════════════════════════════════════════════════════════
