@@ -39,8 +39,13 @@ def cprint(icon: str, colour: str, msg: str) -> None:
     print(f"{colour}{icon} {msg}{RESET}")
 
 
-BASE = Path("/Users/rudolfsarkany/supermegabot")
-REPAIR_HISTORY = Path("/Users/rudolfsarkany/rudibot-eternal/repair_history.json")
+# Portable paths: resolve relative to this file so the scan also works in CI
+# and on Linux machines, not just on Rudolf's Mac.
+BASE = Path(__file__).resolve().parent
+
+_HOME = Path.home()
+_REPAIR_HISTORY_DEFAULT = _HOME / "rudibot-eternal" / "repair_history.json"
+REPAIR_HISTORY = Path(os.environ.get("REPAIR_HISTORY", str(_REPAIR_HISTORY_DEFAULT)))
 REPORT_PATH    = BASE / "scan_report.json"
 
 REQUIRED_ENV_VARS = [

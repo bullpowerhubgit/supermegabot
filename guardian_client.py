@@ -79,9 +79,9 @@ class GuardianConfig:
             raise ValueError(
                 "GUARDIAN_API_SECRET nicht gesetzt!\n"
                 "Lösungen:\n"
-                "1. export GUARDIAN_API_SECRET='dein-secret'\n"
-                "2. Oder .env Datei erstellen\n"
-                "3. Oder GuardianClient(secret_key='...')"
+                "1. Setze die Umgebungsvariable GUARDIAN_API_SECRET\n"
+                "2. Lege eine .env Datei mit dem Eintrag GUARDIAN_API_SECRET an\n"
+                "3. Übergib secret_key beim Erstellen des GuardianClient"
             )
     
     @staticmethod

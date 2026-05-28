@@ -56,6 +56,18 @@ module.exports = {
       autorestart: true,
       log_file: "/tmp/rudibot-army.log",
     },
+    {
+      name: "tg-hub-bridge",
+      script: "python3",
+      args: "telegram_hub_bridge.py",
+      cwd: MEGA_DIR,
+      interpreter: "none",
+      restart_delay: 5000,
+      kill_timeout: 5000,
+      max_restarts: 20,
+      autorestart: true,
+      log_file: "/tmp/tg-hub-bridge.log",
+    },
 
     // ── Optionale externe Services ────────────────────────────────────────────
     {
