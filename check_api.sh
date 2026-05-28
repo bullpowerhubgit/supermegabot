@@ -48,18 +48,21 @@ check_http() {
 
 test_openai() {
   local key="${1:-$OPENAI_API_KEY}"
+  require_values "OpenAI" "OPENAI_API_KEY" "$key" || return 1
   check_http "OpenAI" "https://api.openai.com/v1/models" "200" \
     -H "Authorization: Bearer $key"
 }
 
 test_anthropic() {
   local key="${1:-$ANTHROPIC_API_KEY}"
+  require_values "Anthropic" "ANTHROPIC_API_KEY" "$key" || return 1
   check_http "Anthropic" "https://api.anthropic.com/v1/models" "200" \
     -H "x-api-key: $key" -H "anthropic-version: 2023-06-01"
 }
 
 test_perplexity() {
   local key="${1:-$PERPLEXITY_API_KEY}"
+  require_values "Perplexity" "PERPLEXITY_API_KEY" "$key" || return 1
   local resp
   resp=$(curl -s --max-time 10 \
     -H "Authorization: Bearer $key" \
@@ -76,6 +79,7 @@ test_perplexity() {
 
 test_github() {
   local key="${1:-$GITHUB_TOKEN}"
+  require_values "GitHub" "GITHUB_TOKEN" "$key" || return 1
   check_http "GitHub" "https://api.github.com/user" "200" \
     -H "Authorization: Bearer $key"
 }
@@ -95,12 +99,14 @@ test_shopify() {
 
 test_supabase() {
   local url="${1:-$SUPABASE_URL}" key="${2:-$SUPABASE_ANON_KEY}"
+  require_values "Supabase" "SUPABASE_URL" "$url" "SUPABASE_ANON_KEY" "$key" || return 1
   check_http "Supabase" "${url}/auth/v1/health" "200" \
     -H "apikey: $key"
 }
 
 test_mailchimp() {
   local key="${1:-$MAILCHIMP_API_KEY}"
+  require_values "Mailchimp" "MAILCHIMP_API_KEY" "$key" || return 1
   local server; server=$(echo "$key" | cut -d'-' -f2)
   check_http "Mailchimp" "https://${server}.api.mailchimp.com/3.0/ping" "200" \
     -u "anystring:$key"
@@ -108,18 +114,21 @@ test_mailchimp() {
 
 test_printify() {
   local key="${1:-$PRINTIFY_TOKEN}"
+  require_values "Printify" "PRINTIFY_TOKEN" "$key" || return 1
   check_http "Printify" "https://api.printify.com/v1/shops.json" "200" \
     -H "Authorization: Bearer $key"
 }
 
 test_gumroad() {
   local key="${1:-$GUMROAD_TOKEN}"
+  require_values "Gumroad" "GUMROAD_TOKEN" "$key" || return 1
   check_http "Gumroad" "https://api.gumroad.com/v2/products" "200" \
     -H "Authorization: Bearer $key"
 }
 
 test_klaviyo() {
   local key="${1:-$KLAVIYO_PUBLIC_KEY}"
+  require_values "Klaviyo" "KLAVIYO_PUBLIC_KEY" "$key" || return 1
   check_http "Klaviyo" "https://a.klaviyo.com/api/accounts/" "200" \
     -H "Authorization: Klaviyo-API-Key $key" \
     -H "revision: 2024-10-15"
@@ -127,6 +136,7 @@ test_klaviyo() {
 
 test_windsor() {
   local key="${1:-$WINDSOR_API_KEY}"
+  require_values "Windsor.ai" "WINDSOR_API_KEY" "$key" || return 1
   check_http "Windsor.ai" \
     "https://connectors.windsor.ai/all?api_key=${key}&date_preset=last_7d&fields=source,clicks&_limit=1" "200"
 }
@@ -197,10 +207,13 @@ case "$SERVICE" in
     echo "═══════════════════════════════════════"
     echo "  API KEY VALIDATOR — alle Services"
     echo "═══════════════════════════════════════"
-    # Lade .env
-    ENV_FILE="/Users/rudolfsarkany/supermegabot/.env"
+    # Lade .env (portabel: sucht im Script-Verzeichnis)
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    ENV_FILE="${ENV_FILE:-$SCRIPT_DIR/.env}"
     if [ -f "$ENV_FILE" ]; then
       set -a; source "$ENV_FILE" 2>/dev/null; set +a
+    else
+      warn ".env nicht gefunden: $ENV_FILE"
     fi
     test_openai
     test_anthropic
