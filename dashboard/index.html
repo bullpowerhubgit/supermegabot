@@ -3134,53 +3134,59 @@ async function loadCloud() {
 // ════════════════════════════════════════════════════════════════
 // API KEYS
 // ════════════════════════════════════════════════════════════════
-const KNOWN_KEYS = [
-  'TELEGRAM_BOT_TOKEN',
-  'SHOPIFY_ACCESS_TOKEN',
-  'SHOPIFY_SHOP_DOMAIN',
-  'OLLAMA_HOST',
-  'OPENAI_API_KEY',
-  'PERPLEXITY_API_KEY',
-  'TELEGRAM_CHAT_ID',
-  'RAILWAY_TOKEN',
-  'VERCEL_TOKEN',
-  'NGROK_AUTHTOKEN',
-  'GITHUB_TOKEN',
-];
-
 async function loadAPIKeys() {
+  document.getElementById('apikeys-list').innerHTML = '<div class="empty-state"><div class="es-sub">Validiere Keys…</div></div>';
   try {
-    const d = await api('GET', '/api/system');
-    const envKeys = d.env_keys || d.configured_keys || d.env || {};
-    let setCount = 0;
-    const rows = KNOWN_KEYS.map(key => {
-      // Check if key name appears in the response (value never shown)
-      const isSet = (
-        (typeof envKeys === 'object' && !Array.isArray(envKeys) && key in envKeys && envKeys[key]) ||
-        (Array.isArray(envKeys) && envKeys.includes(key)) ||
-        (d[key.toLowerCase()] !== undefined && d[key.toLowerCase()] !== null && d[key.toLowerCase()] !== '') ||
-        (d['has_' + key.toLowerCase()] === true)
-      );
-      if (isSet) setCount++;
-      return `<div class="service-row">
-        <span style="font-size:18px;">${isSet ? '✅' : '❌'}</span>
-        <span class="service-name" style="font-family:'SF Mono','Cascadia Code',monospace;font-size:12px;">${key}</span>
-        <span class="badge ${isSet ? 'badge-green' : 'badge-red'}">${isSet ? 'Gesetzt' : 'Fehlt'}</span>
-      </div>`;
-    }).join('');
-    document.getElementById('apikeys-count').textContent = `${setCount}/${KNOWN_KEYS.length} gesetzt`;
-    document.getElementById('apikeys-list').innerHTML = rows;
+    const d = await api('GET', '/api/keys?validate=1');
+    const keys = d.keys || {};
+    const s = d.summary || {};
+
+    const statusCfg = {
+      valid:   { icon: '🟢', label: 'OK',        cls: 'badge-green'  },
+      present: { icon: '🟡', label: 'Vorhanden', cls: 'badge-yellow' },
+      missing: { icon: '🔴', label: 'Fehlt',     cls: 'badge-red'    },
+    };
+
+    // Group by category
+    const groups = {
+      'AI Provider':  ['OPENAI_API_KEY','ANTHROPIC_API_KEY','PERPLEXITY_API_KEY','OLLAMA_HOST'],
+      'Shopify':      ['SHOPIFY_ACCESS_TOKEN','SHOPIFY_SHOP_DOMAIN','SHOPIFY_STORE_URL','SHOPIFY_API_VERSION'],
+      'Telegram':     ['TELEGRAM_BOT_TOKEN','TELEGRAM_CHAT_ID'],
+      'Supabase':     ['SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY'],
+      'Google':       ['GOOGLE_ADS_CLIENT_ID','GMC_MERCHANT_ID'],
+      'Externe Apps': ['ETERNAL_BOT_DIR','KIVO_DIR','SHOPIFY_SUITE_URL'],
+      'System':       ['DASHBOARD_PORT','OLLAMA_FAST_MODEL','OLLAMA_SMART_MODEL','OLLAMA_CODE_MODEL'],
+    };
+
+    let html = '';
+    for (const [group, keyList] of Object.entries(groups)) {
+      const groupKeys = keyList.filter(k => k in keys);
+      if (!groupKeys.length) continue;
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">${group}</div>`;
+      for (const key of groupKeys) {
+        const info = keys[key] || { status: 'missing' };
+        const cfg = statusCfg[info.status] || statusCfg.missing;
+        const shortKey = key.replace(/_API_KEY$|_TOKEN$|_KEY$/, '').replace(/_/g,' ').toLowerCase()
+          .replace(/\b\w/g, c => c.toUpperCase());
+        html += `<div class="service-row" style="margin-bottom:4px">
+          <span style="font-size:16px;width:20px">${cfg.icon}</span>
+          <span style="flex:1;font-family:'SF Mono','Cascadia Code',monospace;font-size:11px;color:var(--text2)">${key}</span>
+          ${info.preview ? `<span style="font-size:10px;color:var(--text3);margin-right:8px">${info.preview}</span>` : ''}
+          <span class="badge ${cfg.cls}">${cfg.label}</span>
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    document.getElementById('apikeys-list').innerHTML = html || '<div class="empty-state"><div class="es-sub">Keine Keys gefunden</div></div>';
+    document.getElementById('apikeys-count').textContent =
+      `${s.valid || 0} validiert · ${s.set || 0} gesetzt · ${(s.total||0) - (s.set||0)} fehlen`;
   } catch(e) {
-    // Even on error, show the list with unknown status
-    document.getElementById('apikeys-list').innerHTML = KNOWN_KEYS.map(key =>
-      `<div class="service-row">
-        <span style="font-size:18px;">❓</span>
-        <span class="service-name" style="font-family:'SF Mono','Cascadia Code',monospace;font-size:12px;">${key}</span>
-        <span class="badge badge-gray">Unbekannt</span>
-      </div>`
-    ).join('');
-    document.getElementById('apikeys-count').textContent = '— gesetzt';
-    toast('API-Keys: Server nicht erreichbar', 'error');
+    document.getElementById('apikeys-list').innerHTML =
+      '<div class="empty-state"><div class="es-sub">Server nicht erreichbar</div></div>';
+    document.getElementById('apikeys-count').textContent = '— Keys';
+    toast('API Keys: ' + e.message, 'error');
   }
 }
 
