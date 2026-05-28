@@ -3,6 +3,7 @@
 Telegram Control Panel — Inline-Keyboard Steuerung für den kompletten Bot.
 Wird in mega_orchestrator.py eingebunden.
 """
+import html
 import json
 import os
 import subprocess
@@ -18,14 +19,14 @@ ARMY_STATE = BASE_DIR / "rudibot-army" / "shared" / "army_state.json"
 _HOME      = Path.home()
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 DASHBOARD_URL  = os.getenv("DASHBOARD_URL", "http://localhost:8888")
 
 # Externe Projekte — aus Env oder Standard-Pfad
 _ETERNAL_DIR  = Path(os.getenv("ETERNAL_BOT_DIR",  str(_HOME / "rudibot-eternal")))
 
 # KIVO: liegt im telegram-automation-bot Verzeichnis, startet via .command
-_KIVO_BASE    = Path(os.getenv("KIVO_DIR",
-                                "/Users/rudolfsarkany/local-projects/telegram-automation-bot"))
+_KIVO_BASE    = Path(os.getenv("KIVO_DIR", str(_HOME / "telegram-automation-bot")))
 _KIVO_SCRIPT  = _KIVO_BASE / "kivo.py"
 _KIVO_COMMAND = _KIVO_BASE / "KIVO.command"
 _KIVO_LOG     = str(_KIVO_BASE / "logs" / "kivo.log")
@@ -259,8 +260,18 @@ def _get_log_tail(log_path: str, lines: int = 20) -> str:
         p = Path(log_path)
         if not p.exists():
             return f"Log nicht gefunden: {log_path}"
-        content = p.read_text(errors="ignore").split("\n")
-        tail = content[-lines:]
+        result = []
+        with p.open("rb") as f:
+            f.seek(0, 2)
+            remaining = f.tell()
+            buf = b""
+            while len(result) <= lines and remaining > 0:
+                chunk = min(4096, remaining)
+                remaining -= chunk
+                f.seek(remaining)
+                buf = f.read(chunk) + buf
+                result = buf.split(b"\n")
+        tail = [l.decode("utf-8", errors="ignore") for l in result[-lines:]]
         return "\n".join(tail)
     except Exception as e:
         return f"Fehler: {e}"
@@ -324,8 +335,20 @@ def _clean_logs() -> str:
         try:
             size = logfile.stat().st_size
             if size > 10 * 1024 * 1024:  # > 10 MB
-                lines = logfile.read_text(errors="ignore").split("\n")[-5000:]
-                logfile.write_text("\n".join(lines))
+                keep_lines = 5000
+                result = []
+                with logfile.open("rb") as f:
+                    f.seek(0, 2)
+                    remaining = f.tell()
+                    buf = b""
+                    while len(result) <= keep_lines and remaining > 0:
+                        chunk = min(65536, remaining)
+                        remaining -= chunk
+                        f.seek(remaining)
+                        buf = f.read(chunk) + buf
+                        result = buf.split(b"\n")
+                tail_bytes = b"\n".join(result[-keep_lines:])
+                logfile.write_bytes(tail_bytes)
                 cleaned.append(f"{logfile.name} ({size//1024//1024}MB → 5k Zeilen)")
         except Exception:
             pass
@@ -522,12 +545,11 @@ def _shopify_status() -> str:
     d = _call_dashboard("/api/shopify/status")
     if not d:
         return "🛒 Shopify: Dashboard nicht erreichbar"
+    if not d.get("ok"):
+        return f"🛒 Shopify: ❌ {d.get('error', 'Unbekannter Fehler')}"
     lines = [
         "<b>🛒 Shopify Status</b>", "",
-        f"📦 Produkte: {d.get('product_count', '?')}",
-        f"🛒 Orders gesamt: {d.get('order_count', '?')}",
-        f"💰 Umsatz gesamt: €{d.get('revenue', '?')}",
-        f"📅 Heute: {d.get('today_orders', '?')} Orders | €{d.get('today_revenue', '?')}",
+        f"🟢 Shop: {d.get('store', '?')}",
     ]
     return "\n".join(lines)
 
@@ -537,6 +559,8 @@ def _shopify_status() -> str:
 def handle_callback(data: str, chat_id: str, message_id: int,
                     callback_query_id: str) -> None:
     """Verarbeitet alle Inline-Keyboard Button-Klicks."""
+    if TELEGRAM_CHAT_ID and str(chat_id) != str(TELEGRAM_CHAT_ID):
+        return
     answer_callback(callback_query_id)
 
     action, _, param = data.partition(":")
@@ -648,7 +672,7 @@ def handle_callback(data: str, chat_id: str, message_id: int,
         if len(tail) > 3800:
             tail = "...\n" + tail[-3800:]
         edit_message(chat_id, message_id,
-                     f"📋 <b>{param}</b>\n<pre>{tail}</pre>", kb_logs())
+                     f"📋 <b>{param}</b>\n<pre>{html.escape(tail)}</pre>", kb_logs())
 
     # ── Quick Actions ────────────────────────────────────────────────────────
     elif action == "action":
@@ -695,7 +719,7 @@ def handle_callback(data: str, chat_id: str, message_id: int,
             if len(tail) > 3800:
                 tail = "...\n" + tail[-3800:]
             edit_message(chat_id, message_id,
-                         f"📋 <b>KIVO Logs</b>\n<pre>{tail}</pre>", kb_kivo())
+                         f"📋 <b>KIVO Logs</b>\n<pre>{html.escape(tail)}</pre>", kb_kivo())
 
     # ── Railway Shopify AI Suite ─────────────────────────────────────────────
     elif action == "railway":

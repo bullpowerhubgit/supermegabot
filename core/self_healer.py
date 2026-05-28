@@ -195,7 +195,12 @@ class SelfHealer:
 
     async def _check_http(self, url: str, timeout: int = 5) -> bool:
         if not HAS_AIOHTTP:
-            return True
+            try:
+                import urllib.request
+                req = urllib.request.urlopen(url, timeout=timeout)
+                return req.status < 500
+            except Exception:
+                return False
         try:
             async with aiohttp.ClientSession(
                 timeout=aiohttp.ClientTimeout(total=timeout)
