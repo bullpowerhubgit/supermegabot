@@ -198,7 +198,7 @@ class SelfHealer:
             try:
                 import urllib.request
                 req = urllib.request.urlopen(url, timeout=timeout)
-                return req.status < 500
+                return req.getcode() < 500
             except Exception:
                 return False
         try:
