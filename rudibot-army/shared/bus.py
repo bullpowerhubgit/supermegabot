@@ -1,5 +1,6 @@
 """Shared Message Bus — JSON State + Telegram für Bot-Army Kommunikation"""
 import json, time, os, urllib.request, urllib.parse
+from typing import Optional
 from pathlib import Path
 
 STATE_FILE = Path(__file__).parent / "army_state.json"
@@ -24,9 +25,9 @@ def _load_env_file() -> dict:
             return result
     return {}
 
-_env_cache: dict | None = None
+_env_cache: Optional[dict] = None
 
-def get_env(key: str) -> str | None:
+def get_env(key: str) -> Optional[str]:
     global _env_cache
     v = os.getenv(key)
     if v:
@@ -52,7 +53,7 @@ def save_state(s: dict):
         pass
 
 
-def report(agent_id: str, status: str, message: str, data: dict | None = None):
+def report(agent_id: str, status: str, message: str, data: Optional[dict] = None):
     try:
         s = load_state()
         s["agents"][agent_id] = {

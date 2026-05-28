@@ -170,12 +170,15 @@ Belegt: ${used_mb}MB / ${total_mb}MB"
 log "=== Monitor-Check Start ==="
 
 # PM2-verwaltete Services (Port-basierte Prüfung)
+# WICHTIG: Port muss mit dem tatsächlichen Service-Port übereinstimmen!
+# CreatorHub: 3002 (nicht 3000!)
+# Telegram Bot: 8000 (nicht 3200! 3200 = windsurf-monitor Dashboard)
+# Windsurf Auto-Heal: optional, ggf. nicht aktiv
 check_port "SuperMegaBot Dashboard" 8888 "supermegabot"
-check_port "Telegram Bot"           3200 "telegram-bot"
-check_port "CreatorHub"             3000 "cratorhub"
+check_port "Telegram Bot"           8000 "windsurf-telegram-bot"
+check_port "CreatorHub"             3002 "cratorhub"
 check_port "Windsurf Shopify"       3001 "windsurf-shopify"
 check_port "Password Sync"          3005 "password-sync"
-check_port "Windsurf Auto-Heal"     9000 "windsurf-autoheal"
 check_port "Windsurf API Gateway"   8080 "windsurf-api-gateway"
 
 # Ollama (eigener Daemon, kein PM2)
