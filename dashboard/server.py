@@ -473,13 +473,41 @@ async def handle_services_status(req):
                 port_ok = True
             except Exception:
                 pass
+
+        # Special case: Railway remote service — HTTP health check
+        if svc["id"] == "shopify_ai_suite":
+            try:
+                import urllib.request
+                urllib.request.urlopen(svc.get("health_url", svc.get("url", "")), timeout=5)
+                port_ok = True
+            except Exception:
+                pass
+            result.append({
+                "id": svc["id"], "name": svc["name"], "port": svc["port"],
+                "icon": svc["icon"], "ok": port_ok, "pid": None, "running": port_ok,
+                "remote": True,
+            })
+            continue
+
+        # Special case: mega_orchestrator is embedded in this process
+        if svc["id"] == "mega_orchestrator":
+            result.append({
+                "id": svc["id"], "name": svc["name"], "port": svc["port"],
+                "icon": svc["icon"], "ok": True, "pid": str(os.getpid()), "running": True,
+                "note": "Eingebettet in Dashboard",
+            })
+            continue
+
         pid = None
-        try:
-            ps = subprocess.run(["pgrep", "-f", svc["pattern"]], capture_output=True, text=True)
-            if ps.returncode == 0 and ps.stdout.strip():
-                pid = ps.stdout.strip().split('\n')[0]
-        except Exception:
-            pass
+        pattern = svc.get("pattern", "")
+        if pattern and pattern != "RAILWAY_REMOTE":
+            try:
+                ps = subprocess.run(["pgrep", "-f", pattern], capture_output=True, text=True)
+                if ps.returncode == 0 and ps.stdout.strip():
+                    pid = ps.stdout.strip().split('\n')[0]
+            except Exception:
+                pass
+
         result.append({
             "id": svc["id"], "name": svc["name"], "port": svc["port"],
             "icon": svc["icon"], "ok": port_ok, "pid": pid,
