@@ -83,7 +83,49 @@
       "description": "3 KI-Tools die 2025 für Online-Shops am nützlichsten sind. Name + 1-Satz Erklärung.",
       "content": "Hier sind drei KI-Tools, die 2025 für Online-Shops besonders nützlich sein werden:\n\n1. **Chatbots**: \"Mit Chatbots können Online-Shops ihre Kundensupport-Funktionen automatisieren und ihre Kunden effizienter bedienen.\"\n\n2. **Personalisierungstools**: \"Diese Tools ermöglichen es Online-Shops, Produkte und Angebote an die individuellen Bedürfnisse ihrer Kunden anzupassen und so eine höhere Umsatzsteigerung zu erzielen.\"\n\n3. **Erfahrungsmarketing-Tools**: \"Diese Tools helfen Online-Shops, ihre Kunden besser zu verstehen und ihre Erfahrungen zu verbessern, indem sie Datenanalyse, Personalisierung und interaktive Inhalte anbieten.\"",
       "learned_at": "2026-05-29"
+    },
+    {
+      "name": "trending_products",
+      "description": "Was sind die 3 besten Dropshipping-Produkte heute? Stichpunkte, max 5 Zeilen.",
+      "content": "Basierend auf aktuellen Trends und Nachfrage, hier sind drei der besten Dropshipping-Produkte für 2024:\n\n*   **Smartphone-A Accessoires**: Smartphones sind immer beliebter, daher bieten Accessoire wie Zubehör, Ladegeräte oder Schutzfälle gute Umsatzmöglichkeiten.\n*   **Gaming-Überwachungssysteme**: Die Gaming-Szene ist sehr groß und das Anpassen von Überwachungssystemen zu Gaming-Systemen kann gut einommen werden, besonders wenn es sich um eine hohe Qualität handelt.\n*   **Kleidung für Outdoor-Aktivitäten**: Die Outdoor-Bewegung wächst immer weiter an Beliebtheit. Produkte wie Regenjacken oder Winterschuhe sind daher sehr gefragt und können ein guter Umsatz bringendes Produkt sein.",
+      "learned_at": "2026-05-29"
+    },
+    {
+      "name": "seo_keywords",
+      "description": "Nenne 5 konkrete SEO-Keywords für einen Shopify-Dropshipping-Store. Nur Keywords, keine Erklärung.",
+      "content": "Hier sind 5 konkrete SEO-Keywords für einen Shopify-Dropshipping-Store:\n\n1. \"Hemd Männer\"\n2. \"Tops Online Shop\"\n3. \"Schuhe für Frauen\"\n4. \"Boutique-Mode online kaufen\"\n5. \"Lederjacke Männer\"",
+      "learned_at": "2026-05-29"
+    },
+    {
+      "name": "competitor_check",
+      "description": "Wie analysiere ich Wettbewerber-Preise automatisch für Shopify? 3 konkrete Methoden.",
+      "content": "Analyseren Sie Wettbewerberpreise automatisch für Shopify mit folgenden drei Methoden:\n\n**1. Utilise Shopify's Preisvergleichsfunktion**\n\nShopify bietet eine kostenlose Funktion, die es ermöglicht, den Preis von Produkten auf anderen Webshops zu vergleichen. Um dies zu nutzen, folgen Sie diesen Schritten:\n\n* Gehen Sie zu \"Einstellungen\" > \"Produktinformationen\" und klicken Sie auf das \"Preisvergleichsicon\" symbol.\n* Geben Sie die URL des Webshops ein, für den Sie den Preis vergleichen möchten.\n* Wählen Sie die Produktart aus (z.B. Kleidung, Schuhe usw.) und klicken Sie auf \"Suchen\".\n* Shopify zeigt Ihnen die aktuellen Preise für das Produkt an anderen Webshops an.\n\n**2. Verwenden Sie eine Preisanalyse-App**\n\nEs gibt verschiedene Apps im Shopify-App-Store, die speziell darauf ausgelegt sind, Wettbewerberpreise automatisch zu analysieren. Einige beliebte Optionen sind:\n\n* \"PriceZombie\" - Diese App analysiert Preise an verschiedenen Web",
+      "learned_at": "2026-05-29"
+    },
+    {
+      "name": "social_trends",
+      "description": "3 aktuell trendende Hashtag-Gruppen für E-Commerce auf Instagram/TikTok.",
+      "content": "Hier sind drei aktuelle Trendende Hashtag-Gruppen für E-Commerce auf Instagram und TikTok:\n\n1. **#SustainableFashion**:\nDiese Hashtag-Gruppe ist ein wichtiger Teil der E-Commerce-Konzepte, da sie sich auf nachhaltige Mode konzentriert. Mit dieser Gruppe können E-commerce-Betriebe ihre Produkte als umweltfreundlich und sozialschön präsentieren.\n\n2. **#Ecommerce**:\nDiese Hashtag-Gruppe ist eine der am häufigsten verwendeten Hashtags für E-commerce auf Instagram und TikTok. Mit dieser Gruppe können E-commerce-Betriebe ihre Produkte und Geschäftsmodelle präsentieren, ohne sich auf bestimmte Produktkategorien oder -marke zu beschränken.\n\n3. **#ShopSmall**:\nDiese Hashtag-Gruppe ist eine weitere beliebte Option für E-commerce-Betriebe. Mit dieser Gruppe können E-commerce-Betriebe ihre Kleinunternehmen und Indie-Marken präsentieren, was besonders bei den Kunden sehr beliebt ist.\n\nEs lohnt sich auch, nach spezifischen Hashtags zu suchen,",
+      "learned_at": "2026-05-29"
+    },
+    {
+      "name": "automation_tips",
+      "description": "Welche 3 Automatisierungen bringen im E-Commerce den größten Zeitgewinn?",
+      "content": "Im E-Commerce gibt es viele Möglichkeiten, die Produktivität und Effizienz zu steigern. Hier sind drei Automatisierungen, die einen großen Zeitgewinn bringen können:\n\n1. **Einfache Versandoptionen**: Eine automatische Versandoption kann Kunden ermöglichen, ihre Bestellungen direkt auszuwählen und zu bezahlen, ohne dass sie sich um die Details kümmern müssen. Dies kann durch eine einfache Website oder eine mobile App erreicht werden.\n\nDie Vorteile einer einfachen Versandoption sind:\n\n* Schnellere Lieferzeiten\n* höhere Kundenzufriedenheit\n* geringere Kosten für den Kundenservice\n\n2. **Produktbeschreibungen und -bilder**: Eine automatische Erstellung von Produktbeschreibungen und Bildern kann die Produktpräsentation verbessern und Kunden mehr Informationen über Produkte liefern.\n\nDie Vorteile einer automatisierten Produktbeschreibung und -vervollständigung sind:\n\n* Schnellere Produktübersicht\n* höhere Kundenzufriedenheit durch genaue Beschreibungen und Bilder\n* geringere Fehlerquote\n\n3. *",
+      "learned_at": "2026-05-29"
+    },
+    {
+      "name": "seo_optimization",
+      "description": "3 konkrete Shopify-SEO-Optimierungen die heute sofort helfen.",
+      "content": "Hier sind drei konkrete Shopify-SEO-Optimierungen, die heute sofort helfen können:\n\n1. **Benutzerfreundliche Produktbeschreibungen**: Eine gut strukturierte und kurze Produktbeschreibung kann helfen, Ihre Produktseiten im Suchmaschinenergebnis zu verbessern. Hier sind einige Tipps:\n * Verwenden Sie einfache und klare Sprache.\n * Fügen Sie relevante Schlüsselwörter ein (2-3 pro Seite).\n * Halten Sie die Beschreibung auf 150-200 Wörter beschränkt.\n\nZum Beispiel: \"Unser beliebtes T-Shirt in einer Vielzahl von Farben. Hochwertig, atmungsaktiv und perfekt für den Alltag.\"\n\n2. **Bildoptimierung**: Bildoptimierung kann helfen, Ihre Produktbilder und Artikelbilder schneller sichtbar zu machen. Hier sind einige Tipps:\n * Verwenden Sie relevante Schlüsselwörter im Dateinamen (z.B. \"t-shirt-herr-herren-sport\").\n * Fügen Sie Beschreibungen hinzu, die mindestens 130 Wörter enthalten",
+      "learned_at": "2026-05-29"
+    },
+    {
+      "name": "ai_tools",
+      "description": "3 KI-Tools die 2025 für Online-Shops am nützlichsten sind. Name + 1-Satz Erklärung.",
+      "content": "Hier sind drei Ki-Tools, die 2025 für Online-Shops am nützlichsten sind:\n\n1. **Ki-Tool \"Klick-Test\"**: Dieses Tool hilft Online-Händlern bei der Überprüfung von Produkt- und Benutzerfunktionen sowie bei der Identifizierung von technischen Problemen.\n2. **Ki-Tool \"SEO-Scanner\"**: Mit diesem Tool können Online-Shops ihre Suchmaschinen-Optimierungs- (SEO-) Strategien effektiv überwachen und verbessern, um höhere Suchplatzierungen zu erzielen.\n3. **Ki-Tool \"Social-Media-Manager\"**: Dieses Tool ermöglicht es Online-Händlern, ihre Social-Media-Kanäle professionell zu verwalten, Kundeninteraktionen zu steigern und ihre Marke online stärker zu präsentieren.\n\nDiese Ki-Tools können Online-Shops helfen, ihre Online-Präsenz zu optimieren, Kunden zu besser bedienen und letztendlich ihre Umsätze zu steigern.",
+      "learned_at": "2026-05-29"
     }
   ],
-  "total": 14
+  "total": 21
 }
