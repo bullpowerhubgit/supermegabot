@@ -879,6 +879,38 @@ input[type="range"]::-webkit-slider-thumb {
         <span class="nav-icon">🛡</span> Datenschutz
       </div>
 
+      <div class="nav-group-label">Automatisierung</div>
+      <div class="nav-item" data-section="automation">
+        <span class="nav-icon">⚡</span> Scheduler
+      </div>
+      <div class="nav-item" data-section="social">
+        <span class="nav-icon">📱</span> Social Media
+      </div>
+      <div class="nav-item" data-section="digistore">
+        <span class="nav-icon">🏪</span> Digistore24
+      </div>
+      <div class="nav-item" data-section="mailchimp">
+        <span class="nav-icon">📧</span> Mailchimp
+      </div>
+      <div class="nav-item" data-section="printify">
+        <span class="nav-icon">🖨️</span> Printify PoD
+      </div>
+      <div class="nav-item" data-section="etsy">
+        <span class="nav-icon">🛍️</span> Etsy
+      </div>
+      <div class="nav-item" data-section="gumroad">
+        <span class="nav-icon">💰</span> Gumroad
+      </div>
+      <div class="nav-item" data-section="dropshipping">
+        <span class="nav-icon">📦</span> Dropshipping
+      </div>
+      <div class="nav-item" data-section="seo">
+        <span class="nav-icon">🔍</span> SEO Autopilot
+      </div>
+      <div class="nav-item" data-section="revenue">
+        <span class="nav-icon">💹</span> Revenue Hub
+      </div>
+
       <div class="nav-group-label">Infrastructure</div>
       <div class="nav-item" data-section="system">
         <span class="nav-icon">▣</span> System
@@ -2031,6 +2063,92 @@ input[type="range"]::-webkit-slider-thumb {
       </div>
     </section>
 
+    <!-- ═══════════════ AUTOMATION SCHEDULER ═══════════════ -->
+    <section id="section-automation" class="section">
+      <div class="section-header"><h2>⚡ Automation Scheduler</h2><p>18 vollautomatische Tasks — keine manuelle Aktion nötig</p></div>
+      <div id="automation-status"><div class="spinner"></div></div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📋 Letzte Ausführungen</div>
+        <div id="automation-log"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ SOCIAL MEDIA ═══════════════ -->
+    <section id="section-social" class="section">
+      <div class="section-header"><h2>📱 Social Media</h2><p>TikTok · Pinterest · Meta/Instagram · Reddit · YouTube · Twitter/X · Discord</p></div>
+      <div id="social-status"><div class="spinner"></div></div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📋 API Keys konfigurieren</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.8">
+          Alle Keys in <code>~/.env</code> eintragen. Jede Plattform hat eine Anleitung in der .env-Datei.<br>
+          <b>TikTok:</b> developers.tiktok.com → My Apps<br>
+          <b>Pinterest:</b> developers.pinterest.com<br>
+          <b>Meta/Instagram:</b> developers.facebook.com<br>
+          <b>Reddit:</b> reddit.com/prefs/apps<br>
+          <b>YouTube:</b> console.cloud.google.com → YouTube Data API v3<br>
+          <b>Twitter/X:</b> developer.x.com<br>
+          <b>Discord:</b> discord.com/developers/applications
+        </div>
+        <button class="btn" onclick="runTask('social_autoposter')" style="margin-top:12px">📢 Auto-Post jetzt starten</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════ DIGISTORE24 ═══════════════ -->
+    <section id="section-digistore" class="section">
+      <div class="section-header"><h2>🏪 Digistore24</h2><p>Bestellungen · Produkte · Auto-Sync</p></div>
+      <div id="digistore-status"><div class="spinner"></div></div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📦 Letzte Bestellungen</div>
+        <div id="digistore-orders"><div class="spinner"></div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="runTask('digistore_sync')">🔄 Jetzt sync</button>
+        <button class="btn" onclick="runTask('mailchimp_sync')">📧 → Mailchimp sync</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════ MAILCHIMP ═══════════════ -->
+    <section id="section-mailchimp" class="section">
+      <div class="section-header"><h2>📧 Mailchimp</h2><p>E-Mail Automation · Campaigns · Kontakt-Sync</p></div>
+      <div id="mailchimp-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ═══════════════ PRINTIFY ═══════════════ -->
+    <section id="section-printify" class="section">
+      <div class="section-header"><h2>🖨️ Printify Print-on-Demand</h2><p>Orders · Auto-Fulfillment · Shopify-Publish</p></div>
+      <div id="printify-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ═══════════════ ETSY ═══════════════ -->
+    <section id="section-etsy" class="section">
+      <div class="section-header"><h2>🛍️ Etsy</h2><p>Listings · Transaktionen · Auto-Sync</p></div>
+      <div id="etsy-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ═══════════════ GUMROAD ═══════════════ -->
+    <section id="section-gumroad" class="section">
+      <div class="section-header"><h2>💰 Gumroad</h2><p>Produkte · Verkäufe · Revenue</p></div>
+      <div id="gumroad-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ═══════════════ DROPSHIPPING ═══════════════ -->
+    <section id="section-dropshipping" class="section">
+      <div class="section-header"><h2>📦 Dropshipping & Print-on-Demand</h2><p>Vollautomatische Pipeline: Trending → SEO → Shopify → Social</p></div>
+      <div id="dropshipping-status"></div>
+    </section>
+
+    <!-- ═══════════════ SEO AUTOPILOT ═══════════════ -->
+    <section id="section-seo" class="section">
+      <div class="section-header"><h2>🔍 SEO Autopilot</h2><p>KI-gestützte SEO-Optimierung via Ollama · Content-Kalender</p></div>
+      <div id="seo-status"></div>
+    </section>
+
+    <!-- ═══════════════ REVENUE HUB ═══════════════ -->
+    <section id="section-revenue" class="section">
+      <div class="section-header"><h2>💹 Revenue Hub</h2><p>Umsatz aus allen Plattformen · Tages-Report</p></div>
+      <div id="revenue-status"><div class="spinner"></div></div>
+    </section>
+
   </main>
 </div>
 
@@ -2082,7 +2200,11 @@ function nav(section) {
     analytics:'Analytics', aitools:'AI Tools', botrepair:'Bot Repair',
     memory:'Memory & Notes', github:'GitHub', cloud:'Cloud', apikeys:'API Keys',
     claudeassistant:'Claude Assistant', openclaw:'OpenClaw Hub',
-    remotedesktop:'Remote Desktop', datenschutz:'Datenschutz'
+    remotedesktop:'Remote Desktop', datenschutz:'Datenschutz',
+    automation:'⚡ Automation Scheduler', social:'📱 Social Media',
+    digistore:'🏪 Digistore24', mailchimp:'📧 Mailchimp',
+    printify:'🖨️ Printify PoD', etsy:'🛍️ Etsy', gumroad:'💰 Gumroad',
+    dropshipping:'📦 Dropshipping', seo:'🔍 SEO Autopilot', revenue:'💹 Revenue Hub',
   };
   document.getElementById('topbar-title').textContent = titles[section] || section;
   currentSection = section;
@@ -2110,6 +2232,16 @@ function sectionInit(section) {
     openclaw: () => {},
     remotedesktop: loadRemoteDesktop,
     datenschutz: () => {},
+    automation:   loadAutomation,
+    social:       loadSocial,
+    digistore:    loadDigistore,
+    mailchimp:    loadMailchimp,
+    printify:     loadPrintify,
+    etsy:         loadEtsy,
+    gumroad:      loadGumroad,
+    dropshipping: loadDropshipping,
+    seo:          loadSEO,
+    revenue:      loadRevenue,
   };
   if (loaders[section]) loaders[section]();
 }
@@ -3354,6 +3486,306 @@ setInterval(() => { if (currentSection === 'logs') loadLogs(); }, 8000);
 setInterval(() => { if (currentSection === 'trading') loadPrices(); }, 30000);
 setInterval(() => { if (currentSection === 'system') loadSystem(); }, 5000);
 setInterval(() => { if (currentSection === 'system') loadProcesses(); }, 10000);
+
+// ════════════════════════════════════════════════════════════════
+// AUTOMATION SCHEDULER
+// ════════════════════════════════════════════════════════════════
+async function loadAutomation() {
+  document.getElementById('automation-status').innerHTML = '<div class="spinner"></div> Lade…';
+  try {
+    const d = await api('GET', '/api/automation/status');
+    const tasks = d.status?.tasks || [];
+    const rows = tasks.map(t => {
+      const lastRun = t.last_run ? new Date(t.last_run).toLocaleTimeString('de-DE') : '—';
+      const ok = t.ok ?? 0, total = t.total ?? 0;
+      const rate = total ? Math.round(ok/total*100) : 0;
+      const color = rate >= 80 ? 'green' : rate >= 50 ? 'yellow' : 'red';
+      const intervalMin = Math.round(t.interval_s / 60);
+      const intervalStr = intervalMin >= 60 ? `${Math.round(intervalMin/60)}h` : `${intervalMin}min`;
+      return `<tr>
+        <td><b>${t.name}</b></td>
+        <td>${intervalStr}</td>
+        <td>${lastRun}</td>
+        <td><span class="badge badge-${color}">${total ? rate+'%' : '—'}</span></td>
+        <td><button class="btn btn-xs" onclick="runTask('${t.name}')">▶ Run</button></td>
+      </tr>`;
+    }).join('');
+    document.getElementById('automation-status').innerHTML = `
+      <div class="card-title">⚡ ${tasks.length} Automatisierungen aktiv</div>
+      <table class="data-table"><thead><tr><th>Task</th><th>Interval</th><th>Letzter Run</th><th>Erfolgsrate</th><th>Aktion</th></tr></thead>
+      <tbody>${rows}</tbody></table>`;
+    const recent = (d.recent_runs || []).slice(0, 15);
+    const recentHtml = recent.map(r => {
+      const ico = r.success ? '✅' : '❌';
+      const t = new Date(r.ran_at).toLocaleString('de-DE');
+      return `<tr><td>${ico} ${r.task}</td><td>${t}</td><td>${(r.result||'').slice(0,60)}</td><td>${r.ms}ms</td></tr>`;
+    }).join('');
+    document.getElementById('automation-log').innerHTML = `<table class="data-table"><thead><tr><th>Task</th><th>Zeit</th><th>Ergebnis</th><th>Dauer</th></tr></thead><tbody>${recentHtml}</tbody></table>`;
+  } catch(e) { document.getElementById('automation-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+async function runTask(name) {
+  toast(`▶ Starte ${name}…`, 'info');
+  try {
+    const d = await api('POST', '/api/automation/run', {task: name});
+    toast(d.result || 'Gestartet', d.ok ? 'success' : 'error');
+    setTimeout(loadAutomation, 1500);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SOCIAL MEDIA
+// ════════════════════════════════════════════════════════════════
+async function loadSocial() {
+  document.getElementById('social-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/social/status');
+    const platforms = {
+      tiktok:    {name:'TikTok',     icon:'🎵'},
+      pinterest: {name:'Pinterest',  icon:'📌'},
+      meta:      {name:'Meta/IG',    icon:'📸'},
+      reddit:    {name:'Reddit',     icon:'🤖'},
+      youtube:   {name:'YouTube',    icon:'▶️'},
+      twitter:   {name:'Twitter/X',  icon:'🐦'},
+      discord:   {name:'Discord',    icon:'💬'},
+    };
+    const cards = Object.entries(platforms).map(([k, p]) => {
+      const s = d[k] || {};
+      const ok = s.connected;
+      return `<div class="kpi-card">
+        <div class="kpi-icon">${p.icon}</div>
+        <div class="kpi-label">${p.name}</div>
+        <div class="kpi-value" style="font-size:13px">${ok ? '🟢 Verbunden' : '🔴 Kein Key'}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">${(s.info||'').slice(0,40)}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('social-status').innerHTML = `<div class="grid grid-4">${cards}</div>`;
+  } catch(e) { document.getElementById('social-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// DIGISTORE24
+// ════════════════════════════════════════════════════════════════
+async function loadDigistore() {
+  document.getElementById('digistore-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/digistore/status');
+    const st = d.stats || {};
+    const ok = d.ok;
+    document.getElementById('digistore-status').innerHTML = `
+      <div class="grid grid-4">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${ok?'🟢 Aktiv':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Heute</div><div class="kpi-value">${st.today_orders??'—'}</div><div class="kpi-unit">Bestellungen</div></div>
+        <div class="kpi-card"><div class="kpi-label">Diese Woche</div><div class="kpi-value">${st.week_orders??'—'}</div><div class="kpi-unit">Bestellungen</div></div>
+        <div class="kpi-card"><div class="kpi-label">Produkte</div><div class="kpi-value">${d.product_count??'—'}</div></div>
+      </div>`;
+    if (!ok) { document.getElementById('digistore-status').innerHTML += `<div class="info-msg">💡 Key holen: <a href="https://www.digistore24.com" target="_blank">digistore24.com</a> → Konto → API → DIGISTORE24_API_KEY in .env</div>`; return; }
+    const ord = await api('GET', '/api/digistore/orders?page=1');
+    const rows = (ord.orders||[]).slice(0,10).map(o =>
+      `<tr><td>${o.order_id||'—'}</td><td>${o.product_name||'—'}</td><td>${o.amount||'—'} ${o.currency||'EUR'}</td><td>${(o.created_at||'').slice(0,10)}</td></tr>`
+    ).join('');
+    document.getElementById('digistore-orders').innerHTML = rows ? `<table class="data-table"><thead><tr><th>ID</th><th>Produkt</th><th>Betrag</th><th>Datum</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty-msg">Keine Bestellungen</div>';
+  } catch(e) { document.getElementById('digistore-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// MAILCHIMP
+// ════════════════════════════════════════════════════════════════
+async function loadMailchimp() {
+  document.getElementById('mailchimp-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/mailchimp/status');
+    const lists = d.lists || [];
+    const listOptions = lists.map(l => `<option value="${l.id}">${l.name} (${l.stats?.member_count||0} Kontakte)</option>`).join('');
+    document.getElementById('mailchimp-status').innerHTML = `
+      <div class="grid grid-3">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok?'🟢 Verbunden':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Account</div><div class="kpi-value" style="font-size:13px">${d.account||'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Listen</div><div class="kpi-value">${lists.length}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://mailchimp.com" target="_blank">mailchimp.com</a> → Account → Extras → API Keys → MAILCHIMP_API_KEY in .env</div>' : ''}
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📧 Campaign erstellen</div>
+        <select id="mc-list-id" class="input">${listOptions||'<option>Keine Listen gefunden</option>'}</select>
+        <input id="mc-subject" class="input" placeholder="Betreff" style="margin-top:8px">
+        <input id="mc-from" class="input" placeholder="Absender Name" style="margin-top:8px" value="SuperMegaBot">
+        <textarea id="mc-body" class="input" rows="4" placeholder="HTML-Inhalt der E-Mail…" style="margin-top:8px;width:100%;font-family:monospace"></textarea>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="sendCampaign()">📤 Campaign senden</button>
+          <button class="btn" onclick="syncMailchimp()">🔄 DS24-Kontakte sync</button>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('mailchimp-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+async function sendCampaign() {
+  const list_id = document.getElementById('mc-list-id')?.value;
+  const subject = document.getElementById('mc-subject')?.value;
+  const from_name = document.getElementById('mc-from')?.value;
+  const body_html = document.getElementById('mc-body')?.value;
+  if (!subject || !body_html) { toast('Betreff und Inhalt erforderlich', 'error'); return; }
+  toast('Sende Campaign…', 'info');
+  const d = await api('POST', '/api/mailchimp/campaign', {list_id, subject, from_name, body_html});
+  toast(d.ok ? '✅ Campaign gesendet!' : ('❌ '+d.error), d.ok ? 'success' : 'error');
+}
+async function syncMailchimp() {
+  toast('Sync läuft…', 'info');
+  const d = await api('POST', '/api/mailchimp/sync', {});
+  toast(d.ok ? `✅ ${d.synced} Kontakte synchronisiert` : ('❌ '+d.error), d.ok ? 'success' : 'error');
+}
+
+// ════════════════════════════════════════════════════════════════
+// PRINTIFY
+// ════════════════════════════════════════════════════════════════
+async function loadPrintify() {
+  document.getElementById('printify-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/printify/status');
+    document.getElementById('printify-status').innerHTML = `
+      <div class="grid grid-4">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok?'🟢 Aktiv':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Gesamt Bestellungen</div><div class="kpi-value">${d.total_orders??'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Heute</div><div class="kpi-value">${d.today_orders??'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Pending / Fulfilled</div><div class="kpi-value">${d.pending??'—'} / ${d.fulfilled??'—'}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://printify.com/app/account/connections" target="_blank">printify.com</a> → Account → API → PRINTIFY_API_KEY in .env</div>' : ''}
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="printifyAutofulfill()">🚀 Auto-Fulfill Pending</button>
+      </div>`;
+  } catch(e) { document.getElementById('printify-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+async function printifyAutofulfill() {
+  toast('Auto-Fulfill läuft…', 'info');
+  const d = await api('POST', '/api/printify/autofulfill');
+  toast(d.ok ? `✅ ${d.submitted?.length||0} Bestellungen submitted` : ('❌ '+d.error), d.ok ? 'success' : 'error');
+}
+
+// ════════════════════════════════════════════════════════════════
+// ETSY
+// ════════════════════════════════════════════════════════════════
+async function loadEtsy() {
+  document.getElementById('etsy-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/etsy/status');
+    document.getElementById('etsy-status').innerHTML = `
+      <div class="grid grid-3">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok?'🟢 Verbunden':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Listings</div><div class="kpi-value">${d.listing_count??'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Info</div><div class="kpi-value" style="font-size:12px">${(d.info||'').slice(0,40)}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://www.etsy.com/developers/register" target="_blank">etsy.com/developers</a> → ETSY_API_KEY in .env</div>' : ''}`;
+  } catch(e) { document.getElementById('etsy-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// GUMROAD
+// ════════════════════════════════════════════════════════════════
+async function loadGumroad() {
+  document.getElementById('gumroad-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/gumroad/status');
+    document.getElementById('gumroad-status').innerHTML = `
+      <div class="grid grid-3">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok?'🟢 Verbunden':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Produkte</div><div class="kpi-value">${d.product_count??'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Verkäufe gesamt</div><div class="kpi-value">${d.total_sales??'—'}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://app.gumroad.com/settings/advanced" target="_blank">app.gumroad.com</a> → GUMROAD_ACCESS_TOKEN in .env</div>' : ''}`;
+  } catch(e) { document.getElementById('gumroad-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// DROPSHIPPING
+// ════════════════════════════════════════════════════════════════
+async function loadDropshipping() {
+  document.getElementById('dropshipping-status').innerHTML = `
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">📦 Dropshipping Pipeline</div>
+        <p style="color:var(--text2);font-size:13px">Findet Trending-Produkte → SEO-Optimierung → Shopify-Import → Social Media Promotion</p>
+        <input id="ds-niche" class="input" placeholder="Nische (z.B. fitness, beauty, tech)" style="margin-top:8px">
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="runDropshipping()">🚀 Pipeline starten</button>
+          <button class="btn" onclick="runTask('dropshipping_scan')">🔍 Trending scannen</button>
+        </div>
+        <div id="ds-result" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🖨️ Print-on-Demand Pipeline</div>
+        <p style="color:var(--text2);font-size:13px">Design → Printify Produkt → Shopify → Social Media Auto-Post</p>
+        <input id="pod-design" class="input" placeholder="Design Name (z.B. Vintage Mountain)" style="margin-top:8px">
+        <input id="pod-desc" class="input" placeholder="Beschreibung" style="margin-top:8px">
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="runPOD()">🚀 PoD Pipeline starten</button>
+        </div>
+        <div id="pod-result" style="margin-top:12px"></div>
+      </div>
+    </div>`;
+}
+async function runDropshipping() {
+  const niche = document.getElementById('ds-niche')?.value || '';
+  document.getElementById('ds-result').innerHTML = '<div class="spinner"></div> Pipeline läuft…';
+  const d = await api('POST', '/api/automation/run', {task: 'dropshipping_scan'});
+  document.getElementById('ds-result').innerHTML = `<div class="success-msg">✅ ${d.result||'Gestartet'}</div>`;
+}
+async function runPOD() {
+  document.getElementById('pod-result').innerHTML = '<div class="spinner"></div> Läuft…';
+  const d = await api('POST', '/api/automation/run', {task: 'pod_autofulfill'});
+  document.getElementById('pod-result').innerHTML = `<div class="success-msg">✅ ${d.result||'Gestartet'}</div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// SEO AUTOPILOT
+// ════════════════════════════════════════════════════════════════
+async function loadSEO() {
+  document.getElementById('seo-status').innerHTML = `
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">🔍 SEO Autopilot</div>
+        <p style="color:var(--text2);font-size:13px">Optimiert alle Shopify Produkte automatisch via lokaler KI (Ollama)</p>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="runTask('seo_optimizer')">▶ Alle optimieren</button>
+          <button class="btn" onclick="runTask('content_calendar')">📅 Content-Kalender erstellen</button>
+        </div>
+        <div id="seo-result" style="margin-top:12px;font-size:12px;color:var(--text2)">Letzter Run: <span id="seo-last">—</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Content-Kalender</div>
+        <div id="content-calendar">
+          <button class="btn" onclick="loadContentCalendar()">🔄 Laden</button>
+        </div>
+      </div>
+    </div>`;
+}
+async function loadContentCalendar() {
+  document.getElementById('content-calendar').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/automation/status');
+    const calendarRun = (d.recent_runs||[]).find(r => r.task === 'content_calendar');
+    if (calendarRun) {
+      document.getElementById('content-calendar').innerHTML = `<div class="success-msg">✅ ${calendarRun.result}</div><div style="font-size:11px;color:var(--text2)">${calendarRun.ran_at}</div>`;
+    } else {
+      document.getElementById('content-calendar').innerHTML = `<button class="btn btn-primary" onclick="runTask('content_calendar')">📅 Jetzt generieren</button>`;
+    }
+  } catch(e) { document.getElementById('content-calendar').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// REVENUE HUB
+// ════════════════════════════════════════════════════════════════
+async function loadRevenue() {
+  document.getElementById('revenue-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('POST', '/api/automation/run', {task: 'revenue_report'});
+    document.getElementById('revenue-status').innerHTML = `
+      <div class="card">
+        <div class="card-title">💹 Revenue Hub — Alle Plattformen</div>
+        <div style="white-space:pre-wrap;font-size:13px;color:var(--text1)">${d.result||'Keine Daten'}</div>
+        <div style="margin-top:12px">
+          <button class="btn" onclick="loadRevenue()">🔄 Aktualisieren</button>
+          <button class="btn" onclick="runTask('github_backup')" style="margin-left:8px">💾 Backup jetzt</button>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('revenue-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
 
 // ════════════════════════════════════════════════════════════════
 // INITIAL LOAD
