@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professional Desktop Monitor - SuperMegaBot</title>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid #0f3460;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #a0a0a0;
+            font-size: 1.1em;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .status-online {
+            background: #00ff88;
+            color: #000;
+        }
+
+        .status-offline {
+            background: #ff4444;
+            color: #fff;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: rgba(22, 33, 62, 0.8);
+            border: 1px solid #0f3460;
+            border-radius: 15px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .card h3 {
+            color: #e94560;
+            margin-bottom: 20px;
+            font-size: 1.3em;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .metric {
+            margin-bottom: 15px;
+        }
+
+        .metric-label {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .metric-unit {
+            font-size: 0.6em;
+            color: #a0a0a0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #0f3460;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff88, #00cc6a);
+            transition: width 0.3s ease;
+        }
+
+        .progress-fill.warning {
+            background: linear-gradient(90deg, #ffcc00, #ff9900);
+        }
+
+        .progress-fill.critical {
+            background: linear-gradient(90deg, #ff4444, #cc0000);
+        }
+
+        .chart-container {
+            position: relative;
+            height: 200px;
+            margin-top: 20px;
+        }
+
+        .alerts-container {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .alert {
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .alert.warning {
+            background: rgba(255, 204, 0, 0.1);
+            border-color: #ffcc00;
+        }
+
+        .alert.critical {
+            background: rgba(255, 68, 68, 0.1);
+            border-color: #ff4444;
+        }
+
+        .alert-time {
+            font-size: 0.8em;
+            color: #a0a0a0;
+            margin-bottom: 5px;
+        }
+
+        .alert-message {
+            font-weight: bold;
+        }
+
+        .bot-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: rgba(15, 52, 96, 0.5);
+            border-radius: 8px;
+            border-left: 3px solid #00ff88;
+        }
+
+        .bot-name {
+            font-weight: bold;
+            color: #e94560;
+            margin-bottom: 10px;
+        }
+
+        .bot-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            font-size: 0.9em;
+        }
+
+        .bot-stat {
+            color: #a0a0a0;
+        }
+
+        .bot-stat-value {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #a0a0a0;
+            font-size: 0.9em;
+            border-top: 2px solid #0f3460;
+            margin-top: 30px;
+        }
+
+        .last-update {
+            text-align: center;
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Professional Desktop Monitor</h1>
+            <p>SuperMegaBot System - Real-time Performance Monitoring</p>
+            <span id="statusBadge" class="status-badge status-offline">⚠️ Connecting...</span>
+        </div>
+
+        <div class="grid">
+            <!-- CPU Card -->
+            <div class="card">
+                <h3>🔥 CPU Usage</h3>
+                <div class="metric">
+                    <div class="metric-label">Current Usage</div>
+                    <div class="metric-value"><span id="cpuValue">0</span><span class="metric-unit">%</span></div>
+                    <div class="progress-bar">
+                        <div id="cpuBar" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="cpuChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Memory Card -->
+            <div class="card">
+                <h3>🧠 Memory Usage</h3>
+                <div class="metric">
+                    <div class="metric-label">Current Usage</div>
+                    <div class="metric-value"><span id="memoryValue">0</span><span class="metric-unit">%</span></div>
+                    <div class="progress-bar">
+                        <div id="memoryBar" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Used: <span id="memoryUsed">0</span> GB / <span id="memoryTotal">0</span> GB</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="memoryChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Disk Card -->
+            <div class="card">
+                <h3>💾 Disk Usage</h3>
+                <div class="metric">
+                    <div class="metric-label">Current Usage</div>
+                    <div class="metric-value"><span id="diskValue">0</span><span class="metric-unit">%</span></div>
+                    <div class="progress-bar">
+                        <div id="diskBar" class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Free: <span id="diskFree">0</span> GB / <span id="diskTotal">0</span> GB</div>
+                </div>
+            </div>
+
+            <!-- Network Card -->
+            <div class="card">
+                <h3>🌐 Network</h3>
+                <div class="metric">
+                    <div class="metric-label">Upload Speed</div>
+                    <div class="metric-value"><span id="networkUp">0</span><span class="metric-unit"> MB/s</span></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Download Speed</div>
+                    <div class="metric-value"><span id="networkDown">0</span><span class="metric-unit"> MB/s</span></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Total Sent: <span id="networkSent">0</span> MB</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Total Received: <span id="networkRecv">0</span> MB</div>
+                </div>
+            </div>
+
+            <!-- System Info Card -->
+            <div class="card">
+                <h3>💻 System Info</h3>
+                <div class="metric">
+                    <div class="metric-label">Uptime</div>
+                    <div class="metric-value"><span id="uptime">0</span><span class="metric-unit"> hours</span></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Active Processes</div>
+                    <div class="metric-value"><span id="processes">0</span></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Bot Processes</div>
+                    <div class="metric-value"><span id="botProcesses">0</span></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">System Load</div>
+                    <div class="metric-value"><span id="systemLoad">0</span></div>
+                </div>
+                <div class="metric">
+                    <div class="metric-label">Temperature</div>
+                    <div class="metric-value"><span id="temperature">N/A</span></div>
+                </div>
+            </div>
+
+            <!-- Alerts Card -->
+            <div class="card">
+                <h3>⚠️ Recent Alerts</h3>
+                <div id="alertsContainer" class="alerts-container">
+                    <div style="color: #a0a0a0; text-align: center; padding: 20px;">No recent alerts</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bot Processes Section -->
+        <div class="card">
+            <h3>🤖 Bot Processes</h3>
+            <div id="botContainer" class="grid">
+                <div style="color: #a0a0a0; text-align: center; padding: 20px;">No bot processes detected</div>
+            </div>
+        </div>
+
+        <div class="last-update">
+            Last update: <span id="lastUpdate">--</span>
+        </div>
+
+        <div class="footer">
+            <p>Professional Desktop Monitor - SuperMegaBot System © 2024</p>
+            <p>Real-time System Performance Monitoring</p>
+        </div>
+    </div>
+
+    <script>
+        // Initialize Socket.IO
+        const socket = io();
+        
+        // Chart configurations
+        const chartConfig = {
+            type: 'line',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: '#a0a0a0'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                elements: {
+                    line: {
+                        tension: 0.4
+                    },
+                    point: {
+                        radius: 0
+                    }
+                }
+            }
+        };
+
+        // Initialize charts
+        const cpuCtx = document.getElementById('cpuChart').getContext('2d');
+        const cpuChart = new Chart(cpuCtx, {
+            ...chartConfig,
+            data: {
+                labels: Array(60).fill(''),
+                datasets: [{
+                    data: Array(60).fill(0),
+                    borderColor: '#e94560',
+                    backgroundColor: 'rgba(233, 69, 96, 0.1)',
+                    fill: true
+                }]
+            }
+        });
+
+        const memoryCtx = document.getElementById('memoryChart').getContext('2d');
+        const memoryChart = new Chart(memoryCtx, {
+            ...chartConfig,
+            data: {
+                labels: Array(60).fill(''),
+                datasets: [{
+                    data: Array(60).fill(0),
+                    borderColor: '#00ff88',
+                    backgroundColor: 'rgba(0, 255, 136, 0.1)',
+                    fill: true
+                }]
+            }
+        });
+
+        // Socket.IO event handlers
+        socket.on('connect', () => {
+            console.log('Connected to monitor server');
+            document.getElementById('statusBadge').className = 'status-badge status-online';
+            document.getElementById('statusBadge').textContent = '✅ Online';
+        });
+
+        socket.on('disconnect', () => {
+            console.log('Disconnected from monitor server');
+            document.getElementById('statusBadge').className = 'status-badge status-offline';
+            document.getElementById('statusBadge').textContent = '⚠️ Offline';
+        });
+
+        socket.on('metrics_update', (data) => {
+            updateDashboard(data);
+        });
+
+        function updateDashboard(data) {
+            const system = data.system;
+            const bots = data.bots;
+            const alerts = data.alerts;
+
+            // Update CPU
+            document.getElementById('cpuValue').textContent = system.cpu_percent.toFixed(1);
+            updateProgressBar('cpuBar', system.cpu_percent);
+            updateChart(cpuChart, system.cpu_percent);
+
+            // Update Memory
+            document.getElementById('memoryValue').textContent = system.memory_percent.toFixed(1);
+            document.getElementById('memoryUsed').textContent = system.memory_used_gb.toFixed(1);
+            document.getElementById('memoryTotal').textContent = system.memory_total_gb.toFixed(1);
+            updateProgressBar('memoryBar', system.memory_percent);
+            updateChart(memoryChart, system.memory_percent);
+
+            // Update Disk
+            document.getElementById('diskValue').textContent = system.disk_percent.toFixed(1);
+            document.getElementById('diskFree').textContent = (system.disk_total_gb - system.disk_used_gb).toFixed(1);
+            document.getElementById('diskTotal').textContent = system.disk_total_gb.toFixed(1);
+            updateProgressBar('diskBar', system.disk_percent);
+
+            // Update Network
+            document.getElementById('networkUp').textContent = system.network_speed_up.toFixed(2);
+            document.getElementById('networkDown').textContent = system.network_speed_down.toFixed(2);
+            document.getElementById('networkSent').textContent = system.network_sent_mb.toFixed(1);
+            document.getElementById('networkRecv').textContent = system.network_recv_mb.toFixed(1);
+
+            // Update System Info
+            document.getElementById('uptime').textContent = system.uptime_hours.toFixed(1);
+            document.getElementById('processes').textContent = system.active_processes;
+            document.getElementById('botProcesses').textContent = system.bot_processes;
+            document.getElementById('systemLoad').textContent = system.system_load.toFixed(2);
+            document.getElementById('temperature').textContent = system.temperature;
+
+            // Update Alerts
+            updateAlerts(alerts);
+
+            // Update Bot Processes
+            updateBotProcesses(bots);
+
+            // Update timestamp
+            document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+        }
+
+        function updateProgressBar(elementId, value) {
+            const bar = document.getElementById(elementId);
+            bar.style.width = value + '%';
+            
+            bar.classList.remove('warning', 'critical');
+            if (value > 80) {
+                bar.classList.add('critical');
+            } else if (value > 60) {
+                bar.classList.add('warning');
+            }
+        }
+
+        function updateChart(chart, value) {
+            const data = chart.data.datasets[0].data;
+            data.shift();
+            data.push(value);
+            chart.update('none');
+        }
+
+        function updateAlerts(alerts) {
+            const container = document.getElementById('alertsContainer');
+            
+            if (alerts.length === 0) {
+                container.innerHTML = '<div style="color: #a0a0a0; text-align: center; padding: 20px;">No recent alerts</div>';
+                return;
+            }
+
+            container.innerHTML = alerts.map(alert => `
+                <div class="alert ${alert.severity}">
+                    <div class="alert-time">${new Date(alert.timestamp).toLocaleString()}</div>
+                    <div class="alert-message">[${alert.type}] ${alert.message}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateBotProcesses(bots) {
+            const container = document.getElementById('botContainer');
+            
+            if (bots.length === 0) {
+                container.innerHTML = '<div style="color: #a0a0a0; text-align: center; padding: 20px;">No bot processes detected</div>';
+                return;
+            }
+
+            container.innerHTML = bots.map(bot => `
+                <div class="bot-item">
+                    <div class="bot-name">${bot.bot_name}</div>
+                    <div class="bot-stats">
+                        <div class="bot-stat">Status: <span class="bot-stat-value">${bot.status}</span></div>
+                        <div class="bot-stat">CPU: <span class="bot-stat-value">${bot.cpu_usage.toFixed(1)}%</span></div>
+                        <div class="bot-stat">Memory: <span class="bot-stat-value">${bot.memory_usage.toFixed(1)} MB</span></div>
+                        <div class="bot-stat">Uptime: <span class="bot-stat-value">${(bot.uptime / 60).toFixed(1)} min</span></div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Fetch initial data
+        fetch('/api/metrics')
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error(data.error);
+                    return;
+                }
+                updateDashboard({
+                    system: data,
+                    bots: [],
+                    alerts: []
+                });
+            })
+            .catch(error => console.error('Error fetching initial data:', error));
+    </script>
+</body>
+</html>

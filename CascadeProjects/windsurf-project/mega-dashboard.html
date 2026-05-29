@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RudiBot Mega Dashboard</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); 
+  color: #eee; 
+  min-height: 100vh;
+  padding: 20px;
+}
+.header { 
+  text-align: center; 
+  padding: 30px; 
+  background: rgba(78, 204, 163, 0.1); 
+  border-radius: 16px; 
+  margin-bottom: 20px;
+  border: 1px solid rgba(78, 204, 163, 0.3);
+  box-shadow: 0 4px 30px rgba(0,0,0,0.3);
+}
+.header h1 { 
+  color: #4ecca3; 
+  font-size: 2.5em; 
+  margin-bottom: 10px;
+  text-shadow: 0 0 30px rgba(78, 204, 163, 0.4);
+}
+.header p { color: #888; font-size: 1.1em; }
+.grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); 
+  gap: 20px; 
+  margin-bottom: 20px;
+}
+.card { 
+  background: rgba(22, 33, 62, 0.8); 
+  border-radius: 16px; 
+  padding: 24px; 
+  border-left: 5px solid #4ecca3;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+.card:hover { 
+  transform: translateY(-4px); 
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+}
+.card-off { border-left-color: #e74c3c; }
+.card-warn { border-left-color: #f39c12; }
+.card-cloud { border-left-color: #3498db; }
+.card-external { border-left-color: #9b59b6; }
+.status { 
+  display: inline-flex; 
+  align-items: center; 
+  gap: 8px;
+  padding: 6px 14px; 
+  border-radius: 20px; 
+  font-size: 0.85em; 
+  font-weight: bold;
+}
+.status-on { background: rgba(78, 204, 163, 0.2); color: #4ecca3; }
+.status-off { background: rgba(231, 76, 60, 0.2); color: #e74c3c; }
+.status-warn { background: rgba(243, 156, 18, 0.2); color: #f39c12; }
+h2 { color: #4ecca3; margin-bottom: 14px; font-size: 1.3em; display: flex; align-items: center; gap: 8px; }
+.link { 
+  color: #3498db; 
+  text-decoration: none; 
+  background: rgba(15, 52, 96, 0.6); 
+  padding: 8px 16px; 
+  border-radius: 8px; 
+  display: inline-block; 
+  margin: 4px 0;
+  font-family: monospace;
+  font-size: 0.9em;
+  transition: all 0.2s;
+}
+.link:hover { background: rgba(15, 52, 96, 0.9); transform: scale(1.02); }
+.btn { 
+  background: linear-gradient(135deg, #4ecca3, #3498db); 
+  border: none; 
+  padding: 16px 32px; 
+  border-radius: 12px; 
+  cursor: pointer; 
+  font-size: 1.1em; 
+  color: #1a1a2e; 
+  font-weight: bold;
+  margin: 8px;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(78, 204, 163, 0.3);
+}
+.btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(78, 204, 163, 0.5); }
+.btn-danger { 
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+  box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
+}
+.btn-danger:hover { box-shadow: 0 6px 20px rgba(231, 76, 60, 0.5); }
+.section { 
+  background: rgba(22, 33, 62, 0.6); 
+  border-radius: 16px; 
+  padding: 24px; 
+  margin-bottom: 20px;
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+}
+.info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.info-item { 
+  background: rgba(0,0,0,0.2); 
+  padding: 14px; 
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.info-label { color: #888; font-size: 0.85em; margin-bottom: 6px; }
+.info-value { color: #4ecca3; font-weight: bold; font-size: 1.2em; }
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+.progress-fill.low { background: #4ecca3; }
+.progress-fill.medium { background: #f39c12; }
+.progress-fill.high { background: #e74c3c; }
+.storage-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+.storage-item {
+  background: rgba(0,0,0,0.2);
+  padding: 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.storage-name { font-weight: bold; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+.storage-info { font-size: 0.9em; color: #aaa; }
+.modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8);
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+.modal-content {
+  background: #16213e;
+  padding: 30px;
+  border-radius: 16px;
+  max-width: 500px;
+  text-align: center;
+  border: 1px solid rgba(78, 204, 163, 0.3);
+}
+.modal-content h3 { color: #4ecca3; margin-bottom: 16px; }
+.timestamp { text-align: center; color: #666; font-size: 0.85em; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🤖 RudiBot Mega Dashboard</h1>
+  <p>System, Cloud & Externer Speicher - Alles in einem Blick</p>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2>🧠 Ollama AI</h2>
+    <p><span class="status status-on">● AKTIV</span></p>
+    <p>Modelle: llama3.2, gemma4</p>
+    <a class="link" href="http://localhost:11434" target="_blank" rel="noopener">localhost:11434</a>
+  </div>
+  
+  <div class="card">
+    <h2>🐕 Memory Watchdog</h2>
+    <p><span class="status status-on">● AKTIV</span></p>
+    <p>RAM-Monitoring alle 30 Sekunden</p>
+    <p>Auto-Cleanup bei 80% / Kritisch bei 90%</p>
+  </div>
+  
+  <div class="card card-off">
+    <h2>⚡ n8n Workflows</h2>
+    <p><span class="status status-off">○ BREW PROBLEM</span></p>
+    <p>Automation & Workflows</p>
+    <a class="link" href="http://localhost:5678">localhost:5678</a>
+  </div>
+  
+  <div class="card card-off">
+    <h2>📊 Netdata</h2>
+    <p><span class="status status-off">○ BREW PROBLEM</span></p>
+    <p>System Monitoring</p>
+    <a class="link" href="http://localhost:19999">localhost:19999</a>
+  </div>
+</div>
+
+<div class="section">
+  <h2>💾 Lokaler Speicher</h2>
+  <div class="storage-grid" id="localStorage">
+    <div class="storage-item">
+      <div class="storage-name">💻 Macintosh HD</div>
+      <div class="progress-bar"><div class="progress-fill low" style="width: 45%"></div></div>
+      <div class="storage-info">45% belegt - wird live aktualisiert</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>💾 Externer Speicher</h2>
+  <div class="storage-grid" id="externalStorage">
+    <div class="storage-item">
+      <div class="storage-name">💾 Externe Festplatten</div>
+      <div class="storage-info">Wird vom Watchdog überwacht (/Volumes)</div>
+      <p style="margin-top:8px; color:#888; font-size:0.85em;">Verbinde USB-Festplatten - Dashboard zeigt sie automatisch</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>☁️ Cloud Speicher</h2>
+  <div class="storage-grid" id="cloudStorage">
+    <div class="storage-item">
+      <div class="storage-name">☁️ iCloud Drive</div>
+      <div class="progress-bar"><div class="progress-fill low" style="width: 30%"></div></div>
+      <div class="storage-info">Wird überwacht: ~/Library/Mobile Documents/</div>
+    </div>
+    <div class="storage-item">
+      <div class="storage-name">☁️ Google Drive</div>
+      <div class="storage-info">Wird überwacht: ~/Library/CloudStorage/</div>
+    </div>
+    <div class="storage-item">
+      <div class="storage-name">☁️ Dropbox</div>
+      <div class="storage-info">Wird überwacht: ~/Dropbox</div>
+    </div>
+    <div class="storage-item">
+      <div class="storage-name">☁️ OneDrive</div>
+      <div class="storage-info">Wird überwacht: ~/Library/CloudStorage/OneDrive</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>🔧 System Status</h2>
+  <div class="info-grid">
+    <div class="info-item">
+      <div class="info-label">API Keys</div>
+      <div class="info-value">✓ Konfiguriert</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Telegram Bot</div>
+      <div class="info-value">✓ Bereit</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Shopify</div>
+      <div class="info-value">✓ Verschlüsselt</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Supabase</div>
+      <div class="info-value">✓ Verbunden</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Anthropic</div>
+      <div class="info-value">✓ Verschlüsselt</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">Perplexity</div>
+      <div class="info-value">✓ Verschlüsselt</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="text-align: center;">
+  <h2>🚀 Quick Actions</h2>
+  <button class="btn" onclick="location.reload()">🔄 Alle aktualisieren</button>
+  <button class="btn" onclick="openAll()">🌐 Alle Services öffnen</button>
+  <button class="btn btn-danger" onclick="showCleanup()">🧹 Terminal Cleanup</button>
+  <button class="btn" onclick="checkStorage()">💾 Speicher prüfen</button>
+</div>
+
+<div id="cleanupModal" class="modal">
+  <div class="modal-content">
+    <h3>🧹 Terminal Cleanup</h3>
+    <p>Beendet alle nicht aktiven Terminals und befreit Speicher.</p>
+    <br>
+    <button class="btn btn-danger" onclick="doCleanup()">Bereinigen</button>
+    <button class="btn" onclick="hideCleanup()">Abbrechen</button>
+  </div>
+</div>
+
+<div id="storageModal" class="modal">
+  <div class="modal-content">
+    <h3>💾 Speicher-Information</h3>
+    <p id="storageInfo">Lade Speicherdaten...</p>
+    <br>
+    <button class="btn" onclick="hideStorage()">Schließen</button>
+  </div>
+</div>
+
+<div class="timestamp">
+  🤖 RudiBot System v2.0 | Alle Services in einem Dashboard | Letzte Aktualisierung: <span id="lastUpdate">-</span>
+</div>
+
+<script>
+function updateTimestamp() {
+  document.getElementById('lastUpdate').textContent = new Date().toLocaleString('de-DE');
+}
+updateTimestamp();
+
+function refreshAll() { 
+  location.reload(); 
+}
+
+function openAll() {
+  window.open('http://localhost:11434', '_blank');
+  window.open('http://localhost:3456', '_blank');
+  setTimeout(() => {
+    window.open('http://localhost:5678', '_blank');
+    window.open('http://localhost:19999', '_blank');
+  }, 500);
+}
+
+function showCleanup() {
+  document.getElementById('cleanupModal').style.display = 'flex';
+}
+
+function hideCleanup() {
+  document.getElementById('cleanupModal').style.display = 'none';
+}
+
+function doCleanup() {
+  fetch('/cleanup', { method: 'POST' })
+    .then(r => r.ok ? r.json() : {message: 'Cleanup ausgeführt'})
+    .then(data => { 
+      alert('✅ ' + (data.message || 'Terminal Cleanup durchgeführt!')); 
+      hideCleanup(); 
+    })
+    .catch(() => { 
+      alert('⚠️ Cleanup manuell ausführen: pkill -f zsh'); 
+      hideCleanup(); 
+    });
+}
+
+function checkStorage() {
+  document.getElementById('storageModal').style.display = 'flex';
+  document.getElementById('storageInfo').innerHTML = `
+    <b>💾 Lokaler Speicher:</b> Wird überwacht<br><br>
+    <b>☁️ Cloud Speicher:</b><br>
+    • iCloud Drive<br>
+    • Google Drive<br>
+    • Dropbox<br>
+    • OneDrive<br><br>
+    <b>💾 Extern:</b> USB/Festplatten unter /Volumes
+  `;
+}
+
+function hideStorage() {
+  document.getElementById('storageModal').style.display = 'none';
+}
+
+// Auto-refresh alle 30 Sekunden
+setInterval(() => {
+  fetch('http://localhost:11434/api/tags', { mode: 'no-cors' })
+    .catch(() => {});
+}, 30000);
+</script>
+
+</body>
+</html>

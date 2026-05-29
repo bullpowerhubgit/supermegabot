@@ -1,0 +1,1891 @@
+{
+  "scanMeta": {
+    "timestamp": "2026-05-29T20:35:17.768Z",
+    "duration": 62,
+    "projectDir": "/Users/rudolfsarkany/supermegabot-windsurf-agents/CascadeProjects/windsurf-project",
+    "hostname": "MacBook-Pro-von-Rudolf.local"
+  },
+  "summary": {
+    "totalIssues": 91,
+    "critical": 1,
+    "warnings": 84,
+    "info": 6
+  },
+  "issues": {
+    "critical": [
+      {
+        "type": "high-memory-usage",
+        "message": "Memory usage: 96.62%"
+      }
+    ],
+    "warning": [
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 27,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 34,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 41,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 48,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 55,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 62,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 69,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 76,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 83,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 90,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 97,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 104,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 111,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 118,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 125,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 132,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 139,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 146,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 153,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 160,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 167,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 174,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 181,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 188,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 195,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 202,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 209,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 216,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 495,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 502,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 509,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 516,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 523,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 530,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 537,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 544,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 551,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 558,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 565,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 572,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 579,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 586,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 593,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 600,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 607,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 614,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 621,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 628,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 635,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 642,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 649,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 656,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 670,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 677,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 684,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 691,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 902,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = '<div class=\"log-entry warn\">No PM2 services running</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 920,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = html;"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 969,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry info\">🔍 Scanning files...</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 983,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = html;"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 986,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Error: ' + error.message + '</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1001,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry info\">🧹 Running cleanup...</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1006,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry ' + (data.success ? 'success' : 'error') + '\">' + data."
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1009,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Cleanup failed: ' + error.message + '</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1024,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry info\">💾 Creating backup...</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1031,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry success\">Backup created!</div><div class=\"log-entry inf"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1034,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Backup failed: ' + data.error + '</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1038,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Error: ' + error.message + '</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1052,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry info\">📁 Loading backups...</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1063,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = html;"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1066,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry warn\">No backups found</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1070,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Error: ' + error.message + '</div>';"
+      },
+      {
+        "file": "monitor-dashboard.js",
+        "line": 131,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==='errored'?'b"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 579,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "alertsList.innerHTML = data.alerts.map(alert => {"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 588,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "alertsList.innerHTML = '<div class=\"empty-state\">No alerts</div>';"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 596,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "servicesList.innerHTML = data.pm2.map(service => {"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 615,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "logSelect.innerHTML = '<option value=\"\">Select service...</option>' +"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 618,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "servicesList.innerHTML = '<div class=\"empty-state\">No PM2 services running</div>';"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 632,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "logViewer.innerHTML = logs.join('\\n');"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 634,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "logViewer.innerHTML = '<div style=\"color: var(--muted);\">No logs available</div>';"
+      },
+      {
+        "file": "templates/dashboard.html",
+        "line": 513,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = '<div style=\"color: #a0a0a0; text-align: center; padding: 20px;\">No recent ale"
+      },
+      {
+        "file": "templates/dashboard.html",
+        "line": 517,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = alerts.map(alert => `"
+      },
+      {
+        "file": "templates/dashboard.html",
+        "line": 529,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = '<div style=\"color: #a0a0a0; text-align: center; padding: 20px;\">No bot proces"
+      },
+      {
+        "file": "templates/dashboard.html",
+        "line": 533,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = bots.map(bot => `"
+      }
+    ],
+    "info": [
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 225,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 232,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 488,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 663,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
+      },
+      {
+        "file": "deep-scan-fix.js",
+        "line": 560,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "exec(command, { timeout: 30000 }, (error, stdout, stderr) => {"
+      },
+      {
+        "file": "watchdog.js",
+        "line": 109,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "exec(proc.restartCommand, (err) => {"
+      }
+    ]
+  },
+  "projectFiles": {
+    "totalFiles": 57,
+    "byType": {
+      "": 1,
+      ".env": 1,
+      ".json": 3,
+      ".md": 6,
+      ".js": 28,
+      ".py": 16,
+      ".prisma": 1,
+      ".html": 1
+    },
+    "totalLines": 17352,
+    "largestFiles": [
+      {
+        "file": "mega-dashboard-backend.js",
+        "lines": 1134
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "lines": 1047
+      },
+      {
+        "file": "deep-scan-fix-mac.py",
+        "lines": 796
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "lines": 718
+      },
+      {
+        "file": "implementation-validator.js",
+        "lines": 606
+      },
+      {
+        "file": "deep-scan-fix.js",
+        "lines": 600
+      },
+      {
+        "file": "shopify-flow-validator.js",
+        "lines": 597
+      },
+      {
+        "file": "templates/dashboard.html",
+        "lines": 564
+      },
+      {
+        "file": "cloud-backup.py",
+        "lines": 547
+      },
+      {
+        "file": "facebook-custom-audiences-validator.js",
+        "lines": 541
+      },
+      {
+        "file": "cloud-backup-system.py",
+        "lines": 527
+      },
+      {
+        "file": "security-compliance-validator.js",
+        "lines": 523
+      },
+      {
+        "file": "scalability-performance-validator.js",
+        "lines": 517
+      },
+      {
+        "file": "file-sorter.py",
+        "lines": 476
+      },
+      {
+        "file": "business-logic-validator.js",
+        "lines": 468
+      },
+      {
+        "file": "professional-desktop-monitor.py",
+        "lines": 435
+      },
+      {
+        "file": "mac-optimizer.py",
+        "lines": 433
+      },
+      {
+        "file": "professional-desktop-monitor-server.py",
+        "lines": 429
+      },
+      {
+        "file": "final-deep-scan-report.js",
+        "lines": 401
+      },
+      {
+        "file": "watchdog-v2.js",
+        "lines": 368
+      },
+      {
+        "file": "mega-server.py",
+        "lines": 366
+      },
+      {
+        "file": "package-lock.json",
+        "lines": 361
+      },
+      {
+        "file": "browser-turbo.py",
+        "lines": 351
+      },
+      {
+        "file": "desktop-monitor.py",
+        "lines": 328
+      },
+      {
+        "file": "shopify-automation-solution.md",
+        "lines": 320
+      },
+      {
+        "file": "watchdog.js",
+        "lines": 312
+      },
+      {
+        "file": "webhook-validator.js",
+        "lines": 292
+      },
+      {
+        "file": "rudibot-integrator.js",
+        "lines": 235
+      },
+      {
+        "file": "cloud-backup-auto.py",
+        "lines": 212
+      },
+      {
+        "file": "VALIDATION_REPORT.md",
+        "lines": 199
+      },
+      {
+        "file": "backup-scheduler.py",
+        "lines": 194
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "lines": 194
+      },
+      {
+        "file": "platform-integration.md",
+        "lines": 183
+      },
+      {
+        "file": "enable-gcp-apis.py",
+        "lines": 176
+      },
+      {
+        "file": "MAC_OPTIMIZER_README.md",
+        "lines": 161
+      },
+      {
+        "file": "auto-backup-scheduler.js",
+        "lines": 158
+      },
+      {
+        "file": "services/external-notification-example.js",
+        "lines": 153
+      },
+      {
+        "file": "monitor-dashboard.js",
+        "lines": 150
+      },
+      {
+        "file": "services/telegram-notification-client.js",
+        "lines": 127
+      },
+      {
+        "file": "backup-to-cloud-storage.py",
+        "lines": 111
+      },
+      {
+        "file": "README-MEGA.md",
+        "lines": 110
+      },
+      {
+        "file": "lib/gcp_config.py",
+        "lines": 103
+      },
+      {
+        "file": "README.md",
+        "lines": 99
+      },
+      {
+        "file": "lib/gcp-config.js",
+        "lines": 95
+      },
+      {
+        "file": "services/telegram-direct-client.js",
+        "lines": 86
+      },
+      {
+        "file": "API_CONFIG_TEMPLATE.env",
+        "lines": 84
+      },
+      {
+        "file": "debug-payload.js",
+        "lines": 81
+      },
+      {
+        "file": "deep-scan-scheduler.js",
+        "lines": 71
+      },
+      {
+        "file": ".env",
+        "lines": 70
+      },
+      {
+        "file": "test-direct-notification.js",
+        "lines": 59
+      },
+      {
+        "file": "test-notification.js",
+        "lines": 59
+      },
+      {
+        "file": "package.json",
+        "lines": 38
+      },
+      {
+        "file": "test-gcp-integration.py",
+        "lines": 27
+      },
+      {
+        "file": "test-gcp-integration.js",
+        "lines": 23
+      },
+      {
+        "file": "lib/supabase.js",
+        "lines": 14
+      },
+      {
+        "file": "test-watchdog.js",
+        "lines": 13
+      },
+      {
+        "file": "prisma/schema.prisma",
+        "lines": 10
+      }
+    ]
+  },
+  "security": {
+    "totalIssues": 90,
+    "byType": {
+      "xss-risk": 84,
+      "command-injection-risk": 6
+    },
+    "issues": [
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 27,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 34,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 41,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 48,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 55,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 62,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 69,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 76,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 83,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 90,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 97,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 104,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 111,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 118,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 125,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 132,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 139,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 146,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 153,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 160,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 167,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 174,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 181,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 188,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 195,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 202,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 209,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 216,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 225,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 232,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 488,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 495,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 502,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 509,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 516,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 523,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 530,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 537,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 544,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 551,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 558,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 565,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 572,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 579,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 586,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 593,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 600,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 607,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 614,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 621,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 628,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 635,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 642,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 649,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 656,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 663,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 670,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 677,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 684,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 691,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
+      },
+      {
+        "file": "deep-scan-fix.js",
+        "line": 560,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "exec(command, { timeout: 30000 }, (error, stdout, stderr) => {"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 902,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = '<div class=\"log-entry warn\">No PM2 services running</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 920,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = html;"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 969,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry info\">🔍 Scanning files...</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 983,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = html;"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 986,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Error: ' + error.message + '</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1001,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry info\">🧹 Running cleanup...</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1006,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry ' + (data.success ? 'success' : 'error') + '\">' + data."
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1009,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Cleanup failed: ' + error.message + '</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1024,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry info\">💾 Creating backup...</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1031,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry success\">Backup created!</div><div class=\"log-entry inf"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1034,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Backup failed: ' + data.error + '</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1038,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Error: ' + error.message + '</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1052,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry info\">📁 Loading backups...</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1063,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = html;"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1066,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry warn\">No backups found</div>';"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1070,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "resultDiv.innerHTML = '<div class=\"log-entry error\">Error: ' + error.message + '</div>';"
+      },
+      {
+        "file": "monitor-dashboard.js",
+        "line": 131,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==='errored'?'b"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 579,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "alertsList.innerHTML = data.alerts.map(alert => {"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 588,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "alertsList.innerHTML = '<div class=\"empty-state\">No alerts</div>';"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 596,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "servicesList.innerHTML = data.pm2.map(service => {"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 615,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "logSelect.innerHTML = '<option value=\"\">Select service...</option>' +"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 618,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "servicesList.innerHTML = '<div class=\"empty-state\">No PM2 services running</div>';"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 632,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "logViewer.innerHTML = logs.join('\\n');"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 634,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "logViewer.innerHTML = '<div style=\"color: var(--muted);\">No logs available</div>';"
+      },
+      {
+        "file": "watchdog.js",
+        "line": 109,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "exec(proc.restartCommand, (err) => {"
+      },
+      {
+        "file": "templates/dashboard.html",
+        "line": 513,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = '<div style=\"color: #a0a0a0; text-align: center; padding: 20px;\">No recent ale"
+      },
+      {
+        "file": "templates/dashboard.html",
+        "line": 517,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = alerts.map(alert => `"
+      },
+      {
+        "file": "templates/dashboard.html",
+        "line": 529,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = '<div style=\"color: #a0a0a0; text-align: center; padding: 20px;\">No bot proces"
+      },
+      {
+        "file": "templates/dashboard.html",
+        "line": 533,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "container.innerHTML = bots.map(bot => `"
+      }
+    ]
+  },
+  "apis": [
+    {
+      "name": "Supabase",
+      "file": "lib/supabase.js",
+      "status": "configured"
+    },
+    {
+      "name": "Telegram Bot",
+      "file": "services/telegram-direct-client.js",
+      "status": "configured"
+    },
+    {
+      "name": "Telegram Bot",
+      "file": "services/telegram-notification-client.js",
+      "status": "configured"
+    },
+    {
+      "name": "Prisma ORM",
+      "file": "prisma/schema.prisma",
+      "status": "configured"
+    },
+    {
+      "name": "Cloud Backup Manager",
+      "file": "cloud-backup-manager.js",
+      "status": "configured"
+    },
+    {
+      "name": "Environment Config",
+      "file": ".env",
+      "status": "present"
+    },
+    {
+      "name": "Environment Config",
+      "file": "API_CONFIG_TEMPLATE.env",
+      "status": "present"
+    }
+  ],
+  "cloudData": {
+    "backups": [
+      {
+        "name": "rudibot-full-2026-05-29T15-41-38-547Z",
+        "path": "/Users/rudolfsarkany/RudiBot-Data/backups/rudibot-full-2026-05-29T15-41-38-547Z",
+        "date": "2026-05-29T15:41:38.551Z"
+      },
+      {
+        "name": "rudibot-full-2026-05-29T15-42-15-222Z",
+        "path": "/Users/rudolfsarkany/RudiBot-Data/backups/rudibot-full-2026-05-29T15-42-15-222Z",
+        "date": "2026-05-29T15:42:15.223Z"
+      }
+    ],
+    "syncStatus": "active",
+    "externalServices": [
+      "External Notification Service"
+    ]
+  },
+  "systemHealth": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "uptime": 26328,
+    "totalMemory": 51539607552,
+    "freeMemory": 1740750848,
+    "memoryUsage": "96.62",
+    "cpuCount": 14,
+    "loadAverage": [
+      62.92333984375,
+      55.57568359375,
+      65.3056640625
+    ],
+    "hostname": "MacBook-Pro-von-Rudolf.local"
+  },
+  "performance": {
+    "totalIssues": 244,
+    "byType": {
+      "debug-statement": 236,
+      "potential-memory-leak": 7,
+      "event-listener": 1
+    },
+    "issues": [
+      {
+        "file": "auto-backup-scheduler.js",
+        "line": 34,
+        "type": "debug-statement"
+      },
+      {
+        "file": "auto-backup-scheduler.js",
+        "line": 137,
+        "type": "potential-memory-leak"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 432,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 436,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 438,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 439,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 443,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 444,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 447,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 454,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 455,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 456,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 457,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 459,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 461,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 462,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 463,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 464,
+        "type": "debug-statement"
+      },
+      {
+        "file": "business-logic-validator.js",
+        "line": 465,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 169,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 170,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 171,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 172,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 173,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 178,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 180,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 183,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 185,
+        "type": "debug-statement"
+      },
+      {
+        "file": "cloud-backup-manager.js",
+        "line": 189,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 14,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 42,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 43,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 44,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 45,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 46,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 47,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 48,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 49,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 50,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 51,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 54,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 55,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 69,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 70,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 72,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 73,
+        "type": "debug-statement"
+      },
+      {
+        "file": "debug-payload.js",
+        "line": 76,
+        "type": "debug-statement"
+      },
+      {
+        "file": "deep-scan-fix.js",
+        "line": 39,
+        "type": "debug-statement"
+      },
+      {
+        "file": "deep-scan-fix.js",
+        "line": 45,
+        "type": "debug-statement"
+      },
+      {
+        "file": "deep-scan-fix.js",
+        "line": 47,
+        "type": "debug-statement"
+      }
+    ]
+  },
+  "dependencies": {
+    "node": [
+      "axios",
+      "dotenv",
+      "@supabase/supabase-js",
+      "node-telegram-bot-api",
+      "telegram",
+      "input"
+    ],
+    "python": [],
+    "outdated": [],
+    "devNode": [
+      "prisma"
+    ],
+    "nodeModulesSize": "3.50 MB"
+  },
+  "gitStatus": {
+    "branch": "windsurf-agents",
+    "uncommitted": 0,
+    "untracked": 30,
+    "lastCommit": "Fri May 29 17:09:57 2026 +0200"
+  }
+}

@@ -1,0 +1,50 @@
+#!/bin/bash
+
+PROJECT_DIR="/Users/rudolfsarkany/supermegabot-windsurf-agents/CascadeProjects/windsurf-project"
+PIDFILE_WD="/tmp/supermegabot-watchdog.pid"
+PIDFILE_DS="/tmp/supermegabot-deepscan.pid"
+
+notify() {
+    osascript -e "display notification \"$2\" with title \"$1\" sound name \"Glass\""
+}
+
+check_running() {
+    local pidfile=$1
+    if [ -f "$pidfile" ]; then
+        local pid=$(cat "$pidfile")
+        if ps -p "$pid" > /dev/null 2>&1; then
+            return 0
+        fi
+    fi
+    return 1
+}
+
+# Check if already running
+if check_running "$PIDFILE_WD" && check_running "$PIDFILE_DS"; then
+    notify "SuperMegaBot" "Alle Services laufen bereits"
+    exit 0
+fi
+
+cd "$PROJECT_DIR"
+
+# Start Watchdog
+if ! check_running "$PIDFILE_WD"; then
+    nohup /opt/homebrew/bin/node "$PROJECT_DIR/watchdog.js" > /dev/null 2>&1 &
+    PID_WD=$!
+    echo $PID_WD > "$PIDFILE_WD"
+    notify "SuperMegaBot" "Watchdog gestartet (PID: $PID_WD)"
+fi
+
+# Start Deep-Scan-Scheduler
+if ! check_running "$PIDFILE_DS"; then
+    nohup /opt/homebrew/bin/node "$PROJECT_DIR/deep-scan-scheduler.js" > /dev/null 2>&1 &
+    PID_DS=$!
+    echo $PID_DS > "$PIDFILE_DS"
+    notify "SuperMegaBot" "Deep-Scan Scheduler gestartet (PID: $PID_DS)"
+fi
+
+# Summary notification after 2 seconds
+(sleep 2 && notify "SuperMegaBot" "System bereit! Watchdog + DeepScan aktiv") &
+
+# Open logs in Console after 3 seconds
+(sleep 3 && open -a Console /tmp/supermegabot-watchdog.log) &

@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# Ensure mega dashboard server is running
+if ! curl -s http://localhost:8889/api/status > /dev/null 2>&1; then
+  cd /Users/rudolfsarkany/supermegabot-windsurf-agents/CascadeProjects/windsurf-project
+  nohup /opt/homebrew/bin/node mega-dashboard-backend.js > /tmp/mega-dashboard.log 2>&1 &
+  sleep 2
+fi
+
+# Open dashboard
+open "http://localhost:8889"

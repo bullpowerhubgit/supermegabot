@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # ═══════════════════════════════════════════════════════════════
+  # Telegram Bot - Standalone Notification Hub & Command Center
+  # ═══════════════════════════════════════════════════════════════
+  telegram-bot:
+    build:
+      context: /Users/rudolfsarkany/windsurf-telegram-bot
+      dockerfile: Dockerfile
+    container_name: windsurf-telegram-bot
+    ports:
+      - "8000:8000"
+    environment:
+      - NODE_ENV=production
+      - PORT=8000
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_CHAT_ID=${TELEGRAM_CHAT_ID}
+      # Externe Service URLs (für Webhooks & API Calls)
+      - SHOPIFY_SERVICE_URL=http://localhost:3002
+      - GITHUB_SERVICE_URL=http://localhost:3001
+      - DASHBOARD_SERVICE_URL=http://localhost:8888
+      # Webhook Secrets (für externe Services)
+      - SHOPIFY_WEBHOOK_SECRET=${SHOPIFY_WEBHOOK_SECRET}
+      - GITHUB_WEBHOOK_SECRET=${GITHUB_WEBHOOK_SECRET}
+      # AI Services
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - PERPLEXITY_API_KEY=${PERPLEXITY_API_KEY}
+      # Database (optional)
+      - MONGODB_URI=${MONGODB_URI}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+    networks:
+      - windsurf-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - telegram-data:/data
+      - ../windsurf-telegram-bot:/app
+
+  # ═══════════════════════════════════════════════════════════════
+  # MongoDB - Optional (für Bot Data Persistence)
+  # ═══════════════════════════════════════════════════════════════
+  mongo:
+    image: mongo:7.0
+    container_name: windsurf-mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=windsurf-platform
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - windsurf-network
+    restart: unless-stopped
+    profiles:
+      - with-db
+
+  # ═══════════════════════════════════════════════════════════════
+  # Redis - Optional (für Caching & Sessions)
+  # ═══════════════════════════════════════════════════════════════
+  redis:
+    image: redis:7-alpine
+    container_name: windsurf-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - windsurf-network
+    restart: unless-stopped
+    profiles:
+      - with-cache
+
+networks:
+  windsurf-network:
+    driver: bridge
+
+volumes:
+  telegram-data:
+  mongo-data:
+  redis-data:

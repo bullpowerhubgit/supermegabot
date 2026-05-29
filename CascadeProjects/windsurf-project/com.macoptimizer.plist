@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.macoptimizer</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/rudolfsarkany/supermegabot-windsurf-agents/CascadeProjects/windsurf-project/mac-optimizer.py</string>
+        <string>--optimize</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>86400</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/tmp/mac-optimizer.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/mac-optimizer-error.log</string>
+</dict>
+</plist>

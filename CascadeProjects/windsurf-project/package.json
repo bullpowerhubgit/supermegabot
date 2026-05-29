@@ -1,0 +1,37 @@
+{
+  "name": "windsurf-project",
+  "version": "1.0.0",
+  "description": "Vollautomatische E-Commerce & Marketing-Plattform mit Telegram-Integration.",
+  "main": "test-notification.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test-notification": "node test-notification.js",
+    "deepscan": "node deep-scan-fix.js",
+    "deepscan:schedule": "node deep-scan-scheduler.js",
+    "deepscan:initial": "node deep-scan-scheduler.js --initial-scan",
+    "bot:public": "node bots/public-bot.js",
+    "bot:control": "node bots/control-bot.js",
+    "bot:both": "concurrently \"npm run bot:public\" \"npm run bot:control\"",
+    "bot:mtproto": "node bots/mtproto-client.js"
+  },
+  "keywords": [
+    "telegram",
+    "notifications",
+    "shopify",
+    "automation"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "dotenv": "^17.4.2",
+    "@supabase/supabase-js": "^2.49.0",
+    "node-telegram-bot-api": "^0.66.0",
+    "telegram": "^2.26.8",
+    "input": "^1.0.1"
+  },
+  "devDependencies": {
+    "prisma": "^6.6.0"
+  }
+}
