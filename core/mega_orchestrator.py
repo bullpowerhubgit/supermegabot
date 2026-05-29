@@ -994,6 +994,14 @@ class MegaOrchestrator:
         asyncio.create_task(self._telegram_polling_loop())
         # Start Guardian monitor
         asyncio.create_task(self._guardian_monitor_loop())
+        # Start automation scheduler
+        try:
+            from core.automation_scheduler import get_scheduler
+            sched = get_scheduler()
+            await sched.start()
+            log.info(f"AutoScheduler gestartet ({len(sched._task_handles)} Tasks)")
+        except Exception as e:
+            log.warning(f"AutoScheduler nicht gestartet: {e}")
 
         log.info("SuperMegaBot is RUNNING")
         await send_telegram("SuperMegaBot gestartet! Tippe /help")
