@@ -1105,6 +1105,127 @@ async def handle_deepscan(req):
     return web.json_response(results)
 
 
+async def handle_automation_status(req):
+    """Return automation scheduler status + recent task runs."""
+    try:
+        from core.automation_scheduler import get_scheduler, get_last_runs
+        sched = get_scheduler()
+        return web.json_response({
+            "status": sched.status(),
+            "recent_runs": get_last_runs(limit=30),
+        })
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_automation_run(req):
+    """Manually trigger a specific automation task."""
+    try:
+        data = await req.json()
+        task_name = data.get("task", "")
+        from core.automation_scheduler import get_scheduler
+        sched = get_scheduler()
+        result = await sched.run_now(task_name)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_social_status(req):
+    """Ping all social media platform connectors."""
+    try:
+        from modules.social_connectors import ping_all
+        results = await ping_all()
+        return web.json_response(results)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_digistore_status(req):
+    try:
+        from modules.digistore24_automation import ping, get_sales_stats, get_products
+        ok = await ping()
+        stats = await get_sales_stats() if ok else {}
+        products = await get_products() if ok else []
+        return web.json_response({"ok": ok, "stats": stats, "product_count": len(products)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_digistore_orders(req):
+    try:
+        from modules.digistore24_automation import get_orders
+        page = int(req.rel_url.query.get("page", 1))
+        orders = await get_orders(page=page)
+        return web.json_response({"orders": orders})
+    except Exception as e:
+        return web.json_response({"orders": [], "error": str(e)})
+
+
+async def handle_mailchimp_status(req):
+    try:
+        from modules.mailchimp_automation import ping, get_lists
+        ok, account = await ping()
+        lists = await get_lists() if ok else []
+        return web.json_response({"ok": ok, "account": account, "lists": lists})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mailchimp_sync(req):
+    try:
+        from modules.mailchimp_automation import sync_from_digistore, get_lists
+        lists = await get_lists()
+        if not lists:
+            return web.json_response({"ok": False, "error": "Keine Listen gefunden"})
+        list_id = (await req.json()).get("list_id") or lists[0]["id"]
+        count = await sync_from_digistore(list_id)
+        return web.json_response({"ok": True, "synced": count})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_printify_status(req):
+    try:
+        from modules.printify_automation import ping, get_stats
+        ok = await ping()
+        stats = await get_stats() if ok else {}
+        return web.json_response({"ok": ok, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_printify_autofulfill(req):
+    try:
+        from modules.printify_automation import auto_fulfill_pending
+        result = await auto_fulfill_pending()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_etsy_status(req):
+    try:
+        from modules.ecommerce_connectors import EtsyConnector
+        etsy = EtsyConnector()
+        ok, info = await etsy.ping()
+        stats = await etsy.get_stats() if ok else {}
+        return web.json_response({"ok": ok, "info": info, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_gumroad_status(req):
+    try:
+        from modules.ecommerce_connectors import GumroadConnector
+        gum = GumroadConnector()
+        ok, info = await gum.ping()
+        stats = await gum.get_stats() if ok else {}
+        return web.json_response({"ok": ok, "info": info, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -1173,6 +1294,29 @@ async def create_app():
     app.router.add_post("/api/notes",             handle_notes_save)
     app.router.add_delete("/api/notes",           handle_notes_delete)
     app.router.add_get("/api/deepscan",           handle_deepscan)
+
+    # ── Automation Scheduler ──────────────────────────────────────────────────
+    app.router.add_get("/api/automation/status",      handle_automation_status)
+    app.router.add_post("/api/automation/run",        handle_automation_run)
+
+    # ── Social Media ──────────────────────────────────────────────────────────
+    app.router.add_get("/api/social/status",          handle_social_status)
+
+    # ── Digistore24 ───────────────────────────────────────────────────────────
+    app.router.add_get("/api/digistore/status",       handle_digistore_status)
+    app.router.add_get("/api/digistore/orders",       handle_digistore_orders)
+
+    # ── Mailchimp ─────────────────────────────────────────────────────────────
+    app.router.add_get("/api/mailchimp/status",       handle_mailchimp_status)
+    app.router.add_post("/api/mailchimp/sync",        handle_mailchimp_sync)
+
+    # ── Printify ──────────────────────────────────────────────────────────────
+    app.router.add_get("/api/printify/status",        handle_printify_status)
+    app.router.add_post("/api/printify/autofulfill",  handle_printify_autofulfill)
+
+    # ── Etsy + Gumroad ────────────────────────────────────────────────────────
+    app.router.add_get("/api/etsy/status",            handle_etsy_status)
+    app.router.add_get("/api/gumroad/status",         handle_gumroad_status)
 
     return app
 
