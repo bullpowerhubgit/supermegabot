@@ -10,7 +10,7 @@
         "today_revenue": "0",
         "products": 0
       },
-      "ts": "2026-05-29 13:48:41"
+      "ts": "2026-05-29 14:26:01"
     },
     "monitor": {
       "status": "ok",
@@ -20,7 +20,7 @@
         "Ollama LLM": true,
         "RudiBot Army": true
       },
-      "ts": "2026-05-29 13:49:39"
+      "ts": "2026-05-29 14:26:41"
     },
     "security": {
       "status": "ok",
@@ -32,32 +32,31 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-05-29 13:49:44"
+      "ts": "2026-05-29 14:26:45"
     },
     "micro_ping": {
       "status": "warning",
-      "message": "3/6 Services UP",
+      "message": "4/6 Services UP",
       "data": {
         "down": [
           "Telegram Bot",
-          "SuperMegaBot",
           "API-Gateway"
         ]
       },
-      "ts": "2026-05-29 13:48:52"
+      "ts": "2026-05-29 14:25:59"
     },
     "optimizer": {
       "status": "ok",
-      "message": "CPU:72% RAM:78% Disk:54%",
+      "message": "CPU:62% RAM:84% Disk:60%",
       "data": {
-        "ram_percent": 77.6,
-        "ram_free_gb": 11.5,
-        "cpu_percent": 71.9,
-        "disk_percent": 54.4,
+        "ram_percent": 83.9,
+        "ram_free_gb": 8.3,
+        "cpu_percent": 61.9,
+        "disk_percent": 60.2,
         "issues": [],
         "suggestions": []
       },
-      "ts": "2026-05-29 13:48:51"
+      "ts": "2026-05-29 14:25:52"
     },
     "social": {
       "status": "ok",
@@ -67,7 +66,7 @@
         "total": 1,
         "last_autopost": "nie"
       },
-      "ts": "2026-05-29 13:49:41"
+      "ts": "2026-05-29 14:26:41"
     },
     "finance": {
       "status": "ok",
@@ -77,47 +76,43 @@
         "total_revenue": 0.0,
         "yesterday_revenue": 0.0
       },
-      "ts": "2026-05-29 13:44:42"
+      "ts": "2026-05-29 14:21:43"
     },
     "micro_revenue": {
-      "status": "ok",
-      "message": "Umsatz heute: \u20ac0.00 (0 Orders)",
-      "data": {
-        "revenue": 0.0,
-        "orders": 0,
-        "date": "2026-05-29"
-      },
-      "ts": "2026-05-29 13:44:48"
+      "status": "warning",
+      "message": "Shopify API nicht erreichbar",
+      "data": {},
+      "ts": "2026-05-29 14:21:57"
     },
     "learner": {
       "status": "ok",
-      "message": "Skills: 14 gespeichert | 7 heute",
+      "message": "Skills: 21 gespeichert | 7 heute",
       "data": {
-        "total_skills": 14,
+        "total_skills": 21,
         "learned_today": 7,
         "last_learn": "2026-05-29"
       },
-      "ts": "2026-05-29 13:45:31"
+      "ts": "2026-05-29 14:22:32"
     },
     "micro_clean": {
       "status": "ok",
-      "message": "Disk: 52% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "message": "Disk: 60% | Rotiert: 0 Logs | Gespart: 0.0MB",
       "data": {
-        "disk_percent": 52.5,
+        "disk_percent": 59.7,
         "cleaned": 0,
         "saved_mb": 0.0
       },
-      "ts": "2026-05-29 13:44:48"
+      "ts": "2026-05-29 14:21:48"
     },
     "micro_backup": {
       "status": "ok",
-      "message": "\u2705 supermegabot: Backup OK (2026-05-29 03:52)",
+      "message": "\u2705 supermegabot: Backup OK (2026-05-29 13:49)",
       "data": {
         "results": [
-          "\u2705 supermegabot: Backup OK (2026-05-29 03:52)"
+          "\u2705 supermegabot: Backup OK (2026-05-29 13:49)"
         ]
       },
-      "ts": "2026-05-29 03:53:08"
+      "ts": "2026-05-29 13:49:57"
     },
     "micro_ai": {
       "status": "ok",
@@ -125,1009 +120,1009 @@
       "data": {
         "date": "2026-05-29"
       },
-      "ts": "2026-05-29 03:58:02"
+      "ts": "2026-05-29 13:54:55"
     }
   },
   "events": [
     {
-      "agent": "finance",
-      "msg": "\u20ac0.00 heute | \u20ac0.00 gesamt",
-      "ts": "13:13:48"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:13:52"
-    },
-    {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:13:55"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:14:25"
+      "ts": "13:50:39"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:14:48"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:14:52"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:14:55"
+      "ts": "13:50:45"
     },
     {
       "agent": "shopify",
       "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:15:14"
+      "ts": "13:50:45"
     },
     {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:15:25"
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "13:50:53"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:39% RAM:78% Disk:49%",
-      "ts": "13:15:41"
+      "msg": "CPU:57% RAM:74% Disk:54%",
+      "ts": "13:50:53"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:51:09"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:51:39"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:15:48"
+      "ts": "13:51:45"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:15:52"
+      "ts": "13:51:53"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:15:56"
+      "ts": "13:52:10"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:16:26"
+      "ts": "13:52:40"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:16:49"
+      "ts": "13:52:45"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "13:52:47"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:16:54"
+      "ts": "13:52:53"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:44% RAM:72% Disk:57%",
+      "ts": "13:52:56"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 1/2 OK",
+      "ts": "13:53:13"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:16:56"
+      "ts": "13:53:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "13:53:45"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "13:53:53"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:54:13"
     },
     {
       "agent": "social",
       "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:17:15"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:17:15"
+      "ts": "13:54:41"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:17:26"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:40% RAM:80% Disk:49%",
-      "ts": "13:17:43"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:17:49"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:17:54"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:17:56"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:18:26"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:18:49"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:18:55"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:18:56"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:19:16"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:19:26"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:44% RAM:81% Disk:49%",
-      "ts": "13:19:45"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:19:49"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:19:55"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:19:56"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:20:26"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:20:49"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:20:55"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:20:57"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:21:16"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:21:27"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:52% RAM:78% Disk:49%",
-      "ts": "13:21:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:21:49"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 49% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:21:51"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:21:55"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:21:57"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Umsatz heute: \u20ac0.00 (0 Orders)",
-      "ts": "13:22:09"
-    },
-    {
-      "agent": "social",
-      "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:22:15"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:22:27"
-    },
-    {
-      "agent": "learner",
-      "msg": "Skills: 7 gespeichert | 7 heute",
-      "ts": "13:22:28"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:22:49"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:22:55"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:22:57"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:23:22"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:23:27"
+      "ts": "13:54:43"
     },
     {
       "agent": "finance",
       "msg": "\u20ac0.00 heute | \u20ac0.00 gesamt",
-      "ts": "13:23:49"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:49% RAM:78% Disk:49%",
-      "ts": "13:23:50"
+      "ts": "13:54:43"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:23:50"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:23:55"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:23:57"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:24:28"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:24:50"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:24:56"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:24:58"
+      "ts": "13:54:45"
     },
     {
       "agent": "shopify",
       "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:25:23"
+      "ts": "13:54:49"
     },
     {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:25:28"
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "13:54:53"
     },
     {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:25:51"
+      "agent": "micro_ai",
+      "msg": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
+      "ts": "13:54:55"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:38% RAM:80% Disk:49%",
-      "ts": "13:25:52"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:25:56"
+      "msg": "CPU:37% RAM:81% Disk:57%",
+      "ts": "13:54:58"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:25:58"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:26:28"
+      "ts": "13:55:14"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:26:52"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:26:56"
+      "ts": "13:55:45"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:26:58"
+      "ts": "13:55:46"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "13:55:53"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:56:16"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "13:56:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 1/2 OK",
+      "ts": "13:56:49"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "13:56:52"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "13:56:53"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:44% RAM:81% Disk:57%",
+      "ts": "13:57:00"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:57:20"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "13:57:45"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:57:50"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "13:57:53"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:58:20"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "13:58:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:58:50"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "13:58:53"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "13:58:53"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:47% RAM:76% Disk:57%",
+      "ts": "13:59:02"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:59:20"
     },
     {
       "agent": "social",
       "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:27:15"
+      "ts": "13:59:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "13:59:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "13:59:50"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "13:59:54"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:00:20"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:00:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:00:50"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:00:54"
     },
     {
       "agent": "shopify",
       "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:27:24"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:27:28"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:27:53"
+      "ts": "14:00:54"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:36% RAM:79% Disk:49%",
-      "ts": "13:27:54"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:27:56"
+      "msg": "CPU:39% RAM:74% Disk:57%",
+      "ts": "14:01:04"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:27:59"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:28:29"
+      "ts": "14:01:20"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:28:53"
+      "ts": "14:01:46"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:01:50"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:28:56"
+      "ts": "14:01:54"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:28:59"
+      "ts": "14:02:20"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:02:48"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:29:29"
+      "ts": "14:02:50"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:02:54"
     },
     {
       "agent": "shopify",
       "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:29:30"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:29:53"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:29:56"
+      "ts": "14:03:04"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:44% RAM:78% Disk:49%",
-      "ts": "13:29:56"
+      "msg": "CPU:38% RAM:74% Disk:58%",
+      "ts": "14:03:06"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:29:59"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:30:29"
+      "ts": "14:03:22"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:30:53"
+      "ts": "14:03:48"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:03:52"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:30:57"
+      "ts": "14:03:54"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:31:01"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:31:31"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:31:32"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:31:53"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:31:57"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:36% RAM:81% Disk:49%",
-      "ts": "13:31:59"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:32:01"
+      "ts": "14:04:23"
     },
     {
       "agent": "social",
       "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:32:15"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:32:31"
+      "ts": "14:04:41"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:32:55"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:32:57"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:33:02"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:33:32"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:33:33"
+      "ts": "14:04:48"
     },
     {
       "agent": "finance",
       "msg": "\u20ac0.00 heute | \u20ac0.00 gesamt",
-      "ts": "13:33:50"
+      "ts": "14:04:48"
     },
     {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:33:55"
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:04:53"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:33:57"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:47% RAM:79% Disk:49%",
-      "ts": "13:34:01"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:34:02"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:34:32"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:34:56"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:34:57"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:35:02"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:35:32"
+      "ts": "14:04:54"
     },
     {
       "agent": "shopify",
       "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:35:35"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:35:56"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:35:57"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:36:02"
+      "ts": "14:05:05"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:39% RAM:79% Disk:49%",
-      "ts": "13:36:03"
+      "msg": "CPU:40% RAM:72% Disk:58%",
+      "ts": "14:05:08"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:36:33"
+      "ts": "14:05:23"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:36:56"
+      "ts": "14:05:48"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:05:53"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:36:58"
+      "ts": "14:05:54"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:37:03"
+      "ts": "14:06:23"
     },
     {
-      "agent": "social",
-      "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:37:15"
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:06:48"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:37:33"
+      "ts": "14:06:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:06:54"
     },
     {
       "agent": "shopify",
       "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:37:35"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:37:56"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:37:58"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:38:03"
+      "ts": "14:07:09"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:39% RAM:80% Disk:49%",
-      "ts": "13:38:05"
+      "msg": "CPU:42% RAM:72% Disk:58%",
+      "ts": "14:07:10"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:38:33"
+      "ts": "14:07:25"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:38:56"
+      "ts": "14:07:48"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:38:58"
+      "ts": "14:07:55"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:39:03"
+      "ts": "14:07:55"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:39:33"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:39:37"
+      "ts": "14:08:25"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:39:56"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:39:58"
+      "ts": "14:08:48"
     },
     {
       "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:40:03"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:40% RAM:80% Disk:49%",
-      "ts": "13:40:08"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:40:33"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:40:56"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:40:58"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:41:03"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:41:34"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:41:38"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:41:57"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:41:58"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:42:04"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:35% RAM:80% Disk:49%",
-      "ts": "13:42:10"
-    },
-    {
-      "agent": "social",
-      "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:42:15"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:42:34"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:42:57"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:43:01"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:43:04"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:43:34"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:43:39"
-    },
-    {
-      "agent": "finance",
-      "msg": "\u20ac0.00 heute | \u20ac0.00 gesamt",
-      "ts": "13:43:54"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:43:57"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:44:05"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:44:05"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:36% RAM:79% Disk:49%",
-      "ts": "13:44:12"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:44:35"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:44:38"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:44:40"
-    },
-    {
-      "agent": "social",
-      "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:44:40"
-    },
-    {
-      "agent": "finance",
-      "msg": "\u20ac0.00 heute | \u20ac0.00 gesamt",
-      "ts": "13:44:42"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:44:44"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:44:46"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:45% RAM:81% Disk:52%",
-      "ts": "13:44:47"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 52% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:44:48"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Umsatz heute: \u20ac0.00 (0 Orders)",
-      "ts": "13:44:48"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:45:08"
-    },
-    {
-      "agent": "learner",
-      "msg": "Skills: 14 gespeichert | 7 heute",
-      "ts": "13:45:31"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:45:39"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:45:44"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:45:46"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:46:09"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:46:39"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:46:41"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:46:44"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:46:47"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:36% RAM:82% Disk:54%",
-      "ts": "13:46:49"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:47:09"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:47:39"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:47:44"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:47:47"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:48:09"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:48:39"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:48:41"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:48:44"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:72% RAM:78% Disk:54%",
-      "ts": "13:48:51"
+      "msg": "Services: 1/2 OK",
+      "ts": "14:08:58"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "13:48:52"
+      "ts": "14:09:02"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:09:11"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:40% RAM:71% Disk:58%",
+      "ts": "14:09:13"
     },
     {
       "agent": "monitor",
       "msg": "Services: 2/2 OK",
-      "ts": "13:49:09"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:49:39"
+      "ts": "14:09:28"
     },
     {
       "agent": "social",
       "msg": "Social: Telegram offline | Letzter Post: nie",
-      "ts": "13:49:41"
+      "ts": "14:09:41"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:49:44"
+      "ts": "14:09:48"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:09:58"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:10:04"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:10:28"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:10:50"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:10:59"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:11:05"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:11:12"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:45% RAM:71% Disk:58%",
+      "ts": "14:11:15"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:11:29"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:11:50"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:11:59"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:12:05"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:12:29"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:12:50"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:12:59"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:13:05"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:13:14"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:47% RAM:68% Disk:58%",
+      "ts": "14:13:17"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:13:29"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:13:50"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:14:00"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:14:05"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:14:30"
+    },
+    {
+      "agent": "social",
+      "msg": "Social: Telegram offline | Letzter Post: nie",
+      "ts": "14:14:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:14:50"
+    },
+    {
+      "agent": "finance",
+      "msg": "\u20ac0.00 heute | \u20ac0.00 gesamt",
+      "ts": "14:14:56"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:15:00"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:15:05"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:15:15"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:39% RAM:69% Disk:58%",
+      "ts": "14:15:19"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:15:30"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:15:50"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:16:00"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:16:05"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:16:30"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:16:50"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:17:00"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:17:05"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:17:15"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:42% RAM:70% Disk:58%",
+      "ts": "14:17:21"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:17:30"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:17:51"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:18:00"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:18:05"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:18:30"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:18:51"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:19:00"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:19:05"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:19:17"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:54% RAM:74% Disk:52%",
+      "ts": "14:19:23"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:19:30"
+    },
+    {
+      "agent": "social",
+      "msg": "Social: Telegram offline | Letzter Post: nie",
+      "ts": "14:19:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:19:51"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:20:00"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:20:10"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:20:31"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:20:51"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:21:01"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:21:10"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:21:20"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:56% RAM:83% Disk:52%",
+      "ts": "14:21:25"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:21:31"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:21:39"
+    },
+    {
+      "agent": "social",
+      "msg": "Social: Telegram offline | Letzter Post: nie",
+      "ts": "14:21:41"
+    },
+    {
+      "agent": "finance",
+      "msg": "\u20ac0.00 heute | \u20ac0.00 gesamt",
+      "ts": "14:21:43"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:21:44"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:21:44"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:71% RAM:83% Disk:59%",
+      "ts": "14:21:48"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 60% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "14:21:48"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "14:21:52"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "14:21:57"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:22:09"
+    },
+    {
+      "agent": "learner",
+      "msg": "Skills: 21 gespeichert | 7 heute",
+      "ts": "14:22:32"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:22:39"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:22:45"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "14:22:57"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:23:09"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:23:40"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:23:45"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:57% RAM:83% Disk:56%",
+      "ts": "14:23:50"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:23:51"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:23:59"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:24:10"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:24:40"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:24:45"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:24:59"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:25:10"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:25:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:25:45"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:62% RAM:84% Disk:60%",
+      "ts": "14:25:52"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "14:25:59"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
+      "ts": "14:26:01"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:26:11"
+    },
+    {
+      "agent": "monitor",
+      "msg": "Services: 2/2 OK",
+      "ts": "14:26:41"
+    },
+    {
+      "agent": "social",
+      "msg": "Social: Telegram offline | Letzter Post: nie",
+      "ts": "14:26:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "14:26:45"
     }
   ],
   "fixes": [],
