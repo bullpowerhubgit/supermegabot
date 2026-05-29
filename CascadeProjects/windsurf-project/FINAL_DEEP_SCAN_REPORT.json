@@ -1,21 +1,21 @@
 {
   "scanMeta": {
-    "timestamp": "2026-05-29T20:35:17.768Z",
-    "duration": 62,
+    "timestamp": "2026-05-29T20:49:35.002Z",
+    "duration": 74,
     "projectDir": "/Users/rudolfsarkany/supermegabot-windsurf-agents/CascadeProjects/windsurf-project",
     "hostname": "MacBook-Pro-von-Rudolf.local"
   },
   "summary": {
-    "totalIssues": 91,
+    "totalIssues": 211,
     "critical": 1,
-    "warnings": 84,
-    "info": 6
+    "warnings": 196,
+    "info": 14
   },
   "issues": {
     "critical": [
       {
         "type": "high-memory-usage",
-        "message": "Memory usage: 96.62%"
+        "message": "Memory usage: 98.29%"
       }
     ],
     "warning": [
@@ -24,389 +24,1173 @@
         "line": 27,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No PM2 services "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 34,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = html;\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = html;\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 41,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🔍 Scanning file"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 48,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 55,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 62,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🧹 Running clean"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 69,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry ' + (data.success ? 'succ"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 76,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Cleanup failed:"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 83,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">💾 Creating back"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 90,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry success\\\\\\\">Backup create"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 97,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Backup failed: "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 104,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 111,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">📁 Loading backu"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 118,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 125,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No backups found"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 132,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 139,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-onli"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 146,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = data.alerts.map(alert => {\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 153,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No alerts</div>';\\"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 160,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = data.pm2.map(service => {\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 167,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logSelect.innerHTML = '<option value=\\\\\\\"\\\\\\\">Select service...</option>'"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 174,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No PM2 services "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 181,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = logs.join('\\\\\\\\n');\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 188,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = '<div style=\\\\\\\"color: var(--muted);\\\\\\\">No logs av"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 195,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 202,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = alerts.map(alert => `\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 209,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 216,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = bots.map(bot => `\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 495,
+        "line": 223,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 230,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 237,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🔍 Scanning file"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 244,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 251,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 258,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🧹 Running clean"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 265,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry ' + (data.success ? 'succ"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 272,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Cleanup failed:"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 279,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">💾 Creating back"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 286,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry success\\\\\\\">Backup create"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 293,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Backup failed: "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 300,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 307,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">📁 Loading backu"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 314,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 321,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No backups found"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 328,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 335,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-onli"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 342,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = data.alerts.map(alert => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 349,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No alerts</div>';\\"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 356,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = data.pm2.map(service => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 363,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logSelect.innerHTML = '<option value=\\\\\\\"\\\\\\\">Select service...</option>'"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 370,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 377,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = logs.join('\\\\\\\\n');\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 384,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = '<div style=\\\\\\\"color: var(--muted);\\\\\\\">No logs av"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 391,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 398,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = alerts.map(alert => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 405,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 412,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = bots.map(bot => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 419,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 502,
+        "line": 426,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = html;\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 509,
+        "line": 433,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 516,
+        "line": 440,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 523,
+        "line": 447,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 530,
+        "line": 454,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 537,
+        "line": 461,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 544,
+        "line": 468,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 551,
+        "line": 475,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 558,
+        "line": 482,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 565,
+        "line": 489,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 572,
+        "line": 496,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 579,
+        "line": 503,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 586,
+        "line": 510,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 593,
+        "line": 517,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 600,
+        "line": 524,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 607,
+        "line": 531,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 614,
+        "line": 538,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 621,
+        "line": 545,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 628,
+        "line": 552,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 635,
+        "line": 559,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 642,
+        "line": 566,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 649,
+        "line": 573,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 656,
+        "line": 580,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 670,
+        "line": 587,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 677,
+        "line": 594,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 684,
+        "line": 601,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 691,
+        "line": 608,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 912,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 919,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 926,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🔍 Scanning file"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 933,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 940,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 947,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🧹 Running clean"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 954,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry ' + (data.success ? 'succ"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 961,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Cleanup failed:"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 968,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">💾 Creating back"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 975,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry success\\\\\\\">Backup create"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 982,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Backup failed: "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 989,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 996,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">📁 Loading backu"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1003,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1010,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No backups found"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1017,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1024,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-onli"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1031,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = data.alerts.map(alert => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1038,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No alerts</div>';\\"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1045,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = data.pm2.map(service => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1052,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logSelect.innerHTML = '<option value=\\\\\\\"\\\\\\\">Select service...</option>'"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1059,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1066,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = logs.join('\\\\\\\\n');\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1073,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = '<div style=\\\\\\\"color: var(--muted);\\\\\\\">No logs av"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1080,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1087,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = alerts.map(alert => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1094,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1101,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = bots.map(bot => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1129,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1136,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1143,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🔍 Scanning file"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1150,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1157,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1164,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🧹 Running clean"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1171,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry ' + (data.success ? 'succ"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1178,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Cleanup failed:"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1185,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">💾 Creating back"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1192,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry success\\\\\\\">Backup create"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1199,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Backup failed: "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1206,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1213,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">📁 Loading backu"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1220,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1227,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No backups found"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1234,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1241,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-onli"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1248,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = data.alerts.map(alert => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1255,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No alerts</div>';\\"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1262,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = data.pm2.map(service => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1269,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logSelect.innerHTML = '<option value=\\\\\\\"\\\\\\\">Select service...</option>'"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1276,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1283,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = logs.join('\\\\\\\\n');\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1290,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = '<div style=\\\\\\\"color: var(--muted);\\\\\\\">No logs av"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1304,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1311,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = alerts.map(alert => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1318,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1325,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = bots.map(bot => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1339,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1346,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1353,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1360,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1367,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1374,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1381,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1388,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1395,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1402,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1409,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1416,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1423,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1430,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1437,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1444,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1451,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1458,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1465,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1472,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1479,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1486,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1493,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1500,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1514,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1521,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1528,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1535,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
@@ -611,28 +1395,84 @@
     "info": [
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 225,
+        "line": 617,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 624,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(proc.restartCommand, (err) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 631,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 638,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(proc.restartCommand, (err) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 645,
         "type": "command-injection-risk",
         "severity": "medium",
         "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 232,
+        "line": 652,
         "type": "command-injection-risk",
         "severity": "medium",
         "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 488,
+        "line": 1108,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1115,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(proc.restartCommand, (err) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1122,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1297,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(proc.restartCommand, (err) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1332,
         "type": "command-injection-risk",
         "severity": "medium",
         "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 663,
+        "line": 1507,
         "type": "command-injection-risk",
         "severity": "medium",
         "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
@@ -654,26 +1494,26 @@
     ]
   },
   "projectFiles": {
-    "totalFiles": 57,
+    "totalFiles": 59,
     "byType": {
       "": 1,
       ".env": 1,
       ".json": 3,
       ".md": 6,
-      ".js": 28,
+      ".js": 30,
       ".py": 16,
       ".prisma": 1,
       ".html": 1
     },
-    "totalLines": 17352,
+    "totalLines": 18633,
     "largestFiles": [
       {
-        "file": "mega-dashboard-backend.js",
-        "lines": 1134
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "lines": 1891
       },
       {
-        "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "lines": 1047
+        "file": "mega-dashboard-backend.js",
+        "lines": 1135
       },
       {
         "file": "deep-scan-fix-mac.py",
@@ -681,7 +1521,7 @@
       },
       {
         "file": "professional-desktop-monitor.js",
-        "lines": 718
+        "lines": 720
       },
       {
         "file": "implementation-validator.js",
@@ -745,7 +1585,7 @@
       },
       {
         "file": "watchdog-v2.js",
-        "lines": 368
+        "lines": 369
       },
       {
         "file": "mega-server.py",
@@ -769,11 +1609,15 @@
       },
       {
         "file": "watchdog.js",
-        "lines": 312
+        "lines": 313
       },
       {
         "file": "webhook-validator.js",
         "lines": 292
+      },
+      {
+        "file": "code-fixer.js",
+        "lines": 274
       },
       {
         "file": "rudibot-integrator.js",
@@ -809,7 +1653,11 @@
       },
       {
         "file": "auto-backup-scheduler.js",
-        "lines": 158
+        "lines": 159
+      },
+      {
+        "file": "memory-optimizer.js",
+        "lines": 155
       },
       {
         "file": "services/external-notification-example.js",
@@ -817,7 +1665,7 @@
       },
       {
         "file": "monitor-dashboard.js",
-        "lines": 150
+        "lines": 151
       },
       {
         "file": "services/telegram-notification-client.js",
@@ -857,7 +1705,7 @@
       },
       {
         "file": "deep-scan-scheduler.js",
-        "lines": 71
+        "lines": 72
       },
       {
         "file": ".env",
@@ -898,10 +1746,10 @@
     ]
   },
   "security": {
-    "totalIssues": 90,
+    "totalIssues": 210,
     "byType": {
-      "xss-risk": 84,
-      "command-injection-risk": 6
+      "xss-risk": 196,
+      "command-injection-risk": 14
     },
     "issues": [
       {
@@ -909,417 +1757,1257 @@
         "line": 27,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No PM2 services "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 34,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = html;\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = html;\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 41,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🔍 Scanning file"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 48,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 55,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 62,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🧹 Running clean"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 69,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry ' + (data.success ? 'succ"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 76,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Cleanup failed:"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 83,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">💾 Creating back"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 90,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry success\\\\\\\">Backup create"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 97,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Backup failed: "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 104,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 111,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">📁 Loading backu"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 118,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 125,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No backups found"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 132,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 139,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-onli"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 146,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = data.alerts.map(alert => {\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 153,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No alerts</div>';\\"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 160,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = data.pm2.map(service => {\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 167,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logSelect.innerHTML = '<option value=\\\\\\\"\\\\\\\">Select service...</option>'"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 174,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No PM2 services "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 181,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = logs.join('\\\\\\\\n');\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 188,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = '<div style=\\\\\\\"color: var(--muted);\\\\\\\">No logs av"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 195,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 202,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = alerts.map(alert => `\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 209,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
         "line": 216,
         "type": "xss-risk",
         "severity": "high",
-        "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = bots.map(bot => `\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 225,
-        "type": "command-injection-risk",
-        "severity": "medium",
-        "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
+        "line": 223,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No PM2 services "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 232,
-        "type": "command-injection-risk",
-        "severity": "medium",
-        "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
+        "line": 230,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = html;\\\"\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 488,
-        "type": "command-injection-risk",
-        "severity": "medium",
-        "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
+        "line": 237,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🔍 Scanning file"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 495,
+        "line": 244,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 251,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 258,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🧹 Running clean"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 265,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry ' + (data.success ? 'succ"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 272,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Cleanup failed:"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 279,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">💾 Creating back"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 286,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry success\\\\\\\">Backup create"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 293,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Backup failed: "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 300,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 307,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">📁 Loading backu"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 314,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 321,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No backups found"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 328,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 335,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-onli"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 342,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = data.alerts.map(alert => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 349,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No alerts</div>';\\"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 356,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = data.pm2.map(service => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 363,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logSelect.innerHTML = '<option value=\\\\\\\"\\\\\\\">Select service...</option>'"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 370,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 377,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = logs.join('\\\\\\\\n');\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 384,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = '<div style=\\\\\\\"color: var(--muted);\\\\\\\">No logs av"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 391,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 398,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = alerts.map(alert => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 405,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 412,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = bots.map(bot => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 419,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 502,
+        "line": 426,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = html;\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 509,
+        "line": 433,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 516,
+        "line": 440,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 523,
+        "line": 447,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 530,
+        "line": 454,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 537,
+        "line": 461,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 544,
+        "line": 468,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 551,
+        "line": 475,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 558,
+        "line": 482,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 565,
+        "line": 489,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 572,
+        "line": 496,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 579,
+        "line": 503,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 586,
+        "line": 510,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 593,
+        "line": 517,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 600,
+        "line": 524,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 607,
+        "line": 531,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 614,
+        "line": 538,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 621,
+        "line": 545,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 628,
+        "line": 552,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 635,
+        "line": 559,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 642,
+        "line": 566,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 649,
+        "line": 573,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 656,
+        "line": 580,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 663,
-        "type": "command-injection-risk",
-        "severity": "medium",
-        "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
-      },
-      {
-        "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 670,
+        "line": 587,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 677,
+        "line": 594,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 684,
+        "line": 601,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
       },
       {
         "file": "FINAL_DEEP_SCAN_REPORT.json",
-        "line": 691,
+        "line": 608,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 617,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 624,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(proc.restartCommand, (err) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 631,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 638,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(proc.restartCommand, (err) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 645,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 652,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 912,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 919,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 926,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🔍 Scanning file"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 933,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 940,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 947,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🧹 Running clean"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 954,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry ' + (data.success ? 'succ"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 961,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Cleanup failed:"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 968,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">💾 Creating back"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 975,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry success\\\\\\\">Backup create"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 982,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Backup failed: "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 989,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 996,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">📁 Loading backu"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1003,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1010,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No backups found"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1017,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1024,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-onli"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1031,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = data.alerts.map(alert => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1038,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No alerts</div>';\\"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1045,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = data.pm2.map(service => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1052,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logSelect.innerHTML = '<option value=\\\\\\\"\\\\\\\">Select service...</option>'"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1059,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1066,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = logs.join('\\\\\\\\n');\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1073,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = '<div style=\\\\\\\"color: var(--muted);\\\\\\\">No logs av"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1080,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1087,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = alerts.map(alert => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1094,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1101,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = bots.map(bot => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1108,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1115,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(proc.restartCommand, (err) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1122,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1129,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1136,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1143,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🔍 Scanning file"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1150,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1157,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1164,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">🧹 Running clean"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1171,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry ' + (data.success ? 'succ"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1178,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Cleanup failed:"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1185,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">💾 Creating back"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1192,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry success\\\\\\\">Backup create"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1199,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Backup failed: "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1206,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1213,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry info\\\\\\\">📁 Loading backu"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1220,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = html;\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1227,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry warn\\\\\\\">No backups found"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1234,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"resultDiv.innerHTML = '<div class=\\\\\\\"log-entry error\\\\\\\">Error: ' + erro"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1241,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-onli"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1248,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = data.alerts.map(alert => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1255,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"alertsList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No alerts</div>';\\"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1262,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = data.pm2.map(service => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1269,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logSelect.innerHTML = '<option value=\\\\\\\"\\\\\\\">Select service...</option>'"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1276,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"servicesList.innerHTML = '<div class=\\\\\\\"empty-state\\\\\\\">No PM2 services "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1283,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = logs.join('\\\\\\\\n');\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1290,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"logViewer.innerHTML = '<div style=\\\\\\\"color: var(--muted);\\\\\\\">No logs av"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1297,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"exec(proc.restartCommand, (err) => {\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1304,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1311,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = alerts.map(alert => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1318,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = '<div style=\\\\\\\"color: #a0a0a0; text-align: center;"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1325,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"\\\"snippet\\\": \\\"container.innerHTML = bots.map(bot => `\\\"\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1332,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(command, { timeout: 30000 }, (error, stdout, stderr) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1339,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div class=\\\"log-entry warn\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1346,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1353,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🔍 Scanning files...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1360,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1367,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1374,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">🧹 Running cleanup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1381,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry ' + (data.success ? 'success' : 'error') +"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1388,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Cleanup failed: ' + error.message "
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1395,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">💾 Creating backup...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1402,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry success\\\">Backup created!</div><div class="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1409,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Backup failed: ' + data.error + '<"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1416,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1423,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry info\\\">📁 Loading backups...</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1430,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = html;\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1437,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry warn\\\">No backups found</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1444,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"resultDiv.innerHTML = '<div class=\\\"log-entry error\\\">Error: ' + error.message + '</div>"
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1451,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"list.innerHTML=data.pm2.map(p=>{const cls=p.status==='online'?'badge-online':p.status==="
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1458,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = data.alerts.map(alert => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1465,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"alertsList.innerHTML = '<div class=\\\"empty-state\\\">No alerts</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1472,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = data.pm2.map(service => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1479,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logSelect.innerHTML = '<option value=\\\"\\\">Select service...</option>' +\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1486,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"servicesList.innerHTML = '<div class=\\\"empty-state\\\">No PM2 services running</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1493,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = logs.join('\\\\n');\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1500,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"logViewer.innerHTML = '<div style=\\\"color: var(--muted);\\\">No logs available</div>';\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1507,
+        "type": "command-injection-risk",
+        "severity": "medium",
+        "snippet": "\"snippet\": \"exec(proc.restartCommand, (err) => {\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1514,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1521,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = alerts.map(alert => `\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1528,
+        "type": "xss-risk",
+        "severity": "high",
+        "snippet": "\"snippet\": \"container.innerHTML = '<div style=\\\"color: #a0a0a0; text-align: center; padding: 20px;\\\""
+      },
+      {
+        "file": "FINAL_DEEP_SCAN_REPORT.json",
+        "line": 1535,
         "type": "xss-risk",
         "severity": "high",
         "snippet": "\"snippet\": \"container.innerHTML = bots.map(bot => `\""
@@ -1594,275 +3282,95 @@
   "systemHealth": {
     "platform": "darwin",
     "arch": "arm64",
-    "uptime": 26328,
+    "uptime": 27185,
     "totalMemory": 51539607552,
-    "freeMemory": 1740750848,
-    "memoryUsage": "96.62",
+    "freeMemory": 882343936,
+    "memoryUsage": "98.29",
     "cpuCount": 14,
     "loadAverage": [
-      62.92333984375,
-      55.57568359375,
-      65.3056640625
+      91.998046875,
+      69.66552734375,
+      64.6494140625
     ],
     "hostname": "MacBook-Pro-von-Rudolf.local"
   },
   "performance": {
-    "totalIssues": 244,
+    "totalIssues": 14,
     "byType": {
-      "debug-statement": 236,
-      "potential-memory-leak": 7,
-      "event-listener": 1
+      "potential-memory-leak": 8,
+      "deprecated-var": 4,
+      "event-listener": 2
     },
     "issues": [
       {
         "file": "auto-backup-scheduler.js",
-        "line": 34,
-        "type": "debug-statement"
-      },
-      {
-        "file": "auto-backup-scheduler.js",
-        "line": 137,
+        "line": 138,
         "type": "potential-memory-leak"
       },
       {
-        "file": "business-logic-validator.js",
-        "line": 432,
-        "type": "debug-statement"
+        "file": "code-fixer.js",
+        "line": 62,
+        "type": "deprecated-var"
       },
       {
-        "file": "business-logic-validator.js",
-        "line": 436,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 438,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 439,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 443,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 444,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 447,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 454,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 455,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 456,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 457,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 459,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 461,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 462,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 463,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 464,
-        "type": "debug-statement"
-      },
-      {
-        "file": "business-logic-validator.js",
-        "line": 465,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 169,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 170,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 171,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 172,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 173,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 178,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 180,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 183,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 185,
-        "type": "debug-statement"
-      },
-      {
-        "file": "cloud-backup-manager.js",
-        "line": 189,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 14,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 42,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 43,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 44,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 45,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 46,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 47,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 48,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 49,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 50,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 51,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 54,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 55,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 69,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
-        "line": 70,
-        "type": "debug-statement"
-      },
-      {
-        "file": "debug-payload.js",
+        "file": "code-fixer.js",
         "line": 72,
-        "type": "debug-statement"
+        "type": "deprecated-var"
       },
       {
-        "file": "debug-payload.js",
-        "line": 73,
-        "type": "debug-statement"
+        "file": "code-fixer.js",
+        "line": 83,
+        "type": "deprecated-var"
       },
       {
-        "file": "debug-payload.js",
-        "line": 76,
-        "type": "debug-statement"
+        "file": "code-fixer.js",
+        "line": 88,
+        "type": "deprecated-var"
       },
       {
-        "file": "deep-scan-fix.js",
-        "line": 39,
-        "type": "debug-statement"
+        "file": "code-fixer.js",
+        "line": 106,
+        "type": "potential-memory-leak"
       },
       {
-        "file": "deep-scan-fix.js",
-        "line": 45,
-        "type": "debug-statement"
+        "file": "code-fixer.js",
+        "line": 134,
+        "type": "event-listener"
       },
       {
-        "file": "deep-scan-fix.js",
-        "line": 47,
-        "type": "debug-statement"
+        "file": "deep-scan-scheduler.js",
+        "line": 36,
+        "type": "potential-memory-leak"
+      },
+      {
+        "file": "mega-dashboard-backend.js",
+        "line": 1122,
+        "type": "potential-memory-leak"
+      },
+      {
+        "file": "monitor-dashboard.js",
+        "line": 135,
+        "type": "potential-memory-leak"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 668,
+        "type": "event-listener"
+      },
+      {
+        "file": "professional-desktop-monitor.js",
+        "line": 677,
+        "type": "potential-memory-leak"
+      },
+      {
+        "file": "watchdog-v2.js",
+        "line": 322,
+        "type": "potential-memory-leak"
+      },
+      {
+        "file": "watchdog.js",
+        "line": 278,
+        "type": "potential-memory-leak"
       }
     ]
   },
@@ -1885,7 +3393,7 @@
   "gitStatus": {
     "branch": "windsurf-agents",
     "uncommitted": 0,
-    "untracked": 30,
-    "lastCommit": "Fri May 29 17:09:57 2026 +0200"
+    "untracked": 29,
+    "lastCommit": "Fri May 29 22:49:31 2026 +0200"
   }
 }

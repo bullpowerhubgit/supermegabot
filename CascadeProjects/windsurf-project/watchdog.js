@@ -69,10 +69,81 @@ class MemoryWatchdog {
       // Kill zombie processes
       await execAsync('ps aux | grep -E "defunct|<defunct>" | awk \'{print $2}\' | xargs kill -9 2>/dev/null').catch(() => {});
       
+      // Run smart cleanup for terminals and browser tabs
+      await this.runSmartCleanup();
+      
       this.log('info', '✅ Speicher-Cleanup abgeschlossen');
     } catch (error) {
       this.log('error', `Cleanup Fehler: ${error.message}`);
     }
+  }
+
+  async runSmartCleanup() {
+    try {
+      this.log('info', '🧹 Starte Smart Cleanup (Terminals & Browser)...');
+      
+      // Close unused terminals
+      const terminals = await execAsync('ps aux | grep -i "terminal\\|iterm\\|kitty\\|alacritty" | grep -v grep', { encoding: 'utf8' });
+      const terminalLines = terminals.trim().split('\n').filter(l => l.trim());
+      
+      if (terminalLines.length > 3) {
+        const toClose = terminalLines.length - 3;
+        this.log('info', `Schließe ${toClose} ungenutzte Terminal-Fenster...`);
+        for (let i = 0; i < toClose; i++) {
+          try {
+            await execAsync('osascript -e \'tell application "Terminal" to close first window\'', { stdio: 'ignore' });
+          } catch (e) {}
+        }
+      }
+      
+      // Close browser tabs (Chrome)
+      try {
+        const chromeRunning = await execAsync('pgrep -f "Google Chrome"', { encoding: 'utf8' }).trim();
+        if (chromeRunning) {
+          const script = `
+            tell application "Google Chrome"
+              set windowCount to count of windows
+              if windowCount > 1 then
+                repeat with w from 2 to windowCount
+                  try
+                    close window w
+                  end try
+                end repeat
+              end if
+            end tell
+          `;
+          await execAsync(`osascript -e '${script}'`, { stdio: 'ignore' });
+          this.log('info', 'Browser-Tabs bereinigt');
+        }
+      } catch (e) {}
+      
+      // Clear cache directories
+      const cacheDirs = [
+        path.join(os.homedir(), 'Library', 'Caches'),
+        '/tmp',
+        path.join(process.cwd(), 'node_modules', '.cache')
+      ];
+      
+      for (const dir of cacheDirs) {
+        try {
+          if (fs.existsSync(dir)) {
+            await execAsync(`rm -rf "${dir}"/*`, { stdio: 'ignore' });
+            this.log('info', `Cache bereinigt: ${dir}`);
+          }
+        } catch (e) {}
+      }
+      
+      this.log('info', '✅ Smart Cleanup abgeschlossen');
+    } catch (error) {
+      this.log('error', `Smart Cleanup Fehler: ${error.message}`);
+    }
+  }
+
+  async triggerSmartCleanup() {
+    this.log('info', '🧹 Manuelles Smart Cleanup ausgelöst...');
+    await this.runSmartCleanup();
+    const mem = await this.getMemoryUsage();
+    this.log('info', `RAM nach Smart Cleanup: ${mem.percent}%`);
   }
 
   async killHighMemoryProcesses() {
@@ -308,5 +379,10 @@ const watchdog = new MemoryWatchdog({
 
 process.on('SIGINT', () => watchdog.stop());
 process.on('SIGTERM', () => watchdog.stop());
+
+// Handle manual cleanup trigger via SIGUSR1
+process.on('SIGUSR1', () => {
+  watchdog.triggerSmartCleanup();
+});
 
 watchdog.start();
