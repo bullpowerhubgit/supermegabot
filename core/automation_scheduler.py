@@ -331,6 +331,75 @@ async def task_dropshipping_scan() -> str:
         return f"Fehler: {e}"
 
 
+async def task_pod_autofulfill() -> str:
+    """Print-on-Demand: auto-fulfill + publish new designs to Shopify."""
+    try:
+        from modules.dropshipping_automation import PrintOnDemandWorkflow
+        from modules.printify_automation import ping, auto_fulfill_pending
+        if not await ping():
+            return "Printify nicht konfiguriert"
+        result = await auto_fulfill_pending()
+        sub = len(result.get("submitted", []))
+        if sub:
+            await _tg(f"🖨️ Print-on-Demand: {sub} Bestellungen automatisch in Produktion")
+        return f"PoD: {sub} submitted, {result.get('total_pending',0)} pending gesamt"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_seo_optimizer() -> str:
+    """Auto-optimize Shopify product SEO via local Ollama."""
+    try:
+        from modules.seo_automation import optimize_all_shopify_products
+        result = await optimize_all_shopify_products(limit=10)
+        updated = result.get("updated", 0)
+        if updated:
+            await _tg(f"🔍 SEO Auto-Optimizer: {updated} Produkte optimiert")
+        return f"SEO: {result.get('processed',0)} geprüft, {updated} aktualisiert"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_revenue_report() -> str:
+    """Collect revenue from all platforms and send daily summary."""
+    try:
+        from modules.revenue_aggregator import get_daily_report, save_daily_snapshot
+        report = await get_daily_report()
+        await save_daily_snapshot()
+        await _tg(f"💰 <b>Tages-Report</b>\n{report}")
+        return report[:120]
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_content_calendar() -> str:
+    """Generate weekly AI content calendar for all platforms."""
+    try:
+        from modules.ai_content_pipeline import generate_content_calendar
+        calendar = await generate_content_calendar(niche="e-commerce", days=7)
+        (DATA_DIR / "content_calendar.json").write_text(
+            __import__("json").dumps(calendar, ensure_ascii=False, indent=2)
+        )
+        return f"Content-Kalender erstellt: {len(calendar)} Beiträge für 7 Tage"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_social_autoposter() -> str:
+    """Auto-post latest Shopify products to all social platforms."""
+    try:
+        from modules.dropshipping_automation import DropshippingWorkflow
+        wf = DropshippingWorkflow()
+        products = await wf.find_trending_products(limit=3)
+        posted = 0
+        for p in products[:2]:
+            result = await wf.promote_to_social(p)
+            posted += sum(1 for v in result.values() if v.get("ok"))
+        return f"Social Auto-Post: {posted} Posts veröffentlicht"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
 async def task_etsy_sync() -> str:
     """Sync Etsy listings and check for new orders."""
     try:
@@ -366,18 +435,28 @@ async def task_gumroad_sync() -> str:
 
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
-    ("system_health",       task_system_health,       300,    10),   # every 5 min
-    ("railway_health",      task_railway_health,      600,    20),   # every 10 min
-    ("digistore_sync",      task_digistore_sync,      900,    30),   # every 15 min
-    ("printify_autofulfill",task_printify_autofulfill,1800,   45),   # every 30 min
-    ("etsy_sync",           task_etsy_sync,           1800,   60),   # every 30 min
-    ("gumroad_sync",        task_gumroad_sync,        1800,   75),   # every 30 min
-    ("mailchimp_sync",      task_mailchimp_sync,      3600,   90),   # every hour
-    ("shopify_sync",        task_shopify_sync,        3600,   120),  # every hour
-    ("social_status",       task_social_status,       3600,   150),  # every hour
-    ("dropshipping_scan",   task_dropshipping_scan,   7200,   180),  # every 2 hours
-    ("trading_report",      task_trading_report,      21600,  240),  # every 6 hours
-    ("github_backup",       task_github_backup,       86400,  300),  # once daily
+    # ── Real-time (every few minutes) ────────────────────────────────────────
+    ("system_health",       task_system_health,       300,    10),   # 5 min
+    ("railway_health",      task_railway_health,      600,    20),   # 10 min
+    # ── Sales & Orders (every 15-30 min) ─────────────────────────────────────
+    ("digistore_sync",      task_digistore_sync,      900,    30),   # 15 min
+    ("printify_autofulfill",task_printify_autofulfill,1800,   45),   # 30 min
+    ("pod_autofulfill",     task_pod_autofulfill,     1800,   50),   # 30 min
+    ("etsy_sync",           task_etsy_sync,           1800,   60),   # 30 min
+    ("gumroad_sync",        task_gumroad_sync,        1800,   75),   # 30 min
+    # ── Marketing & Sync (hourly) ─────────────────────────────────────────────
+    ("mailchimp_sync",      task_mailchimp_sync,      3600,   90),   # 1h
+    ("shopify_sync",        task_shopify_sync,        3600,   120),  # 1h
+    ("social_status",       task_social_status,       3600,   150),  # 1h
+    ("social_autoposter",   task_social_autoposter,   3600,   180),  # 1h
+    # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
+    ("seo_optimizer",       task_seo_optimizer,       7200,   200),  # 2h
+    ("dropshipping_scan",   task_dropshipping_scan,   7200,   220),  # 2h
+    ("trading_report",      task_trading_report,      21600,  240),  # 6h
+    # ── Daily ─────────────────────────────────────────────────────────────────
+    ("revenue_report",      task_revenue_report,      86400,  270),  # daily
+    ("content_calendar",    task_content_calendar,    86400,  290),  # daily
+    ("github_backup",       task_github_backup,       86400,  300),  # daily
 ]
 
 
