@@ -815,6 +815,19 @@ _WATCHED_ENV_KEYS = [
     "GOOGLE_ADS_CLIENT_ID", "GMC_MERCHANT_ID",
     "ETERNAL_BOT_DIR", "KIVO_DIR",
     "DASHBOARD_PORT", "SHOPIFY_SUITE_URL",
+    # E-Commerce & Automation
+    "DIGISTORE24_API_KEY", "PRINTIFY_API_KEY", "PRINTIFY_SHOP_ID",
+    "ETSY_API_KEY", "ETSY_ACCESS_TOKEN", "GUMROAD_ACCESS_TOKEN",
+    "MAILCHIMP_API_KEY", "MAILCHIMP_SERVER_PREFIX",
+    "STRIPE_SECRET_KEY", "KLAVIYO_API_KEY",
+    # Social Media
+    "TIKTOK_CLIENT_KEY", "PINTEREST_ACCESS_TOKEN",
+    "META_ACCESS_TOKEN", "META_PAGE_ID",
+    "TWITTER_BEARER_TOKEN", "DISCORD_BOT_TOKEN",
+    "YOUTUBE_API_KEY", "YOUTUBE_CHANNEL_ID",
+    "REDDIT_CLIENT_ID",
+    # Infrastructure
+    "GITHUB_TOKEN", "RAILWAY_TOKEN", "GCP_PROJECT_ID",
 ]
 
 # Key format validators (no network needed)
@@ -1254,6 +1267,84 @@ async def handle_gumroad_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_revenue_status(req):
+    """Revenue aggregation across all platforms."""
+    try:
+        from modules.revenue_aggregator import get_platform_revenue
+        revenue = await get_platform_revenue()
+        return web.json_response({"ok": True, "revenue": revenue})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_revenue_report(req):
+    """Generate and return daily revenue report."""
+    try:
+        from modules.revenue_aggregator import get_daily_report, save_daily_snapshot
+        report = await get_daily_report()
+        await save_daily_snapshot()
+        return web.json_response({"ok": True, "report": report})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_seo_status(req):
+    """SEO score for all Shopify products."""
+    try:
+        from modules.seo_automation import generate_sitemap_data
+        sitemap = await generate_sitemap_data()
+        return web.json_response({"ok": True, "sitemap": sitemap})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_seo_run(req):
+    """Run AI-powered SEO optimizer on Shopify products."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        limit = int(data.get("limit", 5))
+        from modules.seo_automation import optimize_all_shopify_products
+        result = await optimize_all_shopify_products(limit=limit)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_dropshipping_status(req):
+    """Dropshipping pipeline status."""
+    try:
+        from modules.dropshipping_automation import DropshippingWorkflow
+        wf = DropshippingWorkflow()
+        trending = await wf.find_trending_products("general")
+        return web.json_response({"ok": True, "trending_count": len(trending), "sample": trending[:3]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_dropshipping_run(req):
+    """Run a full dropshipping pipeline for a niche."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        niche = data.get("niche", "trending")
+        from modules.dropshipping_automation import DropshippingWorkflow
+        wf = DropshippingWorkflow()
+        result = await wf.full_pipeline(niche)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_pod_status(req):
+    """Print-on-Demand status via Printify."""
+    try:
+        from modules.printify_automation import get_stats, get_pending_orders
+        stats = await get_stats()
+        pending = await get_pending_orders()
+        return web.json_response({"ok": True, "stats": stats, "pending_count": len(pending)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -1345,6 +1436,21 @@ async def create_app():
     # ── Etsy + Gumroad ────────────────────────────────────────────────────────
     app.router.add_get("/api/etsy/status",            handle_etsy_status)
     app.router.add_get("/api/gumroad/status",         handle_gumroad_status)
+
+    # ── Revenue Aggregator ────────────────────────────────────────────────────
+    app.router.add_get("/api/revenue/status",         handle_revenue_status)
+    app.router.add_get("/api/revenue/report",         handle_revenue_report)
+
+    # ── SEO Autopilot ─────────────────────────────────────────────────────────
+    app.router.add_get("/api/seo/status",             handle_seo_status)
+    app.router.add_post("/api/seo/run",               handle_seo_run)
+
+    # ── Dropshipping ──────────────────────────────────────────────────────────
+    app.router.add_get("/api/dropshipping/status",    handle_dropshipping_status)
+    app.router.add_post("/api/dropshipping/run",      handle_dropshipping_run)
+
+    # ── Print-on-Demand ───────────────────────────────────────────────────────
+    app.router.add_get("/api/pod/status",             handle_pod_status)
 
     return app
 
