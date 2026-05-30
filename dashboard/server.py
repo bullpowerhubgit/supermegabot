@@ -1176,6 +1176,31 @@ async def handle_automation_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_automation_tasks(req):
+    """Return full task list with intervals and last-run info."""
+    try:
+        from core.automation_scheduler import TASKS, get_task_stats
+        stats = get_task_stats()
+        tasks = []
+        for name, _fn, interval_s, delay_s in TASKS:
+            s = stats.get(name, {})
+            tasks.append({
+                "name":       name,
+                "interval_s": interval_s,
+                "interval_label": (
+                    f"{interval_s // 3600}h" if interval_s >= 3600
+                    else f"{interval_s // 60}min"
+                ),
+                "last_run":  s.get("last_run"),
+                "total_runs": s.get("total", 0),
+                "ok_runs":    s.get("ok", 0),
+                "avg_ms":     s.get("avg_ms", 0),
+            })
+        return web.json_response({"tasks": tasks, "count": len(tasks)})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 async def handle_social_status(req):
     """Ping all social media platform connectors."""
     try:
@@ -1421,6 +1446,7 @@ async def create_app():
     # ── Automation Scheduler ──────────────────────────────────────────────────
     app.router.add_get("/api/automation/status",      handle_automation_status)
     app.router.add_post("/api/automation/run",        handle_automation_run)
+    app.router.add_get("/api/automation/tasks",       handle_automation_tasks)
 
     # ── Social Media ──────────────────────────────────────────────────────────
     app.router.add_get("/api/social/status",          handle_social_status)

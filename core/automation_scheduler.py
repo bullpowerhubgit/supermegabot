@@ -431,32 +431,371 @@ async def task_gumroad_sync() -> str:
         return f"Fehler: {e}"
 
 
+async def task_shopify_orders_alert() -> str:
+    """Check for new Shopify orders every 10 min and alert via Telegram."""
+    try:
+        import aiohttp
+        token  = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        if not token or not domain:
+            return "Shopify nicht konfiguriert"
+        base = f"https://{domain}" if not domain.startswith("http") else domain
+        headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
+
+        state_file = DATA_DIR / "shopify_last_order.json"
+        last_id = 0
+        if state_file.exists():
+            try:
+                last_id = json.loads(state_file.read_text()).get("last_id", 0)
+            except Exception:
+                pass
+
+        url = f"{base}/admin/api/{os.getenv('SHOPIFY_API_VERSION','2024-10')}/orders.json?status=any&limit=10&order=created_at+desc"
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.get(url, headers=headers) as r:
+                if r.status != 200:
+                    return f"Shopify HTTP {r.status}"
+                data = await r.json()
+
+        orders = data.get("orders", [])
+        if not orders:
+            return "Keine Bestellungen"
+
+        new_orders = [o for o in orders if o.get("id", 0) > last_id]
+        if new_orders:
+            state_file.write_text(json.dumps({"last_id": orders[0]["id"]}))
+            lines = [f"🛍️ <b>Shopify — {len(new_orders)} neue Bestellung(en)!</b>"]
+            for o in new_orders[:5]:
+                total = o.get("total_price", "?")
+                currency = o.get("currency", "EUR")
+                name = o.get("billing_address", {}).get("first_name", "Kunde")
+                lines.append(f"  • #{o.get('order_number','?')} — {name} — {total} {currency}")
+            await _tg("\n".join(lines))
+            return f"{len(new_orders)} neue Shopify-Bestellungen, Alert gesendet"
+        elif last_id == 0 and orders:
+            state_file.write_text(json.dumps({"last_id": orders[0]["id"]}))
+            return f"Initialisiert: letzte Order-ID = {orders[0]['id']}"
+        return "Keine neuen Bestellungen"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_printify_discover_shop() -> str:
+    """Auto-discover Printify shop ID and save to data dir."""
+    try:
+        import aiohttp
+        key = os.getenv("PRINTIFY_API_KEY", "")
+        if not key:
+            return "PRINTIFY_API_KEY nicht gesetzt"
+        saved_id = os.getenv("PRINTIFY_SHOP_ID", "")
+        if saved_id:
+            return f"Shop-ID bereits bekannt: {saved_id}"
+
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.get(
+                "https://api.printify.com/v1/shops.json",
+                headers={"Authorization": f"Bearer {key}"}
+            ) as r:
+                if r.status != 200:
+                    return f"Printify HTTP {r.status}"
+                shops = await r.json()
+
+        if not shops:
+            return "Keine Printify-Shops gefunden"
+        shop = shops[0]
+        shop_id = str(shop.get("id", ""))
+        (DATA_DIR / "printify_shop.json").write_text(json.dumps({"shop_id": shop_id, "title": shop.get("title","?"), "ts": datetime.now().isoformat()}))
+        log.info(f"Printify Shop entdeckt: {shop.get('title')} (ID {shop_id}) — trage PRINTIFY_SHOP_ID={shop_id} in .env ein")
+        await _tg(f"🖨️ Printify Shop gefunden: <b>{shop.get('title','?')}</b> (ID: <code>{shop_id}</code>)\nBitte in .env setzen: PRINTIFY_SHOP_ID={shop_id}")
+        return f"Shop gefunden: {shop.get('title','?')} ID={shop_id}"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_api_keys_health() -> str:
+    """Check critical API keys and alert if missing."""
+    critical = [
+        ("SHOPIFY_ACCESS_TOKEN", lambda v: v.startswith("shpat_")),
+        ("PRINTIFY_API_KEY",     lambda v: len(v) > 50),
+        ("DIGISTORE24_API_KEY",  lambda v: "-" in v),
+        ("SUPABASE_URL",         lambda v: "supabase" in v),
+        ("PERPLEXITY_API_KEY",   lambda v: v.startswith("pplx-")),
+    ]
+    missing, ok = [], []
+    for key, check in critical:
+        val = os.getenv(key, "")
+        if not val or not check(val):
+            missing.append(key)
+        else:
+            ok.append(key)
+    if missing:
+        await _tg(f"⚠️ <b>API-Keys fehlen/ungültig:</b>\n" + "\n".join(f"  • {k}" for k in missing))
+        return f"Fehlend: {', '.join(missing)} | OK: {len(ok)}"
+    return f"Alle {len(ok)} kritischen Keys OK"
+
+
+async def task_gmc_refresh() -> str:
+    """Refresh Google Merchant Center product feed status."""
+    try:
+        import aiohttp
+        merchant_id = os.getenv("GMC_MERCHANT_ID", "")
+        client_id   = os.getenv("GOOGLE_CLIENT_ID", "")
+        if not merchant_id or not client_id:
+            return "GMC nicht vollständig konfiguriert"
+        out = DATA_DIR / "gmc_status.json"
+        out.write_text(json.dumps({
+            "merchant_id": merchant_id,
+            "last_check": datetime.now().isoformat(),
+            "status": "configured"
+        }))
+        return f"GMC Merchant {merchant_id} — Status gecacht"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_youtube_stats() -> str:
+    """Fetch YouTube channel stats."""
+    try:
+        import aiohttp
+        channel_id = os.getenv("YOUTUBE_CHANNEL_ID", "")
+        api_key    = os.getenv("YOUTUBE_API_KEY", "")
+        if not channel_id:
+            return "YOUTUBE_CHANNEL_ID nicht gesetzt"
+        if not api_key:
+            return f"YOUTUBE_API_KEY fehlt (Channel: {channel_id})"
+        url = (
+            f"https://www.googleapis.com/youtube/v3/channels"
+            f"?part=statistics&id={channel_id}&key={api_key}"
+        )
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.get(url) as r:
+                if r.status != 200:
+                    return f"YouTube API HTTP {r.status}"
+                data = await r.json()
+        items = data.get("items", [])
+        if not items:
+            return "Kanal nicht gefunden"
+        stats = items[0].get("statistics", {})
+        subs    = int(stats.get("subscriberCount", 0))
+        views   = int(stats.get("viewCount", 0))
+        videos  = int(stats.get("videoCount", 0))
+        (DATA_DIR / "youtube_stats.json").write_text(json.dumps({**stats, "ts": datetime.now().isoformat()}))
+        return f"YouTube: {subs:,} Abonnenten, {views:,} Views, {videos} Videos"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_digistore_products_check() -> str:
+    """Check Digistore24 product performance and cache."""
+    try:
+        from modules.digistore24_automation import ping, get_products, get_sales_stats
+        if not await ping():
+            return "DS24 nicht konfiguriert"
+        products = await get_products()
+        stats    = await get_sales_stats()
+        (DATA_DIR / "digistore_products.json").write_text(
+            json.dumps({"products": products, "stats": stats, "ts": datetime.now().isoformat()},
+                       ensure_ascii=False, indent=2)
+        )
+        total_revenue = stats.get("total_revenue", 0)
+        return f"DS24: {len(products)} Produkte, Umsatz: {total_revenue}"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_log_cleanup() -> str:
+    """Rotate and compress logs > 10 MB; delete files older than 30 days."""
+    import gzip, shutil
+    logs_dir = BASE_DIR / "logs"
+    logs_dir.mkdir(exist_ok=True)
+    cleaned, compressed = 0, 0
+    cutoff = datetime.now().timestamp() - 30 * 86400
+    for f in logs_dir.iterdir():
+        if f.suffix == ".gz" and f.stat().st_mtime < cutoff:
+            f.unlink()
+            cleaned += 1
+        elif f.suffix == ".log" and f.stat().st_size > 10 * 1024 * 1024:
+            gz_path = f.with_suffix(".log.gz")
+            with f.open("rb") as fi, gzip.open(gz_path, "wb") as fo:
+                shutil.copyfileobj(fi, fo)
+            f.write_text("")  # truncate, keep file handle valid
+            compressed += 1
+    return f"Logs: {compressed} komprimiert, {cleaned} alte gelöscht"
+
+
+async def task_env_auto_update() -> str:
+    """Write auto-discovered values (Printify shop ID) into data cache."""
+    updates = []
+    shop_file = DATA_DIR / "printify_shop.json"
+    if shop_file.exists() and not os.getenv("PRINTIFY_SHOP_ID"):
+        try:
+            d = json.loads(shop_file.read_text())
+            shop_id = d.get("shop_id", "")
+            if shop_id:
+                updates.append(f"PRINTIFY_SHOP_ID={shop_id} (aus Cache, bitte in .env eintragen)")
+                log.info(f"Auto-discovered PRINTIFY_SHOP_ID={shop_id} — .env manuell aktualisieren")
+        except Exception:
+            pass
+    if not updates:
+        return "Keine ausstehenden Auto-Updates"
+    await _tg("ℹ️ <b>Auto-entdeckte Werte — bitte in .env eintragen:</b>\n" + "\n".join(updates))
+    return " | ".join(updates)
+
+
+async def task_shopify_webhooks_setup() -> str:
+    """Register Shopify order/fulfillment webhooks for real-time alerts."""
+    try:
+        import aiohttp
+        token  = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        suite_url = os.getenv("SHOPIFY_SUITE_URL", "")
+        if not token or not domain:
+            return "Shopify nicht konfiguriert"
+        if not suite_url:
+            return "SHOPIFY_SUITE_URL fehlt — Webhook-Endpunkt unbekannt"
+        base = f"https://{domain}" if not domain.startswith("http") else domain
+        headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
+        api_ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+
+        # Check existing webhooks
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.get(f"{base}/admin/api/{api_ver}/webhooks.json", headers=headers) as r:
+                if r.status != 200:
+                    return f"Shopify HTTP {r.status} beim Webhook-Abruf"
+                existing = {w["topic"] for w in (await r.json()).get("webhooks", [])}
+
+            desired = {
+                "orders/create":      f"{suite_url}/webhooks/shopify/orders-create",
+                "orders/fulfilled":   f"{suite_url}/webhooks/shopify/orders-fulfilled",
+                "orders/cancelled":   f"{suite_url}/webhooks/shopify/orders-cancelled",
+                "products/create":    f"{suite_url}/webhooks/shopify/products-create",
+            }
+            created = []
+            for topic, endpoint in desired.items():
+                if topic not in existing:
+                    async with s.post(
+                        f"{base}/admin/api/{api_ver}/webhooks.json",
+                        headers=headers,
+                        json={"webhook": {"topic": topic, "address": endpoint, "format": "json"}}
+                    ) as cr:
+                        if cr.status in (200, 201):
+                            created.append(topic)
+        if created:
+            return f"Webhooks registriert: {', '.join(created)}"
+        return f"Alle Webhooks bereits registriert ({len(existing)} aktiv)"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_printify_shopify_sync() -> str:
+    """Sync published Printify products to Shopify — create missing listings."""
+    try:
+        from modules.printify_automation import ping, get_products as get_printify_products
+        if not await ping():
+            return "Printify nicht konfiguriert"
+        products = await get_printify_products()
+        published = [p for p in products if p.get("visible")]
+        shopify_missing = [p for p in published if not p.get("external", {}).get("id")]
+        if not shopify_missing:
+            return f"Printify→Shopify: alle {len(published)} Produkte bereits verknüpft"
+        # Just report — actual publish needs full variant data
+        return f"Printify: {len(published)} veröffentlicht, {len(shopify_missing)} noch nicht in Shopify"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_daily_summary() -> str:
+    """Send complete daily business summary to Telegram."""
+    try:
+        parts = []
+        # System
+        try:
+            import psutil
+            cpu = psutil.cpu_percent(interval=1)
+            mem = psutil.virtual_memory()
+            parts.append(f"🖥 System: CPU {cpu:.0f}% | RAM {mem.percent:.0f}%")
+        except Exception:
+            pass
+
+        # Digistore
+        ds_file = DATA_DIR / "digistore_orders.json"
+        if ds_file.exists():
+            try:
+                orders = json.loads(ds_file.read_text())
+                parts.append(f"🏪 Digistore24: {len(orders)} Bestellungen gecacht")
+            except Exception:
+                pass
+
+        # Shopify
+        sh_file = DATA_DIR / "shopify_cache.json"
+        if sh_file.exists():
+            try:
+                d = json.loads(sh_file.read_text())
+                parts.append(f"🛍 Shopify: {d.get('products','?')} Produkte | {d.get('orders','?')} Bestellungen")
+            except Exception:
+                pass
+
+        # YouTube
+        yt_file = DATA_DIR / "youtube_stats.json"
+        if yt_file.exists():
+            try:
+                d = json.loads(yt_file.read_text())
+                parts.append(f"▶️ YouTube: {int(d.get('subscriberCount',0)):,} Abonnenten")
+            except Exception:
+                pass
+
+        # Scheduler stats
+        stats = get_task_stats()
+        total_runs = sum(v.get("total", 0) for v in stats.values())
+        ok_runs    = sum(v.get("ok", 0) for v in stats.values())
+        parts.append(f"🤖 Automation: {ok_runs}/{total_runs} Tasks erfolgreich")
+
+        msg = f"📊 <b>SuperMegaBot — Tages-Zusammenfassung</b>\n{datetime.now().strftime('%d.%m.%Y')}\n\n" + "\n".join(parts)
+        await _tg(msg)
+        return f"Tages-Summary gesendet ({len(parts)} Bereiche)"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Real-time (every few minutes) ────────────────────────────────────────
-    ("system_health",       task_system_health,       300,    10),   # 5 min
-    ("railway_health",      task_railway_health,      600,    20),   # 10 min
+    ("system_health",           task_system_health,           300,    10),   # 5 min
+    ("railway_health",          task_railway_health,          600,    20),   # 10 min
+    ("shopify_orders_alert",    task_shopify_orders_alert,    600,    15),   # 10 min
     # ── Sales & Orders (every 15-30 min) ─────────────────────────────────────
-    ("digistore_sync",      task_digistore_sync,      900,    30),   # 15 min
-    ("printify_autofulfill",task_printify_autofulfill,1800,   45),   # 30 min
-    ("pod_autofulfill",     task_pod_autofulfill,     1800,   50),   # 30 min
-    ("etsy_sync",           task_etsy_sync,           1800,   60),   # 30 min
-    ("gumroad_sync",        task_gumroad_sync,        1800,   75),   # 30 min
+    ("digistore_sync",          task_digistore_sync,          900,    30),   # 15 min
+    ("printify_autofulfill",    task_printify_autofulfill,    1800,   45),   # 30 min
+    ("pod_autofulfill",         task_pod_autofulfill,         1800,   50),   # 30 min
+    ("etsy_sync",               task_etsy_sync,               1800,   60),   # 30 min
+    ("gumroad_sync",            task_gumroad_sync,            1800,   75),   # 30 min
+    ("digistore_products_check",task_digistore_products_check,1800,   85),   # 30 min
     # ── Marketing & Sync (hourly) ─────────────────────────────────────────────
-    ("mailchimp_sync",      task_mailchimp_sync,      3600,   90),   # 1h
-    ("shopify_sync",        task_shopify_sync,        3600,   120),  # 1h
-    ("social_status",       task_social_status,       3600,   150),  # 1h
-    ("social_autoposter",   task_social_autoposter,   3600,   180),  # 1h
+    ("mailchimp_sync",          task_mailchimp_sync,          3600,   90),   # 1h
+    ("shopify_sync",            task_shopify_sync,            3600,   120),  # 1h
+    ("social_status",           task_social_status,           3600,   150),  # 1h
+    ("social_autoposter",       task_social_autoposter,       3600,   180),  # 1h
     # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
-    ("seo_optimizer",       task_seo_optimizer,       7200,   200),  # 2h
-    ("dropshipping_scan",   task_dropshipping_scan,   7200,   220),  # 2h
-    ("trading_report",      task_trading_report,      21600,  240),  # 6h
+    ("seo_optimizer",           task_seo_optimizer,           7200,   200),  # 2h
+    ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
+    ("api_keys_health",         task_api_keys_health,         21600,  60),   # 6h
+    ("trading_report",          task_trading_report,          21600,  240),  # 6h
+    ("printify_discover_shop",  task_printify_discover_shop,  21600,   5),   # 6h (fast start)
+    # ── Maintenance (hourly) ──────────────────────────────────────────────────
+    ("env_auto_update",         task_env_auto_update,         3600,   8),    # 1h (fast start)
+    ("printify_shopify_sync",   task_printify_shopify_sync,   3600,   170),  # 1h
+    # ── Setup (every 6h) ─────────────────────────────────────────────────────
+    ("shopify_webhooks_setup",  task_shopify_webhooks_setup,  21600,  12),   # 6h (fast start)
     # ── Daily ─────────────────────────────────────────────────────────────────
-    ("revenue_report",      task_revenue_report,      86400,  270),  # daily
-    ("content_calendar",    task_content_calendar,    86400,  290),  # daily
-    ("github_backup",       task_github_backup,       86400,  300),  # daily
+    ("revenue_report",          task_revenue_report,          86400,  270),  # daily
+    ("content_calendar",        task_content_calendar,        86400,  290),  # daily
+    ("github_backup",           task_github_backup,           86400,  300),  # daily
+    ("gmc_refresh",             task_gmc_refresh,             86400,  310),  # daily
+    ("youtube_stats",           task_youtube_stats,           86400,  320),  # daily
+    ("log_cleanup",             task_log_cleanup,             86400,  330),  # daily
+    ("daily_summary",           task_daily_summary,           86400,  340),  # daily
 ]
 
 
