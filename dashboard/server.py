@@ -808,11 +808,13 @@ async def handle_self_learner_find_api(req):
 
 _WATCHED_ENV_KEYS = [
     "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
-    "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_STORE_URL", "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_API_VERSION",
+    "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_API_KEY", "SHOPIFY_API_SECRET",
+    "SHOPIFY_STORE_URL", "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_API_VERSION",
     "OLLAMA_HOST", "OLLAMA_FAST_MODEL", "OLLAMA_SMART_MODEL", "OLLAMA_CODE_MODEL",
     "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "PERPLEXITY_API_KEY",
     "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY",
-    "GOOGLE_ADS_CLIENT_ID", "GMC_MERCHANT_ID",
+    "GOOGLE_ADS_CLIENT_ID", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
+    "GCP_PROJECT_ID", "GMC_MERCHANT_ID",
     "ETERNAL_BOT_DIR", "KIVO_DIR",
     "DASHBOARD_PORT", "SHOPIFY_SUITE_URL",
     # E-Commerce & Automation
@@ -827,7 +829,7 @@ _WATCHED_ENV_KEYS = [
     "YOUTUBE_API_KEY", "YOUTUBE_CHANNEL_ID",
     "REDDIT_CLIENT_ID",
     # Infrastructure
-    "GITHUB_TOKEN", "RAILWAY_TOKEN", "GCP_PROJECT_ID",
+    "GITHUB_TOKEN", "RAILWAY_TOKEN",
 ]
 
 # Key format validators (no network needed)
@@ -837,6 +839,8 @@ _KEY_FORMATS = {
     "PERPLEXITY_API_KEY":    lambda v: v.startswith("pplx-") or len(v) > 20,
     "TELEGRAM_BOT_TOKEN":    lambda v: ":" in v and len(v) > 20,
     "SHOPIFY_ACCESS_TOKEN":  lambda v: v.startswith("shpat_") or v.startswith("shpss_") or len(v) > 20,
+    "SHOPIFY_API_KEY":       lambda v: len(v) > 20,
+    "SHOPIFY_API_SECRET":    lambda v: v.startswith("shpss_") or len(v) > 20,
     "SUPABASE_URL":          lambda v: "supabase" in v or v.startswith("http"),
     "SUPABASE_ANON_KEY":     lambda v: len(v) > 50,
     "SUPABASE_SERVICE_ROLE_KEY": lambda v: len(v) > 50,
