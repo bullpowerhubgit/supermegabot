@@ -12,7 +12,10 @@ import time
 from pathlib import Path
 
 # Guardian Client importieren (immer verfügbar)
-sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+import os
+_eternal_dir = os.environ.get("ETERNAL_BOT_DIR", str(Path.home() / "rudibot-eternal"))
+if _eternal_dir not in sys.path:
+    sys.path.insert(0, _eternal_dir)
 from guardian_client import GuardianClient
 
 # ═══════════════════════════════════════════════════════════════════════

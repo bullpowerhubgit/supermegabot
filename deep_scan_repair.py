@@ -39,8 +39,8 @@ def cprint(icon: str, colour: str, msg: str) -> None:
     print(f"{colour}{icon} {msg}{RESET}")
 
 
-BASE = Path("/Users/rudolfsarkany/supermegabot")
-REPAIR_HISTORY = Path("/Users/rudolfsarkany/rudibot-eternal/repair_history.json")
+BASE = Path(os.environ.get("MEGA_DIR", str(Path(__file__).parent)))
+REPAIR_HISTORY = Path(os.environ.get("ETERNAL_BOT_DIR", str(Path.home() / "rudibot-eternal"))) / "repair_history.json"
 REPORT_PATH    = BASE / "scan_report.json"
 
 REQUIRED_ENV_VARS = [

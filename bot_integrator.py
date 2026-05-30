@@ -13,20 +13,23 @@ import urllib.request
 from pathlib import Path
 from datetime import datetime
 
-sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+_eternal_dir = os.environ.get("ETERNAL_BOT_DIR", str(Path.home() / "rudibot-eternal"))
+if _eternal_dir not in sys.path:
+    sys.path.insert(0, _eternal_dir)
 from guardian_client import GuardianClient
 
 # ═══════════════════════════════════════════════════════════════════════
 # SERVICE REGISTRY
 # ═══════════════════════════════════════════════════════════════════════
 
+_home = str(Path.home())
 SERVICES = {
-    'guardian':      {'port': 3201, 'dir': '/Users/rudolfsarkany/rudibot-eternal',          'cmd': 'python3 eternal_guardian.py --api',     'health': '/api/v1/health'},
-    'telegram_bot':  {'port': 3200, 'dir': '/Users/rudolfsarkany/windsurf-telegram-bot',    'cmd': 'npm start',                              'health': '/health'},
-    'api_gateway':   {'port': 8080, 'dir': '/Users/rudolfsarkany/windsurf-api-gateway',     'cmd': 'npm start',                              'health': '/health'},
-    'shopify_ai':    {'port': 3002, 'dir': '/Users/rudolfsarkany/shopify-ai-suite',           'cmd': 'node server.js',                         'health': '/health'},
-    'github_app':    {'port': 3000, 'dir': '/Users/rudolfsarkany/windsurf-github-app',        'cmd': 'npm start',                              'health': '/health'},
-    'shopify_suite': {'port': 3001, 'dir': '/Users/rudolfsarkany/windsurf-shopify-suite',    'cmd': 'npm start',                              'health': '/health'},
+    'guardian':      {'port': 3201, 'dir': os.environ.get("ETERNAL_BOT_DIR",    f"{_home}/rudibot-eternal"),         'cmd': 'python3 eternal_guardian.py --api', 'health': '/api/v1/health'},
+    'telegram_bot':  {'port': 3200, 'dir': os.environ.get("TELEGRAM_BOT_DIR",   f"{_home}/windsurf-telegram-bot"),   'cmd': 'npm start',                         'health': '/health'},
+    'api_gateway':   {'port': 8080, 'dir': os.environ.get("API_GATEWAY_DIR",    f"{_home}/windsurf-api-gateway"),    'cmd': 'npm start',                         'health': '/health'},
+    'shopify_ai':    {'port': 3002, 'dir': os.environ.get("SHOPIFY_AI_DIR",     f"{_home}/shopify-ai-suite"),        'cmd': 'node server.js',                    'health': '/health'},
+    'github_app':    {'port': 3000, 'dir': os.environ.get("GITHUB_APP_DIR",     f"{_home}/windsurf-github-app"),     'cmd': 'npm start',                         'health': '/health'},
+    'shopify_suite': {'port': 3001, 'dir': os.environ.get("SHOPIFY_SUITE_DIR",  f"{_home}/windsurf-shopify-suite"),  'cmd': 'npm start',                         'health': '/health'},
 }
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -210,7 +213,8 @@ def run_deepscan():
     log('RUNNING DEEPSCAN', 'info')
     log('═' * 60, 'info')
 
-    script = Path('/Users/rudolfsarkany/supermegabot/deep_scan_repair.py')
+    _mega_dir = os.environ.get("MEGA_DIR", str(Path(__file__).parent))
+    script = Path(_mega_dir) / 'deep_scan_repair.py'
     if not script.exists():
         log('DeepScan script not found', 'error')
         return False
@@ -219,7 +223,7 @@ def run_deepscan():
         result = subprocess.run(
             [sys.executable, str(script), '--fix'],
             capture_output=True, text=True, timeout=120,
-            cwd='/Users/rudolfsarkany/supermegabot'
+            cwd=_mega_dir
         )
         log('DeepScan completed', 'ok')
         if result.stdout:
