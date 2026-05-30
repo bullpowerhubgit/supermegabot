@@ -47,7 +47,7 @@ def service_status(port, name):
         return {'name': name, 'port': port, 'status': 'OFFLINE', 'color': '#ff4757'}
 
 def get_log_stats():
-    log = Path("/Users/rudolfsarkany/supermegabot/logs/dashboard.log")
+    log = Path(__file__).parent.parent / "logs" / "dashboard.log"
     if not log.exists(): return {'total': 0, 'errors': 0, 'infos': 0}
     lines = log.read_text().splitlines()
     return {
@@ -399,7 +399,7 @@ for ax in ['xaxis','xaxis2','xaxis3','xaxis4','xaxis5',
         )
 
 # Save
-out = Path("/Users/rudolfsarkany/supermegabot/dashboard/mega_monitor.html")
+out = Path(__file__).parent / "mega_monitor.html"
 fig.write_html(
     str(out),
     include_plotlyjs='cdn',
