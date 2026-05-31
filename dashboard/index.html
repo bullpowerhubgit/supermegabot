@@ -1038,6 +1038,12 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="nav-item" data-section="revenue">
         <span class="nav-icon">💹</span> Revenue Hub
       </div>
+      <div class="nav-item" data-section="stripe">
+        <span class="nav-icon">💳</span> Stripe Payments
+      </div>
+      <div class="nav-item" data-section="drive">
+        <span class="nav-icon">☁️</span> Google Drive
+      </div>
 
       <div class="nav-group-label">Infrastructure</div>
       <div class="nav-item" data-section="system">
@@ -2291,6 +2297,24 @@ input[type="range"]::-webkit-slider-thumb {
       <div id="revenue-status"><div class="spinner"></div></div>
     </section>
 
+    <!-- ── STRIPE ───────────────────────────────────────────────────────── -->
+    <section id="section-stripe" class="section">
+      <div class="section-header">
+        <h2>💳 Stripe Payments</h2>
+        <p>aiitec · Live-Modus · Zahlungen · Kunden · Abos</p>
+      </div>
+      <div id="stripe-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ── GOOGLE DRIVE ──────────────────────────────────────────────────── -->
+    <section id="section-drive" class="section">
+      <div class="section-header">
+        <h2>☁️ Google Drive</h2>
+        <p>Dateien · Backup · Speicher-Übersicht</p>
+      </div>
+      <div id="drive-status"><div class="spinner"></div></div>
+    </section>
+
   </main>
 </div>
 
@@ -2347,6 +2371,7 @@ function nav(section) {
     digistore:'🏪 Digistore24', mailchimp:'📧 Mailchimp',
     printify:'🖨️ Printify PoD', etsy:'🛍️ Etsy', gumroad:'💰 Gumroad',
     dropshipping:'📦 Dropshipping', seo:'🔍 SEO Autopilot', revenue:'💹 Revenue Hub',
+    stripe:'💳 Stripe Payments', drive:'☁️ Google Drive',
   };
   document.getElementById('topbar-title').textContent = titles[section] || section;
   currentSection = section;
@@ -2384,6 +2409,8 @@ function sectionInit(section) {
     dropshipping: loadDropshipping,
     seo:          loadSEO,
     revenue:      loadRevenue,
+    stripe:       loadStripe,
+    drive:        loadDrive,
   };
   if (loaders[section]) loaders[section]();
 }
@@ -3964,6 +3991,143 @@ async function loadRevenue() {
         </div>
       </div>`;
   } catch(e) { document.getElementById('revenue-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// STRIPE PAYMENTS
+// ════════════════════════════════════════════════════════════════
+async function loadStripe() {
+  document.getElementById('stripe-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/stripe/status');
+    if (!d.ok) {
+      document.getElementById('stripe-status').innerHTML = `<div class="error-msg">❌ ${d.error}</div>`;
+      return;
+    }
+    const bal = d.balance?.available || {};
+    const balStr = Object.entries(bal).map(([c,v]) => `${v.toFixed(2)} ${c}`).join(' | ') || '€0.00';
+    const rev = d.revenue_30d || {};
+    const revStr = Object.entries(rev.revenue||{}).map(([c,v]) => `${v.toFixed(2)} ${c}`).join(' | ') || '€0.00';
+    const charges = d.recent_charges || [];
+    const chargesHtml = charges.length ? charges.map(c =>
+      `<tr><td>${c.created?.substring(0,10)||'—'}</td><td>${c.amount?.toFixed(2)} ${c.currency}</td><td><span class="badge ${c.paid?'badge-ok':'badge-warn'}">${c.status}</span></td><td style="color:var(--text2);font-size:11px">${c.description||c.email||'—'}</td></tr>`
+    ).join('') : '<tr><td colspan="4" style="color:var(--text2)">Keine Zahlungen</td></tr>';
+
+    document.getElementById('stripe-status').innerHTML = `
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">💰 Guthaben</div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent)">${balStr}</div>
+          <div style="font-size:11px;color:var(--text2)">Live · ${d.account}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📈 Umsatz 30 Tage</div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent)">${revStr}</div>
+          <div style="font-size:11px;color:var(--text2)">${rev.successful||0} erfolgreiche Zahlungen</div>
+        </div>
+        <div class="card">
+          <div class="card-title">👥 Kunden & Abos</div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent)">${d.customer_count||0}</div>
+          <div style="font-size:11px;color:var(--text2)">${d.active_subs||0} aktive Abos</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">💳 Letzte Zahlungen</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="color:var(--text2);font-size:11px">
+            <th style="text-align:left;padding:4px">Datum</th>
+            <th style="text-align:left;padding:4px">Betrag</th>
+            <th style="text-align:left;padding:4px">Status</th>
+            <th style="text-align:left;padding:4px">Beschreibung</th>
+          </tr></thead>
+          <tbody>${chargesHtml}</tbody>
+        </table>
+        <div style="margin-top:12px">
+          <button class="btn" onclick="loadStripe()">🔄 Aktualisieren</button>
+          <button class="btn" onclick="runTask('stripe_monitor')" style="margin-left:8px">⚡ Monitor jetzt</button>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('stripe-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// GOOGLE DRIVE
+// ════════════════════════════════════════════════════════════════
+async function loadDrive() {
+  document.getElementById('drive-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/drive/status');
+    if (!d.ok) {
+      document.getElementById('drive-status').innerHTML = `
+        <div class="card">
+          <div class="card-title">☁️ Google Drive</div>
+          <div class="error-msg" style="margin-bottom:12px">⚠️ ${d.error}</div>
+          <div style="font-size:12px;color:var(--text2)">Setze <code>GOOGLE_ACCESS_TOKEN</code> in der .env Datei</div>
+        </div>`;
+      return;
+    }
+    const storage = d.storage || {};
+    const files = d.files || [];
+    const filesHtml = files.length ? files.map(f => {
+      const icon = f.mimeType?.includes('folder') ? '📁' :
+                   f.mimeType?.includes('pdf') ? '📄' :
+                   f.mimeType?.includes('spreadsheet') ? '📊' :
+                   f.mimeType?.includes('video') ? '🎬' :
+                   f.mimeType?.includes('image') ? '🖼️' : '📝';
+      const size = f.size > 1e6 ? `${(f.size/1e6).toFixed(1)}MB` :
+                   f.size > 1e3 ? `${(f.size/1e3).toFixed(0)}KB` : `${f.size}B`;
+      return `<tr>
+        <td style="padding:4px">${icon} <a href="${f.webViewLink}" target="_blank" style="color:var(--accent);text-decoration:none">${f.name}</a></td>
+        <td style="padding:4px;color:var(--text2);font-size:11px">${size}</td>
+        <td style="padding:4px;color:var(--text2);font-size:11px">${f.modifiedTime?.substring(0,10)||'—'}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="3" style="color:var(--text2)">Keine Dateien</td></tr>';
+
+    document.getElementById('drive-status').innerHTML = `
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">👤 Konto</div>
+          <div style="font-size:14px;color:var(--accent)">${d.account}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">💾 Speicher</div>
+          <div style="font-size:20px;font-weight:700;color:var(--accent)">${storage.used_gb||0} GB</div>
+          <div style="font-size:11px;color:var(--text2)">von ${storage.total_gb||15} GB (${storage.pct||0}%)</div>
+          <div style="margin-top:6px;height:4px;background:var(--border2);border-radius:2px">
+            <div style="width:${storage.pct||0}%;height:100%;background:var(--accent);border-radius:2px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📂 Dateien</div>
+          <div style="font-size:20px;font-weight:700;color:var(--accent)">${files.length}</div>
+          <div style="font-size:11px;color:var(--text2)">aktuell geladen</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">📂 Zuletzt geänderte Dateien</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="color:var(--text2);font-size:11px">
+            <th style="text-align:left;padding:4px">Name</th>
+            <th style="text-align:left;padding:4px">Größe</th>
+            <th style="text-align:left;padding:4px">Geändert</th>
+          </tr></thead>
+          <tbody>${filesHtml}</tbody>
+        </table>
+        <div style="margin-top:12px">
+          <button class="btn" onclick="loadDrive()">🔄 Aktualisieren</button>
+          <button class="btn btn-primary" onclick="driveBackup()" style="margin-left:8px">☁️ Backup jetzt</button>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('drive-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+async function driveBackup() {
+  toast('Drive Backup startet…', 'info');
+  try {
+    const d = await api('POST', '/api/drive/backup');
+    toast(d.result || 'Backup abgeschlossen', 'success');
+    loadDrive();
+  } catch(e) { toast(`Backup Fehler: ${e.message}`, 'error'); }
 }
 
 // ════════════════════════════════════════════════════════════════
