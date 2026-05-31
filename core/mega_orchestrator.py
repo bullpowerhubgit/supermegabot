@@ -1003,6 +1003,15 @@ class MegaOrchestrator:
         except Exception as e:
             log.warning(f"AutoScheduler nicht gestartet: {e}")
 
+        # Start specialized bot-clones
+        try:
+            from core.bot_clones import get_manager
+            clone_mgr = get_manager()
+            await clone_mgr.start()
+            log.info("BotClone-Manager gestartet (6 spezialisierte Clones)")
+        except Exception as e:
+            log.warning(f"BotClone-Manager nicht gestartet: {e}")
+
         log.info("SuperMegaBot is RUNNING")
         await send_telegram("SuperMegaBot gestartet! Tippe /help")
 
