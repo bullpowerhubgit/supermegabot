@@ -1548,6 +1548,97 @@ async def handle_bot_clone_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ── Stripe ───────────────────────────────────────────────────────────────────
+
+async def handle_stripe_status(req):
+    try:
+        from modules.stripe_automation import get_stats
+        data = await get_stats()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_balance(req):
+    try:
+        from modules.stripe_automation import get_balance
+        data = await get_balance()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_charges(req):
+    try:
+        from modules.stripe_automation import get_charges
+        days = int(req.rel_url.query.get("days", "30"))
+        limit = int(req.rel_url.query.get("limit", "20"))
+        data = await get_charges(limit=limit, days_back=days)
+        return web.json_response({"ok": True, "charges": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_customers(req):
+    try:
+        from modules.stripe_automation import get_customers
+        data = await get_customers(limit=50)
+        return web.json_response({"ok": True, "customers": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_revenue(req):
+    try:
+        from modules.stripe_automation import get_revenue_summary
+        days = int(req.rel_url.query.get("days", "30"))
+        data = await get_revenue_summary(days_back=days)
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_webhook(req):
+    try:
+        event = await req.json()
+        from modules.stripe_automation import handle_webhook_event
+        result = await handle_webhook_event(event)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Google Drive ──────────────────────────────────────────────────────────────
+
+async def handle_drive_status(req):
+    try:
+        from modules.google_drive_automation import get_stats
+        data = await get_stats()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_drive_files(req):
+    try:
+        from modules.google_drive_automation import list_files
+        query = req.rel_url.query.get("q", "")
+        limit = int(req.rel_url.query.get("limit", "20"))
+        data  = await list_files(query=query, page_size=limit)
+        return web.json_response({"ok": True, "files": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_drive_backup(req):
+    try:
+        from modules.google_drive_automation import auto_backup
+        result = await auto_backup()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -1668,6 +1759,19 @@ async def create_app():
     # ── Bot Clones ────────────────────────────────────────────────────────────
     app.router.add_get("/api/bots/status",            handle_bot_clones_status)
     app.router.add_post("/api/bots/run",              handle_bot_clone_run)
+
+    # ── Stripe ────────────────────────────────────────────────────────────────
+    app.router.add_get("/api/stripe/status",          handle_stripe_status)
+    app.router.add_get("/api/stripe/balance",         handle_stripe_balance)
+    app.router.add_get("/api/stripe/charges",         handle_stripe_charges)
+    app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
+    app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
+    app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+
+    # ── Google Drive ──────────────────────────────────────────────────────────
+    app.router.add_get("/api/drive/status",           handle_drive_status)
+    app.router.add_get("/api/drive/files",            handle_drive_files)
+    app.router.add_post("/api/drive/backup",          handle_drive_backup)
 
     return app
 

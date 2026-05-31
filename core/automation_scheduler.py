@@ -757,6 +757,24 @@ async def task_daily_summary() -> str:
         return f"Fehler: {e}"
 
 
+async def task_stripe_monitor() -> str:
+    """Check Stripe for new payments and alert via Telegram."""
+    try:
+        from modules.stripe_automation import monitor_payments
+        return await monitor_payments()
+    except Exception as e:
+        return f"Stripe Monitor Fehler: {e}"
+
+
+async def task_drive_backup() -> str:
+    """Backup data directory JSON files to Google Drive."""
+    try:
+        from modules.google_drive_automation import auto_backup
+        return await auto_backup()
+    except Exception as e:
+        return f"Drive Backup Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -796,6 +814,9 @@ TASKS = [
     ("youtube_stats",           task_youtube_stats,           86400,  320),  # daily
     ("log_cleanup",             task_log_cleanup,             86400,  330),  # daily
     ("daily_summary",           task_daily_summary,           86400,  340),  # daily
+    # ── Stripe & Drive ───────────────────────────────────────────────────────
+    ("stripe_monitor",          task_stripe_monitor,          1800,   25),   # 30 min
+    ("drive_backup",            task_drive_backup,            86400,  360),  # daily
 ]
 
 
