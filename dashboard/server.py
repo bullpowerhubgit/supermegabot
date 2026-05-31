@@ -1255,6 +1255,98 @@ async def handle_mailchimp_sync(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_mailchimp_campaign(req):
+    """Create and send a Mailchimp campaign."""
+    try:
+        data = await req.json()
+        from modules.mailchimp_automation import ping, get_lists
+        ok, account = await ping()
+        if not ok:
+            return web.json_response({"ok": False, "error": "Mailchimp nicht konfiguriert"})
+        import aiohttp, os
+        key    = os.getenv("MAILCHIMP_API_KEY", "")
+        prefix = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
+        if "-" in key:
+            prefix = key.split("-")[-1]
+        base = f"https://{prefix}.api.mailchimp.com/3.0"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        lists = await get_lists()
+        list_id = data.get("list_id") or (lists[0]["id"] if lists else "")
+        if not list_id:
+            return web.json_response({"ok": False, "error": "Keine Mailchimp-Liste gefunden"})
+        campaign_body = {
+            "type": "regular",
+            "recipients": {"list_id": list_id},
+            "settings": {
+                "subject_line": data.get("subject", "SuperMegaBot Newsletter"),
+                "from_name":    data.get("from_name", "SuperMegaBot"),
+                "reply_to":     data.get("reply_to", "noreply@supermegabot.com"),
+            },
+        }
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            async with s.post(f"{base}/campaigns", headers=headers, json=campaign_body) as r:
+                if r.status not in (200, 201):
+                    body = await r.text()
+                    return web.json_response({"ok": False, "error": f"HTTP {r.status}: {body[:200]}"})
+                camp = await r.json()
+            camp_id = camp["id"]
+            content_body = {"html": data.get("body_html", "<p>Hallo!</p>")}
+            async with s.put(f"{base}/campaigns/{camp_id}/content", headers=headers, json=content_body) as r:
+                if r.status not in (200, 204):
+                    return web.json_response({"ok": False, "error": "Content-Upload fehlgeschlagen"})
+            async with s.post(f"{base}/campaigns/{camp_id}/actions/send", headers=headers) as r:
+                if r.status not in (200, 204):
+                    return web.json_response({"ok": False, "error": "Senden fehlgeschlagen"})
+        return web.json_response({"ok": True, "campaign_id": camp_id, "subject": data.get("subject")})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_memory_save(req):
+    """Save a key-value memory note (alias for notes endpoint)."""
+    try:
+        import json as _json
+        data = await req.json()
+        key   = str(data.get("key", "")).strip()
+        value = str(data.get("value", "")).strip()
+        if not key:
+            return web.json_response({"ok": False, "error": "key erforderlich"})
+        mem_file = DATA_DIR / "memory.json"
+        memory: dict = {}
+        if mem_file.exists():
+            try:
+                memory = _json.loads(mem_file.read_text())
+            except Exception:
+                pass
+        memory[key] = {"value": value, "updated": datetime.now().isoformat()}
+        mem_file.write_text(_json.dumps(memory, indent=2, ensure_ascii=False))
+        return web.json_response({"ok": True, "key": key, "total": len(memory)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_notes_save_alias(req):
+    """Alias: /api/notes/save → same as /api/notes POST."""
+    try:
+        import json as _json
+        data = await req.json()
+        key   = str(data.get("key", data.get("text", ""))).strip()
+        value = str(data.get("value", "")).strip()
+        notes_file = DATA_DIR / "notes.json"
+        notes = []
+        if notes_file.exists():
+            try:
+                notes = _json.loads(notes_file.read_text())
+            except Exception:
+                pass
+        notes.append({"key": key, "text": value or key, "created": datetime.now().isoformat()})
+        notes = notes[-200:]
+        notes_file.write_text(_json.dumps(notes, indent=2, ensure_ascii=False))
+        return web.json_response({"ok": True, "count": len(notes)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_printify_status(req):
     try:
         from modules.printify_automation import ping, get_stats
@@ -1374,6 +1466,88 @@ async def handle_pod_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_klaviyo_status(req):
+    try:
+        from modules.klaviyo_automation import get_stats
+        return web.json_response(await get_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_klaviyo_lists(req):
+    try:
+        from modules.klaviyo_automation import get_lists
+        lists = await get_lists()
+        return web.json_response({"ok": True, "lists": lists})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_klaviyo_sync(req):
+    try:
+        data = await req.json()
+        list_id = data.get("list_id", "")
+        source  = data.get("source", "digistore")
+        from modules.klaviyo_automation import sync_from_digistore, sync_from_shopify, get_lists
+        if not list_id:
+            lists = await get_lists()
+            list_id = lists[0]["id"] if lists else ""
+        if not list_id:
+            return web.json_response({"ok": False, "error": "Keine Klaviyo-Liste gefunden"})
+        if source == "shopify":
+            count = await sync_from_shopify(list_id)
+        else:
+            count = await sync_from_digistore(list_id)
+        return web.json_response({"ok": True, "synced": count, "list_id": list_id, "source": source})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_klaviyo_campaign(req):
+    try:
+        data = await req.json()
+        from modules.klaviyo_automation import create_and_send_campaign, get_lists
+        list_id = data.get("list_id", "")
+        if not list_id:
+            lists = await get_lists()
+            list_id = lists[0]["id"] if lists else ""
+        if not list_id:
+            return web.json_response({"ok": False, "error": "Keine Liste gefunden"})
+        result = await create_and_send_campaign(
+            list_id=list_id,
+            subject=data.get("subject", "SuperMegaBot Newsletter"),
+            from_email=data.get("from_email", "noreply@supermegabot.com"),
+            from_name=data.get("from_name", "SuperMegaBot"),
+            html_body=data.get("body_html", "<p>Hallo!</p>"),
+            campaign_name=data.get("name", ""),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_bot_clones_status(req):
+    """Return status of all specialized bot-clone workers."""
+    try:
+        from core.bot_clones import get_bot_status
+        return web.json_response(await get_bot_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_bot_clone_run(req):
+    """Manually trigger a specific bot-clone action."""
+    try:
+        data = await req.json()
+        bot_name = data.get("bot", "")
+        action   = data.get("action", "status")
+        from core.bot_clones import run_bot_action
+        result = await run_bot_action(bot_name, action)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -1458,6 +1632,9 @@ async def create_app():
     # ── Mailchimp ─────────────────────────────────────────────────────────────
     app.router.add_get("/api/mailchimp/status",       handle_mailchimp_status)
     app.router.add_post("/api/mailchimp/sync",        handle_mailchimp_sync)
+    app.router.add_post("/api/mailchimp/campaign",    handle_mailchimp_campaign)
+    app.router.add_post("/api/memory/save",           handle_memory_save)
+    app.router.add_post("/api/notes/save",            handle_notes_save_alias)
 
     # ── Printify ──────────────────────────────────────────────────────────────
     app.router.add_get("/api/printify/status",        handle_printify_status)
@@ -1481,6 +1658,16 @@ async def create_app():
 
     # ── Print-on-Demand ───────────────────────────────────────────────────────
     app.router.add_get("/api/pod/status",             handle_pod_status)
+
+    # ── Klaviyo ───────────────────────────────────────────────────────────────
+    app.router.add_get("/api/klaviyo/status",         handle_klaviyo_status)
+    app.router.add_get("/api/klaviyo/lists",          handle_klaviyo_lists)
+    app.router.add_post("/api/klaviyo/sync",          handle_klaviyo_sync)
+    app.router.add_post("/api/klaviyo/campaign",      handle_klaviyo_campaign)
+
+    # ── Bot Clones ────────────────────────────────────────────────────────────
+    app.router.add_get("/api/bots/status",            handle_bot_clones_status)
+    app.router.add_post("/api/bots/run",              handle_bot_clone_run)
 
     return app
 
