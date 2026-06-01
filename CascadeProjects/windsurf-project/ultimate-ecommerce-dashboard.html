@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta http-equiv="Content-Security-Policy" cself'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+    <meta charset="UTF-8">
+    <meta name="viewport" c>
+    <title>SuperMegaBot Ultimate E-Commerce Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .sidebar-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .sidebar-item.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left: 3px solid #fff;
+        }
+        
+        .metric-card {
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .status-online {
+            color: #10b981;
+        }
+        
+        .status-offline {
+            color: #ef4444;
+        }
+        
+        .status-warning {
+            color: #f59e0b;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 4px;
+        }
+        
+        .chat-message {
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-64 gradient-bg text-white flex flex-col">
+            <div class="p-6 border-b border-white/20">
+                <h1 class="text-2xl font-bold flex items-center gap-2">
+                    <i class="fas fa-rocket"></i>
+                    SuperMegaBot
+                </h1>
+                <p class="text-sm text-white/70 mt-1">Ultimate E-Commerce Suite</p>
+            </div>
+            
+            <nav class="flex-1 p-4 space-y-2">
+                <a href="#" class="sidebar-item active flex items-center gap-3 px-4 py-3 rounded-lg transition-all" data-section="dashboard">
+                    <i class="fas fa-chart-line w-5"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all" data-section="dropshipping">
+                    <i class="fas fa-shipping-fast w-5"></i>
+                    <span>Dropshipping</span>
+                </a>
+                <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all" data-section="printondemand">
+                    <i class="fas fa-tshirt w-5"></i>
+                    <span>Print-on-Demand</span>
+                </a>
+                <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all" data-section="marketing">
+                    <i class="fas fa-bullhorn w-5"></i>
+                    <span>Marketing</span>
+                </a>
+                <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all" data-section="seo">
+                    <i class="fas fa-search w-5"></i>
+                    <span>SEO Tools</span>
+                </a>
+                <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all" data-section="analytics">
+                    <i class="fas fa-chart-bar w-5"></i>
+                    <span>Analytics</span>
+                </a>
+                <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all" data-section="ai-assistant">
+                    <i class="fas fa-robot w-5"></i>
+                    <span>AI Assistant</span>
+                </a>
+                <a href="#" class="sidebar-item flex items-center gap-3 px-4 py-3 rounded-lg transition-all" data-section="settings">
+                    <i class="fas fa-cog w-5"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+            
+            <div class="p-4 border-t border-white/20">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div>
+                        <p class="font-medium">Admin</p>
+                        <p class="text-xs text-white/70">Online</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto">
+            <!-- Header -->
+            <header class="bg-white shadow-sm px-8 py-4 flex items-center justify-between sticky top-0 z-10">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800" id="page-title">Dashboard</h2>
+                    <p class="text-gray-500 text-sm">Welcome back! Here's what's happening today.</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Search..." class="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                    <button class="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-bell"></i>
+                        <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                    <button class="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Dashboard Section -->
+            <section id="dashboard-section" class="p-8">
+                <!-- Metrics Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="metric-card glass-card rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center">
+                                <i class="fas fa-euro-sign text-purple-600 text-xl"></i>
+                            </div>
+                            <span class="text-green-500 text-sm font-medium">+12.5%</span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm">Total Revenue</h3>
+                        <p class="text-2xl font-bold text-gray-800">€124,563</p>
+                    </div>
+                    
+                    <div class="metric-card glass-card rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-shopping-cart text-blue-600 text-xl"></i>
+                            </div>
+                            <span class="text-green-500 text-sm font-medium">+8.2%</span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm">Total Orders</h3>
+                        <p class="text-2xl font-bold text-gray-800">1,234</p>
+                    </div>
+                    
+                    <div class="metric-card glass-card rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-box text-green-600 text-xl"></i>
+                            </div>
+                            <span class="text-green-500 text-sm font-medium">+15.3%</span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm">Products</h3>
+                        <p class="text-2xl font-bold text-gray-800">567</p>
+                    </div>
+                    
+                    <div class="metric-card glass-card rounded-xl p-6 shadow-lg">
+                        <div class="flex items-center justify-between mb-4">
+                            <div class="w-12 h-12 rounded-lg bg-orange-100 flex items-center justify-center">
+                                <i class="fas fa-users text-orange-600 text-xl"></i>
+                            </div>
+                            <span class="text-green-500 text-sm font-medium">+22.1%</span>
+                        </div>
+                        <h3 class="text-gray-500 text-sm">Customers</h3>
+                        <p class="text-2xl font-bold text-gray-800">8,901</p>
+                    </div>
+                </div>
+                
+                <!-- Charts Row -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                    <div class="glass-card rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Revenue Overview</h3>
+                        <canvas id="revenueChart" height="200"></canvas>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Sales by Category</h3>
+                        <canvas id="categoryChart" height="200"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Activity</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-check text-green-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">New order #12345 received</p>
+                                <p class="text-sm text-gray-500">2 minutes ago</p>
+                            </div>
+                            <span class="text-green-600 font-medium">€89.99</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-tshirt text-blue-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">New POD product created</p>
+                                <p class="text-sm text-gray-500">15 minutes ago</p>
+                            </div>
+                            <span class="text-blue-600 font-medium">Print-on-Demand</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
+                                <i class="fas fa-bullhorn text-purple-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">Ad campaign launched</p>
+                                <p class="text-sm text-gray-500">1 hour ago</p>
+                            </div>
+                            <span class="text-purple-600 font-medium">Facebook Ads</span>
+                        </div>
+                        
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                                <i class="fas fa-search text-orange-600"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">SEO optimization completed</p>
+                                <p class="text-sm text-gray-500">2 hours ago</p>
+                            </div>
+                            <span class="text-orange-600 font-medium">SEO Tools</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Dropshipping Section -->
+            <section id="dropshipping-section" class="p-8 hidden">
+                <div class="glass-card rounded-xl p-6 shadow-lg mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">AI Market Trend Analysis</h3>
+                    <div class="flex gap-4 mb-4">
+                        <input type="text" id="trend-niche" placeholder="Enter niche (e.g., home decor)" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <button  class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-search mr-2"></i>Analyze Trends
+                        </button>
+                    </div>
+                    <div id="trend-results" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-gray-800 mb-2">Trending Products</h4>
+                                <ul id="trending-products" class="space-y-2 text-sm text-gray-600"></ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-gray-800 mb-2">Profit Margins</h4>
+                                <ul id="profit-margins" class="space-y-2 text-sm text-gray-600"></ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-gray-800 mb-2">Competition Level</h4>
+                                <ul id="competition-level" class="space-y-2 text-sm text-gray-600"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button  class="p-4 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors">
+                            <i class="fas fa-plus-circle text-2xl mb-2"></i>
+                            <p class="font-medium">Create Product</p>
+                        </button>
+                        <button  class="p-4 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors">
+                            <i class="fas fa-tags text-2xl mb-2"></i>
+                            <p class="font-medium">Optimize Pricing</p>
+                        </button>
+                        <button  class="p-4 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors">
+                            <i class="fas fa-sync text-2xl mb-2"></i>
+                            <p class="font-medium">Sync Inventory</p>
+                        </button>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Print-on-Demand Section -->
+            <section id="printondemand-section" class="p-8 hidden">
+                <div class="glass-card rounded-xl p-6 shadow-lg mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Create POD Product</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="pod-product-name" placeholder="Product name" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <input type="text" id="pod-product-type" placeholder="Product type (t-shirt, mug, etc.)" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <input type="number" id="pod-price" placeholder="Price" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <input type="url" id="pod-design-url" placeholder="Design URL" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <textarea id="pod-description" placeholder="Product description" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 mb-4" rows="3"></textarea>
+                    <button  class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Create POD Product
+                    </button>
+                </div>
+                
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">POD Products</h3>
+                    <div id="pod-products-list" class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-tshirt text-gray-400 text-2xl"></i>
+                            </div>
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">Custom T-Shirt Design</p>
+                                <p class="text-sm text-gray-500">T-Shirt • €29.99</p>
+                            </div>
+                            <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm">Active</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Marketing Section -->
+            <section id="marketing-section" class="p-8 hidden">
+                <div class="glass-card rounded-xl p-6 shadow-lg mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Create Ad Campaign</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <input type="text" id="campaign-name" placeholder="Campaign name" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <input type="number" id="campaign-budget" placeholder="Daily budget (€)" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <select id="campaign-objective" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="CONVERSIONS">Conversions</option>
+                            <option value="TRAFFIC">Traffic</option>
+                            <option value="BRAND_AWARENESS">Brand Awareness</option>
+                        </select>
+                        <input type="text" id="campaign-interests" placeholder="Target interests (comma-separated)" class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    </div>
+                    <button  class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-rocket mr-2"></i>Launch Campaign
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="glass-card rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Active Campaigns</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <p class="font-medium text-gray-800">Summer Sale 2026</p>
+                                    <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm">Active</span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-4 text-sm">
+                                    <div>
+                                        <p class="text-gray-500">Spend</p>
+                                        <p class="font-medium">€1,234</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500">ROAS</p>
+                                        <p class="font-medium">3.5x</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-500">Conversions</p>
+                                        <p class="font-medium">234</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Email Sequences</h3>
+                        <div class="space-y-4">
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <p class="font-medium text-gray-800">Abandoned Cart</p>
+                                    <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm">Active</span>
+                                </div>
+                                <p class="text-sm text-gray-500">3 emails • 35% recovery rate</p>
+                            </div>
+                            <div class="p-4 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between mb-2">
+                                    <p class="font-medium text-gray-800">Welcome Series</p>
+                                    <span class="px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm">Active</span>
+                                </div>
+                                <p class="text-sm text-gray-500">5 emails • 45% open rate</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SEO Section -->
+            <section id="seo-section" class="p-8 hidden">
+                <div class="glass-card rounded-xl p-6 shadow-lg mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Keyword Research</h3>
+                    <div class="flex gap-4 mb-4">
+                        <input type="text" id="seo-niche" placeholder="Enter niche for keyword research" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <button  class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-search mr-2"></i>Research Keywords
+                        </button>
+                    </div>
+                    <div id="keyword-results" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-gray-800 mb-2">Primary Keywords</h4>
+                                <ul id="primary-keywords" class="space-y-2 text-sm text-gray-600"></ul>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-gray-800 mb-2">Long-tail Keywords</h4>
+                                <ul id="longtail-keywords" class="space-y-2 text-sm text-gray-600"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-xl p-6 shadow-lg mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Technical SEO Audit</h3>
+                    <div class="flex gap-4 mb-4">
+                        <input type="url" id="audit-url" placeholder="Enter URL to audit" class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <button  class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                            <i class="fas fa-check-circle mr-2"></i>Run Audit
+                        </button>
+                    </div>
+                    <div id="audit-results" class="hidden">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-green-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-green-800 mb-2">Performance</h4>
+                                <p class="text-2xl font-bold text-green-600">85/100</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-blue-800 mb-2">Mobile</h4>
+                                <p class="text-2xl font-bold text-blue-600">90/100</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <h4 class="font-medium text-purple-800 mb-2">SEO</h4>
+                                <p class="text-2xl font-bold text-purple-600">88/100</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Rank Tracking</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">best dropshipping products 2026</p>
+                                <p class="text-sm text-gray-500">Volume: 12,000 • Difficulty: 45</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-green-600">#3</p>
+                                <p class="text-sm text-green-500">↑ 2</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                            <div class="flex-1">
+                                <p class="font-medium text-gray-800">print on demand t-shirts</p>
+                                <p class="text-sm text-gray-500">Volume: 8,500 • Difficulty: 38</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-2xl font-bold text-blue-600">#7</p>
+                                <p class="text-sm text-green-500">↑ 1</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Analytics Section -->
+            <section id="analytics-section" class="p-8 hidden">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="glass-card rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Traffic Sources</h3>
+                        <canvas id="trafficChart" height="200"></canvas>
+                    </div>
+                    
+                    <div class="glass-card rounded-xl p-6 shadow-lg">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">Conversion Funnel</h3>
+                        <canvas id="funnelChart" height="200"></canvas>
+                    </div>
+                </div>
+                
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">Performance Metrics</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-sm">Conversion Rate</p>
+                            <p class="text-2xl font-bold text-gray-800">3.2%</p>
+                            <p class="text-green-500 text-sm">↑ 0.3%</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-sm">Average Order Value</p>
+                            <p class="text-2xl font-bold text-gray-800">€67.50</p>
+                            <p class="text-green-500 text-sm">↑ €2.30</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-sm">Customer Lifetime Value</p>
+                            <p class="text-2xl font-bold text-gray-800">€234.00</p>
+                            <p class="text-green-500 text-sm">↑ €12.00</p>
+                        </div>
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500 text-sm">Return Rate</p>
+                            <p class="text-2xl font-bold text-gray-800">2.1%</p>
+                            <p class="text-red-500 text-sm">↑ 0.2%</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- AI Assistant Section -->
+            <section id="ai-assistant-section" class="p-8 hidden">
+                <div class="glass-card rounded-xl shadow-lg h-[calc(100vh-200px)] flex flex-col">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold text-gray-800">AI Assistant</h3>
+                        <p class="text-gray-500 text-sm">Powered by GPT-4 & Perplexity</p>
+                    </div>
+                    
+                    <div id="chat-messages" class="flex-1 overflow-y-auto p-6 space-y-4">
+                        <div class="chat-message flex gap-4">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-robot text-purple-600"></i>
+                            </div>
+                            <div class="bg-gray-100 rounded-lg p-4 max-w-[70%]">
+                                <p class="text-gray-800">Hello! I'm your AI assistant. I can help you with:</p>
+                                <ul class="text-gray-600 text-sm mt-2 space-y-1">
+                                    <li>• Market trend analysis</li>
+                                    <li>• Product research</li>
+                                    <li>• Marketing strategy</li>
+                                    <li>• SEO optimization</li>
+                                    <li>• Campaign optimization</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 border-t">
+                        <div class="flex gap-4">
+                            <input type="text" id="ai-input" placeholder="Ask me anything..." class="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" Enter') sendAIMessage()">
+                            <button  class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Settings Section -->
+            <section id="settings-section" class="p-8 hidden">
+                <div class="glass-card rounded-xl p-6 shadow-lg mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">API Configuration</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Shopify Store URL</label>
+                            <input type="url" id="shopify-url" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="https://admin.shopify.com/store/">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Shopify Access Token</label>
+                            <input type="password" id="shopify-token" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="shpat_">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Printify Token</label>
+                            <input type="password" id="printify-token" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Printify API token">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">OpenAI API Key</label>
+                            <input type="password" id="openai-key" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="sk-">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Perplexity API Key</label>
+                            <input type="password" id="perplexity-key" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="pplx-">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Telegram Bot Token</label>
+                            <input type="password" id="telegram-token" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500" placeholder="Telegram bot token">
+                        </div>
+                    </div>
+                    <button  class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                        <i class="fas fa-save mr-2"></i>Save Settings
+                    </button>
+                </div>
+                
+                <div class="glass-card rounded-xl p-6 shadow-lg">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">System Status</h3>
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 rounded-full bg-green-500 pulse-dot"></div>
+                                <span class="font-medium text-gray-800">Dropshipping Engine</span>
+                            </div>
+                            <span class="text-green-600">Online</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 rounded-full bg-green-500 pulse-dot"></div>
+                                <span class="font-medium text-gray-800">Print-on-Demand System</span>
+                            </div>
+                            <span class="text-green-600">Online</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 rounded-full bg-green-500 pulse-dot"></div>
+                                <span class="font-medium text-gray-800">Marketing Automation</span>
+                            </div>
+                            <span class="text-green-600">Online</span>
+                        </div>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-3 h-3 rounded-full bg-green-500 pulse-dot"></div>
+                                <span class="font-medium text-gray-800">SEO Engine</span>
+                            </div>
+                            <span class="text-green-600">Online</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script>
+        // Navigation
+        document.querySelectorAll('.sidebar-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const section = item.dataset.section;
+                
+                // Update active state
+                document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+                
+                // Show section
+                document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+                document.getElementById(`${section}-section`).classList.remove('hidden');
+                
+                // Update title
+                const titles = {
+                    'dashboard': 'Dashboard',
+                    'dropshipping': 'Dropshipping Automation',
+                    'printondemand': 'Print-on-Demand',
+                    'marketing': 'Marketing Automation',
+                    'seo': 'SEO Tools',
+                    'analytics': 'Analytics',
+                    'ai-assistant': 'AI Assistant',
+                    'settings': 'Settings'
+                };
+                document.getElementById('page-title').textContent = titles[section];
+            });
+        });
+        
+        // Initialize Charts
+        function initCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000],
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+            
+            // Category Chart
+            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+            new Chart(categoryCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Electronics', 'Clothing', 'Home', 'Accessories'],
+                    datasets: [{
+                        data: [35, 25, 25, 15],
+                        backgroundColor: ['#8b5cf6', '#3b82f6', '#10b981', '#f59e0b']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+        
+        // Trend Analysis
+        function analyzeTrends() {
+            const niche = document.getElementById('trend-niche').value;
+            if (!niche) return alert('Please enter a niche');
+            
+            document.getElementById('trend-results').classList.remove('hidden');
+            
+            // Simulate results
+            const trendingProducts = document.getElementById('trending-products');
+            trendingProducts.textContent = '';
+            trendingProducts.appendChild(document.createElement('li')).textContent = '• Smart Home Devices (Margin: 40%)';
+            trendingProducts.appendChild(document.createElement('li')).textContent = '• Eco-Friendly Products (Margin: 35%)';
+            trendingProducts.appendChild(document.createElement('li')).textContent = '• Personalized Items (Margin: 50%)';
+            
+            const profitMargins = document.getElementById('profit-margins');
+            profitMargins.textContent = '';
+            profitMargins.appendChild(document.createElement('li')).textContent = '• Electronics: 25-45%';
+            profitMargins.appendChild(document.createElement('li')).textContent = '• Clothing: 30-50%';
+            profitMargins.appendChild(document.createElement('li')).textContent = '• Home Decor: 35-55%';
+            
+            const competitionLevel = document.getElementById('competition-level');
+            competitionLevel.textContent = '';
+            competitionLevel.appendChild(document.createElement('li')).textContent = '• Smart Home: Medium';
+            competitionLevel.appendChild(document.createElement('li')).textContent = '• Eco-Friendly: Low';
+            competitionLevel.appendChild(document.createElement('li')).textContent = '• Personalized: Low';
+        }
+        
+        // Keyword Research
+        function performKeywordResearch() {
+            const niche = document.getElementById('seo-niche').value;
+            if (!niche) return alert('Please enter a niche');
+            
+            document.getElementById('keyword-results').classList.remove('hidden');
+            
+            // Simulate results
+            const primaryKeywords = document.getElementById('primary-keywords');
+            primaryKeywords.textContent = '';
+            primaryKeywords.appendChild(document.createElement('li')).textContent = `• ${niche} (Vol: 12,000, KD: 45)`;
+            primaryKeywords.appendChild(document.createElement('li')).textContent = `• best ${niche} (Vol: 8,500, KD: 38)`;
+            primaryKeywords.appendChild(document.createElement('li')).textContent = `• ${niche} reviews (Vol: 5,200, KD: 32)`;
+            
+            const longtailKeywords = document.getElementById('longtail-keywords');
+            longtailKeywords.textContent = '';
+            longtailKeywords.appendChild(document.createElement('li')).textContent = `• affordable ${niche} for beginners (Vol: 1,200, KD: 25)`;
+            longtailKeywords.appendChild(document.createElement('li')).textContent = `• how to choose ${niche} (Vol: 890, KD: 28)`;
+            longtailKeywords.appendChild(document.createElement('li')).textContent = `• ${niche} vs alternatives (Vol: 650, KD: 22)`;
+        }
+        
+        // Technical Audit
+        function performAudit() {
+            const url = document.getElementById('audit-url').value;
+            if (!url) return alert('Please enter a URL');
+            
+            document.getElementById('audit-results').classList.remove('hidden');
+        }
+        
+        // AI Chat
+        function sendAIMessage() {
+            const input = document.getElementById('ai-input');
+            const message = input.value.trim();
+            if (!message) return;
+            
+            const chatMessages = document.getElementById('chat-messages');
+            
+            // Add user message
+            const userMsgDiv = document.createElement('div');
+            userMsgDiv.className = 'chat-message flex gap-4 justify-end';
+            
+            const userBubble = document.createElement('div');
+            userBubble.className = 'bg-purple-600 text-white rounded-lg p-4 max-w-[70%]';
+            
+            const userP = document.createElement('p');
+            userP.textContent = message;
+            userBubble.appendChild(userP);
+            
+            const userAvatar = document.createElement('div');
+            userAvatar.className = 'w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0';
+            const userIcon = document.createElement('i');
+            userIcon.className = 'fas fa-user text-gray-600';
+            userAvatar.appendChild(userIcon);
+            
+            userMsgDiv.appendChild(userBubble);
+            userMsgDiv.appendChild(userAvatar);
+            chatMessages.appendChild(userMsgDiv);
+            
+            input.value = '';
+            
+            // Simulate AI response
+            setTimeout(() => {
+                const aiMsgDiv = document.createElement('div');
+                aiMsgDiv.className = 'chat-message flex gap-4';
+                
+                const aiAvatar = document.createElement('div');
+                aiAvatar.className = 'w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0';
+                const aiIcon = document.createElement('i');
+                aiIcon.className = 'fas fa-robot text-purple-600';
+                aiAvatar.appendChild(aiIcon);
+                
+                const aiBubble = document.createElement('div');
+                aiBubble.className = 'bg-gray-100 rounded-lg p-4 max-w-[70%]';
+                
+                const aiP = document.createElement('p');
+                aiP.className = 'text-gray-800';
+                aiP.textContent = `I'm analyzing your request: "${message}". Let me process this using our AI engines...`;
+                aiBubble.appendChild(aiP);
+                
+                aiMsgDiv.appendChild(aiAvatar);
+                aiMsgDiv.appendChild(aiBubble);
+                chatMessages.appendChild(aiMsgDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 1000);
+        }
+        
+        // Quick Actions
+        function createProduct() {
+            alert('Product creation wizard would open here');
+        }
+        
+        function optimizePricing() {
+            alert('Pricing optimization would run here');
+        }
+        
+        function syncInventory() {
+            alert('Inventory sync would start here');
+        }
+        
+        function createPODProduct() {
+            alert('POD product creation would start here');
+        }
+        
+        function createCampaign() {
+            alert('Campaign creation would start here');
+        }
+        
+        function saveSettings() {
+            alert('Settings saved successfully!');
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+        });
+    </script>
+</body>
+</html>

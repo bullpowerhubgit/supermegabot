@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "vite",
+  "regions": ["fra1"],
+  "teamId": "team_xulvdt7sib2RSt4BNoqVWeSy",
+  "env": {
+    "ANTHROPIC_API_KEY": {
+      "description": "Anthropic Claude API Key for AI generation"
+    }
+  }
+}

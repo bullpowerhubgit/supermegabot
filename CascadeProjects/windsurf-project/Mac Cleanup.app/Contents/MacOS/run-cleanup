@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Mac Cleanup App - One-Click Cleanup Launcher
+cd "$(dirname "$0")/../../.."
+node mac-cleanup-tool.js

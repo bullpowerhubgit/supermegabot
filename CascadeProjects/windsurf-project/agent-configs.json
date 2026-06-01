@@ -1,0 +1,109 @@
+{
+  "agents": [
+    {
+      "id": "deepscan-agent",
+      "name": "DeepScan Agent",
+      "type": "security",
+      "script": "adaptive-deepscan-master.js",
+      "capabilities": ["security-scan", "vulnerability-detection", "system-analysis", "real-time-monitoring"],
+      "priority": 1,
+      "resources": {
+        "memory": "512MB",
+        "cpu": "25%",
+        "timeout": 300
+      }
+    },
+    {
+      "id": "backup-agent",
+      "name": "Backup Agent",
+      "type": "storage",
+      "script": "cloud-backup-system.js",
+      "capabilities": ["backup", "restore", "cloud-sync", "encryption", "compression"],
+      "priority": 2,
+      "resources": {
+        "memory": "256MB",
+        "cpu": "15%",
+        "timeout": 600
+      }
+    },
+    {
+      "id": "connection-agent",
+      "name": "Connection Agent",
+      "type": "network",
+      "script": "permanent-connection-manager.js",
+      "capabilities": ["api-management", "connection-pooling", "health-monitoring", "failover"],
+      "priority": 3,
+      "resources": {
+        "memory": "128MB",
+        "cpu": "10%",
+        "timeout": 120
+      }
+    },
+    {
+      "id": "google-agent",
+      "name": "Google Agent",
+      "type": "integration",
+      "script": "google-apis-integration.js",
+      "capabilities": ["google-services", "data-sync", "api-management", "oauth2"],
+      "priority": 4,
+      "resources": {
+        "memory": "256MB",
+        "cpu": "20%",
+        "timeout": 180
+      }
+    },
+    {
+      "id": "monitoring-agent",
+      "name": "Monitoring Agent",
+      "type": "analytics",
+      "script": "monitor-dashboard.js",
+      "capabilities": ["system-monitoring", "performance-tracking", "alerting", "metrics"],
+      "priority": 5,
+      "resources": {
+        "memory": "128MB",
+        "cpu": "10%",
+        "timeout": 60
+      }
+    }
+  ],
+  "collaboration_rules": {
+    "parallel_execution": true,
+    "resource_sharing": true,
+    "task_delegation": true,
+    "result_aggregation": true,
+    "load_balancing": true,
+    "fault_tolerance": true,
+    "max_concurrent_tasks": 5,
+    "task_timeout": 600
+  },
+  "communication_protocols": {
+    "message_format": "json",
+    "compression": true,
+    "encryption": false,
+    "retry_attempts": 3,
+    "heartbeat_interval": 30
+  },
+  "task_templates": [
+    {
+      "name": "System Security Audit",
+      "description": "Comprehensive security scan and vulnerability assessment",
+      "agents": ["deepscan-agent", "connection-agent"],
+      "collaboration": "sequential",
+      "priority": "high"
+    },
+    {
+      "name": "Data Backup & Sync",
+      "description": "Complete backup and synchronization across all services",
+      "agents": ["backup-agent", "google-agent"],
+      "collaboration": "parallel",
+      "priority": "high"
+    },
+    {
+      "name": "System Health Check",
+      "description": "Monitor system performance and optimize configurations",
+      "agents": ["monitoring-agent", "connection-agent"],
+      "collaboration": "parallel",
+      "priority": "medium"
+    }
+  ]
+}

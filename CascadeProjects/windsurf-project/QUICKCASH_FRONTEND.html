@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QuickCash System - AI Service Arbitrage</title>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; }
+        .dark { background: #0f172a; color: #e2e8f0; }
+        .dark .bg-white { background: #1e293b; }
+        .dark .bg-gray-50 { background: #334155; }
+        .dark .text-gray-900 { color: #f1f5f9; }
+        .dark .text-gray-600 { color: #cbd5e1; }
+        .dark .border-gray-200 { border-color: #475569; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { BarChart3, Moon, Sun, Zap, CheckCircle, Terminal, Rocket, Download, Activity, DollarSign, Hash, Cpu, Mail, Users, Briefcase, CreditCard, Settings } = lucide;
+
+        const PRICE_INPUT_PER_M = 3.0;
+        const PRICE_OUTPUT_PER_M = 15.0;
+
+        const calcCost = (inp, out) => (inp / 1_000_000) * PRICE_INPUT_PER_M + (out / 1_000_000) * PRICE_OUTPUT_PER_M;
+
+        const QuickCashSystem = () => {
+            const [darkMode, setDarkMode] = useState(true);
+            const [activeTab, setActiveTab] = useState('dashboard');
+            const [apiKey, setApiKey] = useState(localStorage.getItem('quickcash_api_key') || '');
+            const [backendUrl, setBackendUrl] = useState('http://localhost:3001');
+            const [toolOutput, setToolOutput] = useState([]);
+            const [runningTools, setRunningTools] = useState(new Set());
+
+            const quickCashTools = [
+                {
+                    id: 1, name: 'AI Service Arbitrage', category: 'Freelancing',
+                    timeToFirstDollar: '24-48h', weeklyPotential: '$200-800', effort: 'Mittel',
+                    description: 'Verkaufe AI-Services (Logos, Content, Design) auf Fiverr mit 500%+ Markup',
+                    platforms: ['Fiverr', 'Upwork', 'Freelancer'],
+                    fields: [
+                        { name: 'service', label: 'Service', type: 'select', options: ['Logo Design', 'Content Writing', 'Social Media Posts', 'Business Names', 'Presentations'] },
+                        { name: 'price', label: 'Dein Preis ($)', type: 'number', placeholder: '50' },
+                        { name: 'turnaround', label: 'Lieferzeit (Stunden)', type: 'number', placeholder: '24' }
+                    ]
+                },
+                {
+                    id: 2, name: 'Local Lead Generator', category: 'Lead Generation',
+                    timeToFirstDollar: '3-7 Tage', weeklyPotential: '$300-1000', effort: 'Hoch',
+                    description: 'Generiere Leads für lokale Businesses und verkaufe für $10-50/Lead',
+                    platforms: ['Apollo.io', 'Clearbit', 'Direkt'],
+                    fields: [
+                        { name: 'industry', label: 'Industrie', type: 'select', options: ['Immobilien', 'Versicherungen', 'Handwerker', 'Zahnärzte', 'Anwälte'] },
+                        { name: 'location', label: 'Stadt/Region', type: 'text', placeholder: 'München' },
+                        { name: 'leadPrice', label: 'Preis pro Lead ($)', type: 'number', placeholder: '20' }
+                    ]
+                },
+                {
+                    id: 3, name: 'Upwork Gig Automation', category: 'Freelancing',
+                    timeToFirstDollar: '2-5 Tage', weeklyPotential: '$400-1200', effort: 'Hoch',
+                    description: 'Automatisiere Upwork Gigs mit AI-generierten Inhalten',
+                    platforms: ['Upwork'],
+                    fields: [
+                        { name: 'gigType', label: 'Gig Typ', type: 'select', options: ['Content Writing', 'Graphic Design', 'Video Editing', 'Translation'] },
+                        { name: 'hourlyRate', label: 'Stundensatz ($)', type: 'number', placeholder: '25' },
+                        { name: 'deliverables', label: 'Lieferumfang', type: 'text', placeholder: '1000 words, 2 revisions' }
+                    ]
+                }
+            ];
+
+            const runTool = async (toolId, config) => {
+                setRunningTools(prev => new Set(prev).add(toolId));
+                
+                try {
+                    const response = await fetch(`${backendUrl}/api/quickcash/${toolId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey
+                        },
+                        body: JSON.stringify(config)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const result = await response.json();
+                    
+                    setToolOutput(prev => [...prev, {
+                        toolId,
+                        timestamp: new Date().toISOString(),
+                        result: result.output || result,
+                        stats: result.stats || { calls: 1, inputTokens: 1000, outputTokens: 500, cost: 0.02 }
+                    }]);
+
+                } catch (error) {
+                    console.error('Tool execution error:', error);
+                    setToolOutput(prev => [...prev, {
+                        toolId,
+                        timestamp: new Date().toISOString(),
+                        error: error.message,
+                        stats: { calls: 1, inputTokens: 100, outputTokens: 50, cost: 0.001 }
+                    }]);
+                } finally {
+                    setRunningTools(prev => {
+                        const newSet = new Set(prev);
+                        newSet.delete(toolId);
+                        return newSet;
+                    });
+                }
+            };
+
+            const renderDashboard = () => (
+                <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {quickCashTools.map(tool => (
+                            <div key={tool.id} className={`p-6 rounded-xl border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold">{tool.name}</h3>
+                                    <span className={`px-2 py-1 rounded text-xs font-semibold ${darkMode ? 'bg-purple-900 text-purple-200' : 'bg-purple-100 text-purple-800'}`}>
+                                        {tool.category}
+                                    </span>
+                                </div>
+                                
+                                <p className={`text-sm mb-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    {tool.description}
+                                </p>
+                                
+                                <div className="space-y-2 mb-4">
+                                    <div className="flex justify-between text-sm">
+                                        <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Zeit bis erste €:</span>
+                                        <span className="font-semibold text-green-500">{tool.timeToFirstDollar}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Wöchentliches Potenzial:</span>
+                                        <span className="font-semibold text-blue-500">{tool.weeklyPotential}</span>
+                                    </div>
+                                    <div className="flex justify-between text-sm">
+                                        <span className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Aufwand:</span>
+                                        <span className="font-semibold">{tool.effort}</span>
+                                    </div>
+                                </div>
+                                
+                                <div className="flex flex-wrap gap-1 mb-4">
+                                    {tool.platforms.map(platform => (
+                                        <span key={platform} className={`px-2 py-1 rounded text-xs ${darkMode ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-700'}`}>
+                                            {platform}
+                                        </span>
+                                    ))}
+                                </div>
+                                
+                                <button
+                                    onClick={() => setActiveTab(`tool-${tool.id}`)}
+                                    disabled={runningTools.has(tool.id)}
+                                    className={`w-full py-2 px-4 rounded-lg font-semibold transition-colors ${
+                                        runningTools.has(tool.id)
+                                            ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                            : 'bg-blue-500 hover:bg-blue-600 text-white'
+                                    }`}
+                                >
+                                    {runningTools.has(tool.id) ? 'Läuft...' : 'Starten'}
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+
+            const renderToolInterface = (toolId) => {
+                const tool = quickCashTools.find(t => t.id === toolId);
+                if (!tool) return null;
+
+                const [config, setConfig] = useState({});
+                const [isRunning, setIsRunning] = useState(false);
+
+                const handleExecute = () => {
+                    setIsRunning(true);
+                    runTool(toolId, config);
+                };
+
+                return (
+                    <div className="space-y-6">
+                        <button
+                            onClick={() => setActiveTab('dashboard')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-gray-100 hover:bg-gray-200'}`}
+                        >
+                            ← Zurück zum Dashboard
+                        </button>
+
+                        <div className={`p-6 rounded-xl border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                            <h2 className="text-2xl font-bold mb-4">{tool.name}</h2>
+                            <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{tool.description}</p>
+
+                            <div className="space-y-4 mb-6">
+                                {tool.fields.map(field => (
+                                    <div key={field.name}>
+                                        <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                            {field.label}
+                                        </label>
+                                        {field.type === 'select' ? (
+                                            <select
+                                                value={config[field.name] || ''}
+                                                onChange={(e) => setConfig(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                                className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300'}`}
+                                            >
+                                                <option value="">Wählen...</option>
+                                                {field.options.map(option => (
+                                                    <option key={option} value={option}>{option}</option>
+                                                ))}
+                                            </select>
+                                        ) : (
+                                            <input
+                                                type={field.type}
+                                                placeholder={field.placeholder}
+                                                value={config[field.name] || ''}
+                                                onChange={(e) => setConfig(prev => ({ ...prev, [field.name]: e.target.value }))}
+                                                className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300'}`}
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            <button
+                                onClick={handleExecute}
+                                disabled={isRunning || !apiKey}
+                                className={`w-full py-3 px-6 rounded-lg font-semibold transition-colors ${
+                                    isRunning || !apiKey
+                                        ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                        : 'bg-green-500 hover:bg-green-600 text-white'
+                                }`}
+                            >
+                                {isRunning ? 'Wird ausgeführt...' : 'Ausführen'}
+                            </button>
+
+                            {!apiKey && (
+                                <p className="mt-4 text-sm text-red-500">
+                                    Bitte API Key konfigurieren
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                );
+            };
+
+            const renderOutput = () => (
+                <div className="space-y-4">
+                    <h2 className="text-xl font-bold">Tool-Ausgaben</h2>
+                    {toolOutput.length === 0 ? (
+                        <p className={darkMode ? 'text-gray-400' : 'text-gray-500'}>Noch keine Ausgaben</p>
+                    ) : (
+                        toolOutput.map((output, index) => (
+                            <div key={index} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="font-semibold">Tool {output.toolId}</span>
+                                    <span className="text-sm text-gray-500">
+                                        {new Date(output.timestamp).toLocaleString()}
+                                    </span>
+                                </div>
+                                {output.error ? (
+                                    <div className="text-red-500 text-sm">{output.error}</div>
+                                ) : (
+                                    <div className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                        {typeof output.result === 'string' ? output.result : JSON.stringify(output.result, null, 2)}
+                                    </div>
+                                )}
+                                {output.stats && (
+                                    <div className="mt-2 text-xs text-gray-500">
+                                        Kosten: ${output.stats.cost.toFixed(4)} | Tokens: {output.stats.inputTokens + output.stats.outputTokens}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
+                </div>
+            );
+
+            const renderSettings = () => (
+                <div className="space-y-6">
+                    <h2 className="text-xl font-bold">Einstellungen</h2>
+                    
+                    <div className={`p-6 rounded-xl border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                        <h3 className="text-lg font-semibold mb-4">API Konfiguration</h3>
+                        
+                        <div className="space-y-4">
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    Backend URL
+                                </label>
+                                <input
+                                    type="text"
+                                    value={backendUrl}
+                                    onChange={(e) => {
+                                        setBackendUrl(e.target.value);
+                                        localStorage.setItem('quickcash_backend_url', e.target.value);
+                                    }}
+                                    className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300'}`}
+                                />
+                            </div>
+                            
+                            <div>
+                                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                    API Key
+                                </label>
+                                <input
+                                    type="password"
+                                    value={apiKey}
+                                    onChange={(e) => {
+                                        setApiKey(e.target.value);
+                                        localStorage.setItem('quickcash_api_key', e.target.value);
+                                    }}
+                                    className={`w-full p-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-gray-300' : 'bg-white border-gray-300'}`}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+
+            const renderContent = () => {
+                if (activeTab.startsWith('tool-')) {
+                    const toolId = parseInt(activeTab.split('-')[1]);
+                    return renderToolInterface(toolId);
+                }
+                
+                switch (activeTab) {
+                    case 'dashboard': return renderDashboard();
+                    case 'output': return renderOutput();
+                    case 'settings': return renderSettings();
+                    default: return renderDashboard();
+                }
+            };
+
+            return (
+                <div className={`min-h-screen ${darkMode ? 'dark bg-gray-900' : 'bg-gray-50'}`}>
+                    <div className="max-w-7xl mx-auto p-6">
+                        <header className="flex justify-between items-center mb-8">
+                            <div>
+                                <h1 className="text-3xl font-bold flex items-center gap-3">
+                                    <DollarSign className="text-green-500" />
+                                    QuickCash System
+                                </h1>
+                                <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                    AI Service Arbitrage & Lead Generation
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setDarkMode(!darkMode)}
+                                className={`p-2 rounded-lg ${darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'}`}
+                            >
+                                {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+                            </button>
+                        </header>
+
+                        <nav className="flex space-x-4 mb-8">
+                            {[
+                                { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
+                                { id: 'output', label: 'Ausgaben', icon: Terminal },
+                                { id: 'settings', label: 'Einstellungen', icon: Settings }
+                            ].map(tab => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id)}
+                                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                                        activeTab === tab.id
+                                            ? 'bg-blue-500 text-white'
+                                            : darkMode ? 'bg-gray-800 hover:bg-gray-700' : 'bg-white hover:bg-gray-100'
+                                    }`}
+                                >
+                                    <tab.icon size={16} />
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </nav>
+
+                        <main>
+                            {renderContent()}
+                        </main>
+                    </div>
+                </div>
+            );
+        };
+
+        ReactDOM.render(<QuickCashSystem />, document.getElementById('root'));
+    </script>
+</body>
+</html>
