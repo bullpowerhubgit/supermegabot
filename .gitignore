@@ -11,3 +11,14 @@ logs/
 nohup.out
 data/
 rudibot-army/shared/army_state.json
+
+# GCP / Google Cloud — niemals einchecken
+RudiBot-Secure-API/
+**/gcp-config.json
+**/service-account*.json
+**/serviceaccount*.json
+**/*credentials*.json
+*-key.json
+gcloud/
+.config/gcloud/
+application_default_credentials.json
