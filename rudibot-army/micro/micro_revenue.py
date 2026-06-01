@@ -8,7 +8,13 @@ Usage:
 import sys, os
 import pathlib, time, json, datetime, urllib.request, urllib.error
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent.parent / 'modules'))
 from bus import report, notify_telegram, get_env
+try:
+    from stripe_client import write_to_supabase as _stripe_supabase_write
+    _SUPABASE_OK = True
+except ImportError:
+    _SUPABASE_OK = False
 
 ID = "micro_revenue"
 INTERVAL = 3600  # Stündlich
@@ -100,6 +106,10 @@ def run_once() -> bool:
         print(f"[{ID}]    Bestellungen: {orders}", flush=True)
         report(ID, "ok", f"Umsatz heute: {cur} {rev:.2f} ({orders} Orders)",
                {"revenue": rev, "orders": orders, "currency": cur, "date": str(today)})
+        if _SUPABASE_OK:
+            ok_db = _stripe_supabase_write({"source": "shopify", "today_revenue": rev,
+                                            "order_count": orders, "currency": cur})
+            print(f"[{ID}] Supabase: {'✅ gespeichert' if ok_db else '⚠️ nicht konfiguriert'}", flush=True)
         return True
     else:
         print(f"[{ID}] ❌ Shopify API nicht erreichbar", flush=True)
@@ -136,6 +146,9 @@ def run():
 
             report(ID, "ok", f"Umsatz heute: {cur} {rev:.2f} ({orders} Orders)",
                    {"revenue": rev, "orders": orders, "currency": cur, "date": str(today)})
+            if _SUPABASE_OK:
+                _stripe_supabase_write({"source": "shopify", "today_revenue": rev,
+                                        "order_count": orders, "currency": cur})
         else:
             print(f"[{ID}] ⚠️  Shopify API nicht erreichbar — retry in {INTERVAL}s", flush=True)
             report(ID, "warning", "Shopify API nicht erreichbar", {})
