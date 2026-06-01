@@ -88,7 +88,7 @@ class GuardianConfig:
     def _load_from_env() -> Optional[str]:
         """Lade Secret aus .env Dateien."""
         env_paths = [
-            '/Users/rudolfsarkany/rudibot-eternal/.env',
+            str(Path(__file__).parent / '.env'),
             './.env',
             '../.env',
             '../../.env',

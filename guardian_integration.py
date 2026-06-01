@@ -5,8 +5,27 @@
 
 import sys
 import os
-sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+from pathlib import Path
 
+# Load .env for GUARDIAN_API_SECRET
+def _load_env():
+    for p in [Path(__file__).parent / '.env', Path('.env')]:
+        try:
+            with open(p) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#') or '=' not in line:
+                        continue
+                    key, _, val = line.partition('=')
+                    val = val.split('#')[0].strip()
+                    if key.strip() and key.strip() not in os.environ:
+                        os.environ[key.strip()] = val
+            break
+        except FileNotFoundError:
+            pass
+
+_load_env()
+sys.path.insert(0, str(Path(__file__).parent))
 from guardian_client import GuardianClient
 
 class SuperMegaBotGuardian:
