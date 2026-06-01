@@ -1338,8 +1338,8 @@ async def handle_backup_status(req):
     backups = []
     backup_paths = [
         BASE_DIR / "data",
-        Path("/Users/rudolfsarkany/windsurf-telegram-bot"),
-        Path("/Users/rudolfsarkany/CreatorHub Anonym & Profitabel"),
+        Path(os.getenv("TELEGRAM_BOT_DIR", str(Path.home() / "windsurf-telegram-bot"))),
+        Path(os.getenv("CREATORHUB_DIR", str(Path.home() / "creatorhub"))),
     ]
     for p in backup_paths:
         if p.exists():
