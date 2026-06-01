@@ -22,3 +22,7 @@ RudiBot-Secure-API/
 gcloud/
 .config/gcloud/
 application_default_credentials.json
+
+node_modules/
+/generated/
+prisma.config.ts
