@@ -1610,6 +1610,80 @@ async def handle_stripe_webhook(req):
 
 # ── Google Drive ──────────────────────────────────────────────────────────────
 
+# ── Google OAuth2 ─────────────────────────────────────────────────────────────
+
+async def handle_google_auth(req):
+    """Redirect to Google OAuth2 login."""
+    try:
+        from modules.google_oauth import get_auth_url
+        url = get_auth_url()
+        raise web.HTTPFound(url)
+    except web.HTTPFound:
+        raise
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_google_callback(req):
+    """Handle OAuth2 callback, exchange code for token."""
+    code  = req.rel_url.query.get("code", "")
+    error = req.rel_url.query.get("error", "")
+    if error:
+        return web.Response(
+            content_type="text/html",
+            text=f"<h2>❌ Google Auth Fehler: {error}</h2><a href='/'>Dashboard</a>"
+        )
+    if not code:
+        return web.Response(
+            content_type="text/html",
+            text="<h2>❌ Kein Code erhalten</h2><a href='/'>Dashboard</a>"
+        )
+    try:
+        from modules.google_oauth import exchange_code
+        result = await exchange_code(code)
+        if result.get("ok"):
+            html = """
+            <html><head><title>Google verbunden</title>
+            <style>body{font-family:Inter,sans-serif;background:#040508;color:#e2e8f0;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+            .box{text-align:center;padding:40px;background:#0d1117;border:1px solid #1e293b;border-radius:12px}
+            h2{color:#6ee7b7}a{color:#4f8ef7;text-decoration:none}</style></head>
+            <body><div class="box">
+            <h2>✅ Google Drive verbunden!</h2>
+            <p>Token gespeichert — Drive Backup &amp; API aktiv.</p>
+            <a href="/">← Zurück zum Dashboard</a>
+            </div></body></html>"""
+        else:
+            html = f"<h2>❌ Token-Fehler: {result.get('error')}</h2><a href='/'>Dashboard</a>"
+        return web.Response(content_type="text/html", text=html)
+    except Exception as e:
+        return web.Response(content_type="text/html", text=f"<h2>❌ {e}</h2><a href='/'>Dashboard</a>")
+
+
+async def handle_google_status(req):
+    try:
+        from modules.google_oauth import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_google_refresh(req):
+    try:
+        from modules.google_oauth import refresh_token
+        return web.json_response(await refresh_token())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_google_revoke(req):
+    try:
+        from modules.google_oauth import revoke
+        ok = await revoke()
+        return web.json_response({"ok": ok})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_drive_status(req):
     try:
         from modules.google_drive_automation import get_stats
@@ -1767,6 +1841,13 @@ async def create_app():
     app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+
+    # ── Google OAuth2 ─────────────────────────────────────────────────────────
+    app.router.add_get("/api/google/auth",            handle_google_auth)
+    app.router.add_get("/api/google/callback",        handle_google_callback)
+    app.router.add_get("/api/google/status",          handle_google_status)
+    app.router.add_post("/api/google/refresh",        handle_google_refresh)
+    app.router.add_post("/api/google/revoke",         handle_google_revoke)
 
     # ── Google Drive ──────────────────────────────────────────────────────────
     app.router.add_get("/api/drive/status",           handle_drive_status)
