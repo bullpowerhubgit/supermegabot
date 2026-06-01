@@ -1,0 +1,154 @@
+{
+  "enabled": true,
+  "connections": {
+    "facebook": {
+      "enabled": true,
+      "type": "api",
+      "endpoint": "https://graph.facebook.com/v18.0",
+      "timeout": 30000,
+      "retryAttempts": 5,
+      "retryDelay": 5000,
+      "healthCheckInterval": 60000,
+      "failover": {
+        "enabled": true,
+        "alternativeEndpoints": [
+          "https://graph.facebook.com/v17.0",
+          "https://api.facebook.com"
+        ]
+      },
+      "pool": {
+        "minConnections": 2,
+        "maxConnections": 10,
+        "idleTimeout": 300000
+      }
+    },
+    "telegram": {
+      "enabled": true,
+      "type": "api",
+      "endpoint": "https://api.telegram.org",
+      "timeout": 30000,
+      "retryAttempts": 5,
+      "retryDelay": 5000,
+      "healthCheckInterval": 60000,
+      "failover": {
+        "enabled": true,
+        "alternativeEndpoints": [
+          "https://api.telegram.org/bot",
+          "https://t.me/api"
+        ]
+      },
+      "pool": {
+        "minConnections": 2,
+        "maxConnections": 8,
+        "idleTimeout": 300000
+      }
+    },
+    "gcp": {
+      "enabled": true,
+      "type": "cloud",
+      "endpoint": "https://storage.googleapis.com",
+      "timeout": 45000,
+      "retryAttempts": 3,
+      "retryDelay": 10000,
+      "healthCheckInterval": 120000,
+      "failover": {
+        "enabled": true,
+        "alternativeEndpoints": [
+          "https://www.googleapis.com",
+          "https://googleapis.com"
+        ]
+      },
+      "pool": {
+        "minConnections": 1,
+        "maxConnections": 5,
+        "idleTimeout": 600000
+      }
+    },
+    "aws": {
+      "enabled": true,
+      "type": "cloud",
+      "endpoint": "https://s3.amazonaws.com",
+      "timeout": 45000,
+      "retryAttempts": 3,
+      "retryDelay": 10000,
+      "healthCheckInterval": 120000,
+      "failover": {
+        "enabled": true,
+        "alternativeEndpoints": [
+          "https://s3.us-east-1.amazonaws.com",
+          "https://s3.us-west-1.amazonaws.com"
+        ]
+      },
+      "pool": {
+        "minConnections": 1,
+        "maxConnections": 5,
+        "idleTimeout": 600000
+      }
+    },
+    "azure": {
+      "enabled": true,
+      "type": "cloud",
+      "endpoint": "https://blob.core.windows.net",
+      "timeout": 45000,
+      "retryAttempts": 3,
+      "retryDelay": 10000,
+      "healthCheckInterval": 120000,
+      "failover": {
+        "enabled": true,
+        "alternativeEndpoints": [
+          "https://blob.core.windows.net",
+          "https://azure.microsoft.com"
+        ]
+      },
+      "pool": {
+        "minConnections": 1,
+        "maxConnections": 4,
+        "idleTimeout": 600000
+      }
+    },
+    "local_services": {
+      "enabled": true,
+      "type": "local",
+      "endpoints": [
+        "http://localhost:3001",
+        "http://localhost:3002",
+        "http://localhost:8080"
+      ],
+      "timeout": 10000,
+      "retryAttempts": 3,
+      "retryDelay": 2000,
+      "healthCheckInterval": 30000,
+      "pool": {
+        "minConnections": 1,
+        "maxConnections": 3,
+        "idleTimeout": 180000
+      }
+    }
+  },
+  "global": {
+    "maxConcurrentReconnections": 3,
+    "reconnectionBackoffMultiplier": 1.5,
+    "maxReconnectionDelay": 60000,
+    "healthCheckTimeout": 10000,
+    "connectionTimeout": 30000,
+    "keepAlive": true,
+    "keepAliveTimeout": 60000
+  },
+  "monitoring": {
+    "enabled": true,
+    "metricsInterval": 30000,
+    "alertThresholds": {
+      "failureRate": 0.1,
+      "responseTime": 5000,
+      "connectionDrops": 5
+    },
+    "notifications": {
+      "enabled": true,
+      "channels": [
+        "console",
+        "log",
+        "telegram"
+      ]
+    }
+  }
+}

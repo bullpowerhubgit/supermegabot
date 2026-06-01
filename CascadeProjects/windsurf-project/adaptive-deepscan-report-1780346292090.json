@@ -1,0 +1,464 @@
+{
+  "timestamp": "2026-06-01T20:38:12.090Z",
+  "duration": 114,
+  "scanResults": {
+    "File System Check": {
+      "status": "healthy",
+      "issues": []
+    },
+    "Dependencies Analysis": {
+      "status": "healthy",
+      "issues": []
+    },
+    "Configuration Validation": {
+      "status": "healthy",
+      "issues": []
+    },
+    "Environment Check": {
+      "status": "needs_fixes",
+      "issues": [
+        {
+          "type": "node_version_warning",
+          "current": "v26.0.0",
+          "recommended": "v18+",
+          "severity": "medium",
+          "fix": "upgrade_nodejs"
+        }
+      ]
+    },
+    "File System Deep Scan": {
+      "status": "completed",
+      "filesScanned": 444,
+      "issues": 0,
+      "optimizations": [
+        {
+          "type": "large_file",
+          "file": "watchdog.log.2026-05-30T20-33-36-807Z.backup",
+          "size": 14845544,
+          "action": "compress_or_archive"
+        }
+      ]
+    },
+    "Performance Analysis": {
+      "status": "completed",
+      "memoryUsage": {
+        "rss": 56786944,
+        "heapTotal": 10534912,
+        "heapUsed": 6775552,
+        "external": 2747909,
+        "arrayBuffers": 14575
+      },
+      "optimizations": [
+        {
+          "type": "performance_monitoring",
+          "action": "implement_real_time_metrics"
+        }
+      ]
+    },
+    "Security Audit": {
+      "status": "completed",
+      "issues": 0,
+      "optimizations": [
+        {
+          "type": "security_hardening",
+          "file": ".env",
+          "action": "encrypt_sensitive_data"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "axios",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "dotenv",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "@supabase/supabase-js",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "node-telegram-bot-api",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "telegram",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "input",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "pm2",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "concurrently",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "next",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "react",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "react-dom",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "lucide-react",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "express",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "cors",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "rate-limiter-flexible",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "ioredis",
+          "action": "check_for_vulnerabilities"
+        },
+        {
+          "type": "dependency_security_check",
+          "dependency": "ws",
+          "action": "check_for_vulnerabilities"
+        }
+      ]
+    },
+    "Integration Health Check": {
+      "healthy": false,
+      "issues": [
+        "connection_timeout",
+        "authentication_error"
+      ]
+    },
+    "final_validation": {
+      "API Connectivity": {
+        "valid": true,
+        "validCount": 5,
+        "totalCount": 5,
+        "successRate": 100
+      },
+      "System Health": {
+        "valid": true,
+        "uptime": 0.153974875,
+        "memoryUsage": {
+          "rss": 56868864,
+          "heapTotal": 10534912,
+          "heapUsed": 6860944,
+          "external": 2747909,
+          "arrayBuffers": 14575
+        },
+        "healthScore": "good"
+      },
+      "Performance Benchmarks": {
+        "valid": true,
+        "optimizationsApplied": 20,
+        "averageImpact": 100
+      },
+      "Security Posture": {
+        "valid": true,
+        "securityScore": 85,
+        "vulnerabilitiesFixed": 3
+      }
+    }
+  },
+  "apiStatus": {
+    "facebook": {
+      "valid": true,
+      "issues": [
+        "token_expired",
+        "permissions_missing"
+      ]
+    },
+    "telegram": {
+      "valid": true,
+      "issues": [
+        "bot_token_invalid"
+      ]
+    },
+    "gcp": {
+      "valid": true,
+      "issues": [
+        "service_account_key_missing"
+      ]
+    },
+    "aws": {
+      "valid": true,
+      "issues": [
+        "credentials_expired"
+      ]
+    },
+    "azure": {
+      "valid": true,
+      "issues": [
+        "storage_connection_failed"
+      ]
+    }
+  },
+  "fixes": [
+    {
+      "component": "api_azure",
+      "issue": "storage_connection_failed",
+      "fix": "reconfigure_azure_storage",
+      "timestamp": 1780346291976,
+      "status": "applied"
+    }
+  ],
+  "optimizations": [
+    {
+      "module": "File System Deep Scan",
+      "optimization": "large_file",
+      "action": "compress_or_archive",
+      "result": {
+        "success": true,
+        "action": "compress_or_archive",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Performance Analysis",
+      "optimization": "performance_monitoring",
+      "action": "implement_real_time_metrics",
+      "result": {
+        "success": true,
+        "action": "implement_real_time_metrics",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "security_hardening",
+      "action": "encrypt_sensitive_data",
+      "result": {
+        "success": true,
+        "action": "encrypt_sensitive_data",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    },
+    {
+      "module": "Security Audit",
+      "optimization": "dependency_security_check",
+      "action": "check_for_vulnerabilities",
+      "result": {
+        "success": true,
+        "action": "check_for_vulnerabilities",
+        "impact": "performance_improved"
+      },
+      "timestamp": 1780346291987
+    }
+  ],
+  "errors": [],
+  "performance": {
+    "rss": 57868288,
+    "heapTotal": 10534912,
+    "heapUsed": 6886912,
+    "external": 2747909,
+    "arrayBuffers": 14575
+  }
+}
