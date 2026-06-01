@@ -23,11 +23,22 @@ _UPLOAD = "https://www.googleapis.com/upload/drive/v3"
 _DATA_DIR = Path(__file__).parent.parent / "data"
 
 
-def _auth_headers() -> Dict[str, str]:
+async def _get_token() -> str:
+    try:
+        from modules.google_oauth import ensure_valid_token
+        token = await ensure_valid_token()
+        if token:
+            return token
+    except Exception:
+        pass
     token = os.getenv("GOOGLE_ACCESS_TOKEN", "")
     if not token:
-        raise ValueError("GOOGLE_ACCESS_TOKEN nicht gesetzt")
-    return {"Authorization": f"Bearer {token}"}
+        raise ValueError("GOOGLE_ACCESS_TOKEN nicht gesetzt — bitte /api/google/auth aufrufen")
+    return token
+
+
+async def _auth_headers() -> Dict[str, str]:
+    return {"Authorization": f"Bearer {await _get_token()}"}
 
 
 def _session(total: int = 30) -> aiohttp.ClientSession:
@@ -44,7 +55,7 @@ async def ping() -> tuple[bool, str]:
         async with _session() as s:
             async with s.get(
                 f"{_BASE}/about",
-                headers=_auth_headers(),
+                headers=await _auth_headers(),
                 params={"fields": "user,storageQuota"}
             ) as r:
                 if r.status == 200:
@@ -79,7 +90,7 @@ async def list_files(
 
     try:
         async with _session() as s:
-            async with s.get(f"{_BASE}/files", headers=_auth_headers(), params=params) as r:
+            async with s.get(f"{_BASE}/files", headers=await _auth_headers(), params=params) as r:
                 if r.status != 200:
                     return []
                 d = await r.json()
@@ -138,7 +149,7 @@ async def upload_file(
         async with _session(total=120) as s:
             async with s.post(
                 f"{_UPLOAD}/files?uploadType=multipart&fields=id,name,webViewLink",
-                headers=_auth_headers(),
+                headers=await _auth_headers(),
                 data=data,
             ) as r:
                 if r.status in (200, 201):
@@ -166,7 +177,7 @@ async def create_folder(name: str, parent_id: str = "") -> Optional[str]:
         async with _session() as s:
             async with s.post(
                 f"{_BASE}/files",
-                headers={**_auth_headers(), "Content-Type": "application/json"},
+                headers={**(await _auth_headers()), "Content-Type": "application/json"},
                 json=metadata,
             ) as r:
                 if r.status in (200, 201):
@@ -207,7 +218,7 @@ async def get_storage_info() -> Dict:
         async with _session() as s:
             async with s.get(
                 f"{_BASE}/about",
-                headers=_auth_headers(),
+                headers=await _auth_headers(),
                 params={"fields": "user,storageQuota"}
             ) as r:
                 if r.status != 200:

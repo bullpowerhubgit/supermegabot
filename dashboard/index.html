@@ -4056,13 +4056,30 @@ async function loadStripe() {
 async function loadDrive() {
   document.getElementById('drive-status').innerHTML = '<div class="spinner"></div>';
   try {
+    // First check OAuth status
+    const auth = await api('GET', '/api/google/status').catch(() => ({ok: false}));
+    if (!auth.ok || !auth.logged_in) {
+      document.getElementById('drive-status').innerHTML = `
+        <div class="card" style="text-align:center;padding:40px 20px">
+          <div style="font-size:48px;margin-bottom:16px">☁️</div>
+          <div class="card-title">Google Drive nicht verbunden</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:24px">
+            Einmalig mit Google-Konto einloggen um Drive-Backup &amp; API zu aktivieren
+          </div>
+          <a href="/api/google/auth" class="btn btn-primary" style="text-decoration:none;padding:10px 24px;font-size:14px">
+            🔐 Mit Google verbinden
+          </a>
+          ${auth.auth_url ? '' : '<div class="error-msg" style="margin-top:12px">GOOGLE_CLIENT_ID fehlt in .env</div>'}
+        </div>`;
+      return;
+    }
     const d = await api('GET', '/api/drive/status');
     if (!d.ok) {
       document.getElementById('drive-status').innerHTML = `
         <div class="card">
           <div class="card-title">☁️ Google Drive</div>
           <div class="error-msg" style="margin-bottom:12px">⚠️ ${d.error}</div>
-          <div style="font-size:12px;color:var(--text2)">Setze <code>GOOGLE_ACCESS_TOKEN</code> in der .env Datei</div>
+          <button class="btn btn-primary" onclick="window.location='/api/google/auth'">🔄 Neu einloggen</button>
         </div>`;
       return;
     }
