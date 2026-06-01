@@ -1236,7 +1236,7 @@ async def handle_shopify_status(req):
         return web.json_response({"ok": False, "error": "SHOPIFY_STORE_URL / SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
-            url = f"{store}/admin/api/2024-01/shop.json"
+            url = f"{store}/admin/api/{os.getenv('SHOPIFY_API_VERSION', '2024-10')}/shop.json"
             headers = {"X-Shopify-Access-Token": token}
             async with s.get(url, headers=headers) as r:
                 if r.status == 200:
