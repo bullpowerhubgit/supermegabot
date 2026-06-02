@@ -43,7 +43,7 @@ def _session(total: int = 30) -> aiohttp.ClientSession:
 
 async def _tg(msg: str):
     import aiohttp as _aio
-    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    token = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1") or os.getenv("TELEGRAM_BOT_TOKEN_2") or ""
     chat  = os.getenv("TELEGRAM_CHAT_ID", "")
     if not token or not chat:
         return
