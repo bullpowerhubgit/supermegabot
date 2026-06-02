@@ -30,20 +30,12 @@ LOGS_DIR = BASE_DIR / "logs"
 DATA_DIR.mkdir(exist_ok=True)
 LOGS_DIR.mkdir(exist_ok=True)
 
-# Guardian Integration (portable: project-local first, then external rudibot-eternal,
-# overridable via $ETERNAL_BOT_DIR)
+# Guardian Integration
 GUARDIAN_AVAILABLE = False
-_GUARDIAN_CANDIDATES = [
-    BASE_DIR,
-    Path(os.environ.get("ETERNAL_BOT_DIR", "")) if os.environ.get("ETERNAL_BOT_DIR") else None,
-    Path.home() / "rudibot-eternal",
-]
-for _cand in _GUARDIAN_CANDIDATES:
-    if _cand and (_cand / "guardian_integration.py").exists():
-        sys.path.insert(0, str(_cand))
-        break
+_ETERNAL_DIR = os.getenv("ETERNAL_BOT_DIR", str(Path.home() / "rudibot-eternal"))
 try:
-    from guardian_integration import guardian  # noqa: F401
+    sys.path.insert(0, _ETERNAL_DIR)
+    from guardian_integration import guardian
     GUARDIAN_AVAILABLE = True
 except ImportError:
     pass
@@ -184,11 +176,10 @@ class MemorySystem:
 
 class OllamaClient:
     MODELS = {
-        "fast": "gemma4:latest",
-        "smart": "gemma4:latest",
-        "gemma4": "gemma4:latest",
-        "code": "codellama:latest",
-        "analysis": "mistral:latest",
+        "fast":     os.getenv("OLLAMA_FAST_MODEL",     "llama3.2:latest"),
+        "smart":    os.getenv("OLLAMA_SMART_MODEL",    "gemma2:latest"),
+        "code":     os.getenv("OLLAMA_CODE_MODEL",     "codellama:latest"),
+        "analysis": os.getenv("OLLAMA_ANALYSIS_MODEL", "mistral:latest"),
     }
 
     def __init__(self):
@@ -320,7 +311,7 @@ Provide a SHORT repair solution (1-3 steps, Python code if needed):"""
         "pip":    [sys.executable, "-m", "pip", "install"],
         "pip3":   [sys.executable, "-m", "pip", "install"],
         "brew":   ["brew", "install"],
-        "npm":    ["npm", "install", "-g"],
+        "npm":    ["npm", "install"],
     }
 
     def _parse_repair_actions(self, solution: str) -> List[List[str]]:
@@ -474,6 +465,10 @@ class CommandRouter:
             "/micro_status": self._cmd_micro,
             "/micro_ping": self._cmd_micro,
             "/army_micro": self._cmd_micro,
+            # ── Control Panel ────────────────────────────────────────────────
+            "/menu": self._cmd_menu,
+            "/steuerung": self._cmd_menu,
+            "/control": self._cmd_menu,
             # Guardian / Eternal
             "/guardian": self._cmd_guardian,
             "/guardian_status": self._cmd_guardian,
@@ -681,30 +676,12 @@ class CommandRouter:
 
     async def _cmd_learner(self, text: str, session_id: str) -> str:
         try:
-            import sys, os
-            sys.path.insert(0, os.path.expanduser("~"))
-            # Tokens laden
-            from pathlib import Path
-            # Portable env file lookup; override with $TELEGRAM_BOT_ENV
-            env_file = Path(os.environ.get(
-                "TELEGRAM_BOT_ENV",
-                str(Path.home() / "telegram-automation-bot" / ".env"),
-            ))
-            if env_file.exists():
-                for line in env_file.read_text(errors="ignore").splitlines():
-                    if "=" in line and not line.strip().startswith("#"):
-                        k, _, v = line.partition("=")
-                        if not os.environ.get(k.strip()):
-                            os.environ[k.strip()] = v.strip()
-            from self_learner_core import SelfLearner
-            if not hasattr(self, "_learner"):
-                self._learner = SelfLearner("supermegabot", telegram_notify=True)
-                self._learner.load_learned_skills()
-            # Befehl extrahieren: "/learner" → "/status", direkter Befehl weiterleiten
+            from self_learner_bridge import get_learner
+            learner = get_learner()
             cmd = text.strip()
             if cmd in ("/learner", "/learner_status"):
                 cmd = "/status"
-            return self._learner.handle_command(cmd)
+            return learner.handle_command(cmd)
         except Exception as e:
             return f"Learner Fehler: {e}"
 
@@ -728,20 +705,26 @@ class CommandRouter:
         except Exception as e:
             return f"Micro Status Fehler: {e}"
 
+    async def _cmd_menu(self, text: str, session_id: str) -> str:
+        return (
+            "🤖 <b>Control Panel</b>\n\n"
+            "Tippe /menu um das interaktive Steuerungsmenü mit Buttons zu öffnen.\n\n"
+            "📊 Status · 🪖 Army · 🔧 Services · 🩺 Repair · 📋 Logs · ⚡ Actions"
+        )
     async def _cmd_guardian(self, text: str, session_id: str) -> str:
         """Guardian/Eternal API Commands"""
         try:
             if not self.bot.guardian:
                 return "⚠️ Guardian API nicht verfügbar. API läuft auf Port 3201?"
-            
+
             cmd = text.strip().lower()
-            
+
             # Health check
             if any(x in cmd for x in ["health", "status", "guardian", "eternal"]):
                 health = self.bot.guardian.health()
                 status_icon = "🟢" if health.get('status') == 'healthy' else "🔴"
                 return f"{status_icon} Guardian Health: {health.get('status', 'unknown')}\n🕐 {health.get('timestamp', 'N/A')[:19]}"
-            
+
             # Services
             if "services" in cmd or "service" in cmd:
                 status = self.bot.guardian.status()
@@ -753,7 +736,7 @@ class CommandRouter:
                     lines.append(f"{icon} {svc['name']} (Port {svc['port']}){crit}")
                 lines.append(f"\nOverall: {status.get('overall_health', 'unknown')}")
                 return "\n".join(lines)
-            
+
             # Agents
             if "agents" in cmd or "agent" in cmd:
                 agents = self.bot.guardian.list_agents()
@@ -764,7 +747,7 @@ class CommandRouter:
                     last = agent.get('last_seen', 'never')[:16] if agent.get('last_seen') else 'never'
                     lines.append(f"• {agent['agent_id'][:25]} ({agent['type']}) - {last}")
                 return "\n".join(lines)
-            
+
             # Brain
             if "brain" in cmd:
                 brain = self.bot.guardian.brain_summary()
@@ -774,7 +757,7 @@ class CommandRouter:
                     f"  Repairs: {brain.get('total_repairs', 0)}\n"
                     f"  Permanently resolved: {brain.get('permanently_resolved', 0)}"
                 )
-            
+
             # Heal service
             if "heal" in cmd:
                 # Extract service name if provided
@@ -788,14 +771,14 @@ class CommandRouter:
                 if result.get('healed'):
                     return f"✅ Service {service_name} wurde geheilt"
                 return f"⚠️ Heilen von {service_name} fehlgeschlagen oder nicht nötig"
-            
+
             # Backup
             if "backup" in cmd:
                 result = self.bot.guardian.create_backup()
                 if result.get('results'):
                     return f"✅ Backup erstellt: {len(result['results'])} Projekte"
                 return f"⚠️ Backup fehlgeschlagen: {result.get('error', 'unknown')}"
-            
+
             # Restore
             if "restore" in cmd:
                 # Extract project name and optional date
@@ -815,7 +798,7 @@ class CommandRouter:
                 if result.get('success'):
                     return f"✅ {project} von {result.get('from', 'backup')} wiederhergestellt"
                 return f"⚠️ Restore fehlgeschlagen: {result.get('error', 'unknown')}"
-            
+
             # List backups
             if "backups" in cmd:
                 backups = self.bot.guardian.list_backups()
@@ -825,7 +808,7 @@ class CommandRouter:
                         lines.append(f"  • {b}")
                     return "\n".join(lines)
                 return "⚠️ Keine Backups gefunden"
-            
+
             # Default: show all info
             return (
                 "🤖 Guardian Commands:\n"
@@ -964,24 +947,17 @@ class MegaOrchestrator:
         self.healer = SelfHealingEngine(self.memory, self.ai)
         self.router = CommandRouter(self)
         self.running = True
-        
+
         # Guardian Integration
         self.guardian = None
         self._init_guardian()
-        
+
         log.info("MegaOrchestrator initialized")
-    
+
     def _init_guardian(self):
-        """Initialize Guardian API client (portable lookup)."""
+        """Initialize Guardian API client"""
         try:
-            for cand in (
-                BASE_DIR,
-                Path(os.environ.get("ETERNAL_BOT_DIR", "")) if os.environ.get("ETERNAL_BOT_DIR") else None,
-                Path.home() / "rudibot-eternal",
-            ):
-                if cand and (cand / "guardian_client.py").exists():
-                    sys.path.insert(0, str(cand))
-                    break
+            sys.path.insert(0, _ETERNAL_DIR)
             from guardian_client import GuardianClient
             self.guardian = GuardianClient()
             log.info("Guardian API client initialized")
@@ -998,14 +974,14 @@ class MegaOrchestrator:
             log.info(f"Ollama OK - Models: {self.ai.available_models}")
         else:
             log.warning("Ollama offline - will retry in background")
-        
+
         # Register with Guardian
         if self.guardian:
             try:
                 self.guardian.register_agent(
                     agent_id="supermegabot-core",
                     agent_type="orchestrator",
-                    endpoint="http://localhost:3200"
+                    endpoint=f"http://localhost:{os.getenv('DASHBOARD_PORT', '8888')}"
                 )
                 self.guardian.notify("🚀 SuperMegaBot Orchestrator gestartet!")
                 log.info("Registered with Guardian API")
@@ -1018,6 +994,23 @@ class MegaOrchestrator:
         asyncio.create_task(self._telegram_polling_loop())
         # Start Guardian monitor
         asyncio.create_task(self._guardian_monitor_loop())
+        # Start automation scheduler
+        try:
+            from core.automation_scheduler import get_scheduler
+            sched = get_scheduler()
+            await sched.start()
+            log.info(f"AutoScheduler gestartet ({len(sched._task_handles)} Tasks)")
+        except Exception as e:
+            log.warning(f"AutoScheduler nicht gestartet: {e}")
+
+        # Start specialized bot-clones
+        try:
+            from core.bot_clones import get_manager
+            clone_mgr = get_manager()
+            await clone_mgr.start()
+            log.info("BotClone-Manager gestartet (6 spezialisierte Clones)")
+        except Exception as e:
+            log.warning(f"BotClone-Manager nicht gestartet: {e}")
 
         log.info("SuperMegaBot is RUNNING")
         await send_telegram("SuperMegaBot gestartet! Tippe /help")
@@ -1037,7 +1030,7 @@ class MegaOrchestrator:
             return result
         except Exception as e:
             log.error(f"Process error: {e}")
-            
+
             # Notify Guardian about error
             if self.guardian:
                 try:
@@ -1045,9 +1038,9 @@ class MegaOrchestrator:
                         f"🔴 SuperMegaBot Fehler: {type(e).__name__}: {str(e)[:150]}",
                         priority="high"
                     )
-                except Exception:
+                except:
                     pass
-            
+
             repair = await self.healer.heal(e, f"processing command: {text[:100]}")
             if repair["success"]:
                 return await self.router.route(text, session_id)
@@ -1070,20 +1063,20 @@ class MegaOrchestrator:
         while self.running:
             try:
                 await asyncio.sleep(300)  # Check every 5 minutes
-                
+
                 if not self.guardian:
                     continue
-                
+
                 # Check Guardian health
                 health = self.guardian.health()
                 if health.get('status') != 'healthy':
                     log.warning(f"Guardian not healthy: {health}")
                     continue
-                
+
                 # Check all services
                 status = self.guardian.status()
                 services = status.get('services', [])
-                
+
                 for svc in services:
                     if not svc['healthy'] and svc.get('critical', False):
                         log.error(f"Critical service down: {svc['name']}")
@@ -1093,9 +1086,9 @@ class MegaOrchestrator:
                             f"🔴 Auto-heal triggered for {svc['name']}",
                             priority="high"
                         )
-                
+
                 log.info(f"Guardian monitor: {len([s for s in services if s['healthy']])}/{len(services)} services healthy")
-                
+
             except Exception as e:
                 log.error(f"Guardian monitor error: {e}")
 
@@ -1104,11 +1097,35 @@ class MegaOrchestrator:
             log.warning("No Telegram token - polling disabled")
             return
 
+        # PID-Lock: verhindert doppeltes Polling bei mehrfachem Start
+        lock_path = DATA_DIR / "telegram_polling.pid"
+        my_pid = os.getpid()
+        if lock_path.exists():
+            try:
+                old_pid = int(lock_path.read_text().strip())
+                import signal
+                os.kill(old_pid, 0)  # prüft ob Prozess noch läuft
+                if old_pid != my_pid:
+                    log.warning(f"Telegram-Polling läuft bereits in PID {old_pid} — überspringe")
+                    return
+            except (ValueError, ProcessLookupError, PermissionError):
+                pass  # alter PID tot → Lock überschreiben
+        lock_path.write_text(str(my_pid))
+
+        try:
+            await self._do_telegram_polling()
+        finally:
+            try:
+                lock_path.unlink(missing_ok=True)
+            except Exception:
+                pass
+
+    async def _do_telegram_polling(self):
         # Webhook löschen (verhindert Konflikt mit Polling)
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
                 del_url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/deleteWebhook"
-                async with s.post(del_url, json={"drop_pending_updates": False}) as r:
+                async with s.post(del_url, json={"drop_pending_updates": True}) as r:
                     result = await r.json()
                     if result.get("ok"):
                         log.info("Telegram webhook gelöscht - Polling aktiv")
@@ -1119,11 +1136,12 @@ class MegaOrchestrator:
 
         offset = 0
         retry_wait = 5
+        conflict_wait = 15
         log.info("Telegram polling gestartet")
         while self.running:
             try:
                 url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getUpdates"
-                params = {"offset": offset, "timeout": 30, "limit": 10, "allowed_updates": ["message"]}
+                params = {"offset": offset, "timeout": 30, "limit": 10, "allowed_updates": ["message", "callback_query"]}
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=35)) as s:
                     async with s.get(url, params=params) as r:
                         if r.status == 200:
@@ -1137,14 +1155,16 @@ class MegaOrchestrator:
                                     continue
                                 await asyncio.sleep(retry_wait)
                                 continue
-                            retry_wait = 5  # Reset bei Erfolg
+                            retry_wait = 5       # Reset bei Erfolg
+                            conflict_wait = 15   # Reset nach erfolgreichem Poll
                             for update in data.get("result", []):
                                 offset = update["update_id"] + 1
                                 asyncio.create_task(self._handle_telegram_update(update))
                         elif r.status == 409:
                             body = await r.text()
-                            log.warning(f"Token-Konflikt (409): {body[:200]} — pausiere 60s")
-                            await asyncio.sleep(60)
+                            log.warning(f"Token-Konflikt (409): {body[:100]} — pausiere {conflict_wait}s")
+                            await asyncio.sleep(conflict_wait)
+                            conflict_wait = min(conflict_wait * 2, 300)
                         else:
                             body = await r.text()
                             log.error(f"Telegram HTTP {r.status}: {body[:200]}")
@@ -1160,6 +1180,27 @@ class MegaOrchestrator:
 
     async def _handle_telegram_update(self, update: Dict):
         try:
+            # ── Inline-Keyboard Button-Klick ──────────────────────────────
+            cq = update.get("callback_query")
+            if cq:
+                try:
+                    from modules.telegram_control import handle_callback
+                    chat_id   = str(cq.get("message", {}).get("chat", {}).get("id", ""))
+                    if TELEGRAM_CHAT_ID and chat_id != str(TELEGRAM_CHAT_ID):
+                        log.warning(f"Callback von unautorisiertem Chat {chat_id} ignoriert")
+                        return
+                    message_id = cq.get("message", {}).get("message_id", 0)
+                    cq_id     = cq.get("id", "")
+                    data      = cq.get("data", "")
+                    log.info(f"Callback: {data}")
+                    await asyncio.get_event_loop().run_in_executor(
+                        None, handle_callback, data, chat_id, message_id, cq_id
+                    )
+                except Exception as e:
+                    log.error(f"Callback handler error: {e}")
+                return
+
+            # ── Normale Textnachricht ─────────────────────────────────────
             msg = update.get("message", {})
             text = msg.get("text", "")
             chat_id = str(msg.get("chat", {}).get("id", ""))
@@ -1168,8 +1209,23 @@ class MegaOrchestrator:
             if not text or not chat_id:
                 return
 
+            if TELEGRAM_CHAT_ID and chat_id != str(TELEGRAM_CHAT_ID):
+                log.warning(f"Nachricht von unautorisiertem Chat {chat_id} ignoriert")
+                return
+
             session_id = f"telegram_{chat_id}"
             log.info(f"Telegram [{user}]: {text[:60]}")
+
+            # /menu — zeigt Inline-Keyboard Control Panel
+            if text.strip().lower() in ("/menu", "/steuerung", "/control"):
+                try:
+                    from modules.telegram_control import send_main_menu
+                    await asyncio.get_event_loop().run_in_executor(
+                        None, send_main_menu, chat_id
+                    )
+                except Exception as e:
+                    await send_telegram(f"Menü-Fehler: {e}", chat_id=chat_id)
+                return
 
             response = await self.process(text, session_id)
             await send_telegram(response, chat_id=chat_id)
