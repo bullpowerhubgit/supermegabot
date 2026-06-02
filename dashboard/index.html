@@ -1142,6 +1142,18 @@ input[type="range"]::-webkit-slider-thumb {
           <div class="sc-val" id="ov-disk">—</div>
           <div class="sc-sub" id="ov-disk-sub">Loading…</div>
         </div>
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(16,185,129,0.12),rgba(79,142,247,0.08));border-color:rgba(16,185,129,0.2)">
+          <div class="sc-icon">💰</div>
+          <div class="sc-label">Stripe Balance</div>
+          <div class="sc-val" id="ov-stripe-bal" style="font-size:18px">—</div>
+          <div class="sc-sub" id="ov-stripe-sub">Loading…</div>
+        </div>
+        <div class="stat-card" style="background:linear-gradient(135deg,rgba(124,93,250,0.12),rgba(16,185,129,0.08));border-color:rgba(124,93,250,0.2)">
+          <div class="sc-icon">📈</div>
+          <div class="sc-label">Revenue 30d</div>
+          <div class="sc-val" id="ov-revenue-30d" style="font-size:18px">—</div>
+          <div class="sc-sub" id="ov-revenue-sub">Loading…</div>
+        </div>
       </div>
 
       <!-- Two-column grid -->
@@ -1180,6 +1192,9 @@ input[type="range"]::-webkit-slider-thumb {
           <button class="btn btn-secondary" onclick="nav('autopilot')">◐ Run AutoPilot</button>
           <button class="btn btn-secondary" onclick="nav('geheimwaffe')">⬡ GEHEIMWAFFE</button>
           <button class="btn btn-secondary" onclick="nav('trading')">↗ Trading</button>
+          <button class="btn btn-secondary" onclick="nav('stripe')">💳 Stripe</button>
+          <button class="btn btn-secondary" onclick="nav('revenue')">💹 Revenue Hub</button>
+          <button class="btn btn-secondary" onclick="nav('shopify')">🛒 Shopify</button>
           <button class="btn btn-secondary" onclick="nav('logs')">≡ View Logs</button>
           <button class="btn btn-secondary" onclick="runBackup()">▤ Backup Now</button>
         </div>
@@ -2511,7 +2526,34 @@ function sectionInit(section) {
 function refreshAll() {
   loadSystemKPIs();
   loadServicesKPI();
+  loadOverviewRevenue();
   toast('Refreshing all data…', 'info');
+}
+
+async function loadOverviewRevenue() {
+  try {
+    const d = await api('GET', '/api/stripe/status');
+    if (d.ok) {
+      const bal = d.balance?.available || {};
+      const balStr = Object.entries(bal).map(([c,v]) => `${v.toFixed(2)} ${c.toUpperCase()}`).join(' | ') || '€0.00';
+      const rev = d.revenue_30d || {};
+      const revStr = Object.entries(rev.revenue||{}).map(([c,v]) => `${v.toFixed(2)} ${c.toUpperCase()}`).join(' | ') || '€0.00';
+      document.getElementById('ov-stripe-bal').textContent = balStr;
+      document.getElementById('ov-stripe-sub').textContent = `${d.account || 'Live'}`;
+      document.getElementById('ov-revenue-30d').textContent = revStr;
+      document.getElementById('ov-revenue-sub').textContent = `${rev.successful || 0} Zahlungen`;
+    } else {
+      document.getElementById('ov-stripe-bal').textContent = '—';
+      document.getElementById('ov-stripe-sub').textContent = 'Kein Key';
+      document.getElementById('ov-revenue-30d').textContent = '—';
+      document.getElementById('ov-revenue-sub').textContent = 'Kein Key';
+    }
+  } catch(e) {
+    document.getElementById('ov-stripe-bal').textContent = '—';
+    document.getElementById('ov-stripe-sub').textContent = 'Offline';
+    document.getElementById('ov-revenue-30d').textContent = '—';
+    document.getElementById('ov-revenue-sub').textContent = 'Offline';
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3744,6 +3786,7 @@ document.querySelectorAll('.nav-item').forEach(el => {
 // ════════════════════════════════════════════════════════════════
 setInterval(loadSystemKPIs, 5000);
 setInterval(loadServicesKPI, 30000);
+setInterval(loadOverviewRevenue, 300000);
 setInterval(() => { if (currentSection === 'logs') loadLogs(); }, 8000);
 setInterval(() => { if (currentSection === 'trading') loadPrices(); }, 30000);
 setInterval(() => { if (currentSection === 'system') loadSystem(); }, 5000);
@@ -4329,6 +4372,7 @@ async function loadEcommerceOrch() {
 (function init() {
   loadSystemKPIs();
   loadServicesKPI();
+  loadOverviewRevenue();
   nav('overview');
 })();
 </script>
