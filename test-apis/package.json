@@ -1,0 +1,23 @@
+{
+  "name": "api-test-suite",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "API Test Suite for SuperMegaBot integrations",
+  "scripts": {
+    "test:github": "node github-test.js",
+    "test:supabase": "node supabase-test.js",
+    "test:stripe": "node stripe-test.js",
+    "test:shopify": "node shopify-test.js",
+    "test:klaviyo": "node klaviyo-test.js",
+    "test:printify": "node printify-test.js",
+    "test:all": "npm run test:github && npm run test:supabase && npm run test:stripe && npm run test:shopify && npm run test:klaviyo && npm run test:printify"
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.2",
+    "@supabase/supabase-js": "^2.39.3",
+    "@shopify/shopify-api": "^9.5.2",
+    "axios": "^1.6.8",
+    "dotenv": "^16.4.5",
+    "stripe": "^16.12.0"
+  }
+}
