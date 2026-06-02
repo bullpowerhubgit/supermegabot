@@ -1045,6 +1045,17 @@ input[type="range"]::-webkit-slider-thumb {
         <span class="nav-icon">☁️</span> Google Drive
       </div>
 
+      <div class="nav-group-label">Windsurf Modules</div>
+      <div class="nav-item" data-section="watchdog">
+        <span class="nav-icon">🛡</span> Watchdog
+      </div>
+      <div class="nav-item" data-section="agentshub">
+        <span class="nav-icon">🤖</span> Agenten Hub
+      </div>
+      <div class="nav-item" data-section="ecommerce">
+        <span class="nav-icon">🛒</span> E-Commerce Orch.
+      </div>
+
       <div class="nav-group-label">Infrastructure</div>
       <div class="nav-item" data-section="system">
         <span class="nav-icon">▣</span> System
@@ -2315,6 +2326,84 @@ input[type="range"]::-webkit-slider-thumb {
       <div id="drive-status"><div class="spinner"></div></div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: WATCHDOG
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-watchdog" class="section">
+      <div class="section-header">
+        <div>
+          <h2>🛡 Watchdog</h2>
+          <p>Watchdog v1 + v2 · Port 9003 · Prozess-Überwachung &amp; Auto-Restart</p>
+        </div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadWatchdog()">↻ Refresh</button>
+        </div>
+      </div>
+      <div id="watchdog-status">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🛡</span> Watchdog Status</div>
+            <span class="badge" id="watchdog-badge">Loading…</span>
+          </div>
+          <div id="watchdog-body"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: AGENTEN HUB
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-agentshub" class="section">
+      <div class="section-header">
+        <div>
+          <h2>🤖 Agenten Hub</h2>
+          <p>Multi-Agent Coordination · Port 9998 · Task-Verteilung</p>
+        </div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAgentsHub()">↻ Refresh</button>
+        </div>
+      </div>
+      <div id="agentshub-status">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🤖</span> Agenten Hub Status</div>
+            <span class="badge" id="agentshub-badge">Loading…</span>
+          </div>
+          <div id="agentshub-body"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: E-COMMERCE ORCHESTRATOR
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-ecommerce" class="section">
+      <div class="section-header">
+        <div>
+          <h2>🛒 E-Commerce Orchestrator</h2>
+          <p>Shopify · Printify · Dropshipping · Revenue-Pipeline</p>
+        </div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadEcommerceOrch()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🛒</span> Orchestrator Status</div>
+            <span class="badge" id="ecommerce-badge">Loading…</span>
+          </div>
+          <div id="ecommerce-body"><div class="spinner"></div></div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>💹</span> Revenue Snapshot</div>
+          </div>
+          <div id="ecommerce-revenue"><div class="spinner"></div></div>
+        </div>
+      </div>
+    </section>
+
   </main>
 </div>
 
@@ -2372,6 +2461,7 @@ function nav(section) {
     printify:'🖨️ Printify PoD', etsy:'🛍️ Etsy', gumroad:'💰 Gumroad',
     dropshipping:'📦 Dropshipping', seo:'🔍 SEO Autopilot', revenue:'💹 Revenue Hub',
     stripe:'💳 Stripe Payments', drive:'☁️ Google Drive',
+    watchdog:'🛡 Watchdog', agentshub:'🤖 Agenten Hub', ecommerce:'🛒 E-Commerce Orchestrator',
   };
   document.getElementById('topbar-title').textContent = titles[section] || section;
   currentSection = section;
@@ -2411,6 +2501,9 @@ function sectionInit(section) {
     revenue:      loadRevenue,
     stripe:       loadStripe,
     drive:        loadDrive,
+    watchdog:     loadWatchdog,
+    agentshub:    loadAgentsHub,
+    ecommerce:    loadEcommerceOrch,
   };
   if (loaders[section]) loaders[section]();
 }
@@ -4145,6 +4238,89 @@ async function driveBackup() {
     toast(d.result || 'Backup abgeschlossen', 'success');
     loadDrive();
   } catch(e) { toast(`Backup Fehler: ${e.message}`, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════
+// WINDSURF MODULES — Watchdog / Agenten Hub / E-Commerce Orch.
+// ════════════════════════════════════════════════════════════════
+
+async function loadWatchdog() {
+  const badge = document.getElementById('watchdog-badge');
+  const body  = document.getElementById('watchdog-body');
+  if (!body) return;
+  body.innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/watchdog/status');
+    badge.textContent = d.status || 'online';
+    badge.className   = 'badge badge-green';
+    const rows = Object.entries(d)
+      .map(([k,v]) => `<tr><td style="color:var(--text2);padding:4px 0">${k}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px">${JSON.stringify(v)}</td></tr>`)
+      .join('');
+    body.innerHTML = `<table style="width:100%;border-collapse:collapse">${rows}</table>`;
+  } catch(e) {
+    badge.textContent = 'offline';
+    badge.className   = 'badge badge-red';
+    body.innerHTML = `<div class="empty-state"><div class="es-icon">🛡</div><div class="es-title">Watchdog nicht erreichbar</div><div class="es-sub">Port 9003 — ${e.message}</div></div>`;
+  }
+}
+
+async function loadAgentsHub() {
+  const badge = document.getElementById('agentshub-badge');
+  const body  = document.getElementById('agentshub-body');
+  if (!body) return;
+  body.innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/agents/hub');
+    badge.textContent = d.status || 'online';
+    badge.className   = 'badge badge-green';
+    const rows = Object.entries(d)
+      .map(([k,v]) => `<tr><td style="color:var(--text2);padding:4px 0">${k}</td><td style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px">${JSON.stringify(v)}</td></tr>`)
+      .join('');
+    body.innerHTML = `<table style="width:100%;border-collapse:collapse">${rows}</table>`;
+  } catch(e) {
+    badge.textContent = 'offline';
+    badge.className   = 'badge badge-red';
+    body.innerHTML = `<div class="empty-state"><div class="es-icon">🤖</div><div class="es-title">Agenten Hub nicht erreichbar</div><div class="es-sub">Port 9998 — ${e.message}</div></div>`;
+  }
+}
+
+async function loadEcommerceOrch() {
+  const badge   = document.getElementById('ecommerce-badge');
+  const body    = document.getElementById('ecommerce-body');
+  const revenue = document.getElementById('ecommerce-revenue');
+  if (!body) return;
+  body.innerHTML = '<div class="spinner"></div>';
+  // Reuse existing shopify + revenue endpoints as proxy for orchestrator health
+  try {
+    const [shopify, rev] = await Promise.allSettled([
+      api('GET', '/api/shopify/status'),
+      api('GET', '/api/revenue/status'),
+    ]);
+    const s = shopify.status === 'fulfilled' ? shopify.value : null;
+    const r = rev.status    === 'fulfilled' ? rev.value    : null;
+    badge.textContent = s?.ok ? 'online' : 'degraded';
+    badge.className   = s?.ok ? 'badge badge-green' : 'badge badge-yellow';
+    body.innerHTML = s
+      ? `<table style="width:100%;border-collapse:collapse">
+          <tr><td style="color:var(--text2);padding:4px 0">Store</td><td style="padding:4px 8px">${s.store || '—'}</td></tr>
+          <tr><td style="color:var(--text2);padding:4px 0">Produkte</td><td style="padding:4px 8px">${s.product_count ?? '—'}</td></tr>
+          <tr><td style="color:var(--text2);padding:4px 0">Bestellungen</td><td style="padding:4px 8px">${s.order_count ?? '—'}</td></tr>
+          <tr><td style="color:var(--text2);padding:4px 0">Währung</td><td style="padding:4px 8px">${s.currency || '—'}</td></tr>
+        </table>`
+      : `<div class="empty-state"><div class="es-icon">🛒</div><div class="es-title">Shopify nicht verbunden</div></div>`;
+    if (revenue) {
+      const rdata = r?.revenue || {};
+      const entries = Object.entries(rdata);
+      revenue.innerHTML = entries.length
+        ? `<table style="width:100%;border-collapse:collapse">${entries.map(([p,v])=>`<tr><td style="color:var(--text2);padding:4px 0">${p}</td><td style="padding:4px 8px;font-variant-numeric:tabular-nums">${typeof v==='number'?'€'+v.toFixed(2):JSON.stringify(v)}</td></tr>`).join('')}</table>`
+        : `<div class="empty-state"><div class="es-icon">💹</div><div class="es-title">Keine Revenue-Daten</div></div>`;
+    }
+  } catch(e) {
+    badge.textContent = 'error';
+    badge.className   = 'badge badge-red';
+    body.innerHTML = `<div class="empty-state"><div class="es-icon">🛒</div><div class="es-title">Fehler</div><div class="es-sub">${e.message}</div></div>`;
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
