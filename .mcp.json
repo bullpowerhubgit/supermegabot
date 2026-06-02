@@ -4,12 +4,9 @@
       "type": "http",
       "url": "https://mcp.supabase.com/mcp?project_ref=qyrjeckzacjaazkpvnjk"
     },
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        "Authorization": "Bearer ${GITHUB_TOKEN}"
-      }
+    "supermegabot": {
+      "command": "/Library/Developer/CommandLineTools/usr/bin/python3",
+      "args": ["/Users/rudolfsarkany/supermegabot/mcp_server.py"]
     }
   }
 }
