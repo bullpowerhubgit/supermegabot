@@ -46,7 +46,7 @@ except ImportError:
 
 OLLAMA_HOST        = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL       = os.getenv("OLLAMA_MODEL", "gemma4:latest")
-TELEGRAM_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1") or os.getenv("TELEGRAM_BOT_TOKEN_2") or ""
 TELEGRAM_CHAT_ID   = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_STORE_URL  = os.getenv("SHOPIFY_STORE_URL", "")
 SHOPIFY_ACCESS_TOK = os.getenv("SHOPIFY_ACCESS_TOKEN", "")

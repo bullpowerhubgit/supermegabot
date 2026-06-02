@@ -18,7 +18,7 @@ BASE_DIR   = Path(__file__).parent.parent
 ARMY_STATE = BASE_DIR / "rudibot-army" / "shared" / "army_state.json"
 _HOME      = Path.home()
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1") or os.getenv("TELEGRAM_BOT_TOKEN_2") or ""
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 DASHBOARD_URL  = os.getenv("DASHBOARD_URL", "http://localhost:8888")
 
