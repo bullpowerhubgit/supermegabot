@@ -165,7 +165,7 @@ class ErrorDetectorBot:
                         })
                         break
         except Exception:
-            pass
+            log.exception("ErrorDetectorBot: failed to scan file %s", path)
         return hits
 
     async def run(self) -> Dict:
@@ -208,7 +208,7 @@ class ErrorDetectorBot:
             try:
                 existing = json.loads(incident_file.read_text())
             except Exception:
-                pass
+                log.exception("ErrorDetectorBot: failed to load incident log")
         if results["CRITICAL"]:
             existing.append({
                 "ts":      results["timestamp"],
@@ -296,7 +296,7 @@ class RepairEngineBot:
                 try:
                     jf.rename(backup)
                 except Exception:
-                    pass
+                    log.exception("RepairEngineBot: failed to rename corrupt JSON %s", jf)
                 jf.write_text("{}")
                 results["repaired"].append(f"Korrupte JSON gebackupt+reset: {jf.name}")
 
@@ -310,7 +310,7 @@ class RepairEngineBot:
                         cf.unlink()
                         results["repaired"].append(f"Cache invalidiert: {cf.name} ({age_h:.1f}h alt)")
                     except Exception:
-                        pass
+                        log.exception("RepairEngineBot: failed to delete cache file %s", cf)
 
         # 5. PM2 tote Prozesse neustarten (wenn PM2 verfügbar)
         try:
@@ -404,7 +404,7 @@ class MaintenanceBot:
                         lf.rename(dest)
                         results["log_rotated"].append(lf.name)
                     except Exception:
-                        pass
+                        log.exception("MaintenanceBot: failed to rotate log %s", lf)
 
         # 3. Backup data/*.json
         backup_dir = DATA_DIR / "backups"
@@ -446,7 +446,7 @@ class MaintenanceBot:
                     for p in pkgs[:10]
                 ]
         except Exception:
-            pass
+            log.exception("MaintenanceBot: failed to check outdated packages")
 
         if results["warnings"]:
             await _tg(
@@ -534,7 +534,7 @@ class OptimizationBot:
                         if k in ("orders_count", "revenue_today", "conversion_rate", "avg_order_value")
                     }
             except Exception:
-                pass
+                log.exception("OptimizationBot: failed to load shopify cache")
 
         # 4. Monitoring-History analysieren für Performance-Trends
         monitoring_file = DATA_DIR / "monitoring_status.json"
@@ -546,7 +546,7 @@ class OptimizationBot:
                 if score < 70:
                     results["recommendations"].append("Health-Score < 70 — Services prüfen")
             except Exception:
-                pass
+                log.exception("OptimizationBot: failed to load monitoring status")
 
         # 5. Empfehlungen basierend auf Latenz-Grades
         slow = [
