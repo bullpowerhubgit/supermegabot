@@ -13,7 +13,6 @@ import urllib.request
 from pathlib import Path
 from datetime import datetime
 
-<<<<<<< HEAD
 # Portable: BASE = directory containing this file (works on Mac and CI/Linux)
 _THIS_DIR = Path(__file__).resolve().parent
 _HOME = Path.home()
@@ -28,18 +27,11 @@ try:
     from guardian_client import GuardianClient
 except ImportError:
     GuardianClient = None  # type: ignore
-=======
-_eternal_dir = os.environ.get("ETERNAL_BOT_DIR", str(Path.home() / "rudibot-eternal"))
-if _eternal_dir not in sys.path:
-    sys.path.insert(0, _eternal_dir)
-from guardian_client import GuardianClient
->>>>>>> origin/claude/practical-faraday-wl7aD
 
 # ═══════════════════════════════════════════════════════════════════════
 # SERVICE REGISTRY
 # ═══════════════════════════════════════════════════════════════════════
 
-<<<<<<< HEAD
 def _svc_dir(env_var: str, default_rel: str) -> str:
     """Return $env_var or HOME/default_rel — keeps SERVICES portable."""
     return os.getenv(env_var, str(_HOME / default_rel))
@@ -51,16 +43,6 @@ SERVICES = {
     'shopify_ai':    {'port': 3002, 'dir': _svc_dir('SHOPIFY_AI_DIR',    'shopify-ai-suite'),        'cmd': 'node server.js',                     'health': '/health'},
     'github_app':    {'port': 3000, 'dir': _svc_dir('GITHUB_APP_DIR',    'windsurf-github-app'),     'cmd': 'npm start',                          'health': '/health'},
     'shopify_suite': {'port': 3001, 'dir': _svc_dir('SHOPIFY_SUITE_DIR', 'windsurf-shopify-suite'),  'cmd': 'npm start',                          'health': '/health'},
-=======
-_home = str(Path.home())
-SERVICES = {
-    'guardian':      {'port': 3201, 'dir': os.environ.get("ETERNAL_BOT_DIR",    f"{_home}/rudibot-eternal"),         'cmd': 'python3 eternal_guardian.py --api', 'health': '/api/v1/health'},
-    'telegram_bot':  {'port': 3200, 'dir': os.environ.get("TELEGRAM_BOT_DIR",   f"{_home}/windsurf-telegram-bot"),   'cmd': 'npm start',                         'health': '/health'},
-    'api_gateway':   {'port': 8080, 'dir': os.environ.get("API_GATEWAY_DIR",    f"{_home}/windsurf-api-gateway"),    'cmd': 'npm start',                         'health': '/health'},
-    'shopify_ai':    {'port': 3002, 'dir': os.environ.get("SHOPIFY_AI_DIR",     f"{_home}/shopify-ai-suite"),        'cmd': 'node server.js',                    'health': '/health'},
-    'github_app':    {'port': 3000, 'dir': os.environ.get("GITHUB_APP_DIR",     f"{_home}/windsurf-github-app"),     'cmd': 'npm start',                         'health': '/health'},
-    'shopify_suite': {'port': 3001, 'dir': os.environ.get("SHOPIFY_SUITE_DIR",  f"{_home}/windsurf-shopify-suite"),  'cmd': 'npm start',                         'health': '/health'},
->>>>>>> origin/claude/practical-faraday-wl7aD
 }
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -244,12 +226,7 @@ def run_deepscan():
     log('RUNNING DEEPSCAN', 'info')
     log('═' * 60, 'info')
 
-<<<<<<< HEAD
     script = _THIS_DIR / 'deep_scan_repair.py'
-=======
-    _mega_dir = os.environ.get("MEGA_DIR", str(Path(__file__).parent))
-    script = Path(_mega_dir) / 'deep_scan_repair.py'
->>>>>>> origin/claude/practical-faraday-wl7aD
     if not script.exists():
         log('DeepScan script not found', 'error')
         return False
@@ -258,11 +235,7 @@ def run_deepscan():
         result = subprocess.run(
             [sys.executable, str(script), '--fix'],
             capture_output=True, text=True, timeout=120,
-<<<<<<< HEAD
             cwd=str(_THIS_DIR),
-=======
-            cwd=_mega_dir
->>>>>>> origin/claude/practical-faraday-wl7aD
         )
         log('DeepScan completed', 'ok')
         if result.stdout:
