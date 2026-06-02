@@ -153,6 +153,25 @@ python3 test_bot_hub.py
 Startet den Dashboard-Server auf Port 8889, testet 23 Endpunkte +
 Bridge-Import, beendet den Server sauber und liefert Exit-Code 0 bei Erfolg.
 
+## Windsurf-integrierte Module
+
+Die letzte Integration bringt folgende neue Node.js-Module in das System:
+
+| Modul | Port | Beschreibung |
+|-------|------|--------------|
+| `core/watchdog/` (v1 + v2) | 9003 | Prozess-Watchdog — überwacht alle Services, startet sie automatisch neu bei Absturz |
+| `core/agenten_hub.js` | 9998 | Multi-Agent Koordination — verteilt Tasks an spezialisierte Agenten |
+| `core/multi_agent_collaboration.js` | — | Kollaborationslogik für parallele Agenten-Workflows |
+| `modules/ecommerce_orchestrator.js` | — | Orchestriert Shopify · Printify · Dropshipping in einer Pipeline |
+| `modules/marketing_engine.js` | — | Automatisiertes Content-Marketing (Social, E-Mail, Ads) |
+| `modules/seo_engine.js` | — | KI-gestützte SEO-Optimierung für Shopify-Produkte |
+| `dashboard/server_windsurf.js` | 9002 | Windsurf-eigenes Dashboard als Ergänzung zu Port 8888 |
+
+Alle Module werden über `ecosystem.config.js` von PM2 verwaltet.
+Das Haupt-Dashboard (Port 8888) hat neue Proxy-Endpunkte `/api/watchdog/status`
+und `/api/agents/hub` sowie drei neue Sektionen: **Watchdog**, **Agenten Hub**
+und **E-Commerce Orchestrator**.
+
 ## Sicherheit
 
 - Keine Hardcoded-Secrets. Alle Tokens kommen aus `.env`.
