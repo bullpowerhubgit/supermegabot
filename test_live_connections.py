@@ -33,7 +33,7 @@ def _mask(value: str) -> str:
         return "***"
     return value[:4] + "***" + value[-2:]
 
-def _env(key: str) -> str | None:
+def _env(key: str):
     return os.environ.get(key)
 
 def _check_env(*keys) -> tuple[bool, list[str]]:
