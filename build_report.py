@@ -983,7 +983,7 @@ def page_infra(pdf):
 # ═══════════════════════════════════════════════════════════════════════════
 # GENERATE REPORT
 # ═══════════════════════════════════════════════════════════════════════════
-OUTPUT = "/Users/rudolfsarkany/supermegabot/supermegabot_business_report.pdf"
+OUTPUT = str(Path(__file__).parent / "supermegabot_business_report.pdf")
 print(f"\n🔄  Generiere SuperMegaBot Business Intelligence Report...")
 print(f"    Ziel: {OUTPUT}\n")
 

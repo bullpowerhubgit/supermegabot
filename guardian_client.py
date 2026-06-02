@@ -75,23 +75,23 @@ class GuardianConfig:
         """Validiere Konfiguration."""
         if not self.secret_key:
             self.secret_key = self._load_from_env()
+        # Do NOT raise — Guardian is optional. Warn and continue with empty secret.
         if not self.secret_key:
-            raise ValueError(
-                "GUARDIAN_API_SECRET nicht gesetzt!\n"
-                "Lösungen:\n"
-                "1. Setze die Umgebungsvariable GUARDIAN_API_SECRET\n"
-                "2. Lege eine .env Datei mit dem Eintrag GUARDIAN_API_SECRET an\n"
-                "3. Übergib secret_key beim Erstellen des GuardianClient"
+            import logging
+            logging.getLogger("GuardianClient").warning(
+                "GUARDIAN_API_SECRET nicht gesetzt — Guardian deaktiviert"
             )
     
     @staticmethod
     def _load_from_env() -> Optional[str]:
         """Lade Secret aus .env Dateien."""
+        from pathlib import Path
+        _eternal = Path(os.environ.get("ETERNAL_BOT_DIR", str(Path.home() / "rudibot-eternal")))
         env_paths = [
-            str(Path(__file__).parent / '.env'),
+            str(_eternal / ".env"),
+            str(Path(__file__).parent / ".env"),
+            str(Path(__file__).parent.parent / ".env"),
             './.env',
-            '../.env',
-            '../../.env',
         ]
         for env_path in env_paths:
             try:

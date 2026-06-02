@@ -360,7 +360,7 @@ async def shopify_graphql(query: str, variables: Dict = None) -> Dict:
     if not SHOPIFY_URL or not SHOPIFY_TOKEN or not HAS_AIOHTTP:
         return {"error": "Shopify nicht konfiguriert"}
     store = SHOPIFY_URL.replace("https://", "").replace("http://", "").rstrip("/")
-    url = f"https://{store}/admin/api/2024-01/graphql.json"
+    url = f"https://{store}/admin/api/2024-10/graphql.json"
     headers = {"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"}
     payload = {"query": query}
     if variables:

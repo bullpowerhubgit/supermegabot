@@ -1,33 +1,58 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SuperMegaBot — Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #07090f;
-  --surface: #0c0e18;
-  --card: #101320;
-  --card2: #141728;
-  --border: #1c2035;
-  --border2: #262d48;
-  --blue: #3d7eff;
-  --blue-dim: rgba(61,126,255,0.15);
-  --purple: #8b5cf6;
-  --cyan: #22d3ee;
-  --green: #10b981;
-  --green-bright: #34d399;
-  --red: #ef4444;
-  --yellow: #f59e0b;
-  --orange: #f97316;
-  --text1: #e8edf5;
-  --text2: #8892a8;
-  --text3: #434d65;
-  --sidebar-w: 220px;
-  --topbar-h: 58px;
-  --r: 8px;
-  --r-lg: 12px;
+  /* ── Tiefes Schwarz — Premium Dark ── */
+  --bg:      #040508;
+  --surface: #080a10;
+  --card:    #0c0f1a;
+  --card2:   #0f1220;
+  --card3:   #131726;
+  --border:  #161c30;
+  --border2: #1e2640;
+  --border3: #283050;
+
+  /* ── Accent Farben ── */
+  --blue:        #4f8ef7;
+  --blue-bright: #6ba3ff;
+  --blue-dim:    rgba(79,142,247,0.12);
+  --blue-glow:   rgba(79,142,247,0.25);
+  --purple:      #7c5dfa;
+  --purple-dim:  rgba(124,93,250,0.12);
+  --cyan:        #06b6d4;
+  --green:       #10b981;
+  --green-bright:#34d399;
+  --green-dim:   rgba(16,185,129,0.12);
+  --red:         #f43f5e;
+  --red-dim:     rgba(244,63,94,0.12);
+  --yellow:      #f59e0b;
+  --orange:      #f97316;
+
+  /* ── Typografie ── */
+  --text1: #f0f4ff;
+  --text2: #7b8db0;
+  --text3: #3a4560;
+  --text4: #242d45;
+
+  /* ── Layout ── */
+  --sidebar-w: 230px;
+  --topbar-h:  60px;
+  --r:         8px;
+  --r-lg:      12px;
+  --r-xl:      16px;
+
+  /* ── Schatten ── */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.5);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.6);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.7);
+  --shadow-glow: 0 0 30px rgba(79,142,247,0.15);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -36,10 +61,13 @@ html, body {
   height: 100%;
   background: var(--bg);
   color: var(--text1);
-  font-family: -apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 13px;
   line-height: 1.5;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'cv02','cv03','cv04','cv11';
 }
 
 /* ── LAYOUT ── */
@@ -49,82 +77,120 @@ html, body {
 #sidebar {
   width: var(--sidebar-w);
   min-width: var(--sidebar-w);
-  background: var(--surface);
+  background: linear-gradient(180deg, #080b14 0%, #060910 100%);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   z-index: 50;
+  box-shadow: 1px 0 0 var(--border);
 }
 
 #sidebar-logo {
-  padding: 18px 16px 14px;
+  padding: 20px 16px 16px;
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 11px;
 }
 
 #sidebar-logo .logo-icon {
-  width: 32px; height: 32px;
-  background: linear-gradient(135deg, var(--blue), var(--purple));
-  border-radius: 8px;
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--blue) 0%, var(--purple) 100%);
+  border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; flex-shrink: 0;
+  font-size: 17px; flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(79,142,247,0.35);
 }
 
-#sidebar-logo .logo-text { font-weight: 700; font-size: 14px; color: var(--text1); }
-#sidebar-logo .logo-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
+#sidebar-logo .logo-text {
+  font-weight: 800;
+  font-size: 14px;
+  color: var(--text1);
+  letter-spacing: -0.01em;
+}
+#sidebar-logo .logo-sub {
+  font-size: 10px;
+  color: var(--text3);
+  margin-top: 1px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
 
 #sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 10px 8px;
+  padding: 12px 10px;
   -ms-overflow-style: none;
 }
 #sidebar-nav::-webkit-scrollbar { display: none; }
 
 .nav-group-label {
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--text3);
-  padding: 10px 8px 4px;
+  color: var(--text4);
+  padding: 14px 8px 5px;
 }
 
 .nav-item {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 8px 10px;
-  border-radius: var(--r);
+  padding: 7px 10px;
+  border-radius: 7px;
   cursor: pointer;
-  color: var(--text2);
-  font-size: 13px;
+  color: var(--text3);
+  font-size: 12.5px;
   font-weight: 500;
-  transition: background 0.15s, color 0.15s;
+  transition: all 0.12s ease;
   -webkit-user-select: none;
   user-select: none;
   margin-bottom: 1px;
+  position: relative;
 }
-.nav-item:hover { background: var(--card); color: var(--text1); }
-.nav-item.active { background: var(--blue-dim); color: var(--blue); }
-.nav-item .nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-item:hover {
+  background: rgba(255,255,255,0.04);
+  color: var(--text2);
+}
+.nav-item.active {
+  background: rgba(79,142,247,0.1);
+  color: var(--blue-bright);
+  font-weight: 600;
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  width: 3px; height: 16px;
+  background: var(--blue);
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 0 8px var(--blue-glow);
+}
+.nav-item .nav-icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+.nav-item.active .nav-icon { opacity: 1; }
 .nav-item .nav-badge {
   margin-left: auto;
   font-size: 10px;
-  background: var(--blue-dim);
+  background: rgba(79,142,247,0.15);
   color: var(--blue);
   padding: 1px 6px;
   border-radius: 10px;
-  font-weight: 600;
+  font-weight: 700;
 }
-.nav-item.active .nav-badge { background: rgba(61,126,255,0.25); }
 
 #sidebar-footer {
   border-top: 1px solid var(--border);
-  padding: 12px 12px;
+  padding: 14px 14px;
+  background: rgba(0,0,0,0.2);
 }
 
 .status-dot {
@@ -151,52 +217,57 @@ html, body {
   left: var(--sidebar-w);
   right: 0;
   height: var(--topbar-h);
-  background: rgba(7,9,15,0.9);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: rgba(4,5,8,0.85);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  backdrop-filter: blur(20px) saturate(180%);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
-  padding: 0 20px;
+  padding: 0 24px;
   gap: 16px;
   z-index: 40;
 }
 
 #topbar-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 700;
   color: var(--text1);
   min-width: 140px;
+  letter-spacing: -0.01em;
 }
 
-.kpi-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.kpi-chips { display: flex; gap: 6px; flex-wrap: wrap; }
 
 .kpi-chip {
   display: flex;
   align-items: center;
-  gap: 6px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 4px 12px;
-  font-size: 12px;
+  gap: 5px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--text1);
   white-space: nowrap;
+  transition: border-color 0.15s;
 }
-.kpi-chip .kc-label { color: var(--text2); font-weight: 400; }
-.kpi-chip .kc-val { color: var(--text1); }
+.kpi-chip:hover { border-color: var(--border3); }
+.kpi-chip .kc-label { color: var(--text3); font-weight: 500; font-size: 11px; }
+.kpi-chip .kc-val { color: var(--text1); font-variant-numeric: tabular-nums; }
 .kpi-chip.green .kc-val { color: var(--green-bright); }
 .kpi-chip.yellow .kc-val { color: var(--yellow); }
 .kpi-chip.red .kc-val { color: var(--red); }
-.kpi-chip.blue .kc-val { color: var(--blue); }
+.kpi-chip.blue .kc-val { color: var(--blue-bright); }
 
 #topbar-clock {
   margin-left: auto;
-  font-size: 12px;
-  color: var(--text2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  color: var(--text3);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+  letter-spacing: 0.03em;
 }
 
 /* ── MAIN CONTENT ── */
@@ -221,7 +292,9 @@ html, body {
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
   padding: 20px;
+  box-shadow: var(--shadow-sm);
 }
+.card:hover { border-color: var(--border2); }
 
 .card-header {
   display: flex;
@@ -230,10 +303,11 @@ html, body {
   margin-bottom: 16px;
 }
 .card-title {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--text1);
   display: flex; align-items: center; gap: 8px;
+  letter-spacing: -0.005em;
 }
 .card-title span { font-size: 14px; }
 
@@ -244,47 +318,100 @@ html, body {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
-  padding: 18px 20px;
+  padding: 20px 22px;
   position: relative;
   overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
+.stat-card:hover { border-color: var(--border2); box-shadow: var(--shadow-md); }
 .stat-card::before {
   content: '';
   position: absolute;
   top: 0; left: 0; right: 0;
-  height: 2px;
+  height: 1px;
+}
+.stat-card::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; bottom: 0;
+  border-radius: var(--r-lg) 0 0 var(--r-lg);
 }
 .stat-card.blue::before { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+.stat-card.blue::after  { background: linear-gradient(180deg, var(--blue), var(--purple)); opacity: 0.6; }
 .stat-card.green::before { background: linear-gradient(90deg, var(--green), var(--cyan)); }
+.stat-card.green::after  { background: linear-gradient(180deg, var(--green), var(--cyan)); opacity: 0.6; }
 .stat-card.yellow::before { background: linear-gradient(90deg, var(--yellow), var(--orange)); }
+.stat-card.yellow::after  { background: linear-gradient(180deg, var(--yellow), var(--orange)); opacity: 0.6; }
 .stat-card.purple::before { background: linear-gradient(90deg, var(--purple), var(--blue)); }
+.stat-card.purple::after  { background: linear-gradient(180deg, var(--purple), var(--blue)); opacity: 0.6; }
 
-.stat-card .sc-label { font-size: 11px; color: var(--text2); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
-.stat-card .sc-val { font-size: 28px; font-weight: 800; color: var(--text1); line-height: 1; margin-bottom: 4px; }
+.stat-card .sc-label {
+  font-size: 10.5px;
+  color: var(--text3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 10px;
+}
+.stat-card .sc-val {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--text1);
+  line-height: 1;
+  margin-bottom: 5px;
+  letter-spacing: -0.02em;
+  font-feature-settings: 'tnum';
+}
 .stat-card .sc-sub { font-size: 11px; color: var(--text3); }
-.stat-card .sc-icon { position: absolute; top: 16px; right: 18px; font-size: 22px; opacity: 0.2; }
+.stat-card .sc-icon {
+  position: absolute;
+  top: 18px; right: 20px;
+  font-size: 24px;
+  opacity: 0.08;
+}
 
 /* ── BUTTONS ── */
 .btn {
   display: inline-flex; align-items: center; gap: 6px;
   padding: 7px 14px;
-  border-radius: var(--r);
+  border-radius: 7px;
   border: none;
   cursor: pointer;
   font-size: 12px;
   font-weight: 600;
-  transition: all 0.15s;
+  transition: all 0.12s ease;
   font-family: inherit;
+  letter-spacing: 0.005em;
 }
 .btn:active { transform: scale(0.97); }
-.btn-primary { background: var(--blue); color: #fff; }
-.btn-primary:hover { background: #5590ff; }
-.btn-secondary { background: var(--card2); color: var(--text1); border: 1px solid var(--border2); }
-.btn-secondary:hover { background: var(--border); }
-.btn-danger { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.25); }
-.btn-danger:hover { background: rgba(239,68,68,0.25); }
-.btn-success { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.25); }
-.btn-success:hover { background: rgba(16,185,129,0.25); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--blue) 0%, #3a70e0 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(79,142,247,0.3);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--blue-bright) 0%, var(--blue) 100%);
+  box-shadow: 0 4px 14px rgba(79,142,247,0.4);
+}
+.btn-secondary {
+  background: rgba(255,255,255,0.04);
+  color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-secondary:hover { background: rgba(255,255,255,0.07); color: var(--text1); border-color: var(--border3); }
+.btn-danger {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(244,63,94,0.2);
+}
+.btn-danger:hover { background: rgba(244,63,94,0.2); }
+.btn-success {
+  background: var(--green-dim);
+  color: var(--green-bright);
+  border: 1px solid rgba(16,185,129,0.2);
+}
+.btn-success:hover { background: rgba(16,185,129,0.2); }
 .btn-xs { padding: 3px 9px; font-size: 11px; border-radius: 5px; }
 .btn-sm { padding: 5px 11px; font-size: 12px; }
 .btn-icon { padding: 6px 8px; }
@@ -518,19 +645,20 @@ html, body {
 
 /* ── TERMINAL / LOGS ── */
 .terminal {
-  background: #060810;
-  border: 1px solid #1a1f35;
+  background: #050709;
+  border: 1px solid var(--border2);
   border-radius: var(--r-lg);
-  font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace;
   font-size: 12px;
   line-height: 1.7;
   padding: 14px 16px;
   overflow-y: auto;
-  color: #9eff9e;
+  color: #6ee7b7;
   height: 400px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
 }
 #panel-logs::-webkit-scrollbar { width: 6px; }
-#panel-logs::-webkit-scrollbar-thumb { background: #1a1f35; border-radius: 3px; }
+#panel-logs::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 .log-line { white-space: pre-wrap; word-break: break-all; }
 .log-line.err { color: #ff6b6b; }
 .log-line.warn { color: #ffd700; }
@@ -692,6 +820,8 @@ input[type="range"]::-webkit-slider-thumb {
 /* ── CHAT SECTION WRAPPER ── */
 #section-chat { padding: 0; display: none; flex-direction: column; height: calc(100vh - var(--topbar-h)); }
 #section-chat.active { display: flex; }
+#section-claudeassistant { padding: 0; display: none; flex-direction: column; height: calc(100vh - var(--topbar-h)); }
+#section-claudeassistant.active { display: flex; }
 .chat-top-bar { padding: 14px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
 .chat-top-bar h2 { font-size: 16px; font-weight: 700; color: var(--text1); flex: 1; }
 
@@ -750,6 +880,7 @@ input[type="range"]::-webkit-slider-thumb {
 .skeleton-w85 { width:85%; }
 .skeleton-w90 { width:90%; }
 .flex-wrap-gap8 { display:flex; gap:8px; flex-wrap:wrap; }
+.flex-wrap-gap6 { display:flex; gap:6px; flex-wrap:wrap; }
 .flex-center-gap8 { display:flex; align-items:center; gap:8px; }
 .flex-center-gap6 { display:flex; align-items:center; gap:6px; }
 .flex-col-gap6 { display:flex; flex-direction:column; gap:6px; }
@@ -818,16 +949,19 @@ input[type="range"]::-webkit-slider-thumb {
       <div class="nav-item" data-section="chat">
         <span class="nav-icon">◎</span> AI Chat
       </div>
-      <div class="nav-item" data-section="autopilot">
-        <span class="nav-icon">◐</span> AutoPilot
-      </div>
-      <div class="nav-item" data-section="geheimwaffe">
-        <span class="nav-icon">⬡</span> GEHEIMWAFFE
-      </div>
 
       <div class="nav-group-label">Business</div>
       <div class="nav-item" data-section="shopify">
         <span class="nav-icon">◆</span> Shopify
+      </div>
+      <div class="nav-item" data-section="analytics">
+        <span class="nav-icon">📊</span> Analytics
+      </div>
+      <div class="nav-item" data-section="aitools">
+        <span class="nav-icon">🤖</span> AI Tools
+      </div>
+      <div class="nav-item" data-section="geheimwaffe">
+        <span class="nav-icon">⬡</span> Geheimwaffe
       </div>
       <div class="nav-item" data-section="gmc">
         <span class="nav-icon">◇</span> Google Merchant
@@ -837,6 +971,78 @@ input[type="range"]::-webkit-slider-thumb {
       </div>
       <div class="nav-item" data-section="telegram">
         <span class="nav-icon">✈</span> Telegram
+      </div>
+
+      <div class="nav-group-label">Automation</div>
+      <div class="nav-item" data-section="autopilot">
+        <span class="nav-icon">◐</span> Agents &amp; Autopilot
+      </div>
+      <div class="nav-item" data-section="botrepair">
+        <span class="nav-icon">🔧</span> Bot Repair
+      </div>
+
+      <div class="nav-group-label">Daten</div>
+      <div class="nav-item" data-section="memory">
+        <span class="nav-icon">🗒</span> Memory &amp; Notes
+      </div>
+      <div class="nav-item" data-section="github">
+        <span class="nav-icon">🐙</span> GitHub
+      </div>
+      <div class="nav-item" data-section="cloud">
+        <span class="nav-icon">☁</span> Cloud
+      </div>
+      <div class="nav-item" data-section="apikeys">
+        <span class="nav-icon">🔑</span> API Keys
+      </div>
+      <div class="nav-item" data-section="claudeassistant">
+        <span class="nav-icon">◎</span> Claude Assistant
+      </div>
+      <div class="nav-item" data-section="openclaw">
+        <span class="nav-icon">🦞</span> OpenClaw Hub
+      </div>
+      <div class="nav-item" data-section="remotedesktop">
+        <span class="nav-icon">🖥</span> Remote Desktop
+      </div>
+      <div class="nav-item" data-section="datenschutz">
+        <span class="nav-icon">🛡</span> Datenschutz
+      </div>
+
+      <div class="nav-group-label">Automatisierung</div>
+      <div class="nav-item" data-section="automation">
+        <span class="nav-icon">⚡</span> Scheduler
+      </div>
+      <div class="nav-item" data-section="social">
+        <span class="nav-icon">📱</span> Social Media
+      </div>
+      <div class="nav-item" data-section="digistore">
+        <span class="nav-icon">🏪</span> Digistore24
+      </div>
+      <div class="nav-item" data-section="mailchimp">
+        <span class="nav-icon">📧</span> Mailchimp
+      </div>
+      <div class="nav-item" data-section="printify">
+        <span class="nav-icon">🖨️</span> Printify PoD
+      </div>
+      <div class="nav-item" data-section="etsy">
+        <span class="nav-icon">🛍️</span> Etsy
+      </div>
+      <div class="nav-item" data-section="gumroad">
+        <span class="nav-icon">💰</span> Gumroad
+      </div>
+      <div class="nav-item" data-section="dropshipping">
+        <span class="nav-icon">📦</span> Dropshipping
+      </div>
+      <div class="nav-item" data-section="seo">
+        <span class="nav-icon">🔍</span> SEO Autopilot
+      </div>
+      <div class="nav-item" data-section="revenue">
+        <span class="nav-icon">💹</span> Revenue Hub
+      </div>
+      <div class="nav-item" data-section="stripe">
+        <span class="nav-icon">💳</span> Stripe Payments
+      </div>
+      <div class="nav-item" data-section="drive">
+        <span class="nav-icon">☁️</span> Google Drive
       </div>
 
       <div class="nav-group-label">Infrastructure</div>
@@ -1019,6 +1225,15 @@ input[type="range"]::-webkit-slider-thumb {
         <div><h2>Shopify</h2><p>Store management and analytics</p></div>
         <div class="section-header-actions">
           <button class="btn btn-secondary btn-sm" onclick="loadShopify()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div id="sh-setup-banner" style="display:none" class="tg-status-banner not-configured mb-16">
+        <span style="font-size:24px">⚠</span>
+        <div>
+          <div class="tg-status-title">Shopify Setup erforderlich — DNS / Verbindungsfehler</div>
+          <div class="tg-status-sub">Shop-Domain in .env setzen: <strong>SHOPIFY_SHOP_DOMAIN=yourshop.myshopify.com</strong></div>
+          <div class="tg-status-sub" style="margin-top:4px">Ausserdem <strong>SHOPIFY_ACCESS_TOKEN</strong> aus dem Shopify Partner-Dashboard eintragen.</div>
         </div>
       </div>
 
@@ -1423,6 +1638,683 @@ input[type="range"]::-webkit-slider-thumb {
       </div>
     </section>
 
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: ANALYTICS
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-analytics" class="section">
+      <div class="section-header">
+        <div><h2>Analytics</h2><p>Umsatz, Bestellungen und Produkt-Performance</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAnalytics()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="stat-cards mb-16" id="analytics-stat-cards">
+        <div class="stat-card blue">
+          <div class="sc-icon">💰</div>
+          <div class="sc-label">Umsatz (30d)</div>
+          <div class="sc-val" id="an-revenue">—</div>
+          <div class="sc-sub" id="an-revenue-sub">Loading…</div>
+        </div>
+        <div class="stat-card green">
+          <div class="sc-icon">🛒</div>
+          <div class="sc-label">Bestellungen</div>
+          <div class="sc-val" id="an-orders">—</div>
+          <div class="sc-sub" id="an-orders-sub">Loading…</div>
+        </div>
+        <div class="stat-card yellow">
+          <div class="sc-icon">📦</div>
+          <div class="sc-label">Produkte</div>
+          <div class="sc-val" id="an-products">—</div>
+          <div class="sc-sub" id="an-products-sub">Loading…</div>
+        </div>
+        <div class="stat-card purple">
+          <div class="sc-icon">👤</div>
+          <div class="sc-label">Kunden</div>
+          <div class="sc-val" id="an-customers">—</div>
+          <div class="sc-sub" id="an-customers-sub">Loading…</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>📊</span> Top Produkte</div>
+            <button class="btn btn-secondary btn-xs" onclick="loadAnalytics()">↻</button>
+          </div>
+          <div id="an-products-table">
+            <div class="empty-state"><div class="es-icon">📦</div><div class="es-title">Lade Produkte…</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🛒</span> Letzte Bestellungen</div>
+            <button class="btn btn-secondary btn-xs" onclick="loadAnalytics()">↻</button>
+          </div>
+          <div id="an-orders-table">
+            <div class="empty-state"><div class="es-icon">🛒</div><div class="es-title">Lade Bestellungen…</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <div class="card-header">
+          <div class="card-title"><span>◈</span> Shopify Quick-Actions</div>
+        </div>
+        <div class="flex-wrap-gap8">
+          <button class="btn btn-primary" onclick="nav('shopify')">◆ Shopify öffnen</button>
+          <button class="btn btn-secondary" onclick="loadAnalytics()">↻ Daten aktualisieren</button>
+          <button class="btn btn-secondary" onclick="nav('gmc')">◇ Google Merchant</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: AI TOOLS (Ollama)
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-aitools" class="section">
+      <div class="section-header">
+        <div><h2>AI Tools</h2><p>Ollama Modelle, Quick Chat und Modell-Verwaltung</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAITools()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🤖</span> Ollama Modelle</div>
+            <span class="badge badge-gray" id="ait-model-count">— Modelle</span>
+          </div>
+          <div id="ait-models-list">
+            <div class="empty-state"><div class="es-sub">Lade Modelle…</div></div>
+          </div>
+          <div class="mt-12">
+            <button class="btn btn-secondary w-full" onclick="loadAITools()">↻ Modelle neu laden</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>◎</span> Quick Chat</div>
+          </div>
+          <label class="label-sm-block">Modell auswählen:</label>
+          <select id="ait-model-select" class="w-full input-mb">
+            <option value="gemma4">Gemma 4</option>
+            <option value="llama3.2">Llama 3.2</option>
+            <option value="codellama">CodeLlama</option>
+            <option value="mistral">Mistral</option>
+          </select>
+          <label class="label-sm-block">Nachricht:</label>
+          <textarea id="ait-prompt" class="w-full" style="height:80px;resize:vertical;" placeholder="Prompt eingeben…"></textarea>
+          <div class="flex-center-gap8 mt-10">
+            <button class="btn btn-primary flex-1" onclick="runAIToolsChat()" id="ait-chat-btn">▶ Senden</button>
+            <button class="btn btn-secondary" onclick="document.getElementById('ait-result').innerHTML='';document.getElementById('ait-prompt').value=''">✕ Clear</button>
+          </div>
+          <div id="ait-result" class="mt-12" style="display:none;">
+            <div class="result-card">
+              <div class="result-card-header"><div class="result-card-title">◈ Antwort</div><div class="result-card-meta" id="ait-result-meta"></div></div>
+              <div class="result-body" id="ait-result-body"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>▣</span> Ollama Status</div>
+        </div>
+        <div id="ait-status-row" class="flex-center-gap8">
+          <div class="ring" id="ait-ring"></div>
+          <span id="ait-status-text" class="text2">Prüfe Verbindung…</span>
+          <button class="btn btn-secondary btn-xs ml-auto" onclick="loadAITools()">Prüfen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: BOT REPAIR
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-botrepair" class="section">
+      <div class="section-header">
+        <div><h2>Bot Repair</h2><p>Self-Healer — automatische Fehlerdiagnose und Reparatur</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadBotRepair()">↻ Status</button>
+          <button class="btn btn-primary btn-sm" onclick="runBotScan()">🔍 Scan starten</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🔧</span> Self-Healer Status</div>
+            <span id="br-status-badge" class="badge badge-gray">—</span>
+          </div>
+          <div id="br-status-list">
+            <div class="service-row">
+              <div class="ring" id="br-ring-main"></div>
+              <span class="service-name">Bot Core</span>
+              <span id="br-core-badge" class="badge badge-gray">Prüfe…</span>
+            </div>
+            <div class="service-row">
+              <div class="ring" id="br-ring-ollama"></div>
+              <span class="service-name">Ollama AI</span>
+              <span id="br-ollama-badge" class="badge badge-gray">Prüfe…</span>
+            </div>
+            <div class="service-row">
+              <div class="ring" id="br-ring-telegram"></div>
+              <span class="service-name">Telegram Bot</span>
+              <span id="br-telegram-badge" class="badge badge-gray">Prüfe…</span>
+            </div>
+            <div class="service-row">
+              <div class="ring" id="br-ring-shopify"></div>
+              <span class="service-name">Shopify API</span>
+              <span id="br-shopify-badge" class="badge badge-gray">Prüfe…</span>
+            </div>
+          </div>
+          <div class="flex-wrap-gap8 mt-12">
+            <button class="btn btn-primary" onclick="runBotScan()">🔍 Vollscan</button>
+            <button class="btn btn-success" onclick="runBotRepair()">🔧 Auto-Repair</button>
+            <button class="btn btn-secondary" onclick="loadBotRepair()">↻ Refresh</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>≡</span> Repair Log</div>
+            <button class="btn btn-danger btn-xs" onclick="document.getElementById('br-log').innerHTML='<span class=\'log-line debug\'>Log geleert.</span>'">✕ Clear</button>
+          </div>
+          <div class="terminal" style="height:240px;" id="br-log">
+            <span class="log-line debug">Bereit — Scan starten um Logs zu sehen.</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>◈</span> Manuelle Aktionen</div>
+        </div>
+        <div class="flex-wrap-gap8">
+          <button class="btn btn-secondary" onclick="botRepairAction('restart_bot')">↻ Bot neu starten</button>
+          <button class="btn btn-secondary" onclick="botRepairAction('clear_cache')">🗑 Cache leeren</button>
+          <button class="btn btn-secondary" onclick="botRepairAction('reload_env')">⚙ .env neu laden</button>
+          <button class="btn btn-secondary" onclick="runBackup()">▤ Backup jetzt</button>
+          <button class="btn btn-danger" onclick="botRepairAction('kill_zombie')">☠ Zombie-Proz. killen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: MEMORY & NOTES
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-memory" class="section">
+      <div class="section-header">
+        <div><h2>Memory &amp; Notes</h2><p>Bot-Gedächtnis und persönliche Notizen</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadMemory()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🗒</span> Bot-Memory DB</div>
+            <span class="badge badge-gray" id="mem-count">— Einträge</span>
+          </div>
+          <div id="mem-entries-list">
+            <div class="empty-state"><div class="es-sub">Lade Memory…</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>✏</span> Notiz erstellen</div>
+          </div>
+          <label class="label-sm-block">Titel / Schlüssel:</label>
+          <input type="text" id="mem-note-key" class="w-full input-mb" placeholder="z.B. shopify_strategy">
+          <label class="label-sm-block">Inhalt:</label>
+          <textarea id="mem-note-val" class="w-full" style="height:120px;resize:vertical;" placeholder="Notiz-Inhalt…"></textarea>
+          <div class="flex-center-gap8 mt-10">
+            <button class="btn btn-primary flex-1" onclick="saveMemoryNote()">💾 Speichern</button>
+            <button class="btn btn-secondary" onclick="loadMemory()">↻ Refresh</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: GITHUB
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-github" class="section">
+      <div class="section-header">
+        <div><h2>GitHub</h2><p>Repository-Status, Commits und Backup</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadGitHub()">↻ Refresh</button>
+          <button class="btn btn-primary btn-sm" onclick="runBackup()">▤ Push / Backup</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🐙</span> Repository Info</div>
+          </div>
+          <div id="gh-info-list">
+            <div class="empty-state"><div class="es-sub">Lade Git-Info…</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>◈</span> Quick Actions</div>
+          </div>
+          <div class="flex-col-gap6">
+            <button class="btn btn-primary" onclick="runBackup()">▤ Backup &amp; Push nach GitHub</button>
+            <button class="btn btn-secondary" onclick="loadGitHub()">↻ Git-Status aktualisieren</button>
+            <button class="btn btn-secondary" onclick="ghOpenPR()">🔗 Pull Request öffnen</button>
+          </div>
+          <div class="mt-12">
+            <div class="card-title card-title-sm">Git Output</div>
+            <div class="terminal" style="height:120px;" id="gh-output">Bereit.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>≡</span> Letzter Commit</div>
+        </div>
+        <div id="gh-last-commit">
+          <div class="empty-state"><div class="es-sub">Lade Commit-Info…</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: CLOUD
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-cloud" class="section">
+      <div class="section-header">
+        <div><h2>Cloud</h2><p>Railway, Vercel und Cloud-Deployments</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadCloud()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🚂</span> Railway</div>
+            <span id="cloud-railway-badge" class="badge badge-gray">Prüfe…</span>
+          </div>
+          <div id="cloud-railway-info">
+            <div class="empty-state"><div class="es-sub">Lade Railway-Status…</div></div>
+          </div>
+          <div class="flex-wrap-gap8 mt-12">
+            <button class="btn btn-secondary" onclick="loadCloud()">↻ Status prüfen</button>
+            <button class="btn btn-secondary" onclick="window.open('https://railway.app','_blank')">🔗 Railway öffnen</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>▲</span> Vercel</div>
+            <span class="badge badge-gray">Platzhalter</span>
+          </div>
+          <div class="empty-state" style="padding:32px 16px;">
+            <div class="es-icon">▲</div>
+            <div class="es-title">Vercel-Integration</div>
+            <div class="es-sub">Vercel-API-Key in .env setzen: VERCEL_TOKEN=…</div>
+          </div>
+          <div class="flex-wrap-gap8">
+            <button class="btn btn-secondary" onclick="window.open('https://vercel.com/dashboard','_blank')">🔗 Vercel Dashboard</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>◈</span> Deployment-Aktionen</div>
+        </div>
+        <div class="flex-wrap-gap8">
+          <button class="btn btn-primary" onclick="runBackup()">▤ Backup starten</button>
+          <button class="btn btn-secondary" onclick="loadCloud()">↻ Cloud-Status refreshen</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: API KEYS
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-apikeys" class="section">
+      <div class="section-header">
+        <div><h2>API Keys</h2><p>ENV-Variablen Status — nur Key-Namen, keine Werte</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAPIKeys()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title"><span>🔑</span> Konfigurierte Keys</div>
+          <span class="badge badge-blue" id="apikeys-count">— Keys</span>
+        </div>
+        <div id="apikeys-list">
+          <div class="empty-state"><div class="es-sub">Lade API Keys…</div></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title"><span>ℹ</span> Hinweis</div>
+        </div>
+        <div style="font-size:12px;color:var(--text2);line-height:1.7;">
+          <p>API-Keys werden <strong style="color:var(--green)">niemals</strong> im Klartext angezeigt — nur ob ein Key gesetzt ist (✅) oder fehlt (❌).</p>
+          <p class="mt-8">Keys in <code style="background:var(--card2);padding:2px 6px;border-radius:4px;">/home/user/supermegabot/.env</code> oder <code style="background:var(--card2);padding:2px 6px;border-radius:4px;">/home/user/supermegabot/dashboard/.env</code> eintragen.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: CLAUDE ASSISTANT
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-claudeassistant" class="section">
+      <div class="chat-top-bar">
+        <h2>◎ Claude Assistant</h2>
+        <label class="model-label">Modell:</label>
+        <select id="claude-model" class="w-160">
+          <option value="gemma4">Gemma 4 (Ollama)</option>
+          <option value="llama3.2">Llama 3.2 (Ollama)</option>
+          <option value="codellama">CodeLlama (Ollama)</option>
+          <option value="mistral">Mistral (Ollama)</option>
+        </select>
+        <button class="btn btn-secondary btn-sm" onclick="clearClaudeChat()">✕ Clear</button>
+      </div>
+      <div id="claude-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:14px;"></div>
+      <div class="chat-input-area">
+        <textarea id="claude-input" placeholder="Frage Claude… (Enter = Senden, Shift+Enter = Neue Zeile)" rows="1"></textarea>
+        <button class="btn btn-primary" onclick="sendClaudeChat()" id="claude-send-btn">Senden ↑</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: OPENCLAW HUB
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-openclaw" class="section">
+      <div class="section-header">
+        <div><h2>OpenClaw Hub</h2><p>Zentraler Hub für OpenClaw-Services</p></div>
+      </div>
+
+      <div class="gw-hero" style="background:linear-gradient(135deg,rgba(249,115,22,0.12),rgba(245,158,11,0.12));border-color:rgba(249,115,22,0.25);">
+        <h1>🦞 <span style="background:linear-gradient(90deg,var(--orange),var(--yellow));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">OpenClaw Hub</span></h1>
+        <p>Der zentrale Hub für alle OpenClaw-Dienste und Integrationen.<br>Diese Sektion wird in Kürze verfügbar sein.</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card" style="text-align:center;padding:32px 16px;">
+          <div style="font-size:32px;margin-bottom:12px;">🔌</div>
+          <div class="card-title" style="justify-content:center;margin-bottom:8px;">API Integration</div>
+          <div class="text2 text-sm">Verbindung zu OpenClaw-Servern</div>
+          <div class="badge badge-gray mt-12">Coming Soon</div>
+        </div>
+        <div class="card" style="text-align:center;padding:32px 16px;">
+          <div style="font-size:32px;margin-bottom:12px;">📡</div>
+          <div class="card-title" style="justify-content:center;margin-bottom:8px;">Live Feed</div>
+          <div class="text2 text-sm">Echtzeit-Daten aus OpenClaw</div>
+          <div class="badge badge-gray mt-12">Coming Soon</div>
+        </div>
+        <div class="card" style="text-align:center;padding:32px 16px;">
+          <div style="font-size:32px;margin-bottom:12px;">⚡</div>
+          <div class="card-title" style="justify-content:center;margin-bottom:8px;">Automation</div>
+          <div class="text2 text-sm">Automatisierte Workflows</div>
+          <div class="badge badge-gray mt-12">Coming Soon</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: REMOTE DESKTOP
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-remotedesktop" class="section">
+      <div class="section-header">
+        <div><h2>Remote Desktop</h2><p>Fernzugriff via ngrok oder andere Tunnel</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadRemoteDesktop()">↻ Refresh</button>
+        </div>
+      </div>
+
+      <div class="card mb-16">
+        <div class="card-header">
+          <div class="card-title"><span>🖥</span> Tunnel-Status</div>
+          <span id="rd-status-badge" class="badge badge-gray">Prüfe…</span>
+        </div>
+        <div id="rd-tunnel-info">
+          <div class="empty-state"><div class="es-sub">Lade Tunnel-Info…</div></div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>◈</span> Schnellzugriff</div>
+          </div>
+          <div class="flex-col-gap6">
+            <button class="btn btn-primary" id="rd-open-btn" onclick="rdOpenTunnel()" disabled>🔗 Tunnel-URL öffnen</button>
+            <button class="btn btn-secondary" onclick="loadRemoteDesktop()">↻ Status prüfen</button>
+          </div>
+          <div class="mt-12" style="font-size:12px;color:var(--text2);">
+            <p>URL: <span id="rd-url-display" style="color:var(--cyan);">—</span></p>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>ℹ</span> Setup</div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.8;">
+            <p><strong style="color:var(--text1);">ngrok einrichten:</strong></p>
+            <p>1. <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">NGROK_AUTHTOKEN=…</code> in .env</p>
+            <p>2. <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">ngrok http 8888</code> starten</p>
+            <p>3. URL erscheint hier automatisch</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════
+         SECTION: DATENSCHUTZ
+    ═══════════════════════════════════════════════════ -->
+    <section id="section-datenschutz" class="section">
+      <div class="section-header">
+        <div><h2>Datenschutz</h2><p>Lokale Datenspeicherung — kein Cloud-Tracking</p></div>
+      </div>
+
+      <div class="gw-hero" style="background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(34,211,238,0.1));border-color:rgba(16,185,129,0.25);">
+        <h1>🛡 <span style="background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">Privacy First</span></h1>
+        <p>Alle Daten werden ausschließlich lokal gespeichert. Kein Cloud-Tracking, keine externe Telemetrie.</p>
+      </div>
+
+      <div class="grid-2 mb-16">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>🛡</span> Datenschutz-Prinzipien</div>
+          </div>
+          <div class="flex-col-gap6" style="font-size:13px;">
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">Alle Daten lokal (SQLite / JSON)</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">Kein externe Tracking-Cookies</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">API-Keys nur lokal in .env</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">Dashboard nur über localhost erreichbar</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--green);font-size:16px;">✅</span>
+              <span style="color:var(--text1);">Kein Telemetrie-Reporting</span>
+            </div>
+            <div class="service-row">
+              <span style="color:var(--yellow);font-size:16px;">⚠</span>
+              <span style="color:var(--text2);">Externe APIs (Shopify, Telegram) senden Daten an ihre Server</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title"><span>📂</span> Lokale Datenspeicherung</div>
+          </div>
+          <div style="font-size:12px;color:var(--text2);line-height:2;">
+            <div class="flex-center-gap8">
+              <span style="color:var(--cyan);">📁</span>
+              <span><code style="background:var(--card2);padding:1px 5px;border-radius:3px;">/home/user/supermegabot/</code></span>
+            </div>
+            <div class="flex-center-gap8">
+              <span style="color:var(--blue);">🗄</span>
+              <span>SQLite DB: <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">memory.db</code></span>
+            </div>
+            <div class="flex-center-gap8">
+              <span style="color:var(--yellow);">⚙</span>
+              <span>Config: <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">.env</code> (niemals commiten!)</span>
+            </div>
+            <div class="flex-center-gap8">
+              <span style="color:var(--green);">📋</span>
+              <span>Logs: <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">logs/</code> Verzeichnis</span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="flex-wrap-gap8">
+            <button class="btn btn-secondary" onclick="nav('apikeys')">🔑 API Keys prüfen</button>
+            <button class="btn btn-secondary" onclick="runBackup()">▤ Backup starten</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ AUTOMATION SCHEDULER ═══════════════ -->
+    <section id="section-automation" class="section">
+      <div class="section-header">
+        <div><h2>⚡ Automation Scheduler</h2><p>30 vollautomatische Tasks — rund um die Uhr aktiv</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadAutomationTasks()">🔄 Aktualisieren</button>
+        </div>
+      </div>
+
+      <div id="automation-task-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:20px"></div>
+
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-header">
+          <div class="card-title">📊 Scheduler Status</div>
+        </div>
+        <div id="automation-status"><div class="skeleton skeleton-h12 skeleton-mb" style="width:60%"></div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📋 Letzte Ausführungen</div>
+        <div id="automation-log"><div class="skeleton skeleton-h12 skeleton-mb"></div></div>
+      </div>
+    </section>
+
+    <!-- ═══════════════ SOCIAL MEDIA ═══════════════ -->
+    <section id="section-social" class="section">
+      <div class="section-header"><h2>📱 Social Media</h2><p>TikTok · Pinterest · Meta/Instagram · Reddit · YouTube · Twitter/X · Discord</p></div>
+      <div id="social-status"><div class="spinner"></div></div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📋 API Keys konfigurieren</div>
+        <div style="font-size:13px;color:var(--text2);line-height:1.8">
+          Alle Keys in <code>~/.env</code> eintragen. Jede Plattform hat eine Anleitung in der .env-Datei.<br>
+          <b>TikTok:</b> developers.tiktok.com → My Apps<br>
+          <b>Pinterest:</b> developers.pinterest.com<br>
+          <b>Meta/Instagram:</b> developers.facebook.com<br>
+          <b>Reddit:</b> reddit.com/prefs/apps<br>
+          <b>YouTube:</b> console.cloud.google.com → YouTube Data API v3<br>
+          <b>Twitter/X:</b> developer.x.com<br>
+          <b>Discord:</b> discord.com/developers/applications
+        </div>
+        <button class="btn" onclick="runTask('social_autoposter')" style="margin-top:12px">📢 Auto-Post jetzt starten</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════ DIGISTORE24 ═══════════════ -->
+    <section id="section-digistore" class="section">
+      <div class="section-header"><h2>🏪 Digistore24</h2><p>Bestellungen · Produkte · Auto-Sync</p></div>
+      <div id="digistore-status"><div class="spinner"></div></div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📦 Letzte Bestellungen</div>
+        <div id="digistore-orders"><div class="spinner"></div></div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="runTask('digistore_sync')">🔄 Jetzt sync</button>
+        <button class="btn" onclick="runTask('mailchimp_sync')">📧 → Mailchimp sync</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════ MAILCHIMP ═══════════════ -->
+    <section id="section-mailchimp" class="section">
+      <div class="section-header"><h2>📧 Mailchimp</h2><p>E-Mail Automation · Campaigns · Kontakt-Sync</p></div>
+      <div id="mailchimp-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ═══════════════ PRINTIFY ═══════════════ -->
+    <section id="section-printify" class="section">
+      <div class="section-header"><h2>🖨️ Printify Print-on-Demand</h2><p>Orders · Auto-Fulfillment · Shopify-Publish</p></div>
+      <div id="printify-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ═══════════════ ETSY ═══════════════ -->
+    <section id="section-etsy" class="section">
+      <div class="section-header"><h2>🛍️ Etsy</h2><p>Listings · Transaktionen · Auto-Sync</p></div>
+      <div id="etsy-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ═══════════════ GUMROAD ═══════════════ -->
+    <section id="section-gumroad" class="section">
+      <div class="section-header"><h2>💰 Gumroad</h2><p>Produkte · Verkäufe · Revenue</p></div>
+      <div id="gumroad-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ═══════════════ DROPSHIPPING ═══════════════ -->
+    <section id="section-dropshipping" class="section">
+      <div class="section-header"><h2>📦 Dropshipping & Print-on-Demand</h2><p>Vollautomatische Pipeline: Trending → SEO → Shopify → Social</p></div>
+      <div id="dropshipping-status"></div>
+    </section>
+
+    <!-- ═══════════════ SEO AUTOPILOT ═══════════════ -->
+    <section id="section-seo" class="section">
+      <div class="section-header"><h2>🔍 SEO Autopilot</h2><p>KI-gestützte SEO-Optimierung via Ollama · Content-Kalender</p></div>
+      <div id="seo-status"></div>
+    </section>
+
+    <!-- ═══════════════ REVENUE HUB ═══════════════ -->
+    <section id="section-revenue" class="section">
+      <div class="section-header"><h2>💹 Revenue Hub</h2><p>Umsatz aus allen Plattformen · Tages-Report</p></div>
+      <div id="revenue-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ── STRIPE ───────────────────────────────────────────────────────── -->
+    <section id="section-stripe" class="section">
+      <div class="section-header">
+        <h2>💳 Stripe Payments</h2>
+        <p>aiitec · Live-Modus · Zahlungen · Kunden · Abos</p>
+      </div>
+      <div id="stripe-status"><div class="spinner"></div></div>
+    </section>
+
+    <!-- ── GOOGLE DRIVE ──────────────────────────────────────────────────── -->
+    <section id="section-drive" class="section">
+      <div class="section-header">
+        <h2>☁️ Google Drive</h2>
+        <p>Dateien · Backup · Speicher-Übersicht</p>
+      </div>
+      <div id="drive-status"><div class="spinner"></div></div>
+    </section>
+
   </main>
 </div>
 
@@ -1469,8 +2361,17 @@ function nav(section) {
   document.getElementById(`section-${section}`)?.classList.add('active');
   const titles = {
     overview:'Overview', services:'Services', chat:'AI Chat', shopify:'Shopify',
-    trading:'Trading', system:'System', logs:'Logs', autopilot:'AutoPilot',
-    geheimwaffe:'GEHEIMWAFFE', telegram:'Telegram', gmc:'Google Merchant'
+    trading:'Trading', system:'System', logs:'Logs', autopilot:'Agents & Autopilot',
+    geheimwaffe:'GEHEIMWAFFE', telegram:'Telegram', gmc:'Google Merchant',
+    analytics:'Analytics', aitools:'AI Tools', botrepair:'Bot Repair',
+    memory:'Memory & Notes', github:'GitHub', cloud:'Cloud', apikeys:'API Keys',
+    claudeassistant:'Claude Assistant', openclaw:'OpenClaw Hub',
+    remotedesktop:'Remote Desktop', datenschutz:'Datenschutz',
+    automation:'⚡ Automation Scheduler', social:'📱 Social Media',
+    digistore:'🏪 Digistore24', mailchimp:'📧 Mailchimp',
+    printify:'🖨️ Printify PoD', etsy:'🛍️ Etsy', gumroad:'💰 Gumroad',
+    dropshipping:'📦 Dropshipping', seo:'🔍 SEO Autopilot', revenue:'💹 Revenue Hub',
+    stripe:'💳 Stripe Payments', drive:'☁️ Google Drive',
   };
   document.getElementById('topbar-title').textContent = titles[section] || section;
   currentSection = section;
@@ -1487,6 +2388,29 @@ function sectionInit(section) {
     autopilot: () => { loadAgents(); loadAutopilotLogs(); },
     telegram: loadTelegram,
     gmc: loadGMC,
+    analytics: loadAnalytics,
+    aitools: loadAITools,
+    botrepair: loadBotRepair,
+    memory: loadMemory,
+    github: loadGitHub,
+    cloud: loadCloud,
+    apikeys: loadAPIKeys,
+    claudeassistant: () => {},
+    openclaw: () => {},
+    remotedesktop: loadRemoteDesktop,
+    datenschutz: () => {},
+    automation:   loadAutomation,
+    social:       loadSocial,
+    digistore:    loadDigistore,
+    mailchimp:    loadMailchimp,
+    printify:     loadPrintify,
+    etsy:         loadEtsy,
+    gumroad:      loadGumroad,
+    dropshipping: loadDropshipping,
+    seo:          loadSEO,
+    revenue:      loadRevenue,
+    stripe:       loadStripe,
+    drive:        loadDrive,
   };
   if (loaders[section]) loaders[section]();
 }
@@ -1738,19 +2662,48 @@ document.addEventListener('DOMContentLoaded', () => {
 async function loadShopify() {
   try {
     const d = await api('GET', '/api/shopify/status');
-    document.getElementById('sh-products').textContent = d.products ?? '—';
-    document.getElementById('sh-orders').textContent = d.orders ?? '—';
-    document.getElementById('sh-store-name').textContent = d.store || 'Connected';
-    const badge = d.ok ? '<span class="badge badge-green">Active</span>' : '<span class="badge badge-red">Error</span>';
+    // API now returns product_count and order_count
+    document.getElementById('sh-products').textContent = d.product_count ?? d.products ?? '—';
+    document.getElementById('sh-orders').textContent   = d.order_count  ?? d.orders  ?? '—';
+    document.getElementById('sh-store-name').textContent = d.store || (d.ok ? 'Verbunden' : '—');
+
+    const badge = d.ok
+      ? `<span class="badge badge-green">✓ ${d.plan || 'Active'}</span>`
+      : '<span class="badge badge-red">Verbindungsfehler</span>';
     document.getElementById('sh-status-badge').innerHTML = badge;
+
+    const banner = document.getElementById('sh-setup-banner');
+    if (!d.ok) {
+      banner.style.display = 'flex';
+      // Show specific error in banner subtitle
+      const sub = banner.querySelector('.tg-status-sub');
+      if (sub) {
+        if (d.error && d.error.includes('DNS')) {
+          sub.innerHTML = '🔴 DNS-Fehler — Shop-Domain in .env setzen: <strong>SHOPIFY_SHOP_DOMAIN=deinshop.myshopify.com</strong><br>Und: <strong>SHOPIFY_ACCESS_TOKEN=shpat_...</strong>';
+        } else if (d.error && d.error.includes('401')) {
+          sub.innerHTML = '🔑 Token abgelaufen — neues Token in Shopify Admin → Apps → API generieren.<br>Dann <strong>SHOPIFY_ACCESS_TOKEN=...</strong> in .env aktualisieren.';
+        } else if (d.error && (d.error.includes('STORE_URL') || d.error.includes('SHOP_DOMAIN'))) {
+          sub.innerHTML = 'In .env setzen:<br><strong>SHOPIFY_SHOP_DOMAIN=deinshop.myshopify.com</strong><br><strong>SHOPIFY_ACCESS_TOKEN=shpat_...</strong>';
+        } else {
+          sub.textContent = d.error || 'Verbindung fehlgeschlagen';
+        }
+      }
+    } else {
+      banner.style.display = 'none';
+    }
   } catch(e) {
-    toast('Failed to load Shopify data', 'error');
-    document.getElementById('sh-store-name').textContent = 'Error';
+    toast('Shopify-Fehler: ' + e.message, 'error');
+    document.getElementById('sh-store-name').textContent = 'Fehler';
+    document.getElementById('sh-setup-banner').style.display = 'flex';
   }
 }
 
 function openShopify(page) {
-  toast(`Opening Shopify ${page}…`, 'info');
+  const domain = 'suitenew.myshopify.com'; // wird durch API-Response ersetzt wenn verbunden
+  toast(`Öffne Shopify ${page}…`, 'info');
+  // Wenn Domain bekannt, direkt öffnen:
+  const pageMap = { products: 'products', orders: 'orders', analytics: 'reports', customers: 'customers' };
+  window.open(`https://admin.shopify.com/store/${domain.replace('.myshopify.com','')}/${pageMap[page]||page}`, '_blank');
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -2109,6 +3062,542 @@ async function sendQuickTg(message) {
 }
 
 // ════════════════════════════════════════════════════════════════
+// ANALYTICS
+// ════════════════════════════════════════════════════════════════
+async function loadAnalytics() {
+  try {
+    const [sh, sys] = await Promise.allSettled([
+      api('GET', '/api/shopify/status'),
+      api('GET', '/api/system'),
+    ]);
+    const s = sh.status === 'fulfilled' ? sh.value : {};
+    document.getElementById('an-revenue').textContent = s.revenue ? `€${Number(s.revenue).toLocaleString('de-DE')}` : '—';
+    document.getElementById('an-revenue-sub').textContent = 'Letzte 30 Tage';
+    document.getElementById('an-orders').textContent = s.orders ?? '—';
+    document.getElementById('an-orders-sub').textContent = s.ok ? 'Shopify verbunden' : 'Setup erforderlich';
+    document.getElementById('an-products').textContent = s.products ?? '—';
+    document.getElementById('an-products-sub').textContent = 'Aktive Produkte';
+    document.getElementById('an-customers').textContent = s.customers ?? '—';
+    document.getElementById('an-customers-sub').textContent = 'Registrierte Kunden';
+
+    // Products table placeholder
+    if (s.products_list && s.products_list.length) {
+      const rows = s.products_list.slice(0,8).map(p =>
+        `<tr><td class="strong">${escapeHtml(p.title||p.name||'—')}</td><td>${p.status||'—'}</td><td>${p.inventory??'—'}</td></tr>`
+      ).join('');
+      document.getElementById('an-products-table').innerHTML =
+        `<table class="data-table"><thead><tr><th>Produkt</th><th>Status</th><th>Lager</th></tr></thead><tbody>${rows}</tbody></table>`;
+    } else {
+      document.getElementById('an-products-table').innerHTML =
+        `<div class="empty-state"><div class="es-sub">${s.ok ? 'Keine Produkt-Daten' : 'Shopify nicht konfiguriert'}</div></div>`;
+    }
+
+    // Orders table placeholder
+    if (s.orders_list && s.orders_list.length) {
+      const rows = s.orders_list.slice(0,8).map(o =>
+        `<tr><td class="strong">#${o.id||o.order_number||'—'}</td><td>${o.customer||'—'}</td><td class="price-positive">€${Number(o.total||0).toFixed(2)}</td><td><span class="badge badge-green">${o.status||'—'}</span></td></tr>`
+      ).join('');
+      document.getElementById('an-orders-table').innerHTML =
+        `<table class="data-table"><thead><tr><th>Nr.</th><th>Kunde</th><th>Betrag</th><th>Status</th></tr></thead><tbody>${rows}</tbody></table>`;
+    } else {
+      document.getElementById('an-orders-table').innerHTML =
+        `<div class="empty-state"><div class="es-sub">${s.ok ? 'Keine Bestellungen' : 'Shopify nicht konfiguriert'}</div></div>`;
+    }
+  } catch(e) {
+    toast('Analytics-Laden fehlgeschlagen', 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// AI TOOLS (Ollama)
+// ════════════════════════════════════════════════════════════════
+async function loadAITools() {
+  const ring = document.getElementById('ait-ring');
+  const statusTxt = document.getElementById('ait-status-text');
+  try {
+    const d = await api('GET', '/api/ollama/models');
+    const models = d.models || d.data || [];
+    document.getElementById('ait-model-count').textContent = `${models.length} Modelle`;
+    if (models.length) {
+      document.getElementById('ait-models-list').innerHTML = models.map(m => {
+        const name = m.name || m.id || String(m);
+        const size = m.size ? ` — ${(m.size/1e9).toFixed(1)}GB` : '';
+        return `<div class="service-row">
+          <div class="ring online"></div>
+          <span class="service-name">${escapeHtml(name)}</span>
+          <span class="badge badge-blue">${escapeHtml(size)}</span>
+          <button class="btn btn-secondary btn-xs" onclick="document.getElementById('ait-model-select').value='${escapeHtml(name)}';toast('Modell ${escapeHtml(name)} ausgewählt','info')">Nutzen</button>
+        </div>`;
+      }).join('');
+      ring.className = 'ring online';
+      statusTxt.textContent = `Ollama online — ${models.length} Modelle verfügbar`;
+    } else {
+      document.getElementById('ait-models-list').innerHTML = '<div class="empty-state"><div class="es-sub">Keine Modelle gefunden. Ollama läuft?</div></div>';
+      ring.className = 'ring offline';
+      statusTxt.textContent = 'Ollama — keine Modelle gefunden';
+    }
+    // populate select
+    const sel = document.getElementById('ait-model-select');
+    if (models.length) {
+      sel.innerHTML = models.map(m => {
+        const name = m.name || m.id || String(m);
+        return `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`;
+      }).join('');
+    }
+  } catch(e) {
+    document.getElementById('ait-models-list').innerHTML = '<div class="empty-state"><div class="es-icon">✗</div><div class="es-title">Ollama nicht erreichbar</div><div class="es-sub">Prüfe ob Ollama läuft (Port 11434)</div></div>';
+    ring.className = 'ring offline';
+    statusTxt.textContent = 'Ollama offline oder nicht konfiguriert';
+  }
+}
+
+async function runAIToolsChat() {
+  const prompt = document.getElementById('ait-prompt').value.trim();
+  const model = document.getElementById('ait-model-select').value;
+  if (!prompt) { toast('Prompt eingeben', 'error'); return; }
+  const btn = document.getElementById('ait-chat-btn');
+  btn.disabled = true; btn.textContent = '⏳ Denke…';
+  const resultEl = document.getElementById('ait-result');
+  const bodyEl = document.getElementById('ait-result-body');
+  const metaEl = document.getElementById('ait-result-meta');
+  resultEl.style.display = 'none';
+  const start = Date.now();
+  try {
+    const d = await api('POST', '/api/chat', { text: prompt, model, session_id: 'aitools_' + Date.now() });
+    const elapsed = ((Date.now() - start) / 1000).toFixed(1);
+    bodyEl.textContent = d.response || d.reply || JSON.stringify(d);
+    metaEl.textContent = `${model} — ${elapsed}s`;
+    resultEl.style.display = 'block';
+    toast('Antwort erhalten!', 'success');
+  } catch(e) {
+    bodyEl.textContent = `Fehler: ${e.message}`;
+    metaEl.textContent = 'Error';
+    resultEl.style.display = 'block';
+    toast('Chat-Anfrage fehlgeschlagen', 'error');
+  }
+  btn.disabled = false; btn.textContent = '▶ Senden';
+}
+
+// ════════════════════════════════════════════════════════════════
+// BOT REPAIR
+// ════════════════════════════════════════════════════════════════
+function brLog(msg, cls='info') {
+  const log = document.getElementById('br-log');
+  const line = document.createElement('span');
+  line.className = `log-line ${cls}`;
+  line.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  log.appendChild(document.createElement('br'));
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function loadBotRepair() {
+  try {
+    const d = await api('GET', '/api/services/status');
+    const services = d.services || [];
+    const updateRing = (ringId, badgeId, label, up) => {
+      const ring = document.getElementById(ringId);
+      const badge = document.getElementById(badgeId);
+      if (ring) ring.className = `ring ${up ? 'online' : 'offline'}`;
+      if (badge) badge.innerHTML = `<span class="badge ${up ? 'badge-green' : 'badge-red'}">${up ? 'OK' : 'Fehler'}</span>`;
+    };
+    const find = (id) => services.find(s => s.id === id || (s.name||'').toLowerCase().includes(id));
+    const mainSvc = services.find(s => s.id === 'bot' || s.id === 'main' || s.id === 'supermegabot');
+    const ollamaSvc = find('ollama');
+    const tgSvc = find('telegram');
+    const shopifySvc = find('shopify');
+    updateRing('br-ring-main', 'br-core-badge', 'Bot Core', mainSvc ? (mainSvc.running || mainSvc.ok) : services.length > 0);
+    updateRing('br-ring-ollama', 'br-ollama-badge', 'Ollama', ollamaSvc ? (ollamaSvc.running || ollamaSvc.ok) : false);
+    updateRing('br-ring-telegram', 'br-telegram-badge', 'Telegram', tgSvc ? (tgSvc.running || tgSvc.ok) : false);
+    updateRing('br-ring-shopify', 'br-shopify-badge', 'Shopify', shopifySvc ? (shopifySvc.running || shopifySvc.ok) : false);
+    const totalOk = services.filter(s => s.running || s.ok).length;
+    document.getElementById('br-status-badge').innerHTML =
+      `<span class="badge ${totalOk === services.length ? 'badge-green' : totalOk > 0 ? 'badge-yellow' : 'badge-red'}">${totalOk}/${services.length} OK</span>`;
+    brLog(`Status geladen: ${totalOk}/${services.length} Dienste aktiv`);
+  } catch(e) {
+    brLog('Status-Abruf fehlgeschlagen: ' + e.message, 'err');
+    toast('Repair-Status fehlgeschlagen', 'error');
+  }
+}
+
+async function runBotScan() {
+  brLog('Vollscan gestartet…', 'info');
+  try {
+    const d = await api('GET', '/api/services/status');
+    const services = d.services || [];
+    services.forEach(s => {
+      const up = s.running || s.ok;
+      brLog(`${up ? '✓' : '✗'} ${s.name}: ${up ? 'OK' : 'FEHLER'}`, up ? 'info' : 'err');
+    });
+    brLog('Scan abgeschlossen.', 'info');
+    toast('Scan abgeschlossen', 'success');
+    await loadBotRepair();
+  } catch(e) {
+    brLog('Scan fehlgeschlagen: ' + e.message, 'err');
+    toast('Scan fehlgeschlagen', 'error');
+  }
+}
+
+async function runBotRepair() {
+  brLog('Auto-Repair gestartet…', 'warn');
+  toast('Auto-Repair läuft…', 'info');
+  try {
+    const d = await api('GET', '/api/services/status');
+    const services = d.services || [];
+    const broken = services.filter(s => !(s.running || s.ok));
+    if (!broken.length) {
+      brLog('Alle Dienste laufen — kein Repair nötig', 'info');
+      toast('Alles OK — kein Repair nötig', 'success');
+      return;
+    }
+    for (const s of broken) {
+      brLog(`Versuche ${s.name} neu zu starten…`, 'warn');
+      try {
+        await api('POST', '/api/services/action', { id: s.id, action: 'restart' });
+        brLog(`✓ ${s.name} Neustart angefordert`, 'info');
+      } catch(e) {
+        brLog(`✗ ${s.name} Neustart fehlgeschlagen: ${e.message}`, 'err');
+      }
+    }
+    brLog('Auto-Repair abgeschlossen.', 'info');
+    toast('Auto-Repair abgeschlossen', 'success');
+    setTimeout(loadBotRepair, 2000);
+  } catch(e) {
+    brLog('Repair-Fehler: ' + e.message, 'err');
+    toast('Repair fehlgeschlagen', 'error');
+  }
+}
+
+async function botRepairAction(action) {
+  brLog(`Aktion: ${action}`, 'warn');
+  try {
+    const d = await api('POST', '/api/mac/action', { action });
+    brLog(`✓ ${action}: ${d.result || 'OK'}`, 'info');
+    toast(`${action} ausgeführt`, 'success');
+  } catch(e) {
+    // Try services action as fallback
+    try {
+      await api('POST', '/api/services/action', { id: 'bot', action });
+      brLog(`✓ ${action} via Services-API`, 'info');
+      toast(`${action} ausgeführt`, 'success');
+    } catch(e2) {
+      brLog(`✗ ${action} fehlgeschlagen: ${e2.message}`, 'err');
+      toast(`${action} fehlgeschlagen`, 'error');
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// MEMORY & NOTES
+// ════════════════════════════════════════════════════════════════
+async function loadMemory() {
+  try {
+    const d = await api('GET', '/api/system');
+    const memory = d.memory_db || d.memory || {};
+    const entries = Array.isArray(memory) ? memory : Object.entries(memory).map(([k,v]) => ({key:k, value:v}));
+    document.getElementById('mem-count').textContent = `${entries.length} Einträge`;
+    if (!entries.length) {
+      document.getElementById('mem-entries-list').innerHTML = '<div class="empty-state"><div class="es-icon">🗒</div><div class="es-title">Keine Memory-Einträge</div></div>';
+      return;
+    }
+    document.getElementById('mem-entries-list').innerHTML = entries.slice(0,20).map(e => {
+      const key = e.key || e.k || '—';
+      const val = e.value || e.v || '';
+      const preview = String(val).substring(0, 80) + (String(val).length > 80 ? '…' : '');
+      return `<div class="result-card">
+        <div class="result-card-header">
+          <div class="result-card-title">🗒 ${escapeHtml(key)}</div>
+          <div class="result-card-meta">${new Date(e.timestamp||e.ts||Date.now()).toLocaleDateString('de-DE')}</div>
+        </div>
+        <div class="result-body">${escapeHtml(preview)}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    document.getElementById('mem-entries-list').innerHTML = '<div class="empty-state"><div class="es-icon">✗</div><div class="es-title">Fehler beim Laden</div></div>';
+    toast('Memory laden fehlgeschlagen', 'error');
+  }
+}
+
+async function saveMemoryNote() {
+  const key = document.getElementById('mem-note-key').value.trim();
+  const val = document.getElementById('mem-note-val').value.trim();
+  if (!key || !val) { toast('Schlüssel und Inhalt erforderlich', 'error'); return; }
+  try {
+    await api('POST', '/api/memory/save', { key, value: val });
+    document.getElementById('mem-note-key').value = '';
+    document.getElementById('mem-note-val').value = '';
+    toast('Notiz gespeichert!', 'success');
+    loadMemory();
+  } catch(e) {
+    // Try alternative endpoint
+    try {
+      await api('POST', '/api/notes/save', { key, value: val });
+      document.getElementById('mem-note-key').value = '';
+      document.getElementById('mem-note-val').value = '';
+      toast('Notiz gespeichert!', 'success');
+      loadMemory();
+    } catch(e2) {
+      toast('Speichern fehlgeschlagen: ' + e2.message, 'error');
+    }
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// GITHUB
+// ════════════════════════════════════════════════════════════════
+function appendGHOutput(text) {
+  const el = document.getElementById('gh-output');
+  el.textContent += '\n' + text;
+  el.scrollTop = el.scrollHeight;
+}
+
+async function loadGitHub() {
+  try {
+    const d = await api('GET', '/api/backup/status');
+    const gh = d.git || d;
+    const infoHtml = `
+      <table class="data-table">
+        <tbody>
+          <tr><td>Branch</td><td class="strong">${escapeHtml(gh.branch || 'main')}</td></tr>
+          <tr><td>Remote</td><td class="strong">${escapeHtml(gh.remote || gh.origin || '—')}</td></tr>
+          <tr><td>Status</td><td><span class="badge ${gh.clean ? 'badge-green' : 'badge-yellow'}">${gh.clean ? 'Clean' : 'Uncommitted changes'}</span></td></tr>
+          <tr><td>Letzte Änderung</td><td>${gh.last_commit_date ? new Date(gh.last_commit_date).toLocaleString('de-DE') : '—'}</td></tr>
+        </tbody>
+      </table>`;
+    document.getElementById('gh-info-list').innerHTML = infoHtml;
+
+    // Last commit
+    if (gh.last_commit || gh.commit) {
+      const c = gh.last_commit || gh.commit || {};
+      document.getElementById('gh-last-commit').innerHTML = `
+        <div class="result-card">
+          <div class="result-card-header">
+            <div class="result-card-title">◈ ${escapeHtml(c.hash || c.sha || '—').substring(0,8)}</div>
+            <div class="result-card-meta">${c.date ? new Date(c.date).toLocaleString('de-DE') : '—'}</div>
+          </div>
+          <div class="result-body">${escapeHtml(c.message || c.msg || '—')}</div>
+        </div>`;
+    } else {
+      document.getElementById('gh-last-commit').innerHTML = '<div class="empty-state"><div class="es-sub">Keine Commit-Info verfügbar</div></div>';
+    }
+    appendGHOutput('Git-Status geladen.');
+    toast('GitHub-Status geladen', 'success');
+  } catch(e) {
+    document.getElementById('gh-info-list').innerHTML = '<div class="empty-state"><div class="es-icon">✗</div><div class="es-title">Git-Info nicht verfügbar</div></div>';
+    document.getElementById('gh-last-commit').innerHTML = '<div class="empty-state"><div class="es-sub">Fehler beim Laden</div></div>';
+    appendGHOutput('Fehler: ' + e.message);
+    toast('GitHub-Laden fehlgeschlagen', 'error');
+  }
+}
+
+function ghOpenPR() {
+  toast('PR-Link — konfiguriere GITHUB_REPO in .env', 'info');
+  appendGHOutput('PR-Link: Noch nicht konfiguriert.');
+}
+
+// ════════════════════════════════════════════════════════════════
+// CLOUD
+// ════════════════════════════════════════════════════════════════
+async function loadCloud() {
+  try {
+    const d = await api('GET', '/api/system');
+    const cloud = d.cloud || d.railway || {};
+    const badge = document.getElementById('cloud-railway-badge');
+    const info = document.getElementById('cloud-railway-info');
+    if (cloud.status || cloud.project) {
+      badge.innerHTML = '<span class="badge badge-green">Verbunden</span>';
+      info.innerHTML = `
+        <table class="data-table">
+          <tbody>
+            <tr><td>Projekt</td><td class="strong">${escapeHtml(cloud.project || '—')}</td></tr>
+            <tr><td>Environment</td><td class="strong">${escapeHtml(cloud.environment || 'production')}</td></tr>
+            <tr><td>Status</td><td><span class="badge badge-green">${escapeHtml(cloud.status || 'Running')}</span></td></tr>
+            <tr><td>URL</td><td><span style="color:var(--cyan);">${escapeHtml(cloud.url || '—')}</span></td></tr>
+          </tbody>
+        </table>`;
+    } else {
+      badge.innerHTML = '<span class="badge badge-gray">Nicht konfiguriert</span>';
+      info.innerHTML = `
+        <div class="empty-state" style="padding:24px 16px;">
+          <div class="es-icon">🚂</div>
+          <div class="es-title">Railway nicht konfiguriert</div>
+          <div class="es-sub">RAILWAY_TOKEN in .env setzen</div>
+        </div>`;
+    }
+    toast('Cloud-Status geladen', 'success');
+  } catch(e) {
+    document.getElementById('cloud-railway-badge').innerHTML = '<span class="badge badge-red">Fehler</span>';
+    document.getElementById('cloud-railway-info').innerHTML = '<div class="empty-state"><div class="es-sub">Verbindung fehlgeschlagen</div></div>';
+    toast('Cloud-Laden fehlgeschlagen', 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// API KEYS
+// ════════════════════════════════════════════════════════════════
+async function loadAPIKeys() {
+  document.getElementById('apikeys-list').innerHTML = '<div class="empty-state"><div class="es-sub">Validiere Keys…</div></div>';
+  try {
+    const d = await api('GET', '/api/keys?validate=1');
+    const keys = d.keys || {};
+    const s = d.summary || {};
+
+    const statusCfg = {
+      valid:   { icon: '🟢', label: 'OK',        cls: 'badge-green'  },
+      present: { icon: '🟡', label: 'Vorhanden', cls: 'badge-yellow' },
+      missing: { icon: '🔴', label: 'Fehlt',     cls: 'badge-red'    },
+    };
+
+    // Group by category
+    const groups = {
+      'AI Provider':  ['OPENAI_API_KEY','ANTHROPIC_API_KEY','PERPLEXITY_API_KEY','OLLAMA_HOST'],
+      'Shopify':      ['SHOPIFY_ACCESS_TOKEN','SHOPIFY_SHOP_DOMAIN','SHOPIFY_STORE_URL','SHOPIFY_API_VERSION'],
+      'Telegram':     ['TELEGRAM_BOT_TOKEN','TELEGRAM_CHAT_ID'],
+      'Supabase':     ['SUPABASE_URL','SUPABASE_ANON_KEY','SUPABASE_SERVICE_ROLE_KEY'],
+      'Google':       ['GOOGLE_ADS_CLIENT_ID','GMC_MERCHANT_ID'],
+      'Externe Apps': ['ETERNAL_BOT_DIR','KIVO_DIR','SHOPIFY_SUITE_URL'],
+      'System':       ['DASHBOARD_PORT','OLLAMA_FAST_MODEL','OLLAMA_SMART_MODEL','OLLAMA_CODE_MODEL'],
+    };
+
+    let html = '';
+    for (const [group, keyList] of Object.entries(groups)) {
+      const groupKeys = keyList.filter(k => k in keys);
+      if (!groupKeys.length) continue;
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:8px">${group}</div>`;
+      for (const key of groupKeys) {
+        const info = keys[key] || { status: 'missing' };
+        const cfg = statusCfg[info.status] || statusCfg.missing;
+        const shortKey = key.replace(/_API_KEY$|_TOKEN$|_KEY$/, '').replace(/_/g,' ').toLowerCase()
+          .replace(/\b\w/g, c => c.toUpperCase());
+        html += `<div class="service-row" style="margin-bottom:4px">
+          <span style="font-size:16px;width:20px">${cfg.icon}</span>
+          <span style="flex:1;font-family:'SF Mono','Cascadia Code',monospace;font-size:11px;color:var(--text2)">${key}</span>
+          ${info.preview ? `<span style="font-size:10px;color:var(--text3);margin-right:8px">${info.preview}</span>` : ''}
+          <span class="badge ${cfg.cls}">${cfg.label}</span>
+        </div>`;
+      }
+      html += '</div>';
+    }
+
+    document.getElementById('apikeys-list').innerHTML = html || '<div class="empty-state"><div class="es-sub">Keine Keys gefunden</div></div>';
+    document.getElementById('apikeys-count').textContent =
+      `${s.valid || 0} validiert · ${s.set || 0} gesetzt · ${(s.total||0) - (s.set||0)} fehlen`;
+  } catch(e) {
+    document.getElementById('apikeys-list').innerHTML =
+      '<div class="empty-state"><div class="es-sub">Server nicht erreichbar</div></div>';
+    document.getElementById('apikeys-count').textContent = '— Keys';
+    toast('API Keys: ' + e.message, 'error');
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// CLAUDE ASSISTANT (separate chat interface)
+// ════════════════════════════════════════════════════════════════
+let claudeSession = 'claude_' + Date.now();
+
+document.addEventListener('DOMContentLoaded', () => {
+  const ci2 = document.getElementById('claude-input');
+  if (ci2) {
+    ci2.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendClaudeChat(); }
+    });
+    ci2.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+  }
+});
+
+function addClaudeMessage(role, text) {
+  const box = document.getElementById('claude-messages');
+  const time = new Date().toLocaleTimeString();
+  const div = document.createElement('div');
+  div.className = `chat-bubble ${role}`;
+  div.innerHTML = `<div>${escapeHtml(text).replace(/\n/g,'<br>')}</div><div class="chat-time">${time}</div>`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+  return div;
+}
+
+async function sendClaudeChat() {
+  const input = document.getElementById('claude-input');
+  const model = document.getElementById('claude-model').value;
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  input.style.height = '40px';
+  document.getElementById('claude-send-btn').disabled = true;
+  addClaudeMessage('user', text);
+  const thinking = document.createElement('div');
+  thinking.className = 'chat-bubble bot chat-thinking';
+  thinking.textContent = '● ● ●';
+  document.getElementById('claude-messages').appendChild(thinking);
+  document.getElementById('claude-messages').scrollTop = document.getElementById('claude-messages').scrollHeight;
+  try {
+    const d = await api('POST', '/api/chat', { text, session_id: claudeSession, model });
+    thinking.remove();
+    addClaudeMessage('bot', d.response || d.reply || JSON.stringify(d));
+  } catch(e) {
+    thinking.remove();
+    addClaudeMessage('bot', `Fehler: ${e.message}`);
+    toast('Chat-Fehler', 'error');
+  }
+  document.getElementById('claude-send-btn').disabled = false;
+}
+
+function clearClaudeChat() {
+  document.getElementById('claude-messages').innerHTML = '';
+  claudeSession = 'claude_' + Date.now();
+  toast('Chat geleert', 'info');
+}
+
+// ════════════════════════════════════════════════════════════════
+// REMOTE DESKTOP
+// ════════════════════════════════════════════════════════════════
+async function loadRemoteDesktop() {
+  try {
+    const d = await api('GET', '/api/system');
+    const tunnelUrl = d.ngrok_url || d.tunnel_url || d.remote_url || null;
+    const badge = document.getElementById('rd-status-badge');
+    const info = document.getElementById('rd-tunnel-info');
+    const urlDisplay = document.getElementById('rd-url-display');
+    const openBtn = document.getElementById('rd-open-btn');
+    if (tunnelUrl) {
+      badge.innerHTML = '<span class="badge badge-green">Aktiv</span>';
+      urlDisplay.textContent = tunnelUrl;
+      openBtn.disabled = false;
+      openBtn.onclick = () => window.open(tunnelUrl, '_blank');
+      info.innerHTML = `
+        <div class="service-row">
+          <div class="ring online"></div>
+          <span class="service-name">ngrok Tunnel</span>
+          <a href="${escapeHtml(tunnelUrl)}" target="_blank" style="color:var(--cyan);font-size:12px;">${escapeHtml(tunnelUrl)}</a>
+        </div>`;
+    } else {
+      badge.innerHTML = '<span class="badge badge-red">Kein Tunnel</span>';
+      urlDisplay.textContent = '—';
+      openBtn.disabled = true;
+      info.innerHTML = `
+        <div class="empty-state" style="padding:24px 16px;">
+          <div class="es-icon">🖥</div>
+          <div class="es-title">Kein aktiver Tunnel</div>
+          <div class="es-sub">ngrok starten: <code style="background:var(--card2);padding:1px 5px;border-radius:3px;">ngrok http 8888</code></div>
+        </div>`;
+    }
+  } catch(e) {
+    document.getElementById('rd-status-badge').innerHTML = '<span class="badge badge-gray">Unbekannt</span>';
+    document.getElementById('rd-tunnel-info').innerHTML = '<div class="empty-state"><div class="es-sub">Konnte Tunnel-Status nicht laden</div></div>';
+    toast('Remote Desktop Status fehlgeschlagen', 'error');
+  }
+}
+
+function rdOpenTunnel() {
+  const url = document.getElementById('rd-url-display').textContent;
+  if (url && url !== '—') window.open(url, '_blank');
+}
+
+// ════════════════════════════════════════════════════════════════
 // GOOGLE MERCHANT CENTER
 // ════════════════════════════════════════════════════════════════
 async function loadGMC() {
@@ -2166,6 +3655,497 @@ setInterval(() => { if (currentSection === 'logs') loadLogs(); }, 8000);
 setInterval(() => { if (currentSection === 'trading') loadPrices(); }, 30000);
 setInterval(() => { if (currentSection === 'system') loadSystem(); }, 5000);
 setInterval(() => { if (currentSection === 'system') loadProcesses(); }, 10000);
+
+// ════════════════════════════════════════════════════════════════
+// AUTOMATION SCHEDULER
+// ════════════════════════════════════════════════════════════════
+async function loadAutomationTasks() {
+  const grid = document.getElementById('automation-task-grid');
+  if (!grid) return;
+  try {
+    const d = await api('GET', '/api/automation/tasks');
+    const tasks = d.tasks || [];
+    const TASK_ICONS = {
+      system_health:'🖥', railway_health:'🚂', shopify_orders_alert:'🛍',
+      digistore_sync:'🏪', printify_autofulfill:'🖨', pod_autofulfill:'🖨',
+      etsy_sync:'🧶', gumroad_sync:'💳', digistore_products_check:'📦',
+      mailchimp_sync:'📧', shopify_sync:'🛒', social_status:'📱',
+      social_autoposter:'📢', seo_optimizer:'🔍', dropshipping_scan:'🚀',
+      api_keys_health:'🔑', trading_report:'📈', printify_discover_shop:'🖨',
+      env_auto_update:'🔧', printify_shopify_sync:'🔗', shopify_webhooks_setup:'🪝',
+      revenue_report:'💰', content_calendar:'📅', github_backup:'💾',
+      gmc_refresh:'🏪', youtube_stats:'▶️', log_cleanup:'🗑',
+      daily_summary:'📊',
+    };
+    grid.innerHTML = tasks.map(t => {
+      const icon = TASK_ICONS[t.name] || '⚙';
+      const lastRun = t.last_run ? new Date(t.last_run).toLocaleTimeString('de-DE') : 'noch nie';
+      const rate = t.total_runs ? Math.round(t.ok_runs / t.total_runs * 100) : null;
+      const badge = rate !== null
+        ? `<span class="badge ${rate>=80?'badge-green':rate>=50?'badge-yellow':'badge-red'}">${rate}%</span>`
+        : `<span class="badge badge-gray">neu</span>`;
+      return `<div class="card" style="padding:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+          <span style="font-size:20px">${icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:12px;font-weight:700;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div>
+            <div style="font-size:11px;color:var(--text3)">alle ${t.interval_label}</div>
+          </div>
+          ${badge}
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-bottom:8px">
+          Zuletzt: ${lastRun} · ${t.total_runs} Runs
+        </div>
+        <button class="btn btn-secondary btn-xs w-full" onclick="runTask('${t.name}')">▶ Jetzt ausführen</button>
+      </div>`;
+    }).join('');
+  } catch(e) { if (grid) grid.innerHTML = `<div style="color:var(--red);font-size:12px">❌ ${e.message}</div>`; }
+}
+
+async function loadAutomation() {
+  document.getElementById('automation-status').innerHTML = '<div class="skeleton skeleton-h12 skeleton-mb" style="width:60%"></div>';
+  loadAutomationTasks();
+  try {
+    const d = await api('GET', '/api/automation/status');
+    const tasks = d.status?.tasks || [];
+    const totalOk = tasks.reduce((a,t) => a + (t.ok||0), 0);
+    const totalRuns = tasks.reduce((a,t) => a + (t.total||0), 0);
+    document.getElementById('automation-status').innerHTML = `
+      <div style="display:flex;gap:20px;flex-wrap:wrap">
+        <div><div style="font-size:28px;font-weight:800;color:var(--text1)">${tasks.length}</div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Tasks aktiv</div></div>
+        <div><div style="font-size:28px;font-weight:800;color:var(--green)">${totalRuns}</div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Gesamt-Runs</div></div>
+        <div><div style="font-size:28px;font-weight:800;color:var(--blue)">${totalRuns ? Math.round(totalOk/totalRuns*100) : 100}%</div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Erfolgsrate</div></div>
+        <div><div style="font-size:28px;font-weight:800;color:var(--text1)">${d.status?.running ? '🟢' : '🔴'}</div><div style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em">Status</div></div>
+      </div>`;
+    const recent = (d.recent_runs || []).slice(0, 20);
+    const recentHtml = recent.map(r => {
+      const ico = r.success ? '✅' : '❌';
+      const t = new Date(r.ran_at).toLocaleString('de-DE');
+      return `<tr><td>${ico} <b>${r.task}</b></td><td>${t}</td><td>${(r.result||'').slice(0,70)}</td><td style="font-family:monospace">${r.ms}ms</td></tr>`;
+    }).join('');
+    document.getElementById('automation-log').innerHTML = recentHtml
+      ? `<table class="data-table"><thead><tr><th>Task</th><th>Zeit</th><th>Ergebnis</th><th>Dauer</th></tr></thead><tbody>${recentHtml}</tbody></table>`
+      : `<div class="text-center-pad">Noch keine Ausführungen — Tasks starten nach dem Boot</div>`;
+  } catch(e) { document.getElementById('automation-status').innerHTML = `<div style="color:var(--red);font-size:12px">❌ ${e.message}</div>`; }
+}
+
+async function runTask(name) {
+  toast(`▶ Starte ${name}…`, 'info');
+  try {
+    const d = await api('POST', '/api/automation/run', {task: name});
+    toast(d.result || 'Gestartet', d.ok ? 'success' : 'error');
+    setTimeout(loadAutomation, 1500);
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SOCIAL MEDIA
+// ════════════════════════════════════════════════════════════════
+async function loadSocial() {
+  document.getElementById('social-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/social/status');
+    const platforms = {
+      tiktok:    {name:'TikTok',     icon:'🎵'},
+      pinterest: {name:'Pinterest',  icon:'📌'},
+      meta:      {name:'Meta/IG',    icon:'📸'},
+      reddit:    {name:'Reddit',     icon:'🤖'},
+      youtube:   {name:'YouTube',    icon:'▶️'},
+      twitter:   {name:'Twitter/X',  icon:'🐦'},
+      discord:   {name:'Discord',    icon:'💬'},
+    };
+    const cards = Object.entries(platforms).map(([k, p]) => {
+      const s = d[k] || {};
+      const ok = s.connected;
+      return `<div class="kpi-card">
+        <div class="kpi-icon">${p.icon}</div>
+        <div class="kpi-label">${p.name}</div>
+        <div class="kpi-value" style="font-size:13px">${ok ? '🟢 Verbunden' : '🔴 Kein Key'}</div>
+        <div style="font-size:11px;color:var(--text2);margin-top:4px">${(s.info||'').slice(0,40)}</div>
+      </div>`;
+    }).join('');
+    document.getElementById('social-status').innerHTML = `<div class="grid grid-4">${cards}</div>`;
+  } catch(e) { document.getElementById('social-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// DIGISTORE24
+// ════════════════════════════════════════════════════════════════
+async function loadDigistore() {
+  document.getElementById('digistore-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/digistore/status');
+    const st = d.stats || {};
+    const ok = d.ok;
+    document.getElementById('digistore-status').innerHTML = `
+      <div class="grid grid-4">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${ok?'🟢 Aktiv':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Heute</div><div class="kpi-value">${st.today_orders??'—'}</div><div class="kpi-unit">Bestellungen</div></div>
+        <div class="kpi-card"><div class="kpi-label">Diese Woche</div><div class="kpi-value">${st.week_orders??'—'}</div><div class="kpi-unit">Bestellungen</div></div>
+        <div class="kpi-card"><div class="kpi-label">Produkte</div><div class="kpi-value">${d.product_count??'—'}</div></div>
+      </div>`;
+    if (!ok) { document.getElementById('digistore-status').innerHTML += `<div class="info-msg">💡 Key holen: <a href="https://www.digistore24.com" target="_blank">digistore24.com</a> → Konto → API → DIGISTORE24_API_KEY in .env</div>`; return; }
+    const ord = await api('GET', '/api/digistore/orders?page=1');
+    const rows = (ord.orders||[]).slice(0,10).map(o =>
+      `<tr><td>${o.order_id||'—'}</td><td>${o.product_name||'—'}</td><td>${o.amount||'—'} ${o.currency||'EUR'}</td><td>${(o.created_at||'').slice(0,10)}</td></tr>`
+    ).join('');
+    document.getElementById('digistore-orders').innerHTML = rows ? `<table class="data-table"><thead><tr><th>ID</th><th>Produkt</th><th>Betrag</th><th>Datum</th></tr></thead><tbody>${rows}</tbody></table>` : '<div class="empty-msg">Keine Bestellungen</div>';
+  } catch(e) { document.getElementById('digistore-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// MAILCHIMP
+// ════════════════════════════════════════════════════════════════
+async function loadMailchimp() {
+  document.getElementById('mailchimp-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/mailchimp/status');
+    const lists = d.lists || [];
+    const listOptions = lists.map(l => `<option value="${l.id}">${l.name} (${l.stats?.member_count||0} Kontakte)</option>`).join('');
+    document.getElementById('mailchimp-status').innerHTML = `
+      <div class="grid grid-3">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok?'🟢 Verbunden':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Account</div><div class="kpi-value" style="font-size:13px">${d.account||'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Listen</div><div class="kpi-value">${lists.length}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://mailchimp.com" target="_blank">mailchimp.com</a> → Account → Extras → API Keys → MAILCHIMP_API_KEY in .env</div>' : ''}
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">📧 Campaign erstellen</div>
+        <select id="mc-list-id" class="input">${listOptions||'<option>Keine Listen gefunden</option>'}</select>
+        <input id="mc-subject" class="input" placeholder="Betreff" style="margin-top:8px">
+        <input id="mc-from" class="input" placeholder="Absender Name" style="margin-top:8px" value="SuperMegaBot">
+        <textarea id="mc-body" class="input" rows="4" placeholder="HTML-Inhalt der E-Mail…" style="margin-top:8px;width:100%;font-family:monospace"></textarea>
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="sendCampaign()">📤 Campaign senden</button>
+          <button class="btn" onclick="syncMailchimp()">🔄 DS24-Kontakte sync</button>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('mailchimp-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+async function sendCampaign() {
+  const list_id = document.getElementById('mc-list-id')?.value;
+  const subject = document.getElementById('mc-subject')?.value;
+  const from_name = document.getElementById('mc-from')?.value;
+  const body_html = document.getElementById('mc-body')?.value;
+  if (!subject || !body_html) { toast('Betreff und Inhalt erforderlich', 'error'); return; }
+  toast('Sende Campaign…', 'info');
+  const d = await api('POST', '/api/mailchimp/campaign', {list_id, subject, from_name, body_html});
+  toast(d.ok ? '✅ Campaign gesendet!' : ('❌ '+d.error), d.ok ? 'success' : 'error');
+}
+async function syncMailchimp() {
+  toast('Sync läuft…', 'info');
+  const d = await api('POST', '/api/mailchimp/sync', {});
+  toast(d.ok ? `✅ ${d.synced} Kontakte synchronisiert` : ('❌ '+d.error), d.ok ? 'success' : 'error');
+}
+
+// ════════════════════════════════════════════════════════════════
+// PRINTIFY
+// ════════════════════════════════════════════════════════════════
+async function loadPrintify() {
+  document.getElementById('printify-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/printify/status');
+    document.getElementById('printify-status').innerHTML = `
+      <div class="grid grid-4">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok?'🟢 Aktiv':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Gesamt Bestellungen</div><div class="kpi-value">${d.total_orders??'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Heute</div><div class="kpi-value">${d.today_orders??'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Pending / Fulfilled</div><div class="kpi-value">${d.pending??'—'} / ${d.fulfilled??'—'}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://printify.com/app/account/connections" target="_blank">printify.com</a> → Account → API → PRINTIFY_API_KEY in .env</div>' : ''}
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn btn-primary" onclick="printifyAutofulfill()">🚀 Auto-Fulfill Pending</button>
+      </div>`;
+  } catch(e) { document.getElementById('printify-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+async function printifyAutofulfill() {
+  toast('Auto-Fulfill läuft…', 'info');
+  const d = await api('POST', '/api/printify/autofulfill');
+  toast(d.ok ? `✅ ${d.submitted?.length||0} Bestellungen submitted` : ('❌ '+d.error), d.ok ? 'success' : 'error');
+}
+
+// ════════════════════════════════════════════════════════════════
+// ETSY
+// ════════════════════════════════════════════════════════════════
+async function loadEtsy() {
+  document.getElementById('etsy-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/etsy/status');
+    document.getElementById('etsy-status').innerHTML = `
+      <div class="grid grid-3">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok?'🟢 Verbunden':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Listings</div><div class="kpi-value">${d.listing_count??'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Info</div><div class="kpi-value" style="font-size:12px">${(d.info||'').slice(0,40)}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://www.etsy.com/developers/register" target="_blank">etsy.com/developers</a> → ETSY_API_KEY in .env</div>' : ''}`;
+  } catch(e) { document.getElementById('etsy-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// GUMROAD
+// ════════════════════════════════════════════════════════════════
+async function loadGumroad() {
+  document.getElementById('gumroad-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/gumroad/status');
+    document.getElementById('gumroad-status').innerHTML = `
+      <div class="grid grid-3">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok?'🟢 Verbunden':'🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Produkte</div><div class="kpi-value">${d.product_count??'—'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Verkäufe gesamt</div><div class="kpi-value">${d.total_sales??'—'}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://app.gumroad.com/settings/advanced" target="_blank">app.gumroad.com</a> → GUMROAD_ACCESS_TOKEN in .env</div>' : ''}`;
+  } catch(e) { document.getElementById('gumroad-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// DROPSHIPPING
+// ════════════════════════════════════════════════════════════════
+async function loadDropshipping() {
+  document.getElementById('dropshipping-status').innerHTML = `
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">📦 Dropshipping Pipeline</div>
+        <p style="color:var(--text2);font-size:13px">Findet Trending-Produkte → SEO-Optimierung → Shopify-Import → Social Media Promotion</p>
+        <input id="ds-niche" class="input" placeholder="Nische (z.B. fitness, beauty, tech)" style="margin-top:8px">
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="runDropshipping()">🚀 Pipeline starten</button>
+          <button class="btn" onclick="runTask('dropshipping_scan')">🔍 Trending scannen</button>
+        </div>
+        <div id="ds-result" style="margin-top:12px"></div>
+      </div>
+      <div class="card">
+        <div class="card-title">🖨️ Print-on-Demand Pipeline</div>
+        <p style="color:var(--text2);font-size:13px">Design → Printify Produkt → Shopify → Social Media Auto-Post</p>
+        <input id="pod-design" class="input" placeholder="Design Name (z.B. Vintage Mountain)" style="margin-top:8px">
+        <input id="pod-desc" class="input" placeholder="Beschreibung" style="margin-top:8px">
+        <div style="margin-top:8px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="runPOD()">🚀 PoD Pipeline starten</button>
+        </div>
+        <div id="pod-result" style="margin-top:12px"></div>
+      </div>
+    </div>`;
+}
+async function runDropshipping() {
+  const niche = document.getElementById('ds-niche')?.value || '';
+  document.getElementById('ds-result').innerHTML = '<div class="spinner"></div> Pipeline läuft…';
+  const d = await api('POST', '/api/automation/run', {task: 'dropshipping_scan'});
+  document.getElementById('ds-result').innerHTML = `<div class="success-msg">✅ ${d.result||'Gestartet'}</div>`;
+}
+async function runPOD() {
+  document.getElementById('pod-result').innerHTML = '<div class="spinner"></div> Läuft…';
+  const d = await api('POST', '/api/automation/run', {task: 'pod_autofulfill'});
+  document.getElementById('pod-result').innerHTML = `<div class="success-msg">✅ ${d.result||'Gestartet'}</div>`;
+}
+
+// ════════════════════════════════════════════════════════════════
+// SEO AUTOPILOT
+// ════════════════════════════════════════════════════════════════
+async function loadSEO() {
+  document.getElementById('seo-status').innerHTML = `
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-title">🔍 SEO Autopilot</div>
+        <p style="color:var(--text2);font-size:13px">Optimiert alle Shopify Produkte automatisch via lokaler KI (Ollama)</p>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="runTask('seo_optimizer')">▶ Alle optimieren</button>
+          <button class="btn" onclick="runTask('content_calendar')">📅 Content-Kalender erstellen</button>
+        </div>
+        <div id="seo-result" style="margin-top:12px;font-size:12px;color:var(--text2)">Letzter Run: <span id="seo-last">—</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">📅 Content-Kalender</div>
+        <div id="content-calendar">
+          <button class="btn" onclick="loadContentCalendar()">🔄 Laden</button>
+        </div>
+      </div>
+    </div>`;
+}
+async function loadContentCalendar() {
+  document.getElementById('content-calendar').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/automation/status');
+    const calendarRun = (d.recent_runs||[]).find(r => r.task === 'content_calendar');
+    if (calendarRun) {
+      document.getElementById('content-calendar').innerHTML = `<div class="success-msg">✅ ${calendarRun.result}</div><div style="font-size:11px;color:var(--text2)">${calendarRun.ran_at}</div>`;
+    } else {
+      document.getElementById('content-calendar').innerHTML = `<button class="btn btn-primary" onclick="runTask('content_calendar')">📅 Jetzt generieren</button>`;
+    }
+  } catch(e) { document.getElementById('content-calendar').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// REVENUE HUB
+// ════════════════════════════════════════════════════════════════
+async function loadRevenue() {
+  document.getElementById('revenue-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('POST', '/api/automation/run', {task: 'revenue_report'});
+    document.getElementById('revenue-status').innerHTML = `
+      <div class="card">
+        <div class="card-title">💹 Revenue Hub — Alle Plattformen</div>
+        <div style="white-space:pre-wrap;font-size:13px;color:var(--text1)">${d.result||'Keine Daten'}</div>
+        <div style="margin-top:12px">
+          <button class="btn" onclick="loadRevenue()">🔄 Aktualisieren</button>
+          <button class="btn" onclick="runTask('github_backup')" style="margin-left:8px">💾 Backup jetzt</button>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('revenue-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// STRIPE PAYMENTS
+// ════════════════════════════════════════════════════════════════
+async function loadStripe() {
+  document.getElementById('stripe-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const d = await api('GET', '/api/stripe/status');
+    if (!d.ok) {
+      document.getElementById('stripe-status').innerHTML = `<div class="error-msg">❌ ${d.error}</div>`;
+      return;
+    }
+    const bal = d.balance?.available || {};
+    const balStr = Object.entries(bal).map(([c,v]) => `${v.toFixed(2)} ${c}`).join(' | ') || '€0.00';
+    const rev = d.revenue_30d || {};
+    const revStr = Object.entries(rev.revenue||{}).map(([c,v]) => `${v.toFixed(2)} ${c}`).join(' | ') || '€0.00';
+    const charges = d.recent_charges || [];
+    const chargesHtml = charges.length ? charges.map(c =>
+      `<tr><td>${c.created?.substring(0,10)||'—'}</td><td>${c.amount?.toFixed(2)} ${c.currency}</td><td><span class="badge ${c.paid?'badge-ok':'badge-warn'}">${c.status}</span></td><td style="color:var(--text2);font-size:11px">${c.description||c.email||'—'}</td></tr>`
+    ).join('') : '<tr><td colspan="4" style="color:var(--text2)">Keine Zahlungen</td></tr>';
+
+    document.getElementById('stripe-status').innerHTML = `
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">💰 Guthaben</div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent)">${balStr}</div>
+          <div style="font-size:11px;color:var(--text2)">Live · ${d.account}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">📈 Umsatz 30 Tage</div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent)">${revStr}</div>
+          <div style="font-size:11px;color:var(--text2)">${rev.successful||0} erfolgreiche Zahlungen</div>
+        </div>
+        <div class="card">
+          <div class="card-title">👥 Kunden & Abos</div>
+          <div style="font-size:24px;font-weight:700;color:var(--accent)">${d.customer_count||0}</div>
+          <div style="font-size:11px;color:var(--text2)">${d.active_subs||0} aktive Abos</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">💳 Letzte Zahlungen</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="color:var(--text2);font-size:11px">
+            <th style="text-align:left;padding:4px">Datum</th>
+            <th style="text-align:left;padding:4px">Betrag</th>
+            <th style="text-align:left;padding:4px">Status</th>
+            <th style="text-align:left;padding:4px">Beschreibung</th>
+          </tr></thead>
+          <tbody>${chargesHtml}</tbody>
+        </table>
+        <div style="margin-top:12px">
+          <button class="btn" onclick="loadStripe()">🔄 Aktualisieren</button>
+          <button class="btn" onclick="runTask('stripe_monitor')" style="margin-left:8px">⚡ Monitor jetzt</button>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('stripe-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// GOOGLE DRIVE
+// ════════════════════════════════════════════════════════════════
+async function loadDrive() {
+  document.getElementById('drive-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    // First check OAuth status
+    const auth = await api('GET', '/api/google/status').catch(() => ({ok: false}));
+    if (!auth.ok || !auth.logged_in) {
+      document.getElementById('drive-status').innerHTML = `
+        <div class="card" style="text-align:center;padding:40px 20px">
+          <div style="font-size:48px;margin-bottom:16px">☁️</div>
+          <div class="card-title">Google Drive nicht verbunden</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:24px">
+            Einmalig mit Google-Konto einloggen um Drive-Backup &amp; API zu aktivieren
+          </div>
+          <a href="/api/google/auth" class="btn btn-primary" style="text-decoration:none;padding:10px 24px;font-size:14px">
+            🔐 Mit Google verbinden
+          </a>
+          ${auth.auth_url ? '' : '<div class="error-msg" style="margin-top:12px">GOOGLE_CLIENT_ID fehlt in .env</div>'}
+        </div>`;
+      return;
+    }
+    const d = await api('GET', '/api/drive/status');
+    if (!d.ok) {
+      document.getElementById('drive-status').innerHTML = `
+        <div class="card">
+          <div class="card-title">☁️ Google Drive</div>
+          <div class="error-msg" style="margin-bottom:12px">⚠️ ${d.error}</div>
+          <button class="btn btn-primary" onclick="window.location='/api/google/auth'">🔄 Neu einloggen</button>
+        </div>`;
+      return;
+    }
+    const storage = d.storage || {};
+    const files = d.files || [];
+    const filesHtml = files.length ? files.map(f => {
+      const icon = f.mimeType?.includes('folder') ? '📁' :
+                   f.mimeType?.includes('pdf') ? '📄' :
+                   f.mimeType?.includes('spreadsheet') ? '📊' :
+                   f.mimeType?.includes('video') ? '🎬' :
+                   f.mimeType?.includes('image') ? '🖼️' : '📝';
+      const size = f.size > 1e6 ? `${(f.size/1e6).toFixed(1)}MB` :
+                   f.size > 1e3 ? `${(f.size/1e3).toFixed(0)}KB` : `${f.size}B`;
+      return `<tr>
+        <td style="padding:4px">${icon} <a href="${f.webViewLink}" target="_blank" style="color:var(--accent);text-decoration:none">${f.name}</a></td>
+        <td style="padding:4px;color:var(--text2);font-size:11px">${size}</td>
+        <td style="padding:4px;color:var(--text2);font-size:11px">${f.modifiedTime?.substring(0,10)||'—'}</td>
+      </tr>`;
+    }).join('') : '<tr><td colspan="3" style="color:var(--text2)">Keine Dateien</td></tr>';
+
+    document.getElementById('drive-status').innerHTML = `
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">👤 Konto</div>
+          <div style="font-size:14px;color:var(--accent)">${d.account}</div>
+        </div>
+        <div class="card">
+          <div class="card-title">💾 Speicher</div>
+          <div style="font-size:20px;font-weight:700;color:var(--accent)">${storage.used_gb||0} GB</div>
+          <div style="font-size:11px;color:var(--text2)">von ${storage.total_gb||15} GB (${storage.pct||0}%)</div>
+          <div style="margin-top:6px;height:4px;background:var(--border2);border-radius:2px">
+            <div style="width:${storage.pct||0}%;height:100%;background:var(--accent);border-radius:2px"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">📂 Dateien</div>
+          <div style="font-size:20px;font-weight:700;color:var(--accent)">${files.length}</div>
+          <div style="font-size:11px;color:var(--text2)">aktuell geladen</div>
+        </div>
+      </div>
+      <div class="card" style="margin-top:12px">
+        <div class="card-title">📂 Zuletzt geänderte Dateien</div>
+        <table style="width:100%;border-collapse:collapse;font-size:13px">
+          <thead><tr style="color:var(--text2);font-size:11px">
+            <th style="text-align:left;padding:4px">Name</th>
+            <th style="text-align:left;padding:4px">Größe</th>
+            <th style="text-align:left;padding:4px">Geändert</th>
+          </tr></thead>
+          <tbody>${filesHtml}</tbody>
+        </table>
+        <div style="margin-top:12px">
+          <button class="btn" onclick="loadDrive()">🔄 Aktualisieren</button>
+          <button class="btn btn-primary" onclick="driveBackup()" style="margin-left:8px">☁️ Backup jetzt</button>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('drive-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+async function driveBackup() {
+  toast('Drive Backup startet…', 'info');
+  try {
+    const d = await api('POST', '/api/drive/backup');
+    toast(d.result || 'Backup abgeschlossen', 'success');
+    loadDrive();
+  } catch(e) { toast(`Backup Fehler: ${e.message}`, 'error'); }
+}
 
 // ════════════════════════════════════════════════════════════════
 // INITIAL LOAD

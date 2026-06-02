@@ -1,77 +1,88 @@
 #!/usr/bin/env python3
-"""
-🤖 SuperMegaBot + Guardian Integration
+"""SuperMegaBot + Guardian Integration (optional — graceful when not available)"""
 
-Lazy-loads the GuardianClient so importing this module never crashes the
-dashboard / orchestrator when GUARDIAN_API_SECRET isn't set.
-"""
-
-import sys
 import os
+import sys
 from pathlib import Path
 
-# Portable: try project-local first, then the rudibot-eternal sibling repo,
-# overridable via $ETERNAL_BOT_DIR.
-_HERE = Path(__file__).resolve().parent
-for _cand in (
-    _HERE,
-    Path(os.environ.get("ETERNAL_BOT_DIR", "")) if os.environ.get("ETERNAL_BOT_DIR") else None,
-    Path.home() / "rudibot-eternal",
-):
-    if _cand and (_cand / "guardian_client.py").exists():
-        sys.path.insert(0, str(_cand))
-        break
+_eternal_dir = os.environ.get("ETERNAL_BOT_DIR", str(Path.home() / "rudibot-eternal"))
+if _eternal_dir not in sys.path:
+    sys.path.insert(0, _eternal_dir)
 
 from guardian_client import GuardianClient
 
 
 class SuperMegaBotGuardian:
-    """SuperMegaBot mit Guardian Überwachung (Client wird lazy initialisiert)."""
+    """SuperMegaBot mit Guardian Überwachung. Guardian ist optional — kein Crash wenn nicht konfiguriert."""
 
     def __init__(self):
-        self._client = None
+        try:
+            self.client = GuardianClient()
+        except Exception:
+            self.client = None
         self.project_name = "supermegabot"
 
-    @property
-    def client(self) -> GuardianClient:
-        """Create the GuardianClient on first use so missing env vars don't
-        crash module import."""
-        if self._client is None:
-            self._client = GuardianClient()
-        return self._client
-        
-    def startup(self):
-        """Start melden"""
-        self.client.notify(f"🚀 {self.project_name} startet...")
-        
-        # Als Agent registrieren
-        self.client.register_agent(
-            agent_id=f"proj-{self.project_name}",
-            agent_type="service",
-            endpoint=f"http://localhost:{os.getenv('PORT', '3200')}"
-        )
-        
-        # Guardian Status prüfen
-        health = self.client.health()
-        if health['status'] != 'healthy':
-            self.client.notify("⚠️ Guardian meldet Probleme!", priority="high")
-            # Auto-heal
-            self.client.heal_service('rudibot_main')
-    
-    def on_error(self, error_msg: str):
-        """Fehler an Guardian melden"""
-        self.client.notify(
-            f"🔴 {self.project_name} Fehler: {error_msg[:200]}",
-            priority="high"
-        )
-    
-    def shutdown(self):
-        """Stop melden"""
-        self.client.notify(f"🛑 {self.project_name} wird gestoppt")
+    def _ok(self) -> bool:
+        return self.client is not None
 
-# Singleton für einfachen Zugriff
+    def startup(self):
+        if not self._ok():
+            return
+        try:
+            self.client.notify(f"🚀 {self.project_name} startet...")
+            self.client.register_agent(
+                agent_id=f"proj-{self.project_name}",
+                agent_type="service",
+                endpoint=f"http://localhost:{os.getenv('DASHBOARD_PORT', '8888')}"
+            )
+            health = self.client.health()
+            if health.get("status") != "healthy":
+                self.client.notify("⚠️ Guardian meldet Probleme!", priority="high")
+        except Exception:
+            pass
+
+    def notify(self, msg: str, priority: str = "normal"):
+        if not self._ok():
+            return
+        try:
+            self.client.notify(msg, priority=priority)
+        except Exception:
+            pass
+
+    def register_agent(self, **kwargs):
+        if not self._ok():
+            return
+        try:
+            self.client.register_agent(**kwargs)
+        except Exception:
+            pass
+
+    def status(self):
+        if not self._ok():
+            return {"services": []}
+        try:
+            return self.client.status()
+        except Exception:
+            return {"services": []}
+
+    def heal_service(self, name: str):
+        if not self._ok():
+            return
+        try:
+            self.client.heal_service(name)
+        except Exception:
+            pass
+
+    def on_error(self, error_msg: str):
+        self.notify(f"🔴 {self.project_name} Fehler: {error_msg[:200]}", priority="high")
+
+    def shutdown(self):
+        self.notify(f"🛑 {self.project_name} wird gestoppt")
+
+
+# Singleton
 guardian = SuperMegaBotGuardian()
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     guardian.startup()
-    print("✅ SuperMegaBot mit Guardian verbunden!")
+    print("✅ SuperMegaBot mit Guardian verbunden!" if guardian._ok() else "⚠️ Guardian nicht konfiguriert (GUARDIAN_API_SECRET fehlt)")
