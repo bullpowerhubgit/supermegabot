@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """🧹 Micro-Clean — Stündliche Log-Rotation + Disk-Schutz"""
 import sys, os
-import pathlib, pathlib, time, glob
+import pathlib, time, glob
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram
 
