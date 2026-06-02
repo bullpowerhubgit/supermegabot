@@ -6,8 +6,6 @@ Account: aiitec (acct_1SwsoNFZGd8ei10Q)
 """
 
 import asyncio
-import hashlib
-import hmac
 import json
 import logging
 import os
@@ -28,13 +26,8 @@ _CACHE_FILE = _DATA_DIR / "stripe_cache.json"
 def _auth() -> Dict[str, str]:
     key = os.getenv("STRIPE_SECRET_KEY", "")
     if not key:
-        raise ValueError("STRIPE_SECRET_KEY nicht gesetzt — in .env eintragen: STRIPE_SECRET_KEY=sk_live_...")
+        raise ValueError("STRIPE_SECRET_KEY nicht gesetzt")
     return {"Authorization": f"Bearer {key}"}
-
-
-def stripe_available() -> bool:
-    """Returns True only if STRIPE_SECRET_KEY is configured."""
-    return bool(os.getenv("STRIPE_SECRET_KEY", ""))
 
 
 def _session(total: int = 30) -> aiohttp.ClientSession:
@@ -240,38 +233,6 @@ async def get_revenue_summary(days_back: int = 30) -> Dict:
         "revenue":        by_currency,
         "recent_charges": charges[:5],
     }
-
-
-# ── Webhook Signature Verification ───────────────────────────────────────────
-
-def verify_webhook_signature(payload: bytes, sig_header: str, secret: str) -> bool:
-    """Verify Stripe-Signature header using HMAC-SHA256.
-
-    Stripe sends: t=<timestamp>,v1=<signature>
-    We compute HMAC(secret, f"{timestamp}.{payload}") and compare.
-    Returns False if secret is not configured (allows passthrough in dev).
-    """
-    if not secret:
-        return True  # dev mode — no secret configured
-    try:
-        parts = {k: v for k, v in (p.split("=", 1) for p in sig_header.split(","))}
-        ts = parts.get("t", "")
-        sig = parts.get("v1", "")
-        if not ts or not sig:
-            return False
-        # Reject events older than 5 minutes to prevent replay attacks
-        if abs(time.time() - int(ts)) > 300:
-            log.warning("Stripe webhook timestamp too old: %s", ts)
-            return False
-        expected = hmac.new(
-            secret.encode(),
-            f"{ts}.{payload.decode()}".encode(),
-            hashlib.sha256
-        ).hexdigest()
-        return hmac.compare_digest(expected, sig)
-    except Exception as exc:
-        log.error("verify_webhook_signature error: %s", exc)
-        return False
 
 
 # ── Webhook Handler ───────────────────────────────────────────────────────────
