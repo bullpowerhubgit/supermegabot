@@ -11,9 +11,28 @@ import urllib.request
 import urllib.error
 import hashlib
 import os
+from pathlib import Path
 
-BASE_URL = "http://localhost:8888"
-GUARDIAN_URL = "http://localhost:3201"
+# Load .env if present (no external dependency)
+def _load_env():
+    for env_path in [Path(__file__).parent / '.env', Path('.env')]:
+        try:
+            with open(env_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#') or '=' not in line:
+                        continue
+                    key, _, val = line.partition('=')
+                    val = val.split('#')[0].strip()
+                    if key.strip() and key.strip() not in os.environ:
+                        os.environ[key.strip()] = val
+        except FileNotFoundError:
+            pass
+
+_load_env()
+
+BASE_URL = os.getenv('SUPERMEGABOT_URL', 'http://localhost:8888')
+GUARDIAN_URL = os.getenv('GUARDIAN_URL', 'http://localhost:3201')
 
 # Guardian API Key aus Umgebung laden
 GUARDIAN_SECRET = os.getenv('GUARDIAN_API_SECRET', '')
@@ -264,7 +283,8 @@ def handle_tool_call(name, args):
         status = guardian_api_call("GET", "/api/v1/status")
         return {"services": status.get("services", []), "overall": status.get("overall_health")}
     elif name == "guardian_heal":
-        return guardian_api_call("POST", "/api/v1/services/heal", {"service": args["service"]})
+        service = args["service"]
+        return guardian_api_call("POST", f"/api/v1/services/{service}/heal")
     elif name == "guardian_agents":
         return guardian_api_call("GET", "/api/v1/agents")
     elif name == "guardian_notify":
@@ -273,7 +293,7 @@ def handle_tool_call(name, args):
             "priority": args.get("priority", "normal")
         })
     elif name == "guardian_brain":
-        return guardian_api_call("GET", "/api/v1/brain/summary")
+        return guardian_api_call("GET", "/api/v1/brain")
     elif name == "guardian_backup":
         return guardian_api_call("POST", "/api/v1/backup")
     elif name == "guardian_backups_list":

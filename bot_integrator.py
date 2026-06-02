@@ -13,20 +13,64 @@ import urllib.request
 from pathlib import Path
 from datetime import datetime
 
-sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+# Load .env before any other imports that depend on environment variables
+def _load_env(env_path=None):
+    for p in [env_path, Path(__file__).parent / '.env', Path('.env')]:
+        if p is None:
+            continue
+        try:
+            with open(p) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line or line.startswith('#') or '=' not in line:
+                        continue
+                    key, _, val = line.partition('=')
+                    val = val.split('#')[0].strip()
+                    if key.strip() and key.strip() not in os.environ:
+                        os.environ[key.strip()] = val
+            break
+        except FileNotFoundError:
+            pass
+
+_load_env()
+
+# guardian_client.py lives in this repo's root
+sys.path.insert(0, str(Path(__file__).parent))
 from guardian_client import GuardianClient
 
 # ═══════════════════════════════════════════════════════════════════════
-# SERVICE REGISTRY
+# SERVICE REGISTRY — dirs configurable via .env
 # ═══════════════════════════════════════════════════════════════════════
 
+def _home(*parts):
+    """Resolve path relative to HOME, or from env override."""
+    return str(Path.home().joinpath(*parts))
+
 SERVICES = {
-    'guardian':      {'port': 3201, 'dir': '/Users/rudolfsarkany/rudibot-eternal',          'cmd': 'python3 eternal_guardian.py --api',     'health': '/api/v1/health'},
-    'telegram_bot':  {'port': 3200, 'dir': '/Users/rudolfsarkany/windsurf-telegram-bot',    'cmd': 'npm start',                              'health': '/health'},
-    'api_gateway':   {'port': 8080, 'dir': '/Users/rudolfsarkany/windsurf-api-gateway',     'cmd': 'npm start',                              'health': '/health'},
-    'shopify_ai':    {'port': 3002, 'dir': '/Users/rudolfsarkany/shopify-ai-suite',           'cmd': 'node server.js',                         'health': '/health'},
-    'github_app':    {'port': 3000, 'dir': '/Users/rudolfsarkany/windsurf-github-app',        'cmd': 'npm start',                              'health': '/health'},
-    'shopify_suite': {'port': 3001, 'dir': '/Users/rudolfsarkany/windsurf-shopify-suite',    'cmd': 'npm start',                              'health': '/health'},
+    'guardian':      {'port': int(os.getenv('GUARDIAN_API_PORT', '3201')),
+                      'dir': os.getenv('GUARDIAN_DIR', _home('rudibot-eternal')),
+                      'cmd': 'python3 eternal_guardian.py --api',
+                      'health': '/api/v1/health'},
+    'telegram_bot':  {'port': 3200,
+                      'dir': os.getenv('TELEGRAM_BOT_DIR', _home('windsurf-telegram-bot')),
+                      'cmd': 'npm start',
+                      'health': '/health'},
+    'api_gateway':   {'port': 8080,
+                      'dir': os.getenv('API_GATEWAY_DIR', _home('windsurf-api-gateway')),
+                      'cmd': 'npm start',
+                      'health': '/health'},
+    'shopify_ai':    {'port': 3002,
+                      'dir': os.getenv('SHOPIFY_AI_DIR', _home('shopify-ai-suite')),
+                      'cmd': 'node server.js',
+                      'health': '/health'},
+    'github_app':    {'port': 3000,
+                      'dir': os.getenv('GITHUB_APP_DIR', _home('windsurf-github-app')),
+                      'cmd': 'npm start',
+                      'health': '/health'},
+    'shopify_suite': {'port': 3001,
+                      'dir': os.getenv('SHOPIFY_SUITE_DIR', _home('windsurf-shopify-suite')),
+                      'cmd': 'npm start',
+                      'health': '/health'},
 }
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -210,7 +254,7 @@ def run_deepscan():
     log('RUNNING DEEPSCAN', 'info')
     log('═' * 60, 'info')
 
-    script = Path('/Users/rudolfsarkany/supermegabot/deep_scan_repair.py')
+    script = Path(__file__).parent / 'deep_scan_repair.py'
     if not script.exists():
         log('DeepScan script not found', 'error')
         return False
@@ -219,7 +263,7 @@ def run_deepscan():
         result = subprocess.run(
             [sys.executable, str(script), '--fix'],
             capture_output=True, text=True, timeout=120,
-            cwd='/Users/rudolfsarkany/supermegabot'
+            cwd=str(Path(__file__).parent)
         )
         log('DeepScan completed', 'ok')
         if result.stdout:

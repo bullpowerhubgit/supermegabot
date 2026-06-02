@@ -38,8 +38,8 @@ try:
 except ImportError:
     AIOHTTP_AVAILABLE = False
 
-# Guardian path setup
-GUARDIAN_PATH = Path('/Users/rudolfsarkany/rudibot-eternal')
+# Guardian path setup — configurable via env var
+GUARDIAN_PATH = Path(os.getenv('GUARDIAN_DIR', str(Path(__file__).parent.parent)))
 
 log = logging.getLogger('WebhookNotifier')
 
