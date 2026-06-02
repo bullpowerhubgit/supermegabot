@@ -83,7 +83,7 @@ def test_shopify():
             info("Benötigte Scopes: read_orders, write_products, read_customers")
             RESULTS["shopify"] = {"status": "FAIL", "error": "403"}
         else:
-            fail(f"HTTP {r.status_code}: {r.text[:200]}")
+            fail(f"HTTP {r.status_code}")
             RESULTS["shopify"] = {"status": "FAIL", "error": str(r.status_code)}
     except requests.exceptions.ConnectionError:
         fail("Verbindung fehlgeschlagen — Store-URL prüfen")
@@ -165,7 +165,8 @@ def test_telegram():
             ).json()
             wh_url = wh.get("result", {}).get("url", "")
             if wh_url:
-                info(f"Webhook gesetzt: {wh_url[:40]}...")
+                # Nie die volle URL ausgeben — könnte Token-Fragment enthalten
+                info("Webhook gesetzt: [URL vorhanden, nicht angezeigt]")
             else:
                 warn("Kein Webhook gesetzt — Bot läuft im Polling-Modus")
         else:
@@ -241,7 +242,7 @@ def test_guardian():
     try:
         r = requests.get(f"{guardian_url}/api/v1/health", timeout=5)
         if r.status_code == 200:
-            ok(f"Guardian läuft: {r.json()}")
+            ok("Guardian läuft")
             RESULTS["guardian"] = {"status": "OK"}
         else:
             warn(f"HTTP {r.status_code} — Guardian läuft, aber Health-Check fehlgeschlagen")
