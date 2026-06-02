@@ -16,7 +16,10 @@ logger = logging.getLogger(__name__)
 
 # Config aus .env (lazy via helpers — nie bei Import)
 def _store_domain() -> str:
-    return os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+    return os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+
+def _api_version() -> str:
+    return os.getenv("SHOPIFY_API_VERSION", "2024-10")
 
 def _store_url() -> str:
     return f"https://{_store_domain()}"
@@ -191,7 +194,7 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
     if variables:
         payload["variables"] = variables
 
-    url = f"{_store_url()}/admin/api/2024-10/graphql.json"
+    url = f"{_store_url()}/admin/api/{_api_version()}/graphql.json"
     try:
         async with _client_session(15) as session:
             async with session.post(url, json=payload, headers=headers) as resp:
@@ -211,7 +214,7 @@ async def rest_get(endpoint: str) -> Dict:
         return {"error": "aiohttp not installed"}
 
     auth = await _get_best_token()
-    url = f"{_store_url()}/admin/api/2024-10/{endpoint}"
+    url = f"{_store_url()}/admin/api/{_api_version()}/{endpoint}"
     try:
         async with _client_session(15) as session:
             async with session.get(url, headers=auth) as resp:
