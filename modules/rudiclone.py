@@ -277,9 +277,12 @@ class RudiSystemClone:
                 if env_path.exists():
                     safe_name = str(env_path).replace("/", "_").lstrip("_") + ".env"
                     dest = env_staging / safe_name
-                    shutil.copy2(env_path, dest)
-                    env_manifest.append({"original": str(env_path), "saved_as": safe_name})
-                    log.info(f"Snapshot: kopiert {env_path}")
+                    try:
+                        shutil.copy2(env_path, dest)
+                        env_manifest.append({"original": str(env_path), "saved_as": safe_name})
+                        log.info(f"Snapshot: kopiert {env_path}")
+                    except OSError as copy_err:
+                        log.warning(f"Snapshot: übersprungen (EPERM/iCloud) {env_path}: {copy_err}")
                 else:
                     log.debug(f"Snapshot: .env nicht gefunden: {env_path}")
             (staging / "env_manifest.json").write_text(
