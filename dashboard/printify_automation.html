@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Printify Automation Dashboard</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --card: #1a1a26;
+  --accent: #6c63ff;
+  --accent2: #ff6584;
+  --green: #43d98c;
+  --yellow: #ffd700;
+  --red: #ff4757;
+  --orange: #ff6b35;
+  --text: #e8e8f0;
+  --muted: #7070a0;
+  --border: #2a2a40;
+  --printify-blue: #00a0e1;
+  --printify-dark: #003366;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  background: linear-gradient(135deg, var(--printify-blue) 0%, var(--printify-dark) 100%);
+  padding: 16px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 20px rgba(0,160,225,0.4);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.header h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
+.header .subtitle { font-size: 0.8rem; opacity: 0.85; margin-top: 2px; }
+.header-center { font-size: 1.1rem; font-weight: 600; color: rgba(255,255,255,0.9); }
+.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.status-pill {
+  background: rgba(255,255,255,0.2);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  display: flex; align-items: center; gap: 6px;
+}
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+.status-dot.offline { background: var(--red); }
+.status-dot.warning { background: var(--yellow); }
+
+/* ── Main Layout ── */
+.main { padding: 24px; max-width: 1600px; margin: 0 auto; }
+.grid { display: grid; gap: 20px; }
+.grid-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 1200px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.card-title { font-size: 1.1rem; font-weight: 600; color: var(--text); }
+.card-icon { font-size: 1.5rem; }
+
+/* ── Stats ── */
+.stat-value { font-size: 2rem; font-weight: 700; color: var(--text); }
+.stat-label { font-size: 0.85rem; color: var(--muted); margin-top: 4px; }
+.stat-change { font-size: 0.8rem; margin-top: 8px; }
+.stat-change.positive { color: var(--green); }
+.stat-change.negative { color: var(--red); }
+
+/* ── Printify Specific ── */
+.printify-metric {
+  text-align: center;
+  padding: 16px;
+  background: linear-gradient(135deg, rgba(0,160,225,0.1) 0%, rgba(0,51,102,0.1) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(0,160,225,0.3);
+}
+.printify-metric-value { font-size: 1.8rem; font-weight: 700; color: var(--printify-blue); }
+.printify-metric-label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+/* ── Buttons ── */
+.btn {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn:hover { background: var(--accent2); }
+.btn-secondary { background: var(--surface); color: var(--text); }
+.btn-secondary:hover { background: var(--border); }
+.btn-sm { padding: 6px 12px; font-size: 0.8rem; }
+.btn-full {
+  background: linear-gradient(135deg, var(--printify-blue) 0%, var(--accent) 100%);
+  padding: 14px 28px;
+  font-size: 1rem;
+  font-weight: 700;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,160,225,0.4);
+}
+.btn-full:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,160,225,0.6);
+}
+.btn-full:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Loading ── */
+.loading { text-align: center; padding: 40px; color: var(--muted); }
+.loading-spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Product List ── */
+.product-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: var(--surface);
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+.product-info { display: flex; align-items: center; gap: 12px; }
+.product-icon { font-size: 1.3rem; }
+.product-name { font-weight: 600; font-size: 0.95rem; }
+.product-status { font-size: 0.8rem; color: var(--muted); }
+.product-actions { display: flex; gap: 8px; }
+
+/* ── Status Badge ── */
+.status-badge {
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.status-badge.synced { background: rgba(67,217,140,0.2); color: var(--green); }
+.status-badge.pending { background: rgba(255,215,0,0.2); color: var(--yellow); }
+.status-badge.error { background: rgba(255,71,87,0.2); color: var(--red); }
+
+/* ── Progress Bar ── */
+.progress-bar {
+  height: 8px;
+  background: var(--surface);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--printify-blue), var(--accent));
+  transition: width 0.3s ease;
+  border-radius: 4px;
+}
+
+/* ── Log Console ── */
+.log-console {
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 12px;
+  font-family: 'Monaco', 'Menlo', monospace;
+  font-size: 0.8rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+.log-entry {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--border);
+}
+.log-entry:last-child { border-bottom: none; }
+.log-time { color: var(--muted); margin-right: 8px; }
+.log-success { color: var(--green); }
+.log-error { color: var(--red); }
+.log-info { color: var(--printify-blue); }
+</style>
+</head>
+<body>
+<div class="header">
+  <div>
+    <h1>🎨 Printify Automation Dashboard</h1>
+    <div class="subtitle">Volle Automatisierung & Shopify-Sync</div>
+  </div>
+  <div class="header-center">
+    <span id="current-time"></span>
+  </div>
+  <div class="header-right">
+    <div class="status-pill">
+      <div class="status-dot" id="system-status-dot"></div>
+      <span id="system-status-text">Loading...</span>
+    </div>
+    <button class="btn btn-sm" onclick="refreshDashboard()">🔄 Refresh</button>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Printify Metrics -->
+  <div class="grid grid-4" style="margin-bottom: 20px;">
+    <div class="printify-metric">
+      <div class="printify-metric-value" id="total-products">-</div>
+      <div class="printify-metric-label">Total Products</div>
+    </div>
+    <div class="printify-metric">
+      <div class="printify-metric-value" id="synced-products">-</div>
+      <div class="printify-metric-label">Synced to Shopify</div>
+    </div>
+    <div class="printify-metric">
+      <div class="printify-metric-value" id="total-orders">-</div>
+      <div class="printify-metric-label">Total Orders</div>
+    </div>
+    <div class="printify-metric">
+      <div class="printify-metric-value" id="shopify-connected">-</div>
+      <div class="printify-metric-label">Shopify Connected</div>
+    </div>
+  </div>
+
+  <!-- Full Automation Section -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+      <div class="card-title">🚀 Volle Automatisierung</div>
+      <div class="card-icon">⚡</div>
+    </div>
+    <div style="text-align: center; padding: 20px;">
+      <p style="color: var(--muted); margin-bottom: 20px;">
+        Synchronisiere alle Printify-Produkte automatisch zu Shopify
+      </p>
+      <button class="btn btn-full" id="full-automation-btn" onclick="runFullAutomation()">
+        🎯 VOLL AUTOMATISIERUNG STARTEN
+      </button>
+      <div id="automation-progress" style="margin-top: 20px; display: none;">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+          <span id="progress-text">Synchronisiere...</span>
+          <span id="progress-percent">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="grid grid-3" style="margin-bottom: 20px;">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📦 Auto Publish</div>
+        <div class="card-icon">📤</div>
+      </div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 12px;">
+        Veröffentliche neue Produkte automatisch
+      </p>
+      <button class="btn btn-sm" onclick="runAutoPublish()" style="width: 100%;">
+        Auto Publish Starten
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🔄 Sync Status</div>
+        <div class="card-icon">📊</div>
+      </div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 12px;">
+        Prüfe Synchronisierungsstatus
+      </p>
+      <button class="btn btn-sm btn-secondary" onclick="checkSyncStatus()" style="width: 100%;">
+        Status Prüfen
+      </button>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🛒 Shopify Option</div>
+        <div class="card-icon">🛍️</div>
+      </div>
+      <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 12px;">
+        Shopify-Integration aktivieren
+      </p>
+      <button class="btn btn-sm" onclick="toggleShopifyOption()" id="shopify-option-btn" style="width: 100%;">
+        Shopify Aktivieren
+      </button>
+    </div>
+  </div>
+
+  <!-- Products Section -->
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-header">
+      <div class="card-title">🎨 Printify Produkte</div>
+      <div class="card-icon">📦</div>
+    </div>
+    <div id="products-list">
+      <div class="loading">
+        <div class="loading-spinner"></div>
+        <div>Loading products...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity Log -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">📝 Automatisierungs-Log</div>
+      <div class="card-icon">📋</div>
+    </div>
+    <div class="log-console" id="log-console">
+      <div class="log-entry">
+        <span class="log-time">--:--:--</span>
+        <span class="log-info">System initialisiert...</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API_BASE = '/api';
+
+// Update time
+function updateTime() {
+  const now = new Date();
+  document.getElementById('current-time').textContent = now.toLocaleString('de-DE');
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// Log function
+function addLog(message, type = 'info') {
+  const console = document.getElementById('log-console');
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  const time = new Date().toLocaleTimeString('de-DE');
+  const typeClass = type === 'success' ? 'log-success' : type === 'error' ? 'log-error' : 'log-info';
+  entry.innerHTML = `<span class="log-time">${time}</span><span class="${typeClass}">${message}</span>`;
+  console.insertBefore(entry, console.firstChild);
+}
+
+// Refresh dashboard
+async function refreshDashboard() {
+  await Promise.all([
+    loadPrintifyStatus(),
+    loadPrintifyAutomation(),
+    loadProducts()
+  ]);
+}
+
+// Load Printify Status
+async function loadPrintifyStatus() {
+  try {
+    const response = await fetch(`${API_BASE}/printify/status`);
+    const data = await response.json();
+    
+    if (data.ok) {
+      document.getElementById('total-products').textContent = data.products_count || 0;
+      document.getElementById('total-orders').textContent = data.orders_count || 0;
+      document.getElementById('shopify-connected').textContent = data.shop ? '✓' : '✗';
+      
+      document.getElementById('system-status-dot').className = 'status-dot';
+      document.getElementById('system-status-text').textContent = 'Online';
+    } else {
+      document.getElementById('system-status-dot').className = 'status-dot offline';
+      document.getElementById('system-status-text').textContent = 'Error';
+    }
+  } catch (error) {
+    console.error('Error loading Printify status:', error);
+    addLog('Fehler beim Laden des Status: ' + error.message, 'error');
+  }
+}
+
+// Load Printify Automation Status
+async function loadPrintifyAutomation() {
+  try {
+    const response = await fetch(`${API_BASE}/printify/automation?action=status`);
+    const data = await response.json();
+    
+    if (data.ok) {
+      document.getElementById('synced-products').textContent = data.total_products || 0;
+    }
+  } catch (error) {
+    console.error('Error loading automation status:', error);
+  }
+}
+
+// Load Products
+async function loadProducts() {
+  try {
+    const response = await fetch(`${API_BASE}/printify/status`);
+    const data = await response.json();
+    
+    const container = document.getElementById('products-list');
+    if (data.ok && data.products && data.products.length > 0) {
+      container.innerHTML = data.products.slice(0, 10).map(product => `
+        <div class="product-item">
+          <div class="product-info">
+            <div class="product-icon">🎨</div>
+            <div>
+              <div class="product-name">${product.title || 'Product'}</div>
+              <div class="product-status">${product.status || 'Active'}</div>
+            </div>
+          </div>
+          <div class="product-actions">
+            <span class="status-badge synced">Synced</span>
+            <button class="btn btn-sm" onclick="syncProduct('${product.id}')">🔄</button>
+          </div>
+        </div>
+      `).join('');
+    } else {
+      container.innerHTML = '<div style="text-align:center; padding:20px; color:var(--muted)">Keine Produkte gefunden</div>';
+    }
+  } catch (error) {
+    console.error('Error loading products:', error);
+    document.getElementById('products-list').innerHTML = '<div style="text-align:center; padding:20px; color:var(--red)">Fehler beim Laden</div>';
+  }
+}
+
+// Run Full Automation
+async function runFullAutomation() {
+  const btn = document.getElementById('full-automation-btn');
+  const progress = document.getElementById('automation-progress');
+  const progressFill = document.getElementById('progress-fill');
+  const progressText = document.getElementById('progress-text');
+  const progressPercent = document.getElementById('progress-percent');
+  
+  btn.disabled = true;
+  btn.textContent = '⏳ Automatisierung läuft...';
+  progress.style.display = 'block';
+  
+  addLog('Volle Automatisierung gestartet...', 'info');
+  
+  try {
+    const response = await fetch(`${API_BASE}/printify/automation?action=full_sync`);
+    const data = await response.json();
+    
+    if (data.ok) {
+      // Simulate progress
+      let progressValue = 0;
+      const total = data.total_products || 1;
+      const interval = setInterval(() => {
+        progressValue += Math.ceil(100 / total);
+        if (progressValue > 100) progressValue = 100;
+        
+        progressFill.style.width = progressValue + '%';
+        progressPercent.textContent = progressValue + '%';
+        progressText.textContent = `${data.synced || 0}/${total} synchronisiert`;
+        
+        if (progressValue >= 100) {
+          clearInterval(interval);
+          btn.disabled = false;
+          btn.textContent = '🎯 VOLL AUTOMATISIERUNG STARTEN';
+          addLog(`Automatisierung abgeschlossen: ${data.synced}/${data.total_products} synchronisiert`, 'success');
+          refreshDashboard();
+        }
+      }, 200);
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch (error) {
+    console.error('Full automation error:', error);
+    addLog('Automatisierung fehlgeschlagen: ' + error.message, 'error');
+    btn.disabled = false;
+    btn.textContent = '🎯 VOLL AUTOMATISIERUNG STARTEN';
+    progress.style.display = 'none';
+  }
+}
+
+// Run Auto Publish
+async function runAutoPublish() {
+  addLog('Auto Publish gestartet...', 'info');
+  
+  try {
+    const response = await fetch(`${API_BASE}/printify/automation?action=auto_publish`);
+    const data = await response.json();
+    
+    if (data.ok) {
+      addLog(`Auto Publish abgeschlossen: ${data.published} veröffentlicht, ${data.already_published} bereits veröffentlicht`, 'success');
+      refreshDashboard();
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch (error) {
+    console.error('Auto publish error:', error);
+    addLog('Auto Publish fehlgeschlagen: ' + error.message, 'error');
+  }
+}
+
+// Check Sync Status
+async function checkSyncStatus() {
+  addLog('Prüfe Sync-Status...', 'info');
+  
+  try {
+    const response = await fetch(`${API_BASE}/printify/automation?action=status`);
+    const data = await response.json();
+    
+    if (data.ok) {
+      addLog(`Sync-Status: ${data.total_products} Produkte, Shopify verbunden: ${data.shopify_connected}`, 'success');
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch (error) {
+    console.error('Sync status error:', error);
+    addLog('Status-Prüfung fehlgeschlagen: ' + error.message, 'error');
+  }
+}
+
+// Sync Single Product
+async function syncProduct(productId) {
+  addLog(`Synchronisiere Produkt ${productId}...`, 'info');
+  
+  try {
+    const response = await fetch(`${API_BASE}/printify/automation?action=sync_product`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ product_id: productId })
+    });
+    const data = await response.json();
+    
+    if (data.ok) {
+      addLog(`Produkt ${productId} synchronisiert`, 'success');
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch (error) {
+    console.error('Sync product error:', error);
+    addLog(`Produkt-Sync fehlgeschlagen: ${error.message}`, 'error');
+  }
+}
+
+// Toggle Shopify Option
+let shopifyEnabled = false;
+function toggleShopifyOption() {
+  shopifyEnabled = !shopifyEnabled;
+  const btn = document.getElementById('shopify-option-btn');
+  
+  if (shopifyEnabled) {
+    btn.textContent = 'Shopify Deaktivieren';
+    btn.classList.remove('btn');
+    btn.classList.add('btn-secondary');
+    addLog('Shopify-Option aktiviert', 'success');
+  } else {
+    btn.textContent = 'Shopify Aktivieren';
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn');
+    addLog('Shopify-Option deaktiviert', 'info');
+  }
+}
+
+// Initial load
+document.addEventListener('DOMContentLoaded', () => {
+  refreshDashboard();
+  addLog('Dashboard geladen', 'info');
+  // Auto-refresh every 30 seconds
+  setInterval(refreshDashboard, 30000);
+});
+</script>
+</body>
+</html>

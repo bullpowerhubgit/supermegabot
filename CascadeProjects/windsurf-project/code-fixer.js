@@ -59,7 +59,7 @@ class CodeFixer {
   }
 
   async fixVarDeclarations() {
-    this.log('Fixing var declarations...');
+    this.log('Fixing const declarations...');
     
     const files = this.getJsFiles();
     let fixedCount = 0;
@@ -69,7 +69,7 @@ class CodeFixer {
         let content = fs.readFileSync(file, 'utf8');
         const original = content;
         
-        // Replace var with const/let (simple heuristic)
+        // Replace const with const/let (simple heuristic)
         content = content.replace(/\bvar\s+(\w+)\s*=/g, (match, varName) => {
           // Use const for single assignment, let for reassignment
           const contentAfter = content.substring(content.indexOf(match));
@@ -80,12 +80,12 @@ class CodeFixer {
         if (content !== original) {
           fs.writeFileSync(file, content);
           fixedCount++;
-          this.fixes.push(`Fixed var declarations in ${path.relative(this.projectDir, file)}`);
+          this.fixes.push(`Fixed const declarations in ${path.relative(this.projectDir, file)}`);
         }
       } catch (e) {}
     }
     
-    this.log(`Fixed ${fixedCount} files with var declarations`);
+    this.log(`Fixed ${fixedCount} files with const declarations`);
   }
 
   async fixSetIntervals() {
