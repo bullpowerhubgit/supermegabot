@@ -1,59 +1,59 @@
 #!/usr/bin/env python3
-"""📱 Social Agent — Autopilot für Social Media, plant Posts, überwacht Plattformen"""
-import sys, os, time, json
-from typing import Optional
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
-from bus import report, notify_telegram
+"""📱 Social Agent — Prüft Social-Media APIs auf Erreichbarkeit"""
+import sys, os, time, urllib.request
+sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from bus import report, notify_telegram, get_env
+from learner_mixin import AgentLearner
 
 ID = "social"
 
-DASHBOARD_URL = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-AUTOPOST_INTERVAL = int(os.getenv("SOCIAL_AUTOPOST_INTERVAL", str(6 * 3600)))  # 6h default
+PLATFORMS = [
+    {"name": "Meta", "url": "https://graph.facebook.com/v18.0/me", "check": lambda r: r.get("error") is None or r.get("error", {}).get("code") == 190},
+    {"name": "TikTok", "url": "https://business-api.tiktok.com/open_api/v1.3/user/info/", "check": lambda r: True},  # Nur Erreichbarkeit
+]
 
 
-def call_api(path: str, method: str = "GET", body: Optional[dict] = None) -> dict:
-    import urllib.request
+def check_platform(name, url, check_fn):
     try:
-        data = json.dumps(body).encode() if body else None
-        req = urllib.request.Request(f"{DASHBOARD_URL}{path}", data=data, method=method)
-        if data:
-            req.add_header("Content-Type", "application/json")
-        r = urllib.request.urlopen(req, timeout=15)
-        return json.loads(r.read())
-    except Exception:
-        return {}
+        req = urllib.request.Request(url, headers={"User-Agent": "RudiBot-Checker/1.0"})
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = resp.read().decode()
+            try:
+                import json
+                json_data = json.loads(data)
+                ok = check_fn(json_data)
+            except Exception:
+                ok = resp.status == 200
+            return ok, resp.status
+    except Exception as e:
+        return False, str(e)[:40]
 
 
 def run():
     print(f"[{ID}] 📱 Social Agent gestartet")
-    last_autopost = 0
+    learner = AgentLearner(ID)
 
     while True:
         try:
-            status = call_api("/api/telegram/status")
-            connected = 1 if status.get("ok") or status.get("connected") else 0
-            total = 1
+            results = []
+            any_down = False
 
-            now = time.time()
-            if connected >= 1 and (now - last_autopost) > AUTOPOST_INTERVAL:
-                result = call_api("/api/geheimwaffe/run", "POST",
-                                  {"task": "social_autopost", "platforms": ["instagram", "facebook"]})
-                if result.get("ok") or result.get("product") or result.get("message"):
-                    msg = result.get("product") or result.get("message") or "Post erstellt"
-                    notify_telegram(f"📱 <b>Social Autopilot:</b> {msg}")
-                    last_autopost = now
+            for plat in PLATFORMS:
+                ok, detail = check_platform(plat["name"], plat["url"], plat["check"])
+                icon = "✅" if ok else "❌"
+                results.append(f"{icon} {plat['name']} ({detail})")
+                if not ok:
+                    any_down = True
 
-            last_str = time.strftime("%H:%M", time.localtime(last_autopost)) if last_autopost else "nie"
-            report(ID, "ok",
-                   f"Social: Telegram {'online' if connected else 'offline'} | Letzter Post: {last_str}",
-                   {"connected": connected, "total": total, "last_autopost": last_str})
+            status = "warning" if any_down else "ok"
+            msg = "Social APIs OK" if not any_down else f"{sum(1 for r in results if r.startswith('❌'))} Platformen down"
+            report(ID, status, msg, {"platforms": results})
+            learner.log_cycle(status, msg, {"platform_count": len(PLATFORMS)})
 
         except Exception as e:
-            report(ID, "error", f"Fehler: {str(e)[:80]}")
+            report(ID, "error", str(e)[:80])
 
-        time.sleep(300)
+        time.sleep(600)
 
 
 if __name__ == "__main__":
