@@ -312,7 +312,7 @@ html, body {
 .card-title span { font-size: 14px; }
 
 /* ── STAT CARDS ROW ── */
-.stat-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; margin-bottom: 20px; }
 
 .stat-card {
   background: var(--card);
@@ -1034,6 +1034,9 @@ input[type="range"]::-webkit-slider-thumb {
       </div>
       <div class="nav-item" data-section="seo">
         <span class="nav-icon">🔍</span> SEO Autopilot
+      </div>
+      <div class="nav-item" data-section="klaviyo">
+        <span class="nav-icon">📨</span> Klaviyo
       </div>
       <div class="nav-item" data-section="revenue">
         <span class="nav-icon">💹</span> Revenue Hub
@@ -2323,6 +2326,17 @@ input[type="range"]::-webkit-slider-thumb {
       <div id="revenue-status"><div class="spinner"></div></div>
     </section>
 
+    <!-- ═══════════════ KLAVIYO ═══════════════ -->
+    <section id="section-klaviyo" class="section">
+      <div class="section-header">
+        <div><h2>📨 Klaviyo</h2><p>E-Mail Marketing · Listen · Campaigns · Sync</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-secondary btn-sm" onclick="loadKlaviyo()">↻ Refresh</button>
+        </div>
+      </div>
+      <div id="klaviyo-status"><div class="spinner"></div></div>
+    </section>
+
     <!-- ── STRIPE ───────────────────────────────────────────────────────── -->
     <section id="section-stripe" class="section">
       <div class="section-header">
@@ -2474,7 +2488,7 @@ function nav(section) {
     automation:'⚡ Automation Scheduler', social:'📱 Social Media',
     digistore:'🏪 Digistore24', mailchimp:'📧 Mailchimp',
     printify:'🖨️ Printify PoD', etsy:'🛍️ Etsy', gumroad:'💰 Gumroad',
-    dropshipping:'📦 Dropshipping', seo:'🔍 SEO Autopilot', revenue:'💹 Revenue Hub',
+    dropshipping:'📦 Dropshipping', seo:'🔍 SEO Autopilot', klaviyo:'📨 Klaviyo', revenue:'💹 Revenue Hub',
     stripe:'💳 Stripe Payments', drive:'☁️ Google Drive',
     watchdog:'🛡 Watchdog', agentshub:'🤖 Agenten Hub', ecommerce:'🛒 E-Commerce Orchestrator',
   };
@@ -2512,6 +2526,7 @@ function sectionInit(section) {
     etsy:         loadEtsy,
     gumroad:      loadGumroad,
     dropshipping: loadDropshipping,
+    klaviyo:      loadKlaviyo,
     seo:          loadSEO,
     revenue:      loadRevenue,
     stripe:       loadStripe,
@@ -4108,6 +4123,71 @@ async function loadContentCalendar() {
       document.getElementById('content-calendar').innerHTML = `<button class="btn btn-primary" onclick="runTask('content_calendar')">📅 Jetzt generieren</button>`;
     }
   } catch(e) { document.getElementById('content-calendar').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// KLAVIYO
+// ════════════════════════════════════════════════════════════════
+async function loadKlaviyo() {
+  document.getElementById('klaviyo-status').innerHTML = '<div class="spinner"></div>';
+  try {
+    const [status, lists] = await Promise.allSettled([
+      api('GET', '/api/klaviyo/status'),
+      api('GET', '/api/klaviyo/lists'),
+    ]);
+    const d = status.status === 'fulfilled' ? status.value : {ok: false, error: status.reason?.message};
+    const ls = lists.status === 'fulfilled' ? (lists.value.lists || []) : [];
+    const listOptions = ls.map(l => `<option value="${l.id}">${l.name} (${l.member_count||0} Kontakte)</option>`).join('');
+    document.getElementById('klaviyo-status').innerHTML = `
+      <div class="grid grid-3">
+        <div class="kpi-card"><div class="kpi-label">Status</div><div class="kpi-value">${d.ok ? '🟢 Verbunden' : '🔴 Kein Key'}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Listen</div><div class="kpi-value">${ls.length}</div></div>
+        <div class="kpi-card"><div class="kpi-label">Kontakte (gesamt)</div><div class="kpi-value">${ls.reduce((a,l)=>a+(l.member_count||0),0)}</div></div>
+      </div>
+      ${!d.ok ? '<div class="info-msg">💡 Key holen: <a href="https://www.klaviyo.com/account#api-keys-tab" target="_blank">klaviyo.com</a> → KLAVIYO_API_KEY in .env</div>' : ''}
+      <div class="grid-2" style="margin-top:16px">
+        <div class="card">
+          <div class="card-title">🔄 Kontakte synchronisieren</div>
+          <select id="kv-list-id" class="input" style="margin-top:8px">${listOptions || '<option>Keine Listen gefunden</option>'}</select>
+          <select id="kv-source" class="input" style="margin-top:8px">
+            <option value="digistore">Digistore24</option>
+            <option value="shopify">Shopify</option>
+          </select>
+          <button class="btn btn-primary" style="margin-top:8px" onclick="syncKlaviyo()">🔄 Sync starten</button>
+          <div id="kv-sync-result" style="margin-top:8px"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📧 Campaign erstellen</div>
+          <select id="kv-camp-list" class="input" style="margin-top:8px">${listOptions || '<option>Keine Listen gefunden</option>'}</select>
+          <input id="kv-subject" class="input" placeholder="Betreff" style="margin-top:8px">
+          <input id="kv-from" class="input" placeholder="Absender Name" style="margin-top:8px" value="SuperMegaBot">
+          <textarea id="kv-body" class="input" rows="3" placeholder="HTML-Inhalt…" style="margin-top:8px;width:100%;font-family:monospace"></textarea>
+          <button class="btn btn-primary" style="margin-top:8px" onclick="sendKlaviyoCampaign()">📤 Senden</button>
+          <div id="kv-camp-result" style="margin-top:8px"></div>
+        </div>
+      </div>`;
+  } catch(e) { document.getElementById('klaviyo-status').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`; }
+}
+async function syncKlaviyo() {
+  const list_id = document.getElementById('kv-list-id')?.value;
+  const source  = document.getElementById('kv-source')?.value || 'digistore';
+  document.getElementById('kv-sync-result').innerHTML = '<div class="spinner"></div>';
+  const d = await api('POST', '/api/klaviyo/sync', {list_id, source});
+  document.getElementById('kv-sync-result').innerHTML = d.ok
+    ? `<div class="success-msg">✅ ${d.synced} Kontakte synchronisiert</div>`
+    : `<div class="error-msg">❌ ${d.error}</div>`;
+}
+async function sendKlaviyoCampaign() {
+  const list_id   = document.getElementById('kv-camp-list')?.value;
+  const subject   = document.getElementById('kv-subject')?.value;
+  const from_name = document.getElementById('kv-from')?.value;
+  const body_html = document.getElementById('kv-body')?.value;
+  if (!subject || !body_html) { toast('Betreff und Inhalt erforderlich', 'error'); return; }
+  document.getElementById('kv-camp-result').innerHTML = '<div class="spinner"></div>';
+  const d = await api('POST', '/api/klaviyo/campaign', {list_id, subject, from_name, body_html});
+  document.getElementById('kv-camp-result').innerHTML = d.ok
+    ? `<div class="success-msg">✅ Campaign gesendet!</div>`
+    : `<div class="error-msg">❌ ${d.error}</div>`;
 }
 
 // ════════════════════════════════════════════════════════════════
