@@ -20,13 +20,14 @@ from datetime import datetime
 STORE_DOMAIN = os.getenv('SHOPIFY_SHOP_DOMAIN', 'suitenew.myshopify.com')
 API_VERSION = os.getenv('SHOPIFY_API_VERSION', '2024-10')
 
+_home = Path.home()
 PROJECT_DIRS = [
-    '/Users/rudolfsarkany/local-projects/telegram-automation-bot',
-    '/Users/rudolfsarkany/windsurf-telegram-bot',
-    '/Users/rudolfsarkany/windsurf-shopify-suite',
-    '/Users/rudolfsarkany/shopify-ai-suite',
-    '/Users/rudolfsarkany/rudibot-eternal',
-    '/Users/rudolfsarkany/supermegabot',
+    str(_home / 'local-projects' / 'telegram-automation-bot'),
+    str(_home / 'windsurf-telegram-bot'),
+    str(_home / 'windsurf-shopify-suite'),
+    str(_home / 'shopify-ai-suite'),
+    str(_home / 'rudibot-eternal'),
+    str(Path(__file__).parent),
 ]
 
 # ═══════════════════════════════════════════════════════════════════════
