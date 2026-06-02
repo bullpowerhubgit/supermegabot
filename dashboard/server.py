@@ -13,6 +13,7 @@ from datetime import datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path(__file__).parent.parent / "modules"))
 sys.path.insert(0, str(Path.home()))
 
 from aiohttp import web
@@ -1236,7 +1237,7 @@ async def handle_shopify_status(req):
         return web.json_response({"ok": False, "error": "SHOPIFY_STORE_URL / SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
-            url = f"{store}/admin/api/2024-01/shop.json"
+            url = f"{store}/admin/api/{os.getenv('SHOPIFY_API_VERSION', '2024-10')}/shop.json"
             headers = {"X-Shopify-Access-Token": token}
             async with s.get(url, headers=headers) as r:
                 if r.status == 200:
@@ -1338,8 +1339,8 @@ async def handle_backup_status(req):
     backups = []
     backup_paths = [
         BASE_DIR / "data",
-        Path("/Users/rudolfsarkany/windsurf-telegram-bot"),
-        Path("/Users/rudolfsarkany/CreatorHub Anonym & Profitabel"),
+        Path(os.getenv("TELEGRAM_BOT_DIR", str(Path.home() / "windsurf-telegram-bot"))),
+        Path(os.getenv("CREATORHUB_DIR", str(Path.home() / "creatorhub"))),
     ]
     for p in backup_paths:
         if p.exists():
@@ -1711,6 +1712,51 @@ async def handle_self_learner_find_api(req):
 # App Factory
 # ---------------------------------------------------------------------------
 
+async def handle_stripe_webhook(req):
+    """Stripe Webhook — empfängt Events und schreibt in Supabase."""
+    import hashlib, hmac as _hmac
+    body = await req.read()
+    sig = req.headers.get("Stripe-Signature", "")
+    secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+    if secret and sig:
+        try:
+            parts = {p.split("=")[0]: p.split("=")[1] for p in sig.split(",") if "=" in p}
+            ts = parts.get("t", "")
+            v1 = parts.get("v1", "")
+            signed_payload = f"{ts}.{body.decode()}"
+            expected = _hmac.new(secret.encode(), signed_payload.encode(), hashlib.sha256).hexdigest()
+            if not _hmac.compare_digest(expected, v1):
+                return web.Response(status=400, text="Invalid signature")
+        except Exception as e:
+            log.warning("Stripe webhook sig error: %s", e)
+            return web.Response(status=400, text="Signature error")
+
+    try:
+        event = json.loads(body)
+    except Exception:
+        return web.Response(status=400, text="Invalid JSON")
+
+    event_type = event.get("type", "")
+    log.info("Stripe webhook: %s", event_type)
+
+    if event_type in ("charge.succeeded", "payment_intent.succeeded"):
+        obj = event.get("data", {}).get("object", {})
+        amount = obj.get("amount") or obj.get("amount_received", 0)
+        try:
+            from stripe_client import write_to_supabase
+            write_to_supabase({
+                "source": "stripe_webhook",
+                "today_revenue": round(amount / 100, 2),
+                "order_count": 1,
+                "currency": obj.get("currency", "eur").upper(),
+            })
+        except Exception as e:
+            log.warning("Stripe webhook Supabase write: %s", e)
+
+    return web.Response(status=200, text="ok")
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -1767,6 +1813,9 @@ async def create_app():
     app.router.add_get("/api/storage/large-files", handle_storage_large_files)
     app.router.add_get("/api/storage/history",     handle_storage_history)
     app.router.add_get("/storage", handle_storage_widget)
+
+    # Stripe webhook
+    app.router.add_post("/webhooks/stripe", handle_stripe_webhook)
 
     return app
 

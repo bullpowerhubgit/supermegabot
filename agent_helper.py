@@ -6,8 +6,9 @@
 import sys
 import os
 import json
-sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).parent))
 from guardian_client import GuardianClient
 
 def help_agent(agent_name: str, action: str, **kwargs):
