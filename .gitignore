@@ -1,4 +1,5 @@
 .env
+.claude/worktrees/
 .env.*
 !.env.example
 __pycache__/
