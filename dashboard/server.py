@@ -1648,6 +1648,68 @@ async def handle_agents_hub(req):
         return web.json_response({"ok": False, "status": "offline", "error": str(e)})
 
 
+async def handle_agents_teams_list(req):
+    try:
+        from modules.agent_teams import list_teams
+        return web.json_response({"ok": True, "teams": list_teams()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_agents_teams_run(req):
+    try:
+        data = await req.json()
+        team = data.get("team", "").strip()
+        task = data.get("task", "").strip()
+        notify = data.get("notify", True)
+        if not team or not task:
+            return web.json_response({"ok": False, "error": "team and task required"}, status=400)
+        from modules.agent_teams import run_team
+        result = await run_team(team, task, notify=notify)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Monetization ─────────────────────────────────────────────────────────────
+
+async def handle_plans_list(req):
+    try:
+        from modules.monetization import get_plans_info
+        return web.json_response({"ok": True, "plans": get_plans_info()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_checkout_create(req):
+    try:
+        data = await req.json()
+        plan = data.get("plan", "").strip()
+        email = data.get("email", "").strip()
+        base_url = data.get("base_url", os.getenv("DASHBOARD_URL", "http://localhost:8888"))
+        if not plan or not email:
+            return web.json_response({"ok": False, "error": "plan and email required"}, status=400)
+        from modules.monetization import create_checkout_session
+        session = create_checkout_session(
+            plan=plan,
+            customer_email=email,
+            success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{base_url}/checkout/cancel",
+        )
+        return web.json_response({"ok": True, "checkout_url": session.get("url"), "session_id": session.get("id")})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mrr(req):
+    try:
+        from modules.monetization import get_mrr
+        mrr = get_mrr()
+        return web.json_response({"ok": True, "mrr_eur": mrr, "arr_eur": mrr * 12})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── Stripe ───────────────────────────────────────────────────────────────────
 
 async def handle_stripe_status(req):
@@ -1964,6 +2026,15 @@ async def create_app():
     # ── Watchdog + Agenten Hub ────────────────────────────────────────────────
     app.router.add_get("/api/watchdog/status",        handle_watchdog_status)
     app.router.add_get("/api/agents/hub",             handle_agents_hub)
+
+    # ── Agent Teams ───────────────────────────────────────────────────────────
+    app.router.add_get("/api/agents/teams",           handle_agents_teams_list)
+    app.router.add_post("/api/agents/run",            handle_agents_teams_run)
+
+    # ── Monetization ──────────────────────────────────────────────────────────
+    app.router.add_get("/api/plans",                  handle_plans_list)
+    app.router.add_post("/api/checkout",              handle_checkout_create)
+    app.router.add_get("/api/mrr",                    handle_mrr)
 
     # ── Stripe ────────────────────────────────────────────────────────────────
     app.router.add_get("/api/stripe/status",          handle_stripe_status)
