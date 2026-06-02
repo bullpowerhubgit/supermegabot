@@ -232,7 +232,48 @@ def test_supabase():
         RESULTS["supabase"] = {"status": "FAIL", "error": type(e).__name__}
 
 # ══════════════════════════════════════════════════════════
-# 5. GUARDIAN API (lokal)
+# 5. ANTHROPIC API
+# ══════════════════════════════════════════════════════════
+def test_anthropic():
+    section("ANTHROPIC API")
+    ready, missing = _check_env("ANTHROPIC_API_KEY")
+    if not ready:
+        fail(f"Fehlende Variablen: {missing}")
+        RESULTS["anthropic"] = {"status": "SKIP", "missing": missing}
+        return
+
+    key = _env("ANTHROPIC_API_KEY")
+    model = _env("ANTHROPIC_MODEL") or "claude-sonnet-4-20250514"
+    info(f"Key: {_mask(key)}")
+    info(f"Model: {model}")
+
+    try:
+        import anthropic
+        client = anthropic.Anthropic(api_key=key)
+        response = client.messages.create(
+            model=model,
+            max_tokens=5,
+            messages=[{"role": "user", "content": "hi"}]
+        )
+        ok(f"Anthropic API OK - Modell: {model}")
+        RESULTS["anthropic"] = {"status": "OK", "model": model}
+    except ImportError:
+        fail("'anthropic' Python-Paket nicht installiert")
+        info("Installieren mit: pip install anthropic")
+        RESULTS["anthropic"] = {"status": "FAIL", "error": "anthropic_not_installed"}
+    except anthropic.NotFoundError:
+        fail(f"404 - Modell '{model}' nicht gefunden (deprecated)")
+        info("Aktuelles Modell in .env setzen: ANTHROPIC_MODEL=...")
+        RESULTS["anthropic"] = {"status": "FAIL", "error": "model_not_found"}
+    except anthropic.AuthenticationError:
+        fail("401 - API Key ungültig")
+        RESULTS["anthropic"] = {"status": "FAIL", "error": "401"}
+    except Exception as e:
+        fail(f"Fehler: {type(e).__name__}")
+        RESULTS["anthropic"] = {"status": "FAIL", "error": type(e).__name__}
+
+# ══════════════════════════════════════════════════════════
+# 6. GUARDIAN API (lokal)
 # ══════════════════════════════════════════════════════════
 def test_guardian():
     section("GUARDIAN API (lokal)")
@@ -296,6 +337,8 @@ def summary():
             extra = f" → {result['shop']}"
         elif result["status"] == "OK" and "username" in result:
             extra = f" → @{result['username']}"
+        elif result["status"] == "OK" and "model" in result:
+            extra = f" → {result['model']}"
         print(f"  {icon} {service.upper():<15} {result['status']}{extra}")
 
     failed = [k for k, v in RESULTS.items() if v["status"] == "FAIL"]
@@ -326,6 +369,7 @@ if __name__ == "__main__":
     test_stripe()
     test_telegram()
     test_supabase()
+    test_anthropic()
     test_guardian()
     test_dashboard()
     summary()
