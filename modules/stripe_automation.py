@@ -28,13 +28,8 @@ _CACHE_FILE = _DATA_DIR / "stripe_cache.json"
 def _auth() -> Dict[str, str]:
     key = os.getenv("STRIPE_SECRET_KEY", "")
     if not key:
-        raise ValueError("STRIPE_SECRET_KEY nicht gesetzt — in .env eintragen: STRIPE_SECRET_KEY=sk_live_...")
+        raise ValueError("STRIPE_SECRET_KEY nicht gesetzt")
     return {"Authorization": f"Bearer {key}"}
-
-
-def stripe_available() -> bool:
-    """Returns True only if STRIPE_SECRET_KEY is configured."""
-    return bool(os.getenv("STRIPE_SECRET_KEY", ""))
 
 
 def _session(total: int = 30) -> aiohttp.ClientSession:

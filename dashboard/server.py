@@ -537,6 +537,38 @@ async def handle_service_action(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_service_start(req):
+    """Startet einen Service (dedizierter Endpoint für /api/service/start)."""
+    data = await req.json()
+    svc_id = data.get("id", "")
+    svc = next((s for s in SERVICES if s["id"] == svc_id), None)
+    if not svc:
+        return web.json_response({"ok": False, "error": f"Service {svc_id} not found"}, status=404)
+    if svc["id"] == "dashboard":
+        return web.json_response({"ok": False, "error": "Dashboard kann sich nicht selbst starten"}, status=400)
+    try:
+        subprocess.Popen(svc["start_cmd"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        await asyncio.sleep(1.5)
+        return web.json_response({"ok": True, "action": "start", "service": svc["name"]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_service_stop(req):
+    """Stoppt einen Service (dedizierter Endpoint für /api/service/stop)."""
+    data = await req.json()
+    svc_id = data.get("id", "")
+    svc = next((s for s in SERVICES if s["id"] == svc_id), None)
+    if not svc:
+        return web.json_response({"ok": False, "error": f"Service {svc_id} not found"}, status=404)
+    try:
+        subprocess.run(["pkill", "-f", svc["pattern"]], capture_output=True)
+        await asyncio.sleep(0.8)
+        return web.json_response({"ok": True, "action": "stop", "service": svc["name"]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_logs(req):
     lines = []
     for lf in [BASE_DIR / "logs" / "supermegabot.log", Path("/tmp/supermegabot.log")]:
@@ -1527,9 +1559,8 @@ async def handle_klaviyo_campaign(req):
 
 
 async def handle_bot_clones_status(req):
-    """Return status of all bot-clone workers (base + specialized)."""
+    """Return status of all specialized bot-clone workers."""
     try:
-        import core.specialized_bots  # registers specialized bots into BOT_REGISTRY
         from core.bot_clones import get_bot_status
         return web.json_response(await get_bot_status())
     except Exception as e:
@@ -1585,13 +1616,7 @@ async def handle_agents_hub(req):
 
 async def handle_stripe_status(req):
     try:
-        from modules.stripe_automation import stripe_available, get_stats
-        if not stripe_available():
-            return web.json_response({
-                "ok": False,
-                "configured": False,
-                "message": "STRIPE_SECRET_KEY nicht gesetzt — in .env eintragen",
-            })
+        from modules.stripe_automation import get_stats
         data = await get_stats()
         return web.json_response(data)
     except Exception as e:
@@ -1760,12 +1785,27 @@ async def handle_drive_backup(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+@web.middleware
+async def cors_middleware(request, handler):
+    if request.method == "OPTIONS":
+        response = web.Response()
+    else:
+        try:
+            response = await handler(request)
+        except web.HTTPException as ex:
+            response = ex
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
     await bot.start()
 
-    app = web.Application()
+    app = web.Application(middlewares=[cors_middleware])
     app["bot"] = bot
 
     # Existing routes
@@ -1794,6 +1834,8 @@ async def create_app():
     app.router.add_post("/api/mac/action", handle_mac_action)
     app.router.add_get("/api/services/status", handle_services_status)
     app.router.add_post("/api/services/action", handle_service_action)
+    app.router.add_post("/api/service/start", handle_service_start)
+    app.router.add_post("/api/service/stop", handle_service_stop)
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
