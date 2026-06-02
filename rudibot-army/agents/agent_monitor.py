@@ -1,88 +1,75 @@
 #!/usr/bin/env python3
-"""🔴 Monitor Agent — Überwacht alle Services, Ports und Prozesse"""
-import sys, os, time, socket, subprocess, urllib.request
-from typing import Optional
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).parent.parent / "shared"))
-from bus import report, notify_telegram
+"""🔴 Monitor Agent — Überwacht Services, Ports, meldet Ausfälle"""
+import sys, os, time, socket, urllib.request
+sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from bus import report, notify_telegram, load_state
+from learner_mixin import AgentLearner
 
 ID = "monitor"
-
-# Projekt-Root dynamisch ermitteln
-ARMY_DIR  = Path(__file__).parent.parent
-MEGA_DIR  = ARMY_DIR.parent  # supermegabot/
-
 SERVICES = [
-    ("SuperMegaBot",  8888,  "http://localhost:8888/health"),
-    ("Ollama LLM",   11434,  "http://localhost:11434/api/tags"),
-    ("RudiBot Army",     0,   None),   # Kein Port — nur als Platzhalter
+    {"name": "RudiBot", "host": "127.0.0.1", "port": 3200, "url": "http://127.0.0.1:3200/api/health"},
+    {"name": "SuperMegaBot", "host": "127.0.0.1", "port": 8888, "url": "http://127.0.0.1:8888/api/health"},
+    {"name": "Ollama", "host": "127.0.0.1", "port": 11434, "url": "http://127.0.0.1:11434/api/tags"},
+    {"name": "PasswordSync", "host": "127.0.0.1", "port": 3005, "url": "http://127.0.0.1:3005/health"},
 ]
 
-def check_port(port: int) -> bool:
+
+def check_port(host, port, timeout=3):
     try:
-        s = socket.socket()
-        s.settimeout(1)
-        s.connect(("127.0.0.1", port))
-        s.close()
-        return True
+        with socket.create_connection((host, port), timeout=timeout):
+            return True
     except Exception:
         return False
 
-def check_url(url: str) -> bool:
+
+def check_http(url, timeout=5):
     try:
-        urllib.request.urlopen(url, timeout=3)
+        req = urllib.request.Request(url, method="HEAD")
+        urllib.request.urlopen(req, timeout=timeout)
         return True
     except Exception:
-        return False
-
-def check(port: int, url: Optional[str]) -> bool:
-    if port == 0:
-        return True  # Interner Check, immer OK solange dieser Agent läuft
-    if url:
-        return check_url(url)
-    return check_port(port)
-
-def fix_service(name: str, port: int) -> bool:
-    """Versucht einen Service neu zu starten. Plattform-unabhängig."""
-    cmds: dict[str, str] = {
-        "SuperMegaBot": f"nohup python3 {MEGA_DIR}/dashboard/server.py >> /tmp/mega.log 2>&1 &",
-        "Ollama LLM":   "ollama serve >> /tmp/ollama.log 2>&1 &",
-    }
-    cmd = cmds.get(name)
-    if not cmd:
-        return False
-    subprocess.run(cmd, shell=True, timeout=15, cwd=str(MEGA_DIR))
-    time.sleep(4)
-    return check(port, None)
+        try:
+            req = urllib.request.Request(url, method="GET")
+            urllib.request.urlopen(req, timeout=timeout)
+            return True
+        except Exception:
+            return False
 
 
 def run():
     print(f"[{ID}] 🔴 Monitor Agent gestartet")
-    fail_count = {s[0]: 0 for s in SERVICES}
+    learner = AgentLearner(ID)
+    down_history = {}
 
     while True:
-        summary: dict[str, bool] = {}
-        for name, port, url in SERVICES:
-            ok = check(port, url)
-            summary[name] = ok
-            if not ok:
-                fail_count[name] += 1
-                if fail_count[name] >= 2:
-                    print(f"[{ID}] 🔧 Repariere {name}...")
-                    fixed = fix_service(name, port)
-                    if fixed:
-                        fail_count[name] = 0
-                        notify_telegram(f"✅ <b>{name}</b> automatisch repariert")
-                        report(ID, "repaired", f"{name} repariert", summary)
-            else:
-                fail_count[name] = 0
+        try:
+            statuses = []
+            down_now = []
 
-        ok_count = sum(v for k, v in summary.items() if k != "RudiBot Army")
-        total = sum(1 for k, _ in summary.items() if k != "RudiBot Army")
-        report(ID, "ok" if ok_count == total else "warning",
-               f"Services: {ok_count}/{total} OK", summary)
-        time.sleep(30)
+            for svc in SERVICES:
+                port_ok = check_port(svc["host"], svc["port"])
+                http_ok = check_http(svc["url"]) if svc.get("url") else port_ok
+                ok = port_ok and http_ok
+                icon = "✅" if ok else "❌"
+                statuses.append(f"{icon} {svc['name']}")
+                if not ok:
+                    down_now.append(svc["name"])
+                    down_history[svc["name"]] = down_history.get(svc["name"], 0) + 1
+
+            status = "warning" if down_now else "ok"
+            msg = f"{len(down_now)}/{len(SERVICES)} down" if down_now else "alle Services OK"
+            report(ID, status, msg, {"checks": statuses, "down": down_now})
+            learner.log_cycle(status, msg, {"down_count": len(down_now)})
+
+            # Telegram nur bei Neu-Ausfall oder Wiederherstellung
+            for svc_name in down_now:
+                if down_history.get(svc_name, 0) == 1:
+                    notify_telegram(f"🔴 <b>Monitor:</b> {svc_name} ist DOWN")
+
+        except Exception as e:
+            report(ID, "error", str(e)[:80])
+
+        time.sleep(60)
 
 
 if __name__ == "__main__":

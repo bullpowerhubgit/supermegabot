@@ -1,7 +1,7 @@
 #!/bin/bash
 # Stabiler Wrapper für cratorhub
 # local-projects/digifabrik ist ein lokaler Pfad (kein iCloud) — sicher für cd + dotenv
-DIGIFABRIK="/Users/rudolfsarkany/local-projects/digifabrik"
+DIGIFABRIK="${DIGIFABRIK_DIR:-$HOME/local-projects/digifabrik}"
 
 if [ ! -f "$DIGIFABRIK/server.ts" ]; then
   echo "❌ server.ts nicht gefunden: $DIGIFABRIK/server.ts"

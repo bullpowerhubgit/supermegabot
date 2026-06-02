@@ -1,78 +1,68 @@
 #!/usr/bin/env python3
-"""🔐 Security Agent — VPN-Status, API-Keys, verdächtige Aktivitäten"""
-import sys, os
-import pathlib, time, subprocess, json
-sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
-from bus import report, notify_telegram, get_env
+"""🔐 Security Agent — Prüft auf Failed Logins, ungewöhnliche Aktivität"""
+import sys, os, time, glob, re
+sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+from bus import report, notify_telegram
+from learner_mixin import AgentLearner
 
 ID = "security"
-WARNED_VPN = False
-WARNED_KEYS = set()
+SUSPICIOUS_PATTERNS = [
+    re.compile(r"failed login|authentication failed|unauthorized", re.I),
+    re.compile(r"error.*password|invalid.*credentials", re.I),
+    re.compile(r"port scan|intrusion attempt|suspicious", re.I),
+]
+LOG_PATHS = [
+    os.path.expanduser("~/supermegabot/dashboard/server.log"),
+    os.path.expanduser("~/supermegabot/logs/*.log"),
+    "/tmp/supermegabot.log",
+    "/tmp/rudibot-army.log",
+]
 
-def check_vpn():
-    """Prüft Mullvad VPN Status"""
-    try:
-        r = subprocess.run(["mullvad","status"], capture_output=True, text=True, timeout=5)
-        connected = "connected" in r.stdout.lower()
-        location = r.stdout.strip()
-        return connected, location
-    except Exception:
-        return None, "Mullvad nicht installiert/erreichbar"
 
-def check_api_keys():
-    """Prüft ob alle kritischen Keys gesetzt sind"""
-    critical = ["TELEGRAM_BOT_TOKEN","ANTHROPIC_API_KEY","SHOPIFY_ACCESS_TOKEN","PRINTIFY_API_TOKEN"]
-    missing = []
-    for k in critical:
-        v = get_env(k)
-        if not v or v in ("","YOUR_TOKEN_HERE","APP_TOKEN_REQUIRED"):
-            missing.append(k)
-    return missing
+def scan_logs():
+    findings = []
+    for pattern in LOG_PATHS:
+        for logfile in glob.glob(pattern) if "*" in pattern else [pattern]:
+            if not os.path.exists(logfile):
+                continue
+            try:
+                with open(logfile, "r", errors="ignore") as f:
+                    lines = f.readlines()
+                for i, line in enumerate(lines[-500:], start=max(0, len(lines) - 500)):
+                    for pat in SUSPICIOUS_PATTERNS:
+                        if pat.search(line):
+                            findings.append(f"{os.path.basename(logfile)}:{i+1}: {line.strip()[:80]}")
+                            if len(findings) >= 10:
+                                return findings
+            except Exception:
+                continue
+    return findings
 
-def check_failed_logins():
-    """Prüft Bot-Logs auf verdächtige Aktivität"""
-    try:
-        log = open("/tmp/bot-full.log", errors="ignore").read()[-5000:]
-        suspicious = log.count("Unauthorized") + log.count("403") + log.count("blocked")
-        return suspicious
-    except Exception: return 0
 
 def run():
-    global WARNED_VPN, WARNED_KEYS
     print(f"[{ID}] 🔐 Security Agent gestartet")
+    learner = AgentLearner(ID)
+    last_alerted = 0
+
     while True:
-        issues = []
-        # VPN Check
-        vpn_ok, vpn_loc = check_vpn()
-        if vpn_ok is False and not WARNED_VPN:
-            issues.append("⚠️ VPN GETRENNT — sensible Operationen pausieren")
-            WARNED_VPN = True
-        elif vpn_ok is True:
-            WARNED_VPN = False
-        
-        # API Keys Check
-        missing = check_api_keys()
-        for k in missing:
-            if k not in WARNED_KEYS:
-                issues.append(f"⚠️ Key fehlt: {k}")
-                WARNED_KEYS.add(k)
-        WARNED_KEYS = WARNED_KEYS.intersection(set(missing))
-        
-        # Suspicious Activity
-        suspicious = check_failed_logins()
-        if suspicious > 10:
-            issues.append(f"🚨 {suspicious} verdächtige Login-Versuche in Logs!")
-        
-        if issues:
-            notify_telegram("🔐 <b>Security Alert:</b>\n" + "\n".join(issues))
-        
-        vpn_status = "verbunden" if vpn_ok else ("getrennt" if vpn_ok is False else "unbekannt")
-        report(ID, "warning" if issues else "ok", 
-               f"VPN:{vpn_status} | Keys:{len(missing)} fehlend | Suspicious:{suspicious}", {
-                   "vpn": vpn_status, "vpn_location": vpn_loc,
-                   "missing_keys": missing, "suspicious_count": suspicious, "issues": issues
-               })
-        time.sleep(60)
+        try:
+            findings = scan_logs()
+            status = "warning" if findings else "ok"
+            msg = f"{len(findings)} verdächtige Einträge" if findings else "Logs sauber"
+
+            report(ID, status, msg, {"findings": findings[:5]})
+            learner.log_cycle(status, msg, {"findings_count": len(findings)})
+
+            # Alert nur alle 30 min max
+            if findings and time.time() - last_alerted > 1800:
+                notify_telegram(f"🔐 <b>Security:</b> {len(findings)} verdächtige Log-Einträge gefunden")
+                last_alerted = time.time()
+
+        except Exception as e:
+            report(ID, "error", str(e)[:80])
+
+        time.sleep(300)
+
 
 if __name__ == "__main__":
     run()
