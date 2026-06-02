@@ -12,6 +12,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+_SERVER_START_TIME = time.time()
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path.home()))
 
@@ -140,8 +142,6 @@ async def handle_chat(req):
         data = await req.json()
         text = data.get("text", "")
         session_id = data.get("session_id", "dashboard")
-        sys.path.insert(0, str(BASE_DIR))
-        from core.mega_orchestrator import MegaOrchestrator
         bot = req.app["bot"]
         response = await bot.process(text, session_id)
         return web.json_response({"response": response, "session_id": session_id})
@@ -588,7 +588,8 @@ async def handle_health(req):
         "status": "ok",
         "service": "supermegabot-dashboard",
         "port": PORT,
-        "uptime": time.time(),
+        "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
+        "started_at": datetime.utcfromtimestamp(_SERVER_START_TIME).strftime("%Y-%m-%dT%H:%M:%SZ"),
     })
 
 
@@ -1664,13 +1665,12 @@ async def handle_stripe_revenue(req):
 
 async def handle_stripe_webhook(req):
     try:
-        import os
         payload = await req.read()
         sig_header = req.headers.get("Stripe-Signature", "")
         webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
         from modules.stripe_automation import verify_webhook_signature, handle_webhook_event
-        if sig_header and not verify_webhook_signature(payload, sig_header, webhook_secret):
+        if webhook_secret and not verify_webhook_signature(payload, sig_header, webhook_secret):
             return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
 
         event = json.loads(payload)
