@@ -12,6 +12,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+_SERVER_START_TIME = time.time()
+
 sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path.home()))
 
@@ -140,13 +142,46 @@ async def handle_chat(req):
         data = await req.json()
         text = data.get("text", "")
         session_id = data.get("session_id", "dashboard")
-        sys.path.insert(0, str(BASE_DIR))
-        from core.mega_orchestrator import MegaOrchestrator
         bot = req.app["bot"]
         response = await bot.process(text, session_id)
         return web.json_response({"response": response, "session_id": session_id})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_bot_execute(req):
+    """Telegram Hub Bridge → Dashboard CommandRouter.
+    Called by telegram_hub_bridge.py for every incoming Telegram message.
+    """
+    try:
+        data = await req.json()
+        command = data.get("command", "").strip()
+        session_id = data.get("session_id", "telegram")
+        if not command:
+            return web.json_response({"ok": False, "error": "command is required"}, status=400)
+        bot = req.app["bot"]
+        response = await bot.process(command, session_id)
+        return web.json_response({"ok": True, "response": response})
+    except Exception as e:
+        log.error("handle_bot_execute error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bot_commands(req):
+    """Return all registered bot commands (for /commands meta-command in Telegram)."""
+    try:
+        bot = req.app["bot"]
+        all_cmds = list(bot.router.routes.keys())
+        slash_cmds = sorted(c for c in all_cmds if c.startswith("/"))
+        other_cmds = sorted(c for c in all_cmds if not c.startswith("/"))
+        return web.json_response({
+            "ok": True,
+            "total": len(all_cmds),
+            "slash": slash_cmds,
+            "all": slash_cmds + other_cmds,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_system(req):
@@ -588,7 +623,8 @@ async def handle_health(req):
         "status": "ok",
         "service": "supermegabot-dashboard",
         "port": PORT,
-        "uptime": time.time(),
+        "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
+        "started_at": datetime.utcfromtimestamp(_SERVER_START_TIME).strftime("%Y-%m-%dT%H:%M:%SZ"),
     })
 
 
@@ -840,11 +876,11 @@ async def handle_self_learner_find_api(req):
 
 _WATCHED_ENV_KEYS = [
     "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
-    "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_API_KEY", "SHOPIFY_API_SECRET",
+    "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_ADMIN_API_TOKEN",
     "SHOPIFY_STORE_URL", "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_API_VERSION",
     "OLLAMA_HOST", "OLLAMA_FAST_MODEL", "OLLAMA_SMART_MODEL", "OLLAMA_CODE_MODEL",
     "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "PERPLEXITY_API_KEY",
-    "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY",
+    "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_KEY",
     "GOOGLE_ADS_CLIENT_ID", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
     "GCP_PROJECT_ID", "GMC_MERCHANT_ID",
     "ETERNAL_BOT_DIR", "KIVO_DIR",
@@ -1612,6 +1648,68 @@ async def handle_agents_hub(req):
         return web.json_response({"ok": False, "status": "offline", "error": str(e)})
 
 
+async def handle_agents_teams_list(req):
+    try:
+        from modules.agent_teams import list_teams
+        return web.json_response({"ok": True, "teams": list_teams()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_agents_teams_run(req):
+    try:
+        data = await req.json()
+        team = data.get("team", "").strip()
+        task = data.get("task", "").strip()
+        notify = data.get("notify", True)
+        if not team or not task:
+            return web.json_response({"ok": False, "error": "team and task required"}, status=400)
+        from modules.agent_teams import run_team
+        result = await run_team(team, task, notify=notify)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Monetization ─────────────────────────────────────────────────────────────
+
+async def handle_plans_list(req):
+    try:
+        from modules.monetization import get_plans_info
+        return web.json_response({"ok": True, "plans": get_plans_info()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_checkout_create(req):
+    try:
+        data = await req.json()
+        plan = data.get("plan", "").strip()
+        email = data.get("email", "").strip()
+        base_url = data.get("base_url", os.getenv("DASHBOARD_URL", "http://localhost:8888"))
+        if not plan or not email:
+            return web.json_response({"ok": False, "error": "plan and email required"}, status=400)
+        from modules.monetization import create_checkout_session
+        session = create_checkout_session(
+            plan=plan,
+            customer_email=email,
+            success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{base_url}/checkout/cancel",
+        )
+        return web.json_response({"ok": True, "checkout_url": session.get("url"), "session_id": session.get("id")})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mrr(req):
+    try:
+        from modules.monetization import get_mrr
+        mrr = get_mrr()
+        return web.json_response({"ok": True, "mrr_eur": mrr, "arr_eur": mrr * 12})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── Stripe ───────────────────────────────────────────────────────────────────
 
 async def handle_stripe_status(req):
@@ -1664,13 +1762,12 @@ async def handle_stripe_revenue(req):
 
 async def handle_stripe_webhook(req):
     try:
-        import os
         payload = await req.read()
         sig_header = req.headers.get("Stripe-Signature", "")
         webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
         from modules.stripe_automation import verify_webhook_signature, handle_webhook_event
-        if sig_header and not verify_webhook_signature(payload, sig_header, webhook_secret):
+        if webhook_secret and not verify_webhook_signature(payload, sig_header, webhook_secret):
             return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
 
         event = json.loads(payload)
@@ -1811,6 +1908,9 @@ async def create_app():
     # Existing routes
     app.router.add_get("/", handle_index)
     app.router.add_post("/api/chat", handle_chat)
+    # Telegram Hub Bridge endpoints
+    app.router.add_post("/api/bot/execute", handle_bot_execute)
+    app.router.add_get("/api/bot/commands", handle_bot_commands)
     app.router.add_get("/api/system", handle_system)
     app.router.add_get("/api/services", handle_services_legacy)
     app.router.add_get("/api/trading/prices", handle_trading_prices)
@@ -1926,6 +2026,15 @@ async def create_app():
     # ── Watchdog + Agenten Hub ────────────────────────────────────────────────
     app.router.add_get("/api/watchdog/status",        handle_watchdog_status)
     app.router.add_get("/api/agents/hub",             handle_agents_hub)
+
+    # ── Agent Teams ───────────────────────────────────────────────────────────
+    app.router.add_get("/api/agents/teams",           handle_agents_teams_list)
+    app.router.add_post("/api/agents/run",            handle_agents_teams_run)
+
+    # ── Monetization ──────────────────────────────────────────────────────────
+    app.router.add_get("/api/plans",                  handle_plans_list)
+    app.router.add_post("/api/checkout",              handle_checkout_create)
+    app.router.add_get("/api/mrr",                    handle_mrr)
 
     # ── Stripe ────────────────────────────────────────────────────────────────
     app.router.add_get("/api/stripe/status",          handle_stripe_status)
