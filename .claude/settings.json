@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(*)",
+      "Read(*)",
+      "Write(*)",
+      "Edit(*)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[Hook] Bash: '\"$CLAUDE_TOOL_INPUT\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd /home/user/supermegabot && python3 -m py_compile \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>/dev/null && echo 'Syntax OK' || echo 'Syntax ERROR'"
+          }
+        ]
+      }
+    ]
+  }
+}
