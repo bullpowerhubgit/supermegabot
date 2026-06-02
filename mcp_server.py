@@ -11,7 +11,12 @@ import urllib.request
 import urllib.error
 import hashlib
 import os
+import logging
 from pathlib import Path
+
+# Alle Logs nach stderr – stdout gehört ausschließlich JSON-RPC
+logging.basicConfig(stream=sys.stderr, level=logging.INFO, format="[%(levelname)s] %(message)s")
+logger = logging.getLogger("supermegabot-mcp")
 
 # Load .env if present (no external dependency)
 def _load_env():
@@ -48,8 +53,10 @@ def guardian_api_call(method, path, body=None):
         with urllib.request.urlopen(req, timeout=10) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
+        logger.warning("Guardian HTTP %s %s → %s", method, path, e.code)
         return {"error": f"HTTP {e.code}", "detail": e.read().decode()[:200]}
     except Exception as e:
+        logger.warning("Guardian unavailable: %s", e)
         return {"error": str(e), "guardian": "unavailable"}
 
 
@@ -62,12 +69,14 @@ def api_call(method, path, body=None):
         with urllib.request.urlopen(req, timeout=15) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
+        logger.warning("API HTTP %s %s → %s", method, path, e.code)
         return {"error": f"HTTP {e.code}", "detail": e.read().decode()[:200]}
     except Exception as e:
+        logger.warning("API error: %s", e)
         return {"error": str(e)}
 
 
-def send_tools_list():
+def send_tools_list(req_id):
     tools = [
         {
             "name": "get_services",
@@ -246,6 +255,12 @@ def send_tools_list():
     ]
     send_message({"jsonrpc": "2.0", "id": req_id, "result": {"tools": tools}})
 
+def send_error(req_id, code, message, data=None):
+    err = {"code": code, "message": message}
+    if data is not None:
+        err["data"] = data
+    send_message({"jsonrpc": "2.0", "id": req_id, "error": err})
+
 
 def handle_tool_call(name, args):
     if name == "get_services":
@@ -312,36 +327,64 @@ def send_message(msg):
 
 
 async def main():
-    global req_id
+    initialized = False
     while True:
         line = await asyncio.get_event_loop().run_in_executor(None, sys.stdin.readline)
         if not line:
+            logger.info("stdin closed, exiting")
             break
+        line = line.strip()
+        if not line:
+            continue
         try:
             msg = json.loads(line)
         except json.JSONDecodeError:
+            logger.debug("Ignored non-JSON line")
             continue
-        if msg.get("method") == "initialize":
+
+        method = msg.get("method")
+        req_id = msg.get("id")
+
+        # Notifications haben keine id; nur loggen
+        if method == "notifications/initialized":
+            initialized = True
+            logger.info("MCP client initialized")
+            continue
+
+        if method == "initialize":
             send_message({
-                "jsonrpc": "2.0", "id": msg["id"],
+                "jsonrpc": "2.0", "id": req_id,
                 "result": {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "supermegabot-mcp-guardian", "version": "1.1.0"}
+                    "serverInfo": {"name": "supermegabot-mcp-guardian", "version": "1.2.0"}
                 }
             })
-        elif msg.get("method") == "tools/list":
-            req_id = msg["id"]
-            send_tools_list()
-        elif msg.get("method") == "tools/call":
+            continue
+
+        if not initialized:
+            send_error(req_id, -32002, "Server not initialized")
+            continue
+
+        if method == "tools/list":
+            send_tools_list(req_id)
+        elif method == "tools/call":
             params = msg.get("params", {})
             name = params.get("name")
             args = params.get("arguments", {})
-            result = handle_tool_call(name, args)
+            logger.info("Tool call: %s args=%s", name, args)
+            try:
+                result = handle_tool_call(name, args)
+            except Exception as e:
+                logger.exception("Tool %s failed", name)
+                send_error(req_id, -32603, f"Tool {name} failed: {e}")
+                continue
             send_message({
-                "jsonrpc": "2.0", "id": msg["id"],
+                "jsonrpc": "2.0", "id": req_id,
                 "result": {"content": [{"type": "text", "text": json.dumps(result, indent=2, ensure_ascii=False)}]}
             })
+        else:
+            send_error(req_id, -32601, f"Method not found: {method}")
 
 
 if __name__ == "__main__":
