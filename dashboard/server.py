@@ -1612,6 +1612,50 @@ async def handle_stripe_webhook(req):
 
 # ── Google OAuth2 ─────────────────────────────────────────────────────────────
 
+async def handle_telegram_bot_status(req):
+    """Return known chat IDs and bot info."""
+    try:
+        from modules.telegram_bot_handler import _load_chat_ids, _token, _api
+        chat_ids = _load_chat_ids()
+        # Verify bot token
+        bot_info = {}
+        if _token():
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
+                    async with s.get(_api("getMe")) as r:
+                        if r.status == 200:
+                            bot_info = (await r.json()).get("result", {})
+            except Exception:
+                pass
+        return web.json_response({
+            "ok":           bool(_token()),
+            "bot_username": bot_info.get("username", ""),
+            "bot_name":     bot_info.get("first_name", ""),
+            "chat_ids":     chat_ids,
+            "primary_chat": os.getenv("TELEGRAM_CHAT_ID", ""),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_telegram_send_test(req):
+    """Send a test message to confirm Telegram works."""
+    try:
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        if not chat_id:
+            from modules.telegram_bot_handler import _load_chat_ids
+            ids = _load_chat_ids()
+            if ids:
+                chat_id = list(ids.keys())[0]
+        if not chat_id:
+            return web.json_response({"ok": False, "error": "Keine Chat-ID bekannt — schreib /start an den Bot"})
+        from modules.telegram_bot_handler import _send
+        await _send(int(chat_id), "✅ <b>SuperMegaBot Test</b>\nTelegram funktioniert!")
+        return web.json_response({"ok": True, "chat_id": chat_id})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_google_auth(req):
     """Redirect to Google OAuth2 login."""
     try:
@@ -1717,6 +1761,13 @@ async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
     await bot.start()
+
+    # Telegram polling (auto-captures chat ID + handles commands)
+    try:
+        from modules.telegram_bot_handler import get_poller
+        await get_poller().start()
+    except Exception as _e:
+        log.warning(f"Telegram Poller: {_e}")
 
     app = web.Application()
     app["bot"] = bot
@@ -1841,6 +1892,10 @@ async def create_app():
     app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+
+    # ── Telegram Bot Handler ──────────────────────────────────────────────────
+    app.router.add_get("/api/telegram/bot/status",    handle_telegram_bot_status)
+    app.router.add_post("/api/telegram/bot/test",     handle_telegram_send_test)
 
     # ── Google OAuth2 ─────────────────────────────────────────────────────────
     app.router.add_get("/api/google/auth",            handle_google_auth)

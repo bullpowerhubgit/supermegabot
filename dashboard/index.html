@@ -3024,20 +3024,52 @@ async function genContent(type) {
 // ════════════════════════════════════════════════════════════════
 async function loadTelegram() {
   try {
-    const d = await api('GET', '/api/telegram/status');
+    const [d, bot] = await Promise.allSettled([
+      api('GET', '/api/telegram/status'),
+      api('GET', '/api/telegram/bot/status'),
+    ]);
+    const status = d.status === 'fulfilled' ? d.value : {};
+    const botd   = bot.status === 'fulfilled' ? bot.value : {};
     const banner = document.getElementById('tg-status-banner');
-    if (d.configured) {
+    const chatId = status.chat_id || botd.primary_chat || '';
+    const hasBot = botd.ok && botd.bot_username;
+    const hasChatId = !!chatId;
+
+    if (hasBot && hasChatId) {
       banner.className = 'tg-status-banner configured mb-16';
-      banner.querySelector('div div:first-child').textContent = 'Telegram Bot Connected';
-      document.getElementById('tg-chat-id').textContent = `Chat ID: ${d.chat_id || '—'}`;
+      banner.querySelector('div div:first-child').textContent = `✅ @${botd.bot_username} (${botd.bot_name}) verbunden`;
+      document.getElementById('tg-chat-id').textContent = `Chat-ID: ${chatId}`;
+    } else if (hasBot && !hasChatId) {
+      banner.className = 'tg-status-banner not-configured mb-16';
+      banner.querySelector('div div:first-child').textContent = `⚠️ @${botd.bot_username} aktiv — Chat-ID fehlt`;
+      document.getElementById('tg-chat-id').textContent = 'Schreib /start an den Bot um die Chat-ID auto-zu-setzen';
     } else {
       banner.className = 'tg-status-banner not-configured mb-16';
-      banner.querySelector('div div:first-child').textContent = 'Telegram Not Configured';
-      document.getElementById('tg-chat-id').textContent = 'Set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in .env';
+      banner.querySelector('div div:first-child').textContent = 'Bot nicht konfiguriert';
+      document.getElementById('tg-chat-id').textContent = 'TELEGRAM_BOT_TOKEN in .env setzen';
+    }
+
+    // Show known chat IDs
+    const chatIds = botd.chat_ids || {};
+    if (Object.keys(chatIds).length) {
+      const list = Object.entries(chatIds).map(([id, info]) =>
+        `<div style="font-size:12px;color:var(--text2);margin:2px 0">
+          <code style="color:var(--accent)">${id}</code> @${info.username||'?'} (${info.type}) — ${info.first_seen?.substring(0,10)||'?'}
+         </div>`
+      ).join('');
+      const el = document.getElementById('tg-chat-id');
+      if (el) el.innerHTML += list;
     }
   } catch(e) {
-    toast('Failed to load Telegram status', 'error');
+    toast('Telegram Fehler: ' + e.message, 'error');
   }
+}
+
+async function testTelegramBot() {
+  try {
+    const d = await api('POST', '/api/telegram/bot/test');
+    toast(d.ok ? `✅ Test gesendet an ${d.chat_id}` : `❌ ${d.error}`, d.ok ? 'success' : 'error');
+  } catch(e) { toast('Fehler: ' + e.message, 'error'); }
 }
 
 async function sendTelegram() {

@@ -1012,6 +1012,14 @@ class MegaOrchestrator:
         except Exception as e:
             log.warning(f"BotClone-Manager nicht gestartet: {e}")
 
+        try:
+            from modules.telegram_bot_handler import get_poller
+            poller = get_poller()
+            await poller.start()
+            log.info("Telegram Poller gestartet — Auto-ChatID-Capture aktiv")
+        except Exception as e:
+            log.warning(f"Telegram Poller nicht gestartet: {e}")
+
         log.info("SuperMegaBot is RUNNING")
         await send_telegram("SuperMegaBot gestartet! Tippe /help")
 
