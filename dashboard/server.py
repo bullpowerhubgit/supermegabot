@@ -1553,7 +1553,13 @@ async def handle_bot_clone_run(req):
 
 async def handle_stripe_status(req):
     try:
-        from modules.stripe_automation import get_stats
+        from modules.stripe_automation import stripe_available, get_stats
+        if not stripe_available():
+            return web.json_response({
+                "ok": False,
+                "configured": False,
+                "message": "STRIPE_SECRET_KEY nicht gesetzt — in .env eintragen",
+            })
         data = await get_stats()
         return web.json_response(data)
     except Exception as e:
