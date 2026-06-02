@@ -28,3 +28,6 @@ node_modules/
 /generated/
 prisma.config.ts
 .claude/worktrees/
+
+windsurf-mcp-config.json
+*-mcp-config.json
