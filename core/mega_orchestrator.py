@@ -57,12 +57,15 @@ else:
     log.warning("⚠️ Guardian Integration not available")
 
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+# @DudiRudibot — SuperMegaBot Admin Bot (alle 110 Commands)
 TELEGRAM_TOKEN = (
     os.getenv("TELEGRAM_BOT_TOKEN")
     or os.getenv("TELEGRAM_BOT_TOKEN_1")
     or os.getenv("TELEGRAM_BOT_TOKEN_2")
     or ""
 )
+# @RudiCludiBot — Kunden-Bot (Subscriptions, Support)
+TELEGRAM_TOKEN_CUSTOMER = os.getenv("TELEGRAM_BOT_TOKEN_2", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 
@@ -1017,8 +1020,17 @@ class MegaOrchestrator:
         except Exception as e:
             log.warning(f"BotClone-Manager nicht gestartet: {e}")
 
+        # Start RudiCludiBot (Kunden-Bot @RudiCludiBot)
+        try:
+            if TELEGRAM_TOKEN_CUSTOMER:
+                from modules.rudicludi_bot import run as rudicludi_run
+                asyncio.create_task(rudicludi_run())
+                log.info("RudiCludiBot (@RudiCludiBot) gestartet")
+        except Exception as e:
+            log.warning(f"RudiCludiBot nicht gestartet: {e}")
+
         log.info("SuperMegaBot is RUNNING")
-        await send_telegram("SuperMegaBot gestartet! Tippe /help")
+        await send_telegram("🚀 SuperMegaBot + @RudiCludiBot gestartet! Tippe /help")
 
     async def process(self, text: str, session_id: str = "default") -> str:
         start = time.time()
