@@ -80,6 +80,9 @@ sleep 2
 
 SERVICES=(
   "8888:SuperMegaBot Dashboard"
+  "9002:Windsurf Unified Dashboard"
+  "9003:Windsurf Watchdog Monitor"
+  "9998:Windsurf Agenten-Hub"
   "3005:Password-Sync"
   "11434:Ollama"
   "3200:Telegram Bot"
