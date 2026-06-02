@@ -15,6 +15,9 @@ import gcpConfig from './lib/gcp-config.js';
 
 const execAsync = promisify(exec);
 
+// Portable base directory — override with SUPERMEGABOT_DIR env var
+const BASE = process.env.SUPERMEGABOT_DIR || path.join(os.homedir(), 'supermegabot');
+
 /**
  * SmartWatchdog - Advanced system monitor
  */
@@ -253,10 +256,10 @@ class SmartWatchdog {
     this.lastAlertTime = now;
     
     try {
-      // macOS notification
+      // macOS notification (no-op on Linux — silent fail)
       await execAsync(`osascript -e 'display notification "${message}" with title "${title}" sound name "Glass"'`);
     } catch (e) {
-      // Silent fail
+      // Silent fail — osascript not available on Linux
     }
   }
 
@@ -351,8 +354,8 @@ const watchdog = new SmartWatchdog({
     {
       name: 'main-bot',
       pattern: 'main-bot-complete.js',
-      restartCommand: 'node "' + path.join('/Users/rudolfsarkany/windsurf-telegram-bot', 'main-bot-complete.js') + '"',
-      cwd: '/Users/rudolfsarkany/windsurf-telegram-bot'
+      restartCommand: 'node "' + path.join(process.env.WS_TELEGRAM_DIR || path.join(os.homedir(), 'windsurf-telegram-bot'), 'main-bot-complete.js') + '"',
+      cwd: process.env.WS_TELEGRAM_DIR || path.join(os.homedir(), 'windsurf-telegram-bot')
     }
   ]
 });
