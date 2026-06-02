@@ -18,13 +18,6 @@ sys.path.insert(0, str(Path.home()))
 from aiohttp import web
 import aiohttp
 
-
-def _client_session(total_timeout: int = 15):
-  resolver = aiohttp.resolver.ThreadedResolver()
-  connector = aiohttp.TCPConnector(resolver=resolver, ttl_dns_cache=300)
-  timeout = aiohttp.ClientTimeout(total=total_timeout)
-  return aiohttp.ClientSession(timeout=timeout, connector=connector)
-
 # Self-Learner integration
 try:
     from self_learner_core import SelfLearner
@@ -64,49 +57,60 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 # Service definitions for Start/Stop control
 # ---------------------------------------------------------------------------
 
+_HOME = Path.home()
+
+def _ext(env_var: str, default_rel: str) -> str:
+    """Gibt Pfad aus Env-Var zurück, sonst HOME/default_rel."""
+    return os.getenv(env_var, str(_HOME / default_rel))
+
 SERVICES = [
     {"id": "dashboard", "name": "SuperMegaBot", "port": 8888,
-     "start_cmd": "cd /Users/rudolfsarkany/supermegabot && python3 dashboard/server.py",
+     "start_cmd": f"cd {BASE_DIR} && nohup python3 dashboard/server.py >> /tmp/supermegabot.log 2>&1 &",
      "pattern": "dashboard/server.py", "icon": "🤖"},
+    {"id": "rudibot_army", "name": "RudiBot Army", "port": 0,
+     "start_cmd": f"cd {BASE_DIR} && nohup python3 rudibot-army/army_commander.py >> /tmp/rudibot-army.log 2>&1 &",
+     "pattern": "army_commander.py", "icon": "🪖"},
+    {"id": "mega_orchestrator", "name": "Mega Orchestrator", "port": 0,
+     "start_cmd": f"cd {BASE_DIR} && nohup python3 core/mega_orchestrator.py >> /tmp/mega-orchestrator.log 2>&1 &",
+     "pattern": "mega_orchestrator.py", "icon": "🧩"},
     {"id": "telegram_bot", "name": "Telegram Bot", "port": 3200,
-     "start_cmd": "cd '/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot' && nohup node server.js >> logs/server.log 2>&1 &",
+     "start_cmd": f"cd {_ext('TELEGRAM_BOT_DIR','telegram-automation-bot')} && nohup node server.js >> /tmp/telegram-bot.log 2>&1 &",
      "pattern": "telegram-automation-bot.*server.js", "icon": "✈️"},
-    {"id": "cratorhub", "name": "CreatorHub", "port": 3002,
-     "start_cmd": "cd '/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/digifabrik' && nohup npx tsx server.ts >> /tmp/cratorhub.log 2>&1 &",
+    {"id": "cratorhub", "name": "CreatorHub", "port": 3000,
+     "start_cmd": f"cd {_ext('DIGIFABRIK_DIR','digifabrik')} && nohup npx tsx server.ts >> /tmp/cratorhub.log 2>&1 &",
      "pattern": "digifabrik.*server", "icon": "🎨"},
     {"id": "ollama", "name": "Ollama LLM", "port": 11434,
-     "start_cmd": "ollama serve &",
+     "start_cmd": "ollama serve >> /tmp/ollama.log 2>&1 &",
      "pattern": "ollama serve", "icon": "🧠"},
     {"id": "openclaw", "name": "OpenClaw Gateway", "port": 18789,
      "start_cmd": "openclaw gateway run",
      "pattern": "openclaw", "icon": "🦞"},
     {"id": "windsurf_shopify_suite", "name": "Shopify Webhook Suite", "port": 3001,
-     "start_cmd": "cd /Users/rudolfsarkany/windsurf-shopify-suite && nohup npm start >> /tmp/windsurf-shopify-suite.log 2>&1 &",
+     "start_cmd": f"cd {_ext('SHOPIFY_SUITE_DIR','windsurf-shopify-suite')} && nohup npm start >> /tmp/windsurf-shopify-suite.log 2>&1 &",
      "pattern": "windsurf-shopify-suite", "icon": "🛒"},
     {"id": "windsurf_telegram_bot", "name": "Windsurf Telegram Bot", "port": 8000,
-     "start_cmd": "cd /Users/rudolfsarkany/windsurf-telegram-bot && nohup npm start >> /tmp/windsurf-telegram-bot.log 2>&1 &",
+     "start_cmd": f"cd {_ext('WS_TELEGRAM_DIR','windsurf-telegram-bot')} && nohup npm start >> /tmp/windsurf-telegram-bot.log 2>&1 &",
      "pattern": "windsurf-telegram-bot.*index.js", "icon": "🤖"},
-    # ── Heute gebaut ────────────────────────────────────────────────────────
     {"id": "shopify_ai_suite", "name": "Shopify AI Suite (Railway)", "port": 0,
-     "start_cmd": "echo 'Deployed on Railway: https://shopify-suite-v2-production.up.railway.app'",
+     "start_cmd": "echo 'Deployed on Railway'",
      "pattern": "RAILWAY_REMOTE",
      "url": "https://shopify-suite-v2-production.up.railway.app",
      "health_url": "https://shopify-suite-v2-production.up.railway.app/health",
      "icon": "🛍️"},
     {"id": "windsurf_shopify", "name": "Windsurf API Gateway", "port": 8080,
-     "start_cmd": "cd /Users/rudolfsarkany/windsurf-api-gateway && nohup node src/index.js >> /tmp/windsurf-api-gateway.log 2>&1 &",
+     "start_cmd": f"cd {_ext('API_GATEWAY_DIR','windsurf-api-gateway')} && nohup node src/index.js >> /tmp/windsurf-api-gateway.log 2>&1 &",
      "pattern": "windsurf-api-gateway.*index.js", "icon": "🌊"},
     {"id": "windsurf_autoheal", "name": "Windsurf Auto-Heal", "port": 9000,
-     "start_cmd": "cd /Users/rudolfsarkany/windsurf-auto-heal && nohup npm start >> /tmp/windsurf-autoheal.log 2>&1 &",
+     "start_cmd": f"cd {_ext('AUTO_HEAL_DIR','windsurf-auto-heal')} && nohup npm start >> /tmp/windsurf-autoheal.log 2>&1 &",
      "pattern": "windsurf-auto-heal.*index.js", "icon": "🏥"},
     {"id": "password_sync", "name": "Password Sync", "port": 3005,
-     "start_cmd": "cd /Users/rudolfsarkany/password-sync-suite/web-app && PORT=3005 nohup npm start >> /tmp/password-sync.log 2>&1 &",
+     "start_cmd": f"cd {_ext('PASSWORD_SYNC_DIR','password-sync-suite/web-app')} && PORT=3005 nohup npm start >> /tmp/password-sync.log 2>&1 &",
      "pattern": "password-sync-suite.*server.js", "icon": "🔐"},
     {"id": "rudibot_eternal", "name": "RudiBot Eternal", "port": 0,
-     "start_cmd": "cd /Users/rudolfsarkany/rudibot-eternal && nohup python3 immortal_bot.py >> /tmp/rudibot-eternal.log 2>&1 &",
+     "start_cmd": f"cd {_ext('ETERNAL_BOT_DIR','rudibot-eternal')} && nohup python3 immortal_bot.py >> /tmp/rudibot-eternal.log 2>&1 &",
      "pattern": "immortal_bot.py", "icon": "♾️"},
     {"id": "kivo", "name": "KIVO Voice", "port": 0,
-     "start_cmd": "cd /Users/rudolfsarkany/kivo && nohup python3 kivo.py >> /tmp/kivo.log 2>&1 &",
+     "start_cmd": f"cd {_ext('KIVO_DIR','kivo')} && nohup python3 kivo.py >> /tmp/kivo.log 2>&1 &",
      "pattern": "kivo.py", "icon": "🎙️"},
 ]
 
@@ -334,36 +338,6 @@ body {
 .error-text { color: var(--red); font-size: 0.78rem; }
 .vol-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
 input[type=range] { flex: 1; accent-color: var(--accent); }
-
-/* ── Tabs ── */
-.tab-nav {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  display: flex; gap: 2px; padding: 0 16px;
-  overflow-x: auto; scrollbar-width: none;
-}
-.tab-nav::-webkit-scrollbar { display: none; }
-.tab-btn {
-  padding: 11px 16px; background: none; border: none; border-bottom: 2px solid transparent;
-  color: var(--muted); cursor: pointer; font-size: 0.82rem; white-space: nowrap;
-  font-family: inherit; transition: color 0.15s, border-color 0.15s;
-}
-.tab-btn:hover { color: var(--text); }
-.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
-.tab-iframe {
-  width: 100%; height: calc(100vh - 118px); border: none;
-  background: var(--surface); display: block;
-}
-/* ── Remote Desktop Card ── */
-.crd-input {
-  width: 100%; background: var(--surface); color: var(--text);
-  border: 1px solid var(--border); border-radius: 8px;
-  padding: 8px 10px; font-size: 0.78rem; font-family: monospace;
-  margin-bottom: 8px; resize: vertical; min-height: 54px;
-}
-.crd-input:focus { outline: none; border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -387,25 +361,6 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
   <button class="quick-btn" onclick="quickMac('lock')">🔒 Sperren</button>
   <button class="quick-btn" onclick="quickMac('sleep_display')">🌙 Display aus</button>
 </div>
-
-<!-- ══ TAB NAV ══ -->
-<div class="tab-nav">
-  <button class="tab-btn active" data-tab="home" onclick="switchTab('home')">🤖 SuperMegaBot</button>
-  <button class="tab-btn" data-tab="telegram" onclick="switchTab('telegram')">✈️ Telegram Bot</button>
-  <button class="tab-btn" data-tab="shopify-apps" onclick="switchTab('shopify-apps')">🛒 Shopify Apps</button>
-  <button class="tab-btn" data-tab="nailschip" onclick="switchTab('nailschip')">💅 NailsChip</button>
-  <button class="tab-btn" data-tab="revenue" onclick="switchTab('revenue')">💰 Revenue Hub</button>
-  <button class="tab-btn" data-tab="income" onclick="switchTab('income')">📊 Income Engine</button>
-  <button class="tab-btn" data-tab="social" onclick="switchTab('social')">🌐 Social</button>
-  <button class="tab-btn" data-tab="windsurf-shopify" onclick="switchTab('windsurf-shopify')">🏪 Windsurf Shop</button>
-  <button class="tab-btn" data-tab="password-sync" onclick="switchTab('password-sync')">🔑 Passwort Sync</button>
-  <button class="tab-btn" data-tab="cratorhub" onclick="switchTab('cratorhub')">🎨 CreatorHub</button>
-  <button class="tab-btn" data-tab="remote" onclick="switchTab('remote')">🖥️ Remote Desktop</button>
-  <button class="tab-btn" data-tab="rudiclone" onclick="switchTab('rudiclone')">🧬 Rudiclone</button>
-</div>
-
-<!-- ══ TAB: HOME (SuperMegaBot Dashboard) ══ -->
-<div id="tab-home" class="tab-panel active">
 
 <!-- ══ MAIN GRID ══ -->
 <div class="grid">
@@ -476,8 +431,8 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
       <div><div class="card-title">KI-Assistent</div><div class="card-subtitle">Ollama · 100% lokal</div></div>
       <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
         <select id="model-select" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.72rem">
-          <option value="gemma4" selected>gemma4 (schnell)</option>
-          <option value="fast">llama3.2</option>
+          <option value="fast">llama3.2 (schnell)</option>
+          <option value="gemma4">gemma4</option>
           <option value="code">codellama</option>
           <option value="analysis">mistral</option>
         </select>
@@ -668,7 +623,7 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
         <span>windsurf-auto-heal</span><span class="badge badge-green">✓ Aktiv</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <span>CreatorHub Server</span><span class="badge badge-yellow">Port 3002</span>
+        <span>CreatorHub Server</span><span class="badge badge-yellow">Port 3000</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center">
         <span>Shopify AI Suite</span><span class="badge badge-green">✓ Keys OK</span>
@@ -692,136 +647,6 @@ input[type=range] { flex: 1; accent-color: var(--accent); }
   </div>
 
 </div><!-- /grid -->
-</div><!-- /tab-home -->
-
-<!-- ══ TAB: Telegram Bot ══ -->
-<div id="tab-telegram" class="tab-panel">
-  <iframe class="tab-iframe" data-local-url="http://localhost:3200" title="Telegram Bot"></iframe>
-</div>
-
-<!-- ══ TAB: Shopify Apps Suite ══ -->
-<div id="tab-shopify-apps" class="tab-panel">
-  <iframe class="tab-iframe" data-path="/shopify-apps" title="Shopify Apps"></iframe>
-</div>
-
-<!-- ══ TAB: NailsChip Studio ══ -->
-<div id="tab-nailschip" class="tab-panel">
-  <iframe class="tab-iframe" data-path="/nailschip" title="NailsChip"></iframe>
-</div>
-
-<!-- ══ TAB: Revenue Hub ══ -->
-<div id="tab-revenue" class="tab-panel">
-  <iframe class="tab-iframe" data-path="/revenue" title="Revenue Hub"></iframe>
-</div>
-
-<!-- ══ TAB: Income Engine ══ -->
-<div id="tab-income" class="tab-panel">
-  <iframe class="tab-iframe" data-path="/income" title="Income Engine"></iframe>
-</div>
-
-<!-- ══ TAB: Social ══ -->
-<div id="tab-social" class="tab-panel">
-  <iframe class="tab-iframe" data-path="/social" title="Social"></iframe>
-</div>
-
-<!-- ══ TAB: Windsurf Shopify ══ -->
-<div id="tab-windsurf-shopify" class="tab-panel">
-  <iframe class="tab-iframe" src="https://shopify-suite-v2-production.up.railway.app" title="Windsurf Shopify"></iframe>
-</div>
-
-<!-- ══ TAB: Password Sync ══ -->
-<div id="tab-password-sync" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3005" title="Password Sync"></iframe>
-</div>
-
-<!-- ══ TAB: CreatorHub ══ -->
-<div id="tab-cratorhub" class="tab-panel">
-  <iframe class="tab-iframe" src="http://localhost:3002" title="CreatorHub"></iframe>
-</div>
-
-<!-- ══ TAB: Remote Desktop ══ -->
-<div id="tab-remote" class="tab-panel">
-  <div style="padding:32px;max-width:700px;margin:0 auto">
-    <div class="card" style="margin-bottom:20px">
-      <div class="card-header">
-        <div class="card-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">🖥️</div>
-        <div><div class="card-title">Chrome Remote Desktop</div><div class="card-subtitle">Host-Registrierung</div></div>
-      </div>
-      <p style="font-size:0.82rem;color:var(--muted);margin-bottom:14px">
-        Hole den Auth-Code von <a href="https://remotedesktop.google.com/headless" target="_blank" style="color:var(--accent)">remotedesktop.google.com/headless</a>
-        und füge ihn hier ein.
-      </p>
-      <label style="font-size:0.75rem;color:var(--muted);display:block;margin-bottom:4px">Auth Code (--code=...)</label>
-      <textarea class="crd-input" id="crd-code" placeholder="4/0AeoWuM_bnLD2e3zP8tn2..."></textarea>
-      <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="registerCRD()">🖥️ Remote Desktop registrieren</button>
-      <div id="crd-result" style="font-size:0.78rem;font-family:monospace;background:var(--surface);border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap;display:none"></div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon" style="background:linear-gradient(135deg,#43d98c,#00b894)">ℹ️</div>
-        <div><div class="card-title">Anleitung</div></div>
-      </div>
-      <ol style="font-size:0.82rem;color:var(--muted);line-height:1.8;padding-left:18px">
-        <li>Öffne <strong style="color:var(--text)">remotedesktop.google.com/headless</strong></li>
-        <li>Klicke auf <strong style="color:var(--text)">Set up via SSH</strong> → <strong style="color:var(--text)">Begin</strong></li>
-        <li>Kopiere den Auth-Code (beginnt mit <code style="color:var(--accent)">4/0A...</code>)</li>
-        <li>Füge ihn oben ein und klicke <strong style="color:var(--text)">registrieren</strong></li>
-        <li>Verbinde dich dann über <strong style="color:var(--text)">remotedesktop.google.com</strong></li>
-      </ol>
-    </div>
-  </div>
-</div>
-
-<!-- ══ TAB: Rudiclone ══ -->
-<div id="tab-rudiclone" class="tab-panel">
-  <div style="padding:24px;max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:20px">
-
-    <!-- A: Persona -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c)">🧬</div>
-        <div><div class="card-title">A — Rudi Persona</div><div class="card-subtitle">KI-Klon · Rudi's Sprache</div></div>
-      </div>
-      <textarea id="persona-input" class="crd-input" placeholder="Was würde Rudi zu diesem Problem sagen..."></textarea>
-      <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="personaAsk()">🧬 Rudi fragen</button>
-      <div id="persona-result" style="font-size:0.82rem;background:var(--surface);border-radius:8px;padding:12px;min-height:60px;white-space:pre-wrap;display:none"></div>
-    </div>
-
-    <!-- B: System Clone -->
-    <div class="card">
-      <div class="card-header">
-        <div class="card-icon" style="background:linear-gradient(135deg,#43d98c,#00b894)">💾</div>
-        <div><div class="card-title">B — System Clone</div><div class="card-subtitle">Backup · Restore · Diff</div></div>
-      </div>
-      <button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="createSnapshot()">📸 Snapshot erstellen</button>
-      <button class="btn btn-ghost btn-sm" style="width:100%;margin-bottom:8px" onclick="loadSnapshots()">📋 Snapshots anzeigen</button>
-      <div id="snapshot-result" style="font-size:0.75rem;font-family:monospace;background:var(--surface);border-radius:8px;padding:10px;min-height:40px;white-space:pre-wrap;display:none"></div>
-      <div id="snapshots-list" style="margin-top:8px;font-size:0.75rem"></div>
-    </div>
-
-    <!-- C: Sub-Agents (full width) -->
-    <div class="card col-2" style="grid-column:span 2">
-      <div class="card-header">
-        <div class="card-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)">🤖</div>
-        <div><div class="card-title">C — Sub-Agenten</div><div class="card-subtitle">SystemDiagnose · Shopify · Trade · LoadMonitor</div></div>
-        <div style="margin-left:auto;display:flex;gap:6px">
-          <button class="btn btn-green btn-sm" onclick="startAgents()">▶ Alle starten</button>
-          <button class="btn btn-ghost btn-sm" onclick="loadAgentStatus()">↺ Status</button>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
-        <button class="btn btn-ghost btn-sm" onclick="runAgent('SystemDiagnoseAgent')">🔍 System Diagnose</button>
-        <button class="btn btn-ghost btn-sm" onclick="runAgent('ShopifyAgent')">🛒 Shopify Check</button>
-        <button class="btn btn-ghost btn-sm" onclick="runAgent('TradeAgent')">📈 Trade Scan</button>
-        <button class="btn btn-ghost btn-sm" onclick="runAgent('LoadMonitor')">⚡ Load Monitor</button>
-      </div>
-      <div id="agents-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-        <div class="loading">Lade Status...</div>
-      </div>
-    </div>
-
-  </div>
-</div>
 
 <script>
 const session = 'dashboard_' + Date.now();
@@ -842,47 +667,14 @@ setInterval(() => {
 document.getElementById('clock').textContent = new Date().toLocaleTimeString('de-DE');
 
 // ── API helper ──
-const RAILWAY_SUITE_URL = 'https://shopify-suite-v2-production.up.railway.app';
-
-function isLocalHost() {
-  const h = window.location.hostname;
-  return h === 'localhost' || h === '127.0.0.1';
-}
-
-function resolveSuiteUrl(path='') {
-  const base = isLocalHost() ? 'http://localhost:3200' : RAILWAY_SUITE_URL;
-  return base + path;
-}
-
-function resolveTabIframeUrl(iframe) {
-  if (iframe.dataset.localUrl) {
-    return isLocalHost() ? iframe.dataset.localUrl : '';
-  }
-  if (iframe.dataset.path) {
-    return resolveSuiteUrl(iframe.dataset.path);
-  }
-  return iframe.dataset.src || '';
-}
-
 async function api(path, data=null) {
   try {
     const opts = data
-      ? { method:'POST', headers:{'Content-Type':'application/json','Accept':'application/json'}, body:JSON.stringify(data), cache:'no-store' }
-      : { headers:{'Accept':'application/json'}, cache:'no-store' };
+      ? { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }
+      : {};
     const r = await fetch('/api' + path, opts);
-    const raw = await r.text();
-    let parsed;
-    try {
-      parsed = raw ? JSON.parse(raw) : {};
-    } catch (_) {
-      parsed = { ok: r.ok, error: raw || ('HTTP ' + r.status) };
-    }
-    if (typeof parsed.ok === 'undefined') parsed.ok = r.ok;
-    if (!parsed.ok && !parsed.error) parsed.error = 'HTTP ' + r.status;
-    return parsed;
-  } catch(e) {
-    return { ok: false, error: e?.message || 'Failed to fetch' };
-  }
+    return await r.json();
+  } catch(e) { return { error: e.message }; }
 }
 
 // ── Services ──
@@ -1047,10 +839,6 @@ async function scanArbitrage() {
 // ── Telegram ──
 async function loadTgStatus() {
   const r = await api('/telegram/status');
-  if (!r.ok && r.error) {
-    document.getElementById('tg-status').innerHTML = `<span class="badge badge-red">✗ Verbindungsfehler</span> ${r.error}`;
-    return;
-  }
   document.getElementById('tg-status').innerHTML = r.configured
     ? `<span class="badge badge-green">✓ Konfiguriert</span> Chat ID: ${r.chat_id || '?'}`
     : '<span class="badge badge-red">✗ Nicht konfiguriert</span> TELEGRAM_BOT_TOKEN setzen';
@@ -1066,7 +854,7 @@ async function sendTelegram() {
 
 // ── Shopify ──
 async function loadShopify() {
-  const r = await api('/shopify/status?section=summary');
+  const r = await api('/shopify/status');
   const el = document.getElementById('shopify-data');
   if (r.ok) {
     el.innerHTML = `<div>Store: <strong>${r.store || 'N/A'}</strong></div>
@@ -1075,9 +863,6 @@ async function loadShopify() {
   } else if (r.error && r.error.includes('401')) {
     el.innerHTML = `<span class="badge badge-orange">⚠ Token abgelaufen</span>
       <div style="margin-top:6px;font-size:0.72rem;color:var(--muted)">Neu generieren: suitenew.myshopify.com → Admin → Apps → API-Zugangsdaten</div>`;
-  } else if (r.error && r.error.toLowerCase().includes('failed to fetch')) {
-    el.innerHTML = `<div class="error-text">Dashboard API nicht erreichbar (${r.error})</div>
-      <div style="margin-top:4px"><span class="badge badge-yellow">⚠ Verbindung prüfen</span></div>`;
   } else {
     el.innerHTML = `<div class="error-text">${r.error || 'Nicht verbunden'}</div>
       <div style="margin-top:4px"><span class="badge badge-yellow">⚠ Setup erforderlich</span></div>`;
@@ -1087,24 +872,9 @@ async function loadShopify() {
 async function shopifyAction(type) {
   showToast(type + ' wird geladen...', true);
   const el = document.getElementById('shopify-data');
-  const r = await api('/shopify/status?section=' + encodeURIComponent(type));
+  const r = await api('/shopify/status');
   if (!r.ok) { showToast(r.error || 'Shopify Fehler', false); return; }
-  if (type === 'products') {
-    const items = r.products || [];
-    el.innerHTML = `<div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">${items.length} Produkte aus der echten Shopify Admin API</div>` +
-      items.slice(0, 8).map(p => `<div style="padding:6px 0;border-bottom:1px solid var(--border)"><strong>${p.title || 'Untitled'}</strong><div style="font-size:0.7rem;color:var(--muted)">${p.status || ''} · ${p.vendor || ''}</div></div>`).join('');
-  } else if (type === 'orders') {
-    const items = r.orders || [];
-    el.innerHTML = `<div style="font-size:0.75rem;color:var(--muted);margin-bottom:6px">${items.length} Bestellungen aus der echten Shopify Admin API</div>` +
-      items.slice(0, 8).map(o => `<div style="padding:6px 0;border-bottom:1px solid var(--border)"><strong>${o.name || 'Order'}</strong><div style="font-size:0.7rem;color:var(--muted)">${o.displayFinancialStatus || ''} · ${o.displayFulfillmentStatus || ''}</div></div>`).join('');
-  } else if (type === 'analytics') {
-    const a = r.analytics || {};
-    el.innerHTML = `<div>Shop: <strong>${a.shop || r.store || 'N/A'}</strong></div>
-      <div>Umsatz: <strong>€${Number(a.revenue || 0).toFixed(2)}</strong></div>
-      <div>Orders: ${a.orders_total || 0} · Paid: ${a.orders_paid || 0}</div>`;
-  } else {
-    el.innerHTML = `<div style="color:var(--muted);font-size:0.75rem">${type} – Daten kommen direkt von der echten Shopify Admin API</div>`;
-  }
+  el.innerHTML = `<div style="color:var(--muted);font-size:0.75rem">${type} – Daten kommen direkt vom Shopify API</div>`;
 }
 
 // ── Ollama Models ──
@@ -1345,105 +1115,6 @@ setInterval(loadPrices,   30000);
 setInterval(scanArbitrage, 60000);
 setInterval(loadLogs,     8000);
 setInterval(loadGMC,      60000);
-
-// ── Rudiclone ──
-async function personaAsk() {
-  const text = document.getElementById('persona-input').value.trim();
-  if (!text) return;
-  const res = document.getElementById('persona-result');
-  res.style.display = 'block';
-  res.textContent = '⏳ Rudi denkt nach...';
-  const r = await api('/rudiclone/persona', { text });
-  res.textContent = r.ok ? r.response : ('❌ ' + (r.error || 'Fehler'));
-}
-
-async function createSnapshot() {
-  const el = document.getElementById('snapshot-result');
-  el.style.display = 'block';
-  el.textContent = '⏳ Erstelle System-Snapshot...';
-  const r = await api('/rudiclone/snapshot', {});
-  el.textContent = r.ok ? ('✅ Snapshot: ' + r.path) : ('❌ ' + r.error);
-  if (r.ok) showToast('Snapshot erstellt', true);
-  loadSnapshots();
-}
-
-async function loadSnapshots() {
-  const r = await api('/rudiclone/snapshots');
-  const el = document.getElementById('snapshots-list');
-  if (!r.ok || !r.snapshots?.length) { el.innerHTML = '<div class="loading">Keine Snapshots</div>'; return; }
-  el.innerHTML = r.snapshots.map(s => `
-    <div style="display:flex;justify-content:space-between;padding:5px 8px;background:var(--surface);border-radius:6px;margin-bottom:4px;font-size:0.72rem">
-      <span style="color:var(--text)">${s.name}</span>
-      <span style="color:var(--muted)">${s.size_kb}KB · ${new Date(s.created).toLocaleString('de-DE')}</span>
-    </div>`).join('');
-}
-
-async function loadAgentStatus() {
-  const r = await api('/rudiclone/agents');
-  const el = document.getElementById('agents-grid');
-  if (!r.ok) { el.innerHTML = '<div class="error-text">' + (r.error||'Fehler') + '</div>'; return; }
-  const agents = r.agents || {};
-  el.innerHTML = Object.entries(agents).map(([name, s]) => `
-    <div style="background:var(--surface);border-radius:10px;padding:10px;font-size:0.75rem">
-      <div style="font-weight:600;margin-bottom:4px">${name}</div>
-      <div style="color:${s.running?'var(--green)':'var(--muted)'}">${s.running?'🟢 läuft':'⚪ gestoppt'}</div>
-      <div style="color:var(--muted);font-size:0.7rem">Läufe: ${s.run_count||0} · Fehler: ${s.error_count||0}</div>
-      <div style="color:var(--muted);font-size:0.68rem;margin-top:2px">${s.last_run?new Date(s.last_run*1000).toLocaleTimeString('de-DE'):'-'}</div>
-    </div>`).join('');
-}
-
-async function startAgents() {
-  const r = await api('/rudiclone/agents/start', {});
-  showToast(r.ok ? r.message : r.error, r.ok);
-  setTimeout(loadAgentStatus, 2000);
-}
-
-async function runAgent(name) {
-  showToast('▶ ' + name + '...', true);
-  const r = await api('/rudiclone/agents/run', { agent: name });
-  if (r.ok) showToast('✓ ' + name + ' fertig', true);
-  else showToast('✗ ' + (r.error||'Fehler'), false);
-  setTimeout(loadAgentStatus, 1000);
-}
-
-// ── Tab Navigation ──
-function switchTab(tabId) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  const panel = document.getElementById('tab-' + tabId);
-  if (panel) panel.classList.add('active');
-  const btn = document.querySelector(`.tab-btn[data-tab="${tabId}"]`);
-  if (btn) btn.classList.add('active');
-  // lazy-load iframe on first visit
-  if (panel) {
-    const iframe = panel.querySelector('iframe');
-    if (iframe && !iframe.src) {
-      const targetUrl = resolveTabIframeUrl(iframe);
-      if (targetUrl) {
-        iframe.src = targetUrl;
-      } else if (tabId === 'telegram') {
-        panel.innerHTML = '<div style="padding:24px;color:var(--muted)">Telegram Bot ist nur lokal auf diesem Mac unter <strong>http://localhost:3200</strong> verfuegbar.</div>';
-      }
-    }
-  }
-}
-
-// ── Chrome Remote Desktop ──
-async function registerCRD() {
-  const code = document.getElementById('crd-code').value.trim();
-  if (!code) { showToast('Auth-Code fehlt', false); return; }
-  const result = document.getElementById('crd-result');
-  result.style.display = 'block';
-  result.textContent = '⏳ Registriere Remote Desktop Host...';
-  const r = await api('/remote-desktop/register', { code });
-  if (r.ok) {
-    result.textContent = '✅ Erfolgreich registriert!\\n\\n' + (r.output || '');
-    showToast('Remote Desktop registriert!', true);
-  } else {
-    result.textContent = '❌ Fehler: ' + (r.error || 'Unbekannt') + '\\n\\n' + (r.output || '');
-    showToast(r.error || 'Fehler', false);
-  }
-}
 </script>
 </body>
 </html>'''
@@ -1496,7 +1167,7 @@ async def handle_services_legacy(req):
     service_list = [
         {"name": "SuperMegaBot Dashboard", "port": PORT},
         {"name": "Telegram-Automation-Bot", "port": 3200},
-        {"name": "CreatorHub", "port": 3002},
+        {"name": "CreatorHub", "port": 3000},
         {"name": "Ollama", "port": 11434},
         {"name": "OpenClaw Gateway", "port": 18789},
         {"name": "Windsurf API Gateway", "port": 8080},
@@ -1515,33 +1186,23 @@ async def handle_services_legacy(req):
 
 
 async def handle_trading_prices(req):
-    # ccxt market-loading deaktiviert — verursacht 83% CPU + PM2-Crashloop
-    # Lightweight Binance public API stattdessen
     try:
-        pairs = ["BTCUSDT", "ETHUSDT", "SOLUSDT", "BNBUSDT"]
-        prices = {}
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as session:
-            for pair in pairs:
-                try:
-                    async with session.get(
-                        f"https://api.binance.com/api/v3/ticker/price?symbol={pair}"
-                    ) as r:
-                        if r.status == 200:
-                            d = await r.json()
-                            prices[pair] = float(d.get("price", 0))
-                except Exception:
-                    pass
-        return web.json_response({"prices": prices, "source": "binance-public"})
+        from modules.trading_bot import TradingBot
+        bot = TradingBot()
+        prices = await bot.get_quick_prices()
+        return web.json_response({"prices": prices})
     except Exception as e:
-        return web.json_response({"prices": {}, "error": str(e)})
+        return web.json_response({"error": str(e)})
 
 
 async def handle_trading_arbitrage(req):
-    # ccxt arbitrage-scan deaktiviert — zu CPU-intensiv für Production
-    return web.json_response({
-        "opportunities": [],
-        "info": "Arbitrage-Scan pausiert (CPU-Schutz). Via Telegram /trading aktivieren."
-    })
+    try:
+        from modules.trading_bot import TradingBot
+        bot = TradingBot()
+        opps = await bot.scan_quick()
+        return web.json_response({"opportunities": opps})
+    except Exception as e:
+        return web.json_response({"error": str(e)})
 
 
 async def handle_telegram_status(req):
@@ -1553,283 +1214,37 @@ async def handle_telegram_status(req):
 
 
 async def handle_telegram_send(req):
-  if not TELEGRAM_TOKEN:
-    return web.json_response({"ok": False, "error": "No token configured"})
-
-  message = ""
-  try:
-    data = await req.json()
-    message = data.get("message", "")
-    chat_id = TELEGRAM_CHAT_ID
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    async with _client_session(15) as s:
-      async with s.post(url, json={"chat_id": chat_id, "text": message}) as r:
-        if r.status == 200:
-          return web.json_response({"ok": True})
-  except Exception:
-    pass
-
-  # DNS/network fallback via urllib
-  try:
-    import urllib.request
-
-    payload = json.dumps({"chat_id": TELEGRAM_CHAT_ID, "text": message}).encode("utf-8")
-    req_u = urllib.request.Request(
-      f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-      data=payload,
-      headers={"Content-Type": "application/json"},
-      method="POST",
-    )
-    with urllib.request.urlopen(req_u, timeout=15) as resp:
-      return web.json_response({"ok": 200 <= getattr(resp, "status", 0) < 300})
-  except Exception as e:
-    return web.json_response({"ok": False, "error": str(e)})
+    if not TELEGRAM_TOKEN:
+        return web.json_response({"ok": False, "error": "No token configured"})
+    try:
+        data = await req.json()
+        message = data.get("message", "")
+        chat_id = TELEGRAM_CHAT_ID
+        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+        async with aiohttp.ClientSession() as s:
+            async with s.post(url, json={"chat_id": chat_id, "text": message}) as r:
+                ok = r.status == 200
+                return web.json_response({"ok": ok})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_shopify_status(req):
+    store = os.getenv("SHOPIFY_STORE_URL", "")
+    token = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    if not store or not token:
+        return web.json_response({"ok": False, "error": "SHOPIFY_STORE_URL / SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
     try:
-        section = (req.query.get("section") or "summary").strip().lower()
-        from modules import shopify_client
-
-        if section == "products":
-            products = await shopify_client.get_products(limit=20)
-            return web.json_response({"ok": True, "section": section, "products": products, "count": len(products)})
-
-        if section == "orders":
-            orders = await shopify_client.get_orders(limit=20)
-            return web.json_response({"ok": True, "section": section, "orders": orders, "count": len(orders)})
-
-        if section == "analytics":
-            analytics = await shopify_client.get_analytics_summary()
-            return web.json_response({"ok": True, "section": section, "analytics": analytics})
-
-        shop = await shopify_client.get_shop_info()
-        analytics = await shopify_client.get_analytics_summary()
-        products = await shopify_client.get_products(limit=5)
-        orders = await shopify_client.get_orders(limit=5)
-        return web.json_response({
-            "ok": True,
-            "store": shop.get("name") or shop.get("myshopifyDomain") or os.getenv("SHOPIFY_SHOP_DOMAIN", ""),
-            "currency": shop.get("currencyCode", "EUR"),
-            "products": len(products),
-            "orders": len(orders),
-            "revenue": analytics.get("revenue", 0),
-            "section": section,
-            "shop": shop,
-            "analytics": analytics,
-        })
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
+            url = f"{store}/admin/api/2024-01/shop.json"
+            headers = {"X-Shopify-Access-Token": token}
+            async with s.get(url, headers=headers) as r:
+                if r.status == 200:
+                    d = await r.json()
+                    return web.json_response({"ok": True, "store": d.get("shop", {}).get("name", store)})
+                return web.json_response({"ok": False, "error": f"HTTP {r.status}"})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_printify_status(req):
-    token = os.getenv("PRINTIFY_TOKEN", "")
-    shop_id = os.getenv("PRINTIFY_SHOP_ID", "")
-    if not token:
-        return web.json_response({"ok": False, "error": "PRINTIFY_TOKEN fehlt"})
-    try:
-        headers = {"Authorization": f"Bearer {token}"}
-        async with _client_session(10) as session:
-            async with session.get("https://api.printify.com/v1/shops.json", headers=headers) as r:
-                body = await r.text()
-                if r.status != 200:
-                    return web.json_response({"ok": False, "error": f"HTTP {r.status}", "detail": body[:200]})
-                shops = json.loads(body)
-                shop = shops[0] if isinstance(shops, list) and shops else {}
-                if not shop_id:
-                    shop_id = str(shop.get("id", ""))
-
-                orders = []
-                products = []
-                if shop_id:
-                    async with session.get(f"https://api.printify.com/v1/shops/{shop_id}/orders.json", headers=headers) as ro:
-                        if ro.status == 200:
-                            orders_body = await ro.text()
-                            orders = json.loads(orders_body) or []
-                    async with session.get(f"https://api.printify.com/v1/shops/{shop_id}/products.json", headers=headers) as rp:
-                        if rp.status == 200:
-                            products_body = await rp.text()
-                            products = json.loads(products_body) or []
-
-                return web.json_response({
-                    "ok": True,
-                    "shop": shop,
-                    "shop_id": shop_id,
-                    "shops_count": len(shops) if isinstance(shops, list) else 0,
-                    "orders_count": len(orders) if isinstance(orders, list) else 0,
-                    "products_count": len(products) if isinstance(products, list) else 0,
-                    "orders": orders[:10] if isinstance(orders, list) else [],
-                    "products": products[:10] if isinstance(products, list) else [],
-                })
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-# ── Rudiclone handlers ──────────────────────────────────────────────────────
-
-_rudiclone_agents = None
-
-def _get_rudiclone():
-    try:
-        from modules.rudiclone import RudiPersona, RudiSystemClone, RudiAgents
-        return RudiPersona(), RudiSystemClone(), RudiAgents()
-    except Exception as e:
-        return None, None, None
-
-async def handle_rudiclone_persona(req):
-    try:
-        data = await req.json()
-        text = data.get("text", "").strip()
-        if not text:
-            return web.json_response({"ok": False, "error": "text fehlt"})
-        persona, _, _ = _get_rudiclone()
-        if not persona:
-            return web.json_response({"ok": False, "error": "RudiPersona nicht verfügbar"})
-        response = await persona.respond(text)
-        return web.json_response({"ok": True, "response": response, "stats": persona.get_stats()})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-async def handle_rudiclone_snapshot(req):
-    try:
-        _, clone, _ = _get_rudiclone()
-        if not clone:
-            return web.json_response({"ok": False, "error": "RudiSystemClone nicht verfügbar"})
-        path = await clone.snapshot()
-        return web.json_response({"ok": True, "path": str(path)})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-async def handle_rudiclone_snapshots(req):
-    try:
-        _, clone, _ = _get_rudiclone()
-        if not clone:
-            return web.json_response({"ok": False, "snapshots": []})
-        snaps = clone.list_snapshots()
-        return web.json_response({"ok": True, "snapshots": snaps})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e), "snapshots": []})
-
-async def handle_rudiclone_agents_status(req):
-    global _rudiclone_agents
-    try:
-        import inspect
-        from modules.rudiclone import RudiAgents
-        if _rudiclone_agents is None:
-            _rudiclone_agents = RudiAgents()
-        status = _rudiclone_agents.get_status()
-        if inspect.isawaitable(status):
-            status = await status
-        return web.json_response({"ok": True, "agents": status})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-async def handle_rudiclone_agents_start(req):
-    global _rudiclone_agents
-    try:
-        from modules.rudiclone import RudiAgents
-        if _rudiclone_agents is None:
-            _rudiclone_agents = RudiAgents()
-        asyncio.create_task(_rudiclone_agents.start_all())
-        return web.json_response({"ok": True, "message": "Alle Sub-Agenten gestartet"})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-async def handle_rudiclone_run_once(req):
-    global _rudiclone_agents
-    try:
-        data = await req.json()
-        name = data.get("agent", "").strip()
-        from modules.rudiclone import RudiAgents
-        if _rudiclone_agents is None:
-            _rudiclone_agents = RudiAgents()
-        result = await _rudiclone_agents.run_once(name)
-        return web.json_response({"ok": True, "result": result})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_remote_desktop_register(req):
-    """Register Chrome Remote Desktop host on macOS using one-time auth code from remotedesktop.google.com/headless"""
-    import shutil, platform
-    try:
-        data = await req.json()
-        code = data.get("code", "").strip()
-
-        # Status-only request (no code) — return installation status
-        if not code:
-            host_binary = _find_crd_binary()
-            installed = host_binary is not None
-            return web.json_response({
-                "ok": True,
-                "installed": installed,
-                "binary": host_binary,
-                "platform": platform.system(),
-                "instructions": (
-                    "Besuche https://remotedesktop.google.com/headless → "
-                    "'Einrichten' → Auth-Code kopieren → hier einfügen"
-                ) if installed else (
-                    "Chrome Remote Desktop Host nicht installiert. "
-                    "Download: https://remotedesktop.google.com/access → 'Remote-Zugriff einrichten'"
-                ),
-            })
-
-        host_binary = _find_crd_binary()
-        if not host_binary:
-            return web.json_response({
-                "ok": False,
-                "error": "Chrome Remote Desktop Host nicht installiert.",
-                "fix": "Download unter https://remotedesktop.google.com/access → 'Remote-Zugriff einrichten'",
-            })
-
-        redirect_url = "https://remotedesktop.google.com/_/oauthredirect"
-        import socket
-        hostname = socket.gethostname()
-
-        # macOS: use the installed host binary directly
-        cmd = (
-            f'"{host_binary}" '
-            f'--code="{code}" '
-            f'--redirect-url="{redirect_url}" '
-            f'--name="{hostname}"'
-        )
-        proc = await asyncio.create_subprocess_shell(
-            cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        try:
-            stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
-        except asyncio.TimeoutError:
-            return web.json_response({"ok": False, "error": "Timeout (30s)"})
-        output = (stdout.decode() + stderr.decode()).strip()
-        success = proc.returncode == 0
-        return web.json_response({
-            "ok": success,
-            "output": output or ("Erfolgreich registriert!" if success else "Fehler beim Registrieren"),
-            "returncode": proc.returncode,
-            "access_url": "https://remotedesktop.google.com/access" if success else None,
-        })
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-def _find_crd_binary():
-    """Find Chrome Remote Desktop host binary on macOS or Linux."""
-    import shutil
-    candidates = [
-        # macOS (Chrome)
-        "/Library/Application Support/Google/Chrome Remote Desktop/chrome-remote-desktop-host",
-        # macOS (alternative path)
-        "/Applications/Chrome Remote Desktop Host.app/Contents/MacOS/chrome-remote-desktop-host",
-        # Linux
-        "/opt/google/chrome-remote-desktop/start-host",
-        "/usr/bin/chrome-remote-desktop",
-    ]
-    for path in candidates:
-        if os.path.isfile(path) and os.access(path, os.X_OK):
-            return path
-    return shutil.which("chrome-remote-desktop") or shutil.which("chrome-remote-desktop-host")
 
 
 async def handle_ollama_models(req):
@@ -1983,60 +1398,32 @@ async def handle_mac_action(req):
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
+
 async def handle_services_status(req):
-  import socket
-  import urllib.request
-
-  result = []
-  for svc in SERVICES:
-    port_ok = False
-    remote_ok = False
-
-    if svc.get("port", 0) > 0:
-      try:
-        sock = socket.create_connection(("localhost", svc["port"]), timeout=0.5)
-        sock.close()
-        port_ok = True
-      except Exception:
-        pass
-
-    if svc.get("health_url") or svc.get("url"):
-      check_url = svc.get("health_url") or svc.get("url")
-      try:
-        with urllib.request.urlopen(check_url, timeout=3) as resp:
-          remote_ok = 200 <= getattr(resp, "status", 0) < 400
-      except Exception:
-        # Fallback via curl because Python DNS can intermittently fail in this process.
+    import socket
+    result = []
+    for svc in SERVICES:
+        port_ok = False
+        if svc.get("port", 0) > 0:
+            try:
+                sock = socket.create_connection(("localhost", svc["port"]), timeout=0.5)
+                sock.close()
+                port_ok = True
+            except Exception:
+                pass
+        pid = None
         try:
-          cp = subprocess.run(
-            ["curl", "-sS", "-o", "/dev/null", "-w", "%{http_code}", "--max-time", "5", check_url],
-            capture_output=True,
-            text=True,
-          )
-          code = int((cp.stdout or "0").strip() or "0")
-          remote_ok = 200 <= code < 400
+            ps = subprocess.run(["pgrep", "-f", svc["pattern"]], capture_output=True, text=True)
+            if ps.returncode == 0 and ps.stdout.strip():
+                pid = ps.stdout.strip().split('\n')[0]
         except Exception:
-          remote_ok = False
-
-    pid = None
-    try:
-      ps = subprocess.run(["pgrep", "-f", svc["pattern"]], capture_output=True, text=True)
-      if ps.returncode == 0 and ps.stdout.strip():
-        pid = ps.stdout.strip().split('\n')[0]
-    except Exception:
-      pass
-
-    result.append({
-      "id": svc["id"],
-      "name": svc["name"],
-      "port": svc["port"],
-      "icon": svc["icon"],
-      "ok": port_ok or remote_ok,
-      "pid": pid,
-      "running": port_ok or remote_ok or bool(pid),
-    })
-
-  return web.json_response({"services": result})
+            pass
+        result.append({
+            "id": svc["id"], "name": svc["name"], "port": svc["port"],
+            "icon": svc["icon"], "ok": port_ok, "pid": pid,
+            "running": port_ok or bool(pid),
+        })
+    return web.json_response({"services": result})
 
 
 async def handle_service_action(req):
@@ -2081,6 +1468,54 @@ async def handle_health(req):
         "port": PORT,
         "uptime": time.time(),
     })
+
+
+# ── RudiBot Army Integration ─────────────────────────────────────────────────
+
+ARMY_STATE_FILE = BASE_DIR / "rudibot-army" / "shared" / "army_state.json"
+
+async def handle_army_status(req):
+    """Gibt den aktuellen Status aller Army-Agenten zurück."""
+    try:
+        if ARMY_STATE_FILE.exists():
+            state = json.loads(ARMY_STATE_FILE.read_text(errors='ignore'))
+        else:
+            state = {"agents": {}, "events": [], "fixes": [], "stats": {}}
+        # Laufende Prozesse prüfen
+        army_running = False
+        try:
+            r = subprocess.run(["pgrep", "-f", "army_commander.py"],
+                               capture_output=True, text=True)
+            army_running = r.returncode == 0 and bool(r.stdout.strip())
+        except Exception:
+            pass
+        return web.json_response({
+            "ok": True,
+            "army_running": army_running,
+            "agents": state.get("agents", {}),
+            "events": state.get("events", [])[-20:],
+            "agent_count": len(state.get("agents", {})),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_army_start(req):
+    """Startet die Army wenn sie nicht läuft."""
+    try:
+        r = subprocess.run(["pgrep", "-f", "army_commander.py"],
+                           capture_output=True, text=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return web.json_response({"ok": True, "msg": "Army läuft bereits"})
+        log_path = Path("/tmp/rudibot-army.log")
+        with open(log_path, "a") as lf:
+            subprocess.Popen(
+                [sys.executable, str(BASE_DIR / "rudibot-army" / "army_commander.py")],
+                stdout=lf, stderr=lf, start_new_session=True,
+            )
+        return web.json_response({"ok": True, "msg": "Army gestartet"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_monitor(req):
@@ -2142,97 +1577,134 @@ async def handle_processes(req):
 
 
 # ---------------------------------------------------------------------------
-# Self-Learner Handlers
+# Storage Monitor API
+# ---------------------------------------------------------------------------
+
+async def handle_storage_status(req):
+    try:
+        from modules.storage_monitor import get_status_dict
+        return web.json_response(get_status_dict())
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_storage_cleanup(req):
+    try:
+        data = await req.json() if req.can_read_body else {}
+        max_age = int(data.get("max_age_hours", 24))
+        from modules.storage_monitor import run_cleanup
+        result = run_cleanup(max_age_hours=max_age)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_storage_offload(req):
+    try:
+        data = await req.json() if req.can_read_body else {}
+        mountpoint = data.get("mountpoint", "/")
+        min_mb = float(data.get("min_file_mb", 50.0))
+        from modules.storage_monitor import run_offload
+        result = run_offload(source_mountpoint=mountpoint, min_file_mb=min_mb)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_storage_large_files(req):
+    try:
+        directory = req.rel_url.query.get("dir", str(BASE_DIR))
+        min_mb = float(req.rel_url.query.get("min_mb", "50"))
+        from modules.storage_monitor import find_large_files
+        files = find_large_files(Path(directory), min_size_mb=min_mb, limit=30)
+        return web.json_response({"files": files, "directory": directory})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_storage_history(req):
+    try:
+        limit = int(req.rel_url.query.get("limit", "50"))
+        from modules.storage_monitor import get_event_history
+        return web.json_response({"events": get_event_history(limit)})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_storage_widget(req):
+    widget = Path(__file__).parent / "storage_widget.html"
+    if widget.exists():
+        return web.Response(text=widget.read_text(), content_type="text/html")
+    return web.Response(text="Storage widget not found", status=404)
+
+
+# ---------------------------------------------------------------------------
+# Self-Learner API
 # ---------------------------------------------------------------------------
 
 async def handle_self_learner_status(req):
     try:
-        if _self_learner:
-            skills = _self_learner.skills
-            built_ins = [s for s in skills.values() if s.source == "built-in"]
-            learned  = [s for s in skills.values() if s.source in ("learned","api")]
-            return web.json_response({
-                "ok": True,
-                "tool": _self_learner.tool_name,
-                "total_skills": len(skills),
-                "built_in": len(built_ins),
-                "learned": len(learned),
-                "telegram": _self_learner.telegram_notify,
-                "skills_list": [{"name":s.name,"desc":s.desc,"source":s.source,"usage":s.usage_count}
-                                 for s in skills.values()],
-            })
-        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+        if _self_learner is None:
+            return web.json_response({"ok": False, "status": "disabled", "reason": "self_learner_core not available"})
+        skills = _self_learner.learned_skills if hasattr(_self_learner, 'learned_skills') else {}
+        return web.json_response({"ok": True, "status": "active", "skills_count": len(skills), "skills": list(skills.keys())})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_self_learner_learn(req):
     try:
-        data = await req.json()
-        desc = data.get("description", "")
-        if not desc:
-            return web.json_response({"ok": False, "error": "description fehlt"})
-        if _self_learner:
-            result = _self_learner.handle_command(f"/lerne {desc}")
-            return web.json_response({"ok": True, "result": result})
-        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+        if _self_learner is None:
+            return web.json_response({"ok": False, "error": "self_learner_core not available"}, status=503)
+        data = await req.json() if req.can_read_body else {}
+        skill_name = data.get("skill")
+        skill_data = data.get("data", {})
+        if not skill_name:
+            return web.json_response({"ok": False, "error": "skill name required"}, status=400)
+        _self_learner.learn(skill_name, skill_data)
+        return web.json_response({"ok": True, "learned": skill_name})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_self_learner_skills(req):
     try:
-        if _self_learner:
-            result = _self_learner.handle_command("/skills")
-            return web.json_response({"ok": True, "result": result})
-        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+        if _self_learner is None:
+            return web.json_response({"ok": False, "skills": [], "error": "self_learner_core not available"})
+        skills = _self_learner.learned_skills if hasattr(_self_learner, 'learned_skills') else {}
+        return web.json_response({"ok": True, "skills": list(skills.keys()), "count": len(skills)})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_self_learner_delete(req):
     try:
-        data = await req.json()
-        name = data.get("name", "")
-        if not name:
-            return web.json_response({"ok": False, "error": "name fehlt"})
-        if _self_learner:
-            result = _self_learner.handle_command(f"/skill_del {name}")
-            return web.json_response({"ok": True, "result": result})
-        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+        if _self_learner is None:
+            return web.json_response({"ok": False, "error": "self_learner_core not available"}, status=503)
+        data = await req.json() if req.can_read_body else {}
+        skill_name = data.get("skill")
+        if not skill_name:
+            return web.json_response({"ok": False, "error": "skill name required"}, status=400)
+        skills = _self_learner.learned_skills if hasattr(_self_learner, 'learned_skills') else {}
+        if skill_name in skills:
+            del skills[skill_name]
+            return web.json_response({"ok": True, "deleted": skill_name})
+        return web.json_response({"ok": False, "error": f"skill '{skill_name}' not found"}, status=404)
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_self_learner_find_api(req):
     try:
-        data = await req.json()
-        task = data.get("task", "")
-        if not task:
-            return web.json_response({"ok": False, "error": "task fehlt"})
-        if _self_learner:
-            result = _self_learner.handle_command(f"/api_finde {task}")
-            return web.json_response({"ok": True, "result": result})
-        return web.json_response({"ok": False, "error": "SelfLearner nicht verfügbar"})
+        if _self_learner is None:
+            return web.json_response({"ok": False, "error": "self_learner_core not available"}, status=503)
+        data = await req.json() if req.can_read_body else {}
+        query = data.get("query", "")
+        skills = _self_learner.learned_skills if hasattr(_self_learner, 'learned_skills') else {}
+        matches = [k for k in skills.keys() if query.lower() in k.lower()] if query else list(skills.keys())
+        return web.json_response({"ok": True, "query": query, "matches": matches, "count": len(matches)})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-# ---------------------------------------------------------------------------
-# Army / Micro Bot Status Handler
-# ---------------------------------------------------------------------------
-
-async def handle_army_status(req):
-    try:
-        import json as _json
-        state_file = BASE_DIR.parent / "rudibot-army" / "shared" / "army_state.json"
-        if state_file.exists():
-            state = _json.loads(state_file.read_text(errors="ignore"))
-            return web.json_response({"ok": True, "agents": state.get("agents", {}),
-                                       "events": state.get("events", [])[-20:]})
-        return web.json_response({"ok": False, "error": "army_state.json nicht gefunden"})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ---------------------------------------------------------------------------
@@ -2240,51 +1712,15 @@ async def handle_army_status(req):
 # ---------------------------------------------------------------------------
 
 async def create_app():
-    # Mega-Orchestrator nur starten wenn KEIN eigenständiger Prozess läuft
-    # (verhindert 409-Konflikt bei doppeltem Telegram-Polling)
-    import subprocess as _sp
-    _orch_running = _sp.run(
-        ["pgrep", "-f", "core/mega_orchestrator.py"],
-        capture_output=True
-    ).returncode == 0
-
-    _orch_api_up = False
-    if _orch_running:
-        try:
-            import socket as _socket
-            with _socket.create_connection(("127.0.0.1", 8889), timeout=1.0):
-                _orch_api_up = True
-        except Exception:
-            _orch_api_up = False
-
-    if not (_orch_running and _orch_api_up):
-        from core.mega_orchestrator import MegaOrchestrator
-        bot = MegaOrchestrator()
-        await bot.start()
-    else:
-        # Dummy-Objekt — Dashboard leitet Chat-Requests per HTTP weiter
-        class _BotProxy:
-            async def process(self, text, session_id="default"):
-                try:
-                    import aiohttp as _aio
-                    async with _aio.ClientSession() as s:
-                        async with s.post(
-                            "http://127.0.0.1:8889/api/chat",
-                            json={"text": text, "session_id": session_id},
-                            timeout=_aio.ClientTimeout(total=30)
-                        ) as r:
-                            d = await r.json()
-                            return d.get("response", d.get("result", str(d)))
-                except Exception as ex:
-                    return f"Orchestrator antwortet nicht: {ex}"
-        bot = _BotProxy()
+    from core.mega_orchestrator import MegaOrchestrator
+    bot = MegaOrchestrator()
+    await bot.start()
 
     app = web.Application()
     app["bot"] = bot
 
     # Existing routes
     app.router.add_get("/", handle_index)
-    app.router.add_get("/dashboard", handle_index)
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_get("/api/system", handle_system)
     app.router.add_get("/api/services", handle_services_legacy)
@@ -2293,7 +1729,6 @@ async def create_app():
     app.router.add_get("/api/telegram/status", handle_telegram_status)
     app.router.add_post("/api/telegram/send", handle_telegram_send)
     app.router.add_get("/api/shopify/status", handle_shopify_status)
-    app.router.add_get("/api/printify/status", handle_printify_status)
     app.router.add_get("/api/ollama/models", handle_ollama_models)
     app.router.add_get("/api/autopilot/agents", handle_autopilot_agents)
     app.router.add_post("/api/autopilot/run", handle_autopilot_run)
@@ -2313,23 +1748,25 @@ async def create_app():
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
+    app.router.add_get("/api/army/status", handle_army_status)
+    app.router.add_post("/api/army/start", handle_army_start)
     app.router.add_get("/monitor", handle_monitor)
     app.router.add_post("/api/monitor/refresh", handle_monitor_refresh)
 
     # Self-Learner routes
-    app.router.add_post("/api/remote-desktop/register", handle_remote_desktop_register)
-    # Rudiclone routes
-    app.router.add_post("/api/rudiclone/persona", handle_rudiclone_persona)
-    app.router.add_post("/api/rudiclone/snapshot", handle_rudiclone_snapshot)
-    app.router.add_get("/api/rudiclone/snapshots", handle_rudiclone_snapshots)
-    app.router.add_get("/api/rudiclone/agents", handle_rudiclone_agents_status)
-    app.router.add_post("/api/rudiclone/agents/start", handle_rudiclone_agents_start)
-    app.router.add_post("/api/rudiclone/agents/run", handle_rudiclone_run_once)
     app.router.add_get("/api/self-learner/status", handle_self_learner_status)
     app.router.add_post("/api/self-learner/learn", handle_self_learner_learn)
     app.router.add_post("/api/self-learner/skills", handle_self_learner_skills)
     app.router.add_post("/api/self-learner/delete", handle_self_learner_delete)
     app.router.add_post("/api/self-learner/find-api", handle_self_learner_find_api)
+
+    # Storage Monitor routes
+    app.router.add_get("/api/storage/status",      handle_storage_status)
+    app.router.add_post("/api/storage/cleanup",    handle_storage_cleanup)
+    app.router.add_post("/api/storage/offload",    handle_storage_offload)
+    app.router.add_get("/api/storage/large-files", handle_storage_large_files)
+    app.router.add_get("/api/storage/history",     handle_storage_history)
+    app.router.add_get("/storage", handle_storage_widget)
 
     return app
 

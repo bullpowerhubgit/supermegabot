@@ -1,36 +1,45 @@
 #!/usr/bin/env python3
 """💸 Micro-Revenue — Stündlicher Shopify-Umsatz-Check + Tages-Zusammenfassung"""
-import sys, os, time, json, datetime, urllib.request
-from pathlib import Path
-
-ARMY_DIR = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ARMY_DIR / "shared"))
-sys.path.insert(0, str(ARMY_DIR.parent))
+import sys, os
+import pathlib, time, json, datetime, urllib.request
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram, get_env
-from modules import shopify_client
 
 ID = "micro_revenue"
 INTERVAL = 3600  # Stündlich
 
+DASHBOARD_URL = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+SHOPIFY_API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+
 def fetch_revenue():
-    """Holt Umsatz-Daten direkt aus der Shopify Admin API."""
+    """Holt Umsatz-Daten: Dashboard → Shopify API direkt."""
+    # Primär: SuperMegaBot Dashboard
     try:
-        import asyncio
-        analytics = asyncio.run(shopify_client.get_analytics_summary())
-        orders = asyncio.run(shopify_client.get_orders(limit=50))
-        if not analytics:
-            return None
-        return {
-            "today_revenue": float(analytics.get("revenue", 0)),
-            "order_count": len(orders),
-            "shop": analytics.get("shop", ""),
-        }
+        r = urllib.request.urlopen(f"{DASHBOARD_URL}/api/shopify/status", timeout=10)
+        data = json.loads(r.read())
+        if data:
+            return {
+                "today_revenue": float(data.get("today_revenue", data.get("todayRevenue", 0)) or 0),
+                "order_count":   int(data.get("today_orders", data.get("todayOrders", 0)) or 0),
+            }
     except Exception:
         pass
+    # Fallback: Shopify API direkt
+    token = get_env("SHOPIFY_ACCESS_TOKEN")
+    shop  = get_env("SHOPIFY_SHOP_DOMAIN")
+    if not token or not shop:
+        return None
     try:
-        import asyncio
-        analytics = asyncio.run(shopify_client.get_analytics_summary())
-        return {"today_revenue": float(analytics.get("revenue", 0)), "order_count": int(analytics.get("orders_paid", 0))}
+        today = datetime.date.today().isoformat()
+        url = (f"https://{shop}/admin/api/{SHOPIFY_API_VERSION}/orders.json"
+               f"?status=paid&created_at_min={today}T00:00:00Z&fields=total_price")
+        req = urllib.request.Request(url)
+        req.add_header("X-Shopify-Access-Token", token)
+        r = urllib.request.urlopen(req, timeout=10)
+        data = json.loads(r.read())
+        orders = data.get("orders", [])
+        total = sum(float(o.get("total_price", 0)) for o in orders)
+        return {"today_revenue": round(total, 2), "order_count": len(orders)}
     except Exception:
         return None
 

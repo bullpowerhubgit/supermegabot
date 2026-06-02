@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """🔐 Security Agent — VPN-Status, API-Keys, verdächtige Aktivitäten"""
-import sys, os, time, subprocess, json
-from pathlib import Path
-
-ARMY_DIR = Path(__file__).resolve().parent.parent
-SHARED_DIR = ARMY_DIR / "shared"
-sys.path.insert(0, str(SHARED_DIR))
+import sys, os
+import pathlib, pathlib, time, subprocess, json
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram, get_env
 
 ID = "security"
@@ -19,7 +16,7 @@ def check_vpn():
         connected = "connected" in r.stdout.lower()
         location = r.stdout.strip()
         return connected, location
-    except Exception:
+    except:
         return None, "Mullvad nicht installiert/erreichbar"
 
 def check_api_keys():
@@ -35,12 +32,10 @@ def check_api_keys():
 def check_failed_logins():
     """Prüft Bot-Logs auf verdächtige Aktivität"""
     try:
-        with open("/tmp/bot-full.log", errors="ignore") as f:
-            log = f.read()[-5000:]
+        log = open("/tmp/bot-full.log", errors="ignore").read()[-5000:]
         suspicious = log.count("Unauthorized") + log.count("403") + log.count("blocked")
         return suspicious
-    except Exception:
-        return 0
+    except: return 0
 
 def run():
     global WARNED_VPN, WARNED_KEYS
