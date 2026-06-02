@@ -112,8 +112,12 @@ async def _fetch_etsy() -> Dict:
 
 async def _fetch_digistore() -> Dict:
     """Fetch orders total from Digistore24."""
+    from modules.digistore24_automation import is_configured as ds24_configured, get_orders  # type: ignore
+    if not ds24_configured():
+        return {"revenue": 0.0, "orders": 0, "currency": "EUR",
+                "ok": False, "status": "not_configured",
+                "error": "DIGISTORE24_API_KEY not set"}
     try:
-        from modules.digistore24_automation import get_orders  # type: ignore
         orders_list = await get_orders(page=1, per_page=100)
         total   = sum(float(o.get("amount", 0)) for o in orders_list)
         currency = (orders_list[0].get("currency", "EUR") if orders_list else "EUR")
@@ -256,8 +260,11 @@ async def get_daily_report() -> str:
                 best_revenue  = eur_equiv
                 best_platform = name
         else:
-            error = data.get("error", "Nicht verfügbar")
-            lines.append(f"{emoji} <b>{name.capitalize()}</b>: ⚠️ {error}")
+            if data.get("status") == "not_configured":
+                lines.append(f"{emoji} <b>{name.capitalize()}</b>: ⚙️ nicht konfiguriert")
+            else:
+                error = data.get("error", "Nicht verfügbar")
+                lines.append(f"{emoji} <b>{name.capitalize()}</b>: ⚠️ {error}")
 
     lines += [
         "",
