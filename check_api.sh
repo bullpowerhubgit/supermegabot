@@ -182,10 +182,12 @@ case "$SERVICE" in
     echo "═══════════════════════════════════════"
     echo "  API KEY VALIDATOR — alle Services"
     echo "═══════════════════════════════════════"
-    # Lade .env
-    ENV_FILE="/Users/rudolfsarkany/supermegabot/.env"
+    # Lade .env (portabel über ENV oder Fallback)
+    ENV_FILE="${SUPERMEGABOT_ENV:-$HOME/supermegabot/.env}"
     if [ -f "$ENV_FILE" ]; then
       set -a; source "$ENV_FILE" 2>/dev/null; set +a
+    elif [ -f "$HOME/.env" ]; then
+      set -a; source "$HOME/.env" 2>/dev/null; set +a
     fi
     test_openai
     test_anthropic

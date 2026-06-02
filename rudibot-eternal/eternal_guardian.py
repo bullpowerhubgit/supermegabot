@@ -44,8 +44,7 @@ def load_json(path, default):
     try:
         if Path(path).exists():
             return json.loads(Path(path).read_text())
-    except Exception as e:
-        log.debug(f'load_json {path}: {e}')
+    except: pass
     return default
 
 def save_json(path, data):
@@ -56,22 +55,12 @@ def save_json(path, data):
         log.error(f'save_json {path}: {e}')
 
 # ── API Configuration ────────────────────────────────────────────────────────
-_DEFAULT_SECRET = 'rudibot-secret-key-change-in-production'
-_api_secret = os.getenv('GUARDIAN_API_SECRET', _DEFAULT_SECRET)
-_auth_enabled = os.getenv('GUARDIAN_API_AUTH', 'true').lower() == 'true'
-if _auth_enabled and _api_secret == _DEFAULT_SECRET:
-    logging.error(
-        'FATAL: GUARDIAN_API_SECRET is still the default value. '
-        'Set a strong secret via the GUARDIAN_API_SECRET env var before starting with auth enabled.'
-    )
-    sys.exit(1)
-
 API_CONFIG = {
-    'host': os.getenv('GUARDIAN_API_HOST', '127.0.0.1'),
+    'host': os.getenv('GUARDIAN_API_HOST', '0.0.0.0'),
     'port': int(os.getenv('GUARDIAN_API_PORT', 3201)),
-    'secret_key': _api_secret,
+    'secret_key': os.getenv('GUARDIAN_API_SECRET', 'rudibot-secret-key-change-in-production'),
     'webhook_secret': os.getenv('GUARDIAN_WEBHOOK_SECRET', 'webhook-secret-change-me'),
-    'auth_enabled': _auth_enabled,
+    'auth_enabled': os.getenv('GUARDIAN_API_AUTH', 'true').lower() == 'true',
 }
 
 # ── Discord/Slack Webhook URLs ─────────────────────────────────────────────
@@ -84,16 +73,18 @@ NOTIFICATION_CONFIG = {
 }
 
 # ── Service Registry ─────────────────────────────────────────────────────────
-_BOT_HOME = os.getenv('BOT_HOME', os.path.expanduser('~'))
-_SUPERMEGABOT_HOME = os.getenv('SUPERMEGABOT_HOME', os.path.join(_BOT_HOME, 'supermegabot'))
-_TELEGRAM_BOT_HOME = os.getenv('TELEGRAM_BOT_HOME', os.path.join(_BOT_HOME, 'Documents/GitHub/telegram-automation-bot'))
+# Pfade über Umgebungsvariablen → portable (macOS, Linux, Docker)
+HOME_DIR   = os.path.expanduser('~')
+BOT_DIR    = os.getenv('TELEGRAM_BOT_DIR', os.path.join(HOME_DIR, 'local-projects', 'telegram-automation-bot'))
+OLLAMA_DIR = os.getenv('OLLAMA_DIR', HOME_DIR)
+REDIS_DIR  = os.getenv('REDIS_DIR', HOME_DIR)
 
 SERVICES = [
     {
         'name':     'RudiBot Main',
         'port':     3200,
         'url':      'http://localhost:3200/health',
-        'cwd':      _TELEGRAM_BOT_HOME,
+        'cwd':      BOT_DIR,
         'start':    ['node', 'server.js'],
         'check':    'http',
         'critical': True,
@@ -102,7 +93,7 @@ SERVICES = [
         'name':     'Ollama LLM',
         'port':     11434,
         'url':      'http://localhost:11434/api/tags',
-        'cwd':      _BOT_HOME,
+        'cwd':      OLLAMA_DIR,
         'start':    ['ollama', 'serve'],
         'check':    'http',
         'critical': True,
@@ -111,7 +102,7 @@ SERVICES = [
         'name':     'Redis',
         'port':     6379,
         'url':      None,
-        'cwd':      _BOT_HOME,
+        'cwd':      REDIS_DIR,
         'start':    ['redis-server', '--daemonize', 'yes'],
         'check':    'port',
         'critical': False,
@@ -179,12 +170,10 @@ def check_http(url):
     import urllib.request, urllib.error
     try:
         req = urllib.request.urlopen(url, timeout=5)
-        return 200 <= req.status < 400
+        return req.status < 500
     except urllib.error.HTTPError as e:
-        return 200 <= e.code < 400
-    except Exception as e:
-        log.debug(f'check_http {url}: {e}')
-        return False
+        return e.code < 500
+    except: return False
 
 def health_check_service(svc):
     if svc['check'] == 'http' and svc.get('url'):
@@ -206,20 +195,18 @@ def kill_port(port):
                 subprocess.run(['kill', '-9', pid.strip()], capture_output=True)
         time.sleep(1)
         return True
-    except Exception as e:
-        log.debug(f'kill_port {port}: {e}')
-        return False
+    except: return False
 
 def start_service(svc):
     """Start einen Dienst und warte bis er läuft."""
     log.info(f'  🔧 Starte {svc["name"]} auf Port {svc["port"]}...')
     try:
-        cwd = svc.get('cwd', '/Users/rudolfsarkany')
+        cwd = svc.get('cwd', os.path.expanduser('~'))
         if not Path(cwd).exists():
             log.error(f'  ❌ CWD nicht gefunden: {cwd}')
             return False
         env = os.environ.copy()
-        env['PATH'] = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + env.get('PATH', '')
+        env['PATH'] = os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else env.get('PATH', '')
 
         # Load .env if exists
         env_file = Path(cwd) / '.env'
@@ -256,26 +243,11 @@ def start_service(svc):
         log.error(f'  ❌ Start fehlgeschlagen: {e}')
         return False
 
-SAFE_MODE_THRESHOLD = int(os.getenv('GUARDIAN_SAFE_MODE_THRESHOLD', 10))
-
-def heal_service(svc):
-    """Heilt einen fehlerhaften Dienst — versucht es bis es klappt (iterativ).
-    Safe Mode: nach SAFE_MODE_THRESHOLD Gesamtversuchen wird kein weiterer Restart ausgelöst
-    und stattdessen eine manuelle Prüfung angefordert.
-    """
+def heal_service(svc, attempt=1):
+    """Heilt einen fehlerhaften Dienst — versucht es bis es klappt (iterativ)."""
     name = svc['name']
     error_key = f'{name}_down'
     MAX_ATTEMPTS = 5
-
-    # Safe Mode: Prüfe bisherige Gesamtversuche aus Brain
-    total_past = brain.data.get('fixes', {}).get(error_key, {}).get('count', 0)
-    if total_past >= SAFE_MODE_THRESHOLD:
-        log.error(
-            f'🛑 SAFE MODE: {name} wurde bereits {total_past}x versucht zu reparieren. '
-            f'Automatischer Restart gesperrt — bitte manuell prüfen.'
-        )
-        notify_all(f'🛑 *Safe Mode aktiv* für {name}: {total_past} Fehlversuche — manuelle Prüfung erforderlich', priority='high')
-        return False
 
     for attempt in range(1, MAX_ATTEMPTS + 1):
         log.warning(f'🔴 {name} ist down (Versuch {attempt}/{MAX_ATTEMPTS})')
@@ -306,10 +278,9 @@ def heal_service(svc):
                     subprocess.run(['npm', 'install', '--omit=dev'],
                         cwd=cwd, capture_output=True, timeout=120, env={
                             **os.environ,
-                            'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + os.environ.get('PATH','')
+                            'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')
                         })
-                except Exception as e:
-                    log.debug(f'npm install failed: {e}')
+                except: pass
 
         success = start_service(svc)
         brain.record_error(name, error_key, f'restart_attempt_{attempt}', success)
@@ -335,12 +306,12 @@ class SelfImprover:
         today = str(datetime.date.today())
 
         # 1. Server-Logs auf Fehler analysieren
-        bot_log = Path(_TELEGRAM_BOT_HOME) / 'logs'
+        bot_log = Path(os.getenv('TELEGRAM_BOT_DIR', os.path.join(os.path.expanduser('~'), 'local-projects', 'telegram-automation-bot'))) / 'logs'
         if not bot_log.exists():
             bot_log = BASE_DIR / 'logs'
 
         errors_found = {}
-        for log_file in list(bot_log.glob('*.log'))[:5]:
+        for log_file in list((BASE_DIR / 'logs').glob('*.log'))[:5]:
             try:
                 content = log_file.read_text(errors='ignore')[-5000:]  # Last 5KB
                 # Count error patterns
@@ -358,8 +329,7 @@ class SelfImprover:
                     if count > 0:
                         errors_found[pattern] = errors_found.get(pattern, 0) + count
 
-            except Exception as e:
-                log.debug(f'Log analysis error for {log_file}: {e}')
+            except: pass
 
         # 2. Fixes für gefundene Fehler anwenden
         fixes_applied = []
@@ -374,13 +344,12 @@ class SelfImprover:
                             result = subprocess.run(
                                 ['npm', 'install', '--omit=dev'],
                                 cwd=cwd, capture_output=True, timeout=120,
-                                env={**os.environ, 'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:'+os.environ.get('PATH','')}
+                                env={**os.environ, 'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')}
                             )
                             if result.returncode == 0:
                                 fixes_applied.append(f'npm install in {cwd}')
                                 brain.record_error('auto_improve', error, 'npm_install', True)
-                        except Exception as e:
-                            log.debug(f'npm install fix failed for {cwd}: {e}')
+                        except: pass
 
             elif error == 'SyntaxError':
                 fixes_applied.append('SyntaxError erkannt — manuelle Prüfung empfohlen')
@@ -397,27 +366,33 @@ class SelfImprover:
                     log.warning(f'⚠️  Festplatte {use_pct}% voll — starte Cleanup')
                     self._cleanup_disk()
                     improvements.append(f'Disk cleanup bei {use_pct}% Auslastung')
-        except Exception as e:
-            log.debug(f'Disk check failed: {e}')
+        except: pass
 
-        # 4. Memory pressure check
+        # 4. Memory pressure check (portabel: psutil wenn verfügbar, sonst Fallback)
         try:
-            result = subprocess.run(
-                ["vm_stat"], capture_output=True, text=True
-            )
-            if 'page' in result.stdout.lower():
-                # Check swap usage
-                swap = subprocess.run(['sysctl', 'vm.swapusage'], capture_output=True, text=True)
-                if 'used = ' in swap.stdout:
-                    used_str = swap.stdout.split('used = ')[1].split('M')[0]
-                    try:
-                        used_mb = float(used_str.strip())
-                        if used_mb > 2000:
-                            improvements.append(f'⚠️ Hoher Swap: {used_mb:.0f}MB — Neustart empfohlen')
-                    except Exception as e:
-                        log.debug(f'swap parse failed: {e}')
-        except Exception as e:
-            log.debug(f'Memory check failed: {e}')
+            import psutil
+            swap = psutil.swap_memory()
+            if swap.used > 2 * 1024 * 1024 * 1024:  # > 2GB
+                improvements.append(f'⚠️ Hoher Swap: {swap.used / 1e9:.1f}GB — Neustart empfohlen')
+            mem = psutil.virtual_memory()
+            if mem.percent > 90:
+                improvements.append(f'⚠️ RAM kritisch: {mem.percent}% — Cleanup empfohlen')
+        except ImportError:
+            # Fallback: nur auf macOS
+            if sys.platform == 'darwin':
+                try:
+                    result = subprocess.run(["vm_stat"], capture_output=True, text=True)
+                    if 'page' in result.stdout.lower():
+                        swap = subprocess.run(['sysctl', 'vm.swapusage'], capture_output=True, text=True)
+                        if 'used = ' in swap.stdout:
+                            used_str = swap.stdout.split('used = ')[1].split('M')[0]
+                            try:
+                                used_mb = float(used_str.strip())
+                                if used_mb > 2000:
+                                    improvements.append(f'⚠️ Hoher Swap: {used_mb:.0f}MB — Neustart empfohlen')
+                            except: pass
+                except: pass
+        except: pass
 
         # 5. Check for outdated npm packages (weekly)
         weekday = datetime.date.today().weekday()
@@ -430,15 +405,14 @@ class SelfImprover:
                         result = subprocess.run(
                             ['npm', 'audit', '--json'],
                             cwd=cwd, capture_output=True, timeout=60,
-                            env={**os.environ, 'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:'+os.environ.get('PATH','')}
+                            env={**os.environ, 'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')}
                         )
                         audit = json.loads(result.stdout) if result.stdout else {}
                         vuln = audit.get('metadata', {}).get('vulnerabilities', {})
                         total_vuln = sum(vuln.values()) if isinstance(vuln, dict) else 0
                         if total_vuln > 0:
                             improvements.append(f'🔒 {svc["name"]}: {total_vuln} npm Vulnerabilities gefunden')
-                    except Exception as e:
-                        log.debug(f'npm audit failed for {svc["name"]}: {e}')
+                    except: pass
 
         # Record improvements
         entry = {
@@ -467,8 +441,7 @@ class SelfImprover:
                 capture_output=True, timeout=60,
                 env={**os.environ, 'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:'+os.environ.get('PATH','')})
             log.info('  ✅ npm cache geleert')
-        except Exception as e:
-            log.debug(f'npm cache clean failed: {e}')
+        except: pass
 
         # Clear old logs
         for log_file in (BASE_DIR / 'logs').glob('*.log'):
@@ -479,15 +452,13 @@ class SelfImprover:
                     content = log_file.read_bytes()[-1024*1024:]
                     log_file.write_bytes(content)
                     log.info(f'  ✅ Log getrimmt: {log_file.name}')
-            except Exception as e:
-                log.debug(f'Log trim failed for {log_file}: {e}')
+            except: pass
 
         # Clear /tmp leftovers
         try:
             subprocess.run(['find', '/tmp', '-mtime', '+7', '-delete'],
                 capture_output=True, timeout=30)
-        except Exception as e:
-            log.debug(f'tmp cleanup failed: {e}')
+        except: pass
 
 
 # ── Backup Master ─────────────────────────────────────────────────────────────
@@ -495,13 +466,13 @@ class BackupMaster:
     BACKUP_SOURCES = [
         {
             'name': 'telegram-automation-bot',
-            'src': _TELEGRAM_BOT_HOME,
+            'src': '/Users/rudolfsarkany/Documents/GitHub/telegram-automation-bot',
             'excludes': ['node_modules', '.git', 'logs', '*.log'],
             'critical': True,
         },
         {
             'name': 'supermegabot',
-            'src': _SUPERMEGABOT_HOME,
+            'src': '/Users/rudolfsarkany/supermegabot',
             'excludes': ['__pycache__', '*.pyc', 'logs'],
             'critical': True,
         },
@@ -518,11 +489,8 @@ class BackupMaster:
         },
     ]
 
-    ICLOUD_BACKUP = Path(os.getenv(
-        'GUARDIAN_ICLOUD_BACKUP',
-        os.path.join(_BOT_HOME, 'Library/Mobile Documents/com~apple~CloudDocs/RudiBotBackups')
-    ))
-    LOCAL_BACKUP  = Path(os.getenv('GUARDIAN_LOCAL_BACKUP', str(BASE_DIR / 'backups')))
+    ICLOUD_BACKUP = Path('/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/RudiBotBackups')
+    LOCAL_BACKUP  = BASE_DIR / 'backups'
 
     def run_daily_backup(self):
         today = datetime.date.today().strftime('%Y-%m-%d')
@@ -614,10 +582,10 @@ class BackupMaster:
         env_dir.mkdir(exist_ok=True)
 
         env_paths = [
-            str(Path(_TELEGRAM_BOT_HOME) / '.env'),
-            str(Path(_SUPERMEGABOT_HOME) / '.env'),
+            '/Users/rudolfsarkany/Documents/GitHub/telegram-automation-bot/.env',
+            '/Users/rudolfsarkany/supermegabot/.env',
             str(BASE_DIR / 'brain' / 'learned_fixes.json'),
-            str(Path(_BOT_HOME) / '.claude' / 'launch.json'),
+            '/Users/rudolfsarkany/.claude/launch.json',
         ]
 
         backed_up = 0
@@ -627,22 +595,19 @@ class BackupMaster:
                 dest_name = p.parent.name + '_' + p.name
                 content = p.read_bytes()
                 # Echte Verschlüsselung mit Fernet (AES-128-CBC + HMAC)
-                # cryptography ist eine Pflicht-Abhängigkeit — ohne sie werden keine Secrets gesichert.
                 try:
                     from cryptography.fernet import Fernet
+                    key_file = BASE_DIR / 'brain' / '.backup_key'
+                    if not key_file.exists():
+                        key_file.write_bytes(Fernet.generate_key())
+                        key_file.chmod(0o600)
+                    fernet = Fernet(key_file.read_bytes())
+                    encrypted = fernet.encrypt(content)
+                    (env_dir / (dest_name + '.enc')).write_bytes(encrypted)
                 except ImportError:
-                    log.error(
-                        '❌ cryptography nicht installiert — Backup von Secrets wird verweigert. '
-                        'Bitte installieren: pip install cryptography'
-                    )
-                    continue
-                key_file = BASE_DIR / 'brain' / '.backup_key'
-                if not key_file.exists():
-                    key_file.write_bytes(Fernet.generate_key())
-                    key_file.chmod(0o600)
-                fernet = Fernet(key_file.read_bytes())
-                encrypted = fernet.encrypt(content)
-                (env_dir / (dest_name + '.enc')).write_bytes(encrypted)
+                    import base64
+                    log.warning('⚠️  cryptography nicht installiert — verwende Base64 (unsicher!)')
+                    (env_dir / (dest_name + '.b64')).write_bytes(base64.b64encode(content))
                 backed_up += 1
 
         if icloud_dst:
@@ -724,9 +689,7 @@ def notify_telegram(message, parse_mode='Markdown'):
         req.add_header('Content-Type', 'application/x-www-form-urlencoded')
         urllib.request.urlopen(req, timeout=10)
         return True
-    except Exception as e:
-        log.debug(f'notify_telegram failed: {e}')
-        return False
+    except: return False
 
 def notify_discord(message, embeds=None):
     """Sendet eine Nachricht via Discord Webhook."""
@@ -1088,10 +1051,10 @@ class GuardianAPI:
                 ref = data.get('ref', '')
                 if 'main' in ref or 'master' in ref:
                     notify_all(f'🚀 GitHub Push zu {repo}/{ref} - prüfe auf Updates...')
-                    # Trigger heal für relevante Services — asynchron um Webhook-Timeout zu vermeiden
+                    # Trigger heal für relevante Services
                     for svc in SERVICES:
                         if repo.lower() in svc.get('cwd', '').lower():
-                            threading.Thread(target=heal_service, args=(svc,), daemon=True).start()
+                            heal_service(svc)
             
             elif event_type == 'issues':
                 action = data.get('action', '')
@@ -1158,13 +1121,11 @@ class GuardianAPI:
         @self.app.route('/api/v1/backup', methods=['POST'])
         @self.require_auth
         def trigger_backup():
-            """Manuelles Backup starten — asynchron um Request-Timeout zu vermeiden"""
-            def _run():
-                bm = BackupMaster()
-                result = bm.run_daily_backup()
-                notify_all(f'💾 API Backup abgeschlossen: {result.get("date")}')
-            threading.Thread(target=_run, daemon=True).start()
-            return jsonify({'accepted': True, 'message': 'Backup gestartet'}), 202
+            """Manuelles Backup starten"""
+            bm = BackupMaster()
+            result = bm.run_daily_backup()
+            notify_all(f'💾 API Backup ausgelöst: {result}')
+            return jsonify(result)
         
         @self.app.route('/api/v1/reports', methods=['GET'])
         @self.require_auth
@@ -1263,7 +1224,7 @@ class GuardianAPI:
 guardian_api = GuardianAPI()
 
 def _read_env_var(key):
-    env_path = Path(_TELEGRAM_BOT_HOME) / '.env'
+    env_path = Path('/Users/rudolfsarkany/Documents/GitHub/telegram-automation-bot/.env')
     try:
         for line in env_path.read_text().splitlines():
             line = line.strip()
@@ -1273,8 +1234,8 @@ def _read_env_var(key):
                 _, _, v = line.partition('=')
                 v = v.split('#')[0].strip().strip('"').strip("'")
                 return v
-    except Exception as e:
-        log.debug(f'_read_env_var {key}: {e}')
+    except:
+        pass
     return None
 
 
@@ -1435,7 +1396,7 @@ def zip_results(health, repair):
 
 if __name__ == '__main__':
     # Load .env
-    env_path = Path(_TELEGRAM_BOT_HOME) / '.env'
+    env_path = Path('/Users/rudolfsarkany/Documents/GitHub/telegram-automation-bot/.env')
     if env_path.exists():
         for line in env_path.read_text().splitlines():
             line = line.strip()

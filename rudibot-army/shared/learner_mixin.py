@@ -1,111 +1,84 @@
-#!/usr/bin/env python3
-"""
-🧠 Learner Mixin — Self-Learning für jeden Army-Agent in 2 Zeilen
-Usage:
-    from learner_mixin import AgentLearner
-    learner = AgentLearner("optimizer")
-    learner.log_cycle(status="ok", msg="CPU:12%")
-"""
-import os, sys
+"""AgentLearner — Selbstlern-Mixin für Army Agenten"""
+import json, time, os
 from pathlib import Path
 
-ARMY_DIR = Path(__file__).parent.parent
-
-def _load_tokens():
-    """Lädt Telegram-Tokens aus .env falls nicht als Umgebungsvariable gesetzt."""
-    try:
-        sys.path.insert(0, str(ARMY_DIR / "shared"))
-        from bus import get_env
-        for key in ("TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID", "AUTHORIZED_USER_ID"):
-            if not os.environ.get(key):
-                val = get_env(key)
-                if val:
-                    os.environ[key] = val
-        if not os.environ.get("TELEGRAM_CHAT_ID"):
-            v = os.environ.get("AUTHORIZED_USER_ID", "")
-            if v:
-                os.environ["TELEGRAM_CHAT_ID"] = v
-    except Exception:
-        pass
-
-try:
-    _load_tokens()
-    sys.path.insert(0, os.path.expanduser("~"))
-    from self_learner_core import SelfLearner as _SelfLearner
-    _LEARNER_AVAILABLE = True
-except Exception:
-    _SelfLearner = None
-    _LEARNER_AVAILABLE = False
-
-
-class _DummyLearner:
-    """Fallback wenn SelfLearner nicht verfügbar — Agent läuft trotzdem."""
-    def register(self, *a, **k): pass
-    def handle(self, *a, **k): return "Learner nicht verfügbar"
-    def log_cycle(self, *a, **k): pass
-    def skills_summary(self): return "Learner nicht verfügbar"
-    def self_analysis(self): return "Learner nicht verfügbar"
+BRAIN_DIR = Path(__file__).parent / "brain"
+BRAIN_DIR.mkdir(exist_ok=True)
 
 
 class AgentLearner:
-    """Crashsicherer Wrapper um SelfLearner für Army-Agenten."""
+    """Jeder Agent hat ein kleines Gehirn: merkt sich Patterns, lernt dazu."""
 
     def __init__(self, agent_id: str):
-        self.agent_id = agent_id
-        self._cycle = 0
-        self._learner = None
-        try:
-            if _LEARNER_AVAILABLE:
-                # telegram_notify=False bei Init — kein Spam bei jedem Start
-                self._learner = _SelfLearner(f"army_{agent_id}", telegram_notify=False)
-                self._learner.load_learned_skills()
-                # Telegram erst nach erstem erfolgreichem Zyklus aktivieren
-                self._learner.telegram_notify = bool(
-                    os.environ.get("TELEGRAM_BOT_TOKEN") and
-                    os.environ.get("TELEGRAM_CHAT_ID")
-                )
-        except Exception as e:
-            self._learner = None
+        self.id = agent_id
+        self.brain_file = BRAIN_DIR / f"{agent_id}_brain.json"
+        self.data = self._load()
+        self._ensure_defaults()
 
-    def _get(self):
-        return self._learner if self._learner else _DummyLearner()
-
-    def register(self, name: str, handler, desc: str = ""):
+    def _load(self) -> dict:
         try:
-            self._get().register(name, handler, desc)
+            if self.brain_file.exists():
+                return json.loads(self.brain_file.read_text())
+        except Exception:
+            pass
+        return {}
+
+    def _save(self):
+        try:
+            self.brain_file.write_text(json.dumps(self.data, indent=2, default=str))
         except Exception:
             pass
 
-    def handle(self, command: str) -> str:
-        try:
-            return self._get().handle(command)
-        except Exception as e:
-            return f"Fehler: {e}"
+    def _ensure_defaults(self):
+        defaults = {
+            "cycles": 0,
+            "patterns": {},
+            "registers": {},
+            "history": [],
+            "created_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
+        for k, v in defaults.items():
+            self.data.setdefault(k, v)
 
-    def log_cycle(self, status: str, msg: str, data: dict = None):
-        """Jeden Agent-Zyklus tracken; täglich Zusammenfassung senden."""
-        self._cycle += 1
-        try:
-            if self._learner:
-                self._learner._log("INFO", f"[{self.agent_id}] {status}: {msg}")
-            # Alle 720 Zyklen (~24h bei 120s sleep) → Telegram-Zusammenfassung
-            if self._cycle % 720 == 0 and self._learner:
-                n = len(self._learner.skills) if self._learner else 0
-                self._learner.send_telegram(
-                    f"📊 *{self.agent_id} Tages-Report*\n"
-                    f"Status: {status}\n{msg}\nSkills: {n}"
-                )
-        except Exception:
-            pass
+    def register(self, key: str, fn_or_value, description: str = ""):
+        """Registriert einen Wert oder eine Funktion für Monitoring."""
+        self.data["registers"][key] = {
+            "description": description,
+            "last_value": None,
+            "updated": time.strftime("%Y-%m-%d %H:%M:%S"),
+        }
 
-    def skills_summary(self) -> str:
-        try:
-            return self._get().skills_summary()
-        except Exception:
-            return "Learner nicht verfügbar"
+    def log_cycle(self, status: str, message: str, metrics: dict = None):
+        """Speichert einen Zyklus + lernt Patterns."""
+        self.data["cycles"] += 1
+        entry = {
+            "ts": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "status": status,
+            "message": message,
+            "metrics": metrics or {},
+        }
+        self.data["history"].append(entry)
+        self.data["history"] = self.data["history"][-500:]  # max 500 Einträge
 
-    def self_analysis(self) -> str:
-        try:
-            return self._get().self_analysis()
-        except Exception:
-            return "Learner nicht verfügbar"
+        # Pattern-Learning: gleicher Fehler wiederholt?
+        if status in ("error", "warning"):
+            pattern_key = f"{status}:{message[:60]}"
+            self.data["patterns"][pattern_key] = self.data["patterns"].get(pattern_key, 0) + 1
+
+        self._save()
+
+    def get_insights(self) -> list:
+        """Gibt gelernte Insights zurück (häufige Patterns)."""
+        insights = []
+        for pattern, count in self.data.get("patterns", {}).items():
+            if count >= 3:
+                insights.append(f"🔁 {pattern} ({count}x)")
+        return insights
+
+    def summary(self) -> dict:
+        return {
+            "agent": self.id,
+            "cycles": self.data["cycles"],
+            "insights": self.get_insights(),
+            "registers": list(self.data["registers"].keys()),
+        }
