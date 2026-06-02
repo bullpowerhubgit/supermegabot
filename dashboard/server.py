@@ -1498,6 +1498,26 @@ async def handle_pod_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_guardian_status(req):
+    try:
+        from modules.guardian_news import get_client
+        return web.json_response(get_client().status())
+    except Exception as e:
+        return web.json_response({"status": "FAIL", "error": str(e)})
+
+
+async def handle_guardian_search(req):
+    try:
+        from modules.guardian_news import search_news
+        query = req.rel_url.query.get("q", "technology")
+        section = req.rel_url.query.get("section")
+        page_size = int(req.rel_url.query.get("page_size", 10))
+        results = search_news(query, page_size=page_size, section=section)
+        return web.json_response({"ok": True, "results": results, "count": len(results)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_klaviyo_status(req):
     try:
         from modules.klaviyo_automation import get_stats
@@ -1914,6 +1934,8 @@ async def create_app():
     app.router.add_get("/api/pod/status",             handle_pod_status)
 
     # ── Klaviyo ───────────────────────────────────────────────────────────────
+    app.router.add_get("/api/guardian/status",        handle_guardian_status)
+    app.router.add_get("/api/guardian/search",        handle_guardian_search)
     app.router.add_get("/api/klaviyo/status",         handle_klaviyo_status)
     app.router.add_get("/api/klaviyo/lists",          handle_klaviyo_lists)
     app.router.add_post("/api/klaviyo/sync",          handle_klaviyo_sync)
