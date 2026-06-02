@@ -73,7 +73,7 @@ class SecurityBot {
                 
                 // Check for expired or example tokens
                 const expiredPatterns = [
-                    /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/, // Old Shopify token
+                    /shpat_[a-f0-9]{32}/, // Shopify token pattern (detect any hardcoded shpat_ tokens)
                     /YOUR_.*_HERE/,
                     /example/,
                     /test/
