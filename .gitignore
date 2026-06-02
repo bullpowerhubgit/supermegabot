@@ -39,3 +39,5 @@ supermegabot_business_report.pdf
 
 # CascadeProjects — Windsurf local workspace, source code is in repo root
 CascadeProjects/
+windsurf-mcp-config.json
+*-mcp-config.json
