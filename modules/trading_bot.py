@@ -127,34 +127,43 @@ class PriceCollector:
             import ccxt.async_support as ccxt
 
             results = {}
-            tasks = []
+            exchanges: List = []
+            sem = asyncio.Semaphore(10)  # max 10 concurrent connections
 
             async def fetch_one(exchange_name: str, pair: str):
                 exchange_cls = getattr(ccxt, exchange_name, None)
                 if not exchange_cls:
                     return
                 exchange = exchange_cls({"enableRateLimit": True})
-                try:
-                    ticker = await exchange.fetch_ticker(pair)
-                    key = f"{exchange_name}:{pair}"
-                    results[key] = {
-                        "exchange": exchange_name,
-                        "pair": pair,
-                        "bid": ticker.get("bid", 0) or 0,
-                        "ask": ticker.get("ask", 0) or 0,
-                        "last": ticker.get("last", 0) or 0,
-                        "volume": ticker.get("baseVolume", 0) or 0,
-                    }
-                except Exception:
-                    pass
-                finally:
-                    await exchange.close()
+                exchanges.append(exchange)
+                async with sem:
+                    try:
+                        ticker = await asyncio.wait_for(
+                            exchange.fetch_ticker(pair), timeout=10.0
+                        )
+                        key = f"{exchange_name}:{pair}"
+                        results[key] = {
+                            "exchange": exchange_name,
+                            "pair": pair,
+                            "bid": ticker.get("bid", 0) or 0,
+                            "ask": ticker.get("ask", 0) or 0,
+                            "last": ticker.get("last", 0) or 0,
+                            "volume": ticker.get("baseVolume", 0) or 0,
+                        }
+                    except Exception:
+                        pass
 
-            for exchange_name in EXCHANGES:
-                for pair in PAIRS:
-                    tasks.append(fetch_one(exchange_name, pair))
+            tasks = [
+                fetch_one(exchange_name, pair)
+                for exchange_name in EXCHANGES
+                for pair in PAIRS
+            ]
+            try:
+                await asyncio.gather(*tasks, return_exceptions=True)
+            finally:
+                close_tasks = [ex.close() for ex in exchanges]
+                await asyncio.gather(*close_tasks, return_exceptions=True)
 
-            await asyncio.gather(*tasks, return_exceptions=True)
             return results
 
         except ImportError:

@@ -112,1015 +112,15 @@ SERVICES = [
     {"id": "kivo", "name": "KIVO Voice", "port": 0,
      "start_cmd": f"cd {_ext('KIVO_DIR','kivo')} && nohup python3 kivo.py >> /tmp/kivo.log 2>&1 &",
      "pattern": "kivo.py", "icon": "🎙️"},
-    {"id": "tg_hub_bridge", "name": "Telegram Hub Bridge", "port": 0,
-     "start_cmd": f"cd {BASE_DIR} && nohup python3 telegram_hub_bridge.py >> /tmp/tg-hub-bridge.log 2>&1 &",
-     "pattern": "telegram_hub_bridge.py", "icon": "🛰️"},
 ]
 
 # ---------------------------------------------------------------------------
 # HTML Dashboard
 # ---------------------------------------------------------------------------
 
-DASHBOARD_HTML = '''<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperMegaBot Dashboard</title>
-<style>
-:root {
-  --bg: #0a0a0f;
-  --surface: #12121a;
-  --card: #1a1a26;
-  --accent: #6c63ff;
-  --accent2: #ff6584;
-  --green: #43d98c;
-  --yellow: #ffd700;
-  --red: #ff4757;
-  --orange: #ff6b35;
-  --text: #e8e8f0;
-  --muted: #7070a0;
-  --border: #2a2a40;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-  min-height: 100vh;
-}
+_INDEX_HTML = Path(__file__).parent / 'index.html'
 
-/* ── Header ── */
-.header {
-  background: linear-gradient(135deg, var(--accent) 0%, #9f7aea 100%);
-  padding: 16px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  box-shadow: 0 4px 20px rgba(108,99,255,0.4);
-  flex-wrap: wrap;
-  gap: 10px;
-}
-.header h1 { font-size: 1.6rem; font-weight: 700; color: #fff; }
-.header .subtitle { font-size: 0.8rem; opacity: 0.85; margin-top: 2px; }
-.header-center { font-size: 1.1rem; font-weight: 600; color: rgba(255,255,255,0.9); }
-.header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.status-pill {
-  background: rgba(255,255,255,0.2);
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  display: flex; align-items: center; gap: 6px;
-}
-.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-@keyframes slideIn { from{transform:translateX(100px);opacity:0} to{transform:translateX(0);opacity:1} }
 
-/* Quick action bar */
-.quick-bar {
-  background: rgba(0,0,0,0.3);
-  padding: 10px 28px;
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  border-bottom: 1px solid var(--border);
-}
-.quick-btn {
-  background: rgba(108,99,255,0.2);
-  border: 1px solid rgba(108,99,255,0.4);
-  color: var(--text);
-  padding: 7px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.82rem;
-  font-weight: 500;
-  transition: all 0.2s;
-}
-.quick-btn:hover { background: rgba(108,99,255,0.4); transform: translateY(-1px); }
-
-/* ── Grid ── */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  padding: 20px 24px;
-  max-width: 1800px;
-  margin: 0 auto;
-}
-@media (max-width: 1400px) { .grid { grid-template-columns: repeat(3, 1fr); } }
-@media (max-width: 1000px) { .grid { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 640px)  { .grid { grid-template-columns: 1fr; } }
-
-.col-2 { grid-column: span 2; }
-.col-3 { grid-column: span 3; }
-.col-4 { grid-column: span 4; }
-@media (max-width: 1400px) { .col-4 { grid-column: span 3; } }
-@media (max-width: 1000px) { .col-2,.col-3,.col-4 { grid-column: span 2; } }
-@media (max-width: 640px)  { .col-2,.col-3,.col-4 { grid-column: span 1; } }
-
-/* ── Card ── */
-.card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 18px;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-.card-header {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 14px;
-}
-.card-icon {
-  width: 38px; height: 38px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0;
-}
-.card-title { font-size: 0.95rem; font-weight: 600; }
-.card-subtitle { font-size: 0.72rem; color: var(--muted); }
-
-/* ── Stat bars ── */
-.stat-bar { margin: 8px 0; }
-.stat-label { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 4px; }
-.bar-track { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
-.bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
-.bar-green  { background: linear-gradient(90deg, var(--green), #6edfa0); }
-.bar-yellow { background: linear-gradient(90deg, var(--yellow), #ffec6e); }
-.bar-red    { background: linear-gradient(90deg, var(--red), #ff758c); }
-.bar-accent { background: linear-gradient(90deg, var(--accent), #9f7aea); }
-
-/* ── Stats grid ── */
-.stats-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.stat-box { background: var(--surface); border-radius: 10px; padding: 10px; text-align: center; }
-.stat-value { font-size: 1.4rem; font-weight: 700; color: var(--accent); }
-.stat-label-sm { font-size: 0.68rem; color: var(--muted); margin-top: 2px; }
-
-/* ── Chat ── */
-.chat-box {
-  background: var(--surface); border-radius: 10px;
-  height: 220px; overflow-y: auto; padding: 10px;
-  margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px;
-}
-.msg { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 0.83rem; line-height: 1.4; }
-.msg-user { align-self: flex-end; background: var(--accent); color: #fff; }
-.msg-bot  { align-self: flex-start; background: var(--border); }
-.chat-input-row { display: flex; gap: 8px; }
-.chat-input {
-  flex: 1; background: var(--surface); border: 1px solid var(--border);
-  border-radius: 8px; padding: 9px 12px; color: var(--text); font-size: 0.83rem; outline: none;
-}
-.chat-input:focus { border-color: var(--accent); }
-
-/* ── Buttons ── */
-.btn {
-  padding: 7px 14px; border-radius: 8px; border: none; cursor: pointer;
-  font-size: 0.8rem; font-weight: 500; transition: opacity 0.2s, transform 0.1s;
-}
-.btn:hover { opacity: 0.85; transform: translateY(-1px); }
-.btn:active { transform: translateY(0); }
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-green   { background: var(--green); color: #000; }
-.btn-red     { background: var(--red); color: #fff; }
-.btn-orange  { background: var(--orange); color: #fff; }
-.btn-ghost   { background: var(--border); color: var(--text); }
-.btn-sm      { padding: 4px 9px; font-size: 0.72rem; }
-.btn-xs      { padding: 2px 7px; font-size: 0.68rem; border-radius: 5px; }
-
-/* ── Tables ── */
-.table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
-.table th { color: var(--muted); font-weight: 500; padding: 5px 7px; text-align: left; border-bottom: 1px solid var(--border); }
-.table td { padding: 5px 7px; border-bottom: 1px solid rgba(255,255,255,0.04); }
-.badge { padding: 2px 7px; border-radius: 20px; font-size: 0.68rem; font-weight: 600; }
-.badge-green  { background: rgba(67,217,140,0.18); color: var(--green); }
-.badge-red    { background: rgba(255,71,87,0.18); color: var(--red); }
-.badge-yellow { background: rgba(255,215,0,0.18); color: var(--yellow); }
-.badge-orange { background: rgba(255,107,53,0.18); color: var(--orange); }
-
-/* ── Service rows ── */
-.svc-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 10px; border-radius: 8px; background: var(--surface);
-  margin-bottom: 6px;
-}
-.svc-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-.svc-dot.on  { background: var(--green); box-shadow: 0 0 6px var(--green); }
-.svc-dot.off { background: var(--red); }
-.svc-name { flex: 1; font-size: 0.82rem; font-weight: 500; }
-.svc-port { font-size: 0.68rem; color: var(--muted); margin-right: 4px; }
-.svc-btns { display: flex; gap: 4px; }
-
-/* ── Mac control ── */
-.mac-output {
-  margin-top: 10px; font-size: 0.78rem; background: var(--surface);
-  border-radius: 8px; padding: 10px; min-height: 50px; white-space: pre-wrap;
-  color: var(--green); font-family: monospace; max-height: 120px; overflow-y: auto;
-}
-.mac-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
-
-/* ── Log box ── */
-.log-box {
-  background: #050508; border-radius: 8px; padding: 10px;
-  height: 200px; overflow-y: auto; font-family: monospace;
-  font-size: 0.72rem; color: var(--green); line-height: 1.5;
-}
-
-/* ── AutoPilot ── */
-#agent-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 14px; }
-.agent-card {
-  background: var(--surface); border-radius: 10px; padding: 10px 6px;
-  text-align: center; cursor: pointer; border: 1px solid var(--border);
-  transition: all 0.2s;
-}
-.agent-card:hover { border-color: var(--accent); }
-
-/* ── Scrollbar ── */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: var(--surface); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-/* ── Misc ── */
-.loading { opacity: 0.5; font-style: italic; font-size: 0.78rem; }
-.error-text { color: var(--red); font-size: 0.78rem; }
-.vol-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-input[type=range] { flex: 1; accent-color: var(--accent); }
-</style>
-</head>
-<body>
-
-<!-- ══ HEADER ══ -->
-<div class="header">
-  <div>
-    <h1>SuperMegaBot 🤖</h1>
-    <div class="subtitle">M4 Pro · 48GB · macOS · 95% Lokal</div>
-  </div>
-  <div class="header-center" id="clock"></div>
-  <div class="header-right">
-    <div class="status-pill"><div class="dot"></div><span id="bot-status">Online</span></div>
-  </div>
-</div>
-
-<!-- ══ QUICK ACTION BAR ══ -->
-<div class="quick-bar">
-  <button class="quick-btn" onclick="quickMac('screenshot')">📸 Screenshot</button>
-  <button class="quick-btn" onclick="quickNotify()">🔔 Benachrichtigung</button>
-  <button class="quick-btn" onclick="quickMac('lock')">🔒 Sperren</button>
-  <button class="quick-btn" onclick="quickMac('sleep_display')">🌙 Display aus</button>
-</div>
-
-<!-- ══ MAIN GRID ══ -->
-<div class="grid">
-
-  <!-- ── Services (2 cols) ── -->
-  <div class="card col-2">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#43d98c,#00b894)">⚡</div>
-      <div><div class="card-title">Services</div><div class="card-subtitle">Live Status · Start/Stop</div></div>
-      <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="loadServices()">↺ Refresh</button>
-    </div>
-    <div id="services-list"><div class="loading">Prüfe Services...</div></div>
-  </div>
-
-  <!-- ── System Stats (1 col) ── -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#667eea,#764ba2)">💻</div>
-      <div><div class="card-title">System</div><div class="card-subtitle" id="sys-uptime">M4 Pro · 48GB RAM</div></div>
-    </div>
-    <div class="stat-bar">
-      <div class="stat-label"><span>CPU</span><span id="cpu-val">–</span></div>
-      <div class="bar-track"><div class="bar-fill bar-accent" id="cpu-bar" style="width:0%"></div></div>
-    </div>
-    <div class="stat-bar">
-      <div class="stat-label"><span>RAM</span><span id="ram-val">–</span></div>
-      <div class="bar-track"><div class="bar-fill bar-green" id="ram-bar" style="width:0%"></div></div>
-    </div>
-    <div class="stat-bar">
-      <div class="stat-label"><span>SSD</span><span id="disk-val">–</span></div>
-      <div class="bar-track"><div class="bar-fill bar-yellow" id="disk-bar" style="width:0%"></div></div>
-    </div>
-    <div class="stats-2" style="margin-top:10px">
-      <div class="stat-box"><div class="stat-value" id="cpu-cores">14</div><div class="stat-label-sm">CPU Kerne</div></div>
-      <div class="stat-box"><div class="stat-value" id="proc-count">–</div><div class="stat-label-sm">Prozesse</div></div>
-    </div>
-  </div>
-
-  <!-- ── Mac Control (1 col) ── -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#4facfe,#00f2fe)">🖥️</div>
-      <div><div class="card-title">Mac Steuerung</div><div class="card-subtitle">Direkte Aktionen</div></div>
-    </div>
-
-    <div class="vol-row">
-      <span style="font-size:0.75rem;color:var(--muted)">🔊</span>
-      <input type="range" id="vol-slider" min="0" max="100" value="50">
-      <span id="vol-val" style="font-size:0.75rem;min-width:28px">50</span>
-      <button class="btn btn-ghost btn-sm" onclick="setVolume()">Set</button>
-    </div>
-
-    <div class="mac-actions">
-      <button class="btn btn-ghost btn-sm" onclick="macAction('clipboard_get')">📋 Clipboard</button>
-      <button class="btn btn-ghost btn-sm" onclick="macAction('empty_trash')">🗑️ Papierkorb</button>
-      <button class="btn btn-ghost btn-sm" onclick="macOpenUrl()">🌐 URL öffnen</button>
-      <button class="btn btn-ghost btn-sm" onclick="macAction('running_apps')">📱 Apps</button>
-      <button class="btn btn-ghost btn-sm" onclick="macAction('system_info')">ℹ️ System Info</button>
-      <button class="btn btn-ghost btn-sm" onclick="loadProcesses()">⚙️ Prozesse</button>
-    </div>
-    <div class="mac-output" id="mac-output">Bereit.</div>
-  </div>
-
-  <!-- ── KI Chat (2 cols) ── -->
-  <div class="card col-2">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c)">🤖</div>
-      <div><div class="card-title">KI-Assistent</div><div class="card-subtitle">Ollama · 100% lokal</div></div>
-      <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
-        <select id="model-select" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:0.72rem">
-          <option value="fast">llama3.2 (schnell)</option>
-          <option value="gemma4">gemma4</option>
-          <option value="code">codellama</option>
-          <option value="analysis">mistral</option>
-        </select>
-      </div>
-    </div>
-    <div class="chat-box" id="chat-box">
-      <div class="msg msg-bot">Hallo! Ich bin SuperMegaBot. Was kann ich für dich tun?</div>
-    </div>
-    <div class="chat-input-row">
-      <input class="chat-input" id="chat-input" placeholder="Schreib eine Nachricht..." onkeydown="if(event.key==='Enter')sendChat()">
-      <button class="btn btn-primary" onclick="sendChat()">Senden</button>
-      <button class="btn btn-ghost btn-sm" onclick="clearChat()">✕</button>
-    </div>
-  </div>
-
-  <!-- ── Trading Bot (2 cols) ── -->
-  <div class="card col-2">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#ffd700,#ff6b35)">📈</div>
-      <div><div class="card-title">Trading Bot</div><div class="card-subtitle">Multi-Exchange Arbitrage</div></div>
-      <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick="loadPrices()">🔄 Preise laden</button>
-        <button class="btn btn-green btn-sm" onclick="scanArbitrage()">📊 Arbitrage scannen</button>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div>
-        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">LIVE PREISE</div>
-        <div id="prices-list" class="loading">Lade Preise...</div>
-      </div>
-      <div>
-        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">ARBITRAGE CHANCEN</div>
-        <div id="arb-list" class="loading">Scan läuft...</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── Telegram (1 col) ── -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#0088cc,#00b4d8)">✈️</div>
-      <div><div class="card-title">Telegram</div><div class="card-subtitle">Bot Status & Senden</div></div>
-    </div>
-    <div id="tg-status" class="loading" style="margin-bottom:10px;font-size:0.82rem">Prüfe...</div>
-    <input id="tg-msg" class="chat-input" placeholder="Nachricht senden..." style="width:100%;margin-bottom:8px">
-    <button class="btn btn-primary" style="width:100%" onclick="sendTelegram()">✈️ Senden</button>
-  </div>
-
-  <!-- ── Shopify (1 col) ── -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#96f7d2,#08d4a5)">🛒</div>
-      <div><div class="card-title">Shopify</div><div class="card-subtitle">Store Analytics</div></div>
-    </div>
-    <div id="shopify-data" class="loading" style="font-size:0.82rem;margin-bottom:10px">Lade Shopify...</div>
-    <div style="display:flex;gap:6px;flex-wrap:wrap">
-      <button class="btn btn-ghost btn-sm" onclick="loadShopify()">↺ Status</button>
-      <button class="btn btn-ghost btn-sm" onclick="shopifyAction('products')">Produkte</button>
-      <button class="btn btn-ghost btn-sm" onclick="shopifyAction('orders')">Bestellungen</button>
-      <button class="btn btn-ghost btn-sm" onclick="shopifyAction('analytics')">Analytics</button>
-    </div>
-  </div>
-
-  <!-- ── GMC Status (1 col) ── -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#4285f4,#34a853)">🛒</div>
-      <div><div class="card-title">Google Merchant Center</div><div class="card-subtitle">GMC Status & Produkte</div></div>
-      <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="loadGMC()">↺</button>
-    </div>
-    <div id="gmc-data"><div class="loading">Lade GMC...</div></div>
-  </div>
-
-  <!-- ── Ollama Models (1 col) ── -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#a18cd1,#fbc2eb)">🧠</div>
-      <div><div class="card-title">Ollama Models</div><div class="card-subtitle">Lokal · Kostenlos</div></div>
-    </div>
-    <div id="models-list" class="loading" style="display:flex;flex-direction:column;gap:6px">Lade Models...</div>
-  </div>
-
-  <!-- ── Live Logs (2 cols) ── -->
-  <div class="card col-2">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#2d3436,#636e72)">📜</div>
-      <div><div class="card-title">Live Logs</div><div class="card-subtitle">Letzte 80 Zeilen</div></div>
-      <div style="margin-left:auto;display:flex;gap:6px">
-        <button class="btn btn-ghost btn-sm" onclick="loadLogs()">↺ Aktualisieren</button>
-        <button class="btn btn-red btn-sm" onclick="clearLogs()">🗑️ Löschen</button>
-      </div>
-    </div>
-    <div class="log-box" id="log-box"><div style="opacity:0.4">Lade Logs...</div></div>
-  </div>
-
-  <!-- ── AutoPilot (full width) ── -->
-  <div class="card col-4" style="border:1px solid rgba(108,99,255,0.4);background:linear-gradient(135deg,rgba(108,99,255,0.08),rgba(159,122,234,0.05))">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#6c63ff,#9f7aea);font-size:1.4rem">🚀</div>
-      <div>
-        <div class="card-title" style="font-size:1.05rem">AutoPilot Modus</div>
-        <div class="card-subtitle">Multi-Agent AI System · CEO + 7 Spezial-Agenten · Lokal via Ollama</div>
-      </div>
-      <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-        <div id="autopilot-status-dot" class="dot" style="background:var(--muted)"></div>
-        <span id="autopilot-status-text" style="font-size:0.78rem;color:var(--muted)">Bereit</span>
-      </div>
-    </div>
-    <div id="agent-grid"></div>
-    <div style="background:var(--surface);border-radius:12px;padding:14px">
-      <div style="font-size:0.7rem;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.05em">AutoPilot Ziel</div>
-      <textarea id="autopilot-goal"
-        style="width:100%;background:transparent;border:1px solid var(--border);border-radius:8px;padding:10px;color:var(--text);font-size:0.83rem;resize:vertical;min-height:70px;outline:none;font-family:inherit"
-        placeholder="Beschreibe dein Ziel z.B.: 'Analysiere meinen Shopify Store und erstelle einen Optimierungsplan'"></textarea>
-      <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="runAutoPilot()" style="flex:1;min-width:140px">🚀 AutoPilot starten</button>
-        <select id="agent-select" style="background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:7px;font-size:0.8rem">
-          <option value="">Auto (CEO entscheidet)</option>
-          <option value="ceo">👑 CEO Agent</option>
-          <option value="shopify">🛒 Shopify Agent</option>
-          <option value="marketing">📣 Marketing Agent</option>
-          <option value="coding">💻 Coding Agent</option>
-          <option value="research">🔬 Research Agent</option>
-          <option value="finance">💰 Finance Agent</option>
-          <option value="automation">⚙️ Automation Agent</option>
-          <option value="security">🛡️ Security Agent</option>
-        </select>
-        <button class="btn btn-ghost btn-sm" onclick="loadAgentLogs()">📋 Logs</button>
-      </div>
-    </div>
-    <div id="autopilot-results" style="margin-top:10px;display:flex;flex-direction:column;gap:8px;max-height:400px;overflow-y:auto"></div>
-  </div>
-
-  <!-- ── GEHEIMWAFFE (2 cols) ── -->
-  <div class="card col-2" style="border:1px solid rgba(255,215,0,0.4);background:linear-gradient(135deg,rgba(255,215,0,0.06),rgba(255,107,53,0.04))">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#ffd700,#ff6b35);font-size:1.3rem">⚔️</div>
-      <div>
-        <div class="card-title" style="font-size:1.05rem">GEHEIMWAFFE</div>
-        <div class="card-subtitle">Automated Shopify Growth · Winning Products · AI Content · Viral Ads</div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div style="background:var(--surface);border-radius:10px;padding:12px">
-        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:7px;text-transform:uppercase">Nische / Produkt</div>
-        <input id="gw-niche" class="chat-input" placeholder="z.B. Haustiere, Fitness, Baby..." style="width:100%;margin-bottom:7px">
-        <button class="btn btn-primary" style="width:100%;background:linear-gradient(135deg,#ffd700,#ff6b35);color:#000" onclick="runGeheimwaffe()">
-          ⚔️ GEHEIMWAFFE AKTIVIEREN
-        </button>
-      </div>
-      <div style="background:var(--surface);border-radius:10px;padding:12px">
-        <div style="font-size:0.7rem;color:var(--muted);margin-bottom:7px;text-transform:uppercase">Schnell-Content</div>
-        <input id="gw-product" class="chat-input" placeholder="Produktname..." style="width:100%;margin-bottom:6px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px">
-          <button class="btn btn-ghost btn-sm" onclick="gwContent('listing')">📝 Listing</button>
-          <button class="btn btn-ghost btn-sm" onclick="gwContent('social','tiktok')">🎵 TikTok</button>
-          <button class="btn btn-ghost btn-sm" onclick="gwContent('social','instagram')">📸 Instagram</button>
-          <button class="btn btn-ghost btn-sm" onclick="gwContent('ads')">📣 Ads</button>
-        </div>
-      </div>
-    </div>
-    <div id="gw-results" style="margin-top:10px;background:var(--surface);border-radius:10px;padding:12px;min-height:70px;font-size:0.8rem;white-space:pre-wrap;display:none"></div>
-  </div>
-
-  <!-- ── Agent Task History (2 cols) ── -->
-  <div class="card col-2">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#f093fb,#f5576c)">📋</div>
-      <div><div class="card-title">Agent Task-History</div><div class="card-subtitle">Alle ausgeführten Aufgaben</div></div>
-      <button class="btn btn-ghost btn-sm" style="margin-left:auto" onclick="loadAgentLogs()">↺ Refresh</button>
-    </div>
-    <div id="agent-logs" style="font-size:0.75rem;display:flex;flex-direction:column;gap:5px;max-height:180px;overflow-y:auto">
-      <div class="loading">Lade Logs...</div>
-    </div>
-  </div>
-
-  <!-- ── Backup & Bot Integration ── -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#2d3436,#636e72)">💾</div>
-      <div><div class="card-title">Backups & Bots</div><div class="card-subtitle">Bestehende Bots integriert</div></div>
-    </div>
-    <div style="font-size:0.78rem;display:flex;flex-direction:column;gap:7px">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span>windsurf-telegram-bot</span><span class="badge badge-green">✓ Integriert</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span>windsurf-auto-heal</span><span class="badge badge-green">✓ Aktiv</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span>CreatorHub Server</span><span class="badge badge-yellow">Port 3000</span>
-      </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span>Shopify AI Suite</span><span class="badge badge-green">✓ Keys OK</span>
-      </div>
-    </div>
-    <button class="btn btn-ghost btn-sm" style="margin-top:10px;width:100%" onclick="runBackup()">💾 Backup jetzt</button>
-    <div id="backup-result" style="margin-top:5px;font-size:0.72rem;color:var(--muted)"></div>
-  </div>
-
-  <!-- ── Self-Healing Log ── -->
-  <div class="card">
-    <div class="card-header">
-      <div class="card-icon" style="background:linear-gradient(135deg,#ff6b6b,#ee5a24)">🔧</div>
-      <div><div class="card-title">Self-Healing</div><div class="card-subtitle">Auto-Reparatur Log</div></div>
-    </div>
-    <div id="heal-log" style="font-size:0.75rem;background:var(--surface);border-radius:8px;padding:10px;height:140px;overflow-y:auto;font-family:monospace">
-      <div style="color:var(--green)">✓ System bereit</div>
-      <div style="color:var(--green)">✓ Self-Healing aktiv</div>
-      <div style="color:var(--green)">✓ Pattern Learning läuft</div>
-    </div>
-  </div>
-
-</div><!-- /grid -->
-
-<script>
-const session = 'dashboard_' + Date.now();
-
-// ── Toast ──
-function showToast(msg, ok=true) {
-  const t = document.createElement('div');
-  t.style.cssText = `position:fixed;top:20px;right:20px;z-index:9999;background:${ok?'#43d98c':'#ff4757'};color:#000;padding:12px 20px;border-radius:10px;font-weight:600;font-size:0.85rem;box-shadow:0 4px 16px rgba(0,0,0,0.4);animation:slideIn 0.3s ease`;
-  t.textContent = (ok ? '✓ ' : '✗ ') + msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
-}
-
-// ── Clock ──
-setInterval(() => {
-  document.getElementById('clock').textContent = new Date().toLocaleTimeString('de-DE');
-}, 1000);
-document.getElementById('clock').textContent = new Date().toLocaleTimeString('de-DE');
-
-// ── API helper ──
-async function api(path, data=null) {
-  try {
-    const opts = data
-      ? { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) }
-      : {};
-    const r = await fetch('/api' + path, opts);
-    return await r.json();
-  } catch(e) { return { error: e.message }; }
-}
-
-// ── Services ──
-async function svcAction(id, action) {
-  showToast('Ausführen: ' + action + '...', true);
-  const r = await api('/services/action', { id, action });
-  showToast(r.ok ? (r.service + ' → ' + action) : (r.error || 'Fehler'), r.ok);
-  setTimeout(loadServices, 2000);
-}
-
-async function loadServices() {
-  const r = await api('/services/status');
-  const el = document.getElementById('services-list');
-  if (!r.services) { el.innerHTML = '<div class="error-text">Fehler beim Laden</div>'; return; }
-  el.innerHTML = r.services.map(s => `
-    <div class="svc-row">
-      <div class="svc-dot ${s.running ? 'on' : 'off'}"></div>
-      <span style="font-size:1rem">${s.icon}</span>
-      <span class="svc-name">${s.name}</span>
-      <span class="svc-port">${s.port > 0 ? ':' + s.port : ''}</span>
-      <div class="svc-btns">
-        <button class="btn btn-green btn-xs" onclick="svcAction('${s.id}','start')">▶</button>
-        <button class="btn btn-red btn-xs" onclick="svcAction('${s.id}','stop')">■</button>
-        <button class="btn btn-ghost btn-xs" onclick="svcAction('${s.id}','restart')">↺</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-// ── System Stats ──
-async function loadSystem() {
-  const r = await api('/system');
-  if (r.error) return;
-  const cpu = r.cpu_percent || 0;
-  document.getElementById('cpu-val').textContent = cpu + '%';
-  document.getElementById('cpu-bar').style.width = cpu + '%';
-  document.getElementById('cpu-bar').className = 'bar-fill ' + (cpu > 80 ? 'bar-red' : cpu > 50 ? 'bar-yellow' : 'bar-accent');
-  const ram = r.memory_percent || 0;
-  document.getElementById('ram-val').textContent = `${r.memory_used_gb||0}GB / ${r.memory_total_gb||48}GB (${ram}%)`;
-  document.getElementById('ram-bar').style.width = ram + '%';
-  document.getElementById('ram-bar').className = 'bar-fill ' + (ram > 85 ? 'bar-red' : ram > 60 ? 'bar-yellow' : 'bar-green');
-  const disk = r.disk_percent || 0;
-  document.getElementById('disk-val').textContent = `${r.disk_used_gb||0}GB belegt · ${r.disk_free_gb||0}GB frei`;
-  document.getElementById('disk-bar').style.width = disk + '%';
-  if (r.process_count) document.getElementById('proc-count').textContent = r.process_count;
-}
-
-// ── Mac Actions (direct, no chat) ──
-async function macAction(action, extra={}) {
-  const out = document.getElementById('mac-output');
-  out.textContent = '⏳ ' + action + '...';
-  const r = await api('/mac/action', { action, ...extra });
-  if (!r.ok) {
-    out.textContent = '✗ ' + (r.error || 'Fehler');
-    showToast(r.error || 'Mac Fehler', false);
-    return;
-  }
-  const result = r.result;
-  if (typeof result === 'object') {
-    out.textContent = JSON.stringify(result, null, 2);
-  } else {
-    out.textContent = String(result || 'OK');
-  }
-  showToast(action + ' OK', true);
-}
-
-async function quickMac(action) {
-  const r = await api('/mac/action', { action });
-  showToast(r.ok ? action + ' OK' : (r.error || 'Fehler'), r.ok);
-}
-
-async function quickNotify() {
-  const msg = prompt('Benachrichtigung:', 'Test von SuperMegaBot');
-  if (!msg) return;
-  const r = await api('/mac/action', { action: 'notify', title: 'SuperMegaBot', message: msg });
-  showToast(r.ok ? 'Benachrichtigung gesendet' : (r.error || 'Fehler'), r.ok);
-}
-
-function setVolume() {
-  const level = document.getElementById('vol-slider').value;
-  macAction('volume', { level: parseInt(level) });
-}
-
-document.getElementById('vol-slider').oninput = function() {
-  document.getElementById('vol-val').textContent = this.value;
-};
-
-function macOpenUrl() {
-  const url = prompt('URL öffnen:', 'https://google.com');
-  if (url) macAction('open_url', { url });
-}
-
-async function loadProcesses() {
-  const out = document.getElementById('mac-output');
-  out.textContent = '⏳ Lade Prozesse...';
-  const r = await api('/processes');
-  if (r.error) { out.textContent = '✗ ' + r.error; return; }
-  out.textContent = (r.processes || []).map(p =>
-    `${String(p.cpu).padStart(5)}% CPU  ${String(p.mem).padStart(4)}% MEM  ${p.name}`
-  ).join('\\n');
-}
-
-// ── Chat ──
-async function sendChat() {
-  const input = document.getElementById('chat-input');
-  const text = input.value.trim();
-  if (!text) return;
-  input.value = '';
-  addMsg(text, 'user');
-  const typing = addMsg('...', 'bot');
-  const r = await api('/chat', { text, session_id: session, model: document.getElementById('model-select').value });
-  typing.remove();
-  addMsg(r.response || r.error || 'Fehler', 'bot');
-}
-
-function addMsg(text, role) {
-  const box = document.getElementById('chat-box');
-  const div = document.createElement('div');
-  div.className = `msg msg-${role}`;
-  div.textContent = text;
-  box.appendChild(div);
-  box.scrollTop = box.scrollHeight;
-  return div;
-}
-
-function clearChat() {
-  document.getElementById('chat-box').innerHTML = '<div class="msg msg-bot">Chat geleert. Wie kann ich helfen?</div>';
-}
-
-// ── Prices ──
-async function loadPrices() {
-  const r = await api('/trading/prices');
-  const el = document.getElementById('prices-list');
-  if (!r.prices) { el.innerHTML = '<div class="error-text">Fehler</div>'; return; }
-  el.innerHTML = Object.entries(r.prices).map(([pair, data]) =>
-    `<div style="display:flex;justify-content:space-between;margin-bottom:4px;font-size:0.8rem">
-      <span style="color:var(--muted)">${pair}</span>
-      <span style="font-weight:600">$${(data.avg||0).toLocaleString('de-DE',{minimumFractionDigits:2,maximumFractionDigits:2})}</span>
-    </div>`
-  ).join('');
-}
-
-async function scanArbitrage() {
-  document.getElementById('arb-list').innerHTML = '<div class="loading">Scanne...</div>';
-  const r = await api('/trading/arbitrage');
-  const el = document.getElementById('arb-list');
-  if (!r.opportunities || r.opportunities.length === 0) {
-    el.innerHTML = '<div style="color:var(--muted);font-size:0.78rem">Keine Chancen ≥ 0.5%</div>';
-    return;
-  }
-  el.innerHTML = r.opportunities.slice(0,5).map(o =>
-    `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px">
-      <div>
-        <div style="font-weight:600;font-size:0.8rem">${o.pair}</div>
-        <div style="font-size:0.68rem;color:var(--muted)">${o.exchange_buy}→${o.exchange_sell}</div>
-      </div>
-      <span class="badge badge-green">+${o.profit_pct}%</span>
-    </div>`
-  ).join('');
-}
-
-// ── Telegram ──
-async function loadTgStatus() {
-  const r = await api('/telegram/status');
-  document.getElementById('tg-status').innerHTML = r.configured
-    ? `<span class="badge badge-green">✓ Konfiguriert</span> Chat ID: ${r.chat_id || '?'}`
-    : '<span class="badge badge-red">✗ Nicht konfiguriert</span> TELEGRAM_BOT_TOKEN setzen';
-}
-
-async function sendTelegram() {
-  const msg = document.getElementById('tg-msg').value.trim();
-  if (!msg) return;
-  const r = await api('/telegram/send', { message: msg });
-  document.getElementById('tg-msg').value = '';
-  showToast(r.ok ? 'Gesendet!' : ('Fehler: ' + (r.error || 'Unbekannt')), r.ok);
-}
-
-// ── Shopify ──
-async function loadShopify() {
-  const r = await api('/shopify/status');
-  const el = document.getElementById('shopify-data');
-  if (r.ok) {
-    el.innerHTML = `<div>Store: <strong>${r.store || 'N/A'}</strong></div>
-      <div>Produkte: ${r.products || '?'} · Bestellungen: ${r.orders || '?'}</div>
-      <div style="margin-top:4px"><span class="badge badge-green">✓ Verbunden</span></div>`;
-  } else if (r.error && r.error.includes('401')) {
-    el.innerHTML = `<span class="badge badge-orange">⚠ Token abgelaufen</span>
-      <div style="margin-top:6px;font-size:0.72rem;color:var(--muted)">Neu generieren: suitenew.myshopify.com → Admin → Apps → API-Zugangsdaten</div>`;
-  } else {
-    el.innerHTML = `<div class="error-text">${r.error || 'Nicht verbunden'}</div>
-      <div style="margin-top:4px"><span class="badge badge-yellow">⚠ Setup erforderlich</span></div>`;
-  }
-}
-
-async function shopifyAction(type) {
-  showToast(type + ' wird geladen...', true);
-  const el = document.getElementById('shopify-data');
-  const r = await api('/shopify/status');
-  if (!r.ok) { showToast(r.error || 'Shopify Fehler', false); return; }
-  el.innerHTML = `<div style="color:var(--muted);font-size:0.75rem">${type} – Daten kommen direkt vom Shopify API</div>`;
-}
-
-// ── Ollama Models ──
-async function loadModels() {
-  const r = await api('/ollama/models');
-  const el = document.getElementById('models-list');
-  if (!r.models || r.models.length === 0) {
-    el.innerHTML = '<div class="error-text">Ollama nicht erreichbar</div><div style="font-size:0.72rem;color:var(--muted);margin-top:4px">Starte: ollama serve</div>';
-    return;
-  }
-  el.innerHTML = r.models.map(m => `
-    <div style="display:flex;align-items:center;gap:8px">
-      <span class="dot"></span>
-      <span style="font-size:0.8rem;flex:1">${m.name}</span>
-      <span style="font-size:0.68rem;color:var(--muted)">${m.size || ''}</span>
-      <button class="btn btn-ghost btn-xs" onclick="setModel('${m.name}')">Chat</button>
-    </div>
-  `).join('');
-}
-
-function setModel(name) {
-  const sel = document.getElementById('model-select');
-  // add as option if not present
-  let found = false;
-  for (let opt of sel.options) { if (opt.value === name) { found = true; sel.value = name; break; } }
-  if (!found) {
-    const opt = document.createElement('option');
-    opt.value = name; opt.textContent = name;
-    sel.appendChild(opt);
-    sel.value = name;
-  }
-  showToast('Model: ' + name, true);
-}
-
-// ── GMC ──
-async function loadGMC() {
-  const r = await api('/gmc');
-  const el = document.getElementById('gmc-data');
-  if (r.error) {
-    el.innerHTML = `<div class="error-text">${escHtml(r.error)}</div>`;
-    return;
-  }
-  const gmc = r.gmc || r;
-  const suspended = gmc.suspended || false;
-  const suspendIcon = suspended ? '🔴' : '🟢';
-  const suspendText = suspended ? 'Gesperrt ⛔' : 'Aktiv ✅';
-  const shopifyProds = r.shopify_products || {};
-  const total = shopifyProds.total ?? shopifyProds.count ?? (gmc.shopify_products ?? '?');
-  const active = shopifyProds.active ?? '?';
-  const gmcApproved = gmc.products_approved ?? 0;
-  const gmcDisapproved = gmc.products_disapproved ?? 0;
-  const shipping = gmc.shipping_policies_count ?? (r.policies?.shipping_services ?? 15);
-  const returns = gmc.return_policies_count ?? (r.policies?.return_policies ?? 2);
-  const identityPending = gmc.identity_verification_pending ?? !gmc.identity_verified;
-  const identityIcon = identityPending ? '⏳' : '✅';
-  el.innerHTML = `
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
-      <span style="font-size:1.2rem">${suspendIcon}</span>
-      <span style="font-weight:600;font-size:0.88rem">${suspendText}</span>
-      <span style="margin-left:auto;font-size:0.68rem;color:var(--muted)">ID ${gmc.merchant_id||'?'}</span>
-    </div>
-    <div style="font-size:0.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px">Produkte</div>
-    <div class="stats-2" style="margin-bottom:8px">
-      <div class="stat-box"><div class="stat-value" style="font-size:1.1rem">${total}</div><div class="stat-label-sm">Shopify aktiv</div></div>
-      <div class="stat-box"><div class="stat-value" style="font-size:1.1rem;color:var(--green)">${gmcApproved}</div><div class="stat-label-sm">GMC ✅</div></div>
-    </div>
-    <div style="font-size:0.78rem;display:flex;flex-direction:column;gap:4px">
-      <div style="display:flex;justify-content:space-between">
-        <span style="color:var(--muted)">GMC abgelehnt</span>
-        <span style="color:${gmcDisapproved>0?'var(--red)':'var(--green)'}">${gmcDisapproved}</span>
-      </div>
-      <div style="display:flex;justify-content:space-between">
-        <span style="color:var(--muted)">Versandrichtlinien</span>
-        <span>${shipping} ✓</span>
-      </div>
-      <div style="display:flex;justify-content:space-between">
-        <span style="color:var(--muted)">Rückgaberichtlinien</span>
-        <span>${returns} ✓</span>
-      </div>
-      <div style="display:flex;justify-content:space-between">
-        <span style="color:var(--muted)">Identität</span>
-        <span>${identityIcon} ${identityPending ? 'Ausstehend' : 'Verifiziert'}</span>
-      </div>
-    </div>`;
-}
-
-// ── Logs ──
-async function loadLogs() {
-  const r = await api('/logs');
-  const el = document.getElementById('log-box');
-  if (!r.lines) { el.innerHTML = '<div class="error-text">Fehler</div>'; return; }
-  el.innerHTML = r.lines.filter(Boolean).map(l =>
-    `<div>${escHtml(l)}</div>`
-  ).join('');
-  el.scrollTop = el.scrollHeight;
-}
-
-function clearLogs() {
-  document.getElementById('log-box').innerHTML = '<div style="opacity:0.4">Logs geleert</div>';
-}
-
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-
-// ── AutoPilot ──
-async function loadAgentGrid() {
-  const r = await api('/autopilot/agents');
-  const el = document.getElementById('agent-grid');
-  if (!r.agents) return;
-  el.innerHTML = r.agents.map(a => `
-    <div class="agent-card" onclick="selectAgent('${a.id}')" id="agent-btn-${a.id}"
-      style="border-color:${a.color}33;background:${a.color}11">
-      <div style="font-size:1.3rem">${a.emoji}</div>
-      <div style="font-size:0.65rem;margin-top:3px;font-weight:600">${a.name}</div>
-      <div style="font-size:0.58rem;color:var(--muted);margin-top:1px">${(a.role||'').split(' ')[0]}</div>
-    </div>
-  `).join('');
-}
-
-function selectAgent(id) {
-  document.getElementById('agent-select').value = id;
-  document.querySelectorAll('[id^="agent-btn-"]').forEach(b => b.style.opacity = '0.6');
-  const btn = document.getElementById(`agent-btn-${id}`);
-  if (btn) btn.style.opacity = '1';
-}
-
-async function runAutoPilot() {
-  const goal = document.getElementById('autopilot-goal').value.trim();
-  if (!goal) { showToast('Bitte Ziel eingeben', false); return; }
-  const agentId = document.getElementById('agent-select').value;
-  document.getElementById('autopilot-status-dot').style.background = '#ffd700';
-  document.getElementById('autopilot-status-text').textContent = 'Läuft...';
-  const resultsEl = document.getElementById('autopilot-results');
-  resultsEl.innerHTML = `<div style="text-align:center;padding:20px;color:var(--muted)">
-    <div style="font-size:2rem;margin-bottom:8px">🤖</div>
-    <div>Agenten arbeiten... (Ollama lokal)</div>
-  </div>`;
-  const r = await api('/autopilot/run', { goal, agent_id: agentId || null });
-  document.getElementById('autopilot-status-dot').style.background = 'var(--green)';
-  document.getElementById('autopilot-status-text').textContent = 'Fertig';
-  if (r.error) {
-    resultsEl.innerHTML = `<div class="error-text" style="padding:10px">${r.error}</div>`;
-    return;
-  }
-  const results = r.results || [r];
-  resultsEl.innerHTML = results.map(res => `
-    <div style="background:var(--surface);border-radius:10px;padding:12px;border-left:3px solid var(--accent)">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
-        <span style="font-weight:600;font-size:0.85rem">${res.agent_name || res.agent || ''}</span>
-        <span style="font-size:0.68rem;color:var(--muted);margin-left:auto">${res.duration_ms||0}ms</span>
-      </div>
-      <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px;font-style:italic">${(res.task||'').substring(0,80)}</div>
-      <div style="font-size:0.8rem;white-space:pre-wrap;line-height:1.5">${res.result||''}</div>
-    </div>
-  `).join('');
-  loadAgentLogs();
-}
-
-async function loadAgentLogs() {
-  const r = await api('/autopilot/logs');
-  const el = document.getElementById('agent-logs');
-  if (!r.logs || r.logs.length === 0) {
-    el.innerHTML = '<div style="color:var(--muted)">Noch keine Aufgaben</div>';
-    return;
-  }
-  el.innerHTML = r.logs.map(l => `
-    <div style="display:flex;gap:7px;align-items:flex-start;padding:5px;background:var(--surface);border-radius:6px">
-      <span style="font-size:0.68rem;color:var(--muted);white-space:nowrap">${l.timestamp?.substring(11,19)||''}</span>
-      <span class="badge badge-green" style="font-size:0.58rem">${l.agent}</span>
-      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.75rem">${l.task?.substring(0,60)||''}</span>
-    </div>
-  `).join('');
-}
-
-// ── Geheimwaffe ──
-async function runGeheimwaffe() {
-  const niche = document.getElementById('gw-niche').value.trim() || 'General';
-  const el = document.getElementById('gw-results');
-  el.style.display = 'block';
-  el.textContent = '⚔️ Geheimwaffe läuft... (AI analysiert Markt lokal via Ollama)';
-  const r = await api('/geheimwaffe/run', { niche });
-  if (r.error) { el.textContent = 'Fehler: ' + r.error; return; }
-  let text = `✅ GEHEIMWAFFE ERGEBNIS für: ${niche}\n\n`;
-  if (r.winning_products?.length) {
-    text += `🏆 TOP WINNING PRODUCTS:\n`;
-    r.winning_products.forEach((p, i) => {
-      text += `${i+1}. ${p.title || 'Produkt'}\n`;
-      if (p.why_winning) text += `   → ${p.why_winning}\n`;
-      if (p.profit_margin) text += `   Marge: ${p.profit_margin}\n`;
-    });
-    text += '\\n';
-  }
-  if (r.listing?.title) text += `📝 LISTING:\n${r.listing.title}\n${r.listing.seo_description||''}\n\n`;
-  if (r.social?.tiktok?.content) text += `🎵 TIKTOK:\n${r.social.tiktok.content?.substring(0,200)}...\n\n`;
-  if (r.forecast?.month3_target) text += `📈 PROGNOSE:\nMonat 1: ${r.forecast.month1_target}\nMonat 2: ${r.forecast.month2_target}\nMonat 3: ${r.forecast.month3_target}\n`;
-  el.textContent = text;
-}
-
-async function gwContent(type, platform='tiktok') {
-  const product = document.getElementById('gw-product').value.trim();
-  if (!product) { showToast('Produktname eingeben', false); return; }
-  const el = document.getElementById('gw-results');
-  el.style.display = 'block';
-  el.textContent = `Generiere ${type}...`;
-  const r = await api('/geheimwaffe/content', { product, type, platform });
-  if (r.error) { el.textContent = 'Fehler: ' + r.error; return; }
-  let text = `${type.toUpperCase()} für: ${product}\n\n`;
-  if (typeof r === 'object') {
-    Object.entries(r).forEach(([k, v]) => { if (typeof v === 'string') text += `${k}:\n${v}\n\n`; });
-  }
-  el.textContent = text;
-}
-
-async function runBackup() {
-  const r = await api('/backup/run', {});
-  document.getElementById('backup-result').textContent = r.ok
-    ? `✓ Backup: ${r.path?.split('/').slice(-2).join('/')}`
-    : `✗ ${r.error}`;
-  showToast(r.ok ? 'Backup erstellt' : r.error, r.ok);
-}
-
-// ── Init & Auto-refresh ──
-async function init() {
-  await Promise.all([
-    loadSystem(), loadServices(), loadPrices(),
-    loadTgStatus(), loadShopify(), loadModels(),
-    loadAgentGrid(), loadLogs(), loadGMC()
-  ]);
-  scanArbitrage();
-  loadAgentLogs();
-}
-
-init();
-setInterval(loadSystem,   5000);
-setInterval(loadServices, 30000);
-setInterval(loadPrices,   30000);
-setInterval(scanArbitrage, 60000);
-setInterval(loadLogs,     8000);
-setInterval(loadGMC,      60000);
-</script>
-</body>
-</html>'''
 
 
 # ---------------------------------------------------------------------------
@@ -1128,266 +128,25 @@ setInterval(loadGMC,      60000);
 # ---------------------------------------------------------------------------
 
 async def handle_index(req):
-    return web.Response(text=DASHBOARD_HTML, content_type="text/html")
+    try:
+        html = _INDEX_HTML.read_text(encoding="utf-8")
+    except Exception:
+        html = "<h1>Dashboard nicht gefunden</h1><p>dashboard/index.html fehlt</p>"
+    return web.Response(text=html, content_type="text/html")
 
 
 async def handle_chat(req):
-    """Process a chat / command message.
-
-    Accepts JSON body with either {"text": "..."} or {"message": "..."} for
-    backwards compatibility with the deep_scan_repair.py test harness.
-    """
     try:
-        data = await req.json() if req.can_read_body else {}
-        # accept both "text" (dashboard) and "message" (scan-runner) keys
-        text = data.get("text") or data.get("message") or ""
+        data = await req.json()
+        text = data.get("text", "")
         session_id = data.get("session_id", "dashboard")
-        if not text:
-            return web.json_response(
-                {"ok": False, "error": "Missing 'text' or 'message' field"},
-                status=400,
-            )
+        sys.path.insert(0, str(BASE_DIR))
+        from core.mega_orchestrator import MegaOrchestrator
         bot = req.app["bot"]
         response = await bot.process(text, session_id)
-        return web.json_response({
-            "ok": True,
-            "response": response,
-            "session_id": session_id,
-        })
+        return web.json_response({"response": response, "session_id": session_id})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-# ---------------------------------------------------------------------------
-# Alias endpoints — kept to keep the scan / external dashboards happy
-# ---------------------------------------------------------------------------
-
-async def handle_status_alias(req):
-    """Alias for /api/services/status — convenience for monitoring tools."""
-    return await handle_services_status(req)
-
-
-async def handle_health_alias(req):
-    """Alias for /health under /api/health (mirrors other API endpoints)."""
-    return await handle_health(req)
-
-
-async def handle_shopify_alias(req):
-    """Alias for /api/shopify/status."""
-    return await handle_shopify_status(req)
-
-
-async def handle_metrics_alias(req):
-    """Alias for /api/system — returns CPU/memory/disk metrics."""
-    return await handle_system(req)
-
-
-async def handle_agents_alias(req):
-    """Aggregate all "agent" sources (army + autopilot)."""
-    army_resp = await handle_army_status(req)
-    autopilot_resp = await handle_autopilot_agents(req)
-    try:
-        army_data = json.loads(army_resp.text)
-    except Exception:
-        army_data = {"agents": {}}
-    try:
-        autopilot_data = json.loads(autopilot_resp.text)
-    except Exception:
-        autopilot_data = {"agents": []}
-    return web.json_response({
-        "ok": True,
-        "army": army_data,
-        "autopilot": autopilot_data,
-        "total": len(army_data.get("agents", {})) + len(autopilot_data.get("agents", [])),
-    })
-
-
-async def handle_analytics_summary(req):
-    """Quick analytics roll-up combining trading + shopify + system signals."""
-    summary = {"ok": True, "timestamp": datetime.now().isoformat()}
-    # System
-    try:
-        sys_resp = await handle_system(req)
-        summary["system"] = json.loads(sys_resp.text)
-    except Exception as e:
-        summary["system"] = {"error": str(e)}
-    # Shopify
-    try:
-        shop_resp = await handle_shopify_status(req)
-        summary["shopify"] = json.loads(shop_resp.text)
-    except Exception as e:
-        summary["shopify"] = {"error": str(e)}
-    # Trading prices
-    try:
-        prices_resp = await handle_trading_prices(req)
-        summary["trading"] = json.loads(prices_resp.text)
-    except Exception as e:
-        summary["trading"] = {"error": str(e)}
-    return web.json_response(summary)
-
-
-async def handle_revenue_summary(req):
-    """Revenue placeholder — surfaces Shopify status + autopilot context."""
-    out = {"ok": True, "timestamp": datetime.now().isoformat(), "currency": "EUR"}
-    try:
-        shop_resp = await handle_shopify_status(req)
-        out["shopify"] = json.loads(shop_resp.text)
-    except Exception as e:
-        out["shopify"] = {"error": str(e)}
-    # KPI hook: try to load any cached revenue snapshot under data/revenue.json
-    snapshot = DATA_DIR / "revenue.json"
-    if snapshot.exists():
-        try:
-            out["snapshot"] = json.loads(snapshot.read_text(errors="ignore"))
-        except Exception as e:
-            out["snapshot_error"] = str(e)
-    return web.json_response(out)
-
-
-async def handle_kpis_summary(req):
-    """Combine system + revenue + agents into a single KPI payload."""
-    out = {"ok": True, "timestamp": datetime.now().isoformat()}
-    for key, handler in (
-        ("system", handle_system),
-        ("revenue", handle_revenue_summary),
-        ("agents", handle_agents_alias),
-    ):
-        try:
-            resp = await handler(req)
-            out[key] = json.loads(resp.text)
-        except Exception as e:
-            out[key] = {"error": str(e)}
-    return web.json_response(out)
-
-
-async def handle_chat_clear(req):
-    """Clear the in-memory chat history for a session_id."""
-    try:
-        data = await req.json() if req.can_read_body else {}
-        session_id = data.get("session_id", "dashboard")
-        bot = req.app["bot"]
-        # MegaOrchestrator stores history in its MemorySystem (SQLite).
-        # Best-effort wipe for the given session_id.
-        try:
-            conn = sqlite3.connect(bot.memory.db_path)
-            conn.execute("DELETE FROM conversations WHERE session_id=?", (session_id,))
-            conn.commit()
-            conn.close()
-        except Exception as e:
-            return web.json_response({"ok": False, "error": str(e)}, status=500)
-        return web.json_response({"ok": True, "session_id": session_id})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_logs_clear(req):
-    """Truncate the local dashboard log file (does not touch /tmp logs)."""
-    try:
-        log_file = BASE_DIR / "logs" / "supermegabot.log"
-        if log_file.exists():
-            log_file.write_text("")
-        return web.json_response({"ok": True, "cleared": str(log_file)})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_service_start_alias(req):
-    """POST /api/service/start — alias to /api/services/action with action=start."""
-    try:
-        data = await req.json() if req.can_read_body else {}
-        new_req_data = dict(data)
-        new_req_data["action"] = "start"
-        # Forward via internal helper rather than mutating req
-        from aiohttp.test_utils import make_mocked_request
-        # Simpler: re-run handle_service_action with the data already parsed.
-        return await _service_action_inner(req.app, new_req_data)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_service_stop_alias(req):
-    """POST /api/service/stop — alias to /api/services/action with action=stop."""
-    try:
-        data = await req.json() if req.can_read_body else {}
-        new_req_data = dict(data)
-        new_req_data["action"] = "stop"
-        return await _service_action_inner(req.app, new_req_data)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def _service_action_inner(app, data):
-    """Internal: run a service action given an already-parsed JSON body."""
-    sid = data.get("id")
-    action = data.get("action")
-    svc = next((s for s in SERVICES if s["id"] == sid), None)
-    if not svc:
-        return web.json_response({"ok": False, "error": f"unknown service {sid}"}, status=404)
-    if action == "start":
-        try:
-            subprocess.Popen(svc["start_cmd"], shell=True, start_new_session=True)
-            return web.json_response({"ok": True, "msg": f"{svc['name']} startet"})
-        except Exception as e:
-            return web.json_response({"ok": False, "error": str(e)}, status=500)
-    if action == "stop":
-        try:
-            subprocess.run(["pkill", "-f", svc["pattern"]], check=False)
-            return web.json_response({"ok": True, "msg": f"{svc['name']} gestoppt"})
-        except Exception as e:
-            return web.json_response({"ok": False, "error": str(e)}, status=500)
-    return web.json_response({"ok": False, "error": f"unknown action {action}"}, status=400)
-
-
-# ---------------------------------------------------------------------------
-# Bot Control Hub — exposes the CommandRouter so the bot is the single point of
-# control for the entire system.  Every dashboard button can be triggered as a
-# bot command, and every bot command can be triggered as an HTTP call.
-# ---------------------------------------------------------------------------
-
-async def handle_bot_commands(req):
-    """Return the list of registered bot commands."""
-    try:
-        bot = req.app["bot"]
-        routes = getattr(bot.router, "routes", {})
-        # Group by handler name so the dashboard / bot help can render a clean menu.
-        grouped: dict[str, list[str]] = {}
-        for command, handler in routes.items():
-            name = getattr(handler, "__name__", str(handler))
-            grouped.setdefault(name, []).append(command)
-        return web.json_response({
-            "ok": True,
-            "count": len(routes),
-            "groups": grouped,
-            "all": sorted(routes.keys()),
-        })
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_bot_execute(req):
-    """Execute a bot command via the CommandRouter.
-
-    Body: {"command": "/army_status", "session_id": "dashboard"}
-    """
-    try:
-        data = await req.json() if req.can_read_body else {}
-        command = data.get("command") or data.get("text") or data.get("message") or ""
-        if not command:
-            return web.json_response(
-                {"ok": False, "error": "Missing 'command' field"},
-                status=400,
-            )
-        session_id = data.get("session_id", "dashboard")
-        bot = req.app["bot"]
-        response = await bot.process(command, session_id)
-        return web.json_response({
-            "ok": True,
-            "command": command,
-            "response": response,
-            "session_id": session_id,
-        })
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def handle_system(req):
@@ -1478,19 +237,73 @@ async def handle_telegram_send(req):
 
 
 async def handle_shopify_status(req):
-    store = os.getenv("SHOPIFY_STORE_URL", "")
-    token = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-    if not store or not token:
-        return web.json_response({"ok": False, "error": "SHOPIFY_STORE_URL / SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
+    store = os.getenv("SHOPIFY_STORE_URL", "").strip().rstrip("/")
+    token = os.getenv("SHOPIFY_ACCESS_TOKEN", "").strip()
+    domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip().rstrip("/")
+
+    if not token:
+        return web.json_response({"ok": False, "error": "SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
+
+    # Build base URL: prefer explicit domain, fall back to SHOPIFY_STORE_URL
+    if domain:
+        if not domain.startswith("http"):
+            domain = f"https://{domain}"
+        base = domain
+    elif store:
+        if not store.startswith("http"):
+            store = f"https://{store}"
+        base = store
+    else:
+        return web.json_response({"ok": False, "error": "SHOPIFY_STORE_URL oder SHOPIFY_SHOP_DOMAIN nicht gesetzt"})
+
+    api_version = os.getenv("SHOPIFY_API_VERSION", "2024-10")
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
-            url = f"{store}/admin/api/2024-01/shop.json"
-            headers = {"X-Shopify-Access-Token": token}
+        connector = aiohttp.TCPConnector(ssl=True, limit=5)
+        timeout = aiohttp.ClientTimeout(total=10, connect=6)
+        async with aiohttp.ClientSession(connector=connector, timeout=timeout) as s:
+            url = f"{base}/admin/api/{api_version}/shop.json"
+            headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
             async with s.get(url, headers=headers) as r:
                 if r.status == 200:
                     d = await r.json()
-                    return web.json_response({"ok": True, "store": d.get("shop", {}).get("name", store)})
-                return web.json_response({"ok": False, "error": f"HTTP {r.status}"})
+                    shop = d.get("shop", {})
+                    # Also fetch product + order counts
+                    prod_url = f"{base}/admin/api/{api_version}/products/count.json"
+                    order_url = f"{base}/admin/api/{api_version}/orders/count.json?status=any"
+                    prod_count = order_count = "?"
+                    try:
+                        async with s.get(prod_url, headers=headers) as pr:
+                            if pr.status == 200:
+                                prod_count = (await pr.json()).get("count", "?")
+                    except Exception:
+                        pass
+                    try:
+                        async with s.get(order_url, headers=headers) as or_:
+                            if or_.status == 200:
+                                order_count = (await or_.json()).get("count", "?")
+                    except Exception:
+                        pass
+                    return web.json_response({
+                        "ok": True,
+                        "store": shop.get("name", base),
+                        "domain": shop.get("domain", ""),
+                        "email": shop.get("email", ""),
+                        "currency": shop.get("currency", ""),
+                        "plan": shop.get("plan_display_name", ""),
+                        "product_count": prod_count,
+                        "order_count": order_count,
+                    })
+                elif r.status == 401:
+                    return web.json_response({"ok": False, "error": "Token ungültig (401) — neu generieren"})
+                elif r.status == 402:
+                    return web.json_response({"ok": False, "error": "Shop gesperrt (402)"})
+                else:
+                    body = await r.text()
+                    return web.json_response({"ok": False, "error": f"HTTP {r.status}: {body[:100]}"})
+    except aiohttp.ClientConnectorError as e:
+        return web.json_response({"ok": False, "error": f"DNS/Verbindung fehlgeschlagen: {e.host} — Shop-URL prüfen"})
+    except aiohttp.ServerTimeoutError:
+        return web.json_response({"ok": False, "error": "Timeout — Shopify nicht erreichbar"})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -1584,15 +397,15 @@ async def handle_gmc(req):
 
 async def handle_backup_status(req):
     backups = []
-    # Portable: HOME-relative defaults, overridable via env vars
-    backup_paths = [
-        BASE_DIR / "data",
-        Path(os.getenv("WS_TELEGRAM_DIR", str(_HOME / "windsurf-telegram-bot"))),
-        Path(os.getenv("CREATORHUB_DIR", str(_HOME / "CreatorHub Anonym & Profitabel"))),
-    ]
+    extra_dirs = [d.strip() for d in os.getenv("BACKUP_EXTRA_DIRS", "").split(",") if d.strip()]
+    backup_paths = [BASE_DIR / "data"] + [Path(d) for d in extra_dirs]
     for p in backup_paths:
         if p.exists():
-            backups.append({"path": str(p), "exists": True})
+            try:
+                size = sum(f.stat().st_size for f in p.rglob("*") if f.is_file())
+                backups.append({"path": str(p), "exists": True, "size_mb": round(size/1024/1024, 1)})
+            except Exception:
+                backups.append({"path": str(p), "exists": True})
     return web.json_response({"backups": backups, "count": len(backups)})
 
 
@@ -1660,13 +473,41 @@ async def handle_services_status(req):
                 port_ok = True
             except Exception:
                 pass
+
+        # Special case: Railway remote service — HTTP health check
+        if svc["id"] == "shopify_ai_suite":
+            try:
+                import urllib.request
+                urllib.request.urlopen(svc.get("health_url", svc.get("url", "")), timeout=5)
+                port_ok = True
+            except Exception:
+                pass
+            result.append({
+                "id": svc["id"], "name": svc["name"], "port": svc["port"],
+                "icon": svc["icon"], "ok": port_ok, "pid": None, "running": port_ok,
+                "remote": True,
+            })
+            continue
+
+        # Special case: mega_orchestrator is embedded in this process
+        if svc["id"] == "mega_orchestrator":
+            result.append({
+                "id": svc["id"], "name": svc["name"], "port": svc["port"],
+                "icon": svc["icon"], "ok": True, "pid": str(os.getpid()), "running": True,
+                "note": "Eingebettet in Dashboard",
+            })
+            continue
+
         pid = None
-        try:
-            ps = subprocess.run(["pgrep", "-f", svc["pattern"]], capture_output=True, text=True)
-            if ps.returncode == 0 and ps.stdout.strip():
-                pid = ps.stdout.strip().split('\n')[0]
-        except Exception:
-            pass
+        pattern = svc.get("pattern", "")
+        if pattern and pattern != "RAILWAY_REMOTE":
+            try:
+                ps = subprocess.run(["pgrep", "-f", pattern], capture_output=True, text=True)
+                if ps.returncode == 0 and ps.stdout.strip():
+                    pid = ps.stdout.strip().split('\n')[0]
+            except Exception:
+                pass
+
         result.append({
             "id": svc["id"], "name": svc["name"], "port": svc["port"],
             "icon": svc["icon"], "ok": port_ok, "pid": pid,
@@ -1960,6 +801,918 @@ async def handle_self_learner_find_api(req):
 # App Factory
 # ---------------------------------------------------------------------------
 
+
+# ---------------------------------------------------------------------------
+# New section handlers: API Keys, GitHub, Cloud, Bot Repair, Notes, Railway
+# ---------------------------------------------------------------------------
+
+_WATCHED_ENV_KEYS = [
+    "TELEGRAM_BOT_TOKEN", "TELEGRAM_CHAT_ID",
+    "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_API_KEY", "SHOPIFY_API_SECRET",
+    "SHOPIFY_STORE_URL", "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_API_VERSION",
+    "OLLAMA_HOST", "OLLAMA_FAST_MODEL", "OLLAMA_SMART_MODEL", "OLLAMA_CODE_MODEL",
+    "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "PERPLEXITY_API_KEY",
+    "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_ROLE_KEY",
+    "GOOGLE_ADS_CLIENT_ID", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
+    "GCP_PROJECT_ID", "GMC_MERCHANT_ID",
+    "ETERNAL_BOT_DIR", "KIVO_DIR",
+    "DASHBOARD_PORT", "SHOPIFY_SUITE_URL",
+    # E-Commerce & Automation
+    "DIGISTORE24_API_KEY", "PRINTIFY_API_KEY", "PRINTIFY_SHOP_ID",
+    "ETSY_API_KEY", "ETSY_ACCESS_TOKEN", "GUMROAD_ACCESS_TOKEN",
+    "MAILCHIMP_API_KEY", "MAILCHIMP_SERVER_PREFIX",
+    "STRIPE_SECRET_KEY", "KLAVIYO_API_KEY",
+    # Social Media
+    "TIKTOK_CLIENT_KEY", "PINTEREST_ACCESS_TOKEN",
+    "META_ACCESS_TOKEN", "META_PAGE_ID",
+    "TWITTER_BEARER_TOKEN", "DISCORD_BOT_TOKEN",
+    "YOUTUBE_API_KEY", "YOUTUBE_CHANNEL_ID",
+    "REDDIT_CLIENT_ID",
+    # Infrastructure
+    "GITHUB_TOKEN", "RAILWAY_TOKEN",
+]
+
+# Key format validators (no network needed)
+_KEY_FORMATS = {
+    "OPENAI_API_KEY":        lambda v: v.startswith("sk-"),
+    "ANTHROPIC_API_KEY":     lambda v: v.startswith("sk-ant-"),
+    "PERPLEXITY_API_KEY":    lambda v: v.startswith("pplx-") or len(v) > 20,
+    "TELEGRAM_BOT_TOKEN":    lambda v: ":" in v and len(v) > 20,
+    "SHOPIFY_ACCESS_TOKEN":  lambda v: v.startswith("shpat_") or v.startswith("shpss_") or len(v) > 20,
+    "SHOPIFY_API_KEY":       lambda v: len(v) > 20,
+    "SHOPIFY_API_SECRET":    lambda v: v.startswith("shpss_") or len(v) > 20,
+    "SUPABASE_URL":          lambda v: "supabase" in v or v.startswith("http"),
+    "SUPABASE_ANON_KEY":     lambda v: len(v) > 50,
+    "SUPABASE_SERVICE_ROLE_KEY": lambda v: len(v) > 50,
+}
+
+
+async def _validate_key(session: aiohttp.ClientSession, key: str, val: str) -> str:
+    """Returns 'valid', 'present', or 'missing'."""
+    if not val:
+        return "missing"
+
+    # Format check first (fast, no network)
+    fmt_check = _KEY_FORMATS.get(key)
+    if fmt_check and not fmt_check(val):
+        return "present"  # set but wrong format
+
+    # Network validation for critical keys
+    timeout = aiohttp.ClientTimeout(total=5)
+    try:
+        if key == "OPENAI_API_KEY":
+            async with session.get(
+                "https://api.openai.com/v1/models",
+                headers={"Authorization": f"Bearer {val}"},
+                timeout=timeout
+            ) as r:
+                return "valid" if r.status == 200 else "present"
+
+        elif key == "ANTHROPIC_API_KEY":
+            async with session.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={
+                    "x-api-key": val,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
+                },
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1,
+                      "messages": [{"role": "user", "content": "hi"}]},
+                timeout=timeout
+            ) as r:
+                return "valid" if r.status in (200, 400) else "present"
+
+        elif key == "SUPABASE_URL" and os.environ.get("SUPABASE_ANON_KEY"):
+            async with session.get(
+                f"{val}/rest/v1/",
+                headers={"apikey": os.environ["SUPABASE_ANON_KEY"]},
+                timeout=timeout
+            ) as r:
+                return "valid" if r.status < 500 else "present"
+
+    except Exception:
+        pass
+
+    # Not validated via network — but set + format ok
+    return "present"
+
+
+async def handle_api_keys(req):
+    """Returns validation status for all tracked env keys."""
+    validate = req.rel_url.query.get("validate", "1") == "1"
+    result = {}
+    async with aiohttp.ClientSession() as session:
+        for key in _WATCHED_ENV_KEYS:
+            val = os.environ.get(key, "")
+            if not val:
+                status = "missing"
+            elif validate:
+                status = await _validate_key(session, key, val)
+            else:
+                status = "present"
+            result[key] = {
+                "status": status,          # "valid" | "present" | "missing"
+                "set": bool(val),
+                "length": len(val),
+                "preview": val[:4] + "..." if len(val) > 4 else ("(set)" if val else ""),
+            }
+    set_count    = sum(1 for v in result.values() if v["set"])
+    valid_count  = sum(1 for v in result.values() if v["status"] == "valid")
+    return web.json_response({
+        "ok": True, "keys": result,
+        "summary": {"total": len(result), "set": set_count, "valid": valid_count}
+    })
+
+
+async def handle_github_status(req):
+    """Returns current git branch, last commit, and remote URL."""
+    try:
+        def _git(args):
+            r = subprocess.run(["git", "-C", str(BASE_DIR)] + args,
+                               capture_output=True, text=True, timeout=8)
+            return r.stdout.strip() if r.returncode == 0 else ""
+        branch = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        commit = _git(["log", "-1", "--oneline"])
+        remote = _git(["remote", "get-url", "origin"])
+        status = _git(["status", "--porcelain"])
+        staged = len([l for l in status.splitlines() if l and l[0] in "MADRCU"])
+        unstaged = len([l for l in status.splitlines() if l and l[1] in "MADRCU?"])
+        return web.json_response({
+            "ok": True,
+            "branch": branch,
+            "commit": commit,
+            "remote": remote,
+            "staged": staged,
+            "unstaged": unstaged,
+            "clean": not bool(status.strip()),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_github_push(req):
+    """Git add -A, commit with timestamp, push to current branch."""
+    try:
+        def _git(args):
+            r = subprocess.run(["git", "-C", str(BASE_DIR)] + args,
+                               capture_output=True, text=True, timeout=30)
+            return r.returncode == 0, r.stdout.strip(), r.stderr.strip()
+
+        ok, out, err = _git(["status", "--porcelain"])
+        if not out.strip():
+            return web.json_response({"ok": True, "message": "Nichts zu committen"})
+
+        ts = time.strftime("%Y-%m-%d %H:%M")
+        _git(["add", "-A"])
+        ok, out, err = _git(["commit", "-m", f"Dashboard auto-commit {ts}"])
+        if not ok:
+            return web.json_response({"ok": False, "error": f"Commit: {err}"})
+
+        branch_ok, branch, _ = _git(["rev-parse", "--abbrev-ref", "HEAD"])
+        push_ok, push_out, push_err = _git(["push", "origin", branch])
+        if push_ok:
+            return web.json_response({"ok": True, "message": f"Gepusht: {branch} ✅"})
+        return web.json_response({"ok": False, "error": push_err[:200]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_cloud_status(req):
+    """Check Railway + ngrok availability."""
+    railway_url = os.getenv("SHOPIFY_SUITE_URL",
+                            "https://shopify-suite-v2-production.up.railway.app")
+    results = {}
+    timeout = aiohttp.ClientTimeout(total=8)
+    async with aiohttp.ClientSession(timeout=timeout) as s:
+        # Railway
+        try:
+            async with s.get(f"{railway_url}/health") as r:
+                results["railway"] = {"ok": r.status < 400, "status": r.status, "url": railway_url}
+        except Exception as e:
+            results["railway"] = {"ok": False, "error": str(e)[:80], "url": railway_url}
+        # ngrok
+        try:
+            async with s.get("http://localhost:4040/api/tunnels") as r:
+                d = await r.json()
+                tunnels = [t.get("public_url", "") for t in d.get("tunnels", [])]
+                results["ngrok"] = {"ok": True, "tunnels": tunnels}
+        except Exception:
+            results["ngrok"] = {"ok": False, "tunnels": []}
+    return web.json_response({"ok": True, "services": results})
+
+
+async def handle_bot_repair_status(req):
+    """Returns self-healer status + recent heal history."""
+    try:
+        heal_log = DATA_DIR / "heal_history.json"
+        history = []
+        if heal_log.exists():
+            history = json.loads(heal_log.read_text())[-20:]
+        known = {}
+        known_file = DATA_DIR / "known_fixes.json"
+        if known_file.exists():
+            known = json.loads(known_file.read_text())
+        return web.json_response({
+            "ok": True,
+            "total_fixes": len(history),
+            "known_problems": len(known),
+            "recent": history[-5:],
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_bot_repair_run(req):
+    """Trigger self-healer scan."""
+    try:
+        sys.path.insert(0, str(BASE_DIR / "core"))
+        from self_healer import SelfHealer
+        healer = SelfHealer()
+        fixes = await healer.run_auto_fixes()
+        errors = await healer.scan_logs_for_errors()
+        return web.json_response({
+            "ok": True,
+            "fixes_applied": fixes,
+            "log_errors": [e["error"] for e in errors],
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_notes_get(req):
+    """Get saved notes."""
+    notes_file = DATA_DIR / "notes.json"
+    notes = []
+    if notes_file.exists():
+        try:
+            notes = json.loads(notes_file.read_text())
+        except Exception:
+            pass
+    return web.json_response({"ok": True, "notes": notes})
+
+
+async def handle_notes_save(req):
+    """Save a note."""
+    try:
+        data = await req.json()
+        text = str(data.get("text", "")).strip()[:2000]
+        if not text:
+            return web.json_response({"ok": False, "error": "Leere Notiz"})
+        notes_file = DATA_DIR / "notes.json"
+        notes = []
+        if notes_file.exists():
+            try:
+                notes = json.loads(notes_file.read_text())
+            except Exception:
+                pass
+        notes.append({"text": text, "created": datetime.now().isoformat()})
+        notes = notes[-100:]
+        notes_file.write_text(json.dumps(notes, indent=2, ensure_ascii=False))
+        return web.json_response({"ok": True, "count": len(notes)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_notes_delete(req):
+    """Delete a note by index."""
+    try:
+        data = await req.json()
+        idx = int(data.get("index", -1))
+        notes_file = DATA_DIR / "notes.json"
+        notes = []
+        if notes_file.exists():
+            notes = json.loads(notes_file.read_text())
+        if 0 <= idx < len(notes):
+            notes.pop(idx)
+            notes_file.write_text(json.dumps(notes, indent=2, ensure_ascii=False))
+        return web.json_response({"ok": True, "count": len(notes)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_deepscan(req):
+    """Run a comprehensive system deep scan."""
+    results = {"timestamp": datetime.now().isoformat(), "checks": {}}
+
+    # 1. Python syntax check on key files
+    key_files = [
+        BASE_DIR / "core" / "mega_orchestrator.py",
+        BASE_DIR / "core" / "self_healer.py",
+        BASE_DIR / "dashboard" / "server.py",
+        BASE_DIR / "modules" / "telegram_control.py",
+    ]
+    syntax_ok = []
+    syntax_err = []
+    for f in key_files:
+        if not f.exists():
+            continue
+        try:
+            import ast
+            ast.parse(f.read_text())
+            syntax_ok.append(f.name)
+        except SyntaxError as e:
+            syntax_err.append(f"{f.name}: {e}")
+    results["checks"]["syntax"] = {"ok": not syntax_err, "ok_files": syntax_ok, "errors": syntax_err}
+
+    # 2. Env vars
+    required_env = ["TELEGRAM_BOT_TOKEN", "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_SHOP_DOMAIN"]
+    missing_env = [k for k in required_env if not os.environ.get(k)]
+    results["checks"]["env"] = {"ok": not missing_env, "missing": missing_env}
+
+    # 3. Ollama
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=3)) as s:
+            async with s.get(f"{OLLAMA_BASE}/api/tags") as r:
+                results["checks"]["ollama"] = {"ok": r.status == 200}
+    except Exception:
+        results["checks"]["ollama"] = {"ok": False}
+
+    # 4. Army state
+    army_state = BASE_DIR / "rudibot-army" / "shared" / "army_state.json"
+    results["checks"]["army_state"] = {"ok": army_state.exists()}
+
+    # 5. Disk
+    try:
+        import psutil
+        disk = psutil.disk_usage("/")
+        results["checks"]["disk"] = {
+            "ok": disk.percent < 90,
+            "percent": disk.percent,
+            "free_gb": disk.free // 1024 ** 3,
+        }
+    except ImportError:
+        results["checks"]["disk"] = {"ok": True, "note": "psutil nicht installiert"}
+
+    # Summary
+    total = len(results["checks"])
+    passed = sum(1 for v in results["checks"].values() if v.get("ok"))
+    results["summary"] = {"total": total, "passed": passed, "failed": total - passed}
+    return web.json_response(results)
+
+
+async def handle_automation_status(req):
+    """Return automation scheduler status + recent task runs."""
+    try:
+        from core.automation_scheduler import get_scheduler, get_last_runs
+        sched = get_scheduler()
+        return web.json_response({
+            "status": sched.status(),
+            "recent_runs": get_last_runs(limit=30),
+        })
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_automation_run(req):
+    """Manually trigger a specific automation task."""
+    try:
+        data = await req.json()
+        task_name = data.get("task", "")
+        from core.automation_scheduler import get_scheduler
+        sched = get_scheduler()
+        result = await sched.run_now(task_name)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_automation_tasks(req):
+    """Return full task list with intervals and last-run info."""
+    try:
+        from core.automation_scheduler import TASKS, get_task_stats
+        stats = get_task_stats()
+        tasks = []
+        for name, _fn, interval_s, delay_s in TASKS:
+            s = stats.get(name, {})
+            tasks.append({
+                "name":       name,
+                "interval_s": interval_s,
+                "interval_label": (
+                    f"{interval_s // 3600}h" if interval_s >= 3600
+                    else f"{interval_s // 60}min"
+                ),
+                "last_run":  s.get("last_run"),
+                "total_runs": s.get("total", 0),
+                "ok_runs":    s.get("ok", 0),
+                "avg_ms":     s.get("avg_ms", 0),
+            })
+        return web.json_response({"tasks": tasks, "count": len(tasks)})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_social_status(req):
+    """Ping all social media platform connectors."""
+    try:
+        from modules.social_connectors import ping_all
+        results = await ping_all()
+        return web.json_response(results)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_digistore_status(req):
+    try:
+        from modules.digistore24_automation import ping, get_sales_stats, get_products
+        ok = await ping()
+        stats = await get_sales_stats() if ok else {}
+        products = await get_products() if ok else []
+        return web.json_response({"ok": ok, "stats": stats, "product_count": len(products)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_digistore_orders(req):
+    try:
+        from modules.digistore24_automation import get_orders
+        page = int(req.rel_url.query.get("page", 1))
+        orders = await get_orders(page=page)
+        return web.json_response({"orders": orders})
+    except Exception as e:
+        return web.json_response({"orders": [], "error": str(e)})
+
+
+async def handle_mailchimp_status(req):
+    try:
+        from modules.mailchimp_automation import ping, get_lists
+        ok, account = await ping()
+        lists = await get_lists() if ok else []
+        return web.json_response({"ok": ok, "account": account, "lists": lists})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mailchimp_sync(req):
+    try:
+        from modules.mailchimp_automation import sync_from_digistore, get_lists
+        lists = await get_lists()
+        if not lists:
+            return web.json_response({"ok": False, "error": "Keine Listen gefunden"})
+        list_id = (await req.json()).get("list_id") or lists[0]["id"]
+        count = await sync_from_digistore(list_id)
+        return web.json_response({"ok": True, "synced": count})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mailchimp_campaign(req):
+    """Create and send a Mailchimp campaign."""
+    try:
+        data = await req.json()
+        from modules.mailchimp_automation import ping, get_lists
+        ok, account = await ping()
+        if not ok:
+            return web.json_response({"ok": False, "error": "Mailchimp nicht konfiguriert"})
+        import aiohttp, os
+        key    = os.getenv("MAILCHIMP_API_KEY", "")
+        prefix = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
+        if "-" in key:
+            prefix = key.split("-")[-1]
+        base = f"https://{prefix}.api.mailchimp.com/3.0"
+        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+        lists = await get_lists()
+        list_id = data.get("list_id") or (lists[0]["id"] if lists else "")
+        if not list_id:
+            return web.json_response({"ok": False, "error": "Keine Mailchimp-Liste gefunden"})
+        campaign_body = {
+            "type": "regular",
+            "recipients": {"list_id": list_id},
+            "settings": {
+                "subject_line": data.get("subject", "SuperMegaBot Newsletter"),
+                "from_name":    data.get("from_name", "SuperMegaBot"),
+                "reply_to":     data.get("reply_to", "noreply@supermegabot.com"),
+            },
+        }
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            async with s.post(f"{base}/campaigns", headers=headers, json=campaign_body) as r:
+                if r.status not in (200, 201):
+                    body = await r.text()
+                    return web.json_response({"ok": False, "error": f"HTTP {r.status}: {body[:200]}"})
+                camp = await r.json()
+            camp_id = camp["id"]
+            content_body = {"html": data.get("body_html", "<p>Hallo!</p>")}
+            async with s.put(f"{base}/campaigns/{camp_id}/content", headers=headers, json=content_body) as r:
+                if r.status not in (200, 204):
+                    return web.json_response({"ok": False, "error": "Content-Upload fehlgeschlagen"})
+            async with s.post(f"{base}/campaigns/{camp_id}/actions/send", headers=headers) as r:
+                if r.status not in (200, 204):
+                    return web.json_response({"ok": False, "error": "Senden fehlgeschlagen"})
+        return web.json_response({"ok": True, "campaign_id": camp_id, "subject": data.get("subject")})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_memory_save(req):
+    """Save a key-value memory note (alias for notes endpoint)."""
+    try:
+        import json as _json
+        data = await req.json()
+        key   = str(data.get("key", "")).strip()
+        value = str(data.get("value", "")).strip()
+        if not key:
+            return web.json_response({"ok": False, "error": "key erforderlich"})
+        mem_file = DATA_DIR / "memory.json"
+        memory: dict = {}
+        if mem_file.exists():
+            try:
+                memory = _json.loads(mem_file.read_text())
+            except Exception:
+                pass
+        memory[key] = {"value": value, "updated": datetime.now().isoformat()}
+        mem_file.write_text(_json.dumps(memory, indent=2, ensure_ascii=False))
+        return web.json_response({"ok": True, "key": key, "total": len(memory)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_notes_save_alias(req):
+    """Alias: /api/notes/save → same as /api/notes POST."""
+    try:
+        import json as _json
+        data = await req.json()
+        key   = str(data.get("key", data.get("text", ""))).strip()
+        value = str(data.get("value", "")).strip()
+        notes_file = DATA_DIR / "notes.json"
+        notes = []
+        if notes_file.exists():
+            try:
+                notes = _json.loads(notes_file.read_text())
+            except Exception:
+                pass
+        notes.append({"key": key, "text": value or key, "created": datetime.now().isoformat()})
+        notes = notes[-200:]
+        notes_file.write_text(_json.dumps(notes, indent=2, ensure_ascii=False))
+        return web.json_response({"ok": True, "count": len(notes)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_printify_status(req):
+    try:
+        from modules.printify_automation import ping, get_stats
+        ok = await ping()
+        stats = await get_stats() if ok else {}
+        return web.json_response({"ok": ok, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_printify_autofulfill(req):
+    try:
+        from modules.printify_automation import auto_fulfill_pending
+        result = await auto_fulfill_pending()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_etsy_status(req):
+    try:
+        from modules.ecommerce_connectors import EtsyConnector
+        etsy = EtsyConnector()
+        ok, info = await etsy.ping()
+        stats = await etsy.get_stats() if ok else {}
+        return web.json_response({"ok": ok, "info": info, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_gumroad_status(req):
+    try:
+        from modules.ecommerce_connectors import GumroadConnector
+        gum = GumroadConnector()
+        ok, info = await gum.ping()
+        stats = await gum.get_stats() if ok else {}
+        return web.json_response({"ok": ok, "info": info, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_revenue_status(req):
+    """Revenue aggregation across all platforms."""
+    try:
+        from modules.revenue_aggregator import get_platform_revenue
+        revenue = await get_platform_revenue()
+        return web.json_response({"ok": True, "revenue": revenue})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_revenue_report(req):
+    """Generate and return daily revenue report."""
+    try:
+        from modules.revenue_aggregator import get_daily_report, save_daily_snapshot
+        report = await get_daily_report()
+        await save_daily_snapshot()
+        return web.json_response({"ok": True, "report": report})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_seo_status(req):
+    """SEO score for all Shopify products."""
+    try:
+        from modules.seo_automation import generate_sitemap_data
+        sitemap = await generate_sitemap_data()
+        return web.json_response({"ok": True, "sitemap": sitemap})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_seo_run(req):
+    """Run AI-powered SEO optimizer on Shopify products."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        limit = int(data.get("limit", 5))
+        from modules.seo_automation import optimize_all_shopify_products
+        result = await optimize_all_shopify_products(limit=limit)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_dropshipping_status(req):
+    """Dropshipping pipeline status."""
+    try:
+        from modules.dropshipping_automation import DropshippingWorkflow
+        wf = DropshippingWorkflow()
+        trending = await wf.find_trending_products("general")
+        return web.json_response({"ok": True, "trending_count": len(trending), "sample": trending[:3]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_dropshipping_run(req):
+    """Run a full dropshipping pipeline for a niche."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        niche = data.get("niche", "trending")
+        from modules.dropshipping_automation import DropshippingWorkflow
+        wf = DropshippingWorkflow()
+        result = await wf.full_pipeline(niche)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_pod_status(req):
+    """Print-on-Demand status via Printify."""
+    try:
+        from modules.printify_automation import get_stats, get_pending_orders
+        stats = await get_stats()
+        pending = await get_pending_orders()
+        return web.json_response({"ok": True, "stats": stats, "pending_count": len(pending)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_klaviyo_status(req):
+    try:
+        from modules.klaviyo_automation import get_stats
+        return web.json_response(await get_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_klaviyo_lists(req):
+    try:
+        from modules.klaviyo_automation import get_lists
+        lists = await get_lists()
+        return web.json_response({"ok": True, "lists": lists})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_klaviyo_sync(req):
+    try:
+        data = await req.json()
+        list_id = data.get("list_id", "")
+        source  = data.get("source", "digistore")
+        from modules.klaviyo_automation import sync_from_digistore, sync_from_shopify, get_lists
+        if not list_id:
+            lists = await get_lists()
+            list_id = lists[0]["id"] if lists else ""
+        if not list_id:
+            return web.json_response({"ok": False, "error": "Keine Klaviyo-Liste gefunden"})
+        if source == "shopify":
+            count = await sync_from_shopify(list_id)
+        else:
+            count = await sync_from_digistore(list_id)
+        return web.json_response({"ok": True, "synced": count, "list_id": list_id, "source": source})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_klaviyo_campaign(req):
+    try:
+        data = await req.json()
+        from modules.klaviyo_automation import create_and_send_campaign, get_lists
+        list_id = data.get("list_id", "")
+        if not list_id:
+            lists = await get_lists()
+            list_id = lists[0]["id"] if lists else ""
+        if not list_id:
+            return web.json_response({"ok": False, "error": "Keine Liste gefunden"})
+        result = await create_and_send_campaign(
+            list_id=list_id,
+            subject=data.get("subject", "SuperMegaBot Newsletter"),
+            from_email=data.get("from_email", "noreply@supermegabot.com"),
+            from_name=data.get("from_name", "SuperMegaBot"),
+            html_body=data.get("body_html", "<p>Hallo!</p>"),
+            campaign_name=data.get("name", ""),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_bot_clones_status(req):
+    """Return status of all specialized bot-clone workers."""
+    try:
+        from core.bot_clones import get_bot_status
+        return web.json_response(await get_bot_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_bot_clone_run(req):
+    """Manually trigger a specific bot-clone action."""
+    try:
+        data = await req.json()
+        bot_name = data.get("bot", "")
+        action   = data.get("action", "status")
+        from core.bot_clones import run_bot_action
+        result = await run_bot_action(bot_name, action)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Stripe ───────────────────────────────────────────────────────────────────
+
+async def handle_stripe_status(req):
+    try:
+        from modules.stripe_automation import get_stats
+        data = await get_stats()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_balance(req):
+    try:
+        from modules.stripe_automation import get_balance
+        data = await get_balance()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_charges(req):
+    try:
+        from modules.stripe_automation import get_charges
+        days = int(req.rel_url.query.get("days", "30"))
+        limit = int(req.rel_url.query.get("limit", "20"))
+        data = await get_charges(limit=limit, days_back=days)
+        return web.json_response({"ok": True, "charges": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_customers(req):
+    try:
+        from modules.stripe_automation import get_customers
+        data = await get_customers(limit=50)
+        return web.json_response({"ok": True, "customers": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_revenue(req):
+    try:
+        from modules.stripe_automation import get_revenue_summary
+        days = int(req.rel_url.query.get("days", "30"))
+        data = await get_revenue_summary(days_back=days)
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_webhook(req):
+    try:
+        event = await req.json()
+        from modules.stripe_automation import handle_webhook_event
+        result = await handle_webhook_event(event)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Google Drive ──────────────────────────────────────────────────────────────
+
+# ── Google OAuth2 ─────────────────────────────────────────────────────────────
+
+async def handle_google_auth(req):
+    """Redirect to Google OAuth2 login."""
+    try:
+        from modules.google_oauth import get_auth_url
+        url = get_auth_url()
+        raise web.HTTPFound(url)
+    except web.HTTPFound:
+        raise
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_google_callback(req):
+    """Handle OAuth2 callback, exchange code for token."""
+    code  = req.rel_url.query.get("code", "")
+    error = req.rel_url.query.get("error", "")
+    if error:
+        return web.Response(
+            content_type="text/html",
+            text=f"<h2>❌ Google Auth Fehler: {error}</h2><a href='/'>Dashboard</a>"
+        )
+    if not code:
+        return web.Response(
+            content_type="text/html",
+            text="<h2>❌ Kein Code erhalten</h2><a href='/'>Dashboard</a>"
+        )
+    try:
+        from modules.google_oauth import exchange_code
+        result = await exchange_code(code)
+        if result.get("ok"):
+            html = """
+            <html><head><title>Google verbunden</title>
+            <style>body{font-family:Inter,sans-serif;background:#040508;color:#e2e8f0;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
+            .box{text-align:center;padding:40px;background:#0d1117;border:1px solid #1e293b;border-radius:12px}
+            h2{color:#6ee7b7}a{color:#4f8ef7;text-decoration:none}</style></head>
+            <body><div class="box">
+            <h2>✅ Google Drive verbunden!</h2>
+            <p>Token gespeichert — Drive Backup &amp; API aktiv.</p>
+            <a href="/">← Zurück zum Dashboard</a>
+            </div></body></html>"""
+        else:
+            html = f"<h2>❌ Token-Fehler: {result.get('error')}</h2><a href='/'>Dashboard</a>"
+        return web.Response(content_type="text/html", text=html)
+    except Exception as e:
+        return web.Response(content_type="text/html", text=f"<h2>❌ {e}</h2><a href='/'>Dashboard</a>")
+
+
+async def handle_google_status(req):
+    try:
+        from modules.google_oauth import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_google_refresh(req):
+    try:
+        from modules.google_oauth import refresh_token
+        return web.json_response(await refresh_token())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_google_revoke(req):
+    try:
+        from modules.google_oauth import revoke
+        ok = await revoke()
+        return web.json_response({"ok": ok})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_drive_status(req):
+    try:
+        from modules.google_drive_automation import get_stats
+        data = await get_stats()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_drive_files(req):
+    try:
+        from modules.google_drive_automation import list_files
+        query = req.rel_url.query.get("q", "")
+        limit = int(req.rel_url.query.get("limit", "20"))
+        data  = await list_files(query=query, page_size=limit)
+        return web.json_response({"ok": True, "files": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_drive_backup(req):
+    try:
+        from modules.google_drive_automation import auto_backup
+        result = await auto_backup()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -2017,33 +1770,121 @@ async def create_app():
     app.router.add_get("/api/storage/history",     handle_storage_history)
     app.router.add_get("/storage", handle_storage_widget)
 
-    # Alias / convenience endpoints (keep the scan + monitoring tools happy)
-    app.router.add_get ("/api/status",    handle_status_alias)
-    app.router.add_get ("/api/health",    handle_health_alias)
-    app.router.add_get ("/api/shopify",   handle_shopify_alias)
-    app.router.add_get ("/api/metrics",   handle_metrics_alias)
-    app.router.add_get ("/api/agents",    handle_agents_alias)
-    app.router.add_get ("/api/analytics", handle_analytics_summary)
-    app.router.add_get ("/api/revenue",   handle_revenue_summary)
-    app.router.add_get ("/api/kpis",      handle_kpis_summary)
-    app.router.add_post("/api/chat/clear",  handle_chat_clear)
-    app.router.add_post("/api/logs/clear",  handle_logs_clear)
-    app.router.add_post("/api/service/start", handle_service_start_alias)
-    app.router.add_post("/api/service/stop",  handle_service_stop_alias)
+    # ── New section routes ────────────────────────────────────────────────────
+    app.router.add_get("/api/keys",               handle_api_keys)
+    app.router.add_get("/api/github/status",      handle_github_status)
+    app.router.add_post("/api/github/push",       handle_github_push)
+    app.router.add_get("/api/cloud/status",       handle_cloud_status)
+    app.router.add_get("/api/bot-repair/status",  handle_bot_repair_status)
+    app.router.add_post("/api/bot-repair/run",    handle_bot_repair_run)
+    app.router.add_get("/api/notes",              handle_notes_get)
+    app.router.add_post("/api/notes",             handle_notes_save)
+    app.router.add_delete("/api/notes",           handle_notes_delete)
+    app.router.add_get("/api/deepscan",           handle_deepscan)
 
-    # Bot Control Hub — every dashboard button is also a bot command.
-    app.router.add_get ("/api/bot/commands", handle_bot_commands)
-    app.router.add_post("/api/bot/execute",  handle_bot_execute)
+    # ── Automation Scheduler ──────────────────────────────────────────────────
+    app.router.add_get("/api/automation/status",      handle_automation_status)
+    app.router.add_post("/api/automation/run",        handle_automation_run)
+    app.router.add_get("/api/automation/tasks",       handle_automation_tasks)
+
+    # ── Social Media ──────────────────────────────────────────────────────────
+    app.router.add_get("/api/social/status",          handle_social_status)
+
+    # ── Digistore24 ───────────────────────────────────────────────────────────
+    app.router.add_get("/api/digistore/status",       handle_digistore_status)
+    app.router.add_get("/api/digistore/orders",       handle_digistore_orders)
+
+    # ── Mailchimp ─────────────────────────────────────────────────────────────
+    app.router.add_get("/api/mailchimp/status",       handle_mailchimp_status)
+    app.router.add_post("/api/mailchimp/sync",        handle_mailchimp_sync)
+    app.router.add_post("/api/mailchimp/campaign",    handle_mailchimp_campaign)
+    app.router.add_post("/api/memory/save",           handle_memory_save)
+    app.router.add_post("/api/notes/save",            handle_notes_save_alias)
+
+    # ── Printify ──────────────────────────────────────────────────────────────
+    app.router.add_get("/api/printify/status",        handle_printify_status)
+    app.router.add_post("/api/printify/autofulfill",  handle_printify_autofulfill)
+
+    # ── Etsy + Gumroad ────────────────────────────────────────────────────────
+    app.router.add_get("/api/etsy/status",            handle_etsy_status)
+    app.router.add_get("/api/gumroad/status",         handle_gumroad_status)
+
+    # ── Revenue Aggregator ────────────────────────────────────────────────────
+    app.router.add_get("/api/revenue/status",         handle_revenue_status)
+    app.router.add_get("/api/revenue/report",         handle_revenue_report)
+
+    # ── SEO Autopilot ─────────────────────────────────────────────────────────
+    app.router.add_get("/api/seo/status",             handle_seo_status)
+    app.router.add_post("/api/seo/run",               handle_seo_run)
+
+    # ── Dropshipping ──────────────────────────────────────────────────────────
+    app.router.add_get("/api/dropshipping/status",    handle_dropshipping_status)
+    app.router.add_post("/api/dropshipping/run",      handle_dropshipping_run)
+
+    # ── Print-on-Demand ───────────────────────────────────────────────────────
+    app.router.add_get("/api/pod/status",             handle_pod_status)
+
+    # ── Klaviyo ───────────────────────────────────────────────────────────────
+    app.router.add_get("/api/klaviyo/status",         handle_klaviyo_status)
+    app.router.add_get("/api/klaviyo/lists",          handle_klaviyo_lists)
+    app.router.add_post("/api/klaviyo/sync",          handle_klaviyo_sync)
+    app.router.add_post("/api/klaviyo/campaign",      handle_klaviyo_campaign)
+
+    # ── Bot Clones ────────────────────────────────────────────────────────────
+    app.router.add_get("/api/bots/status",            handle_bot_clones_status)
+    app.router.add_post("/api/bots/run",              handle_bot_clone_run)
+
+    # ── Stripe ────────────────────────────────────────────────────────────────
+    app.router.add_get("/api/stripe/status",          handle_stripe_status)
+    app.router.add_get("/api/stripe/balance",         handle_stripe_balance)
+    app.router.add_get("/api/stripe/charges",         handle_stripe_charges)
+    app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
+    app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
+    app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+
+    # ── Google OAuth2 ─────────────────────────────────────────────────────────
+    app.router.add_get("/api/google/auth",            handle_google_auth)
+    app.router.add_get("/api/google/callback",        handle_google_callback)
+    app.router.add_get("/api/google/status",          handle_google_status)
+    app.router.add_post("/api/google/refresh",        handle_google_refresh)
+    app.router.add_post("/api/google/revoke",         handle_google_revoke)
+
+    # ── Google Drive ──────────────────────────────────────────────────────────
+    app.router.add_get("/api/drive/status",           handle_drive_status)
+    app.router.add_get("/api/drive/files",            handle_drive_files)
+    app.router.add_post("/api/drive/backup",          handle_drive_backup)
 
     return app
 
 
+def _free_port(port: int) -> None:
+    """Kill whatever holds the port (macOS + Linux)."""
+    try:
+        result = subprocess.run(
+            ["lsof", "-ti", f":{port}"], capture_output=True, text=True
+        )
+        pids = result.stdout.strip().split()
+        for pid in pids:
+            try:
+                os.kill(int(pid), 9)
+                print(f"  Killed PID {pid} on port {port}")
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
 if __name__ == "__main__":
     async def _main():
+        print(f"\n🔍 Prüfe Port {PORT}...")
+        _free_port(PORT)
+        import asyncio as _aio
+        await _aio.sleep(0.5)   # kurz warten damit OS den Port freigibt
+
         app = await create_app()
         runner = web.AppRunner(app, access_log=None)
         await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_port=True)
+        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True, reuse_port=True)
         await site.start()
         print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
         try:

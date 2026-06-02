@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """🔐 Security Agent — VPN-Status, API-Keys, verdächtige Aktivitäten"""
 import sys, os
-import pathlib, pathlib, time, subprocess, json
+import pathlib, time, subprocess, json
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram, get_env
 
