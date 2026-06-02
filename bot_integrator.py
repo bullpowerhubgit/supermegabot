@@ -13,64 +13,36 @@ import urllib.request
 from pathlib import Path
 from datetime import datetime
 
-# Load .env before any other imports that depend on environment variables
-def _load_env(env_path=None):
-    for p in [env_path, Path(__file__).parent / '.env', Path('.env')]:
-        if p is None:
-            continue
-        try:
-            with open(p) as f:
-                for line in f:
-                    line = line.strip()
-                    if not line or line.startswith('#') or '=' not in line:
-                        continue
-                    key, _, val = line.partition('=')
-                    val = val.split('#')[0].strip()
-                    if key.strip() and key.strip() not in os.environ:
-                        os.environ[key.strip()] = val
-            break
-        except FileNotFoundError:
-            pass
+# Portable: BASE = directory containing this file (works on Mac and CI/Linux)
+_THIS_DIR = Path(__file__).resolve().parent
+_HOME = Path.home()
 
-_load_env()
+# Try project-local guardian_client first, then external rudibot-eternal location
+for _candidate in (_THIS_DIR, _HOME / "rudibot-eternal"):
+    if (_candidate / "guardian_client.py").exists():
+        sys.path.insert(0, str(_candidate))
+        break
 
-# guardian_client.py lives in this repo's root
-sys.path.insert(0, str(Path(__file__).parent))
-from guardian_client import GuardianClient
+try:
+    from guardian_client import GuardianClient
+except ImportError:
+    GuardianClient = None  # type: ignore
 
 # ═══════════════════════════════════════════════════════════════════════
-# SERVICE REGISTRY — dirs configurable via .env
+# SERVICE REGISTRY
 # ═══════════════════════════════════════════════════════════════════════
 
-def _home(*parts):
-    """Resolve path relative to HOME, or from env override."""
-    return str(Path.home().joinpath(*parts))
+def _svc_dir(env_var: str, default_rel: str) -> str:
+    """Return $env_var or HOME/default_rel — keeps SERVICES portable."""
+    return os.getenv(env_var, str(_HOME / default_rel))
 
 SERVICES = {
-    'guardian':      {'port': int(os.getenv('GUARDIAN_API_PORT', '3201')),
-                      'dir': os.getenv('GUARDIAN_DIR', _home('rudibot-eternal')),
-                      'cmd': 'python3 eternal_guardian.py --api',
-                      'health': '/api/v1/health'},
-    'telegram_bot':  {'port': 3200,
-                      'dir': os.getenv('TELEGRAM_BOT_DIR', _home('windsurf-telegram-bot')),
-                      'cmd': 'npm start',
-                      'health': '/health'},
-    'api_gateway':   {'port': 8080,
-                      'dir': os.getenv('API_GATEWAY_DIR', _home('windsurf-api-gateway')),
-                      'cmd': 'npm start',
-                      'health': '/health'},
-    'shopify_ai':    {'port': 3002,
-                      'dir': os.getenv('SHOPIFY_AI_DIR', _home('shopify-ai-suite')),
-                      'cmd': 'node server.js',
-                      'health': '/health'},
-    'github_app':    {'port': 3000,
-                      'dir': os.getenv('GITHUB_APP_DIR', _home('windsurf-github-app')),
-                      'cmd': 'npm start',
-                      'health': '/health'},
-    'shopify_suite': {'port': 3001,
-                      'dir': os.getenv('SHOPIFY_SUITE_DIR', _home('windsurf-shopify-suite')),
-                      'cmd': 'npm start',
-                      'health': '/health'},
+    'guardian':      {'port': 3201, 'dir': _svc_dir('ETERNAL_BOT_DIR',   'rudibot-eternal'),         'cmd': 'python3 eternal_guardian.py --api', 'health': '/api/v1/health'},
+    'telegram_bot':  {'port': 3200, 'dir': _svc_dir('WS_TELEGRAM_DIR',   'windsurf-telegram-bot'),   'cmd': 'npm start',                          'health': '/health'},
+    'api_gateway':   {'port': 8080, 'dir': _svc_dir('API_GATEWAY_DIR',   'windsurf-api-gateway'),    'cmd': 'npm start',                          'health': '/health'},
+    'shopify_ai':    {'port': 3002, 'dir': _svc_dir('SHOPIFY_AI_DIR',    'shopify-ai-suite'),        'cmd': 'node server.js',                     'health': '/health'},
+    'github_app':    {'port': 3000, 'dir': _svc_dir('GITHUB_APP_DIR',    'windsurf-github-app'),     'cmd': 'npm start',                          'health': '/health'},
+    'shopify_suite': {'port': 3001, 'dir': _svc_dir('SHOPIFY_SUITE_DIR', 'windsurf-shopify-suite'),  'cmd': 'npm start',                          'health': '/health'},
 }
 
 # ═══════════════════════════════════════════════════════════════════════
@@ -88,7 +60,7 @@ def check_port(port):
     try:
         result = subprocess.run(['lsof', '-ti', f':{port}'], capture_output=True, text=True, timeout=2)
         return result.returncode == 0 and bool(result.stdout.strip())
-    except:
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
         return False
 
 def http_get(host, port, path, timeout=3):
@@ -222,7 +194,7 @@ def broadcast_to_agents(message, priority='normal'):
                     if r.status == 200:
                         log(f'{name}: ✅ Notified via {notify_path}', 'ok')
                         break
-            except:
+            except Exception:
                 pass
         else:
             log(f'{name}: ℹ️  No notify endpoint (OK)', 'info')
@@ -239,7 +211,7 @@ def broadcast_to_agents(message, priority='normal'):
         with urllib.request.urlopen(req, timeout=3) as r:
             if r.status == 200:
                 log('Telegram Bot: ✅ Notified', 'ok')
-    except:
+    except Exception:
         pass
 
     log('\n✅ Broadcast complete', 'ok')
@@ -254,7 +226,7 @@ def run_deepscan():
     log('RUNNING DEEPSCAN', 'info')
     log('═' * 60, 'info')
 
-    script = Path(__file__).parent / 'deep_scan_repair.py'
+    script = _THIS_DIR / 'deep_scan_repair.py'
     if not script.exists():
         log('DeepScan script not found', 'error')
         return False
@@ -263,7 +235,7 @@ def run_deepscan():
         result = subprocess.run(
             [sys.executable, str(script), '--fix'],
             capture_output=True, text=True, timeout=120,
-            cwd=str(Path(__file__).parent)
+            cwd=str(_THIS_DIR),
         )
         log('DeepScan completed', 'ok')
         if result.stdout:
@@ -302,7 +274,7 @@ def get_master_status():
         code, body = http_get('localhost', 3201, '/api/v1/health')
         if code == 200:
             status['guardian'] = json.loads(body)
-    except:
+    except Exception:
         pass
 
     # Agents
@@ -311,7 +283,7 @@ def get_master_status():
         if code == 200:
             data = json.loads(body)
             status['agents'] = data.get('agents', [])
-    except:
+    except Exception:
         pass
 
     return status
@@ -329,8 +301,11 @@ def main():
     # 1. Services sicherstellen
     ensure_all_services()
 
-    # 2. Guardian Integration
-    integrate_with_guardian()
+    # 2. Guardian Integration (only when GuardianClient is available)
+    if GuardianClient is not None:
+        integrate_with_guardian()
+    else:
+        log('Guardian client not installed — skipping Guardian integration', 'warn')
 
     # 3. DeepScan (optional)
     if '--deepscan' in sys.argv:
