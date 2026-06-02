@@ -1160,6 +1160,14 @@ class MegaOrchestrator:
                             for update in data.get("result", []):
                                 offset = update["update_id"] + 1
                                 asyncio.create_task(self._handle_telegram_update(update))
+                        elif r.status == 401:
+                            # Ungültiger Token — kein Retry-Spam, einmalig loggen dann stoppen
+                            log.error(
+                                "Telegram 401 Unauthorized — TELEGRAM_BOT_TOKEN ungültig oder abgelaufen. "
+                                "Bitte Token über @BotFather erneuern und .env aktualisieren. "
+                                "Polling wird deaktiviert."
+                            )
+                            return  # Loop beenden, kein weiterer Spam
                         elif r.status == 409:
                             body = await r.text()
                             log.warning(f"Token-Konflikt (409): {body[:100]} — pausiere {conflict_wait}s")
