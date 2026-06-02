@@ -32,6 +32,12 @@ except ImportError:
     HAS_AIOHTTP = False
 
 
+_DB_MAX_ROWS = {
+    "winning_products":  500,
+    "generated_content": 1000,
+    "campaigns":         200,
+}
+
 def _db():
     conn = sqlite3.connect(DB_PATH)
     conn.executescript("""
@@ -65,6 +71,14 @@ def _db():
         );
     """)
     conn.commit()
+    # Alte Einträge löschen wenn Tabellen zu groß werden
+    for table, max_rows in _DB_MAX_ROWS.items():
+        conn.execute(
+            f"DELETE FROM {table} WHERE id IN "
+            f"(SELECT id FROM {table} ORDER BY id ASC LIMIT MAX(0, (SELECT COUNT(*) FROM {table}) - ?))",
+            (max_rows,)
+        )
+    conn.commit()
     return conn
 
 
@@ -72,8 +86,12 @@ async def _ai(prompt: str, system: str = "", task: str = "smart") -> str:
     """Local Ollama AI call"""
     if not HAS_AIOHTTP:
         return "aiohttp nicht installiert"
-    model_map = {"fast": "llama3.2:latest", "smart": "gemma4:latest", "code": "codellama:latest"}
-    model = model_map.get(task, "llama3.2:latest")
+    model_map = {
+        "fast": os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest"),
+        "smart": os.getenv("OLLAMA_SMART_MODEL", "gemma2:latest"),
+        "code": os.getenv("OLLAMA_CODE_MODEL", "codellama:latest"),
+    }
+    model = model_map.get(task, os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:latest"))
     messages = []
     if system:
         messages.append({"role": "system", "content": system})

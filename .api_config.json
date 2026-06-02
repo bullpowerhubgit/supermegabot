@@ -1,0 +1,215 @@
+{
+  "guardian_api": {
+    "base_url": "http://localhost:3201",
+    "version": "v1",
+    "auth": {
+      "type": "api_key",
+      "header": "X-API-Key",
+      "key_generation": "echo -n 'rudibot-secret-key-change-in-production' | sha256sum | cut -c1-32"
+    }
+  },
+  "endpoints": {
+    "health": {
+      "url": "http://localhost:3201/api/v1/health",
+      "method": "GET",
+      "auth_required": false,
+      "description": "Health check for load balancers"
+    },
+    "status": {
+      "url": "http://localhost:3201/api/v1/status",
+      "method": "GET",
+      "auth_required": true,
+      "description": "Full system status with services and brain"
+    },
+    "services": {
+      "list": {
+        "url": "http://localhost:3201/api/v1/services",
+        "method": "GET",
+        "auth_required": true
+      },
+      "status": {
+        "url": "http://localhost:3201/api/v1/services/{service_name}/status",
+        "method": "GET",
+        "auth_required": true,
+        "params": ["service_name"]
+      },
+      "start": {
+        "url": "http://localhost:3201/api/v1/services/{service_name}/start",
+        "method": "POST",
+        "auth_required": true,
+        "services": ["rudibot_main", "ollama_llm", "redis"]
+      },
+      "stop": {
+        "url": "http://localhost:3201/api/v1/services/{service_name}/stop",
+        "method": "POST",
+        "auth_required": true,
+        "services": ["rudibot_main", "ollama_llm", "redis"]
+      },
+      "restart": {
+        "url": "http://localhost:3201/api/v1/services/{service_name}/restart",
+        "method": "POST",
+        "auth_required": true,
+        "services": ["rudibot_main", "ollama_llm", "redis"]
+      },
+      "heal": {
+        "url": "http://localhost:3201/api/v1/services/{service_name}/heal",
+        "method": "POST",
+        "auth_required": true,
+        "services": ["rudibot_main", "ollama_llm", "redis"]
+      }
+    },
+    "brain": {
+      "summary": {
+        "url": "http://localhost:3201/api/v1/brain",
+        "method": "GET",
+        "auth_required": true
+      },
+      "fixes": {
+        "url": "http://localhost:3201/api/v1/brain/fixes",
+        "method": "GET",
+        "auth_required": true
+      },
+      "patterns": {
+        "url": "http://localhost:3201/api/v1/brain/patterns",
+        "method": "GET",
+        "auth_required": true
+      },
+      "add_fix": {
+        "url": "http://localhost:3201/api/v1/brain/fixes",
+        "method": "POST",
+        "auth_required": true,
+        "content_type": "application/json",
+        "body_template": {
+          "error_key": "string",
+          "service": "string",
+          "fix": "string",
+          "success": true
+        }
+      }
+    },
+    "agents": {
+      "list": {
+        "url": "http://localhost:3201/api/v1/agents",
+        "method": "GET",
+        "auth_required": true
+      },
+      "register": {
+        "url": "http://localhost:3201/api/v1/agents/register",
+        "method": "POST",
+        "auth_required": true,
+        "content_type": "application/json",
+        "body_template": {
+          "agent_id": "string",
+          "type": "monitoring|healer|notifier|analyzer",
+          "endpoint": "http://optional:8080"
+        }
+      }
+    },
+    "backup": {
+      "trigger": {
+        "url": "http://localhost:3201/api/v1/backup",
+        "method": "POST",
+        "auth_required": true
+      }
+    },
+    "reports": {
+      "list": {
+        "url": "http://localhost:3201/api/v1/reports",
+        "method": "GET",
+        "auth_required": true,
+        "query_params": ["limit"]
+      },
+      "latest": {
+        "url": "http://localhost:3201/api/v1/reports/latest",
+        "method": "GET",
+        "auth_required": true
+      }
+    },
+    "notifications": {
+      "send": {
+        "url": "http://localhost:3201/api/v1/notify",
+        "method": "POST",
+        "auth_required": true,
+        "content_type": "application/json",
+        "body_template": {
+          "message": "string",
+          "priority": "normal|high|critical",
+          "channels": ["telegram", "discord", "slack", "all"]
+        }
+      }
+    },
+    "webhooks": {
+      "github": {
+        "url": "http://localhost:3201/webhooks/github",
+        "method": "POST",
+        "auth_required": false,
+        "signature_header": "X-Hub-Signature-256",
+        "events": ["push", "issues", "pull_request"]
+      },
+      "alertmanager": {
+        "url": "http://localhost:3201/webhooks/alertmanager",
+        "method": "POST",
+        "auth_required": false
+      },
+      "custom": {
+        "url": "http://localhost:3201/webhooks/custom",
+        "method": "POST",
+        "auth_required": true,
+        "content_type": "application/json"
+      }
+    },
+    "metrics": {
+      "prometheus": {
+        "url": "http://localhost:3201/metrics",
+        "method": "GET",
+        "auth_required": false,
+        "format": "prometheus",
+        "metrics": [
+          "guardian_service_up",
+          "guardian_brain_repairs_total",
+          "guardian_brain_patterns_learned",
+          "guardian_brain_permanently_resolved"
+        ]
+      }
+    }
+  },
+  "registered_agents": [
+    {
+      "agent_id": "agent-001",
+      "type": "monitoring",
+      "endpoint": "",
+      "registered_at": "2026-05-27T17:12:17",
+      "last_seen": "2026-05-27T17:12:17"
+    },
+    {
+      "agent_id": "agent-002",
+      "type": "healer",
+      "endpoint": "http://localhost:8080",
+      "registered_at": "2026-05-27T17:15:05",
+      "last_seen": "2026-05-27T17:15:05"
+    }
+  ],
+  "environment_variables": {
+    "GUARDIAN_API_HOST": "0.0.0.0",
+    "GUARDIAN_API_PORT": "3201",
+    "GUARDIAN_API_SECRET": "rudibot-secret-key-change-in-production",
+    "GUARDIAN_API_AUTH": "true",
+    "GUARDIAN_WEBHOOK_SECRET": "webhook-secret-change-me",
+    "DISCORD_WEBHOOK_URL": "",
+    "SLACK_WEBHOOK_URL": "",
+    "GITHUB_WEBHOOK_SECRET": "",
+    "PROMETHEUS_ENABLED": "true"
+  },
+  "cli_commands": {
+    "generate_api_key": "KEY=$(echo -n 'rudibot-secret-key-change-in-production' | sha256sum | cut -c1-32)",
+    "start_guardian_with_api": "python3 /Users/rudolfsarkany/rudibot-eternal/eternal_guardian.py",
+    "start_api_only": "python3 /Users/rudolfsarkany/rudibot-eternal/eternal_guardian.py --api-only",
+    "check_health": "curl http://localhost:3201/api/v1/health",
+    "check_status": "curl -H \"X-API-Key: $KEY\" http://localhost:3201/api/v1/status",
+    "restart_service": "curl -X POST -H \"X-API-Key: $KEY\" http://localhost:3201/api/v1/services/{service_name}/restart",
+    "trigger_backup": "curl -X POST -H \"X-API-Key: $KEY\" http://localhost:3201/api/v1/backup",
+    "get_metrics": "curl http://localhost:3201/metrics"
+  },
+  "created_at": "2026-05-27T17:15:00",
+  "version": "1.0.0"
+}

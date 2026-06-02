@@ -9,10 +9,20 @@
 import os, sys, time, subprocess, signal, json, datetime
 from pathlib import Path
 
-ARMY_DIR = Path(__file__).parent
+ARMY_DIR   = Path(__file__).parent
 AGENTS_DIR = ARMY_DIR / "agents"
-LOGS_DIR = ARMY_DIR / "logs"
+MICRO_DIR  = ARMY_DIR / "micro"
+LOGS_DIR   = ARMY_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
+
+# .env laden bevor bus importiert wird
+_env_path = ARMY_DIR.parent / ".env"
+if _env_path.exists():
+    for _line in _env_path.read_text(errors='ignore').splitlines():
+        _line = _line.strip()
+        if _line and not _line.startswith('#') and '=' in _line:
+            _k, _, _v = _line.partition('=')
+            os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
 
 sys.path.insert(0, str(ARMY_DIR / "shared"))
 from bus import report, notify_telegram, load_state, get_env

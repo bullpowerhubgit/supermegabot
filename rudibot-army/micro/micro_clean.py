@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """🧹 Micro-Clean — Stündliche Log-Rotation + Disk-Schutz"""
-import sys, os, time, glob
-from pathlib import Path
-
-ARMY_DIR = Path(__file__).resolve().parent.parent
-SHARED_DIR = ARMY_DIR / "shared"
-sys.path.insert(0, str(SHARED_DIR))
+import sys, os
+import pathlib, pathlib, time, glob
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram
 
 ID = "micro_clean"
@@ -47,7 +44,7 @@ def clean_logs() -> tuple:
                 saved = size_mb - (os.path.getsize(path) / 1_048_576)
                 total_saved_mb += saved
                 cleaned.append(f"{os.path.basename(path)}: {size_mb:.0f}MB→{KEEP_LINES} Zeilen")
-        except OSError:
+        except:
             pass
 
     # /tmp alte .log Dateien (>7 Tage) löschen
@@ -56,7 +53,7 @@ def clean_logs() -> tuple:
                    shell=True, timeout=15)
 
     # Army-eigene Logs
-    army_logs = glob.glob(str(ARMY_DIR / "logs" / "*.log"))
+    army_logs = glob.glob(str(pathlib.Path(__file__).parent.parent / "logs" / "*.log"))
     for path in army_logs:
         try:
             size_mb = os.path.getsize(path) / 1_048_576
@@ -66,7 +63,7 @@ def clean_logs() -> tuple:
                 with open(path, "w") as f:
                     f.writelines(lines)
                 cleaned.append(f"army/{os.path.basename(path)}: rotiert")
-        except OSError:
+        except:
             pass
 
     return cleaned, total_saved_mb

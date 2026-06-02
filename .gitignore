@@ -9,3 +9,4 @@ logs/
 *.sqlite
 nohup.out
 data/
+rudibot-army/shared/army_state.json

@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speicher-Überwacher</title>
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #12121a;
+  --card: #1a1a26;
+  --accent: #6c63ff;
+  --green: #43d98c;
+  --yellow: #ffd700;
+  --red: #ff4757;
+  --orange: #ff6b35;
+  --blue: #3498db;
+  --text: #e8e8f0;
+  --muted: #7070a0;
+  --border: #2a2a40;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+  padding: 20px;
+  min-height: 100vh;
+}
+h1 { font-size: 1.4rem; margin-bottom: 20px; color: var(--accent); }
+h2 { font-size: 1rem; margin-bottom: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; }
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+}
+.card.critical { border-color: var(--red); box-shadow: 0 0 16px rgba(255,71,87,0.2); }
+.card.warning  { border-color: var(--orange); }
+
+/* Bar */
+.bar-wrap { margin: 10px 0; }
+.bar-label { display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 5px; color: var(--muted); }
+.bar-label span:last-child { font-weight: 600; }
+.bar-track { height: 8px; background: #1e1e30; border-radius: 4px; overflow: hidden; }
+.bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease, background 0.3s;
+}
+.bar-fill.ok       { background: linear-gradient(90deg, #43d98c, #26c281); }
+.bar-fill.warning  { background: linear-gradient(90deg, #ffd700, #ff9f43); }
+.bar-fill.critical { background: linear-gradient(90deg, #ff4757, #c0392b); animation: blink 1.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+/* Buttons */
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+.btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.15); }
+.btn.primary   { background: var(--accent); color: #fff; }
+.btn.danger    { background: var(--red); color: #fff; }
+.btn.success   { background: var(--green); color: #000; }
+.btn.secondary { background: #2a2a40; color: var(--text); border: 1px solid var(--border); }
+.btn:disabled  { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Alerts */
+.alert-box { margin-bottom: 16px; }
+.alert {
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 0.82rem;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.alert.critical { background: rgba(255,71,87,0.15); border: 1px solid rgba(255,71,87,0.4); }
+.alert.warning  { background: rgba(255,214,0,0.1);  border: 1px solid rgba(255,214,0,0.3); }
+.alert.ok       { background: rgba(67,217,140,0.1); border: 1px solid rgba(67,217,140,0.3); }
+
+/* Status dot */
+.dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 2px;
+}
+.dot.ok       { background: var(--green); }
+.dot.warning  { background: var(--yellow); }
+.dot.critical { background: var(--red); animation: blink 1.5s infinite; }
+
+/* Stats */
+.stat-row { display: flex; justify-content: space-between; padding: 5px 0; font-size: 0.82rem; border-bottom: 1px solid var(--border); }
+.stat-row:last-child { border-bottom: none; }
+.stat-row .label { color: var(--muted); }
+.stat-row .val   { font-weight: 600; }
+.val.ok       { color: var(--green); }
+.val.warning  { color: var(--yellow); }
+.val.critical { color: var(--red); }
+
+/* Files table */
+.files-table { width: 100%; border-collapse: collapse; font-size: 0.78rem; margin-top: 8px; }
+.files-table th { color: var(--muted); text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--border); font-weight: 500; }
+.files-table td { padding: 5px 8px; border-bottom: 1px solid rgba(42,42,64,0.5); }
+.files-table tr:hover td { background: rgba(108,99,255,0.08); }
+.badge {
+  padding: 2px 7px; border-radius: 12px; font-size: 0.72rem; font-weight: 600;
+}
+.badge.moveable { background: rgba(67,217,140,0.2); color: var(--green); }
+.badge.locked   { background: rgba(255,71,87,0.2);  color: var(--red); }
+
+/* History */
+.history-item { display: flex; gap: 10px; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.78rem; align-items: flex-start; }
+.history-item:last-child { border-bottom: none; }
+.ev-type {
+  padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; font-weight: 700; white-space: nowrap;
+  flex-shrink: 0;
+}
+.ev-cleanup  { background: rgba(108,99,255,0.25); color: #a29bfe; }
+.ev-offload  { background: rgba(67,217,140,0.2);  color: var(--green); }
+.ev-alert    { background: rgba(255,71,87,0.2);   color: var(--red); }
+.ev-auto_cleanup { background: rgba(255,107,53,0.2); color: var(--orange); }
+.ev-log_cleanup  { background: rgba(52,152,219,0.2); color: var(--blue); }
+
+/* Toast */
+#toast {
+  position: fixed; bottom: 24px; right: 24px;
+  background: var(--card); border: 1px solid var(--border);
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 0.85rem; max-width: 340px;
+  transform: translateY(100px); opacity: 0;
+  transition: all 0.3s; z-index: 9999;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+#toast.show { transform: translateY(0); opacity: 1; }
+#toast.success { border-color: var(--green); }
+#toast.error   { border-color: var(--red); }
+
+/* Timestamp */
+.ts { font-size: 0.7rem; color: var(--muted); text-align: right; margin-bottom: 12px; }
+
+/* No external */
+.no-external {
+  text-align: center; padding: 24px; color: var(--muted);
+  font-size: 0.85rem; border: 2px dashed var(--border); border-radius: 10px;
+}
+
+.section-title {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
+}
+.section-title .icon { font-size: 1.2rem; }
+.section-title h2 { margin-bottom: 0; }
+
+.refresh-btn {
+  margin-left: auto; background: none; border: 1px solid var(--border);
+  color: var(--muted); padding: 4px 10px; border-radius: 6px;
+  cursor: pointer; font-size: 0.75rem;
+}
+.refresh-btn:hover { color: var(--text); border-color: var(--accent); }
+
+.daemon-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(67,217,140,0.1); border: 1px solid rgba(67,217,140,0.3);
+  color: var(--green); padding: 3px 10px; border-radius: 12px;
+  font-size: 0.72rem; font-weight: 600;
+}
+.daemon-badge.off { background: rgba(255,71,87,0.1); border-color: rgba(255,71,87,0.3); color: var(--red); }
+.daemon-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: blink 2s infinite; }
+</style>
+</head>
+<body>
+
+<h1>💾 Speicher-Überwacher</h1>
+
+<div class="ts" id="ts">Lade...</div>
+<div class="alert-box" id="alerts"></div>
+
+<div class="grid">
+
+  <!-- RAM -->
+  <div class="card" id="ram-card">
+    <div class="section-title">
+      <span class="icon">🧠</span>
+      <h2>Arbeitsspeicher (RAM)</h2>
+      <button class="refresh-btn" onclick="loadStatus()">⟳ Aktualisieren</button>
+    </div>
+    <div id="ram-content">Lade...</div>
+  </div>
+
+  <!-- Interner Speicher -->
+  <div class="card" id="internal-card">
+    <div class="section-title">
+      <span class="icon">💿</span>
+      <h2>Interner Speicher</h2>
+    </div>
+    <div id="internal-content">Lade...</div>
+    <div class="btn-row">
+      <button class="btn primary" onclick="runCleanup()">🧹 Auto-Cleanup</button>
+      <button class="btn success" onclick="runOffload()">📦 Auf Extern auslagern</button>
+    </div>
+  </div>
+
+  <!-- Externer Speicher -->
+  <div class="card" id="external-card">
+    <div class="section-title">
+      <span class="icon">🔌</span>
+      <h2>Externer Speicher</h2>
+    </div>
+    <div id="external-content">Lade...</div>
+  </div>
+
+  <!-- Große Dateien -->
+  <div class="card" id="files-card">
+    <div class="section-title">
+      <span class="icon">📂</span>
+      <h2>Große Dateien</h2>
+      <button class="refresh-btn" onclick="loadLargeFiles()">⟳</button>
+    </div>
+    <div id="files-content">Lade...</div>
+  </div>
+
+  <!-- Event-Verlauf -->
+  <div class="card" id="history-card">
+    <div class="section-title">
+      <span class="icon">📋</span>
+      <h2>Ereignis-Verlauf</h2>
+    </div>
+    <div id="history-content">Lade...</div>
+  </div>
+
+  <!-- Status & Daemon -->
+  <div class="card" id="info-card">
+    <div class="section-title">
+      <span class="icon">⚙️</span>
+      <h2>System-Info</h2>
+    </div>
+    <div id="info-content">Lade...</div>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn secondary" onclick="loadStatus()">⟳ Status aktualisieren</button>
+      <button class="btn danger" onclick="runCleanup(12)">🔥 Aggressiver Cleanup</button>
+    </div>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+const API = '';  // Gleicher Origin
+
+function pct2color(pct) {
+  if (pct >= 90) return 'critical';
+  if (pct >= 80) return 'warning';
+  return 'ok';
+}
+
+function fmtGB(gb) {
+  if (gb < 1) return (gb * 1000).toFixed(0) + ' MB';
+  return gb.toFixed(1) + ' GB';
+}
+
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleString('de-DE', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+}
+
+function showToast(msg, type='success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show ' + type;
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => t.className = '', 4000);
+}
+
+function renderBar(label, pct, detail='') {
+  const cls = pct2color(pct);
+  return `
+    <div class="bar-wrap">
+      <div class="bar-label"><span>${label}${detail ? ' — '+detail : ''}</span><span class="${cls}">${pct.toFixed(1)}%</span></div>
+      <div class="bar-track"><div class="bar-fill ${cls}" style="width:${Math.min(pct,100)}%"></div></div>
+    </div>`;
+}
+
+function renderRAM(ram) {
+  let h = renderBar('RAM', ram.percent, `${fmtGB(ram.used_gb)} / ${fmtGB(ram.total_gb)}`);
+  h += renderBar('Swap', ram.swap_percent, `${fmtGB(ram.swap_used_gb)} / ${fmtGB(ram.swap_total_gb)}`);
+  h += `<div class="stat-row"><span class="label">Verfügbar</span><span class="val ${pct2color(ram.percent)}">${fmtGB(ram.available_gb)}</span></div>`;
+  document.getElementById('ram-content').innerHTML = h;
+  document.getElementById('ram-card').className = 'card ' + pct2color(ram.percent);
+}
+
+function renderInternal(partitions) {
+  if (!partitions.length) {
+    document.getElementById('internal-content').innerHTML = '<div class="no-external">Keine internen Partitionen gefunden</div>';
+    return;
+  }
+  let h = '';
+  partitions.forEach(p => {
+    h += renderBar(p.label, p.percent, `${fmtGB(p.free_gb)} frei von ${fmtGB(p.total_gb)}`);
+    h += `<div class="stat-row" style="font-size:0.72rem;margin-bottom:6px">
+      <span class="label">${p.device} (${p.fstype})</span>
+      <span class="val ${p.status}">${p.status.toUpperCase()}</span>
+    </div>`;
+  });
+  document.getElementById('internal-content').innerHTML = h;
+}
+
+function renderExternal(partitions) {
+  const el = document.getElementById('external-content');
+  if (!partitions.length) {
+    el.innerHTML = '<div class="no-external">🔌 Kein externer Speicher verbunden<br><small style="margin-top:6px;display:block">USB, externe Festplatten oder Netzlaufwerke werden hier angezeigt</small></div>';
+    return;
+  }
+  let h = '';
+  partitions.forEach(p => {
+    h += renderBar(p.label, p.percent, `${fmtGB(p.free_gb)} frei von ${fmtGB(p.total_gb)}`);
+  });
+  el.innerHTML = h;
+}
+
+function renderAlerts(alerts) {
+  const el = document.getElementById('alerts');
+  if (!alerts.length) {
+    el.innerHTML = '<div class="alert ok"><div class="dot ok"></div>Alle Speicher im grünen Bereich</div>';
+    return;
+  }
+  el.innerHTML = alerts.map(a => {
+    const cls = a.toLowerCase().includes('kritisch') ? 'critical' : 'warning';
+    return `<div class="alert ${cls}"><div class="dot ${cls}"></div>${a}</div>`;
+  }).join('');
+}
+
+function renderInfo(data) {
+  const s = data.summary;
+  const daemonOn = data.daemon_running;
+  let h = `
+    <div style="margin-bottom:12px">
+      <span class="daemon-badge ${daemonOn ? '' : 'off'}">
+        <span class="daemon-dot"></span>
+        Daemon ${daemonOn ? 'aktiv' : 'gestoppt'}
+      </span>
+    </div>
+    <div class="stat-row"><span class="label">Interner Gesamt</span><span class="val">${fmtGB(s.total_internal_gb)}</span></div>
+    <div class="stat-row"><span class="label">Interner Belegt</span><span class="val">${fmtGB(s.used_internal_gb)}</span></div>
+    <div class="stat-row"><span class="label">Interner Frei</span><span class="val ok">${fmtGB(s.free_internal_gb)}</span></div>
+    <div class="stat-row"><span class="label">Externer Gesamt</span><span class="val">${fmtGB(s.total_external_gb)}</span></div>
+    <div class="stat-row"><span class="label">Externer Frei</span><span class="val ${s.has_external ? 'ok' : ''}">${s.has_external ? fmtGB(s.free_external_gb) : 'nicht verbunden'}</span></div>
+    <div class="stat-row"><span class="label">Kritische Partitionen</span><span class="val ${s.critical_count > 0 ? 'critical' : 'ok'}">${s.critical_count}</span></div>
+    <div class="stat-row"><span class="label">Letzter Cleanup</span><span class="val">${fmtDate(data.last_cleanup)}</span></div>
+    <div class="stat-row"><span class="label">Letzte Auslagerung</span><span class="val">${fmtDate(data.last_move)}</span></div>
+  `;
+  document.getElementById('info-content').innerHTML = h;
+}
+
+function renderHistory(events) {
+  if (!events.length) {
+    document.getElementById('history-content').innerHTML = '<div style="color:var(--muted);font-size:0.82rem;text-align:center;padding:12px">Noch keine Ereignisse</div>';
+    return;
+  }
+  const typeMap = {
+    cleanup: 'ev-cleanup', offload: 'ev-offload', auto_cleanup: 'ev-auto_cleanup',
+    log_cleanup: 'ev-log_cleanup', alert: 'ev-alert',
+  };
+  const h = events.slice(0, 15).map(e => {
+    const cls = typeMap[e.type] || 'ev-alert';
+    return `<div class="history-item">
+      <span class="ev-type ${cls}">${e.type}</span>
+      <div>
+        <div>${e.details || '—'}</div>
+        <div style="color:var(--muted);font-size:0.7rem">${fmtDate(e.ts)} ${e.mountpoint ? '· ' + e.mountpoint : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('history-content').innerHTML = h;
+}
+
+function renderLargeFiles(files) {
+  if (!files.length) {
+    document.getElementById('files-content').innerHTML = '<div style="color:var(--muted);font-size:0.82rem">Keine großen Dateien gefunden (&gt; 50 MB)</div>';
+    return;
+  }
+  const rows = files.map(f => {
+    const name = f.path.split('/').pop();
+    const dir  = f.path.split('/').slice(0,-1).join('/').replace(/^\/home\/[^/]+\/supermegabot/, '~SMB');
+    return `<tr>
+      <td title="${f.path}">${name}</td>
+      <td>${f.size_mb.toFixed(0)} MB</td>
+      <td>${f.ext || '—'}</td>
+      <td><span class="badge ${f.moveable ? 'moveable' : 'locked'}">${f.moveable ? 'verschiebbar' : 'geschützt'}</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('files-content').innerHTML = `
+    <table class="files-table">
+      <thead><tr><th>Datei</th><th>Größe</th><th>Typ</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+async function loadStatus() {
+  try {
+    const r = await fetch(API + '/api/storage/status');
+    const data = await r.json();
+    if (data.error) { showToast('Fehler: ' + data.error, 'error'); return; }
+    document.getElementById('ts').textContent = 'Aktualisiert: ' + fmtDate(data.timestamp);
+    renderRAM(data.ram);
+    renderInternal(data.internal);
+    renderExternal(data.external);
+    renderAlerts(data.alerts);
+    renderInfo(data);
+    renderHistory(data.history);
+  } catch(e) {
+    showToast('Verbindungsfehler: ' + e.message, 'error');
+  }
+}
+
+async function loadLargeFiles() {
+  document.getElementById('files-content').textContent = 'Suche...';
+  try {
+    const r = await fetch(API + '/api/storage/large-files?min_mb=50');
+    const data = await r.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+    renderLargeFiles(data.files);
+  } catch(e) {
+    showToast('Fehler: ' + e.message, 'error');
+  }
+}
+
+async function runCleanup(hours=24) {
+  showToast('Cleanup läuft...', '');
+  try {
+    const r = await fetch(API + '/api/storage/cleanup', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({max_age_hours: hours})
+    });
+    const data = await r.json();
+    if (data.ok) {
+      showToast(`Cleanup fertig: ${data.freed_mb} MB freigegeben, ${data.deleted_files} Dateien gelöscht`, 'success');
+      setTimeout(loadStatus, 1000);
+    } else {
+      showToast('Cleanup Fehler: ' + data.error, 'error');
+    }
+  } catch(e) {
+    showToast('Fehler: ' + e.message, 'error');
+  }
+}
+
+async function runOffload() {
+  showToast('Auslagerung läuft...', '');
+  try {
+    const r = await fetch(API + '/api/storage/offload', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({mountpoint: '/', min_file_mb: 50})
+    });
+    const data = await r.json();
+    if (data.ok) {
+      if (data.moved_files > 0) {
+        showToast(`${data.moved_files} Dateien (${data.moved_gb} GB) nach "${data.target}" verschoben`, 'success');
+      } else {
+        showToast(data.error || 'Kein externer Speicher verfügbar oder keine Dateien gefunden', 'error');
+      }
+      setTimeout(loadStatus, 1000);
+    } else {
+      showToast(data.error, 'error');
+    }
+  } catch(e) {
+    showToast('Fehler: ' + e.message, 'error');
+  }
+}
+
+// Initial laden
+loadStatus();
+loadLargeFiles();
+
+// Alle 30 Sekunden auto-refresh
+setInterval(loadStatus, 30000);
+</script>
+</body>
+</html>

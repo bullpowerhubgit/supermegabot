@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
 """🏓 Micro-Ping — Überwacht alle Services, sofort-Alert per Telegram"""
-import sys, os, time, socket, urllib.request
-from pathlib import Path
-
-ARMY_DIR = Path(__file__).resolve().parent.parent
-SHARED_DIR = ARMY_DIR / "shared"
-sys.path.insert(0, str(SHARED_DIR))
+import sys, os
+import pathlib, pathlib, time, socket, urllib.request
+sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram
 
 ID = "micro_ping"
@@ -26,7 +23,7 @@ def check_service(name, url):
     try:
         req = urllib.request.urlopen(url, timeout=5)
         return req.getcode() < 500
-    except Exception:
+    except:
         return False
 
 def run():

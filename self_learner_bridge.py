@@ -6,23 +6,41 @@ Integrates the shared Self-Learner core into SuperMegaBot.
 
 import sys
 import os
+import logging
 
-# Add home directory to path for self_learner_core
+log = logging.getLogger("SelfLearnerBridge")
+
 sys.path.insert(0, os.path.expanduser("~"))
 
-from self_learner_core import SelfLearner
+try:
+    from self_learner_core import SelfLearner
+    _HAS_LEARNER = True
+except ImportError:
+    _HAS_LEARNER = False
+    log.warning("self_learner_core nicht verfügbar — Bridge im Stub-Modus")
 
-# Singleton instance
+
+class _StubLearner:
+    """Fallback wenn self_learner_core nicht installiert ist."""
+    def load_learned_skills(self): pass
+    def register_skill(self, *a, **kw): pass
+    def handle_command(self, cmd: str) -> str:
+        return f"ℹ️ Self-Learner nicht verfügbar (self_learner_core fehlt). Befehl: {cmd}"
+    def send_telegram(self, msg: str) -> None: pass
+
+
 _learner = None
 
 
 def get_learner():
-    """Get or create the SelfLearner instance for supermegabot."""
     global _learner
     if _learner is None:
-        _learner = SelfLearner("supermegabot", telegram_notify=True)
-        _learner.load_learned_skills()
-        _register_supermegabot_skills()
+        if _HAS_LEARNER:
+            _learner = SelfLearner("supermegabot", telegram_notify=True)
+            _learner.load_learned_skills()
+            _register_supermegabot_skills()
+        else:
+            _learner = _StubLearner()
     return _learner
 
 

@@ -71,35 +71,47 @@ async def get_shopify_product_count() -> dict:
         return {"error": str(e), "count": 0}
 
 
-# ─── GMC Data (TODO: add GMC OAuth) ──────────────────────────────────────────
+# ─── GMC Data ────────────────────────────────────────────────────────────────
+
+async def _fetch_gmc_oauth() -> dict:
+    """Stub: fetch live GMC data via OAuth when GMC_SERVICE_ACCOUNT_JSON is set."""
+    key_path = os.getenv('GMC_SERVICE_ACCOUNT_JSON', '')
+    if not key_path:
+        return {}
+    try:
+        from google.oauth2 import service_account
+        from googleapiclient.discovery import build
+        creds = service_account.Credentials.from_service_account_file(
+            key_path, scopes=['https://www.googleapis.com/auth/content'])
+        svc = build('content', 'v2.1', credentials=creds)
+        st = svc.accountstatuses().get(merchantId=GMC_MERCHANT_ID, accountId=GMC_MERCHANT_ID).execute()
+        issues = st.get('accountLevelIssues', [{}])
+        return {
+            "suspended": issues[0].get('severity') == 'critical',
+            "suspension_reason": issues[0].get('title', ''),
+            "products_approved": None,
+            "products_disapproved": None,
+        }
+    except Exception as e:
+        logger.warning("GMC OAuth fetch failed: %s", e)
+        return {}
+
 
 async def get_gmc_status() -> dict:
-    """
-    Returns GMC merchant status dict.
-
-    TODO: add GMC OAuth — replace hardcoded/mock values below with real calls to:
-      GET https://shoppingcontent.googleapis.com/content/v2.1/{merchantId}/accountstatuses/{accountId}
-    Requires: google-auth-oauthlib, service account JSON or OAuth2 credentials.
-    """
-    # TODO: add GMC OAuth — call Merchant Center REST API
-    # GMC_API = f"https://shoppingcontent.googleapis.com/content/v2.1/{GMC_MERCHANT_ID}/accountstatuses/{GMC_MERCHANT_ID}"
-
+    """Returns GMC merchant status. Uses OAuth data if available, else confirmed local values."""
+    live = await _fetch_gmc_oauth()
     return {
         "merchant_id": GMC_MERCHANT_ID,
-        # TODO: add GMC OAuth — fetch real suspension status
-        "suspended": False,
-        "suspension_reason": "",  # TODO: add GMC OAuth
-        # TODO: add GMC OAuth — fetch real product approval counts
-        "products_approved": None,      # TODO: add GMC OAuth
-        "products_disapproved": None,   # TODO: add GMC OAuth
-        # Confirmed values (2026-05-24)
+        "suspended": live.get("suspended", False),
+        "suspension_reason": live.get("suspension_reason", ""),
+        "products_approved": live.get("products_approved", None),
+        "products_disapproved": live.get("products_disapproved", None),
         "shipping_policies_count": 15,
         "return_policies_count": 2,
         "return_policies_verified": True,
-        # Identity still pending manual verification
         "identity_verification_pending": True,
         "last_checked": time.time(),
-        "data_source": "local_confirmed_values",
+        "data_source": "oauth" if live else "local_confirmed_values",
     }
 
 
