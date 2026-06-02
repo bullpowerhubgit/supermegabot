@@ -537,6 +537,38 @@ async def handle_service_action(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_service_start(req):
+    """Startet einen Service (dedizierter Endpoint für /api/service/start)."""
+    data = await req.json()
+    svc_id = data.get("id", "")
+    svc = next((s for s in SERVICES if s["id"] == svc_id), None)
+    if not svc:
+        return web.json_response({"ok": False, "error": f"Service {svc_id} not found"}, status=404)
+    if svc["id"] == "dashboard":
+        return web.json_response({"ok": False, "error": "Dashboard kann sich nicht selbst starten"}, status=400)
+    try:
+        subprocess.Popen(svc["start_cmd"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        await asyncio.sleep(1.5)
+        return web.json_response({"ok": True, "action": "start", "service": svc["name"]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_service_stop(req):
+    """Stoppt einen Service (dedizierter Endpoint für /api/service/stop)."""
+    data = await req.json()
+    svc_id = data.get("id", "")
+    svc = next((s for s in SERVICES if s["id"] == svc_id), None)
+    if not svc:
+        return web.json_response({"ok": False, "error": f"Service {svc_id} not found"}, status=404)
+    try:
+        subprocess.run(["pkill", "-f", svc["pattern"]], capture_output=True)
+        await asyncio.sleep(0.8)
+        return web.json_response({"ok": True, "action": "stop", "service": svc["name"]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_logs(req):
     lines = []
     for lf in [BASE_DIR / "logs" / "supermegabot.log", Path("/tmp/supermegabot.log")]:
@@ -1787,6 +1819,8 @@ async def create_app():
     app.router.add_post("/api/mac/action", handle_mac_action)
     app.router.add_get("/api/services/status", handle_services_status)
     app.router.add_post("/api/services/action", handle_service_action)
+    app.router.add_post("/api/service/start", handle_service_start)
+    app.router.add_post("/api/service/stop", handle_service_stop)
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
