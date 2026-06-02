@@ -11,6 +11,8 @@ api-keys.txt
 api-config.json.backup
 backup-encryption.key
 backup-metadata-*.json
+windsurf-mcp-config.json
+*.mcp-config.json
 
 # Dependencies
 node_modules/
