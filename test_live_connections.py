@@ -14,7 +14,7 @@ from pathlib import Path
 # ── .env laden ────────────────────────────────────────────────────────────────
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent / ".env")
+    load_dotenv(Path(__file__).parent / ".env", override=True)
 except ImportError:
     pass  # python-dotenv optional — export vars manually if needed
 

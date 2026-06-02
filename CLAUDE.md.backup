@@ -1,0 +1,48 @@
+# SuperMegaBot – Claude Code Kontext
+
+## Projekt
+
+Zentrales Steuerungs-Hub für Rudolfs Bot-Armee (Telegram, Shopify, Trading, Guardian, etc.).
+Haupt-Dashboard läuft auf Port 8888.
+
+## Wichtige Dateien
+
+- `dashboard/server.py` – aiohttp API (Port 8888)
+- `telegram_hub_bridge.py` – Telegram-Long-Polling-Bridge
+- `mcp_server.py` – MCP-Server für Claude Desktop/Code
+- `ecosystem.config.js` – PM2 Prozess-Definitionen
+- `guardian_client.py` – Guardian API Client
+
+## MCP-Server
+
+Der MCP-Server (`mcp_server.py`) gibt Claude Zugriff auf:
+
+- Systemstatus, Services, Prozesse, Logs
+- Telegram-Chat, AutoPilot
+- Guardian (Heal, Backup, Restore, Notify)
+- Shopify-Status, Trading-Preise
+- Mac-Actions (Screenshot, Lock, Volume)
+
+**Setup:**
+
+```bash
+python3 setup_mcp_for_claude.py
+```
+
+Danach Claude Desktop neu starten.
+
+## API-Base
+
+```text
+http://localhost:8888
+```
+
+## Commands
+
+- `python3 test_bot_hub.py` – End-to-End-Smoketest
+- `pm2 start ecosystem.config.js` – Alles starten
+- `python3 deep_scan_repair.py` – System-Scan + Repair
+
+## Sicherheit
+
+Alle Secrets kommen aus `.env`. Nie Secrets in den Code committen.
