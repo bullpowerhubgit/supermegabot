@@ -1785,12 +1785,27 @@ async def handle_drive_backup(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+@web.middleware
+async def cors_middleware(request, handler):
+    if request.method == "OPTIONS":
+        response = web.Response()
+    else:
+        try:
+            response = await handler(request)
+        except web.HTTPException as ex:
+            response = ex
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
+    return response
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
     await bot.start()
 
-    app = web.Application()
+    app = web.Application(middlewares=[cors_middleware])
     app["bot"] = bot
 
     # Existing routes
