@@ -1527,8 +1527,9 @@ async def handle_klaviyo_campaign(req):
 
 
 async def handle_bot_clones_status(req):
-    """Return status of all specialized bot-clone workers."""
+    """Return status of all bot-clone workers (base + specialized)."""
     try:
+        import core.specialized_bots  # registers specialized bots into BOT_REGISTRY
         from core.bot_clones import get_bot_status
         return web.json_response(await get_bot_status())
     except Exception as e:
