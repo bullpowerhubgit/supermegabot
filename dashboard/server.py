@@ -1548,6 +1548,38 @@ async def handle_bot_clone_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ── Watchdog Proxy ───────────────────────────────────────────────────────────
+
+async def handle_watchdog_status(req):
+    """Proxy GET /api/watchdog/status → http://localhost:9003/status"""
+    try:
+        timeout = aiohttp.ClientTimeout(total=5)
+        async with aiohttp.ClientSession(timeout=timeout) as s:
+            async with s.get("http://localhost:9003/status") as r:
+                if r.status == 200:
+                    data = await r.json(content_type=None)
+                    return web.json_response(data)
+                return web.json_response({"ok": False, "error": f"HTTP {r.status}"})
+    except Exception as e:
+        return web.json_response({"ok": False, "status": "offline", "error": str(e)})
+
+
+# ── Agenten Hub Proxy ─────────────────────────────────────────────────────────
+
+async def handle_agents_hub(req):
+    """Proxy GET /api/agents/hub → http://localhost:9998/status"""
+    try:
+        timeout = aiohttp.ClientTimeout(total=5)
+        async with aiohttp.ClientSession(timeout=timeout) as s:
+            async with s.get("http://localhost:9998/status") as r:
+                if r.status == 200:
+                    data = await r.json(content_type=None)
+                    return web.json_response(data)
+                return web.json_response({"ok": False, "error": f"HTTP {r.status}"})
+    except Exception as e:
+        return web.json_response({"ok": False, "status": "offline", "error": str(e)})
+
+
 # ── Stripe ───────────────────────────────────────────────────────────────────
 
 async def handle_stripe_status(req):
@@ -1600,8 +1632,16 @@ async def handle_stripe_revenue(req):
 
 async def handle_stripe_webhook(req):
     try:
-        event = await req.json()
-        from modules.stripe_automation import handle_webhook_event
+        import os
+        payload = await req.read()
+        sig_header = req.headers.get("Stripe-Signature", "")
+        webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+        from modules.stripe_automation import verify_webhook_signature, handle_webhook_event
+        if sig_header and not verify_webhook_signature(payload, sig_header, webhook_secret):
+            return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
+
+        event = json.loads(payload)
         result = await handle_webhook_event(event)
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
@@ -1833,6 +1873,10 @@ async def create_app():
     # ── Bot Clones ────────────────────────────────────────────────────────────
     app.router.add_get("/api/bots/status",            handle_bot_clones_status)
     app.router.add_post("/api/bots/run",              handle_bot_clone_run)
+
+    # ── Watchdog + Agenten Hub ────────────────────────────────────────────────
+    app.router.add_get("/api/watchdog/status",        handle_watchdog_status)
+    app.router.add_get("/api/agents/hub",             handle_agents_hub)
 
     # ── Stripe ────────────────────────────────────────────────────────────────
     app.router.add_get("/api/stripe/status",          handle_stripe_status)
