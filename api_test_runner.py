@@ -85,7 +85,7 @@ def http_request(host, port, path, method='GET', timeout=5):
             body = resp.read().decode('utf-8')
             try:
                 data = json.loads(body) if body else {}
-            except:
+            except Exception:
                 data = {'_raw': body[:200]}
             return {
                 'status': resp.status,

@@ -30,11 +30,20 @@ LOGS_DIR = BASE_DIR / "logs"
 DATA_DIR.mkdir(exist_ok=True)
 LOGS_DIR.mkdir(exist_ok=True)
 
-# Guardian Integration
+# Guardian Integration (portable: project-local first, then external rudibot-eternal,
+# overridable via $ETERNAL_BOT_DIR)
 GUARDIAN_AVAILABLE = False
+_GUARDIAN_CANDIDATES = [
+    BASE_DIR,
+    Path(os.environ.get("ETERNAL_BOT_DIR", "")) if os.environ.get("ETERNAL_BOT_DIR") else None,
+    Path.home() / "rudibot-eternal",
+]
+for _cand in _GUARDIAN_CANDIDATES:
+    if _cand and (_cand / "guardian_integration.py").exists():
+        sys.path.insert(0, str(_cand))
+        break
 try:
-    sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
-    from guardian_integration import guardian
+    from guardian_integration import guardian  # noqa: F401
     GUARDIAN_AVAILABLE = True
 except ImportError:
     pass
@@ -676,7 +685,11 @@ class CommandRouter:
             sys.path.insert(0, os.path.expanduser("~"))
             # Tokens laden
             from pathlib import Path
-            env_file = Path("/Users/rudolfsarkany/Library/Mobile Documents/com~apple~CloudDocs/Documents/GitHub/telegram-automation-bot/.env")
+            # Portable env file lookup; override with $TELEGRAM_BOT_ENV
+            env_file = Path(os.environ.get(
+                "TELEGRAM_BOT_ENV",
+                str(Path.home() / "telegram-automation-bot" / ".env"),
+            ))
             if env_file.exists():
                 for line in env_file.read_text(errors="ignore").splitlines():
                     if "=" in line and not line.strip().startswith("#"):
@@ -959,9 +972,16 @@ class MegaOrchestrator:
         log.info("MegaOrchestrator initialized")
     
     def _init_guardian(self):
-        """Initialize Guardian API client"""
+        """Initialize Guardian API client (portable lookup)."""
         try:
-            sys.path.insert(0, '/Users/rudolfsarkany/rudibot-eternal')
+            for cand in (
+                BASE_DIR,
+                Path(os.environ.get("ETERNAL_BOT_DIR", "")) if os.environ.get("ETERNAL_BOT_DIR") else None,
+                Path.home() / "rudibot-eternal",
+            ):
+                if cand and (cand / "guardian_client.py").exists():
+                    sys.path.insert(0, str(cand))
+                    break
             from guardian_client import GuardianClient
             self.guardian = GuardianClient()
             log.info("Guardian API client initialized")
@@ -1025,7 +1045,7 @@ class MegaOrchestrator:
                         f"🔴 SuperMegaBot Fehler: {type(e).__name__}: {str(e)[:150]}",
                         priority="high"
                     )
-                except:
+                except Exception:
                     pass
             
             repair = await self.healer.heal(e, f"processing command: {text[:100]}")
