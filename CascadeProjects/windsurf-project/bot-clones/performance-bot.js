@@ -26,7 +26,7 @@ class PerformanceBot {
             loadCritical: 10.0,
             loadWarning: 5.0,
             memoryCritical: 90,
-            memoryWarning: 75
+            memoryWarning: 90
         };
         this.optimizations = 0;
     }

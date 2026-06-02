@@ -14,7 +14,7 @@ const CONFIG = {
   refreshInterval: 2000, // 2 seconds
   historySize: 60, // Keep 60 data points for charts
   alertThresholds: {
-    memory: { warning: 80, critical: 92 },
+    memory: { warning: 90, critical: 95 },
     disk: { warning: 85, critical: 95 },
     cpu: { warning: 80, critical: 95 }
   }

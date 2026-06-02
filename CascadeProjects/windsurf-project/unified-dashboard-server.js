@@ -147,8 +147,8 @@ class UnifiedServer {
   async getAlerts() {
     const alerts = [];
     const [mem, cpu, disks] = await Promise.all([this.getSystemStats(), this.getCPU(), this.getDisks()]);
-    if (mem.percent > 85) alerts.push({ type: 'critical', source: 'memory', message: `RAM kritisch: ${mem.percent}%`, timestamp: new Date().toISOString() });
-    else if (mem.percent > 75) alerts.push({ type: 'warning', source: 'memory', message: `RAM hoch: ${mem.percent}%`, timestamp: new Date().toISOString() });
+    if (mem.percent > 95) alerts.push({ type: 'critical', source: 'memory', message: `RAM kritisch: ${mem.percent}%`, timestamp: new Date().toISOString() });
+    else if (mem.percent > 90) alerts.push({ type: 'warning', source: 'memory', message: `RAM hoch: ${mem.percent}%`, timestamp: new Date().toISOString() });
     if (cpu.usage > 90) alerts.push({ type: 'critical', source: 'cpu', message: `CPU kritisch: ${cpu.usage}%`, timestamp: new Date().toISOString() });
     else if (cpu.usage > 70) alerts.push({ type: 'warning', source: 'cpu', message: `CPU hoch: ${cpu.usage}%`, timestamp: new Date().toISOString() });
     for (const d of disks) {

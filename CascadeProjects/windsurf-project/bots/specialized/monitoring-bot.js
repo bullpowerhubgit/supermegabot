@@ -114,7 +114,7 @@ export class MonitoringBot {
   evaluateThresholds(metrics) {
     const alerts = [];
     if (metrics.memory.percent > this.thresholds.memory) {
-      alerts.push({ type: 'memory', severity: 'warning', value: metrics.memory.percent, threshold: this.thresholds.memory });
+      if (metrics.memory.percent > 90) alerts.push({ type: 'memory', severity: 'warning', value: metrics.memory.percent, threshold: 90 });
     }
     if (metrics.cpu > this.thresholds.cpu) {
       alerts.push({ type: 'cpu', severity: 'warning', value: metrics.cpu, threshold: this.thresholds.cpu });
