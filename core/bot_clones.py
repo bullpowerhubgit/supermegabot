@@ -33,7 +33,7 @@ def _load_status() -> Dict:
         try:
             return json.loads(_STATUS_FILE.read_text())
         except Exception:
-            pass
+            log.exception("BotClones: failed to load status file")
     return {}
 
 
@@ -56,7 +56,7 @@ async def _tg(msg: str):
                 json={"chat_id": chat, "text": msg, "parse_mode": "HTML"}
             )
     except Exception:
-        pass
+        log.exception("BotClones: Telegram send failed")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -146,7 +146,7 @@ class RepairBot:
                 pyc.unlink()
                 cleaned += 1
             except Exception:
-                pass
+                log.exception("RepairBot: failed to delete pyc file %s", pyc)
         results["pyc_cleaned"] = cleaned
 
         # Check data dir for corrupt JSON
@@ -154,6 +154,7 @@ class RepairBot:
             try:
                 json.loads(json_file.read_text())
             except Exception:
+                log.exception("RepairBot: corrupt JSON reset: %s", json_file.name)
                 json_file.write_text("{}")
                 results["fixed"].append(f"Reset corrupt: {json_file.name}")
 
@@ -197,7 +198,7 @@ class GrowthBot:
                 results["content_items"] = len(cal)
                 results["content_updated"] = cal_file.stat().st_mtime
             except Exception:
-                pass
+                log.exception("GrowthBot: failed to load content calendar")
 
         # Ollama health (for SEO generation)
         try:
@@ -229,7 +230,7 @@ class RevenueBot:
                     age_h = (time.time() - f.stat().st_mtime) / 3600
                     results[platform] = {"age_h": round(age_h, 1), "data": d if isinstance(d, dict) else {"count": len(d)}}
                 except Exception:
-                    pass
+                    log.exception("RevenueBot: failed to load cache file %s", fname)
 
         # Revenue snapshot
         snap_file = DATA_DIR / "revenue_snapshots.json"
@@ -240,7 +241,7 @@ class RevenueBot:
                 if snaps:
                     results["last_snapshot"] = snaps[-1].get("date", "")
             except Exception:
-                pass
+                log.exception("RevenueBot: failed to load revenue snapshots")
 
         return results
 
@@ -310,7 +311,7 @@ class DeployBot:
             )
             results["uncommitted"] = len(r.stdout.strip().splitlines())
         except Exception:
-            pass
+            log.exception("DeployBot: failed to check git status")
 
         # PM2 status
         try:
