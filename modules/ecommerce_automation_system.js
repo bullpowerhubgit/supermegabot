@@ -27,7 +27,8 @@ class ECommerceAutomationSystem {
         apiVersion: process.env.SHOPIFY_API_VERSION || '2026-04'
       },
       printify: {
-        token: process.env.PRINTIFY_TOKEN,
+        // Unterstütze beide Varianten für Kompatibilität mit Python-Stack
+        token: process.env.PRINTIFY_API_KEY || process.env.PRINTIFY_TOKEN || '',
         shopId: process.env.PRINTIFY_SHOP_ID
       },
       etsy: {
