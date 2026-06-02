@@ -1,0 +1,14 @@
+{
+  "03f4c35825a9": {
+    "error_type": "server_down",
+    "first_seen": "2026-05-24T01:51:25.256417",
+    "count": 238,
+    "successes": 1,
+    "last_fix": "2026-05-27T16:13:59.096612",
+    "solutions": [
+      "acknowledged_stuck_error_reset_2026-05-28"
+    ],
+    "last_seen": "2026-05-27T14:22:25.997326",
+    "status": "acknowledged"
+  }
+}

@@ -5,7 +5,7 @@
     "auth": {
       "type": "api_key",
       "header": "X-API-Key",
-      "key_generation": "python3 -c \"import hashlib,os; print(hashlib.sha256(os.environ['GUARDIAN_API_SECRET'].encode()).hexdigest()[:32])\""
+      "key_generation": "echo -n 'rudibot-secret-key-change-in-production' | sha256sum | cut -c1-32"
     }
   },
   "endpoints": {
@@ -192,18 +192,18 @@
   "environment_variables": {
     "GUARDIAN_API_HOST": "0.0.0.0",
     "GUARDIAN_API_PORT": "3201",
-    "GUARDIAN_API_SECRET": "${GUARDIAN_API_SECRET}",
+    "GUARDIAN_API_SECRET": "rudibot-secret-key-change-in-production",
     "GUARDIAN_API_AUTH": "true",
-    "GUARDIAN_WEBHOOK_SECRET": "${GUARDIAN_WEBHOOK_SECRET}",
+    "GUARDIAN_WEBHOOK_SECRET": "webhook-secret-change-me",
     "DISCORD_WEBHOOK_URL": "",
     "SLACK_WEBHOOK_URL": "",
     "GITHUB_WEBHOOK_SECRET": "",
     "PROMETHEUS_ENABLED": "true"
   },
   "cli_commands": {
-    "generate_api_key": "python3 -c \"import hashlib,os; print(hashlib.sha256(os.environ['GUARDIAN_API_SECRET'].encode()).hexdigest()[:32])\"",
-    "start_guardian_with_api": "python3 eternal_guardian.py",
-    "start_api_only": "python3 eternal_guardian.py --api-only",
+    "generate_api_key": "KEY=$(echo -n 'rudibot-secret-key-change-in-production' | sha256sum | cut -c1-32)",
+    "start_guardian_with_api": "python3 /Users/rudolfsarkany/rudibot-eternal/eternal_guardian.py",
+    "start_api_only": "python3 /Users/rudolfsarkany/rudibot-eternal/eternal_guardian.py --api-only",
     "check_health": "curl http://localhost:3201/api/v1/health",
     "check_status": "curl -H \"X-API-Key: $KEY\" http://localhost:3201/api/v1/status",
     "restart_service": "curl -X POST -H \"X-API-Key: $KEY\" http://localhost:3201/api/v1/services/{service_name}/restart",

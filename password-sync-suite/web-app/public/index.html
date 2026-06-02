@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Sync Suite</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header>
+      <div class="logo">Password Sync Suite</div>
+      <nav id="nav"></nav>
+    </header>
+
+    <main>
+      <section id="view-landing" class="view">
+        <div class="hero">
+          <h1>Passwörter überall synchron</h1>
+          <p>Verwalte deine Gmail-Konten und gespeicherten Passwörter zentral.</p>
+          <a href="/auth/google" class="btn primary">Mit Google anmelden</a>
+        </div>
+        <div class="cards">
+          <div class="card">
+            <h3>Browser-Extension</h3>
+            <p>Installiere die Extension und speichere Passwörter direkt im Browser.</p>
+          </div>
+          <div class="card">
+            <h3>Gmail-Sync</h3>
+            <p>Verbinde dragonadnp, aiitecbuuss und bullpowersrtkennels auf einen Blick.</p>
+          </div>
+          <div class="card">
+            <h3>Sicher & verschlüsselt</h3>
+            <p>Client-seitige Verschlüsselung und sichere OAuth-Authentifizierung.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="view-dashboard" class="view hidden">
+        <div class="dashboard-header">
+          <h2>Dashboard</h2>
+          <div id="user-pill"></div>
+        </div>
+
+        <div class="grid">
+          <div class="panel">
+            <h3>Gmail-Konten</h3>
+            <div id="accounts-grid"></div>
+          </div>
+          <div class="panel">
+            <h3>Sync-Status</h3>
+            <div id="sync-stats"></div>
+          </div>
+          <div class="panel wide">
+            <h3>Gespeicherte Passwörter</h3>
+            <table id="passwords-table">
+              <thead>
+                <tr><th>Website</th><th>Benutzername</th><th>Hinzugefügt</th></tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <small>Password Sync Suite v1.0</small>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
