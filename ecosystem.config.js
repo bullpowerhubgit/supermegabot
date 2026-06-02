@@ -70,7 +70,7 @@ module.exports = {
     },
 
     // ── Windsurf Integration Services ────────────────────────────────────────
-    /* DISABLED: requires npm install axios ws + Linux portability fixes */
+    /* DISABLED: requires npm install axios ws + Linux portability fixes
     {
       name: "windsurf-watchdog",
       script: "node",
@@ -140,7 +140,7 @@ module.exports = {
       autorestart: true,
       log_file: "/tmp/windsurf-agenten-hub.log",
     },
-    /* DISABLED: requires npm install axios ws + Linux portability fixes */
+    */
 
     // ── Optionale externe Services ────────────────────────────────────────────
     {
