@@ -23,40 +23,19 @@ def _url(action: str) -> str:
     return f"{DS24_BASE}/{DS24_KEY}/{action}/{DS24_FORMAT}"
 
 
-def _mock_orders():
-    """Return mock orders when API key is not configured."""
-    now = datetime.now()
-    return [
-        {
-            "order_id": f"DS-DEMO-{1000 + i}",
-            "date": (now - timedelta(days=i)).strftime("%Y-%m-%d"),
-            "product_name": f"Demo Product {i + 1}",
-            "amount": round(29.99 + i * 10, 2),
-            "currency": "EUR",
-            "buyer_email": f"buyer{i}@example.com",
-            "status": "complete",
-        }
-        for i in range(10)
-    ]
-
-
-def _mock_products():
-    """Return mock products when API key is not configured."""
-    return [
-        {"product_id": f"P-{100 + i}", "name": f"Demo Product {i + 1}", "price": round(29.99 + i * 10, 2), "currency": "EUR"}
-        for i in range(5)
-    ]
+def is_configured() -> bool:
+    return bool(DS24_KEY)
 
 
 async def get_orders(page=1, per_page=50):
     """Fetch orders from Digistore24. Returns list of order dicts."""
     if not DS24_KEY:
-        log.warning("DIGISTORE24_API_KEY not set — returning mock data")
-        return _mock_orders()
+        log.warning("DIGISTORE24_API_KEY not set — returning empty (set key to enable)")
+        return []
 
     if not HAS_AIOHTTP:
         log.error("aiohttp not installed")
-        return _mock_orders()
+        return []
 
     url = _url("listOrdersForVendor")
     params = {"page": page, "items_per_page": per_page}
@@ -70,21 +49,21 @@ async def get_orders(page=1, per_page=50):
             orders = raw.get("order_list", raw.get("orders", raw if isinstance(raw, list) else []))
             return orders
         log.warning("DS24 get_orders: result=%s", data.get("result"))
-        return _mock_orders()
+        return []
     except Exception as exc:
         log.error("DS24 get_orders error: %s", exc)
-        return _mock_orders()
+        return []
 
 
 async def get_products():
     """Fetch products from Digistore24. Returns list of product dicts."""
     if not DS24_KEY:
-        log.warning("DIGISTORE24_API_KEY not set — returning mock data")
-        return _mock_products()
+        log.warning("DIGISTORE24_API_KEY not set — returning empty")
+        return []
 
     if not HAS_AIOHTTP:
         log.error("aiohttp not installed")
-        return _mock_products()
+        return []
 
     url = _url("listProductsForVendor")
     try:
@@ -96,10 +75,10 @@ async def get_products():
             products = raw.get("product_list", raw.get("products", raw if isinstance(raw, list) else []))
             return products
         log.warning("DS24 get_products: result=%s", data.get("result"))
-        return _mock_products()
+        return []
     except Exception as exc:
         log.error("DS24 get_products error: %s", exc)
-        return _mock_products()
+        return []
 
 
 async def get_sales_stats():
