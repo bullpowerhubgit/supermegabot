@@ -1607,8 +1607,16 @@ async def handle_stripe_revenue(req):
 
 async def handle_stripe_webhook(req):
     try:
-        event = await req.json()
-        from modules.stripe_automation import handle_webhook_event
+        import os
+        payload = await req.read()
+        sig_header = req.headers.get("Stripe-Signature", "")
+        webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+
+        from modules.stripe_automation import verify_webhook_signature, handle_webhook_event
+        if sig_header and not verify_webhook_signature(payload, sig_header, webhook_secret):
+            return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
+
+        event = json.loads(payload)
         result = await handle_webhook_event(event)
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
