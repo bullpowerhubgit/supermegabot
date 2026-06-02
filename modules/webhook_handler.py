@@ -166,7 +166,7 @@ _handler = WebhookHandler()
 def _send_telegram(text: str) -> None:
     """Fire-and-forget Telegram notification (sync-safe)."""
     import urllib.request
-    token   = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    token   = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1") or os.getenv("TELEGRAM_BOT_TOKEN_2") or ""
     chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
     if not (token and chat_id):
         log.debug("Telegram not configured — skipping notification")

@@ -543,7 +543,7 @@ _ALERT_COOLDOWN = 1800  # 30 Minuten zwischen gleichen Alerts
 
 
 def _send_telegram(message: str):
-    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    token = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1") or os.getenv("TELEGRAM_BOT_TOKEN_2") or ""
     chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
     if not token or not chat_id:
         return

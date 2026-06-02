@@ -57,7 +57,12 @@ else:
     log.warning("⚠️ Guardian Integration not available")
 
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_TOKEN = (
+    os.getenv("TELEGRAM_BOT_TOKEN")
+    or os.getenv("TELEGRAM_BOT_TOKEN_1")
+    or os.getenv("TELEGRAM_BOT_TOKEN_2")
+    or ""
+)
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
 
