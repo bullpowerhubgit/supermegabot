@@ -70,3 +70,6 @@ backups/
 # Logs
 logs/
 *.log
+
+# MCP Config with API Keys
+windsurf-mcp-config.json
