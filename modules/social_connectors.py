@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Unified Social Media Connectors — async, credential-safe, mock-capable."""
+"""Unified Social Media Connectors — async, credential-safe."""
 
 import os
 import json
@@ -31,6 +31,9 @@ class TikTokConnector:
         self.client_secret = _env("TIKTOK_CLIENT_SECRET")
         self.access_token = _env("TIKTOK_ACCESS_TOKEN")
 
+    def is_configured(self) -> bool:
+        return bool(self.access_token)
+
     def _headers(self) -> Dict[str, str]:
         return {
             "Authorization": f"Bearer {self.access_token}",
@@ -59,7 +62,7 @@ class TikTokConnector:
         privacy: str = "PUBLIC_TO_EVERYONE",
     ) -> Dict[str, Any]:
         if not self.access_token:
-            return {"mock": True, "publish_id": "mock_publish_id_001", "title": title}
+            return {"available": False, "reason": "TIKTOK_ACCESS_TOKEN not set"}
         url = f"{self.BASE}/post/publish/video/init/"
         payload = {
             "post_info": {
@@ -80,12 +83,7 @@ class TikTokConnector:
 
     async def get_stats(self) -> Dict[str, Any]:
         if not self.access_token:
-            return {
-                "mock": True,
-                "follower_count": 12_500,
-                "video_count": 87,
-                "platform": "tiktok",
-            }
+            return {"available": False, "reason": "TIKTOK_ACCESS_TOKEN not set", "platform": "tiktok"}
         url = f"{self.BASE}/research/adlib/ad/detail/"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self._headers()) as resp:
@@ -104,6 +102,9 @@ class PinterestConnector:
     def __init__(self) -> None:
         self.access_token = _env("PINTEREST_ACCESS_TOKEN")
         self.default_board_id = _env("PINTEREST_BOARD_ID")
+
+    def is_configured(self) -> bool:
+        return bool(self.access_token)
 
     def _headers(self) -> Dict[str, str]:
         return {
@@ -136,12 +137,7 @@ class PinterestConnector:
     ) -> Dict[str, Any]:
         board = board_id or self.default_board_id
         if not self.access_token:
-            return {
-                "mock": True,
-                "id": "mock_pin_id_001",
-                "title": title,
-                "board_id": board,
-            }
+            return {"available": False, "reason": "PINTEREST_ACCESS_TOKEN not set"}
         url = f"{self.BASE}/pins"
         payload = {
             "title": title,
@@ -156,13 +152,7 @@ class PinterestConnector:
 
     async def get_boards(self) -> Dict[str, Any]:
         if not self.access_token:
-            return {
-                "mock": True,
-                "items": [
-                    {"id": "mock_board_1", "name": "Moodboard"},
-                    {"id": "mock_board_2", "name": "Products"},
-                ],
-            }
+            return {"available": False, "reason": "PINTEREST_ACCESS_TOKEN not set"}
         url = f"{self.BASE}/boards"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self._headers()) as resp:
@@ -172,13 +162,7 @@ class PinterestConnector:
 
     async def get_analytics(self) -> Dict[str, Any]:
         if not self.access_token:
-            return {
-                "mock": True,
-                "impressions": 45_200,
-                "saves": 1_340,
-                "clicks": 980,
-                "platform": "pinterest",
-            }
+            return {"available": False, "reason": "PINTEREST_ACCESS_TOKEN not set", "platform": "pinterest"}
         url = f"{self.BASE}/user_account/analytics"
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=self._headers()) as resp:
@@ -198,6 +182,9 @@ class MetaConnector:
         self.access_token = _env("META_ACCESS_TOKEN")
         self.page_id = _env("META_PAGE_ID")
         self.ig_account_id = _env("INSTAGRAM_ACCOUNT_ID")
+
+    def is_configured(self) -> bool:
+        return bool(self.access_token and self.page_id)
 
     def _params(self, extra: Optional[Dict] = None) -> Dict[str, str]:
         p: Dict[str, str] = {"access_token": self.access_token}
@@ -226,12 +213,7 @@ class MetaConnector:
 
     async def post_photo(self, image_url: str, caption: str) -> Dict[str, Any]:
         if not self.access_token or not self.ig_account_id:
-            return {
-                "mock": True,
-                "id": "mock_ig_media_001",
-                "caption": caption,
-                "platform": "instagram",
-            }
+            return {"available": False, "reason": "META_ACCESS_TOKEN or INSTAGRAM_ACCOUNT_ID not set", "platform": "instagram"}
         # Step 1 — create container
         create_url = f"{self.BASE}/{self.ig_account_id}/media"
         async with aiohttp.ClientSession() as session:
@@ -254,12 +236,7 @@ class MetaConnector:
 
     async def post_fb_page(self, message: str, link: str = "") -> Dict[str, Any]:
         if not self.access_token or not self.page_id:
-            return {
-                "mock": True,
-                "id": "mock_fb_post_001",
-                "message": message,
-                "platform": "facebook",
-            }
+            return {"available": False, "reason": "META_ACCESS_TOKEN or META_PAGE_ID not set", "platform": "facebook"}
         url = f"{self.BASE}/{self.page_id}/feed"
         payload: Dict[str, str] = {"message": message}
         if link:
@@ -272,13 +249,7 @@ class MetaConnector:
 
     async def get_insights(self) -> Dict[str, Any]:
         if not self.access_token or not self.ig_account_id:
-            return {
-                "mock": True,
-                "impressions": 98_700,
-                "reach": 54_100,
-                "follower_count": 8_200,
-                "platform": "instagram",
-            }
+            return {"available": False, "reason": "META_ACCESS_TOKEN or INSTAGRAM_ACCOUNT_ID not set", "platform": "instagram"}
         url = f"{self.BASE}/{self.ig_account_id}/insights"
         params = self._params(
             {
@@ -309,8 +280,11 @@ class RedditConnector:
         self.user_agent = _env("REDDIT_USER_AGENT", "SuperMegaBot/1.0")
         self._token: Optional[str] = None
 
-    def _has_creds(self) -> bool:
+    def is_configured(self) -> bool:
         return bool(self.client_id and self.client_secret and self.username and self.password)
+
+    def _has_creds(self) -> bool:
+        return self.is_configured()
 
     async def _get_token(self) -> Optional[str]:
         if self._token:
@@ -369,13 +343,7 @@ class RedditConnector:
         flair: str = "",
     ) -> Dict[str, Any]:
         if not self._has_creds():
-            return {
-                "mock": True,
-                "id": "mock_reddit_post_001",
-                "subreddit": subreddit,
-                "title": title,
-                "platform": "reddit",
-            }
+            return {"available": False, "reason": "REDDIT_CLIENT_ID/SECRET/USERNAME/PASSWORD not set", "platform": "reddit"}
         token = await self._get_token()
         if not token:
             return {"error": "token_error", "platform": "reddit"}
@@ -405,14 +373,7 @@ class RedditConnector:
         self, subreddit: str, limit: int = 10
     ) -> Dict[str, Any]:
         if not self._has_creds():
-            return {
-                "mock": True,
-                "posts": [
-                    {"title": f"Mock Post {i+1}", "score": (10 - i) * 100, "id": f"mock_{i}"}
-                    for i in range(min(limit, 3))
-                ],
-                "subreddit": subreddit,
-            }
+            return {"available": False, "reason": "REDDIT_CLIENT_ID/SECRET/USERNAME/PASSWORD not set", "subreddit": subreddit}
         token = await self._get_token()
         if not token:
             return {"error": "token_error", "subreddit": subreddit}
@@ -439,6 +400,9 @@ class YouTubeConnector:
         self.api_key = _env("YOUTUBE_API_KEY")
         self.channel_id = _env("YOUTUBE_CHANNEL_ID")
 
+    def is_configured(self) -> bool:
+        return bool(self.api_key)
+
     async def ping(self) -> Tuple[bool, str]:
         if not self.api_key or not self.channel_id:
             return False, "Kein API-Key konfiguriert (YOUTUBE_API_KEY / YOUTUBE_CHANNEL_ID)"
@@ -464,13 +428,7 @@ class YouTubeConnector:
 
     async def get_channel_stats(self) -> Dict[str, Any]:
         if not self.api_key or not self.channel_id:
-            return {
-                "mock": True,
-                "viewCount": "1250000",
-                "subscriberCount": "34700",
-                "videoCount": "312",
-                "platform": "youtube",
-            }
+            return {"available": False, "reason": "YOUTUBE_API_KEY or YOUTUBE_CHANNEL_ID not set", "platform": "youtube"}
         url = f"{self.BASE}/channels"
         params = {"part": "statistics", "id": self.channel_id, "key": self.api_key}
         async with aiohttp.ClientSession() as session:
@@ -485,15 +443,7 @@ class YouTubeConnector:
 
     async def search_videos(self, query: str, max_results: int = 10) -> Dict[str, Any]:
         if not self.api_key:
-            return {
-                "mock": True,
-                "items": [
-                    {
-                        "id": {"videoId": "mock_vid_001"},
-                        "snippet": {"title": f"Mock Video — {query}"},
-                    }
-                ],
-            }
+            return {"available": False, "reason": "YOUTUBE_API_KEY not set"}
         url = f"{self.BASE}/search"
         params = {
             "part": "snippet",
@@ -509,16 +459,7 @@ class YouTubeConnector:
 
     async def get_trending(self, region_code: str = "DE") -> Dict[str, Any]:
         if not self.api_key:
-            return {
-                "mock": True,
-                "region": region_code,
-                "items": [
-                    {
-                        "id": "mock_trending_001",
-                        "snippet": {"title": "Mock Trending Video"},
-                    }
-                ],
-            }
+            return {"available": False, "reason": "YOUTUBE_API_KEY not set", "region": region_code}
         url = f"{self.BASE}/videos"
         params = {
             "part": "snippet",
@@ -547,6 +488,9 @@ class TwitterConnector:
         self.api_secret = _env("TWITTER_API_SECRET")
         self.access_token = _env("TWITTER_ACCESS_TOKEN")
         self.access_secret = _env("TWITTER_ACCESS_SECRET")
+
+    def is_configured(self) -> bool:
+        return bool(self.bearer_token)
 
     def _bearer_headers(self) -> Dict[str, str]:
         return {
@@ -578,12 +522,7 @@ class TwitterConnector:
 
     async def post_tweet(self, text: str) -> Dict[str, Any]:
         if not self.bearer_token:
-            return {
-                "mock": True,
-                "id": "mock_tweet_001",
-                "text": text,
-                "platform": "twitter",
-            }
+            return {"available": False, "reason": "TWITTER_BEARER_TOKEN not set", "platform": "twitter"}
         url = f"{self.BASE}/tweets"
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -595,13 +534,7 @@ class TwitterConnector:
 
     async def get_mentions(self, user_id: str, max_results: int = 10) -> Dict[str, Any]:
         if not self.bearer_token:
-            return {
-                "mock": True,
-                "data": [
-                    {"id": f"mock_mention_{i}", "text": f"Mock mention #{i+1}"}
-                    for i in range(min(max_results, 3))
-                ],
-            }
+            return {"available": False, "reason": "TWITTER_BEARER_TOKEN not set"}
         url = f"{self.BASE}/users/{user_id}/mentions"
         params = {"max_results": str(max(5, min(max_results, 100)))}
         async with aiohttp.ClientSession() as session:
@@ -614,16 +547,7 @@ class TwitterConnector:
 
     async def search_recent(self, query: str, max_results: int = 10) -> Dict[str, Any]:
         if not self.bearer_token:
-            return {
-                "mock": True,
-                "data": [
-                    {
-                        "id": f"mock_tweet_{i}",
-                        "text": f"Mock tweet about '{query}' #{i+1}",
-                    }
-                    for i in range(min(max_results, 3))
-                ],
-            }
+            return {"available": False, "reason": "TWITTER_BEARER_TOKEN not set"}
         url = f"{self.BASE}/tweets/search/recent"
         params = {
             "query": query,
@@ -649,6 +573,9 @@ class DiscordConnector:
         self.bot_token = _env("DISCORD_BOT_TOKEN")
         self.default_channel_id = _env("DISCORD_CHANNEL_ID")
         self.webhook_url = _env("DISCORD_WEBHOOK_URL")
+
+    def is_configured(self) -> bool:
+        return bool(self.bot_token or self.webhook_url)
 
     def _bot_headers(self) -> Dict[str, str]:
         return {
@@ -695,12 +622,6 @@ class DiscordConnector:
         # Use webhook if available and no explicit channel override
         if self.webhook_url and not channel_id:
             payload = {"content": content}
-            if not self.webhook_url:
-                return {
-                    "mock": True,
-                    "id": "mock_discord_msg_001",
-                    "content": content,
-                }
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     self.webhook_url,
@@ -712,12 +633,7 @@ class DiscordConnector:
                     return await resp.json() if resp.content_length else {"ok": True}
 
         if not self.bot_token or not channel:
-            return {
-                "mock": True,
-                "id": "mock_discord_msg_001",
-                "content": content,
-                "platform": "discord",
-            }
+            return {"available": False, "reason": "DISCORD_BOT_TOKEN or DISCORD_CHANNEL_ID not set", "platform": "discord"}
         url = f"{self.BASE}/channels/{channel}/messages"
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -748,12 +664,6 @@ class DiscordConnector:
         # Webhook path
         if self.webhook_url and not channel_id:
             payload = {"embeds": [embed]}
-            if not self.webhook_url:
-                return {
-                    "mock": True,
-                    "embed_title": title,
-                    "platform": "discord",
-                }
             async with aiohttp.ClientSession() as session:
                 async with session.post(
                     self.webhook_url,
@@ -765,11 +675,7 @@ class DiscordConnector:
                     return await resp.json() if resp.content_length else {"ok": True}
 
         if not self.bot_token or not channel:
-            return {
-                "mock": True,
-                "embed_title": title,
-                "platform": "discord",
-            }
+            return {"available": False, "reason": "DISCORD_BOT_TOKEN or DISCORD_CHANNEL_ID not set", "platform": "discord"}
         url = f"{self.BASE}/channels/{channel}/messages"
         async with aiohttp.ClientSession() as session:
             async with session.post(
