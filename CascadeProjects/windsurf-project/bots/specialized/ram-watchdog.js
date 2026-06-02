@@ -20,9 +20,9 @@ export class RAMWatchdog {
     this.running = false;
     this.timer = null;
     this.thresholds = {
-      warning: options.warningThreshold || 75,
-      critical: options.criticalThreshold || 85,
-      action: options.actionThreshold || 90
+      warning: options.warningThreshold || 90,
+      critical: options.criticalThreshold || 95,
+      action: options.actionThreshold || 98
     };
     this.knownLeaks = new Set();
     this.status = { startedAt: null, checks: 0, cleanups: 0, alerts: 0 };

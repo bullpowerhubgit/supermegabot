@@ -359,7 +359,7 @@ class MemoryWatchdog {
 // Konfiguration
 const watchdog = new MemoryWatchdog({
   interval: 30, // Check every 30 seconds
-  memoryThreshold: 80, // Warning at 80%
+  memoryThreshold: 90, // Warning at 90%
   criticalThreshold: 90, // Critical at 90%
   cleanupEnabled: true,
   autoRestartEnabled: true,
