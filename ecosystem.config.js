@@ -143,15 +143,16 @@ module.exports = {
     */
 
     // ── Optionale externe Services ────────────────────────────────────────────
+    // autorestart: false — PM2 startet diese Services nicht neu wenn das Repo
+    // lokal nicht existiert. Manuell starten mit: pm2 start ecosystem.config.js --only <name>
     {
       name: "telegram-bot",
       script: "node",
       args: "server.js",
       cwd: BOT_DIR,
-      exp_backoff_restart_delay: 100,
       kill_timeout: 5000,
       max_restarts: 5,
-      min_uptime: "30s",
+      autorestart: false,
       log_file: "/tmp/telegram-bot-pm2.log",
     },
     {
@@ -161,10 +162,9 @@ module.exports = {
       cwd: PASS_DIR,
       interpreter: "none",
       env: { PORT: 3005 },
-      exp_backoff_restart_delay: 100,
       kill_timeout: 5000,
       max_restarts: 5,
-      min_uptime: "30s",
+      autorestart: false,
       log_file: "/tmp/password-sync-pm2.log",
     },
     {
@@ -174,10 +174,9 @@ module.exports = {
       cwd: SHOPIFY_DIR,
       interpreter: "none",
       env: { PORT: 3001 },
-      exp_backoff_restart_delay: 100,
       kill_timeout: 5000,
       max_restarts: 5,
-      min_uptime: "30s",
+      autorestart: false,
       log_file: "/tmp/windsurf-shopify-pm2.log",
     },
     {
@@ -187,10 +186,9 @@ module.exports = {
       cwd: HEAL_DIR,
       interpreter: "none",
       env: { AUTO_HEAL_PORT: 9000 },
-      exp_backoff_restart_delay: 100,
       kill_timeout: 5000,
       max_restarts: 5,
-      min_uptime: "30s",
+      autorestart: false,
       log_file: "/tmp/windsurf-autoheal-pm2.log",
     },
     {
@@ -199,10 +197,9 @@ module.exports = {
       args: "src/index.js",
       cwd: GW_DIR,
       env: { PORT: 8080 },
-      exp_backoff_restart_delay: 100,
       kill_timeout: 5000,
       max_restarts: 5,
-      min_uptime: "30s",
+      autorestart: false,
       log_file: "/tmp/windsurf-api-gateway-pm2.log",
     },
     {
@@ -212,10 +209,9 @@ module.exports = {
       cwd: WS_BOT_DIR,
       interpreter: "none",
       env: { PORT: 8000 },
-      exp_backoff_restart_delay: 100,
       kill_timeout: 5000,
       max_restarts: 5,
-      min_uptime: "30s",
+      autorestart: false,
       log_file: "/tmp/windsurf-telegram-bot-pm2.log",
     },
     {
@@ -228,7 +224,6 @@ module.exports = {
       kill_timeout: 5000,
       max_restarts: 99,
       autorestart: true,
-      min_uptime: "30s",
       log_file: "/tmp/rudibot-eternal-pm2.log",
     },
   ],

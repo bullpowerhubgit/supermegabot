@@ -7,10 +7,12 @@ __pycache__/
 *.db
 *.log
 logs/
+!logs/.gitkeep
 .DS_Store
 *.sqlite
 nohup.out
 data/
+!data/.gitkeep
 rudibot-army/shared/army_state.json
 
 # GCP / Google Cloud — niemals einchecken
