@@ -34,7 +34,7 @@ class AgentenHub {
         type: 'ai',
         port: 11434,
         url: 'http://localhost:11434',
-        startCmd: 'open -a Ollama',
+        startCmd: process.platform === 'darwin' ? 'open -a Ollama' : 'ollama serve',
         checkEndpoint: '/api/tags',
         description: 'Ollama AI Models'
       },
@@ -322,7 +322,14 @@ setInterval(()=>location.reload(),30000);
         res.writeHead(302, { Location: '/' });
         res.end();
       } else if (req.url === '/cleanup' && req.method === 'POST') {
-        await execAsync('pkill -f zsh; pkill -f Terminal; purge');
+        // pkill is cross-platform; purge is macOS-only — skip silently on Linux
+        await execAsync('pkill -f zsh').catch(() => {});
+        await execAsync('pkill -f Terminal').catch(() => {});
+        try {
+          await execAsync('purge');
+        } catch (e) {
+          hub.log('warn', 'purge not available (macOS-only) — skipped');
+        }
         res.end('{"ok":true}');
       } else {
         res.statusCode = 404;
