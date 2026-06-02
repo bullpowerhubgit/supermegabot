@@ -16,6 +16,10 @@
     "agents:hub": "node core/agenten_hub.js",
     "agents:collab": "node core/multi_agent_collaboration.js"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "devDependencies": {
     "prisma": "^7.8.0"
   },

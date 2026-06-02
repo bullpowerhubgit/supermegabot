@@ -27,3 +27,4 @@ application_default_credentials.json
 node_modules/
 /generated/
 prisma.config.ts
+.claude/worktrees/
