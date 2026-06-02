@@ -1527,9 +1527,8 @@ async def handle_klaviyo_campaign(req):
 
 
 async def handle_bot_clones_status(req):
-    """Return status of all bot-clone workers (base + specialized)."""
+    """Return status of all specialized bot-clone workers."""
     try:
-        import core.specialized_bots  # registers specialized bots into BOT_REGISTRY
         from core.bot_clones import get_bot_status
         return web.json_response(await get_bot_status())
     except Exception as e:
@@ -1553,13 +1552,7 @@ async def handle_bot_clone_run(req):
 
 async def handle_stripe_status(req):
     try:
-        from modules.stripe_automation import stripe_available, get_stats
-        if not stripe_available():
-            return web.json_response({
-                "ok": False,
-                "configured": False,
-                "message": "STRIPE_SECRET_KEY nicht gesetzt — in .env eintragen",
-            })
+        from modules.stripe_automation import get_stats
         data = await get_stats()
         return web.json_response(data)
     except Exception as e:
@@ -1607,16 +1600,8 @@ async def handle_stripe_revenue(req):
 
 async def handle_stripe_webhook(req):
     try:
-        import os
-        payload = await req.read()
-        sig_header = req.headers.get("Stripe-Signature", "")
-        webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-
-        from modules.stripe_automation import verify_webhook_signature, handle_webhook_event
-        if sig_header and not verify_webhook_signature(payload, sig_header, webhook_secret):
-            return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
-
-        event = json.loads(payload)
+        event = await req.json()
+        from modules.stripe_automation import handle_webhook_event
         result = await handle_webhook_event(event)
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
