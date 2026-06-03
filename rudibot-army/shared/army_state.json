@@ -34,7 +34,7 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-06-03 07:31:09"
+      "ts": "2026-06-03 07:33:09"
     },
     "micro_ping": {
       "status": "warning",
@@ -48,7 +48,7 @@
           "API-Gateway"
         ]
       },
-      "ts": "2026-06-03 07:30:11"
+      "ts": "2026-06-03 07:33:11"
     },
     "optimizer": {
       "status": "ok",
@@ -129,31 +129,6 @@
     }
   },
   "events": [
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:51:45"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:51:53"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:52:10"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:52:40"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:52:45"
-    },
     {
       "agent": "shopify",
       "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
@@ -1128,6 +1103,31 @@
       "agent": "security",
       "msg": "VPN:unbekannt | Keys:1 fehlend | Suspicious:0",
       "ts": "07:31:09"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "1/6 Services UP",
+      "ts": "07:31:11"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:unbekannt | Keys:1 fehlend | Suspicious:0",
+      "ts": "07:32:09"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "1/6 Services UP",
+      "ts": "07:32:11"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:unbekannt | Keys:1 fehlend | Suspicious:0",
+      "ts": "07:33:09"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "1/6 Services UP",
+      "ts": "07:33:11"
     }
   ],
   "fixes": [],
