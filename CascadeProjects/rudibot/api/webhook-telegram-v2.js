@@ -6,6 +6,7 @@
 
 const axios = require('axios');
 const { createClient } = require('@supabase/supabase-js');
+const Anthropic = require('@anthropic-ai/sdk');
 
 class TelegramWebhookV2 {
   constructor(context, orchestrator) {
@@ -13,6 +14,11 @@ class TelegramWebhookV2 {
     this.orchestrator = orchestrator;
     this.ollamaUrl = process.env.OLLAMA_URL || 'http://localhost:11434';
     this.ollamaModel = process.env.OLLAMA_MODEL || 'llama3.2';
+    // Claude API (optional für Hybrid-Modus)
+    this.anthropicKey = process.env.ANTHROPIC_API_KEY || null;
+    if (this.anthropicKey && this.anthropicKey !== 'PLACEHOLDER') {
+      this.anthropic = new Anthropic({ apiKey: this.anthropicKey });
+    }
     // Supabase optional - fallback if not configured
     this.supabase = process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY 
       ? createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
@@ -323,39 +329,78 @@ ${results.join('\n')}
     }
   }
 
-  async handleOllamaResponse(chatId, text, msg) {
+  async handleHybridResponse(chatId, text, msg) {
     try {
-      // Prüfe ob Ollama läuft
-      const healthCheck = await axios.get(`${this.ollamaUrl}/api/tags`, { timeout: 3000 })
-        .catch(() => null);
-      
-      if (!healthCheck) {
-        await this.sendMessage(chatId, '🤖 RudiBot (Ollama) ist offline. Starte Ollama mit: `ollama run llama3.2`');
-        return;
+      // Hybrid-Modus: Claude + Ollama
+      let reply = '';
+      let aiProvider = '';
+
+      // Zuerst Claude versuchen (wenn Key vorhanden)
+      if (this.anthropicKey && this.anthropicKey !== 'PLACEHOLDER') {
+        try {
+          const response = await this.anthropic.messages.create({
+            model: 'claude-3-haiku-20240307',
+            max_tokens: 300,
+            messages: [{
+              role: 'user',
+              content: `Du bist RudiBot (@DudiRudibot), ein freundlicher KI-Assistent für E-Commerce Automation. 
+Spezialisiert auf: Shopify, Revenue First Mode, Automation.
+Antworte kurz, prägnant und auf Deutsch. 
+Bei Umsatz/Kosten-Fragen: verweise auf Commands wie /revenue, /costs.
+
+Benutzer: ${text}`
+            }]
+          });
+          reply = response.content[0].text.trim();
+          aiProvider = '🧠 Claude';
+        } catch (claudeError) {
+          // Fallback zu Ollama
+          console.log('Claude Fehler, fallback zu Ollama:', claudeError.message);
+        }
       }
 
-      const systemPrompt = `Du bist RudiBot (@DudiRudibot), ein freundlicher KI-Assistent für E-Commerce Automation. 
+      // Ollama als Fallback oder primär
+      if (!reply) {
+        const healthCheck = await axios.get(`${this.ollamaUrl}/api/tags`, { timeout: 3000 })
+          .catch(() => null);
+        
+        if (!healthCheck) {
+          await this.sendMessage(chatId, '🤖 RudiBot (Ollama) ist offline. Starte Ollama mit: `ollama run llama3.2`');
+          return;
+        }
+
+        const systemPrompt = `Du bist RudiBot (@DudiRudibot), ein freundlicher KI-Assistent für E-Commerce Automation. 
 Du nutzt Ollama (lokale KI) - keine Cloud-API nötig!
 Spezialisiert auf: Shopify, Revenue First Mode, Automation.
 Antworte kurz, prägnant und auf Deutsch. 
 Bei Umsatz/Kosten-Fragen: verweise auf Commands wie /revenue, /costs.`;
 
-      const response = await axios.post(`${this.ollamaUrl}/api/generate`, {
-        model: this.ollamaModel,
-        prompt: `${systemPrompt}\n\nBenutzer: ${text}\n\nRudiBot:`,
-        stream: false,
-        options: {
-          temperature: 0.7,
-          num_predict: 500
-        }
-      }, { timeout: 30000 });
+        const response = await axios.post(`${this.ollamaUrl}/api/generate`, {
+          model: this.ollamaModel,
+          prompt: `${systemPrompt}\n\nBenutzer: ${text}\n\nRudiBot:`,
+          stream: false,
+          options: {
+            temperature: 0.7,
+            num_predict: 500
+          }
+        }, { timeout: 30000 });
 
-      const replyText = response.data?.response || '🤖 Keine Antwort von Ollama';
-      await this.sendMessage(chatId, replyText.trim());
+        reply = response.data?.response || '🤖 Keine Antwort von Ollama';
+        aiProvider = '🦙 Ollama';
+      }
+
+      // AI Provider Kennzeichnung hinzufügen
+      const finalReply = `${reply.trim()}\n\n_${aiProvider}_`;
+      await this.sendMessage(chatId, finalReply);
     } catch (error) {
-      console.error('Ollama Fehler:', error.message);
-      await this.sendMessage(chatId, '🤖 RudiBot (Ollama) ist online! Nutze /help für Commands. Starte Ollama mit: `ollama run llama3.2`');
+      console.error('Hybrid KI Fehler:', error.message);
+      await this.sendMessage(chatId, '🤖 RudiBot ist online! Nutze /help für Commands.');
     }
+  }
+
+  async handleOllamaResponse(chatId, text, msg) {
+    // Legacy Methode - ruft Hybrid auf
+    return this.handleHybridResponse(chatId, text, msg);
   }
 
   async sendMessage(chatId, text) {
