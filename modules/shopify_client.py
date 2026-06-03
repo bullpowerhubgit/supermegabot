@@ -21,8 +21,50 @@ def _store_domain() -> str:
 def _api_version() -> str:
     return os.getenv("SHOPIFY_API_VERSION", "2024-10")
 
+def _api_version() -> str:
+    return os.getenv("SHOPIFY_API_VERSION", "2026-04")
+
 def _store_url() -> str:
     return f"https://{_store_domain()}"
+
+# ─── Multi-Store Support ──────────────────────────────────────────────────────
+
+def _store2_domain() -> str:
+    return os.getenv("SHOPIFY_STORE2_DOMAIN", "soolar.myshopify.com")
+
+def _store2_token() -> str:
+    return os.getenv("SHOPIFY_STORE2_TOKEN", "")
+
+def _store2_url() -> str:
+    return f"https://{_store2_domain()}"
+
+
+async def graphql_store2(query: str, variables: Optional[Dict] = None) -> Dict:
+    """Admin GraphQL Anfrage für Secondary Store (soolar)"""
+    if not HAS_AIOHTTP:
+        return {"errors": "aiohttp not installed"}
+    token = _store2_token()
+    if not token:
+        return {"errors": "SHOPIFY_STORE2_TOKEN not set"}
+    headers = {"Content-Type": "application/json", "X-Shopify-Access-Token": token}
+    payload = {"query": query}
+    if variables:
+        payload["variables"] = variables
+    url = f"{_store2_url()}/admin/api/{_api_version()}/graphql.json"
+    try:
+        async with _client_session(15) as session:
+            async with session.post(url, json=payload, headers=headers) as resp:
+                return await resp.json()
+    except Exception as e:
+        logger.warning("Shopify Store2 GraphQL error: %s", e)
+        return {"errors": str(e)}
+
+
+async def get_store2_shop_info() -> Dict:
+    """Shop-Info für Secondary Store (soolar)"""
+    q = "{ shop { name email myshopifyDomain plan { displayName } currencyCode } }"
+    r = await graphql_store2(q)
+    return r.get("data", {}).get("shop", {})
 
 def _shpat_token() -> str:
     return os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
