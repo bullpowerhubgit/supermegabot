@@ -96,7 +96,6 @@ def create_checkout_session(plan: str, customer_email: str, success_url: str, ca
 
     data = {
         "mode": "subscription",
-        "customer_email": customer_email,
         "line_items[0][price]": price_id,
         "line_items[0][quantity]": "1",
         "subscription_data[trial_end]": str(trial_end),
@@ -105,6 +104,8 @@ def create_checkout_session(plan: str, customer_email: str, success_url: str, ca
         "allow_promotion_codes": "true",
         "billing_address_collection": "auto",
     }
+    if customer_email:
+        data["customer_email"] = customer_email
 
     return _stripe_request("POST", "/checkout/sessions", data)
 
