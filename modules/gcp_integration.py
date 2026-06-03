@@ -18,7 +18,7 @@ from typing import Any, Optional
 
 log = logging.getLogger("gcp_integration")
 
-GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "gen-lang-client-0895465231")
+GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "rudibot-gcp-project")
 GCP_REGION = os.getenv("GCP_REGION", "europe-west1")
 GCP_CONFIG_PATH = Path(__file__).parent.parent / "CascadeProjects" / "windsurf-project" / "RudiBot-Secure-API" / "gcp-config.json"
 
