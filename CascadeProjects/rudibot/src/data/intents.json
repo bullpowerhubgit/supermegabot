@@ -1,0 +1,300 @@
+{
+  "version": "1.0",
+  "language": "de",
+  "intents": [
+    {
+      "id": "system.status",
+      "type": "system",
+      "patterns": [
+        "status",
+        "übersicht",
+        "bericht",
+        "report",
+        "was ist los",
+        "wie geht es",
+        "system status"
+      ],
+      "entities": ["scope", "period"],
+      "confidence": 0.8,
+      "description": "General system status and overview"
+    },
+    {
+      "id": "system.health",
+      "type": "system",
+      "patterns": [
+        "health",
+        "gesundheit",
+        "läuft alles",
+        "probleme",
+        "fehler"
+      ],
+      "entities": ["service"],
+      "confidence": 0.85,
+      "description": "System health check"
+    },
+    {
+      "id": "security.scan",
+      "type": "security",
+      "patterns": [
+        "scan",
+        "scanne",
+        "deepscan",
+        "deep scan",
+        "sicherheit",
+        "security",
+        "prüfe",
+        "check",
+        "audit"
+      ],
+      "entities": ["scope", "target"],
+      "confidence": 0.9,
+      "description": "Security scanning and auditing"
+    },
+    {
+      "id": "security.validate",
+      "type": "security",
+      "patterns": [
+        "validiere",
+        "validate",
+        "keys",
+        "api keys",
+        "secrets",
+        "leaks"
+      ],
+      "entities": [],
+      "confidence": 0.85,
+      "description": "API key and secret validation"
+    },
+    {
+      "id": "finance.overview",
+      "type": "finance",
+      "patterns": [
+        "finanzen",
+        "finance",
+        "geld",
+        "kosten",
+        "übersicht",
+        "finanzstatus"
+      ],
+      "entities": ["period", "scope"],
+      "confidence": 0.85,
+      "description": "Financial overview and status"
+    },
+    {
+      "id": "finance.subscriptions",
+      "type": "finance",
+      "patterns": [
+        "abos",
+        "abo",
+        "verträge",
+        "subscriptions",
+        "abo übersicht",
+        "was zahle ich"
+      ],
+      "entities": ["action", "provider"],
+      "confidence": 0.9,
+      "description": "Subscription management"
+    },
+    {
+      "id": "finance.cancel",
+      "type": "finance",
+      "patterns": [
+        "kündigen",
+        "kündige",
+        "cancel",
+        "beenden",
+        "stoppen",
+        "abo kündigen"
+      ],
+      "entities": ["provider", "id"],
+      "confidence": 0.9,
+      "description": "Subscription cancellation"
+    },
+    {
+      "id": "finance.tax",
+      "type": "finance",
+      "patterns": [
+        "steuer",
+        "tax",
+        "elster",
+        "finanzamt",
+        "steuererklärung",
+        "umsatzsteuer"
+      ],
+      "entities": ["year", "action"],
+      "confidence": 0.85,
+      "description": "Tax operations and ELSTER export"
+    },
+    {
+      "id": "finance.expenses",
+      "type": "finance",
+      "patterns": [
+        "ausgaben",
+        "expenses",
+        "kosten",
+        "ausgaben radar",
+        "was habe ich ausgegeben"
+      ],
+      "entities": ["period", "category"],
+      "confidence": 0.85,
+      "description": "Expense tracking and reporting"
+    },
+    {
+      "id": "home.control",
+      "type": "home",
+      "patterns": [
+        "licht",
+        "lampe",
+        "licht an",
+        "licht aus",
+        "steckdose",
+        "schalter"
+      ],
+      "entities": ["device", "action"],
+      "confidence": 0.95,
+      "description": "Home lighting control"
+    },
+    {
+      "id": "home.climate",
+      "type": "home",
+      "patterns": [
+        "temperatur",
+        "heizung",
+        "thermostat",
+        "klima",
+        "wärme",
+        "kälte"
+      ],
+      "entities": ["device", "temperature"],
+      "confidence": 0.9,
+      "description": "Climate and temperature control"
+    },
+    {
+      "id": "home.timer",
+      "type": "home",
+      "patterns": [
+        "timer",
+        "wecker",
+        "alarm",
+        "countdown",
+        "erinnerung",
+        "in x minuten"
+      ],
+      "entities": ["duration", "name"],
+      "confidence": 0.95,
+      "description": "Timer and alarm management"
+    },
+    {
+      "id": "home.access",
+      "type": "home",
+      "patterns": [
+        "tor",
+        "garage",
+        "tür",
+        "schloss",
+        "öffnen",
+        "schließen",
+        "auf",
+        "zu"
+      ],
+      "entities": ["device", "action"],
+      "confidence": 0.9,
+      "description": "Door and garage access control"
+    },
+    {
+      "id": "home.scene",
+      "type": "home",
+      "patterns": [
+        "scene",
+        "modus",
+        "nachtmodus",
+        "abendmodus",
+        "morgenmodus",
+        "away",
+        "home"
+      ],
+      "entities": ["scene_name"],
+      "confidence": 0.85,
+      "description": "Home scene activation"
+    },
+    {
+      "id": "agent.report",
+      "type": "agent",
+      "patterns": [
+        "bericht",
+        "report",
+        "zusammenfassung",
+        "summary",
+        "was ist passiert",
+        "tagesbericht"
+      ],
+      "entities": ["scope", "period"],
+      "confidence": 0.8,
+      "description": "Generate reports and summaries"
+    },
+    {
+      "id": "agent.workflow",
+      "type": "agent",
+      "patterns": [
+        "workflow",
+        "ablauf",
+        "prozess",
+        "automatisiere"
+      ],
+      "entities": ["workflow_name"],
+      "confidence": 0.75,
+      "description": "Workflow execution"
+    },
+    {
+      "id": "general.greeting",
+      "type": "general",
+      "patterns": [
+        "hallo",
+        "hi",
+        "hey",
+        "guten morgen",
+        "guten abend",
+        "guten tag"
+      ],
+      "entities": [],
+      "confidence": 0.9,
+      "description": "General greeting"
+    },
+    {
+      "id": "general.help",
+      "type": "general",
+      "patterns": [
+        "hilfe",
+        "help",
+        "was kannst du",
+        "commands",
+        "befehle",
+        "funktionen"
+      ],
+      "entities": [],
+      "confidence": 0.9,
+      "description": "Help and command listing"
+    },
+    {
+      "id": "general.thanks",
+      "type": "general",
+      "patterns": [
+        "danke",
+        "thanks",
+        "vielen dank",
+        "super",
+        "perfekt"
+      ],
+      "entities": [],
+      "confidence": 0.8,
+      "description": "Thank you and appreciation"
+    }
+  ],
+  "aliases": {
+    "licht": ["lampe", "beleuchtung", "licht"],
+    "heizung": ["temperatur", "thermostat", "klima"],
+    "tor": ["garage", "tür", "einfahrt"],
+    "abos": ["verträge", "subscriptions", "abo", "monatlich"],
+    "scan": ["prüfe", "check", "audit", "sicherheit"]
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "updatedAt": "2026-06-03T19:52:57.779Z",
+  "subscriptions": [
+    {
+      "id": "sub_shopify",
+      "name": "Shopify Basic",
+      "category": "ecommerce",
+      "cost": 29,
+      "currency": "EUR",
+      "billingCycle": "monthly",
+      "nextBilling": "2026-06-15",
+      "cancelDeadline": "2026-06-08",
+      "usage": {
+        "lastUsed": "2026-06-01",
+        "frequency": "daily",
+        "score": 95
+      },
+      "platform": "SaaS",
+      "url": "https://admin.shopify.com",
+      "autoRenew": true,
+      "status": "active"
+    },
+    {
+      "id": "sub_hubspot",
+      "name": "HubSpot Marketing",
+      "category": "crm",
+      "cost": 120,
+      "currency": "EUR",
+      "billingCycle": "monthly",
+      "nextBilling": "2026-06-20",
+      "cancelDeadline": "2026-06-13",
+      "usage": {
+        "lastUsed": "2026-05-15",
+        "frequency": "weekly",
+        "score": 30
+      },
+      "platform": "SaaS",
+      "url": "https://app.hubspot.com",
+      "autoRenew": true,
+      "status": "active"
+    },
+    {
+      "id": "sub_adobe",
+      "name": "Adobe Creative Cloud",
+      "category": "design",
+      "cost": 60,
+      "currency": "EUR",
+      "billingCycle": "monthly",
+      "nextBilling": "2026-06-25",
+      "cancelDeadline": "2026-06-18",
+      "usage": {
+        "lastUsed": "2026-03-10",
+        "frequency": "none",
+        "score": 5
+      },
+      "platform": "SaaS",
+      "url": "https://creativecloud.adobe.com",
+      "autoRenew": true,
+      "status": "active"
+    },
+    {
+      "id": "sub_zoom",
+      "name": "Zoom Pro",
+      "category": "communication",
+      "cost": 14,
+      "currency": "EUR",
+      "billingCycle": "monthly",
+      "nextBilling": "2026-06-10",
+      "cancelDeadline": "2026-06-03",
+      "usage": {
+        "lastUsed": "2026-06-02",
+        "frequency": "daily",
+        "score": 90
+      },
+      "platform": "SaaS",
+      "url": "https://zoom.us",
+      "autoRenew": true,
+      "status": "active"
+    },
+    {
+      "id": "sub_notion",
+      "name": "Notion Team",
+      "category": "productivity",
+      "cost": 10,
+      "currency": "EUR",
+      "billingCycle": "monthly",
+      "nextBilling": "2026-06-12",
+      "cancelDeadline": "2026-06-05",
+      "usage": {
+        "lastUsed": "2026-05-20",
+        "frequency": "weekly",
+        "score": 40
+      },
+      "platform": "SaaS",
+      "url": "https://notion.so",
+      "autoRenew": true,
+      "status": "active"
+    },
+    {
+      "id": "sub_aws",
+      "name": "AWS EC2 + S3",
+      "category": "infrastructure",
+      "cost": 75,
+      "currency": "EUR",
+      "billingCycle": "monthly",
+      "nextBilling": "2026-06-30",
+      "cancelDeadline": "2026-06-23",
+      "usage": {
+        "lastUsed": "2026-06-03",
+        "frequency": "continuous",
+        "score": 100
+      },
+      "platform": "Cloud",
+      "url": "https://aws.amazon.com",
+      "autoRenew": true,
+      "status": "active"
+    }
+  ]
+}

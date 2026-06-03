@@ -1,0 +1,47 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "users": {},
+  "global": {
+    "preferences": {
+      "language": "de",
+      "responseStyle": "concise",
+      "notifications": {
+        "renewals": true,
+        "deadlines": true,
+        "securityAlerts": true,
+        "dailyBriefing": false
+      },
+      "homeAssistant": {
+        "defaultRoom": "living_room",
+        "eveningModeTime": "22:00",
+        "morningModeTime": "07:00"
+      },
+      "finance": {
+        "currency": "EUR",
+        "taxYear": 2026,
+        "defaultPeriod": "current_month"
+      }
+    },
+    "routines": [
+      {
+        "id": "morning-briefing",
+        "name": "Morning Briefing",
+        "enabled": false,
+        "schedule": "07:00",
+        "days": ["mon", "tue", "wed", "thu", "fri"],
+        "actions": ["dashboard.status", "finance.overview", "security.scan.quick"]
+      },
+      {
+        "id": "evening-mode",
+        "name": "Evening Mode",
+        "enabled": false,
+        "schedule": "22:00",
+        "days": ["mon", "tue", "wed", "thu", "fri", "sat", "sun"],
+        "actions": ["home.scene.evening", "finance.subscriptions.check"]
+      }
+    ],
+    "projects": [],
+    "deviceKnowledge": {}
+  }
+}

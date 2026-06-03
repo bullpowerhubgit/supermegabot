@@ -1,0 +1,31 @@
+{
+  "id": "security_scan",
+  "name": "Security Deep Scan",
+  "description": "Perform security vulnerability scan",
+  "steps": [
+    {
+      "id": "api_validation",
+      "type": "api_security_scan",
+      "timeout": 60000
+    },
+    {
+      "id": "dependency_scan",
+      "type": "dependency_check",
+      "timeout": 45000
+    },
+    {
+      "id": "config_audit",
+      "type": "security_config_audit",
+      "timeout": 30000
+    },
+    {
+      "id": "generate_report",
+      "type": "security_report",
+      "timeout": 30000
+    }
+  ],
+  "retryPolicy": {
+    "maxAttempts": 2,
+    "backoff": "linear"
+  }
+}

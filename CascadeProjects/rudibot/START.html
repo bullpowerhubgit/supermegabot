@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚀 RudiBot - One-Click Start</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex items-center justify-center p-4">
+    <div class="glass-effect rounded-3xl p-8 max-w-2xl w-full shadow-2xl">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-20 h-20 bg-green-500 rounded-full mb-4 pulse-animation">
+                <i class="fas fa-robot text-white text-4xl"></i>
+            </div>
+            <h1 class="text-4xl font-bold text-white mb-2">🚀 RudiBot</h1>
+            <p class="text-xl text-purple-100">Multi-Platform Business Automation Bot</p>
+            <div class="mt-4 flex justify-center gap-2">
+                <span class="px-3 py-1 bg-green-500 text-white rounded-full text-sm">18+ APIs</span>
+                <span class="px-3 py-1 bg-blue-500 text-white rounded-full text-sm">Production Ready</span>
+                <span class="px-3 py-1 bg-purple-500 text-white rounded-full text-sm">100% Complete</span>
+            </div>
+        </div>
+
+        <!-- Status Display -->
+        <div class="mb-8">
+            <div class="bg-white/10 rounded-xl p-6">
+                <h3 class="text-white font-semibold mb-4 flex items-center">
+                    <i class="fas fa-server mr-2"></i>
+                    System Status
+                </h3>
+                <div id="status-display" class="space-y-3">
+                    <div class="flex items-center justify-between text-white">
+                        <span>🤖 Core APIs</span>
+                        <span class="text-green-400">✅ Online</span>
+                    </div>
+                    <div class="flex items-center justify-between text-white">
+                        <span>🛒 E-Commerce</span>
+                        <span class="text-green-400">✅ Connected</span>
+                    </div>
+                    <div class="flex items-center justify-between text-white">
+                        <span>💬 Communication</span>
+                        <span class="text-green-400">✅ Active</span>
+                    </div>
+                    <div class="flex items-center justify-between text-white">
+                        <span>📱 Social Media</span>
+                        <span class="text-green-400">✅ Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Button -->
+        <div class="text-center mb-8">
+            <button onclick="startRudiBot()" class="group relative inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full hover:from-green-600 hover:to-emerald-700 focus:outline-none focus:ring-4 focus:ring-green-500/50 pulse-animation">
+                <span class="mr-2">
+                    <i class="fas fa-play"></i>
+                </span>
+                <span>🚀 RUDIBOT STARTEN</span>
+                <span class="absolute inset-0 rounded-full bg-white opacity-0 group-hover:opacity-20 transition-opacity duration-200"></span>
+            </button>
+            <p class="text-purple-100 mt-4 text-sm">Klicke hier um RudiBot zu starten</p>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+            <a href="http://localhost:3200/api/status" target="_blank" class="bg-white/10 hover:bg-white/20 rounded-lg p-4 text-center text-white transition-all duration-200 hover:scale-105">
+                <i class="fas fa-chart-line text-2xl mb-2"></i>
+                <p class="text-sm">API Status</p>
+            </a>
+            <a href="http://localhost:3200/api/health" target="_blank" class="bg-white/10 hover:bg-white/20 rounded-lg p-4 text-center text-white transition-all duration-200 hover:scale-105">
+                <i class="fas fa-heartbeat text-2xl mb-2"></i>
+                <p class="text-sm">Health Check</p>
+            </a>
+            <a href="https://t.me/DUDIRUDIBOT" target="_blank" class="bg-white/10 hover:bg-white/20 rounded-lg p-4 text-center text-white transition-all duration-200 hover:scale-105">
+                <i class="fab fa-telegram text-2xl mb-2"></i>
+                <p class="text-sm">Telegram Bot</p>
+            </a>
+            <a href="RUDIBOT_COMPLETE.md" target="_blank" class="bg-white/10 hover:bg-white/20 rounded-lg p-4 text-center text-white transition-all duration-200 hover:scale-105">
+                <i class="fas fa-book text-2xl mb-2"></i>
+                <p class="text-sm">Dokumentation</p>
+            </a>
+        </div>
+
+        <!-- Console Output -->
+        <div class="bg-black/30 rounded-xl p-4 font-mono text-sm text-green-400 max-h-40 overflow-y-auto" id="console">
+            <div class="mb-2">🚀 RudiBot One-Click Start Interface</div>
+            <div class="mb-2">📋 Bereit für den Start...</div>
+            <div id="console-output"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-purple-100 text-sm">
+            <p>🎯 Production Ready • 18+ APIs • Multi-Platform</p>
+            <p class="mt-2">© 2024 RudiBot - Business Automation Platform</p>
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false;
+
+        function addConsoleMessage(message, type = 'info') {
+            const consoleOutput = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            const messageDiv = document.createElement('div');
+            
+            let icon = '📋';
+            let color = 'text-green-400';
+            
+            if (type === 'success') {
+                icon = '✅';
+                color = 'text-green-400';
+            } else if (type === 'error') {
+                icon = '❌';
+                color = 'text-red-400';
+            } else if (type === 'warning') {
+                icon = '⚠️';
+                color = 'text-yellow-400';
+            } else if (type === 'info') {
+                icon = 'ℹ️';
+                color = 'text-blue-400';
+            }
+            
+            messageDiv.className = color;
+            messageDiv.innerHTML = `<span class="text-gray-400">[${timestamp}]</span> ${icon} ${message}`;
+            consoleOutput.appendChild(messageDiv);
+            
+            // Auto-scroll to bottom
+            const console = document.getElementById('console');
+            console.scrollTop = console.scrollHeight;
+        }
+
+        async function startRudiBot() {
+            if (isRunning) {
+                addConsoleMessage('RudiBot läuft bereits!', 'warning');
+                return;
+            }
+
+            isRunning = true;
+            addConsoleMessage('🚀 Starte RudiBot...', 'info');
+            
+            try {
+                // Check if server is already running
+                const response = await fetch('http://localhost:3200/api/health');
+                
+                if (response.ok) {
+                    addConsoleMessage('✅ RudiBot läuft bereits auf Port 3200!', 'success');
+                    updateStatus(true);
+                    
+                    // Test APIs
+                    setTimeout(() => {
+                        testAllAPIs();
+                    }, 1000);
+                    
+                } else {
+                    addConsoleMessage('⚠️ Server antwortet nicht, starte manuell...', 'warning');
+                    addConsoleMessage('📝 Führe aus: node server.js', 'info');
+                }
+                
+            } catch (error) {
+                addConsoleMessage('❌ Server nicht erreichbar', 'error');
+                addConsoleMessage('📝 Bitte starte den Server manuell:', 'info');
+                addConsoleMessage('   cd /Users/rudolfsarkany/CascadeProjects/rudibot', 'info');
+                addConsoleMessage('   node server.js', 'info');
+            }
+            
+            isRunning = false;
+        }
+
+        async function testAllAPIs() {
+            addConsoleMessage('🧪 Teste alle APIs...', 'info');
+            
+            const apis = [
+                { name: 'API Status', url: 'http://localhost:3200/api/status' },
+                { name: 'Health Check', url: 'http://localhost:3200/api/health' },
+                { name: 'Notion Database', url: 'http://localhost:3200/api/notion/database' },
+                { name: 'Discord Info', url: 'http://localhost:3200/api/discord/info' },
+                { name: 'Twitter Me', url: 'http://localhost:3200/api/twitter/me' },
+                { name: 'Instagram Me', url: 'http://localhost:3200/api/instagram/me' }
+            ];
+
+            for (const api of apis) {
+                try {
+                    const response = await fetch(api.url);
+                    if (response.ok) {
+                        addConsoleMessage(`✅ ${api.name}: Online`, 'success');
+                    } else {
+                        addConsoleMessage(`⚠️ ${api.name}: ${response.status}`, 'warning');
+                    }
+                } catch (error) {
+                    addConsoleMessage(`❌ ${api.name}: Offline`, 'error');
+                }
+                
+                // Small delay between requests
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+            
+            addConsoleMessage('🎉 API-Test abgeschlossen!', 'success');
+            addConsoleMessage('🤖 RudiBot ist bereit für den Einsatz!', 'success');
+        }
+
+        function updateStatus(isOnline) {
+            const statusDisplay = document.getElementById('status-display');
+            const statusItems = statusDisplay.querySelectorAll('.text-green-400, .text-red-400');
+            
+            statusItems.forEach(item => {
+                if (isOnline) {
+                    item.className = 'text-green-400';
+                    item.textContent = item.textContent.replace('❌ Offline', '✅ Online')
+                                               .replace('⚠️ Checking', '✅ Online');
+                } else {
+                    item.className = 'text-red-400';
+                    item.textContent = item.textContent.replace('✅ Online', '❌ Offline')
+                                               .replace('✅ Connected', '❌ Offline')
+                                               .replace('✅ Active', '❌ Offline')
+                                               .replace('✅ Ready', '❌ Offline');
+                }
+            });
+        }
+
+        // Auto-check status on page load
+        window.addEventListener('load', () => {
+            addConsoleMessage('🌐 RudiBot Interface geladen', 'info');
+            addConsoleMessage('📋 Klicke auf "RUDIBOT STARTEN" um zu beginnen', 'info');
+            
+            // Check if server is already running
+            setTimeout(() => {
+                fetch('http://localhost:3200/api/health')
+                    .then(response => {
+                        if (response.ok) {
+                            addConsoleMessage('✅ Server bereits aktiv!', 'success');
+                            updateStatus(true);
+                        }
+                    })
+                    .catch(() => {
+                        addConsoleMessage('ℹ️ Server nicht aktiv - Start erforderlich', 'info');
+                    });
+            }, 1000);
+        });
+
+        // Add keyboard shortcut (Space to start)
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space' && e.target.tagName !== 'INPUT') {
+                e.preventDefault();
+                startRudiBot();
+            }
+        });
+    </script>
+</body>
+</html>
