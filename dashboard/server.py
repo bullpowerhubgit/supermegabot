@@ -1845,6 +1845,47 @@ async def handle_stripe_revenue(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_telegram_webhook(req):
+    """Telegram webhook — processes incoming messages via Claude AI."""
+    try:
+        data = await req.json()
+        msg = data.get("message") or data.get("edited_message")
+        if not msg:
+            return web.Response(status=200)
+
+        chat_id = msg.get("chat", {}).get("id")
+        text = msg.get("text", "")
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN_2") or os.getenv("TELEGRAM_BOT_TOKEN", "")
+
+        if not chat_id or not bot_token:
+            return web.Response(status=200)
+
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
+            reply_msg = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=500,
+                system="Du bist RudiBot, ein freundlicher KI-Assistent für E-Commerce und Business. Antworte auf Deutsch, kurz und hilfreich.",
+                messages=[{"role": "user", "content": text or "(leere Nachricht)"}]
+            )
+            reply_text = reply_msg.content[0].text if reply_msg.content else "Entschuldigung, keine Antwort verfügbar."
+        except Exception as ai_err:
+            log.error("AI error in telegram webhook: %s", ai_err)
+            reply_text = f"Hallo! Ich bin RudiBot. (KI momentan nicht verfügbar)"
+
+        async with aiohttp.ClientSession() as session:
+            await session.post(
+                f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                json={"chat_id": chat_id, "text": reply_text, "parse_mode": "Markdown"}
+            )
+
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("Telegram webhook error: %s", e)
+        return web.Response(status=200)
+
+
 async def handle_stripe_webhook(req):
     try:
         payload = await req.read()
@@ -2113,6 +2154,8 @@ async def create_app():
     app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+    app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
+    app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
 
     # ── Google OAuth2 ─────────────────────────────────────────────────────────
     app.router.add_get("/api/google/auth",            handle_google_auth)
@@ -2159,6 +2202,25 @@ if __name__ == "__main__":
         site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True, reuse_port=True)
         await site.start()
         print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
+
+        # Auto-register Telegram webhook on Railway
+        railway_url = os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN")
+        if railway_url:
+            base = f"https://{railway_url}" if not railway_url.startswith("http") else railway_url
+            for token_env in ("TELEGRAM_BOT_TOKEN_2", "TELEGRAM_BOT_TOKEN"):
+                tok = os.getenv(token_env)
+                if tok:
+                    try:
+                        async with aiohttp.ClientSession() as _s:
+                            wh_url = f"{base}/webhook/telegram"
+                            r = await _s.post(
+                                f"https://api.telegram.org/bot{tok}/setWebhook",
+                                json={"url": wh_url, "allowed_updates": ["message", "edited_message"]}
+                            )
+                            result = await r.json()
+                            log.info("Telegram webhook set (%s): %s → %s", token_env, wh_url, result.get("description",""))
+                    except Exception as _e:
+                        log.warning("Telegram webhook setup failed: %s", _e)
         try:
             await asyncio.Event().wait()
         finally:
