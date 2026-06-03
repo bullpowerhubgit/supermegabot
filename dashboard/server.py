@@ -2107,6 +2107,8 @@ async def create_app():
     app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+    app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
+    app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
 
     # ── Google OAuth2 ─────────────────────────────────────────────────────────
     app.router.add_get("/api/google/auth",            handle_google_auth)
@@ -2140,6 +2142,56 @@ def _free_port(port: int) -> None:
         pass
 
 
+async def handle_telegram_webhook(req):
+    """Handle incoming Telegram webhook messages via Railway deployment."""
+    try:
+        data = await req.json()
+        log.info("📨 Telegram webhook: %s", json.dumps(data, indent=2)[:500])
+        
+        if "message" in data:
+            message = data["message"]
+            chat_id = message["chat"]["id"]
+            text = message.get("text", "")
+            user = message.get("from", {})
+            
+            # Process through existing bot system
+            bot = req.app["bot"]
+            response = await bot.process(text, f"tg-{chat_id}")
+            
+            # Send response back
+            if TELEGRAM_TOKEN:
+                url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+                async with aiohttp.ClientSession() as s:
+                    await s.post(url, json={
+                        "chat_id": chat_id,
+                        "text": response[:3800] or "(leere Antwort)",
+                        "disable_web_page_preview": True
+                    })
+            
+        return web.json_response({"status": "ok"})
+    except Exception as e:
+        log.error("Telegram webhook error: %s", e)
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def _register_telegram_webhook():
+    """Auto-register Telegram webhook on Railway startup."""
+    railway_url = os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN")
+    if railway_url and TELEGRAM_TOKEN:
+        base = f"https://{railway_url}" if not railway_url.startswith("http") else railway_url
+        try:
+            wh_url = f"{base}/webhook/telegram"
+            async with aiohttp.ClientSession() as s:
+                r = await s.post(
+                    f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook",
+                    json={"url": wh_url, "allowed_updates": ["message", "edited_message"]}
+                )
+                result = await r.json()
+                log.info("Telegram webhook set: %s → %s", wh_url, result.get("description", ""))
+        except Exception as e:
+            log.warning("Telegram webhook setup failed: %s", e)
+
+
 if __name__ == "__main__":
     async def _main():
         print(f"\n🔍 Prüfe Port {PORT}...")
@@ -2153,6 +2205,10 @@ if __name__ == "__main__":
         site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True, reuse_port=True)
         await site.start()
         print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
+        
+        # Auto-register Telegram webhook on Railway
+        await _register_telegram_webhook()
+        
         try:
             await asyncio.Event().wait()
         finally:
