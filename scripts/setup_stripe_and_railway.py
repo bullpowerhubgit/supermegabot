@@ -24,14 +24,63 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 ENV_FILE = BASE_DIR / ".env"
 
-# ── Lade .env ────────────────────────────────────────────────────────────────
-env_vars = {}
-if ENV_FILE.exists():
-    for line in ENV_FILE.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, _, v = line.partition("=")
-            env_vars[k.strip()] = v.strip()
+# ── Optionaler --env Pfad (z.B. --env /pfad/zu/.env.new) ─────────────────────
+_extra_env = None
+if "--env" in sys.argv:
+    idx = sys.argv.index("--env")
+    if idx + 1 < len(sys.argv):
+        _extra_env = Path(sys.argv[idx + 1])
+
+
+def _parse_env(path: Path) -> dict:
+    result = {}
+    if path and path.exists():
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                if k.strip() and v.strip():
+                    result[k.strip()] = v.strip()
+    return result
+
+
+# ── Lade .env (Basis) + optionale extra .env ──────────────────────────────────
+env_vars = _parse_env(ENV_FILE)
+
+if _extra_env:
+    extra = _parse_env(_extra_env)
+    print(f"📂 Lade extra .env: {_extra_env} ({len(extra)} Keys)")
+    # Merge: extra überschreibt leere Keys, neue Keys werden hinzugefügt
+    updated = []
+    for k, v in extra.items():
+        if not env_vars.get(k):
+            env_vars[k] = v
+            updated.append(f"  NEU: {k}")
+        elif env_vars[k] != v and v:
+            env_vars[k] = v
+            updated.append(f"  UPD: {k}")
+    for u in updated:
+        print(u)
+    # Schreibe merged .env zurück
+    lines = ENV_FILE.read_text().splitlines() if ENV_FILE.exists() else []
+    written = set()
+    result_lines = []
+    for line in lines:
+        s = line.strip()
+        if s and not s.startswith("#") and "=" in s:
+            k = s.partition("=")[0].strip()
+            if k in env_vars:
+                result_lines.append(f"{k}={env_vars[k]}")
+                written.add(k)
+            else:
+                result_lines.append(line)
+        else:
+            result_lines.append(line)
+    for k, v in env_vars.items():
+        if k not in written:
+            result_lines.append(f"{k}={v}")
+    ENV_FILE.write_text("\n".join(result_lines) + "\n")
+    print(f"✅ .env aktualisiert ({len(updated)} Änderungen)\n")
 
 STRIPE_KEY = env_vars.get("STRIPE_SECRET_KEY") or os.getenv("STRIPE_SECRET_KEY", "")
 GITHUB_TOKEN = env_vars.get("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN", "")
@@ -195,6 +244,118 @@ def set_railway_token():
         print(f"      Name: RAILWAY_TOKEN | Value: {railway_token[:8]}...")
 
 
+def _railway_graphql(query: str, variables: dict, token: str) -> dict:
+    """Railway GraphQL API call."""
+    body = json.dumps({"query": query, "variables": variables}).encode()
+    req = urllib.request.Request("https://backboard.railway.app/graphql/v2", data=body, method="POST")
+    req.add_header("Authorization", f"Bearer {token}")
+    req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req, timeout=15) as r:
+            return json.loads(r.read())
+    except urllib.error.HTTPError as e:
+        return {"errors": [{"message": f"HTTP {e.code}: {e.read()[:200].decode()}"}]}
+    except Exception as e:
+        return {"errors": [{"message": str(e)}]}
+
+
+def push_env_vars_to_railway(price_ids: dict):
+    """Setzt alle wichtigen Env Vars direkt auf Railway via GraphQL API."""
+    railway_token = env_vars.get("RAILWAY_TOKEN", "").strip()
+    if not railway_token or len(railway_token) < 10:
+        print("\n⚠️  Railway Token fehlt oder unvollständig — Env Vars nicht gesetzt")
+        return
+
+    print("\n🚂 Setze Env Vars auf Railway...\n")
+
+    # Projekt-ID holen
+    q_projects = """
+    query { me { projects { edges { node { id name } } } } }
+    """
+    resp = _railway_graphql(q_projects, {}, railway_token)
+    if resp.get("errors"):
+        print(f"  ❌ Railway Auth fehlgeschlagen: {resp['errors'][0]['message'][:100]}")
+        print(f"  → Env Vars manuell im Railway Dashboard eintragen")
+        return
+
+    projects = resp.get("data", {}).get("me", {}).get("projects", {}).get("edges", [])
+    if not projects:
+        print("  ⚠️  Keine Railway-Projekte gefunden")
+        return
+
+    # Suche supermegabot-Projekt
+    project = None
+    for p in projects:
+        if "supermegabot" in p["node"]["name"].lower() or "super" in p["node"]["name"].lower():
+            project = p["node"]
+            break
+    if not project:
+        project = projects[0]["node"]
+
+    print(f"  📦 Projekt: {project['name']} ({project['id']})")
+
+    # Service-ID holen
+    q_services = """
+    query($projectId: String!) {
+      project(id: $projectId) {
+        services { edges { node { id name } } }
+        environments { edges { node { id name } } }
+      }
+    }
+    """
+    resp = _railway_graphql(q_services, {"projectId": project["id"]}, railway_token)
+    proj_data = resp.get("data", {}).get("project", {})
+    services = proj_data.get("services", {}).get("edges", [])
+    environments = proj_data.get("environments", {}).get("edges", [])
+
+    if not services or not environments:
+        print("  ⚠️  Keine Services/Environments gefunden")
+        return
+
+    service_id = services[0]["node"]["id"]
+    env_id = next((e["node"]["id"] for e in environments if e["node"]["name"] == "production"), environments[0]["node"]["id"])
+    print(f"  🔧 Service: {services[0]['node']['name']} | Env: {environments[0]['node']['name']}")
+
+    # Wichtige Vars aus .env
+    KEYS_TO_PUSH = [
+        "TELEGRAM_BOT_TOKEN", "TELEGRAM_BOT_TOKEN_1", "TELEGRAM_BOT_TOKEN_2", "TELEGRAM_CHAT_ID",
+        "ANTHROPIC_API_KEY", "OPENAI_API_KEY",
+        "STRIPE_SECRET_KEY", "STRIPE_PRICE_STARTER", "STRIPE_PRICE_PRO", "STRIPE_PRICE_ENTERPRISE",
+        "SUPABASE_URL", "SUPABASE_ANON_KEY",
+        "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_ADMIN_API_TOKEN", "SHOPIFY_API_VERSION",
+        "SHOPIFY_CLIENT_ID", "SHOPIFY_CLIENT_SECRET",
+        "GITHUB_TOKEN", "GITHUB_USER",
+        "DASHBOARD_PORT", "DASHBOARD_URL",
+        "PERPLEXITY_API_KEY",
+    ]
+
+    # Merge mit aktuellen price_ids
+    vars_to_set = {**env_vars, **price_ids}
+
+    q_upsert = """
+    mutation($input: VariableCollectionUpsertInput!) {
+      variableCollectionUpsert(input: $input)
+    }
+    """
+    variables_payload = {k: vars_to_set[k] for k in KEYS_TO_PUSH if vars_to_set.get(k)}
+
+    resp = _railway_graphql(q_upsert, {
+        "input": {
+            "projectId": project["id"],
+            "serviceId": service_id,
+            "environmentId": env_id,
+            "variables": variables_payload,
+        }
+    }, railway_token)
+
+    if resp.get("errors"):
+        print(f"  ❌ Fehler: {resp['errors'][0]['message'][:100]}")
+    else:
+        print(f"  ✅ {len(variables_payload)} Env Vars auf Railway gesetzt!")
+        for k in variables_payload:
+            print(f"     • {k}")
+
+
 def set_stripe_secrets(price_ids: dict):
     print("\n🔐 Setze Stripe Keys als GitHub Secrets...\n")
     stripe_secrets = {
@@ -225,14 +386,14 @@ if __name__ == "__main__":
 
     price_ids = create_stripe_plans()
     set_railway_token()
+    push_env_vars_to_railway(price_ids)
     set_stripe_secrets(price_ids)
 
     print("\n" + "=" * 60)
     print("  ✅ Setup abgeschlossen!")
     print("  Nächste Schritte:")
-    print("  1. Railway: Env vars aus .env in Railway Dashboard eintragen")
-    print("     (ANTHROPIC_API_KEY, TELEGRAM_BOT_TOKEN, SUPABASE_*, etc.)")
-    print("  2. Push zu main → GitHub Actions → Railway auto-deploy")
+    print("  1. git checkout main && git merge claude/blissful-noether-eoEVy")
+    print("  2. git push origin main → Railway auto-deploy startet")
     print("  3. Stripe Webhook: Dashboard → Webhooks → Endpoint hinzufügen")
     print("     URL: https://<deine-railway-url>/api/stripe/webhook")
     print("=" * 60)
