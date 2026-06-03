@@ -1,5 +1,4 @@
 .env
-.claude/worktrees/
 .env.*
 !.env.example
 __pycache__/
@@ -7,12 +6,10 @@ __pycache__/
 *.db
 *.log
 logs/
-!logs/.gitkeep
 .DS_Store
 *.sqlite
 nohup.out
 data/
-!data/.gitkeep
 rudibot-army/shared/army_state.json
 
 # GCP / Google Cloud — niemals einchecken
@@ -41,5 +38,4 @@ supermegabot_business_report.pdf
 
 # CascadeProjects — Windsurf local workspace, source code is in repo root
 CascadeProjects/
-windsurf-mcp-config.json
-*-mcp-config.json
+rudibot-army/shared/army_state.json
