@@ -2001,7 +2001,7 @@ async def create_app():
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
-app.router.add_get("/api/health", handle_health)
+    app.router.add_get("/api/health", handle_health)
     app.router.add_get("/api/status/full", handle_status_full)
     app.router.add_get("/api/army/status", handle_army_status)
     app.router.add_post("/api/army/start", handle_army_start)
