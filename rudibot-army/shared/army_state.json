@@ -34,7 +34,7 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-06-03 07:33:09"
+      "ts": "2026-06-03 07:34:09"
     },
     "micro_ping": {
       "status": "warning",
@@ -48,7 +48,7 @@
           "API-Gateway"
         ]
       },
-      "ts": "2026-06-03 07:33:11"
+      "ts": "2026-06-03 07:34:11"
     },
     "optimizer": {
       "status": "ok",
@@ -129,16 +129,6 @@
     }
   },
   "events": [
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:52:47"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:52:53"
-    },
     {
       "agent": "optimizer",
       "msg": "CPU:44% RAM:72% Disk:57%",
@@ -1128,6 +1118,16 @@
       "agent": "micro_ping",
       "msg": "1/6 Services UP",
       "ts": "07:33:11"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:unbekannt | Keys:1 fehlend | Suspicious:0",
+      "ts": "07:34:09"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "1/6 Services UP",
+      "ts": "07:34:11"
     }
   ],
   "fixes": [],
