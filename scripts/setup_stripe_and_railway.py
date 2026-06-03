@@ -24,14 +24,63 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent.parent
 ENV_FILE = BASE_DIR / ".env"
 
-# ── Lade .env ────────────────────────────────────────────────────────────────
-env_vars = {}
-if ENV_FILE.exists():
-    for line in ENV_FILE.read_text().splitlines():
-        line = line.strip()
-        if line and not line.startswith("#") and "=" in line:
-            k, _, v = line.partition("=")
-            env_vars[k.strip()] = v.strip()
+# ── Optionaler --env Pfad (z.B. --env /pfad/zu/.env.new) ─────────────────────
+_extra_env = None
+if "--env" in sys.argv:
+    idx = sys.argv.index("--env")
+    if idx + 1 < len(sys.argv):
+        _extra_env = Path(sys.argv[idx + 1])
+
+
+def _parse_env(path: Path) -> dict:
+    result = {}
+    if path and path.exists():
+        for line in path.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                if k.strip() and v.strip():
+                    result[k.strip()] = v.strip()
+    return result
+
+
+# ── Lade .env (Basis) + optionale extra .env ──────────────────────────────────
+env_vars = _parse_env(ENV_FILE)
+
+if _extra_env:
+    extra = _parse_env(_extra_env)
+    print(f"📂 Lade extra .env: {_extra_env} ({len(extra)} Keys)")
+    # Merge: extra überschreibt leere Keys, neue Keys werden hinzugefügt
+    updated = []
+    for k, v in extra.items():
+        if not env_vars.get(k):
+            env_vars[k] = v
+            updated.append(f"  NEU: {k}")
+        elif env_vars[k] != v and v:
+            env_vars[k] = v
+            updated.append(f"  UPD: {k}")
+    for u in updated:
+        print(u)
+    # Schreibe merged .env zurück
+    lines = ENV_FILE.read_text().splitlines() if ENV_FILE.exists() else []
+    written = set()
+    result_lines = []
+    for line in lines:
+        s = line.strip()
+        if s and not s.startswith("#") and "=" in s:
+            k = s.partition("=")[0].strip()
+            if k in env_vars:
+                result_lines.append(f"{k}={env_vars[k]}")
+                written.add(k)
+            else:
+                result_lines.append(line)
+        else:
+            result_lines.append(line)
+    for k, v in env_vars.items():
+        if k not in written:
+            result_lines.append(f"{k}={v}")
+    ENV_FILE.write_text("\n".join(result_lines) + "\n")
+    print(f"✅ .env aktualisiert ({len(updated)} Änderungen)\n")
 
 STRIPE_KEY = env_vars.get("STRIPE_SECRET_KEY") or os.getenv("STRIPE_SECRET_KEY", "")
 GITHUB_TOKEN = env_vars.get("GITHUB_TOKEN") or os.getenv("GITHUB_TOKEN", "")
