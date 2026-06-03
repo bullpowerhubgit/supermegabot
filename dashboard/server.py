@@ -555,6 +555,27 @@ async def handle_service_action(req):
     data = await req.json()
     action = data.get("action", "")
     svc_id = data.get("id", "")
+
+    # ── START ALL ──────────────────────────────────────────────────────────
+    if svc_id == "all" and action == "start":
+        started, skipped, failed = [], [], []
+        for svc in SERVICES:
+            if svc["id"] == "dashboard":
+                skipped.append(svc["name"])
+                continue
+            try:
+                subprocess.Popen(svc["start_cmd"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                started.append(svc["name"])
+            except Exception as e:
+                failed.append(f"{svc['name']}: {e}")
+        await asyncio.sleep(2)
+        return web.json_response({
+            "ok": True, "action": "start_all",
+            "started": started, "skipped": skipped, "failed": failed,
+            "summary": f"{len(started)} gestartet, {len(failed)} Fehler"
+        })
+
+    # ── SINGLE SERVICE ─────────────────────────────────────────────────────
     svc = next((s for s in SERVICES if s["id"] == svc_id), None)
     if not svc:
         return web.json_response({"ok": False, "error": f"Service {svc_id} not found"})
@@ -570,6 +591,33 @@ async def handle_service_action(req):
         return web.json_response({"ok": True, "action": action, "service": svc["name"]})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_start_all(req):
+    """POST /api/start-all — startet alle Services außer Dashboard mit einem Klick."""
+    started, skipped, failed = [], [], []
+    for svc in SERVICES:
+        if svc["id"] == "dashboard":
+            skipped.append(svc["name"])
+            continue
+        try:
+            subprocess.Popen(svc["start_cmd"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            started.append(svc["name"])
+            log.info(f"Start-All: {svc['name']} gestartet")
+        except Exception as e:
+            failed.append(f"{svc['name']}: {e}")
+            log.warning(f"Start-All: {svc['name']} Fehler: {e}")
+    await asyncio.sleep(2)
+    msg = f"🚀 {len(started)} Services gestartet"
+    if failed:
+        msg += f" | ⚠️ {len(failed)} Fehler"
+    return web.json_response({
+        "ok": True,
+        "started": started,
+        "skipped": skipped,
+        "failed": failed,
+        "summary": msg,
+    })
 
 
 async def handle_logs(req):
@@ -1956,6 +2004,7 @@ async def create_app():
     app.router.add_post("/api/mac/action", handle_mac_action)
     app.router.add_get("/api/services/status", handle_services_status)
     app.router.add_post("/api/services/action", handle_service_action)
+    app.router.add_post("/api/start-all", handle_start_all)
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
