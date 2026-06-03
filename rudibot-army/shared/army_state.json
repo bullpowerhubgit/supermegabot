@@ -34,7 +34,7 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-06-03 07:34:09"
+      "ts": "2026-06-03 07:35:09"
     },
     "micro_ping": {
       "status": "warning",
@@ -48,7 +48,7 @@
           "API-Gateway"
         ]
       },
-      "ts": "2026-06-03 07:34:11"
+      "ts": "2026-06-03 07:35:11"
     },
     "optimizer": {
       "status": "ok",
@@ -111,13 +111,13 @@
     },
     "micro_backup": {
       "status": "ok",
-      "message": "\u2705 supermegabot: Backup OK (2026-05-29 13:49)",
+      "message": "\u2705 supermegabot: Backup OK (2026-06-03 07:34)",
       "data": {
         "results": [
-          "\u2705 supermegabot: Backup OK (2026-05-29 13:49)"
+          "\u2705 supermegabot: Backup OK (2026-06-03 07:34)"
         ]
       },
-      "ts": "2026-05-29 13:49:57"
+      "ts": "2026-06-03 07:34:13"
     },
     "micro_ai": {
       "status": "ok",
@@ -129,21 +129,6 @@
     }
   },
   "events": [
-    {
-      "agent": "optimizer",
-      "msg": "CPU:44% RAM:72% Disk:57%",
-      "ts": "13:52:56"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 1/2 OK",
-      "ts": "13:53:13"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:53:43"
-    },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
@@ -1128,6 +1113,21 @@
       "agent": "micro_ping",
       "msg": "1/6 Services UP",
       "ts": "07:34:11"
+    },
+    {
+      "agent": "micro_backup",
+      "msg": "\u2705 supermegabot: Backup OK (2026-06-03 07:34)",
+      "ts": "07:34:13"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:unbekannt | Keys:1 fehlend | Suspicious:0",
+      "ts": "07:35:09"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "1/6 Services UP",
+      "ts": "07:35:11"
     }
   ],
   "fixes": [],
