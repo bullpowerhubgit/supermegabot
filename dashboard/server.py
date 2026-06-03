@@ -46,7 +46,7 @@ except ImportError:
                 _k, _, _v = _line.partition("=")
                 os.environ.setdefault(_k.strip(), _v.strip())
 
-PORT = int(os.getenv("DASHBOARD_PORT", "8888"))
+PORT = int(os.getenv("PORT") or os.getenv("DASHBOARD_PORT", "8888"))
 
 log = logging.getLogger("Dashboard")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
