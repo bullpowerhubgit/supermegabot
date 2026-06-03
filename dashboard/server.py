@@ -625,6 +625,68 @@ async def handle_health(req):
         "port": PORT,
         "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
         "started_at": datetime.utcfromtimestamp(_SERVER_START_TIME).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "shopify_domain": os.getenv("SHOPIFY_SHOP_DOMAIN", ""),
+        "bots": {
+            "admin_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1")),
+            "customer_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN_2")),
+        },
+    })
+
+
+async def handle_status_full(req):
+    """Full system status including all configured integrations."""
+    import socket
+
+    def _port_open(port: int) -> bool:
+        try:
+            sock = socket.create_connection(("localhost", port), timeout=1)
+            sock.close()
+            return True
+        except Exception:
+            return False
+
+    # Ollama check
+    ollama_ok = False
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=3)) as s:
+            async with s.get(f"{os.getenv('OLLAMA_HOST', 'http://localhost:11434')}/api/tags") as r:
+                ollama_ok = r.status == 200
+    except Exception:
+        pass
+
+    return web.json_response({
+        "status": "ok",
+        "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
+        "telegram": {
+            "admin_bot_configured": bool(os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1")),
+            "customer_bot_configured": bool(os.getenv("TELEGRAM_BOT_TOKEN_2")),
+            "chat_id_configured": bool(os.getenv("TELEGRAM_CHAT_ID")),
+        },
+        "shopify": {
+            "configured": bool(os.getenv("SHOPIFY_SHOP_DOMAIN") and (os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN"))),
+            "domain": os.getenv("SHOPIFY_SHOP_DOMAIN", ""),
+            "api_version": os.getenv("SHOPIFY_API_VERSION", "2026-04"),
+            "store2_configured": bool(os.getenv("SHOPIFY_STORE2_DOMAIN") and os.getenv("SHOPIFY_STORE2_TOKEN")),
+            "store2_domain": os.getenv("SHOPIFY_STORE2_DOMAIN", "soolar.myshopify.com"),
+        },
+        "stripe": {
+            "configured": bool(os.getenv("STRIPE_SECRET_KEY")),
+            "webhook_configured": bool(os.getenv("STRIPE_WEBHOOK_SECRET")),
+        },
+        "supabase": {
+            "configured": bool(os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_ANON_KEY")),
+            "url": os.getenv("SUPABASE_URL", ""),
+        },
+        "ollama": {
+            "configured": bool(os.getenv("OLLAMA_HOST")),
+            "online": ollama_ok,
+            "host": os.getenv("OLLAMA_HOST", "http://localhost:11434"),
+            "model": os.getenv("OLLAMA_MODEL", "llama3.2"),
+        },
+        "ai": {
+            "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
+            "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+        },
     })
 
 
@@ -1939,7 +2001,8 @@ async def create_app():
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
-    app.router.add_get("/api/health", handle_health)
+app.router.add_get("/api/health", handle_health)
+    app.router.add_get("/api/status/full", handle_status_full)
     app.router.add_get("/api/army/status", handle_army_status)
     app.router.add_post("/api/army/start", handle_army_start)
     app.router.add_get("/monitor", handle_monitor)

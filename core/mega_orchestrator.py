@@ -496,6 +496,11 @@ class CommandRouter:
             "/hub_hilfe": self._cmd_hub,
             "/hub_help": self._cmd_hub,
             "hub hilfe": self._cmd_hub,
+            # ── Monetization ─────────────────────────────────────────────────
+            "/plans": self._cmd_plans,
+            "/subscribe": self._cmd_subscribe,
+            "/team_run": self._cmd_team_run,
+            "/mrr": self._cmd_mrr,
         }
 
     async def route(self, text: str, session_id: str) -> str:
@@ -831,6 +836,68 @@ class CommandRouter:
             )
         except Exception as e:
             return f"Guardian Fehler: {e}"
+
+    async def _cmd_plans(self, text: str, session_id: str) -> str:
+        """Zeigt verfügbare Abo-Pläne"""
+        return (
+            "📦 SuperMegaBot Abo-Pläne:\n\n"
+            "🟢 Starter  — €49/Monat\n"
+            "   • Shopify Sync, Telegram Bot, AI Chat\n\n"
+            "🔵 Pro      — €99/Monat\n"
+            "   • Alles in Starter + Multi-Store, SEO Autopilot\n\n"
+            "🟣 Enterprise — €299/Monat\n"
+            "   • Alles in Pro + Agent Teams, dedizierter Support\n\n"
+            "Zum Abonnieren: /subscribe"
+        )
+
+    async def _cmd_subscribe(self, text: str, session_id: str) -> str:
+        """Checkout-Link für Abonnement"""
+        dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+        return (
+            "🛒 Abonnement abschließen:\n\n"
+            f"Starter  (€49/mo): {dashboard_url}/checkout?plan=starter\n"
+            f"Pro      (€99/mo): {dashboard_url}/checkout?plan=pro\n"
+            f"Enterprise(€299/mo): {dashboard_url}/checkout?plan=enterprise\n\n"
+            "Zahlung via Stripe • Sofort aktiv"
+        )
+
+    async def _cmd_team_run(self, text: str, session_id: str) -> str:
+        """Agent Team ausführen"""
+        try:
+            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{dashboard_url}/api/agents/run",
+                    json={"team": "default", "triggered_by": session_id},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    data = await r.json()
+                    if r.status == 200:
+                        return f"✅ Agent Team gestartet: {data.get('message', 'OK')}"
+                    return f"⚠️ Agent Team Fehler: {data.get('error', r.status)}"
+        except Exception as e:
+            return f"❌ /team_run Fehler: {e}"
+
+    async def _cmd_mrr(self, text: str, session_id: str) -> str:
+        """MRR (Monthly Recurring Revenue) anzeigen"""
+        try:
+            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"{dashboard_url}/api/mrr",
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    data = await r.json()
+                    mrr = data.get("mrr", 0)
+                    currency = data.get("currency", "EUR")
+                    active = data.get("active_subscriptions", "N/A")
+                    return (
+                        f"💰 MRR: {mrr} {currency}\n"
+                        f"📊 Aktive Abos: {active}\n"
+                        f"📅 Stand: {datetime.utcnow().strftime('%Y-%m-%d')}"
+                    )
+        except Exception as e:
+            return f"❌ /mrr Fehler: {e}"
 
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle:
