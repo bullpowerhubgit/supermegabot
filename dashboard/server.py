@@ -1845,6 +1845,47 @@ async def handle_stripe_revenue(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+_PLANS_MSG = """💰 *RudiBot Premium Pläne*
+
+🥉 *Starter — €49/Monat*
+• Shopify Produkt-Automation
+• AI-Antworten unbegrenzt
+• Tägliche Trend-Analyse
+
+🥈 *Pro — €99/Monat*
+• Alles aus Starter
+• Digistore24 Integration
+• Stripe Revenue Tracking
+• Priority Support
+
+🏆 *Enterprise — €299/Monat*
+• Alles aus Pro
+• Eigene Agent Teams
+• White-Label Branding
+• Dedizierter Support
+
+👇 Jetzt starten:"""
+
+_WELCOME_MSG = """🤖 *Willkommen bei RudiBot!*
+
+Ich bin dein KI-Assistent für E-Commerce & Business Automation.
+
+*Befehle:*
+/start — Diese Nachricht
+/premium — Pläne & Preise
+/hilfe — Alle Funktionen
+
+Oder einfach schreib mir — ich antworte sofort! 💬"""
+
+
+async def _tg_send(bot_token: str, chat_id: int, text: str, reply_markup: dict = None):
+    payload = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+    async with aiohttp.ClientSession() as s:
+        await s.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload)
+
+
 async def handle_telegram_webhook(req):
     """Telegram webhook — processes incoming messages via Claude AI."""
     try:
@@ -1854,36 +1895,90 @@ async def handle_telegram_webhook(req):
             return web.Response(status=200)
 
         chat_id = msg.get("chat", {}).get("id")
-        text = msg.get("text", "")
+        text = (msg.get("text") or "").strip()
         bot_token = os.getenv("TELEGRAM_BOT_TOKEN_2") or os.getenv("TELEGRAM_BOT_TOKEN", "")
 
         if not chat_id or not bot_token:
             return web.Response(status=200)
 
+        base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
+
+        # --- Befehle ---
+        if text in ("/start", "/hilfe", "/help"):
+            await _tg_send(bot_token, chat_id, _WELCOME_MSG)
+            return web.Response(status=200)
+
+        if text in ("/premium", "/kaufen", "/plans", "/preise", "/buy"):
+            keyboard = {"inline_keyboard": [
+                [{"text": "🥉 Starter €49/Mo", "url": f"{base_url}/checkout?plan=starter&chat_id={chat_id}"}],
+                [{"text": "🥈 Pro €99/Mo", "url": f"{base_url}/checkout?plan=pro&chat_id={chat_id}"}],
+                [{"text": "🏆 Enterprise €299/Mo", "url": f"{base_url}/checkout?plan=enterprise&chat_id={chat_id}"}],
+            ]}
+            await _tg_send(bot_token, chat_id, _PLANS_MSG, reply_markup=keyboard)
+            return web.Response(status=200)
+
+        # --- AI Antwort ---
         try:
             import anthropic
             client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
             reply_msg = client.messages.create(
                 model="claude-haiku-4-5-20251001",
                 max_tokens=500,
-                system="Du bist RudiBot, ein freundlicher KI-Assistent für E-Commerce und Business. Antworte auf Deutsch, kurz und hilfreich.",
+                system=(
+                    "Du bist RudiBot, ein KI-Assistent für E-Commerce und Business Automation. "
+                    "Antworte auf Deutsch, kurz und hilfreich. "
+                    "Wenn jemand nach Preisen, Abo oder Kauf fragt, sage: 'Tippe /premium für unsere Pläne ab €49/Monat.'"
+                ),
                 messages=[{"role": "user", "content": text or "(leere Nachricht)"}]
             )
             reply_text = reply_msg.content[0].text if reply_msg.content else "Entschuldigung, keine Antwort verfügbar."
         except Exception as ai_err:
             log.error("AI error in telegram webhook: %s", ai_err)
-            reply_text = f"Hallo! Ich bin RudiBot. (KI momentan nicht verfügbar)"
+            reply_text = "Hallo! Ich bin RudiBot. Tippe /premium für unsere Pläne. (KI momentan nicht verfügbar)"
 
-        async with aiohttp.ClientSession() as session:
-            await session.post(
-                f"https://api.telegram.org/bot{bot_token}/sendMessage",
-                json={"chat_id": chat_id, "text": reply_text, "parse_mode": "Markdown"}
-            )
-
+        await _tg_send(bot_token, chat_id, reply_text)
         return web.Response(status=200)
     except Exception as e:
         log.error("Telegram webhook error: %s", e)
         return web.Response(status=200)
+
+
+async def handle_checkout_page(req):
+    """Redirect to Stripe Checkout für Telegram-Nutzer."""
+    plan = req.rel_url.query.get("plan", "starter")
+    chat_id = req.rel_url.query.get("chat_id", "")
+    base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
+    try:
+        from modules.monetization import create_checkout_session
+        session = create_checkout_session(
+            plan=plan,
+            customer_email="",
+            success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}&chat_id={chat_id}",
+            cancel_url=f"{base_url}/checkout/cancel",
+        )
+        checkout_url = session.get("url", "")
+        if checkout_url:
+            raise web.HTTPFound(checkout_url)
+        return web.Response(text="Checkout nicht verfügbar.", status=500)
+    except web.HTTPFound:
+        raise
+    except Exception as e:
+        log.error("Checkout page error: %s", e)
+        return web.Response(text=f"Fehler: {e}", status=500)
+
+
+async def handle_checkout_success(req):
+    """Nach erfolgreichem Kauf — Telegram Bestätigung senden."""
+    chat_id = req.rel_url.query.get("chat_id", "")
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN_2") or os.getenv("TELEGRAM_BOT_TOKEN", "")
+    if chat_id and bot_token:
+        try:
+            await _tg_send(bot_token, int(chat_id),
+                "✅ *Zahlung erfolgreich!* Willkommen bei RudiBot Premium! 🎉\n\nDu hast jetzt Zugang zu allen Features. Schreib mir einfach!")
+        except Exception:
+            pass
+    html = "<html><body style='font-family:sans-serif;text-align:center;padding:50px'><h1>✅ Zahlung erfolgreich!</h1><p>Gehe zurück zu Telegram und schreib @RudiCludiBot</p></body></html>"
+    return web.Response(text=html, content_type="text/html")
 
 
 async def handle_stripe_webhook(req):
@@ -2156,6 +2251,8 @@ async def create_app():
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
     app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
     app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
+    app.router.add_get("/checkout",                   handle_checkout_page)
+    app.router.add_get("/checkout/success",           handle_checkout_success)
 
     # ── Google OAuth2 ─────────────────────────────────────────────────────────
     app.router.add_get("/api/google/auth",            handle_google_auth)
