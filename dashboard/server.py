@@ -1908,6 +1908,37 @@ async def handle_telegram_webhook(req):
             await _tg_send(bot_token, chat_id, _WELCOME_MSG)
             return web.Response(status=200)
 
+        if text in ("/shopify", "/shop", "/status"):
+            from modules.shopify_automation import get_shopify_status_message
+            await _tg_send(bot_token, chat_id, get_shopify_status_message())
+            return web.Response(status=200)
+
+        if text in ("/bestellungen", "/orders"):
+            from modules.shopify_automation import get_recent_orders, format_orders_message
+            orders = get_recent_orders(limit=5)
+            await _tg_send(bot_token, chat_id, format_orders_message(orders))
+            return web.Response(status=200)
+
+        if text in ("/umsatz", "/revenue", "/geld"):
+            from modules.shopify_automation import get_revenue_today
+            r = get_revenue_today()
+            msg = f"💰 *Umsatz heute:* €{r['revenue']}\n📋 Bestellungen: {r['orders']}"
+            await _tg_send(bot_token, chat_id, msg)
+            return web.Response(status=200)
+
+        if text.startswith("/produkt "):
+            parts = text[9:].split("|")
+            if len(parts) >= 2:
+                from modules.shopify_automation import create_product_simple
+                p = create_product_simple(parts[0].strip(), parts[1].strip(), parts[2].strip() if len(parts) > 2 else "")
+                if p.get("id"):
+                    await _tg_send(bot_token, chat_id, f"✅ Produkt erstellt: *{p['title']}* — €{parts[1].strip()}")
+                else:
+                    await _tg_send(bot_token, chat_id, f"❌ Fehler: {p.get('error', p)}")
+            else:
+                await _tg_send(bot_token, chat_id, "Format: `/produkt Name | Preis | Beschreibung`\nBeispiel: `/produkt T-Shirt | 29.99 | Hochwertiges Shirt`")
+            return web.Response(status=200)
+
         if text in ("/premium", "/kaufen", "/plans", "/preise", "/buy"):
             keyboard = {"inline_keyboard": [
                 [{"text": "🥉 Starter €49/Mo", "url": f"{base_url}/checkout?plan=starter&chat_id={chat_id}"}],
@@ -1979,6 +2010,35 @@ async def handle_checkout_success(req):
             pass
     html = "<html><body style='font-family:sans-serif;text-align:center;padding:50px'><h1>✅ Zahlung erfolgreich!</h1><p>Gehe zurück zu Telegram und schreib @RudiCludiBot</p></body></html>"
     return web.Response(text=html, content_type="text/html")
+
+
+async def handle_shopify_order_webhook_route(req):
+    """Shopify Order Webhook — sendet Telegram-Alarm bei neuer Bestellung."""
+    try:
+        data = await req.json()
+        from modules.shopify_automation import handle_shopify_order_webhook
+        await handle_shopify_order_webhook(data)
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("Shopify order webhook error: %s", e)
+        return web.Response(status=200)
+
+
+async def handle_shopify_orders(req):
+    try:
+        from modules.shopify_automation import get_recent_orders, format_orders_message
+        orders = get_recent_orders(limit=10)
+        return web.json_response({"ok": True, "orders": orders, "count": len(orders)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_shopify_revenue(req):
+    try:
+        from modules.shopify_automation import get_revenue_today
+        return web.json_response({"ok": True, **get_revenue_today()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_stripe_webhook(req):
@@ -2249,6 +2309,9 @@ async def create_app():
     app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+    app.router.add_post("/api/shopify/order-webhook", handle_shopify_order_webhook_route)
+    app.router.add_get("/api/shopify/orders",         handle_shopify_orders)
+    app.router.add_get("/api/shopify/revenue",        handle_shopify_revenue)
     app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
     app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
     app.router.add_get("/checkout",                   handle_checkout_page)
