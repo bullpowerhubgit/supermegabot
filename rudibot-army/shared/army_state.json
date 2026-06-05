@@ -8,10 +8,10 @@
           "SuperMegaBot"
         ]
       },
-      "ts": "2026-06-05 22:09:51"
+      "ts": "2026-06-06 00:42:39"
     },
     "security": {
-      "status": "warning",
+      "status": "ok",
       "message": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
       "data": {
         "vpn": "verbunden",
@@ -20,357 +20,227 @@
           "PRINTIFY_API_TOKEN"
         ],
         "suspicious_count": 0,
-        "issues": [
-          "\u26a0\ufe0f Key fehlt: PRINTIFY_API_TOKEN"
-        ]
+        "issues": []
       },
-      "ts": "2026-06-05 22:09:49"
+      "ts": "2026-06-06 00:42:37"
     },
     "micro_revenue": {
       "status": "warning",
       "message": "Shopify API nicht erreichbar",
       "data": {},
-      "ts": "2026-06-05 22:09:52"
-    },
-    "micro_ai": {
-      "status": "ok",
-      "message": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
-      "data": {
-        "date": "2026-06-05"
-      },
-      "ts": "2026-06-05 22:08:09"
+      "ts": "2026-06-06 00:39:01"
     }
   },
   "events": [
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:05:32"
+      "ts": "00:38:08"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:05:34"
+      "ts": "00:38:37"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:05:36"
+      "ts": "00:38:39"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "00:38:46"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "00:38:46"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "00:38:46"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "00:38:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:38:58"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:38:58"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "22:05:37"
+      "ts": "00:39:01"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:05:43"
+      "ts": "00:39:08"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:05:44"
+      "ts": "00:39:08"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:06:12"
+      "ts": "00:39:37"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:39:39"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:06:12"
+      "ts": "00:39:46"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:06:31"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:06:33"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:06:33"
+      "ts": "00:39:46"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:06:34"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:06:36"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:06:43"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:06:44"
-    },
-    {
-      "agent": "micro_ai",
-      "msg": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
-      "ts": "22:07:05"
+      "ts": "00:39:46"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:07:13"
+      "ts": "00:39:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:39:58"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:39:58"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:40:09"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:40:09"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:07:13"
+      "ts": "00:40:37"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:40:39"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:07:13"
+      "ts": "00:40:46"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:07:31"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:07:33"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:07:33"
+      "ts": "00:40:46"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:07:34"
+      "ts": "00:40:54"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:07:37"
+      "ts": "00:40:58"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:07:43"
+      "ts": "00:40:58"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:07:44"
+      "ts": "00:41:09"
     },
     {
-      "agent": "micro_ai",
-      "msg": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
-      "ts": "22:08:09"
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:41:09"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:08:13"
+      "ts": "00:41:37"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "00:41:39"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:08:22"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:08:24"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:08:25"
+      "ts": "00:41:46"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:08:31"
+      "ts": "00:41:46"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:08:33"
+      "ts": "00:41:54"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:08:33"
+      "ts": "00:41:58"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:08:33"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:08:35"
+      "ts": "00:41:58"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:08:36"
+      "ts": "00:42:09"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:08:43"
+      "ts": "00:42:09"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:08:44"
+      "ts": "00:42:37"
     },
     {
       "agent": "micro_ping",
       "msg": "5/6 Services UP",
-      "ts": "22:08:44"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:08:46"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:08:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:08:55"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:08:57"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:08:57"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:09:06"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:09:08"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:09:08"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:09:13"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:09:16"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:09:19"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:09:19"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:09:27"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:09:30"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:09:30"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:09:31"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:09:33"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:09:33"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:09:38"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:09:41"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:09:41"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "22:09:44"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:09:44"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "22:09:49"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "5/6 Services UP",
-      "ts": "22:09:51"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "22:09:52"
+      "ts": "00:42:39"
     }
   ],
   "fixes": [],
