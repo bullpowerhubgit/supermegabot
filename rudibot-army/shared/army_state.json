@@ -1,5 +1,51 @@
 {
   "agents": {
+    "resource_manager": {
+      "status": "high",
+      "message": "RAM 73.6% | CPU 51.5%",
+      "data": {
+        "snapshot": {
+          "timestamp": "2026-06-06 16:24:21",
+          "ram_used_percent": 73.6,
+          "ram_used_mb": 35683,
+          "ram_total_mb": 48451,
+          "cpu_percent": 51.5,
+          "disk_used_percent": 47.0,
+          "disk_free_gb": 13.0,
+          "load_avg_1m": 27.01,
+          "process_count": 1027
+        },
+        "load_level": "high",
+        "cloud_offloaded": [
+          "shopify",
+          "micro_clean",
+          "learner",
+          "social",
+          "micro_ai",
+          "finance",
+          "optimizer",
+          "micro_revenue",
+          "micro_ping",
+          "micro_backup"
+        ],
+        "history_count": 1
+      },
+      "ts": "2026-06-06 16:24:23"
+    },
+    "security": {
+      "status": "ok",
+      "message": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "data": {
+        "vpn": "verbunden",
+        "vpn_location": "Disconnected\n    Visible location:       Germany, Weilheim. IPv4: 79.224.210.30",
+        "missing_keys": [
+          "PRINTIFY_API_TOKEN"
+        ],
+        "suspicious_count": 0,
+        "issues": []
+      },
+      "ts": "2026-06-06 16:24:20"
+    },
     "micro_ping": {
       "status": "warning",
       "message": "4/6 Services UP",
@@ -9,29 +55,23 @@
           "SuperMegaBot"
         ]
       },
-      "ts": "2026-06-06 13:58:43"
-    },
-    "security": {
-      "status": "warning",
-      "message": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "data": {
-        "vpn": "verbunden",
-        "vpn_location": "Disconnected\n    Visible location:       Germany, Weilheim. IPv4: 79.224.210.30",
-        "missing_keys": [
-          "PRINTIFY_API_TOKEN"
-        ],
-        "suspicious_count": 0,
-        "issues": [
-          "\u26a0\ufe0f Key fehlt: PRINTIFY_API_TOKEN"
-        ]
-      },
-      "ts": "2026-06-06 13:58:34"
+      "ts": "2026-06-06 16:24:09"
     },
     "micro_revenue": {
       "status": "warning",
       "message": "Shopify API nicht erreichbar",
       "data": {},
-      "ts": "2026-06-06 13:58:36"
+      "ts": "2026-06-06 16:24:19"
+    },
+    "micro_clean": {
+      "status": "ok",
+      "message": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "data": {
+        "disk_percent": 47.0,
+        "cleaned": 0,
+        "saved_mb": 0.0
+      },
+      "ts": "2026-06-06 16:24:20"
     },
     "micro_ai": {
       "status": "ok",
@@ -39,1075 +79,1023 @@
       "data": {
         "date": "2026-06-06"
       },
-      "ts": "2026-06-06 13:56:43"
-    },
-    "resource_manager": {
-      "status": "high",
-      "message": "RAM 78.2% | CPU 64.9%",
-      "data": {
-        "snapshot": {
-          "timestamp": "2026-06-06 13:58:37",
-          "ram_used_percent": 78.2,
-          "ram_used_mb": 37892,
-          "ram_total_mb": 48443,
-          "cpu_percent": 64.9,
-          "disk_used_percent": 34.0,
-          "disk_free_gb": 22.0,
-          "load_avg_1m": 23.06,
-          "process_count": 990
-        },
-        "load_level": "high",
-        "cloud_offloaded": [
-          "micro_clean",
-          "micro_backup",
-          "finance",
-          "learner",
-          "micro_revenue",
-          "micro_ping",
-          "optimizer",
-          "shopify",
-          "micro_ai",
-          "social"
-        ],
-        "history_count": 1
-      },
-      "ts": "2026-06-06 13:58:39"
-    },
-    "micro_backup": {
-      "status": "ok",
-      "message": "\u2705 supermegabot: Backup OK (2026-06-06 13:50)",
-      "data": {
-        "results": [
-          "\u2705 supermegabot: Backup OK (2026-06-06 13:50)"
-        ]
-      },
-      "ts": "2026-06-06 13:50:42"
-    },
-    "micro_clean": {
-      "status": "ok",
-      "message": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "data": {
-        "disk_percent": 34.0,
-        "cleaned": 0,
-        "saved_mb": 0.0
-      },
-      "ts": "2026-06-06 13:58:37"
+      "ts": "2026-06-06 16:02:47"
     }
   },
   "events": [
     {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:51:54"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:51:54"
-    },
-    {
       "agent": "resource_manager",
-      "msg": "RAM 52.1% | CPU 64.1%",
-      "ts": "13:51:57"
+      "msg": "RAM 73.5% | CPU 51.5%",
+      "ts": "16:16:33"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:52:03"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:52:05"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:52:05"
+      "ts": "16:16:35"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 51.8% | CPU 64.6%",
-      "ts": "13:52:08"
+      "msg": "RAM 73.7% | CPU 47.5%",
+      "ts": "16:16:35"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:52:14"
+      "ts": "16:16:36"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:52:16"
+      "ts": "16:16:37"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:52:16"
+      "ts": "16:16:37"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 52.3% | CPU 60.5%",
-      "ts": "13:52:18"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 76.8% | CPU 52.8%",
-      "ts": "13:52:22"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "1h avg: RAM 95.6% CPU 54.2%",
-      "ts": "13:52:22"
+      "msg": "RAM 73.3% | CPU 236.7%",
+      "ts": "16:16:44"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:52:24"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:52:26"
+      "ts": "16:16:46"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:52:27"
+      "ts": "16:16:48"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:16:49"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:16:49"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 52.4% | CPU 66.4%",
-      "ts": "13:52:29"
+      "msg": "RAM 73.8% | CPU 223.8%",
+      "ts": "16:16:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:16:59"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.5% | CPU 239.1%",
+      "ts": "16:17:05"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.9% | CPU 64.5%",
+      "ts": "16:17:07"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:17:09"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:17:09"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 72.4% | CPU 261.9%",
+      "ts": "16:17:16"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:52:34"
+      "ts": "16:17:17"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:17:19"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:52:35"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:52:37"
+      "ts": "16:17:20"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:52:37"
+      "ts": "16:17:20"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 52.5% | CPU 67.8%",
-      "ts": "13:52:40"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:52:41"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:52:47"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:52:48"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 52.7% | CPU 64.6%",
-      "ts": "13:52:51"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 76.9% | CPU 44.9%",
-      "ts": "13:52:53"
+      "msg": "RAM 73.2% | CPU 255.7%",
+      "ts": "16:17:26"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:52:56"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:52:58"
+      "ts": "16:17:28"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:52:59"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 52.7% | CPU 65.2%",
-      "ts": "13:53:01"
+      "ts": "16:17:30"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:53:07"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:53:09"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:53:09"
+      "ts": "16:17:36"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 52.5% | CPU 70.8%",
-      "ts": "13:53:12"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:53:20"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:53:20"
+      "msg": "RAM 73.6% | CPU 258.3%",
+      "ts": "16:17:36"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:53:20"
+      "ts": "16:17:38"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 53.7% | CPU 78.5%",
-      "ts": "13:53:23"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 79.9% | CPU 72.0%",
-      "ts": "13:53:24"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:53:28"
+      "msg": "RAM 74.2% | CPU 56.0%",
+      "ts": "16:17:39"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:53:30"
+      "ts": "16:17:40"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:53:31"
+      "ts": "16:17:40"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 53.1% | CPU 70.4%",
-      "ts": "13:53:33"
+      "msg": "RAM 73.5% | CPU 282.9%",
+      "ts": "16:17:47"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:17:50"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:17:51"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 53.4% | CPU 57.5%",
-      "ts": "13:53:35"
+      "msg": "RAM 73.7% | CPU 249.4%",
+      "ts": "16:17:57"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:17:59"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:18:01"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:18:01"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 72.2% | CPU 298.2%",
+      "ts": "16:18:08"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:18:10"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:18:12"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:18:12"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 72.9% | CPU 50.6%",
+      "ts": "16:18:12"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.2% | CPU 51.8%",
+      "ts": "16:18:18"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:18:20"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:18:20"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:18:22"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:18:22"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.6% | CPU 222.4%",
+      "ts": "16:18:29"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:18:30"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:18:32"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:18:33"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:18:36"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.0% | CPU 273.5%",
+      "ts": "16:18:40"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:18:41"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:18:43"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:18:44"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.0% | CPU 43.0%",
+      "ts": "16:18:44"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.2% | CPU 50.4%",
+      "ts": "16:18:49"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:18:51"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:18:53"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:18:53"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 72.9% | CPU 54.1%",
+      "ts": "16:18:59"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:19:01"
     },
     {
       "agent": "micro_ping",
       "msg": "3/6 Services UP",
-      "ts": "13:53:42"
+      "ts": "16:19:03"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:53:43"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 54.0% | CPU 63.2%",
-      "ts": "13:53:43"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:53:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:53:49"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:53:51"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 54.6% | CPU 73.7%",
-      "ts": "13:53:54"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:54:00"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:54:02"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:54:02"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 54.4% | CPU 76.1%",
-      "ts": "13:54:04"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 54.3% | CPU 75.8%",
-      "ts": "13:54:05"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 54.7% | CPU 56.8%",
-      "ts": "13:54:06"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:54:10"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:54:12"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:54:13"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 49.9% | CPU 67.9%",
-      "ts": "13:54:15"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:54:21"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:54:23"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:54:24"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 50.0% | CPU 70.1%",
-      "ts": "13:54:26"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:54:32"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:54:34"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:54:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 72.8% | CPU 58.5%",
-      "ts": "13:54:35"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 75.3% | CPU 78.9%",
-      "ts": "13:54:37"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 75.2% | CPU 78.0%",
-      "ts": "13:54:37"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:54:43"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:54:45"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:54:45"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 74.4% | CPU 60.3%",
-      "ts": "13:54:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:54:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:54:53"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:54:56"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:54:56"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 75.0% | CPU 68.8%",
-      "ts": "13:54:58"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:55:04"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:55:06"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:55:06"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 74.9% | CPU 70.6%",
-      "ts": "13:55:07"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 74.4% | CPU 71.8%",
-      "ts": "13:55:08"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 74.3% | CPU 71.1%",
-      "ts": "13:55:09"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:55:14"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:55:16"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:55:16"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 74.1% | CPU 61.1%",
-      "ts": "13:55:19"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:55:25"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:55:27"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:55:27"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 74.4% | CPU 63.8%",
-      "ts": "13:55:30"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:55:35"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:55:38"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:55:38"
+      "ts": "16:19:04"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:55:38"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:19:05"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 79.3% | CPU 48.4%",
-      "ts": "13:55:39"
+      "msg": "RAM 73.4% | CPU 56.6%",
+      "ts": "16:19:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:19:12"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:19:14"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 72.6% | CPU 50.3%",
+      "ts": "16:19:17"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.3% | CPU 56.6%",
+      "ts": "16:19:19"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:19:20"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:19:22"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:19:25"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 72.4% | CPU 48.0%",
+      "ts": "16:19:28"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:19:34"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:19:35"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:19:36"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.6% | CPU 60.3%",
+      "ts": "16:19:39"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:19:43"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:19:45"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:55:39"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:19:46"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.8% | CPU 54.4%",
-      "ts": "13:55:40"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:55:43"
+      "msg": "RAM 72.8% | CPU 58.4%",
+      "ts": "16:19:49"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.6% | CPU 50.3%",
-      "ts": "13:55:43"
+      "msg": "RAM 72.8% | CPU 58.1%",
+      "ts": "16:19:50"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:55:46"
+      "ts": "16:19:54"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:55:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:55:48"
+      "ts": "16:19:55"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:55:49"
+      "ts": "16:19:55"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:55:50"
-    },
-    {
-      "agent": "micro_ai",
-      "msg": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
-      "ts": "13:55:50"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:19:57"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.3% | CPU 51.4%",
-      "ts": "13:55:53"
+      "msg": "RAM 72.8% | CPU 52.0%",
+      "ts": "16:19:59"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:55:57"
+      "ts": "16:20:04"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:55:59"
+      "ts": "16:20:05"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:55:59"
+      "ts": "16:20:06"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:56:01"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:20:07"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.2% | CPU 54.7%",
-      "ts": "13:56:03"
+      "msg": "RAM 73.3% | CPU 52.1%",
+      "ts": "16:20:09"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:56:08"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:56:10"
+      "ts": "16:20:14"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:56:11"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 77.9% | CPU 53.2%",
-      "ts": "13:56:11"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.1% | CPU 52.9%",
-      "ts": "13:56:11"
+      "ts": "16:20:16"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:56:12"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 77.9% | CPU 49.5%",
-      "ts": "13:56:15"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:20:17"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:56:18"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:56:20"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:56:21"
+      "ts": "16:20:20"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.5% | CPU 58.7%",
-      "ts": "13:56:24"
+      "msg": "RAM 73.3% | CPU 59.0%",
+      "ts": "16:20:21"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.4% | CPU 49.5%",
+      "ts": "16:20:22"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 73.5% CPU 52.5%",
+      "ts": "16:20:22"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:56:28"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:56:31"
+      "ts": "16:20:24"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:56:31"
+      "ts": "16:20:27"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:20:28"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:20:30"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.5% | CPU 50.2%",
-      "ts": "13:56:35"
+      "msg": "RAM 73.5% | CPU 81.4%",
+      "ts": "16:20:35"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:56:39"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:56:41"
+      "ts": "16:20:36"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:56:41"
+      "ts": "16:20:41"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.2% | CPU 62.7%",
-      "ts": "13:56:42"
+      "msg": "RAM 73.8% | CPU 56.0%",
+      "ts": "16:20:44"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:20:50"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:20:51"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:20:52"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:20:52"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.2% | CPU 62.9%",
-      "ts": "13:56:43"
+      "msg": "RAM 73.0% | CPU 62.5%",
+      "ts": "16:20:55"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 72.9% | CPU 63.2%",
+      "ts": "16:20:55"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:21:01"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.8% | CPU 61.7%",
+      "ts": "16:21:04"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:21:08"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:21:10"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.6% | CPU 69.1%",
+      "ts": "16:21:13"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:21:18"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:21:20"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:21:20"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:21:20"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.6% | CPU 58.0%",
+      "ts": "16:21:23"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.9% | CPU 30.4%",
+      "ts": "16:21:27"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:21:29"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:21:30"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:21:30"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.5% | CPU 41.3%",
+      "ts": "16:21:33"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:21:36"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:21:38"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:21:41"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:21:42"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:21:43"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.8% | CPU 55.8%",
+      "ts": "16:21:47"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:21:51"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:21:54"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:21:55"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.9% | CPU 69.7%",
+      "ts": "16:21:59"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.9% | CPU 63.8%",
+      "ts": "16:22:00"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:22:04"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:22:05"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:22:05"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:22:07"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 74.7% | CPU 66.5%",
+      "ts": "16:22:16"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:22:20"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:22:22"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 74.7% | CPU 68.0%",
+      "ts": "16:22:24"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:22:27"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:22:30"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:22:30"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:22:31"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 75.7% | CPU 57.9%",
+      "ts": "16:22:33"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:22:36"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 75.4% | CPU 75.2%",
+      "ts": "16:22:41"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:22:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:22:45"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:22:47"
     },
     {
       "agent": "micro_ping",
       "msg": "2/6 Services UP",
-      "ts": "13:56:43"
-    },
-    {
-      "agent": "micro_ai",
-      "msg": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
-      "ts": "13:56:43"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.1% | CPU 58.8%",
-      "ts": "13:56:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:56:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:56:49"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:56:51"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:56:51"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.0% | CPU 79.1%",
-      "ts": "13:56:54"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:56:59"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:57:01"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:57:01"
+      "ts": "16:22:48"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:57:02"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:22:48"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 78.5% | CPU 78.6%",
-      "ts": "13:57:05"
+      "msg": "RAM 76.8% | CPU 57.2%",
+      "ts": "16:22:53"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:57:10"
+      "ts": "16:22:57"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:57:12"
+      "ts": "16:22:59"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:57:12"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.7% | CPU 82.1%",
-      "ts": "13:57:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.2% | CPU 92.5%",
-      "ts": "13:57:15"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 77.8% | CPU 90.2%",
-      "ts": "13:57:15"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:57:20"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:57:22"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:57:22"
+      "ts": "16:22:59"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:57:23"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:23:01"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 76.8% | CPU 42.9%",
+      "ts": "16:23:05"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 70.2% | CPU 79.3%",
+      "ts": "16:23:10"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:23:14"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:23:16"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:57:23"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 77.4% | CPU 76.6%",
-      "ts": "13:57:25"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:23:17"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:57:31"
+      "ts": "16:23:20"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 74.2% | CPU 61.7%",
+      "ts": "16:23:21"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:23:27"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:57:33"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:57:33"
+      "ts": "16:23:27"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:57:34"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:23:28"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 77.4% | CPU 70.5%",
-      "ts": "13:57:35"
+      "msg": "RAM 75.7% | CPU 45.8%",
+      "ts": "16:23:33"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:57:41"
+      "ts": "16:23:36"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:23:37"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 75.8% | CPU 90.7%",
+      "ts": "16:23:38"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.4% | CPU 69.8%",
+      "ts": "16:23:42"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:23:46"
     },
     {
       "agent": "micro_ping",
       "msg": "4/6 Services UP",
-      "ts": "13:57:43"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:57:43"
+      "ts": "16:23:48"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:57:43"
+      "ts": "16:23:49"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.8% | CPU 63.8%",
+      "ts": "16:23:52"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:23:56"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:23:59"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "16:23:59"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 74.1% | CPU 67.0%",
+      "ts": "16:24:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:24:07"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "16:24:09"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:24:09"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 74.1% | CPU 52.6%",
+      "ts": "16:24:10"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 74.0% | CPU 53.9%",
+      "ts": "16:24:13"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:24:17"
+    },
+    {
+      "agent": "micro_revenue",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "16:24:19"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:24:20"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:57:44"
+      "msg": "Disk: 47% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "16:24:20"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 77.7% | CPU 48.1%",
-      "ts": "13:57:45"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 77.6% | CPU 70.7%",
-      "ts": "13:57:46"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 77.6% | CPU 71.2%",
-      "ts": "13:57:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:57:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:57:52"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:57:54"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:57:55"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.1% | CPU 73.9%",
-      "ts": "13:57:57"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:58:02"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:58:04"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:58:05"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:58:06"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.0% | CPU 62.2%",
-      "ts": "13:58:08"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:58:13"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:58:15"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:58:15"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.3% | CPU 51.2%",
-      "ts": "13:58:16"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.2% | CPU 65.5%",
-      "ts": "13:58:18"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.2% | CPU 64.5%",
-      "ts": "13:58:18"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:58:23"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:58:26"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:58:26"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 77.9% | CPU 62.5%",
-      "ts": "13:58:28"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:58:34"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:58:35"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:58:36"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 34% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:58:37"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 78.2% | CPU 64.9%",
-      "ts": "13:58:39"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:58:43"
+      "msg": "RAM 73.6% | CPU 51.5%",
+      "ts": "16:24:23"
     }
   ],
   "fixes": [],
   "stats": {},
   "cloud_offloaded": [
+    "learner",
     "social",
     "finance",
-    "micro_ai",
-    "learner",
     "shopify",
+    "micro_ai",
+    "micro_clean",
+    "optimizer",
     "micro_ping",
     "micro_revenue",
-    "micro_backup",
-    "optimizer",
-    "micro_clean"
+    "micro_backup"
   ]
 }
