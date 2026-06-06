@@ -1,8 +1,13 @@
 {
-  "cycles": 2,
+  "cycles": 7,
   "patterns": {
     "warning:Fehler: shopify(1); Warnings: micro_ping(10), monitor(1), so": 1,
-    "warning:Fehler: shopify(2); Warnings: micro_ping(8), monitor(6), soc": 1
+    "warning:Fehler: shopify(2); Warnings: micro_ping(8), monitor(6), soc": 1,
+    "warning:Fehler: shopify(2); Warnings: micro_ping(8), monitor(8), lea": 1,
+    "warning:Fehler: shopify(2); Warnings: micro_ping(8), monitor(8), soc": 1,
+    "warning:Fehler: shopify(2); Warnings: monitor(9), micro_ping(8), lea": 1,
+    "warning:Fehler: shopify(3); Warnings: micro_ping(7), monitor(8), lea": 1,
+    "warning:Fehler: shopify(2); Warnings: monitor(8), micro_ping(7), lea": 1
   },
   "registers": {},
   "history": [
@@ -18,6 +23,46 @@
       "ts": "2026-06-06 23:00:30",
       "status": "warning",
       "message": "Fehler: shopify(2); Warnings: micro_ping(8), monitor(6), social(1), monetization(1), learner(1), micro_revenue(1)",
+      "metrics": {
+        "tracked": 14
+      }
+    },
+    {
+      "ts": "2026-06-06 23:05:30",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: micro_ping(8), monitor(8), learner(1), social(1)",
+      "metrics": {
+        "tracked": 14
+      }
+    },
+    {
+      "ts": "2026-06-06 23:10:30",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: micro_ping(8), monitor(8), social(1), learner(1), monetization(1)",
+      "metrics": {
+        "tracked": 14
+      }
+    },
+    {
+      "ts": "2026-06-06 23:15:30",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: monitor(9), micro_ping(8), learner(1)",
+      "metrics": {
+        "tracked": 14
+      }
+    },
+    {
+      "ts": "2026-06-06 23:17:31",
+      "status": "warning",
+      "message": "Fehler: shopify(3); Warnings: micro_ping(7), monitor(8), learner(2), monetization(1), social(1)",
+      "metrics": {
+        "tracked": 14
+      }
+    },
+    {
+      "ts": "2026-06-06 23:22:31",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: monitor(8), micro_ping(7), learner(2), monetization(2), social(2), micro_revenue(1)",
       "metrics": {
         "tracked": 14
       }
