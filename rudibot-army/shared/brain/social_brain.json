@@ -1,0 +1,18 @@
+{
+  "cycles": 1,
+  "patterns": {
+    "warning:2 Platformen down": 1
+  },
+  "registers": {},
+  "history": [
+    {
+      "ts": "2026-06-06 22:55:28",
+      "status": "warning",
+      "message": "2 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    }
+  ],
+  "created_at": "2026-06-06 22:55:26"
+}

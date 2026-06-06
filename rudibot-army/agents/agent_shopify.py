@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """🛒 Shopify Agent — Beobachtet Orders, Inventory, meldet Neuigkeiten"""
 import sys, os, time, json, urllib.request
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+sys.path.insert(0, os.path.expanduser("~/supermegabot/rudibot-army/shared"))
 from bus import report, notify_telegram, get_env
 from learner_mixin import AgentLearner
 

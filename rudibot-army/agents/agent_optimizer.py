@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """⚡ Optimizer Agent — Analysiert Performance, optimiert täglich, gibt Vorschläge"""
 import sys, os, time, json, subprocess, re, datetime
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+sys.path.insert(0, os.path.expanduser("~/supermegabot/rudibot-army/shared"))
 from bus import report, notify_telegram, load_state
 from learner_mixin import AgentLearner
 

@@ -1,0 +1,47 @@
+{
+  "cycles": 3,
+  "patterns": {},
+  "registers": {
+    "performance": {
+      "description": "Aktuelle System-Metriken",
+      "last_value": null,
+      "updated": "2026-06-06 22:55:32"
+    }
+  },
+  "history": [
+    {
+      "ts": "2026-06-06 22:55:34",
+      "status": "ok",
+      "message": "CPU:37% RAM:66% Disk:46%",
+      "metrics": {
+        "ram_percent": 65.6,
+        "cpu_percent": 36.9,
+        "disk_percent": 46.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-06 22:57:35",
+      "status": "ok",
+      "message": "CPU:40% RAM:66% Disk:46%",
+      "metrics": {
+        "ram_percent": 65.6,
+        "cpu_percent": 40.4,
+        "disk_percent": 46.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-06 22:59:36",
+      "status": "ok",
+      "message": "CPU:30% RAM:65% Disk:46%",
+      "metrics": {
+        "ram_percent": 65.3,
+        "cpu_percent": 29.8,
+        "disk_percent": 46.0,
+        "ram_free_gb": 0.5
+      }
+    }
+  ],
+  "created_at": "2026-06-06 22:55:32"
+}

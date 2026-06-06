@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-06-06T22:55:29.940753",
+  "daily_revenue": 0.0,
+  "weekly_revenue": 0.0,
+  "monthly_revenue": 0.0,
+  "sources": [],
+  "goals": {
+    "daily": 500.0,
+    "weekly": 3500.0,
+    "monthly": 15000.0
+  },
+  "recommendations": [
+    "\ud83d\ude80 Starte eine Email-Kampagne \u00fcber SendGrid/Mailchimp",
+    "\ud83d\udcb3 Stripe nicht konfiguriert \u2014 Zahlungen nicht trackbar",
+    "\ud83d\udc65 Nutze ungenutzte Konten f\u00fcr mehr Shopify/Shops"
+  ]
+}

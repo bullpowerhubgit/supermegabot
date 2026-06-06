@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """🔴 Monitor Agent — Überwacht Services, Ports, meldet Ausfälle"""
 import sys, os, time, socket, urllib.request
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+sys.path.insert(0, os.path.expanduser("~/supermegabot/rudibot-army/shared"))
 from bus import report, notify_telegram, load_state
 from learner_mixin import AgentLearner
 
