@@ -28,6 +28,7 @@ sys.path.insert(0, str(ARMY_DIR / "shared"))
 from bus import report, notify_telegram, load_state, get_env
 
 AGENTS = [
+    {"id": "resource_manager", "file": "agent_resource_manager.py", "icon": "🌡️", "desc": "Resource Manager"},
     {"id": "monitor",   "file": "agent_monitor.py",   "icon": "🔴", "desc": "Service Monitor"},
     {"id": "shopify",   "file": "agent_shopify.py",   "icon": "🛒", "desc": "Shopify Watcher"},
     {"id": "social",    "file": "agent_social.py",    "icon": "📱", "desc": "Social Autopilot"},

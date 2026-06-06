@@ -2202,7 +2202,7 @@ if __name__ == "__main__":
         app = await create_app()
         runner = web.AppRunner(app, access_log=None)
         await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True, reuse_port=True)
+        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True)
         await site.start()
         print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
         
