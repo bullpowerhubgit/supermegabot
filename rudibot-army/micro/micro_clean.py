@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """🧹 Micro-Clean — Stündliche Log-Rotation + Disk-Schutz"""
-import sys, os
+import sys, os, subprocess
 import pathlib, time, glob
 sys.path.insert(0, str(pathlib.Path(__file__).parent.parent / 'shared'))
 from bus import report, notify_telegram
@@ -48,7 +48,6 @@ def clean_logs() -> tuple:
             pass
 
     # /tmp alte .log Dateien (>7 Tage) löschen
-    import subprocess
     subprocess.run("find /tmp -name '*.log' -mtime +7 -delete 2>/dev/null",
                    shell=True, timeout=15)
 
@@ -83,12 +82,21 @@ def run():
                 f"\n💾 {saved_mb:.1f} MB freigegeben"
             )
 
-        import psutil
-        disk = psutil.disk_usage("/")
-        status = "warning" if disk.percent > 85 else "ok"
+        # Disk check via df (no psutil dependency)
+        disk_pct = 0.0
+        try:
+            df_out = subprocess.run("df -h /", shell=True, capture_output=True, text=True, timeout=5).stdout
+            lines = df_out.strip().splitlines()
+            if len(lines) >= 2:
+                parts = lines[1].split()
+                if len(parts) >= 5:
+                    disk_pct = float(parts[4].replace('%', ''))
+        except Exception:
+            pass
+        status = "warning" if disk_pct > 85 else "ok"
         report(ID, status,
-               f"Disk: {disk.percent:.0f}% | Rotiert: {len(cleaned)} Logs | Gespart: {daily_saves:.1f}MB",
-               {"disk_percent": disk.percent, "cleaned": len(cleaned), "saved_mb": round(saved_mb, 1)})
+               f"Disk: {disk_pct:.0f}% | Rotiert: {len(cleaned)} Logs | Gespart: {daily_saves:.1f}MB",
+               {"disk_percent": round(disk_pct, 1), "cleaned": len(cleaned), "saved_mb": round(saved_mb, 1)})
 
         time.sleep(INTERVAL)
 
