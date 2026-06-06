@@ -12,61 +12,68 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-06-06 21:33:12"
+      "ts": "2026-06-06 22:28:37"
     },
     "resource_manager": {
       "status": "medium",
-      "message": "RAM 55.7% | CPU 42.9%",
+      "message": "RAM 59.4% | CPU 30.4%",
       "data": {
         "snapshot": {
-          "timestamp": "2026-06-06 21:32:53",
-          "ram_used_percent": 55.7,
-          "ram_used_mb": 27009,
-          "ram_total_mb": 48450,
-          "cpu_percent": 42.9,
-          "disk_used_percent": 45.0,
-          "disk_free_gb": 14.0,
-          "load_avg_1m": 6.08,
-          "process_count": 1117
+          "timestamp": "2026-06-06 22:29:02",
+          "ram_used_percent": 59.4,
+          "ram_used_mb": 28802,
+          "ram_total_mb": 48455,
+          "cpu_percent": 30.4,
+          "disk_used_percent": 44.0,
+          "disk_free_gb": 15.0,
+          "load_avg_1m": 6.35,
+          "process_count": 972
         },
         "load_level": "medium",
         "cloud_offloaded": [
-          "learner",
+          "shopify",
+          "micro_ping",
           "social",
+          "learner",
+          "micro_backup",
+          "micro_clean",
           "micro_ai",
-          "finance"
+          "finance",
+          "micro_revenue",
+          "optimizer"
         ],
-        "history_count": 100
+        "history_count": 10
       },
-      "ts": "2026-06-06 21:32:54"
+      "ts": "2026-06-06 22:29:03"
     },
     "micro_ping": {
       "status": "warning",
-      "message": "3/6 Services UP",
+      "message": "2/6 Services UP",
       "data": {
         "down": [
+          "Password-Sync",
           "SuperMegaBot",
           "Autoheal",
           "Telegram Bot"
         ]
       },
-      "ts": "2026-06-06 21:32:16"
+      "ts": "2026-06-06 22:28:41"
     },
     "micro_revenue": {
       "status": "warning",
       "message": "Shopify API nicht erreichbar",
       "data": {},
-      "ts": "2026-06-06 21:28:14"
+      "ts": "2026-06-06 22:24:32"
     },
     "micro_clean": {
       "status": "ok",
-      "message": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "message": "Disk: 44% | Rotiert: 0 Logs | Gespart: 0.0MB",
       "data": {
-        "disk_percent": 45.0,
+        "disk_percent": 44.0,
         "cleaned": 0,
         "saved_mb": 0.0
       },
-      "ts": "2026-06-06 21:33:09"
+      "ts": "2026-06-06 22:24:34"
     },
     "micro_ai": {
       "status": "ok",
@@ -74,1019 +81,1019 @@
       "data": {
         "date": "2026-06-06"
       },
-      "ts": "2026-06-06 21:27:29"
+      "ts": "2026-06-06 21:38:19"
     },
     "micro_backup": {
       "status": "ok",
-      "message": "\u2705 supermegabot: Backup OK (2026-06-06 20:02)",
+      "message": "\u2705 supermegabot: Backup OK (2026-06-06 21:33)",
       "data": {
         "results": [
-          "\u2705 supermegabot: Backup OK (2026-06-06 20:02)"
+          "\u2705 supermegabot: Backup OK (2026-06-06 21:33)"
         ]
       },
-      "ts": "2026-06-06 20:02:18"
+      "ts": "2026-06-06 21:33:16"
     }
   },
   "events": [
     {
       "agent": "resource_manager",
-      "msg": "RAM 61.6% | CPU 65.7%",
-      "ts": "21:25:06"
+      "msg": "RAM 58.0% | CPU 39.4%",
+      "ts": "22:07:45"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 61.6% | CPU 56.4%",
-      "ts": "21:25:07"
+      "msg": "RAM 58.8% | CPU 43.4%",
+      "ts": "22:07:48"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:07:50"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.7% | CPU 47.8%",
+      "ts": "22:07:51"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:25:12"
+      "ts": "22:07:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:07:54"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:07:59"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:08:01"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.7% | CPU 39.4%",
+      "ts": "22:08:09"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:08:12"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:08:12"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:08:15"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.7% | CPU 38.5%",
+      "ts": "22:08:16"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.7% | CPU 48.6%",
+      "ts": "22:08:20"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.4% | CPU 41.3%",
+      "ts": "22:08:23"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:08:26"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:08:32"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:08:34"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.9% | CPU 33.1%",
+      "ts": "22:08:40"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:08:41"
     },
     {
       "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:25:14"
+      "msg": "2/6 Services UP",
+      "ts": "22:08:46"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.8% | CPU 46.7%",
+      "ts": "22:08:48"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:08:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:08:51"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.7% | CPU 49.5%",
+      "ts": "22:08:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:08:54"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.0% | CPU 43.4%",
+      "ts": "22:08:54"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:08:59"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.9% | CPU 33.2%",
+      "ts": "22:09:11"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:09:15"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.8% | CPU 43.7%",
+      "ts": "22:09:19"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.4% | CPU 38.7%",
+      "ts": "22:09:23"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 58.5% | CPU 39.2%",
+      "ts": "22:09:26"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:09:26"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:09:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.5% | CPU 32.9%",
+      "ts": "22:09:43"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:09:48"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.1% | CPU 31.9%",
+      "ts": "22:09:50"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:09:51"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:09:52"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:09:54"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.5% | CPU 37.1%",
+      "ts": "22:09:55"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.2% | CPU 31.5%",
+      "ts": "22:09:57"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:10:00"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.0% | CPU 31.4%",
+      "ts": "22:10:14"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:10:15"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:10:18"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.2% | CPU 30.0%",
+      "ts": "22:10:22"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.2% | CPU 25.1%",
+      "ts": "22:10:26"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.4% | CPU 32.5%",
+      "ts": "22:10:28"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:10:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.6% | CPU 32.5%",
+      "ts": "22:10:45"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:10:49"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:10:51"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.8% | CPU 28.3%",
+      "ts": "22:10:53"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:10:54"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:10:54"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.9% | CPU 36.6%",
+      "ts": "22:10:57"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.0% | CPU 30.7%",
+      "ts": "22:11:00"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:11:00"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:11:15"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.1% | CPU 33.9%",
+      "ts": "22:11:16"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.8% | CPU 26.6%",
+      "ts": "22:11:24"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 59.0% CPU 34.9%",
+      "ts": "22:11:24"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.5% | CPU 30.4%",
+      "ts": "22:11:28"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.5% | CPU 29.3%",
+      "ts": "22:11:31"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:11:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.1% | CPU 45.4%",
+      "ts": "22:11:48"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 59.3% CPU 35.3%",
+      "ts": "22:11:48"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:11:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:11:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:11:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:11:55"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.1% | CPU 26.2%",
+      "ts": "22:11:56"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.9% | CPU 36.3%",
+      "ts": "22:12:00"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:12:00"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.4% | CPU 32.1%",
+      "ts": "22:12:02"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:12:15"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.0% | CPU 32.3%",
+      "ts": "22:12:19"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.7% | CPU 32.3%",
+      "ts": "22:12:27"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.4% | CPU 26.7%",
+      "ts": "22:12:31"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 59.2% CPU 36.1%",
+      "ts": "22:12:31"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.7% | CPU 35.9%",
+      "ts": "22:12:33"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 59.4% CPU 35.4%",
+      "ts": "22:12:33"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 46% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:12:34"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 46% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:12:34"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:12:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.2% | CPU 34.8%",
+      "ts": "22:12:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:12:52"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:12:52"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:12:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:12:57"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.1% | CPU 36.8%",
+      "ts": "22:12:58"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:13:00"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.8% | CPU 31.7%",
+      "ts": "22:13:02"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.7% | CPU 44.1%",
+      "ts": "22:13:05"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:13:15"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.9% | CPU 44.4%",
+      "ts": "22:13:22"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.7% | CPU 39.9%",
+      "ts": "22:13:30"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.8% | CPU 37.1%",
+      "ts": "22:13:33"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.7% | CPU 33.4%",
+      "ts": "22:13:37"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:13:42"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:13:52"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:13:53"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.9% | CPU 32.8%",
+      "ts": "22:13:53"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:13:54"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 46% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:13:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:13:58"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:14:00"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.4% | CPU 40.2%",
+      "ts": "22:14:01"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.0% | CPU 56.0%",
+      "ts": "22:14:05"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.0% | CPU 48.3%",
+      "ts": "22:14:08"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:14:15"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.5% | CPU 62.7%",
+      "ts": "22:14:25"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.1% | CPU 45.2%",
+      "ts": "22:14:32"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.3% | CPU 52.4%",
+      "ts": "22:14:37"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.8% | CPU 43.7%",
+      "ts": "22:14:39"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:14:42"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:14:52"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:14:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:14:55"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.7% | CPU 33.7%",
+      "ts": "22:14:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:15:00"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:15:00"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.9% | CPU 30.1%",
+      "ts": "22:15:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.2% | CPU 29.2%",
+      "ts": "22:15:08"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.4% | CPU 30.2%",
+      "ts": "22:15:11"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:15:16"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.1% | CPU 36.0%",
+      "ts": "22:15:27"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.1% | CPU 40.9%",
+      "ts": "22:15:35"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.2% | CPU 45.1%",
+      "ts": "22:15:39"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:15:42"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.2% | CPU 39.0%",
+      "ts": "22:15:42"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:15:52"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:15:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:15:57"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.0% | CPU 41.6%",
+      "ts": "22:15:59"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:16:00"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:16:02"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.0% | CPU 65.1%",
+      "ts": "22:16:07"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.8% | CPU 36.5%",
+      "ts": "22:16:11"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.9% | CPU 38.9%",
+      "ts": "22:16:13"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:16:16"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 44% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:16:22"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.5% | CPU 33.6%",
+      "ts": "22:16:30"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.7% | CPU 38.0%",
+      "ts": "22:16:38"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:16:42"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.6% | CPU 58.5%",
+      "ts": "22:16:42"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.4% | CPU 27.9%",
+      "ts": "22:16:45"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:16:52"
+    },
+    {
+      "agent": "micro_clean",
+      "msg": "Disk: 44% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:16:53"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:16:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:16:58"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:17:00"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.6% | CPU 30.8%",
+      "ts": "22:17:01"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:17:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.9% | CPU 33.5%",
+      "ts": "22:17:09"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "21:25:14"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:25:14"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:25:15"
+      "ts": "22:17:10"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 61.8% | CPU 56.8%",
-      "ts": "21:25:17"
+      "msg": "RAM 60.9% | CPU 37.2%",
+      "ts": "22:17:14"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:25:24"
+      "ts": "22:17:16"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.7% | CPU 33.2%",
+      "ts": "22:17:16"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.5% | CPU 31.8%",
+      "ts": "22:17:32"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.3% | CPU 27.9%",
+      "ts": "22:17:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 60.9% CPU 38.0%",
+      "ts": "22:17:41"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:17:42"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.5% | CPU 41.6%",
+      "ts": "22:17:46"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.3% | CPU 42.3%",
+      "ts": "22:17:47"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:17:52"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:17:54"
     },
     {
       "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:25:25"
+      "msg": "2/6 Services UP",
+      "ts": "22:17:59"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:18:00"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.6% | CPU 45.3%",
+      "ts": "22:18:04"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 60.9% CPU 38.3%",
+      "ts": "22:18:04"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "22:18:05"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.2% | CPU 44.0%",
+      "ts": "22:18:12"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:18:16"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.3% | CPU 40.9%",
+      "ts": "22:18:17"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.3% | CPU 46.9%",
+      "ts": "22:18:19"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 60.3% | CPU 47.0%",
+      "ts": "22:24:22"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "21:25:25"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.2% | CPU 50.9%",
-      "ts": "21:25:27"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 34.6%",
-      "ts": "21:25:29"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:25:33"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.4% | CPU 39.0%",
-      "ts": "21:25:35"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:25:35"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:25:38"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.6% | CPU 60.0%",
-      "ts": "21:25:38"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.6% | CPU 62.1%",
-      "ts": "21:25:38"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:25:41"
+      "ts": "22:24:32"
     },
     {
       "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:25:45"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:25:46"
+      "msg": "2/6 Services UP",
+      "ts": "22:24:33"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:25:47"
+      "msg": "Disk: 44% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "22:24:34"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:25:48"
+      "ts": "22:24:37"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 62.2% | CPU 50.9%",
-      "ts": "21:25:49"
+      "msg": "RAM 60.1% | CPU 33.7%",
+      "ts": "22:24:54"
     },
     {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:25:53"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:25:56"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:25:56"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:25:57"
+      "agent": "resource_manager",
+      "msg": "RAM 59.3% | CPU 39.5%",
+      "ts": "22:25:25"
     },
     {
       "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:25:57"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:25:58"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.2% | CPU 44.6%",
-      "ts": "21:25:59"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.4% | CPU 31.2%",
-      "ts": "21:26:01"
+      "msg": "2/6 Services UP",
+      "ts": "22:25:35"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:04"
+      "ts": "22:25:37"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 61.8% | CPU 35.9%",
-      "ts": "21:26:06"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:26:07"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:26:08"
+      "msg": "RAM 59.5% | CPU 46.8%",
+      "ts": "22:25:56"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 62.1% | CPU 63.3%",
-      "ts": "21:26:09"
+      "msg": "RAM 60.2% | CPU 42.2%",
+      "ts": "22:26:27"
     },
     {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 59.4%",
-      "ts": "21:26:10"
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "22:26:37"
     },
     {
       "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:26:14"
+      "msg": "2/6 Services UP",
+      "ts": "22:26:37"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.2% | CPU 28.0%",
+      "ts": "22:26:58"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 59.0% | CPU 36.2%",
+      "ts": "22:27:30"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:16"
+      "ts": "22:27:37"
     },
     {
       "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:26:17"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:26:17"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:26:19"
+      "msg": "2/6 Services UP",
+      "ts": "22:27:39"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 60.7%",
-      "ts": "21:26:21"
+      "msg": "RAM 59.8% | CPU 37.8%",
+      "ts": "22:28:01"
     },
     {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:26:25"
+      "agent": "resource_manager",
+      "msg": "RAM 58.9% | CPU 33.8%",
+      "ts": "22:28:32"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:28"
+      "ts": "22:28:37"
     },
     {
       "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:26:28"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:26:28"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:26:30"
+      "msg": "2/6 Services UP",
+      "ts": "22:28:41"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 61.8% | CPU 44.9%",
-      "ts": "21:26:31"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 42.5%",
-      "ts": "21:26:32"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 26.1%",
-      "ts": "21:26:37"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:26:39"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:26:39"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:26:40"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.1% | CPU 20.1%",
-      "ts": "21:26:40"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:41"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 55.0%",
-      "ts": "21:26:42"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:48"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:26:50"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:26:51"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:26:51"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 54.1%",
-      "ts": "21:26:52"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:53"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:56"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:26:59"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:27:00"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:27:00"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:27:01"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.2% | CPU 49.4%",
-      "ts": "21:27:03"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.2% | CPU 44.2%",
-      "ts": "21:27:03"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.9% | CPU 31.3%",
-      "ts": "21:27:09"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:09"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:27:11"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.1% | CPU 22.6%",
-      "ts": "21:27:11"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:27:12"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 60.0%",
-      "ts": "21:27:13"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:27:14"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:27:21"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:21"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:27:22"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.4% | CPU 44.9%",
-      "ts": "21:27:23"
-    },
-    {
-      "agent": "micro_ai",
-      "msg": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
-      "ts": "21:27:29"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:29"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:27:31"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:27:32"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.4% | CPU 58.5%",
-      "ts": "21:27:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.3% | CPU 58.1%",
-      "ts": "21:27:34"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:27:38"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 32.2%",
-      "ts": "21:27:40"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:41"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:41"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:27:41"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:27:42"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:27:43"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.8% | CPU 25.2%",
-      "ts": "21:27:43"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 69.1%",
-      "ts": "21:27:45"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:27:45"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:51"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:27:53"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "21:27:53"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:53"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.1% | CPU 55.9%",
-      "ts": "21:27:55"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:27:56"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:28:00"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:28:03"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 65.9%",
-      "ts": "21:28:05"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "1h avg: RAM 61.0% CPU 34.8%",
-      "ts": "21:28:05"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 67.6%",
-      "ts": "21:28:06"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 32.4%",
-      "ts": "21:28:11"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:28:12"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "21:28:14"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:28:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.9% | CPU 29.0%",
-      "ts": "21:28:14"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:28:15"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:28:15"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:28:24"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 38.8%",
-      "ts": "21:28:36"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.9% | CPU 51.0%",
-      "ts": "21:28:38"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:28:41"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.1% | CPU 31.4%",
-      "ts": "21:28:42"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "1h avg: RAM 61.5% CPU 29.8%",
-      "ts": "21:28:42"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.8% | CPU 31.0%",
-      "ts": "21:28:45"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "1h avg: RAM 61.4% CPU 40.7%",
-      "ts": "21:28:45"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:28:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:28:53"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:28:56"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:29:03"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 35.3%",
-      "ts": "21:29:07"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 37.4%",
-      "ts": "21:29:09"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:29:12"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.8% | CPU 35.2%",
-      "ts": "21:29:13"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:29:14"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:29:15"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 26.5%",
-      "ts": "21:29:16"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:29:17"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:29:23"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.5% | CPU 37.2%",
-      "ts": "21:29:39"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.5% | CPU 29.2%",
-      "ts": "21:29:40"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:29:41"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.2% | CPU 26.9%",
-      "ts": "21:29:44"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.7% | CPU 29.8%",
-      "ts": "21:29:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:29:48"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:29:48"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:29:54"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:29:56"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:29:56"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.8% | CPU 30.6%",
-      "ts": "21:30:10"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 27.6%",
-      "ts": "21:30:11"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:30:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:30:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 61.8% | CPU 33.2%",
-      "ts": "21:30:15"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:30:15"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 30.3%",
-      "ts": "21:30:18"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.3% | CPU 37.9%",
-      "ts": "21:30:41"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:30:41"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.3% | CPU 53.8%",
-      "ts": "21:30:42"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.2% | CPU 44.9%",
-      "ts": "21:30:46"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:30:48"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 62.0% | CPU 41.8%",
-      "ts": "21:30:49"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:30:54"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:30:56"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:31:12"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 58.3% | CPU 32.1%",
-      "ts": "21:31:12"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 58.3% | CPU 34.3%",
-      "ts": "21:31:13"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:31:14"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:31:16"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 58.3% | CPU 49.0%",
-      "ts": "21:31:18"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 57.9% | CPU 31.3%",
-      "ts": "21:31:20"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:31:23"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:31:41"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:31:42"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 57.4% | CPU 29.7%",
-      "ts": "21:31:43"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 57.4% | CPU 30.3%",
-      "ts": "21:31:44"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:31:48"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 57.8% | CPU 30.0%",
-      "ts": "21:31:49"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 57.9% | CPU 34.7%",
-      "ts": "21:31:51"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:31:54"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:31:57"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:32:12"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:32:15"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 58.2% | CPU 47.8%",
-      "ts": "21:32:15"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 58.2% | CPU 47.1%",
-      "ts": "21:32:15"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "3/6 Services UP",
-      "ts": "21:32:16"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 58.0% | CPU 37.5%",
-      "ts": "21:32:20"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 58.2% | CPU 31.0%",
-      "ts": "21:32:22"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:32:24"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:32:41"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 55.4% | CPU 46.8%",
-      "ts": "21:32:46"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 56.2% | CPU 44.0%",
-      "ts": "21:32:47"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:32:48"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 55.4% | CPU 39.2%",
-      "ts": "21:32:52"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:32:54"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 55.7% | CPU 42.9%",
-      "ts": "21:32:54"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:32:57"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 45% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "21:33:09"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "21:33:12"
+      "msg": "RAM 59.4% | CPU 30.4%",
+      "ts": "22:29:03"
     }
   ],
   "fixes": [],
