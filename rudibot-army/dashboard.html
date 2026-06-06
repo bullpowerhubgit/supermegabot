@@ -3,77 +3,74 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>RudiBot Army — Meta-Dashboard</title>
+<title>RudiBot Army — Live Dashboard</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; padding: 20px; }
-h1 { text-align: center; color: #38bdf8; margin-bottom: 10px; font-size: 28px; }
-.subtitle { text-align: center; color: #94a3b8; margin-bottom: 30px; font-size: 14px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; max-width: 1400px; margin: 0 auto; }
-.card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
-.card h2 { font-size: 16px; color: #38bdf8; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-.metric { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 14px; }
+h1 { text-align: center; color: #38bdf8; margin-bottom: 5px; font-size: 28px; }
+.subtitle { text-align: center; color: #94a3b8; margin-bottom: 25px; font-size: 13px; }
+.live-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4ade80; margin-right: 6px; animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 18px; max-width: 1500px; margin: 0 auto; }
+.card { background: #1e293b; border-radius: 12px; padding: 18px; border: 1px solid #334155; }
+.card h2 { font-size: 15px; color: #38bdf8; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.metric { display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid #334155; font-size: 13px; }
 .metric:last-child { border-bottom: none; }
 .metric .label { color: #94a3b8; }
 .metric .value { font-weight: 600; }
 .good { color: #4ade80; }
 .warn { color: #fbbf24; }
 .crit { color: #f87171; }
-.status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 .dot-green { background: #4ade80; }
 .dot-yellow { background: #fbbf24; }
 .dot-red { background: #f87171; }
-.account-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #334155; font-size: 13px; }
+.account-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #334155; font-size: 12px; }
 .account-row:last-child { border-bottom: none; }
-.platform-tag { background: #334155; padding: 2px 8px; border-radius: 12px; font-size: 11px; margin-right: 4px; }
-.revenue-box { background: #0f172a; border-radius: 8px; padding: 15px; margin-top: 10px; text-align: center; }
+.platform-tag { background: #334155; padding: 2px 7px; border-radius: 10px; font-size: 10px; margin: 1px; display: inline-block; }
+.revenue-box { background: #0f172a; border-radius: 8px; padding: 15px; margin-top: 8px; text-align: center; }
 .revenue-box .amount { font-size: 32px; font-weight: bold; color: #4ade80; }
-.revenue-box .label { font-size: 12px; color: #94a3b8; margin-top: 5px; }
-.progress-bar { width: 100%; height: 8px; background: #334155; border-radius: 4px; margin-top: 10px; overflow: hidden; }
+.revenue-box .label { font-size: 11px; color: #94a3b8; margin-top: 4px; }
+.progress-bar { width: 100%; height: 7px; background: #334155; border-radius: 4px; margin-top: 8px; overflow: hidden; }
 .progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
-.log-entry { font-family: 'SF Mono', Monaco, monospace; font-size: 11px; padding: 4px 0; border-bottom: 1px solid #334155; color: #cbd5e1; }
+.log-entry { font-family: 'SF Mono', Monaco, monospace; font-size: 10px; padding: 4px 0; border-bottom: 1px solid #334155; color: #cbd5e1; }
 .log-entry:last-child { border-bottom: none; }
-.timestamp { color: #64748b; margin-right: 8px; }
-.refresh-btn { background: #38bdf8; color: #0f172a; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: block; margin: 20px auto; }
-.refresh-btn:hover { background: #7dd3fc; }
+.timestamp { color: #64748b; margin-right: 6px; }
+.header-bar { display: flex; justify-content: space-between; align-items: center; max-width: 1500px; margin: 0 auto 20px; }
+.header-bar .left { display: flex; align-items: center; gap: 10px; }
+.last-update { color: #64748b; font-size: 12px; }
+.recommendation-item { padding: 8px 0; border-bottom: 1px solid #334155; font-size: 12px; }
+.recommendation-item:last-child { border-bottom: none; }
+.action-btn { background: #38bdf8; color: #0f172a; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; text-decoration: none; display: inline-block; }
+.action-btn:hover { background: #7dd3fc; }
 </style>
 </head>
 <body>
-<h1>🤖 RudiBot Army — Meta-Dashboard</h1>
-<p class="subtitle">Meta-Supervisor v2.0 | Deduplication | Multi-Account | Monetization</p>
-
-<button class="refresh-btn" onclick="location.reload()">🔄 Aktualisieren</button>
+<div class="header-bar">
+<div class="left">
+<h1>🤖 RudiBot Army — Live Dashboard</h1>
+</div>
+<div class="last-update">
+<span class="live-indicator"></span>Letztes Update: <span id="last-update">-</span>
+</div>
+</div>
+<p class="subtitle">Meta-Supervisor v2.0 | Deduplication | Multi-Account | Monetization | Self-Healing</p>
 
 <div class="grid">
 
 <!-- System Health -->
 <div class="card">
 <h2>🌡️ System Health</h2>
-<div class="metric">
-<span class="label">RAM Usage</span>
-<span class="value" id="ram-val">Loading...</span>
-</div>
-<div class="metric">
-<span class="label">Disk Usage</span>
-<span class="value" id="disk-val">Loading...</span>
-</div>
-<div class="metric">
-<span class="label">Army Prozesse</span>
-<span class="value good" id="procs-val">Loading...</span>
-</div>
-<div class="metric">
-<span class="label">Commander Status</span>
-<span class="value good" id="commander-val">Loading...</span>
-</div>
-<div class="metric">
-<span class="label">Letzter Restart</span>
-<span class="value" id="restart-val">Loading...</span>
-</div>
+<div class="metric"><span class="label">RAM Usage</span><span class="value" id="ram-val">-</span></div>
+<div class="metric"><span class="label">Disk Usage</span><span class="value" id="disk-val">-</span></div>
+<div class="metric"><span class="label">Army Prozesse</span><span class="value" id="procs-val">-</span></div>
+<div class="metric"><span class="label">Commander PID</span><span class="value" id="commander-val">-</span></div>
+<div class="metric"><span class="label">Meta-Supervisor</span><span class="value" id="supervisor-val">-</span></div>
 </div>
 
 <!-- Agent Status -->
 <div class="card">
-<h2>🤖 Agent Status</h2>
+<h2>🤖 Agent Status (<span id="agent-running-count">0</span>/<span id="agent-total-count">0</span>)</h2>
 <div id="agent-list">Loading...</div>
 </div>
 
@@ -88,34 +85,19 @@ h1 { text-align: center; color: #38bdf8; margin-bottom: 10px; font-size: 28px; }
 <h2>💰 Monetarisierung</h2>
 <div class="revenue-box">
 <div class="amount" id="daily-rev">€0.00</div>
-<div class="label">Täglicher Umsatz</div>
+<div class="label">Tagesumsatz</div>
 </div>
-<div style="margin-top:15px">
-<div class="metric">
-<span class="label">Tagesziel</span>
-<span class="value">€500</span>
+<div style="margin-top:12px">
+<div class="metric"><span class="label">Tagesziel €500</span><span class="value" id="daily-pct">0%</span></div>
+<div class="progress-bar"><div class="progress-fill" id="daily-progress" style="width:0%; background:#4ade80;"></div></div>
 </div>
-<div class="progress-bar">
-<div class="progress-fill" id="daily-progress" style="width:0%; background:#4ade80;"></div>
+<div style="margin-top:12px">
+<div class="metric"><span class="label">Wochenziel €3,500</span><span class="value" id="weekly-pct">0%</span></div>
+<div class="progress-bar"><div class="progress-fill" id="weekly-progress" style="width:0%; background:#38bdf8;"></div></div>
 </div>
-</div>
-<div style="margin-top:15px">
-<div class="metric">
-<span class="label">Wochenziel</span>
-<span class="value">€3,500</span>
-</div>
-<div class="progress-bar">
-<div class="progress-fill" id="weekly-progress" style="width:0%; background:#38bdf8;"></div>
-</div>
-</div>
-<div style="margin-top:15px">
-<div class="metric">
-<span class="label">Monatsziel</span>
-<span class="value">€15,000</span>
-</div>
-<div class="progress-bar">
-<div class="progress-fill" id="monthly-progress" style="width:0%; background:#a78bfa;"></div>
-</div>
+<div style="margin-top:12px">
+<div class="metric"><span class="label">Monatsziel €15,000</span><span class="value" id="monthly-pct">0%</span></div>
+<div class="progress-bar"><div class="progress-fill" id="monthly-progress" style="width:0%; background:#a78bfa;"></div></div>
 </div>
 </div>
 
@@ -125,82 +107,92 @@ h1 { text-align: center; color: #38bdf8; margin-bottom: 10px; font-size: 28px; }
 <div id="error-log">Loading...</div>
 </div>
 
-<!-- Monetarisierungs-Tipps -->
+<!-- Empfehlungen -->
 <div class="card">
 <h2>⚡ Optimierungs-Tipps</h2>
-<div class="metric">
-<span class="label">Aktive Plattformen</span>
-<span class="value" id="platform-count">Loading...</span>
-</div>
-<div class="metric">
-<span class="label">Ungenutzte Konten</span>
-<span class="value warn" id="unused-count">Loading...</span>
-</div>
-<div class="metric">
-<span class="label">Empfohlene Aktion</span>
-<span class="value" id="recommendation">Loading...</span>
+<div id="recommendation-list">Loading...</div>
+<div style="margin-top:12px; text-align:center">
+<a href="platform-links-20.html" class="action-btn" target="_blank">🚀 Plattformen registrieren</a>
 </div>
 </div>
 
 </div>
 
 <script>
-// Statische Daten für das Dashboard
-const ACCOUNTS = [
-  { email: "dragonadnp@gmail.com", platforms: ["Google Cloud"], status: "limited" },
-  { email: "nikolestimi@gmail.com", platforms: [], status: "missing" },
-  { email: "bullpowersrtkennels@gmail.com", platforms: ["Shopify","Stripe","Klaviyo","Twitter","Airtable","Google Cloud","HubSpot","Intercom","Jira","Mailchimp","Notion","OpenAI","Perplexity","Pipedrive","SendGrid","Slack","Zendesk","AWS","Cloudflare","Heroku"], status: "active" },
-  { email: "looopwave@gmail.com", platforms: [], status: "missing" },
-  { email: "aitecbuuss@gmail.com", platforms: [], status: "missing" },
-  { email: "rudolf.sarkany@aitec.de", platforms: [], status: "missing" },
-  { email: "rudolf.sarkany.aiitec@gmail.com", platforms: [], status: "missing" },
-];
+const DATA_FILE = 'dashboard_data.json';
 
-const AGENTS = [
-  { id: "resource_manager", icon: "🌡️", name: "Resource Manager", status: "running" },
-  { id: "monitor", icon: "🔴", name: "Service Monitor", status: "running" },
-  { id: "shopify", icon: "🛒", name: "Shopify Watcher", status: "running" },
-  { id: "social", icon: "📱", name: "Social Autopilot", status: "running" },
-  { id: "finance", icon: "💰", name: "Finance Tracker", status: "running" },
-  { id: "learner", icon: "🧠", name: "Auto Learner", status: "running" },
-  { id: "security", icon: "🔐", name: "Security Guard", status: "running" },
-  { id: "optimizer", icon: "⚡", name: "Optimizer", status: "running" },
-];
-
-function renderAccounts() {
-  const el = document.getElementById('account-list');
-  let html = '';
-  ACCOUNTS.forEach(acc => {
-    const statusClass = acc.status === 'active' ? 'good' : (acc.status === 'limited' ? 'warn' : 'crit');
-    const statusDot = acc.status === 'active' ? 'dot-green' : (acc.status === 'limited' ? 'dot-yellow' : 'dot-red');
-    const platformTags = acc.platforms.slice(0, 5).map(p => `<span class="platform-tag">${p}</span>`).join('');
-    const more = acc.platforms.length > 5 ? `<span class="platform-tag">+${acc.platforms.length - 5}</span>` : '';
-    html += `<div class="account-row">
-      <span><span class="status-dot ${statusDot}"></span>${acc.email}</span>
-      <span>${platformTags}${more}</span>
-    </div>`;
-  });
-  el.innerHTML = html;
+function getStatusClass(pct) {
+  if (pct > 85) return 'crit';
+  if (pct > 70) return 'warn';
+  return 'good';
 }
 
-function renderAgents() {
+function renderSystem(data) {
+  const sys = data.system || {};
+  document.getElementById('ram-val').innerHTML = `<span class="${getStatusClass(sys.ram_pct || 0)}">${sys.ram_pct || 0}%</span>`;
+  document.getElementById('disk-val').innerHTML = `<span class="${getStatusClass(sys.disk_pct || 0)}">${sys.disk_pct || 0}%</span>`;
+  document.getElementById('procs-val').textContent = sys.processes || 0;
+  document.getElementById('commander-val').innerHTML = '<span class="good">● Running</span>';
+  document.getElementById('supervisor-val').innerHTML = '<span class="good">● Running</span>';
+}
+
+function renderAgents(data) {
+  const agents = data.agents || [];
+  document.getElementById('agent-running-count').textContent = agents.filter(a => a.running).length;
+  document.getElementById('agent-total-count').textContent = agents.length;
+
   const el = document.getElementById('agent-list');
   let html = '';
-  AGENTS.forEach(agent => {
+  agents.forEach(agent => {
+    const statusClass = agent.running ? 'good' : 'crit';
+    const statusText = agent.running ? '● Running' : '● Down';
     html += `<div class="metric">
       <span class="label">${agent.icon} ${agent.name}</span>
-      <span class="value good">● Running</span>
+      <span class="value ${statusClass}">${statusText}</span>
     </div>`;
   });
   el.innerHTML = html;
 }
 
-function renderErrors() {
+function renderAccounts(data) {
+  const accounts = data.accounts || [];
+  const el = document.getElementById('account-list');
+  let html = '';
+  accounts.forEach(acc => {
+    const statusClass = acc.status === 'active' ? 'good' : (acc.status === 'limited' ? 'warn' : 'crit');
+    const statusDot = acc.status === 'active' ? 'dot-green' : (acc.status === 'limited' ? 'dot-yellow' : 'dot-red');
+    const platformTags = acc.platforms.slice(0, 4).map(p => `<span class="platform-tag">${p}</span>`).join('');
+    const more = acc.platforms.length > 4 ? `<span class="platform-tag">+${acc.platforms.length - 4}</span>` : '';
+    html += `<div class="account-row">
+      <div><span class="status-dot ${statusDot}"></span>${acc.email}<br><small style="color:#64748b">${acc.platforms.length} Plattformen</small></div>
+      <div>${platformTags}${more}</div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+function renderRevenue(data) {
+  const rev = data.revenue || {};
+  const daily = rev.daily || 0;
+  const weekly = rev.weekly || 0;
+  const monthly = rev.monthly || 0;
+
+  document.getElementById('daily-rev').textContent = `€${daily.toFixed(2)}`;
+  document.getElementById('daily-pct').textContent = `${Math.min((daily / 500) * 100, 100).toFixed(0)}%`;
+  document.getElementById('daily-progress').style.width = `${Math.min((daily / 500) * 100, 100)}%`;
+  document.getElementById('weekly-pct').textContent = `${Math.min((weekly / 3500) * 100, 100).toFixed(0)}%`;
+  document.getElementById('weekly-progress').style.width = `${Math.min((weekly / 3500) * 100, 100)}%`;
+  document.getElementById('monthly-pct').textContent = `${Math.min((monthly / 15000) * 100, 100).toFixed(0)}%`;
+  document.getElementById('monthly-progress').style.width = `${Math.min((monthly / 15000) * 100, 100)}%`;
+}
+
+function renderErrors(data) {
+  const errors = data.errors || [];
   const el = document.getElementById('error-log');
-  const errors = [
-    { ts: "22:24:25", source: "HEALTH", msg: "5 Konten nicht in Configs gefunden" },
-    { ts: "22:24:26", source: "REVENUE", msg: "Keine Stripe-Daten verfügbar (kein API Key)" },
-  ];
+  if (!errors.length) {
+    el.innerHTML = '<div style="color:#4ade80; padding:10px">✅ Keine Fehler in den letzten 20 Einträgen</div>';
+    return;
+  }
   let html = '';
   errors.forEach(e => {
     html += `<div class="log-entry"><span class="timestamp">${e.ts}</span>[${e.source}] ${e.msg}</div>`;
@@ -208,34 +200,43 @@ function renderErrors() {
   el.innerHTML = html;
 }
 
-function renderSystem() {
-  document.getElementById('ram-val').innerHTML = '<span class="good">60.0%</span>';
-  document.getElementById('disk-val').innerHTML = '<span class="good">44.0%</span>';
-  document.getElementById('procs-val').textContent = '14';
-  document.getElementById('commander-val').innerHTML = '<span class="good">● Running</span>';
-  document.getElementById('restart-val').textContent = 'Keiner (stabil)';
+function renderRecommendations(data) {
+  const recs = (data.revenue || {}).recommendations || [];
+  const el = document.getElementById('recommendation-list');
+  if (!recs.length) {
+    el.innerHTML = '<div style="color:#4ade80; padding:10px">✅ Alles optimal!</div>';
+    return;
+  }
+  let html = '';
+  recs.forEach(r => {
+    html += `<div class="recommendation-item">${r}</div>`;
+  });
+  el.innerHTML = html;
 }
 
-function renderMonetization() {
-  const dailyRev = 0;
-  const weeklyRev = 0;
-  const monthlyRev = 0;
+async function loadData() {
+  try {
+    const resp = await fetch(DATA_FILE + '?t=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
 
-  document.getElementById('daily-rev').textContent = `€${dailyRev.toFixed(2)}`;
-  document.getElementById('daily-progress').style.width = `${Math.min((dailyRev / 500) * 100, 100)}%`;
-  document.getElementById('weekly-progress').style.width = `${Math.min((weeklyRev / 3500) * 100, 100)}%`;
-  document.getElementById('monthly-progress').style.width = `${Math.min((monthlyRev / 15000) * 100, 100)}%`;
+    renderSystem(data);
+    renderAgents(data);
+    renderAccounts(data);
+    renderRevenue(data);
+    renderErrors(data);
+    renderRecommendations(data);
 
-  document.getElementById('platform-count').innerHTML = '<span class="good">20 Plattformen</span>';
-  document.getElementById('unused-count').innerHTML = '<span class="crit">5 Konten ungenutzt</span>';
-  document.getElementById('recommendation').innerHTML = '<span class="warn">Registriere ungenutzte Konten auf Stripe/Shopify für mehr Reichweite</span>';
+    document.getElementById('last-update').textContent = new Date(data.timestamp).toLocaleTimeString('de-DE');
+  } catch (e) {
+    console.error('Dashboard load error:', e);
+    document.getElementById('last-update').textContent = 'Fehler: ' + e.message;
+  }
 }
 
-renderSystem();
-renderAgents();
-renderAccounts();
-renderErrors();
-renderMonetization();
+// Initial + alle 10 Sekunden
+loadData();
+setInterval(loadData, 10000);
 </script>
 </body>
 </html>
