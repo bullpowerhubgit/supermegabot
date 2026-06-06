@@ -681,7 +681,7 @@ async def handle_status_full(req):
         "shopify": {
             "configured": bool(os.getenv("SHOPIFY_SHOP_DOMAIN") and (os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN"))),
             "domain": os.getenv("SHOPIFY_SHOP_DOMAIN", ""),
-            "api_version": os.getenv("SHOPIFY_API_VERSION", "2026-04"),
+            "api_version": os.getenv("SHOPIFY_API_VERSION", "2024-10"),
             "store2_configured": bool(os.getenv("SHOPIFY_STORE2_DOMAIN") and os.getenv("SHOPIFY_STORE2_TOKEN")),
             "store2_domain": os.getenv("SHOPIFY_STORE2_DOMAIN", "soolar.myshopify.com"),
         },
