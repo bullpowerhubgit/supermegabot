@@ -566,6 +566,68 @@ html, body {
 .empty-state .es-title { font-size: 14px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
 .empty-state .es-sub { font-size: 12px; }
 
+/* ── PRICING CARDS ── */
+.pricing-card {
+  text-align: center;
+  padding: 32px 24px;
+  border: 2px solid var(--border);
+  transition: all 0.2s;
+  position: relative;
+}
+.pricing-card:hover {
+  border-color: var(--accent);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+.pricing-popular {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, rgba(99,102,241,0.05), rgba(168,85,247,0.05));
+}
+.pricing-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  margin-bottom: 16px;
+}
+.pricing-badge-popular {
+  background: linear-gradient(90deg, #6366f1, #a855f7);
+  color: white;
+  border-color: transparent;
+}
+.pricing-price {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text1);
+  margin-bottom: 4px;
+}
+.pricing-period {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text3);
+}
+.pricing-features {
+  text-align: left;
+  margin: 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.pricing-feature {
+  font-size: 13px;
+  color: var(--text2);
+  padding: 4px 0;
+}
+.pricing-btn {
+  width: 100%;
+  padding: 12px;
+  font-weight: 600;
+}
+
 /* ── SERVICES ── */
 .service-row {
   display: flex; align-items: center;
@@ -1043,6 +1105,9 @@ input[type="range"]::-webkit-slider-thumb {
       </div>
       <div class="nav-item" data-section="stripe">
         <span class="nav-icon">💳</span> Stripe Payments
+      </div>
+      <div class="nav-item" data-section="pricing">
+        <span class="nav-icon">💎</span> Pricing
       </div>
       <div class="nav-item" data-section="drive">
         <span class="nav-icon">☁️</span> Google Drive
@@ -2346,6 +2411,68 @@ input[type="range"]::-webkit-slider-thumb {
       <div id="stripe-status"><div class="spinner"></div></div>
     </section>
 
+    <!-- ── PRICING ───────────────────────────────────────────────────────── -->
+    <section id="section-pricing" class="section">
+      <div class="section-header">
+        <div><h2>💎 Pricing</h2><p>Abonnement-Pläne · Stripe Checkout · Billing</p></div>
+      </div>
+
+      <div class="gw-hero" style="background:linear-gradient(135deg,rgba(99,102,241,0.15),rgba(168,85,247,0.15));border-color:rgba(99,102,241,0.3);">
+        <h1>💎 <span style="background:linear-gradient(90deg,#6366f1,#a855f7);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;">SuperMegaBot SaaS</span></h1>
+        <p>Wähle deinen Plan und starte sofort mit der Automatisierung</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="card pricing-card">
+          <div class="pricing-badge">Starter</div>
+          <div class="pricing-price">€29<span class="pricing-period">/Monat</span></div>
+          <div class="pricing-features">
+            <div class="pricing-feature">✅ 1 Shopify Store</div>
+            <div class="pricing-feature">✅ 1000 Webhooks/Monat</div>
+            <div class="pricing-feature">✅ Basic Telegram Bot</div>
+            <div class="pricing-feature">✅ Email Support</div>
+          </div>
+          <button class="btn btn-primary pricing-btn" onclick="startCheckout('starter')">Starten</button>
+        </div>
+
+        <div class="card pricing-card pricing-popular">
+          <div class="pricing-badge pricing-badge-popular">Pro</div>
+          <div class="pricing-price">€79<span class="pricing-period">/Monat</span></div>
+          <div class="pricing-features">
+            <div class="pricing-feature">✅ 5 Shopify Stores</div>
+            <div class="pricing-feature">✅ 10000 Webhooks/Monat</div>
+            <div class="pricing-feature">✅ Advanced Telegram Bot</div>
+            <div class="pricing-feature">✅ AI Agent Integration</div>
+            <div class="pricing-feature">✅ Priority Support</div>
+          </div>
+          <button class="btn btn-primary pricing-btn" onclick="startCheckout('pro')">Starten</button>
+        </div>
+
+        <div class="card pricing-card">
+          <div class="pricing-badge">Enterprise</div>
+          <div class="pricing-price">€199<span class="pricing-period">/Monat</span></div>
+          <div class="pricing-features">
+            <div class="pricing-feature">✅ Unlimited Stores</div>
+            <div class="pricing-feature">✅ Unlimited Webhooks</div>
+            <div class="pricing-feature">✅ Custom AI Agents</div>
+            <div class="pricing-feature">✅ White-Label Solution</div>
+            <div class="pricing-feature">✅ 24/7 Phone Support</div>
+          </div>
+          <button class="btn btn-primary pricing-btn" onclick="startCheckout('enterprise')">Starten</button>
+        </div>
+      </div>
+
+      <div class="card mt-16">
+        <div class="card-header">
+          <div class="card-title"><span>📋</span> Aktuelles Abonnement</div>
+        </div>
+        <div id="current-subscription">
+          <div class="empty-state"><div class="es-sub">Lade Abonnement-Status…</div></div>
+        </div>
+      </div>
+    </section>
+    </section>
+
     <!-- ── GOOGLE DRIVE ──────────────────────────────────────────────────── -->
     <section id="section-drive" class="section">
       <div class="section-header">
@@ -2530,6 +2657,7 @@ function sectionInit(section) {
     seo:          loadSEO,
     revenue:      loadRevenue,
     stripe:       loadStripe,
+    pricing:      loadPricing,
     drive:        loadDrive,
     watchdog:     loadWatchdog,
     agentshub:    loadAgentsHub,
@@ -4443,6 +4571,83 @@ async function loadEcommerceOrch() {
     badge.textContent = 'error';
     badge.className   = 'badge badge-red';
     body.innerHTML = `<div class="empty-state"><div class="es-icon">🛒</div><div class="es-title">Fehler</div><div class="es-sub">${e.message}</div></div>`;
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// PRICING
+// ════════════════════════════════════════════════════════════════
+async function loadPricing() {
+  try {
+    const d = await api('GET', '/api/stripe/subscriptions');
+    const subEl = document.getElementById('current-subscription');
+    if (!d.ok || !d.subscriptions || d.subscriptions.length === 0) {
+      subEl.innerHTML = `
+        <div style="text-align:center;padding:32px">
+          <div style="font-size:32px;margin-bottom:12px">💎</div>
+          <div style="font-size:14px;color:var(--text2)">Kein aktives Abonnement</div>
+          <div style="font-size:12px;color:var(--text3);margin-top:8px">Wähle einen Plan oben um zu starten</div>
+        </div>
+      `;
+    } else {
+      const sub = d.subscriptions[0];
+      subEl.innerHTML = `
+        <div style="padding:16px;background:var(--card2);border-radius:8px;border:1px solid var(--border)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div>
+              <div style="font-weight:700;color:var(--text1);font-size:16px">${sub.amount.toFixed(2)} ${sub.currency}/${sub.interval}</div>
+              <div style="font-size:12px;color:var(--text2)">ID: ${sub.id}</div>
+            </div>
+            <span class="badge badge-green">Aktiv</span>
+          </div>
+          <div style="font-size:12px;color:var(--text3)">
+            <div>Start: ${new Date(sub.created * 1000).toLocaleDateString()}</div>
+            <div>Nächste Abrechnung: ${new Date(sub.current_period_end * 1000).toLocaleDateString()}</div>
+          </div>
+          <button class="btn btn-secondary" style="margin-top:12px;width:100%" onclick="manageSubscription()">Abonnement verwalten</button>
+        </div>
+      `;
+    }
+  } catch(e) {
+    document.getElementById('current-subscription').innerHTML = `<div class="error-msg">❌ ${e.message}</div>`;
+  }
+}
+
+async function startCheckout(plan) {
+  const prices = {
+    starter: 'price_starter_monthly',
+    pro: 'price_pro_monthly',
+    enterprise: 'price_enterprise_monthly'
+  };
+  const priceId = prices[plan];
+  if (!priceId) {
+    toast('Ungültiger Plan', 'error');
+    return;
+  }
+  try {
+    toast('Erstelle Checkout Session…', 'info');
+    const d = await api('POST', '/api/stripe/checkout', { price_id: priceId });
+    if (d.ok && d.url) {
+      window.location.href = d.url;
+    } else {
+      toast(d.error || 'Checkout fehlgeschlagen', 'error');
+    }
+  } catch(e) {
+    toast(`Checkout Fehler: ${e.message}`, 'error');
+  }
+}
+
+async function manageSubscription() {
+  try {
+    toast('Lade Customer Portal…', 'info');
+    const d = await api('POST', '/api/stripe/portal');
+    if (d.ok && d.url) {
+      window.location.href = d.url;
+    } else {
+      toast(d.error || 'Portal fehlgeschlagen', 'error');
+    }
+  } catch(e) {
+    toast(`Portal Fehler: ${e.message}`, 'error');
   }
 }
 

@@ -382,3 +382,46 @@ async def monitor_payments() -> str:
         return f"{len(new_payments)} neue Zahlungen, {total:.2f} {currency}"
 
     return "keine neuen Zahlungen"
+
+
+# ── Checkout Session ─────────────────────────────────────────────────────────
+
+async def create_checkout_session(price_id: str, success_url: str = None, cancel_url: str = None) -> Dict:
+    """Create a Stripe Checkout Session for subscription."""
+    try:
+        async with _session() as s:
+            payload = {
+                "mode": "subscription",
+                "payment_method_types": ["card"],
+                "line_items": [{"price": price_id, "quantity": 1}],
+                "success_url": success_url or f"{os.getenv('DASHBOARD_URL', 'http://localhost:8888')}/pricing?success=true",
+                "cancel_url": cancel_url or f"{os.getenv('DASHBOARD_URL', 'http://localhost:8888')}/pricing?canceled=true",
+            }
+            async with s.post(f"{_BASE}/checkout/sessions", headers=_auth(), json=payload) as r:
+                if r.status != 200:
+                    return {"ok": False, "error": f"HTTP {r.status}"}
+                d = await r.json()
+                return {"ok": True, "url": d.get("url"), "session_id": d.get("id")}
+    except Exception as e:
+        log.error(f"create_checkout_session: {e}")
+        return {"ok": False, "error": str(e)}
+
+
+# ── Customer Portal ─────────────────────────────────────────────────────────
+
+async def create_customer_portal_session(customer_id: str, return_url: str = None) -> Dict:
+    """Create a Stripe Customer Portal session for subscription management."""
+    try:
+        async with _session() as s:
+            payload = {
+                "customer": customer_id,
+                "return_url": return_url or f"{os.getenv('DASHBOARD_URL', 'http://localhost:8888')}/pricing",
+            }
+            async with s.post(f"{_BASE}/billing_portal/sessions", headers=_auth(), json=payload) as r:
+                if r.status != 200:
+                    return {"ok": False, "error": f"HTTP {r.status}"}
+                d = await r.json()
+                return {"ok": True, "url": d.get("url")}
+    except Exception as e:
+        log.error(f"create_customer_portal_session: {e}")
+        return {"ok": False, "error": str(e)}

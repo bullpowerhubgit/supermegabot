@@ -1839,6 +1839,36 @@ async def handle_stripe_webhook(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_stripe_checkout(req):
+    """Create Stripe Checkout Session for subscription."""
+    try:
+        data = await req.json()
+        price_id = data.get("price_id")
+        if not price_id:
+            return web.json_response({"ok": False, "error": "price_id required"}, status=400)
+
+        from modules.stripe_automation import create_checkout_session
+        result = await create_checkout_session(price_id)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_portal(req):
+    """Create Stripe Customer Portal session."""
+    try:
+        data = await req.json()
+        customer_id = data.get("customer_id")
+        if not customer_id:
+            return web.json_response({"ok": False, "error": "customer_id required"}, status=400)
+
+        from modules.stripe_automation import create_customer_portal_session
+        result = await create_customer_portal_session(customer_id)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── Google Drive ──────────────────────────────────────────────────────────────
 
 # ── Google OAuth2 ─────────────────────────────────────────────────────────────
@@ -2097,6 +2127,8 @@ async def create_app():
 
     # ── Monetization ──────────────────────────────────────────────────────────
     app.router.add_get("/api/plans",                  handle_plans_list)
+    app.router.add_post("/api/stripe/checkout",       handle_stripe_checkout)
+    app.router.add_post("/api/stripe/portal",         handle_stripe_portal)
     app.router.add_post("/api/checkout",              handle_checkout_create)
     app.router.add_get("/api/mrr",                    handle_mrr)
 

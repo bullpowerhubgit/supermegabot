@@ -1,17 +1,238 @@
 {
-  "timestamp": "2026-06-06T23:17:33.247713",
-  "daily_revenue": 0.0,
-  "weekly_revenue": 0.0,
-  "monthly_revenue": 0.0,
-  "sources": [],
-  "goals": {
-    "daily": 500.0,
-    "weekly": 3500.0,
-    "monthly": 15000.0
+  "timestamp": "2026-06-06T23:51:40.882973",
+  "system": {
+    "ram_pct": 69.5,
+    "disk_pct": 46.0,
+    "processes": 16
   },
-  "recommendations": [
-    "\ud83d\ude80 Starte eine Email-Kampagne \u00fcber SendGrid/Mailchimp",
-    "\ud83d\udcb3 Stripe nicht konfiguriert \u2014 Zahlungen nicht trackbar",
-    "\ud83d\udc65 Nutze ungenutzte Konten f\u00fcr mehr Shopify/Shops"
+  "agents": [
+    {
+      "id": "resource_manager",
+      "icon": "\ud83c\udf21\ufe0f",
+      "name": "Resource Manager",
+      "running": true
+    },
+    {
+      "id": "monitor",
+      "icon": "\ud83d\udd34",
+      "name": "Service Monitor",
+      "running": true
+    },
+    {
+      "id": "shopify",
+      "icon": "\ud83d\uded2",
+      "name": "Shopify Watcher",
+      "running": true
+    },
+    {
+      "id": "social",
+      "icon": "\ud83d\udcf1",
+      "name": "Social Autopilot",
+      "running": true
+    },
+    {
+      "id": "finance",
+      "icon": "\ud83d\udcb0",
+      "name": "Finance Tracker",
+      "running": true
+    },
+    {
+      "id": "monetization",
+      "icon": "\ud83d\udcc8",
+      "name": "Revenue Tracker",
+      "running": true
+    },
+    {
+      "id": "learner",
+      "icon": "\ud83e\udde0",
+      "name": "Auto Learner",
+      "running": true
+    },
+    {
+      "id": "security",
+      "icon": "\ud83d\udd10",
+      "name": "Security Guard",
+      "running": true
+    },
+    {
+      "id": "optimizer",
+      "icon": "\u26a1",
+      "name": "Optimizer",
+      "running": true
+    }
+  ],
+  "accounts": [
+    {
+      "email": "dragonadnp@gmail.com",
+      "platforms": [
+        "Google Cloud"
+      ],
+      "status": "limited"
+    },
+    {
+      "email": "nikolestimi@gmail.com",
+      "platforms": [],
+      "status": "missing"
+    },
+    {
+      "email": "bullpowersrtkennels@gmail.com",
+      "platforms": [
+        "Shopify",
+        "Stripe",
+        "Klaviyo",
+        "Twitter",
+        "Airtable",
+        "Google Cloud",
+        "HubSpot",
+        "Intercom",
+        "Jira",
+        "Mailchimp",
+        "Notion",
+        "OpenAI",
+        "Perplexity",
+        "Pipedrive",
+        "SendGrid",
+        "Slack",
+        "Zendesk",
+        "AWS",
+        "Cloudflare",
+        "Heroku"
+      ],
+      "status": "active"
+    },
+    {
+      "email": "looopwave@gmail.com",
+      "platforms": [],
+      "status": "missing"
+    },
+    {
+      "email": "aitecbuuss@gmail.com",
+      "platforms": [],
+      "status": "missing"
+    },
+    {
+      "email": "rudolf.sarkany@aitec.de",
+      "platforms": [],
+      "status": "missing"
+    },
+    {
+      "email": "rudolf.sarkany.aiitec@gmail.com",
+      "platforms": [],
+      "status": "missing"
+    }
+  ],
+  "revenue": {
+    "daily": 0.0,
+    "weekly": 0.0,
+    "monthly": 0.0,
+    "sources": [],
+    "recommendations": [
+      "\ud83d\ude80 Starte eine Email-Kampagne \u00fcber SendGrid/Mailchimp",
+      "\ud83d\uded2 Pr\u00fcfe Shopify-Cart-Abbruch \u2014 retargeting n\u00f6tig",
+      "\ud83d\udcb3 Stripe nicht konfiguriert \u2014 Zahlungen nicht trackbar",
+      "\ud83d\udc65 Nutze ungenutzte Konten f\u00fcr mehr Shopify/Shops"
+    ]
+  },
+  "errors": [
+    {
+      "ts": "?",
+      "source": "?",
+      "msg": "\u2705 bullpowersrtkennels@gmail.com"
+    },
+    {
+      "ts": "?",
+      "source": "?",
+      "msg": "    \u2192 airtable, aws, cloudflare, github, google, heroku, hubspot, intercom"
+    },
+    {
+      "ts": "2026-06-06 23:27:52",
+      "source": "MEMORY",
+      "msg": "\ud83d\udfe0 WARNUNG: RAM 77.7%"
+    },
+    {
+      "ts": "2026-06-06 23:46:46",
+      "source": "START",
+      "msg": "Starte resource_manager"
+    },
+    {
+      "ts": "2026-06-06 23:46:47",
+      "source": "START",
+      "msg": "Starte monitor"
+    },
+    {
+      "ts": "2026-06-06 23:46:48",
+      "source": "START",
+      "msg": "Starte shopify"
+    },
+    {
+      "ts": "2026-06-06 23:46:50",
+      "source": "START",
+      "msg": "Starte social"
+    },
+    {
+      "ts": "2026-06-06 23:46:51",
+      "source": "START",
+      "msg": "Starte finance"
+    },
+    {
+      "ts": "2026-06-06 23:46:52",
+      "source": "START",
+      "msg": "Starte monetization"
+    },
+    {
+      "ts": "2026-06-06 23:46:54",
+      "source": "START",
+      "msg": "Starte learner"
+    },
+    {
+      "ts": "2026-06-06 23:46:55",
+      "source": "START",
+      "msg": "Starte security"
+    },
+    {
+      "ts": "2026-06-06 23:46:56",
+      "source": "START",
+      "msg": "Starte optimizer"
+    },
+    {
+      "ts": "2026-06-06 23:46:58",
+      "source": "START",
+      "msg": "Starte micro_ping"
+    },
+    {
+      "ts": "2026-06-06 23:46:58",
+      "source": "START",
+      "msg": "Starte micro_revenue"
+    },
+    {
+      "ts": "2026-06-06 23:46:59",
+      "source": "START",
+      "msg": "Starte micro_backup"
+    },
+    {
+      "ts": "2026-06-06 23:47:00",
+      "source": "START",
+      "msg": "Starte micro_clean"
+    },
+    {
+      "ts": "2026-06-06 23:47:01",
+      "source": "START",
+      "msg": "Starte micro_ai"
+    },
+    {
+      "ts": "2026-06-06 23:47:08",
+      "source": "HEALTH",
+      "msg": "\u2705 dragonadnp@gmail.com"
+    },
+    {
+      "ts": "?",
+      "source": "?",
+      "msg": "    \u2192 airtable, aws, cloudflare, github, google, heroku, hubspot, intercom, jira, mailchimp, notion,"
+    },
+    {
+      "ts": "?",
+      "source": "?",
+      "msg": "\u2705 nikolestimi@g"
+    }
   ]
 }
