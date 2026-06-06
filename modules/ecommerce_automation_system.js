@@ -24,7 +24,7 @@ class ECommerceAutomationSystem {
       shopify: {
         storeUrl: process.env.SHOPIFY_STORE_URL,
         accessToken: process.env.SHOPIFY_ACCESS_TOKEN,
-        apiVersion: process.env.SHOPIFY_API_VERSION || '2026-04'
+        apiVersion: process.env.SHOPIFY_API_VERSION || '2024-10'
       },
       printify: {
         // Unterstütze beide Varianten für Kompatibilität mit Python-Stack
