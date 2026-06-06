@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """🧠 Learner Agent — Sammelt Patterns aus allen Agenten, schlägt Verbesserungen vor"""
 import sys, os, time, json
-sys.path.insert(0, os.path.expanduser("~/rudibot-army/shared"))
+sys.path.insert(0, os.path.expanduser("~/supermegabot/rudibot-army/shared"))
 from bus import report, notify_telegram, load_state
 from learner_mixin import AgentLearner
 
