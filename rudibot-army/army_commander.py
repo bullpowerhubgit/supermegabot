@@ -60,6 +60,23 @@ def log_error(source, message):
     with open(central_error_log, "a") as f:
         f.write(line)
 
+def rotate_logs(max_size_mb=10):
+    """Rotiert Log-Dateien wenn sie zu groß werden — verhindert Disk-Full"""
+    try:
+        for log_file in LOGS_DIR.glob("*.log"):
+            size_mb = log_file.stat().st_size / (1024 * 1024)
+            if size_mb > max_size_mb:
+                # Backup erstellen, dann auf letzte 500 Zeilen kürzen
+                backup = LOGS_DIR / f"{log_file.stem}.old.log"
+                log_file.rename(backup)
+                with open(backup, "r") as f:
+                    lines = f.readlines()
+                with open(log_file, "w") as f:
+                    f.writelines(lines[-500:])
+                log_error("LOG_ROTATE", f"Rotiert: {log_file.name} ({size_mb:.1f}MB -> {len(lines[-500:])} Zeilen)")
+    except Exception:
+        pass
+
 def kill_duplicate_processes(script_name):
     """Killt alle alten Instanzen desselben Scripts — verhindert Duplikate"""
     try:
@@ -291,6 +308,10 @@ def run():
     kill_duplicate_processes("rudibot-army")
     time.sleep(1)
 
+    # Log-Rotation vor Start (verhindert Disk-Full)
+    print("🔄 Rotiere Logs...")
+    rotate_logs()
+
     # Alle Agenten starten
     for agent in AGENTS:
         start_agent(agent, AGENTS_DIR)
@@ -319,10 +340,16 @@ def run():
     last_report = time.time()
     last_health_check = 0
     last_memory_check = 0
+    last_log_rotate = 0
     all_workers = AGENTS + MICRO_BOTS
 
     while True:
         now = time.time()
+
+        # ── Alle 30 Min: Log-Rotation (verhindert Disk-Full) ──
+        if now - last_log_rotate > 1800:
+            rotate_logs()
+            last_log_rotate = now
 
         # ── Watchdog: Agenten + Micro Bots ──
         for agent in AGENTS:

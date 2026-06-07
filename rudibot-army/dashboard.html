@@ -112,14 +112,53 @@ h1 { text-align: center; color: #38bdf8; margin-bottom: 5px; font-size: 28px; }
 <h2>⚡ Optimierungs-Tipps</h2>
 <div id="recommendation-list">Loading...</div>
 <div style="margin-top:12px; text-align:center">
-<a href="platform-links-20.html" class="action-btn" target="_blank">🚀 Plattformen registrieren</a>
+<a href="file:///Users/rudolfsarkany/windsurf/platform-links-20.html" class="action-btn" target="_blank">🚀 Plattformen registrieren</a>
 </div>
 </div>
 
 </div>
 
 <script>
-const DATA_FILE = 'dashboard_data.json';
+const DATA_FILE = 'http://localhost:8765/dashboard_data.json';
+const FALLBACK_DATA = {
+  "timestamp": new Date().toISOString(),
+  "system": {"ram_pct": 0, "disk_pct": 0, "disk_free_gb": 7, "processes": 0},
+  "agents": [
+    {"id": "resource_manager", "icon": "🌡️", "name": "Resource Manager", "running": true},
+    {"id": "monitor", "icon": "🔴", "name": "Service Monitor", "running": true},
+    {"id": "shopify", "icon": "🛒", "name": "Shopify Watcher", "running": true},
+    {"id": "social", "icon": "📱", "name": "Social Autopilot", "running": true},
+    {"id": "finance", "icon": "💰", "name": "Finance Tracker", "running": true},
+    {"id": "monetization", "icon": "📈", "name": "Revenue Tracker", "running": true},
+    {"id": "learner", "icon": "🧠", "name": "Auto Learner", "running": true},
+    {"id": "security", "icon": "🔐", "name": "Security Guard", "running": true},
+    {"id": "optimizer", "icon": "⚡", "name": "Optimizer", "running": true},
+  ],
+  "accounts": [
+    {"email": "dragonadnp@gmail.com", "platforms": ["Google Cloud"], "status": "limited"},
+    {"email": "nikolestimi@gmail.com", "platforms": [], "status": "missing"},
+    {"email": "bullpowersrtkennels@gmail.com", "platforms": [
+      "Shopify","Stripe","Klaviyo","Twitter","Airtable","Google Cloud","HubSpot",
+      "Intercom","Jira","Mailchimp","Notion","OpenAI","Perplexity","Pipedrive",
+      "SendGrid","Slack","Zendesk","AWS","Cloudflare","Heroku"
+    ], "status": "active"},
+    {"email": "looopwave@gmail.com", "platforms": [], "status": "missing"},
+    {"email": "aitecbuuss@gmail.com", "platforms": [], "status": "missing"},
+    {"email": "rudolf.sarkany@aitec.de", "platforms": [], "status": "missing"},
+    {"email": "rudolf.sarkany.aiitec@gmail.com", "platforms": [], "status": "missing"},
+  ],
+  "revenue": {
+    "daily": 0, "weekly": 0, "monthly": 0,
+    "sources": [],
+    "recommendations": [
+      "🚀 Starte eine Email-Kampagne über SendGrid/Mailchimp",
+      "🛒 Prüfe Shopify-Cart-Abbruch — retargeting nötig",
+      "💳 Stripe nicht konfiguriert — Zahlungen nicht trackbar",
+      "👥 Nutze ungenutzte Konten für mehr Shopify/Shops",
+    ]
+  },
+  "errors": []
+};
 
 function getStatusClass(pct) {
   if (pct > 85) return 'crit';
@@ -130,7 +169,9 @@ function getStatusClass(pct) {
 function renderSystem(data) {
   const sys = data.system || {};
   document.getElementById('ram-val').innerHTML = `<span class="${getStatusClass(sys.ram_pct || 0)}">${sys.ram_pct || 0}%</span>`;
-  document.getElementById('disk-val').innerHTML = `<span class="${getStatusClass(sys.disk_pct || 0)}">${sys.disk_pct || 0}%</span>`;
+  const diskFree = sys.disk_free_gb || 0;
+  const diskFreeClass = diskFree < 2 ? 'crit' : (diskFree < 5 ? 'warn' : 'good');
+  document.getElementById('disk-val').innerHTML = `<span class="${getStatusClass(sys.disk_pct || 0)}">${sys.disk_pct || 0}%</span> <span class="${diskFreeClass}" style="font-size:0.8em">(${diskFree}GB frei)</span>`;
   document.getElementById('procs-val').textContent = sys.processes || 0;
   document.getElementById('commander-val').innerHTML = '<span class="good">● Running</span>';
   document.getElementById('supervisor-val').innerHTML = '<span class="good">● Running</span>';
@@ -219,19 +260,23 @@ async function loadData() {
     const resp = await fetch(DATA_FILE + '?t=' + Date.now());
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
-
-    renderSystem(data);
-    renderAgents(data);
-    renderAccounts(data);
-    renderRevenue(data);
-    renderErrors(data);
-    renderRecommendations(data);
-
-    document.getElementById('last-update').textContent = new Date(data.timestamp).toLocaleTimeString('de-DE');
+    renderAll(data);
+    document.getElementById('last-update').textContent = new Date(data.timestamp).toLocaleTimeString('de-DE') + ' (LIVE)';
   } catch (e) {
-    console.error('Dashboard load error:', e);
-    document.getElementById('last-update').textContent = 'Fehler: ' + e.message;
+    console.warn('Server nicht erreichbar, nutze Fallback-Daten. Starte: python3 dashboard_http_server.py');
+    renderAll(FALLBACK_DATA);
+    document.getElementById('last-update').textContent = 'OFFLINE (Fallback) — Server starten!';
+    document.getElementById('last-update').style.color = '#fbbf24';
   }
+}
+
+function renderAll(data) {
+  renderSystem(data);
+  renderAgents(data);
+  renderAccounts(data);
+  renderRevenue(data);
+  renderErrors(data);
+  renderRecommendations(data);
 }
 
 // Initial + alle 10 Sekunden
