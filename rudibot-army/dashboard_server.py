@@ -32,8 +32,16 @@ def get_system_stats():
         lines = df_out.strip().splitlines()
         if len(lines) >= 2:
             parts = lines[1].split()
-            if len(parts) >= 5:
+            if len(parts) >= 4:
                 stats["disk_pct"] = float(parts[4].replace('%', ''))
+                # Parse available space
+                avail_str = parts[3]
+                if avail_str.endswith('Gi'):
+                    stats["disk_free_gb"] = float(avail_str[:-2])
+                elif avail_str.endswith('Mi'):
+                    stats["disk_free_gb"] = round(float(avail_str[:-2]) / 1024, 1)
+                elif avail_str.endswith('Ti'):
+                    stats["disk_free_gb"] = float(avail_str[:-2]) * 1024
     except Exception:
         pass
 

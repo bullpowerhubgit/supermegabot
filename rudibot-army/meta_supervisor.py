@@ -178,6 +178,41 @@ def monetization_check():
         log(f"⚠️ Monetization check error: {e}")
     return revenue_data
 
+def check_disk_space():
+    """Prüft freien Speicher — warnt bei < 5 GB"""
+    try:
+        result = subprocess.run("df -h /", shell=True, capture_output=True, text=True, timeout=5)
+        lines = result.stdout.strip().splitlines()
+        if len(lines) >= 2:
+            parts = lines[1].split()
+            if len(parts) >= 4:
+                avail_str = parts[3]
+                # Parse z.B. "7.0Gi" oder "500Mi"
+                if avail_str.endswith('Gi'):
+                    avail_gb = float(avail_str[:-2])
+                elif avail_str.endswith('Mi'):
+                    avail_gb = float(avail_str[:-2]) / 1024
+                elif avail_str.endswith('Ti'):
+                    avail_gb = float(avail_str[:-2]) * 1024
+                else:
+                    avail_gb = float(avail_str) / (1024*1024*1024)
+
+                pct = float(parts[4].replace('%', ''))
+
+                if avail_gb < 2:
+                    log(f"🔴 KRITISCH: Nur {avail_gb:.1f} GB frei! Sofort aufräumen!")
+                    send_critical_alert(f"🚨 DISK SPACE KRITISCH\nNur {avail_gb:.1f} GB frei auf dem Mac!\nStarte sofort: python3 ~/supermegabot/rudibot-army/cleanup.py")
+                    return "critical", avail_gb
+                elif avail_gb < 5:
+                    log(f"🟠 WARNUNG: Nur {avail_gb:.1f} GB frei")
+                    send_critical_alert(f"⚠️ Disk Space niedrig\nNur {avail_gb:.1f} GB frei. Bald aufräumen!")
+                    return "warning", avail_gb
+                else:
+                    return "ok", avail_gb
+    except Exception as e:
+        log(f"⚠️ Disk check error: {e}")
+    return "unknown", 0
+
 def system_health_snapshot():
     """Gibt einen System-Health-Snapshot zurück"""
     health = {}
@@ -248,11 +283,19 @@ def main():
     last_duplicate_check = 0
     last_monetization_check = 0
     last_system_check = 0
+    last_disk_check = 0
     commander_restart_count = 0
     last_restart_time = time.time()
 
     while True:
         now = time.time()
+
+        # 0. Disk Space überwachen (alle 5 Min)
+        if now - last_disk_check > 300:
+            status, avail = check_disk_space()
+            if status == "ok":
+                log(f"💾 Disk: {avail:.1f} GB frei")
+            last_disk_check = now
 
         # 1. Prüfe ob Commander läuft
         commander_pid = get_commander_pid()

@@ -21,6 +21,10 @@ PROCESSES = {
         "script": "dashboard_server.py",
         "log": "dashboard_server.log",
     },
+    "dashboard_http": {
+        "script": "dashboard_http_server.py",
+        "log": "dashboard_http.log",
+    },
 }
 
 def is_running(script_name):
@@ -77,8 +81,7 @@ def start_process(name, cfg):
         return False
 
 def open_dashboard():
-    dashboard_path = ARMY_DIR / "dashboard.html"
-    url = f"file://{dashboard_path.resolve()}"
+    url = "http://localhost:8765/dashboard.html"
     print(f"🌐 Öffne Dashboard: {url}")
     webbrowser.open(url)
 
