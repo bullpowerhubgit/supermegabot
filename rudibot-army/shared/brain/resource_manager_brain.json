@@ -1,228 +1,8 @@
 {
-  "cycles": 3246,
+  "cycles": 3266,
   "patterns": {},
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-07 13:08:04",
-      "status": "medium",
-      "message": "RAM 65.7% CPU 35.0%",
-      "metrics": {
-        "ram": 65.7,
-        "cpu": 35.0,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:08:35",
-      "status": "medium",
-      "message": "RAM 65.6% CPU 36.5%",
-      "metrics": {
-        "ram": 65.6,
-        "cpu": 36.5,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:09:06",
-      "status": "medium",
-      "message": "RAM 65.2% CPU 41.4%",
-      "metrics": {
-        "ram": 65.2,
-        "cpu": 41.4,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:09:37",
-      "status": "medium",
-      "message": "RAM 65.6% CPU 41.9%",
-      "metrics": {
-        "ram": 65.6,
-        "cpu": 41.9,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:10:09",
-      "status": "medium",
-      "message": "RAM 66.0% CPU 43.0%",
-      "metrics": {
-        "ram": 66.0,
-        "cpu": 43.0,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:10:40",
-      "status": "high",
-      "message": "RAM 67.5% CPU 71.7%",
-      "metrics": {
-        "ram": 67.5,
-        "cpu": 71.7,
-        "disk": 74.0,
-        "level": "high"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:11:12",
-      "status": "medium",
-      "message": "RAM 66.7% CPU 54.9%",
-      "metrics": {
-        "ram": 66.7,
-        "cpu": 54.9,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:11:43",
-      "status": "high",
-      "message": "RAM 67.3% CPU 63.4%",
-      "metrics": {
-        "ram": 67.3,
-        "cpu": 63.4,
-        "disk": 75.0,
-        "level": "high"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:12:15",
-      "status": "medium",
-      "message": "RAM 67.1% CPU 57.3%",
-      "metrics": {
-        "ram": 67.1,
-        "cpu": 57.3,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:12:46",
-      "status": "medium",
-      "message": "RAM 67.6% CPU 49.0%",
-      "metrics": {
-        "ram": 67.6,
-        "cpu": 49.0,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:13:17",
-      "status": "medium",
-      "message": "RAM 67.3% CPU 42.2%",
-      "metrics": {
-        "ram": 67.3,
-        "cpu": 42.2,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:13:49",
-      "status": "medium",
-      "message": "RAM 66.7% CPU 49.0%",
-      "metrics": {
-        "ram": 66.7,
-        "cpu": 49.0,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:14:20",
-      "status": "medium",
-      "message": "RAM 67.5% CPU 51.8%",
-      "metrics": {
-        "ram": 67.5,
-        "cpu": 51.8,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:14:51",
-      "status": "medium",
-      "message": "RAM 66.6% CPU 43.8%",
-      "metrics": {
-        "ram": 66.6,
-        "cpu": 43.8,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:15:23",
-      "status": "medium",
-      "message": "RAM 67.2% CPU 49.5%",
-      "metrics": {
-        "ram": 67.2,
-        "cpu": 49.5,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:15:54",
-      "status": "medium",
-      "message": "RAM 67.3% CPU 39.3%",
-      "metrics": {
-        "ram": 67.3,
-        "cpu": 39.3,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:16:25",
-      "status": "medium",
-      "message": "RAM 66.7% CPU 39.4%",
-      "metrics": {
-        "ram": 66.7,
-        "cpu": 39.4,
-        "disk": 75.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:16:57",
-      "status": "medium",
-      "message": "RAM 66.7% CPU 40.4%",
-      "metrics": {
-        "ram": 66.7,
-        "cpu": 40.4,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:17:28",
-      "status": "medium",
-      "message": "RAM 67.0% CPU 40.8%",
-      "metrics": {
-        "ram": 67.0,
-        "cpu": 40.8,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
-    {
-      "ts": "2026-06-07 13:17:59",
-      "status": "medium",
-      "message": "RAM 67.6% CPU 41.2%",
-      "metrics": {
-        "ram": 67.6,
-        "cpu": 41.2,
-        "disk": 74.0,
-        "level": "medium"
-      }
-    },
     {
       "ts": "2026-06-07 13:18:30",
       "status": "medium",
@@ -5500,6 +5280,226 @@
         "ram": 67.0,
         "cpu": 36.7,
         "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:29:16",
+      "status": "medium",
+      "message": "RAM 66.7% CPU 34.3%",
+      "metrics": {
+        "ram": 66.7,
+        "cpu": 34.3,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:29:47",
+      "status": "medium",
+      "message": "RAM 66.4% CPU 28.3%",
+      "metrics": {
+        "ram": 66.4,
+        "cpu": 28.3,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:30:18",
+      "status": "medium",
+      "message": "RAM 67.0% CPU 32.8%",
+      "metrics": {
+        "ram": 67.0,
+        "cpu": 32.8,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:30:50",
+      "status": "medium",
+      "message": "RAM 66.9% CPU 47.1%",
+      "metrics": {
+        "ram": 66.9,
+        "cpu": 47.1,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:31:22",
+      "status": "medium",
+      "message": "RAM 67.4% CPU 48.8%",
+      "metrics": {
+        "ram": 67.4,
+        "cpu": 48.8,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:31:40",
+      "status": "medium",
+      "message": "RAM 66.3% CPU 43.1%",
+      "metrics": {
+        "ram": 66.3,
+        "cpu": 43.1,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:32:50",
+      "status": "medium",
+      "message": "RAM 66.6% CPU 28.2%",
+      "metrics": {
+        "ram": 66.6,
+        "cpu": 28.2,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:33:21",
+      "status": "medium",
+      "message": "RAM 66.9% CPU 40.0%",
+      "metrics": {
+        "ram": 66.9,
+        "cpu": 40.0,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:33:52",
+      "status": "medium",
+      "message": "RAM 66.9% CPU 23.9%",
+      "metrics": {
+        "ram": 66.9,
+        "cpu": 23.9,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:34:09",
+      "status": "medium",
+      "message": "RAM 66.6% CPU 37.3%",
+      "metrics": {
+        "ram": 66.6,
+        "cpu": 37.3,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:34:11",
+      "status": "medium",
+      "message": "RAM 66.5% CPU 44.5%",
+      "metrics": {
+        "ram": 66.5,
+        "cpu": 44.5,
+        "disk": 63.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:34:43",
+      "status": "medium",
+      "message": "RAM 66.6% CPU 42.0%",
+      "metrics": {
+        "ram": 66.6,
+        "cpu": 42.0,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:35:14",
+      "status": "medium",
+      "message": "RAM 66.5% CPU 30.8%",
+      "metrics": {
+        "ram": 66.5,
+        "cpu": 30.8,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:35:46",
+      "status": "medium",
+      "message": "RAM 66.7% CPU 39.6%",
+      "metrics": {
+        "ram": 66.7,
+        "cpu": 39.6,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:36:17",
+      "status": "medium",
+      "message": "RAM 66.3% CPU 32.3%",
+      "metrics": {
+        "ram": 66.3,
+        "cpu": 32.3,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:36:48",
+      "status": "medium",
+      "message": "RAM 67.2% CPU 31.8%",
+      "metrics": {
+        "ram": 67.2,
+        "cpu": 31.8,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:37:20",
+      "status": "medium",
+      "message": "RAM 65.9% CPU 37.3%",
+      "metrics": {
+        "ram": 65.9,
+        "cpu": 37.3,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:37:51",
+      "status": "medium",
+      "message": "RAM 67.0% CPU 41.2%",
+      "metrics": {
+        "ram": 67.0,
+        "cpu": 41.2,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:38:22",
+      "status": "medium",
+      "message": "RAM 66.8% CPU 27.8%",
+      "metrics": {
+        "ram": 66.8,
+        "cpu": 27.8,
+        "disk": 64.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-07 17:38:54",
+      "status": "medium",
+      "message": "RAM 67.3% CPU 25.2%",
+      "metrics": {
+        "ram": 67.3,
+        "cpu": 25.2,
+        "disk": 64.0,
         "level": "medium"
       }
     }
