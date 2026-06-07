@@ -12,22 +12,22 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-06-07 14:16:52"
+      "ts": "2026-06-07 17:28:55"
     },
     "resource_manager": {
       "status": "medium",
-      "message": "RAM 69.3% | CPU 36.6%",
+      "message": "RAM 67.0% | CPU 36.7%",
       "data": {
         "snapshot": {
-          "timestamp": "2026-06-07 14:16:24",
-          "ram_used_percent": 69.3,
-          "ram_used_mb": 33552,
-          "ram_total_mb": 48445,
-          "cpu_percent": 36.6,
-          "disk_used_percent": 57.0,
-          "disk_free_gb": 8.0,
-          "load_avg_1m": 7.36,
-          "process_count": 1147
+          "timestamp": "2026-06-07 17:28:43",
+          "ram_used_percent": 67.0,
+          "ram_used_mb": 32480,
+          "ram_total_mb": 48458,
+          "cpu_percent": 36.7,
+          "disk_used_percent": 63.0,
+          "disk_free_gb": 7.0,
+          "load_avg_1m": 5.55,
+          "process_count": 1151
         },
         "load_level": "medium",
         "cloud_offloaded": [
@@ -40,39 +40,38 @@
           "social",
           "shopify"
         ],
-        "history_count": 10
+        "history_count": 100
       },
-      "ts": "2026-06-07 14:16:25"
+      "ts": "2026-06-07 17:28:44"
     },
     "micro_ping": {
       "status": "warning",
-      "message": "1/6 Services UP",
+      "message": "2/6 Services UP",
       "data": {
         "down": [
-          "Telegram Bot",
           "Password-Sync",
           "Autoheal",
           "SuperMegaBot",
           "API-Gateway"
         ]
       },
-      "ts": "2026-06-07 14:16:21"
+      "ts": "2026-06-07 17:29:03"
     },
     "micro_revenue": {
       "status": "warning",
       "message": "Shopify API nicht erreichbar",
       "data": {},
-      "ts": "2026-06-07 14:11:55"
+      "ts": "2026-06-07 17:11:55"
     },
     "micro_clean": {
       "status": "ok",
-      "message": "Disk: 57% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "message": "Disk: 61% | Rotiert: 0 Logs | Gespart: 0.0MB",
       "data": {
-        "disk_percent": 57.0,
+        "disk_percent": 61.0,
         "cleaned": 0,
         "saved_mb": 0.0
       },
-      "ts": "2026-06-07 14:11:57"
+      "ts": "2026-06-07 17:11:57"
     },
     "micro_ai": {
       "status": "ok",
@@ -80,50 +79,49 @@
       "data": {
         "date": "2026-06-07"
       },
-      "ts": "2026-06-07 01:04:23"
+      "ts": "2026-06-07 14:22:03"
     },
     "micro_backup": {
       "status": "ok",
-      "message": "\u2705 supermegabot: Backup OK (2026-06-07 00:59)",
+      "message": "\u2705 supermegabot: Backup OK (2026-06-07 14:16)",
       "data": {
         "results": [
-          "\u2705 supermegabot: Backup OK (2026-06-07 00:59)"
+          "\u2705 supermegabot: Backup OK (2026-06-07 14:16)"
         ]
       },
-      "ts": "2026-06-07 00:59:20"
+      "ts": "2026-06-07 14:17:03"
     },
     "monitor": {
       "status": "warning",
-      "message": "3/4 down",
+      "message": "2/4 down",
       "data": {
         "checks": [
-          "\u274c RudiBot",
+          "\u2705 RudiBot",
           "\u274c SuperMegaBot",
           "\u2705 Ollama",
           "\u274c PasswordSync"
         ],
         "down": [
-          "RudiBot",
           "SuperMegaBot",
           "PasswordSync"
         ]
       },
-      "ts": "2026-06-07 14:16:54"
+      "ts": "2026-06-07 17:28:57"
     },
     "shopify": {
       "status": "error",
       "message": "Shopify API nicht erreichbar",
       "data": {},
-      "ts": "2026-06-07 14:16:45"
+      "ts": "2026-06-07 17:26:45"
     },
     "finance": {
       "status": "ok",
-      "message": "Finance check 2026-06-07 14:11",
+      "message": "Finance check 2026-06-07 17:11",
       "data": {
         "day": "2026-06-07",
-        "timestamp": "14:11"
+        "timestamp": "17:11"
       },
-      "ts": "2026-06-07 14:11:48"
+      "ts": "2026-06-07 17:11:48"
     },
     "social": {
       "status": "warning",
@@ -134,7 +132,7 @@
           "\u274c TikTok (<urlopen error [SSL: CERTIFICATE_VERIFY_)"
         ]
       },
-      "ts": "2026-06-07 14:11:49"
+      "ts": "2026-06-07 17:23:05"
     },
     "monetization": {
       "status": "warning",
@@ -145,1041 +143,1040 @@
         "shopify_status": "no_config",
         "alerts": 2
       },
-      "ts": "2026-06-07 14:11:53"
+      "ts": "2026-06-07 17:23:27"
     },
     "learner": {
       "status": "warning",
-      "message": "Fehler: shopify(2); Warnings: micro_ping(7), social(2), monitor(7), monetization(2), learner(1), micro_revenue(1)",
+      "message": "Fehler: shopify(2); Warnings: monitor(8), micro_ping(8), learner(1), social(1), monetization(1)",
       "data": {
         "agents_tracked": 14,
         "errors": {
           "shopify": 2
         },
         "warnings": {
-          "micro_ping": 7,
-          "social": 2,
-          "monitor": 7,
-          "monetization": 2,
+          "monitor": 8,
+          "micro_ping": 8,
           "learner": 1,
-          "micro_revenue": 1
+          "social": 1,
+          "monetization": 1
         }
       },
-      "ts": "2026-06-07 14:16:50"
+      "ts": "2026-06-07 17:26:51"
     },
     "optimizer": {
       "status": "ok",
-      "message": "CPU:40% RAM:68% Disk:57%",
+      "message": "CPU:29% RAM:67% Disk:62%",
       "data": {
-        "ram_percent": 68.4,
-        "cpu_percent": 39.9,
-        "disk_percent": 57.0,
-        "ram_free_gb": 0.1,
+        "ram_percent": 67.4,
+        "cpu_percent": 29.0,
+        "disk_percent": 62.0,
+        "ram_free_gb": 0.2,
         "issues": [],
         "suggestions": []
       },
-      "ts": "2026-06-07 14:15:57"
+      "ts": "2026-06-07 17:27:58"
     }
   },
   "events": [
     {
       "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:46:08"
+      "msg": "2/6 Services UP",
+      "ts": "16:57:03"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 67.5% | CPU 42.2%",
-      "ts": "13:46:10"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:46:14"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:46:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.3% | CPU 47.3%",
-      "ts": "13:46:42"
+      "msg": "RAM 68.1% | CPU 35.2%",
+      "ts": "16:57:16"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:44% RAM:67% Disk:77%",
-      "ts": "13:47:06"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:47:13"
+      "msg": "CPU:51% RAM:68% Disk:61%",
+      "ts": "16:57:38"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 67.1% | CPU 59.7%",
-      "ts": "13:47:13"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:47:14"
+      "msg": "RAM 68.8% | CPU 40.0%",
+      "ts": "16:57:48"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:47:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.6% | CPU 34.2%",
-      "ts": "13:47:45"
+      "ts": "16:57:55"
     },
     {
       "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:48:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.7% | CPU 40.3%",
-      "ts": "13:48:16"
+      "msg": "2/4 down",
+      "ts": "16:57:56"
     },
     {
       "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:48:18"
+      "msg": "2/6 Services UP",
+      "ts": "16:58:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 68.3% | CPU 40.0%",
+      "ts": "16:58:19"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 69.0% | CPU 46.1%",
+      "ts": "16:58:50"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:48:34"
+      "ts": "16:58:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "16:58:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "16:59:03"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 67.4% | CPU 39.7%",
-      "ts": "13:48:47"
+      "msg": "RAM 69.2% | CPU 32.8%",
+      "ts": "16:59:22"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:38% RAM:68% Disk:61%",
+      "ts": "16:59:39"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 67.9% | CPU 58.8%",
+      "ts": "16:59:54"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "16:59:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "16:59:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:00:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 68.8% | CPU 51.2%",
+      "ts": "17:00:25"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 68.4% CPU 41.9%",
+      "ts": "17:00:25"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:00:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:00:56"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 68.6% | CPU 35.7%",
+      "ts": "17:00:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:01:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 68.9% | CPU 23.8%",
+      "ts": "17:01:28"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:34% RAM:70% Disk:61%",
+      "ts": "17:01:40"
     },
     {
       "agent": "shopify",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "13:49:06"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:42% RAM:67% Disk:77%",
-      "ts": "13:49:07"
-    },
-    {
-      "agent": "learner",
-      "msg": "Fehler: shopify(2); Warnings: micro_ping(8), monitor(8), learner(1)",
-      "ts": "13:49:11"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:49:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.5% | CPU 47.9%",
-      "ts": "13:49:19"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:49:23"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:49:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.3% | CPU 34.8%",
-      "ts": "13:49:50"
-    },
-    {
-      "agent": "social",
-      "msg": "2 Platformen down",
-      "ts": "13:50:01"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:50:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.1% | CPU 33.4%",
-      "ts": "13:50:21"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:50:28"
-    },
-    {
-      "agent": "monetization",
-      "msg": "Daily: \u20ac0.00 | Sources: 0",
-      "ts": "13:50:28"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:50:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.7% | CPU 32.9%",
-      "ts": "13:50:53"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:45% RAM:68% Disk:77%",
-      "ts": "13:51:09"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:51:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.3% | CPU 46.2%",
-      "ts": "13:51:24"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:51:33"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:51:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.6% | CPU 32.5%",
-      "ts": "13:51:55"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "1h avg: RAM 67.4% CPU 40.9%",
-      "ts": "13:51:55"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:52:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.6% | CPU 28.0%",
-      "ts": "13:52:26"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:52:34"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:52:38"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.7% | CPU 33.1%",
-      "ts": "13:52:58"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:32% RAM:67% Disk:77%",
-      "ts": "13:53:10"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:53:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.4% | CPU 32.0%",
-      "ts": "13:53:29"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:53:34"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:53:43"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.3% | CPU 29.4%",
-      "ts": "13:54:00"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:54:06"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-07 13:54",
-      "ts": "13:54:09"
-    },
-    {
-      "agent": "learner",
-      "msg": "Fehler: shopify(2); Warnings: monitor(8), micro_ping(7), learner(1), social(1), monetization(1)",
-      "ts": "13:54:11"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:54:14"
-    },
-    {
-      "agent": "micro_revenue",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:54:15"
-    },
-    {
-      "agent": "micro_clean",
-      "msg": "Disk: 77% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "13:54:17"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 66.9% | CPU 29.9%",
-      "ts": "13:54:32"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:54:34"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:54:48"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.1% | CPU 26.8%",
-      "ts": "13:55:03"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:36% RAM:67% Disk:77%",
-      "ts": "13:55:11"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:55:14"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:55:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.1% | CPU 24.9%",
-      "ts": "13:55:34"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:55:53"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.5% | CPU 43.8%",
-      "ts": "13:56:06"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:56:14"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:56:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.1% | CPU 31.0%",
-      "ts": "13:56:37"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:56:58"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.9% | CPU 51.6%",
-      "ts": "13:57:08"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:40% RAM:68% Disk:77%",
-      "ts": "13:57:12"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:57:14"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:57:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.9% | CPU 41.6%",
-      "ts": "13:57:40"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:58:03"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.0% | CPU 34.4%",
-      "ts": "13:58:11"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "1h avg: RAM 67.5% CPU 33.9%",
-      "ts": "13:58:11"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:58:14"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:58:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.1% | CPU 45.6%",
-      "ts": "13:58:42"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "13:59:06"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "13:59:08"
-    },
-    {
-      "agent": "learner",
-      "msg": "Fehler: shopify(2); Warnings: monitor(8), micro_ping(8), learner(1), micro_revenue(1)",
-      "ts": "13:59:11"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "13:59:14"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:42% RAM:68% Disk:77%",
-      "ts": "13:59:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.2% | CPU 41.4%",
-      "ts": "13:59:14"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "13:59:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.5% | CPU 38.0%",
-      "ts": "13:59:46"
-    },
-    {
-      "agent": "social",
-      "msg": "2 Platformen down",
-      "ts": "14:00:01"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:00:13"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:00:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.4% | CPU 40.6%",
-      "ts": "14:00:17"
-    },
-    {
-      "agent": "monetization",
-      "msg": "Daily: \u20ac0.00 | Sources: 0",
-      "ts": "14:00:33"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:00:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.6% | CPU 42.0%",
-      "ts": "14:00:48"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:01:14"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:37% RAM:68% Disk:72%",
-      "ts": "14:01:16"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:01:18"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.9% | CPU 45.1%",
-      "ts": "14:01:20"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:01:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.9% | CPU 40.8%",
-      "ts": "14:01:51"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:02:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.5% | CPU 37.2%",
-      "ts": "14:02:22"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:02:23"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:02:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.4% | CPU 42.2%",
-      "ts": "14:02:54"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:03:14"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:42% RAM:68% Disk:71%",
-      "ts": "14:03:17"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.5% | CPU 39.9%",
-      "ts": "14:03:25"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:03:28"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:03:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.1% | CPU 33.4%",
-      "ts": "14:03:57"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "14:04:06"
-    },
-    {
-      "agent": "learner",
-      "msg": "Fehler: shopify(2); Warnings: micro_ping(8), monitor(8), learner(1), social(1), monetization(1)",
-      "ts": "14:04:11"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:04:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.2% | CPU 33.5%",
-      "ts": "14:04:28"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "1h avg: RAM 68.4% CPU 40.0%",
-      "ts": "14:04:28"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:04:33"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:04:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.5% | CPU 56.4%",
-      "ts": "14:04:59"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:05:14"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:46% RAM:69% Disk:66%",
-      "ts": "14:05:18"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 69.1% | CPU 51.2%",
-      "ts": "14:05:31"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:05:34"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:05:38"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.9% | CPU 54.5%",
-      "ts": "14:06:02"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:06:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.9% | CPU 34.5%",
-      "ts": "14:06:33"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:06:34"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:06:43"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 69.2% | CPU 38.2%",
-      "ts": "14:07:05"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:07:14"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:36% RAM:68% Disk:57%",
-      "ts": "14:07:19"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:07:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.5% | CPU 38.8%",
-      "ts": "14:07:36"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:07:48"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.8% | CPU 51.0%",
-      "ts": "14:08:07"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:08:14"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:08:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.0% | CPU 46.0%",
-      "ts": "14:08:39"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:08:53"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "14:09:06"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.9% | CPU 29.4%",
-      "ts": "14:09:10"
+      "ts": "17:01:45"
     },
     {
       "agent": "learner",
       "msg": "Fehler: shopify(2); Warnings: monitor(8), micro_ping(8), learner(1)",
-      "ts": "14:09:11"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:09:14"
-    },
-    {
-      "agent": "optimizer",
-      "msg": "CPU:37% RAM:68% Disk:57%",
-      "ts": "14:09:21"
+      "ts": "17:01:51"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:09:34"
+      "ts": "17:01:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:01:56"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 68.0% | CPU 36.9%",
-      "ts": "14:09:42"
+      "msg": "RAM 69.4% | CPU 37.4%",
+      "ts": "17:01:59"
     },
     {
       "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:09:58"
+      "msg": "2/6 Services UP",
+      "ts": "17:02:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 68.4% | CPU 53.7%",
+      "ts": "17:02:31"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:02:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:02:56"
     },
     {
       "agent": "social",
       "msg": "2 Platformen down",
-      "ts": "14:10:03"
+      "ts": "17:02:58"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 66.8% | CPU 38.5%",
-      "ts": "14:10:13"
+      "msg": "RAM 69.2% | CPU 28.1%",
+      "ts": "17:03:02"
     },
     {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:10:14"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:10:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.7% | CPU 45.1%",
-      "ts": "14:10:44"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "1h avg: RAM 68.4% CPU 43.4%",
-      "ts": "14:10:44"
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:03:03"
     },
     {
       "agent": "monetization",
       "msg": "Daily: \u20ac0.00 | Sources: 0",
-      "ts": "14:10:47"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:11:03"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:11:14"
+      "ts": "17:03:26"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 68.5% | CPU 45.4%",
-      "ts": "14:11:16"
+      "msg": "RAM 68.6% | CPU 32.7%",
+      "ts": "17:03:33"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:48% RAM:68% Disk:58%",
-      "ts": "14:11:22"
+      "msg": "CPU:36% RAM:69% Disk:61%",
+      "ts": "17:03:42"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:11:34"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 67.9% | CPU 59.3%",
-      "ts": "14:11:44"
+      "ts": "17:03:55"
     },
     {
       "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:11:44"
+      "msg": "2/4 down",
+      "ts": "17:03:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:04:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 68.9% | CPU 36.2%",
+      "ts": "17:04:05"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 69.9% | CPU 39.1%",
+      "ts": "17:04:36"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:04:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:04:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:05:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 69.8% | CPU 67.4%",
+      "ts": "17:05:08"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 68.0% | CPU 42.9%",
+      "ts": "17:05:39"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:43% RAM:69% Disk:61%",
+      "ts": "17:05:43"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:05:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:05:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:06:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 69.4% | CPU 34.6%",
+      "ts": "17:06:11"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 69.9% | CPU 50.3%",
+      "ts": "17:06:42"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 69.1% CPU 40.2%",
+      "ts": "17:06:42"
     },
     {
       "agent": "shopify",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "14:11:45"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-07 14:11",
-      "ts": "14:11:48"
-    },
-    {
-      "agent": "social",
-      "msg": "2 Platformen down",
-      "ts": "14:11:49"
+      "ts": "17:06:45"
     },
     {
       "agent": "learner",
-      "msg": "Fehler: shopify(2); Warnings: micro_ping(7), monitor(8), learner(1), social(2), monetization(1)",
-      "ts": "14:11:50"
+      "msg": "Fehler: shopify(2); Warnings: monitor(8), micro_ping(8), learner(1), social(1), monetization(1)",
+      "ts": "17:06:51"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:11:52"
+      "ts": "17:06:55"
     },
     {
-      "agent": "monetization",
-      "msg": "Daily: \u20ac0.00 | Sources: 0",
-      "ts": "14:11:53"
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:06:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:07:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 70.0% | CPU 37.0%",
+      "ts": "17:07:14"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:45% RAM:68% Disk:57%",
-      "ts": "14:11:54"
+      "msg": "CPU:41% RAM:71% Disk:61%",
+      "ts": "17:07:45"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 71.2% | CPU 38.8%",
+      "ts": "17:07:45"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:07:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:07:56"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:08:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 70.2% | CPU 46.2%",
+      "ts": "17:08:17"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 71.9% | CPU 44.0%",
+      "ts": "17:08:48"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:08:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:08:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:09:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 73.6% | CPU 38.9%",
+      "ts": "17:09:19"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:37% RAM:72% Disk:61%",
+      "ts": "17:09:46"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 72.2% | CPU 39.0%",
+      "ts": "17:09:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:09:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:09:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:10:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 68.6% | CPU 99.5%",
+      "ts": "17:10:25"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:10:55"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.9% | CPU 44.7%",
+      "ts": "17:10:56"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:10:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:11:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.1% | CPU 34.3%",
+      "ts": "17:11:28"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "17:11:45"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:55% RAM:63% Disk:61%",
+      "ts": "17:11:47"
+    },
+    {
+      "agent": "finance",
+      "msg": "Finance check 2026-06-07 17:11",
+      "ts": "17:11:48"
+    },
+    {
+      "agent": "learner",
+      "msg": "Fehler: shopify(2); Warnings: monitor(8), micro_ping(8), learner(1)",
+      "ts": "17:11:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:11:55"
     },
     {
       "agent": "micro_revenue",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "14:11:55"
+      "ts": "17:11:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:11:57"
     },
     {
       "agent": "micro_clean",
-      "msg": "Disk: 57% | Rotiert: 0 Logs | Gespart: 0.0MB",
-      "ts": "14:11:57"
+      "msg": "Disk: 61% | Rotiert: 0 Logs | Gespart: 0.0MB",
+      "ts": "17:11:57"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.1% | CPU 36.1%",
+      "ts": "17:11:59"
     },
     {
       "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:12:01"
+      "msg": "2/6 Services UP",
+      "ts": "17:12:03"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 68.3% | CPU 35.0%",
-      "ts": "14:12:15"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.3% | CPU 45.4%",
-      "ts": "14:12:47"
+      "msg": "RAM 63.9% | CPU 38.4%",
+      "ts": "17:12:31"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:12:52"
+      "ts": "17:12:55"
     },
     {
       "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:12:54"
+      "msg": "2/4 down",
+      "ts": "17:12:57"
+    },
+    {
+      "agent": "social",
+      "msg": "2 Platformen down",
+      "ts": "17:13:00"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.0% | CPU 34.7%",
+      "ts": "17:13:02"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 67.7% CPU 44.3%",
+      "ts": "17:13:02"
     },
     {
       "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:13:06"
+      "msg": "2/6 Services UP",
+      "ts": "17:13:03"
+    },
+    {
+      "agent": "monetization",
+      "msg": "Daily: \u20ac0.00 | Sources: 0",
+      "ts": "17:13:26"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 67.8% | CPU 43.0%",
-      "ts": "14:13:18"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.6% | CPU 37.6%",
-      "ts": "14:13:49"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:13:52"
-    },
-    {
-      "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:13:54"
+      "msg": "RAM 61.4% | CPU 24.7%",
+      "ts": "17:13:33"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:39% RAM:68% Disk:57%",
-      "ts": "14:13:56"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:14:11"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.4% | CPU 51.4%",
-      "ts": "14:14:20"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 68.4% | CPU 46.0%",
-      "ts": "14:14:52"
+      "msg": "CPU:34% RAM:62% Disk:61%",
+      "ts": "17:13:48"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:14:52"
+      "ts": "17:13:55"
     },
     {
       "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:14:54"
+      "msg": "2/4 down",
+      "ts": "17:13:57"
     },
     {
       "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:15:16"
+      "msg": "2/6 Services UP",
+      "ts": "17:14:03"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 68.5% | CPU 41.8%",
-      "ts": "14:15:23"
+      "msg": "RAM 61.6% | CPU 42.7%",
+      "ts": "17:14:05"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 61.5% | CPU 47.2%",
+      "ts": "17:14:36"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:15:52"
+      "ts": "17:14:55"
     },
     {
       "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:15:54"
+      "msg": "2/4 down",
+      "ts": "17:14:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:15:03"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 68.1% | CPU 51.6%",
-      "ts": "14:15:54"
+      "msg": "RAM 62.5% | CPU 45.0%",
+      "ts": "17:15:08"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.4% | CPU 40.6%",
+      "ts": "17:15:39"
     },
     {
       "agent": "optimizer",
-      "msg": "CPU:40% RAM:68% Disk:57%",
-      "ts": "14:15:57"
+      "msg": "CPU:27% RAM:62% Disk:61%",
+      "ts": "17:15:50"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:15:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:15:57"
     },
     {
       "agent": "micro_ping",
-      "msg": "1/6 Services UP",
-      "ts": "14:16:21"
+      "msg": "2/6 Services UP",
+      "ts": "17:16:03"
     },
     {
       "agent": "resource_manager",
-      "msg": "RAM 69.3% | CPU 36.6%",
-      "ts": "14:16:25"
+      "msg": "RAM 62.2% | CPU 28.8%",
+      "ts": "17:16:10"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.6% | CPU 35.6%",
+      "ts": "17:16:42"
     },
     {
       "agent": "shopify",
       "msg": "Shopify API nicht erreichbar",
-      "ts": "14:16:45"
+      "ts": "17:16:45"
     },
     {
       "agent": "learner",
-      "msg": "Fehler: shopify(2); Warnings: micro_ping(7), social(2), monitor(7), monetization(2), learner(1), micro_revenue(1)",
-      "ts": "14:16:50"
+      "msg": "Fehler: shopify(2); Warnings: micro_ping(8), monitor(7), learner(1), micro_revenue(1), social(1), monetization(1)",
+      "ts": "17:16:51"
     },
     {
       "agent": "security",
       "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
-      "ts": "14:16:52"
+      "ts": "17:16:55"
     },
     {
       "agent": "monitor",
-      "msg": "3/4 down",
-      "ts": "14:16:54"
+      "msg": "2/4 down",
+      "ts": "17:16:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:17:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.3% | CPU 36.6%",
+      "ts": "17:17:13"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.0% | CPU 40.2%",
+      "ts": "17:17:45"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:59% RAM:62% Disk:61%",
+      "ts": "17:17:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:17:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:17:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:18:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.6% | CPU 32.6%",
+      "ts": "17:18:16"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.1% | CPU 40.2%",
+      "ts": "17:18:47"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:18:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:18:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:19:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.8% | CPU 35.2%",
+      "ts": "17:19:19"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 62.2% CPU 37.5%",
+      "ts": "17:19:19"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 62.7% | CPU 30.9%",
+      "ts": "17:19:50"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:32% RAM:63% Disk:62%",
+      "ts": "17:19:53"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:19:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:19:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:20:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.0% | CPU 33.1%",
+      "ts": "17:20:22"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.3% | CPU 34.0%",
+      "ts": "17:20:53"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:20:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:20:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:21:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.3% | CPU 29.6%",
+      "ts": "17:21:24"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "17:21:45"
+    },
+    {
+      "agent": "learner",
+      "msg": "Fehler: shopify(2); Warnings: micro_ping(9), monetization(1), monitor(8), learner(1)",
+      "ts": "17:21:51"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:30% RAM:64% Disk:62%",
+      "ts": "17:21:54"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:21:55"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.6% | CPU 29.2%",
+      "ts": "17:21:56"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:21:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:22:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.3% | CPU 35.2%",
+      "ts": "17:22:27"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:22:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:22:57"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 63.9% | CPU 36.0%",
+      "ts": "17:22:58"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:23:03"
+    },
+    {
+      "agent": "social",
+      "msg": "2 Platformen down",
+      "ts": "17:23:05"
+    },
+    {
+      "agent": "monetization",
+      "msg": "Daily: \u20ac0.00 | Sources: 0",
+      "ts": "17:23:27"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 67.4% | CPU 30.5%",
+      "ts": "17:23:30"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:32% RAM:67% Disk:62%",
+      "ts": "17:23:55"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:23:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:23:57"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 67.2% | CPU 30.1%",
+      "ts": "17:24:01"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:24:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 66.6% | CPU 36.2%",
+      "ts": "17:24:33"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:24:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:24:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:25:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 67.4% | CPU 37.6%",
+      "ts": "17:25:05"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 67.0% | CPU 35.0%",
+      "ts": "17:25:36"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 64.9% CPU 33.1%",
+      "ts": "17:25:36"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:25:55"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:36% RAM:67% Disk:62%",
+      "ts": "17:25:56"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:25:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:26:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 66.9% | CPU 38.6%",
+      "ts": "17:26:07"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 66.6% | CPU 35.3%",
+      "ts": "17:26:39"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "17:26:45"
+    },
+    {
+      "agent": "learner",
+      "msg": "Fehler: shopify(2); Warnings: monitor(8), micro_ping(8), learner(1), social(1), monetization(1)",
+      "ts": "17:26:51"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:26:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:26:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:27:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 66.7% | CPU 35.7%",
+      "ts": "17:27:10"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 67.1% | CPU 41.0%",
+      "ts": "17:27:42"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:27:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:27:57"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:29% RAM:67% Disk:62%",
+      "ts": "17:27:58"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:28:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 67.4% | CPU 34.2%",
+      "ts": "17:28:13"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 67.0% | CPU 36.7%",
+      "ts": "17:28:44"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "17:28:55"
+    },
+    {
+      "agent": "monitor",
+      "msg": "2/4 down",
+      "ts": "17:28:57"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "2/6 Services UP",
+      "ts": "17:29:03"
     }
   ],
   "fixes": [],

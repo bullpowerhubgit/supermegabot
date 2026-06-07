@@ -218,7 +218,11 @@ def system_health_snapshot():
     health = {}
     # RAM
     try:
-        out = subprocess.run("vm_stat", shell=True, capture_output=True, text=True, timeout=5).stdout
+        # FIX: vm_stat may require permissions
+        try:
+            out = subprocess.run("vm_stat", shell=True, capture_output=True, text=True, timeout=5).stdout
+        except Exception:
+            out = ""  # Graceful fallback
         vals = {}
         for line in out.splitlines():
             if ":" in line:
@@ -236,7 +240,11 @@ def system_health_snapshot():
 
     # Disk
     try:
-        df_out = subprocess.run("df -h /", shell=True, capture_output=True, text=True, timeout=5).stdout
+        # FIX: df may require permissions
+        try:
+            df_out = subprocess.run("df -h /", shell=True, capture_output=True, text=True, timeout=5).stdout
+        except Exception:
+            df_out = ""  # Graceful fallback
         lines = df_out.strip().splitlines()
         if len(lines) >= 2:
             parts = lines[1].split()
@@ -247,7 +255,11 @@ def system_health_snapshot():
 
     # Laufende Prozesse
     try:
-        result = subprocess.run(["pgrep", "-f", "rudibot-army"], capture_output=True, text=True, timeout=3)
+        # FIX: pgrep may fail without permissions
+        try:
+            result = subprocess.run(["pgrep", "-f", "rudibot-army"], capture_output=True, text=True, timeout=3)
+        except Exception:
+            result = None  # Graceful fallback
         health["army_processes"] = len(result.stdout.strip().splitlines()) if result.returncode == 0 else 0
     except Exception:
         health["army_processes"] = 0
