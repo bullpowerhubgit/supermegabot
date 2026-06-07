@@ -11,7 +11,11 @@ CENTRAL_LOG = ARMY_DIR / "logs" / "central_errors.log"
 def get_system_stats():
     stats = {"ram_pct": 0, "disk_pct": 0, "processes": 0}
     try:
-        out = subprocess.run("vm_stat", shell=True, capture_output=True, text=True, timeout=5).stdout
+        # FIX: vm_stat may require permissions
+        try:
+            out = subprocess.run("vm_stat", shell=True, capture_output=True, text=True, timeout=5).stdout
+        except Exception:
+            out = ""  # Graceful fallback
         vals = {}
         for line in out.splitlines():
             if ":" in line:
@@ -28,7 +32,11 @@ def get_system_stats():
         pass
 
     try:
-        df_out = subprocess.run("df -h /", shell=True, capture_output=True, text=True, timeout=5).stdout
+        # FIX: df may require permissions
+        try:
+            df_out = subprocess.run("df -h /", shell=True, capture_output=True, text=True, timeout=5).stdout
+        except Exception:
+            df_out = ""  # Graceful fallback
         lines = df_out.strip().splitlines()
         if len(lines) >= 2:
             parts = lines[1].split()
@@ -68,7 +76,11 @@ def get_agent_status():
     ]
     for aid, icon, name in agent_scripts:
         try:
+            # FIX: pgrep may fail without permissions - use try/except
+        try:
             result = subprocess.run(["pgrep", "-f", f"agent_{aid}.py"], capture_output=True, text=True, timeout=2)
+        except Exception:
+            result = None  # Graceful fallback
             running = result.returncode == 0 and result.stdout.strip()
             agents.append({"id": aid, "icon": icon, "name": name, "running": bool(running)})
         except Exception:
