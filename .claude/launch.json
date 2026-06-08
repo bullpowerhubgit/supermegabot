@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "supermegabot-dashboard",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["dashboard/server.py"],
+      "port": 8888,
+      "autoPort": false
+    }
+  ]
+}

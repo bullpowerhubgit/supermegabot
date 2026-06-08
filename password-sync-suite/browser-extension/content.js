@@ -55,6 +55,7 @@
 
     const wrapper = document.createElement('div');
     wrapper.style.cssText = 'position: relative; display: inline-block; width: 100%;';
+    if (!pwInput.parentNode) return;
     pwInput.parentNode.insertBefore(wrapper, pwInput);
     wrapper.appendChild(pwInput);
     wrapper.appendChild(btn);
@@ -108,6 +109,7 @@
           if (userInput) userInput.value = m.username;
           pwInput.value = m.password;
           picker.remove();
+          document.removeEventListener('click', close);
           pwInput.dispatchEvent(new Event('input', { bubbles: true }));
         });
         picker.appendChild(row);
@@ -115,8 +117,13 @@
     }
 
     wrapper.appendChild(picker);
-    const close = (ev) => { if (!wrapper.contains(ev.target)) picker.remove(); };
-    document.addEventListener('click', close, { once: true });
+    const close = (ev) => {
+      if (!wrapper.contains(ev.target)) {
+        picker.remove();
+        document.removeEventListener('click', close);
+      }
+    };
+    document.addEventListener('click', close);
   }
 
   function escapeHtml(str) {
