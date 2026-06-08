@@ -28,7 +28,7 @@ export class OpenClawClient {
   private ws: WebSocket | null = null;
   private config: Required<OpenClawConfig>;
   private messageQueue: OpenClawMessage[] = [];
-  private isConnected = false;
+  public isConnected = false;
   private messageId = 0;
 
   constructor(config: OpenClawConfig = {}) {
