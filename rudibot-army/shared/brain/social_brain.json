@@ -1,19 +1,11 @@
 {
-  "cycles": 3095,
+  "cycles": 3096,
   "patterns": {
-    "warning:2 Platformen down": 131,
+    "warning:2 Platformen down": 132,
     "warning:1 Platformen down": 2964
   },
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-08 05:32:22",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
     {
       "ts": "2026-06-08 05:32:34",
       "status": "warning",
@@ -4000,6 +3992,14 @@
     },
     {
       "ts": "2026-06-08 08:09:40",
+      "status": "warning",
+      "message": "2 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-08 08:17:37",
       "status": "warning",
       "message": "2 Platformen down",
       "metrics": {
