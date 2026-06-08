@@ -1,19 +1,8 @@
 {
-  "cycles": 8033,
+  "cycles": 8034,
   "patterns": {},
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-08 07:05:43",
-      "status": "high",
-      "message": "RAM 75.4% CPU 42.9%",
-      "metrics": {
-        "ram": 75.4,
-        "cpu": 42.9,
-        "disk": 40.0,
-        "level": "high"
-      }
-    },
     {
       "ts": "2026-06-08 07:05:53",
       "status": "high",
@@ -5499,6 +5488,17 @@
       "metrics": {
         "ram": 55.7,
         "cpu": 42.2,
+        "disk": 41.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-08 10:19:51",
+      "status": "medium",
+      "message": "RAM 56.6% CPU 45.5%",
+      "metrics": {
+        "ram": 56.6,
+        "cpu": 45.5,
         "disk": 41.0,
         "level": "medium"
       }
