@@ -20,6 +20,12 @@ sys.path.insert(0, str(Path.home()))
 from aiohttp import web
 import aiohttp
 
+# RudiBot Central Connector
+try:
+    from modules.rudibot_connector import rudibot as _rudibot
+except Exception:
+    _rudibot = None
+
 # Self-Learner integration
 try:
     from self_learner_core import SelfLearner
@@ -2163,6 +2169,40 @@ async def handle_drive_backup(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ── RudiBot Central Data Handlers ────────────────────────────────────────────
+
+async def handle_rudibot_states(req):
+    if not _rudibot:
+        return web.json_response({"error": "rudibot connector not available"}, status=503)
+    states = _rudibot.get_all_states()
+    return web.json_response(states)
+
+async def handle_rudibot_revenue(req):
+    if not _rudibot:
+        return web.json_response({"error": "rudibot connector not available"}, status=503)
+    revenue = _rudibot.get_revenue()
+    return web.json_response(revenue)
+
+async def handle_rudibot_events(req):
+    if not _rudibot:
+        return web.json_response({"error": "rudibot connector not available"}, status=503)
+    events = _rudibot.get_events(limit=50)
+    return web.json_response({"events": events})
+
+async def handle_rudibot_logs(req):
+    if not _rudibot:
+        return web.json_response({"error": "rudibot connector not available"}, status=503)
+    service = req.query.get("service", "")
+    log_dir = _rudibot.dirs['logs']
+    if service:
+        log_dir = log_dir / service
+    logs = []
+    if log_dir.exists():
+        for f in sorted(log_dir.glob("**/*.log"), reverse=True)[:5]:
+            logs.append({"file": f.name, "service": f.parent.name, "lines": f.read_text().splitlines()[-50:]})
+    return web.json_response({"logs": logs})
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -2329,6 +2369,12 @@ async def create_app():
     app.router.add_get("/api/drive/files",            handle_drive_files)
     app.router.add_post("/api/drive/backup",          handle_drive_backup)
 
+    # ── RudiBot Central Data ─────────────────────────────────────────────────
+    app.router.add_get("/api/rudibot/states",         handle_rudibot_states)
+    app.router.add_get("/api/rudibot/revenue",        handle_rudibot_revenue)
+    app.router.add_get("/api/rudibot/events",         handle_rudibot_events)
+    app.router.add_get("/api/rudibot/logs",           handle_rudibot_logs)
+
     return app
 
 
@@ -2362,6 +2408,11 @@ if __name__ == "__main__":
         site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True, reuse_port=True)
         await site.start()
         print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
+
+        # Register with RudiBot Central
+        if _rudibot:
+            _rudibot.set_state('supermegabot', {'status': 'online', 'port': PORT, 'started_at': datetime.utcnow().isoformat() + 'Z'})
+            _rudibot.log('supermegabot', f'Dashboard started on :{PORT}')
 
         # Auto-register Telegram webhook on Railway
         railway_url = os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN")
