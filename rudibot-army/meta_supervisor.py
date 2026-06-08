@@ -13,8 +13,33 @@ ARMY_DIR = Path(__file__).parent
 LOGS_DIR = ARMY_DIR / "logs"
 LOGS_DIR.mkdir(exist_ok=True)
 SUPERVISOR_LOG = LOGS_DIR / "meta_supervisor.log"
+LOCK_FILE = ARMY_DIR / ".meta_supervisor.lock"
+PID_FILE = ARMY_DIR / ".commander.pid"
 
 COMMANDER_SCRIPT = ARMY_DIR / "army_commander.py"
+
+# ═══════════════════════════════════════════════════════════════════════
+# SINGLETON LOCK — Verhindert doppelte Supervisor-Instanzen
+# ═══════════════════════════════════════════════════════════════════════
+def acquire_lock():
+    """File-basiertes Lock — nur EIN Supervisor darf laufen"""
+    import fcntl
+    try:
+        fd = open(LOCK_FILE, 'w')
+        fcntl.flock(fd.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return fd
+    except (IOError, OSError):
+        log("🔒 Meta-Supervisor läuft bereits — beende mich")
+        sys.exit(1)
+
+def release_lock(lock_fd):
+    import fcntl
+    try:
+        fcntl.flock(lock_fd.fileno(), fcntl.LOCK_UN)
+        lock_fd.close()
+        LOCK_FILE.unlink(missing_ok=True)
+    except Exception:
+        pass
 
 EMAILS = [
     "dragonadnp@gmail.com",
@@ -40,8 +65,9 @@ def log(msg):
     with open(SUPERVISOR_LOG, "a") as f:
         f.write(line + "\n")
 
-def kill_all_commanders():
-    """Killt ALLE army_commander Prozesse außer diesem Supervisor"""
+def kill_all_commanders(own_pid=None):
+    """Killt ALLE army_commander Prozesse außer diesem Supervisor und optional own_pid"""
+    killed = []
     try:
         result = subprocess.run(
             ["pgrep", "-f", "army_commander.py"],
@@ -51,22 +77,41 @@ def kill_all_commanders():
             for pid_str in result.stdout.strip().splitlines():
                 try:
                     pid = int(pid_str)
-                    if pid != os.getpid() and pid != os.getppid():
+                    if pid != os.getpid() and pid != os.getppid() and pid != own_pid:
                         os.kill(pid, signal.SIGTERM)
-                        time.sleep(1)
+                        time.sleep(0.5)
                         try:
                             os.kill(pid, 0)
                             os.kill(pid, signal.SIGKILL)
                         except ProcessLookupError:
                             pass
+                        killed.append(pid)
                         log(f"🛑 Killed old commander PID {pid}")
                 except (ValueError, ProcessLookupError, PermissionError):
                     pass
     except Exception as e:
         log(f"⚠️ kill_all_commanders error: {e}")
+    return killed
+
+def get_tracked_commander():
+    """Prüft ob der von uns gestartete Commander noch läuft"""
+    try:
+        if PID_FILE.exists():
+            pid = int(PID_FILE.read_text().strip())
+            # Prüfe ob Prozess existiert
+            os.kill(pid, 0)
+            return pid
+    except (ValueError, ProcessLookupError, PermissionError):
+        pass
+    return None
 
 def get_commander_pid():
-    """Gibt PID des laufenden commanders zurück oder None"""
+    """Fallback: Gibt PID eines laufenden commanders zurück oder None"""
+    # Priorität: unser getrackter Commander
+    tracked = get_tracked_commander()
+    if tracked:
+        return tracked
+    # Fallback: pgrep
     try:
         result = subprocess.run(
             ["pgrep", "-f", "army_commander.py"],
@@ -85,7 +130,7 @@ def get_commander_pid():
     return None
 
 def start_commander():
-    """Startet den Army Commander frisch"""
+    """Startet den Army Commander frisch und trackt PID"""
     log("🚀 Starte Army Commander...")
     env = os.environ.copy()
     env["PATH"] = "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:" + env.get("PATH", "")
@@ -96,6 +141,8 @@ def start_commander():
         start_new_session=True,
         env=env
     )
+    # Speichere PID für Tracking
+    PID_FILE.write_text(str(proc.pid))
     log(f"✅ Commander gestartet (PID {proc.pid})")
     return proc
 
@@ -178,6 +225,37 @@ def monetization_check():
         log(f"⚠️ Monetization check error: {e}")
     return revenue_data
 
+def check_ram_usage():
+    """Prüft RAM-Nutzung — warnt bei > 90%"""
+    try:
+        result = subprocess.run("vm_stat", shell=True, capture_output=True, text=True, timeout=5)
+        lines = result.stdout.strip().splitlines()
+        vals = {}
+        for line in lines:
+            if ":" in line:
+                k = line.split(":")[0].strip().replace('"', '')
+                v = line.split(":")[1].strip().rstrip('.')
+                try:
+                    vals[k] = int(v)
+                except ValueError:
+                    pass
+        
+        used = vals.get("Pages active", 0) + vals.get("Pages wired down", 0) + vals.get("Pages occupied by compressor", 0)
+        total = used + vals.get("Pages free", 0) + vals.get("Pages inactive", 0) + vals.get("Pages speculative", 0)
+        
+        if total > 0:
+            ram_pct = round((used / total) * 100, 1)
+            if ram_pct > 90:
+                return "critical", ram_pct
+            elif ram_pct > 80:
+                return "warning", ram_pct
+            else:
+                return "ok", ram_pct
+        return "unknown", 0
+    except Exception as e:
+        log(f"⚠️ RAM check error: {e}")
+        return "error", 0
+
 def check_disk_space():
     """Prüft freien Speicher — warnt bei < 5 GB"""
     try:
@@ -211,6 +289,43 @@ def check_disk_space():
                     return "ok", avail_gb
     except Exception as e:
         log(f"⚠️ Disk check error: {e}")
+    return "unknown", 0
+
+def check_ram_usage():
+    """Prüft RAM-Nutzung — killt Ollama bei > 90% und warnt bei > 80%"""
+    try:
+        out = subprocess.run("vm_stat", shell=True, capture_output=True, text=True, timeout=5).stdout
+        vals = {}
+        for line in out.splitlines():
+            if ":" in line:
+                k = line.split(":")[0].strip().replace('"', '')
+                v = line.split(":")[1].strip().rstrip('.')
+                try:
+                    vals[k] = int(v)
+                except ValueError:
+                    pass
+        used = vals.get("Pages active", 0) + vals.get("Pages wired down", 0) + vals.get("Pages occupied by compressor", 0)
+        total = used + vals.get("Pages free", 0) + vals.get("Pages inactive", 0) + vals.get("Pages speculative", 0)
+        if total > 0:
+            pct = (used / total) * 100
+            if pct > 90:
+                log(f"🔴 RAM KRITISCH: {pct:.1f}% — Stoppe Ollama!")
+                # Kill Ollama (der RAM-Fresser)
+                try:
+                    subprocess.run(["pkill", "-f", "ollama"], capture_output=True, timeout=3)
+                    log("🛑 Ollama gekillt (RAM-Kritisch)")
+                    send_critical_alert(f"🛑 RAM {pct:.1f}% KRITISCH!\nOllama wurde automatisch gestoppt.")
+                except Exception:
+                    pass
+                return "critical", pct
+            elif pct > 80:
+                log(f"🟠 RAM hoch: {pct:.1f}%")
+                send_critical_alert(f"⚠️ RAM {pct:.1f}% hoch!\nSchließe ungenutzte Apps.")
+                return "warning", pct
+            else:
+                return "ok", pct
+    except Exception as e:
+        log(f"⚠️ RAM check error: {e}")
     return "unknown", 0
 
 def system_health_snapshot():
@@ -276,91 +391,114 @@ def send_critical_alert(message):
         log(f"Could not send Telegram alert: {message}")
 
 def main():
-    log("="*60)
-    log("🛡️  META-SUPERVISOR gestartet")
-    log("   Aufgaben: Commander überwachen | Duplikate verhindern |")
-    log("   Konten prüfen | Umsatz tracken | Fehler verhindern")
-    log("="*60)
+    # Singleton Lock — verhindert doppelte Instanzen
+    lock_fd = acquire_lock()
+    try:
+        log("="*60)
+        log("🛡️  META-SUPERVISOR gestartet")
+        log("   Aufgaben: Commander überwachen | Duplikate verhindern |")
+        log("   Konten prüfen | Umsatz tracken | Fehler verhindern")
+        log("   Lock aktiv — keine doppelten Instanzen möglich")
+        log("="*60)
 
-    # Startup: Alles aufräumen
-    log("🧹 Startup-Cleanup...")
-    kill_all_commanders()
-    time.sleep(2)
+        # Startup: Alles aufräumen (nur fremde commander)
+        log("🧹 Startup-Cleanup...")
+        kill_all_commanders()
+        time.sleep(2)
 
-    # Starte Commander
-    commander_proc = start_commander()
-    time.sleep(5)
+        # Starte Commander
+        commander_proc = start_commander()
+        own_commander_pid = commander_proc.pid
+        time.sleep(5)
 
-    last_health_check = 0
-    last_duplicate_check = 0
-    last_monetization_check = 0
-    last_system_check = 0
-    last_disk_check = 0
-    commander_restart_count = 0
-    last_restart_time = time.time()
+        last_health_check = 0
+        last_duplicate_check = 0
+        last_monetization_check = 0
+        last_system_check = 0
+        last_disk_check = 0
+        last_ram_check = 0
+        commander_restart_count = 0
+        last_restart_time = time.time()
+        last_restart_attempt = 0  # Grace period tracking
+        GRACE_PERIOD = 15  # Sekunden nach Restart
 
-    while True:
-        now = time.time()
+        while True:
+            now = time.time()
 
-        # 0. Disk Space überwachen (alle 5 Min)
-        if now - last_disk_check > 300:
-            status, avail = check_disk_space()
-            if status == "ok":
-                log(f"💾 Disk: {avail:.1f} GB frei")
-            last_disk_check = now
+            # 0. Disk Space überwachen (alle 5 Min)
+            if now - last_disk_check > 300:
+                status, avail = check_disk_space()
+                if status == "ok":
+                    log(f"💾 Disk: {avail:.1f} GB frei")
+                last_disk_check = now
 
-        # 1. Prüfe ob Commander läuft
-        commander_pid = get_commander_pid()
-        if commander_pid is None:
-            log("🔴 Commander nicht gefunden! Neustart...")
-            commander_restart_count += 1
-            last_restart_time = now
+            # 0b. RAM überwachen (alle 2 Min — schneller als Disk!)
+            if now - last_ram_check > 120:
+                ram_status, ram_pct = check_ram_usage()
+                if ram_status == "ok":
+                    log(f"🧠 RAM: {ram_pct:.1f}% — OK")
+                last_ram_check = now
 
-            # Backoff bei zu vielen Restarts
-            if commander_restart_count >= 5 and (now - last_restart_time) < 300:
-                wait = min(60 * commander_restart_count, 300)
-                log(f"⏳ Backoff: Warte {wait}s vor Restart #{commander_restart_count}")
-                time.sleep(wait)
+            # 1. Prüfe ob Commander läuft (Grace Period beachten)
+            if now - last_restart_attempt > GRACE_PERIOD:
+                commander_pid = get_commander_pid()
+                if commander_pid is None:
+                    log("🔴 Commander nicht gefunden! Neustart...")
+                    commander_restart_count += 1
+                    last_restart_time = now
+                    last_restart_attempt = now
 
-            kill_all_commanders()
-            time.sleep(2)
-            commander_proc = start_commander()
+                    # Backoff bei zu vielen Restarts
+                    if commander_restart_count >= 5 and (now - last_restart_time) < 300:
+                        wait = min(60 * commander_restart_count, 300)
+                        log(f"⏳ Backoff: Warte {wait}s vor Restart #{commander_restart_count}")
+                        time.sleep(wait)
 
-            if commander_restart_count % 3 == 0:
-                send_critical_alert(f"Commander ist {commander_restart_count}× neu gestartet worden. Prüfe System!")
-        else:
-            # Reset counter wenn lange stabil
-            if now - last_restart_time > 1800:
-                commander_restart_count = 0
+                    # Kill nur fremde commander, nicht unseren eigenen
+                    kill_all_commanders(own_pid=own_commander_pid)
+                    time.sleep(2)
+                    commander_proc = start_commander()
+                    own_commander_pid = commander_proc.pid
 
-        # 2. Alle 60s: Duplikate checken
-        if now - last_duplicate_check > 60:
-            check_duplicate_agents()
-            last_duplicate_check = now
+                    if commander_restart_count % 3 == 0:
+                        send_critical_alert(f"Commander ist {commander_restart_count}× neu gestartet worden. Prüfe System!")
+                else:
+                    # Reset counter wenn lange stabil
+                    if now - last_restart_time > 1800:
+                        if commander_restart_count > 0:
+                            log(f"✅ Commander stabil seit 30min — Reset Restart-Counter")
+                        commander_restart_count = 0
 
-        # 3. Alle 10 Min: Konten-Health
-        if now - last_health_check > 600:
-            ok, missing = check_account_health()
-            if not ok:
-                log(f"🔴 FEHLENDE KONTEN: {missing}")
-                send_critical_alert(f"Konten nicht in Configs: {', '.join(missing)}")
-            last_health_check = now
+            # 2. Alle 60s: Duplikate checken
+            if now - last_duplicate_check > 60:
+                check_duplicate_agents()
+                last_duplicate_check = now
 
-        # 4. Alle 5 Min: Monetarisierung
-        if now - last_monetization_check > MONETIZATION_GOALS["stripe_check_interval"]:
-            rev = monetization_check()
-            log(f"💰 Revenue-Check: {rev['sources']}")
-            last_monetization_check = now
+            # 3. Alle 10 Min: Konten-Health
+            if now - last_health_check > 600:
+                ok, missing = check_account_health()
+                if not ok:
+                    log(f"🔴 FEHLENDE KONTEN: {missing}")
+                    send_critical_alert(f"Konten nicht in Configs: {', '.join(missing)}")
+                last_health_check = now
 
-        # 5. Alle 2 Min: System-Health
-        if now - last_system_check > 120:
-            health = system_health_snapshot()
-            log(f"🌡️  RAM {health.get('ram_pct', '?')}% | Disk {health.get('disk_pct', '?')}% | Prozesse {health.get('army_processes', '?')}")
-            if health.get("ram_pct", 0) > 90:
-                send_critical_alert(f"KRITISCH: RAM bei {health['ram_pct']}%!")
-            last_system_check = now
+            # 4. Alle 5 Min: Monetarisierung
+            if now - last_monetization_check > MONETIZATION_GOALS["stripe_check_interval"]:
+                rev = monetization_check()
+                log(f"💰 Revenue-Check: {rev['sources']}")
+                last_monetization_check = now
 
-        time.sleep(10)
+            # 5. Alle 2 Min: System-Health
+            if now - last_system_check > 120:
+                health = system_health_snapshot()
+                log(f"🌡️  RAM {health.get('ram_pct', '?')}% | Disk {health.get('disk_pct', '?')}% | Prozesse {health.get('army_processes', '?')}")
+                if health.get("ram_pct", 0) > 90:
+                    send_critical_alert(f"KRITISCH: RAM bei {health['ram_pct']}%!")
+                last_system_check = now
+
+            time.sleep(10)
+    finally:
+        release_lock(lock_fd)
 
 if __name__ == "__main__":
     main()

@@ -4,10 +4,19 @@
 ║  RUDIBOT ARMY COMMANDER — Verwaltet alle Agenten                   ║
 ║  Startet, überwacht und koordiniert die komplette Bot-Army          ║
 ║  6 spezialisierte Agenten + Self-Healing + Telegram Reports        ║
+║  + OpenClaw AI Integration für intelligente Entscheidungen          ║
 ╚══════════════════════════════════════════════════════════════════════╝
 """
 import os, sys, time, subprocess, signal, json, datetime, re, threading
 from pathlib import Path
+
+# OpenClaw Integration
+try:
+    sys.path.insert(0, str(Path(__file__).parent.parent.parent / "rudibot-eternal"))
+    from openclaw_ai_provider import SyncOpenClawAIProvider
+    OPENCLAW_AVAILABLE = True
+except ImportError:
+    OPENCLAW_AVAILABLE = False
 
 ARMY_DIR   = Path(__file__).parent
 AGENTS_DIR = ARMY_DIR / "agents"
