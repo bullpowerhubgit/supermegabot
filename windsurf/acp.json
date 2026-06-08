@@ -1,0 +1,9 @@
+{
+  "_comment": "Install OpenCode first: https://opencode.ai/install",
+  "agent_servers": {
+    "OpenCode": {
+      "command": "opencode",
+      "args": ["acp"]
+    }
+  }
+}

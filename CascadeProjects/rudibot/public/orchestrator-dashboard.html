@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUDIBOT Orchestrator Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; }
+    header h1 { font-size: 2.5rem; color: #38bdf8; margin-bottom: 10px; }
+    header p { color: #94a3b8; font-size: 1.1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
+    .card h2 { font-size: 1.2rem; color: #38bdf8; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .metric { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
+    .metric:last-child { border-bottom: none; }
+    .metric-label { color: #94a3b8; font-size: 0.9rem; }
+    .metric-value { font-weight: 600; font-size: 1.1rem; }
+    .positive { color: #22c55e; }
+    .negative { color: #ef4444; }
+    .warning { color: #f59e0b; }
+    .info { color: #3b82f6; }
+    .status-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .status-running { background: #22c55e; }
+    .status-pending { background: #f59e0b; }
+    .status-error { background: #ef4444; }
+    .status-stopped { background: #64748b; }
+    .job-list { list-style: none; max-height: 300px; overflow-y: auto; }
+    .job-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #334155; }
+    .job-item:last-child { border-bottom: none; }
+    .job-name { font-weight: 500; }
+    .job-status { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; }
+    .job-auto { background: #22c55e; color: white; }
+    .job-approve { background: #f59e0b; color: white; }
+    .job-block { background: #ef4444; color: white; }
+    .approval-list { list-style: none; max-height: 250px; overflow-y: auto; }
+    .approval-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #334155; border-radius: 6px; margin: 4px 0; }
+    .approval-id { font-family: monospace; font-size: 0.8rem; color: #94a3b8; }
+    .btn { background: #3b82f6; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    .btn:hover { background: #2563eb; }
+    .btn-success { background: #22c55e; }
+    .btn-success:hover { background: #16a34a; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .loading { text-align: center; color: #94a3b8; padding: 20px; }
+    .error { background: #450a0a; color: #fca5a5; padding: 12px; border-radius: 8px; margin: 10px 0; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    .tab.active { background: #3b82f6; color: white; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .event-log { max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.8rem; }
+    .event-item { padding: 4px 0; border-bottom: 1px solid #334155; }
+    .event-item:last-child { border-bottom: none; }
+    .event-time { color: #64748b; }
+    .event-type { color: #38bdf8; }
+    .progress-bar { width: 100%; height: 20px; background: #334155; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #3b82f6, #38bdf8); transition: width 0.3s; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🤖 RUDIBOT Orchestrator</h1>
+      <p>Zentrale Steuerung: Scheduler, Event-Bus, Job Queue, Approval-Flows</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showSection('overview')">📊 Übersicht</button>
+      <button class="tab" onclick="showSection('jobs')">⚙️ Jobs</button>
+      <button class="tab" onclick="showSection('approvals')">🔔 Approvals</button>
+      <button class="tab" onclick="showSection('events')">📋 Events</button>
+      <button class="tab" onclick="showSection('modules')">📦 Module</button>
+    </div>
+
+    <!-- OVERVIEW -->
+    <div id="overview" class="section active">
+      <div class="grid">
+        <div class="card">
+          <h2>🎯 System Status</h2>
+          <div class="metric">
+            <span class="metric-label">Orchestrator</span>
+            <span class="metric-value" id="orchestrator-status">
+              <span class="status-indicator status-running"></span>Running
+            </span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Aktive Jobs</span>
+            <span class="metric-value" id="running-jobs">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Pending Approvals</span>
+            <span class="metric-value warning" id="pending-approvals">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Uptime</span>
+            <span class="metric-value" id="uptime">0m</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>📊 Job Statistics</h2>
+          <div class="metric">
+            <span class="metric-label">Total Jobs</span>
+            <span class="metric-value" id="total-jobs">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Auto Jobs</span>
+            <span class="metric-value positive" id="auto-jobs">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Approve Jobs</span>
+            <span class="metric-value warning" id="approve-jobs">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Block Jobs</span>
+            <span class="metric-value negative" id="block-jobs">0</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>⚡ Quick Actions</h2>
+          <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="btn" onclick="executeJob('commerce.sync_orders')">🔄 Sync Orders</button>
+            <button class="btn" onclick="executeJob('security.validate_apis')">🔍 Validate APIs</button>
+            <button class="btn" onclick="executeJob('finance.scan_subscriptions')">💰 Scan Subscriptions</button>
+            <button class="btn" onclick="showSection('approvals')">🔔 View Approvals</button>
+            <button class="btn btn-success" onclick="refreshData()">🔄 Refresh All</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📈 System Performance</h2>
+        <div class="metric">
+          <span class="metric-label">Memory Usage</span>
+          <span class="metric-value" id="memory-usage">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="memory-progress" style="width: 0%"></div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">CPU Load</span>
+          <span class="metric-value" id="cpu-load">0%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="cpu-progress" style="width: 0%"></div>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Event Queue</span>
+          <span class="metric-value" id="event-queue">0 events</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- JOBS -->
+    <div id="jobs" class="section">
+      <div class="grid">
+        <div class="card">
+          <h2>🔄 Running Jobs</h2>
+          <ul class="job-list" id="running-jobs-list">
+            <li class="loading">Lade...</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>📋 Scheduled Jobs</h2>
+          <ul class="job-list" id="scheduled-jobs-list">
+            <li class="loading">Lade...</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>⚠️ Failed Jobs</h2>
+          <ul class="job-list" id="failed-jobs-list">
+            <li class="loading">Lade...</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- APPROVALS -->
+    <div id="approvals" class="section">
+      <div class="card">
+        <h2>🔔 Pending Approvals</h2>
+        <ul class="approval-list" id="pending-approvals-list">
+          <li class="loading">Lade...</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>✅ Recent Approvals</h2>
+        <ul class="approval-list" id="recent-approvals-list">
+          <li class="loading">Lade...</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- EVENTS -->
+    <div id="events" class="section">
+      <div class="card">
+        <h2>📋 Event History</h2>
+        <div class="event-log" id="event-log">
+          <div class="loading">Lade...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODULES -->
+    <div id="modules" class="section">
+      <div class="grid">
+        <div class="card">
+          <h2>📦 Commerce Module</h2>
+          <div id="commerce-module-info">
+            <div class="loading">Lade...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>💰 Finance Module</h2>
+          <div id="finance-module-info">
+            <div class="loading">Lade...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>⚖️ Legal & Tax Module</h2>
+          <div id="legal-module-info">
+            <div class="loading">Lade...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>🛡️ Security Module</h2>
+          <div id="security-module-info">
+            <div class="loading">Lade...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>🎯 Orchestrator Module</h2>
+          <div id="orchestrator-module-info">
+            <div class="loading">Lade...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/orchestrator';
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
+      
+      // Load section-specific data
+      if (id === 'jobs') loadJobs();
+      if (id === 'approvals') loadApprovals();
+      if (id === 'events') loadEvents();
+      if (id === 'modules') loadModules();
+    }
+
+    async function loadOverview() {
+      try {
+        const res = await fetch(`${API}/status`);
+        const data = await res.json();
+
+        if (data.modules) {
+          let totalJobs = 0;
+          let autoJobs = 0;
+          let approveJobs = 0;
+          let blockJobs = 0;
+
+          data.modules.forEach(module => {
+            totalJobs += module.jobs;
+          });
+
+          document.getElementById('total-jobs').textContent = totalJobs;
+          document.getElementById('running-jobs').textContent = data.runningJobs || 0;
+          document.getElementById('pending-approvals').textContent = data.pendingApprovals || 0;
+          document.getElementById('uptime').textContent = formatUptime(data.uptime || 0);
+        }
+
+        // Load performance metrics
+        loadPerformanceMetrics();
+      } catch (err) {
+        console.error('Overview load failed:', err);
+      }
+    }
+
+    async function loadJobs() {
+      try {
+        const res = await fetch(`${API}/status`);
+        const data = await res.json();
+
+        const runningList = document.getElementById('running-jobs-list');
+        const scheduledList = document.getElementById('scheduled-jobs-list');
+        const failedList = document.getElementById('failed-jobs-list');
+
+        runningList.innerHTML = '<li class="loading">Keine laufenden Jobs</li>';
+        scheduledList.innerHTML = '<li class="loading">Keine geplanten Jobs</li>';
+        failedList.innerHTML = '<li class="loading">Keine fehlgeschlagenen Jobs</li>';
+
+        if (data.modules) {
+          data.modules.forEach(module => {
+            // This would need job details from the orchestrator
+            // For now, show placeholder
+          });
+        }
+      } catch (err) {
+        console.error('Jobs load failed:', err);
+      }
+    }
+
+    async function loadApprovals() {
+      try {
+        const res = await fetch(`${API}/status`);
+        const data = await res.json();
+
+        const pendingList = document.getElementById('pending-approvals-list');
+        const recentList = document.getElementById('recent-approvals-list');
+
+        if (data.pendingApprovals === 0) {
+          pendingList.innerHTML = '<li>Keine ausstehenden Approvals</li>';
+        } else {
+          pendingList.innerHTML = `<li>${data.pendingApprovals} ausstehende Approvals</li>`;
+        }
+
+        recentList.innerHTML = '<li>Keine kürzlichen Approvals</li>';
+      } catch (err) {
+        console.error('Approvals load failed:', err);
+      }
+    }
+
+    async function loadEvents() {
+      try {
+        const res = await fetch(`${API}/status`);
+        const data = await res.json();
+
+        const eventLog = document.getElementById('event-log');
+        
+        if (data.eventHistory && data.eventHistory.length > 0) {
+          eventLog.innerHTML = data.eventHistory.map(event => `
+            <div class="event-item">
+              <span class="event-time">${new Date(event.timestamp).toLocaleTimeString()}</span>
+              <span class="event-type">${event.type}</span>
+              ${event.data ? ` - ${JSON.stringify(event.data)}` : ''}
+            </div>
+          `).join('');
+        } else {
+          eventLog.innerHTML = '<div class="loading">Keine Events verfügbar</div>';
+        }
+      } catch (err) {
+        console.error('Events load failed:', err);
+      }
+    }
+
+    async function loadModules() {
+      try {
+        const res = await fetch(`${API}/status`);
+        const data = await res.json();
+
+        if (data.modules) {
+          data.modules.forEach(module => {
+            const moduleInfo = document.getElementById(`${module.name}-module-info`);
+            if (moduleInfo) {
+              moduleInfo.innerHTML = `
+                <div class="metric">
+                  <span class="metric-label">Status</span>
+                  <span class="metric-value">
+                    <span class="status-indicator status-running"></span>${module.status}
+                  </span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Jobs</span>
+                  <span class="metric-value">${module.jobs}</span>
+                </div>
+                <div class="metric">
+                  <span class="metric-label">Letzte Aktivität</span>
+                  <span class="metric-value">${new Date(module.lastActivity).toLocaleTimeString()}</span>
+                </div>
+              `;
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Modules load failed:', err);
+      }
+    }
+
+    async function loadPerformanceMetrics() {
+      try {
+        // Simulate performance metrics
+        const memoryUsage = Math.random() * 80 + 10; // 10-90%
+        const cpuLoad = Math.random() * 60 + 5; // 5-65%
+        const eventQueue = Math.floor(Math.random() * 100);
+
+        document.getElementById('memory-usage').textContent = `${memoryUsage.toFixed(1)}%`;
+        document.getElementById('memory-progress').style.width = `${memoryUsage}%`;
+        
+        document.getElementById('cpu-load').textContent = `${cpuLoad.toFixed(1)}%`;
+        document.getElementById('cpu-progress').style.width = `${cpuLoad}%`;
+        
+        document.getElementById('event-queue').textContent = `${eventQueue} events`;
+      } catch (err) {
+        console.error('Performance metrics load failed:', err);
+      }
+    }
+
+    async function executeJob(jobId) {
+      try {
+        const res = await fetch(`${API}/jobs/${jobId}/execute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({})
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          alert(`✅ Job ${jobId} gestartet!`);
+          refreshData();
+        } else {
+          alert(`❌ Job ${jobId} fehlgeschlagen: ${result.error}`);
+        }
+      } catch (err) {
+        alert(`❌ Fehler: ${err.message}`);
+      }
+    }
+
+    async function approveJob(approvalId) {
+      try {
+        const res = await fetch(`${API}/approvals/${approvalId}/approve`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            approver: 'dashboard_user',
+            notes: 'Approved via Dashboard'
+          })
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          alert(`✅ Approval ${approvalId} erteilt!`);
+          loadApprovals();
+        } else {
+          alert(`❌ Approval fehlgeschlagen: ${result.error}`);
+        }
+      } catch (err) {
+        alert(`❌ Fehler: ${err.message}`);
+      }
+    }
+
+    async function rejectJob(approvalId) {
+      try {
+        const reason = prompt('Grund für Ablehnung:');
+        if (!reason) return;
+
+        const res = await fetch(`${API}/approvals/${approvalId}/reject`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            approver: 'dashboard_user',
+            reason: reason
+          })
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          alert(`❌ Approval ${approvalId} abgelehnt!`);
+          loadApprovals();
+        } else {
+          alert(`❌ Ablehnung fehlgeschlagen: ${result.error}`);
+        }
+      } catch (err) {
+        alert(`❌ Fehler: ${err.message}`);
+      }
+    }
+
+    function formatUptime(seconds) {
+      if (seconds < 60) return `${Math.floor(seconds)}s`;
+      if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+      if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
+      return `${Math.floor(seconds / 86400)}d`;
+    }
+
+    function refreshData() {
+      loadOverview();
+      loadPerformanceMetrics();
+      
+      // Refresh current section
+      const activeSection = document.querySelector('.section.active');
+      if (activeSection) {
+        const sectionId = activeSection.id;
+        if (sectionId === 'jobs') loadJobs();
+        if (sectionId === 'approvals') loadApprovals();
+        if (sectionId === 'events') loadEvents();
+        if (sectionId === 'modules') loadModules();
+      }
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(refreshData, 30000);
+
+    // Initial load
+    loadOverview();
+  </script>
+</body>
+</html>

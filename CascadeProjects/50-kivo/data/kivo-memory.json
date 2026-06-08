@@ -1,0 +1,150 @@
+{
+  "userProfile": {},
+  "preferences": {},
+  "projects": [],
+  "routines": [],
+  "deviceKnowledge": {},
+  "conversationHistory": [
+    {
+      "timestamp": "2026-06-03T18:09:24.038Z",
+      "text": "Hey Kivo, Licht an",
+      "intent": {
+        "type": "home",
+        "action": "control",
+        "confidence": 0.9
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.039Z",
+      "text": "Hey Kivo, Licht an",
+      "intent": {
+        "type": "home",
+        "action": "control",
+        "confidence": 0.9
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.040Z",
+      "text": "Hey Kivo, Timer 10 Minuten",
+      "intent": {
+        "type": "home",
+        "action": "timer",
+        "confidence": 0.95
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.040Z",
+      "text": "Hey Kivo, Timer 10 Minuten",
+      "intent": {
+        "type": "home",
+        "action": "timer",
+        "confidence": 0.95
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.040Z",
+      "text": "Hey Kivo, Timer 1 Stunde",
+      "intent": {
+        "type": "home",
+        "action": "timer",
+        "confidence": 0.95
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.040Z",
+      "text": "Hey Kivo, Timer 1 Stunde",
+      "intent": {
+        "type": "home",
+        "action": "timer",
+        "confidence": 0.95
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.041Z",
+      "text": "Hey Kivo, prüf meine Abos",
+      "intent": {
+        "type": "agent",
+        "action": "subscription",
+        "confidence": 0.85
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.041Z",
+      "text": "Hey Kivo, prüf meine Abos",
+      "intent": {
+        "type": "agent",
+        "action": "subscription",
+        "confidence": 0.85
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.041Z",
+      "text": "Hey Kivo, starte Deepscan",
+      "intent": {
+        "type": "agent",
+        "action": "security",
+        "confidence": 0.85
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.041Z",
+      "text": "Hey Kivo, starte Deepscan",
+      "intent": {
+        "type": "agent",
+        "action": "security",
+        "confidence": 0.85
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.772Z",
+      "text": "Hey Kivo, was kostet mich gerade unnötig Geld?",
+      "intent": {
+        "type": "unknown",
+        "action": "fallback",
+        "confidence": 0.5
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.773Z",
+      "text": "Hey Kivo, zeig mir den Tagesbericht",
+      "intent": {
+        "type": "agent",
+        "action": "report",
+        "confidence": 0.8
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:24.773Z",
+      "text": "Hey Kivo, zeig mir den Tagesbericht",
+      "intent": {
+        "type": "agent",
+        "action": "report",
+        "confidence": 0.8
+      },
+      "source": "voice"
+    },
+    {
+      "timestamp": "2026-06-03T18:09:25.703Z",
+      "text": "Hey Kivo, was kostet mich gerade unnötig Geld?",
+      "intent": {
+        "type": "unknown",
+        "action": "fallback",
+        "confidence": 0.5
+      },
+      "source": "voice"
+    }
+  ],
+  "lastAccess": null
+}
