@@ -6,6 +6,11 @@ import paymentRoutes from './payment-routes.js';
 import { AIClient, BrowserController, MacController, GCPController, ShopifyController, EmailController, SMSController, StripeController, QueueController, AuthController, DataController, GitHubController, SlackController, DiscordController, TelegramController, NotionController, AirtableController, AWSController, AzureController, GoogleController, HerokuController, CloudflareController, MailchimpController, HubSpotController, SalesforceController, ZendeskController, PayPalController, JiraController, TrelloController, AsanaController, TwitterController, FacebookController, SendinblueController, MailgunController, PipedriveController, IntercomController, DocuSignController, MicrosoftGraphController, MondayController, LinearController, LinkedInController, InstagramController, YouTubeController, KlaviyoController, ActiveCampaignController, ConvertKitController, CopperController, ZohoController, FreshdeskController, HelpScoutController, PandaDocController, EmailAutomationController } from '../core/index.js';
 import { Message, BrowserAction, MacAction, GCPConfig, NLAction, TranslationAction, VisionAction, SpeechAction, StorageAction, FirestoreAction, ShopifyConfig, EmailConfig, SMSConfig, StripeConfig, QueueConfig, AuthConfig, GitHubConfig, SlackConfig, DiscordConfig, TelegramConfig, NotionConfig, AirtableConfig, AWSConfig, AzureConfig, GoogleDriveConfig, GoogleAnalyticsConfig, HerokuConfig, CloudflareConfig, MailchimpConfig, HubSpotConfig, SalesforceConfig, ZendeskConfig, PayPalConfig, JiraConfig, TrelloConfig, AsanaConfig, TwitterConfig, FacebookConfig, SendinblueConfig, MailgunConfig, PipedriveConfig, IntercomConfig, DocuSignConfig, MicrosoftGraphConfig, MondayConfig, LinearConfig, LinkedInConfig, InstagramConfig, YouTubeConfig, KlaviyoConfig, ActiveCampaignConfig, ConvertKitConfig, CopperConfig, ZohoConfig, FreshdeskConfig, HelpScoutConfig, PandaDocConfig, EmailAutomationConfig, EmailAutomationAction } from '../core/types.js';
 
+// Security Middleware
+import { requireAuth, requireRole, requireAuthOrApiKey, createSupabaseClient } from '../middleware/auth.js';
+import { checkPlanLimits, requireFeature, getBillingInfo } from '../middleware/billing.js';
+import { verifyHmacWebhook, verifyStripeWebhook, verifyShopifyWebhook } from '../middleware/webhook.js';
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -1497,6 +1502,70 @@ app.post('/api/email-automation', async (req, res) => {
 });
 
 app.use('/api/payments', paymentRoutes);
+
+// ── Protected API Routes (Auth + Billing) ────────────────────────
+app.get('/api/billing/info', requireAuth, getBillingInfo);
+
+app.post('/api/chat', requireAuth, checkPlanLimits, async (req, res) => {
+  try {
+    const { message, sessionId } = req.body;
+    let ai = aiClients.get(sessionId || 'default');
+    if (!ai) {
+      ai = new AIClient({ provider: 'openai', apiKey: process.env.OPENAI_API_KEY || '' });
+      aiClients.set(sessionId || 'default', ai);
+    }
+    const response = await ai.chat([{ role: 'user', content: message }]);
+    res.json({ response: response.content || response });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post('/api/browser/action', requireAuth, requireFeature('browser_automation'), async (req, res) => {
+  try {
+    const { action, sessionId } = req.body;
+    let browser = browsers.get(sessionId || 'default');
+    if (!browser) {
+      browser = new BrowserController();
+      browsers.set(sessionId || 'default', browser);
+    }
+    const result = await browser.execute(action);
+    res.json({ result });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Webhook Endpoints (with Verification) ────────────────────────
+app.post('/api/webhooks/stripe', verifyStripeWebhook, async (req, res) => {
+  try {
+    const event = (req as any).stripeEvent || req.body;
+    console.log('Stripe webhook received:', event.type);
+    res.json({ received: true });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/webhooks/shopify', verifyShopifyWebhook, async (req, res) => {
+  try {
+    const topic = req.headers['x-shopify-topic'];
+    console.log('Shopify webhook received:', topic);
+    res.json({ received: true });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post('/api/webhooks/generic', verifyHmacWebhook, async (req, res) => {
+  try {
+    const { event_type, payload } = req.body;
+    console.log('Generic webhook received:', event_type);
+    res.json({ received: true });
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
 // ── Health & Status ──────────────────────────────────────────────
 const startTime = Date.now();
