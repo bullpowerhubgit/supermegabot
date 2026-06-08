@@ -1,0 +1,165 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="color-scheme" content="dark" /><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>RudiBot Shopify Automation Sprint</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"><script src="https://js.stripe.com/v3/"></script><style>
+html,body{color-scheme:dark only!important;background:#050711!important;color:#e5e7eb!important}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Inter',sans-serif;line-height:1.6;color:#1a1a2e;background:#fff}.container{max-width:1200px;margin:0 auto;padding:0 24px}.hero{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);color:#fff;padding:120px 0 100px;position:relative;overflow:hidden}.hero::before{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(233,69,96,.15) 0%,transparent 70%);border-radius:50%}.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.1);backdrop-filter:blur(10px);padding:8px 20px;border-radius:100px;font-size:14px;font-weight:500;margin-bottom:32px;border:1px solid rgba(255,255,255,.15)}.hero-badge .dot{width:8px;height:8px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}.hero h1{font-size:clamp(36px,5vw,64px);font-weight:800;line-height:1.1;margin-bottom:24px;max-width:800px}.hero h1 span{color:#e94560}.hero-subtitle{font-size:clamp(18px,2.5vw,24px);color:rgba(255,255,255,.8);max-width:600px;margin-bottom:40px}.hero-cta{display:flex;gap:16px;flex-wrap:wrap;align-items:center}.btn{display:inline-flex;align-items:center;gap:8px;padding:16px 32px;border-radius:12px;font-weight:600;font-size:16px;text-decoration:none;transition:all .3s ease;cursor:pointer;border:none}.btn-primary{background:#e94560;color:#fff;box-shadow:0 4px 20px rgba(233,69,96,.3)}.btn-primary:hover{background:#d63d57;transform:translateY(-2px);box-shadow:0 8px 30px rgba(233,69,96,.4)}.btn-secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}.btn-secondary:hover{background:rgba(255,255,255,.2)}.hero-trust{margin-top:48px;display:flex;align-items:center;gap:24px;flex-wrap:wrap}.hero-trust-item{display:flex;align-items:center;gap:8px;color:rgba(255,255,255,.7);font-size:14px}.hero-trust-item svg{width:20px;height:20px;color:#4ade80}.problem{padding:100px 0;background:#f8f9fc}.section-header{text-align:center;max-width:700px;margin:0 auto 64px}.section-label{display:inline-block;background:rgba(233,69,96,.1);color:#e94560;padding:6px 16px;border-radius:100px;font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:16px}.section-header h2{font-size:clamp(28px,4vw,40px);font-weight:800;margin-bottom:16px}.section-header p{color:#6b7280;font-size:18px}.problem-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px}.problem-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:32px;transition:all .3s ease}.problem-card:hover{border-color:#e94560;box-shadow:0 8px 30px rgba(0,0,0,.08);transform:translateY(-4px)}.problem-icon{width:48px;height:48px;background:rgba(233,69,96,.1);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:16px}.problem-card h3{font-size:18px;font-weight:700;margin-bottom:8px}.problem-card p{color:#6b7280;font-size:15px}.solution{padding:100px 0;background:#fff}.solution-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:32px;margin-top:48px}.solution-card{position:relative;padding:40px;border-radius:20px;background:linear-gradient(145deg,#f8f9fc 0%,#fff 100%);border:1px solid #e5e7eb}.solution-number{position:absolute;top:-16px;left:32px;width:40px;height:40px;background:#e94560;color:#fff;border-radius:12px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px}.solution-card h3{font-size:22px;font-weight:700;margin-bottom:16px;margin-top:8px}.solution-card ul{list-style:none}.solution-card li{padding:8px 0;padding-left:28px;position:relative;color:#4b5563}.solution-card li::before{content:'✓';position:absolute;left:0;color:#4ade80;font-weight:700}.pricing{padding:100px 0;background:linear-gradient(180deg,#f8f9fc 0%,#fff 100%)}.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:48px;align-items:stretch}.pricing-card{background:#fff;border:2px solid #e5e7eb;border-radius:20px;padding:40px 32px;position:relative;transition:all .3s ease;display:flex;flex-direction:column}.pricing-card:hover{border-color:#e94560;transform:translateY(-8px);box-shadow:0 20px 60px rgba(0,0,0,.1)}.pricing-card.featured{border-color:#e94560;background:linear-gradient(180deg,#fff 0%,rgba(233,69,96,.03) 100%)}.pricing-card.featured::before{content:'Bestseller';position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#e94560;color:#fff;padding:4px 16px;border-radius:100px;font-size:13px;font-weight:600}.pricing-name{font-size:20px;font-weight:700;margin-bottom:8px}.pricing-desc{color:#6b7280;font-size:14px;margin-bottom:24px}.pricing-price{font-size:48px;font-weight:800;color:#1a1a2e;margin-bottom:8px}.pricing-price span{font-size:16px;font-weight:500;color:#6b7280}.pricing-period{color:#6b7280;font-size:14px;margin-bottom:32px}.pricing-features{list-style:none;margin-bottom:32px;flex:1}.pricing-features li{padding:10px 0;padding-left:28px;position:relative;font-size:15px;border-bottom:1px solid #f3f4f6}.pricing-features li::before{content:'✓';position:absolute;left:0;color:#4ade80;font-weight:700}.pricing-features li:last-child{border-bottom:none}.pricing-btn{width:100%;justify-content:center}.pricing-btn.outline{background:transparent;color:#1a1a2e;border:2px solid #1a1a2e}.pricing-btn.outline:hover{background:#1a1a2e;color:#fff}.for-whom{padding:100px 0;background:#1a1a2e;color:#fff}.for-whom-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:32px;margin-top:48px}.for-whom-item{padding:32px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px}.for-whom-item .icon{font-size:32px;margin-bottom:16px}.for-whom-item h3{font-size:18px;font-weight:700;margin-bottom:8px}.for-whom-item p{color:rgba(255,255,255,.7);font-size:15px}.process{padding:100px 0;background:#fff}.process-steps{display:flex;justify-content:space-between;gap:24px;margin-top:48px;position:relative}.process-steps::before{content:'';position:absolute;top:24px;left:60px;right:60px;height:2px;background:#e5e7eb;z-index:0}.process-step{flex:1;text-align:center;position:relative;z-index:1}.process-step .step-num{width:50px;height:50px;background:#fff;border:2px solid #e94560;color:#e94560;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:18px;margin:0 auto 20px}.process-step h3{font-size:16px;font-weight:700;margin-bottom:8px}.process-step p{color:#6b7280;font-size:14px}.cta{padding:100px 0;background:linear-gradient(135deg,#e94560 0%,#d63d57 100%);color:#fff;text-align:center}.cta h2{font-size:clamp(28px,4vw,40px);font-weight:800;margin-bottom:16px}.cta p{font-size:18px;opacity:.9;max-width:600px;margin:0 auto 32px}.cta .btn{background:#fff;color:#e94560;font-size:18px;padding:18px 40px}.cta .btn:hover{background:#f8f9fc;transform:translateY(-2px)}.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);z-index:1000;align-items:center;justify-content:center}.modal-overlay.active{display:flex}.modal{background:#fff;border-radius:20px;padding:40px;max-width:500px;width:90%;position:relative}.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#6b7280}.modal h3{font-size:24px;font-weight:700;margin-bottom:8px}.modal p{color:#6b7280;margin-bottom:24px}.form-group{margin-bottom:20px}.form-group label{display:block;font-weight:600;margin-bottom:8px;font-size:14px}.form-group input,.form-group textarea{width:100%;padding:14px 16px;border:2px solid #e5e7eb;border-radius:12px;font-size:15px;font-family:inherit;transition:border-color .3s}.form-group input:focus,.form-group textarea:focus{outline:none;border-color:#e94560}.form-group textarea{resize:vertical;min-height:100px}.form-submit{width:100%;background:#e94560;color:#fff;border:none;padding:16px;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;transition:all .3s}.form-submit:hover{background:#d63d57}footer{padding:40px 0;background:#1a1a2e;color:rgba(255,255,255,.6);text-align:center;font-size:14px}footer a{color:#e94560;text-decoration:none}@media(max-width:768px){.process-steps{flex-direction:column}.process-steps::before{display:none}}</style></head><body>
+
+<!-- Hero -->
+<section class="hero"><div class="container">
+<div class="hero-badge"><span class="dot"></span>Jetzt buchbar — Start in 48h</div>
+<h1>RudiBot Shopify <span>Automation Sprint</span></h1>
+<p class="hero-subtitle">Hol dir einen Shopify-Shop, der nicht bei jedem Fehler Geld verbrennt. In 3–5 Tagen technisch aufgeräumt, überwacht und zukunftssicher.</p>
+<div class="hero-cta">
+<button class="btn btn-primary" onclick="openModal('fix')"><span>🚀</span> Fix Sprint buchen — 990 €</button>
+<button class="btn btn-secondary" onclick="openModal('audit')"><span>🔍</span> Light Audit — 299 €</button>
+</div>
+<div class="hero-trust">
+<div class="hero-trust-item">✓ 3–5 Tage Lieferzeit</div>
+<div class="hero-trust-item">✓ Fix-Preisgarantie</div>
+<div class="hero-trust-item">✓ Monitoring inklusive</div>
+</div>
+</div></section>
+
+<!-- Problem -->
+<section class="problem"><div class="container">
+<div class="section-header">
+<div class="section-label">Das Problem</div>
+<h2>Warum Shopify-Shops still Geld verbrennen</h2>
+<p>Die meisten Shop-Betreiber merken technische Probleme erst, wenn der Schaden schon da ist.</p>
+</div>
+<div class="problem-grid">
+<div class="problem-card"><div class="problem-icon">💸</div><h3>Flows scheitern still</h3><p>Bestellungen, Webhooks und Apps fallen aus — ohne dass jemand es mitbekommt.</p></div>
+<div class="problem-card"><div class="problem-icon">😴</div><h3>Niemand überwacht</h3><p>Ohne Monitoring laufen Shops im Blindflug. Kritische Ereignisse bleiben unbemerkt.</p></div>
+<div class="problem-card"><div class="problem-icon">🔧</div><h3>Automationen halbfertig</h3><p>Skripte, Apps und Workflows sind nur halb eingerichtet — oder gar nicht.</p></div>
+<div class="problem-card"><div class="problem-icon">📉</div><h3>Technische Schulden</h3><p>Fehler, die wochenlang unbemerkt bleiben, führen zu Dateninkonsistenzen.</p></div>
+</div>
+</div></section>
+
+<!-- Solution -->
+<section class="solution"><div class="container">
+<div class="section-header">
+<div class="section-label">Die Lösung</div>
+<h2>Der RudiBot Automation Sprint in 3 Schritten</h2>
+<p>Ein strukturiertes 3–5-Tage-Programm, das deinen Shop technisch aufräumt.</p>
+</div>
+<div class="solution-grid">
+<div class="solution-card"><div class="solution-number">1</div><h3>Automation & System Audit</h3><ul><li>Check von Apps, Webhooks, Skripten und API-Flows</li><li>Erkennung von Fehlern, Bottlenecks und Risiken</li><li>Bewertung der Systemstabilität</li><li>Priorisierte Handlungsempfehlungen</li></ul></div>
+<div class="solution-card"><div class="solution-number">2</div><h3>Fix Sprint</h3><ul><li>Umsetzung der wichtigsten Fixes (nach Freigabe)</li><li>Härtung kritischer Flows</li><li>Einrichtung smarter Fallbacks</li><li>API- und Webhook-Konsistenz sicherstellen</li></ul></div>
+<div class="solution-card"><div class="solution-number">3</div><h3>Monitoring & Alerts</h3><ul><li>Monitoring-Ebene für kritische Ereignisse</li><li>Alerts über Telegram oder E-Mail</li><li>Abschluss-Report mit "Vorher/Nachher"</li><li>Konkrete To-Dos für die Zukunft</li></ul></div>
+</div>
+</div></section>
+
+<!-- Pricing -->
+<section class="pricing" id="pricing"><div class="container">
+<div class="section-header">
+<div class="section-label">Pakete & Preise</div>
+<h2>Wähle deinen Einstieg</h2>
+<p>Flexibel skalierbar — vom ersten Audit bis zur laufenden Betreuung.</p>
+</div>
+<div class="pricing-grid">
+<div class="pricing-card">
+<div class="pricing-name">Audit Light</div>
+<div class="pricing-desc">Schnelle Analyse + klare Empfehlungen</div>
+<div class="pricing-price">299<span>€</span></div>
+<div class="pricing-period">Einmalzahlung</div>
+<ul class="pricing-features"><li>Technische Analyse deines Shops</li><li>Check der Kern-Automationspunkte</li><li>Priorisierte Handlungsempfehlungen</li><li>30-Minuten-Call oder Loom-Video</li></ul>
+<button class="btn btn-primary pricing-btn" onclick="openModal('audit')">Light Audit buchen</button>
+</div>
+<div class="pricing-card featured">
+<div class="pricing-name">Audit + Fix Sprint</div>
+<div class="pricing-desc">Analyse + Umsetzung + Monitoring</div>
+<div class="pricing-price">990<span>€</span></div>
+<div class="pricing-period">Einmalzahlung</div>
+<ul class="pricing-features"><li>Vollständiger Automation & Stability Audit</li><li>Umsetzung der wichtigsten Fixes</li><li>Basis-Monitoring & Alerts einrichten</li><li>Fertiger Abschluss-Report</li><li>Telegram-Integration inklusive</li></ul>
+<button class="btn btn-primary pricing-btn" onclick="openModal('fix')">Fix Sprint buchen</button>
+</div>
+<div class="pricing-card">
+<div class="pricing-name">Monitoring & Care</div>
+<div class="pricing-desc">Laufende Überwachung & Reports</div>
+<div class="pricing-price">199<span>€</span></div>
+<div class="pricing-period">pro Monat</div>
+<ul class="pricing-features"><li>Laufende Überwachung der Kernflüsse</li><li>Alerts bei kritischen Fehlern</li><li>Monatlicher Kurzbericht</li><li>Quick-Wins & Optimierungen</li><li>Priorisierter Support</li></ul>
+<button class="btn btn-primary pricing-btn outline" onclick="openModal('care')">Care-Paket buchen</button>
+</div>
+</div>
+</div></section>
+
+<!-- For Whom -->
+<section class="for-whom"><div class="container">
+<div class="section-header">
+<div class="section-label" style="background:rgba(255,255,255,.1);color:#fff;">Für wen?</div>
+<h2>Das ist genau richtig für dich, wenn...</h2>
+</div>
+<div class="for-whom-grid">
+<div class="for-whom-item"><div class="icon">🛒</div><h3>Shopify Stores</h3><p>Mit 10k–100k+ Monatsumsatz, die merken, dass technische Probleme Umsatz kosten.</p></div>
+<div class="for-whom-item"><div class="icon">⏰</div><h3>Keine Zeit für Technik</h3><p>Du hast keine Zeit, dich durch Logs, Webhooks und API-Dokumentation zu kämpfen.</p></div>
+<div class="for-whom-item"><div class="icon">🤔</div><h3>"Irgendwas stimmt nicht"</h3><p>Du merkt, dass etwas im Hintergrund nicht rund läuft, weißt aber nicht genau was.</p></div>
+<div class="for-whom-item"><div class="icon">📈</div><h3>Wachstum ohne Chaos</h3><p>Du willst skalieren, ohne dass die Technik bei jedem Schritt bremst oder kaputt geht.</p></div>
+</div>
+</div></section>
+
+<!-- Process -->
+<section class="process"><div class="container">
+<div class="section-header">
+<div class="section-label">So läuft es ab</div>
+<h2>Von der Anfrage zum fertigen Sprint</h2>
+</div>
+<div class="process-steps">
+<div class="process-step"><div class="step-num">1</div><h3>Kennenlern-Call</h3><p>15–20 Min. Wir besprechen deinen Shop und ob der Sprint Sinn macht.</p></div>
+<div class="process-step"><div class="step-num">2</div><h3>Zugang & Audit</h3><p>Sichere Einrichtung. Dann 1–2 Tage technische Analyse.</p></div>
+<div class="process-step"><div class="step-num">3</div><h3>Fix Sprint</h3><p>2–3 Tage Umsetzung der wichtigsten Fixes mit deiner Freigabe.</p></div>
+<div class="process-step"><div class="step-num">4</div><h3>Übergabe</h3><p>Call mit Ergebnis-Report, Monitoring-Dashboard und nächsten Schritten.</p></div>
+<div class="process-step"><div class="step-num">5</div><h3>Care (optional)</h3><p>Monatliche Überwachung, Alerts und Quick-Wins.</p></div>
+</div>
+</div></section>
+
+<!-- CTA -->
+<section class="cta"><div class="container">
+<h2>Bereit, deinen Shop technisch aufzuräumen?</h2>
+<p>Schick mir deinen Shop-Link — ich sage dir in 24 Stunden, ob der Sprint bei dir Sinn macht.</p>
+<button class="btn" onclick="openModal('fix')">🚀 Jetzt Fix Sprint buchen</button>
+</div></section>
+
+<!-- Footer -->
+<footer><div class="container">
+<p>© 2026 RudiBot — Shopify Automation Sprint. Built with ❤️ for E-Commerce.</p>
+<p><a href="mailto:hello@rudibot.ai">hello@rudibot.ai</a></p>
+</div></footer>
+
+<!-- Contact Modal -->
+<div class="modal-overlay" id="modal"><div class="modal">
+<button class="modal-close" onclick="closeModal()">&times;</button>
+<h3 id="modal-title">Anfrage senden</h3>
+<p id="modal-desc">Fülle das Formular aus — ich melde mich innerhalb von 24 Stunden.</p>
+<form onsubmit="handleSubmit(event)">
+<div class="form-group"><label>Dein Name</label><input type="text" name="name" required placeholder="Max Mustermann"></div>
+<div class="form-group"><label>E-Mail</label><input type="email" name="email" required placeholder="max@shop.de"></div>
+<div class="form-group"><label>Shop-Link</label><input type="url" name="shop" placeholder="https://deinshop.myshopify.com"></div>
+<div class="form-group"><label>Nachricht (optional)</label><textarea name="message" placeholder="Was ist dein größtes technisches Problem?"></textarea></div>
+<input type="hidden" name="package" id="modal-package" value="">
+<button type="submit" class="form-submit">Anfrage senden</button>
+</form>
+</div></div>
+
+<script>
+function openModal(pkg) {
+    const titles = {audit:'Light Audit buchen — 299 €',fix:'Fix Sprint buchen — 990 €',care:'Care-Paket buchen — 199 €/Monat'};
+    const descs = {audit:'Du erhältst eine technische Analyse + klare Empfehlungen.',fix:'Inkl. Audit, Fix-Umsetzung und Monitoring-Setup.',care:'Laufende Überwachung mit monatlichem Report.'};
+    document.getElementById('modal-title').textContent = titles[pkg] || 'Anfrage senden';
+    document.getElementById('modal-desc').textContent = descs[pkg] || 'Fülle das Formular aus.';
+    document.getElementById('modal-package').value = pkg;
+    document.getElementById('modal').classList.add('active');
+}
+function closeModal() { document.getElementById('modal').classList.remove('active'); }
+function handleSubmit(e) {
+    e.preventDefault();
+    const data = Object.fromEntries(new FormData(e.target));
+    // TODO: Send to your backend (e.g., Telegram bot, email, or form service)
+    alert('Danke! Ich melde mich innerhalb von 24 Stunden bei dir.');
+    closeModal();
+    e.target.reset();
+}
+document.getElementById('modal').addEventListener('click', function(e) {
+    if(e.target === this) closeModal();
+});
+</script>
+
+</body></html>
