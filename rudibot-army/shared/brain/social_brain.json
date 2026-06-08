@@ -1,27 +1,11 @@
 {
-  "cycles": 3097,
+  "cycles": 3099,
   "patterns": {
     "warning:2 Platformen down": 133,
-    "warning:1 Platformen down": 2964
+    "warning:1 Platformen down": 2966
   },
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-08 05:32:43",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 05:32:54",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
     {
       "ts": "2026-06-08 05:33:25",
       "status": "warning",
@@ -4002,6 +3986,22 @@
       "ts": "2026-06-08 08:27:39",
       "status": "warning",
       "message": "2 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-08 10:14:32",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-08 10:14:43",
+      "status": "warning",
+      "message": "1 Platformen down",
       "metrics": {
         "platform_count": 2
       }
