@@ -1,5 +1,5 @@
 {
-  "cycles": 329,
+  "cycles": 332,
   "patterns": {
     "warning:Fehler: shopify(10); Warnings: monitor(10), monetization(3),": 2,
     "warning:Fehler: shopify(11); Warnings: monitor(11), social(6)": 2,
@@ -172,11 +172,13 @@
     "warning:Fehler: shopify(2); Warnings: micro_ping(8), monitor(8), lea": 1,
     "warning:Fehler: shopify(3); Warnings: micro_ping(7), monetization(2)": 1,
     "warning:Fehler: shopify(3); Warnings: micro_ping(7), social(2), mone": 1,
-    "warning:Fehler: shopify(2); Warnings: micro_ping(8), learner(1)": 10,
+    "warning:Fehler: shopify(2); Warnings: micro_ping(8), learner(1)": 11,
     "warning:Fehler: shopify(2); Warnings: micro_ping(8), learner(1), soc": 10,
     "warning:Fehler: shopify(2); Warnings: micro_ping(7), learner(1), mic": 2,
     "warning:Fehler: shopify(2); Warnings: micro_ping(9), learner(1)": 5,
-    "warning:Fehler: shopify(3); Warnings: micro_ping(7), learner(2), mon": 2
+    "warning:Fehler: shopify(3); Warnings: micro_ping(7), learner(2), mon": 2,
+    "warning:Fehler: shopify(2); Warnings: micro_ping(7), learner(1), mon": 1,
+    "warning:Fehler: shopify(2); Warnings: micro_ping(7), social(1), lear": 1
   },
   "registers": {},
   "history": [
@@ -2808,6 +2810,30 @@
       "ts": "2026-06-08 12:56:13",
       "status": "warning",
       "message": "Fehler: shopify(3); Warnings: micro_ping(7), learner(2), monetization(1), social(1), micro_revenue(1)",
+      "metrics": {
+        "tracked": 14
+      }
+    },
+    {
+      "ts": "2026-06-08 13:01:13",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: micro_ping(8), learner(1)",
+      "metrics": {
+        "tracked": 14
+      }
+    },
+    {
+      "ts": "2026-06-08 13:03:49",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: micro_ping(7), learner(1), monetization(1), social(2)",
+      "metrics": {
+        "tracked": 14
+      }
+    },
+    {
+      "ts": "2026-06-08 13:08:49",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: micro_ping(7), social(1), learner(1), monetization(1), micro_revenue(1)",
       "metrics": {
         "tracked": 14
       }
