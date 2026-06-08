@@ -40,9 +40,11 @@ SERVICES = {
     'guardian':      {'port': 3201, 'dir': _svc_dir('ETERNAL_BOT_DIR',   'rudibot-eternal'),         'cmd': 'python3 eternal_guardian.py --api', 'health': '/api/v1/health'},
     'telegram_bot':  {'port': 3200, 'dir': _svc_dir('WS_TELEGRAM_DIR',   'windsurf-telegram-bot'),   'cmd': 'npm start',                          'health': '/health'},
     'api_gateway':   {'port': 8080, 'dir': _svc_dir('API_GATEWAY_DIR',   'windsurf-api-gateway'),    'cmd': 'npm start',                          'health': '/health'},
+    'windsurf_api':  {'port': 3001, 'dir': _svc_dir('WS_API_DIR',        'windsurf'),                'cmd': 'npm start',                          'health': '/health'},
     'shopify_ai':    {'port': 3002, 'dir': _svc_dir('SHOPIFY_AI_DIR',    'shopify-ai-suite'),        'cmd': 'node server.js',                     'health': '/health'},
     'github_app':    {'port': 3000, 'dir': _svc_dir('GITHUB_APP_DIR',    'windsurf-github-app'),     'cmd': 'npm start',                          'health': '/health'},
     'shopify_suite': {'port': 3001, 'dir': _svc_dir('SHOPIFY_SUITE_DIR', 'windsurf-shopify-suite'),  'cmd': 'npm start',                          'health': '/health'},
+    'rudibot_army':  {'port': 8766, 'dir': _svc_dir('RUDIBOT_ARMY_DIR',  'supermegabot/rudibot-army'),'cmd': 'python3 api_server.py',              'health': '/health'},
 }
 
 # ═══════════════════════════════════════════════════════════════════════

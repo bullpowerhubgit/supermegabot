@@ -1,231 +1,4506 @@
 {
-  "cycles": 25,
+  "cycles": 4341,
   "patterns": {},
   "registers": {},
   "history": [
     {
-      "ts": "2026-06-06 22:55:27",
+      "ts": "2026-06-08 06:20:12",
       "status": "ok",
-      "message": "Finance check 2026-06-06 22:55",
+      "message": "Finance check 2026-06-08 06:20",
       "metrics": {
-        "day": "2026-06-06",
-        "timestamp": "22:55"
+        "day": "2026-06-08",
+        "timestamp": "06:20"
       }
     },
     {
-      "ts": "2026-06-06 23:17:28",
+      "ts": "2026-06-08 06:20:23",
       "status": "ok",
-      "message": "Finance check 2026-06-06 23:17",
+      "message": "Finance check 2026-06-08 06:20",
       "metrics": {
-        "day": "2026-06-06",
-        "timestamp": "23:17"
+        "day": "2026-06-08",
+        "timestamp": "06:20"
       }
     },
     {
-      "ts": "2026-06-06 23:46:51",
+      "ts": "2026-06-08 06:20:34",
       "status": "ok",
-      "message": "Finance check 2026-06-06 23:46",
+      "message": "Finance check 2026-06-08 06:20",
       "metrics": {
-        "day": "2026-06-06",
-        "timestamp": "23:46"
+        "day": "2026-06-08",
+        "timestamp": "06:20"
       }
     },
     {
-      "ts": "2026-06-07 00:46:51",
+      "ts": "2026-06-08 06:20:44",
       "status": "ok",
-      "message": "Finance check 2026-06-07 00:46",
+      "message": "Finance check 2026-06-08 06:20",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "00:46"
+        "day": "2026-06-08",
+        "timestamp": "06:20"
       }
     },
     {
-      "ts": "2026-06-07 00:54:07",
+      "ts": "2026-06-08 06:20:55",
       "status": "ok",
-      "message": "Finance check 2026-06-07 00:54",
+      "message": "Finance check 2026-06-08 06:20",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "00:54"
+        "day": "2026-06-08",
+        "timestamp": "06:20"
       }
     },
     {
-      "ts": "2026-06-07 01:54:07",
+      "ts": "2026-06-08 06:21:06",
       "status": "ok",
-      "message": "Finance check 2026-06-07 01:54",
+      "message": "Finance check 2026-06-08 06:21",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "01:54"
+        "day": "2026-06-08",
+        "timestamp": "06:21"
       }
     },
     {
-      "ts": "2026-06-07 02:54:07",
+      "ts": "2026-06-08 06:21:16",
       "status": "ok",
-      "message": "Finance check 2026-06-07 02:54",
+      "message": "Finance check 2026-06-08 06:21",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "02:54"
+        "day": "2026-06-08",
+        "timestamp": "06:21"
       }
     },
     {
-      "ts": "2026-06-07 03:54:08",
+      "ts": "2026-06-08 06:21:27",
       "status": "ok",
-      "message": "Finance check 2026-06-07 03:54",
+      "message": "Finance check 2026-06-08 06:21",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "03:54"
+        "day": "2026-06-08",
+        "timestamp": "06:21"
       }
     },
     {
-      "ts": "2026-06-07 04:54:08",
+      "ts": "2026-06-08 06:21:48",
       "status": "ok",
-      "message": "Finance check 2026-06-07 04:54",
+      "message": "Finance check 2026-06-08 06:21",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "04:54"
+        "day": "2026-06-08",
+        "timestamp": "06:21"
       }
     },
     {
-      "ts": "2026-06-07 05:54:08",
+      "ts": "2026-06-08 06:21:59",
       "status": "ok",
-      "message": "Finance check 2026-06-07 05:54",
+      "message": "Finance check 2026-06-08 06:21",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "05:54"
+        "day": "2026-06-08",
+        "timestamp": "06:21"
       }
     },
     {
-      "ts": "2026-06-07 06:54:08",
+      "ts": "2026-06-08 06:22:09",
       "status": "ok",
-      "message": "Finance check 2026-06-07 06:54",
+      "message": "Finance check 2026-06-08 06:22",
       "metrics": {
-        "day": "2026-06-07",
+        "day": "2026-06-08",
+        "timestamp": "06:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:22:20",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:22:30",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:22:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:22:51",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:23:01",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:23:12",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:23:23",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:23:33",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:23:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:23:54",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:24:04",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:24:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:24:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:24:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:24:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:24:58",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:25:08",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:25:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:25:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:25:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:25:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:26:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:26:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:26:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:26:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:26:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:26:54",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:27:02",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:27:12",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:27:23",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:27:33",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:27:44",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:27:54",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:28:07",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:28:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:28:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:28:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:28:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:28:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:29:07",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:29:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:29:28",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:29:39",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:29:49",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:30:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:30:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:30:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:30:31",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:30:42",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:30:54",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:31:02",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:31:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:31:23",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:31:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:31:44",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:31:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:32:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:32:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:32:25",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:32:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:32:46",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:32:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:33:07",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:33:17",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:33:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:33:38",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:33:49",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:33:59",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:34:10",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:34:20",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:34:30",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:34:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:34:52",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:35:02",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:35:12",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:35:23",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:35:33",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:35:44",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:35:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:36:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:36:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:36:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:36:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:36:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:36:58",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:37:09",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:37:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:37:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:37:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:37:52",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:38:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:38:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:38:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:38:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:38:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:38:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:39:04",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:39:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:39:25",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:39:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:39:46",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:39:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:40:07",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:40:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:40:28",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:40:39",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:40:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:41:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:41:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:41:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:41:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:41:42",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:41:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:42:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:42:14",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:42:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:42:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:42:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:43:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:43:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:43:27",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:43:38",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:43:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:43:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:44:08",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:44:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:44:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:44:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:44:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:45:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:45:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:45:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:45:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:45:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:46:04",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:46:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:46:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:46:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:46:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:46:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:47:08",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:47:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:47:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:47:39",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:47:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:48:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:48:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:48:31",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:48:42",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:48:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:49:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:49",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:49"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:49:14",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:49",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:49"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:49:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:49",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:49"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:49:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:49",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:49"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:49:44",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:49",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:49"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:49:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:49",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:49"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:50:06",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:50",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:50"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:50:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:50",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:50"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:50:27",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:50",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:50"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:50:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:50",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:50"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:50:48",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:50",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:50"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:50:59",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:50",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:50"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:51:09",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:51",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:51"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:51:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:51",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:51"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:51:30",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:51",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:51"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:51:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:51",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:51"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:51:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:51",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:51"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:52:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:52",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:52"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:52:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:52",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:52"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:52:22",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:52",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:52"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:52:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:52",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:52"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:52:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:52",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:52"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:52:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:52",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:52"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:53:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:53",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:53"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:53:14",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:53",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:53"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:53:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:53",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:53"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:53:35",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:53",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:53"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:53:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:53",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:53"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:53:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:53",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:53"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:54:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:54",
+      "metrics": {
+        "day": "2026-06-08",
         "timestamp": "06:54"
       }
     },
     {
-      "ts": "2026-06-07 07:54:08",
+      "ts": "2026-06-08 06:54:16",
       "status": "ok",
-      "message": "Finance check 2026-06-07 07:54",
+      "message": "Finance check 2026-06-08 06:54",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "07:54"
+        "day": "2026-06-08",
+        "timestamp": "06:54"
       }
     },
     {
-      "ts": "2026-06-07 08:54:09",
+      "ts": "2026-06-08 06:54:26",
       "status": "ok",
-      "message": "Finance check 2026-06-07 08:54",
+      "message": "Finance check 2026-06-08 06:54",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "08:54"
+        "day": "2026-06-08",
+        "timestamp": "06:54"
       }
     },
     {
-      "ts": "2026-06-07 09:54:09",
+      "ts": "2026-06-08 06:54:37",
       "status": "ok",
-      "message": "Finance check 2026-06-07 09:54",
+      "message": "Finance check 2026-06-08 06:54",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "09:54"
+        "day": "2026-06-08",
+        "timestamp": "06:54"
       }
     },
     {
-      "ts": "2026-06-07 10:54:09",
+      "ts": "2026-06-08 06:54:48",
       "status": "ok",
-      "message": "Finance check 2026-06-07 10:54",
+      "message": "Finance check 2026-06-08 06:54",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "10:54"
+        "day": "2026-06-08",
+        "timestamp": "06:54"
       }
     },
     {
-      "ts": "2026-06-07 11:54:09",
+      "ts": "2026-06-08 06:54:58",
       "status": "ok",
-      "message": "Finance check 2026-06-07 11:54",
+      "message": "Finance check 2026-06-08 06:54",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "11:54"
+        "day": "2026-06-08",
+        "timestamp": "06:54"
       }
     },
     {
-      "ts": "2026-06-07 12:54:09",
+      "ts": "2026-06-08 06:55:09",
       "status": "ok",
-      "message": "Finance check 2026-06-07 12:54",
+      "message": "Finance check 2026-06-08 06:55",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "12:54"
+        "day": "2026-06-08",
+        "timestamp": "06:55"
       }
     },
     {
-      "ts": "2026-06-07 13:54:09",
+      "ts": "2026-06-08 06:55:20",
       "status": "ok",
-      "message": "Finance check 2026-06-07 13:54",
+      "message": "Finance check 2026-06-08 06:55",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "13:54"
+        "day": "2026-06-08",
+        "timestamp": "06:55"
       }
     },
     {
-      "ts": "2026-06-07 14:11:48",
+      "ts": "2026-06-08 06:55:30",
       "status": "ok",
-      "message": "Finance check 2026-06-07 14:11",
+      "message": "Finance check 2026-06-08 06:55",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "14:11"
+        "day": "2026-06-08",
+        "timestamp": "06:55"
       }
     },
     {
-      "ts": "2026-06-07 15:11:48",
+      "ts": "2026-06-08 06:55:41",
       "status": "ok",
-      "message": "Finance check 2026-06-07 15:11",
+      "message": "Finance check 2026-06-08 06:55",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "15:11"
+        "day": "2026-06-08",
+        "timestamp": "06:55"
       }
     },
     {
-      "ts": "2026-06-07 16:11:48",
+      "ts": "2026-06-08 06:55:51",
       "status": "ok",
-      "message": "Finance check 2026-06-07 16:11",
+      "message": "Finance check 2026-06-08 06:55",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "16:11"
+        "day": "2026-06-08",
+        "timestamp": "06:55"
       }
     },
     {
-      "ts": "2026-06-07 17:11:48",
+      "ts": "2026-06-08 06:56:01",
       "status": "ok",
-      "message": "Finance check 2026-06-07 17:11",
+      "message": "Finance check 2026-06-08 06:56",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "17:11"
+        "day": "2026-06-08",
+        "timestamp": "06:56"
       }
     },
     {
-      "ts": "2026-06-07 17:31:44",
+      "ts": "2026-06-08 06:56:12",
       "status": "ok",
-      "message": "Finance check 2026-06-07 17:31",
+      "message": "Finance check 2026-06-08 06:56",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "17:31"
+        "day": "2026-06-08",
+        "timestamp": "06:56"
       }
     },
     {
-      "ts": "2026-06-07 17:32:54",
+      "ts": "2026-06-08 06:56:23",
       "status": "ok",
-      "message": "Finance check 2026-06-07 17:32",
+      "message": "Finance check 2026-06-08 06:56",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "17:32"
+        "day": "2026-06-08",
+        "timestamp": "06:56"
       }
     },
     {
-      "ts": "2026-06-07 17:34:15",
+      "ts": "2026-06-08 06:56:33",
       "status": "ok",
-      "message": "Finance check 2026-06-07 17:34",
+      "message": "Finance check 2026-06-08 06:56",
       "metrics": {
-        "day": "2026-06-07",
-        "timestamp": "17:34"
+        "day": "2026-06-08",
+        "timestamp": "06:56"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:56:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:56",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:56"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:56:54",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:56",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:56"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:57:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:57",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:57"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:57:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:57",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:57"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:57:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:57",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:57"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:57:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:57",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:57"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:57:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:57",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:57"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:57:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:57",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:57"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:58:07",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:58",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:58"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:58:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:58",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:58"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:58:28",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:58",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:58"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:58:39",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:58",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:58"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:58:49",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:58",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:58"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:59:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:59",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:59"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:59:10",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:59",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:59"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:59:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:59",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:59"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:59:31",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:59",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:59"
+      }
+    },
+    {
+      "ts": "2026-06-08 06:59:52",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 06:59",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "06:59"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:00:02",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:00",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:00"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:00:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:00",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:00"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:00:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:00",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:00"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:00:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:00",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:00"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:00:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:00",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:00"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:00:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:00",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:00"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:01:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:01",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:01"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:01:25",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:01",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:01"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:01:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:01",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:01"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:01:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:01",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:01"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:01:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:01",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:01"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:02:07",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:02",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:02"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:02:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:02",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:02"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:02:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:02",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:02"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:02:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:02",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:02"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:02:49",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:02",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:02"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:03:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:03",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:03"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:03:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:03",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:03"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:03:22",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:03",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:03"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:03:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:03",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:03"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:03:42",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:03",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:03"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:03:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:03",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:03"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:04:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:04",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:04"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:04:14",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:04",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:04"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:04:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:04",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:04"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:04:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:04",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:04"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:04:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:04",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:04"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:04:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:04",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:04"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:05:06",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:05",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:05"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:05:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:05",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:05"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:05:28",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:05",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:05"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:05:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:05",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:05"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:05:48",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:05",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:05"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:05:58",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:05",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:05"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:06:09",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:06",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:06"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:06:20",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:06",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:06"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:06:30",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:06",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:06"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:06:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:06",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:06"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:06:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:06",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:06"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:07:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:07",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:07"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:07:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:07",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:07"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:07:23",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:07",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:07"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:07:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:07",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:07"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:07:44",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:07",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:07"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:07:54",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:07",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:07"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:08:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:08",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:08"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:08:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:08",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:08"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:08:27",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:08",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:08"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:08:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:08",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:08"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:08:46",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:08",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:08"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:08:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:08",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:08"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:09:07",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:09",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:09"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:09:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:09",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:09"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:09:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:09",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:09"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:09:39",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:09",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:09"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:09:49",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:09",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:09"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:10:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:10",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:10"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:10:10",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:10",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:10"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:10:31",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:10",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:10"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:10:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:10",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:10"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:10:51",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:10",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:10"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:11:02",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:11",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:11"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:11:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:11",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:11"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:11:23",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:11",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:11"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:11:33",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:11",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:11"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:11:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:11",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:11"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:11:54",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:11",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:11"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:12:04",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:12",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:12"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:12:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:12",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:12"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:12:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:12",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:12"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:12:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:12",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:12"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:12:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:12",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:12"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:12:59",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:12",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:12"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:13:08",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:13",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:13"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:13:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:13",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:13"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:13:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:13",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:13"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:13:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:13",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:13"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:13:51",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:13",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:13"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:14:01",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:14",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:14"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:14:12",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:14",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:14"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:14:22",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:14",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:14"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:14:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:14",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:14"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:14:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:14",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:14"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:14:54",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:14",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:14"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:15:04",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:15",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:15"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:15:14",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:15",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:15"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:15:25",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:15",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:15"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:15:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:15",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:15"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:15:46",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:15",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:15"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:15:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:15",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:15"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:16:07",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:16",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:16"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:16:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:16",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:16"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:16:28",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:16",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:16"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:16:42",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:16",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:16"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:16:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:16",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:16"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:17:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:17",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:17"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:17:10",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:17",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:17"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:17:20",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:17",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:17"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:17:31",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:17",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:17"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:17:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:17",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:17"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:17:52",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:17",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:17"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:18:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:18",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:18"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:18:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:18",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:18"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:18:25",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:18",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:18"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:18:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:18",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:18"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:18:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:18",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:18"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:18:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:18",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:18"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:19:06",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:19",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:19"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:19:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:19",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:19"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:19:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:19",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:19"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:19:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:19",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:19"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:19:58",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:19",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:19"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:20:08",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:20",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:20"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:20:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:20",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:20"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:20:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:20",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:20"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:20:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:20",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:20"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:20:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:20",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:20"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:21:01",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:21",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:21"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:21:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:21",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:21"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:21:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:21",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:21"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:21:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:21",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:21"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:21:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:21",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:21"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:21:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:21",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:21"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:22:04",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:22:14",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:22:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:22:35",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:22:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:22:56",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:22",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:22"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:23:06",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:23:17",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:23:27",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:23:38",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:23:49",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:23:59",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:23",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:23"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:24:10",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:24:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:24:31",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:24:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:24:52",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:24",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:24"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:25:02",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:25:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:25:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:25:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:25:44",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:25:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:25",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:25"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:26:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:26:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:26:27",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:26:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:26:48",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:26:58",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:26",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:26"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:27:09",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:27:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:27:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:27:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:27:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:27",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:27"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:28:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:28:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:28:22",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:28:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:28:42",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:28:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:28",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:28"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:29:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:29:14",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:29:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:29:35",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:29:46",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:29:56",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:29",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:29"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:30:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:30:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:30:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:30:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:30:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:30:58",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:30",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:30"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:31:09",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:31:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:31:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:31:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:31:51",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:31",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:31"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:32:01",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:32:12",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:32:22",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:32:33",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:32:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:32:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:32",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:32"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:33:03",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:33:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:33:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:33:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:33:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:33:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:33",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:33"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:34:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:34:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:34:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:34:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:34:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:34:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:34",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:34"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:35:08",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:35:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:35:30",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:35:39",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:35:49",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:35",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:35"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:36:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:36:12",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:36:22",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:36:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:36:43",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:36:53",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:36",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:36"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:37:04",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:37:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:37:25",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:37:35",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:37:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:37:56",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:37",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:37"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:38:06",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:38:17",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:38:28",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:38:38",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:38:49",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:38:59",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:38",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:38"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:39:19",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:39:30",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:39:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:39:51",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:39",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:39"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:40:01",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:40:12",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:40:23",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:40:33",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:40:44",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:40:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:40",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:40"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:41:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:41:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:41:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:41:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:41:47",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:41:57",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:41",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:41"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:42:08",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:42:18",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:42:29",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:42:40",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:42:50",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:42",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:42"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:43:00",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:43:11",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:43:21",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:43:32",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:43:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:43:52",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:43",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:43"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:44:04",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:44:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:44:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:44:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:44:45",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:44:56",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:44",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:44"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:45:06",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:45:16",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:45:27",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:45:38",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:45:48",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:45:59",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:45",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:45"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:46:10",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:46:20",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:46:31",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:46:41",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:46:51",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:46",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:46"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:47:02",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:47:13",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:47:23",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:47:34",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:47:44",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:47:55",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:47",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:47"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:48:05",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:48:15",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:48:26",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 07:48:37",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 07:48",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "07:48"
+      }
+    },
+    {
+      "ts": "2026-06-08 08:08:24",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 08:08",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "08:08"
+      }
+    },
+    {
+      "ts": "2026-06-08 08:09:36",
+      "status": "ok",
+      "message": "Finance check 2026-06-08 08:09",
+      "metrics": {
+        "day": "2026-06-08",
+        "timestamp": "08:09"
       }
     }
   ],

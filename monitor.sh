@@ -188,19 +188,27 @@ check_process \
     "ollama serve"
 
 # OpenClaw Gateway (LaunchAgent, kein PM2)
+OPENCLAW_BIN="/opt/homebrew/bin/openclaw"
 if nc -z localhost 18789 2>/dev/null; then
     log "✅ OpenClaw Gateway (:18789) läuft"
 else
-    log "⚠️ OpenClaw Gateway (:18789) gestoppt — starte neu..."
-    send_telegram "⚠️ *OpenClaw Gateway gestoppt!* Starte automatisch neu..."
-    /opt/homebrew/bin/openclaw gateway start >> "$LOG_FILE" 2>&1
-    sleep 5
-    if nc -z localhost 18789 2>/dev/null; then
-        log "✅ OpenClaw Gateway erfolgreich neugestartet"
-        send_telegram "✅ *OpenClaw Gateway wieder online! (:18789)*"
+    if [ -x "$OPENCLAW_BIN" ]; then
+        log "⚠️ OpenClaw Gateway (:18789) gestoppt — starte neu..."
+        send_telegram "⚠️ *OpenClaw Gateway gestoppt!* Starte automatisch neu..."
+        "$OPENCLAW_BIN" gateway start >> "$LOG_FILE" 2>&1 || {
+            log "⚠️ OpenClaw start fehlgeschlagen (keine Admin-Rechte?)"
+            send_telegram "⚠️ *OpenClaw Gateway:* Keine Berechtigung zum Starten. Bitte manuell prüfen."
+        }
+        sleep 5
+        if nc -z localhost 18789 2>/dev/null; then
+            log "✅ OpenClaw Gateway erfolgreich neugestartet"
+            send_telegram "✅ *OpenClaw Gateway wieder online! (:18789)*"
+        else
+            log "❌ OpenClaw Gateway Neustart fehlgeschlagen"
+            send_telegram "❌ *OpenClaw Gateway Neustart fehlgeschlagen!* Bitte manuell prüfen."
+        fi
     else
-        log "❌ OpenClaw Gateway Neustart fehlgeschlagen"
-        send_telegram "❌ *OpenClaw Gateway Neustart fehlgeschlagen!* Bitte manuell prüfen."
+        log "⚠️ OpenClaw Binary nicht gefunden ($OPENCLAW_BIN) — überspringe"
     fi
 fi
 
@@ -217,3 +225,8 @@ check_ram
 check_storage_dirs
 
 log "=== Monitor-Check Ende ==="
+
+# 7. Heartbeat Report — konsistente Datenbasis für alle Agenten
+if command -v python3 >/dev/null 2>&1 && [ -f "$PROJECT_DIR/heartbeat_reporter.py" ]; then
+    python3 "$PROJECT_DIR/heartbeat_reporter.py" >> "$LOG_FILE" 2>&1 || log "⚠️ Heartbeat Reporter fehlgeschlagen"
+fi
