@@ -1,25 +1,25 @@
 {
   "agents": {
     "resource_manager": {
-      "status": "medium",
-      "message": "RAM 46.4% | CPU 44.1%",
+      "status": "high",
+      "message": "RAM 74.8% | CPU 48.4%",
       "data": {
         "snapshot": {
-          "timestamp": "2026-06-08 08:26:49",
-          "ram_used_percent": 46.4,
-          "ram_used_mb": 22508,
-          "ram_total_mb": 48460,
-          "cpu_percent": 44.1,
+          "timestamp": "2026-06-08 08:36:09",
+          "ram_used_percent": 74.8,
+          "ram_used_mb": 36227,
+          "ram_total_mb": 48446,
+          "cpu_percent": 48.4,
           "disk_used_percent": 40.0,
           "disk_free_gb": 17.0,
           "load_avg_1m": 1.0,
-          "process_count": 1024
+          "process_count": 1044
         },
-        "load_level": "medium",
+        "load_level": "high",
         "cloud_offloaded": [],
-        "history_count": 19
+        "history_count": 37
       },
-      "ts": "2026-06-08 08:26:50"
+      "ts": "2026-06-08 08:36:10"
     },
     "monitor": {
       "status": "ok",
@@ -33,13 +33,13 @@
         ],
         "down": []
       },
-      "ts": "2026-06-08 08:26:21"
+      "ts": "2026-06-08 08:36:22"
     },
     "shopify": {
       "status": "error",
       "message": "Shopify API nicht erreichbar",
       "data": {},
-      "ts": "2026-06-08 08:22:22"
+      "ts": "2026-06-08 08:32:22"
     },
     "finance": {
       "status": "ok",
@@ -56,28 +56,27 @@
       "data": {
         "platforms": [
           "\u274c Meta (<urlopen error [SSL: CERTIFICATE_VERIFY_)",
-          "\u274c TikTok (<urlopen error _ssl.c:1015: The handshak)"
+          "\u274c TikTok (<urlopen error [SSL: CERTIFICATE_VERIFY_)"
         ]
       },
-      "ts": "2026-06-08 08:17:37"
+      "ts": "2026-06-08 08:27:39"
     },
     "learner": {
       "status": "warning",
-      "message": "Fehler: shopify(2); Warnings: micro_ping(7), monetization(1), learner(1), social(1), micro_revenue(1)",
+      "message": "Fehler: shopify(2); Warnings: micro_ping(8), monetization(1), learner(1), social(1)",
       "data": {
-        "agents_tracked": 13,
+        "agents_tracked": 14,
         "errors": {
           "shopify": 2
         },
         "warnings": {
-          "micro_ping": 7,
+          "micro_ping": 8,
           "monetization": 1,
           "learner": 1,
-          "social": 1,
-          "micro_revenue": 1
+          "social": 1
         }
       },
-      "ts": "2026-06-08 08:22:27"
+      "ts": "2026-06-08 08:32:28"
     },
     "monetization": {
       "status": "warning",
@@ -88,7 +87,7 @@
         "shopify_status": "no_config",
         "alerts": 1
       },
-      "ts": "2026-06-08 08:17:26"
+      "ts": "2026-06-08 08:27:27"
     },
     "security": {
       "status": "ok",
@@ -102,20 +101,20 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-06-08 08:26:30"
+      "ts": "2026-06-08 08:36:31"
     },
     "optimizer": {
       "status": "ok",
-      "message": "CPU:42% RAM:47% Disk:40%",
+      "message": "CPU:46% RAM:75% Disk:40%",
       "data": {
-        "ram_percent": 46.6,
-        "cpu_percent": 41.9,
+        "ram_percent": 75.1,
+        "cpu_percent": 46.5,
         "disk_percent": 40.0,
-        "ram_free_gb": 14.7,
+        "ram_free_gb": 0.5,
         "issues": [],
         "suggestions": []
       },
-      "ts": "2026-06-08 08:25:35"
+      "ts": "2026-06-08 08:35:41"
     },
     "micro_ping": {
       "status": "warning",
@@ -125,7 +124,7 @@
           "Autoheal"
         ]
       },
-      "ts": "2026-06-08 08:26:33"
+      "ts": "2026-06-08 08:35:42"
     },
     "micro_revenue": {
       "status": "warning",
@@ -152,324 +151,17 @@
         ]
       },
       "ts": "2026-06-08 08:22:40"
+    },
+    "micro_ai": {
+      "status": "ok",
+      "message": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
+      "data": {
+        "date": "2026-06-08"
+      },
+      "ts": "2026-06-08 08:27:42"
     }
   },
   "events": [
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 51.2% | CPU 42.8%",
-      "ts": "07:46:36"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:46:36"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:46:38"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:46",
-      "ts": "07:46:41"
-    },
-    {
-      "agent": "monetization",
-      "msg": "Daily: \u20ac0.00 | Sources: 0",
-      "ts": "07:46:43"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 52.1% | CPU 53.9%",
-      "ts": "07:46:46"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:46:47"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:46:48"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:46:51"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:46",
-      "ts": "07:46:51"
-    },
-    {
-      "agent": "learner",
-      "msg": "Fehler: shopify(10); Warnings: social(8), monitor(10), monetization(1)",
-      "ts": "07:46:54"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 51.9% | CPU 35.8%",
-      "ts": "07:46:57"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:46:58"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:46:59"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:47:01"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:47",
-      "ts": "07:47:02"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 52.3% | CPU 40.0%",
-      "ts": "07:47:08"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:47:08"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:47:10"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:47",
-      "ts": "07:47:13"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:47:14"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 52.1% | CPU 34.3%",
-      "ts": "07:47:18"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:47:18"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:47:20"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:47",
-      "ts": "07:47:23"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:47:25"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 51.7% | CPU 34.1%",
-      "ts": "07:47:29"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:47:29"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:47:31"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:47",
-      "ts": "07:47:34"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:47:35"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 52.1% | CPU 37.1%",
-      "ts": "07:47:39"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:47:39"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:47:41"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:47:43"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:47",
-      "ts": "07:47:44"
-    },
-    {
-      "agent": "monetization",
-      "msg": "Daily: \u20ac0.00 | Sources: 0",
-      "ts": "07:47:47"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 51.2% | CPU 38.3%",
-      "ts": "07:47:50"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:47:50"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:47:52"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:47:54"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:47",
-      "ts": "07:47:55"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 51.1% | CPU 42.1%",
-      "ts": "07:48:00"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:48:01"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:48:02"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:48",
-      "ts": "07:48:05"
-    },
-    {
-      "agent": "monetization",
-      "msg": "Daily: \u20ac0.00 | Sources: 0",
-      "ts": "07:48:08"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 51.1% | CPU 32.5%",
-      "ts": "07:48:10"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:48:11"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:48:12"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:48:15"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:48",
-      "ts": "07:48:15"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 51.8% | CPU 35.8%",
-      "ts": "07:48:21"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:48:21"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:48:23"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:48",
-      "ts": "07:48:26"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:48:27"
-    },
-    {
-      "agent": "learner",
-      "msg": "Fehler: shopify(10); Warnings: social(9), learner(1), monitor(9), monetization(2)",
-      "ts": "07:48:29"
-    },
-    {
-      "agent": "resource_manager",
-      "msg": "RAM 51.7% | CPU 37.5%",
-      "ts": "07:48:32"
-    },
-    {
-      "agent": "monitor",
-      "msg": "1/4 down",
-      "ts": "07:48:33"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Shopify API nicht erreichbar",
-      "ts": "07:48:34"
-    },
-    {
-      "agent": "finance",
-      "msg": "Finance check 2026-06-08 07:48",
-      "ts": "07:48:37"
-    },
-    {
-      "agent": "social",
-      "msg": "1 Platformen down",
-      "ts": "07:48:38"
-    },
     {
       "agent": "monitor",
       "msg": "alle Services OK",
@@ -1154,6 +846,321 @@
       "agent": "resource_manager",
       "msg": "RAM 46.4% | CPU 44.1%",
       "ts": "08:26:50"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 47.1% | CPU 52.4%",
+      "ts": "08:27:21"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:27:21"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "08:27:22"
+    },
+    {
+      "agent": "monetization",
+      "msg": "Daily: \u20ac0.00 | Sources: 0",
+      "ts": "08:27:27"
+    },
+    {
+      "agent": "learner",
+      "msg": "Fehler: shopify(2); Warnings: micro_ping(8), learner(1), monetization(1)",
+      "ts": "08:27:27"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:27:30"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "08:27:33"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:58% RAM:47% Disk:40%",
+      "ts": "08:27:37"
+    },
+    {
+      "agent": "social",
+      "msg": "2 Platformen down",
+      "ts": "08:27:39"
+    },
+    {
+      "agent": "micro_ai",
+      "msg": "KI-Tipp gesendet: Was sind heute die 3 besten Dropshipping-Produkte ",
+      "ts": "08:27:42"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 54.8% | CPU 45.4%",
+      "ts": "08:27:52"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "throttled social",
+      "ts": "08:27:52"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:28:21"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 56.2% | CPU 47.2%",
+      "ts": "08:28:23"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:28:31"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "08:28:33"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 56.1% | CPU 49.5%",
+      "ts": "08:28:54"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:29:21"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 56.4% | CPU 45.1%",
+      "ts": "08:29:26"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 49.8% CPU 47.0%",
+      "ts": "08:29:26"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:29:31"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:45% RAM:56% Disk:40%",
+      "ts": "08:29:38"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "08:29:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 55.6% | CPU 38.7%",
+      "ts": "08:29:57"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:30:21"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 55.4% | CPU 40.3%",
+      "ts": "08:30:28"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:30:31"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "08:30:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 55.4% | CPU 42.3%",
+      "ts": "08:30:59"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:31:21"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 51.5% | CPU 47.7%",
+      "ts": "08:31:30"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:31:31"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:52% RAM:52% Disk:40%",
+      "ts": "08:31:39"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "08:31:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 51.9% | CPU 54.4%",
+      "ts": "08:32:01"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:32:22"
+    },
+    {
+      "agent": "shopify",
+      "msg": "Shopify API nicht erreichbar",
+      "ts": "08:32:22"
+    },
+    {
+      "agent": "learner",
+      "msg": "Fehler: shopify(2); Warnings: micro_ping(8), monetization(1), learner(1), social(1)",
+      "ts": "08:32:28"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:32:31"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 52.5% | CPU 49.0%",
+      "ts": "08:32:32"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "08:32:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 49.2% | CPU 42.4%",
+      "ts": "08:33:03"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "throttled social",
+      "ts": "08:33:04"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:33:22"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:33:31"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 49.6% | CPU 45.8%",
+      "ts": "08:33:35"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:45% RAM:49% Disk:40%",
+      "ts": "08:33:40"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "08:33:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 49.7% | CPU 43.2%",
+      "ts": "08:34:06"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:34:22"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:34:31"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 49.2% | CPU 41.9%",
+      "ts": "08:34:37"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "08:34:41"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 52.5% | CPU 48.8%",
+      "ts": "08:35:08"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:35:22"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:35:31"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 75.3% | CPU 46.1%",
+      "ts": "08:35:39"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "1h avg: RAM 54.0% CPU 45.1%",
+      "ts": "08:35:39"
+    },
+    {
+      "agent": "optimizer",
+      "msg": "CPU:46% RAM:75% Disk:40%",
+      "ts": "08:35:41"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "5/6 Services UP",
+      "ts": "08:35:42"
+    },
+    {
+      "agent": "resource_manager",
+      "msg": "RAM 74.8% | CPU 48.4%",
+      "ts": "08:36:10"
+    },
+    {
+      "agent": "monitor",
+      "msg": "alle Services OK",
+      "ts": "08:36:22"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:1 fehlend | Suspicious:0",
+      "ts": "08:36:31"
     }
   ],
   "fixes": [],

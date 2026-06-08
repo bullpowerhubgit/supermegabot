@@ -1,5 +1,5 @@
 {
-  "cycles": 5639,
+  "cycles": 5649,
   "patterns": {
     "warning:3/4 down": 1036,
     "warning:2/4 down": 631,
@@ -7,86 +7,6 @@
   },
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-08 06:24:53",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:25:04",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:25:14",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:25:24",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:25:35",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:25:45",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:25:56",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:26:06",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:26:16",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
-    {
-      "ts": "2026-06-08 06:26:28",
-      "status": "warning",
-      "message": "1/4 down",
-      "metrics": {
-        "down_count": 1
-      }
-    },
     {
       "ts": "2026-06-08 06:26:37",
       "status": "warning",
@@ -4001,6 +3921,86 @@
     },
     {
       "ts": "2026-06-08 08:26:21",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:27:21",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:28:21",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:29:21",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:30:21",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:31:21",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:32:22",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:33:22",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:34:22",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:35:22",
+      "status": "ok",
+      "message": "alle Services OK",
+      "metrics": {
+        "down_count": 0
+      }
+    },
+    {
+      "ts": "2026-06-08 08:36:22",
       "status": "ok",
       "message": "alle Services OK",
       "metrics": {
