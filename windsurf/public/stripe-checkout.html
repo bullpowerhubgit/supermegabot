@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Stripe Checkout — RudiBot</title>
+<script src="https://js.stripe.com/v3/"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Inter',-apple-system,sans-serif;background:#f8f9fc;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.checkout-card{background:#fff;border-radius:20px;padding:48px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.1)}
+h1{font-size:28px;font-weight:800;margin-bottom:8px;color:#1a1a2e}
+p{color:#6b7280;margin-bottom:32px}
+.package-select{margin-bottom:24px}
+.package-select label{display:block;font-weight:600;margin-bottom:8px;font-size:14px}
+.package-select select{width:100%;padding:14px 16px;border:2px solid #e5e7eb;border-radius:12px;font-size:15px;font-family:inherit}
+.btn{width:100%;padding:16px;border-radius:12px;font-weight:600;font-size:16px;cursor:pointer;border:none;background:#e94560;color:#fff;transition:all .3s}
+.btn:hover{background:#d63d57}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+#error-message{color:#e94560;margin-top:16px;font-size:14px;display:none}
+.note{margin-top:24px;padding:16px;background:#f8f9fc;border-radius:12px;font-size:13px;color:#6b7280}
+.note code{background:#e5e7eb;padding:2px 6px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+
+<div class="checkout-card">
+<h1>🔒 Sicher zur Kasse</h1>
+<p>Wähle dein Paket und bezahle sicher via Stripe.</p>
+
+<div class="package-select">
+<label>Paket wählen</label>
+<select id="package">
+<option value="audit">Audit Light — 299 €</option>
+<option value="fix" selected>Audit + Fix Sprint — 990 €</option>
+<option value="care">Monitoring & Care — 199 €/Monat</option>
+</select>
+</div>
+
+<button class="btn" id="checkout-btn" onclick="startCheckout()">
+💳 Jetzt bezahlen
+</button>
+
+<div id="error-message"></div>
+
+<div class="note">
+<strong>Hinweis:</strong> Du brauchst einen Stripe-Account. Ersetze <code>YOUR_STRIPE_PUBLIC_KEY</code> in der Konfiguration.
+</div>
+</div>
+
+<script>
+// Stripe Configuration — HIER DEINEN PUBLIC KEY EINTRAGEN
+const STRIPE_PUBLIC_KEY = 'YOUR_STRIPE_PUBLIC_KEY'; // pk_live_... oder pk_test_...
+
+// Price IDs — HIER DEINE STRIPE PRICE IDs EINTRAGEN
+const PRICE_IDS = {
+    audit: 'price_audit_light',      // z.B. price_1ABC...
+    fix: 'price_fix_sprint',          // z.B. price_1DEF...
+    care: 'price_care_monthly'        // z.B. price_1GHI...
+};
+
+let stripe;
+
+// Initialize Stripe
+try {
+    if (STRIPE_PUBLIC_KEY === 'YOUR_STRIPE_PUBLIC_KEY') {
+        throw new Error('Stripe Public Key nicht konfiguriert');
+    }
+    stripe = Stripe(STRIPE_PUBLIC_KEY);
+} catch (e) {
+    console.error('Stripe Init Error:', e);
+    document.getElementById('error-message').textContent = '⚠️ Stripe ist noch nicht konfiguriert. Bitte füge deinen Public Key hinzu.';
+    document.getElementById('error-message').style.display = 'block';
+    document.getElementById('checkout-btn').disabled = true;
+}
+
+async function startCheckout() {
+    const pkg = document.getElementById('package').value;
+    const btn = document.getElementById('checkout-btn');
+    const errorDiv = document.getElementById('error-message');
+    
+    btn.disabled = true;
+    btn.textContent = '⏳ Lade Checkout...';
+    errorDiv.style.display = 'none';
+    
+    try {
+        // Option A: Redirect to Stripe Checkout (server-side session required)
+        // Du brauchst einen Backend-Endpoint, der eine Checkout Session erstellt
+        
+        const response = await fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                priceId: PRICE_IDS[pkg],
+                package: pkg,
+                mode: pkg === 'care' ? 'subscription' : 'payment'
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Server-Fehler beim Erstellen der Checkout-Session');
+        }
+        
+        const session = await response.json();
+        
+        // Redirect zu Stripe Checkout
+        const result = await stripe.redirectToCheckout({
+            sessionId: session.id
+        });
+        
+        if (result.error) {
+            throw new Error(result.error.message);
+        }
+        
+    } catch (error) {
+        console.error('Checkout Error:', error);
+        errorDiv.textContent = '❌ ' + error.message;
+        errorDiv.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = '💳 Jetzt bezahlen';
+    }
+}
+
+// Alternative: Stripe Payment Element (embedded)
+// Für eine embedded Checkout-Erfahrung ohne Redirect:
+async function embeddedCheckout() {
+    const pkg = document.getElementById('package').value;
+    
+    const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            priceId: PRICE_IDS[pkg],
+            package: pkg,
+            mode: pkg === 'care' ? 'subscription' : 'payment',
+            ui_mode: 'embedded'
+        })
+    });
+    
+    const {client_secret} = await response.json();
+    
+    const checkout = await stripe.initEmbeddedCheckout({
+        clientSecret: client_secret
+    });
+    
+    checkout.mount('#checkout-container');
+}
+</script>
+
+</body>
+</html>

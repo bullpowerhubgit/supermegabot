@@ -1,0 +1,57 @@
+#!/bin/sh
+# RUDIBOT SECRET SCANNING - Pre-commit hook
+# Prevents commits of API keys, tokens, and secrets
+
+echo "🔒 RudiBot Secret Scanning..."
+
+# Check for common secret patterns in staged files
+STAGED_FILES=$(git diff --cached --name-only)
+
+if [ -z "$STAGED_FILES" ]; then
+    exit 0
+fi
+
+# Patterns to detect
+PATTERNS="
+sk-[a-zA-Z0-9]{20,}
+sk-ant-[a-zA-Z0-9]{20,}
+SG\.[a-zA-Z0-9_-]{20,}
+ghp_[a-zA-Z0-9]{20,}
+whsec_[a-zA-Z0-9]{20,}
+ATATT[a-zA-Z0-9]{20,}
+pat[a-zA-Z0-9]{20,}
+secret_[a-zA-Z0-9]{20,}
+pk_[a-zA-Z0-9]{20,}
+xoxb-[a-zA-Z0-9_-]{20,}
+AIzaSy[a-zA-Z0-9_-]{20,}
+"
+
+VIOLATIONS=0
+
+for FILE in $STAGED_FILES; do
+    # Skip binary files and known safe files
+    case "$FILE" in
+        *.env|*.env.local|.env.example|.gitignore|*.lock|node_modules/*|dist/*|.github/hooks/*)
+            continue
+            ;;
+    esac
+    
+    # Check for patterns
+    if git diff --cached "$FILE" | grep -iE "$(echo $PATTERNS | tr '\n' '|' | sed 's/|$//')" > /dev/null 2>&1; then
+        echo "❌ Potential secret found in: $FILE"
+        VIOLATIONS=$((VIOLATIONS + 1))
+    fi
+done
+
+if [ $VIOLATIONS -gt 0 ]; then
+    echo ""
+    echo "🚨 SECRET DETECTED! 🚨"
+    echo "Move secrets to .env files (which are gitignored)"
+    echo "Use .env.example as template"
+    echo ""
+    echo "To bypass (NOT RECOMMENDED): git commit --no-verify"
+    exit 1
+fi
+
+echo "✅ No secrets detected"
+exit 0

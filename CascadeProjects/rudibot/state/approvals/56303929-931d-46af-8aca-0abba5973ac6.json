@@ -1,0 +1,27 @@
+{
+  "id": "56303929-931d-46af-8aca-0abba5973ac6",
+  "jobId": "3278ee99-ac9f-43df-9571-dbc01a6e7872",
+  "job": {
+    "jobId": "3278ee99-ac9f-43df-9571-dbc01a6e7872",
+    "type": "command",
+    "source": "test",
+    "action": "security_scan",
+    "target": "system",
+    "payload": {
+      "source": "test",
+      "command": "security_scan",
+      "target": "system"
+    },
+    "correlationId": "356d0b58-639f-49ad-a94f-540fb3a292fd",
+    "status": "received",
+    "createdAt": "2026-06-03T18:35:01.197Z",
+    "riskLevel": "yellow"
+  },
+  "status": "pending",
+  "requestedAt": "2026-06-03T18:35:01.197Z",
+  "expiresAt": "2026-06-04T18:35:01.197Z",
+  "approvedBy": null,
+  "approvedAt": null,
+  "note": null,
+  "correlationId": "356d0b58-639f-49ad-a94f-540fb3a292fd"
+}
