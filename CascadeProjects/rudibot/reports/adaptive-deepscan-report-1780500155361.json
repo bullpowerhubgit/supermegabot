@@ -1,0 +1,39 @@
+{
+  "scan_id": "adaptive-deepscan-report-1780500155362",
+  "timestamp": "2026-06-03T15:22:35.362Z",
+  "duration_ms": 1,
+  "duration_human": "0s",
+  "config": {
+    "maxDepth": 3,
+    "maxFileSize": 104857600,
+    "excludePatterns": [
+      "node_modules",
+      ".git",
+      ".cache",
+      "temp",
+      "tmp",
+      ".DS_Store",
+      "Thumbs.db"
+    ],
+    "includePatterns": [],
+    "securityScan": true,
+    "generateReports": true,
+    "autoEncrypt": false
+  },
+  "statistics": {
+    "total_files": 0,
+    "total_folders": 0,
+    "total_size": 0,
+    "security_issues": 0,
+    "file_types": [],
+    "largest_files": [],
+    "oldest_files": [],
+    "newest_files": [],
+    "size_human": "0.00 B",
+    "avg_file_size": 0,
+    "avg_file_size_human": "0.00 B"
+  },
+  "security_issues": [],
+  "patterns": {},
+  "recommendations": []
+}

@@ -1,0 +1,31 @@
+{
+  "id": "daily_report",
+  "name": "Daily Executive Report",
+  "description": "Generate daily business and system report",
+  "steps": [
+    {
+      "id": "system_metrics",
+      "type": "system_metrics",
+      "timeout": 20000
+    },
+    {
+      "id": "business_metrics",
+      "type": "business_metrics",
+      "timeout": 30000
+    },
+    {
+      "id": "security_summary",
+      "type": "security_summary",
+      "timeout": 15000
+    },
+    {
+      "id": "compile_report",
+      "type": "report_compilation",
+      "timeout": 20000
+    }
+  ],
+  "retryPolicy": {
+    "maxAttempts": 2,
+    "backoff": "linear"
+  }
+}

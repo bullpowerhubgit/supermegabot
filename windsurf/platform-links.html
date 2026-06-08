@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Plattformen - Kontoerstellung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .category {
+            background: white;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .category h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .platform {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        .platform a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .platform a:hover {
+            text-decoration: underline;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        .status.pending {
+            background: #e74c3c;
+            color: white;
+        }
+        .status.done {
+            background: #27ae60;
+            color: white;
+        }
+        .open-all {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .open-all:hover {
+            background: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 API Plattformen - Kontoerstellung</h1>
+    <p>Klicke auf die Links, um Konten zu erstellen und API-Keys zu generieren.</p>
+
+    <div class="category">
+        <h2>📋 Projektmanagement</h2>
+        <button class="open-all" onclick="openCategory('project')">Alle öffnen</button>
+        <div class="platform" data-category="project">
+            <a href="https://www.atlassian.com/software/jira" target="_blank">Jira</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="project">
+            <a href="https://trello.com/signup" target="_blank">Trello</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="project">
+            <a href="https://asana.com/signup" target="_blank">Asana</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="project">
+            <a href="https://monday.com/signup" target="_blank">Monday.com</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="project">
+            <a href="https://linear.app/signup" target="_blank">Linear</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>📱 Social Media</h2>
+        <button class="open-all" onclick="openCategory('social')">Alle öffnen</button>
+        <div class="platform" data-category="social">
+            <a href="https://twitter.com/i/flow/signup" target="_blank">Twitter/X</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="social">
+            <a href="https://www.facebook.com/r.php" target="_blank">Facebook</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="social">
+            <a href="https://www.linkedin.com/signup" target="_blank">LinkedIn</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="social">
+            <a href="https://www.instagram.com/accounts/emailsignup/" target="_blank">Instagram</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="social">
+            <a href="https://accounts.google.com/SignUp" target="_blank">YouTube</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>📧 Email Marketing</h2>
+        <button class="open-all" onclick="openCategory('email')">Alle öffnen</button>
+        <div class="platform" data-category="email">
+            <a href="https://signup.sendgrid.com/" target="_blank">SendGrid</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="email">
+            <a href="https://login.mailchimp.com/signup/" target="_blank">Mailchimp</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="email">
+            <a href="https://app.brevo.com/account/register" target="_blank">Sendinblue/Brevo</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="email">
+            <a href="https://signup.mailgun.com/" target="_blank">Mailgun</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="email">
+            <a href="https://www.klaviyo.com/signup" target="_blank">Klaviyo</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="email">
+            <a href="https://www.activecampaign.com/create-account/" target="_blank">ActiveCampaign</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="email">
+            <a href="https://app.convertkit.com/users/signup" target="_blank">ConvertKit</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>👥 CRM</h2>
+        <button class="open-all" onclick="openCategory('crm')">Alle öffnen</button>
+        <div class="platform" data-category="crm">
+            <a href="https://www.hubspot.com/products/crm" target="_blank">HubSpot</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="crm">
+            <a href="https://www.salesforce.com/de/form/signup/freetrial/sales/" target="_blank">Salesforce</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="crm">
+            <a href="https://www.pipedrive.com/signup/" target="_blank">Pipedrive</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="crm">
+            <a href="https://www.copper.com/signup" target="_blank">Copper</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="crm">
+            <a href="https://www.zoho.com/crm/signup.html" target="_blank">Zoho CRM</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>💬 Support</h2>
+        <button class="open-all" onclick="openCategory('support')">Alle öffnen</button>
+        <div class="platform" data-category="support">
+            <a href="https://www.zendesk.com/register/" target="_blank">Zendesk</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="support">
+            <a href="https://www.intercom.com/signup" target="_blank">Intercom</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="support">
+            <a href="https://freshdesk.com/signup/" target="_blank">Freshdesk</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="support">
+            <a href="https://www.helpscout.com/signup/" target="_blank">Help Scout</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>✍️ E-Signature</h2>
+        <button class="open-all" onclick="openCategory('esignature')">Alle öffnen</button>
+        <div class="platform" data-category="esignature">
+            <a href="https://www.docusign.com/products/signature" target="_blank">DocuSign</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="esignature">
+            <a href="https://www.pandadoc.com/signup/" target="_blank">PandaDoc</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>🏢 Microsoft</h2>
+        <button class="open-all" onclick="openCategory('microsoft')">Alle öffnen</button>
+        <div class="platform" data-category="microsoft">
+            <a href="https://signup.microsoft.com/" target="_blank">Microsoft 365</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>🛒 E-Commerce & Payments</h2>
+        <button class="open-all" onclick="openCategory('ecommerce')">Alle öffnen</button>
+        <div class="platform" data-category="ecommerce">
+            <a href="https://www.shopify.com/signup" target="_blank">Shopify</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="ecommerce">
+            <a href="https://dashboard.stripe.com/register" target="_blank">Stripe</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="ecommerce">
+            <a href="https://www.paypal.com/signup/account" target="_blank">PayPal</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>💬 Kommunikation</h2>
+        <button class="open-all" onclick="openCategory('communication')">Alle öffnen</button>
+        <div class="platform" data-category="communication">
+            <a href="https://slack.com/get-started" target="_blank">Slack</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="communication">
+            <a href="https://discord.com/register" target="_blank">Discord</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="communication">
+            <a href="https://web.telegram.org/" target="_blank">Telegram</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="communication">
+            <a href="https://www.twilio.com/try-twilio" target="_blank">Twilio</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>☁️ Cloud Storage</h2>
+        <button class="open-all" onclick="openCategory('cloud')">Alle öffnen</button>
+        <div class="platform" data-category="cloud">
+            <a href="https://aws.amazon.com/free/" target="_blank">AWS</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="cloud">
+            <a href="https://azure.microsoft.com/free/" target="_blank">Azure</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="cloud">
+            <a href="https://cloud.google.com/free" target="_blank">Google Cloud</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>🤖 AI & Machine Learning</h2>
+        <button class="open-all" onclick="openCategory('ai')">Alle öffnen</button>
+        <div class="platform" data-category="ai">
+            <a href="https://platform.openai.com/signup" target="_blank">OpenAI</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="ai">
+            <a href="https://console.anthropic.com/" target="_blank">Anthropic</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="ai">
+            <a href="https://opencode.ai/" target="_blank">OpenCode</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>📊 Datenbanken & Daten</h2>
+        <button class="open-all" onclick="openCategory('data')">Alle öffnen</button>
+        <div class="platform" data-category="data">
+            <a href="https://www.notion.so/signup" target="_blank">Notion</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="data">
+            <a href="https://airtable.com/create" target="_blank">Airtable</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>🚀 Deployment & Infrastructure</h2>
+        <button class="open-all" onclick="openCategory('deployment')">Alle öffnen</button>
+        <div class="platform" data-category="deployment">
+            <a href="https://signup.heroku.com/" target="_blank">Heroku</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+        <div class="platform" data-category="deployment">
+            <a href="https://dash.cloudflare.com/sign-up" target="_blank">Cloudflare</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <div class="category">
+        <h2>🔧 System & Browser</h2>
+        <button class="open-all" onclick="openCategory('system')">Alle öffnen</button>
+        <div class="platform" data-category="system">
+            <a href="https://github.com/signup" target="_blank">GitHub</a>
+            <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+        </div>
+    </div>
+
+    <script>
+        function toggleStatus(element) {
+            if (element.classList.contains('pending')) {
+                element.classList.remove('pending');
+                element.classList.add('done');
+                element.textContent = 'Erledigt';
+            } else {
+                element.classList.remove('done');
+                element.classList.add('pending');
+                element.textContent = 'Ausstehend';
+            }
+        }
+
+        function openCategory(category) {
+            const platforms = document.querySelectorAll(`[data-category="${category}"]`);
+            platforms.forEach(platform => {
+                const link = platform.querySelector('a');
+                window.open(link.href, '_blank');
+            });
+        }
+    </script>
+</body>
+</html>
