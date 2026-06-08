@@ -1,19 +1,8 @@
 {
-  "cycles": 7792,
+  "cycles": 7793,
   "patterns": {},
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-08 06:23:38",
-      "status": "medium",
-      "message": "RAM 53.2% CPU 42.4%",
-      "metrics": {
-        "ram": 53.2,
-        "cpu": 42.4,
-        "disk": 39.0,
-        "level": "medium"
-      }
-    },
     {
       "ts": "2026-06-08 06:23:49",
       "status": "medium",
@@ -5499,6 +5488,17 @@
       "metrics": {
         "ram": 46.0,
         "cpu": 41.2,
+        "disk": 40.0,
+        "level": "medium"
+      }
+    },
+    {
+      "ts": "2026-06-08 08:14:43",
+      "status": "medium",
+      "message": "RAM 45.5% CPU 45.8%",
+      "metrics": {
+        "ram": 45.5,
+        "cpu": 45.8,
         "disk": 40.0,
         "level": "medium"
       }
