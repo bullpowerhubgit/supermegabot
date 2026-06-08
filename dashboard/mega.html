@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RudiBot — Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #030508;
+  --surface: #0a0d14;
+  --card: #0f1219;
+  --card-hover: #141820;
+  --border: #1a2030;
+  --text: #e8ecf4;
+  --text-dim: #7a8599;
+  --blue: #4f8ef7;
+  --green: #10b981;
+  --red: #ef4444;
+  --orange: #f59e0b;
+  --purple: #8b5cf6;
+  --cyan: #06b6d4;
+  --pink: #ec4899;
+  --glow-blue: rgba(79,142,247,0.15);
+  --glow-green: rgba(16,185,129,0.15);
+  --radius: 12px;
+}
+body {
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a { color: var(--blue); text-decoration: none; }
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header h1 {
+  font-size: 20px;
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-right {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+.status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.header-stat {
+  font-size: 12px;
+  color: var(--text-dim);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── Layout ── */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+@media (min-width: 1200px) {
+  .layout { grid-template-columns: repeat(3, 1fr); }
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: rgba(79,142,247,0.3); }
+.card-title {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-title .icon { font-size: 16px; }
+
+/* ── Revenue ── */
+.revenue-big {
+  font-size: 42px;
+  font-weight: 900;
+  background: linear-gradient(135deg, var(--green), var(--cyan));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.revenue-label { color: var(--text-dim); font-size: 13px; margin-top: 4px; }
+
+/* ── Service Grid ── */
+.service-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+.service-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+}
+.service-item .dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.service-item .dot.on { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.service-item .dot.off { background: var(--red); }
+.service-item .dot.warn { background: var(--orange); }
+
+/* ── Platform Grid ── */
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 6px;
+}
+.platform-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--surface);
+  border-radius: 6px;
+  font-size: 11px;
+  border: 1px solid var(--border);
+}
+.platform-chip.configured { border-color: rgba(16,185,129,0.4); background: rgba(16,185,129,0.05); }
+.platform-chip.not-configured { opacity: 0.5; }
+
+/* ── Mailing ── */
+.mail-stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+}
+.mail-stat:last-child { border-bottom: none; }
+.mail-stat .val { font-weight: 600; color: var(--blue); }
+
+/* ── Marketplace ── */
+.marketplace-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.marketplace-row:last-child { border-bottom: none; }
+.marketplace-label { font-size: 14px; font-weight: 600; }
+.marketplace-status {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.marketplace-status.connected { background: var(--glow-green); color: var(--green); }
+.marketplace-status.pending { background: rgba(245,158,11,0.12); color: var(--orange); }
+
+/* ── Events Log ── */
+.event-log {
+  max-height: 260px;
+  overflow-y: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.event-item {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(26,32,48,0.5);
+  display: flex;
+  gap: 8px;
+}
+.event-item .time { color: var(--text-dim); white-space: nowrap; }
+.event-item .msg { color: var(--text); }
+
+/* ── Quick Actions ── */
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+}
+.action-btn {
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.action-btn:hover {
+  border-color: var(--blue);
+  background: var(--glow-blue);
+  transform: translateY(-1px);
+}
+
+/* ── AI Assistant ── */
+.ai-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 380px;
+  max-height: 520px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  z-index: 999;
+  transition: all 0.3s;
+}
+.ai-panel.minimized {
+  width: 56px;
+  height: 56px;
+  max-height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ai-panel.minimized .ai-content,
+.ai-panel.minimized .ai-input-area { display: none; }
+.ai-toggle {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ai-panel:not(.minimized) .ai-toggle {
+  width: 100%;
+  height: 44px;
+  background: linear-gradient(135deg, var(--blue), var(--purple));
+  border-radius: 16px 16px 0 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+.ai-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  font-size: 13px;
+  min-height: 200px;
+  max-height: 380px;
+}
+.ai-msg {
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  line-height: 1.5;
+}
+.ai-msg.bot {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.ai-msg.user {
+  background: var(--glow-blue);
+  border: 1px solid rgba(79,142,247,0.3);
+  margin-left: 20px;
+}
+.ai-input-area {
+  display: flex;
+  gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+.ai-input-area input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text);
+  font-size: 13px;
+  outline: none;
+}
+.ai-input-area input:focus { border-color: var(--blue); }
+.ai-input-area button {
+  background: var(--blue);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 14px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--surface);
+  border-radius: 8px;
+  padding: 3px;
+  margin-bottom: 16px;
+}
+.tab {
+  padding: 8px 14px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-dim);
+  transition: all 0.2s;
+}
+.tab.active { background: var(--card); color: var(--text); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.tab:hover:not(.active) { color: var(--text); }
+
+/* ── Stripe Tiers ── */
+.tier-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.tier-card {
+  padding: 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  text-align: center;
+}
+.tier-card .price {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--green);
+  margin: 6px 0;
+}
+.tier-card .name { font-size: 13px; font-weight: 600; }
+.tier-card .desc { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<div class="header">
+  <h1>RudiBot Command Center</h1>
+  <div class="header-right">
+    <div class="header-stat"><div class="status-dot"></div> System Online</div>
+    <div class="header-stat" id="hdr-revenue">€0.00</div>
+    <div class="header-stat" id="hdr-services">0/6 Services</div>
+    <div class="header-stat" id="hdr-time"></div>
+  </div>
+</div>
+
+<!-- ═══ MAIN LAYOUT ═══ -->
+<div class="layout">
+
+  <!-- Revenue Card -->
+  <div class="card">
+    <div class="card-title"><span class="icon">💰</span> Revenue (Total)</div>
+    <div class="revenue-big" id="total-revenue">€0.00</div>
+    <div class="revenue-label" id="revenue-label">0 Zahlungen</div>
+    <div style="margin-top: 14px; display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;">
+      <div style="text-align:center;padding:8px;background:var(--surface);border-radius:8px;">
+        <div style="font-size:18px;font-weight:700;color:var(--blue)" id="rev-stripe">€0</div>
+        <div style="font-size:10px;color:var(--text-dim)">Stripe</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:var(--surface);border-radius:8px;">
+        <div style="font-size:18px;font-weight:700;color:var(--orange)" id="rev-amazon">€0</div>
+        <div style="font-size:10px;color:var(--text-dim)">Amazon</div>
+      </div>
+      <div style="text-align:center;padding:8px;background:var(--surface);border-radius:8px;">
+        <div style="font-size:18px;font-weight:700;color:var(--cyan)" id="rev-ebay">€0</div>
+        <div style="font-size:10px;color:var(--text-dim)">eBay</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services Status -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🔌</span> Services</div>
+    <div class="service-grid" id="services-grid">
+      <div class="service-item"><div class="dot on"></div>API Gateway</div>
+      <div class="service-item"><div class="dot on"></div>Telegram Bot</div>
+      <div class="service-item"><div class="dot on"></div>Shopify Suite</div>
+      <div class="service-item"><div class="dot on"></div>GitHub App</div>
+      <div class="service-item"><div class="dot on"></div>Eternal Guardian</div>
+      <div class="service-item"><div class="dot on"></div>RudiBot Master</div>
+    </div>
+  </div>
+
+  <!-- Stripe Pricing -->
+  <div class="card">
+    <div class="card-title"><span class="icon">💳</span> Stripe Monetarisierung</div>
+    <div class="tier-grid" id="tiers-grid">
+      <div class="tier-card">
+        <div class="name">Audit Light</div>
+        <div class="price">€299</div>
+        <div class="desc">Einmalig</div>
+      </div>
+      <div class="tier-card">
+        <div class="name">Audit + Fix</div>
+        <div class="price">€990</div>
+        <div class="desc">Einmalig</div>
+      </div>
+      <div class="tier-card">
+        <div class="name">Monitoring</div>
+        <div class="price">€199</div>
+        <div class="desc">/Monat</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mailing Automation -->
+  <div class="card">
+    <div class="card-title"><span class="icon">📧</span> Mailing Automation</div>
+    <div class="mail-stat"><span>Templates</span><span class="val" id="mail-templates">6</span></div>
+    <div class="mail-stat"><span>Gesendete Mails</span><span class="val" id="mail-sent">0</span></div>
+    <div class="mail-stat"><span>Follow-up Queue</span><span class="val" id="mail-queue">0</span></div>
+    <div class="mail-stat"><span>Nächste Mail</span><span class="val" id="mail-next">—</span></div>
+    <div style="margin-top:12px">
+      <div class="action-btn" onclick="processEmails()">Follow-ups verarbeiten</div>
+    </div>
+  </div>
+
+  <!-- Marketplaces -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🛒</span> Marketplaces</div>
+    <div class="marketplace-row">
+      <span class="marketplace-label">Amazon</span>
+      <span class="marketplace-status" id="amazon-status">Prüfe...</span>
+    </div>
+    <div class="marketplace-row">
+      <span class="marketplace-label">eBay</span>
+      <span class="marketplace-status" id="ebay-status">Prüfe...</span>
+    </div>
+    <div class="marketplace-row">
+      <span class="marketplace-label">Shopify</span>
+      <span class="marketplace-status connected">Live</span>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px">
+      <div class="action-btn" onclick="syncAmazon()">Amazon Sync</div>
+      <div class="action-btn" onclick="syncEbay()">eBay Sync</div>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="card">
+    <div class="card-title"><span class="icon">⚡</span> Quick Actions</div>
+    <div class="actions-grid">
+      <div class="action-btn" onclick="action('test-stripe')">Stripe Test</div>
+      <div class="action-btn" onclick="action('send-report')">Weekly Report</div>
+      <div class="action-btn" onclick="action('sync-all')">Alles Sync</div>
+      <div class="action-btn" onclick="action('restart-services')">Services Restart</div>
+      <div class="action-btn" onclick="action('backup')">Backup</div>
+      <div class="action-btn" onclick="action('health-all')">Health Check All</div>
+      <div class="action-btn" onclick="action('shopify-sync')">Shopify Full Sync</div>
+      <div class="action-btn" onclick="action('social-post')">Social Post</div>
+      <div class="action-btn" onclick="action('generate-ebook')">E-Book generieren</div>
+      <div class="action-btn" onclick="action('generate-ad')">Werbung erstellen</div>
+    </div>
+  </div>
+
+  <!-- Social Media Automation -->
+  <div class="card">
+    <div class="card-title"><span class="icon">📱</span> Social Media Automation</div>
+    <div id="social-status" class="service-grid"></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <div class="action-btn" onclick="action('social-post')">Auto-Post Alle</div>
+      <div class="action-btn" onclick="action('social-schedule')">Post planen</div>
+    </div>
+  </div>
+
+  <!-- Shopify Automation -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🏪</span> Shopify Automation</div>
+    <div class="mail-stat"><span>Auto-SEO</span><span class="val" id="shopify-seo">Bereit</span></div>
+    <div class="mail-stat"><span>Auto-Fulfillment</span><span class="val" id="shopify-fulfill">Bereit</span></div>
+    <div class="mail-stat"><span>Auto-Pricing</span><span class="val" id="shopify-price">Bereit</span></div>
+    <div class="mail-stat"><span>Abandoned Cart</span><span class="val" id="shopify-cart">Bereit</span></div>
+    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+      <div class="action-btn" onclick="action('shopify-sync')">Full Sync</div>
+      <div class="action-btn" onclick="action('shopify-seo')">Auto-SEO</div>
+      <div class="action-btn" onclick="action('shopify-fulfill')">Auto-Fulfill</div>
+    </div>
+  </div>
+
+  <!-- Automation Hub (POD, E-Book, Ads, PayPal) -->
+  <div class="card">
+    <div class="card-title"><span class="icon">🤖</span> Automation Hub</div>
+    <div class="service-grid">
+      <div class="service-item"><div class="dot" id="dot-pod"></div>Print-on-Demand</div>
+      <div class="service-item"><div class="dot" id="dot-ebook"></div>E-Book Generator</div>
+      <div class="service-item"><div class="dot" id="dot-ads"></div>Werbe-Tool</div>
+      <div class="service-item"><div class="dot" id="dot-paypal"></div>PayPal</div>
+      <div class="service-item"><div class="dot" id="dot-google"></div>Google Console</div>
+      <div class="service-item"><div class="dot" id="dot-etsy"></div>Etsy</div>
+      <div class="service-item"><div class="dot" id="dot-gumroad"></div>Gumroad</div>
+      <div class="service-item"><div class="dot" id="dot-email"></div>Email Extended</div>
+    </div>
+  </div>
+
+  <!-- 48 Platforms (full width) -->
+  <div class="card span-3">
+    <div class="card-title"><span class="icon">🌐</span> Alle 48 Plattformen</div>
+    <div class="tabs" id="platform-tabs">
+      <div class="tab active" data-cat="all">Alle (48)</div>
+      <div class="tab" data-cat="social">Social (5)</div>
+      <div class="tab" data-cat="ecommerce">E-Commerce (3)</div>
+      <div class="tab" data-cat="ai">AI (4)</div>
+      <div class="tab" data-cat="communication">Komm. (4)</div>
+      <div class="tab" data-cat="email">Email (7)</div>
+      <div class="tab" data-cat="crm">CRM (5)</div>
+      <div class="tab" data-cat="project">Projekt (5)</div>
+      <div class="tab" data-cat="cloud">Cloud (3)</div>
+      <div class="tab" data-cat="support">Support (4)</div>
+    </div>
+    <div class="platform-grid" id="platforms-grid"></div>
+  </div>
+
+  <!-- Events Log (full width) -->
+  <div class="card span-3">
+    <div class="card-title"><span class="icon">📋</span> Live Event Stream</div>
+    <div class="event-log" id="events-log">
+      <div class="event-item"><span class="time">--:--</span><span class="msg">Warte auf Events...</span></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══ AI ASSISTANT ═══ -->
+<div class="ai-panel" id="ai-panel">
+  <div class="ai-toggle" onclick="toggleAI()">
+    <span>🤖 RudiBot Assistent</span>
+    <span style="font-size:12px;opacity:0.7">ESC to close</span>
+  </div>
+  <div class="ai-content" id="ai-content">
+    <div class="ai-msg bot">Hallo! Ich bin dein RudiBot Assistent. Ich kann dir bei allem helfen:<br><br>
+      • <b>Services steuern</b> — "starte telegram bot neu"<br>
+      • <b>Revenue anzeigen</b> — "zeig umsatz diese woche"<br>
+      • <b>Mails senden</b> — "sende test-mail an ..."<br>
+      • <b>Sync</b> — "sync amazon bestellungen"<br>
+      • <b>Status</b> — "welche plattformen sind aktiv?"<br>
+      • <b>Einstellungen</b> — "ändere pricing auf €499"<br><br>
+      Frag mich alles!</div>
+  </div>
+  <div class="ai-input-area">
+    <input type="text" id="ai-input" placeholder="Frag mich was..." onkeydown="if(event.key==='Enter')sendAI()">
+    <button onclick="sendAI()">→</button>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ──
+const API = window.location.hostname === 'localhost'
+  ? `http://localhost:${window.GATEWAY_PORT || 8080}`
+  : '';
+
+// ── STATE ──
+let platformData = null;
+let aiMinimized = false;
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  loadAll();
+  setInterval(loadAll, 15000);
+  setInterval(updateClock, 1000);
+  updateClock();
+});
+
+async function loadAll() {
+  await Promise.allSettled([
+    loadRevenue(),
+    loadStates(),
+    loadPlatforms(),
+    loadEvents(),
+    loadMarketplaces(),
+    loadSocial(),
+    loadAutomationHub(),
+  ]);
+}
+
+// ── REVENUE ──
+async function loadRevenue() {
+  try {
+    const res = await fetch(`${API}/api/rudibot/revenue`);
+    const data = await res.json();
+    document.getElementById('total-revenue').textContent = `€${(data.total_eur || 0).toFixed(2)}`;
+    document.getElementById('revenue-label').textContent = `${data.count || 0} Zahlungen`;
+    document.getElementById('hdr-revenue').textContent = `€${(data.total_eur || 0).toFixed(2)}`;
+    document.getElementById('rev-stripe').textContent = `€${(data.stripe_eur || data.total_eur || 0).toFixed(0)}`;
+  } catch(e) {}
+}
+
+// ── SERVICES ──
+async function loadStates() {
+  try {
+    const res = await fetch(`${API}/api/rudibot/states`);
+    const data = await res.json();
+    const grid = document.getElementById('services-grid');
+    const services = Object.entries(data);
+    let online = 0;
+    grid.innerHTML = services.map(([name, state]) => {
+      const isOn = state.status === 'online' || state.status === 'running';
+      if (isOn) online++;
+      return `<div class="service-item"><div class="dot ${isOn ? 'on' : 'off'}"></div>${name}</div>`;
+    }).join('');
+    document.getElementById('hdr-services').textContent = `${online}/${services.length} Services`;
+  } catch(e) {}
+}
+
+// ── PLATFORMS ──
+async function loadPlatforms() {
+  try {
+    const res = await fetch(`${API}/api/platforms/status`);
+    platformData = await res.json();
+    renderPlatforms('all');
+    setupPlatformTabs();
+  } catch(e) {}
+}
+
+function renderPlatforms(category) {
+  if (!platformData) return;
+  const grid = document.getElementById('platforms-grid');
+  let platforms = [];
+  for (const [cat, items] of Object.entries(platformData.categories)) {
+    if (category === 'all' || cat === category) {
+      platforms = platforms.concat(items);
+    }
+  }
+  grid.innerHTML = platforms.map(p =>
+    `<div class="platform-chip ${p.configured ? 'configured' : 'not-configured'}">
+      <span style="font-size:8px">${p.configured ? '🟢' : '⚪'}</span>
+      ${p.name}
+    </div>`
+  ).join('');
+}
+
+function setupPlatformTabs() {
+  document.querySelectorAll('#platform-tabs .tab').forEach(tab => {
+    tab.onclick = () => {
+      document.querySelectorAll('#platform-tabs .tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      renderPlatforms(tab.dataset.cat);
+    };
+  });
+}
+
+// ── EVENTS ──
+async function loadEvents() {
+  try {
+    const res = await fetch(`${API}/api/rudibot/events`);
+    const data = await res.json();
+    const log = document.getElementById('events-log');
+    if (data.events && data.events.length) {
+      log.innerHTML = data.events.slice(0, 30).map(e => {
+        const time = new Date(e.timestamp || e.created_at).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+        return `<div class="event-item"><span class="time">${time}</span><span class="msg">${e.type || e.event}: ${JSON.stringify(e.data || {}).slice(0,80)}</span></div>`;
+      }).join('');
+    }
+  } catch(e) {}
+}
+
+// ── MARKETPLACES ──
+async function loadMarketplaces() {
+  try {
+    const [amz, eb] = await Promise.allSettled([
+      fetch(`${API}/api/amazon/status`).then(r=>r.json()),
+      fetch(`${API}/api/ebay/status`).then(r=>r.json()),
+    ]);
+    const amzEl = document.getElementById('amazon-status');
+    const ebEl = document.getElementById('ebay-status');
+    if (amz.value?.status === 'connected') {
+      amzEl.className = 'marketplace-status connected'; amzEl.textContent = 'Live';
+    } else {
+      amzEl.className = 'marketplace-status pending'; amzEl.textContent = 'Keys fehlen';
+    }
+    if (eb.value?.status === 'connected') {
+      ebEl.className = 'marketplace-status connected'; ebEl.textContent = 'Live';
+    } else {
+      ebEl.className = 'marketplace-status pending'; ebEl.textContent = 'Keys fehlen';
+    }
+  } catch(e) {}
+}
+
+// ── SOCIAL ──
+async function loadSocial() {
+  try {
+    const res = await fetch(`${API}/api/social/status`);
+    const data = await res.json();
+    const grid = document.getElementById('social-status');
+    if (grid && data.platforms) {
+      grid.innerHTML = Object.entries(data.platforms).map(([id, p]) =>
+        `<div class="service-item"><div class="dot ${p.configured ? 'on' : 'off'}"></div>${p.name}</div>`
+      ).join('');
+    }
+  } catch(e) {}
+}
+
+// ── AUTOMATION HUB ──
+async function loadAutomationHub() {
+  try {
+    const [pod, ads, paypal, google, etsy, email] = await Promise.allSettled([
+      fetch(`${API}/api/automation/pod/status`).then(r=>r.json()),
+      fetch(`${API}/api/automation/ads/status`).then(r=>r.json()),
+      fetch(`${API}/api/automation/paypal/status`).then(r=>r.json()),
+      fetch(`${API}/api/automation/google/status`).then(r=>r.json()),
+      fetch(`${API}/api/automation/etsy/status`).then(r=>r.json()),
+      fetch(`${API}/api/automation/email-automation/status`).then(r=>r.json()),
+    ]);
+    const setDot = (id, ok) => { const el = document.getElementById(id); if(el) el.className = `dot ${ok ? 'on' : 'warn'}`; };
+    setDot('dot-pod', pod.value?.printful?.configured || pod.value?.printify?.configured);
+    setDot('dot-ebook', true); // Always ready with AI
+    setDot('dot-ads', ads.value?.meta_ads || ads.value?.google_ads || ads.value?.tiktok_ads);
+    setDot('dot-paypal', paypal.value?.configured);
+    setDot('dot-google', google.value?.analytics || google.value?.ads);
+    setDot('dot-etsy', etsy.value?.configured);
+    setDot('dot-gumroad', true);
+    setDot('dot-email', email.value?.resend || email.value?.sendgrid);
+  } catch(e) {}
+}
+
+// ── CLOCK ──
+function updateClock() {
+  document.getElementById('hdr-time').textContent = new Date().toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+
+// ── ACTIONS ──
+async function action(type) {
+  addAIMsg('bot', `Führe aus: ${type}...`);
+  try {
+    switch(type) {
+      case 'test-stripe':
+        const r = await fetch(`${API}/api/stripe/pricing`);
+        const d = await r.json();
+        addAIMsg('bot', `Stripe OK! ${d.tiers.length} Tiers aktiv.`);
+        break;
+      case 'send-report':
+        await fetch(`${API}/api/mailing/weekly-report`, {method:'POST'});
+        addAIMsg('bot', 'Weekly Report gesendet!');
+        break;
+      case 'sync-all':
+        await Promise.allSettled([
+          fetch(`${API}/api/amazon/sync`, {method:'POST'}),
+          fetch(`${API}/api/ebay/sync`, {method:'POST'}),
+        ]);
+        addAIMsg('bot', 'Amazon + eBay synchronisiert!');
+        break;
+      case 'health-all':
+        const states = await fetch(`${API}/api/rudibot/states`).then(r=>r.json());
+        addAIMsg('bot', `Health: ${Object.keys(states).length} Services registriert.`);
+        break;
+      case 'shopify-sync':
+        await fetch(`${API}/api/shopify-auto/full-sync`, {method:'POST'});
+        addAIMsg('bot', 'Shopify Full-Sync gestartet (SEO + Fulfillment + Abandoned Cart)!');
+        break;
+      case 'shopify-seo':
+        const seo = await fetch(`${API}/api/shopify-auto/auto-seo`, {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'}).then(r=>r.json());
+        addAIMsg('bot', `SEO optimiert: ${seo.optimized || 0} Produkte.`);
+        break;
+      case 'shopify-fulfill':
+        const ful = await fetch(`${API}/api/shopify-auto/auto-fulfill`, {method:'POST', headers:{'Content-Type':'application/json'}, body:'{}'}).then(r=>r.json());
+        addAIMsg('bot', `Auto-Fulfillment: ${ful.fulfilled || 0} Bestellungen verarbeitet.`);
+        break;
+      case 'social-post':
+        addAIMsg('bot', 'Gib deinen Post-Text ein (nutze den Chat unten) — Format: "post: Dein Text hier"');
+        break;
+      case 'generate-ebook':
+        addAIMsg('bot', 'E-Book Generator bereit. Nutze den Chat: "ebook: Dein Thema"');
+        break;
+      case 'generate-ad':
+        addAIMsg('bot', 'Werbe-Generator bereit. Nutze: "werbung: Produkt-Name"');
+        break;
+      default:
+        addAIMsg('bot', `Action "${type}" wird vorbereitet...`);
+    }
+  } catch(e) {
+    addAIMsg('bot', `Fehler: ${e.message}`);
+  }
+}
+
+async function syncAmazon() { await action('sync-all'); }
+async function syncEbay() { await action('sync-all'); }
+async function processEmails() {
+  try {
+    await fetch(`${API}/api/mailing/process`, {method:'POST'});
+    addAIMsg('bot', 'Follow-up Mails verarbeitet!');
+  } catch(e) { addAIMsg('bot', `Fehler: ${e.message}`); }
+}
+
+// ── AI ASSISTANT ──
+function toggleAI() {
+  const panel = document.getElementById('ai-panel');
+  aiMinimized = !aiMinimized;
+  panel.classList.toggle('minimized', aiMinimized);
+}
+
+function addAIMsg(role, text) {
+  const content = document.getElementById('ai-content');
+  const msg = document.createElement('div');
+  msg.className = `ai-msg ${role}`;
+  msg.innerHTML = text;
+  content.appendChild(msg);
+  content.scrollTop = content.scrollHeight;
+}
+
+async function sendAI() {
+  const input = document.getElementById('ai-input');
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = '';
+  addAIMsg('user', text);
+
+  // AI Logic — local command parsing + OpenAI fallback
+  const lower = text.toLowerCase();
+  try {
+    if (lower.includes('umsatz') || lower.includes('revenue') || lower.includes('geld')) {
+      const r = await fetch(`${API}/api/rudibot/revenue`).then(r=>r.json());
+      addAIMsg('bot', `Dein Gesamtumsatz: <b>€${(r.total_eur||0).toFixed(2)}</b> aus ${r.count||0} Zahlungen.`);
+    } else if (lower.includes('status') || lower.includes('services') || lower.includes('dienste')) {
+      const s = await fetch(`${API}/api/rudibot/states`).then(r=>r.json());
+      const names = Object.keys(s);
+      addAIMsg('bot', `${names.length} Services registriert: ${names.join(', ')}`);
+    } else if (lower.includes('plattform') || lower.includes('platform')) {
+      const p = await fetch(`${API}/api/platforms/status`).then(r=>r.json());
+      addAIMsg('bot', `${p.total} Plattformen total. ${p.configured} konfiguriert, ${p.not_configured} noch offen.`);
+    } else if (lower.includes('mail') || lower.includes('email')) {
+      const t = await fetch(`${API}/api/mailing/templates`).then(r=>r.json());
+      addAIMsg('bot', `${t.templates.length} Mail-Templates verfügbar: ${t.templates.map(x=>x.id).join(', ')}`);
+    } else if (lower.includes('amazon')) {
+      const a = await fetch(`${API}/api/amazon/status`).then(r=>r.json());
+      addAIMsg('bot', `Amazon Status: ${a.status}. ${a.message || ''}`);
+    } else if (lower.includes('ebay')) {
+      const e = await fetch(`${API}/api/ebay/status`).then(r=>r.json());
+      addAIMsg('bot', `eBay Status: ${e.status}. ${e.message || ''}`);
+    } else if (lower.includes('pricing') || lower.includes('preis')) {
+      const p = await fetch(`${API}/api/stripe/pricing`).then(r=>r.json());
+      addAIMsg('bot', p.tiers.map(t => `<b>${t.name}</b>: €${t.price} (${t.mode})`).join('<br>'));
+    } else if (lower.startsWith('post:') || lower.startsWith('poste:')) {
+      const content = text.split(':').slice(1).join(':').trim();
+      const r = await fetch(`${API}/api/social/post`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({platforms:'all', content}) });
+      const data = await r.json();
+      addAIMsg('bot', `Gepostet auf ${data.posted_to || 0} Plattformen!`);
+    } else if (lower.startsWith('ebook:') || lower.startsWith('e-book:')) {
+      const topic = text.split(':').slice(1).join(':').trim();
+      addAIMsg('bot', `Generiere E-Book über "${topic}"... (kann 30s dauern)`);
+      const r = await fetch(`${API}/api/automation/ebook/generate`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({topic}) });
+      const data = await r.json();
+      addAIMsg('bot', data.success ? `E-Book erstellt! ${data.word_count} Wörter. ID: ${data.id}` : `Fehler: ${data.error}`);
+    } else if (lower.startsWith('werbung:') || lower.startsWith('ad:')) {
+      const product = text.split(':').slice(1).join(':').trim();
+      const r = await fetch(`${API}/api/automation/ads/generate-creative`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({product_name: product}) });
+      const data = await r.json();
+      addAIMsg('bot', data.success ? `Werbung erstellt:<br>${data.creative}` : `Fehler: ${data.error}`);
+    } else if (lower.includes('shopify')) {
+      const s = await fetch(`${API}/api/shopify-auto/status`).then(r=>r.json());
+      addAIMsg('bot', `Shopify: ${s.configured ? 'Verbunden' : 'Keys fehlen'} (${s.domain}). Features: ${s.features?.join(', ')}`);
+    } else if (lower.includes('social')) {
+      const s = await fetch(`${API}/api/social/status`).then(r=>r.json());
+      addAIMsg('bot', `Social Media: ${s.configured}/${s.total} Plattformen konfiguriert.`);
+    } else if (lower.includes('sync')) {
+      await action('sync-all');
+    } else if (lower.includes('hilfe') || lower.includes('help')) {
+      addAIMsg('bot', `Ich kann:<br>• "umsatz" — Revenue<br>• "status" — Services<br>• "plattformen" — 48 Plattformen<br>• "amazon/ebay" — Marketplaces<br>• "shopify" — Shop Status<br>• "social" — Social Media<br>• "post: Text" — Auf allen Plattformen posten<br>• "ebook: Thema" — E-Book generieren<br>• "werbung: Produkt" — Werbung erstellen<br>• "sync" — Alles synchronisieren<br>• "pricing" — Stripe Tiers`);
+    } else {
+      // Try OpenAI if configured
+      try {
+        const aiRes = await fetch(`${API}/api/ai/chat`, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ message: text })
+        });
+        if (aiRes.ok) {
+          const aiData = await aiRes.json();
+          addAIMsg('bot', aiData.response || aiData.message || 'Verstanden.');
+        } else {
+          addAIMsg('bot', `Ich verstehe "${text}". Versuche: umsatz, status, plattformen, sync, mail, amazon, ebay, pricing, hilfe`);
+        }
+      } catch(e) {
+        addAIMsg('bot', `Versuche: umsatz, status, plattformen, sync, mail, amazon, ebay, pricing, hilfe`);
+      }
+    }
+  } catch(e) {
+    addAIMsg('bot', `Fehler: ${e.message}`);
+  }
+}
+
+// ESC to toggle AI
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') toggleAI();
+});
+</script>
+</body>
+</html>
