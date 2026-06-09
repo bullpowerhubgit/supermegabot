@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "updatedAt": "2026-01-01T00:00:00.000Z",
+  "queue": [],
+  "history": [],
+  "config": {
+    "maxPending": 10,
+    "autoExpireMinutes": 5,
+    "notifyOnPending": true,
+    "requireReason": true
+  }
+}

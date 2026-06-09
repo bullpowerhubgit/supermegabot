@@ -1,0 +1,29 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "72e210c7e655bc31d1057226b23818b9"
+name = "Suiteap111"
+application_url = "https://ineedit.com.co/webhooks/shopify"
+embedded = true
+
+[build]
+dev_store_url = "iwiini-td2xdoae.myshopify.com"
+
+[webhooks]
+api_version = "2026-04"
+
+[auth]
+redirect_urls = [ "https://ineedit.com.co/auth/callback" ]
+
+[app_proxy]
+url = "https://ineedit.com.co/webhooks/shopify"
+subpath = "suiteapi"
+prefix = "apps"
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "read_analytics,write_checkouts,read_checkouts,read_customers,write_customers,read_price_rules,write_price_rules,read_discounts,write_discounts,write_draft_orders,read_draft_orders,read_fulfillments,write_fulfillments,read_gift_cards,write_gift_cards,write_inventory,read_inventory,read_locations,write_marketing_events,read_marketing_events,write_order_edits,read_order_edits,read_orders,write_orders,read_products,write_products,write_reports,read_reports,read_script_tags,write_script_tags,read_shipping,write_shipping,read_content,write_content,read_themes,write_themes"
+optional_scopes = [ ]
+use_legacy_install_flow = false
+
+[app_preferences]
+url = "https://ineedit.com.co/auth/shopify"

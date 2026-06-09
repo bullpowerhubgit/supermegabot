@@ -1,0 +1,49 @@
+{
+  "auto_allow": [
+    "health_check",
+    "status_report",
+    "log_scan",
+    "safe_sync",
+    "usage_analysis",
+    "daily_report",
+    "monitoring_check",
+    "api_validation",
+    "system_metrics",
+    "business_metrics",
+    "security_summary",
+    "report_generation",
+    "security_report",
+    "cost_report",
+    "report_compilation"
+  ],
+  "approval_required": [
+    "cancel_subscription",
+    "rotate_key",
+    "notify_external",
+    "change_config",
+    "billing_action",
+    "security_scan",
+    "cost_analysis",
+    "subscription_audit",
+    "key_rotation_prepare",
+    "deepscan",
+    "subscription_scan",
+    "usage_metrics",
+    "cost_recommendations",
+    "dependency_check",
+    "security_config_audit"
+  ],
+  "hard_blocked": [
+    "delete_account",
+    "revoke_api_full_access",
+    "move_money",
+    "external_communication",
+    "production_key_change",
+    "data_deletion",
+    "account_termination",
+    "revoke_access",
+    "terminate_service",
+    "delete_data",
+    "financial_transaction"
+  ]
+}

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RudiBot Unified Dashboard</title>
+<style>
+:root{--bg:#0a0e17;--bg2:#111827;--bg3:#1f2937;--ac:#10b981;--ac2:#3b82f6;--wrn:#f59e0b;--dng:#ef4444;--txt:#e5e7eb;--txt2:#9ca3af;--bdr:#374151}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+body{background:var(--bg);color:var(--txt);min-height:100vh;display:flex;overflow:hidden}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--bdr)}
+.sidebar{width:240px;background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column}
+.sidebar-h{padding:18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
+.logo{width:32px;height:32px;background:linear-gradient(135deg,var(--ac),var(--ac2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:15px}
+.sidebar-h h1{font-size:14px;font-weight:600}.sidebar-h span{font-size:10px;color:var(--txt2);display:block}
+.nav{padding:10px;flex:1;overflow-y:auto}
+.ni{padding:9px 12px;border-radius:6px;display:flex;align-items:center;gap:8px;cursor:pointer;transition:.15s;color:var(--txt2);font-size:12px;margin-bottom:2px}
+.ni:hover,.ni.active{background:var(--bg3);color:var(--txt)}
+.ni .i{width:18px;height:18px;display:flex;align-items:center;justify-content:center;font-size:13px}
+.ns{margin-top:14px;margin-bottom:5px;padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--txt2);font-weight:600}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tb{height:52px;background:var(--bg2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.sp{padding:3px 10px;border-radius:16px;font-size:10px;font-weight:600;background:rgba(16,185,129,.15);color:var(--ac);border:1px solid rgba(16,185,129,.3)}
+.sp.w{background:rgba(245,158,11,.15);color:var(--wrn);border-color:rgba(245,158,11,.3)}
+.sp.d{background:rgba(239,68,68,.15);color:var(--dng);border-color:rgba(239,68,68,.3)}
+.tbr{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--txt2)}
+.ct{flex:1;overflow-y:auto;padding:20px}
+.cs{display:none}.cs.active{display:block}
+.st{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.st .i{width:28px;height:28px;background:var(--bg3);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px}
+.gd{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:20px}
+.cd{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:16px}
+.cd-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cd-t{font-size:11px;font-weight:600;color:var(--txt2);text-transform:uppercase;letter-spacing:.04em}
+.cd-v{font-size:24px;font-weight:700;margin-bottom:3px}
+.cd-s{font-size:11px;color:var(--txt2)}
+.cd-i{width:8px;height:8px;border-radius:50%;background:var(--txt2)}
+.cd-i.on{background:var(--ac);box-shadow:0 0 6px rgba(16,185,129,.4)}
+.cd-i.off{background:var(--dng);box-shadow:0 0 6px rgba(239,68,68,.4)}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+.sc{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:.15s}
+.sc:hover{border-color:var(--ac2);transform:translateY(-1px)}
+.si{width:36px;height:36px;border-radius:8px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.sv{flex:1;min-width:0}.sn{font-size:12px;font-weight:600;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sm{font-size:10px;color:var(--txt2)}.ss{width:7px;height:7px;border-radius:50%;flex-shrink:0}.ss.on{background:var(--ac)}.ss.off{background:var(--dng)}.ss.unk{background:var(--wrn)}
+.ag{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.ab{background:var(--bg3);border:1px solid var(--bdr);border-radius:6px;padding:10px;text-align:center;cursor:pointer;transition:.15s;font-size:11px;color:var(--txt);border:none}
+.ab:hover{background:var(--ac);color:#000}
+.ab.dg:hover{background:var(--dng);color:#fff}
+.trm{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;overflow:hidden}
+.trm-h{padding:8px 14px;background:var(--bg3);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:6px;font-size:11px;color:var(--txt2)}
+.td{width:10px;height:10px;border-radius:50%;background:var(--dng)}.td.y{background:var(--wrn)}.td.g{background:var(--ac)}
+.trm-b{padding:14px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:1.6;height:260px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.lv{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:10px;line-height:1.6;height:360px;overflow-y:auto}
+.ll{padding:2px 0;border-bottom:1px solid rgba(55,65,81,.3)}
+.lt{color:var(--txt2);margin-right:6px}.li{color:var(--ac2)}.lw{color:var(--wrn)}.le{color:var(--dng)}
+.lg{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.lk{background:var(--bg2);border:1px solid var(--bdr);border-radius:8px;padding:12px;text-decoration:none;color:var(--txt);transition:.15s;display:flex;align-items:center;gap:10px;font-size:11px;font-weight:500}
+.lk:hover{border-color:var(--ac2);transform:translateY(-1px)}.lk .i{font-size:18px}
+.inp{display:flex;border-top:1px solid var(--bdr)}.pr{padding:8px 14px;background:var(--bg3);color:var(--ac);font-family:monospace;font-size:11px;border-right:1px solid var(--bdr)}
+.in{flex:1;background:transparent;border:none;color:var(--txt);padding:8px 14px;font-family:monospace;font-size:11px;outline:none}
+@media(max-width:768px){.sidebar{width:50px}.sidebar-h h1,.sidebar-h span,.ni span{display:none}.ni{justify-content:center}.ct{padding:12px}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+  <div class="sidebar-h"><div class="logo">R</div><div><h1>RudiBot Unified</h1><span>Command & Control</span></div></div>
+  <nav class="nav">
+    <div class="ns">Overview</div>
+    <div class="ni active" data-s="dashboard"><span class="i">◉</span><span>Dashboard</span></div>
+    <div class="ni" data-s="services"><span class="i">◈</span><span>Services</span></div>
+    <div class="ns">Tools</div>
+    <div class="ni" data-s="shopify"><span class="i">◈</span><span>Shopify</span></div>
+    <div class="ni" data-s="rudibot"><span class="i">◉</span><span>RudiBot v2.0</span></div>
+    <div class="ni" data-s="army"><span class="i">◈</span><span>RudiBot Army</span></div>
+    <div class="ns">System</div>
+    <div class="ni" data-s="terminal"><span class="i">⌘</span><span>Terminal</span></div>
+    <div class="ni" data-s="logs"><span class="i">◉</span><span>Logs</span></div>
+    <div class="ni" data-s="links"><span class="i">◈</span><span>Links</span></div>
+  </nav>
+</aside>
+<div class="main">
+  <header class="tb">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span id="ov" class="sp">Checking...</span>
+      <span style="font-size:11px;color:var(--txt2)">Online: <b id="on">-</b> / <b id="tot">-</b></span>
+    </div>
+    <div class="tbr">
+      <span id="ld">Load: -</span><span id="mm">Mem: -</span><span id="ck" style="font-variant-numeric:tabular-nums">--:--:--</span>
+    </div>
+  </header>
+  <div class="ct">
+    <section class="cs active" id="dashboard">
+      <div class="st"><div class="i">◉</div>System Overview</div>
+      <div class="gd">
+        <div class="cd"><div class="cd-h"><span class="cd-t">CPU Cores</span><div class="cd-i on"></div></div><div class="cd-v" id="cc">-</div><div class="cd-s">Total cores</div></div>
+        <div class="cd"><div class="cd-h"><span class="cd-t">Memory</span><div class="cd-i"></div></div><div class="cd-v" id="mt">-</div><div class="cd-s" id="mf">Free: -</div></div>
+        <div class="cd"><div class="cd-h"><span class="cd-t">Uptime</span><div class="cd-i on"></div></div><div class="cd-v" id="up">-</div><div class="cd-s">System running</div></div>
+        <div class="cd"><div class="cd-h"><span class="cd-t">Platform</span><div class="cd-i on"></div></div><div class="cd-v" id="pl" style="font-size:18px">-</div><div class="cd-s" id="ar">-</div></div>
+      </div>
+      <div class="st"><div class="i">◈</div>Quick Actions</div>
+      <div class="ag" style="margin-bottom:20px">
+        <button class="ab" onclick="ra('pm2 status')">PM2 Status</button>
+        <button class="ab" onclick="ra('pm2 restart all')">Restart All</button>
+        <button class="ab" onclick="ra('git status')">Git Status</button>
+        <button class="ab dg" onclick="ra('pm2 stop all')">Stop All</button>
+        <button class="ab" onclick="ra('curl http://localhost:3201/health')">Guardian</button>
+      </div>
+      <div class="st"><div class="i">◉</div>Services</div><div class="sg" id="ds"></div>
+    </section>
+
+    <section class="cs" id="services">
+      <div class="st"><div class="i">◈</div>All Services</div><div class="sg" id="as"></div>
+    </section>
+
+    <section class="cs" id="shopify">
+      <div class="st"><div class="i">◈</div>Shopify</div>
+      <div class="ag" style="margin-bottom:16px">
+        <button class="ab" onclick="window.open('http://localhost:3000','_blank')">Dash (3000)</button>
+        <button class="ab" onclick="window.open('http://localhost:8082','_blank')">Dash (8082)</button>
+        <button class="ab" onclick="ra('curl -s http://localhost:3000/api/health || echo offline')">Health</button>
+      </div>
+    </section>
+
+    <section class="cs" id="rudibot">
+      <div class="st"><div class="i">◉</div>RudiBot v2.0 — Main Server</div>
+      <div class="ag" style="margin-bottom:16px">
+        <button class="ab" onclick="window.open('http://localhost:3200','_blank')">Open (3200)</button>
+        <button class="ab" onclick="ra('curl -s http://localhost:3200/health')">Health</button>
+        <button class="ab" onclick="ra('curl -s http://localhost:3200/api/v1/status')">API Status</button>
+        <button class="ab" onclick="ra('pm2 logs rudibot --lines 20')">PM2 Logs</button>
+        <button class="ab" onclick="ra('cat /Users/rudolfsarkany/CascadeProjects/rudibot/.env | grep -E \"^(PORT|SHOPIFY|GITHUB|OPENAI|STRIPE)\" | head -10')">Env Preview</button>
+        <button class="ab" onclick="ra('ps aux | grep -E \"rudibot|node.*3200\" | grep -v grep')">Process Check</button>
+      </div>
+      <div class="trm"><div class="trm-h"><div style="display:flex;gap:5px"><div class="td"></div><div class="td y"></div><div class="td g"></div></div><span>RudiBot v2.0 Output</span></div><div class="trm-b" id="to">Run a command above...</div></div>
+    </section>
+
+    <section class="cs" id="army">
+      <div class="st"><div class="i">◈</div>RudiBot Army</div>
+      <div class="ag" style="margin-bottom:16px">
+        <button class="ab" onclick="ra('pgrep -f army_commander && echo RUNNING || echo STOPPED')">Army</button>
+        <button class="ab" onclick="ra('pgrep -f meta_supervisor && echo RUNNING || echo STOPPED')">Supervisor</button>
+        <button class="ab" onclick="ra('tail -20 /Users/rudolfsarkany/rudibot-eternal/logs/eternal.log')">Guardian Logs</button>
+        <button class="ab" onclick="ra('python3 /Users/rudolfsarkany/rudibot-eternal/eternal_guardian.py --status')">Guardian</button>
+      </div>
+      <div class="trm"><div class="trm-h"><div style="display:flex;gap:5px"><div class="td"></div><div class="td y"></div><div class="td g"></div></div><span>Army Output</span></div><div class="trm-b" id="ao">Run a command above...</div></div>
+    </section>
+
+    <section class="cs" id="terminal">
+      <div class="st"><div class="i">⌘</div>Command Center</div>
+      <div class="trm" style="height:calc(100vh - 140px);display:flex;flex-direction:column">
+        <div class="trm-h"><div style="display:flex;gap:5px"><div class="td"></div><div class="td y"></div><div class="td g"></div></div><span>Unified Terminal v1.0</span></div>
+        <div class="trm-b" id="mtm" style="flex:1;height:auto">RudiBot Unified Terminal
+Allowed: pm2, git, docker, python3, node, npm, ls, ps, cat, tail, curl, etc.
+
+</div>
+        <div class="inp"><div class="pr">rudibot@unified:~$</div><input type="text" class="in" id="ti" placeholder="Enter command..." autocomplete="off"></div>
+      </div>
+    </section>
+
+    <section class="cs" id="logs">
+      <div class="st"><div class="i">◉</div>Log Viewer</div>
+      <div class="ag" style="margin-bottom:14px">
+        <button class="ab" onclick="lg('eternal')">Eternal</button>
+        <button class="ab" onclick="lg('windsurf')">Windsurf</button>
+        <button class="ab" onclick="lg('rudibot')">RudiBot v2</button>
+        <button class="ab" onclick="lg('pm2')">PM2</button>
+      </div>
+      <div class="lv" id="lv">Select a log source...</div>
+    </section>
+
+    <section class="cs" id="links">
+      <div class="st"><div class="i">◈</div>Quick Links</div>
+      <div class="lg">
+        <a class="lk" href="http://localhost:3000" target="_blank"><span class="i">◈</span>Shopify (3000)</a>
+        <a class="lk" href="http://localhost:8082" target="_blank"><span class="i">◈</span>Shopify (8082)</a>
+        <a class="lk" href="http://localhost:8080" target="_blank"><span class="i">◉</span>Gateway (8080)</a>
+        <a class="lk" href="http://localhost:3001" target="_blank"><span class="i">◉</span>API (3001)</a>
+        <a class="lk" href="http://localhost:3200" target="_blank"><span class="i">◈</span>RudiBot v2.0 (3200)</a>
+        <a class="lk" href="http://localhost:3201" target="_blank"><span class="i">◉</span>Guardian (3201)</a>
+        <a class="lk" href="http://localhost:9900" target="_blank"><span class="i">◈</span>Master (9900)</a>
+        <a class="lk" href="http://localhost:9000" target="_blank"><span class="i">◉</span>This (9000)</a>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+// Navigation
+document.querySelectorAll('.ni').forEach(item=>{item.addEventListener('click',()=>{document.querySelectorAll('.ni').forEach(i=>i.classList.remove('active'));document.querySelectorAll('.cs').forEach(s=>s.classList.remove('active'));item.classList.add('active');document.getElementById(item.dataset.s).classList.add('active')})});
+
+// Clock
+function uc(){document.getElementById('ck').textContent=new Date().toLocaleTimeString('de-DE')}
+setInterval(uc,1000);uc();
+
+// System Info
+async function si(){
+  try{const d=await(await fetch('/api/system')).json();
+  document.getElementById('cc').textContent=d.cpus;
+  document.getElementById('mt').textContent=(d.totalMem/1024/1024/1024).toFixed(1)+' GB';
+  document.getElementById('mf').textContent='Free: '+(d.freeMem/1024/1024/1024).toFixed(1)+' GB';
+  document.getElementById('up').textContent=fu(d.uptime);
+  document.getElementById('pl').textContent=d.platform+' ('+d.arch+')';
+  document.getElementById('ld').textContent='Load: '+d.loadavg[0].toFixed(2);
+  document.getElementById('mm').textContent='Mem: '+((1-d.freeMem/d.totalMem)*100).toFixed(0)+'%';
+  }catch(e){}}
+function fu(s){const d=Math.floor(s/86400),h=Math.floor((s%86400)/3600),m=Math.floor((s%3600)/60);return d>0?d+'d '+h+'h':h+'h '+m+'m'}
+
+// Health
+let hd={};
+async function ch(){
+  try{hd=await(await fetch('/api/health')).json();rs();
+  const on=Object.values(hd).filter(s=>s.status==='online').length,tot=Object.values(hd).length;
+  document.getElementById('on').textContent=on;document.getElementById('tot').textContent=tot;
+  const el=document.getElementById('ov');
+  if(on===tot){el.textContent='All Online';el.className='sp'}
+  else if(on>0){el.textContent=(tot-on)+' Down';el.className='sp w'}
+  else{el.textContent='All Offline';el.className='sp d'}
+  }catch(e){console.error(e)}
+}
+
+function rs(){
+  const ic={windsurfApi:'◉',windsurfGateway:'◈',rudibotV2:'◉',eternalGuardian:'◈',shopifyDashboard:'◉',rudibotMaster:'◈',shopifyAlt:'◉',pm2:'◉',armyCommander:'◈',metaSupervisor:'◉'};
+  let h='';
+  for(const[k,v]of Object.entries(hd)){
+    const sc=v.status==='online'?'on':v.status==='offline'?'off':'unk';
+    const mt=v.port?'Port '+v.port:v.pid?'PID '+v.pid:'Process';
+    h+=`<div class="sc" onclick="window.open('${v.url||'#'}','_blank')" style="cursor:pointer"><div class="si">${ic[k]||'◆'}</div><div class="sv"><div class="sn">${v.name}</div><div class="sm">${mt}</div></div><div class="ss ${sc}"></div></div>`;
+  }
+  document.getElementById('as').innerHTML=h;
+  const d=document.getElementById('ds');if(d)d.innerHTML=h;
+}
+
+// Actions
+async function ra(cmd,cwd){
+  const t=document.getElementById('mtm');
+  if(t){t.textContent+=`\n$ ${cmd}\n[...]\n`;t.scrollTop=t.scrollHeight}
+  try{
+    const d=await(await fetch('/api/action/exec',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({command:cmd,cwd})})).json();
+    const o=(d.stdout||'')+(d.stderr?'\n[ERR]\n'+d.stderr:'');
+    if(t){t.textContent=t.textContent.replace('[...]',(o||'(no output)').trim()+'\n');t.scrollTop=t.scrollHeight}
+    if(cmd.includes('rudibot')||cmd.includes('3200')||cmd.includes('cascade')){const x=document.getElementById('to');if(x)x.textContent=o||'(no output)'}
+    if(cmd.includes('army')||cmd.includes('meta')||cmd.includes('guardian')){const x=document.getElementById('ao');if(x)x.textContent=o||'(no output)'}
+    return d;
+  }catch(e){if(t)t.textContent=t.textContent.replace('[...]','Error: '+e.message+'\n');return{error:e.message}}
+}
+
+document.getElementById('ti')?.addEventListener('keydown',async e=>{if(e.key==='Enter'){const c=e.target.value.trim();if(!c)return;e.target.value='';await ra(c)}});
+
+// Logs
+async function lg(srv){
+  const v=document.getElementById('lv');v.textContent='Loading...';
+  try{
+    const d=await(await fetch('/api/logs/'+srv)).json();
+    if(d.lines){v.innerHTML=d.lines.map((l,i)=>{
+      let c='ll';
+      if(/ERROR|error|FEHLER/.test(l))c+=' le';else if(/WARN/.test(l))c+=' lw';else if(/INFO|OK/.test(l))c+=' li';
+      return`<div class="${c}"><span class="lt">${(i+1).toString().padStart(3,'0')}</span>${l.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>`
+    }).join('');}
+    else if(d.files){v.innerHTML=d.files.map(f=>`<div class="ll"><span class="lt">FILE</span>${f}</div>`).join('');}
+    else v.textContent=JSON.stringify(d,null,2);
+  }catch(e){v.textContent='Error: '+e.message}
+}
+
+// ── RudiBot AI Assistant ──────────────────────────────────────────
+const assistant = {
+  open: false,
+  history: [],
+  el: null,
+  btn: null,
+
+  init() {
+    // Floating button
+    this.btn = document.createElement('div');
+    this.btn.innerHTML = '🤖';
+    this.btn.style.cssText = 'position:fixed;bottom:20px;right:20px;width:50px;height:50px;background:linear-gradient(135deg,var(--ac),var(--ac2));border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;box-shadow:0 4px 15px rgba(16,185,129,.4);z-index:9999;transition:.2s;user-select:none';
+    this.btn.onclick = () => this.toggle();
+    this.btn.onmouseenter = () => this.btn.style.transform = 'scale(1.1)';
+    this.btn.onmouseleave = () => this.btn.style.transform = 'scale(1)';
+    document.body.appendChild(this.btn);
+
+    // Chat window
+    this.el = document.createElement('div');
+    this.el.style.cssText = 'position:fixed;bottom:80px;right:20px;width:380px;height:500px;background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;display:none;flex-direction:column;z-index:9998;box-shadow:0 8px 32px rgba(0,0,0,.5);overflow:hidden';
+    this.el.innerHTML = `
+      <div style="padding:12px 16px;background:linear-gradient(135deg,var(--ac),var(--ac2));border-radius:12px 12px 0 0;display:flex;align-items:center;gap:8px">
+        <span style="font-size:18px">🤖</span>
+        <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#000">RudiBot AI</div><div style="font-size:10px;color:rgba(0,0,0,.7)">Universeller Assistent</div></div>
+        <button onclick="assistant.toggle()" style="background:none;border:none;color:#000;font-size:18px;cursor:pointer;padding:0 4px">×</button>
+      </div>
+      <div id="ach" style="flex:1;overflow-y:auto;padding:12px;font-size:12px;line-height:1.5"></div>
+      <div style="display:flex;border-top:1px solid var(--bdr);padding:8px;gap:6px">
+        <input type="text" id="aci" placeholder="Frag mich was..." style="flex:1;background:var(--bg3);border:1px solid var(--bdr);border-radius:6px;color:var(--txt);padding:8px 12px;font-size:12px;outline:none" onkeydown="if(event.key==='Enter')assistant.send()">
+        <button onclick="assistant.send()" style="background:var(--ac);color:#000;border:none;border-radius:6px;padding:8px 16px;font-size:12px;font-weight:600;cursor:pointer">Send</button>
+      </div>
+      <div style="padding:4px 8px;border-top:1px solid var(--bdr);display:flex;gap:4px;flex-wrap:wrap">
+        <button onclick="assistant.quick('status all')" style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:3px 8px;font-size:9px;color:var(--txt2);cursor:pointer">Status</button>
+        <button onclick="assistant.quick('restart guardian')" style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:3px 8px;font-size:9px;color:var(--txt2);cursor:pointer">Restart</button>
+        <button onclick="assistant.quick('logs eternal')" style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:3px 8px;font-size:9px;color:var(--txt2);cursor:pointer">Logs</button>
+        <button onclick="assistant.quick('shopify theme')" style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:3px 8px;font-size:9px;color:var(--txt2);cursor:pointer">Shopify</button>
+        <button onclick="assistant.quick('webhook list')" style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:3px 8px;font-size:9px;color:var(--txt2);cursor:pointer">Webhooks</button>
+        <button onclick="assistant.quick('backup all')" style="background:var(--bg3);border:1px solid var(--bdr);border-radius:4px;padding:3px 8px;font-size:9px;color:var(--txt2);cursor:pointer">Backup</button>
+      </div>
+    `;
+    document.body.appendChild(this.el);
+
+    // Welcome message
+    this.add('ai', `Hallo! Ich bin **RudiBot AI** 🤖\n\nIch kann dir helfen mit:\n• **Status** aller Services prüfen\n• Services **restarten/starten/stoppen**\n• **Logs** analysieren\n• **Shopify** & Webhooks konfigurieren\n• **Backups** erstellen\n• **API-Keys** verwalten\n\nWas möchtest du tun?`);
+  },
+
+  toggle() {
+    this.open = !this.open;
+    this.el.style.display = this.open ? 'flex' : 'none';
+    if (this.open) document.getElementById('aci')?.focus();
+  },
+
+  add(role, text) {
+    const ch = document.getElementById('ach');
+    const div = document.createElement('div');
+    div.style.cssText = 'margin-bottom:10px;padding:10px 12px;border-radius:8px;max-width:90%;' + (role === 'user' ? 'background:var(--ac);color:#000;margin-left:auto' : 'background:var(--bg3);color:var(--txt)');
+    div.innerHTML = text.replace(/\n/g, '<br>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/• (.*?)<br>/g, '• <span style="color:var(--ac)">$1</span><br>');
+    ch.appendChild(div);
+    ch.scrollTop = ch.scrollHeight;
+  },
+
+  quick(text) {
+    document.getElementById('aci').value = text;
+    this.send();
+  },
+
+  async send() {
+    const input = document.getElementById('aci');
+    const msg = input.value.trim();
+    if (!msg) return;
+    input.value = '';
+
+    this.add('user', msg);
+    this.add('ai', '<em>Denke nach...</em>');
+
+    try {
+      // Try OpenClaw first, fallback to local
+      let res;
+      try {
+        res = await fetch('/api/assistant/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }), timeout: 15000 });
+      } catch {
+        res = await fetch('/api/assistant/local', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg }) });
+      }
+
+      const data = await res.json();
+      const ch = document.getElementById('ach');
+      ch.lastChild.remove(); // remove "thinking"
+      this.add('ai', data.response || data.error || 'Keine Antwort erhalten');
+
+      // Execute known commands
+      await this.executeCommand(msg);
+    } catch (e) {
+      const ch = document.getElementById('ach');
+      ch.lastChild.remove();
+      this.add('ai', '❌ Fehler: ' + e.message);
+    }
+  },
+
+  async executeCommand(msg) {
+    const lower = msg.toLowerCase();
+
+    if (lower.includes('status') || lower.includes('health')) {
+      await ch();
+      const on = Object.values(hd).filter(s => s.status === 'online').length;
+      const tot = Object.values(hd).length;
+      this.add('ai', `📊 **System Status**\n${on}/${tot} Services online\n${on === tot ? '✅ Alles OK' : '⚠️ Einige Services offline'}`);
+    }
+
+    if (lower.includes('restart') && lower.includes('guardian')) {
+      this.add('ai', '🔄 Starte Guardian neu...');
+      await ra('cd /Users/rudolfsarkany/rudibot-eternal && python3 eternal_guardian.py --api-only');
+    }
+
+    if (lower.includes('logs') && lower.includes('eternal')) {
+      this.add('ai', '📋 Lade Eternal Logs...');
+      await lg('eternal');
+      document.querySelector('.ni[data-s="logs"]').click();
+    }
+
+    if (lower.includes('shopify')) {
+      this.add('ai', '🛍️ **Shopify**\nDashboard: http://localhost:3000\nAlt: http://localhost:8082\n\nMöchtest du:\n• Theme bearbeiten\n• Produkte verwalten\n• Webhooks einrichten\n• Orders prüfen');
+    }
+
+    if (lower.includes('webhook')) {
+      this.add('ai', '🔗 **Webhooks**\n\nSetup: /Users/rudolfsarkany/rudibot-eternal/WEBHOOK_SETUP.md\n\nEndpunkte:\n• Guardian: http://localhost:3201/api/v1/webhooks\n• RudiBot v2: http://localhost:3200/webhooks\n\nVerfügbare Events:\n• shopify/order/create\n• stripe/payment.success\n• github/push\n• telegram/message');
+    }
+
+    if (lower.includes('backup')) {
+      this.add('ai', '💾 Starte Backup...');
+      await ra('python3 /Users/rudolfsarkany/rudibot-eternal/eternal_guardian.py --backup');
+    }
+  }
+};
+
+// Init assistant when DOM ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => assistant.init());
+} else {
+  assistant.init();
+}
+
+// Init
+si();ch();
+setInterval(()=>{si();ch()},5000);
+</script>
+</body>
+</html>

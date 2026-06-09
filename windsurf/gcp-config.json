@@ -1,0 +1,30 @@
+{
+  "_note": "ZENTRALE CONFIG: RudiBot-Secure-API/gcp-config.json",
+  "projectId": "gen-lang-client-0895465231",
+  "projectNumber": "1023902745882",
+  "projectName": "Shopy",
+  "enabledApis": [
+    "agentregistry",
+    "aiplatform",
+    "apphub",
+    "apptopology",
+    "cloudapiregistry",
+    "cloudtrace",
+    "compute",
+    "dataform",
+    "iam",
+    "iamconnectors",
+    "iap",
+    "logging",
+    "modelarmor",
+    "networksecurity",
+    "networkservices",
+    "notebooks",
+    "observability",
+    "storage-component",
+    "telemetry",
+    "texttospeech"
+  ],
+  "billingAccount": "0119F3-58784D-13BCB6",
+  "authMethod": "gcloud"
+}
