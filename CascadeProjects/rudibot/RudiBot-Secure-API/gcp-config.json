@@ -1,0 +1,21 @@
+{
+  "project": {
+    "id": "rudibot-gcp-project",
+    "name": "RudiBot GCP Project",
+    "number": "123456789012"
+  },
+  "service_account": {
+    "client_email": "rudibot@rudibot-gcp-project.iam.gserviceaccount.com",
+    "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...\n-----END PRIVATE KEY-----"
+  },
+  "apis": {
+    "youtube": {
+      "api_key": "AIzaSyA_tRUr5LdzzqNjp1d7am5Kli_wcTQ77Ck",
+      "enabled": true
+    },
+    "google_ai": {
+      "api_key": "AIzaSyA_tRUr5LdzzqNjp1d7am5Kli_wcTQ77Ck",
+      "enabled": true
+    }
+  }
+}

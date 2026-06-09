@@ -1,0 +1,67 @@
+{
+  "updatedAt": "2026-06-03T21:08:48.755Z",
+  "cases": [
+    [
+      "case_1780520928755_sfep1",
+      {
+        "id": "case_1780520928755_sfep1",
+        "type": "tax",
+        "title": "Test Steuerfall 2024",
+        "description": "Testfall für Steuererklärung 2024",
+        "priority": 1,
+        "status": "open",
+        "createdAt": "2026-06-03T21:08:48.755Z",
+        "updatedAt": "2026-06-03T21:08:48.755Z",
+        "deadline": null,
+        "assignedTo": null,
+        "tags": [
+          "test",
+          "steuer"
+        ],
+        "documents": [],
+        "actions": [
+          {
+            "id": "action_0",
+            "type": "document_request",
+            "status": "pending",
+            "assignedTo": null,
+            "dueDate": "2026-06-06",
+            "notes": "",
+            "completedAt": null
+          },
+          {
+            "id": "action_1",
+            "type": "filing_deadline",
+            "status": "pending",
+            "assignedTo": null,
+            "dueDate": "2026-06-17",
+            "notes": "",
+            "completedAt": null
+          },
+          {
+            "id": "action_2",
+            "type": "payment_required",
+            "status": "pending",
+            "assignedTo": null,
+            "dueDate": "2026-06-08",
+            "notes": "",
+            "completedAt": null
+          }
+        ],
+        "timeline": [
+          {
+            "timestamp": "2026-06-03T21:08:48.755Z",
+            "action": "created",
+            "description": "Fall erstellt",
+            "user": "system"
+          }
+        ],
+        "metadata": {
+          "estimatedResolution": "2-4 Wochen",
+          "complexity": "medium",
+          "impact": "medium"
+        }
+      }
+    ]
+  ]
+}

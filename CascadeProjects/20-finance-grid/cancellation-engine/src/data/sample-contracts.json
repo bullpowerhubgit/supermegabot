@@ -1,0 +1,17 @@
+[
+  {
+    "provider": "exampleSaaS",
+    "contractName": "Example SaaS Pro",
+    "customerNumber": "ACC-884422",
+    "nextRenewalDate": "2026-08-15",
+    "confirmationEmail": "you@example.com",
+    "fullName": "Rudolf Sarkany"
+  },
+  {
+    "provider": "netflix",
+    "contractName": "Netflix Premium",
+    "nextRenewalDate": "2026-06-30",
+    "confirmationEmail": "you@example.com",
+    "fullName": "Rudolf Sarkany"
+  }
+]

@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "rewrites": [
+    { "source": "/api/status",          "destination": "/api/status-v2.js" },
+    { "source": "/webhook/telegram",    "destination": "/api/webhook-telegram-v2.js" },
+    { "source": "/webhook/control",     "destination": "/api/webhook-control-v2.js" },
+    { "source": "/api/health",          "destination": "/api/status-v2.js" },
+    { "source": "/api/agent-help/(.*)", "destination": "/api/agent-help.js" },
+    { "source": "/revenue-first",       "destination": "/public/revenue-first-dashboard.html" },
+    { "source": "/finanz-assistant",    "destination": "/public/finanz-assistant-dashboard.html" }
+  ]
+}
