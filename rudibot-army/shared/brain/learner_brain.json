@@ -1,5 +1,5 @@
 {
-  "cycles": 494,
+  "cycles": 496,
   "patterns": {
     "warning:Fehler: shopify(10); Warnings: monitor(10), monetization(3),": 2,
     "warning:Fehler: shopify(11); Warnings: monitor(11), social(6)": 2,
@@ -209,7 +209,9 @@
     "warning:Fehler: shopify(2); Warnings: micro_ping(10), monitor(9), le": 2,
     "warning:Fehler: shopify(1); Warnings: micro_ping(2), monitor(2)": 2,
     "warning:Fehler: shopify(2); Warnings: micro_ping(7), monitor(7), lea": 2,
-    "warning:Fehler: shopify(2); Warnings: monitor(9), micro_revenue(1), ": 1
+    "warning:Fehler: shopify(2); Warnings: monitor(9), micro_revenue(1), ": 1,
+    "warning:Fehler: shopify(2); Warnings: resource_manager(17), micro_pi": 1,
+    "warning:Fehler: shopify(2); Warnings: micro_ping(7), monitor(7), mon": 1
   },
   "registers": {},
   "history": [
@@ -4163,6 +4165,22 @@
       "message": "Fehler: shopify(2); Warnings: micro_ping(9), monitor(8), learner(1)",
       "metrics": {
         "tracked": 11
+      }
+    },
+    {
+      "ts": "2026-06-09 12:26:14",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: resource_manager(17), micro_ping(8), monitor(8), monetization(1), social(1)",
+      "metrics": {
+        "tracked": 11
+      }
+    },
+    {
+      "ts": "2026-06-09 12:31:14",
+      "status": "warning",
+      "message": "Fehler: shopify(2); Warnings: micro_ping(7), monitor(7), monetization(2), social(1), learner(1), micro_revenue(1)",
+      "metrics": {
+        "tracked": 12
       }
     }
   ],
