@@ -1,1060 +1,12 @@
 {
-  "cycles": 7183,
+  "cycles": 7314,
   "patterns": {
     "warning:3/4 down": 1044,
-    "warning:2/4 down": 1432,
+    "warning:2/4 down": 1563,
     "warning:1/4 down": 4351
   },
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-09 01:56:55",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 01:57:55",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 01:58:55",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 01:59:55",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:00:56",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:01:56",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:02:56",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:03:56",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:04:57",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:05:57",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:06:57",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:07:57",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:08:58",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:09:58",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:10:58",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:11:58",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:12:58",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:13:59",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:14:59",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:15:59",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:16:59",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:18:00",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:19:00",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:20:00",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:21:00",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:22:00",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:23:00",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:24:01",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:25:08",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:26:08",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:27:08",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:28:09",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:29:09",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:30:09",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:31:09",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:32:09",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:33:10",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:34:10",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:35:13",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:36:14",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:37:14",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:38:15",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:39:15",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:40:15",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:41:17",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:42:17",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:43:18",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:44:18",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:45:18",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:46:18",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:47:18",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:48:19",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:49:19",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:50:19",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:51:19",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:52:19",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:53:20",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:54:20",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:55:23",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:56:23",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:57:23",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:58:23",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:59:23",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:00:23",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:01:23",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:02:23",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:03:24",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:04:24",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:05:25",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:06:25",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:07:25",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:08:25",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:09:26",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:10:26",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:11:26",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:12:26",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:13:26",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:14:26",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:15:27",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:16:27",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:17:27",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:18:28",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:19:28",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:20:28",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:21:28",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:22:29",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:23:29",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:24:30",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:25:35",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:26:35",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:27:35",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:28:36",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:29:37",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:30:37",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:31:37",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:32:37",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:33:37",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:34:37",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:35:38",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:36:39",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:37:39",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:38:40",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:39:40",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:40:40",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:41:43",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:42:43",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:43:44",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:44:44",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:45:44",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:46:44",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:47:44",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:48:44",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:49:44",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:50:45",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:51:45",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:52:45",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:53:45",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:54:46",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:55:52",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:56:52",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:57:52",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:58:52",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:59:52",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:00:53",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:01:53",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:02:53",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:03:53",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:04:53",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:05:54",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:06:54",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:07:55",
-      "status": "warning",
-      "message": "2/4 down",
-      "metrics": {
-        "down_count": 2
-      }
-    },
     {
       "ts": "2026-06-09 04:08:55",
       "status": "warning",
@@ -4001,6 +2953,1054 @@
     },
     {
       "ts": "2026-06-09 10:19:41",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:20:41",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:21:41",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:22:41",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:23:42",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:24:42",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:25:42",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:26:42",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:27:42",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:28:42",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:29:43",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:30:43",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:31:43",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:32:43",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:33:43",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:34:43",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:35:44",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:36:44",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:37:45",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:38:45",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:39:45",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:40:45",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:41:45",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:42:45",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:43:46",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:44:46",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:45:46",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:46:46",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:47:46",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:48:47",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:49:47",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:50:47",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:51:47",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:52:47",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:53:48",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:54:48",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:55:48",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:56:48",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:57:48",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:58:48",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 10:59:49",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:00:49",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:01:49",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:02:49",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:03:50",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:04:50",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:05:50",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:06:50",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:07:50",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:08:51",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:09:51",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:10:51",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:11:51",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:12:51",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:13:52",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:14:52",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:15:52",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:16:53",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:17:53",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:18:53",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:19:53",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:20:53",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:21:54",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:22:54",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:23:54",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:24:54",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:25:55",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:26:55",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:27:55",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:28:55",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:29:56",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:30:56",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:31:56",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:32:56",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:33:57",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:34:57",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:35:58",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:36:58",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:37:58",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:38:58",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:39:59",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:40:59",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:41:59",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:42:59",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:43:59",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:45:00",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:46:00",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:47:00",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:48:00",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:49:00",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:50:00",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:51:01",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:52:01",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:53:01",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:54:02",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:55:02",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:56:02",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:57:02",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:58:03",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 11:59:03",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:00:03",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:01:04",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:02:04",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:03:04",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:04:05",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:05:05",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:06:05",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:07:05",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:08:05",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:09:06",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:10:06",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:11:06",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:12:06",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:13:06",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:14:06",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:15:06",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:16:06",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:17:07",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:18:07",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:19:07",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:20:07",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:21:07",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:22:07",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:23:07",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:24:08",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:25:08",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:26:07",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:27:12",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:28:12",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:29:12",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:30:12",
+      "status": "warning",
+      "message": "2/4 down",
+      "metrics": {
+        "down_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 12:31:12",
       "status": "warning",
       "message": "2/4 down",
       "metrics": {
