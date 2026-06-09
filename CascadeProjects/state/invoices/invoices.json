@@ -1,0 +1,53 @@
+{
+  "updatedAt": "2026-06-03T19:43:06.144Z",
+  "invoices": [
+    {
+      "id": "inv_1780515763534_kep4a",
+      "source": "test",
+      "detectedAt": "2026-06-03T19:42:43.534Z",
+      "raw": "Rechnung Nr. 12345\nVon: Adobe Systems\nBetrag: 29,99 EUR\nDatum: 03.06.2026\nKündigungsfrist: 1 Monat zum Monatsende",
+      "extracted": {
+        "amount": 29.99,
+        "currency": "EUR",
+        "invoiceNumber": "Nr.",
+        "date": "2026-06-03",
+        "vendor": "Adobe Systems",
+        "category": "design",
+        "cancellationPeriod": "1 Monat zum Monatsende",
+        "isRecurring": false
+      }
+    },
+    {
+      "id": "inv_1780515786143_rfipl",
+      "source": "test",
+      "detectedAt": "2026-06-03T19:43:06.143Z",
+      "raw": "Rechnung Nr. 12345\nVon: Adobe Systems\nBetrag: 29,99 EUR\nDatum: 03.06.2026\nKündigungsfrist: 1 Monat zum Monatsende",
+      "extracted": {
+        "amount": 29.99,
+        "currency": "EUR",
+        "invoiceNumber": "Nr.",
+        "date": "2026-06-03",
+        "vendor": "Adobe Systems",
+        "category": "design",
+        "cancellationPeriod": "1 Monat zum Monatsende",
+        "isRecurring": false
+      }
+    }
+  ],
+  "contracts": [
+    [
+      "Adobe Systems",
+      {
+        "vendor": "Adobe Systems",
+        "category": "design",
+        "lastInvoiceAmount": 29.99,
+        "lastInvoiceDate": "2026-06-03",
+        "cancellationPeriod": "1 Monat zum Monatsende",
+        "isRecurring": false,
+        "invoiceCount": 2,
+        "firstDetected": "2026-06-03T19:42:43.534Z",
+        "lastDetected": "2026-06-03T19:43:06.143Z"
+      }
+    ]
+  ]
+}

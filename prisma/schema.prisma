@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Order {
+  id           String   @id @default(cuid())
+  shopifyId    String   @unique
+  shop         String
+  totalPrice   Float
+  currency     String
+  status       String
+  customerEmail String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("orders")
+}
+
+model RevenueSnapshot {
+  id          String   @id @default(cuid())
+  shop        String
+  totalOrders Int
+  totalRevenue Float
+  currency    String
+  snapshotAt  DateTime @default(now())
+
+  @@map("revenue_snapshots")
+}
+
+model AgentLog {
+  id        String   @id @default(cuid())
+  agent     String
+  event     String
+  payload   Json?
+  level     String   @default("info")
+  createdAt DateTime @default(now())
+
+  @@map("agent_logs")
+}
+
+model ServiceStatus {
+  id          String   @id @default(cuid())
+  service     String   @unique
+  status      String
+  lastChecked DateTime @default(now())
+  meta        Json?
+
+  @@map("service_status")
+}

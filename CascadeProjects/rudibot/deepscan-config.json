@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "created": "2026-06-03T15:21:04.855Z",
+  "scanSettings": {
+    "maxDepth": 5,
+    "maxFileSize": 104857600,
+    "excludePatterns": [
+      "node_modules",
+      ".git",
+      ".cache",
+      "temp",
+      "tmp",
+      ".DS_Store",
+      "Thumbs.db"
+    ],
+    "securityScan": true,
+    "generateReports": true,
+    "autoEncrypt": false
+  },
+  "securitySettings": {
+    "sensitiveExtensions": [
+      ".env",
+      ".key",
+      ".pem",
+      ".p12",
+      ".pfx",
+      ".jks"
+    ],
+    "sensitivePatterns": [
+      "password",
+      "api[_-]?key",
+      "secret",
+      "token",
+      "private[_-]?key"
+    ],
+    "encryptionEnabled": false,
+    "backupSensitiveFiles": true
+  },
+  "reporting": {
+    "maxReports": 100,
+    "reportFormat": "json",
+    "includeStatistics": true,
+    "includeRecommendations": true,
+    "autoCleanup": true
+  },
+  "notifications": {
+    "enabled": false,
+    "webhook": null,
+    "email": null
+  }
+}

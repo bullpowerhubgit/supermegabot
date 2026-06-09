@@ -1,0 +1,27 @@
+{
+  "id": "3cca79de-033d-470f-bfc6-7f05a8a363ca",
+  "jobId": "23e720d9-aebb-44cd-bef4-c81b950b6497",
+  "job": {
+    "jobId": "23e720d9-aebb-44cd-bef4-c81b950b6497",
+    "type": "command",
+    "source": "test",
+    "action": "delete_account",
+    "target": "system",
+    "payload": {
+      "source": "test",
+      "command": "delete_account",
+      "target": "system"
+    },
+    "correlationId": "c4cfec07-28a2-43a9-a55f-ca0d9cb1587f",
+    "status": "received",
+    "createdAt": "2026-06-03T18:35:07.295Z",
+    "riskLevel": "red"
+  },
+  "status": "pending",
+  "requestedAt": "2026-06-03T18:35:07.295Z",
+  "expiresAt": "2026-06-04T18:35:07.295Z",
+  "approvedBy": null,
+  "approvedAt": null,
+  "note": null,
+  "correlationId": "c4cfec07-28a2-43a9-a55f-ca0d9cb1587f"
+}

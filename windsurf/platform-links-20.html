@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 21 API Plattformen - Kontoerstellung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .platform {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin: 10px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .platform a {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .platform a:hover {
+            text-decoration: underline;
+        }
+        .status {
+            padding: 8px 15px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .status.pending {
+            background: #e74c3c;
+            color: white;
+        }
+        .status.done {
+            background: #27ae60;
+            color: white;
+        }
+        .open-all {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px 0;
+            font-size: 16px;
+            width: 100%;
+        }
+        .open-all:hover {
+            background: #2980b9;
+        }
+        .counter {
+            text-align: center;
+            font-size: 18px;
+            margin: 10px 0;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Top 21 API Plattformen - Kontoerstellung</h1>
+    <p>Die 21 wichtigsten Plattformen für deine Automation.</p>
+    
+    <button class="open-all" onclick="openAll()">🔗 Alle 21 öffnen</button>
+    <div class="counter" id="counter">Fortschritt: 0/21 erledigt</div>
+
+    <div class="platform">
+        <a href="https://www.shopify.com/signup" target="_blank">🛒 Shopify</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://dashboard.stripe.com/register" target="_blank">💳 Stripe</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://www.hubspot.com/products/crm" target="_blank">👥 HubSpot</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://slack.com/get-started" target="_blank">💬 Slack</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://www.atlassian.com/software/jira" target="_blank">📋 Jira</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://trello.com/signup" target="_blank">📝 Trello</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://signup.sendgrid.com/" target="_blank">📧 SendGrid</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://login.mailchimp.com/signup/" target="_blank">📨 Mailchimp</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://aws.amazon.com/free/" target="_blank">☁️ AWS</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://cloud.google.com/free" target="_blank">🌐 Google Cloud</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://platform.openai.com/signup" target="_blank">🤖 OpenAI</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://github.com/signup" target="_blank">🐙 GitHub</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://www.notion.so/signup" target="_blank">📓 Notion</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://airtable.com/create" target="_blank">📊 Airtable</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://signup.heroku.com/" target="_blank">🚀 Heroku</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://dash.cloudflare.com/sign-up" target="_blank">🛡️ Cloudflare</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://www.salesforce.com/de/form/signup/freetrial/sales/" target="_blank">🏢 Salesforce</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://www.pipedrive.com/signup/" target="_blank">💼 Pipedrive</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://www.zendesk.com/register/" target="_blank">🎫 Zendesk</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://www.intercom.com/signup" target="_blank">💡 Intercom</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+    <div class="platform">
+        <a href="https://opencode.ai/" target="_blank">🧠 OpenCode</a>
+        <span class="status pending" onclick="toggleStatus(this)">Ausstehend</span>
+    </div>
+
+    <div style="background:#e8f5e9; border:1px solid #4caf50; padding:12px; margin:15px 0; border-radius:8px; display:none;" id="save-notice">
+        ✅ Fortschritt wird automatisch gespeichert!
+    </div>
+    <div style="background:#fff3e0; border:1px solid #ff9800; padding:12px; margin:15px 0; border-radius:8px; display:none;" id="popup-warning">
+        ⚠️ Dein Browser blockiert Popups. Erlaube Popups für diese Seite, um alle Tabs zu öffnen.
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'rudibot_platform_progress';
+
+        function toggleStatus(element) {
+            const platformName = element.parentElement.querySelector('a').textContent.trim();
+            if (element.classList.contains('pending')) {
+                element.classList.remove('pending');
+                element.classList.add('done');
+                element.textContent = 'Erledigt';
+            } else {
+                element.classList.remove('done');
+                element.classList.add('pending');
+                element.textContent = 'Ausstehend';
+            }
+            updateCounter();
+            saveProgress();
+        }
+
+        function updateCounter() {
+            const total = document.querySelectorAll('.status').length;
+            const done = document.querySelectorAll('.status.done').length;
+            document.getElementById('counter').textContent = `Fortschritt: ${done}/${total} erledigt`;
+        }
+
+        function openAll() {
+            const links = document.querySelectorAll('.platform a');
+            let blocked = 0;
+            links.forEach((link, index) => {
+                setTimeout(() => {
+                    const win = window.open(link.href, '_blank');
+                    if (!win || win.closed || typeof win.closed == 'undefined') {
+                        blocked++;
+                    }
+                }, index * 300);
+            });
+            setTimeout(() => {
+                if (blocked > 0) {
+                    document.getElementById('popup-warning').style.display = 'block';
+                }
+            }, links.length * 300 + 500);
+        }
+
+        function saveProgress() {
+            const progress = {};
+            document.querySelectorAll('.platform').forEach((plat, idx) => {
+                const status = plat.querySelector('.status');
+                progress[idx] = status.classList.contains('done');
+            });
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+            document.getElementById('save-notice').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('save-notice').style.display = 'none';
+            }, 2000);
+        }
+
+        function loadProgress() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const progress = JSON.parse(saved);
+                    document.querySelectorAll('.platform').forEach((plat, idx) => {
+                        const status = plat.querySelector('.status');
+                        if (progress[idx]) {
+                            status.classList.remove('pending');
+                            status.classList.add('done');
+                            status.textContent = 'Erledigt';
+                        }
+                    });
+                }
+            } catch (e) {
+                console.error('Could not load progress:', e);
+            }
+            updateCounter();
+        }
+
+        function resetProgress() {
+            if (confirm('Wirklich alles zurücksetzen?')) {
+                localStorage.removeItem(STORAGE_KEY);
+                document.querySelectorAll('.status').forEach(el => {
+                    el.classList.remove('done');
+                    el.classList.add('pending');
+                    el.textContent = 'Ausstehend';
+                });
+                updateCounter();
+            }
+        }
+
+        // Beim Laden: Fortschritt wiederherstellen
+        loadProgress();
+    </script>
+    <button class="open-all" onclick="resetProgress()" style="background:#e74c3c; margin-top:10px;">🗑️ Fortschritt zurücksetzen</button>
+</body>
+</html>

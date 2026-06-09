@@ -1,0 +1,29 @@
+{
+  "updatedAt": "2026-06-03T20:52:57.808Z",
+  "reminders": [
+    {
+      "id": "rem_cancellation_deadline_1780515763544",
+      "type": "cancellation_deadline",
+      "title": "Test Kündigungsfrist",
+      "deadline": "2026-12-31",
+      "details": {
+        "subscription": "Test Abo"
+      },
+      "createdAt": "2026-06-03T19:42:43.544Z",
+      "notifications": [],
+      "status": "active"
+    },
+    {
+      "id": "rem_cancellation_deadline_1780515786167",
+      "type": "cancellation_deadline",
+      "title": "Test Kündigungsfrist",
+      "deadline": "2026-12-31",
+      "details": {
+        "subscription": "Test Abo"
+      },
+      "createdAt": "2026-06-03T19:43:06.167Z",
+      "notifications": [],
+      "status": "active"
+    }
+  ]
+}

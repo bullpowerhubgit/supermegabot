@@ -72,13 +72,15 @@ document.addEventListener('DOMContentLoaded', () => {
       const idx = accounts.findIndex(a => a.email === email);
       if (idx >= 0) {
         accounts.splice(idx, 1);
+        await chrome.storage.local.set({ accounts });
+        setStatus('Bereit');
+        loadData();
       } else {
-        // In echter App: OAuth-Flow starten
-        accounts.push({ email, linkedAt: Date.now(), token: null });
+        // Öffne Web-App OAuth-Flow in neuem Tab
+        chrome.tabs.create({ url: 'http://localhost:3005/auth/google' });
+        setStatus('Login im Browser...');
+        setTimeout(() => setStatus('Bereit'), 2000);
       }
-      await chrome.storage.local.set({ accounts });
-      setStatus('Bereit');
-      loadData();
     } catch (e) {
       setStatus('Fehler', 'error');
       console.error(e);
@@ -89,7 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const { passwords = [] } = await chrome.storage.local.get('passwords');
     const p = passwords[idx];
     if (p) {
-      await navigator.clipboard.writeText(p.password);
+      const ta = document.createElement('textarea');
+      ta.value = p.password;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
       setStatus('Kopiert!');
       setTimeout(() => setStatus('Bereit'), 1200);
     }

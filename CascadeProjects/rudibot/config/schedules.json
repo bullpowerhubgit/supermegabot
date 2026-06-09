@@ -1,0 +1,69 @@
+{
+  "monitoring_loop": {
+    "enabled": true,
+    "interval": "*/5 * * * *",
+    "actions": [
+      "health_check",
+      "api_validation",
+      "log_scan"
+    ],
+    "description": "APIs, Server, Logs, Health, Response-Zeiten, Fehler"
+  },
+  "research_loop": {
+    "enabled": true,
+    "interval": "0 7 * * *",
+    "actions": [
+      "check_releases",
+      "check_documentation",
+      "scan_new_sources"
+    ],
+    "description": "Neue APIs, Dokumentationsänderungen, Anbieteränderungen"
+  },
+  "optimization_loop": {
+    "enabled": true,
+    "interval": "0 8 * * *",
+    "actions": [
+      "cost_analysis",
+      "subscription_audit",
+      "unused_tools_scan"
+    ],
+    "description": "Kosten, Reibung, unnötige Tools, ineffiziente Abos"
+  },
+  "security_weekly": {
+    "enabled": true,
+    "interval": "0 6 * * 1",
+    "actions": [
+      "security_scan",
+      "deep_scan",
+      "dependency_check"
+    ],
+    "description": "Wöchentliche Sicherheitsprüfung"
+  },
+  "daily_summary": {
+    "enabled": true,
+    "interval": "0 20 * * *",
+    "actions": [
+      "daily_report",
+      "executive_summary"
+    ],
+    "description": "Täglicher Zusammenfassungsbericht"
+  },
+  "execution_loop": {
+    "enabled": true,
+    "interval": "*/30 * * * * *",
+    "actions": [
+      "process_queue",
+      "cleanup_tasks"
+    ],
+    "description": "Task Queue Verarbeitung"
+  },
+  "approval_loop": {
+    "enabled": true,
+    "interval": "*/60 * * * * *",
+    "actions": [
+      "cleanup_expired_approvals",
+      "escalate_pending"
+    ],
+    "description": "Freigaben prüfen, Escalation"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "python.defaultInterpreterPath": "/Library/Developer/CommandLineTools/usr/bin/python3",
+  "python.analysis.typeCheckingMode": "basic",
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/*.pyc": true
+  }
+}

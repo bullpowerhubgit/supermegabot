@@ -1,9 +1,10 @@
-require('dotenv').config();
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bodyParser = require('body-parser');
+const cors = require('cors');
 const path = require('path');
 
 const app = express();
@@ -19,6 +20,7 @@ const ALLOWED_EMAILS = (process.env.ALLOWED_EMAILS || DEFAULT_EMAILS)
 const syncStore = new Map();
 const users = new Map();
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(session({
   secret: process.env.SESSION_SECRET || 'default-secret-change-me',
@@ -37,7 +39,7 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
   passport.use(new GoogleStrategy({
     clientID: GOOGLE_CLIENT_ID,
     clientSecret: GOOGLE_CLIENT_SECRET,
-    callbackURL: '/auth/google/callback'
+    callbackURL: 'http://localhost:3005/auth/google/callback'
   }, (accessToken, refreshToken, profile, done) => {
   const email = (profile.emails && profile.emails[0] && profile.emails[0].value) || '';
   const normalized = email.toLowerCase();
@@ -79,8 +81,11 @@ if (GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET) {
   app.get('/auth/google/callback', (req, res) => res.redirect('/?error=oauth-not-configured'));
 }
 
-app.get('/auth/logout', (req, res) => {
-  req.logout(() => res.redirect('/'));
+app.get('/auth/logout', (req, res, next) => {
+  req.logout((err) => {
+    if (err) return next(err);
+    res.redirect('/');
+  });
 });
 
 app.get('/api/me', (req, res) => {
@@ -126,7 +131,7 @@ app.get('/api/dashboard', (req, res) => {
     if (data.passwords) allPasswords.push(...data.passwords);
   }
   res.json({
-    user: req.user,
+    user: req.user ? { id: req.user.id, email: req.user.email, name: req.user.name, photo: req.user.photo } : null,
     totalPasswords: allPasswords.length,
     clients: syncStore.size,
     accounts: ALLOWED_EMAILS.map(e => ({ email: e, connected: !!users.get(e) }))
@@ -161,6 +166,12 @@ app.get('/api/stats', (req, res) => {
     clients: syncStore.size,
     uptime: Math.floor(process.uptime())
   });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error('[Error]', err.stack || err.message || err);
+  res.status(500).json({ error: 'Interner Serverfehler.' });
 });
 
 app.listen(PORT, () => {

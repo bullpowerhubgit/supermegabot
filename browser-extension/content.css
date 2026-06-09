@@ -1,0 +1,314 @@
+/* RudiBot Widget Styles — injected into all pages */
+
+#rudibot-widget {
+    position: fixed !important;
+    bottom: 24px !important;
+    right: 24px !important;
+    z-index: 2147483647 !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    color: #fff !important;
+    pointer-events: none !important;
+}
+
+#rudibot-widget * {
+    box-sizing: border-box !important;
+    pointer-events: auto !important;
+}
+
+/* ── FAB Button ── */
+#rudibot-fab {
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5) !important;
+    transition: all 0.2s ease !important;
+    position: relative !important;
+    user-select: none !important;
+}
+
+#rudibot-fab:hover {
+    transform: scale(1.1) !important;
+    box-shadow: 0 6px 28px rgba(99, 102, 241, 0.7) !important;
+}
+
+.rudibot-fab-icon {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 24px !important;
+}
+
+/* ── Status Dot ── */
+#rudibot-status-dot {
+    width: 12px !important;
+    height: 12px !important;
+    border-radius: 50% !important;
+    position: absolute !important;
+    bottom: 2px !important;
+    right: 2px !important;
+    border: 2px solid #1a1a2e !important;
+}
+
+.status-online { background: #22c55e !important; }
+.status-offline { background: #ef4444 !important; }
+
+/* ── Panel ── */
+#rudibot-panel {
+    position: absolute !important;
+    bottom: 68px !important;
+    right: 0 !important;
+    width: 360px !important;
+    max-height: 520px !important;
+    background: rgba(15, 15, 30, 0.97) !important;
+    backdrop-filter: blur(20px) !important;
+    border: 1px solid rgba(99, 102, 241, 0.3) !important;
+    border-radius: 16px !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(99, 102, 241, 0.1) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    transition: all 0.2s ease !important;
+}
+
+.rudibot-hidden {
+    display: none !important;
+    opacity: 0 !important;
+    transform: translateY(10px) !important;
+}
+
+/* ── Header ── */
+#rudibot-header {
+    background: linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.1)) !important;
+    border-bottom: 1px solid rgba(99,102,241,0.2) !important;
+    padding: 12px 14px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+}
+
+.rudibot-title {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+.rudibot-logo { font-size: 22px !important; }
+
+.rudibot-name {
+    font-weight: 700 !important;
+    font-size: 15px !important;
+    color: #e0e0ff !important;
+}
+
+.rudibot-status {
+    font-size: 11px !important;
+    color: #888 !important;
+}
+
+.rudibot-header-btns {
+    display: flex !important;
+    gap: 6px !important;
+}
+
+.rudibot-header-btns button {
+    background: rgba(255,255,255,0.08) !important;
+    border: none !important;
+    color: #aaa !important;
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    font-size: 13px !important;
+    transition: all 0.15s !important;
+}
+
+.rudibot-header-btns button:hover {
+    background: rgba(99,102,241,0.3) !important;
+    color: #fff !important;
+}
+
+/* ── Quick Buttons ── */
+#rudibot-quick-btns {
+    display: flex !important;
+    gap: 6px !important;
+    padding: 10px 12px !important;
+    border-bottom: 1px solid rgba(255,255,255,0.06) !important;
+    overflow-x: auto !important;
+    flex-wrap: nowrap !important;
+}
+
+#rudibot-quick-btns::-webkit-scrollbar { height: 3px !important; }
+#rudibot-quick-btns::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.4) !important; border-radius: 2px !important; }
+
+.rb-qbtn {
+    background: rgba(99,102,241,0.15) !important;
+    border: 1px solid rgba(99,102,241,0.25) !important;
+    color: #c0c0ff !important;
+    padding: 5px 10px !important;
+    border-radius: 20px !important;
+    cursor: pointer !important;
+    font-size: 11.5px !important;
+    white-space: nowrap !important;
+    transition: all 0.15s !important;
+}
+
+.rb-qbtn:hover:not(:disabled) {
+    background: rgba(99,102,241,0.35) !important;
+    border-color: rgba(99,102,241,0.6) !important;
+    color: #fff !important;
+}
+
+.rb-qbtn:disabled { opacity: 0.4 !important; cursor: not-allowed !important; }
+
+/* ── Messages ── */
+#rudibot-messages {
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 12px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+    max-height: 280px !important;
+}
+
+#rudibot-messages::-webkit-scrollbar { width: 4px !important; }
+#rudibot-messages::-webkit-scrollbar-thumb { background: rgba(99,102,241,0.3) !important; border-radius: 2px !important; }
+
+.rb-message {
+    display: flex !important;
+    gap: 8px !important;
+    align-items: flex-start !important;
+}
+
+.rb-message.rb-user {
+    flex-direction: row-reverse !important;
+}
+
+.rb-avatar {
+    font-size: 18px !important;
+    flex-shrink: 0 !important;
+    margin-top: 2px !important;
+}
+
+.rb-bubble {
+    background: rgba(255,255,255,0.07) !important;
+    border: 1px solid rgba(255,255,255,0.08) !important;
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    max-width: 85% !important;
+    font-size: 13px !important;
+    color: #e0e0ff !important;
+    line-height: 1.5 !important;
+    word-break: break-word !important;
+}
+
+.rb-message.rb-user .rb-bubble {
+    background: rgba(99,102,241,0.25) !important;
+    border-color: rgba(99,102,241,0.3) !important;
+}
+
+.rb-bubble strong { color: #a78bfa !important; }
+.rb-bubble code {
+    background: rgba(0,0,0,0.3) !important;
+    padding: 1px 4px !important;
+    border-radius: 3px !important;
+    font-family: monospace !important;
+    font-size: 12px !important;
+    color: #67e8f9 !important;
+}
+
+/* ── Typing Indicator ── */
+.rb-typing-indicator {
+    display: flex !important;
+    gap: 4px !important;
+    align-items: center !important;
+    padding: 8px 14px !important;
+}
+
+.rb-typing-indicator span {
+    width: 6px !important;
+    height: 6px !important;
+    border-radius: 50% !important;
+    background: #6366f1 !important;
+    animation: rbTyping 1.2s infinite !important;
+}
+
+.rb-typing-indicator span:nth-child(2) { animation-delay: 0.2s !important; }
+.rb-typing-indicator span:nth-child(3) { animation-delay: 0.4s !important; }
+
+@keyframes rbTyping {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+    40% { opacity: 1; transform: scale(1.2); }
+}
+
+/* ── Input Area ── */
+#rudibot-input-area {
+    display: flex !important;
+    gap: 8px !important;
+    padding: 10px 12px !important;
+    border-top: 1px solid rgba(255,255,255,0.06) !important;
+    background: rgba(0,0,0,0.2) !important;
+}
+
+#rudibot-input {
+    flex: 1 !important;
+    background: rgba(255,255,255,0.07) !important;
+    border: 1px solid rgba(99,102,241,0.25) !important;
+    color: #e0e0ff !important;
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    outline: none !important;
+    transition: border-color 0.15s !important;
+}
+
+#rudibot-input:focus {
+    border-color: rgba(99,102,241,0.6) !important;
+    background: rgba(255,255,255,0.1) !important;
+}
+
+#rudibot-input::placeholder { color: rgba(255,255,255,0.3) !important; }
+
+#rudibot-send-btn {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+    border: none !important;
+    color: white !important;
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    font-size: 15px !important;
+    transition: all 0.15s !important;
+    flex-shrink: 0 !important;
+}
+
+#rudibot-send-btn:hover:not(:disabled) {
+    opacity: 0.85 !important;
+    transform: scale(1.05) !important;
+}
+
+#rudibot-send-btn:disabled { opacity: 0.4 !important; cursor: not-allowed !important; }
+
+/* ── Page Info ── */
+#rudibot-page-info {
+    padding: 6px 12px !important;
+    font-size: 10px !important;
+    color: rgba(255,255,255,0.25) !important;
+    border-top: 1px solid rgba(255,255,255,0.04) !important;
+    background: rgba(0,0,0,0.15) !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* ── Responsive ── */
+@media (max-width: 480px) {
+    #rudibot-panel { width: 300px !important; right: -8px !important; }
+}

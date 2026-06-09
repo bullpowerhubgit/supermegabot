@@ -1,0 +1,105 @@
+{
+  "updatedAt": "2026-06-03T21:08:48.770Z",
+  "expenses": [
+    [
+      "exp_1780520928762_vsxps",
+      {
+        "id": "exp_1780520928762_vsxps",
+        "name": "Test Expense",
+        "amount": 49.99,
+        "category": "subscriptions",
+        "subcategory": null,
+        "type": "recurring",
+        "billingCycle": "monthly",
+        "vendor": "Test Software",
+        "description": "Test software subscription",
+        "tags": [
+          "test",
+          "software"
+        ],
+        "startDate": "2026-06-03",
+        "endDate": null,
+        "isActive": true,
+        "createdAt": "2026-06-03T21:08:48.763Z",
+        "updatedAt": "2026-06-03T21:08:48.763Z",
+        "metadata": {
+          "confidence": 0.3,
+          "detectedFrom": "manual",
+          "lastPayment": null,
+          "paymentCount": 0,
+          "averageAmount": 49.99
+        }
+      }
+    ],
+    [
+      "exp_1780520928770_n04zs",
+      {
+        "id": "exp_1780520928770_n04zs",
+        "name": "Test Expense",
+        "amount": 49.99,
+        "category": "subscriptions",
+        "subcategory": null,
+        "type": "recurring",
+        "billingCycle": "monthly",
+        "vendor": "Test Software",
+        "description": "Test software subscription",
+        "tags": [
+          "test",
+          "software"
+        ],
+        "startDate": "2026-06-03",
+        "endDate": null,
+        "isActive": true,
+        "createdAt": "2026-06-03T21:08:48.770Z",
+        "updatedAt": "2026-06-03T21:08:48.770Z",
+        "metadata": {
+          "confidence": 0.3,
+          "detectedFrom": "manual",
+          "lastPayment": null,
+          "paymentCount": 0,
+          "averageAmount": 49.99
+        }
+      }
+    ]
+  ],
+  "monthlyData": [
+    [
+      "2026-06",
+      {
+        "month": "2026-06",
+        "total": 99.98,
+        "categories": {
+          "subscriptions": 99.98
+        },
+        "expenseCount": 2,
+        "updatedAt": "2026-06-03T21:08:48.770Z"
+      }
+    ]
+  ],
+  "budgets": [
+    [
+      "subscriptions",
+      {
+        "category": "subscriptions",
+        "amount": 100,
+        "period": "monthly",
+        "createdAt": "2026-06-03T21:08:48.765Z",
+        "active": true
+      }
+    ]
+  ],
+  "alerts": [
+    {
+      "id": "alert_1780520928770_g63y3",
+      "createdAt": "2026-06-03T21:08:48.770Z",
+      "acknowledged": false,
+      "type": "budget_warning",
+      "category": "subscriptions",
+      "currentSpending": 99.98,
+      "budgetAmount": 100,
+      "percentage": 99.98,
+      "severity": "warning",
+      "message": "Budget für Abonnements fast erreicht: 100%"
+    }
+  ]
+}

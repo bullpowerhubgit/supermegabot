@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>RudiBot — Alle 52 Plattformen (Master)</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:1200px;margin:0 auto;padding:20px;background:#f8f9fc;color:#1a1a2e}
+h1{text-align:center;margin-bottom:8px;font-size:32px}
+.subtitle{text-align:center;color:#6b7280;margin-bottom:24px}
+.stats{background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);color:#fff;padding:24px;border-radius:16px;margin-bottom:32px}
+.stat-row{display:flex;justify-content:space-around;flex-wrap:wrap;gap:16px;text-align:center}
+.stat-number{font-size:48px;font-weight:800;color:#e94560}
+.stat-label{font-size:14px;opacity:.8}
+.progress-bar{width:100%;height:12px;background:rgba(255,255,255,.1);border-radius:6px;margin-top:16px;overflow:hidden}
+.progress-fill{height:100%;background:#4ade80;border-radius:6px;transition:width .5s ease}
+.category{background:#fff;border-radius:16px;padding:24px;margin-bottom:24px;box-shadow:0 4px 20px rgba(0,0,0,.05)}
+.category-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:2px solid #e5e7eb;padding-bottom:12px;flex-wrap:wrap;gap:8px}
+.category h2{font-size:20px;color:#1a1a2e}
+.category-count{font-size:14px;color:#6b7280;background:#f3f4f6;padding:4px 12px;border-radius:100px}
+.platform{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;margin:8px 0;background:#f8f9fc;border-radius:12px;transition:all .2s;flex-wrap:wrap;gap:8px}
+.platform:hover{transform:translateX(4px);box-shadow:0 2px 8px rgba(0,0,0,.05)}
+.platform-info{display:flex;align-items:center;gap:12px;flex:1;min-width:200px}
+.platform-name{font-weight:600;font-size:15px}
+.platform-desc{font-size:13px;color:#6b7280}
+.status{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;border:none;min-width:110px;text-align:center}
+.status.pending{background:#fef2f2;color:#dc2626;border:1px solid #fecaca}
+.status.done{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0}
+.priority-high{color:#dc2626;font-size:11px;font-weight:700;background:#fef2f2;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.priority-medium{color:#ea580c;font-size:11px;font-weight:700;background:#fff7ed;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.priority-low{color:#6b7280;font-size:11px;font-weight:700;background:#f3f4f6;padding:2px 8px;border-radius:4px;text-transform:uppercase}
+.actions{display:flex;gap:12px;margin-bottom:32px;flex-wrap:wrap;justify-content:center}
+.btn{padding:12px 24px;border-radius:12px;font-weight:600;font-size:14px;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:#e94560;color:#fff}
+.btn-primary:hover{background:#d63d57}
+.btn-secondary{background:#fff;color:#1a1a2e;border:2px solid #e5e7eb}
+.btn-secondary:hover{background:#f8f9fc}
+.btn-danger{background:#fff;color:#dc2626;border:2px solid #fecaca}
+.btn-danger:hover{background:#fef2f2}
+.filter-active{background:#e94560!important;color:#fff!important;border-color:#e94560!important}
+.hidden{display:none!important}
+a.link{color:#3498db;font-size:13px;text-decoration:none;margin:0 8px}
+a.link:hover{text-decoration:underline}
+.phase-badge{display:inline-block;padding:4px 12px;border-radius:100px;font-size:12px;font-weight:700;margin-bottom:16px}
+.phase-1{background:#fef2f2;color:#dc2626}
+.phase-2{background:#fff7ed;color:#ea580c}
+.phase-3{background:#f0fdf4;color:#16a34a}
+</style>
+</head>
+<body>
+
+<h1>🚀 RudiBot — Alle 52 Plattformen</h1>
+<p class="subtitle">Master-Liste mit Live-Fortschritt. Single Source of Truth.</p>
+
+<div class="stats">
+  <div class="stat-row">
+    <div><div class="stat-number" id="stat-total">52</div><div class="stat-label">Gesamt</div></div>
+    <div><div class="stat-number" id="stat-done">52</div><div class="stat-label">Erledigt</div></div>
+    <div><div class="stat-number" id="stat-pending">0</div><div class="stat-label">Ausstehend</div></div>
+    <div><div class="stat-number" id="stat-pct">100%</div><div class="stat-label">Fortschritt</div></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-bar" style="width:100%"></div></div>
+</div>
+
+<div class="actions">
+  <button class="btn btn-primary" onclick="openAllPending()">🔗 Alle Ausstehenden öffnen</button>
+  <button class="btn btn-secondary" onclick="filterView('all')">Alle</button>
+  <button class="btn btn-secondary" onclick="filterView('pending')">Ausstehend</button>
+  <button class="btn btn-secondary" onclick="filterView('done')">Erledigt</button>
+  <button class="btn btn-danger" onclick="resetProgress()">🗑️ Zurücksetzen</button>
+</div>
+
+<div id="platforms-container"></div>
+
+<script>
+const PLATFORMS = [
+  // Phase 1: Kritisch für Sprint
+  {id:'shopify',name:'🛒 Shopify',desc:'Hauptplattform für den Sprint',phase:1,priority:'high',status:'done',link:'https://www.shopify.com/signup'},
+  {id:'paypal',name:'💳 PayPal',desc:'Zahlungsalternative zu Stripe',phase:1,priority:'high',status:'done',link:'https://www.paypal.com/signup/account'},
+  {id:'opencode',name:'🧠 OpenCode',desc:'Haupt-Entwicklungstool',phase:1,priority:'high',status:'done',link:'https://opencode.ai/'},
+  {id:'telegram',name:'💬 Telegram',desc:'Bot & Alerts',phase:1,priority:'high',status:'done',link:'https://web.telegram.org/'},
+  {id:'discord',name:'🎮 Discord',desc:'Community-Server',phase:1,priority:'high',status:'done',link:'https://discord.com/register'},
+  {id:'twitter',name:'🐦 Twitter/X',desc:'Marketing & Updates',phase:1,priority:'high',status:'done',link:'https://twitter.com/i/flow/signup'},
+  {id:'github',name:'🐙 GitHub',desc:'Code-Hosting & CI/CD',phase:1,priority:'high',status:'done',link:'https://github.com/signup'},
+  {id:'notion',name:'📓 Notion',desc:'Dokumentation & Wikis',phase:1,priority:'high',status:'done',link:'https://www.notion.so/signup'},
+  {id:'youtube',name:'▶️ YouTube',desc:'Content & Tutorials',phase:1,priority:'high',status:'done',link:'https://accounts.google.com/SignUp'},
+  {id:'instagram',name:'📸 Instagram',desc:'Shopping-Integration',phase:1,priority:'high',status:'done',link:'https://www.instagram.com/accounts/emailsignup/'},
+
+  // Phase 2: Stack-Erweiterung
+  {id:'facebook',name:'📘 Facebook',desc:'Meta Business Suite',phase:2,priority:'medium',status:'done',link:'https://www.facebook.com/r.php'},
+  {id:'anthropic',name:'🤖 Anthropic',desc:'Claude API',phase:2,priority:'medium',status:'done',link:'https://console.anthropic.com/'},
+  {id:'perplexity',name:'🔍 Perplexity',desc:'Research & Insights',phase:2,priority:'medium',status:'done',link:'https://www.perplexity.ai/'},
+  {id:'twilio',name:'📞 Twilio',desc:'SMS-Alerts & 2FA',phase:2,priority:'medium',status:'done',link:'https://www.twilio.com/try-twilio'},
+  {id:'aws',name:'☁️ AWS',desc:'Cloud-Hosting, Lambda, S3',phase:2,priority:'medium',status:'done',link:'https://aws.amazon.com/free/'},
+  {id:'gcp',name:'🌐 Google Cloud',desc:'Firebase, GCP-Integration',phase:2,priority:'medium',status:'done',link:'https://cloud.google.com/free'},
+  {id:'azure',name:'🔷 Azure',desc:'Microsoft-Cloud',phase:2,priority:'medium',status:'done',link:'https://azure.microsoft.com/free/'},
+  {id:'freshdesk',name:'🎧 Freshdesk',desc:'Support-Backup',phase:2,priority:'medium',status:'done',link:'https://freshdesk.com/signup/'},
+  {id:'docusign',name:'✍️ DocuSign',desc:'Verträge mit Kunden',phase:2,priority:'medium',status:'done',link:'https://www.docusign.com/products/signature'},
+  {id:'pandadoc',name:'📄 PandaDoc',desc:'Angebote & Verträge',phase:2,priority:'medium',status:'done',link:'https://www.pandadoc.com/signup/'},
+  {id:'convertkit',name:'📧 ConvertKit',desc:'Newsletter für Kunden',phase:2,priority:'medium',status:'done',link:'https://app.convertkit.com/users/signup'},
+  {id:'mailgun',name:'📨 Mailgun',desc:'Transactional Email API',phase:2,priority:'medium',status:'done',link:'https://signup.mailgun.com/'},
+
+  // Phase 3: Optional
+  {id:'copper',name:'🥉 Copper',desc:'Google-Workspace-CRM',phase:3,priority:'low',status:'done',link:'https://www.copper.com/signup'},
+  {id:'zoho',name:'🌐 Zoho CRM',desc:'Budget-Alternative',phase:3,priority:'low',status:'done',link:'https://www.zoho.com/crm/signup.html'},
+  {id:'monday',name:'📅 Monday.com',desc:'Kunden-Projekttracking',phase:3,priority:'low',status:'done',link:'https://monday.com/signup'},
+  {id:'linear',name:'📐 Linear',desc:'Entwickler-fokussiertes PM',phase:3,priority:'low',status:'done',link:'https://linear.app/signup'},
+  {id:'helpscout',name:'🦉 Help Scout',desc:'Kundensupport',phase:3,priority:'low',status:'done',link:'https://www.helpscout.com/signup/'},
+  {id:'intercom',name:'💬 Intercom',desc:'Live-Chat & Automation',phase:3,priority:'low',status:'done',link:'https://www.intercom.com/signup'},
+  {id:'heroku',name:'🚀 Heroku',desc:'Schnelles Deploy',phase:3,priority:'low',status:'done',link:'https://signup.heroku.com/'},
+  {id:'cloudflare',name:'🛡️ Cloudflare',desc:'CDN & Security',phase:3,priority:'low',status:'done',link:'https://dash.cloudflare.com/sign-up'},
+  {id:'klaviyo',name:'📧 Klaviyo',desc:'E-Commerce Email',phase:3,priority:'low',status:'done',link:'https://www.klaviyo.com/signup'},
+  {id:'activecampaign',name:'⚡ ActiveCampaign',desc:'Marketing Automation',phase:3,priority:'low',status:'done',link:'https://www.activecampaign.com/create-account/'},
+
+  // Bereits bestätigt erledigt (Rest)
+  {id:'jira',name:'📋 Jira',desc:'Projektmanagement',phase:4,priority:'done',status:'done',link:'https://www.atlassian.com/software/jira'},
+  {id:'trello',name:'📝 Trello',desc:'Kanban-Boards',phase:4,priority:'done',status:'done',link:'https://trello.com/signup'},
+  {id:'asana',name:'✅ Asana',desc:'Task-Management',phase:4,priority:'done',status:'done',link:'https://asana.com/signup'},
+  {id:'linkedin',name:'💼 LinkedIn',desc:'B2B-Netzwerk',phase:4,priority:'done',status:'done',link:'https://www.linkedin.com/signup'},
+  {id:'slack',name:'💬 Slack',desc:'Team-Kommunikation',phase:4,priority:'done',status:'done',link:'https://slack.com/get-started'},
+  {id:'sendgrid',name:'📧 SendGrid',desc:'Email API',phase:4,priority:'done',status:'done',link:'https://signup.sendgrid.com/'},
+  {id:'mailchimp',name:'📨 Mailchimp',desc:'Email Marketing',phase:4,priority:'done',status:'done',link:'https://login.mailchimp.com/signup/'},
+  {id:'brevo',name:'📧 Brevo',desc:'Sendinblue Nachfolger',phase:4,priority:'done',status:'done',link:'https://app.brevo.com/account/register'},
+  {id:'hubspot',name:'👥 HubSpot',desc:'CRM & Marketing',phase:4,priority:'done',status:'done',link:'https://www.hubspot.com/products/crm'},
+  {id:'salesforce',name:'🏢 Salesforce',desc:'Enterprise CRM',phase:4,priority:'done',status:'done',link:'https://www.salesforce.com/de/form/signup/freetrial/sales/'},
+  {id:'pipedrive',name:'🎯 Pipedrive',desc:'Sales Pipeline',phase:4,priority:'done',status:'done',link:'https://www.pipedrive.com/signup/'},
+  {id:'zendesk',name:'🎫 Zendesk',desc:'Kundensupport',phase:4,priority:'done',status:'done',link:'https://www.zendesk.com/register/'},
+  {id:'microsoft365',name:'🏢 Microsoft 365',desc:'Office & Cloud',phase:4,priority:'done',status:'done',link:'https://signup.microsoft.com/'},
+  {id:'stripe',name:'💳 Stripe',desc:'Zahlungsabwicklung',phase:4,priority:'done',status:'done',link:'https://dashboard.stripe.com/register'},
+  {id:'airtable',name:'📊 Airtable',desc:'Datenbank & Sheets',phase:4,priority:'done',status:'done',link:'https://airtable.com/create'},
+  {id:'openai',name:'🤖 OpenAI',desc:'GPT API',phase:4,priority:'done',status:'done',link:'https://platform.openai.com/signup'}
+];
+
+const STORAGE_KEY = 'rudibot_platforms_v2';
+
+function loadProgress() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const progress = JSON.parse(saved);
+      PLATFORMS.forEach(p => {
+        if (progress[p.id] !== undefined) p.status = progress[p.id];
+      });
+    }
+  } catch(e) { console.error('Load error:', e); }
+}
+
+function saveProgress() {
+  const progress = {};
+  PLATFORMS.forEach(p => { progress[p.id] = p.status; });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+  updateStats();
+}
+
+function updateStats() {
+  const total = PLATFORMS.length;
+  const done = PLATFORMS.filter(p => p.status === 'done').length;
+  const pending = total - done;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-done').textContent = done;
+  document.getElementById('stat-pending').textContent = pending;
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function getPriorityBadge(p) {
+  if (p.priority === 'high') return '<span class="priority-high">KRITISCH</span>';
+  if (p.priority === 'medium') return '<span class="priority-medium">WICHTIG</span>';
+  if (p.priority === 'low') return '<span class="priority-low">OPTIONAL</span>';
+  return '';
+}
+
+function renderPlatforms(filter = 'all') {
+  const container = document.getElementById('platforms-container');
+  const phases = {
+    1: {title:'🔥 Phase 1 — Kritisch für Shopify Sprint',badge:'phase-1'},
+    2: {title:'📦 Phase 2 — Stack-Erweiterung',badge:'phase-2'},
+    3: {title:'💡 Phase 3 — Optional',badge:'phase-3'},
+    4: {title:'✅ Bereits bestätigt erledigt',badge:'phase-3'}
+  };
+
+  let html = '';
+  for (let phase = 1; phase <= 4; phase++) {
+    const phasePlatforms = PLATFORMS.filter(p => {
+      if (p.phase !== phase) return false;
+      if (filter === 'pending') return p.status === 'pending';
+      if (filter === 'done') return p.status === 'done';
+      return true;
+    });
+
+    if (phasePlatforms.length === 0) continue;
+
+    const doneCount = phasePlatforms.filter(p => p.status === 'done').length;
+    html += `<div class="category" data-phase="${phase}">`;
+    html += `<div class="category-header">`;
+    html += `<h2>${phases[phase].title}</h2>`;
+    html += `<span class="category-count">${doneCount}/${phasePlatforms.length}</span>`;
+    html += `</div>`;
+
+    phasePlatforms.forEach(p => {
+      const isDone = p.status === 'done';
+      html += `<div class="platform" data-id="${p.id}" data-status="${p.status}">`;
+      html += `<div class="platform-info">`;
+      html += `<span class="platform-name">${p.name}</span>`;
+      html += `<span class="platform-desc">${p.desc}</span>`;
+      html += `</div>`;
+      html += getPriorityBadge(p);
+      html += `<a href="${p.link}" target="_blank" class="link">Link ↗</a>`;
+      html += `<button class="status ${p.status}" onclick="toggleStatus('${p.id}')">${isDone ? '✅ Erledigt' : 'Ausstehend'}</button>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  }
+  container.innerHTML = html;
+}
+
+function toggleStatus(id) {
+  const p = PLATFORMS.find(x => x.id === id);
+  if (!p) return;
+  p.status = p.status === 'done' ? 'pending' : 'done';
+  saveProgress();
+  renderPlatforms(currentFilter);
+}
+
+let currentFilter = 'all';
+function filterView(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.actions .btn-secondary').forEach(btn => {
+    btn.classList.remove('filter-active');
+    if (btn.textContent.toLowerCase().includes(filter === 'all' ? 'alle' : filter === 'pending' ? 'ausstehend' : 'erledigt')) {
+      btn.classList.add('filter-active');
+    }
+  });
+  renderPlatforms(filter);
+}
+
+function openAllPending() {
+  const pending = PLATFORMS.filter(p => p.status === 'pending');
+  let blocked = 0;
+  pending.forEach((p, i) => {
+    setTimeout(() => {
+      const win = window.open(p.link, '_blank');
+      if (!win || win.closed) blocked++;
+    }, i * 300);
+  });
+  if (blocked > 0) alert(`${blocked} Tabs wurden blockiert. Erlaube Popups für diese Seite.`);
+}
+
+function resetProgress() {
+  if (!confirm('Wirklich ALLE Fortschritte zurücksetzen?')) return;
+  PLATFORMS.forEach(p => p.status = 'pending');
+  localStorage.removeItem(STORAGE_KEY);
+  updateStats();
+  renderPlatforms(currentFilter);
+}
+
+// Init
+loadProgress();
+renderPlatforms();
+updateStats();
+</script>
+
+</body>
+</html>

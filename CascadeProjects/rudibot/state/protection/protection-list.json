@@ -1,0 +1,19 @@
+{
+  "updatedAt": "2026-06-03T21:08:48.752Z",
+  "manualProtections": [
+    [
+      "manual_1780520928752_9ws0q",
+      {
+        "id": "manual_1780520928752_9ws0q",
+        "name": "Test Service",
+        "vendor": "Test Vendor",
+        "cost": 99.99,
+        "reason": "Test protection",
+        "priority": 2,
+        "requiresApproval": false,
+        "createdAt": "2026-06-03T21:08:48.752Z",
+        "expiresAt": null
+      }
+    ]
+  ]
+}

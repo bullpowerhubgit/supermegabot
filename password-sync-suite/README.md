@@ -33,14 +33,14 @@ npm install
 npm start
 ```
 
-Die Web-App läuft dann auf `http://localhost:3000`.
+Die Web-App läuft dann auf `http://localhost:3005`.
 
 ### 2. Google OAuth einrichten
 
 1. [Google Cloud Console](https://console.cloud.google.com/apis/credentials) öffnen
 2. Neues Projekt erstellen
 3. "OAuth 2.0 Client ID" anlegen (Web-Anwendung)
-4. Autorisierte Weiterleitungs-URI: `http://localhost:3000/auth/google/callback`
+4. Autorisierte Weiterleitungs-URI: `http://localhost:3005/auth/google/callback`
 5. Client ID & Secret in `.env` eintragen
 
 ### 3. Browser-Extension laden

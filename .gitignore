@@ -1,0 +1,48 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.pyc
+*.db
+*.log
+logs/
+.DS_Store
+*.sqlite
+nohup.out
+data/
+rudibot-army/shared/army_state.json
+
+# GCP / Google Cloud — niemals einchecken
+RudiBot-Secure-API/
+**/gcp-config.json
+**/service-account*.json
+**/serviceaccount*.json
+**/*credentials*.json
+*-key.json
+gcloud/
+.config/gcloud/
+application_default_credentials.json
+
+node_modules/
+/generated/
+prisma.config.ts
+.claude/worktrees/
+
+# Cached test results & reports
+.api_test_cache/
+scan_report.json
+
+# Git internal files
+FETCH_HEAD
+
+# Large binary files — keep locally, not in git
+*.pdf
+*.png
+*.jpg
+*.jpeg
+store_dashboard.png
+supermegabot_business_report.pdf
+
+# CascadeProjects — Windsurf local workspace, source code is in repo root
+CascadeProjects/
+rudibot-army/shared/army_state.json

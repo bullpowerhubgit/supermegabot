@@ -1,0 +1,31 @@
+{
+  "id": "cost_analysis",
+  "name": "Cost and Subscription Analysis",
+  "description": "Analyze costs and identify optimization opportunities",
+  "steps": [
+    {
+      "id": "subscription_audit",
+      "type": "subscription_scan",
+      "timeout": 45000
+    },
+    {
+      "id": "usage_analysis",
+      "type": "usage_metrics",
+      "timeout": 30000
+    },
+    {
+      "id": "cost_optimization",
+      "type": "cost_recommendations",
+      "timeout": 60000
+    },
+    {
+      "id": "generate_report",
+      "type": "cost_report",
+      "timeout": 30000
+    }
+  ],
+  "retryPolicy": {
+    "maxAttempts": 3,
+    "backoff": "exponential"
+  }
+}
