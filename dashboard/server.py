@@ -3543,6 +3543,11 @@ async def _register_telegram_webhook():
 
 if __name__ == "__main__":
     async def _main():
+        # Startup ENV check
+        missing = [v for v in ["TELEGRAM_BOT_TOKEN", "SHOPIFY_ACCESS_TOKEN", "SUPABASE_URL"] if not os.getenv(v)]
+        if missing:
+            log.warning("⚠️ Fehlende ENV-Variablen: %s", ', '.join(missing))
+
         log.info("Prüfe Port %s...", PORT)
         _free_port(PORT)
         import asyncio as _aio
