@@ -777,6 +777,67 @@ async def task_drive_backup() -> str:
 
 # ── Task registry ────────────────────────────────────────────────────────────
 
+async def task_revenue_autopilot_carts() -> str:
+    """Stündlich: Abandoned Carts erkennen und Recovery-Emails senden."""
+    try:
+        from modules.shopify_revenue_engine import get_abandoned_carts, recover_all_carts
+        carts = await get_abandoned_carts(hours=2)
+        carts_with_email = [c for c in carts if c.get("email")]
+        if not carts_with_email:
+            return "Keine neuen Abandoned Carts in den letzten 2h"
+        result = await recover_all_carts(hours=2)
+        potential = result.get("potential_revenue", 0)
+        sent = result.get("emails_sent", 0)
+        if sent > 0:
+            await _tg(
+                f"🛒 *Cart Recovery gestartet*\n"
+                f"• {sent} Recovery-Emails gesendet\n"
+                f"• Potentieller Umsatz: €{potential:.2f}"
+            )
+        return f"Cart Recovery: {sent}/{len(carts_with_email)} Emails gesendet · €{potential:.2f} potentiell"
+    except Exception as e:
+        return f"Fehler Cart Recovery: {e}"
+
+
+async def task_revenue_autopilot_daily() -> str:
+    """Täglich: Revenue-Report + Zero-Seller-Analyse via Telegram."""
+    try:
+        from modules.shopify_revenue_engine import get_revenue_summary, get_product_performance, get_low_inventory
+        rev = await get_revenue_summary()
+        today = rev.get("today", {})
+        d7    = rev.get("7d", {})
+        d30   = rev.get("30d", {})
+
+        perf = await get_product_performance(days=7)
+        top3 = perf.get("top_sellers", [])[:3]
+        zeros = perf.get("zero_seller_count", 0)
+
+        inv = await get_low_inventory(threshold=3)
+
+        lines = [
+            "📊 *Täglicher Revenue Report*",
+            f"",
+            f"💶 Heute: €{today.get('revenue',0):.2f} ({today.get('orders',0)} Bestellungen)",
+            f"📅 7 Tage: €{d7.get('revenue',0):.2f} ({d7.get('orders',0)} Bestellungen)",
+            f"📆 30 Tage: €{d30.get('revenue',0):.2f} ({d30.get('orders',0)} Bestellungen)",
+            f"",
+        ]
+        if top3:
+            lines.append("🏆 *Top-Produkte (7T):*")
+            for p in top3:
+                lines.append(f"  • {p['title'][:30]}: €{p['revenue']:.2f}")
+        if zeros > 0:
+            lines.append(f"\n⚠️ {zeros} Produkte ohne Verkauf in 7 Tagen")
+        if inv:
+            lines.append(f"📦 {len(inv)} Produkte mit kritisch niedrigem Lager")
+        lines.append(f"\n🤖 Revenue Autopilot aktiv")
+
+        await _tg("\n".join(lines))
+        return f"Daily Revenue Report gesendet: €{d7.get('revenue',0):.2f} in 7 Tagen"
+    except Exception as e:
+        return f"Fehler Daily Revenue Report: {e}"
+
+
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Real-time (every few minutes) ────────────────────────────────────────
@@ -817,6 +878,9 @@ TASKS = [
     # ── Stripe & Drive ───────────────────────────────────────────────────────
     ("stripe_monitor",          task_stripe_monitor,          1800,   25),   # 30 min
     ("drive_backup",            task_drive_backup,            86400,  360),  # daily
+    # ── Revenue Autopilot ────────────────────────────────────────────────────
+    ("revenue_autopilot_carts", task_revenue_autopilot_carts,  3600,   35),  # 1h
+    ("revenue_autopilot_daily", task_revenue_autopilot_daily, 86400,  400),  # daily
 ]
 
 

@@ -123,6 +123,383 @@ SERVICES = [
 _INDEX_HTML = Path(__file__).parent / 'index.html'
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# REVENUE AUTOPILOT DASHBOARD HTML
+# ══════════════════════════════════════════════════════════════════════════════
+_REVENUE_AUTOPILOT_HTML = """<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>💰 Revenue Autopilot — SuperMegaBot</title>
+<style>
+  :root{--green:#00d4aa;--red:#ff4757;--yellow:#ffa502;--blue:#1e90ff;--dark:#0d1117;--card:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
+  header{background:linear-gradient(135deg,#1a1f2e,#0d1117);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;gap:12px}
+  header h1{font-size:1.4rem;font-weight:700}header span{font-size:.85rem;color:var(--muted)}
+  .badge{background:#00d4aa22;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:600}
+  .container{padding:20px 24px;max-width:1600px;margin:0 auto}
+  .grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:24px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+  .card h2{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
+  .stat{font-size:2rem;font-weight:800;color:var(--text)}
+  .stat-sub{font-size:.8rem;color:var(--muted);margin-top:4px}
+  .green{color:var(--green)} .red{color:var(--red)} .yellow{color:var(--yellow)} .blue{color:var(--blue)}
+  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:none;font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-green{background:#00d4aa22;color:var(--green);border:1px solid var(--green)}
+  .btn-green:hover:not(:disabled){background:#00d4aa44}
+  .btn-red{background:#ff475722;color:var(--red);border:1px solid var(--red)}
+  .btn-red:hover:not(:disabled){background:#ff475744}
+  .btn-blue{background:#1e90ff22;color:var(--blue);border:1px solid var(--blue)}
+  .btn-blue:hover:not(:disabled){background:#1e90ff44}
+  .btn-yellow{background:#ffa50222;color:var(--yellow);border:1px solid var(--yellow)}
+  .btn-yellow:hover:not(:disabled){background:#ffa50244}
+  .btn-solid{background:var(--green);color:#000;font-weight:700}
+  .btn-solid:hover:not(:disabled){background:#00b899}
+  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
+  table{width:100%;border-collapse:collapse;font-size:.85rem}
+  th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase}
+  td{padding:10px 12px;border-bottom:1px solid #21262d}
+  tr:hover td{background:#1c2128}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600}
+  .tag-green{background:#00d4aa22;color:var(--green)}
+  .tag-red{background:#ff475722;color:var(--red)}
+  .tag-yellow{background:#ffa50222;color:var(--yellow)}
+  .tag-blue{background:#1e90ff22;color:var(--blue)}
+  input,select{background:#21262d;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:.85rem;width:100%}
+  input:focus,select:focus{outline:none;border-color:var(--green)}
+  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  label{font-size:.8rem;color:var(--muted);margin-bottom:4px;display:block}
+  .flash-msg{padding:12px 16px;border-radius:8px;font-size:.85rem;margin-bottom:16px;display:none}
+  .flash-msg.show{display:block}
+  .flash-ok{background:#00d4aa22;color:var(--green);border:1px solid #00d4aa44}
+  .flash-err{background:#ff475722;color:var(--red);border:1px solid #ff475744}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .section-title{font-size:1.1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .empty{color:var(--muted);font-style:italic;padding:20px;text-align:center}
+  .progress-bar{height:6px;background:#21262d;border-radius:3px;overflow:hidden;margin-top:6px}
+  .progress-fill{height:100%;border-radius:3px;background:var(--green)}
+  .share-box{background:#21262d;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:.9rem;word-break:break-all;color:var(--green);margin-top:8px}
+  @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<header>
+  <div style="font-size:1.8rem">💰</div>
+  <div>
+    <h1>Revenue Autopilot</h1>
+    <span>SuperMegaBot · Shopify Automation Suite</span>
+  </div>
+  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+    <span class="badge" id="live-badge">⚡ LIVE</span>
+    <button class="btn btn-green" onclick="loadAll()">🔄 Refresh</button>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Flash message -->
+  <div class="flash-msg" id="flash"></div>
+
+  <!-- ── KPI Cards ── -->
+  <div class="grid-4" id="kpi-grid">
+    <div class="card"><h2>💶 Heute</h2><div class="stat green" id="kpi-today">—</div><div class="stat-sub" id="kpi-today-orders">—</div></div>
+    <div class="card"><h2>📅 7 Tage</h2><div class="stat" id="kpi-7d">—</div><div class="stat-sub" id="kpi-7d-orders">—</div></div>
+    <div class="card"><h2>📆 30 Tage</h2><div class="stat" id="kpi-30d">—</div><div class="stat-sub" id="kpi-30d-orders">—</div></div>
+    <div class="card"><h2>🛒 Offene Carts</h2><div class="stat yellow" id="kpi-carts">—</div><div class="stat-sub" id="kpi-carts-value">potentieller Umsatz</div></div>
+    <div class="card"><h2>📦 Offene Bestellungen</h2><div class="stat blue" id="kpi-pending">—</div><div class="stat-sub" id="kpi-pending-value">—</div></div>
+    <div class="card"><h2>⚠️ Wenig Lager</h2><div class="stat red" id="kpi-inventory">—</div><div class="stat-sub">≤ 5 Stück</div></div>
+    <div class="card"><h2>💡 Ø Bestellwert (30T)</h2><div class="stat" id="kpi-aov">—</div><div class="stat-sub">Average Order Value</div></div>
+    <div class="card"><h2>🎯 Umsatz gestern</h2><div class="stat" id="kpi-yesterday">—</div><div class="stat-sub" id="kpi-yesterday-orders">—</div></div>
+  </div>
+
+  <div class="grid-2">
+
+    <!-- ── Aktionen ── -->
+    <div class="card">
+      <div class="section-title">⚡ Schnell-Aktionen</div>
+
+      <!-- Abandoned Cart Recovery -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">🛒 Abandoned Cart Recovery</div>
+        <div class="actions">
+          <button class="btn btn-yellow" onclick="recoverCarts(24)">Letzte 24h</button>
+          <button class="btn btn-yellow" onclick="recoverCarts(48)">Letzte 48h</button>
+          <button class="btn btn-red" onclick="recoverCarts(72)">Letzte 72h</button>
+        </div>
+      </div>
+
+      <!-- Flash Sale -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">🔥 Flash Sale erstellen</div>
+        <div class="form-row">
+          <div><label>Rabatt %</label><input id="fs-pct" type="number" value="20" min="5" max="80"></div>
+          <div><label>Dauer (Std)</label><input id="fs-hours" type="number" value="24" min="1" max="168"></div>
+        </div>
+        <div style="margin-bottom:8px"><label>Code (leer = auto)</label><input id="fs-code" placeholder="z.B. SOMMER20"></div>
+        <div style="margin-bottom:12px"><label>Mindestbestellwert (€)</label><input id="fs-min" type="number" value="0" min="0"></div>
+        <button class="btn btn-solid" onclick="createFlashSale()" style="width:100%">🔥 Flash Sale starten</button>
+        <div id="fs-result" class="share-box" style="display:none"></div>
+      </div>
+
+      <!-- Bulk Price -->
+      <div style="margin-bottom:20px">
+        <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">💲 Preise anpassen</div>
+        <div class="form-row">
+          <div><label>Methode</label>
+            <select id="bp-method">
+              <option value="percent">% Änderung</option>
+              <option value="fixed_add">+ Fester Betrag (€)</option>
+              <option value="fixed_set">Preis setzen (€)</option>
+            </select>
+          </div>
+          <div><label>Wert</label><input id="bp-value" type="number" value="10" step="0.01"></div>
+        </div>
+        <div class="form-row">
+          <div><label>Min Preis (€)</label><input id="bp-min" type="number" value="0"></div>
+          <div><label>Max Preis (€)</label><input id="bp-max" type="number" value="9999"></div>
+        </div>
+        <button class="btn btn-blue" onclick="bulkPrice()" style="width:100%">💲 Alle Preise anpassen</button>
+      </div>
+
+      <!-- Auto Publish & AI Descriptions -->
+      <div class="actions">
+        <button class="btn btn-green" onclick="publishDrafts()" id="btn-publish">📢 Drafts veröffentlichen</button>
+        <button class="btn btn-blue" onclick="aiDescriptions()" id="btn-ai">🤖 AI Beschreibungen (5)</button>
+      </div>
+    </div>
+
+    <!-- ── Abandoned Carts Table ── -->
+    <div class="card">
+      <div class="section-title">🛒 Verlassene Warenkörbe <span id="carts-count" class="badge" style="font-size:.7rem"></span></div>
+      <div id="carts-table"><div class="empty">Lade Daten…</div></div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <!-- ── Top Sellers ── -->
+    <div class="card">
+      <div class="section-title">🏆 Top-Seller (30 Tage)</div>
+      <div id="top-sellers"><div class="empty">Lade…</div></div>
+    </div>
+
+    <!-- ── Zero/Slow Sellers ── -->
+    <div class="card">
+      <div class="section-title">😴 Null-Verkäufe (aktive Produkte)</div>
+      <div id="zero-sellers"><div class="empty">Lade…</div></div>
+    </div>
+
+    <!-- ── Upsell Pairs ── -->
+    <div class="card">
+      <div class="section-title">🔗 Zusammen gekauft (Upsell)</div>
+      <div id="upsell-pairs"><div class="empty">Lade…</div></div>
+    </div>
+  </div>
+
+  <!-- ── Low Inventory ── -->
+  <div class="card" style="margin-bottom:24px">
+    <div class="section-title">⚠️ Niedriger Lagerbestand (≤ 5 Stück)</div>
+    <div id="inventory-table"><div class="empty">Lade…</div></div>
+  </div>
+
+</div>
+
+<script>
+const API = '';
+const fmt = (v,c='EUR')=>new Intl.NumberFormat('de-DE',{style:'currency',currency:c}).format(v||0);
+
+function flash(msg,ok=true){
+  const el=document.getElementById('flash');
+  el.className='flash-msg show '+(ok?'flash-ok':'flash-err');
+  el.textContent=msg;
+  setTimeout(()=>el.classList.remove('show'),5000);
+}
+
+function setBtn(id,loading){
+  const b=document.getElementById(id);
+  if(!b)return;
+  b.disabled=loading;
+  if(loading)b.dataset.orig=b.innerHTML;
+  b.innerHTML=loading?'<span class="spinner"></span> Läuft…':b.dataset.orig;
+}
+
+async function api(path,method='GET',body=null){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(API+path,opts);
+  return r.json();
+}
+
+async function loadRevenue(){
+  try{
+    const d=await api('/api/revenue/dashboard');
+    if(!d.ok)return;
+    const r=d.revenue||{};
+    document.getElementById('kpi-today').textContent=fmt(r.today?.revenue);
+    document.getElementById('kpi-today-orders').textContent=`${r.today?.orders||0} Bestellungen`;
+    document.getElementById('kpi-7d').textContent=fmt(r['7d']?.revenue);
+    document.getElementById('kpi-7d-orders').textContent=`${r['7d']?.orders||0} Bestellungen`;
+    document.getElementById('kpi-30d').textContent=fmt(r['30d']?.revenue);
+    document.getElementById('kpi-30d-orders').textContent=`${r['30d']?.orders||0} Bestellungen`;
+    document.getElementById('kpi-yesterday').textContent=fmt(r.yesterday?.revenue);
+    document.getElementById('kpi-yesterday-orders').textContent=`${r.yesterday?.orders||0} Bestellungen`;
+    document.getElementById('kpi-aov').textContent=fmt(r['30d']?.aov);
+    document.getElementById('kpi-pending').textContent=r.pending_orders||0;
+    document.getElementById('kpi-pending-value').textContent=fmt(r.pending_revenue)+' ausstehend';
+
+    const carts=d.abandoned_carts||[];
+    document.getElementById('kpi-carts').textContent=carts.length;
+    const cartVal=carts.reduce((s,c)=>s+c.total,0);
+    document.getElementById('kpi-carts-value').textContent=fmt(cartVal)+' potentiell';
+    document.getElementById('carts-count').textContent=carts.length;
+
+    const inv=d.low_inventory||[];
+    document.getElementById('kpi-inventory').textContent=inv.length;
+
+    renderCarts(carts);
+    renderInventory(inv);
+  }catch(e){console.error(e)}
+}
+
+function renderCarts(carts){
+  const el=document.getElementById('carts-table');
+  if(!carts.length){el.innerHTML='<div class="empty">Keine offenen Warenkörbe 🎉</div>';return;}
+  el.innerHTML=`<table><thead><tr><th>E-Mail</th><th>Artikel</th><th>Wert</th><th>Erstellt</th></tr></thead><tbody>
+    ${carts.slice(0,10).map(c=>`<tr>
+      <td>${c.email||'<span style="color:var(--muted)">anonym</span>'}</td>
+      <td><small>${c.product_titles.slice(0,2).join(', ')||'—'}</small></td>
+      <td class="yellow">${fmt(c.total)}</td>
+      <td><small>${new Date(c.created_at).toLocaleDateString('de')}</small></td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+function renderInventory(items){
+  const el=document.getElementById('inventory-table');
+  if(!items.length){el.innerHTML='<div class="empty">Lager OK — kein Handlungsbedarf</div>';return;}
+  el.innerHTML=`<table><thead><tr><th>Produkt</th><th>SKU</th><th>Bestand</th><th>Preis</th></tr></thead><tbody>
+    ${items.map(i=>`<tr>
+      <td>${i.title}</td>
+      <td><code style="color:var(--muted)">${i.sku||'—'}</code></td>
+      <td><span class="tag ${i.inventory<=0?'tag-red':i.inventory<=2?'tag-yellow':'tag-blue'}">${i.inventory} Stk</span></td>
+      <td>${fmt(i.price)}</td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+async function loadPerformance(){
+  try{
+    const d=await api('/api/revenue/product-performance?days=30');
+    if(!d.ok)return;
+    const topEl=document.getElementById('top-sellers');
+    if(d.top_sellers?.length){
+      const maxR=d.top_sellers[0].revenue;
+      topEl.innerHTML=d.top_sellers.slice(0,8).map((p,i)=>`
+        <div style="margin-bottom:10px">
+          <div style="display:flex;justify-content:space-between;font-size:.85rem">
+            <span>${i+1}. ${p.title.slice(0,30)}${p.title.length>30?'…':''}</span>
+            <span class="green">${fmt(p.revenue)}</span>
+          </div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(p.revenue/maxR*100)}%"></div></div>
+          <div style="font-size:.75rem;color:var(--muted)">${p.units_sold} Stk · ${p.orders} Bestellungen</div>
+        </div>`).join('');
+    }else{topEl.innerHTML='<div class="empty">Keine Verkäufe in 30 Tagen</div>';}
+
+    const zeroEl=document.getElementById('zero-sellers');
+    if(d.zero_sellers?.length){
+      zeroEl.innerHTML=`<div style="color:var(--muted);font-size:.8rem;margin-bottom:8px">${d.zero_seller_count} Produkte ohne Verkauf</div>
+        <table><thead><tr><th>Produkt</th><th>Preis</th></tr></thead><tbody>
+        ${d.zero_sellers.slice(0,10).map(p=>`<tr>
+          <td style="font-size:.82rem">${p.title.slice(0,35)}${p.title.length>35?'…':''}</td>
+          <td>${fmt(p.price)}</td>
+        </tr>`).join('')}</tbody></table>`;
+    }else{zeroEl.innerHTML='<div class="empty">Alle Produkte haben Verkäufe 🎉</div>';}
+  }catch(e){console.error(e)}
+}
+
+async function loadUpsell(){
+  try{
+    const d=await api('/api/revenue/upsell-pairs?limit=8');
+    const el=document.getElementById('upsell-pairs');
+    if(!d.pairs?.length){el.innerHTML='<div class="empty">Nicht genug Bestelldaten</div>';return;}
+    el.innerHTML=d.pairs.map(p=>`
+      <div style="border-bottom:1px solid var(--border);padding:10px 0">
+        <div style="font-size:.82rem;font-weight:600">${p.product_a.slice(0,25)}…</div>
+        <div style="font-size:.75rem;color:var(--muted)">➜ wird oft mit gekauft:</div>
+        <div style="font-size:.82rem;color:var(--green)">${p.product_b.slice(0,25)}…</div>
+        <span class="tag tag-blue">${p.bought_together}× zusammen</span>
+      </div>`).join('');
+  }catch(e){console.error(e)}
+}
+
+async function recoverCarts(hours){
+  flash(`Starte Cart Recovery für letzte ${hours}h…`);
+  const d=await api('/api/revenue/recover-carts','POST',{hours});
+  if(d.ok)flash(`✅ ${d.emails_sent} Recovery-Emails gesendet · ${fmt(d.potential_revenue)} potentiell`);
+  else flash('❌ Fehler: '+d.error,false);
+}
+
+async function createFlashSale(){
+  const pct=parseInt(document.getElementById('fs-pct').value)||20;
+  const hours=parseInt(document.getElementById('fs-hours').value)||24;
+  const code=document.getElementById('fs-code').value.trim().toUpperCase();
+  const min=parseFloat(document.getElementById('fs-min').value)||0;
+  flash('Erstelle Flash Sale…');
+  const d=await api('/api/revenue/flash-sale','POST',{discount_pct:pct,title:code||undefined,duration_hours:hours,min_purchase:min});
+  const el=document.getElementById('fs-result');
+  if(d.ok){
+    el.style.display='block';
+    el.textContent=d.share_message+'\n\nCode: '+d.code;
+    flash(`✅ Flash Sale aktiv! Code: ${d.code} · ${pct}% für ${hours}h`);
+  }else{el.style.display='none';flash('❌ '+d.error,false);}
+}
+
+async function bulkPrice(){
+  const method=document.getElementById('bp-method').value;
+  const value=parseFloat(document.getElementById('bp-value').value)||10;
+  const min=parseFloat(document.getElementById('bp-min').value)||0;
+  const max=parseFloat(document.getElementById('bp-max').value)||9999;
+  const label=method==='percent'?`${value>0?'+':''}${value}%`:`${value>0?'+':''}${fmt(value)}`;
+  if(!confirm(`Alle Preise um ${label} anpassen?\nPreisbereich: ${fmt(min)} – ${fmt(max)}`))return;
+  flash('Passe Preise an…');
+  const d=await api('/api/revenue/bulk-price','POST',{method,value,min_price:min,max_price:max});
+  if(d.ok)flash(`✅ ${d.updated_variants} Varianten aktualisiert`);
+  else flash('❌ '+d.error,false);
+}
+
+async function publishDrafts(){
+  setBtn('btn-publish',true);
+  flash('Veröffentliche Draft-Produkte…');
+  const d=await api('/api/revenue/publish-drafts','POST');
+  setBtn('btn-publish',false);
+  if(d.ok)flash(`✅ ${d.published} Produkte veröffentlicht`);
+  else flash('❌ '+d.error,false);
+}
+
+async function aiDescriptions(){
+  setBtn('btn-ai',true);
+  flash('Claude generiert SEO-Beschreibungen…');
+  const d=await api('/api/revenue/ai-descriptions','POST',{limit:5,language:'de'});
+  setBtn('btn-ai',false);
+  if(d.ok)flash(`✅ ${d.updated} Beschreibungen aktualisiert`);
+  else flash('❌ '+d.error,false);
+}
+
+async function loadAll(){
+  await Promise.all([loadRevenue(),loadPerformance(),loadUpsell()]);
+}
+
+// Auto-refresh every 60 seconds
+loadAll();
+setInterval(loadAll,60000);
+</script>
+</body>
+</html>"""
 
 
 # ---------------------------------------------------------------------------
@@ -1561,6 +1938,165 @@ async def handle_seo_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# REVENUE AUTOPILOT — Shopify Revenue Engine Handlers
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def handle_revenue_dashboard(req):
+    """Vollständiges Revenue Dashboard (Umsatz + Carts + Inventory)."""
+    try:
+        from modules.shopify_revenue_engine import get_full_dashboard
+        data = await get_full_dashboard()
+        return web.json_response({"ok": True, **data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_revenue_analytics(req):
+    """Umsatz-Analyse: heute, 7T, 30T, offene Bestellungen."""
+    try:
+        from modules.shopify_revenue_engine import get_revenue_summary
+        data = await get_revenue_summary()
+        return web.json_response({"ok": True, **data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_abandoned_carts(req):
+    """Alle offenen / verlassenen Warenkörbe."""
+    try:
+        hours = int(req.rel_url.query.get("hours", "24"))
+        from modules.shopify_revenue_engine import get_abandoned_carts
+        carts = await get_abandoned_carts(hours)
+        return web.json_response({"ok": True, "count": len(carts), "carts": carts})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_recover_carts(req):
+    """Alle offenen Carts per Recovery-E-Mail ansprechen."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        hours = int(data.get("hours", 24))
+        from modules.shopify_revenue_engine import recover_all_carts
+        result = await recover_all_carts(hours)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_flash_sale(req):
+    """Flash-Sale-Discount-Code erstellen."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        from modules.shopify_revenue_engine import create_flash_sale
+        result = await create_flash_sale(
+            discount_pct=int(data.get("discount_pct", 20)),
+            title=data.get("title", ""),
+            duration_hours=int(data.get("duration_hours", 24)),
+            collection_id=data.get("collection_id"),
+            min_purchase=float(data.get("min_purchase", 0)),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_bulk_price_update(req):
+    """Preise für alle oder ausgewählte Produkte auf einmal anpassen."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        from modules.shopify_revenue_engine import bulk_price_update
+        result = await bulk_price_update(
+            product_ids=data.get("product_ids"),
+            method=data.get("method", "percent"),
+            value=float(data.get("value", 10)),
+            min_price=float(data.get("min_price", 0)),
+            max_price=float(data.get("max_price", 99999)),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_product_performance(req):
+    """Top-Seller, Slow-Mover und Zero-Seller Analyse."""
+    try:
+        days = int(req.rel_url.query.get("days", "30"))
+        from modules.shopify_revenue_engine import get_product_performance
+        data = await get_product_performance(days)
+        return web.json_response({"ok": True, **data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_all_products_prices(req):
+    """Alle Produkte mit aktuellen Preisen."""
+    try:
+        from modules.shopify_revenue_engine import get_all_products_with_prices
+        products = await get_all_products_with_prices()
+        return web.json_response({"ok": True, "count": len(products), "products": products})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_ai_descriptions(req):
+    """Claude generiert SEO-Beschreibungen für Produkte (Bulk)."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        from modules.shopify_revenue_engine import generate_ai_descriptions_bulk
+        result = await generate_ai_descriptions_bulk(
+            product_ids=data.get("product_ids"),
+            limit=int(data.get("limit", 5)),
+            language=data.get("language", "de"),
+        )
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_low_inventory(req):
+    """Produkte mit niedrigem Lagerbestand."""
+    try:
+        threshold = int(req.rel_url.query.get("threshold", "5"))
+        from modules.shopify_revenue_engine import get_low_inventory
+        items = await get_low_inventory(threshold)
+        return web.json_response({"ok": True, "count": len(items), "items": items})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_publish_drafts(req):
+    """Alle Draft-Produkte automatisch veröffentlichen."""
+    try:
+        from modules.shopify_revenue_engine import auto_publish_drafts
+        result = await auto_publish_drafts()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_upsell_pairs(req):
+    """Produkte die häufig zusammen gekauft werden (Upsell-Empfehlungen)."""
+    try:
+        limit = int(req.rel_url.query.get("limit", "10"))
+        from modules.shopify_revenue_engine import get_upsell_pairs
+        pairs = await get_upsell_pairs(limit)
+        return web.json_response({"ok": True, "pairs": pairs})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Revenue Autopilot Frontend ─────────────────────────────────────────────────
+
+async def handle_revenue_autopilot_ui(req):
+    """Standalone Revenue Autopilot Dashboard HTML."""
+    html = _REVENUE_AUTOPILOT_HTML
+    return web.Response(text=html, content_type="text/html", charset="utf-8")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+
 async def handle_dropshipping_status(req):
     """Dropshipping pipeline status."""
     try:
@@ -2018,6 +2554,7 @@ async def create_app():
     app.router.add_post("/api/geheimwaffe/content", handle_geheimwaffe_content)
     app.router.add_get("/api/backup/status", handle_backup_status)
     app.router.add_post("/api/backup/run", handle_backup_run)
+    app.router.add_post("/api/backup", handle_backup_run)
 
     # GMC route
     app.router.add_get("/api/gmc", handle_gmc)
@@ -2153,6 +2690,21 @@ async def create_app():
     app.router.add_get("/api/drive/status",           handle_drive_status)
     app.router.add_get("/api/drive/files",            handle_drive_files)
     app.router.add_post("/api/drive/backup",          handle_drive_backup)
+
+    # ── Revenue Autopilot ──────────────────────────────────────────────────────
+    app.router.add_get("/revenue",                            handle_revenue_autopilot_ui)
+    app.router.add_get("/api/revenue/dashboard",             handle_revenue_dashboard)
+    app.router.add_get("/api/revenue/analytics",             handle_revenue_analytics)
+    app.router.add_get("/api/revenue/abandoned-carts",       handle_abandoned_carts)
+    app.router.add_post("/api/revenue/recover-carts",        handle_recover_carts)
+    app.router.add_post("/api/revenue/flash-sale",           handle_flash_sale)
+    app.router.add_post("/api/revenue/bulk-price",           handle_bulk_price_update)
+    app.router.add_get("/api/revenue/product-performance",   handle_product_performance)
+    app.router.add_get("/api/revenue/products",              handle_all_products_prices)
+    app.router.add_post("/api/revenue/ai-descriptions",      handle_ai_descriptions)
+    app.router.add_get("/api/revenue/low-inventory",         handle_low_inventory)
+    app.router.add_post("/api/revenue/publish-drafts",       handle_publish_drafts)
+    app.router.add_get("/api/revenue/upsell-pairs",          handle_upsell_pairs)
 
     return app
 
