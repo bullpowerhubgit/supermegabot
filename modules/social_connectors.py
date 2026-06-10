@@ -728,3 +728,318 @@ if __name__ == "__main__":
             print(f"  [{icon}] {platform:12s}  {status['info']}")
 
     asyncio.run(_main())
+
+
+# ---------------------------------------------------------------------------
+# Maximum-Setup: Cross-Platform Scheduler + AI Content Tools
+# ---------------------------------------------------------------------------
+
+import asyncio as _sc_asyncio
+import datetime as _sc_dt
+import os as _sc_os
+import re as _sc_re
+import logging as _sc_log
+
+_sclog = _sc_log.getLogger("SocialConnectors.Max")
+
+
+async def schedule_post(
+    content: str,
+    platforms: list,
+    scheduled_for: str,
+    image_url: str = "",
+    link: str = "",
+) -> dict:
+    """Schedule a post across multiple social platforms simultaneously.
+
+    Posts are published immediately if scheduled_for is in the past or within 60s.
+    Otherwise returns a scheduled task dict (requires an external job runner to
+    actually fire it at the right time — integrates with automation_scheduler).
+
+    Args:
+        content:        Post text
+        platforms:      List of platform names: ["tiktok", "meta", "twitter", "discord", "reddit", "pinterest"]
+        scheduled_for:  ISO datetime string "2026-06-10T15:00:00" (local time)
+        image_url:      Optional image URL (used for Instagram/Pinterest)
+        link:           Optional link (Reddit/Twitter)
+
+    Returns:
+        {"ok": True, "scheduled_at": str, "results": {platform: result}}
+    """
+    try:
+        scheduled_dt = _sc_dt.datetime.fromisoformat(scheduled_for)
+    except ValueError:
+        return {"ok": False, "error": f"Invalid scheduled_for format: {scheduled_for}. Use ISO: YYYY-MM-DDTHH:MM:SS"}
+
+    now = _sc_dt.datetime.now()
+    delay_seconds = (scheduled_dt - now).total_seconds()
+
+    async def _publish_now() -> dict:
+        connectors_map = {
+            "tiktok":    TikTokConnector(),
+            "meta":      MetaConnector(),
+            "twitter":   TwitterConnector(),
+            "discord":   DiscordConnector(),
+            "reddit":    RedditConnector(),
+            "pinterest": PinterestConnector(),
+        }
+        results = {}
+        tasks = []
+
+        async def _post_to(platform: str) -> None:
+            c = connectors_map.get(platform)
+            if not c:
+                results[platform] = {"error": "unknown platform"}
+                return
+            try:
+                if platform == "tiktok":
+                    if image_url:
+                        r = await c.post_video(title=content[:150], video_url=image_url)
+                    else:
+                        r = {"skipped": True, "reason": "TikTok requires video_url"}
+                elif platform == "meta":
+                    if image_url:
+                        r = await c.post_photo(image_url=image_url, caption=content)
+                    else:
+                        r = await c.post_fb_page(message=content, link=link)
+                elif platform == "twitter":
+                    text = content[:280]
+                    if link:
+                        text = f"{text[:277-len(link)]} {link}"
+                    r = await c.post_tweet(text)
+                elif platform == "discord":
+                    r = await c.send_message(content)
+                elif platform == "reddit":
+                    r = await c.submit_post(
+                        subreddit=_sc_os.getenv("REDDIT_DEFAULT_SUBREDDIT", "test"),
+                        title=content[:300],
+                        url=link or "",
+                        text=content if not link else "",
+                    )
+                elif platform == "pinterest":
+                    r = await c.create_pin(
+                        title=content[:100],
+                        description=content,
+                        image_url=image_url,
+                        link=link or "https://supermegabot.com",
+                    )
+                else:
+                    r = {"error": "platform not implemented"}
+                results[platform] = r
+            except Exception as exc:
+                results[platform] = {"error": str(exc)[:120]}
+
+        for p in platforms:
+            tasks.append(_post_to(p))
+
+        await _sc_asyncio.gather(*tasks)
+        return results
+
+    if delay_seconds <= 60:
+        # Publish immediately
+        _sclog.info("Publishing now to %d platforms: %s", len(platforms), platforms)
+        results = await _publish_now()
+        return {
+            "ok":           True,
+            "mode":         "immediate",
+            "scheduled_at": scheduled_for,
+            "platforms":    platforms,
+            "results":      results,
+        }
+    else:
+        # Return scheduled task descriptor; caller should store and execute later
+        _sclog.info("Scheduled post for %s on %s (in %.0fs)", scheduled_for, platforms, delay_seconds)
+        return {
+            "ok":            True,
+            "mode":          "scheduled",
+            "scheduled_at":  scheduled_for,
+            "delay_seconds": int(delay_seconds),
+            "platforms":     platforms,
+            "content":       content[:200],
+            "image_url":     image_url,
+            "link":          link,
+            "note":          "Store this dict and execute via automation_scheduler at scheduled_at",
+        }
+
+
+async def get_best_posting_times(platform: str = "all") -> dict:
+    """AI analysis of optimal posting times for maximum engagement.
+
+    Uses Claude/OpenAI to recommend posting windows based on platform best practices
+    and niche (e-commerce / SaaS). Falls back to evidence-based static data
+    if no AI key is available.
+
+    Args:
+        platform: "tiktok", "instagram", "twitter", "facebook", "all"
+
+    Returns:
+        {"ok": True, "recommendations": {platform: [{"day": str, "hours": [...], "reason": str}]}}
+    """
+    # Evidence-based defaults (used as fallback + context)
+    static_recommendations = {
+        "tiktok":    [
+            {"day": "Tuesday",   "hours": [9, 19, 21], "reason": "Highest TikTok engagement mid-morning and evening"},
+            {"day": "Thursday",  "hours": [12, 19, 21], "reason": "Peak TikTok watch time on Thursdays"},
+            {"day": "Friday",    "hours": [17, 20, 22], "reason": "Weekend wind-down browsing starts Friday evening"},
+        ],
+        "instagram": [
+            {"day": "Wednesday", "hours": [11, 15], "reason": "Instagram peak: Wednesday 11am and 3pm"},
+            {"day": "Friday",    "hours": [10, 11], "reason": "Friday morning scroll before work"},
+            {"day": "Saturday",  "hours": [9, 11],  "reason": "Weekend morning browsing"},
+        ],
+        "twitter":   [
+            {"day": "Tuesday",  "hours": [8, 9, 10],   "reason": "B2B Twitter peaks Tuesday-Thursday morning"},
+            {"day": "Wednesday", "hours": [8, 9, 10],   "reason": "Midweek engagement highest"},
+            {"day": "Thursday",  "hours": [8, 9, 10],   "reason": "Pre-weekend decision-making peak"},
+        ],
+        "facebook":  [
+            {"day": "Wednesday", "hours": [13, 14, 15], "reason": "Facebook lunch-hour peak"},
+            {"day": "Thursday",  "hours": [8, 12, 13], "reason": "B2C Facebook peaks Thursday"},
+            {"day": "Friday",    "hours": [13, 14],    "reason": "TGIF social media browsing spike"},
+        ],
+    }
+
+    anthropic_key = _sc_os.getenv("ANTHROPIC_API_KEY", "")
+    openai_key    = _sc_os.getenv("OPENAI_API_KEY", "")
+
+    if not anthropic_key and not openai_key:
+        # Return static recommendations
+        if platform == "all":
+            return {"ok": True, "source": "static", "recommendations": static_recommendations}
+        return {"ok": True, "source": "static", "recommendations": {platform: static_recommendations.get(platform, [])}}
+
+    # Use AI for personalised recommendations
+    target_platforms = list(static_recommendations.keys()) if platform == "all" else [platform]
+    prompt = (
+        f"Du bist Social-Media-Experte für E-Commerce / SaaS (DACH-Markt).\n"
+        f"Analysiere optimale Posting-Zeiten für folgende Plattformen: {', '.join(target_platforms)}.\n"
+        f"Zielgruppe: E-Commerce-Unternehmer, Online-Marketer, 25-45 Jahre, DACH-Region.\n\n"
+        f"Antworte als JSON:\n"
+        f'{{"recommendations": {{'
+        f'"platform_name": [{{"day": "Monday", "hours": [9, 15, 19], "reason": "Begründung"}}]'
+        f"}}}}"
+    )
+
+    try:
+        import aiohttp as _ah
+        if anthropic_key:
+            async with _ah.ClientSession() as s:
+                async with s.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                    json={"model": "claude-3-5-haiku-20241022", "max_tokens": 1024, "messages": [{"role": "user", "content": prompt}]},
+                    timeout=_ah.ClientTimeout(total=30),
+                ) as r:
+                    d = await r.json(content_type=None)
+            raw = d.get("content", [{}])[0].get("text", "")
+        else:
+            async with _ah.ClientSession() as s:
+                async with s.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+                    json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "max_tokens": 1024},
+                    timeout=_ah.ClientTimeout(total=30),
+                ) as r:
+                    d = await r.json(content_type=None)
+            raw = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        import json
+        m = _sc_re.search(r'\{[\s\S]*\}', raw)
+        if m:
+            parsed = json.loads(m.group())
+            ai_recs = parsed.get("recommendations", {})
+            if ai_recs:
+                return {"ok": True, "source": "ai", "recommendations": ai_recs}
+    except Exception as exc:
+        _sclog.warning("get_best_posting_times AI call failed: %s — using static data", exc)
+
+    # Fallback to static
+    if platform == "all":
+        return {"ok": True, "source": "static_fallback", "recommendations": static_recommendations}
+    return {"ok": True, "source": "static_fallback", "recommendations": {platform: static_recommendations.get(platform, [])}}
+
+
+async def create_viral_hook(
+    product_or_topic: str,
+    platform: str = "tiktok",
+    style: str = "curiosity",
+) -> dict:
+    """Generate viral content hooks for TikTok/Instagram Reels/Twitter.
+
+    Hooks are the opening 1-2 sentences that stop the scroll.
+
+    Args:
+        product_or_topic: Product name or topic to create hooks for
+        platform:         "tiktok", "instagram", "twitter", "facebook"
+        style:            "curiosity" | "shock" | "benefit" | "story" | "controversy"
+
+    Returns:
+        {"ok": True, "hooks": [{"hook": str, "style": str, "explanation": str}]}
+    """
+    anthropic_key = _sc_os.getenv("ANTHROPIC_API_KEY", "")
+    openai_key    = _sc_os.getenv("OPENAI_API_KEY", "")
+
+    style_descriptions = {
+        "curiosity":    "Neugier wecken, Fragen aufwerfen die man beantworten will",
+        "shock":        "Überraschendes Statement, das widerspricht was man erwartet",
+        "benefit":      "Klarer konkreter Nutzen in Sekunden kommuniziert",
+        "story":        "Persönliche Geschichte die sofort eine Verbindung schafft",
+        "controversy":  "Kontroverser oder provokanter Einstieg der polarisiert",
+    }
+
+    style_desc = style_descriptions.get(style, style_descriptions["curiosity"])
+    platform_limits = {"tiktok": 150, "instagram": 125, "twitter": 200, "facebook": 200}
+    char_limit = platform_limits.get(platform, 150)
+
+    # Fallback hooks if no AI available
+    fallback_hooks = [
+        {"hook": f"Ich hab {product_or_topic} 30 Tage lang getestet — das hätte ich nie erwartet...", "style": "curiosity", "explanation": "Neugier durch unerwartetes Ergebnis"},
+        {"hook": f"99% der {platform}-Nutzer machen diesen Fehler mit {product_or_topic} #viral", "style": "shock", "explanation": "Shock-Faktor durch Statistik"},
+        {"hook": f"So sparst du mit {product_or_topic} 10 Stunden pro Woche (ernsthaft)", "style": "benefit", "explanation": "Konkreter quantifizierter Nutzen"},
+    ]
+
+    if not anthropic_key and not openai_key:
+        return {"ok": True, "source": "fallback", "hooks": fallback_hooks, "platform": platform}
+
+    prompt = (
+        f"Erstelle 5 virale Content-Hooks auf Deutsch für {platform.upper()} zum Thema: \"{product_or_topic}\".\n"
+        f"Hook-Style: {style} — {style_desc}\n"
+        f"Max. {char_limit} Zeichen pro Hook.\n"
+        f"Die Hooks sollen den Scroll SOFORT stoppen.\n\n"
+        f'Antworte als JSON:\n{{"hooks": [{{"hook": "...", "style": "{style}", "explanation": "warum viral"}}]}}'
+    )
+
+    try:
+        import aiohttp as _ah, json
+        if anthropic_key:
+            async with _ah.ClientSession() as s:
+                async with s.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                    json={"model": "claude-3-5-haiku-20241022", "max_tokens": 1024, "messages": [{"role": "user", "content": prompt}]},
+                    timeout=_ah.ClientTimeout(total=30),
+                ) as r:
+                    d = await r.json(content_type=None)
+            raw = d.get("content", [{}])[0].get("text", "")
+        else:
+            async with _ah.ClientSession() as s:
+                async with s.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+                    json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "max_tokens": 1024},
+                    timeout=_ah.ClientTimeout(total=30),
+                ) as r:
+                    d = await r.json(content_type=None)
+            raw = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        m = _sc_re.search(r'\{[\s\S]*\}', raw)
+        if m:
+            parsed = json.loads(m.group())
+            hooks = parsed.get("hooks", [])
+            if hooks:
+                _sclog.info("Generated %d viral hooks for '%s' on %s", len(hooks), product_or_topic, platform)
+                return {"ok": True, "source": "ai", "hooks": hooks, "platform": platform, "style": style}
+    except Exception as exc:
+        _sclog.warning("create_viral_hook AI failed: %s — using fallback", exc)
+
+    return {"ok": True, "source": "fallback", "hooks": fallback_hooks, "platform": platform}

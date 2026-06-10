@@ -1,5 +1,5 @@
 {
-  "cycles": 1512,
+  "cycles": 1845,
   "patterns": {
     "warning:CPU:97% RAM:52% Disk:46%": 1,
     "warning:CPU:47% RAM:85% Disk:11%": 1,
@@ -19,3669 +19,6 @@
     }
   },
   "history": [
-    {
-      "ts": "2026-06-08 23:03:43",
-      "status": "ok",
-      "message": "CPU:0% RAM:68% Disk:9%",
-      "metrics": {
-        "ram_percent": 68.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-08 23:05:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:68% Disk:9%",
-      "metrics": {
-        "ram_percent": 68.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-08 23:08:03",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:9%",
-      "metrics": {
-        "ram_percent": 63.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 8.8
-      }
-    },
-    {
-      "ts": "2026-06-08 23:10:11",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 6.6
-      }
-    },
-    {
-      "ts": "2026-06-08 23:12:16",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 5.5
-      }
-    },
-    {
-      "ts": "2026-06-08 23:14:22",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:9%",
-      "metrics": {
-        "ram_percent": 59.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 8.2
-      }
-    },
-    {
-      "ts": "2026-06-08 23:16:34",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:9%",
-      "metrics": {
-        "ram_percent": 62.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 3.9
-      }
-    },
-    {
-      "ts": "2026-06-08 23:18:40",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 2.1
-      }
-    },
-    {
-      "ts": "2026-06-08 23:20:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:9%",
-      "metrics": {
-        "ram_percent": 66.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.7
-      }
-    },
-    {
-      "ts": "2026-06-08 23:22:55",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 65.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.8
-      }
-    },
-    {
-      "ts": "2026-06-08 23:25:01",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 65.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.9
-      }
-    },
-    {
-      "ts": "2026-06-08 23:27:06",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.8
-      }
-    },
-    {
-      "ts": "2026-06-08 23:29:14",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.7
-      }
-    },
-    {
-      "ts": "2026-06-08 23:31:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 65.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.3
-      }
-    },
-    {
-      "ts": "2026-06-08 23:33:27",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 65.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.2
-      }
-    },
-    {
-      "ts": "2026-06-08 23:35:36",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 65.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-08 23:37:47",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:9%",
-      "metrics": {
-        "ram_percent": 60.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 9.5
-      }
-    },
-    {
-      "ts": "2026-06-08 23:39:53",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:9%",
-      "metrics": {
-        "ram_percent": 61.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 7.9
-      }
-    },
-    {
-      "ts": "2026-06-08 23:42:00",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:9%",
-      "metrics": {
-        "ram_percent": 61.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 7.6
-      }
-    },
-    {
-      "ts": "2026-06-08 23:44:10",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:9%",
-      "metrics": {
-        "ram_percent": 62.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 6.5
-      }
-    },
-    {
-      "ts": "2026-06-08 23:46:15",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 3.9
-      }
-    },
-    {
-      "ts": "2026-06-08 23:48:21",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:9%",
-      "metrics": {
-        "ram_percent": 66.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 2.3
-      }
-    },
-    {
-      "ts": "2026-06-08 23:50:26",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:9%",
-      "metrics": {
-        "ram_percent": 67.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.3
-      }
-    },
-    {
-      "ts": "2026-06-08 23:52:36",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:9%",
-      "metrics": {
-        "ram_percent": 66.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.3
-      }
-    },
-    {
-      "ts": "2026-06-08 23:54:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:9%",
-      "metrics": {
-        "ram_percent": 65.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 1.0
-      }
-    },
-    {
-      "ts": "2026-06-08 23:56:53",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 65.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 1.0
-      }
-    },
-    {
-      "ts": "2026-06-08 23:58:59",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 63.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 2.4
-      }
-    },
-    {
-      "ts": "2026-06-09 00:01:06",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 63.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 2.0
-      }
-    },
-    {
-      "ts": "2026-06-09 00:03:12",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 1.2
-      }
-    },
-    {
-      "ts": "2026-06-09 00:05:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 63.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 1.5
-      }
-    },
-    {
-      "ts": "2026-06-09 00:07:28",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:9%",
-      "metrics": {
-        "ram_percent": 59.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 10.7
-      }
-    },
-    {
-      "ts": "2026-06-09 00:09:36",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:9%",
-      "metrics": {
-        "ram_percent": 61.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 7.2
-      }
-    },
-    {
-      "ts": "2026-06-09 00:11:41",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:9%",
-      "metrics": {
-        "ram_percent": 62.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 5.2
-      }
-    },
-    {
-      "ts": "2026-06-09 00:13:47",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:9%",
-      "metrics": {
-        "ram_percent": 62.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 4.9
-      }
-    },
-    {
-      "ts": "2026-06-09 00:15:54",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:9%",
-      "metrics": {
-        "ram_percent": 62.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 4.8
-      }
-    },
-    {
-      "ts": "2026-06-09 00:18:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:9%",
-      "metrics": {
-        "ram_percent": 63.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 4.2
-      }
-    },
-    {
-      "ts": "2026-06-09 00:20:08",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 3.5
-      }
-    },
-    {
-      "ts": "2026-06-09 00:22:13",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 3.0
-      }
-    },
-    {
-      "ts": "2026-06-09 00:24:19",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 65.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 2.2
-      }
-    },
-    {
-      "ts": "2026-06-09 00:26:24",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:9%",
-      "metrics": {
-        "ram_percent": 66.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 1.7
-      }
-    },
-    {
-      "ts": "2026-06-09 00:28:29",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:9%",
-      "metrics": {
-        "ram_percent": 66.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 1.4
-      }
-    },
-    {
-      "ts": "2026-06-09 00:30:37",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:9%",
-      "metrics": {
-        "ram_percent": 63.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 3.8
-      }
-    },
-    {
-      "ts": "2026-06-09 00:32:44",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:9%",
-      "metrics": {
-        "ram_percent": 63.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 2.7
-      }
-    },
-    {
-      "ts": "2026-06-09 00:34:50",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:9%",
-      "metrics": {
-        "ram_percent": 64.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 1.6
-      }
-    },
-    {
-      "ts": "2026-06-09 00:37:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:81% Disk:9%",
-      "metrics": {
-        "ram_percent": 81.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 00:39:08",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:9%",
-      "metrics": {
-        "ram_percent": 61.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 8.3
-      }
-    },
-    {
-      "ts": "2026-06-09 00:41:16",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:9%",
-      "metrics": {
-        "ram_percent": 62.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 9.0,
-        "ram_free_gb": 6.1
-      }
-    },
-    {
-      "ts": "2026-06-09 00:43:23",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.2
-      }
-    },
-    {
-      "ts": "2026-06-09 00:45:28",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.5
-      }
-    },
-    {
-      "ts": "2026-06-09 00:47:36",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.7
-      }
-    },
-    {
-      "ts": "2026-06-09 00:49:42",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.1
-      }
-    },
-    {
-      "ts": "2026-06-09 00:51:48",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.5
-      }
-    },
-    {
-      "ts": "2026-06-09 00:53:55",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.0
-      }
-    },
-    {
-      "ts": "2026-06-09 00:56:00",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.4
-      }
-    },
-    {
-      "ts": "2026-06-09 00:58:06",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.5
-      }
-    },
-    {
-      "ts": "2026-06-09 01:00:13",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.2
-      }
-    },
-    {
-      "ts": "2026-06-09 01:02:18",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.3
-      }
-    },
-    {
-      "ts": "2026-06-09 01:04:25",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.6
-      }
-    },
-    {
-      "ts": "2026-06-09 01:06:35",
-      "status": "ok",
-      "message": "CPU:0% RAM:82% Disk:10%",
-      "metrics": {
-        "ram_percent": 82.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.2
-      }
-    },
-    {
-      "ts": "2026-06-09 01:08:43",
-      "status": "ok",
-      "message": "CPU:0% RAM:80% Disk:10%",
-      "metrics": {
-        "ram_percent": 80.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 01:10:52",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.7
-      }
-    },
-    {
-      "ts": "2026-06-09 01:12:58",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.0
-      }
-    },
-    {
-      "ts": "2026-06-09 01:15:03",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.4
-      }
-    },
-    {
-      "ts": "2026-06-09 01:17:09",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.8
-      }
-    },
-    {
-      "ts": "2026-06-09 01:19:15",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.1
-      }
-    },
-    {
-      "ts": "2026-06-09 01:21:21",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.9
-      }
-    },
-    {
-      "ts": "2026-06-09 01:23:27",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.8
-      }
-    },
-    {
-      "ts": "2026-06-09 01:25:33",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.8
-      }
-    },
-    {
-      "ts": "2026-06-09 01:27:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.5
-      }
-    },
-    {
-      "ts": "2026-06-09 01:29:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.7
-      }
-    },
-    {
-      "ts": "2026-06-09 01:31:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.3
-      }
-    },
-    {
-      "ts": "2026-06-09 01:33:57",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.0
-      }
-    },
-    {
-      "ts": "2026-06-09 01:36:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.3
-      }
-    },
-    {
-      "ts": "2026-06-09 01:38:09",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.4
-      }
-    },
-    {
-      "ts": "2026-06-09 01:40:16",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.8
-      }
-    },
-    {
-      "ts": "2026-06-09 01:42:21",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.4
-      }
-    },
-    {
-      "ts": "2026-06-09 01:44:26",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.0
-      }
-    },
-    {
-      "ts": "2026-06-09 01:46:32",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.7
-      }
-    },
-    {
-      "ts": "2026-06-09 01:48:38",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.8
-      }
-    },
-    {
-      "ts": "2026-06-09 01:50:43",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.8
-      }
-    },
-    {
-      "ts": "2026-06-09 01:52:49",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.5
-      }
-    },
-    {
-      "ts": "2026-06-09 01:54:55",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.0
-      }
-    },
-    {
-      "ts": "2026-06-09 01:57:01",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.6
-      }
-    },
-    {
-      "ts": "2026-06-09 01:59:09",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.8
-      }
-    },
-    {
-      "ts": "2026-06-09 02:01:14",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.4
-      }
-    },
-    {
-      "ts": "2026-06-09 02:03:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.8
-      }
-    },
-    {
-      "ts": "2026-06-09 02:05:25",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.1
-      }
-    },
-    {
-      "ts": "2026-06-09 02:07:31",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.8
-      }
-    },
-    {
-      "ts": "2026-06-09 02:09:36",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.1
-      }
-    },
-    {
-      "ts": "2026-06-09 02:11:43",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.7
-      }
-    },
-    {
-      "ts": "2026-06-09 02:13:48",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.3
-      }
-    },
-    {
-      "ts": "2026-06-09 02:15:54",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.0
-      }
-    },
-    {
-      "ts": "2026-06-09 02:18:00",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.9
-      }
-    },
-    {
-      "ts": "2026-06-09 02:20:06",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.3
-      }
-    },
-    {
-      "ts": "2026-06-09 02:22:11",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.5
-      }
-    },
-    {
-      "ts": "2026-06-09 02:24:17",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.8
-      }
-    },
-    {
-      "ts": "2026-06-09 02:26:22",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.7
-      }
-    },
-    {
-      "ts": "2026-06-09 02:28:28",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.1
-      }
-    },
-    {
-      "ts": "2026-06-09 02:30:35",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.0
-      }
-    },
-    {
-      "ts": "2026-06-09 02:32:42",
-      "status": "ok",
-      "message": "CPU:0% RAM:68% Disk:10%",
-      "metrics": {
-        "ram_percent": 68.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 02:34:47",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.8
-      }
-    },
-    {
-      "ts": "2026-06-09 02:36:53",
-      "status": "ok",
-      "message": "CPU:0% RAM:83% Disk:10%",
-      "metrics": {
-        "ram_percent": 82.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 02:38:58",
-      "status": "ok",
-      "message": "CPU:0% RAM:81% Disk:10%",
-      "metrics": {
-        "ram_percent": 81.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.2
-      }
-    },
-    {
-      "ts": "2026-06-09 02:41:03",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.5
-      }
-    },
-    {
-      "ts": "2026-06-09 02:43:09",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.3
-      }
-    },
-    {
-      "ts": "2026-06-09 02:45:15",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.0
-      }
-    },
-    {
-      "ts": "2026-06-09 02:47:22",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.6
-      }
-    },
-    {
-      "ts": "2026-06-09 02:49:27",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.6
-      }
-    },
-    {
-      "ts": "2026-06-09 02:51:32",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.4
-      }
-    },
-    {
-      "ts": "2026-06-09 02:53:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.9
-      }
-    },
-    {
-      "ts": "2026-06-09 02:55:44",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.7
-      }
-    },
-    {
-      "ts": "2026-06-09 02:57:50",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.1
-      }
-    },
-    {
-      "ts": "2026-06-09 02:59:55",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.0
-      }
-    },
-    {
-      "ts": "2026-06-09 03:02:01",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.5
-      }
-    },
-    {
-      "ts": "2026-06-09 03:04:07",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.6
-      }
-    },
-    {
-      "ts": "2026-06-09 03:06:13",
-      "status": "ok",
-      "message": "CPU:0% RAM:77% Disk:10%",
-      "metrics": {
-        "ram_percent": 76.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 03:08:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.7
-      }
-    },
-    {
-      "ts": "2026-06-09 03:10:25",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.7
-      }
-    },
-    {
-      "ts": "2026-06-09 03:12:31",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.9
-      }
-    },
-    {
-      "ts": "2026-06-09 03:14:37",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.3
-      }
-    },
-    {
-      "ts": "2026-06-09 03:16:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.1
-      }
-    },
-    {
-      "ts": "2026-06-09 03:18:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.4
-      }
-    },
-    {
-      "ts": "2026-06-09 03:20:56",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:23:03",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:25:09",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.9
-      }
-    },
-    {
-      "ts": "2026-06-09 03:27:15",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.4
-      }
-    },
-    {
-      "ts": "2026-06-09 03:29:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.7
-      }
-    },
-    {
-      "ts": "2026-06-09 03:31:26",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.0
-      }
-    },
-    {
-      "ts": "2026-06-09 03:33:31",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.0
-      }
-    },
-    {
-      "ts": "2026-06-09 03:35:36",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.1
-      }
-    },
-    {
-      "ts": "2026-06-09 03:37:42",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.0
-      }
-    },
-    {
-      "ts": "2026-06-09 03:39:48",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.2
-      }
-    },
-    {
-      "ts": "2026-06-09 03:41:55",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.6
-      }
-    },
-    {
-      "ts": "2026-06-09 03:44:01",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.1
-      }
-    },
-    {
-      "ts": "2026-06-09 03:46:07",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.6
-      }
-    },
-    {
-      "ts": "2026-06-09 03:48:14",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.1
-      }
-    },
-    {
-      "ts": "2026-06-09 03:50:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.3
-      }
-    },
-    {
-      "ts": "2026-06-09 03:52:28",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 67.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.6
-      }
-    },
-    {
-      "ts": "2026-06-09 03:54:34",
-      "status": "ok",
-      "message": "CPU:0% RAM:68% Disk:10%",
-      "metrics": {
-        "ram_percent": 67.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.7
-      }
-    },
-    {
-      "ts": "2026-06-09 03:56:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:68% Disk:10%",
-      "metrics": {
-        "ram_percent": 67.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.1
-      }
-    },
-    {
-      "ts": "2026-06-09 03:58:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:68% Disk:10%",
-      "metrics": {
-        "ram_percent": 68.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.3
-      }
-    },
-    {
-      "ts": "2026-06-09 04:00:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:68% Disk:10%",
-      "metrics": {
-        "ram_percent": 67.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.6
-      }
-    },
-    {
-      "ts": "2026-06-09 04:02:56",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 67.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.7
-      }
-    },
-    {
-      "ts": "2026-06-09 04:05:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 67.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.7
-      }
-    },
-    {
-      "ts": "2026-06-09 04:07:11",
-      "status": "warning",
-      "message": "CPU:0% RAM:85% Disk:10%",
-      "metrics": {
-        "ram_percent": 85.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 04:09:16",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.1
-      }
-    },
-    {
-      "ts": "2026-06-09 04:11:23",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.4
-      }
-    },
-    {
-      "ts": "2026-06-09 04:13:28",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 04:15:34",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:17:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.6
-      }
-    },
-    {
-      "ts": "2026-06-09 04:19:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.8
-      }
-    },
-    {
-      "ts": "2026-06-09 04:21:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.4
-      }
-    },
-    {
-      "ts": "2026-06-09 04:23:56",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.0
-      }
-    },
-    {
-      "ts": "2026-06-09 04:26:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.8
-      }
-    },
-    {
-      "ts": "2026-06-09 04:28:08",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.2
-      }
-    },
-    {
-      "ts": "2026-06-09 04:30:15",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.4
-      }
-    },
-    {
-      "ts": "2026-06-09 04:32:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.8
-      }
-    },
-    {
-      "ts": "2026-06-09 04:34:26",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.5
-      }
-    },
-    {
-      "ts": "2026-06-09 04:36:32",
-      "status": "ok",
-      "message": "CPU:0% RAM:82% Disk:10%",
-      "metrics": {
-        "ram_percent": 81.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 04:38:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:82% Disk:10%",
-      "metrics": {
-        "ram_percent": 82.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 04:40:44",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.8
-      }
-    },
-    {
-      "ts": "2026-06-09 04:42:50",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.4
-      }
-    },
-    {
-      "ts": "2026-06-09 04:44:55",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.1
-      }
-    },
-    {
-      "ts": "2026-06-09 04:47:01",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.8
-      }
-    },
-    {
-      "ts": "2026-06-09 04:49:06",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.1
-      }
-    },
-    {
-      "ts": "2026-06-09 04:51:12",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.9
-      }
-    },
-    {
-      "ts": "2026-06-09 04:53:18",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.6
-      }
-    },
-    {
-      "ts": "2026-06-09 04:55:24",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.1
-      }
-    },
-    {
-      "ts": "2026-06-09 04:57:29",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.4
-      }
-    },
-    {
-      "ts": "2026-06-09 04:59:35",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.4
-      }
-    },
-    {
-      "ts": "2026-06-09 05:01:40",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.4
-      }
-    },
-    {
-      "ts": "2026-06-09 05:03:46",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.0
-      }
-    },
-    {
-      "ts": "2026-06-09 05:05:52",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.2
-      }
-    },
-    {
-      "ts": "2026-06-09 05:07:57",
-      "status": "ok",
-      "message": "CPU:0% RAM:84% Disk:10%",
-      "metrics": {
-        "ram_percent": 83.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 05:10:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:81% Disk:10%",
-      "metrics": {
-        "ram_percent": 80.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 05:12:08",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.9
-      }
-    },
-    {
-      "ts": "2026-06-09 05:14:14",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.1
-      }
-    },
-    {
-      "ts": "2026-06-09 05:16:19",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.9
-      }
-    },
-    {
-      "ts": "2026-06-09 05:18:25",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.9
-      }
-    },
-    {
-      "ts": "2026-06-09 05:20:31",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.0
-      }
-    },
-    {
-      "ts": "2026-06-09 05:22:37",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 05:24:42",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.8
-      }
-    },
-    {
-      "ts": "2026-06-09 05:26:49",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.4
-      }
-    },
-    {
-      "ts": "2026-06-09 05:28:54",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.6
-      }
-    },
-    {
-      "ts": "2026-06-09 05:31:00",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 05:33:05",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.8
-      }
-    },
-    {
-      "ts": "2026-06-09 05:35:11",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.1
-      }
-    },
-    {
-      "ts": "2026-06-09 05:37:16",
-      "status": "ok",
-      "message": "CPU:0% RAM:85% Disk:10%",
-      "metrics": {
-        "ram_percent": 84.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 05:39:22",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.1
-      }
-    },
-    {
-      "ts": "2026-06-09 05:41:28",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.4
-      }
-    },
-    {
-      "ts": "2026-06-09 05:43:34",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.6
-      }
-    },
-    {
-      "ts": "2026-06-09 05:45:40",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.5
-      }
-    },
-    {
-      "ts": "2026-06-09 05:47:46",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.4
-      }
-    },
-    {
-      "ts": "2026-06-09 05:49:52",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.5
-      }
-    },
-    {
-      "ts": "2026-06-09 05:51:58",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.1
-      }
-    },
-    {
-      "ts": "2026-06-09 05:54:03",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.9
-      }
-    },
-    {
-      "ts": "2026-06-09 05:56:09",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.4
-      }
-    },
-    {
-      "ts": "2026-06-09 05:58:14",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.3
-      }
-    },
-    {
-      "ts": "2026-06-09 06:00:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.2
-      }
-    },
-    {
-      "ts": "2026-06-09 06:02:26",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.2
-      }
-    },
-    {
-      "ts": "2026-06-09 06:04:32",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.5
-      }
-    },
-    {
-      "ts": "2026-06-09 06:06:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:82% Disk:10%",
-      "metrics": {
-        "ram_percent": 82.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 06:08:46",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.6
-      }
-    },
-    {
-      "ts": "2026-06-09 06:10:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.7
-      }
-    },
-    {
-      "ts": "2026-06-09 06:12:57",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.4
-      }
-    },
-    {
-      "ts": "2026-06-09 06:15:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.4
-      }
-    },
-    {
-      "ts": "2026-06-09 06:17:08",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.1
-      }
-    },
-    {
-      "ts": "2026-06-09 06:19:15",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.8
-      }
-    },
-    {
-      "ts": "2026-06-09 06:21:21",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.1
-      }
-    },
-    {
-      "ts": "2026-06-09 06:23:26",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.7
-      }
-    },
-    {
-      "ts": "2026-06-09 06:25:32",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.2
-      }
-    },
-    {
-      "ts": "2026-06-09 06:27:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.0
-      }
-    },
-    {
-      "ts": "2026-06-09 06:29:44",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 67.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.0
-      }
-    },
-    {
-      "ts": "2026-06-09 06:31:50",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 66.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.4
-      }
-    },
-    {
-      "ts": "2026-06-09 06:33:56",
-      "status": "ok",
-      "message": "CPU:0% RAM:67% Disk:10%",
-      "metrics": {
-        "ram_percent": 67.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.9
-      }
-    },
-    {
-      "ts": "2026-06-09 06:36:12",
-      "status": "ok",
-      "message": "CPU:0% RAM:50% Disk:10%",
-      "metrics": {
-        "ram_percent": 50.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.0
-      }
-    },
-    {
-      "ts": "2026-06-09 06:38:19",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.2
-      }
-    },
-    {
-      "ts": "2026-06-09 06:40:24",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.3
-      }
-    },
-    {
-      "ts": "2026-06-09 06:42:30",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.3
-      }
-    },
-    {
-      "ts": "2026-06-09 06:44:35",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.0
-      }
-    },
-    {
-      "ts": "2026-06-09 06:46:41",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.5
-      }
-    },
-    {
-      "ts": "2026-06-09 06:48:47",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.1
-      }
-    },
-    {
-      "ts": "2026-06-09 06:50:52",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.9
-      }
-    },
-    {
-      "ts": "2026-06-09 06:52:58",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.2
-      }
-    },
-    {
-      "ts": "2026-06-09 06:55:04",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.5
-      }
-    },
-    {
-      "ts": "2026-06-09 06:57:10",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.0
-      }
-    },
-    {
-      "ts": "2026-06-09 06:59:15",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.1
-      }
-    },
-    {
-      "ts": "2026-06-09 07:01:21",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.1
-      }
-    },
-    {
-      "ts": "2026-06-09 07:03:26",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.1
-      }
-    },
-    {
-      "ts": "2026-06-09 07:05:32",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.8
-      }
-    },
-    {
-      "ts": "2026-06-09 07:07:38",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.6
-      }
-    },
-    {
-      "ts": "2026-06-09 07:09:44",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.9
-      }
-    },
-    {
-      "ts": "2026-06-09 07:11:50",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 07:13:56",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.2
-      }
-    },
-    {
-      "ts": "2026-06-09 07:16:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.0
-      }
-    },
-    {
-      "ts": "2026-06-09 07:18:08",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.7
-      }
-    },
-    {
-      "ts": "2026-06-09 07:20:13",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.7
-      }
-    },
-    {
-      "ts": "2026-06-09 07:22:19",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 63.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.9
-      }
-    },
-    {
-      "ts": "2026-06-09 07:24:24",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.7
-      }
-    },
-    {
-      "ts": "2026-06-09 07:26:29",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.9
-      }
-    },
-    {
-      "ts": "2026-06-09 07:28:35",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.2
-      }
-    },
-    {
-      "ts": "2026-06-09 07:30:40",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.7
-      }
-    },
-    {
-      "ts": "2026-06-09 07:32:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.1
-      }
-    },
-    {
-      "ts": "2026-06-09 07:34:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.1
-      }
-    },
-    {
-      "ts": "2026-06-09 07:36:56",
-      "status": "ok",
-      "message": "CPU:0% RAM:82% Disk:10%",
-      "metrics": {
-        "ram_percent": 82.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 07:39:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.8
-      }
-    },
-    {
-      "ts": "2026-06-09 07:41:07",
-      "status": "ok",
-      "message": "CPU:0% RAM:62% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.5
-      }
-    },
-    {
-      "ts": "2026-06-09 07:43:13",
-      "status": "ok",
-      "message": "CPU:0% RAM:63% Disk:10%",
-      "metrics": {
-        "ram_percent": 62.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.7
-      }
-    },
-    {
-      "ts": "2026-06-09 07:45:18",
-      "status": "ok",
-      "message": "CPU:0% RAM:64% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 5.0
-      }
-    },
-    {
-      "ts": "2026-06-09 07:47:24",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 64.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.6
-      }
-    },
-    {
-      "ts": "2026-06-09 07:49:30",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.0
-      }
-    },
-    {
-      "ts": "2026-06-09 07:51:36",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.9
-      }
-    },
-    {
-      "ts": "2026-06-09 07:53:42",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.8
-      }
-    },
-    {
-      "ts": "2026-06-09 07:55:47",
-      "status": "ok",
-      "message": "CPU:0% RAM:65% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.7
-      }
-    },
-    {
-      "ts": "2026-06-09 07:57:53",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.2
-      }
-    },
-    {
-      "ts": "2026-06-09 07:59:59",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.8
-      }
-    },
-    {
-      "ts": "2026-06-09 08:02:04",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 3.2
-      }
-    },
-    {
-      "ts": "2026-06-09 08:04:10",
-      "status": "ok",
-      "message": "CPU:0% RAM:66% Disk:10%",
-      "metrics": {
-        "ram_percent": 65.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 2.8
-      }
-    },
-    {
-      "ts": "2026-06-09 08:06:16",
-      "status": "ok",
-      "message": "CPU:0% RAM:83% Disk:10%",
-      "metrics": {
-        "ram_percent": 83.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 08:08:23",
-      "status": "ok",
-      "message": "CPU:0% RAM:84% Disk:10%",
-      "metrics": {
-        "ram_percent": 83.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 08:10:28",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.4
-      }
-    },
-    {
-      "ts": "2026-06-09 08:12:34",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.7
-      }
-    },
-    {
-      "ts": "2026-06-09 08:14:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.2
-      }
-    },
-    {
-      "ts": "2026-06-09 08:16:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.6
-      }
-    },
-    {
-      "ts": "2026-06-09 08:18:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.0
-      }
-    },
-    {
-      "ts": "2026-06-09 08:20:57",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.6
-      }
-    },
-    {
-      "ts": "2026-06-09 08:23:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.6
-      }
-    },
-    {
-      "ts": "2026-06-09 08:25:08",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 08:27:16",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.0
-      }
-    },
-    {
-      "ts": "2026-06-09 08:29:21",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.6
-      }
-    },
-    {
-      "ts": "2026-06-09 08:31:27",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 60.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.9
-      }
-    },
-    {
-      "ts": "2026-06-09 08:33:33",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.2
-      }
-    },
-    {
-      "ts": "2026-06-09 08:35:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.4
-      }
-    },
-    {
-      "ts": "2026-06-09 08:37:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:81% Disk:10%",
-      "metrics": {
-        "ram_percent": 81.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.2
-      }
-    },
-    {
-      "ts": "2026-06-09 08:39:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.4
-      }
-    },
-    {
-      "ts": "2026-06-09 08:41:57",
-      "status": "ok",
-      "message": "CPU:0% RAM:52% Disk:10%",
-      "metrics": {
-        "ram_percent": 52.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 12.2
-      }
-    },
-    {
-      "ts": "2026-06-09 08:44:03",
-      "status": "ok",
-      "message": "CPU:0% RAM:55% Disk:10%",
-      "metrics": {
-        "ram_percent": 55.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.6
-      }
-    },
-    {
-      "ts": "2026-06-09 08:46:08",
-      "status": "ok",
-      "message": "CPU:0% RAM:56% Disk:10%",
-      "metrics": {
-        "ram_percent": 56.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.2
-      }
-    },
-    {
-      "ts": "2026-06-09 08:48:14",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 56.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.1
-      }
-    },
-    {
-      "ts": "2026-06-09 08:50:20",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.4
-      }
-    },
-    {
-      "ts": "2026-06-09 08:52:26",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.1
-      }
-    },
-    {
-      "ts": "2026-06-09 08:54:32",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.4
-      }
-    },
-    {
-      "ts": "2026-06-09 08:56:37",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.1
-      }
-    },
-    {
-      "ts": "2026-06-09 08:58:43",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.3
-      }
-    },
-    {
-      "ts": "2026-06-09 09:00:48",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.2
-      }
-    },
-    {
-      "ts": "2026-06-09 09:02:54",
-      "status": "ok",
-      "message": "CPU:0% RAM:60% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.1
-      }
-    },
-    {
-      "ts": "2026-06-09 09:04:59",
-      "status": "ok",
-      "message": "CPU:0% RAM:61% Disk:10%",
-      "metrics": {
-        "ram_percent": 61.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 4.6
-      }
-    },
-    {
-      "ts": "2026-06-09 09:07:05",
-      "status": "ok",
-      "message": "CPU:0% RAM:81% Disk:10%",
-      "metrics": {
-        "ram_percent": 80.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 09:09:13",
-      "status": "ok",
-      "message": "CPU:0% RAM:80% Disk:10%",
-      "metrics": {
-        "ram_percent": 79.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 09:11:19",
-      "status": "ok",
-      "message": "CPU:0% RAM:56% Disk:10%",
-      "metrics": {
-        "ram_percent": 56.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.1
-      }
-    },
-    {
-      "ts": "2026-06-09 09:13:25",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.8
-      }
-    },
-    {
-      "ts": "2026-06-09 09:15:30",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 56.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.3
-      }
-    },
-    {
-      "ts": "2026-06-09 09:17:36",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.5
-      }
-    },
-    {
-      "ts": "2026-06-09 09:19:42",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.8
-      }
-    },
-    {
-      "ts": "2026-06-09 09:21:47",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.2
-      }
-    },
-    {
-      "ts": "2026-06-09 09:23:53",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.6,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.7
-      }
-    },
-    {
-      "ts": "2026-06-09 09:25:58",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.7
-      }
-    },
-    {
-      "ts": "2026-06-09 09:28:04",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 09:30:09",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.6
-      }
-    },
-    {
-      "ts": "2026-06-09 09:32:14",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.4
-      }
-    },
-    {
-      "ts": "2026-06-09 09:34:21",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.6
-      }
-    },
-    {
-      "ts": "2026-06-09 09:36:27",
-      "status": "ok",
-      "message": "CPU:0% RAM:75% Disk:10%",
-      "metrics": {
-        "ram_percent": 75.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.5
-      }
-    },
-    {
-      "ts": "2026-06-09 09:38:33",
-      "status": "ok",
-      "message": "CPU:0% RAM:80% Disk:10%",
-      "metrics": {
-        "ram_percent": 80.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 09:40:38",
-      "status": "ok",
-      "message": "CPU:0% RAM:55% Disk:10%",
-      "metrics": {
-        "ram_percent": 55.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.7
-      }
-    },
-    {
-      "ts": "2026-06-09 09:42:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:56% Disk:10%",
-      "metrics": {
-        "ram_percent": 56.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 10.6
-      }
-    },
-    {
-      "ts": "2026-06-09 09:44:51",
-      "status": "ok",
-      "message": "CPU:0% RAM:55% Disk:10%",
-      "metrics": {
-        "ram_percent": 55.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.0
-      }
-    },
-    {
-      "ts": "2026-06-09 09:46:56",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 56.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.4
-      }
-    },
-    {
-      "ts": "2026-06-09 09:49:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.3
-      }
-    },
-    {
-      "ts": "2026-06-09 09:51:07",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.3
-      }
-    },
-    {
-      "ts": "2026-06-09 09:53:12",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 09:55:18",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.4
-      }
-    },
-    {
-      "ts": "2026-06-09 09:57:23",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.5
-      }
-    },
-    {
-      "ts": "2026-06-09 09:59:29",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 7.2
-      }
-    },
-    {
-      "ts": "2026-06-09 10:01:34",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.7
-      }
-    },
-    {
-      "ts": "2026-06-09 10:03:39",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 59.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 6.7
-      }
-    },
-    {
-      "ts": "2026-06-09 10:05:45",
-      "status": "ok",
-      "message": "CPU:0% RAM:75% Disk:10%",
-      "metrics": {
-        "ram_percent": 75.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-09 10:07:54",
-      "status": "ok",
-      "message": "CPU:0% RAM:81% Disk:10%",
-      "metrics": {
-        "ram_percent": 81.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 10:09:59",
-      "status": "ok",
-      "message": "CPU:0% RAM:78% Disk:10%",
-      "metrics": {
-        "ram_percent": 78.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.2
-      }
-    },
-    {
-      "ts": "2026-06-09 10:12:05",
-      "status": "ok",
-      "message": "CPU:0% RAM:77% Disk:10%",
-      "metrics": {
-        "ram_percent": 77.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 1.1
-      }
-    },
-    {
-      "ts": "2026-06-09 10:14:11",
-      "status": "ok",
-      "message": "CPU:0% RAM:56% Disk:10%",
-      "metrics": {
-        "ram_percent": 55.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.3
-      }
-    },
-    {
-      "ts": "2026-06-09 10:16:16",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.9
-      }
-    },
-    {
-      "ts": "2026-06-09 10:18:21",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.6
-      }
-    },
-    {
-      "ts": "2026-06-09 10:20:27",
-      "status": "ok",
-      "message": "CPU:0% RAM:57% Disk:10%",
-      "metrics": {
-        "ram_percent": 56.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 9.8
-      }
-    },
-    {
-      "ts": "2026-06-09 10:22:32",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.7,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.9
-      }
-    },
-    {
-      "ts": "2026-06-09 10:24:38",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 57.9,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.9
-      }
-    },
-    {
-      "ts": "2026-06-09 10:26:44",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.2,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 10:28:50",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.1,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 10:30:55",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.0,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.5
-      }
-    },
-    {
-      "ts": "2026-06-09 10:33:02",
-      "status": "ok",
-      "message": "CPU:0% RAM:58% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.5,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.2
-      }
-    },
-    {
-      "ts": "2026-06-09 10:35:07",
-      "status": "ok",
-      "message": "CPU:0% RAM:59% Disk:10%",
-      "metrics": {
-        "ram_percent": 58.8,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 8.0
-      }
-    },
-    {
-      "ts": "2026-06-09 10:37:13",
-      "status": "ok",
-      "message": "CPU:0% RAM:80% Disk:10%",
-      "metrics": {
-        "ram_percent": 80.4,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 10:39:18",
-      "status": "ok",
-      "message": "CPU:0% RAM:79% Disk:10%",
-      "metrics": {
-        "ram_percent": 79.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 0.1
-      }
-    },
-    {
-      "ts": "2026-06-09 10:41:24",
-      "status": "ok",
-      "message": "CPU:0% RAM:55% Disk:10%",
-      "metrics": {
-        "ram_percent": 55.3,
-        "cpu_percent": 0.0,
-        "disk_percent": 10.0,
-        "ram_free_gb": 11.4
-      }
-    },
     {
       "ts": "2026-06-09 10:43:30",
       "status": "ok",
@@ -5517,6 +1854,3669 @@
         "cpu_percent": 57.6,
         "disk_percent": 11.0,
         "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-09 22:44:03",
+      "status": "ok",
+      "message": "CPU:63% RAM:81% Disk:14%",
+      "metrics": {
+        "ram_percent": 81.2,
+        "cpu_percent": 63.3,
+        "disk_percent": 14.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 22:46:04",
+      "status": "ok",
+      "message": "CPU:53% RAM:81% Disk:12%",
+      "metrics": {
+        "ram_percent": 81.2,
+        "cpu_percent": 53.3,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 22:48:06",
+      "status": "ok",
+      "message": "CPU:58% RAM:81% Disk:12%",
+      "metrics": {
+        "ram_percent": 81.2,
+        "cpu_percent": 58.5,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 22:50:08",
+      "status": "ok",
+      "message": "CPU:62% RAM:81% Disk:12%",
+      "metrics": {
+        "ram_percent": 81.3,
+        "cpu_percent": 62.5,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 22:52:10",
+      "status": "ok",
+      "message": "CPU:53% RAM:78% Disk:12%",
+      "metrics": {
+        "ram_percent": 78.2,
+        "cpu_percent": 53.2,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 22:54:12",
+      "status": "ok",
+      "message": "CPU:41% RAM:75% Disk:12%",
+      "metrics": {
+        "ram_percent": 75.0,
+        "cpu_percent": 40.7,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 22:56:14",
+      "status": "ok",
+      "message": "CPU:59% RAM:75% Disk:12%",
+      "metrics": {
+        "ram_percent": 74.8,
+        "cpu_percent": 59.0,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 22:58:16",
+      "status": "ok",
+      "message": "CPU:65% RAM:75% Disk:12%",
+      "metrics": {
+        "ram_percent": 74.9,
+        "cpu_percent": 65.1,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:00:18",
+      "status": "ok",
+      "message": "CPU:43% RAM:75% Disk:12%",
+      "metrics": {
+        "ram_percent": 74.6,
+        "cpu_percent": 43.3,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:02:20",
+      "status": "ok",
+      "message": "CPU:64% RAM:75% Disk:12%",
+      "metrics": {
+        "ram_percent": 74.7,
+        "cpu_percent": 63.8,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:04:22",
+      "status": "ok",
+      "message": "CPU:55% RAM:76% Disk:12%",
+      "metrics": {
+        "ram_percent": 75.6,
+        "cpu_percent": 55.1,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 23:06:24",
+      "status": "ok",
+      "message": "CPU:50% RAM:77% Disk:12%",
+      "metrics": {
+        "ram_percent": 76.7,
+        "cpu_percent": 49.5,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:08:26",
+      "status": "ok",
+      "message": "CPU:36% RAM:76% Disk:12%",
+      "metrics": {
+        "ram_percent": 76.4,
+        "cpu_percent": 35.7,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:10:28",
+      "status": "ok",
+      "message": "CPU:49% RAM:68% Disk:14%",
+      "metrics": {
+        "ram_percent": 67.8,
+        "cpu_percent": 48.7,
+        "disk_percent": 14.0,
+        "ram_free_gb": 1.2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:12:29",
+      "status": "ok",
+      "message": "CPU:44% RAM:70% Disk:12%",
+      "metrics": {
+        "ram_percent": 69.8,
+        "cpu_percent": 43.8,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:14:31",
+      "status": "ok",
+      "message": "CPU:49% RAM:70% Disk:12%",
+      "metrics": {
+        "ram_percent": 70.1,
+        "cpu_percent": 49.0,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:16:33",
+      "status": "ok",
+      "message": "CPU:32% RAM:72% Disk:12%",
+      "metrics": {
+        "ram_percent": 71.9,
+        "cpu_percent": 31.5,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:18:36",
+      "status": "ok",
+      "message": "CPU:48% RAM:70% Disk:12%",
+      "metrics": {
+        "ram_percent": 70.1,
+        "cpu_percent": 48.3,
+        "disk_percent": 12.0,
+        "ram_free_gb": 1.2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:20:38",
+      "status": "ok",
+      "message": "CPU:43% RAM:72% Disk:12%",
+      "metrics": {
+        "ram_percent": 72.2,
+        "cpu_percent": 42.9,
+        "disk_percent": 12.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:22:40",
+      "status": "ok",
+      "message": "CPU:53% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 73.9,
+        "cpu_percent": 53.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:24:42",
+      "status": "ok",
+      "message": "CPU:25% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.1,
+        "cpu_percent": 25.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:26:43",
+      "status": "ok",
+      "message": "CPU:36% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.8,
+        "cpu_percent": 35.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:28:45",
+      "status": "ok",
+      "message": "CPU:52% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.4,
+        "cpu_percent": 52.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:30:47",
+      "status": "ok",
+      "message": "CPU:34% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.1,
+        "cpu_percent": 34.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:32:49",
+      "status": "ok",
+      "message": "CPU:44% RAM:67% Disk:7%",
+      "metrics": {
+        "ram_percent": 67.0,
+        "cpu_percent": 43.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 3.3
+      }
+    },
+    {
+      "ts": "2026-06-09 23:34:51",
+      "status": "ok",
+      "message": "CPU:37% RAM:71% Disk:7%",
+      "metrics": {
+        "ram_percent": 70.7,
+        "cpu_percent": 36.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-09 23:36:53",
+      "status": "ok",
+      "message": "CPU:35% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 71.5,
+        "cpu_percent": 35.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:38:54",
+      "status": "ok",
+      "message": "CPU:37% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 71.5,
+        "cpu_percent": 37.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.6
+      }
+    },
+    {
+      "ts": "2026-06-09 23:40:56",
+      "status": "ok",
+      "message": "CPU:44% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 71.7,
+        "cpu_percent": 44.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.6
+      }
+    },
+    {
+      "ts": "2026-06-09 23:42:58",
+      "status": "ok",
+      "message": "CPU:41% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 71.6,
+        "cpu_percent": 41.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-09 23:45:00",
+      "status": "ok",
+      "message": "CPU:34% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 72.0,
+        "cpu_percent": 33.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:47:02",
+      "status": "ok",
+      "message": "CPU:51% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 71.8,
+        "cpu_percent": 50.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.8
+      }
+    },
+    {
+      "ts": "2026-06-09 23:49:03",
+      "status": "ok",
+      "message": "CPU:36% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 72.3,
+        "cpu_percent": 36.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:51:05",
+      "status": "ok",
+      "message": "CPU:46% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.3,
+        "cpu_percent": 45.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:53:07",
+      "status": "ok",
+      "message": "CPU:30% RAM:73% Disk:7%",
+      "metrics": {
+        "ram_percent": 72.8,
+        "cpu_percent": 29.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:55:10",
+      "status": "ok",
+      "message": "CPU:52% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 73.8,
+        "cpu_percent": 52.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-09 23:57:12",
+      "status": "ok",
+      "message": "CPU:43% RAM:73% Disk:7%",
+      "metrics": {
+        "ram_percent": 73.3,
+        "cpu_percent": 43.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.6
+      }
+    },
+    {
+      "ts": "2026-06-09 23:59:14",
+      "status": "ok",
+      "message": "CPU:51% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 73.6,
+        "cpu_percent": 50.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:01:16",
+      "status": "ok",
+      "message": "CPU:45% RAM:73% Disk:7%",
+      "metrics": {
+        "ram_percent": 73.3,
+        "cpu_percent": 45.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 00:03:18",
+      "status": "ok",
+      "message": "CPU:47% RAM:73% Disk:7%",
+      "metrics": {
+        "ram_percent": 72.6,
+        "cpu_percent": 47.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 00:05:19",
+      "status": "ok",
+      "message": "CPU:25% RAM:73% Disk:7%",
+      "metrics": {
+        "ram_percent": 73.2,
+        "cpu_percent": 25.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.7
+      }
+    },
+    {
+      "ts": "2026-06-10 00:07:21",
+      "status": "ok",
+      "message": "CPU:34% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 72.3,
+        "cpu_percent": 34.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:09:23",
+      "status": "ok",
+      "message": "CPU:40% RAM:72% Disk:7%",
+      "metrics": {
+        "ram_percent": 72.2,
+        "cpu_percent": 40.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:11:25",
+      "status": "ok",
+      "message": "CPU:22% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 73.6,
+        "cpu_percent": 22.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:13:27",
+      "status": "ok",
+      "message": "CPU:32% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.1,
+        "cpu_percent": 32.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:15:29",
+      "status": "ok",
+      "message": "CPU:51% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.3,
+        "cpu_percent": 51.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:17:31",
+      "status": "ok",
+      "message": "CPU:37% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.5,
+        "cpu_percent": 37.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:19:33",
+      "status": "ok",
+      "message": "CPU:33% RAM:75% Disk:8%",
+      "metrics": {
+        "ram_percent": 75.1,
+        "cpu_percent": 33.2,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:21:35",
+      "status": "ok",
+      "message": "CPU:41% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.3,
+        "cpu_percent": 41.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:23:37",
+      "status": "ok",
+      "message": "CPU:32% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 73.5,
+        "cpu_percent": 32.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:25:39",
+      "status": "ok",
+      "message": "CPU:32% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.2,
+        "cpu_percent": 31.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:27:41",
+      "status": "ok",
+      "message": "CPU:45% RAM:74% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.4,
+        "cpu_percent": 44.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:29:43",
+      "status": "ok",
+      "message": "CPU:38% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.7,
+        "cpu_percent": 38.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:31:45",
+      "status": "ok",
+      "message": "CPU:42% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.6,
+        "cpu_percent": 42.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 00:33:47",
+      "status": "ok",
+      "message": "CPU:45% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.7,
+        "cpu_percent": 45.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:35:49",
+      "status": "ok",
+      "message": "CPU:41% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.2,
+        "cpu_percent": 40.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.4
+      }
+    },
+    {
+      "ts": "2026-06-10 00:37:51",
+      "status": "ok",
+      "message": "CPU:46% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.8,
+        "cpu_percent": 46.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 00:39:53",
+      "status": "ok",
+      "message": "CPU:34% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.5,
+        "cpu_percent": 33.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:41:54",
+      "status": "ok",
+      "message": "CPU:48% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 74.9,
+        "cpu_percent": 48.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 00:43:56",
+      "status": "ok",
+      "message": "CPU:33% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.3,
+        "cpu_percent": 32.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:45:58",
+      "status": "ok",
+      "message": "CPU:48% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.9,
+        "cpu_percent": 48.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:48:00",
+      "status": "ok",
+      "message": "CPU:53% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.9,
+        "cpu_percent": 52.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:50:02",
+      "status": "ok",
+      "message": "CPU:46% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.8,
+        "cpu_percent": 46.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 00:52:04",
+      "status": "ok",
+      "message": "CPU:42% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.3,
+        "cpu_percent": 41.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:54:06",
+      "status": "ok",
+      "message": "CPU:74% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.0,
+        "cpu_percent": 74.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:56:08",
+      "status": "ok",
+      "message": "CPU:41% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.9,
+        "cpu_percent": 40.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 00:58:10",
+      "status": "ok",
+      "message": "CPU:36% RAM:75% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.4,
+        "cpu_percent": 36.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:00:12",
+      "status": "ok",
+      "message": "CPU:32% RAM:75% Disk:8%",
+      "metrics": {
+        "ram_percent": 75.1,
+        "cpu_percent": 31.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 01:02:14",
+      "status": "ok",
+      "message": "CPU:48% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.9,
+        "cpu_percent": 47.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:04:16",
+      "status": "ok",
+      "message": "CPU:44% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.9,
+        "cpu_percent": 43.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:06:18",
+      "status": "ok",
+      "message": "CPU:45% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.8,
+        "cpu_percent": 45.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:08:20",
+      "status": "ok",
+      "message": "CPU:46% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 76.9,
+        "cpu_percent": 46.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:10:22",
+      "status": "ok",
+      "message": "CPU:48% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 76.4,
+        "cpu_percent": 47.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:12:24",
+      "status": "ok",
+      "message": "CPU:46% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.1,
+        "cpu_percent": 46.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:14:26",
+      "status": "ok",
+      "message": "CPU:44% RAM:77% Disk:8%",
+      "metrics": {
+        "ram_percent": 76.7,
+        "cpu_percent": 43.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:16:28",
+      "status": "ok",
+      "message": "CPU:32% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 76.2,
+        "cpu_percent": 32.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 01:18:30",
+      "status": "ok",
+      "message": "CPU:70% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.4,
+        "cpu_percent": 69.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:20:32",
+      "status": "ok",
+      "message": "CPU:46% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 76.2,
+        "cpu_percent": 46.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 01:22:34",
+      "status": "ok",
+      "message": "CPU:38% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 75.9,
+        "cpu_percent": 37.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:24:36",
+      "status": "ok",
+      "message": "CPU:44% RAM:76% Disk:7%",
+      "metrics": {
+        "ram_percent": 76.1,
+        "cpu_percent": 44.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 01:26:38",
+      "status": "ok",
+      "message": "CPU:80% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.2,
+        "cpu_percent": 79.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:28:40",
+      "status": "ok",
+      "message": "CPU:39% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.3,
+        "cpu_percent": 39.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:30:42",
+      "status": "ok",
+      "message": "CPU:45% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.8,
+        "cpu_percent": 45.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:32:45",
+      "status": "ok",
+      "message": "CPU:59% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.8,
+        "cpu_percent": 58.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 01:34:47",
+      "status": "ok",
+      "message": "CPU:46% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.7,
+        "cpu_percent": 45.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:36:49",
+      "status": "ok",
+      "message": "CPU:47% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.1,
+        "cpu_percent": 46.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:38:51",
+      "status": "ok",
+      "message": "CPU:39% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.3,
+        "cpu_percent": 38.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:40:53",
+      "status": "ok",
+      "message": "CPU:34% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.7,
+        "cpu_percent": 34.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:42:55",
+      "status": "ok",
+      "message": "CPU:44% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.4,
+        "cpu_percent": 44.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:44:57",
+      "status": "ok",
+      "message": "CPU:54% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.6,
+        "cpu_percent": 53.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:47:00",
+      "status": "ok",
+      "message": "CPU:45% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.4,
+        "cpu_percent": 44.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:49:02",
+      "status": "ok",
+      "message": "CPU:42% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.7,
+        "cpu_percent": 42.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:51:04",
+      "status": "ok",
+      "message": "CPU:43% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 42.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:53:06",
+      "status": "ok",
+      "message": "CPU:49% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.2,
+        "cpu_percent": 49.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:55:08",
+      "status": "ok",
+      "message": "CPU:41% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.0,
+        "cpu_percent": 41.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:57:10",
+      "status": "ok",
+      "message": "CPU:40% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.6,
+        "cpu_percent": 40.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 01:59:12",
+      "status": "ok",
+      "message": "CPU:40% RAM:82% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.9,
+        "cpu_percent": 40.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:01:15",
+      "status": "ok",
+      "message": "CPU:54% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.1,
+        "cpu_percent": 53.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:03:17",
+      "status": "ok",
+      "message": "CPU:73% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.4,
+        "cpu_percent": 73.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:05:19",
+      "status": "ok",
+      "message": "CPU:56% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.8,
+        "cpu_percent": 56.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:07:22",
+      "status": "ok",
+      "message": "CPU:50% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.0,
+        "cpu_percent": 50.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.4
+      }
+    },
+    {
+      "ts": "2026-06-10 02:09:24",
+      "status": "ok",
+      "message": "CPU:44% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.1,
+        "cpu_percent": 44.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:11:26",
+      "status": "ok",
+      "message": "CPU:40% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.8,
+        "cpu_percent": 40.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:13:29",
+      "status": "ok",
+      "message": "CPU:74% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 74.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:15:31",
+      "status": "ok",
+      "message": "CPU:73% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.7,
+        "cpu_percent": 72.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.6
+      }
+    },
+    {
+      "ts": "2026-06-10 02:17:34",
+      "status": "ok",
+      "message": "CPU:53% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.6,
+        "cpu_percent": 52.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:19:36",
+      "status": "ok",
+      "message": "CPU:37% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 37.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:21:38",
+      "status": "ok",
+      "message": "CPU:57% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 56.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:23:40",
+      "status": "ok",
+      "message": "CPU:54% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.2,
+        "cpu_percent": 53.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:25:43",
+      "status": "ok",
+      "message": "CPU:53% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 53.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:27:45",
+      "status": "ok",
+      "message": "CPU:57% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.1,
+        "cpu_percent": 57.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:29:48",
+      "status": "ok",
+      "message": "CPU:76% RAM:82% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.7,
+        "cpu_percent": 76.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:31:50",
+      "status": "ok",
+      "message": "CPU:46% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.7,
+        "cpu_percent": 46.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:33:52",
+      "status": "ok",
+      "message": "CPU:51% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.6,
+        "cpu_percent": 50.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:35:55",
+      "status": "ok",
+      "message": "CPU:40% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.3,
+        "cpu_percent": 39.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:37:57",
+      "status": "ok",
+      "message": "CPU:41% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.6,
+        "cpu_percent": 41.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:39:59",
+      "status": "ok",
+      "message": "CPU:38% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.0,
+        "cpu_percent": 38.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:42:02",
+      "status": "ok",
+      "message": "CPU:41% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.5,
+        "cpu_percent": 40.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:44:04",
+      "status": "ok",
+      "message": "CPU:29% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.6,
+        "cpu_percent": 29.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:46:06",
+      "status": "ok",
+      "message": "CPU:79% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.9,
+        "cpu_percent": 79.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:48:09",
+      "status": "ok",
+      "message": "CPU:29% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.1,
+        "cpu_percent": 28.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 02:50:11",
+      "status": "ok",
+      "message": "CPU:25% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 25.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:52:13",
+      "status": "ok",
+      "message": "CPU:39% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 39.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:54:16",
+      "status": "ok",
+      "message": "CPU:49% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.5,
+        "cpu_percent": 48.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.4
+      }
+    },
+    {
+      "ts": "2026-06-10 02:56:18",
+      "status": "ok",
+      "message": "CPU:70% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.7,
+        "cpu_percent": 70.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 02:58:20",
+      "status": "ok",
+      "message": "CPU:36% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.6,
+        "cpu_percent": 36.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.4
+      }
+    },
+    {
+      "ts": "2026-06-10 03:00:23",
+      "status": "ok",
+      "message": "CPU:37% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 81.4,
+        "cpu_percent": 37.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:02:25",
+      "status": "ok",
+      "message": "CPU:28% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 28.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:04:27",
+      "status": "ok",
+      "message": "CPU:34% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.3,
+        "cpu_percent": 34.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:06:30",
+      "status": "ok",
+      "message": "CPU:36% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.6,
+        "cpu_percent": 36.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.7
+      }
+    },
+    {
+      "ts": "2026-06-10 03:08:32",
+      "status": "ok",
+      "message": "CPU:27% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.2,
+        "cpu_percent": 27.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 03:10:34",
+      "status": "ok",
+      "message": "CPU:27% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 27.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:12:37",
+      "status": "ok",
+      "message": "CPU:27% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 26.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:14:39",
+      "status": "ok",
+      "message": "CPU:38% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.4,
+        "cpu_percent": 38.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:16:42",
+      "status": "ok",
+      "message": "CPU:32% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.4,
+        "cpu_percent": 32.5,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:18:44",
+      "status": "ok",
+      "message": "CPU:32% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.0,
+        "cpu_percent": 31.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:20:46",
+      "status": "ok",
+      "message": "CPU:46% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.3,
+        "cpu_percent": 45.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:22:49",
+      "status": "ok",
+      "message": "CPU:33% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 33.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:24:51",
+      "status": "ok",
+      "message": "CPU:32% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 32.2,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:26:53",
+      "status": "ok",
+      "message": "CPU:28% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 28.5,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:28:56",
+      "status": "ok",
+      "message": "CPU:33% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 33.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:30:58",
+      "status": "ok",
+      "message": "CPU:29% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 28.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:33:00",
+      "status": "ok",
+      "message": "CPU:31% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 31.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:35:03",
+      "status": "ok",
+      "message": "CPU:48% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 48.2,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 03:37:05",
+      "status": "ok",
+      "message": "CPU:33% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 33.3,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:39:07",
+      "status": "ok",
+      "message": "CPU:28% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.8,
+        "cpu_percent": 27.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:41:10",
+      "status": "ok",
+      "message": "CPU:36% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 36.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:43:12",
+      "status": "ok",
+      "message": "CPU:41% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.7,
+        "cpu_percent": 41.3,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 03:45:15",
+      "status": "ok",
+      "message": "CPU:39% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 38.7,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:47:17",
+      "status": "ok",
+      "message": "CPU:40% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.9,
+        "cpu_percent": 39.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:49:19",
+      "status": "ok",
+      "message": "CPU:30% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.3,
+        "cpu_percent": 29.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:51:22",
+      "status": "ok",
+      "message": "CPU:32% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 31.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:53:24",
+      "status": "ok",
+      "message": "CPU:34% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.0,
+        "cpu_percent": 33.7,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 03:55:26",
+      "status": "ok",
+      "message": "CPU:30% RAM:78% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.2,
+        "cpu_percent": 30.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 03:57:28",
+      "status": "ok",
+      "message": "CPU:32% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.9,
+        "cpu_percent": 32.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.5
+      }
+    },
+    {
+      "ts": "2026-06-10 03:59:31",
+      "status": "ok",
+      "message": "CPU:37% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.8,
+        "cpu_percent": 37.3,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:01:33",
+      "status": "ok",
+      "message": "CPU:25% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 24.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:03:35",
+      "status": "ok",
+      "message": "CPU:29% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.4,
+        "cpu_percent": 28.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:05:37",
+      "status": "ok",
+      "message": "CPU:33% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.9,
+        "cpu_percent": 32.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:07:40",
+      "status": "ok",
+      "message": "CPU:33% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 32.7,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:09:42",
+      "status": "ok",
+      "message": "CPU:32% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.5,
+        "cpu_percent": 31.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:11:44",
+      "status": "ok",
+      "message": "CPU:35% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.9,
+        "cpu_percent": 34.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:13:47",
+      "status": "ok",
+      "message": "CPU:45% RAM:78% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.3,
+        "cpu_percent": 45.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:15:49",
+      "status": "ok",
+      "message": "CPU:53% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.0,
+        "cpu_percent": 52.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:17:52",
+      "status": "ok",
+      "message": "CPU:32% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 31.9,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:19:54",
+      "status": "ok",
+      "message": "CPU:53% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.5,
+        "cpu_percent": 52.9,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:21:57",
+      "status": "ok",
+      "message": "CPU:42% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 42.5,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:23:59",
+      "status": "ok",
+      "message": "CPU:38% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 37.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:26:01",
+      "status": "ok",
+      "message": "CPU:32% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 31.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:28:04",
+      "status": "ok",
+      "message": "CPU:42% RAM:80% Disk:9%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 42.5,
+        "disk_percent": 9.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:30:06",
+      "status": "ok",
+      "message": "CPU:29% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 28.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:32:08",
+      "status": "ok",
+      "message": "CPU:34% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.4,
+        "cpu_percent": 34.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:34:10",
+      "status": "ok",
+      "message": "CPU:31% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 30.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:36:13",
+      "status": "ok",
+      "message": "CPU:34% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.0,
+        "cpu_percent": 34.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:38:15",
+      "status": "ok",
+      "message": "CPU:53% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.6,
+        "cpu_percent": 53.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:40:17",
+      "status": "ok",
+      "message": "CPU:29% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 81.4,
+        "cpu_percent": 29.3,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:42:20",
+      "status": "ok",
+      "message": "CPU:37% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.4,
+        "cpu_percent": 37.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:44:22",
+      "status": "ok",
+      "message": "CPU:35% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 35.3,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:46:24",
+      "status": "ok",
+      "message": "CPU:37% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 36.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:48:27",
+      "status": "ok",
+      "message": "CPU:37% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 36.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:50:29",
+      "status": "ok",
+      "message": "CPU:35% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 35.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:52:31",
+      "status": "ok",
+      "message": "CPU:35% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.5,
+        "cpu_percent": 35.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:54:33",
+      "status": "ok",
+      "message": "CPU:38% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.7,
+        "cpu_percent": 38.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:56:35",
+      "status": "ok",
+      "message": "CPU:34% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 33.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 04:58:38",
+      "status": "ok",
+      "message": "CPU:40% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.0,
+        "cpu_percent": 39.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:00:40",
+      "status": "ok",
+      "message": "CPU:33% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.0,
+        "cpu_percent": 32.9,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:02:42",
+      "status": "ok",
+      "message": "CPU:35% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.4,
+        "cpu_percent": 35.3,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:04:45",
+      "status": "ok",
+      "message": "CPU:39% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.8,
+        "cpu_percent": 38.9,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:06:47",
+      "status": "ok",
+      "message": "CPU:49% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.8,
+        "cpu_percent": 49.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:08:50",
+      "status": "ok",
+      "message": "CPU:68% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.1,
+        "cpu_percent": 68.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:10:52",
+      "status": "ok",
+      "message": "CPU:34% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.7,
+        "cpu_percent": 34.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:12:54",
+      "status": "ok",
+      "message": "CPU:38% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 38.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:14:56",
+      "status": "ok",
+      "message": "CPU:30% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.6,
+        "cpu_percent": 29.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:16:59",
+      "status": "ok",
+      "message": "CPU:36% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.1,
+        "cpu_percent": 36.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:19:01",
+      "status": "ok",
+      "message": "CPU:34% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 34.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:21:03",
+      "status": "ok",
+      "message": "CPU:42% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 42.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:23:05",
+      "status": "ok",
+      "message": "CPU:32% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 31.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:25:08",
+      "status": "ok",
+      "message": "CPU:48% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 48.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:27:10",
+      "status": "ok",
+      "message": "CPU:39% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 38.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:29:12",
+      "status": "ok",
+      "message": "CPU:36% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.4,
+        "cpu_percent": 35.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:31:15",
+      "status": "ok",
+      "message": "CPU:34% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 33.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:33:18",
+      "status": "ok",
+      "message": "CPU:84% RAM:82% Disk:7%",
+      "metrics": {
+        "ram_percent": 82.1,
+        "cpu_percent": 84.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:35:20",
+      "status": "ok",
+      "message": "CPU:31% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.5,
+        "cpu_percent": 30.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:37:22",
+      "status": "ok",
+      "message": "CPU:29% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 29.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:39:24",
+      "status": "ok",
+      "message": "CPU:40% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 81.1,
+        "cpu_percent": 40.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:41:27",
+      "status": "ok",
+      "message": "CPU:34% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.9,
+        "cpu_percent": 34.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:43:29",
+      "status": "ok",
+      "message": "CPU:31% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.0,
+        "cpu_percent": 30.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:45:31",
+      "status": "ok",
+      "message": "CPU:45% RAM:78% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.3,
+        "cpu_percent": 44.7,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:47:33",
+      "status": "ok",
+      "message": "CPU:26% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.4,
+        "cpu_percent": 26.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:49:35",
+      "status": "ok",
+      "message": "CPU:33% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 32.8,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:51:37",
+      "status": "ok",
+      "message": "CPU:29% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 28.7,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:53:40",
+      "status": "ok",
+      "message": "CPU:41% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.7,
+        "cpu_percent": 40.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:55:42",
+      "status": "ok",
+      "message": "CPU:44% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 43.5,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:57:44",
+      "status": "ok",
+      "message": "CPU:36% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.6,
+        "cpu_percent": 36.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 05:59:47",
+      "status": "ok",
+      "message": "CPU:40% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 40.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:01:49",
+      "status": "ok",
+      "message": "CPU:38% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 38.5,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:03:51",
+      "status": "ok",
+      "message": "CPU:35% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.5,
+        "cpu_percent": 35.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:05:53",
+      "status": "ok",
+      "message": "CPU:33% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 32.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:07:55",
+      "status": "ok",
+      "message": "CPU:32% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.0,
+        "cpu_percent": 31.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:09:57",
+      "status": "ok",
+      "message": "CPU:38% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.3,
+        "cpu_percent": 38.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:12:00",
+      "status": "ok",
+      "message": "CPU:42% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 42.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:14:02",
+      "status": "ok",
+      "message": "CPU:32% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.1,
+        "cpu_percent": 31.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:16:04",
+      "status": "ok",
+      "message": "CPU:34% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.2,
+        "cpu_percent": 34.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:18:07",
+      "status": "ok",
+      "message": "CPU:31% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.9,
+        "cpu_percent": 30.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:20:09",
+      "status": "ok",
+      "message": "CPU:39% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 38.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:22:11",
+      "status": "ok",
+      "message": "CPU:48% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.0,
+        "cpu_percent": 48.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:24:13",
+      "status": "ok",
+      "message": "CPU:41% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.7,
+        "cpu_percent": 41.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:26:16",
+      "status": "ok",
+      "message": "CPU:35% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.0,
+        "cpu_percent": 34.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:28:18",
+      "status": "ok",
+      "message": "CPU:44% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.7,
+        "cpu_percent": 44.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:30:20",
+      "status": "ok",
+      "message": "CPU:39% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.5,
+        "cpu_percent": 38.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:32:22",
+      "status": "ok",
+      "message": "CPU:28% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.2,
+        "cpu_percent": 28.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:34:24",
+      "status": "ok",
+      "message": "CPU:35% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.8,
+        "cpu_percent": 35.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:36:27",
+      "status": "ok",
+      "message": "CPU:31% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 76.8,
+        "cpu_percent": 30.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:38:29",
+      "status": "ok",
+      "message": "CPU:31% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 76.7,
+        "cpu_percent": 31.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 06:40:31",
+      "status": "ok",
+      "message": "CPU:32% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 76.8,
+        "cpu_percent": 31.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 06:42:33",
+      "status": "ok",
+      "message": "CPU:26% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.4,
+        "cpu_percent": 26.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:44:35",
+      "status": "ok",
+      "message": "CPU:29% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.5,
+        "cpu_percent": 29.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:46:38",
+      "status": "ok",
+      "message": "CPU:78% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.3,
+        "cpu_percent": 78.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:48:40",
+      "status": "ok",
+      "message": "CPU:50% RAM:77% Disk:8%",
+      "metrics": {
+        "ram_percent": 77.1,
+        "cpu_percent": 50.3,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 06:50:42",
+      "status": "ok",
+      "message": "CPU:38% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.8,
+        "cpu_percent": 38.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:52:44",
+      "status": "ok",
+      "message": "CPU:30% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.7,
+        "cpu_percent": 30.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:54:47",
+      "status": "ok",
+      "message": "CPU:41% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.5,
+        "cpu_percent": 40.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:56:49",
+      "status": "ok",
+      "message": "CPU:33% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.6,
+        "cpu_percent": 33.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 06:58:51",
+      "status": "ok",
+      "message": "CPU:27% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.2,
+        "cpu_percent": 26.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.3
+      }
+    },
+    {
+      "ts": "2026-06-10 07:00:53",
+      "status": "ok",
+      "message": "CPU:36% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 36.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:02:55",
+      "status": "ok",
+      "message": "CPU:27% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.6,
+        "cpu_percent": 26.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:04:58",
+      "status": "ok",
+      "message": "CPU:36% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.0,
+        "cpu_percent": 36.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:07:00",
+      "status": "ok",
+      "message": "CPU:58% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.3,
+        "cpu_percent": 58.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:09:02",
+      "status": "ok",
+      "message": "CPU:27% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.5,
+        "cpu_percent": 27.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:11:05",
+      "status": "ok",
+      "message": "CPU:38% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.3,
+        "cpu_percent": 37.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:13:07",
+      "status": "ok",
+      "message": "CPU:27% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.3,
+        "cpu_percent": 27.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:15:10",
+      "status": "ok",
+      "message": "CPU:75% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 75.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:17:12",
+      "status": "ok",
+      "message": "CPU:28% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.4,
+        "cpu_percent": 27.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:19:14",
+      "status": "ok",
+      "message": "CPU:45% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 45.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:21:17",
+      "status": "ok",
+      "message": "CPU:47% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.2,
+        "cpu_percent": 46.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:23:19",
+      "status": "ok",
+      "message": "CPU:62% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.2,
+        "cpu_percent": 62.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:25:21",
+      "status": "ok",
+      "message": "CPU:33% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.9,
+        "cpu_percent": 33.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 07:27:24",
+      "status": "ok",
+      "message": "CPU:47% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.3,
+        "cpu_percent": 47.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:29:26",
+      "status": "ok",
+      "message": "CPU:72% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.6,
+        "cpu_percent": 71.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:31:28",
+      "status": "ok",
+      "message": "CPU:49% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.0,
+        "cpu_percent": 48.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:33:30",
+      "status": "ok",
+      "message": "CPU:47% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.2,
+        "cpu_percent": 46.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:35:33",
+      "status": "ok",
+      "message": "CPU:40% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.2,
+        "cpu_percent": 40.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:37:35",
+      "status": "ok",
+      "message": "CPU:82% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.6,
+        "cpu_percent": 81.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.5
+      }
+    },
+    {
+      "ts": "2026-06-10 07:39:38",
+      "status": "ok",
+      "message": "CPU:36% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.5,
+        "cpu_percent": 36.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:41:40",
+      "status": "ok",
+      "message": "CPU:35% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.9,
+        "cpu_percent": 34.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:43:42",
+      "status": "ok",
+      "message": "CPU:51% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 50.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:45:45",
+      "status": "ok",
+      "message": "CPU:42% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.8,
+        "cpu_percent": 42.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:47:47",
+      "status": "ok",
+      "message": "CPU:54% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.0,
+        "cpu_percent": 54.5,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:49:50",
+      "status": "ok",
+      "message": "CPU:48% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.6,
+        "cpu_percent": 47.9,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:51:52",
+      "status": "ok",
+      "message": "CPU:40% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.4,
+        "cpu_percent": 40.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:53:54",
+      "status": "ok",
+      "message": "CPU:38% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 37.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:55:57",
+      "status": "ok",
+      "message": "CPU:41% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 41.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 07:57:59",
+      "status": "ok",
+      "message": "CPU:46% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 45.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:00:01",
+      "status": "ok",
+      "message": "CPU:46% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.0,
+        "cpu_percent": 45.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:02:04",
+      "status": "ok",
+      "message": "CPU:48% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.4,
+        "cpu_percent": 48.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:04:06",
+      "status": "ok",
+      "message": "CPU:44% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 43.7,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:06:09",
+      "status": "ok",
+      "message": "CPU:40% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 40.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:08:11",
+      "status": "ok",
+      "message": "CPU:44% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.1,
+        "cpu_percent": 44.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:10:14",
+      "status": "ok",
+      "message": "CPU:51% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.0,
+        "cpu_percent": 50.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:12:17",
+      "status": "ok",
+      "message": "CPU:62% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.4,
+        "cpu_percent": 62.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:14:20",
+      "status": "ok",
+      "message": "CPU:56% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.5,
+        "cpu_percent": 56.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:16:23",
+      "status": "ok",
+      "message": "CPU:41% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.4,
+        "cpu_percent": 40.9,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:18:26",
+      "status": "ok",
+      "message": "CPU:84% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 83.5,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:20:28",
+      "status": "ok",
+      "message": "CPU:75% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 75.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:22:31",
+      "status": "ok",
+      "message": "CPU:56% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.3,
+        "cpu_percent": 56.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:24:33",
+      "status": "ok",
+      "message": "CPU:38% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.9,
+        "cpu_percent": 38.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:26:36",
+      "status": "ok",
+      "message": "CPU:47% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.0,
+        "cpu_percent": 46.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:28:38",
+      "status": "ok",
+      "message": "CPU:43% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 43.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:30:41",
+      "status": "ok",
+      "message": "CPU:44% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.9,
+        "cpu_percent": 43.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:32:43",
+      "status": "ok",
+      "message": "CPU:39% RAM:78% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.2,
+        "cpu_percent": 39.2,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:34:45",
+      "status": "ok",
+      "message": "CPU:49% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.0,
+        "cpu_percent": 49.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:36:48",
+      "status": "ok",
+      "message": "CPU:53% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.0,
+        "cpu_percent": 53.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:38:50",
+      "status": "ok",
+      "message": "CPU:40% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.5,
+        "cpu_percent": 40.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:40:53",
+      "status": "ok",
+      "message": "CPU:52% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.9,
+        "cpu_percent": 52.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:42:55",
+      "status": "ok",
+      "message": "CPU:38% RAM:77% Disk:8%",
+      "metrics": {
+        "ram_percent": 76.8,
+        "cpu_percent": 38.0,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:44:58",
+      "status": "ok",
+      "message": "CPU:40% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.2,
+        "cpu_percent": 39.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:47:00",
+      "status": "ok",
+      "message": "CPU:39% RAM:77% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.1,
+        "cpu_percent": 39.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:49:02",
+      "status": "ok",
+      "message": "CPU:45% RAM:78% Disk:8%",
+      "metrics": {
+        "ram_percent": 77.6,
+        "cpu_percent": 45.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:51:05",
+      "status": "ok",
+      "message": "CPU:47% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.5,
+        "cpu_percent": 47.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:53:07",
+      "status": "ok",
+      "message": "CPU:36% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.7,
+        "cpu_percent": 36.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:55:09",
+      "status": "ok",
+      "message": "CPU:50% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.9,
+        "cpu_percent": 49.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:57:12",
+      "status": "ok",
+      "message": "CPU:47% RAM:81% Disk:7%",
+      "metrics": {
+        "ram_percent": 81.3,
+        "cpu_percent": 46.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 08:59:14",
+      "status": "ok",
+      "message": "CPU:35% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.5,
+        "cpu_percent": 34.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:01:17",
+      "status": "ok",
+      "message": "CPU:45% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.3,
+        "cpu_percent": 45.0,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:03:19",
+      "status": "ok",
+      "message": "CPU:48% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.9,
+        "cpu_percent": 48.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:05:22",
+      "status": "ok",
+      "message": "CPU:45% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.5,
+        "cpu_percent": 45.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:07:24",
+      "status": "ok",
+      "message": "CPU:45% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 45.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:09:27",
+      "status": "ok",
+      "message": "CPU:38% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 38.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:11:29",
+      "status": "ok",
+      "message": "CPU:39% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.4,
+        "cpu_percent": 39.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:13:31",
+      "status": "ok",
+      "message": "CPU:53% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.6,
+        "cpu_percent": 53.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:15:34",
+      "status": "ok",
+      "message": "CPU:41% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 40.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:17:36",
+      "status": "ok",
+      "message": "CPU:50% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.7,
+        "cpu_percent": 49.8,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:19:39",
+      "status": "ok",
+      "message": "CPU:35% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.1,
+        "cpu_percent": 34.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:21:41",
+      "status": "ok",
+      "message": "CPU:47% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.7,
+        "cpu_percent": 47.4,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:23:43",
+      "status": "ok",
+      "message": "CPU:52% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.4,
+        "cpu_percent": 51.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:25:46",
+      "status": "ok",
+      "message": "CPU:50% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.6,
+        "cpu_percent": 50.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:27:49",
+      "status": "ok",
+      "message": "CPU:43% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.8,
+        "cpu_percent": 42.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:29:51",
+      "status": "ok",
+      "message": "CPU:40% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.7,
+        "cpu_percent": 40.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 09:31:54",
+      "status": "ok",
+      "message": "CPU:86% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.2,
+        "cpu_percent": 86.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:33:57",
+      "status": "ok",
+      "message": "CPU:40% RAM:78% Disk:7%",
+      "metrics": {
+        "ram_percent": 77.5,
+        "cpu_percent": 39.7,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:35:59",
+      "status": "ok",
+      "message": "CPU:39% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 78.7,
+        "cpu_percent": 39.2,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:38:02",
+      "status": "ok",
+      "message": "CPU:54% RAM:78% Disk:8%",
+      "metrics": {
+        "ram_percent": 78.1,
+        "cpu_percent": 53.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:40:04",
+      "status": "ok",
+      "message": "CPU:49% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.0,
+        "cpu_percent": 49.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:42:07",
+      "status": "ok",
+      "message": "CPU:36% RAM:79% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.3,
+        "cpu_percent": 36.1,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:44:10",
+      "status": "ok",
+      "message": "CPU:70% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 80.1,
+        "cpu_percent": 69.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.2
+      }
+    },
+    {
+      "ts": "2026-06-10 09:46:12",
+      "status": "ok",
+      "message": "CPU:56% RAM:79% Disk:8%",
+      "metrics": {
+        "ram_percent": 79.2,
+        "cpu_percent": 56.1,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:48:15",
+      "status": "ok",
+      "message": "CPU:78% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 81.3,
+        "cpu_percent": 77.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:50:18",
+      "status": "ok",
+      "message": "CPU:60% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.6,
+        "cpu_percent": 59.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:52:20",
+      "status": "ok",
+      "message": "CPU:56% RAM:80% Disk:7%",
+      "metrics": {
+        "ram_percent": 79.8,
+        "cpu_percent": 56.3,
+        "disk_percent": 7.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:54:23",
+      "status": "ok",
+      "message": "CPU:59% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.5,
+        "cpu_percent": 59.3,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:56:26",
+      "status": "ok",
+      "message": "CPU:70% RAM:80% Disk:8%",
+      "metrics": {
+        "ram_percent": 80.2,
+        "cpu_percent": 69.6,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 09:58:28",
+      "status": "ok",
+      "message": "CPU:84% RAM:81% Disk:8%",
+      "metrics": {
+        "ram_percent": 81.4,
+        "cpu_percent": 84.4,
+        "disk_percent": 8.0,
+        "ram_free_gb": 0.1
+      }
+    },
+    {
+      "ts": "2026-06-10 10:00:29",
+      "status": "ok",
+      "message": "CPU:36% RAM:21% Disk:7%",
+      "metrics": {
+        "ram_percent": 21.4,
+        "cpu_percent": 35.6,
+        "disk_percent": 7.0,
+        "ram_free_gb": 28.8
       }
     }
   ],

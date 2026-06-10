@@ -1,547 +1,11 @@
 {
-  "cycles": 3202,
+  "cycles": 3269,
   "patterns": {
-    "warning:2 Platformen down": 138,
-    "warning:1 Platformen down": 3064
+    "warning:2 Platformen down": 143,
+    "warning:1 Platformen down": 3126
   },
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-08 05:59:58",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:00:07",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:00:18",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:00:29",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:01:00",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:01:12",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:01:31",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:01:40",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:01:50",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:02:13",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:02:32",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:02:42",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:03:04",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:03:37",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:04:09",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:04:50",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:04:59",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:05:43",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:06:25",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:06:57",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:07:07",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:07:25",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:08:30",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:08:39",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:08:51",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:09:01",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:09:21",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:09:34",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:09:45",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:09:52",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:10:03",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:10:13",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:10:25",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:10:34",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:10:46",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:10:57",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:11:29",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:11:49",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:12:01",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:12:11",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:12:20",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:12:31",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:12:42",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:12:52",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:13:02",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:13:12",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:13:22",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:13:45",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:13:55",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:14:07",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:14:36",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:14:59",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:15:39",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:15:50",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:16:21",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:16:34",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:17:04",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:17:35",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:17:47",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:17:56",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:18:09",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:18:27",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:18:48",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:19:22",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:19:31",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:19:41",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
-    {
-      "ts": "2026-06-08 06:19:52",
-      "status": "warning",
-      "message": "1 Platformen down",
-      "metrics": {
-        "platform_count": 2
-      }
-    },
     {
       "ts": "2026-06-08 06:20:00",
       "status": "warning",
@@ -4000,6 +3464,542 @@
     },
     {
       "ts": "2026-06-09 22:39:04",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 22:49:12",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 22:59:13",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:09:14",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:19:14",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:29:16",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:39:22",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:49:25",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-09 23:59:32",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:09:34",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:19:40",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:29:42",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:39:50",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:49:53",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 00:59:58",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 01:09:59",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 01:20:01",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 01:30:13",
+      "status": "warning",
+      "message": "2 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 01:40:19",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 01:50:29",
+      "status": "warning",
+      "message": "2 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 02:00:34",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 02:10:35",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 02:20:36",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 02:30:41",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 02:40:41",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 02:50:42",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 03:00:45",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 03:10:54",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 03:20:59",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 03:31:01",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 03:41:05",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 03:51:09",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:01:15",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:11:16",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:21:21",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:31:22",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:41:27",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 04:51:39",
+      "status": "warning",
+      "message": "2 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 05:01:43",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 05:11:48",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 05:21:53",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 05:31:58",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 05:42:00",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 05:52:08",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 06:02:18",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 06:12:32",
+      "status": "warning",
+      "message": "2 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 06:22:38",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 06:32:46",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 06:43:01",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 06:53:10",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 07:03:24",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 07:13:29",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 07:23:39",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 07:33:49",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 07:43:53",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 07:54:06",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:04:18",
+      "status": "warning",
+      "message": "2 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:14:20",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:24:20",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:34:25",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:44:28",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 08:54:30",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 09:04:34",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 09:14:35",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 09:24:36",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 09:34:38",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 09:44:39",
+      "status": "warning",
+      "message": "1 Platformen down",
+      "metrics": {
+        "platform_count": 2
+      }
+    },
+    {
+      "ts": "2026-06-10 09:54:40",
       "status": "warning",
       "message": "1 Platformen down",
       "metrics": {
