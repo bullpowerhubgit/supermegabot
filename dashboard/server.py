@@ -46,7 +46,7 @@ except ImportError:
                 _k, _, _v = _line.partition("=")
                 os.environ.setdefault(_k.strip(), _v.strip())
 
-PORT = int(os.getenv("DASHBOARD_PORT", "8888"))
+PORT = int(os.getenv("PORT") or os.getenv("DASHBOARD_PORT", "8888"))
 
 log = logging.getLogger("Dashboard")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
@@ -737,9 +737,12 @@ async def handle_ollama_models(req):
 
 
 async def handle_autopilot_agents(req):
-    from modules.autopilot import AutoPilot
-    ap = AutoPilot()
-    return web.json_response({"agents": ap.get_agent_list()})
+    try:
+        from modules.autopilot import AutoPilot
+        ap = AutoPilot()
+        return web.json_response({"ok": True, "agents": ap.get_agent_list()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_autopilot_run(req):
@@ -761,9 +764,12 @@ async def handle_autopilot_run(req):
 
 
 async def handle_autopilot_logs(req):
-    from modules.autopilot import AutoPilot
-    ap = AutoPilot()
-    return web.json_response({"logs": ap.get_logs(30)})
+    try:
+        from modules.autopilot import AutoPilot
+        ap = AutoPilot()
+        return web.json_response({"ok": True, "logs": ap.get_logs(30)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_geheimwaffe_run(req):
@@ -839,7 +845,10 @@ async def handle_backup_run(req):
 # ---------------------------------------------------------------------------
 
 async def handle_mac_action(req):
-    data = await req.json()
+    try:
+        data = await req.json()
+    except Exception:
+        data = {}
     action = data.get("action", "")
     try:
         from modules.mac_controller import MacController
@@ -929,7 +938,10 @@ async def handle_services_status(req):
 
 
 async def handle_service_action(req):
-    data = await req.json()
+    try:
+        data = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
     action = data.get("action", "")
     svc_id = data.get("id", "")
     svc = next((s for s in SERVICES if s["id"] == svc_id), None)
@@ -1986,17 +1998,29 @@ async def handle_recover_carts(req):
 
 
 async def handle_flash_sale(req):
-    """Flash-Sale-Discount-Code erstellen."""
+    """Flash Sale durch direkte Preisaktualisierung — kein Discount-Code nötig."""
     try:
         data = await req.json() if req.can_read_body else {}
         from modules.shopify_revenue_engine import create_flash_sale
+        pct = int(data.get("discount_percent", data.get("discount_pct", 20)))
         result = await create_flash_sale(
-            discount_pct=int(data.get("discount_pct", 20)),
+            discount_pct=pct,
             title=data.get("title", ""),
             duration_hours=int(data.get("duration_hours", 24)),
             collection_id=data.get("collection_id"),
             min_purchase=float(data.get("min_purchase", 0)),
+            product_ids=data.get("product_ids"),
         )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_restore_flash_sale(req):
+    """Originalpreise nach Flash Sale wiederherstellen."""
+    try:
+        from modules.shopify_revenue_engine import restore_flash_sale
+        result = await restore_flash_sale()
         return web.json_response(result)
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
@@ -2083,6 +2107,43 @@ async def handle_upsell_pairs(req):
         from modules.shopify_revenue_engine import get_upsell_pairs
         pairs = await get_upsell_pairs(limit)
         return web.json_response({"ok": True, "pairs": pairs})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── YouTube Analytics ─────────────────────────────────────────────────────────
+
+async def handle_youtube_dashboard(req):
+    """YouTube Kanal-Dashboard: Abonnenten, Views, Videos."""
+    try:
+        from modules.youtube_analytics import get_full_dashboard
+        return web.json_response(await get_full_dashboard())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_youtube_stats(req):
+    try:
+        from modules.youtube_analytics import get_channel_stats
+        return web.json_response(await get_channel_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_youtube_latest(req):
+    try:
+        n = int(req.rel_url.query.get("limit", "10"))
+        from modules.youtube_analytics import get_latest_videos
+        return web.json_response(await get_latest_videos(n))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_youtube_top(req):
+    try:
+        n = int(req.rel_url.query.get("limit", "10"))
+        from modules.youtube_analytics import get_top_videos
+        return web.json_response(await get_top_videos(n))
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -2755,6 +2816,7 @@ async def create_app():
     app.router.add_get("/api/revenue/abandoned-carts",       handle_abandoned_carts)
     app.router.add_post("/api/revenue/recover-carts",        handle_recover_carts)
     app.router.add_post("/api/revenue/flash-sale",           handle_flash_sale)
+    app.router.add_post("/api/revenue/restore-flash-sale",   handle_restore_flash_sale)
     app.router.add_post("/api/revenue/bulk-price",           handle_bulk_price_update)
     app.router.add_get("/api/revenue/product-performance",   handle_product_performance)
     app.router.add_get("/api/revenue/products",              handle_all_products_prices)
@@ -2762,6 +2824,10 @@ async def create_app():
     app.router.add_get("/api/revenue/low-inventory",         handle_low_inventory)
     app.router.add_post("/api/revenue/publish-drafts",       handle_publish_drafts)
     app.router.add_get("/api/revenue/upsell-pairs",          handle_upsell_pairs)
+    app.router.add_get("/api/youtube/dashboard",             handle_youtube_dashboard)
+    app.router.add_get("/api/youtube/stats",                 handle_youtube_stats)
+    app.router.add_get("/api/youtube/latest",                handle_youtube_latest)
+    app.router.add_get("/api/youtube/top",                   handle_youtube_top)
 
     return app
 
@@ -2776,7 +2842,7 @@ def _free_port(port: int) -> None:
         for pid in pids:
             try:
                 os.kill(int(pid), 9)
-                print(f"  Killed PID {pid} on port {port}")
+                log.info("Killed PID %s on port %s", pid, port)
             except Exception:
                 pass
     except Exception:
@@ -2835,7 +2901,7 @@ async def _register_telegram_webhook():
 
 if __name__ == "__main__":
     async def _main():
-        print(f"\n🔍 Prüfe Port {PORT}...")
+        log.info("Prüfe Port %s...", PORT)
         _free_port(PORT)
         import asyncio as _aio
         await _aio.sleep(0.5)   # kurz warten damit OS den Port freigibt
@@ -2845,7 +2911,7 @@ if __name__ == "__main__":
         await runner.setup()
         site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True)
         await site.start()
-        print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
+        log.info("SuperMegaBot Dashboard läuft auf http://localhost:%s", PORT)
         
         # Auto-register Telegram webhook on Railway
         await _register_telegram_webhook()
