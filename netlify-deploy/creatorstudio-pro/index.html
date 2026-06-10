@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreatorStudio Pro — KI-Suite für Content Creator</title>
+<script>
+(function(){
+  if(localStorage.getItem('bp_ok')!=='1'){
+    document.documentElement.style.display='none';
+    var p=prompt('🔐 Passwort:');
+    if(p==='bullpower2026'){localStorage.setItem('bp_ok','1');document.documentElement.style.display='';}
+    else{document.documentElement.style.display='';document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#ef4444;font:bold 2rem sans-serif">❌ Zugang verweigert</div>';}
+  }
+})();
+</script>
+<style>
+  :root {
+    --grad: linear-gradient(135deg, #7c3aed, #db2777, #f97316);
+    --grad2: linear-gradient(135deg, #4c1d95, #831843);
+    --bg: #0a0a0f;
+    --card: #12121a;
+    --border: #2a1f3d;
+    --text: #f1f0f7;
+    --muted: #9ca3af;
+    --purple: #a855f7;
+    --pink: #ec4899;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; overflow-x: hidden; }
+
+  /* NAV */
+  nav { position: fixed; top: 0; width: 100%; background: rgba(10,10,15,0.9); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border); z-index: 100; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
+  .logo { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.4rem; font-weight: 800; }
+  .nav-cta { background: var(--grad); color: white; border: none; padding: 0.5rem 1.5rem; border-radius: 25px; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+
+  /* HERO */
+  .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 8rem 2rem 4rem; position: relative; overflow: hidden; }
+  .hero::before { content: ''; position: absolute; width: 800px; height: 800px; background: radial-gradient(circle, rgba(168,85,247,0.15), transparent 60%); top: -200px; left: 50%; transform: translateX(-50%); }
+  .hero::after { content: ''; position: absolute; width: 600px; height: 600px; background: radial-gradient(circle, rgba(236,72,153,0.1), transparent 60%); bottom: -100px; right: -100px; }
+  .badge { background: rgba(168,85,247,0.2); border: 1px solid rgba(168,85,247,0.4); color: var(--purple); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 2rem; display: inline-block; }
+  .hero h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; max-width: 900px; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1.5rem; }
+  .hero p { font-size: 1.2rem; color: var(--muted); max-width: 600px; margin-bottom: 2.5rem; line-height: 1.7; }
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+  .btn-primary { background: var(--grad); color: white; border: none; padding: 1rem 2.5rem; border-radius: 50px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 0 30px rgba(168,85,247,0.4); }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(168,85,247,0.6); }
+  .btn-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); padding: 1rem 2.5rem; border-radius: 50px; font-size: 1.1rem; font-weight: 600; cursor: pointer; }
+  .stats { display: flex; gap: 3rem; margin-top: 4rem; flex-wrap: wrap; justify-content: center; }
+  .stat { text-align: center; }
+  .stat-num { font-size: 2.5rem; font-weight: 900; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat-label { color: var(--muted); font-size: 0.9rem; }
+
+  /* SECTIONS */
+  section { padding: 5rem 2rem; max-width: 1200px; margin: 0 auto; }
+  .section-title { text-align: center; margin-bottom: 3rem; }
+  .section-title h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 0.8rem; }
+  .section-title p { color: var(--muted); font-size: 1.1rem; }
+
+  /* TOOL DEMOS */
+  .demos-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 2rem; }
+  .demo-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; position: relative; overflow: hidden; }
+  .demo-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--grad); }
+  .demo-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; }
+  .demo-icon { font-size: 1.5rem; }
+  .demo-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: var(--text); padding: 0.8rem 1rem; border-radius: 10px; font-size: 0.95rem; outline: none; margin-bottom: 0.8rem; }
+  .demo-input:focus { border-color: var(--purple); }
+  .demo-btn { background: var(--grad); color: white; border: none; padding: 0.7rem 1.5rem; border-radius: 10px; font-weight: 700; cursor: pointer; width: 100%; font-size: 0.95rem; transition: opacity 0.2s; }
+  .demo-btn:hover { opacity: 0.9; }
+  .demo-output { margin-top: 1rem; min-height: 80px; background: rgba(168,85,247,0.05); border: 1px solid rgba(168,85,247,0.2); border-radius: 10px; padding: 1rem; }
+
+  /* Cover Art Placeholder */
+  .cover-placeholder { width: 100%; height: 150px; background: var(--grad2); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 3rem; position: relative; overflow: hidden; }
+  .cover-placeholder::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1)); animation: shimmer 2s infinite; }
+  @keyframes shimmer { 0%,100%{opacity:0} 50%{opacity:1} }
+  .cover-loading { display: flex; gap: 0.4rem; justify-content: center; margin-top: 0.8rem; }
+  .loading-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--purple); animation: bounce 0.8s infinite alternate; }
+  .loading-dot:nth-child(2) { animation-delay: 0.2s; background: var(--pink); }
+  .loading-dot:nth-child(3) { animation-delay: 0.4s; background: #f97316; }
+  @keyframes bounce { from{transform:translateY(0)} to{transform:translateY(-8px)} }
+
+  /* SEO Output */
+  .seo-output { display: none; }
+  .seo-line { margin-bottom: 0.6rem; font-size: 0.85rem; }
+  .seo-line strong { color: var(--purple); }
+  .seo-typing { overflow: hidden; white-space: nowrap; border-right: 2px solid var(--purple); animation: typing 2s steps(40), blink 0.75s step-end infinite; }
+  @keyframes typing { from{width:0} to{width:100%} }
+  @keyframes blink { 50%{border-color:transparent} }
+
+  /* Income Slider */
+  .slider-group { margin-bottom: 1rem; }
+  .slider-label { display: flex; justify-content: space-between; margin-bottom: 0.4rem; font-size: 0.9rem; }
+  .slider-val { color: var(--purple); font-weight: 700; }
+  input[type=range] { width: 100%; accent-color: var(--purple); }
+  .income-result { background: var(--grad); border-radius: 12px; padding: 1.2rem; text-align: center; margin-top: 1rem; }
+  .income-result .amount { font-size: 2.2rem; font-weight: 900; color: white; }
+  .income-result .period { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+
+  /* FEATURES */
+  .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .feature-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; transition: transform 0.2s, border-color 0.2s; }
+  .feature-card:hover { transform: translateY(-4px); border-color: var(--purple); }
+  .feature-emoji { font-size: 2.5rem; margin-bottom: 1rem; }
+  .feature-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.6rem; }
+  .feature-card p { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+  /* AUDIENCE */
+  .audience-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; }
+  .audience-card { background: var(--grad2); border-radius: 16px; padding: 2rem; text-align: center; border: 1px solid rgba(168,85,247,0.2); }
+  .audience-card .aud-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .audience-card h3 { font-weight: 700; margin-bottom: 0.5rem; }
+  .audience-card p { color: rgba(255,255,255,0.7); font-size: 0.85rem; }
+
+  /* PRICING */
+  .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; }
+  .pricing-card { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; text-align: center; position: relative; transition: transform 0.2s; }
+  .pricing-card:hover { transform: translateY(-6px); }
+  .pricing-card.featured { border-color: var(--purple); background: rgba(168,85,247,0.08); }
+  .featured-badge { position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: var(--grad); color: white; padding: 0.3rem 1.2rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
+  .plan-name { font-size: 1.3rem; font-weight: 800; margin-bottom: 0.5rem; }
+  .plan-price { font-size: 3rem; font-weight: 900; background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .plan-price span { font-size: 1rem; color: var(--muted); }
+  .plan-features { list-style: none; margin: 1.5rem 0; text-align: left; }
+  .plan-features li { padding: 0.5rem 0; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 0.9rem; display: flex; align-items: center; gap: 0.5rem; }
+  .plan-features li::before { content: '✓'; color: var(--purple); font-weight: 700; }
+  .plan-btn { background: var(--grad); color: white; border: none; padding: 0.9rem 2rem; border-radius: 50px; font-weight: 700; cursor: pointer; width: 100%; font-size: 1rem; transition: opacity 0.2s; }
+  .plan-btn:hover { opacity: 0.9; }
+
+  /* COMPARISON TABLE */
+  .comparison-table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 16px; overflow: hidden; }
+  .comparison-table th { background: var(--grad); padding: 1rem; text-align: center; font-weight: 700; }
+  .comparison-table td { padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); text-align: center; font-size: 0.9rem; }
+  .comparison-table tr:last-child td { border-bottom: none; }
+  .comparison-table tr:hover td { background: rgba(168,85,247,0.05); }
+  .good { color: #22c55e; font-weight: 700; }
+  .bad { color: #ef4444; }
+
+  /* CTA SECTION */
+  .cta-section { background: var(--grad); border-radius: 24px; padding: 4rem; text-align: center; margin: 0 2rem; }
+  .cta-section h2 { font-size: 2.5rem; font-weight: 900; color: white; margin-bottom: 1rem; }
+  .cta-section p { color: rgba(255,255,255,0.85); font-size: 1.1rem; margin-bottom: 2rem; }
+  .cta-btn-white { background: white; color: #7c3aed; border: none; padding: 1rem 2.5rem; border-radius: 50px; font-size: 1.1rem; font-weight: 800; cursor: pointer; transition: transform 0.2s; }
+  .cta-btn-white:hover { transform: scale(1.05); }
+
+  /* FOOTER */
+  footer { text-align: center; padding: 3rem 2rem; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); }
+
+  /* Animations */
+  @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation: fadeIn 0.6s ease forwards; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 20px rgba(168,85,247,0.3)} 50%{box-shadow:0 0 60px rgba(168,85,247,0.6)} }
+  .pulse { animation: pulse 2s infinite; }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">✦ CreatorStudio Pro</div>
+  <button class="nav-cta" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Jetzt starten →</button>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="badge">🚀 Powered by Google Gemini AI</div>
+  <h1>CreatorStudio Pro — KI-Suite die dein Content-Business auf Autopilot setzt</h1>
+  <p>Cover Art, SEO, Income Calculator und mehr — alles mit Google Gemini AI. Spare 20+ Stunden pro Woche und skaliere dein Content-Business auf das nächste Level.</p>
+  <div class="hero-btns">
+    <button class="btn-primary pulse" onclick="document.getElementById('demos').scrollIntoView({behavior:'smooth'})">🎨 Tools ausprobieren</button>
+    <button class="btn-secondary" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Preise ansehen</button>
+  </div>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num" id="s1">0</div>
+      <div class="stat-label">Creator nutzen es täglich</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="s2">0</div>
+      <div class="stat-label">AI-Inhalte generiert</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="s3">0</div>
+      <div class="stat-label">Stunden gespart</div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOL DEMOS -->
+<section id="demos">
+  <div class="section-title">
+    <h2>Probiere unsere KI-Tools live aus</h2>
+    <p>Echte Mock-Demos — so funktioniert CreatorStudio Pro in der Praxis</p>
+  </div>
+  <div class="demos-grid">
+
+    <!-- Cover Art Studio -->
+    <div class="demo-card">
+      <div class="demo-title"><span class="demo-icon">🎨</span> Cover Art Studio</div>
+      <input class="demo-input" id="cover-input" type="text" placeholder="Beschreibe dein Cover-Motiv..." value="Futuristischer Podcast über Tech & Finanzen">
+      <button class="demo-btn" onclick="generateCover()">✨ Cover generieren</button>
+      <div class="demo-output" id="cover-output" style="display:none;">
+        <div class="cover-placeholder" id="cover-img">🖼️</div>
+        <div class="cover-loading">
+          <div class="loading-dot"></div>
+          <div class="loading-dot"></div>
+          <div class="loading-dot"></div>
+        </div>
+        <p style="text-align:center;margin-top:0.8rem;color:var(--muted);font-size:0.85rem;">Gemini generiert dein Cover...</p>
+      </div>
+    </div>
+
+    <!-- SEO Generator -->
+    <div class="demo-card">
+      <div class="demo-title"><span class="demo-icon">🔍</span> SEO Title Generator</div>
+      <input class="demo-input" id="seo-input" type="text" placeholder="Dein Content-Thema..." value="Passives Einkommen mit YouTube 2025">
+      <button class="demo-btn" onclick="generateSEO()">🔍 SEO generieren</button>
+      <div class="demo-output" id="seo-output" style="display:none;" class="seo-output">
+        <div class="seo-line"><strong>📝 Titel:</strong> <span id="seo-title"></span></div>
+        <div class="seo-line" style="margin-top:0.8rem;"><strong>📄 Meta-Beschreibung:</strong></div>
+        <div class="seo-line" style="color:var(--muted);font-size:0.82rem;" id="seo-meta"></div>
+        <div class="seo-line" style="margin-top:0.8rem;"><strong>🏷️ Keywords:</strong></div>
+        <div class="seo-line" style="color:var(--purple);font-size:0.82rem;" id="seo-keywords"></div>
+      </div>
+    </div>
+
+    <!-- Income Calculator -->
+    <div class="demo-card">
+      <div class="demo-title"><span class="demo-icon">💰</span> Income Calculator</div>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Abonnenten/Follower</span>
+          <span class="slider-val" id="followers-val">10.000</span>
+        </div>
+        <input type="range" id="followers" min="1000" max="500000" step="1000" value="10000" oninput="calcIncome()">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Produkt-Preis (€)</span>
+          <span class="slider-val" id="price-val">€49</span>
+        </div>
+        <input type="range" id="price" min="9" max="999" step="10" value="49" oninput="calcIncome()">
+      </div>
+      <div class="slider-group">
+        <div class="slider-label">
+          <span>Conversion-Rate (%)</span>
+          <span class="slider-val" id="conv-val">2%</span>
+        </div>
+        <input type="range" id="conv" min="0.5" max="10" step="0.5" value="2" oninput="calcIncome()">
+      </div>
+      <div class="income-result">
+        <div class="amount" id="income-amount">€9.800</div>
+        <div class="period">Potenziales Monatseinkommen</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-title">
+    <h2>5 mächtige KI-Tools in einem</h2>
+    <p>Alles was ein Content Creator braucht — powered by Gemini AI</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-emoji">🎨</div>
+      <h3>Cover Art Studio</h3>
+      <p>Generiere professionelle Thumbnails, Podcast-Cover und Social-Media-Grafiken in Sekunden. Kein Photoshop-Wissen nötig.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">🔍</div>
+      <h3>SEO Optimizer</h3>
+      <p>KI-optimierte Titel, Meta-Beschreibungen und Keyword-Cluster für YouTube, Blog und Podcast. Mehr organische Reichweite.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">💰</div>
+      <h3>Income Calculator</h3>
+      <p>Berechne dein Revenue-Potenzial basierend auf Audience-Größe, Produkt-Preis und Conversion-Rate — live und dynamisch.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">📝</div>
+      <h3>Content Skript KI</h3>
+      <p>Lass Gemini AI komplette Video-Scripts, Blog-Artikel und Newsletter in deinem Schreibstil generieren. Hook, Body, CTA.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-emoji">📊</div>
+      <h3>Performance Analytics</h3>
+      <p>Analysiere welche Inhalte performen, wann deine Audience aktiv ist und welche Topics den höchsten ROI liefern.</p>
+    </div>
+  </div>
+</section>
+
+<!-- AUDIENCE -->
+<section id="audience">
+  <div class="section-title">
+    <h2>Perfekt für jeden Content Creator</h2>
+    <p>Egal ob Anfänger oder etablierter Creator — CreatorStudio Pro skaliert mit dir</p>
+  </div>
+  <div class="audience-grid">
+    <div class="audience-card">
+      <div class="aud-icon">📹</div>
+      <h3>YouTuber</h3>
+      <p>Thumbnails, Titles & Scripts auf Autopilot</p>
+    </div>
+    <div class="audience-card">
+      <div class="aud-icon">✍️</div>
+      <h3>Blogger</h3>
+      <p>SEO-optimierte Artikel in Minuten</p>
+    </div>
+    <div class="audience-card">
+      <div class="aud-icon">🔗</div>
+      <h3>Affiliate Marketer</h3>
+      <p>High-Converting Reviews & Vergleiche</p>
+    </div>
+    <div class="audience-card">
+      <div class="aud-icon">🎓</div>
+      <h3>Online-Coaches</h3>
+      <p>Kurs-Content & Landingpages automatisiert</p>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-title">
+    <h2>Transparente Preise. Kein Bullshit.</h2>
+    <p>Starte kostenlos, skaliere wenn du bereit bist</p>
+  </div>
+  <div class="pricing-grid">
+    <div class="pricing-card">
+      <div class="plan-name">Creator</div>
+      <div class="plan-price">€19<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>100 AI-Calls pro Monat</li>
+        <li>Cover Art Studio</li>
+        <li>SEO Generator (Basic)</li>
+        <li>Income Calculator</li>
+        <li>Email-Support</li>
+      </ul>
+      <button class="plan-btn">Jetzt starten</button>
+    </div>
+    <div class="pricing-card featured">
+      <div class="featured-badge">⭐ Beliebteste Wahl</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">€49<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>1.000 AI-Calls pro Monat</li>
+        <li>Alle 5 Tools freigeschaltet</li>
+        <li>Content Script KI</li>
+        <li>Performance Analytics</li>
+        <li>Priority Support</li>
+        <li>API Zugang</li>
+      </ul>
+      <button class="plan-btn">Pro starten</button>
+    </div>
+    <div class="pricing-card">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price">€99<span>/mo</span></div>
+      <ul class="plan-features">
+        <li>Unlimited AI-Calls</li>
+        <li>White-Label Option</li>
+        <li>Team-Accounts (5 User)</li>
+        <li>Custom Branding</li>
+        <li>Dedicated Account Manager</li>
+        <li>SLA Garantie</li>
+      </ul>
+      <button class="plan-btn">Agency starten</button>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section id="comparison">
+  <div class="section-title">
+    <h2>CreatorStudio Pro vs. manuell</h2>
+    <p>Sieh selbst wie viel Zeit und Geld du sparst</p>
+  </div>
+  <table class="comparison-table">
+    <thead>
+      <tr>
+        <th>Aufgabe</th>
+        <th>Manuell (Zeit)</th>
+        <th>Manuell (Kosten)</th>
+        <th>CreatorStudio Pro (Zeit)</th>
+        <th>CreatorStudio Pro (Kosten)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>YouTube Thumbnail erstellen</td>
+        <td class="bad">2–3 Stunden</td>
+        <td class="bad">€50–150 (Designer)</td>
+        <td class="good">30 Sekunden</td>
+        <td class="good">Inklusive</td>
+      </tr>
+      <tr>
+        <td>SEO-optimierter Blogartikel</td>
+        <td class="bad">4–6 Stunden</td>
+        <td class="bad">€100–300 (Texter)</td>
+        <td class="good">5 Minuten</td>
+        <td class="good">Inklusive</td>
+      </tr>
+      <tr>
+        <td>Video-Script schreiben</td>
+        <td class="bad">3–5 Stunden</td>
+        <td class="bad">€80–200 (Autor)</td>
+        <td class="good">2 Minuten</td>
+        <td class="good">Inklusive</td>
+      </tr>
+      <tr>
+        <td>Monatliche Content-Planung</td>
+        <td class="bad">8 Stunden</td>
+        <td class="bad">€200+ (Agentur)</td>
+        <td class="good">15 Minuten</td>
+        <td class="good">Inklusive</td>
+      </tr>
+      <tr>
+        <td>Analytics auswerten</td>
+        <td class="bad">2 Stunden</td>
+        <td class="bad">€60+ (Analyst)</td>
+        <td class="good">Automatisch</td>
+        <td class="good">Inklusive</td>
+      </tr>
+      <tr>
+        <td style="font-weight:700;">GESAMT pro Monat</td>
+        <td class="bad" style="font-weight:700;">~80 Stunden</td>
+        <td class="bad" style="font-weight:700;">€490–1.050+</td>
+        <td class="good" style="font-weight:700;">~5 Stunden</td>
+        <td class="good" style="font-weight:700;">Ab €19/mo</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <h2>Bereit für dein Content-Business auf Autopilot?</h2>
+  <p>Schließe dich über 8.200 Creatoren an, die täglich Zeit und Geld sparen</p>
+  <button class="cta-btn-white">🚀 Jetzt kostenlos starten</button>
+</div>
+
+<footer>
+  <p>© 2026 CreatorStudio Pro · Alle Rechte vorbehalten · <a href="#" style="color:var(--purple)">Datenschutz</a> · <a href="#" style="color:var(--purple)">AGB</a></p>
+  <p style="margin-top:0.5rem;">Powered by Google Gemini AI · Made with ❤️ für Content Creator</p>
+</footer>
+
+<script>
+  // Counter animation
+  function animateCounter(id, target, suffix, duration) {
+    const el = document.getElementById(id);
+    const start = 0;
+    const step = (target / duration) * 16;
+    let current = start;
+    const timer = setInterval(() => {
+      current = Math.min(current + step, target);
+      el.textContent = Math.round(current).toLocaleString('de-DE') + suffix;
+      if (current >= target) clearInterval(timer);
+    }, 16);
+  }
+  setTimeout(() => {
+    animateCounter('s1', 8243, '+', 2000);
+    animateCounter('s2', 124850, '+', 2000);
+    animateCounter('s3', 98200, 'h+', 2500);
+  }, 500);
+
+  // Cover Art Generator
+  function generateCover() {
+    const output = document.getElementById('cover-output');
+    const btn = event.target;
+    btn.textContent = '⏳ Generiere...';
+    btn.disabled = true;
+    output.style.display = 'block';
+    const gradients = [
+      'linear-gradient(135deg, #7c3aed, #db2777)',
+      'linear-gradient(135deg, #1d4ed8, #7c3aed)',
+      'linear-gradient(135deg, #065f46, #0891b2)',
+      'linear-gradient(135deg, #9333ea, #f97316)',
+      'linear-gradient(135deg, #b91c1c, #7c3aed)',
+    ];
+    const emojis = ['🎙️','📹','💡','🎵','🚀','🌟','💎','⚡'];
+    setTimeout(() => {
+      const img = document.getElementById('cover-img');
+      img.style.background = gradients[Math.floor(Math.random() * gradients.length)];
+      img.innerHTML = emojis[Math.floor(Math.random() * emojis.length)] + '<br><span style="font-size:0.7rem;color:rgba(255,255,255,0.8);margin-top:0.5rem;display:block">AI-Generated Cover</span>';
+      document.querySelector('.cover-loading').style.display = 'none';
+      document.querySelector('#cover-output p').textContent = '✅ Cover erfolgreich generiert!';
+      document.querySelector('#cover-output p').style.color = '#22c55e';
+      btn.textContent = '✨ Cover generieren';
+      btn.disabled = false;
+    }, 2500);
+  }
+
+  // SEO Generator
+  const seoData = {
+    default: {
+      title: 'Passives Einkommen mit YouTube 2025: Schritt-für-Schritt Anleitung für Einsteiger',
+      meta: 'Erfahre in diesem umfassenden Guide, wie du mit YouTube ein stabiles passives Einkommen aufbaust. Praxiserprobte Strategien für 2025.',
+      keywords: 'passives einkommen youtube, youtube geld verdienen, youtube 2025, content creator anfänger, monetarisierung youtube'
+    }
+  };
+  function generateSEO() {
+    const input = document.getElementById('seo-input').value.trim() || 'Content Creator';
+    const output = document.getElementById('seo-output');
+    const btn = event.target;
+    btn.textContent = '⏳ Analysiere...';
+    btn.disabled = true;
+    output.style.display = 'none';
+    const titles = [
+      `${input}: Der ultimative Guide für 2025 (mit Schritt-für-Schritt Plan)`,
+      `Wie du mit "${input}" in 90 Tagen mehr verdienst — Bewährt & Getestet`,
+      `${input} Masterclass: Von 0 auf €10.000/mo — Diese Strategie funktioniert`,
+      `${input} 2025: Alles was du wissen musst (Anfänger bis Profi-Level)`,
+    ];
+    const metas = [
+      `Entdecke die besten Strategien für ${input}. Praxiserprobte Methoden, die wirklich funktionieren. Jetzt kostenlos lesen und sofort umsetzen.`,
+      `In diesem Guide zeigen wir dir Schritt für Schritt, wie ${input} in 2025 wirklich funktioniert. Inklusive Checkliste und Vorlagen.`,
+    ];
+    const kws = [
+      `${input.toLowerCase()}, ${input.toLowerCase()} 2025, ${input.toLowerCase()} anleitung, geld verdienen online, passives einkommen aufbauen`,
+      `${input.toLowerCase()} strategie, ${input.toLowerCase()} tipps, online business 2025, digitales marketing, content creator`,
+    ];
+    setTimeout(() => {
+      document.getElementById('seo-title').textContent = titles[Math.floor(Math.random() * titles.length)];
+      document.getElementById('seo-meta').textContent = metas[Math.floor(Math.random() * metas.length)];
+      document.getElementById('seo-keywords').textContent = kws[Math.floor(Math.random() * kws.length)];
+      output.style.display = 'block';
+      btn.textContent = '🔍 SEO generieren';
+      btn.disabled = false;
+    }, 1800);
+  }
+
+  // Income Calculator
+  function calcIncome() {
+    const followers = parseInt(document.getElementById('followers').value);
+    const price = parseInt(document.getElementById('price').value);
+    const conv = parseFloat(document.getElementById('conv').value);
+    document.getElementById('followers-val').textContent = followers.toLocaleString('de-DE');
+    document.getElementById('price-val').textContent = '€' + price;
+    document.getElementById('conv-val').textContent = conv + '%';
+    const income = Math.round((followers * (conv / 100) * price));
+    document.getElementById('income-amount').textContent = '€' + income.toLocaleString('de-DE');
+  }
+  calcIncome();
+</script>
+</body>
+</html>
