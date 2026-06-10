@@ -415,3 +415,316 @@ async def get_seo_score(product: Dict) -> Dict:
         "issues":      issues,
         "suggestions": suggestions,
     }
+
+
+# ── Maximum-Setup Additions ───────────────────────────────────────────────────
+
+async def generate_blog_post(topic: str, product_context: str = "", language: str = "de") -> Dict:
+    """Generate an SEO-optimised blog post about a topic or product using Claude.
+
+    Args:
+        topic:            Blog post topic or keyword (e.g. "Dropshipping Tipps 2026")
+        product_context:  Optional product name/description to tie the post to
+        language:         Target language ("de" or "en")
+
+    Returns:
+        {"ok": True, "title": str, "content": str, "meta_description": str,
+         "slug": str, "word_count": int, "keywords": List[str]}
+    """
+    import re
+    import os
+
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    openai_key    = os.getenv("OPENAI_API_KEY", "")
+
+    if not HAS_AIOHTTP:
+        return {"ok": False, "error": "aiohttp not installed"}
+    if not anthropic_key and not openai_key:
+        return {"ok": False, "error": "No AI API key configured (ANTHROPIC_API_KEY or OPENAI_API_KEY)"}
+
+    lang_instruction = "auf Deutsch" if language == "de" else "in English"
+    product_hint = f"\nDas Produkt/Kontext: {product_context}" if product_context else ""
+
+    prompt = (
+        f"Schreibe einen SEO-optimierten Blog-Artikel {lang_instruction} zum Thema: \"{topic}\".{product_hint}\n\n"
+        f"Anforderungen:\n"
+        f"- Genau 1 H1 (Titel), 3-5 H2-Abschnitte\n"
+        f"- 600-800 Wörter\n"
+        f"- Primäres Keyword natürlich 5-7 mal eingebaut\n"
+        f"- Am Ende: 3-5 FAQs als H2\n"
+        f"- Klarer Call-to-Action am Ende\n\n"
+        f"Antworte als JSON:\n"
+        f'{{"title": "...", "meta_description": "...(120-160 Zeichen)", '
+        f'"keywords": ["kw1", "kw2", "kw3"], '
+        f'"content": "... (HTML mit h1, h2, p Tags)"}}'
+    )
+
+    raw_response = ""
+    try:
+        if anthropic_key:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key":         anthropic_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type":      "application/json",
+                    },
+                    json={
+                        "model":      "claude-3-5-haiku-20241022",
+                        "max_tokens": 2048,
+                        "messages":   [{"role": "user", "content": prompt}],
+                    },
+                    timeout=aiohttp.ClientTimeout(total=60),
+                ) as resp:
+                    data = await resp.json(content_type=None)
+            raw_response = data.get("content", [{}])[0].get("text", "")
+        else:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+                    json={
+                        "model":       "gpt-4o-mini",
+                        "messages":    [{"role": "user", "content": prompt}],
+                        "max_tokens":  2048,
+                        "temperature": 0.7,
+                    },
+                    timeout=aiohttp.ClientTimeout(total=60),
+                ) as resp:
+                    data = await resp.json(content_type=None)
+            raw_response = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        # Extract JSON from response
+        json_match = re.search(r'\{[\s\S]*\}', raw_response)
+        if not json_match:
+            return {"ok": False, "error": "AI response did not contain valid JSON", "raw": raw_response[:300]}
+
+        import json
+        parsed = json.loads(json_match.group())
+        content = parsed.get("content", "")
+        word_count = len(re.sub(r"<[^>]+>", "", content).split())
+
+        # Build URL slug
+        slug = re.sub(r"[^\w\s-]", "", topic.lower()).strip()
+        slug = re.sub(r"[\s_]+", "-", slug)[:60]
+
+        log.info("Blog post generated: topic='%s', words=%d", topic, word_count)
+        return {
+            "ok":              True,
+            "title":           parsed.get("title", topic),
+            "content":         content,
+            "meta_description": parsed.get("meta_description", ""),
+            "slug":            slug,
+            "keywords":        parsed.get("keywords", []),
+            "word_count":      word_count,
+            "language":        language,
+        }
+    except Exception as exc:
+        log.error("generate_blog_post: %s", exc)
+        return {"ok": False, "error": str(exc)}
+
+
+async def optimize_meta_tags(limit: int = 50) -> Dict:
+    """Improve Shopify product meta titles and descriptions for all products.
+
+    Uses Claude/OpenAI to rewrite short or missing meta tags, then PATCH via REST.
+
+    Returns:
+        {"ok": True, "processed": int, "updated": int, "skipped": int, "errors": List[str]}
+    """
+    import os, re
+    from modules.shopify_client import get_products  # type: ignore
+
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    openai_key    = os.getenv("OPENAI_API_KEY", "")
+    if not anthropic_key and not openai_key:
+        return {"ok": False, "error": "No AI key (ANTHROPIC_API_KEY / OPENAI_API_KEY)"}
+
+    try:
+        products = await get_products(limit=limit)
+    except Exception as exc:
+        return {"ok": False, "error": f"Product fetch failed: {exc}"}
+
+    processed = updated = skipped = 0
+    errors: List[str] = []
+
+    async def _ai_meta(title: str, description: str) -> Dict:
+        prompt = (
+            f"Produkt: {title}\nBeschreibung: {description[:300] or 'keine'}\n\n"
+            f"Generiere:\n"
+            f'1. SEO Meta-Title (50-60 Zeichen, inkl. Hauptkeyword)\n'
+            f'2. Meta-Description (120-155 Zeichen, mit Call-to-Action)\n\n'
+            f'Antworte als JSON: {{"meta_title": "...", "meta_description": "..."}}'
+        )
+        try:
+            if anthropic_key:
+                async with aiohttp.ClientSession() as s:
+                    async with s.post(
+                        "https://api.anthropic.com/v1/messages",
+                        headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                        json={"model": "claude-3-5-haiku-20241022", "max_tokens": 256, "messages": [{"role": "user", "content": prompt}]},
+                        timeout=aiohttp.ClientTimeout(total=20),
+                    ) as r:
+                        d = await r.json(content_type=None)
+                raw = d.get("content", [{}])[0].get("text", "")
+            else:
+                async with aiohttp.ClientSession() as s:
+                    async with s.post(
+                        "https://api.openai.com/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+                        json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "max_tokens": 256},
+                        timeout=aiohttp.ClientTimeout(total=20),
+                    ) as r:
+                        d = await r.json(content_type=None)
+                raw = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+            m = re.search(r'\{[\s\S]*\}', raw)
+            if m:
+                import json
+                return json.loads(m.group())
+        except Exception as exc:
+            log.warning("_ai_meta error: %s", exc)
+        return {}
+
+    semaphore = asyncio.Semaphore(3)
+
+    async def _process(product: Dict) -> None:
+        nonlocal processed, updated, skipped
+        processed += 1
+        gid        = product.get("id", "")
+        numeric_id = _extract_numeric_id(gid)
+        title      = product.get("title", "")
+        desc       = product.get("description") or product.get("body_html") or ""
+        seo        = product.get("seo", {}) or {}
+        existing_meta_title = seo.get("title", "")
+        existing_meta_desc  = seo.get("description", "")
+
+        # Skip if meta tags are already good
+        if len(existing_meta_title) >= 40 and len(existing_meta_desc) >= 100:
+            skipped += 1
+            return
+
+        async with semaphore:
+            meta = await _ai_meta(title, re.sub(r"<[^>]+>", "", desc))
+
+        if not meta:
+            errors.append(f"Product {numeric_id}: AI meta generation failed")
+            return
+
+        payload: Dict = {"product": {}}
+        if meta.get("meta_title"):
+            payload["product"]["metafields_global_title_tag"] = meta["meta_title"]
+        if meta.get("meta_description"):
+            payload["product"]["metafields_global_description_tag"] = meta["meta_description"]
+
+        if not payload["product"]:
+            skipped += 1
+            return
+
+        result = await _shopify_rest_patch(f"products/{numeric_id}.json", payload)
+        if "error" in result or "errors" in result:
+            err = result.get("error") or str(result.get("errors"))
+            errors.append(f"Product {numeric_id}: {err}")
+        else:
+            log.info("Meta tags updated for product %s (%s)", numeric_id, title)
+            updated += 1
+
+    await asyncio.gather(*[_process(p) for p in products])
+
+    return {"ok": True, "processed": processed, "updated": updated, "skipped": skipped, "errors": errors}
+
+
+async def generate_faq_schema(product: Dict) -> Dict:
+    """Generate FAQ Schema Markup (JSON-LD) for a Shopify product.
+
+    Uses Claude/OpenAI to create 5 realistic FAQs about the product,
+    then returns structured JSON-LD ready to embed in the page <head>.
+
+    Args:
+        product: dict with at least "title" and optionally "description", "price", "category"
+
+    Returns:
+        {"ok": True, "schema_json": str, "faqs": [{"question": ..., "answer": ...}]}
+    """
+    import os, re, json
+
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    openai_key    = os.getenv("OPENAI_API_KEY", "")
+    if not anthropic_key and not openai_key:
+        return {"ok": False, "error": "No AI key configured"}
+
+    title = product.get("title", "Produkt")
+    desc  = product.get("description") or product.get("body_html") or ""
+    desc_plain = re.sub(r"<[^>]+>", "", desc)[:400]
+    price = product.get("price") or product.get("priceRangeV2", {})
+    if isinstance(price, dict):
+        price = price.get("minVariantPrice", {}).get("amount", "")
+
+    prompt = (
+        f"Erstelle 5 realistische FAQs für dieses Produkt als JSON.\n"
+        f"Produkt: {title}\n"
+        f"Beschreibung: {desc_plain or 'keine'}\n"
+        f"Preis: {price or 'unbekannt'}\n\n"
+        f'Format: {{"faqs": [{{"question": "...", "answer": "..."}}]}}\n'
+        f"Fragen sollen kaufrelevant sein: Versand, Material, Garantie, Anwendung, Rückgabe."
+    )
+
+    try:
+        if anthropic_key:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                    json={"model": "claude-3-5-haiku-20241022", "max_tokens": 1024, "messages": [{"role": "user", "content": prompt}]},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    d = await r.json(content_type=None)
+            raw = d.get("content", [{}])[0].get("text", "")
+        else:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+                    json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "max_tokens": 1024},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    d = await r.json(content_type=None)
+            raw = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        m = re.search(r'\{[\s\S]*\}', raw)
+        if not m:
+            return {"ok": False, "error": "No JSON in AI response"}
+
+        parsed = json.loads(m.group())
+        faqs = parsed.get("faqs", [])
+
+        # Build JSON-LD schema
+        schema = {
+            "@context": "https://schema.org",
+            "@type":    "FAQPage",
+            "mainEntity": [
+                {
+                    "@type":          "Question",
+                    "name":           faq.get("question", ""),
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text":  faq.get("answer", ""),
+                    },
+                }
+                for faq in faqs
+            ],
+        }
+        schema_json = json.dumps(schema, ensure_ascii=False, indent=2)
+        script_tag  = f'<script type="application/ld+json">\n{schema_json}\n</script>'
+
+        log.info("FAQ schema generated for product '%s': %d FAQs", title, len(faqs))
+        return {
+            "ok":         True,
+            "faqs":       faqs,
+            "schema_json": schema_json,
+            "script_tag": script_tag,
+            "product":    title,
+        }
+    except Exception as exc:
+        log.error("generate_faq_schema: %s", exc)
+        return {"ok": False, "error": str(exc)}

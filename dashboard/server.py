@@ -2502,6 +2502,38 @@ async def handle_stripe_checkout(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+
+async def handle_stripe_mrr(req):
+    """GET /api/stripe/mrr — Monthly Recurring Revenue from active subscriptions."""
+    try:
+        from modules.stripe_automation import get_mrr
+        result = await get_mrr()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_churn(req):
+    """GET /api/stripe/churn — Churn rate from canceled subscriptions."""
+    try:
+        days_back = int(req.rel_url.query.get("days", "30"))
+        from modules.stripe_automation import get_churn_rate
+        result = await get_churn_rate(days_back=days_back)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_stripe_setup_products(req):
+    """POST /api/stripe/setup-products — Create all SaaS tiers in Stripe."""
+    try:
+        from modules.stripe_automation import setup_saas_products
+        result = await setup_saas_products()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_stripe_portal(req):
     """Create Stripe Customer Portal session."""
     try:
@@ -3194,6 +3226,9 @@ async def create_app():
     app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+    app.router.add_get("/api/stripe/mrr",             handle_stripe_mrr)
+    app.router.add_get("/api/stripe/churn",           handle_stripe_churn)
+    app.router.add_post("/api/stripe/setup-products", handle_stripe_setup_products)
     app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
     app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
 

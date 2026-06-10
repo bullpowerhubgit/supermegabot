@@ -1,546 +1,10 @@
 {
-  "cycles": 1299,
+  "cycles": 1366,
   "patterns": {
-    "warning:Daily: \u20ac0.00 | Sources: 0": 1299
+    "warning:Daily: \u20ac0.00 | Sources: 0": 1366
   },
   "registers": {},
   "history": [
-    {
-      "ts": "2026-06-08 03:00:10",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:00:21",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:00:52",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:01:55",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:03:19",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:05:04",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:05:25",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:05:37",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:05:58",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:07:21",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:10:19",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:12:15",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:13:39",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:14:10",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:14:21",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:15:56",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:16:50",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:18:13",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:18:44",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:20:28",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:20:49",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:21:10",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:22:42",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:22:53",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:23:14",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:23:36",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:24:49",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:26:14",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:27:07",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:27:17",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:27:59",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:28:41",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:29:02",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:30:05",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:31:29",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:31:49",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:32:00",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:32:22",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:33:47",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:36:04",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:36:15",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:36:57",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:37:07",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:37:18",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:38:31",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:38:53",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:39:56",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:40:37",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:42:01",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:42:11",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:42:54",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:43:05",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:45:40",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:45:51",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:46:02",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:46:34",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:48:59",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:49:31",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:50:12",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:50:44",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:51:06",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:56:31",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:57:14",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:57:45",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:58:17",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 03:58:27",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
-    {
-      "ts": "2026-06-08 04:01:24",
-      "status": "warning",
-      "message": "Daily: \u20ac0.00 | Sources: 0",
-      "metrics": {
-        "revenue": 0.0
-      }
-    },
     {
       "ts": "2026-06-08 04:01:34",
       "status": "warning",
@@ -3999,6 +3463,542 @@
     },
     {
       "ts": "2026-06-09 22:38:56",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 22:49:00",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 22:59:10",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 23:09:11",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 23:19:12",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 23:29:14",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 23:39:14",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 23:49:15",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-09 23:59:15",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 00:09:16",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 00:19:17",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 00:29:18",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 00:39:19",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 00:49:21",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 00:59:25",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 01:09:25",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 01:19:28",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 01:29:28",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 01:39:33",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 01:49:37",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 01:59:39",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 02:09:40",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 02:19:41",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 02:29:43",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 02:39:45",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 02:49:48",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 02:59:49",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 03:09:58",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 03:20:08",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 03:30:13",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 03:40:14",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 03:50:16",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 04:00:17",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 04:10:18",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 04:20:21",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 04:30:22",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 04:40:26",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 04:50:28",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 05:00:32",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 05:10:32",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 05:20:35",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 05:30:40",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 05:40:42",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 05:50:47",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 06:00:56",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 06:10:59",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 06:21:08",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 06:31:11",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 06:41:16",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 06:51:17",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 07:01:28",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 07:11:32",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 07:21:33",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 07:31:34",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 07:41:36",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 07:51:41",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 08:01:47",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 08:11:49",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 08:21:53",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 08:31:58",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 08:41:58",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 08:52:01",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 09:02:03",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 09:12:05",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 09:22:07",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 09:32:09",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 09:42:12",
+      "status": "warning",
+      "message": "Daily: \u20ac0.00 | Sources: 0",
+      "metrics": {
+        "revenue": 0.0
+      }
+    },
+    {
+      "ts": "2026-06-10 09:52:12",
       "status": "warning",
       "message": "Daily: \u20ac0.00 | Sources: 0",
       "metrics": {

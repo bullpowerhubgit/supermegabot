@@ -425,3 +425,244 @@ async def create_customer_portal_session(customer_id: str, return_url: str = Non
     except Exception as e:
         log.error(f"create_customer_portal_session: {e}")
         return {"ok": False, "error": str(e)}
+
+
+# ── SaaS Product Creation ────────────────────────────────────────────────────
+
+SAAS_TIERS = [
+    {"name": "Starter",    "price_eur": 4900,  "description": "SuperMegaBot Starter — Shopify Automation, AI Content, Telegram Alerts"},
+    {"name": "Pro",        "price_eur": 9900,  "description": "SuperMegaBot Pro — Full Automation Suite, Multi-Channel Marketing, Priority Support"},
+    {"name": "Enterprise", "price_eur": 29900, "description": "SuperMegaBot Enterprise — Unlimited Everything, Dedicated Infrastructure, White-Label"},
+]
+
+
+async def create_subscription_product(name: str, price_eur: int, description: str = "") -> Dict:
+    """Create a Stripe product + monthly recurring price for a SaaS tier.
+
+    Args:
+        name: Product display name (e.g. "Starter")
+        price_eur: Price in euro cents (e.g. 4900 = €49)
+        description: Product description
+
+    Returns:
+        {"ok": True, "product_id": str, "price_id": str, "amount": float}
+    """
+    try:
+        async with _session() as s:
+            # Step 1 — Create product
+            prod_payload = {
+                "name": f"SuperMegaBot {name}",
+                "description": description or f"SuperMegaBot {name} plan",
+                "metadata[tier]": name.lower(),
+            }
+            async with s.post(f"{_BASE}/products", headers=_auth(), data=prod_payload) as r:
+                if r.status not in (200, 201):
+                    body = await r.text()
+                    return {"ok": False, "error": f"Product creation failed HTTP {r.status}: {body[:200]}"}
+                product = await r.json()
+
+            product_id = product["id"]
+
+            # Step 2 — Create recurring price
+            price_payload = {
+                "product": product_id,
+                "unit_amount": str(price_eur),
+                "currency": "eur",
+                "recurring[interval]": "month",
+                "metadata[tier]": name.lower(),
+            }
+            async with s.post(f"{_BASE}/prices", headers=_auth(), data=price_payload) as r:
+                if r.status not in (200, 201):
+                    body = await r.text()
+                    return {"ok": False, "error": f"Price creation failed HTTP {r.status}: {body[:200]}"}
+                price = await r.json()
+
+        log.info("SaaS product created: %s — product_id=%s price_id=%s", name, product_id, price["id"])
+        return {
+            "ok":         True,
+            "tier":       name,
+            "product_id": product_id,
+            "price_id":   price["id"],
+            "amount":     price_eur / 100,
+            "currency":   "EUR",
+            "interval":   "month",
+        }
+    except Exception as e:
+        log.error("create_subscription_product(%s): %s", name, e)
+        return {"ok": False, "error": str(e)}
+
+
+async def setup_saas_products() -> Dict:
+    """Create all 3 SaaS tiers (Starter/Pro/Enterprise) in Stripe at once.
+
+    Returns:
+        {"ok": True, "tiers": [{"tier": ..., "price_id": ...}, ...], "errors": [...]}
+    """
+    results = []
+    errors = []
+    for tier in SAAS_TIERS:
+        result = await create_subscription_product(
+            name=tier["name"],
+            price_eur=tier["price_eur"],
+            description=tier["description"],
+        )
+        if result.get("ok"):
+            results.append(result)
+        else:
+            errors.append(f"{tier['name']}: {result.get('error')}")
+
+    await _tg(
+        f"\U0001f3d7 <b>SaaS Products Setup</b>\n"
+        f"Erstellt: {len(results)}/3 Tiers\n"
+        + "\n".join(f"  ✅ {r['tier']} — {r['amount']:.0f} EUR/mo (price_id: {r['price_id']})" for r in results)
+        + ("\n⚠️ Fehler:\n" + "\n".join(errors) if errors else "")
+    )
+
+    return {
+        "ok":     len(errors) == 0,
+        "tiers":  results,
+        "errors": errors,
+    }
+
+
+# ── MRR & Churn Analytics ─────────────────────────────────────────────────────
+
+async def get_mrr() -> Dict:
+    """Calculate Monthly Recurring Revenue from all active subscriptions.
+
+    Returns:
+        {"ok": True, "mrr_eur": float, "arr_eur": float, "active_count": int, "by_plan": {}}
+    """
+    try:
+        all_subs = []
+        starting_after: Optional[str] = None
+
+        async with _session() as s:
+            while True:
+                params: Dict = {"status": "active", "limit": "100"}
+                if starting_after:
+                    params["starting_after"] = starting_after
+                async with s.get(f"{_BASE}/subscriptions", headers=_auth(), params=params) as r:
+                    if r.status != 200:
+                        return {"ok": False, "error": f"HTTP {r.status}"}
+                    d = await r.json()
+                all_subs.extend(d.get("data", []))
+                if not d.get("has_more"):
+                    break
+                if d["data"]:
+                    starting_after = d["data"][-1]["id"]
+                else:
+                    break
+
+        mrr_by_currency: Dict[str, float] = {}
+        by_plan: Dict[str, Dict] = {}
+
+        for sub in all_subs:
+            items = sub.get("items", {}).get("data", [])
+            for item in items:
+                price = item.get("price", {})
+                recurring = price.get("recurring", {}) or {}
+                interval = recurring.get("interval", "month")
+                interval_count = recurring.get("interval_count", 1) or 1
+                unit_amount = price.get("unit_amount", 0) or 0
+                currency = price.get("currency", "eur").lower()
+                qty = item.get("quantity", 1) or 1
+
+                # Normalise to monthly
+                if interval == "year":
+                    monthly = (unit_amount * qty) / (12 * interval_count)
+                elif interval == "week":
+                    monthly = (unit_amount * qty) * (52 / 12) / interval_count
+                elif interval == "day":
+                    monthly = (unit_amount * qty) * (365 / 12) / interval_count
+                else:
+                    monthly = (unit_amount * qty) / interval_count
+
+                monthly_eur = monthly / 100
+                mrr_by_currency[currency] = mrr_by_currency.get(currency, 0) + monthly_eur
+
+                prod_name = price.get("nickname") or price.get("product", "unknown")
+                if isinstance(prod_name, dict):
+                    prod_name = prod_name.get("name", "unknown")
+                prod_name = str(prod_name)
+                if prod_name not in by_plan:
+                    by_plan[prod_name] = {"count": 0, "mrr": 0.0, "currency": currency.upper()}
+                by_plan[prod_name]["count"] += 1
+                by_plan[prod_name]["mrr"] = round(by_plan[prod_name]["mrr"] + monthly_eur, 2)
+
+        total_mrr_eur = mrr_by_currency.get("eur", 0.0)
+        total_mrr_usd = mrr_by_currency.get("usd", 0.0)
+
+        log.info("MRR: EUR %.2f, USD %.2f (%d active subs)", total_mrr_eur, total_mrr_usd, len(all_subs))
+        return {
+            "ok":              True,
+            "mrr_eur":         round(total_mrr_eur, 2),
+            "mrr_usd":         round(total_mrr_usd, 2),
+            "mrr_by_currency": {k: round(v, 2) for k, v in mrr_by_currency.items()},
+            "active_count":    len(all_subs),
+            "by_plan":         by_plan,
+            "arr_eur":         round(total_mrr_eur * 12, 2),
+        }
+    except Exception as e:
+        log.error("get_mrr: %s", e)
+        return {"ok": False, "error": str(e)}
+
+
+async def get_churn_rate(days_back: int = 30) -> Dict:
+    """Calculate churn rate from canceled subscriptions over the given period.
+
+    Churn rate = canceled_in_period / (active + canceled) * 100
+
+    Returns:
+        {"ok": True, "churn_rate_pct": float, "canceled": int, "active": int, "period_days": int}
+    """
+    try:
+        since_ts = int((datetime.now() - timedelta(days=days_back)).timestamp())
+
+        async with _session() as s:
+            async with s.get(
+                f"{_BASE}/subscriptions",
+                headers=_auth(),
+                params={"status": "active", "limit": "1"}
+            ) as r:
+                if r.status != 200:
+                    return {"ok": False, "error": f"HTTP {r.status}"}
+                active_data = await r.json()
+            active_count = len(active_data.get("data", []))
+
+            # Fetch all canceled within window (paginate up to 300)
+            canceled_count = 0
+            starting_after = None
+            while True:
+                params: Dict = {
+                    "status": "canceled",
+                    "limit": "100",
+                    "created[gte]": str(since_ts),
+                }
+                if starting_after:
+                    params["starting_after"] = starting_after
+                async with s.get(f"{_BASE}/subscriptions", headers=_auth(), params=params) as r:
+                    if r.status != 200:
+                        break
+                    cdata = await r.json()
+                chunk = cdata.get("data", [])
+                canceled_count += len(chunk)
+                if not cdata.get("has_more") or not chunk:
+                    break
+                starting_after = chunk[-1]["id"]
+
+        base = active_count + canceled_count
+        churn_rate = (canceled_count / base * 100) if base > 0 else 0.0
+
+        log.info("Churn %.2f%% (%d canceled / %d base, %d days)", churn_rate, canceled_count, base, days_back)
+        return {
+            "ok":             True,
+            "churn_rate_pct": round(churn_rate, 2),
+            "canceled":       canceled_count,
+            "active":         active_count,
+            "base":           base,
+            "period_days":    days_back,
+        }
+    except Exception as e:
+        log.error("get_churn_rate: %s", e)
+        return {"ok": False, "error": str(e)}
