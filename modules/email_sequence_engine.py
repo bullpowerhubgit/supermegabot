@@ -9,11 +9,13 @@ tracks stats in Supabase.
 from __future__ import annotations
 
 import asyncio
+import html as _html_module
 import json
 import logging
 import os
+import re
 from datetime import datetime, timedelta, timezone
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
 log = logging.getLogger("EmailSequenceEngine")
 
@@ -22,23 +24,35 @@ log = logging.getLogger("EmailSequenceEngine")
 SEQUENCES: Dict[str, List[Dict]] = {
     "welcome": [
         {"day": 0, "subject": "Willkommen! Dein 10% Rabatt wartet", "template": "welcome_discount"},
-        {"day": 3, "subject": "Bestseller die andere lieben", "template": "bestsellers"},
-        {"day": 7, "subject": "Exklusiv für dich: Neue Arrivals", "template": "new_arrivals"},
+        {"day": 3, "subject": "Bestseller die andere lieben",        "template": "bestsellers"},
+        {"day": 7, "subject": "Exklusiv für dich: Neue Arrivals",    "template": "new_arrivals"},
     ],
     "post_purchase": [
-        {"day": 1, "subject": "Deine Bestellung ist unterwegs!", "template": "shipping_update"},
-        {"day": 7, "subject": "Wie gefällt dir dein Kauf?", "template": "review_request"},
-        {"day": 14, "subject": "Passend dazu empfehlen wir...", "template": "upsell"},
+        {"day":  1, "subject": "Deine Bestellung ist unterwegs!",     "template": "shipping_update"},
+        {"day":  7, "subject": "Wie gefällt dir dein Kauf?",          "template": "review_request"},
+        {"day": 14, "subject": "Passend dazu empfehlen wir...",        "template": "upsell"},
     ],
     "win_back": [
         {"day": 0, "subject": "Wir vermissen dich — 20% Comeback-Rabatt", "template": "winback_1"},
-        {"day": 7, "subject": "Letzte Chance: Dein Rabatt läuft ab", "template": "winback_final"},
+        {"day": 7, "subject": "Letzte Chance: Dein Rabatt läuft ab",       "template": "winback_final"},
     ],
     "vip": [
-        {"day": 0, "subject": "Du bist jetzt VIP! Exklusive Vorteile warten", "template": "vip_welcome"},
-        {"day": 30, "subject": "Dein monatlicher VIP-Report", "template": "vip_monthly"},
+        {"day":  0, "subject": "Du bist jetzt VIP! Exklusive Vorteile warten", "template": "vip_welcome"},
+        {"day": 30, "subject": "Dein monatlicher VIP-Report",                  "template": "vip_monthly"},
     ],
 }
+
+# Rate-limit: max concurrent email sends per process_due_emails() call
+EMAIL_BATCH_CONCURRENCY = int(os.getenv("EMAIL_BATCH_CONCURRENCY", "10"))
+# Max enrollments processed per process_due_emails() run (safety cap)
+EMAIL_BATCH_LIMIT = int(os.getenv("EMAIL_BATCH_LIMIT", "100"))
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def _valid_email(email: str) -> bool:
+    return bool(email and _EMAIL_RE.match(email))
+
 
 # ── Lazy env helpers ──────────────────────────────────────────────────────────
 
@@ -71,6 +85,7 @@ def _telegram_token() -> str:
 
 def _telegram_chat() -> str:
     return os.getenv("TELEGRAM_CHAT_ID", "")
+
 
 # ── aiohttp guard ─────────────────────────────────────────────────────────────
 
@@ -109,6 +124,56 @@ async def _tg(msg: str) -> None:
         log.warning("Telegram send error: %s", exc)
 
 
+# ── HTML sanitization ─────────────────────────────────────────────────────────
+
+# Tags we allow in AI-generated HTML email bodies (whitelist approach)
+_ALLOWED_TAGS = frozenset({
+    "html", "head", "body", "meta", "title",
+    "div", "p", "span", "br", "hr",
+    "h1", "h2", "h3", "h4", "h5", "h6",
+    "ul", "ol", "li",
+    "table", "thead", "tbody", "tr", "th", "td",
+    "a", "img",
+    "strong", "b", "em", "i", "u",
+    "style",
+})
+
+_TAG_RE = re.compile(r"<(/?)(\w+)([^>]*)>", re.IGNORECASE)
+_SCRIPT_RE = re.compile(r"<script[\s\S]*?</script>", re.IGNORECASE)
+_EVENT_ATTR_RE = re.compile(r"\s+on\w+\s*=\s*['\"][^'\"]*['\"]", re.IGNORECASE)
+_JAVASCRIPT_HREF_RE = re.compile(r"href\s*=\s*['\"]javascript:[^'\"]*['\"]", re.IGNORECASE)
+
+
+def _sanitize_html(html_body: str) -> str:
+    """
+    Light sanitizer for AI-generated HTML email content.
+    Strips <script> tags, event handlers (onclick, etc.), and javascript: hrefs.
+    Strips any tags not in _ALLOWED_TAGS.
+    """
+    if not html_body:
+        return ""
+
+    # Remove script blocks entirely
+    sanitized = _SCRIPT_RE.sub("", html_body)
+
+    # Remove event attributes (onclick, onload, onerror, etc.)
+    sanitized = _EVENT_ATTR_RE.sub("", sanitized)
+
+    # Remove javascript: hrefs
+    sanitized = _JAVASCRIPT_HREF_RE.sub('href="#"', sanitized)
+
+    # Strip disallowed tags (keep content, remove the tag itself)
+    def _strip_tag(m: re.Match) -> str:
+        tag_name = m.group(2).lower()
+        if tag_name in _ALLOWED_TAGS:
+            return m.group(0)   # keep as-is
+        # Remove the tag but keep inner text (handled by caller context)
+        return ""
+
+    sanitized = _TAG_RE.sub(_strip_tag, sanitized)
+    return sanitized
+
+
 # ── Customer Enrollment ───────────────────────────────────────────────────────
 
 async def enroll_customer(
@@ -116,11 +181,17 @@ async def enroll_customer(
     name: str,
     sequence_type: str,
     metadata: Optional[Dict] = None,
-) -> Dict:
+) -> Dict[str, Any]:
     """
     Enroll a customer in an email sequence.
     If already enrolled in same sequence with status='active', skip duplicate.
     """
+    # Input validation
+    if not _valid_email(email):
+        return {"ok": False, "error": f"Invalid email: {email!r}"}
+    if not name or not name.strip():
+        log.debug("enroll_customer: empty name for %s, using email as name", email)
+        name = email
     if sequence_type not in SEQUENCES:
         return {"ok": False, "error": f"Unknown sequence type: {sequence_type}"}
 
@@ -128,16 +199,15 @@ async def enroll_customer(
     if not steps:
         return {"ok": False, "error": "Sequence has no steps"}
 
-    # Calculate next_email_at based on first step's day offset
-    first_day_offset = steps[0]["day"]
-    next_email_at = (
+    first_day_offset = steps[0].get("day", 0)
+    next_email_at    = (
         datetime.now(timezone.utc) + timedelta(days=first_day_offset)
     ).isoformat()
 
     try:
         sb = _supabase()
 
-        # Check for existing active enrollment
+        # Deduplication: skip if already active in this sequence
         existing = (
             sb.table("email_sequences")
             .select("id, status")
@@ -148,29 +218,33 @@ async def enroll_customer(
             .execute()
         )
         if existing.data:
+            log.debug(
+                "enroll_customer: %s already active in %s sequence — skipped",
+                email, sequence_type,
+            )
             return {
-                "ok": True,
-                "skipped": True,
-                "reason": "Already enrolled in this sequence",
-                "email": email,
+                "ok":           True,
+                "skipped":      True,
+                "reason":       "Already enrolled in this sequence",
+                "email":        email,
                 "sequence_type": sequence_type,
             }
 
         sb.table("email_sequences").insert({
             "customer_email": email,
-            "customer_name": name,
-            "sequence_type": sequence_type,
-            "current_step": 0,
-            "enrolled_at": datetime.now(timezone.utc).isoformat(),
-            "next_email_at": next_email_at,
-            "metadata": metadata or {},
-            "status": "active",
+            "customer_name":  name.strip(),
+            "sequence_type":  sequence_type,
+            "current_step":   0,
+            "enrolled_at":    datetime.now(timezone.utc).isoformat(),
+            "next_email_at":  next_email_at,
+            "metadata":       metadata or {},
+            "status":         "active",
         }).execute()
 
         log.info("Customer %s enrolled in %s sequence", email, sequence_type)
         return {
-            "ok": True,
-            "email": email,
+            "ok":            True,
+            "email":         email,
             "sequence_type": sequence_type,
             "next_email_at": next_email_at,
         }
@@ -186,32 +260,33 @@ async def generate_email_content(
     template: str,
     customer_name: str,
     metadata: Optional[Dict] = None,
-) -> Dict:
+) -> Dict[str, Any]:
     """
     Generate personalized email content via Claude AI.
     Falls back to static templates if AI is unavailable.
+    AI-generated HTML is sanitized before returning.
     """
     metadata = metadata or {}
     api_key  = _anthropic_key()
 
-    # Template-specific context
     template_context: Dict[str, str] = {
         "welcome_discount": "a warm welcome and a 10% discount code (use code WELCOME10)",
-        "bestsellers": "our current bestselling products and why customers love them",
-        "new_arrivals": "exclusive new product arrivals available only to subscribers",
-        "shipping_update": "confirmation that their order is being prepared and shipped",
-        "review_request": "a friendly request to leave a product review with a direct link",
-        "upsell": "complementary products that pair well with their recent purchase",
-        "winback_1": "a win-back message with a 20% comeback discount code COMEBACK20",
-        "winback_final": "final reminder that their 20% discount expires in 24 hours",
-        "vip_welcome": "VIP membership welcome with exclusive benefits and early access",
-        "vip_monthly": "monthly VIP report with stats, exclusive offers, and loyalty rewards",
+        "bestsellers":      "our current bestselling products and why customers love them",
+        "new_arrivals":     "exclusive new product arrivals available only to subscribers",
+        "shipping_update":  "confirmation that their order is being prepared and shipped",
+        "review_request":   "a friendly request to leave a product review with a direct link",
+        "upsell":           "complementary products that pair well with their recent purchase",
+        "winback_1":        "a win-back message with a 20% comeback discount code COMEBACK20",
+        "winback_final":    "final reminder that their 20% discount expires in 24 hours",
+        "vip_welcome":      "VIP membership welcome with exclusive benefits and early access",
+        "vip_monthly":      "monthly VIP report with stats, exclusive offers, and loyalty rewards",
     }
 
     context = template_context.get(template, f"a {template} email")
+    safe_name = customer_name or "customer"
 
     prompt = (
-        f"Write a professional German e-commerce email for {customer_name or 'customer'}. "
+        f"Write a professional German e-commerce email for {safe_name}. "
         f"The email should contain: {context}. "
         "Brand tone: friendly, professional, conversion-focused. "
         "Return ONLY valid JSON with these exact fields: "
@@ -224,28 +299,29 @@ async def generate_email_content(
         try:
             content = await _generate_via_claude(prompt, api_key)
             if content:
+                # Sanitize AI-generated HTML
+                content["html_body"] = _sanitize_html(content.get("html_body", ""))
                 return content
         except Exception as exc:
             log.warning("Claude content generation failed, using fallback: %s", exc)
 
-    # Static fallback
     return _static_fallback_content(template, customer_name, metadata)
 
 
-async def _generate_via_claude(prompt: str, api_key: str) -> Optional[Dict]:
+async def _generate_via_claude(prompt: str, api_key: str) -> Optional[Dict[str, Any]]:
     payload = {
-        "model": "claude-haiku-4-5",
+        "model":     "claude-haiku-4-5",
         "max_tokens": 2000,
-        "messages": [{"role": "user", "content": prompt}],
-        "system": "You are an expert email marketer. Respond with valid JSON only, no markdown fences.",
+        "messages":   [{"role": "user", "content": prompt}],
+        "system":     "You are an expert email marketer. Respond with valid JSON only, no markdown fences.",
     }
     async with _session(30) as sess:
         async with sess.post(
             "https://api.anthropic.com/v1/messages",
             headers={
-                "x-api-key": api_key,
-                "anthropic-version": "2023-06-01",
-                "Content-Type": "application/json",
+                "x-api-key":          api_key,
+                "anthropic-version":  "2023-06-01",
+                "Content-Type":       "application/json",
             },
             json=payload,
         ) as resp:
@@ -253,13 +329,24 @@ async def _generate_via_claude(prompt: str, api_key: str) -> Optional[Dict]:
                 raise RuntimeError(f"Anthropic HTTP {resp.status}")
             data = await resp.json()
 
-    raw = data["content"][0]["text"].strip()
+    content_blocks = data.get("content") or []
+    if not content_blocks:
+        raise RuntimeError("Anthropic returned empty content blocks")
+    raw = (content_blocks[0].get("text") or "").strip()
+    if not raw:
+        raise RuntimeError("Anthropic returned empty text block")
+
     if "```" in raw:
-        raw = raw.split("```")[1]
+        parts = raw.split("```")
+        raw = parts[1] if len(parts) > 1 else parts[0]
         if raw.startswith("json"):
             raw = raw[4:]
 
-    parsed = json.loads(raw)
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise RuntimeError(f"Could not parse Claude JSON response: {exc}") from exc
+
     return {
         "subject":   str(parsed.get("subject", "")),
         "html_body": str(parsed.get("html_body", "")),
@@ -267,84 +354,91 @@ async def _generate_via_claude(prompt: str, api_key: str) -> Optional[Dict]:
     }
 
 
-def _static_fallback_content(template: str, customer_name: str, metadata: Dict) -> Dict:
+def _static_fallback_content(
+    template: str,
+    customer_name: str,
+    metadata: Dict,
+) -> Dict[str, Any]:
     """Static fallback email templates in German."""
-    name  = customer_name or "Kunde"
-    shop  = os.getenv("SHOPIFY_SHOP_DOMAIN", "unser Shop").replace(".myshopify.com", "")
+    name = customer_name or "Kunde"
+    shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "unser Shop").replace(".myshopify.com", "")
 
     templates: Dict[str, Dict] = {
         "welcome_discount": {
-            "subject": "Willkommen! Dein 10% Rabatt wartet auf dich",
+            "subject":   "Willkommen! Dein 10% Rabatt wartet auf dich",
             "text_body": f"Hallo {name},\n\nwillkommen bei {shop}! Als Dankeschön für deine Anmeldung erhältst du 10% Rabatt auf deine erste Bestellung.\n\nDein Code: WELCOME10\n\nViel Spaß beim Stöbern!\n",
         },
         "bestsellers": {
-            "subject": "Diese Bestseller liebt jeder",
+            "subject":   "Diese Bestseller liebt jeder",
             "text_body": f"Hallo {name},\n\nentdecke unsere beliebtesten Produkte, die tausende Kunden begeistern!\n\nJetzt shoppen: https://{shop}.myshopify.com\n",
         },
         "new_arrivals": {
-            "subject": "Exklusiv für dich: Neue Arrivals",
+            "subject":   "Exklusiv für dich: Neue Arrivals",
             "text_body": f"Hallo {name},\n\nals Abonnent bekommst du als Erster Zugang zu unseren neuesten Produkten!\n\nJetzt entdecken: https://{shop}.myshopify.com\n",
         },
         "shipping_update": {
-            "subject": "Deine Bestellung ist unterwegs!",
+            "subject":   "Deine Bestellung ist unterwegs!",
             "text_body": f"Hallo {name},\n\ndeine Bestellung wird gerade vorbereitet und bald auf dem Weg zu dir sein. Wir halten dich auf dem Laufenden!\n",
         },
         "review_request": {
-            "subject": "Wie gefällt dir dein Kauf?",
+            "subject":   "Wie gefällt dir dein Kauf?",
             "text_body": f"Hallo {name},\n\nwie zufrieden bist du mit deinem Kauf? Dein Feedback hilft uns und anderen Käufern. Bitte hinterlasse eine kurze Bewertung!\n",
         },
         "upsell": {
-            "subject": "Passend dazu empfehlen wir...",
+            "subject":   "Passend dazu empfehlen wir...",
             "text_body": f"Hallo {name},\n\nbasierend auf deinem letzten Kauf haben wir einige perfekte Ergänzungen für dich!\n\nJetzt entdecken: https://{shop}.myshopify.com\n",
         },
         "winback_1": {
-            "subject": "Wir vermissen dich — 20% Comeback-Rabatt",
+            "subject":   "Wir vermissen dich — 20% Comeback-Rabatt",
             "text_body": f"Hallo {name},\n\nwir haben dich vermisst! Als Dankeschön für deine Treue schenken wir dir 20% Rabatt auf deinen nächsten Einkauf.\n\nDein Code: COMEBACK20\n\nGültig für 7 Tage!\n",
         },
         "winback_final": {
-            "subject": "Letzte Chance: Dein 20% Rabatt läuft ab",
+            "subject":   "Letzte Chance: Dein 20% Rabatt läuft ab",
             "text_body": f"Hallo {name},\n\ndein persönlicher 20% Rabattcode COMEBACK20 läuft in 24 Stunden ab. Jetzt einlösen!\n\nZum Shop: https://{shop}.myshopify.com\n",
         },
         "vip_welcome": {
-            "subject": "Du bist jetzt VIP! Exklusive Vorteile warten",
+            "subject":   "Du bist jetzt VIP! Exklusive Vorteile warten",
             "text_body": f"Hallo {name},\n\nherzlichen Glückwunsch! Du hast VIP-Status erreicht. Ab sofort genießt du exklusive Angebote, frühen Zugang zu neuen Produkten und priority Support.\n\nDein VIP-Team\n",
         },
         "vip_monthly": {
-            "subject": "Dein monatlicher VIP-Report",
+            "subject":   "Dein monatlicher VIP-Report",
             "text_body": f"Hallo {name},\n\nhier ist dein persönlicher VIP-Report für diesen Monat mit exklusiven Angeboten und Neuigkeiten speziell für dich!\n",
         },
     }
 
     fallback = templates.get(template, {
-        "subject": f"Nachricht von {shop}",
+        "subject":   f"Nachricht von {shop}",
         "text_body": f"Hallo {name},\n\nvielen Dank für deine Treue!\n",
     })
 
     text_body = fallback["text_body"]
     subject   = fallback["subject"]
 
-    html_body = f"""<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>{subject}</title>
-</head>
-<body style="font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;">
-<div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
-  <div style="background:#1a1a2e;padding:30px;text-align:center;">
-    <h1 style="color:#ffffff;margin:0;font-size:24px;">{shop.upper()}</h1>
-  </div>
-  <div style="padding:30px;">
-    <p style="font-size:16px;color:#333333;line-height:1.6;">{text_body.replace(chr(10), '<br>')}</p>
-  </div>
-  <div style="background:#f8f8f8;padding:20px;text-align:center;font-size:12px;color:#999999;">
-    <p>Du erhältst diese E-Mail weil du dich für unseren Newsletter angemeldet hast.<br>
-    <a href="{{{{unsubscribe_url}}}}" style="color:#999999;">Abmelden</a></p>
-  </div>
-</div>
-</body>
-</html>"""
+    html_body = (
+        "<!DOCTYPE html>\n"
+        "<html lang=\"de\">\n"
+        "<head>\n"
+        "<meta charset=\"UTF-8\">\n"
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+        f"<title>{_html_module.escape(subject)}</title>\n"
+        "</head>\n"
+        "<body style=\"font-family:Arial,sans-serif;background:#f4f4f4;margin:0;padding:20px;\">\n"
+        "<div style=\"max-width:600px;margin:0 auto;background:#ffffff;border-radius:8px;"
+        "overflow:hidden;box-shadow:0 2px 4px rgba(0,0,0,0.1);\">\n"
+        "  <div style=\"background:#1a1a2e;padding:30px;text-align:center;\">\n"
+        f"    <h1 style=\"color:#ffffff;margin:0;font-size:24px;\">{_html_module.escape(shop.upper())}</h1>\n"
+        "  </div>\n"
+        "  <div style=\"padding:30px;\">\n"
+        f"    <p style=\"font-size:16px;color:#333333;line-height:1.6;\">{text_body.replace(chr(10), '<br>')}</p>\n"
+        "  </div>\n"
+        "  <div style=\"background:#f8f8f8;padding:20px;text-align:center;font-size:12px;color:#999999;\">\n"
+        "    <p>Du erhältst diese E-Mail weil du dich für unseren Newsletter angemeldet hast.<br>\n"
+        "    <a href=\"{{unsubscribe_url}}\" style=\"color:#999999;\">Abmelden</a></p>\n"
+        "  </div>\n"
+        "</div>\n"
+        "</body>\n"
+        "</html>"
+    )
 
     return {"subject": subject, "html_body": html_body, "text_body": text_body}
 
@@ -360,19 +454,18 @@ async def _send_via_mailchimp(
 ) -> bool:
     """
     Send a transactional email via Mailchimp Transactional (Mandrill) API.
-    Falls back to Mailchimp campaigns if Mandrill key is unavailable.
+    Falls back gracefully if Mandrill key is unavailable.
     """
     mc_key = _mailchimp_key()
     if not mc_key or not _HAS_AIOHTTP:
         log.warning("Mailchimp not configured; email to %s not sent", email)
         return False
 
-    # Try Mailchimp Transactional (Mandrill)
     mandrill_key = os.getenv("MANDRILL_API_KEY", mc_key)
     try:
         return await _mandrill_send(mandrill_key, email, subject, html_body, text_body)
     except Exception as exc:
-        log.warning("Mandrill send failed: %s", exc)
+        log.warning("Mandrill send failed for %s: %s", email, exc)
         return False
 
 
@@ -389,14 +482,14 @@ async def _mandrill_send(
     payload = {
         "key": api_key,
         "message": {
-            "html": html_body,
-            "text": text_body,
-            "subject": subject,
-            "from_email": from_email,
-            "from_name": from_name,
-            "to": [{"email": to_email, "type": "to"}],
-            "auto_html": False,
-            "auto_text": False,
+            "html":        html_body,
+            "text":        text_body,
+            "subject":     subject,
+            "from_email":  from_email,
+            "from_name":   from_name,
+            "to":          [{"email": to_email, "type": "to"}],
+            "auto_html":   False,
+            "auto_text":   False,
         },
     }
 
@@ -413,24 +506,106 @@ async def _mandrill_send(
         status = data[0].get("status", "")
         if status in ("sent", "queued", "scheduled"):
             return True
-        raise RuntimeError(f"Mandrill status: {status} — {data[0].get('reject_reason','')}")
+        raise RuntimeError(
+            f"Mandrill status: {status} — {data[0].get('reject_reason', '')}"
+        )
     return False
+
+
+# ── Single enrollment processing ─────────────────────────────────────────────
+
+async def _process_enrollment(
+    enrollment: Dict,
+    now: datetime,
+    semaphore: asyncio.Semaphore,
+) -> str:
+    """
+    Process one enrollment: generate content, send, advance step.
+    Returns 'sent', 'failed', or 'skipped'.
+    """
+    seq_type     = enrollment.get("sequence_type", "")
+    current_step = int(enrollment.get("current_step") or 0)
+    email        = enrollment.get("customer_email", "")
+    name         = enrollment.get("customer_name", "")
+    metadata     = enrollment.get("metadata") or {}
+    enroll_id    = enrollment.get("id")
+    next_email_at = enrollment.get("next_email_at")
+
+    # Guard: next_email_at NULL means the row is malformed; skip gracefully
+    if not next_email_at:
+        log.warning(
+            "enrollment id=%s has NULL next_email_at — skipping (seq=%s)",
+            enroll_id, seq_type,
+        )
+        return "skipped"
+
+    if seq_type not in SEQUENCES:
+        return "skipped"
+
+    steps = SEQUENCES[seq_type]
+    if current_step >= len(steps):
+        await _mark_sequence_done(enroll_id)
+        return "skipped"
+
+    step          = steps[current_step]
+    template_name = step.get("template", "")
+    subject_base  = step.get("subject", "")
+
+    async with semaphore:
+        try:
+            content = await asyncio.wait_for(
+                generate_email_content(template_name, name, metadata),
+                timeout=20.0,
+            )
+            subject   = content.get("subject") or subject_base
+            html_body = content.get("html_body", "")
+            text_body = content.get("text_body", "")
+
+            ok = await asyncio.wait_for(
+                _send_via_mailchimp(email, subject, html_body, text_body),
+                timeout=15.0,
+            )
+
+            if ok:
+                await _log_email_send(email, seq_type, current_step, subject, "sent")
+                next_step = current_step + 1
+                if next_step >= len(steps):
+                    await _mark_sequence_done(enroll_id)
+                else:
+                    next_day_offset = steps[next_step]["day"] - step["day"]
+                    next_at         = (now + timedelta(days=max(next_day_offset, 1))).isoformat()
+                    await _advance_sequence(enroll_id, next_step, next_at)
+                log.info(
+                    "Email sent: %s seq=%s step=%d subject=%r",
+                    email, seq_type, current_step, subject,
+                )
+                return "sent"
+            else:
+                await _log_email_send(email, seq_type, current_step, subject, "failed")
+                return "failed"
+
+        except asyncio.TimeoutError:
+            log.warning(
+                "Timeout sending to %s (seq=%s step=%s)",
+                email, seq_type, current_step,
+            )
+            return "failed"
+        except Exception as exc:
+            log.error("Error sending to %s: %s", email, exc)
+            return "failed"
 
 
 # ── Due Email Processing ──────────────────────────────────────────────────────
 
-async def process_due_emails() -> Dict:
+async def process_due_emails() -> Dict[str, Any]:
     """
-    Process all customers with emails due now:
-    1. Fetch due enrollments from Supabase
+    Process all customers with emails due now (rate-limited, batched):
+    1. Fetch due enrollments from Supabase (capped at EMAIL_BATCH_LIMIT)
     2. Generate personalized AI content
     3. Send via Mailchimp
     4. Advance sequence step or mark complete
     """
     now = datetime.now(timezone.utc)
-    sent    = 0
-    failed  = 0
-    skipped = 0
     sequence_counts: Dict[str, int] = {}
 
     try:
@@ -440,7 +615,8 @@ async def process_due_emails() -> Dict:
             .select("*")
             .eq("status", "active")
             .lte("next_email_at", now.isoformat())
-            .limit(100)
+            .not_.is_("next_email_at", "null")   # exclude NULL next_email_at rows
+            .limit(EMAIL_BATCH_LIMIT)
             .execute()
         )
         enrollments = result.data or []
@@ -448,72 +624,29 @@ async def process_due_emails() -> Dict:
         log.error("Failed to fetch due emails: %s", exc)
         return {"sent": 0, "failed": 0, "error": str(exc)}
 
-    for enrollment in enrollments:
-        seq_type     = enrollment.get("sequence_type", "")
-        current_step = int(enrollment.get("current_step", 0))
-        email        = enrollment.get("customer_email", "")
-        name         = enrollment.get("customer_name", "")
-        metadata     = enrollment.get("metadata") or {}
-        enroll_id    = enrollment.get("id")
+    if not enrollments:
+        return {"sent": 0, "failed": 0, "skipped": 0, "sequences": {}}
 
-        if seq_type not in SEQUENCES:
-            skipped += 1
-            continue
+    log.info("process_due_emails: %d enrollments due", len(enrollments))
 
-        steps = SEQUENCES[seq_type]
-        if current_step >= len(steps):
-            # Sequence complete — mark done
-            await _mark_sequence_done(enroll_id)
-            skipped += 1
-            continue
+    semaphore = asyncio.Semaphore(EMAIL_BATCH_CONCURRENCY)
+    outcomes  = await asyncio.gather(
+        *[_process_enrollment(e, now, semaphore) for e in enrollments],
+        return_exceptions=False,
+    )
 
-        step = steps[current_step]
-        template_name = step.get("template", "")
-        subject_base  = step.get("subject", "")
-
-        try:
-            # Generate personalized content
-            content = await asyncio.wait_for(
-                generate_email_content(template_name, name, metadata),
-                timeout=20.0,
-            )
-            subject  = content.get("subject") or subject_base
-            html_body = content.get("html_body", "")
-            text_body = content.get("text_body", "")
-
-            # Send email
-            ok = await asyncio.wait_for(
-                _send_via_mailchimp(email, subject, html_body, text_body),
-                timeout=15.0,
-            )
-
-            if ok:
-                sent += 1
-                sequence_counts[seq_type] = sequence_counts.get(seq_type, 0) + 1
-
-                # Log send
-                await _log_email_send(
-                    email, seq_type, current_step, subject, "sent"
-                )
-
-                # Advance to next step
-                next_step = current_step + 1
-                if next_step >= len(steps):
-                    await _mark_sequence_done(enroll_id)
-                else:
-                    next_day_offset = steps[next_step]["day"] - step["day"]
-                    next_at = (now + timedelta(days=max(next_day_offset, 1))).isoformat()
-                    await _advance_sequence(enroll_id, next_step, next_at)
-            else:
-                failed += 1
-                await _log_email_send(email, seq_type, current_step, subject, "failed")
-
-        except asyncio.TimeoutError:
-            log.warning("Timeout sending to %s (seq=%s step=%s)", email, seq_type, current_step)
+    sent    = 0
+    failed  = 0
+    skipped = 0
+    for enrollment, outcome in zip(enrollments, outcomes):
+        if outcome == "sent":
+            sent += 1
+            seq_type = enrollment.get("sequence_type", "unknown")
+            sequence_counts[seq_type] = sequence_counts.get(seq_type, 0) + 1
+        elif outcome == "failed":
             failed += 1
-        except Exception as exc:
-            log.error("Error sending to %s: %s", email, exc)
-            failed += 1
+        else:
+            skipped += 1
 
     if sent > 0:
         await _tg(
@@ -522,10 +655,14 @@ async def process_due_emails() -> Dict:
             + "\n".join(f"  {k}: {v}" for k, v in sequence_counts.items())
         )
 
+    log.info(
+        "process_due_emails done: sent=%d failed=%d skipped=%d",
+        sent, failed, skipped,
+    )
     return {
-        "sent": sent,
-        "failed": failed,
-        "skipped": skipped,
+        "sent":      sent,
+        "failed":    failed,
+        "skipped":   skipped,
         "sequences": sequence_counts,
     }
 
@@ -535,6 +672,7 @@ async def _mark_sequence_done(enrollment_id: int) -> None:
         _supabase().table("email_sequences").update({
             "status": "completed",
         }).eq("id", enrollment_id).execute()
+        log.debug("Sequence %s marked completed", enrollment_id)
     except Exception as exc:
         log.warning("Failed to mark sequence %s done: %s", enrollment_id, exc)
 
@@ -542,7 +680,7 @@ async def _mark_sequence_done(enrollment_id: int) -> None:
 async def _advance_sequence(enrollment_id: int, next_step: int, next_at: str) -> None:
     try:
         _supabase().table("email_sequences").update({
-            "current_step": next_step,
+            "current_step":  next_step,
             "next_email_at": next_at,
         }).eq("id", enrollment_id).execute()
     except Exception as exc:
@@ -559,11 +697,11 @@ async def _log_email_send(
     try:
         _supabase().table("email_sends").insert({
             "customer_email": email,
-            "sequence_type": seq_type,
-            "step": step,
-            "subject": subject,
-            "sent_at": datetime.now(timezone.utc).isoformat(),
-            "status": status,
+            "sequence_type":  seq_type,
+            "step":           step,
+            "subject":        subject,
+            "sent_at":        datetime.now(timezone.utc).isoformat(),
+            "status":         status,
         }).execute()
     except Exception as exc:
         log.warning("email_sends insert failed: %s", exc)
@@ -571,12 +709,11 @@ async def _log_email_send(
 
 # ── Stats ─────────────────────────────────────────────────────────────────────
 
-async def get_sequence_stats() -> Dict:
+async def get_sequence_stats() -> Dict[str, Any]:
     """Return open/send/completion stats per sequence type."""
     try:
         sb = _supabase()
 
-        # Enrollment counts by sequence + status
         enroll_result = (
             sb.table("email_sequences")
             .select("sequence_type, status")
@@ -584,7 +721,6 @@ async def get_sequence_stats() -> Dict:
         )
         enrollments = enroll_result.data or []
 
-        # Send counts by sequence
         sends_result = (
             sb.table("email_sends")
             .select("sequence_type, status")
@@ -597,11 +733,11 @@ async def get_sequence_stats() -> Dict:
             seq_enrolls = [e for e in enrollments if e.get("sequence_type") == seq_type]
             seq_sends   = [s for s in sends if s.get("sequence_type") == seq_type]
             stats[seq_type] = {
-                "total_enrolled":   len(seq_enrolls),
-                "active":           sum(1 for e in seq_enrolls if e.get("status") == "active"),
-                "completed":        sum(1 for e in seq_enrolls if e.get("status") == "completed"),
+                "total_enrolled":    len(seq_enrolls),
+                "active":            sum(1 for e in seq_enrolls if e.get("status") == "active"),
+                "completed":         sum(1 for e in seq_enrolls if e.get("status") == "completed"),
                 "total_emails_sent": sum(1 for s in seq_sends if s.get("status") == "sent"),
-                "total_failed":     sum(1 for s in seq_sends if s.get("status") == "failed"),
+                "total_failed":      sum(1 for s in seq_sends if s.get("status") == "failed"),
             }
 
         return {"ok": True, "sequences": stats, "total_sends": len(sends)}
@@ -613,7 +749,7 @@ async def get_sequence_stats() -> Dict:
 
 # ── Auto-Enrollment: New Customers ───────────────────────────────────────────
 
-async def auto_enroll_new_customers() -> Dict:
+async def auto_enroll_new_customers() -> Dict[str, Any]:
     """
     Fetch new Shopify customers from last 24h and enroll them in the welcome sequence.
     """
@@ -626,8 +762,8 @@ async def auto_enroll_new_customers() -> Dict:
     if not _HAS_AIOHTTP:
         return {"ok": False, "error": "aiohttp not installed"}
 
-    since = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
-    base  = f"https://{domain}" if not domain.startswith("http") else domain
+    since   = (datetime.now(timezone.utc) - timedelta(hours=24)).isoformat()
+    base    = f"https://{domain}" if not domain.startswith("http") else domain
     headers = {
         "X-Shopify-Access-Token": token,
         "Content-Type": "application/json",
@@ -655,7 +791,7 @@ async def auto_enroll_new_customers() -> Dict:
             last_name  = customer.get("last_name", "")
             name       = f"{first_name} {last_name}".strip() or email
 
-            if not email:
+            if not email or not _valid_email(email):
                 skipped += 1
                 continue
 
@@ -665,7 +801,7 @@ async def auto_enroll_new_customers() -> Dict:
                 sequence_type="welcome",
                 metadata={
                     "shopify_customer_id": str(customer.get("id", "")),
-                    "currency": customer.get("currency", "EUR"),
+                    "currency":            customer.get("currency", "EUR"),
                 },
             )
             if result.get("ok") and not result.get("skipped"):
@@ -675,12 +811,15 @@ async def auto_enroll_new_customers() -> Dict:
             else:
                 errors += 1
 
-        log.info("Auto-enroll new customers: %s enrolled, %s skipped", enrolled, skipped)
+        log.info(
+            "Auto-enroll new customers: %s enrolled, %s skipped, %s errors",
+            enrolled, skipped, errors,
+        )
         return {
-            "ok": True,
-            "enrolled": enrolled,
-            "skipped": skipped,
-            "errors": errors,
+            "ok":              True,
+            "enrolled":        enrolled,
+            "skipped":         skipped,
+            "errors":          errors,
             "total_customers": len(customers),
         }
 
@@ -691,7 +830,7 @@ async def auto_enroll_new_customers() -> Dict:
 
 # ── Auto-Enrollment: Post-Purchase ───────────────────────────────────────────
 
-async def auto_enroll_post_purchase() -> Dict:
+async def auto_enroll_post_purchase() -> Dict[str, Any]:
     """
     Fetch new Shopify orders from last 24h and enroll buyers in post_purchase sequence.
     """
@@ -732,7 +871,7 @@ async def auto_enroll_post_purchase() -> Dict:
                 order.get("email")
                 or (order.get("customer") or {}).get("email", "")
             )
-            if not email:
+            if not email or not _valid_email(email):
                 skipped += 1
                 continue
 
@@ -746,10 +885,10 @@ async def auto_enroll_post_purchase() -> Dict:
                 name=name,
                 sequence_type="post_purchase",
                 metadata={
-                    "order_id": str(order.get("id", "")),
-                    "order_number": order.get("order_number"),
-                    "total_price": order.get("total_price"),
-                    "currency": order.get("currency", "EUR"),
+                    "order_id":      str(order.get("id", "")),
+                    "order_number":  order.get("order_number"),
+                    "total_price":   order.get("total_price"),
+                    "currency":      order.get("currency", "EUR"),
                 },
             )
             if result.get("ok") and not result.get("skipped"):
@@ -759,12 +898,15 @@ async def auto_enroll_post_purchase() -> Dict:
             else:
                 errors += 1
 
-        log.info("Auto-enroll post-purchase: %s enrolled, %s skipped", enrolled, skipped)
+        log.info(
+            "Auto-enroll post-purchase: %s enrolled, %s skipped, %s errors",
+            enrolled, skipped, errors,
+        )
         return {
-            "ok": True,
-            "enrolled": enrolled,
-            "skipped": skipped,
-            "errors": errors,
+            "ok":          True,
+            "enrolled":    enrolled,
+            "skipped":     skipped,
+            "errors":      errors,
             "total_orders": len(orders),
         }
 
@@ -775,11 +917,18 @@ async def auto_enroll_post_purchase() -> Dict:
 
 # ── VIP Promotion ─────────────────────────────────────────────────────────────
 
-async def promote_to_vip(min_orders: int = 3, min_revenue: float = 200.0) -> Dict:
+async def promote_to_vip(
+    min_orders: int = 3,
+    min_revenue: float = 200.0,
+) -> Dict[str, Any]:
     """
     Promote Shopify customers meeting order/revenue thresholds to VIP sequence.
-    Uses Shopify customer data to evaluate eligibility.
     """
+    if min_orders < 0:
+        min_orders = 0
+    if min_revenue < 0:
+        min_revenue = 0.0
+
     domain  = _shopify_domain()
     token   = _shopify_token()
     version = _shopify_api_version()
@@ -799,7 +948,6 @@ async def promote_to_vip(min_orders: int = 3, min_revenue: float = 200.0) -> Dic
     skipped  = 0
 
     try:
-        # Fetch customers sorted by total spent
         async with _session(20) as sess:
             async with sess.get(
                 f"{base}/admin/api/{version}/customers.json"
@@ -812,11 +960,11 @@ async def promote_to_vip(min_orders: int = 3, min_revenue: float = 200.0) -> Dic
 
         customers = data.get("customers", [])
         for customer in customers:
-            orders_count  = int(customer.get("orders_count", 0))
-            total_spent   = float(customer.get("total_spent", 0) or 0)
-            email         = customer.get("email", "")
+            orders_count = int(customer.get("orders_count", 0))
+            total_spent  = float(customer.get("total_spent", 0) or 0)
+            email        = customer.get("email", "")
 
-            if not email:
+            if not email or not _valid_email(email):
                 skipped += 1
                 continue
 
@@ -831,8 +979,8 @@ async def promote_to_vip(min_orders: int = 3, min_revenue: float = 200.0) -> Dic
                     sequence_type="vip",
                     metadata={
                         "shopify_customer_id": str(customer.get("id", "")),
-                        "orders_count": orders_count,
-                        "total_spent": total_spent,
+                        "orders_count":        orders_count,
+                        "total_spent":         total_spent,
                     },
                 )
                 if result.get("ok") and not result.get("skipped"):

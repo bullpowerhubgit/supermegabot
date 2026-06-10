@@ -4,10 +4,13 @@ Guardian News Module
 Einfaches News-Modul für SuperMegaBot
 """
 
+import logging
 import os
 import json
 import urllib.request
 from typing import List, Dict, Any
+
+log = logging.getLogger(__name__)
 
 def search_news(query: str = "technology", page_size: int = 3) -> List[Dict[str, Any]]:
     """
@@ -39,7 +42,7 @@ def search_news(query: str = "technology", page_size: int = 3) -> List[Dict[str,
                     for result in data.get('response', {}).get('results', [])
                 ]
         except Exception as e:
-            print(f"Guardian API Fehler: {e}")
+            log.error("Guardian API Fehler: %s", e)
     
     # Fallback: Demo-Daten
     return [

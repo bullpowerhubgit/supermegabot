@@ -1,11 +1,13 @@
 # SuperMegaBot — Python Dependencies
 # Installieren: pip install -r requirements.txt
 
-# ── Core ─────────────────────────────────────────────────────────────────────
+# ── Core ──────────────────────────────────────────────────────────────────────
 aiohttp>=3.9.0
-aiofiles>=23.0.0
 psutil>=5.9.0
 python-dotenv>=1.2.1
+
+# ── Telegram ──────────────────────────────────────────────────────────────────
+# Telegram API calls are made via raw aiohttp/urllib.request (no telegram SDK needed)
 
 # ── AI / LLM ─────────────────────────────────────────────────────────────────
 anthropic>=0.25.0
@@ -14,11 +16,15 @@ openai>=1.14.0
 # ── Payments ─────────────────────────────────────────────────────────────────
 stripe>=10.0.0
 
-# ── Supabase ─────────────────────────────────────────────────────────────────
+# ── Database ─────────────────────────────────────────────────────────────────
 supabase>=2.3.0
 
-# ── Utilities ────────────────────────────────────────────────────────────────
-requests>=2.33.0
-urllib3>=2.8.0
-google-auth-oauthlib>=1.0.0
+# ── Google APIs ──────────────────────────────────────────────────────────────
+# google.oauth2 (service_account) used in modules/gmc_monitor.py
+# googleapiclient.discovery used in modules/gmc_monitor.py
 google-api-python-client>=2.100.0
+google-auth>=2.20.0
+
+# ── Marketing / Visualisation ─────────────────────────────────────────────────
+# plotly used in dashboard/mega_monitor.py
+plotly>=5.18.0

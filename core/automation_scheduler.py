@@ -15,6 +15,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
+# ── Concurrency / reliability constants ─────────────────────────────────────
+_TASK_TIMEOUT_SECS   = 300      # Tasks running > 5 min are cancelled + alerted
+_ALERT_AFTER_ERRORS  = 3        # Consecutive failures before Telegram alert
+_MAX_BACKOFF_SECS    = 3600     # Cap on exponential backoff (1 hour)
+_EMAIL_SEQ_SEMAPHORE = asyncio.Semaphore(10)   # Max parallel email deliveries
+
 log = logging.getLogger("AutoScheduler")
 
 BASE_DIR = Path(__file__).parent.parent
@@ -915,10 +921,12 @@ async def task_dynamic_pricing() -> str:
 
 
 async def task_email_sequences() -> str:
-    """Process all due email sequence deliveries."""
+    """Process all due email sequence deliveries (Semaphore(10) for parallel safety)."""
     try:
         from modules.email_sequence_engine import process_due_emails
-        result = await process_due_emails()
+        # Pass the module-level semaphore so bulk runs don't fan out uncontrolled
+        async with _EMAIL_SEQ_SEMAPHORE:
+            result = await process_due_emails()
         sent   = result.get("sent", 0)
         failed = result.get("failed", 0)
         return f"Email Sequences: {sent} gesendet, {failed} fehlgeschlagen"
@@ -1082,6 +1090,10 @@ class AutomationScheduler:
         _init_db()
         self._running = False
         self._task_handles: List[asyncio.Task] = []
+        # Per-task asyncio.Lock → prevents overlap when a task runs longer than its interval
+        self._locks: Dict[str, asyncio.Lock] = {name: asyncio.Lock() for name, *_ in TASKS}
+        # Consecutive-failure counters for alerting
+        self._fail_counts: Dict[str, int] = {name: 0 for name, *_ in TASKS}
 
     async def start(self):
         self._running = True
@@ -1103,24 +1115,62 @@ class AutomationScheduler:
 
     async def _run_loop(self, name: str, fn: Callable, interval: int, delay: int):
         await asyncio.sleep(delay)
+        backoff = 0  # exponential backoff after repeated failures (seconds)
         while self._running:
+            if backoff:
+                await asyncio.sleep(min(backoff, _MAX_BACKOFF_SECS))
+                backoff = 0
+
             result = await self._execute(name, fn)
             log.debug(f"[{name}] {result}")
+
+            # Determine next sleep: use normal interval
             await asyncio.sleep(interval)
 
     async def _execute(self, name: str, fn: Callable) -> str:
-        t0 = time.monotonic()
-        try:
-            result = await fn()
-            ms = int((time.monotonic() - t0) * 1000)
-            _log_run(name, True, result or "", ms)
-            return result or "OK"
-        except Exception as e:
-            ms = int((time.monotonic() - t0) * 1000)
-            err = f"{type(e).__name__}: {e}"
-            _log_run(name, False, err, ms)
-            log.error(f"[{name}] {err}")
-            return err
+        lock = self._locks.get(name)
+        if lock is None:
+            lock = asyncio.Lock()
+            self._locks[name] = lock
+
+        # Skip if previous run is still in progress
+        if lock.locked():
+            msg = f"[{name}] still running — skipping overlap"
+            log.warning(msg)
+            return msg
+
+        async with lock:
+            t0 = time.monotonic()
+            try:
+                # Hard timeout: cancel task if it exceeds _TASK_TIMEOUT_SECS
+                result = await asyncio.wait_for(fn(), timeout=_TASK_TIMEOUT_SECS)
+                ms = int((time.monotonic() - t0) * 1000)
+                _log_run(name, True, result or "", ms)
+                # Reset failure counter on success
+                self._fail_counts[name] = 0
+                return result or "OK"
+            except asyncio.TimeoutError:
+                ms = int((time.monotonic() - t0) * 1000)
+                err = f"TIMEOUT nach {_TASK_TIMEOUT_SECS}s"
+                _log_run(name, False, err, ms)
+                log.error(f"[{name}] {err}")
+                await _tg(f"⏱ <b>Task Timeout</b>: <code>{name}</code> lief länger als {_TASK_TIMEOUT_SECS}s und wurde abgebrochen.")
+                self._fail_counts[name] = self._fail_counts.get(name, 0) + 1
+                return err
+            except Exception as e:
+                ms = int((time.monotonic() - t0) * 1000)
+                err = f"{type(e).__name__}: {e}"
+                _log_run(name, False, err, ms)
+                log.error(f"[{name}] {err}")
+                self._fail_counts[name] = self._fail_counts.get(name, 0) + 1
+                # Alert after _ALERT_AFTER_ERRORS consecutive failures
+                if self._fail_counts[name] >= _ALERT_AFTER_ERRORS:
+                    await _tg(
+                        f"🚨 <b>Task-Fehler ({self._fail_counts[name]}x in Folge)</b>\n"
+                        f"Task: <code>{name}</code>\n"
+                        f"Fehler: {err[:200]}"
+                    )
+                return err
 
     def status(self) -> Dict:
         stats = get_task_stats()
@@ -1131,6 +1181,7 @@ class AutomationScheduler:
                 {
                     "name": name,
                     "interval_s": interval,
+                    "consecutive_failures": self._fail_counts.get(name, 0),
                     **stats.get(name, {"total": 0, "ok": 0, "last_run": None, "avg_ms": 0})
                 }
                 for name, _, interval, _ in TASKS
