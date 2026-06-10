@@ -18,9 +18,10 @@ import asyncio
 import json
 import logging
 import os
-import time
+import re
+from collections import Counter
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 log = logging.getLogger("RevenueEngine")
 
@@ -67,41 +68,58 @@ def _session(timeout: int = 30) -> "aiohttp.ClientSession":
 
 # ── Low-level REST helpers ─────────────────────────────────────────────────────
 
-async def _get(path: str, params: Optional[Dict] = None) -> Dict:
+_MAX_RETRIES = 3
+_RATE_LIMIT_BACKOFF = 2.0  # seconds to wait after a 429
+
+
+async def _request_with_retry(method: str, path: str, **kwargs) -> Dict:
+    """Generic request helper with 429 rate-limit retry logic."""
     url = f"{_base()}{path}"
-    async with _session() as s:
-        async with s.get(url, params=params) as r:
-            if r.status >= 400:
-                text = await r.text()
-                raise RuntimeError(f"GET {path} → {r.status}: {text[:300]}")
-            return await r.json()
+    for attempt in range(_MAX_RETRIES):
+        async with _session() as s:
+            async with s.request(method, url, **kwargs) as r:
+                if r.status == 429:
+                    retry_after = float(r.headers.get("Retry-After", _RATE_LIMIT_BACKOFF))
+                    log.warning(
+                        "Shopify rate limit hit on %s %s — waiting %.1fs (attempt %d/%d)",
+                        method, path, retry_after, attempt + 1, _MAX_RETRIES,
+                    )
+                    await asyncio.sleep(retry_after)
+                    continue
+                if r.status >= 400:
+                    text = await r.text()
+                    raise RuntimeError(f"{method} {path} → {r.status}: {text[:300]}")
+                return await r.json()
+    raise RuntimeError(f"{method} {path} → still rate-limited after {_MAX_RETRIES} retries")
+
+
+async def _get(path: str, params: Optional[Dict] = None) -> Dict:
+    return await _request_with_retry("GET", path, params=params)
 
 
 async def _post(path: str, body: Dict) -> Dict:
-    url = f"{_base()}{path}"
-    async with _session() as s:
-        async with s.post(url, json=body) as r:
-            if r.status >= 400:
-                text = await r.text()
-                raise RuntimeError(f"POST {path} → {r.status}: {text[:300]}")
-            return await r.json()
+    return await _request_with_retry("POST", path, json=body)
 
 
 async def _put(path: str, body: Dict) -> Dict:
-    url = f"{_base()}{path}"
-    async with _session() as s:
-        async with s.put(url, json=body) as r:
-            if r.status >= 400:
-                text = await r.text()
-                raise RuntimeError(f"PUT {path} → {r.status}: {text[:300]}")
-            return await r.json()
+    return await _request_with_retry("PUT", path, json=body)
 
 
 async def _delete(path: str) -> bool:
     url = f"{_base()}{path}"
-    async with _session() as s:
-        async with s.delete(url) as r:
-            return r.status < 400
+    for attempt in range(_MAX_RETRIES):
+        async with _session() as s:
+            async with s.delete(url) as r:
+                if r.status == 429:
+                    retry_after = float(r.headers.get("Retry-After", _RATE_LIMIT_BACKOFF))
+                    log.warning(
+                        "Shopify rate limit hit on DELETE %s — waiting %.1fs (attempt %d/%d)",
+                        path, retry_after, attempt + 1, _MAX_RETRIES,
+                    )
+                    await asyncio.sleep(retry_after)
+                    continue
+                return r.status < 400
+    return False
 
 
 # ── 1. Revenue Analytics ───────────────────────────────────────────────────────
@@ -229,59 +247,120 @@ async def recover_all_carts(hours: int = 24) -> Dict:
 
 # ── 3. Flash Sale Creator ──────────────────────────────────────────────────────
 
+_FLASH_SALE_BACKUP_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "flash_sale_backup.json")
+
+
 async def create_flash_sale(
     discount_pct: int = 20,
     title: str = "",
     duration_hours: int = 24,
     collection_id: Optional[str] = None,
     min_purchase: float = 0,
+    product_ids: Optional[List[int]] = None,
 ) -> Dict:
-    """Erstellt einen Discount-Code für eine zeitbegrenzte Flash-Sale-Aktion."""
+    """Flash Sale durch direkte Preisaktualisierung — keine price_rules nötig.
+    Originale Preise werden gesichert und können via restore_flash_sale wiederhergestellt werden."""
     if not title:
         title = f"FLASH{discount_pct}"
 
     starts_at = datetime.now(timezone.utc).isoformat()
     ends_at = (datetime.now(timezone.utc) + timedelta(hours=duration_hours)).isoformat()
 
-    body: Dict[str, Any] = {
-        "price_rule": {
-            "title": title,
-            "target_type": "line_item",
-            "target_selection": "all" if not collection_id else "entitled",
-            "allocation_method": "across",
-            "value_type": "percentage",
-            "value": f"-{discount_pct}.0",
-            "customer_selection": "all",
-            "starts_at": starts_at,
-            "ends_at": ends_at,
-            "usage_limit": None,
-        }
-    }
-
-    if min_purchase > 0:
-        body["price_rule"]["prerequisite_subtotal_range"] = {"greater_than_or_equal_to": str(min_purchase)}
-
-    if collection_id:
-        body["price_rule"]["entitled_collection_ids"] = [int(collection_id)]
-
     try:
-        rule_data = await _post("/price_rules.json", body)
-        rule_id = rule_data["price_rule"]["id"]
+        if product_ids:
+            # Fetch only specific products directly — much faster
+            products = []
+            for pid in product_ids:
+                try:
+                    d = await _get(f"/products/{pid}.json", {"fields": "id,title,variants"})
+                    if "product" in d:
+                        products.append(d["product"])
+                except Exception as e:
+                    log.warning("Could not fetch product %s: %s", pid, e)
+        else:
+            products = await get_all_products_with_prices()
 
-        code_data = await _post(
-            f"/price_rules/{rule_id}/discount_codes.json",
-            {"discount_code": {"code": title}}
-        )
-        return {
-            "ok": True,
-            "code": code_data["discount_code"]["code"],
+        if not product_ids and collection_id:
+            coll_data = await _get(f"/collections/{collection_id}/products.json", {"limit": 250})
+            coll_ids = {p["id"] for p in coll_data.get("products", [])}
+            products = [p for p in products if p["id"] in coll_ids]
+
+        backup: Dict[str, Any] = {
+            "title": title,
             "discount_pct": discount_pct,
             "starts_at": starts_at,
             "ends_at": ends_at,
-            "price_rule_id": rule_id,
-            "discount_code_id": code_data["discount_code"]["id"],
-            "share_message": f"🔥 FLASH SALE! {discount_pct}% Rabatt mit Code: {title} — nur {duration_hours}h!"
+            "original_prices": {},
         }
+
+        updated = 0
+        errors = 0
+        sample_changes = []
+
+        for product in products:
+            for variant in product["variants"]:
+                old_price = float(variant["price"])
+                if min_purchase > 0 and old_price < min_purchase:
+                    continue
+                new_price = max(0.01, round(old_price * (1 - discount_pct / 100), 2))
+                if abs(new_price - old_price) < 0.01:
+                    continue
+                backup["original_prices"][str(variant["id"])] = old_price
+                try:
+                    await _put(
+                        f"/variants/{variant['id']}.json",
+                        {"variant": {"id": variant["id"], "price": str(new_price)}}
+                    )
+                    if updated < 5:
+                        sample_changes.append({"product": product["title"], "old": old_price, "new": new_price})
+                    updated += 1
+                    await asyncio.sleep(0.05)
+                except Exception as e:
+                    log.error("Flash sale variant %s: %s", variant["id"], e)
+                    errors += 1
+
+        os.makedirs(os.path.dirname(_FLASH_SALE_BACKUP_FILE), exist_ok=True)
+        with open(_FLASH_SALE_BACKUP_FILE, "w") as f:
+            json.dump(backup, f)
+
+        return {
+            "ok": True,
+            "title": title,
+            "discount_pct": discount_pct,
+            "products_updated": updated,
+            "errors": errors,
+            "starts_at": starts_at,
+            "ends_at": ends_at,
+            "sample_changes": sample_changes,
+            "restore_available": True,
+            "share_message": f"🔥 FLASH SALE! {discount_pct}% auf {updated} Produkte — nur {duration_hours}h lang!",
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+async def restore_flash_sale() -> Dict:
+    """Stellt Originalpreise nach einem Flash Sale wieder her."""
+    if not os.path.exists(_FLASH_SALE_BACKUP_FILE):
+        return {"ok": False, "error": "Kein Flash Sale Backup gefunden"}
+    try:
+        with open(_FLASH_SALE_BACKUP_FILE) as f:
+            backup = json.load(f)
+        restored = 0
+        errors = 0
+        for variant_id, original_price in backup["original_prices"].items():
+            try:
+                await _put(
+                    f"/variants/{variant_id}.json",
+                    {"variant": {"id": int(variant_id), "price": str(original_price)}}
+                )
+                restored += 1
+                await asyncio.sleep(0.05)
+            except Exception as e:
+                log.error("Restore variant %s: %s", variant_id, e)
+                errors += 1
+        os.remove(_FLASH_SALE_BACKUP_FILE)
+        return {"ok": True, "restored": restored, "errors": errors, "sale_title": backup.get("title")}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
@@ -307,8 +386,7 @@ async def get_all_products_with_prices() -> List[Dict]:
         link = data.get("link", "")
         if 'rel="next"' not in link:
             break
-        # Extract page_info from Link header (simplified)
-        import re
+        # Extract page_info from Link header
         m = re.search(r'page_info=([^&>]+).*?rel="next"', link)
         if not m:
             break
@@ -632,7 +710,6 @@ async def get_upsell_pairs(limit: int = 10) -> List[Dict]:
     except Exception:
         return []
 
-    from collections import defaultdict, Counter
     pair_counts: Counter = Counter()
     product_names: Dict[str, str] = {}
 
