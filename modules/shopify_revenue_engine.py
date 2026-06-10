@@ -33,11 +33,17 @@ except ImportError:
 # ── Config helpers ─────────────────────────────────────────────────────────────
 
 def _domain() -> str:
-    return os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip().rstrip("/")
+    d = os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip().rstrip("/")
+    if not d:
+        # fallback: extract from SHOPIFY_STORE_URL
+        url = os.getenv("SHOPIFY_STORE_URL", "").strip()
+        d = url.replace("https://", "").replace("http://", "").rstrip("/")
+    return d
 
 def _token() -> str:
-    return (os.getenv("SHOPIFY_ACCESS_TOKEN") or
-            os.getenv("SHOPIFY_ADMIN_API_TOKEN") or "").strip()
+    return (os.getenv("SHOPIFY_ADMIN_API_TOKEN") or
+            os.getenv("SHOPIFY_ACCESS_TOKEN") or
+            os.getenv("SHOPIFY_AUTOMATION_TOKEN") or "").strip()
 
 def _version() -> str:
     return os.getenv("SHOPIFY_API_VERSION", "2024-10")

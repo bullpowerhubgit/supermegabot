@@ -2096,6 +2096,57 @@ async def handle_revenue_autopilot_ui(req):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# AUTOPILOT CREATORHUB — Agent System Handlers
+# ══════════════════════════════════════════════════════════════════════════════
+
+_AUTOPILOT_HTML_PATH = Path(__file__).parent / "autopilot.html"
+
+
+async def handle_autopilot_ui(req):
+    """AutoPilot CreatorHub Dashboard."""
+    try:
+        html = _AUTOPILOT_HTML_PATH.read_text(encoding="utf-8")
+        return web.Response(text=html, content_type="text/html", charset="utf-8")
+    except Exception as e:
+        return web.Response(text=f"Error: {e}", status=500)
+
+
+async def handle_agents_status_all(req):
+    """Status aller 10 AI-Agenten."""
+    try:
+        from modules.autopilot_agents import get_all_status
+        statuses = await get_all_status()
+        return web.json_response({"ok": True, "agents": statuses})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_agents_run(req):
+    """Einen Agenten ausführen: {agent, task, params}."""
+    try:
+        data = await req.json()
+        agent = data.get("agent", "ceo")
+        task = data.get("task", "status")
+        params = data.get("params", {})
+        from modules.autopilot_agents import run_agent
+        result = await run_agent(agent, task, params)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_agents_logs(req):
+    """Letzte Logs aller Agenten."""
+    try:
+        limit = int(req.rel_url.query.get("limit", "50"))
+        from modules.autopilot_agents import get_all_logs
+        logs = await get_all_logs(limit)
+        return web.json_response({"ok": True, "logs": logs})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 
 async def handle_dropshipping_status(req):
     """Dropshipping pipeline status."""
@@ -2690,6 +2741,12 @@ async def create_app():
     app.router.add_get("/api/drive/status",           handle_drive_status)
     app.router.add_get("/api/drive/files",            handle_drive_files)
     app.router.add_post("/api/drive/backup",          handle_drive_backup)
+
+    # ── AutoPilot CreatorHub ───────────────────────────────────────────────────
+    app.router.add_get("/autopilot",                          handle_autopilot_ui)
+    app.router.add_get("/api/creatorhub/status",              handle_agents_status_all)
+    app.router.add_post("/api/creatorhub/run",                handle_agents_run)
+    app.router.add_get("/api/creatorhub/logs",                handle_agents_logs)
 
     # ── Revenue Autopilot ──────────────────────────────────────────────────────
     app.router.add_get("/revenue",                            handle_revenue_autopilot_ui)
