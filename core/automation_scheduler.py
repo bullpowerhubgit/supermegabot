@@ -838,6 +838,184 @@ async def task_revenue_autopilot_daily() -> str:
         return f"Fehler Daily Revenue Report: {e}"
 
 
+
+
+# ---------------------------------------------------------------------------
+# SCALE ENGINE TASKS
+# ---------------------------------------------------------------------------
+async def task_review_automation() -> str:
+    """Send review request emails to customers whose orders are 7+ days old."""
+    try:
+        from modules.growth_engine import run_review_automation
+        result = await run_review_automation()
+        sent    = result.get("sent", 0)
+        skipped = result.get("skipped", 0)
+        failed  = result.get("failed", 0)
+        pending = result.get("pending", 0)
+        return f"Review Automation: {sent} gesendet, {skipped} übersprungen, {failed} Fehler von {pending} pending"
+    except Exception as e:
+        return f"Review Automation Fehler: {e}"
+
+
+async def task_winback_campaign() -> str:
+    """Send win-back emails with discount codes to inactive customers."""
+    try:
+        from modules.growth_engine import run_winback_automation
+        result = await run_winback_automation()
+        churned = result.get("churned_customers", 0)
+        sent    = result.get("sent", 0)
+        failed  = result.get("failed", 0)
+        code    = result.get("discount_code", "N/A")
+        return f"Win-Back: {churned} inaktive Kunden, {sent} E-Mails, Code: {code}, {failed} Fehler"
+    except Exception as e:
+        return f"Win-Back Fehler: {e}"
+
+
+async def task_referral_stats() -> str:
+    """Fetch and cache referral program statistics."""
+    try:
+        from modules.growth_engine import get_referral_stats
+        stats = await get_referral_stats()
+        if "error" in stats:
+            return f"Referral Stats: {stats['error']}"
+        referrers   = stats.get("total_referrers", 0)
+        clicks      = stats.get("total_clicks", 0)
+        conversions = stats.get("total_conversions", 0)
+        revenue     = stats.get("total_revenue_eur", 0)
+        commission  = stats.get("total_commission_eur", 0)
+        cvr         = stats.get("conversion_rate_pct", 0)
+        # Cache to data dir
+        out = DATA_DIR / "referral_stats.json"
+        out.write_text(__import__("json").dumps(stats, ensure_ascii=False, indent=2))
+        return (
+            f"Referral: {referrers} Referrer, {clicks} Clicks, "
+            f"{conversions} Conversions ({cvr}%), "
+            f"Revenue {revenue:.2f}€, Provision {commission:.2f}€"
+        )
+    except Exception as e:
+        return f"Referral Stats Fehler: {e}"
+
+
+# ── Task registry ────────────────────────────────────────────────────────────
+
+
+
+async def task_dynamic_pricing() -> str:
+    """Run AI-powered dynamic pricing cycle across all active Shopify products."""
+    try:
+        from modules.dynamic_pricing import run_dynamic_pricing_cycle
+        result = await run_dynamic_pricing_cycle(max_products=20)
+        updated  = result.get("updated", 0)
+        impact   = result.get("total_revenue_impact", "?")
+        errors   = result.get("errors", [])
+        err_note = f" ({len(errors)} errors)" if errors else ""
+        return f"Dynamic Pricing: {updated} prices updated, impact {impact}{err_note}"
+    except Exception as e:
+        return f"Dynamic Pricing Fehler: {e}"
+
+
+async def task_email_sequences() -> str:
+    """Process all due email sequence deliveries."""
+    try:
+        from modules.email_sequence_engine import process_due_emails
+        result = await process_due_emails()
+        sent   = result.get("sent", 0)
+        failed = result.get("failed", 0)
+        return f"Email Sequences: {sent} gesendet, {failed} fehlgeschlagen"
+    except Exception as e:
+        return f"Email Sequences Fehler: {e}"
+
+
+async def task_email_enroll_new() -> str:
+    """Auto-enroll new Shopify customers into welcome + post-purchase sequences."""
+    try:
+        from modules.email_sequence_engine import auto_enroll_new_customers, auto_enroll_post_purchase
+        welcome_res = await auto_enroll_new_customers()
+        purchase_res = await auto_enroll_post_purchase()
+        w_enrolled = welcome_res.get("enrolled", 0)
+        p_enrolled = purchase_res.get("enrolled", 0)
+        return f"Email Enroll: {w_enrolled} welcome, {p_enrolled} post-purchase"
+    except Exception as e:
+        return f"Email Enroll Fehler: {e}"
+
+
+async def task_vip_promotion() -> str:
+    """Promote qualifying customers to VIP email sequence."""
+    try:
+        from modules.email_sequence_engine import promote_to_vip
+        result = await promote_to_vip(min_orders=3, min_revenue=200)
+        promoted = result.get("promoted", 0)
+        return f"VIP Promotion: {promoted} Kunden befördert"
+    except Exception as e:
+        return f"VIP Promotion Fehler: {e}"
+
+
+# ── Task registry ────────────────────────────────────────────────────────────
+
+
+
+async def task_b2b_prospecting() -> str:
+    """Daily B2B lead prospecting — findet neue Shopify-Store-Betreiber."""
+    try:
+        from modules.b2b_pipeline import run_daily_prospecting
+        result = await run_daily_prospecting()
+        added  = result.get("added", 0)
+        found  = result.get("found", 0)
+        return f"B2B Prospecting: {found} gefunden, {added} zur Pipeline hinzugefügt"
+    except Exception as e:
+        return f"B2B Prospecting Fehler: {e}"
+
+
+async def task_tiktok_sync() -> str:
+    """Stündlich Shopify-Produkte zu TikTok Shop synchronisieren."""
+    try:
+        from modules.tiktok_shop_sync import sync_products_to_tiktok
+        result = await sync_products_to_tiktok(limit=50)
+        synced = result.get("synced", 0)
+        failed = result.get("failed", 0)
+        return f"TikTok Sync: {synced} Produkte synchronisiert, {failed} fehlgeschlagen"
+    except Exception as e:
+        return f"TikTok Sync Fehler: {e}"
+
+
+async def task_tiktok_orders() -> str:
+    """TikTok-Bestellungen in Shopify importieren (alle 30 min)."""
+    try:
+        from modules.tiktok_shop_sync import sync_tiktok_orders_to_shopify
+        result = await sync_tiktok_orders_to_shopify()
+        imported = result.get("imported", 0)
+        skipped  = result.get("skipped", 0)
+        if imported:
+            await _tg(f"TikTok: {imported} neue Bestellungen nach Shopify importiert")
+        return f"TikTok Orders: {imported} importiert, {skipped} bereits vorhanden"
+    except Exception as e:
+        return f"TikTok Orders Fehler: {e}"
+
+
+async def task_whatsapp_report() -> str:
+    """Täglicher WhatsApp Revenue-Report an den Betreiber."""
+    try:
+        from modules.whatsapp_automation import send_revenue_alert, get_whatsapp_stats
+        from modules.tiktok_shop_sync import get_combined_revenue
+        revenue = await get_combined_revenue()
+        daily_total = revenue.get("total_revenue_eur_today", 0.0)
+        target      = float(os.getenv("DAILY_REVENUE_TARGET", "200"))
+        await send_revenue_alert(daily_total, target)
+        stats = await get_whatsapp_stats()
+        sent  = stats.get("sent_today", 0)
+        recv  = stats.get("received_today", 0)
+        return (
+            f"WhatsApp Report: €{daily_total:.2f} Tagesumsatz (Ziel €{target:.2f}) | "
+            f"WA: {sent} gesendet, {recv} empfangen"
+        )
+    except Exception as e:
+        return f"WhatsApp Report Fehler: {e}"
+
+
+# ── Task registry ────────────────────────────────────────────────────────────
+
+
+
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Real-time (every few minutes) ────────────────────────────────────────
@@ -881,6 +1059,19 @@ TASKS = [
     # ── Revenue Autopilot ────────────────────────────────────────────────────
     ("revenue_autopilot_carts", task_revenue_autopilot_carts,  3600,   35),  # 1h
     ("revenue_autopilot_daily", task_revenue_autopilot_daily, 86400,  400),  # daily
+
+    # ── Scale Engines (Growth + Pricing + Email + B2B + TikTok + WhatsApp)
+    ("review_automation",       task_review_automation,       86400,  500),  # daily
+    ("winback_campaign",        task_winback_campaign,        86400,  520),  # daily
+    ("referral_stats",          task_referral_stats,          3600,   510),  # 1h
+    ("dynamic_pricing",         task_dynamic_pricing,         7200,   600),  # 2h
+    ("email_sequences",         task_email_sequences,         86400,  610),  # daily
+    ("email_enroll_new",        task_email_enroll_new,        3600,   620),  # 1h
+    ("vip_promotion",           task_vip_promotion,           86400,  630),  # daily
+    ("b2b_prospecting",         task_b2b_prospecting,         86400,  700),  # daily
+    ("tiktok_product_sync",     task_tiktok_sync,             3600,   710),  # 1h
+    ("tiktok_order_sync",       task_tiktok_orders,           1800,   720),  # 30min
+    ("whatsapp_daily_report",   task_whatsapp_report,         86400,  730),  # daily
 ]
 
 
