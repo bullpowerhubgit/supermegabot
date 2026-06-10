@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BullPower Hub — Alle Business-Automationen. Ein Ort.</title>
+  <script>
+(function(){
+  if(localStorage.getItem('bp_ok')!=='1'){
+    document.documentElement.style.display='none';
+    var p=prompt('🔐 Passwort:');
+    if(p==='bullpower2026'){localStorage.setItem('bp_ok','1');document.documentElement.style.display='';}
+    else{document.documentElement.style.display='';document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#ef4444;font:bold 2rem sans-serif">❌ Zugang verweigert</div>';}
+  }
+})();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #f59e0b;
+      --gold-light: #fbbf24;
+      --gold-dim: rgba(245,158,11,0.12);
+      --purple: #8b5cf6;
+      --purple-light: #a78bfa;
+      --purple-dim: rgba(139,92,246,0.12);
+      --bg: #07070f;
+      --bg2: #0d0d1a;
+      --bg3: #111122;
+      --card: #0e0e1e;
+      --card2: #13132a;
+      --text: #e8e8f8;
+      --text-dim: #8888aa;
+      --border: rgba(139,92,246,0.2);
+      --border-gold: rgba(245,158,11,0.3);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* SCROLLBAR */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+    /* =================== NAV =================== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(7,7,15,0.9);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: linear-gradient(135deg, var(--gold), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .nav-logo-text {
+      font-size: 1.25rem; font-weight: 900; letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--gold-light), var(--purple-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-center {
+      display: flex; gap: 0.25rem; align-items: center;
+    }
+    @media(max-width: 768px) { .nav-center { display: none; } }
+    .nav-center a {
+      color: var(--text-dim); text-decoration: none;
+      font-size: 0.85rem; padding: 0.4rem 0.8rem;
+      border-radius: 8px; transition: background 0.2s, color 0.2s;
+    }
+    .nav-center a:hover { background: var(--purple-dim); color: var(--purple-light); }
+    .nav-right { display: flex; gap: 0.75rem; align-items: center; }
+    .btn-nav-login {
+      color: var(--text-dim); text-decoration: none;
+      font-size: 0.85rem; padding: 0.4rem 1rem;
+      border: 1px solid var(--border); border-radius: 8px;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-nav-login:hover { border-color: var(--purple-light); color: var(--purple-light); }
+    .btn-nav-cta {
+      background: linear-gradient(135deg, var(--gold), #d97706);
+      color: #07070f; font-weight: 800; font-size: 0.85rem;
+      padding: 0.45rem 1.1rem; border-radius: 8px; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 2px 12px rgba(245,158,11,0.35);
+    }
+    .btn-nav-cta:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(245,158,11,0.5); }
+
+    /* =================== HERO =================== */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 7rem 2rem 5rem;
+      position: relative; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -5%, rgba(139,92,246,0.2) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 10% 80%, rgba(245,158,11,0.08) 0%, transparent 55%),
+        radial-gradient(ellipse 35% 35% at 90% 70%, rgba(139,92,246,0.06) 0%, transparent 55%);
+      animation: hero-bg-pulse 8s ease-in-out infinite;
+    }
+    @keyframes hero-bg-pulse {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+
+    /* Grid overlay */
+    .hero-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(139,92,246,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139,92,246,0.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: var(--gold-dim); border: 1px solid var(--border-gold);
+      border-radius: 100px; padding: 0.4rem 1.1rem;
+      font-size: 0.78rem; color: var(--gold-light);
+      margin-bottom: 2.5rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      position: relative; z-index: 1;
+    }
+    .hero-eyebrow::before { content: '⬟'; animation: spin 4s linear infinite; display: inline-block; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .hero h1 {
+      font-size: clamp(2.2rem, 6vw, 4.5rem);
+      font-weight: 900; line-height: 1.05;
+      margin-bottom: 1.5rem; letter-spacing: -1.5px;
+      position: relative; z-index: 1;
+    }
+    .hero h1 .line-gold {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero h1 .line-purple {
+      background: linear-gradient(135deg, var(--purple-light), var(--purple));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      font-size: 1.15rem; color: var(--text-dim);
+      max-width: 620px; margin: 0 auto 3rem;
+      position: relative; z-index: 1; line-height: 1.7;
+    }
+    .hero-cta {
+      display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;
+      position: relative; z-index: 1; margin-bottom: 4rem;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), #d97706);
+      color: #07070f; font-weight: 800; font-size: 1.05rem;
+      padding: 1rem 2.5rem; border: none; border-radius: 12px;
+      cursor: pointer; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 24px rgba(245,158,11,0.4);
+    }
+    .btn-gold:hover { transform: translateY(-3px); box-shadow: 0 8px 36px rgba(245,158,11,0.55); }
+    .btn-ghost {
+      background: transparent; color: var(--text); font-weight: 600; font-size: 1.05rem;
+      padding: 1rem 2.5rem; border: 1px solid var(--border); border-radius: 12px;
+      cursor: pointer; text-decoration: none; transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-ghost:hover { border-color: var(--purple-light); color: var(--purple-light); }
+
+    /* =================== STATS BANNER =================== */
+    .stats-banner {
+      display: flex; justify-content: center; gap: 3rem; flex-wrap: wrap;
+      position: relative; z-index: 1;
+      background: rgba(139,92,246,0.08);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 2rem 3rem;
+      max-width: 700px; width: 100%;
+    }
+    .stat-item { text-align: center; }
+    .stat-value {
+      font-size: 2.2rem; font-weight: 900;
+      background: linear-gradient(135deg, var(--gold-light), var(--purple-light));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      display: block;
+    }
+    .stat-label { font-size: 0.82rem; color: var(--text-dim); margin-top: 0.1rem; }
+
+    /* =================== DIVIDER =================== */
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--border), transparent); }
+
+    /* =================== SECTION =================== */
+    .section { padding: 5.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.75rem; font-weight: 700; letter-spacing: 2.5px;
+      color: var(--gold); text-transform: uppercase; margin-bottom: 0.75rem;
+    }
+    h2 {
+      font-size: clamp(1.7rem, 3.5vw, 2.6rem);
+      font-weight: 800; margin-bottom: 1rem; letter-spacing: -0.5px;
+    }
+    .section-sub { color: var(--text-dim); font-size: 1.05rem; max-width: 580px; margin-bottom: 3rem; line-height: 1.7; }
+
+    /* =================== PRODUCTS GRID =================== */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .product-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 1.75rem;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
+      display: flex; flex-direction: column;
+    }
+    .product-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--purple), transparent);
+      opacity: 0; transition: opacity 0.3s;
+    }
+    .product-card:hover {
+      transform: translateY(-6px);
+      border-color: rgba(139,92,246,0.4);
+      box-shadow: 0 20px 50px rgba(139,92,246,0.1);
+    }
+    .product-card:hover::before { opacity: 1; }
+    .product-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+    .product-icon { font-size: 2.2rem; }
+    .product-price-tag {
+      background: var(--gold-dim); border: 1px solid var(--border-gold);
+      border-radius: 8px; padding: 0.3rem 0.7rem;
+      font-size: 0.9rem; font-weight: 800; color: var(--gold-light);
+    }
+    .product-name { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .product-desc { font-size: 0.88rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 1.25rem; flex: 1; }
+    .product-features { list-style: none; margin-bottom: 1.5rem; }
+    .product-features li {
+      font-size: 0.82rem; color: var(--text-dim);
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.25rem 0;
+    }
+    .product-features li::before { content: '✦'; color: var(--purple-light); font-size: 0.65rem; }
+    .product-btn {
+      display: block; text-align: center;
+      background: var(--card2); border: 1px solid var(--border);
+      color: var(--purple-light); font-weight: 700; font-size: 0.88rem;
+      padding: 0.65rem 1rem; border-radius: 10px;
+      text-decoration: none; transition: background 0.2s, border-color 0.2s, color 0.2s;
+    }
+    .product-btn:hover { background: var(--purple-dim); border-color: var(--purple-light); color: #fff; }
+
+    /* =================== BUNDLE SECTION =================== */
+    .bundle-section {
+      background: var(--card);
+      border: 2px solid var(--border-gold);
+      border-radius: 28px;
+      padding: 4rem 3rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      margin-top: 2rem;
+    }
+    .bundle-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(245,158,11,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 0% 100%, rgba(139,92,246,0.08) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .bundle-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: linear-gradient(135deg, rgba(245,158,11,0.2), rgba(139,92,246,0.2));
+      border: 1px solid var(--border-gold);
+      border-radius: 100px; padding: 0.45rem 1.25rem;
+      font-size: 0.85rem; font-weight: 800; color: var(--gold-light);
+      margin-bottom: 1.75rem;
+    }
+    .bundle-section h2 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      margin-bottom: 0.75rem;
+    }
+    .bundle-section h2 span {
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .bundle-sub { color: var(--text-dim); font-size: 1.05rem; margin-bottom: 2.5rem; max-width: 520px; margin-left: auto; margin-right: auto; }
+    .bundle-price-wrap {
+      display: flex; align-items: center; justify-content: center;
+      gap: 1.5rem; flex-wrap: wrap; margin-bottom: 2rem;
+    }
+    .bundle-old {
+      font-size: 1.4rem; color: var(--text-dim);
+      text-decoration: line-through; text-decoration-color: #ef4444;
+    }
+    .bundle-new {
+      font-size: 4.5rem; font-weight: 900; line-height: 1;
+      background: linear-gradient(135deg, var(--gold-light), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .bundle-new sup { font-size: 1.8rem; vertical-align: top; margin-top: 0.8rem; display: inline-block; }
+    .bundle-new sub { font-size: 1.2rem; vertical-align: bottom; opacity: 0.8; }
+    .bundle-saving {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff; font-size: 0.9rem; font-weight: 800;
+      padding: 0.5rem 1.2rem; border-radius: 100px;
+    }
+    .bundle-features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem; margin-bottom: 2.5rem; text-align: left;
+    }
+    .bundle-feat {
+      background: rgba(245,158,11,0.05); border: 1px solid rgba(245,158,11,0.15);
+      border-radius: 10px; padding: 0.75rem 1rem;
+      font-size: 0.85rem; color: var(--text);
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .bundle-feat::before { content: '✓'; color: var(--gold); font-weight: 700; font-size: 1rem; }
+    .btn-bundle {
+      background: linear-gradient(135deg, var(--gold), #d97706);
+      color: #07070f; font-weight: 900; font-size: 1.15rem;
+      padding: 1.2rem 3.5rem; border: none; border-radius: 14px;
+      cursor: pointer; text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 6px 30px rgba(245,158,11,0.45);
+      display: inline-block;
+    }
+    .btn-bundle:hover { transform: translateY(-3px); box-shadow: 0 10px 40px rgba(245,158,11,0.6); }
+    .bundle-note { margin-top: 1rem; font-size: 0.8rem; color: var(--text-dim); }
+
+    /* =================== ABOUT =================== */
+    .about-wrap {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;
+    }
+    @media(max-width: 700px) { .about-wrap { grid-template-columns: 1fr; } }
+    .about-content .section-label { margin-bottom: 0.75rem; }
+    .about-bio {
+      font-size: 1rem; color: var(--text-dim); line-height: 1.8; margin-bottom: 1.5rem;
+    }
+    .about-bio strong { color: var(--text); }
+    .about-contact {
+      display: flex; flex-direction: column; gap: 0.6rem;
+    }
+    .contact-item {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.9rem; color: var(--text-dim);
+    }
+    .contact-item a { color: var(--gold-light); text-decoration: none; transition: color 0.2s; }
+    .contact-item a:hover { color: var(--gold); }
+    .about-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 24px; padding: 2.5rem;
+      text-align: center;
+    }
+    .about-avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem; margin: 0 auto 1.5rem;
+      box-shadow: 0 0 40px rgba(245,158,11,0.3);
+    }
+    .about-name { font-size: 1.4rem; font-weight: 800; margin-bottom: 0.25rem; }
+    .about-title { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+    .about-tags { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center; }
+    .about-tag {
+      background: var(--purple-dim); border: 1px solid var(--border);
+      border-radius: 100px; padding: 0.3rem 0.8rem;
+      font-size: 0.75rem; color: var(--purple-light); font-weight: 600;
+    }
+
+    /* =================== FOOTER =================== */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 4rem 2rem 2rem;
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 2rem; max-width: 1200px; margin: 0 auto 3rem;
+    }
+    @media(max-width: 900px) { .footer-grid { grid-template-columns: 1fr 1fr; } }
+    @media(max-width: 500px) { .footer-grid { grid-template-columns: 1fr; } }
+    .footer-brand .nav-logo { margin-bottom: 1rem; display: inline-flex; }
+    .footer-desc { font-size: 0.85rem; color: var(--text-dim); line-height: 1.7; max-width: 280px; }
+    .footer-col h4 { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 1rem; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 0.5rem; }
+    .footer-col ul li a { color: var(--text-dim); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .footer-col ul li a:hover { color: var(--purple-light); }
+    .footer-bottom {
+      border-top: 1px solid var(--border); padding-top: 2rem;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;
+      max-width: 1200px; margin: 0 auto;
+    }
+    .footer-bottom p { font-size: 0.82rem; color: var(--text-dim); }
+    .footer-bottom a { color: var(--gold-light); text-decoration: none; }
+
+    /* =================== REVEAL =================== */
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s, transform 0.7s; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* =================== MISC =================== */
+    .text-gold { color: var(--gold-light); }
+    .text-purple { color: var(--purple-light); }
+    .mt-1 { margin-top: 0.5rem; }
+    .mt-2 { margin-top: 1rem; }
+    .mt-3 { margin-top: 1.5rem; }
+  </style>
+</head>
+<body>
+
+  <!-- =================== NAVIGATION =================== -->
+  <nav>
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">⚡</div>
+      <div class="nav-logo-text">BullPower Hub</div>
+    </a>
+    <div class="nav-center">
+      <a href="#products">Produkte</a>
+      <a href="#bundle">Bundle Deal</a>
+      <a href="#about">Über Rudolf</a>
+      <a href="#footer">Kontakt</a>
+    </div>
+    <div class="nav-right">
+      <a href="#" class="btn-nav-login">Login</a>
+      <a href="#bundle" class="btn-nav-cta">Bundle kaufen</a>
+    </div>
+  </nav>
+
+  <!-- =================== HERO =================== -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid"></div>
+
+    <div class="hero-eyebrow">8 professionelle SaaS-Tools</div>
+
+    <h1>
+      Alle deine<br>
+      <span class="line-gold">Business-Automationen.</span><br>
+      <span class="line-purple">Ein Ort.</span>
+    </h1>
+
+    <p class="hero-sub">
+      8 professionelle SaaS-Tools für E-Commerce-Unternehmer, Content Creator und Digistore24-Marketer — entwickelt und täglich genutzt von Rudolf Sarkany aus Österreich.
+    </p>
+
+    <div class="hero-cta">
+      <a href="#products" class="btn-gold">Alle Tools entdecken</a>
+      <a href="#bundle" class="btn-ghost">Bundle kaufen — 55% sparen</a>
+    </div>
+
+    <div class="stats-banner">
+      <div class="stat-item">
+        <span class="stat-value" id="stat-tools">0</span>
+        <div class="stat-label">SaaS Tools</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="stat-value">€0</span>
+        <div class="stat-label">Gesamtwert / Monat</div>
+      </div>
+      <div class="stat-item">
+        <span class="stat-value" id="stat-bundle">€0</span>
+        <div class="stat-label">Bundle-Preis / Monat</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- =================== PRODUCTS =================== -->
+  <div class="section" id="products">
+    <div class="section-label">Das Produkt-Portfolio</div>
+    <h2>8 Tools — komplett durchdacht</h2>
+    <p class="section-sub">Jedes Tool löst ein spezifisches Business-Problem. Zusammen bauen sie ein komplettes Automations-Ökosystem für dein Online-Business.</p>
+
+    <div class="products-grid reveal">
+
+      <!-- 1: BullPower AI -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">🤖</div>
+          <div class="product-price-tag">€19/mo</div>
+        </div>
+        <div class="product-name">BullPower AI</div>
+        <p class="product-desc">Dein persönlicher KI-Assistent für Business-Strategie und Content-Erstellung. Schreibt Texte, analysiert Märkte und gibt dir umsetzbare Empfehlungen.</p>
+        <ul class="product-features">
+          <li>Claude &amp; GPT-4 Integration</li>
+          <li>Business-Strategie Beratung</li>
+          <li>Content-Generator für alle Kanäle</li>
+        </ul>
+        <a href="../bullpower-ai/" class="product-btn">Mehr erfahren →</a>
+      </div>
+
+      <!-- 2: Shopify Acquisition Engine -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">🛍️</div>
+          <div class="product-price-tag">€49/mo</div>
+        </div>
+        <div class="product-name">Shopify Acquisition Engine</div>
+        <p class="product-desc">Automatisiertes Kundenwachstum für deinen Shopify-Store. Findet neue Kunden, segmentiert sie und bespielt sie mit personalisierten Kampagnen.</p>
+        <ul class="product-features">
+          <li>KI-gestützte Zielgruppen-Analyse</li>
+          <li>Automatische Email-Sequenzen</li>
+          <li>ROI-Tracking in Echtzeit</li>
+        </ul>
+        <a href="../shopify-acquisition-engine/" class="product-btn">Mehr erfahren →</a>
+      </div>
+
+      <!-- 3: Shopify Automaton Suite -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">⚙️</div>
+          <div class="product-price-tag">€29/mo</div>
+        </div>
+        <div class="product-name">Shopify Automaton Suite</div>
+        <p class="product-desc">Automatisiert wiederkehrende Shopify-Aufgaben: Produkt-Updates, Bestand-Management, Preisanpassungen und Fulfillment-Workflows.</p>
+        <ul class="product-features">
+          <li>Automatische Preisoptimierung</li>
+          <li>Inventar-Management &amp; Alerts</li>
+          <li>Bulk-Produkt-Updates</li>
+        </ul>
+        <a href="../shopify-suite/" class="product-btn">Mehr erfahren →</a>
+      </div>
+
+      <!-- 4: Cognitive Symphony -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">💡</div>
+          <div class="product-price-tag">€29/mo</div>
+        </div>
+        <div class="product-name">Cognitive Symphony (DS24)</div>
+        <p class="product-desc">KI-gesteuerte Optimierung deiner Digistore24-Produkte. Analysiert Conversion-Daten und optimiert automatisch Landing Pages und Funnels.</p>
+        <ul class="product-features">
+          <li>Digistore24 API-Integration</li>
+          <li>Funnel-Optimierung mit KI</li>
+          <li>A/B-Test-Automation</li>
+        </ul>
+        <a href="../cognitive-symphony/" class="product-btn">Mehr erfahren →</a>
+      </div>
+
+      <!-- 5: Digistore24 Automation -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">📊</div>
+          <div class="product-price-tag">€39/mo</div>
+        </div>
+        <div class="product-name">Digistore24 Automation</div>
+        <p class="product-desc">Vollautomatisches Management deiner Digistore24-Produkte und Affiliate-Programme. Revenue-Tracking, Partner-Kommunikation und Auszahlungen auf Autopilot.</p>
+        <ul class="product-features">
+          <li>Revenue-Tracking &amp; Prognosen</li>
+          <li>Affiliate-Partner-Management</li>
+          <li>Automatische Auszahlungs-Reports</li>
+        </ul>
+        <a href="../digistore24-suite/" class="product-btn">Mehr erfahren →</a>
+      </div>
+
+      <!-- 6: CreatorStudio Pro -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">🎨</div>
+          <div class="product-price-tag">€19/mo</div>
+        </div>
+        <div class="product-name">CreatorStudio Pro</div>
+        <p class="product-desc">Komplette Content-Creation-Suite für Creator. KI schreibt Scripts, generiert Thumbnails-Ideen und plant deinen Content-Kalender automatisch.</p>
+        <ul class="product-features">
+          <li>YouTube &amp; TikTok Script-Generator</li>
+          <li>Content-Kalender Automation</li>
+          <li>Trend-Analyse &amp; Ideen-Finder</li>
+        </ul>
+        <a href="../creatorstudio-pro/" class="product-btn">Mehr erfahren →</a>
+      </div>
+
+      <!-- 7: iComeAuto -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">💰</div>
+          <div class="product-price-tag">€29/mo</div>
+        </div>
+        <div class="product-name">iComeAuto</div>
+        <p class="product-desc">5 spezialisierte KI-Bots die 24/7 an deinen Einkommensströmen arbeiten. Affiliate, Email, Social Media, Analytics und Optimierung — vollautomatisch.</p>
+        <ul class="product-features">
+          <li>5 KI-Bots auf Autopilot</li>
+          <li>Multi-Plattform-Integration</li>
+          <li>Echtzeit-Revenue-Tracking</li>
+        </ul>
+        <a href="../icomeauto/" class="product-btn">Mehr erfahren →</a>
+      </div>
+
+      <!-- 8: Gumroad Discord Bot -->
+      <div class="product-card">
+        <div class="product-header">
+          <div class="product-icon">🔐</div>
+          <div class="product-price-tag">€9/mo</div>
+        </div>
+        <div class="product-name">Gumroad Discord Bot</div>
+        <p class="product-desc">Automatische Käufer-Verifizierung zwischen Gumroad und Discord. Sobald jemand kauft, bekommt er sofort die richtige Discord-Rolle — in unter einer Sekunde.</p>
+        <ul class="product-features">
+          <li>Webhook-Integration mit Gumroad</li>
+          <li>Automatische Rollen-Zuweisung</li>
+          <li>Refund-Schutz (Rollen-Entzug)</li>
+        </ul>
+        <a href="../gumroad-discord/" class="product-btn">Mehr erfahren →</a>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- =================== BUNDLE =================== -->
+  <div class="section" id="bundle">
+    <div class="bundle-section reveal">
+      <div class="bundle-badge">🔥 BUNDLE DEAL — NUR FÜR KURZE ZEIT</div>
+      <h2>Alle <span>8 Tools</span> in einem Bundle</h2>
+      <p class="bundle-sub">Spare 55% und erhalte sofort Zugang zu allen Tools — plus exklusive Bundle-Features die nur Bundle-Kunden vorbehalten sind.</p>
+
+      <div class="bundle-price-wrap">
+        <div class="bundle-old">Normaler Preis: €223/mo</div>
+        <div class="bundle-new"><sup>€</sup>99<sub>/mo</sub></div>
+        <div class="bundle-saving">Du sparst €124/mo — 55%!</div>
+      </div>
+
+      <div class="bundle-features-grid">
+        <div class="bundle-feat">Alle 8 Tools sofort verfügbar</div>
+        <div class="bundle-feat">Einheitliches Master-Dashboard</div>
+        <div class="bundle-feat">Priority Support (1h Response)</div>
+        <div class="bundle-feat">Jederzeit kündbar</div>
+        <div class="bundle-feat">Alle zukünftigen Tools inklusive</div>
+        <div class="bundle-feat">Onboarding Call mit Rudolf</div>
+        <div class="bundle-feat">Private Discord-Community</div>
+        <div class="bundle-feat">Monatliche Strategy-Sessions</div>
+      </div>
+
+      <a href="#" class="btn-bundle">Jetzt Bundle kaufen — €99/mo statt €223/mo</a>
+      <p class="bundle-note">Stripe-Zahlung • SSL-verschlüsselt • Jederzeit kündbar • Keine versteckten Kosten</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- =================== ABOUT =================== -->
+  <div class="section" id="about">
+    <div class="about-wrap">
+      <div class="about-content reveal">
+        <div class="section-label">Der Entwickler</div>
+        <h2>Über Rudolf Sarkany</h2>
+        <p class="about-bio">
+          <strong>Unternehmer und Entwickler aus Österreich.</strong><br><br>
+          Ich habe alle diese Tools selbst gebaut und nutze sie täglich in meinem Business. Was du hier siehst ist kein Theorie-Produkt — es ist Software die in meinem echten Shopify-Store, meinen Digistore24-Produkten und meinen Content-Kanälen läuft.<br><br>
+          Meine Mission: <strong>Kleinen und mittleren Online-Unternehmern Zugang zu den gleichen Automation-Tools geben die große E-Commerce-Player haben</strong> — aber zu einem Preis der erschwinglich ist.
+        </p>
+        <div class="about-contact">
+          <div class="contact-item">
+            <span>📧</span>
+            <a href="mailto:bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</a>
+          </div>
+          <div class="contact-item">
+            <span>🐙</span>
+            <a href="https://github.com/bullpowerhubgit" target="_blank">github.com/bullpowerhubgit</a>
+          </div>
+          <div class="contact-item">
+            <span>🇦🇹</span>
+            <span>Wien, Österreich</span>
+          </div>
+        </div>
+      </div>
+      <div class="about-card reveal reveal-delay-2">
+        <div class="about-avatar">👨‍💻</div>
+        <div class="about-name">Rudolf Sarkany</div>
+        <div class="about-title">Unternehmer &amp; Entwickler</div>
+        <div class="about-tags">
+          <span class="about-tag">Shopify</span>
+          <span class="about-tag">Digistore24</span>
+          <span class="about-tag">KI / Automation</span>
+          <span class="about-tag">SaaS</span>
+          <span class="about-tag">Python</span>
+          <span class="about-tag">Österreich</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- =================== FOOTER =================== -->
+  <footer id="footer">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a href="#" class="nav-logo">
+          <div class="nav-logo-icon">⚡</div>
+          <div class="nav-logo-text">BullPower Hub</div>
+        </a>
+        <p class="footer-desc mt-2">
+          8 professionelle SaaS-Tools für E-Commerce, Content Creator und Digistore24-Marketer. Entwickelt in Österreich.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Produkte</h4>
+        <ul>
+          <li><a href="../bullpower-ai/">BullPower AI</a></li>
+          <li><a href="../shopify-acquisition-engine/">Shopify Acquisition</a></li>
+          <li><a href="../shopify-suite/">Shopify Suite</a></li>
+          <li><a href="../cognitive-symphony/">Cognitive Symphony</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Weitere Tools</h4>
+        <ul>
+          <li><a href="../digistore24-suite/">Digistore24 Suite</a></li>
+          <li><a href="../creatorstudio-pro/">CreatorStudio Pro</a></li>
+          <li><a href="../icomeauto/">iComeAuto</a></li>
+          <li><a href="../gumroad-discord/">Gumroad Discord Bot</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Rechtliches</h4>
+        <ul>
+          <li><a href="#">Impressum</a></li>
+          <li><a href="#">Datenschutz</a></li>
+          <li><a href="#">AGB</a></li>
+          <li><a href="#">Cookie-Einstellungen</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2026 BullPower Hub — Rudolf Sarkany · Wien, Österreich</p>
+      <p>Kontakt: <a href="mailto:bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</a></p>
+    </div>
+  </footer>
+
+  <script>
+    // ===== SCROLL REVEAL =====
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.08 });
+    document.querySelectorAll('.reveal').forEach(r => observer.observe(r));
+
+    // ===== COUNTER ANIMATIONS =====
+    function countUp(el, target, prefix, suffix, duration) {
+      let current = 0;
+      const increment = target / (duration / 16);
+      const timer = setInterval(() => {
+        current = Math.min(current + increment, target);
+        el.textContent = prefix + Math.round(current).toLocaleString('de-DE') + suffix;
+        if (current >= target) clearInterval(timer);
+      }, 16);
+    }
+
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        // Stats banner
+        countUp(document.getElementById('stat-tools'), 8, '', '', 1200);
+        countUp(document.getElementById('stat-value'), 223, '€', '/mo', 1800);
+        countUp(document.getElementById('stat-bundle'), 99, '€', '/mo', 2200);
+      }, 600);
+    });
+
+    // ===== PRODUCT CARD HOVER SPARKLE =====
+    document.querySelectorAll('.product-card').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.style.setProperty('--glow', '1');
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.setProperty('--glow', '0');
+      });
+    });
+
+    // ===== SMOOTH NAV ACTIVE STATE =====
+    const sections = document.querySelectorAll('[id]');
+    const navLinks = document.querySelectorAll('.nav-center a');
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(s => {
+        if (window.scrollY >= s.offsetTop - 120) current = s.id;
+      });
+      navLinks.forEach(a => {
+        a.style.color = a.getAttribute('href') === '#' + current ? 'var(--purple-light)' : '';
+        a.style.background = a.getAttribute('href') === '#' + current ? 'var(--purple-dim)' : '';
+      });
+    });
+  </script>
+</body>
+</html>
