@@ -501,6 +501,15 @@ class CommandRouter:
             "/subscribe": self._cmd_subscribe,
             "/team_run": self._cmd_team_run,
             "/mrr": self._cmd_mrr,
+            # ── New Growth / Revenue Commands ────────────────────────────────
+            "/growth_dashboard": self._cmd_growth_dashboard,
+            "/referral_create": self._cmd_referral_create,
+            "/pricing_run": self._cmd_pricing_run,
+            "/b2b_stats": self._cmd_b2b_stats,
+            "/tiktok_sync": self._cmd_tiktok_sync,
+            "/churn": self._cmd_churn,
+            # stripe /mrr alias via stripe module
+            "/stripe_mrr": self._cmd_stripe_mrr,
         }
 
     async def route(self, text: str, session_id: str) -> str:
@@ -898,6 +907,144 @@ class CommandRouter:
                     )
         except Exception as e:
             return f"❌ /mrr Fehler: {e}"
+
+    async def _cmd_growth_dashboard(self, text: str, session_id: str) -> str:
+        try:
+            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"{dashboard_url}/api/growth/dashboard",
+                    timeout=aiohttp.ClientTimeout(total=20),
+                ) as r:
+                    data = await r.json()
+                    if r.status == 200 and data.get("ok"):
+                        d = data.get("data", {})
+                        return (
+                            f"📈 Growth Dashboard:\n"
+                            f"  Referrals: {d.get('total_referrals', 'N/A')}\n"
+                            f"  Conversions: {d.get('conversions', 'N/A')}\n"
+                            f"  New Customers (30T): {d.get('new_customers_30d', 'N/A')}\n"
+                            f"  Winback Rate: {d.get('winback_rate', 'N/A')}"
+                        )
+                    return f"⚠️ Growth Dashboard Fehler: {data.get('error', r.status)}"
+        except Exception as e:
+            return f"❌ /growth_dashboard Fehler: {e}"
+
+    async def _cmd_referral_create(self, text: str, session_id: str) -> str:
+        try:
+            parts = text.strip().split()
+            email = parts[1] if len(parts) > 1 else ""
+            name  = " ".join(parts[2:]) if len(parts) > 2 else ""
+            if not email:
+                return "⚠️ Usage: /referral_create <email> [name]"
+            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{dashboard_url}/api/growth/referral/create",
+                    json={"email": email, "name": name},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    data = await r.json()
+                    if r.status == 200 and data.get("ok"):
+                        d = data.get("data", {})
+                        return (
+                            f"✅ Referral Code erstellt!\n"
+                            f"  Email: {email}\n"
+                            f"  Code: {d.get('code', 'N/A')}\n"
+                            f"  Link: {d.get('link', 'N/A')}"
+                        )
+                    return f"⚠️ Fehler: {data.get('error', r.status)}"
+        except Exception as e:
+            return f"❌ /referral_create Fehler: {e}"
+
+    async def _cmd_pricing_run(self, text: str, session_id: str) -> str:
+        try:
+            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{dashboard_url}/api/pricing/run",
+                    json={},
+                    timeout=aiohttp.ClientTimeout(total=60),
+                ) as r:
+                    data = await r.json()
+                    if r.status == 200 and data.get("ok"):
+                        return (
+                            f"✅ Dynamic Pricing Zyklus abgeschlossen!\n"
+                            f"  Produkte analysiert: {data.get('analyzed', 'N/A')}\n"
+                            f"  Preise angepasst: {data.get('updated', 'N/A')}\n"
+                            f"  Ø Änderung: {data.get('avg_change_pct', 'N/A')}%"
+                        )
+                    return f"⚠️ Pricing Fehler: {data.get('error', r.status)}"
+        except Exception as e:
+            return f"❌ /pricing_run Fehler: {e}"
+
+    async def _cmd_b2b_stats(self, text: str, session_id: str) -> str:
+        try:
+            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"{dashboard_url}/api/b2b/stats",
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    data = await r.json()
+                    if r.status == 200 and data.get("ok"):
+                        return (
+                            f"🏢 B2B Pipeline Stats:\n"
+                            f"  Leads gesamt: {data.get('total_leads', 'N/A')}\n"
+                            f"  Aktiv: {data.get('active_leads', 'N/A')}\n"
+                            f"  Gewonnen: {data.get('won', 'N/A')}\n"
+                            f"  Pipeline-Wert: {data.get('pipeline_value', 'N/A')}"
+                        )
+                    return f"⚠️ B2B Stats Fehler: {data.get('error', r.status)}"
+        except Exception as e:
+            return f"❌ /b2b_stats Fehler: {e}"
+
+    async def _cmd_tiktok_sync(self, text: str, session_id: str) -> str:
+        try:
+            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{dashboard_url}/api/tiktok/sync",
+                    json={},
+                    timeout=aiohttp.ClientTimeout(total=60),
+                ) as r:
+                    data = await r.json()
+                    if r.status == 200 and data.get("ok"):
+                        return (
+                            f"✅ TikTok Shop Sync abgeschlossen!\n"
+                            f"  Produkte synced: {data.get('synced', 'N/A')}\n"
+                            f"  Fehler: {data.get('errors', 0)}\n"
+                            f"  Stand: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}"
+                        )
+                    return f"⚠️ TikTok Sync Fehler: {data.get('error', r.status)}"
+        except Exception as e:
+            return f"❌ /tiktok_sync Fehler: {e}"
+
+    async def _cmd_churn(self, text: str, session_id: str) -> str:
+        try:
+            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"{dashboard_url}/api/stripe/churn",
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    data = await r.json()
+                    if r.status == 200:
+                        rate = data.get("churn_rate", data.get("rate", "N/A"))
+                        canceled = data.get("canceled", "N/A")
+                        return (
+                            f"📉 Churn Rate (30T):\n"
+                            f"  Rate: {rate}%\n"
+                            f"  Gekündigt: {canceled} Abos\n"
+                            f"  Stand: {datetime.utcnow().strftime('%Y-%m-%d')}"
+                        )
+                    return f"⚠️ Churn Fehler: {data.get('error', r.status)}"
+        except Exception as e:
+            return f"❌ /churn Fehler: {e}"
+
+    async def _cmd_stripe_mrr(self, text: str, session_id: str) -> str:
+        """Alias /stripe_mrr → Stripe MRR direkt."""
+        return await self._cmd_mrr(text, session_id)
 
     async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle:

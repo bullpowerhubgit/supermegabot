@@ -51,6 +51,21 @@ PORT = int(os.getenv("PORT") or os.getenv("DASHBOARD_PORT", "8888"))
 log = logging.getLogger("Dashboard")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
+# ---------------------------------------------------------------------------
+# In-memory cache: {key: (timestamp, data)}
+# ---------------------------------------------------------------------------
+_cache: dict = {}
+
+def _cache_get(key: str, ttl: int):
+    """Return cached value if still fresh, else None."""
+    entry = _cache.get(key)
+    if entry and (time.time() - entry[0]) < ttl:
+        return entry[1]
+    return None
+
+def _cache_set(key: str, data):
+    _cache[key] = (time.time(), data)
+
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
@@ -516,14 +531,17 @@ async def handle_index(req):
 
 async def handle_chat(req):
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
         text = data.get("text", "")
         session_id = data.get("session_id", "dashboard")
         bot = req.app["bot"]
         response = await bot.process(text, session_id)
-        return web.json_response({"response": response, "session_id": session_id})
+        return web.json_response({"ok": True, "response": response, "session_id": session_id})
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_bot_execute(req):
@@ -567,6 +585,7 @@ async def handle_system(req):
         mem = psutil.virtual_memory()
         disk = psutil.disk_usage("/")
         return web.json_response({
+            "ok": True,
             "cpu_percent": psutil.cpu_percent(interval=0.5),
             "memory_used_gb": round(mem.used / 1024**3, 1),
             "memory_total_gb": round(mem.total / 1024**3, 1),
@@ -577,7 +596,9 @@ async def handle_system(req):
             "process_count": len(psutil.pids()),
         })
     except ImportError:
-        return web.json_response({"error": "psutil not installed"})
+        return web.json_response({"ok": False, "error": "psutil not installed"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_services_legacy(req):
@@ -609,9 +630,9 @@ async def handle_trading_prices(req):
         from modules.trading_bot import TradingBot
         bot = TradingBot()
         prices = await bot.get_quick_prices()
-        return web.json_response({"prices": prices})
+        return web.json_response({"ok": True, "prices": prices})
     except Exception as e:
-        return web.json_response({"error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_trading_arbitrage(req):
@@ -619,14 +640,15 @@ async def handle_trading_arbitrage(req):
         from modules.trading_bot import TradingBot
         bot = TradingBot()
         opps = await bot.scan_quick()
-        return web.json_response({"opportunities": opps})
+        return web.json_response({"ok": True, "opportunities": opps})
     except Exception as e:
-        return web.json_response({"error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_telegram_status(req):
     token = TELEGRAM_TOKEN or os.getenv("TELEGRAM_BOT_TOKEN", "")
     return web.json_response({
+        "ok": True,
         "configured": bool(token),
         "chat_id": TELEGRAM_CHAT_ID or os.getenv("TELEGRAM_CHAT_ID", ""),
     })
@@ -636,16 +658,21 @@ async def handle_telegram_send(req):
     if not TELEGRAM_TOKEN:
         return web.json_response({"ok": False, "error": "No token configured"})
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
         message = data.get("message", "")
+        if not message:
+            return web.json_response({"ok": False, "error": "message is required"}, status=400)
         chat_id = TELEGRAM_CHAT_ID
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             async with s.post(url, json={"chat_id": chat_id, "text": message}) as r:
                 ok = r.status == 200
                 return web.json_response({"ok": ok})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_shopify_status(req):
@@ -730,10 +757,10 @@ async def handle_ollama_models(req):
                         {"name": m["name"], "size": f"{m.get('size', 0) // 1024//1024//1024:.1f}GB"}
                         for m in data.get("models", [])
                     ]
-                    return web.json_response({"models": models})
-                return web.json_response({"models": []})
-    except Exception:
-        return web.json_response({"models": []})
+                    return web.json_response({"ok": True, "models": models})
+                return web.json_response({"ok": False, "models": []})
+    except Exception as e:
+        return web.json_response({"ok": False, "models": [], "error": str(e)})
 
 
 async def handle_autopilot_agents(req):
@@ -747,20 +774,23 @@ async def handle_autopilot_agents(req):
 
 async def handle_autopilot_run(req):
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
         goal = data.get("goal", "")
         agent_id = data.get("agent_id") or None
         from modules.autopilot import AutoPilot
         ap = AutoPilot()
         if agent_id:
             result = await ap.run_task(goal, agent_id)
-            return web.json_response({"results": [result]})
+            return web.json_response({"ok": True, "results": [result]})
         else:
             results = await ap.run_autopilot_mode(goal)
-            return web.json_response({"results": results})
+            return web.json_response({"ok": True, "results": results})
     except Exception as e:
         log.error(f"AutoPilot error: {e}")
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_autopilot_logs(req):
@@ -774,18 +804,26 @@ async def handle_autopilot_logs(req):
 
 async def handle_geheimwaffe_run(req):
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
         niche = data.get("niche", "General")
         from modules.geheimwaffe import run_full_automation
         result = await run_full_automation(niche)
+        if "ok" not in result:
+            result["ok"] = True
         return web.json_response(result)
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_geheimwaffe_content(req):
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
         product = data.get("product", "")
         content_type = data.get("type", "listing")
         platform = data.get("platform", "tiktok")
@@ -797,10 +835,12 @@ async def handle_geheimwaffe_content(req):
         elif content_type == "ads":
             result = await generate_ad_copy(product)
         else:
-            result = {"error": "Unbekannter content_type"}
+            return web.json_response({"ok": False, "error": "Unbekannter content_type"}, status=400)
+        if "ok" not in result:
+            result["ok"] = True
         return web.json_response(result)
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_gmc(req):
@@ -808,9 +848,11 @@ async def handle_gmc(req):
         sys.path.insert(0, str(BASE_DIR))
         from modules.gmc_monitor import get_full_status
         status = await get_full_status()
+        if "ok" not in status:
+            status["ok"] = True
         return web.json_response(status)
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_backup_status(req):
@@ -963,7 +1005,10 @@ async def handle_service_action(req):
 
 async def handle_service_start(req):
     """Startet einen Service (dedizierter Endpoint für /api/service/start)."""
-    data = await req.json()
+    try:
+        data = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
     svc_id = data.get("id", "")
     svc = next((s for s in SERVICES if s["id"] == svc_id), None)
     if not svc:
@@ -980,7 +1025,10 @@ async def handle_service_start(req):
 
 async def handle_service_stop(req):
     """Stoppt einen Service (dedizierter Endpoint für /api/service/stop)."""
-    data = await req.json()
+    try:
+        data = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
     svc_id = data.get("id", "")
     svc = next((s for s in SERVICES if s["id"] == svc_id), None)
     if not svc:
@@ -994,21 +1042,30 @@ async def handle_service_stop(req):
 
 
 async def handle_logs(req):
-    lines = []
-    for lf in [BASE_DIR / "logs" / "supermegabot.log", Path("/tmp/supermegabot.log")]:
-        if lf.exists():
-            try:
-                content = lf.read_text(errors='replace').split('\n')
-                lines.extend(content[-60:])
-            except Exception:
-                pass
-    if not lines:
-        lines = ["Keine Logs vorhanden — Bot läuft möglicherweise ohne Log-Datei"]
-    return web.json_response({"lines": lines[-80:]})
+    try:
+        lines = []
+        for lf in [BASE_DIR / "logs" / "supermegabot.log", Path("/tmp/supermegabot.log")]:
+            if lf.exists():
+                try:
+                    content = lf.read_text(errors='replace').split('\n')
+                    lines.extend(content[-60:])
+                except Exception:
+                    pass
+        if not lines:
+            lines = ["Keine Logs vorhanden — Bot läuft möglicherweise ohne Log-Datei"]
+        return web.json_response({"ok": True, "lines": lines[-80:]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_health(req):
-    return web.json_response({
+    cached = _cache_get("system_health", 30)
+    if cached is not None:
+        # Always return fresh uptime
+        cached = dict(cached)
+        cached["uptime_seconds"] = round(time.time() - _SERVER_START_TIME, 1)
+        return web.json_response(cached)
+    result = {
         "status": "ok",
         "service": "supermegabot-dashboard",
         "port": PORT,
@@ -1019,7 +1076,9 @@ async def handle_health(req):
             "admin_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1")),
             "customer_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN_2")),
         },
-    })
+    }
+    _cache_set("system_health", result)
+    return web.json_response(result)
 
 
 async def handle_status_full(req):
@@ -1180,9 +1239,9 @@ async def handle_processes(req):
                 "mem": round(p.info['memory_percent'] or 0, 1),
                 "cmd": cmd,
             })
-        return web.json_response({"processes": procs})
+        return web.json_response({"ok": True, "processes": procs})
     except Exception as e:
-        return web.json_response({"error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ---------------------------------------------------------------------------
@@ -1223,21 +1282,27 @@ async def handle_storage_offload(req):
 async def handle_storage_large_files(req):
     try:
         directory = req.rel_url.query.get("dir", str(BASE_DIR))
-        min_mb = float(req.rel_url.query.get("min_mb", "50"))
+        try:
+            min_mb = float(req.rel_url.query.get("min_mb", "50"))
+        except (ValueError, TypeError):
+            min_mb = 50.0
         from modules.storage_monitor import find_large_files
         files = find_large_files(Path(directory), min_size_mb=min_mb, limit=30)
-        return web.json_response({"files": files, "directory": directory})
+        return web.json_response({"ok": True, "files": files, "directory": directory})
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_storage_history(req):
     try:
-        limit = int(req.rel_url.query.get("limit", "50"))
+        try:
+            limit = int(req.rel_url.query.get("limit", "50"))
+        except (ValueError, TypeError):
+            limit = 50
         from modules.storage_monitor import get_event_history
-        return web.json_response({"events": get_event_history(limit)})
+        return web.json_response({"ok": True, "events": get_event_history(limit)})
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_storage_widget(req):
@@ -1675,11 +1740,12 @@ async def handle_automation_status(req):
         from core.automation_scheduler import get_scheduler, get_last_runs
         sched = get_scheduler()
         return web.json_response({
+            "ok": True,
             "status": sched.status(),
             "recent_runs": get_last_runs(limit=30),
         })
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_automation_run(req):
@@ -1715,9 +1781,9 @@ async def handle_automation_tasks(req):
                 "ok_runs":    s.get("ok", 0),
                 "avg_ms":     s.get("avg_ms", 0),
             })
-        return web.json_response({"tasks": tasks, "count": len(tasks)})
+        return web.json_response({"ok": True, "tasks": tasks, "count": len(tasks)})
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_social_status(req):
@@ -1725,9 +1791,11 @@ async def handle_social_status(req):
     try:
         from modules.social_connectors import ping_all
         results = await ping_all()
+        if "ok" not in results:
+            results["ok"] = True
         return web.json_response(results)
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_digistore_status(req):
@@ -1744,11 +1812,14 @@ async def handle_digistore_status(req):
 async def handle_digistore_orders(req):
     try:
         from modules.digistore24_automation import get_orders
-        page = int(req.rel_url.query.get("page", 1))
+        try:
+            page = int(req.rel_url.query.get("page", "1"))
+        except (ValueError, TypeError):
+            page = 1
         orders = await get_orders(page=page)
-        return web.json_response({"orders": orders})
+        return web.json_response({"ok": True, "orders": orders})
     except Exception as e:
-        return web.json_response({"orders": [], "error": str(e)})
+        return web.json_response({"ok": False, "orders": [], "error": str(e)})
 
 
 async def handle_mailchimp_status(req):
@@ -1964,12 +2035,32 @@ async def handle_revenue_dashboard(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
-async def handle_revenue_analytics(req):
-    """Umsatz-Analyse: heute, 7T, 30T, offene Bestellungen."""
+async def handle_revenue_summary(req):
+    """GET /api/revenue/summary — Cached 5min revenue summary."""
+    cached = _cache_get("revenue_summary", 300)
+    if cached is not None:
+        return web.json_response(cached)
     try:
         from modules.shopify_revenue_engine import get_revenue_summary
         data = await get_revenue_summary()
-        return web.json_response({"ok": True, **data})
+        result = {"ok": True, **data}
+        _cache_set("revenue_summary", result)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_revenue_analytics(req):
+    """Umsatz-Analyse: heute, 7T, 30T, offene Bestellungen. Cached 5min."""
+    cached = _cache_get("revenue_summary", 300)
+    if cached is not None:
+        return web.json_response(cached)
+    try:
+        from modules.shopify_revenue_engine import get_revenue_summary
+        data = await get_revenue_summary()
+        result = {"ok": True, **data}
+        _cache_set("revenue_summary", result)
+        return web.json_response(result)
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -1977,7 +2068,10 @@ async def handle_revenue_analytics(req):
 async def handle_abandoned_carts(req):
     """Alle offenen / verlassenen Warenkörbe."""
     try:
-        hours = int(req.rel_url.query.get("hours", "24"))
+        try:
+            hours = int(req.rel_url.query.get("hours", "24"))
+        except (ValueError, TypeError):
+            hours = 24
         from modules.shopify_revenue_engine import get_abandoned_carts
         carts = await get_abandoned_carts(hours)
         return web.json_response({"ok": True, "count": len(carts), "carts": carts})
@@ -2046,7 +2140,10 @@ async def handle_bulk_price_update(req):
 async def handle_product_performance(req):
     """Top-Seller, Slow-Mover und Zero-Seller Analyse."""
     try:
-        days = int(req.rel_url.query.get("days", "30"))
+        try:
+            days = int(req.rel_url.query.get("days", "30"))
+        except (ValueError, TypeError):
+            days = 30
         from modules.shopify_revenue_engine import get_product_performance
         data = await get_product_performance(days)
         return web.json_response({"ok": True, **data})
@@ -2055,11 +2152,16 @@ async def handle_product_performance(req):
 
 
 async def handle_all_products_prices(req):
-    """Alle Produkte mit aktuellen Preisen."""
+    """Alle Produkte mit aktuellen Preisen. Cached 2min."""
+    cached = _cache_get("shopify_products", 120)
+    if cached is not None:
+        return web.json_response(cached)
     try:
         from modules.shopify_revenue_engine import get_all_products_with_prices
         products = await get_all_products_with_prices()
-        return web.json_response({"ok": True, "count": len(products), "products": products})
+        result = {"ok": True, "count": len(products), "products": products}
+        _cache_set("shopify_products", result)
+        return web.json_response(result)
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -2082,7 +2184,10 @@ async def handle_ai_descriptions(req):
 async def handle_low_inventory(req):
     """Produkte mit niedrigem Lagerbestand."""
     try:
-        threshold = int(req.rel_url.query.get("threshold", "5"))
+        try:
+            threshold = int(req.rel_url.query.get("threshold", "5"))
+        except (ValueError, TypeError):
+            threshold = 5
         from modules.shopify_revenue_engine import get_low_inventory
         items = await get_low_inventory(threshold)
         return web.json_response({"ok": True, "count": len(items), "items": items})
@@ -2103,7 +2208,10 @@ async def handle_publish_drafts(req):
 async def handle_upsell_pairs(req):
     """Produkte die häufig zusammen gekauft werden (Upsell-Empfehlungen)."""
     try:
-        limit = int(req.rel_url.query.get("limit", "10"))
+        try:
+            limit = int(req.rel_url.query.get("limit", "10"))
+        except (ValueError, TypeError):
+            limit = 10
         from modules.shopify_revenue_engine import get_upsell_pairs
         pairs = await get_upsell_pairs(limit)
         return web.json_response({"ok": True, "pairs": pairs})
@@ -2132,7 +2240,10 @@ async def handle_youtube_stats(req):
 
 async def handle_youtube_latest(req):
     try:
-        n = int(req.rel_url.query.get("limit", "10"))
+        try:
+            n = int(req.rel_url.query.get("limit", "10"))
+        except (ValueError, TypeError):
+            n = 10
         from modules.youtube_analytics import get_latest_videos
         return web.json_response(await get_latest_videos(n))
     except Exception as e:
@@ -2141,7 +2252,10 @@ async def handle_youtube_latest(req):
 
 async def handle_youtube_top(req):
     try:
-        n = int(req.rel_url.query.get("limit", "10"))
+        try:
+            n = int(req.rel_url.query.get("limit", "10"))
+        except (ValueError, TypeError):
+            n = 10
         from modules.youtube_analytics import get_top_videos
         return web.json_response(await get_top_videos(n))
     except Exception as e:
@@ -2199,7 +2313,10 @@ async def handle_agents_run(req):
 async def handle_agents_logs(req):
     """Letzte Logs aller Agenten."""
     try:
-        limit = int(req.rel_url.query.get("limit", "50"))
+        try:
+            limit = int(req.rel_url.query.get("limit", "50"))
+        except (ValueError, TypeError):
+            limit = 50
         from modules.autopilot_agents import get_all_logs
         logs = await get_all_logs(limit)
         return web.json_response({"ok": True, "logs": logs})
@@ -2443,8 +2560,11 @@ async def handle_stripe_balance(req):
 async def handle_stripe_charges(req):
     try:
         from modules.stripe_automation import get_charges
-        days = int(req.rel_url.query.get("days", "30"))
-        limit = int(req.rel_url.query.get("limit", "20"))
+        try:
+            days = int(req.rel_url.query.get("days", "30"))
+            limit = int(req.rel_url.query.get("limit", "20"))
+        except (ValueError, TypeError):
+            days, limit = 30, 20
         data = await get_charges(limit=limit, days_back=days)
         return web.json_response({"ok": True, "charges": data})
     except Exception as e:
@@ -2463,8 +2583,13 @@ async def handle_stripe_customers(req):
 async def handle_stripe_revenue(req):
     try:
         from modules.stripe_automation import get_revenue_summary
-        days = int(req.rel_url.query.get("days", "30"))
+        try:
+            days = int(req.rel_url.query.get("days", "30"))
+        except (ValueError, TypeError):
+            days = 30
         data = await get_revenue_summary(days_back=days)
+        if "ok" not in data:
+            data["ok"] = True
         return web.json_response(data)
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
@@ -2516,7 +2641,10 @@ async def handle_stripe_mrr(req):
 async def handle_stripe_churn(req):
     """GET /api/stripe/churn — Churn rate from canceled subscriptions."""
     try:
-        days_back = int(req.rel_url.query.get("days", "30"))
+        try:
+            days_back = int(req.rel_url.query.get("days", "30"))
+        except (ValueError, TypeError):
+            days_back = 30
         from modules.stripe_automation import get_churn_rate
         result = await get_churn_rate(days_back=days_back)
         return web.json_response(result)
@@ -2638,7 +2766,10 @@ async def handle_drive_files(req):
     try:
         from modules.google_drive_automation import list_files
         query = req.rel_url.query.get("q", "")
-        limit = int(req.rel_url.query.get("limit", "20"))
+        try:
+            limit = int(req.rel_url.query.get("limit", "20"))
+        except (ValueError, TypeError):
+            limit = 20
         data  = await list_files(query=query, page_size=limit)
         return web.json_response({"ok": True, "files": data})
     except Exception as e:
@@ -2652,6 +2783,27 @@ async def handle_drive_backup(req):
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
+
+
+@web.middleware
+async def logging_middleware(request, handler):
+    """Log all POST requests with body size and response time."""
+    start = time.time()
+    try:
+        response = await handler(request)
+    except web.HTTPException as ex:
+        response = ex
+    except Exception as exc:
+        elapsed_ms = int((time.time() - start) * 1000)
+        if request.method == "POST":
+            log.warning("POST %s failed in %dms: %s", request.path, elapsed_ms, exc)
+        raise
+    elapsed_ms = int((time.time() - start) * 1000)
+    if request.method == "POST":
+        body_size = request.content_length or 0
+        log.info("POST %s %dms body=%db status=%s",
+                 request.path, elapsed_ms, body_size, response.status)
+    return response
 
 
 @web.middleware
@@ -2711,7 +2863,10 @@ async def handle_referral_stats(req):
 
 async def handle_referral_top(req):
     try:
-        limit = int(req.rel_url.query.get("limit", "10"))
+        try:
+            limit = int(req.rel_url.query.get("limit", "10"))
+        except (ValueError, TypeError):
+            limit = 10
         from modules.growth_engine import get_top_referrers
         data = await get_top_referrers(limit=limit)
         return web.json_response({"ok": True, "data": data})
@@ -2778,7 +2933,10 @@ async def handle_pricing_history(req):
     """GET /api/pricing/history?product_id=...&days=30"""
     try:
         product_id = req.rel_url.query.get("product_id")
-        days       = int(req.rel_url.query.get("days", 30))
+        try:
+            days = int(req.rel_url.query.get("days", "30"))
+        except (ValueError, TypeError):
+            days = 30
         from modules.dynamic_pricing import get_pricing_history
         history = await get_pricing_history(product_id=product_id, days=days)
         return web.json_response({"ok": True, "history": history, "count": len(history)})
@@ -2877,7 +3035,10 @@ async def handle_b2b_pipeline_leads(req):
     try:
         from modules.b2b_pipeline import get_pipeline_leads
         stage = req.rel_url.query.get("stage")
-        limit = int(req.rel_url.query.get("limit", "50"))
+        try:
+            limit = int(req.rel_url.query.get("limit", "50"))
+        except (ValueError, TypeError):
+            limit = 50
         leads = await get_pipeline_leads(stage=stage, limit=limit)
         return web.json_response({"ok": True, "leads": leads, "count": len(leads)})
     except Exception as e:
@@ -3033,7 +3194,10 @@ async def handle_tiktok_sync_products(req):
 async def handle_tiktok_orders(req):
     try:
         from modules.tiktok_shop_sync import get_tiktok_orders
-        days   = int(req.rel_url.query.get("days", "7"))
+        try:
+            days = int(req.rel_url.query.get("days", "7"))
+        except (ValueError, TypeError):
+            days = 7
         orders = await get_tiktok_orders(days=days)
         return web.json_response({"ok": True, "orders": orders, "count": len(orders)})
     except Exception as e:
@@ -3080,7 +3244,7 @@ async def create_app():
     bot = MegaOrchestrator()
     await bot.start()
 
-    app = web.Application(middlewares=[cors_middleware])
+    app = web.Application(middlewares=[logging_middleware, cors_middleware])
     app["bot"] = bot
 
     # Existing routes
@@ -3253,6 +3417,7 @@ async def create_app():
     # ── Revenue Autopilot ──────────────────────────────────────────────────────
     app.router.add_get("/revenue",                            handle_revenue_autopilot_ui)
     app.router.add_get("/api/revenue/dashboard",             handle_revenue_dashboard)
+    app.router.add_get("/api/revenue/summary",              handle_revenue_summary)
     app.router.add_get("/api/revenue/analytics",             handle_revenue_analytics)
     app.router.add_get("/api/revenue/abandoned-carts",       handle_abandoned_carts)
     app.router.add_post("/api/revenue/recover-carts",        handle_recover_carts)
@@ -3355,7 +3520,7 @@ async def handle_telegram_webhook(req):
         return web.json_response({"status": "ok"})
     except Exception as e:
         log.error("Telegram webhook error: %s", e)
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def _register_telegram_webhook():
