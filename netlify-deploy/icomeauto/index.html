@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iComeAuto — KI-Einkommensbots</title>
+  <script>
+(function(){
+  if(localStorage.getItem('bp_ok')!=='1'){
+    document.documentElement.style.display='none';
+    var p=prompt('🔐 Passwort:');
+    if(p==='bullpower2026'){localStorage.setItem('bp_ok','1');document.documentElement.style.display='';}
+    else{document.documentElement.style.display='';document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#ef4444;font:bold 2rem sans-serif">❌ Zugang verweigert</div>';}
+  }
+})();
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green: #00ff88;
+      --green-dark: #00cc6a;
+      --green-dim: rgba(0,255,136,0.12);
+      --bg: #050f05;
+      --bg2: #0a1a0a;
+      --bg3: #0f240f;
+      --card: #0d1f0d;
+      --text: #e8f5e8;
+      --text-dim: #7aaa7a;
+      --border: rgba(0,255,136,0.2);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(5,15,5,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--green);
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .nav-logo span { color: var(--text); }
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      margin-left: 2rem;
+      font-size: 0.9rem;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--green); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0,255,136,0.15) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 40% at 20% 80%, rgba(0,200,100,0.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--green-dim);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      padding: 0.4rem 1rem;
+      font-size: 0.8rem;
+      color: var(--green);
+      margin-bottom: 2rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+    .hero-badge::before { content: '●'; animation: pulse-dot 1.5s infinite; }
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+    .hero h1 {
+      font-size: clamp(2rem, 5vw, 3.8rem);
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+      letter-spacing: -1px;
+    }
+    .hero h1 span {
+      color: var(--green);
+      position: relative;
+    }
+    .hero h1 span::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 3px;
+      background: var(--green);
+      border-radius: 2px;
+      opacity: 0.5;
+    }
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--text-dim);
+      max-width: 580px;
+      margin: 0 auto 2.5rem;
+    }
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #050f05;
+      font-weight: 800;
+      font-size: 1rem;
+      padding: 0.9rem 2.2rem;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 4px 20px rgba(0,255,136,0.3);
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,255,136,0.45);
+    }
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      font-weight: 600;
+      font-size: 1rem;
+      padding: 0.9rem 2.2rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--green); color: var(--green); }
+
+    /* COUNTERS */
+    .counters {
+      display: flex;
+      justify-content: center;
+      gap: 3rem;
+      flex-wrap: wrap;
+      margin-top: 4rem;
+      padding: 2rem;
+      background: var(--green-dim);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 700px;
+      width: 100%;
+    }
+    .counter-item { text-align: center; }
+    .counter-value {
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--green);
+      display: block;
+    }
+    .counter-label {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      margin-top: 0.2rem;
+    }
+
+    /* SECTION */
+    section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: var(--green);
+      text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+    h2 {
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
+      font-weight: 800;
+      margin-bottom: 1rem;
+      letter-spacing: -0.5px;
+    }
+    .section-sub {
+      color: var(--text-dim);
+      font-size: 1.05rem;
+      max-width: 560px;
+      margin-bottom: 3rem;
+    }
+
+    /* BOT CARDS */
+    .bots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+    }
+    .bot-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
+    }
+    .bot-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--green);
+      box-shadow: 0 16px 40px rgba(0,255,136,0.15);
+    }
+    .bot-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100px;
+      height: 100px;
+      background: radial-gradient(circle, rgba(0,255,136,0.2) 0%, transparent 70%);
+      animation: pulse-glow 3s ease-in-out infinite;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { opacity: 0.4; transform: translateX(-50%) scale(1); }
+      50% { opacity: 1; transform: translateX(-50%) scale(1.3); }
+    }
+    .bot-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+      display: block;
+      position: relative;
+      z-index: 1;
+    }
+    .bot-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 0.5rem;
+    }
+    .bot-desc {
+      font-size: 0.85rem;
+      color: var(--text-dim);
+      line-height: 1.5;
+    }
+    .bot-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-top: 1rem;
+      font-size: 0.75rem;
+      color: var(--green);
+      background: var(--green-dim);
+      padding: 0.25rem 0.75rem;
+      border-radius: 100px;
+    }
+    .bot-status::before {
+      content: '●';
+      animation: pulse-dot 1.5s infinite;
+    }
+
+    /* FEATURES LIST */
+    .features-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+    @media(max-width: 700px) { .features-wrap { grid-template-columns: 1fr; } }
+    .feature-list { list-style: none; }
+    .feature-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.95rem;
+    }
+    .feature-list li:last-child { border-bottom: none; }
+    .feature-icon {
+      width: 28px;
+      height: 28px;
+      background: var(--green-dim);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .feature-text strong { display: block; color: var(--text); margin-bottom: 0.1rem; }
+    .feature-text span { color: var(--text-dim); font-size: 0.88rem; }
+
+    /* PRICING */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .pricing-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 2.5rem 2rem;
+      position: relative;
+      transition: transform 0.3s, border-color 0.3s;
+    }
+    .pricing-card:hover { transform: translateY(-4px); }
+    .pricing-card.featured {
+      border-color: var(--green);
+      box-shadow: 0 0 40px rgba(0,255,136,0.15);
+    }
+    .pricing-badge {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--green), var(--green-dark));
+      color: #050f05;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.3rem 1rem;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+    .pricing-name { font-size: 1rem; color: var(--text-dim); margin-bottom: 0.5rem; font-weight: 600; }
+    .pricing-price {
+      font-size: 3rem;
+      font-weight: 900;
+      color: var(--green);
+      line-height: 1;
+    }
+    .pricing-price sup { font-size: 1.2rem; vertical-align: top; margin-top: 0.6rem; display: inline-block; }
+    .pricing-period { font-size: 0.9rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+    .pricing-features { list-style: none; margin-bottom: 2rem; }
+    .pricing-features li {
+      padding: 0.5rem 0;
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(0,255,136,0.08);
+    }
+    .pricing-features li::before { content: '✓'; color: var(--green); font-weight: 700; }
+
+    /* FOOTER */
+    footer {
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    footer p { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 0.5rem; }
+    footer a { color: var(--green); text-decoration: none; }
+
+    /* DIVIDER */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+      margin: 0;
+    }
+
+    /* SCROLL REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="nav-logo">iCome<span>Auto</span></a>
+    <div class="nav-links">
+      <a href="#bots">Bots</a>
+      <a href="#features">Features</a>
+      <a href="#pricing">Preise</a>
+      <a href="https://bullpowersrtkennels@gmail.com">Kontakt</a>
+    </div>
+  </nav>
+
+  <div class="hero">
+    <div class="hero-badge">KI-POWERED EINKOMMENSAUTOMATION</div>
+    <h1>iComeAuto —<br><span>KI-gesteuerte Einkommensbots</span><br>die 24/7 für dich arbeiten</h1>
+    <p class="hero-sub">Während du schläfst, verkaufst du. Während du reist, wächst dein Einkommen. 5 spezialisierte KI-Bots arbeiten rund um die Uhr für dich.</p>
+    <div class="hero-cta">
+      <a href="#pricing" class="btn-primary">Jetzt starten</a>
+      <a href="#bots" class="btn-secondary">Bots ansehen</a>
+    </div>
+    <div class="counters">
+      <div class="counter-item">
+        <span class="counter-value" id="cnt-revenue">€0</span>
+        <div class="counter-label">Generierter Umsatz</div>
+      </div>
+      <div class="counter-item">
+        <span class="counter-value" id="cnt-users">0</span>
+        <div class="counter-label">Aktive Nutzer</div>
+      </div>
+      <div class="counter-item">
+        <span class="counter-value" id="cnt-uptime">0%</span>
+        <div class="counter-label">Bot-Uptime</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <section id="bots">
+    <div class="section-label">Die Bot-Flotte</div>
+    <h2>5 spezialisierte KI-Bots</h2>
+    <p class="section-sub">Jeder Bot ist auf eine Einkommensquelle spezialisiert und arbeitet vollständig autonom — ohne manuellen Eingriff.</p>
+    <div class="bots-grid reveal" id="bots-grid">
+      <div class="bot-card">
+        <span class="bot-icon">🤖</span>
+        <div class="bot-name">Affiliate Bot</div>
+        <p class="bot-desc">Findet profitable Affiliate-Produkte, generiert personalisierte Links und postet automatisch auf deinen Kanälen — täglich.</p>
+        <div class="bot-status">AKTIV 24/7</div>
+      </div>
+      <div class="bot-card">
+        <span class="bot-icon">📧</span>
+        <div class="bot-name">Email Bot</div>
+        <p class="bot-desc">Segmentiert deine Liste, schreibt personalisierte Kampagnen mit KI und sendet zum optimalen Zeitpunkt für maximale Öffnungsraten.</p>
+        <div class="bot-status">AKTIV 24/7</div>
+      </div>
+      <div class="bot-card">
+        <span class="bot-icon">📱</span>
+        <div class="bot-name">Social Media Bot</div>
+        <p class="bot-desc">Erstellt und postet viralen Content auf Instagram, TikTok und Twitter. KI-generierte Captions, Hashtags und Posting-Zeiten.</p>
+        <div class="bot-status">AKTIV 24/7</div>
+      </div>
+      <div class="bot-card">
+        <span class="bot-icon">📊</span>
+        <div class="bot-name">Analytics Bot</div>
+        <p class="bot-desc">Trackt alle Einnahmenquellen in Echtzeit. Konsolidiert Shopify, Affiliate, Email und Social in einem übersichtlichen Dashboard.</p>
+        <div class="bot-status">AKTIV 24/7</div>
+      </div>
+      <div class="bot-card">
+        <span class="bot-icon">💰</span>
+        <div class="bot-name">Optimization Bot</div>
+        <p class="bot-desc">Analysiert alle Kampagnen mit KI, erkennt Muster und optimiert automatisch Budget-Verteilung für maximalen ROI.</p>
+        <div class="bot-status">AKTIV 24/7</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="features">
+    <div class="section-label">Warum iComeAuto</div>
+    <h2>Vollautomatisches Einkommens-System</h2>
+    <p class="section-sub">Einmal einrichten — für immer laufen lassen. Alle Bots synchronisieren sich untereinander und lernen kontinuierlich dazu.</p>
+    <div class="features-wrap reveal">
+      <ul class="feature-list">
+        <li>
+          <div class="feature-icon">🚀</div>
+          <div class="feature-text">
+            <strong>Setup in 15 Minuten</strong>
+            <span>API-Keys verbinden, Ziele setzen, loslegen. Kein technisches Wissen nötig.</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon">🧠</div>
+          <div class="feature-text">
+            <strong>KI lernt dein Business</strong>
+            <span>Je länger die Bots laufen, desto besser verstehen sie dein Publikum und deine Produkte.</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon">🔗</div>
+          <div class="feature-text">
+            <strong>Alle Plattformen verbunden</strong>
+            <span>Shopify, Amazon, Digistore24, Clickbank, Mailchimp, Instagram, TikTok, Twitter.</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon">📈</div>
+          <div class="feature-text">
+            <strong>Echtzeit-Dashboard</strong>
+            <span>Sieh live wie deine Einnahmen wachsen. Alle Metriken auf einen Blick.</span>
+          </div>
+        </li>
+      </ul>
+      <ul class="feature-list">
+        <li>
+          <div class="feature-icon">🔒</div>
+          <div class="feature-text">
+            <strong>Sicher &amp; DSGVO-konform</strong>
+            <span>Server in Deutschland. Ende-zu-Ende verschlüsselt. Keine Daten an Dritte.</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon">⚡</div>
+          <div class="feature-text">
+            <strong>Blitzschnelle Ausführung</strong>
+            <span>Bots reagieren in Sekunden auf Marktveränderungen. Kein menschliches Delay.</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon">📞</div>
+          <div class="feature-text">
+            <strong>Telegram-Benachrichtigungen</strong>
+            <span>Erhalte sofortige Alerts bei wichtigen Ereignissen direkt auf dein Handy.</span>
+          </div>
+        </li>
+        <li>
+          <div class="feature-icon">🛠️</div>
+          <div class="feature-text">
+            <strong>Premium Support</strong>
+            <span>Direkter Zugang zum Entwickler. Fragen werden innerhalb von 2h beantwortet.</span>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="pricing">
+    <div class="section-label">Preise</div>
+    <h2>Transparente Preisgestaltung</h2>
+    <p class="section-sub">Wähle den Plan der zu deinem Business passt. Jederzeit kündbar, keine versteckten Kosten.</p>
+    <div class="pricing-grid reveal">
+      <div class="pricing-card">
+        <div class="pricing-name">Starter</div>
+        <div class="pricing-price"><sup>€</sup>29</div>
+        <div class="pricing-period">pro Monat</div>
+        <ul class="pricing-features">
+          <li>3 Bots (Affiliate, Email, Analytics)</li>
+          <li>Bis zu 500 Aktionen/Tag</li>
+          <li>2 Plattform-Verbindungen</li>
+          <li>Basis-Dashboard</li>
+          <li>Email Support</li>
+        </ul>
+        <a href="#" class="btn-secondary" style="display:block;text-align:center">Starten</a>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-badge">⭐ BELIEBTESTE WAHL</div>
+        <div class="pricing-name">Pro</div>
+        <div class="pricing-price"><sup>€</sup>79</div>
+        <div class="pricing-period">pro Monat</div>
+        <ul class="pricing-features">
+          <li>Alle 5 Bots inklusive</li>
+          <li>Unbegrenzte Aktionen</li>
+          <li>Alle Plattformen verbunden</li>
+          <li>KI-Optimierung aktiv</li>
+          <li>Echtzeit-Analytics</li>
+          <li>Telegram-Benachrichtigungen</li>
+          <li>Priority Support (2h)</li>
+        </ul>
+        <a href="#" class="btn-primary" style="display:block;text-align:center">Pro wählen</a>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>© 2026 iComeAuto — Ein BullPower Produkt von Rudolf Sarkany</p>
+    <p><a href="mailto:bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</a></p>
+    <p style="margin-top:1rem;"><a href="../bullpower-hub/">← Zurück zum BullPower Hub</a></p>
+  </footer>
+
+  <script>
+    // Counter Animation
+    function animateCounter(el, target, prefix, suffix, duration) {
+      let start = 0;
+      const step = target / (duration / 16);
+      const timer = setInterval(() => {
+        start += step;
+        if (start >= target) { start = target; clearInterval(timer); }
+        if (prefix === '€') {
+          el.textContent = '€' + Math.floor(start).toLocaleString('de-DE');
+        } else {
+          el.textContent = Math.floor(start).toLocaleString('de-DE') + suffix;
+        }
+      }, 16);
+    }
+
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        animateCounter(document.getElementById('cnt-revenue'), 847230, '€', '', 2500);
+        animateCounter(document.getElementById('cnt-users'), 12450, '', '', 2500);
+        const up = document.getElementById('cnt-uptime');
+        let u = 0;
+        const ut = setInterval(() => {
+          u += 0.5;
+          if (u >= 99.9) { u = 99.9; clearInterval(ut); }
+          up.textContent = u.toFixed(1) + '%';
+        }, 14);
+      }, 400);
+    });
+
+    // Scroll Reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); }
+      });
+    }, { threshold: 0.1 });
+    reveals.forEach(r => observer.observe(r));
+  </script>
+</body>
+</html>
