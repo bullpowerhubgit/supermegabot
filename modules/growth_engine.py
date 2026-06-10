@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import re
 import random
 import string
 from datetime import datetime, timedelta, timezone
@@ -48,6 +49,19 @@ REFERRAL_COMMISSION_PCT = float(os.getenv("REFERRAL_COMMISSION_PCT", "10"))
 WINBACK_DISCOUNT_PCT    = float(os.getenv("WINBACK_DISCOUNT_PCT", "15"))
 REVIEW_DELAY_DAYS       = int(os.getenv("REVIEW_DELAY_DAYS", "7"))
 CHURN_DAYS              = int(os.getenv("CHURN_DAYS", "60"))
+# Rate-limit: max concurrent review request sends per automation run
+REVIEW_BATCH_CONCURRENCY = int(os.getenv("REVIEW_BATCH_CONCURRENCY", "10"))
+# Rate-limit: max concurrent win-back sends per automation run
+WINBACK_BATCH_CONCURRENCY = int(os.getenv("WINBACK_BATCH_CONCURRENCY", "10"))
+
+# Semaphore instances — created lazily inside coroutines (event-loop safe)
+_review_semaphore: Optional[asyncio.Semaphore] = None
+_winback_semaphore: Optional[asyncio.Semaphore] = None
+
+_EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+def _valid_email(email: str) -> bool:
+    return bool(email and _EMAIL_RE.match(email))
 
 
 # ── Supabase helpers ──────────────────────────────────────────────────────────
@@ -108,8 +122,6 @@ async def _ensure_tables() -> bool:
         )
         """,
     ]
-    # Supabase Python SDK doesn't expose raw DDL directly — use the rpc or just
-    # attempt the upsert pattern. We execute via postgrest raw SQL endpoint.
     try:
         url  = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL", "")
         key  = (os.getenv("SUPABASE_SERVICE_KEY")
@@ -118,8 +130,6 @@ async def _ensure_tables() -> bool:
         if not url or not key:
             return False
         sql_endpoint = f"{url}/rest/v1/rpc/exec_sql"
-        # Many Supabase projects don't have exec_sql. Use the migration approach instead.
-        # We silently accept errors — tables may already exist.
         combined = ";\n".join(s.strip() for s in ddl_statements) + ";"
         async with aiohttp.ClientSession() as session:
             async with session.post(
@@ -131,12 +141,11 @@ async def _ensure_tables() -> bool:
                     "Prefer": "return=minimal",
                 },
                 json={"query": combined},
-                timeout=aiohttp.ClientTimeout(total=15),
+                timeout=aiohttp.ClientTimeout(total=10),
             ) as resp:
                 if resp.status in (200, 201, 204):
                     log.info("Growth Engine tables ensured via exec_sql")
                 else:
-                    # Not fatal — tables may already exist
                     log.debug("exec_sql returned %s (tables may already exist)", resp.status)
         return True
     except Exception as e:
@@ -169,6 +178,22 @@ def _generate_code(prefix: str = "RUDI") -> str:
     return f"{prefix}-{suffix}"
 
 
+# ── Input validation helpers ──────────────────────────────────────────────────
+
+def _validate_create_referral_inputs(customer_email: str, customer_name: str) -> Optional[str]:
+    if not customer_email or not _valid_email(customer_email):
+        return f"Invalid or missing customer_email: {customer_email!r}"
+    if not customer_name or not customer_name.strip():
+        return "customer_name must not be empty"
+    return None
+
+
+def _validate_order_value(order_value: float) -> Optional[str]:
+    if order_value < 0:
+        return f"order_value must not be negative, got {order_value}"
+    return None
+
+
 # ═════════════════════════════════════════════════════════════════════════════
 #  REFERRAL SYSTEM
 # ═════════════════════════════════════════════════════════════════════════════
@@ -178,6 +203,12 @@ async def create_referral_code(customer_email: str, customer_name: str) -> Dict[
     Generate a unique referral code for a customer and persist it in Supabase.
     Returns {'code', 'share_link', 'referrer_email', 'created_at'}.
     """
+    # Input validation
+    err = _validate_create_referral_inputs(customer_email, customer_name)
+    if err:
+        log.warning("create_referral_code: validation failed — %s", err)
+        return {"error": err}
+
     await _ensure_tables()
     sb = _get_supabase()
 
@@ -187,7 +218,7 @@ async def create_referral_code(customer_email: str, customer_name: str) -> Dict[
     row = {
         "code":           code,
         "referrer_email": customer_email,
-        "referrer_name":  customer_name,
+        "referrer_name":  customer_name.strip(),
         "clicks":         0,
         "conversions":    0,
         "total_revenue":  0,
@@ -196,13 +227,21 @@ async def create_referral_code(customer_email: str, customer_name: str) -> Dict[
 
     if sb:
         try:
-            # Retry with a new code if collision
-            for _ in range(5):
+            # Retry with a new code on collision (up to 5 attempts)
+            for attempt in range(5):
                 try:
                     sb.table("referrals").insert(row).execute()
+                    log.info(
+                        "Referral code created: %s for %s (attempt %d)",
+                        code, customer_email, attempt + 1,
+                    )
                     break
                 except Exception as e:
                     if "unique" in str(e).lower() or "duplicate" in str(e).lower():
+                        log.debug(
+                            "Referral code collision for %s (attempt %d), retrying",
+                            code, attempt + 1,
+                        )
                         code = _generate_code()
                         row["code"] = code
                         share_link = f"{_site_url()}/ref/{code}"
@@ -211,12 +250,12 @@ async def create_referral_code(customer_email: str, customer_name: str) -> Dict[
         except Exception as exc:
             log.error("create_referral_code DB error: %s", exc)
 
-    log.info("Referral code created: %s for %s", code, customer_email)
+    log.info("Referral code ready: %s for %s", code, customer_email)
     return {
         "code":           code,
         "share_link":     share_link,
         "referrer_email": customer_email,
-        "referrer_name":  customer_name,
+        "referrer_name":  customer_name.strip(),
         "created_at":     datetime.now(timezone.utc).isoformat(),
     }
 
@@ -226,6 +265,9 @@ async def track_referral_click(code: str, ip: str) -> Dict[str, Any]:
     Increment click counter for a referral code.
     Returns referrer info on success.
     """
+    if not code or not code.strip():
+        return {"error": "code must not be empty"}
+
     sb = _get_supabase()
     if not sb:
         return {"error": "Supabase not configured", "code": code}
@@ -239,6 +281,7 @@ async def track_referral_click(code: str, ip: str) -> Dict[str, Any]:
         row = rows[0]
         new_clicks = (row.get("clicks") or 0) + 1
         sb.table("referrals").update({"clicks": new_clicks}).eq("code", code).execute()
+        log.info("Referral click tracked: code=%s clicks=%d ip=%s", code, new_clicks, ip)
 
         return {
             "code":           code,
@@ -261,10 +304,19 @@ async def process_referral_conversion(
     Mark a referral code as converted, compute commission, and notify via Telegram.
     Returns conversion details.
     """
+    # Input validation
+    if not code or not code.strip():
+        return {"error": "code must not be empty"}
+    if not _valid_email(new_customer_email):
+        return {"error": f"Invalid new_customer_email: {new_customer_email!r}"}
+    val_err = _validate_order_value(order_value)
+    if val_err:
+        return {"error": val_err}
+
     sb = _get_supabase()
     commission = round(order_value * REFERRAL_COMMISSION_PCT / 100, 2)
 
-    result = {
+    result: Dict[str, Any] = {
         "code":               code,
         "new_customer_email": new_customer_email,
         "order_value":        order_value,
@@ -278,25 +330,22 @@ async def process_referral_conversion(
         return result
 
     try:
-        # Fetch referral
         ref_res = sb.table("referrals").select("*").eq("code", code).execute()
         rows = ref_res.data if hasattr(ref_res, "data") else []
         if not rows:
             return {**result, "error": "Code not found"}
 
         row = rows[0]
-        new_convs     = (row.get("conversions") or 0) + 1
-        new_revenue   = round((row.get("total_revenue") or 0) + order_value, 2)
+        new_convs      = (row.get("conversions") or 0) + 1
+        new_revenue    = round((row.get("total_revenue") or 0) + order_value, 2)
         new_commission = round((row.get("commission_earned") or 0) + commission, 2)
 
-        # Update referral stats
         sb.table("referrals").update({
             "conversions":       new_convs,
             "total_revenue":     new_revenue,
             "commission_earned": new_commission,
         }).eq("code", code).execute()
 
-        # Log conversion
         sb.table("referral_conversions").insert({
             "referral_code":      code,
             "new_customer_email": new_customer_email,
@@ -304,12 +353,11 @@ async def process_referral_conversion(
             "commission":         commission,
         }).execute()
 
-        result["referrer_email"]   = row.get("referrer_email")
-        result["referrer_name"]    = row.get("referrer_name")
+        result["referrer_email"]    = row.get("referrer_email")
+        result["referrer_name"]     = row.get("referrer_name")
         result["total_conversions"] = new_convs
         result["total_commission"]  = new_commission
 
-        # Telegram notification
         await _tg(
             f"🎉 <b>Referral Conversion!</b>\n"
             f"Code: <code>{code}</code>\n"
@@ -319,7 +367,10 @@ async def process_referral_conversion(
             f"Provision: <b>{commission:.2f} EUR</b> ({REFERRAL_COMMISSION_PCT:.0f}%)\n"
             f"Gesamt-Provision: {new_commission:.2f} EUR"
         )
-        log.info("Referral conversion processed: code=%s order=%.2f commission=%.2f", code, order_value, commission)
+        log.info(
+            "Referral conversion processed: code=%s order=%.2f commission=%.2f",
+            code, order_value, commission,
+        )
 
     except Exception as exc:
         log.error("process_referral_conversion error: %s", exc)
@@ -376,6 +427,8 @@ async def get_referral_stats() -> Dict[str, Any]:
 
 async def get_top_referrers(limit: int = 10) -> List[Dict[str, Any]]:
     """Return ranked list of referrers sorted by conversions."""
+    if limit <= 0:
+        limit = 10
     sb = _get_supabase()
     if not sb:
         return []
@@ -418,58 +471,67 @@ async def send_review_request(
     Prevents duplicates by checking review_requests table first.
     Returns True on success.
     """
+    # Input validation
+    if not order_id or not str(order_id).strip():
+        log.warning("send_review_request: empty order_id")
+        return False
+    if not _valid_email(customer_email):
+        log.warning("send_review_request: invalid email %r for order %s", customer_email, order_id)
+        return False
+
     await _ensure_tables()
     sb = _get_supabase()
 
     # Deduplication check
     if sb:
         try:
-            existing = sb.table("review_requests").select("id").eq("order_id", order_id).execute()
+            existing = (
+                sb.table("review_requests")
+                .select("id")
+                .eq("order_id", str(order_id))
+                .execute()
+            )
             if getattr(existing, "data", []):
                 log.debug("Review request already sent for order %s", order_id)
                 return False
         except Exception as exc:
             log.warning("review_requests dedup check error: %s", exc)
 
-    # Build review URL (customizable per store)
     review_base = os.getenv("REVIEW_URL", f"{_site_url()}/review")
     review_url  = f"{review_base}?order={order_id}&email={customer_email}"
 
-    # Send via Mailchimp
     sent = False
     try:
         mc_api_key = os.getenv("MAILCHIMP_API_KEY", "")
         mc_list_id = os.getenv("MAILCHIMP_LIST_ID", "")
-        mc_server  = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
 
         if mc_api_key and mc_list_id:
             from modules.mailchimp_automation import create_campaign, add_subscriber
             fname = customer_name.split()[0] if customer_name else "Kunde"
 
             subject = f"Wie war Ihr Kauf? — {product_title}"
-            body_html = f"""
-            <html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-            <h2 style="color:#333;">Hallo {fname}!</h2>
-            <p>Wir hoffen, Sie sind mit Ihrem Kauf von <strong>{product_title}</strong>
-               zufrieden. Ihre Meinung ist uns sehr wichtig!</p>
-            <p style="text-align:center;margin:30px 0;">
-              <a href="{review_url}"
-                 style="background:#007bff;color:#fff;padding:14px 28px;
-                        border-radius:6px;text-decoration:none;font-size:16px;">
-                Jetzt Bewertung schreiben
-              </a>
-            </p>
-            <p style="color:#666;font-size:14px;">
-              Ihre Bewertung hilft anderen Kunden bei ihrer Entscheidung und
-              verbessert unseren Service.
-            </p>
-            <p style="color:#999;font-size:12px;">
-              Sie erhalten diese E-Mail, weil Sie kürzlich bei uns eingekauft haben.
-            </p>
-            </body></html>
-            """
+            body_html = (
+                "<html><body style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;\">"
+                f"<h2 style=\"color:#333;\">Hallo {fname}!</h2>"
+                f"<p>Wir hoffen, Sie sind mit Ihrem Kauf von <strong>{product_title}</strong>"
+                " zufrieden. Ihre Meinung ist uns sehr wichtig!</p>"
+                "<p style=\"text-align:center;margin:30px 0;\">"
+                f"  <a href=\"{review_url}\""
+                "     style=\"background:#007bff;color:#fff;padding:14px 28px;"
+                "            border-radius:6px;text-decoration:none;font-size:16px;\">"
+                "    Jetzt Bewertung schreiben"
+                "  </a>"
+                "</p>"
+                "<p style=\"color:#666;font-size:14px;\">"
+                "  Ihre Bewertung hilft anderen Kunden bei ihrer Entscheidung und"
+                "  verbessert unseren Service."
+                "</p>"
+                "<p style=\"color:#999;font-size:12px;\">"
+                "  Sie erhalten diese E-Mail, weil Sie kürzlich bei uns eingekauft haben."
+                "</p>"
+                "</body></html>"
+            )
 
-            # Add subscriber then create transactional campaign
             await add_subscriber(mc_list_id, customer_email, fname, tags=["review-requested"])
             campaign = await create_campaign(
                 list_id=mc_list_id,
@@ -479,11 +541,13 @@ async def send_review_request(
             )
             if "id" in campaign and "error" not in campaign:
                 sent = True
-                log.info("Review request campaign created for order %s, customer %s", order_id, customer_email)
+                log.info(
+                    "Review request sent for order %s, customer %s",
+                    order_id, customer_email,
+                )
             else:
                 log.warning("create_campaign returned: %s", campaign)
         else:
-            # Fallback: log that we would send
             log.info(
                 "MAILCHIMP not configured — review request for order %s, customer %s skipped",
                 order_id, customer_email,
@@ -497,7 +561,7 @@ async def send_review_request(
     if sb:
         try:
             sb.table("review_requests").insert({
-                "order_id":       order_id,
+                "order_id":       str(order_id),
                 "customer_email": customer_email,
                 "status":         "sent" if sent else "failed",
             }).execute()
@@ -555,13 +619,12 @@ async def get_pending_review_requests() -> List[Dict[str, Any]]:
             if order_id in sent_ids:
                 continue
             email = order.get("email", "")
-            if not email:
+            if not email or not _valid_email(email):
                 continue
-            billing = order.get("billing_address") or {}
+            billing    = order.get("billing_address") or {}
             first_name = billing.get("first_name") or order.get("customer", {}).get("first_name", "Kunde")
             last_name  = billing.get("last_name") or order.get("customer", {}).get("last_name", "")
-            # First line item as product title
-            items = order.get("line_items", [])
+            items         = order.get("line_items", [])
             product_title = items[0].get("title", "Ihr Produkt") if items else "Ihr Produkt"
 
             pending.append({
@@ -582,16 +645,12 @@ async def get_pending_review_requests() -> List[Dict[str, Any]]:
     return pending
 
 
-async def run_review_automation() -> Dict[str, Any]:
-    """
-    Fetch all pending orders, send review request emails, and return statistics.
-    """
-    pending = await get_pending_review_requests()
-    sent    = 0
-    skipped = 0
-    failed  = 0
-
-    for order in pending:
+async def _send_review_with_semaphore(
+    order: Dict[str, Any],
+    semaphore: asyncio.Semaphore,
+) -> str:
+    """Send a single review request under a rate-limiting semaphore."""
+    async with semaphore:
         try:
             success = await send_review_request(
                 order_id=order["order_id"],
@@ -599,20 +658,45 @@ async def run_review_automation() -> Dict[str, Any]:
                 customer_name=order["customer_name"],
                 product_title=order["product_title"],
             )
-            if success:
-                sent += 1
-            else:
-                skipped += 1
+            return "sent" if success else "skipped"
         except Exception as exc:
-            log.error("Review request failed for order %s: %s", order.get("order_id"), exc)
-            failed += 1
+            log.error(
+                "Review request failed for order %s: %s",
+                order.get("order_id"), exc,
+            )
+            return "failed"
+
+
+async def run_review_automation() -> Dict[str, Any]:
+    """
+    Fetch all pending orders, send review request emails with rate-limiting,
+    and return statistics.
+    """
+    pending = await get_pending_review_requests()
+    sent    = 0
+    skipped = 0
+    failed  = 0
+
+    if pending:
+        semaphore = asyncio.Semaphore(REVIEW_BATCH_CONCURRENCY)
+        results = await asyncio.gather(
+            *[_send_review_with_semaphore(order, semaphore) for order in pending],
+            return_exceptions=False,
+        )
+        for r in results:
+            if r == "sent":
+                sent += 1
+            elif r == "skipped":
+                skipped += 1
+            else:
+                failed += 1
 
     result = {
-        "pending":      len(pending),
-        "sent":         sent,
-        "skipped":      skipped,
-        "failed":       failed,
-        "timestamp":    datetime.now(timezone.utc).isoformat(),
+        "pending":   len(pending),
+        "sent":      sent,
+        "skipped":   skipped,
+        "failed":    failed,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
     if sent:
@@ -623,7 +707,10 @@ async def run_review_automation() -> Dict[str, Any]:
             f"Gesamt pending: {len(pending)}"
         )
 
-    log.info("Review automation complete: sent=%d skipped=%d failed=%d", sent, skipped, failed)
+    log.info(
+        "Review automation complete: sent=%d skipped=%d failed=%d",
+        sent, skipped, failed,
+    )
     return result
 
 
@@ -634,6 +721,7 @@ async def run_review_automation() -> Dict[str, Any]:
 async def get_churned_customers(days_inactive: int = CHURN_DAYS) -> List[Dict[str, Any]]:
     """
     Return Shopify customers who haven't ordered in `days_inactive` days.
+    Excludes customers who already have a pending/active win-back discount (via Supabase tag).
     """
     token  = _shopify_token()
     domain = _shopify_domain()
@@ -648,6 +736,26 @@ async def get_churned_customers(days_inactive: int = CHURN_DAYS) -> List[Dict[st
         "Content-Type": "application/json",
     }
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days_inactive)).isoformat()
+
+    # Load emails that already have an active win-back discount
+    sb = _get_supabase()
+    already_targeted: set[str] = set()
+    if sb:
+        try:
+            res = (
+                sb.table("winback_campaigns")
+                .select("customer_email")
+                .eq("status", "active")
+                .execute()
+            )
+            already_targeted = {r["customer_email"] for r in (res.data or [])}
+            if already_targeted:
+                log.debug(
+                    "Win-back: skipping %d customers with active discount",
+                    len(already_targeted),
+                )
+        except Exception as exc:
+            log.debug("winback_campaigns table not found (non-fatal): %s", exc)
 
     churned = []
     try:
@@ -664,13 +772,13 @@ async def get_churned_customers(days_inactive: int = CHURN_DAYS) -> List[Dict[st
 
         for cust in data.get("customers", []):
             email = cust.get("email", "")
-            if not email:
+            if not email or not _valid_email(email):
                 continue
-            # Only include customers who have at least 1 order
             if not cust.get("orders_count", 0):
                 continue
-            # Check last order date
-            last_order_date = cust.get("last_order_id") and cust.get("updated_at")
+            if email in already_targeted:
+                log.debug("Win-back: skipping %s — already has active discount", email)
+                continue
             churned.append({
                 "customer_id":  str(cust.get("id", "")),
                 "email":        email,
@@ -681,7 +789,10 @@ async def get_churned_customers(days_inactive: int = CHURN_DAYS) -> List[Dict[st
                 "last_updated": cust.get("updated_at"),
             })
 
-        log.info("Found %d churned customers (inactive >%d days)", len(churned), days_inactive)
+        log.info(
+            "Found %d churned customers (inactive >%d days, %d skipped — active discount)",
+            len(churned), days_inactive, len(already_targeted),
+        )
     except Exception as exc:
         log.error("get_churned_customers error: %s", exc)
 
@@ -690,6 +801,10 @@ async def get_churned_customers(days_inactive: int = CHURN_DAYS) -> List[Dict[st
 
 async def _create_shopify_discount_code(discount_pct: float) -> Optional[str]:
     """Create a Shopify percentage discount code and return it."""
+    if discount_pct <= 0 or discount_pct > 100:
+        log.warning("_create_shopify_discount_code: invalid discount_pct=%.2f", discount_pct)
+        return None
+
     token  = _shopify_token()
     domain = _shopify_domain()
     if not token or not domain:
@@ -702,8 +817,7 @@ async def _create_shopify_discount_code(discount_pct: float) -> Optional[str]:
         "Content-Type": "application/json",
     }
 
-    # Generate unique code
-    code = "WINBACK-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    code   = "WINBACK-" + "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
     expiry = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     try:
@@ -764,6 +878,10 @@ async def send_winback_campaign(
     Send a win-back email via Mailchimp with a discount code.
     Returns True on success.
     """
+    if not _valid_email(customer_email):
+        log.warning("send_winback_campaign: invalid email %r", customer_email)
+        return False
+
     mc_api_key = os.getenv("MAILCHIMP_API_KEY", "")
     mc_list_id = os.getenv("MAILCHIMP_LIST_ID", "")
 
@@ -774,36 +892,34 @@ async def send_winback_campaign(
         )
         return True  # graceful fallback
 
-    fname = customer_name.split()[0] if customer_name else "Kunde"
+    fname    = customer_name.split()[0] if customer_name else "Kunde"
     shop_url = _shopify_base() or _site_url()
     subject  = f"Wir vermissen Sie, {fname}! Hier sind {WINBACK_DISCOUNT_PCT:.0f}% für Sie"
 
-    body_html = f"""
-    <html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
-    <h2 style="color:#333;">Hallo {fname}, wir haben Sie vermisst!</h2>
-    <p>Es ist eine Weile her, seit Sie zuletzt bei uns eingekauft haben.
-       Als kleines Dankeschön schenken wir Ihnen
-       <strong>{WINBACK_DISCOUNT_PCT:.0f}% Rabatt</strong> auf Ihren nächsten Einkauf.</p>
-    <div style="background:#f8f9fa;border:2px dashed #007bff;
-                padding:20px;text-align:center;margin:30px 0;border-radius:8px;">
-      <p style="margin:0;color:#666;font-size:14px;">Ihr persönlicher Rabattcode:</p>
-      <h1 style="color:#007bff;font-size:32px;margin:10px 0;letter-spacing:3px;">
-        {discount_code}
-      </h1>
-      <p style="margin:0;color:#999;font-size:12px;">Gültig für 30 Tage · Einmalig verwendbar</p>
-    </div>
-    <p style="text-align:center;">
-      <a href="{shop_url}"
-         style="background:#28a745;color:#fff;padding:14px 28px;
-                border-radius:6px;text-decoration:none;font-size:16px;">
-        Jetzt einkaufen
-      </a>
-    </p>
-    <p style="color:#999;font-size:12px;text-align:center;">
-      Sie erhalten diese E-Mail, weil Sie früher Kunde bei uns waren.
-    </p>
-    </body></html>
-    """
+    body_html = (
+        "<html><body style=\"font-family:Arial,sans-serif;max-width:600px;margin:0 auto;\">"
+        f"<h2 style=\"color:#333;\">Hallo {fname}, wir haben Sie vermisst!</h2>"
+        "<p>Es ist eine Weile her, seit Sie zuletzt bei uns eingekauft haben."
+        "   Als kleines Dankeschön schenken wir Ihnen"
+        f"  <strong>{WINBACK_DISCOUNT_PCT:.0f}% Rabatt</strong> auf Ihren nächsten Einkauf.</p>"
+        "<div style=\"background:#f8f9fa;border:2px dashed #007bff;"
+        "            padding:20px;text-align:center;margin:30px 0;border-radius:8px;\">"
+        "  <p style=\"margin:0;color:#666;font-size:14px;\">Ihr persönlicher Rabattcode:</p>"
+        f"  <h1 style=\"color:#007bff;font-size:32px;margin:10px 0;letter-spacing:3px;\">{discount_code}</h1>"
+        "  <p style=\"margin:0;color:#999;font-size:12px;\">Gültig für 30 Tage · Einmalig verwendbar</p>"
+        "</div>"
+        "<p style=\"text-align:center;\">"
+        f"  <a href=\"{shop_url}\""
+        "     style=\"background:#28a745;color:#fff;padding:14px 28px;"
+        "            border-radius:6px;text-decoration:none;font-size:16px;\">"
+        "    Jetzt einkaufen"
+        "  </a>"
+        "</p>"
+        "<p style=\"color:#999;font-size:12px;text-align:center;\">"
+        "  Sie erhalten diese E-Mail, weil Sie früher Kunde bei uns waren."
+        "</p>"
+        "</body></html>"
+    )
 
     try:
         from modules.mailchimp_automation import add_subscriber, create_campaign
@@ -815,19 +931,40 @@ async def send_winback_campaign(
             body_html=body_html,
         )
         if "id" in campaign and "error" not in campaign:
-            log.info("Win-back campaign sent to %s with code %s", customer_email, discount_code)
+            log.info(
+                "Win-back campaign sent to %s with code %s",
+                customer_email, discount_code,
+            )
             return True
         log.warning("Win-back campaign create_campaign: %s", campaign)
         return False
     except Exception as exc:
-        log.error("send_winback_campaign error: %s", exc)
+        log.error("send_winback_campaign error for %s: %s", customer_email, exc)
         return False
+
+
+async def _send_winback_with_semaphore(
+    cust: Dict[str, Any],
+    discount_code: str,
+    semaphore: asyncio.Semaphore,
+) -> bool:
+    """Send a single win-back campaign under a rate-limiting semaphore."""
+    async with semaphore:
+        try:
+            return await send_winback_campaign(
+                customer_email=cust["email"],
+                customer_name=f"{cust['first_name']} {cust['last_name']}".strip(),
+                discount_code=discount_code,
+            )
+        except Exception as exc:
+            log.error("Win-back send error for %s: %s", cust.get("email"), exc)
+            return False
 
 
 async def run_winback_automation() -> Dict[str, Any]:
     """
-    Create a single win-back discount code, send it to all churned customers,
-    and return a statistics summary.
+    Create a single win-back discount code, send it to all churned customers
+    (rate-limited), and return a statistics summary.
     """
     churned = await get_churned_customers()
     if not churned:
@@ -839,30 +976,18 @@ async def run_winback_automation() -> Dict[str, Any]:
             "timestamp":         datetime.now(timezone.utc).isoformat(),
         }
 
-    # Create one shared discount code for this batch
     discount_code = await _create_shopify_discount_code(WINBACK_DISCOUNT_PCT)
     if not discount_code:
-        # Fallback code if Shopify API fails
         discount_code = f"WINBACK{int(WINBACK_DISCOUNT_PCT)}"
         log.warning("Shopify discount code creation failed, using fallback: %s", discount_code)
 
-    sent   = 0
-    failed = 0
-
-    for cust in churned:
-        try:
-            success = await send_winback_campaign(
-                customer_email=cust["email"],
-                customer_name=f"{cust['first_name']} {cust['last_name']}".strip(),
-                discount_code=discount_code,
-            )
-            if success:
-                sent += 1
-            else:
-                failed += 1
-        except Exception as exc:
-            log.error("Win-back send error for %s: %s", cust.get("email"), exc)
-            failed += 1
+    semaphore = asyncio.Semaphore(WINBACK_BATCH_CONCURRENCY)
+    results   = await asyncio.gather(
+        *[_send_winback_with_semaphore(cust, discount_code, semaphore) for cust in churned],
+        return_exceptions=False,
+    )
+    sent   = sum(1 for r in results if r)
+    failed = sum(1 for r in results if not r)
 
     result = {
         "churned_customers": len(churned),
@@ -908,7 +1033,6 @@ async def get_growth_dashboard() -> Dict[str, Any]:
     if isinstance(top_referrers, Exception):
         top_referrers = []
 
-    # Review stats from Supabase
     review_stats: Dict[str, Any] = {}
     sb = _get_supabase()
     if sb:
@@ -919,7 +1043,6 @@ async def get_growth_dashboard() -> Dict[str, Any]:
                 "total_sent": total_sent,
                 "status_breakdown": {},
             }
-            # Count by status
             for row in (rr.data or []):
                 status = row.get("status", "sent")
                 review_stats["status_breakdown"][status] = (
@@ -930,28 +1053,27 @@ async def get_growth_dashboard() -> Dict[str, Any]:
     else:
         review_stats = {"note": "Supabase not configured"}
 
-    # Win-back: rough count of churned customers
     winback_stats: Dict[str, Any] = {}
     try:
         churned = await get_churned_customers()
         winback_stats = {
-            "churned_customers":      len(churned),
-            "churn_threshold_days":   CHURN_DAYS,
-            "winback_discount_pct":   WINBACK_DISCOUNT_PCT,
+            "churned_customers":    len(churned),
+            "churn_threshold_days": CHURN_DAYS,
+            "winback_discount_pct": WINBACK_DISCOUNT_PCT,
         }
     except Exception as exc:
         winback_stats = {"error": str(exc)}
 
     return {
-        "referrals":        referral_stats,
-        "top_referrers":    top_referrers,
-        "reviews":          review_stats,
-        "winback":          winback_stats,
+        "referrals":     referral_stats,
+        "top_referrers": top_referrers,
+        "reviews":       review_stats,
+        "winback":       winback_stats,
         "config": {
-            "commission_pct":     REFERRAL_COMMISSION_PCT,
-            "winback_discount":   WINBACK_DISCOUNT_PCT,
-            "review_delay_days":  REVIEW_DELAY_DAYS,
-            "churn_days":         CHURN_DAYS,
+            "commission_pct":    REFERRAL_COMMISSION_PCT,
+            "winback_discount":  WINBACK_DISCOUNT_PCT,
+            "review_delay_days": REVIEW_DELAY_DAYS,
+            "churn_days":        CHURN_DAYS,
         },
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }

@@ -310,7 +310,113 @@ async def handle_webhook_event(event: Dict) -> str:
         )
         return "charge.refunded handled"
 
+    if etype == "customer.subscription.deleted":
+        customer_id = data.get("customer", "?")
+        plan = ""
+        items = data.get("items", {}).get("data", [])
+        if items:
+            price = items[0].get("price", {})
+            amount = (price.get("unit_amount", 0) or 0) / 100
+            cur    = price.get("currency", "eur").upper()
+            plan   = f"{amount:.2f} {cur}/{price.get('recurring', {}).get('interval', '')}"
+        await _tg(
+            f"❌ <b>Abo gekündigt</b> — Stripe\n"
+            f"Kunde: {customer_id}\n"
+            f"Plan: {plan or 'unbekannt'}\n"
+            f"Abo-ID: {data.get('id', '')}"
+        )
+        return "subscription.deleted handled"
+
+    if etype == "invoice.payment_failed":
+        customer_id = data.get("customer", "?")
+        amount      = (data.get("amount_due", 0) or 0) / 100
+        currency    = data.get("currency", "eur").upper()
+        attempt_cnt = data.get("attempt_count", 1)
+        next_attempt = data.get("next_payment_attempt")
+        next_ts = (
+            datetime.fromtimestamp(next_attempt).strftime("%d.%m.%Y %H:%M")
+            if next_attempt else "kein weiterer Versuch"
+        )
+        await _tg(
+            f"⚠️ <b>Zahlung fehlgeschlagen</b> — Stripe\n"
+            f"Kunde: {customer_id}\n"
+            f"Betrag: {amount:.2f} {currency}\n"
+            f"Versuch #{attempt_cnt} | Nächster: {next_ts}"
+        )
+        return "invoice.payment_failed handled"
+
     return f"unhandled: {etype}"
+
+
+# ── Failed Payments ───────────────────────────────────────────────────────────
+
+async def get_failed_payments(days_back: int = 30) -> Dict:
+    """Fetch all failed payment intents from the last *days_back* days.
+
+    Returns:
+        {"ok": True, "count": int, "total_failed_eur": float,
+         "payments": [{"id", "amount", "currency", "created", "error", "email"}]}
+    """
+    since = int((datetime.now() - timedelta(days=days_back)).timestamp())
+    try:
+        failed_payments = []
+        starting_after: Optional[str] = None
+
+        async with _session() as s:
+            while True:
+                params: Dict = {
+                    "limit": "100",
+                    "created[gte]": str(since),
+                }
+                if starting_after:
+                    params["starting_after"] = starting_after
+                async with s.get(
+                    f"{_BASE}/payment_intents",
+                    headers=_auth(),
+                    params=params,
+                ) as r:
+                    if r.status != 200:
+                        return {"ok": False, "error": f"HTTP {r.status}"}
+                    d = await r.json()
+                chunk = [
+                    pi for pi in d.get("data", [])
+                    if pi.get("status") in ("requires_payment_method", "canceled")
+                    and pi.get("last_payment_error")
+                ]
+                failed_payments.extend(chunk)
+                if not d.get("has_more") or not d.get("data"):
+                    break
+                starting_after = d["data"][-1]["id"]
+
+        result_list = []
+        total_eur = 0.0
+        for pi in failed_payments:
+            amount   = (pi.get("amount") or 0) / 100
+            currency = (pi.get("currency") or "eur").upper()
+            err_obj  = pi.get("last_payment_error") or {}
+            result_list.append({
+                "id":       pi["id"],
+                "amount":   amount,
+                "currency": currency,
+                "created":  datetime.fromtimestamp(pi["created"]).isoformat(),
+                "error":    err_obj.get("message", "unknown"),
+                "code":     err_obj.get("code", ""),
+                "email":    pi.get("receipt_email", ""),
+            })
+            if currency == "EUR":
+                total_eur += amount
+
+        log.info("Failed payments (last %d days): %d, total EUR %.2f", days_back, len(result_list), total_eur)
+        return {
+            "ok":               True,
+            "count":            len(result_list),
+            "total_failed_eur": round(total_eur, 2),
+            "period_days":      days_back,
+            "payments":         result_list,
+        }
+    except Exception as e:
+        log.error("get_failed_payments: %s", e)
+        return {"ok": False, "error": str(e), "count": 0, "payments": []}
 
 
 # ── Stats (dashboard) ─────────────────────────────────────────────────────────
@@ -387,7 +493,16 @@ async def monitor_payments() -> str:
 # ── Checkout Session ─────────────────────────────────────────────────────────
 
 async def create_checkout_session(price_id: str, success_url: str = None, cancel_url: str = None) -> Dict:
-    """Create a Stripe Checkout Session for subscription."""
+    """Create a Stripe Checkout Session for subscription.
+
+    Args:
+        price_id:    Stripe Price ID (must start with 'price_')
+        success_url: Redirect URL on success
+        cancel_url:  Redirect URL on cancel
+    """
+    # Validate price_id before hitting the API
+    if not price_id or not isinstance(price_id, str) or not price_id.startswith("price_"):
+        return {"ok": False, "error": f"Ungültige price_id: {price_id!r} (muss mit 'price_' beginnen)"}
     try:
         async with _session() as s:
             payload = {
@@ -492,15 +607,75 @@ async def create_subscription_product(name: str, price_eur: int, description: st
         return {"ok": False, "error": str(e)}
 
 
+async def _get_existing_products() -> Dict[str, str]:
+    """Return a map of {product_name_lower: product_id} for all existing Stripe products."""
+    try:
+        async with _session() as s:
+            async with s.get(
+                f"{_BASE}/products",
+                headers=_auth(),
+                params={"limit": "100", "active": "true"}
+            ) as r:
+                if r.status != 200:
+                    return {}
+                d = await r.json()
+                return {
+                    prod.get("name", "").lower(): prod["id"]
+                    for prod in d.get("data", [])
+                    if prod.get("name")
+                }
+    except Exception as e:
+        log.warning("_get_existing_products: %s", e)
+        return {}
+
+
 async def setup_saas_products() -> Dict:
     """Create all 3 SaaS tiers (Starter/Pro/Enterprise) in Stripe at once.
+
+    Idempotent: skips creation if a product with the same name already exists
+    and retrieves its active price instead.
 
     Returns:
         {"ok": True, "tiers": [{"tier": ..., "price_id": ...}, ...], "errors": [...]}
     """
+    existing = await _get_existing_products()
     results = []
     errors = []
+
     for tier in SAAS_TIERS:
+        tier_key = f"supermegabot {tier['name'].lower()}"
+        if tier_key in existing:
+            product_id = existing[tier_key]
+            # Fetch the active recurring price for this product
+            try:
+                async with _session() as s:
+                    async with s.get(
+                        f"{_BASE}/prices",
+                        headers=_auth(),
+                        params={"product": product_id, "active": "true", "limit": "5"}
+                    ) as r:
+                        prices_data = await r.json() if r.status == 200 else {}
+                prices = prices_data.get("data", [])
+                monthly_prices = [
+                    p for p in prices
+                    if (p.get("recurring") or {}).get("interval") == "month"
+                ]
+                price_id = monthly_prices[0]["id"] if monthly_prices else (prices[0]["id"] if prices else "unknown")
+                results.append({
+                    "ok":         True,
+                    "tier":       tier["name"],
+                    "product_id": product_id,
+                    "price_id":   price_id,
+                    "amount":     tier["price_eur"] / 100,
+                    "currency":   "EUR",
+                    "interval":   "month",
+                    "skipped":    True,
+                })
+                log.info("SaaS product already exists: %s (product_id=%s)", tier["name"], product_id)
+            except Exception as e:
+                errors.append(f"{tier['name']}: existing product found but price lookup failed — {e}")
+            continue
+
         result = await create_subscription_product(
             name=tier["name"],
             price_eur=tier["price_eur"],
@@ -511,9 +686,11 @@ async def setup_saas_products() -> Dict:
         else:
             errors.append(f"{tier['name']}: {result.get('error')}")
 
+    newly_created = [r for r in results if not r.get("skipped")]
+    skipped_count = len([r for r in results if r.get("skipped")])
     await _tg(
         f"\U0001f3d7 <b>SaaS Products Setup</b>\n"
-        f"Erstellt: {len(results)}/3 Tiers\n"
+        f"Erstellt: {len(newly_created)}/3, Übersprungen (vorhanden): {skipped_count}/3\n"
         + "\n".join(f"  ✅ {r['tier']} — {r['amount']:.0f} EUR/mo (price_id: {r['price_id']})" for r in results)
         + ("\n⚠️ Fehler:\n" + "\n".join(errors) if errors else "")
     )
@@ -620,15 +797,26 @@ async def get_churn_rate(days_back: int = 30) -> Dict:
         since_ts = int((datetime.now() - timedelta(days=days_back)).timestamp())
 
         async with _session() as s:
-            async with s.get(
-                f"{_BASE}/subscriptions",
-                headers=_auth(),
-                params={"status": "active", "limit": "1"}
-            ) as r:
-                if r.status != 200:
-                    return {"ok": False, "error": f"HTTP {r.status}"}
-                active_data = await r.json()
-            active_count = len(active_data.get("data", []))
+            # Paginate to get true active count (not just the first page)
+            active_count = 0
+            active_after = None
+            while True:
+                active_params: Dict = {"status": "active", "limit": "100"}
+                if active_after:
+                    active_params["starting_after"] = active_after
+                async with s.get(
+                    f"{_BASE}/subscriptions",
+                    headers=_auth(),
+                    params=active_params,
+                ) as r:
+                    if r.status != 200:
+                        return {"ok": False, "error": f"HTTP {r.status}"}
+                    active_data = await r.json()
+                chunk = active_data.get("data", [])
+                active_count += len(chunk)
+                if not active_data.get("has_more") or not chunk:
+                    break
+                active_after = chunk[-1]["id"]
 
             # Fetch all canceled within window (paginate up to 300)
             canceled_count = 0
@@ -654,14 +842,21 @@ async def get_churn_rate(days_back: int = 30) -> Dict:
         base = active_count + canceled_count
         churn_rate = (canceled_count / base * 100) if base > 0 else 0.0
 
+        # Statistical confidence flag: results are unreliable with < 5 subscriptions
+        low_data = base < 5
+        if low_data:
+            log.warning("Churn rate based on < 5 subscriptions — low statistical confidence")
+
         log.info("Churn %.2f%% (%d canceled / %d base, %d days)", churn_rate, canceled_count, base, days_back)
         return {
-            "ok":             True,
-            "churn_rate_pct": round(churn_rate, 2),
-            "canceled":       canceled_count,
-            "active":         active_count,
-            "base":           base,
-            "period_days":    days_back,
+            "ok":              True,
+            "churn_rate_pct":  round(churn_rate, 2),
+            "canceled":        canceled_count,
+            "active":          active_count,
+            "base":            base,
+            "period_days":     days_back,
+            "low_data_warning": low_data,
+            "note": "Stichprobengröße < 5 — statistische Aussagekraft gering" if low_data else None,
         }
     except Exception as e:
         log.error("get_churn_rate: %s", e)

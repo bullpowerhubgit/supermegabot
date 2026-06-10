@@ -66,8 +66,19 @@ from typing import Dict as _Dict, List as _List, Optional as _Optional
 _alog = _logging.getLogger("supabase_analytics")
 
 
+_service_client_instance = None
+
+
 def _service_client():
-    """Return a Supabase client using the service role key (bypasses RLS)."""
+    """Return a cached Supabase client using the service role key (bypasses RLS).
+
+    The client is created once per process (module-level singleton) to avoid
+    creating a new HTTP connection pool on every call.
+    """
+    global _service_client_instance
+    if _service_client_instance is not None:
+        return _service_client_instance
+
     try:
         from supabase import create_client  # type: ignore
     except ImportError:
@@ -77,7 +88,8 @@ def _service_client():
     key = _os.getenv("SUPABASE_SERVICE_KEY") or _os.getenv("SUPABASE_ANON_KEY") or _os.getenv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY")
     if not url or not key:
         raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_KEY must be set")
-    return create_client(url, key)
+    _service_client_instance = create_client(url, key)
+    return _service_client_instance
 
 
 async def get_revenue_cohorts(months_back: int = 6) -> _Dict:
@@ -103,6 +115,11 @@ async def get_revenue_cohorts(months_back: int = 6) -> _Dict:
             .execute()
         )
         rows = resp.data or []
+
+        # Guard: empty database → return gracefully instead of empty loop
+        if not rows:
+            _alog.info("get_revenue_cohorts: no order data in DB")
+            return {"ok": True, "cohorts": [], "total_customers": 0, "note": "No order data found"}
 
         # Build cohort map: {YYYY-MM: {client_id: order_count}}
         cohort_map: _Dict[str, _Dict[str, int]] = {}
@@ -278,4 +295,73 @@ async def create_analytics_views() -> _Dict:
         "errors":        errors,
         "note": "If exec_sql RPC is not available, run the SQL manually in Supabase SQL editor",
         "sql":  views,
+    }
+
+
+# ── Helper: upsert ────────────────────────────────────────────────────────────
+
+async def upsert(table: str, data: _Dict, on_conflict: str = "id") -> _Dict:
+    """Upsert a single row into *table* using the service-role client.
+
+    Args:
+        table:       Supabase table name
+        data:        Row dict to upsert
+        on_conflict: Comma-separated column(s) for conflict resolution (default "id")
+
+    Returns:
+        {"ok": True, "data": [...]} or {"ok": False, "error": str}
+    """
+    try:
+        client = _service_client()
+        resp = (
+            client.table(table)
+            .upsert(data, on_conflict=on_conflict)
+            .execute()
+        )
+        _alog.debug("upsert(%s): %d rows", table, len(resp.data or []))
+        return {"ok": True, "data": resp.data or []}
+    except Exception as exc:
+        _alog.error("upsert(%s): %s", table, exc)
+        return {"ok": False, "error": str(exc)}
+
+
+# ── Helper: bulk_insert ───────────────────────────────────────────────────────
+
+async def bulk_insert(table: str, rows: _List[_Dict], chunk_size: int = 200) -> _Dict:
+    """Insert a list of rows in batches to avoid request-size limits.
+
+    Args:
+        table:      Supabase table name
+        rows:       List of row dicts to insert
+        chunk_size: Number of rows per batch (default 200)
+
+    Returns:
+        {"ok": True, "inserted": int, "errors": List[str]}
+    """
+    if not rows:
+        return {"ok": True, "inserted": 0, "errors": []}
+
+    try:
+        client = _service_client()
+    except Exception as exc:
+        return {"ok": False, "inserted": 0, "errors": [str(exc)]}
+
+    inserted = 0
+    errors: _List[str] = []
+
+    for i in range(0, len(rows), chunk_size):
+        chunk = rows[i : i + chunk_size]
+        try:
+            resp = client.table(table).insert(chunk).execute()
+            inserted += len(resp.data or chunk)
+            _alog.debug("bulk_insert(%s): chunk %d-%d OK", table, i, i + len(chunk))
+        except Exception as exc:
+            err_msg = f"chunk {i}-{i + len(chunk)}: {str(exc)[:200]}"
+            errors.append(err_msg)
+            _alog.error("bulk_insert(%s): %s", table, err_msg)
+
+    return {
+        "ok":       len(errors) == 0,
+        "inserted": inserted,
+        "errors":   errors,
     }

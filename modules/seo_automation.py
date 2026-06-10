@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """SEO Automation — Vollautomatische SEO-Optimierung für Shopify"""
 import asyncio
+import html as _html_escape_module
 import json
 import logging
 import os
@@ -417,7 +418,28 @@ async def get_seo_score(product: Dict) -> Dict:
     }
 
 
+# ── Backoff helper ────────────────────────────────────────────────────────────
+
+async def _ai_post_with_backoff(session, method: str, url: str, **kwargs) -> "aiohttp.ClientResponse":
+    """Execute an aiohttp request with exponential backoff on HTTP 429 (rate-limit).
+
+    Retries up to 4 times: waits 2, 4, 8, 16 seconds.
+    Raises the last response on persistent failure.
+    """
+    for attempt in range(5):
+        resp = await session.request(method, url, **kwargs)
+        if resp.status != 429:
+            return resp
+        retry_after = int(resp.headers.get("Retry-After", 2 ** attempt * 2))
+        log.warning("AI API rate-limited (429) — retrying in %ds (attempt %d/5)", retry_after, attempt + 1)
+        await resp.release()
+        await asyncio.sleep(retry_after)
+    return resp  # return last response even if still 429
+
+
 # ── Maximum-Setup Additions ───────────────────────────────────────────────────
+
+_MIN_BLOG_WORDS = 300   # Retry blog post generation if output is shorter than this
 
 async def generate_blog_post(topic: str, product_context: str = "", language: str = "de") -> Dict:
     """Generate an SEO-optimised blog post about a topic or product using Claude.
@@ -461,64 +483,82 @@ async def generate_blog_post(topic: str, product_context: str = "", language: st
 
     raw_response = ""
     try:
-        if anthropic_key:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key":         anthropic_key,
-                        "anthropic-version": "2023-06-01",
-                        "content-type":      "application/json",
-                    },
-                    json={
-                        "model":      "claude-3-5-haiku-20241022",
-                        "max_tokens": 2048,
-                        "messages":   [{"role": "user", "content": prompt}],
-                    },
-                    timeout=aiohttp.ClientTimeout(total=60),
-                ) as resp:
+        # Retry up to 2 times if word count is below threshold
+        for _attempt in range(3):
+            if anthropic_key:
+                async with aiohttp.ClientSession() as session:
+                    resp = await _ai_post_with_backoff(
+                        session, "POST",
+                        "https://api.anthropic.com/v1/messages",
+                        headers={
+                            "x-api-key":         anthropic_key,
+                            "anthropic-version": "2023-06-01",
+                            "content-type":      "application/json",
+                        },
+                        json={
+                            "model":      "claude-3-5-haiku-20241022",
+                            "max_tokens": 2048,
+                            "messages":   [{"role": "user", "content": prompt}],
+                        },
+                        timeout=aiohttp.ClientTimeout(total=60),
+                    )
                     data = await resp.json(content_type=None)
-            raw_response = data.get("content", [{}])[0].get("text", "")
-        else:
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
-                    json={
-                        "model":       "gpt-4o-mini",
-                        "messages":    [{"role": "user", "content": prompt}],
-                        "max_tokens":  2048,
-                        "temperature": 0.7,
-                    },
-                    timeout=aiohttp.ClientTimeout(total=60),
-                ) as resp:
+                raw_response = data.get("content", [{}])[0].get("text", "")
+            else:
+                async with aiohttp.ClientSession() as session:
+                    resp = await _ai_post_with_backoff(
+                        session, "POST",
+                        "https://api.openai.com/v1/chat/completions",
+                        headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
+                        json={
+                            "model":       "gpt-4o-mini",
+                            "messages":    [{"role": "user", "content": prompt}],
+                            "max_tokens":  2048,
+                            "temperature": 0.7,
+                        },
+                        timeout=aiohttp.ClientTimeout(total=60),
+                    )
                     data = await resp.json(content_type=None)
-            raw_response = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                raw_response = data.get("choices", [{}])[0].get("message", {}).get("content", "")
 
-        # Extract JSON from response
-        json_match = re.search(r'\{[\s\S]*\}', raw_response)
-        if not json_match:
-            return {"ok": False, "error": "AI response did not contain valid JSON", "raw": raw_response[:300]}
+            # Extract JSON from response
+            json_match = re.search(r'\{[\s\S]*\}', raw_response)
+            if not json_match:
+                log.warning("Blog post attempt %d: no JSON in AI response", _attempt + 1)
+                continue
 
-        import json
-        parsed = json.loads(json_match.group())
-        content = parsed.get("content", "")
-        word_count = len(re.sub(r"<[^>]+>", "", content).split())
+            import json as _json
+            parsed = _json.loads(json_match.group())
+            content = parsed.get("content", "")
+            word_count = len(re.sub(r"<[^>]+>", "", content).split())
 
-        # Build URL slug
-        slug = re.sub(r"[^\w\s-]", "", topic.lower()).strip()
-        slug = re.sub(r"[\s_]+", "-", slug)[:60]
+            if word_count < _MIN_BLOG_WORDS:
+                log.warning(
+                    "Blog post attempt %d: only %d words (min %d) — retrying",
+                    _attempt + 1, word_count, _MIN_BLOG_WORDS
+                )
+                continue  # retry
 
-        log.info("Blog post generated: topic='%s', words=%d", topic, word_count)
+            # Sufficient length — build slug and return
+            slug = re.sub(r"[^\w\s-]", "", topic.lower()).strip()
+            slug = re.sub(r"[\s_]+", "-", slug)[:60]
+
+            log.info("Blog post generated: topic='%s', words=%d (attempt %d)", topic, word_count, _attempt + 1)
+            return {
+                "ok":              True,
+                "title":           parsed.get("title", topic),
+                "content":         content,
+                "meta_description": parsed.get("meta_description", ""),
+                "slug":            slug,
+                "keywords":        parsed.get("keywords", []),
+                "word_count":      word_count,
+                "language":        language,
+            }
+
+        # All attempts exhausted
         return {
-            "ok":              True,
-            "title":           parsed.get("title", topic),
-            "content":         content,
-            "meta_description": parsed.get("meta_description", ""),
-            "slug":            slug,
-            "keywords":        parsed.get("keywords", []),
-            "word_count":      word_count,
-            "language":        language,
+            "ok":    False,
+            "error": f"Blog post too short after 3 attempts (last: {word_count if raw_response else 0} words < {_MIN_BLOG_WORDS})",
         }
     except Exception as exc:
         log.error("generate_blog_post: %s", exc)
@@ -560,23 +600,25 @@ async def optimize_meta_tags(limit: int = 50) -> Dict:
         try:
             if anthropic_key:
                 async with aiohttp.ClientSession() as s:
-                    async with s.post(
+                    r = await _ai_post_with_backoff(
+                        s, "POST",
                         "https://api.anthropic.com/v1/messages",
                         headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                         json={"model": "claude-3-5-haiku-20241022", "max_tokens": 256, "messages": [{"role": "user", "content": prompt}]},
                         timeout=aiohttp.ClientTimeout(total=20),
-                    ) as r:
-                        d = await r.json(content_type=None)
+                    )
+                    d = await r.json(content_type=None)
                 raw = d.get("content", [{}])[0].get("text", "")
             else:
                 async with aiohttp.ClientSession() as s:
-                    async with s.post(
+                    r = await _ai_post_with_backoff(
+                        s, "POST",
                         "https://api.openai.com/v1/chat/completions",
                         headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
                         json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "max_tokens": 256},
                         timeout=aiohttp.ClientTimeout(total=20),
-                    ) as r:
-                        d = await r.json(content_type=None)
+                    )
+                    d = await r.json(content_type=None)
                 raw = d.get("choices", [{}])[0].get("message", {}).get("content", "")
             m = re.search(r'\{[\s\S]*\}', raw)
             if m:
@@ -672,23 +714,25 @@ async def generate_faq_schema(product: Dict) -> Dict:
     try:
         if anthropic_key:
             async with aiohttp.ClientSession() as s:
-                async with s.post(
+                r = await _ai_post_with_backoff(
+                    s, "POST",
                     "https://api.anthropic.com/v1/messages",
                     headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
                     json={"model": "claude-3-5-haiku-20241022", "max_tokens": 1024, "messages": [{"role": "user", "content": prompt}]},
                     timeout=aiohttp.ClientTimeout(total=30),
-                ) as r:
-                    d = await r.json(content_type=None)
+                )
+                d = await r.json(content_type=None)
             raw = d.get("content", [{}])[0].get("text", "")
         else:
             async with aiohttp.ClientSession() as s:
-                async with s.post(
+                r = await _ai_post_with_backoff(
+                    s, "POST",
                     "https://api.openai.com/v1/chat/completions",
                     headers={"Authorization": f"Bearer {openai_key}", "Content-Type": "application/json"},
                     json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "max_tokens": 1024},
                     timeout=aiohttp.ClientTimeout(total=30),
-                ) as r:
-                    d = await r.json(content_type=None)
+                )
+                d = await r.json(content_type=None)
             raw = d.get("choices", [{}])[0].get("message", {}).get("content", "")
 
         m = re.search(r'\{[\s\S]*\}', raw)
@@ -698,17 +742,18 @@ async def generate_faq_schema(product: Dict) -> Dict:
         parsed = json.loads(m.group())
         faqs = parsed.get("faqs", [])
 
-        # Build JSON-LD schema
+        # Build JSON-LD schema — HTML-escape special characters in question/answer
+        # to prevent XSS and broken JSON-LD when embedded in page <head>
         schema = {
             "@context": "https://schema.org",
             "@type":    "FAQPage",
             "mainEntity": [
                 {
                     "@type":          "Question",
-                    "name":           faq.get("question", ""),
+                    "name":           _html_escape_module.escape(faq.get("question", ""), quote=False),
                     "acceptedAnswer": {
                         "@type": "Answer",
-                        "text":  faq.get("answer", ""),
+                        "text":  _html_escape_module.escape(faq.get("answer", ""), quote=False),
                     },
                 }
                 for faq in faqs
@@ -728,3 +773,60 @@ async def generate_faq_schema(product: Dict) -> Dict:
     except Exception as exc:
         log.error("generate_faq_schema: %s", exc)
         return {"ok": False, "error": str(exc)}
+
+
+# ── SEO Report ────────────────────────────────────────────────────────────────
+
+async def get_seo_report(limit: int = 50) -> Dict:
+    """Generate an SEO health report across all Shopify products.
+
+    Scores every product, then returns:
+      - Average SEO score (0–100)
+      - Top 5 worst-scoring products (with issues + suggestions)
+      - Breakdown by issue type
+
+    Returns:
+        {"ok": True, "avg_score": float, "total_products": int,
+         "worst_products": [...], "issue_breakdown": {...}}
+    """
+    from modules.shopify_client import get_products  # type: ignore
+
+    try:
+        products = await get_products(limit=limit)
+    except Exception as exc:
+        log.error("get_seo_report: product fetch failed: %s", exc)
+        return {"ok": False, "error": f"Product fetch failed: {exc}"}
+
+    if not products:
+        return {"ok": True, "avg_score": 0, "total_products": 0, "worst_products": [], "issue_breakdown": {}}
+
+    scored: List[Dict] = []
+    issue_counts: Dict[str, int] = {}
+
+    for product in products:
+        result = await get_seo_score(product)
+        score  = result.get("score", 0)
+        issues = result.get("issues", [])
+        scored.append({
+            "id":          product.get("id", ""),
+            "title":       product.get("title", ""),
+            "score":       score,
+            "issues":      issues,
+            "suggestions": result.get("suggestions", []),
+        })
+        for issue in issues:
+            # Bucket issues by first keyword for summary breakdown
+            key = issue.split("(")[0].strip()
+            issue_counts[key] = issue_counts.get(key, 0) + 1
+
+    avg_score = round(sum(p["score"] for p in scored) / len(scored), 1)
+    worst_five = sorted(scored, key=lambda p: p["score"])[:5]
+
+    log.info("SEO Report: %d products, avg score %.1f", len(scored), avg_score)
+    return {
+        "ok":              True,
+        "avg_score":       avg_score,
+        "total_products":  len(scored),
+        "worst_products":  worst_five,
+        "issue_breakdown": issue_counts,
+    }
