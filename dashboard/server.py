@@ -14,8 +14,11 @@ from pathlib import Path
 
 _SERVER_START_TIME = time.time()
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-sys.path.insert(0, str(Path.home()))
+_REPO_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(_REPO_ROOT))
+_HOME_PATH = str(Path.home())
+if _HOME_PATH not in sys.path:
+    sys.path.append(_HOME_PATH)
 
 from aiohttp import web
 import aiohttp
@@ -535,7 +538,7 @@ async def handle_chat(req):
             data = await req.json()
         except Exception:
             return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
-        text = data.get("text", "")
+        text = data.get("text") or data.get("message") or ""
         session_id = data.get("session_id", "dashboard")
         bot = req.app["bot"]
         response = await bot.process(text, session_id)
@@ -747,6 +750,11 @@ async def handle_shopify_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_shopify_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/shopify."""
+    return await handle_shopify_status(req)
+
+
 async def handle_ollama_models(req):
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
@@ -882,6 +890,21 @@ async def handle_backup_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_revenue_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/revenue."""
+    return await handle_revenue_summary(req)
+
+
+async def handle_analytics_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/analytics."""
+    return await handle_revenue_analytics(req)
+
+
+async def handle_kpis_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/kpis."""
+    return await handle_revenue_summary(req)
+
+
 # ---------------------------------------------------------------------------
 # NEW API Routes
 # ---------------------------------------------------------------------------
@@ -922,6 +945,22 @@ async def handle_mac_action(req):
         return web.json_response({"ok": True, "result": str(result)})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_agents_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/agents."""
+    return await handle_autopilot_agents(req)
+
+
+async def handle_chat_clear(req):
+    """Delete stored conversation history for a session."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        session_id = str(data.get("session_id", "dashboard")).strip() or "dashboard"
+        deleted = req.app["bot"].memory.clear_history(session_id)
+        return web.json_response({"ok": True, "session_id": session_id, "deleted": deleted})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_services_status(req):
@@ -1058,6 +1097,19 @@ async def handle_logs(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_logs_clear(req):
+    """Clear the primary dashboard log files used by the legacy UI."""
+    try:
+        cleared = []
+        for lf in [BASE_DIR / "logs" / "supermegabot.log", Path("/tmp/supermegabot.log")]:
+            if lf.exists():
+                lf.write_text("")
+                cleared.append(str(lf))
+        return web.json_response({"ok": True, "cleared": cleared})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_health(req):
     cached = _cache_get("system_health", 30)
     if cached is not None:
@@ -1079,6 +1131,16 @@ async def handle_health(req):
     }
     _cache_set("system_health", result)
     return web.json_response(result)
+
+
+async def handle_status_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/status."""
+    return await handle_status_full(req)
+
+
+async def handle_metrics_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/metrics."""
+    return await handle_system(req)
 
 
 async def handle_status_full(req):
@@ -3250,15 +3312,19 @@ async def create_app():
     # Existing routes
     app.router.add_get("/", handle_index)
     app.router.add_post("/api/chat", handle_chat)
+    app.router.add_post("/api/chat/clear", handle_chat_clear)
     # Telegram Hub Bridge endpoints
     app.router.add_post("/api/bot/execute", handle_bot_execute)
     app.router.add_get("/api/bot/commands", handle_bot_commands)
     app.router.add_get("/api/system", handle_system)
+    app.router.add_get("/api/status", handle_status_legacy)
+    app.router.add_get("/api/metrics", handle_metrics_legacy)
     app.router.add_get("/api/services", handle_services_legacy)
     app.router.add_get("/api/trading/prices", handle_trading_prices)
     app.router.add_get("/api/trading/arbitrage", handle_trading_arbitrage)
     app.router.add_get("/api/telegram/status", handle_telegram_status)
     app.router.add_post("/api/telegram/send", handle_telegram_send)
+    app.router.add_get("/api/shopify", handle_shopify_legacy)
     app.router.add_get("/api/shopify/status", handle_shopify_status)
     app.router.add_get("/api/ollama/models", handle_ollama_models)
     app.router.add_get("/api/autopilot/agents", handle_autopilot_agents)
@@ -3280,6 +3346,7 @@ async def create_app():
     app.router.add_post("/api/service/start", handle_service_start)
     app.router.add_post("/api/service/stop", handle_service_stop)
     app.router.add_get("/api/logs", handle_logs)
+    app.router.add_post("/api/logs/clear", handle_logs_clear)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
     app.router.add_get("/api/health", handle_health)
@@ -3416,6 +3483,9 @@ async def create_app():
 
     # ── Revenue Autopilot ──────────────────────────────────────────────────────
     app.router.add_get("/revenue",                            handle_revenue_autopilot_ui)
+    app.router.add_get("/api/revenue",                       handle_revenue_legacy)
+    app.router.add_get("/api/analytics",                     handle_analytics_legacy)
+    app.router.add_get("/api/kpis",                          handle_kpis_legacy)
     app.router.add_get("/api/revenue/dashboard",             handle_revenue_dashboard)
     app.router.add_get("/api/revenue/summary",              handle_revenue_summary)
     app.router.add_get("/api/revenue/analytics",             handle_revenue_analytics)
@@ -3470,6 +3540,7 @@ async def create_app():
     app.router.add_get("/api/tiktok/analytics",           handle_tiktok_analytics)
     app.router.add_get("/api/tiktok/revenue",             handle_tiktok_combined_revenue)
     app.router.add_post("/api/tiktok/promotion",          handle_tiktok_promotion)
+    app.router.add_get("/api/agents",                     handle_agents_legacy)
 
     return app
 
