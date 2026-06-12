@@ -134,6 +134,14 @@ class MemorySystem:
         conn.close()
         return [{"role": r[0], "content": r[1], "timestamp": r[2]} for r in reversed(rows)]
 
+    def clear_history(self, session_id: str) -> int:
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.execute("DELETE FROM conversations WHERE session_id=?", (session_id,))
+        conn.commit()
+        deleted = cur.rowcount
+        conn.close()
+        return deleted
+
     def learn_fact(self, category: str, key: str, value: str, confidence: float = 1.0):
         conn = sqlite3.connect(self.db_path)
         conn.execute(
