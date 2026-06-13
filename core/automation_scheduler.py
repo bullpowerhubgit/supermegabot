@@ -13,7 +13,7 @@ import sqlite3
 import time
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 # ── Concurrency / reliability constants ─────────────────────────────────────
 _TASK_TIMEOUT_SECS   = 300      # Tasks running > 5 min are cancelled + alerted
@@ -38,7 +38,8 @@ except ImportError:
 
 # ── Scheduler state DB ───────────────────────────────────────────────────────
 
-def _init_db():
+def _init_db() -> None:
+    """Create the scheduler SQLite database and required tables if they don't exist."""
     conn = sqlite3.connect(_SCHED_DB)
     conn.executescript("""
         CREATE TABLE IF NOT EXISTS task_runs (
@@ -55,7 +56,8 @@ def _init_db():
     conn.close()
 
 
-def _log_run(task_name: str, success: bool, result: str, duration_ms: int):
+def _log_run(task_name: str, success: bool, result: str, duration_ms: int) -> None:
+    """Persist a single task execution record to the SQLite scheduler database."""
     try:
         conn = sqlite3.connect(_SCHED_DB)
         conn.execute(
@@ -68,7 +70,8 @@ def _log_run(task_name: str, success: bool, result: str, duration_ms: int):
         log.warning(f"Scheduler DB write error: {e}")
 
 
-def get_last_runs(limit: int = 50) -> List[Dict]:
+def get_last_runs(limit: int = 50) -> List[Dict[str, Any]]:
+    """Return the most recent task run records ordered by newest first."""
     try:
         _init_db()
         conn = sqlite3.connect(_SCHED_DB)
@@ -82,7 +85,8 @@ def get_last_runs(limit: int = 50) -> List[Dict]:
         return []
 
 
-def get_task_stats() -> Dict:
+def get_task_stats() -> Dict[str, Any]:
+    """Return aggregated run statistics (total, ok, last_run, avg_ms) per task name."""
     try:
         _init_db()
         conn = sqlite3.connect(_SCHED_DB)
@@ -103,7 +107,8 @@ def get_task_stats() -> Dict:
 
 # ── Telegram helper ──────────────────────────────────────────────────────────
 
-async def _tg(msg: str):
+async def _tg(msg: str) -> None:
+    """Send a Telegram message to the configured chat; silently skips if credentials missing."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
     chat  = os.getenv("TELEGRAM_CHAT_ID", "")
     if not token or not chat:
@@ -1086,34 +1091,41 @@ TASKS = [
 # ── Scheduler loop ───────────────────────────────────────────────────────────
 
 class AutomationScheduler:
-    def __init__(self):
+    """Manages all periodic automation tasks with overlap prevention and failure alerting."""
+
+    def __init__(self) -> None:
+        """Initialise the scheduler, create DB tables, and set up per-task locks and counters."""
         _init_db()
-        self._running = False
+        self._running: bool = False
         self._task_handles: List[asyncio.Task] = []
         # Per-task asyncio.Lock → prevents overlap when a task runs longer than its interval
         self._locks: Dict[str, asyncio.Lock] = {name: asyncio.Lock() for name, *_ in TASKS}
         # Consecutive-failure counters for alerting
         self._fail_counts: Dict[str, int] = {name: 0 for name, *_ in TASKS}
 
-    async def start(self):
+    async def start(self) -> None:
+        """Start all registered task loops as independent asyncio Tasks."""
         self._running = True
         log.info(f"AutoScheduler gestartet — {len(TASKS)} Tasks registriert")
         for name, fn, interval, delay in TASKS:
             handle = asyncio.create_task(self._run_loop(name, fn, interval, delay))
             self._task_handles.append(handle)
 
-    async def stop(self):
+    async def stop(self) -> None:
+        """Cancel all running task loops and mark the scheduler as stopped."""
         self._running = False
         for h in self._task_handles:
             h.cancel()
 
     async def run_now(self, task_name: str) -> Optional[str]:
+        """Execute a named task immediately outside its normal schedule and return its result."""
         for name, fn, _, _ in TASKS:
             if name == task_name:
                 return await self._execute(name, fn)
         return f"Task {task_name!r} nicht gefunden"
 
-    async def _run_loop(self, name: str, fn: Callable, interval: int, delay: int):
+    async def _run_loop(self, name: str, fn: Callable[[], Any], interval: int, delay: int) -> None:
+        """Wait for the initial delay then execute the task repeatedly at the given interval."""
         await asyncio.sleep(delay)
         backoff = 0  # exponential backoff after repeated failures (seconds)
         while self._running:
@@ -1127,7 +1139,8 @@ class AutomationScheduler:
             # Determine next sleep: use normal interval
             await asyncio.sleep(interval)
 
-    async def _execute(self, name: str, fn: Callable) -> str:
+    async def _execute(self, name: str, fn: Callable[[], Any]) -> str:
+        """Run fn() with timeout and overlap protection; log result and alert on repeated failures."""
         lock = self._locks.get(name)
         if lock is None:
             lock = asyncio.Lock()
@@ -1172,7 +1185,8 @@ class AutomationScheduler:
                     )
                 return err
 
-    def status(self) -> Dict:
+    def status(self) -> Dict[str, Any]:
+        """Return a snapshot of scheduler state and per-task run statistics."""
         stats = get_task_stats()
         return {
             "running": self._running,
@@ -1195,6 +1209,7 @@ _scheduler: Optional[AutomationScheduler] = None
 
 
 def get_scheduler() -> AutomationScheduler:
+    """Return the module-level singleton AutomationScheduler, creating it if necessary."""
     global _scheduler
     if _scheduler is None:
         _scheduler = AutomationScheduler()
