@@ -1407,6 +1407,16 @@ class MegaOrchestrator:
             log.warning("No Telegram token - polling disabled")
             return
 
+        # OpenClaw manages Telegram polling — yield to avoid getUpdates conflict
+        openclaw_url = os.getenv("OPENCLAW_URL", "http://127.0.0.1:18789")
+        try:
+            import urllib.request
+            urllib.request.urlopen(f"{openclaw_url}/health", timeout=2)
+            log.info("OpenClaw detected — Telegram polling delegated to OpenClaw gateway")
+            return
+        except Exception:
+            pass  # OpenClaw not running — take over polling
+
         # PID-Lock: verhindert doppeltes Polling bei mehrfachem Start
         lock_path = DATA_DIR / "telegram_polling.pid"
         my_pid = os.getpid()
