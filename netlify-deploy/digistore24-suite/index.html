@@ -3,430 +3,805 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Digistore24 Automation Suite — Mehr Verkäufe, weniger Arbeit</title>
-<script>
-(function(){
-  if(localStorage.getItem('bp_ok')!=='1'){
-    document.documentElement.style.display='none';
-    var p=prompt('🔐 Passwort:');
-    if(p==='bullpower2026'){localStorage.setItem('bp_ok','1');document.documentElement.style.display='';}
-    else{document.documentElement.style.display='';document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#ef4444;font:bold 2rem sans-serif">❌ Zugang verweigert</div>';}
-  }
-})();
-</script>
+<title>Digistore24 Automation Suite — Mehr Verkäufe. Weniger Arbeit. Automatis</title>
+<meta name="description" content="Digistore24 Automation Suite — Automatische Webhooks bei jedem Verkauf, E-Mail-Kampagnen, Affiliate-Tracking und Google Sheets Export.">
+<meta property="og:title" content="Digistore24 Automation Suite — BullPower Tools">
+<meta property="og:description" content="Digistore24 Automation Suite — Automatische Webhooks bei jedem Verkauf, E-Mail-Kampagnen, Affiliate-Tracking und Google Sheets Export.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#8b5cf6">
 <style>
-  :root {
-    --bg: #050810;
-    --card: #0d1120;
-    --card2: #111827;
-    --border: #1e2d4a;
-    --text: #e8edf5;
-    --muted: #8b96a8;
-    --blue: #3b82f6;
-    --cyan: #06b6d4;
-    --green: #10b981;
-    --purple: #8b5cf6;
-    --grad: linear-gradient(135deg, #3b82f6, #06b6d4);
-    --grad2: linear-gradient(135deg, #1e3a5f, #0e4d5a);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; overflow-x:hidden; }
+:root{
+  --bg:#050810;
+  --surface:#080d1a;
+  --card:#0c1224;
+  --card2:#101830;
+  --border:#1a2540;
+  --border2:#243055;
+  --text:#e8edf5;
+  --muted:#6b7fa0;
+  --dim:#3a4a68;
+  --violet:#8b5cf6;
+  --purple:#a78bfa;
+  --light-purple:#c4b5fd;
+  --blue:#6366f1;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Inter','Segoe UI',system-ui,sans-serif;overflow-x:hidden;line-height:1.65}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-  /* NAV */
-  nav { position:fixed; top:0; width:100%; background:rgba(5,8,16,0.92); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); z-index:100; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; }
-  .logo { background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-size:1.4rem; font-weight:800; }
-  .nav-badge { background:rgba(16,185,129,0.2); border:1px solid rgba(16,185,129,0.4); color:var(--green); padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem; font-weight:700; }
-  .nav-cta { background:var(--grad); color:white; border:none; padding:0.5rem 1.5rem; border-radius:25px; font-weight:700; cursor:pointer; font-size:0.9rem; }
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:60px;display:flex;align-items:center;justify-content:space-between;padding:0 2.5rem;background:rgba(5,8,16,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-brand{display:flex;align-items:center;gap:0.7rem}
+.nav-icon{width:30px;height:30px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:0.9rem}
+.nav-name{font-weight:800;font-size:1rem;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-center{display:flex;align-items:center;gap:2rem}
+.nav-link{color:var(--muted);font-size:0.85rem;cursor:pointer;text-decoration:none;transition:color 0.2s;letter-spacing:0.1px}
+.nav-link:hover{color:var(--text)}
+.nav-right{display:flex;align-items:center;gap:0.8rem}
+.nav-pill{display:flex;align-items:center;gap:0.35rem;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);color:var(--purple);padding:0.28rem 0.7rem;border-radius:20px;font-size:0.75rem;font-weight:700}
+.nav-dot-live{width:6px;height:6px;border-radius:50%;background:#8b5cf6;animation:blink-purple 1.5s ease-in-out infinite}
+@keyframes blink-purple{0%,100%{opacity:1}50%{opacity:0.3}}
+.nav-cta{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:0.4rem 1.2rem;border-radius:20px;font-size:0.82rem;font-weight:700;cursor:pointer;letter-spacing:0.1px;transition:opacity 0.2s}
+.nav-cta:hover{opacity:0.85}
 
-  /* HERO */
-  .hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8rem 2rem 4rem; position:relative; overflow:hidden; }
-  .hero-glow { position:absolute; width:900px; height:900px; background:radial-gradient(circle, rgba(59,130,246,0.12), transparent 60%); top:-300px; left:50%; transform:translateX(-50%); }
-  .hero-glow2 { position:absolute; width:500px; height:500px; background:radial-gradient(circle, rgba(6,182,212,0.08), transparent 60%); bottom:-100px; right:-50px; }
-  .live-badge { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:var(--green); padding:0.4rem 1rem; border-radius:20px; font-size:0.85rem; font-weight:700; margin-bottom:2rem; display:inline-flex; align-items:center; gap:0.5rem; }
-  .live-dot { width:8px; height:8px; border-radius:50%; background:var(--green); animation:pulse-dot 1.5s infinite; }
-  @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
-  .hero h1 { font-size:clamp(2.2rem,5vw,3.8rem); font-weight:900; line-height:1.1; max-width:880px; margin-bottom:1.5rem; }
-  .hero h1 span { background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  .hero p { font-size:1.15rem; color:var(--muted); max-width:600px; margin-bottom:3rem; line-height:1.7; }
-  .btn-primary { background:var(--grad); color:white; border:none; padding:1rem 2.5rem; border-radius:50px; font-size:1.1rem; font-weight:700; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; box-shadow:0 0 30px rgba(59,130,246,0.4); }
-  .btn-primary:hover { transform:translateY(-2px); box-shadow:0 0 50px rgba(59,130,246,0.6); }
-  .btn-trial { background:transparent; color:var(--text); border:2px solid var(--border); padding:1rem 2.5rem; border-radius:50px; font-size:1.1rem; font-weight:600; cursor:pointer; transition:border-color 0.2s; }
-  .btn-trial:hover { border-color:var(--blue); }
-  .hero-btns { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
+/* ── HERO — SPLIT LAYOUT ── */
+.hero{min-height:100vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:4rem;padding:100px 5rem 5rem;max-width:1300px;margin:0 auto;position:relative}
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding:100px 2rem 4rem;gap:3rem}}
+.hero-bg-glow{position:fixed;width:700px;height:700px;background:radial-gradient(ellipse,rgba(139,92,246,0.08),transparent 65%);top:-200px;left:-200px;pointer-events:none}
+.hero-bg-glow2{position:fixed;width:500px;height:500px;background:radial-gradient(ellipse,rgba(99,102,241,0.06),transparent 65%);bottom:-100px;right:-100px;pointer-events:none}
 
-  /* LIVE DASHBOARD MOCKUP */
-  .dashboard-section { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:2rem; max-width:1000px; margin:3rem auto; position:relative; overflow:hidden; }
-  .dashboard-section::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--grad); }
-  .dash-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
-  .dash-title { font-size:1.1rem; font-weight:700; }
-  .dash-live { background:rgba(16,185,129,0.15); border:1px solid rgba(16,185,129,0.4); color:var(--green); padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem; font-weight:700; display:flex; align-items:center; gap:0.4rem; }
-  .metrics-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:1.5rem; margin-bottom:2rem; }
-  .metric-card { background:var(--card2); border:1px solid var(--border); border-radius:14px; padding:1.5rem; text-align:center; }
-  .metric-val { font-size:2rem; font-weight:900; margin-bottom:0.3rem; }
-  .metric-val.green { color:var(--green); }
-  .metric-val.blue { color:var(--blue); }
-  .metric-val.cyan { color:var(--cyan); }
-  .metric-label { color:var(--muted); font-size:0.85rem; }
-  .metric-change { color:var(--green); font-size:0.8rem; margin-top:0.3rem; font-weight:600; }
-  .chart-area { background:var(--card2); border:1px solid var(--border); border-radius:14px; padding:1.5rem; }
-  .chart-title { font-size:0.9rem; font-weight:600; color:var(--muted); margin-bottom:1rem; }
-  .chart-bars { display:flex; align-items:flex-end; gap:0.6rem; height:80px; }
-  .bar { flex:1; background:var(--grad); border-radius:4px 4px 0 0; transition:height 1s ease; position:relative; }
-  .bar:hover::after { content:attr(data-val); position:absolute; top:-25px; left:50%; transform:translateX(-50%); background:var(--blue); color:white; padding:0.2rem 0.5rem; border-radius:6px; font-size:0.7rem; white-space:nowrap; }
-  .chart-labels { display:flex; gap:0.6rem; margin-top:0.5rem; }
-  .chart-label { flex:1; text-align:center; font-size:0.7rem; color:var(--muted); }
+.hero-left{}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:0.5rem;background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:var(--purple);padding:0.3rem 0.8rem;border-radius:20px;font-size:0.78rem;font-weight:600;margin-bottom:1.8rem;letter-spacing:0.3px}
+.hero-h1{font-size:clamp(2rem,3.5vw,3.2rem);font-weight:900;line-height:1.1;letter-spacing:-1px;margin-bottom:1.2rem}
+.hero-h1 .accent{background:linear-gradient(90deg,#8b5cf6,#a78bfa,#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-p{color:var(--muted);font-size:1rem;line-height:1.75;max-width:460px;margin-bottom:2rem}
+.hero-ctas{display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:2.5rem}
+.btn-primary{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:0.85rem 2rem;border-radius:12px;font-size:0.95rem;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 0 30px rgba(139,92,246,0.3);letter-spacing:0.1px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 50px rgba(139,92,246,0.5)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2);padding:0.85rem 2rem;border-radius:12px;font-size:0.95rem;font-weight:600;cursor:pointer;transition:border-color 0.2s,color 0.2s}
+.btn-outline:hover{border-color:var(--violet);color:var(--purple)}
+.hero-social-proof{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.social-avatars{display:flex}
+.social-avatars span{width:32px;height:32px;border-radius:50%;border:2px solid var(--bg);margin-left:-8px;font-size:0.85rem;display:flex;align-items:center;justify-content:center;background:var(--card2)}
+.social-avatars span:first-child{margin-left:0}
+.social-text{color:var(--muted);font-size:0.82rem}
+.social-text strong{color:var(--light-purple)}
 
-  /* AUTOMATION FEATURES */
-  .features-section { padding:5rem 2rem; max-width:1200px; margin:0 auto; }
-  .section-title { text-align:center; margin-bottom:3rem; }
-  .section-title h2 { font-size:2.5rem; font-weight:800; margin-bottom:0.8rem; }
-  .section-title p { color:var(--muted); font-size:1.1rem; }
-  .features-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:1.5rem; }
-  .feature-item { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:1.8rem; display:flex; gap:1.2rem; align-items:flex-start; transition:transform 0.2s,border-color 0.2s; }
-  .feature-item:hover { transform:translateY(-3px); border-color:var(--blue); }
-  .feature-icon { font-size:2rem; flex-shrink:0; }
-  .feature-text h3 { font-size:1.05rem; font-weight:700; margin-bottom:0.5rem; }
-  .feature-text p { color:var(--muted); font-size:0.88rem; line-height:1.6; }
+/* NOTIFICATION FEED */
+.hero-right{}
+.feed-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden;position:relative}
+.feed-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.6),transparent)}
+.feed-header{padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.feed-header-title{display:flex;align-items:center;gap:0.5rem;font-size:0.88rem;font-weight:700}
+.feed-live{display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;font-weight:700;color:#22c55e}
+.feed-live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse-green 1.5s infinite}
+@keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,0.5)}50%{box-shadow:0 0 0 4px rgba(34,197,94,0)}}
+.feed-body{padding:0.8rem;display:flex;flex-direction:column;gap:0.5rem;min-height:320px;max-height:380px;overflow:hidden}
+.notif{display:flex;align-items:flex-start;gap:0.8rem;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:0.75rem 1rem;transition:border-color 0.3s;animation:slideIn 0.4s ease forwards}
+@keyframes slideIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+.notif.sale{border-left:3px solid #22c55e}
+.notif.affiliate{border-left:3px solid var(--violet)}
+.notif.refund{border-left:3px solid #f59e0b}
+.notif-icon{font-size:1.3rem;flex-shrink:0;margin-top:1px}
+.notif-body{}
+.notif-title{font-size:0.85rem;font-weight:700;margin-bottom:0.2rem}
+.notif-meta{font-size:0.75rem;color:var(--muted)}
+.notif-amount{font-size:0.88rem;font-weight:800;margin-top:0.2rem}
+.notif-amount.green{color:#22c55e}
+.notif-amount.purple{color:var(--purple)}
+.notif-amount.yellow{color:#fbbf24}
+.notif-time{margin-left:auto;font-size:0.7rem;color:var(--dim);white-space:nowrap;flex-shrink:0}
+.feed-footer{padding:0.8rem 1.4rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.feed-counter{color:var(--muted);font-size:0.78rem}
+.feed-counter strong{color:var(--light-purple)}
+.feed-view-btn{background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.25);color:var(--purple);padding:0.3rem 0.8rem;border-radius:8px;font-size:0.75rem;font-weight:600;cursor:pointer}
 
-  /* ROI EXAMPLE */
-  .roi-section { background:var(--grad2); border:1px solid var(--border); border-radius:24px; padding:3rem; max-width:1000px; margin:0 auto 3rem; display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center; }
-  @media(max-width:600px){.roi-section{grid-template-columns:1fr}}
-  .roi-quote { border-left:3px solid var(--blue); padding-left:1.5rem; }
-  .roi-quote p { font-size:1.15rem; line-height:1.7; color:var(--text); margin-bottom:1rem; }
-  .roi-quote .author { color:var(--cyan); font-weight:700; }
-  .roi-stats { display:grid; gap:1rem; }
-  .roi-stat { background:rgba(0,0,0,0.3); border-radius:12px; padding:1.2rem; text-align:center; }
-  .roi-stat-val { font-size:2rem; font-weight:900; color:var(--green); }
-  .roi-stat-label { color:var(--muted); font-size:0.85rem; }
+/* ── SECTION WRAPPER ── */
+.sec{max-width:1100px;margin:0 auto;padding:5rem 2rem}
+.sec-header{margin-bottom:3rem}
+.sec-label{font-size:0.72rem;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem}
+.sec-title{font-size:2rem;font-weight:900;letter-spacing:-0.5px;margin-bottom:0.6rem}
+.sec-title .acc{background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sec-sub{color:var(--muted);font-size:0.95rem;max-width:520px}
 
-  /* VIDEO MOCKUP */
-  .video-mockup { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2rem; max-width:700px; margin:0 auto 3rem; text-align:center; }
-  .video-player { background:#000; border-radius:14px; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; position:relative; overflow:hidden; cursor:pointer; margin-bottom:1rem; }
-  .video-bg { position:absolute; inset:0; background:var(--grad2); opacity:0.5; }
-  .play-btn { width:80px; height:80px; background:rgba(59,130,246,0.9); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:2rem; z-index:1; transition:transform 0.2s,background 0.2s; cursor:pointer; }
-  .play-btn:hover { transform:scale(1.1); background:var(--blue); }
-  .play-animation { display:none; position:absolute; inset:0; background:#000; align-items:center; justify-content:center; flex-direction:column; gap:1rem; z-index:2; }
-  .progress-bar { width:80%; height:4px; background:#333; border-radius:2px; overflow:hidden; }
-  .progress-fill { height:100%; background:var(--grad); width:0%; animation:progress 8s linear; }
-  @keyframes progress { to{width:100%} }
-  .video-code { font-family:monospace; font-size:0.85rem; color:var(--cyan); text-align:left; padding:1rem; background:rgba(0,0,0,0.5); border-radius:8px; line-height:1.8; }
+/* ── 4-STEP TIMELINE ── */
+.timeline{display:flex;align-items:flex-start;gap:0;position:relative}
+.timeline::before{content:'';position:absolute;top:28px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border2) 10%,var(--border2) 90%,transparent);z-index:0}
+@media(max-width:700px){.timeline{flex-direction:column;gap:1.5rem}.timeline::before{display:none}}
+.timeline-step{flex:1;text-align:center;position:relative;padding:0 1rem}
+.step-num{width:56px;height:56px;background:linear-gradient(135deg,#8b5cf6,#6366f1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:900;color:#fff;margin:0 auto 1rem;position:relative;z-index:1;box-shadow:0 0 0 4px var(--bg),0 0 0 5px var(--border2)}
+.step-title{font-size:0.95rem;font-weight:700;margin-bottom:0.4rem}
+.step-desc{color:var(--muted);font-size:0.82rem;line-height:1.55}
 
-  /* PRICING */
-  .pricing-section { padding:5rem 2rem; max-width:1000px; margin:0 auto; }
-  .pricing-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2rem; }
-  .pricing-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem; text-align:center; position:relative; transition:transform 0.2s; }
-  .pricing-card:hover { transform:translateY(-6px); }
-  .pricing-card.featured { border-color:var(--blue); background:rgba(59,130,246,0.06); }
-  .featured-tag { position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:var(--grad); color:white; padding:0.3rem 1.2rem; border-radius:20px; font-size:0.8rem; font-weight:700; white-space:nowrap; }
-  .plan-name { font-size:1.3rem; font-weight:800; margin-bottom:0.5rem; }
-  .plan-price { font-size:3rem; font-weight:900; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  .plan-price span { font-size:1rem; color:var(--muted); }
-  .plan-features { list-style:none; margin:1.5rem 0; text-align:left; }
-  .plan-features li { padding:0.5rem 0; border-bottom:1px solid var(--border); color:var(--muted); font-size:0.9rem; display:flex; align-items:center; gap:0.5rem; }
-  .plan-features li::before { content:'✓'; color:var(--green); font-weight:700; }
-  .plan-btn { background:var(--grad); color:white; border:none; padding:0.9rem 2rem; border-radius:50px; font-weight:700; cursor:pointer; width:100%; font-size:1rem; }
-  .plan-btn:hover { opacity:0.9; }
+/* ── INTEGRATION STRIP ── */
+.integration-strip{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem 2.5rem;max-width:1100px;margin:0 auto 3rem}
+.int-label{text-align:center;color:var(--muted);font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:1.5rem}
+.int-row{display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap}
+.int-node{display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:0 1.5rem}
+.int-icon{width:52px;height:52px;background:var(--card2);border:1px solid var(--border2);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;transition:border-color 0.2s,transform 0.2s}
+.int-icon:hover{border-color:var(--violet);transform:translateY(-3px)}
+.int-name{font-size:0.72rem;color:var(--muted);font-weight:600}
+.int-arrow{color:var(--dim);font-size:1rem;padding:0 0.2rem;flex-shrink:0}
 
-  /* TRIAL CTA */
-  .trial-cta { background:var(--grad); border-radius:24px; padding:4rem; text-align:center; margin:3rem 2rem; }
-  .trial-cta h2 { font-size:2.5rem; font-weight:900; color:white; margin-bottom:1rem; }
-  .trial-cta p { color:rgba(255,255,255,0.85); font-size:1.1rem; margin-bottom:2rem; }
-  .trial-cta-btn { background:white; color:#1e3a5f; border:none; padding:1.1rem 3rem; border-radius:50px; font-size:1.15rem; font-weight:800; cursor:pointer; transition:transform 0.2s; }
-  .trial-cta-btn:hover { transform:scale(1.05); }
-  .trial-note { color:rgba(255,255,255,0.7); font-size:0.9rem; margin-top:1rem; }
+/* ── COMPARISON TABLE ── */
+.cmp-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:16px;overflow:hidden;border:1px solid var(--border)}
+.cmp-table thead tr{background:var(--card)}
+.cmp-table th{padding:0.9rem 1.4rem;font-size:0.78rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;border-bottom:1px solid var(--border);text-align:left}
+.cmp-table th:nth-child(2){color:var(--muted)}
+.cmp-table th:nth-child(3){background:rgba(139,92,246,0.08);color:var(--purple)}
+.cmp-table td{padding:0.85rem 1.4rem;border-top:1px solid var(--border);font-size:0.88rem;text-align:left}
+.cmp-table td:nth-child(3){background:rgba(139,92,246,0.04);font-weight:700;color:var(--light-purple)}
+.cmp-table tr:hover td{background:rgba(139,92,246,0.025)}
+.cmp-table tr:hover td:nth-child(3){background:rgba(139,92,246,0.08)}
+.cmp-bad{color:var(--dim)}
+.cmp-good{color:#22c55e}
+.cmp-feature{font-weight:600;color:var(--text)}
 
-  footer { text-align:center; padding:3rem 2rem; color:var(--muted); font-size:0.9rem; border-top:1px solid var(--border); }
+/* ── FEATURE ALTERNATING ── */
+.alt-section{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;max-width:1100px;margin:0 auto;padding:4rem 2rem}
+.alt-section.reverse{direction:rtl}
+.alt-section.reverse > *{direction:ltr}
+@media(max-width:800px){.alt-section{grid-template-columns:1fr;direction:ltr}.alt-section.reverse{direction:ltr}}
+.alt-visual{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;position:relative;overflow:hidden}
+.alt-visual::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--violet),transparent)}
+.alt-label{font-size:0.72rem;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:2px;margin-bottom:1rem}
+.alt-title{font-size:1.5rem;font-weight:800;letter-spacing:-0.4px;margin-bottom:0.8rem}
+.alt-title .acc{background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.alt-desc{color:var(--muted);line-height:1.7;font-size:0.92rem;margin-bottom:1.5rem}
+.alt-points{list-style:none;display:flex;flex-direction:column;gap:0.6rem}
+.alt-points li{display:flex;align-items:flex-start;gap:0.6rem;font-size:0.88rem;color:var(--muted)}
+.alt-points li::before{content:'→';color:var(--violet);font-weight:700;flex-shrink:0;margin-top:1px}
+.visual-card{background:var(--card);border-radius:12px;padding:1rem;margin-bottom:0.8rem;border:1px solid var(--border2)}
+.visual-card-label{font-size:0.72rem;color:var(--muted);font-weight:600;margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:0.5px}
+.visual-card-val{font-size:1.4rem;font-weight:800}
+.visual-card-val.purple{color:var(--purple)}
+.visual-card-val.green{color:#22c55e}
+.visual-progress{height:6px;background:var(--border);border-radius:3px;margin-top:0.5rem;overflow:hidden}
+.visual-progress-fill{height:100%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);border-radius:3px}
+
+/* ── PRICING ── */
+.pricing-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2rem;max-width:720px;margin:0 auto}
+@media(max-width:600px){.pricing-grid{grid-template-columns:1fr}}
+.plan-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.2rem;position:relative;transition:transform 0.25s,border-color 0.25s}
+.plan-card:hover{transform:translateY(-5px)}
+.plan-card.featured{border-color:var(--violet);background:linear-gradient(160deg,rgba(139,92,246,0.08),rgba(99,102,241,0.04))}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:0.7rem;font-weight:800;padding:0.22rem 0.9rem;border-radius:20px;white-space:nowrap;letter-spacing:0.3px}
+.plan-name{font-size:0.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.8rem}
+.plan-price{font-size:2.8rem;font-weight:900;letter-spacing:-1.5px;margin-bottom:0.25rem}
+.plan-card.featured .plan-price{background:linear-gradient(135deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.plan-cycle{color:var(--muted);font-size:0.82rem;margin-bottom:1.4rem}
+.plan-divider{height:1px;background:var(--border);margin-bottom:1.2rem}
+.plan-feats{list-style:none;display:flex;flex-direction:column;gap:0.55rem;margin-bottom:1.8rem}
+.plan-feats li{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.83rem;color:var(--muted)}
+.plan-feats li .ck{color:var(--violet);font-weight:800;flex-shrink:0}
+.plan-btn{width:100%;padding:0.82rem;border-radius:12px;border:none;font-size:0.92rem;font-weight:700;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;letter-spacing:0.1px}
+.plan-btn-main{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff}
+.plan-btn-main:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(139,92,246,0.4)}
+.plan-btn-sec{background:transparent;color:var(--muted);border:1px solid var(--border2)}
+.plan-btn-sec:hover{border-color:var(--violet);color:var(--purple)}
+
+/* ── CTA STRIP ── */
+.cta-strip{max-width:1100px;margin:0 auto;padding:3rem 2rem}
+.cta-box{background:linear-gradient(135deg,#1a0b3d,#0d1535);border:1px solid rgba(139,92,246,0.3);border-radius:24px;padding:4rem;text-align:center;position:relative;overflow:hidden}
+.cta-box::before{content:'';position:absolute;width:600px;height:600px;background:radial-gradient(circle,rgba(139,92,246,0.15),transparent 65%);top:-200px;left:50%;transform:translateX(-50%);pointer-events:none}
+.cta-box h2{font-size:2.2rem;font-weight:900;color:#fff;margin-bottom:0.8rem;letter-spacing:-0.5px;position:relative}
+.cta-box p{color:rgba(196,181,253,0.7);font-size:1rem;margin-bottom:2rem;position:relative}
+.cta-main-btn{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;padding:1rem 2.8rem;border-radius:50px;font-size:1.05rem;font-weight:800;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;position:relative;letter-spacing:0.2px}
+.cta-main-btn:hover{transform:scale(1.04);box-shadow:0 12px 40px rgba(139,92,246,0.5)}
+.cta-note{margin-top:1.2rem;color:rgba(107,127,160,0.8);font-size:0.82rem;position:relative}
+
+footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;color:var(--dim);font-size:0.82rem}
+footer a{color:var(--violet);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="logo">⚡ DS24 Suite</div>
-  <div class="nav-badge"><span class="live-dot" style="display:inline-block"></span> Live</div>
-  <button class="nav-cta" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">7 Tage gratis →</button>
+<!-- ═══════════════════════════════════════════
+     PASSWORD GATE — DO NOT MODIFY
+════════════════════════════════════════════ -->
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#050008;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #8b5cf622}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#8b5cf6,#7c3aed);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#8b5cf6;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#8b5cf6}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #8b5cf644}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">📈</div>
+    <h1>Digistore24 Automation Suite</h1>
+    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#8b5cf6;border:1px solid #8b5cf640;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">ab €39/mo</div>
+    <div class="tag">Mehr Verkäufe. Weniger Arbeit. Automatisch.</div>
+    <div class="feat">Webhooks • E-Mail-Sequenzen • Affiliate-Tracking</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+<!-- ═══════════════════════════════════════════
+     END GATE
+════════════════════════════════════════════ -->
+
+<div class="hero-bg-glow"></div>
+<div class="hero-bg-glow2"></div>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-brand">
+    <div class="nav-icon">⚡</div>
+    <span class="nav-name">DS24 Suite</span>
+  </div>
+  <div class="nav-center">
+    <a class="nav-link" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">So funktioniert's</a>
+    <a class="nav-link" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Features</a>
+    <a class="nav-link" onclick="document.getElementById('vergleich').scrollIntoView({behavior:'smooth'})">Vergleich</a>
+    <a class="nav-link" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Preise</a>
+  </div>
+  <div class="nav-right">
+    <div class="nav-pill"><div class="nav-dot-live"></div> 247 Nutzer online</div>
+    <button class="nav-cta" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">7 Tage gratis →</button>
+  </div>
 </nav>
 
-<!-- HERO -->
+<!-- ══════════════ HERO SPLIT ══════════════ -->
 <div class="hero">
-  <div class="hero-glow"></div>
-  <div class="hero-glow2"></div>
-  <div class="live-badge"><div class="live-dot"></div> 247 aktive Nutzer gerade online</div>
-  <h1>Digistore24 auf <span>Autopilot</span> —<br>Mehr Verkäufe, weniger Arbeit</h1>
-  <p>Vollautomatische Webhooks, E-Mail-Sequenzen, KI-Analytics und Affiliate-Management. Dein Digistore24-Business läuft 24/7 — auch wenn du schläfst.</p>
-  <div class="hero-btns">
-    <button class="btn-primary" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">📊 Live-Demo ansehen</button>
-    <button class="btn-trial" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">7 Tage kostenlos testen</button>
+  <!-- LEFT: Headline + CTAs -->
+  <div class="hero-left">
+    <div class="hero-eyebrow">📈 Digistore24 Autopilot · Seit 2024</div>
+    <h1 class="hero-h1">Mehr Verkäufe.<br><span class="accent">Weniger Arbeit.</span><br>Vollautomatisch.</h1>
+    <p class="hero-p">Vollautomatische Webhooks, E-Mail-Sequenzen, KI-Analytics und Affiliate-Management — dein Digistore24-Business läuft 24/7, auch wenn du schläfst.</p>
+    <div class="hero-ctas">
+      <button class="btn-primary" onclick="document.getElementById('how-it-works').scrollIntoView({behavior:'smooth'})">⚡ So funktioniert's</button>
+      <button class="btn-outline" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">7 Tage kostenlos</button>
+    </div>
+    <div class="hero-social-proof">
+      <div class="social-avatars">
+        <span>👨</span><span>👩</span><span>🧑</span><span>👨‍💼</span><span>+</span>
+      </div>
+      <div class="social-text">Über <strong>1.240 Verkäufer</strong> automatisieren ihr DS24-Business</div>
+    </div>
   </div>
-</div>
 
-<!-- LIVE DASHBOARD MOCKUP -->
-<div style="max-width:1200px;margin:0 auto;padding:0 2rem;">
-  <div class="dashboard-section" id="dashboard">
-    <div class="dash-header">
-      <div class="dash-title">📊 Digistore24 Live-Dashboard</div>
-      <div class="dash-live"><div class="live-dot"></div> Live-Daten</div>
-    </div>
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-val green" id="revenue">€0</div>
-        <div class="metric-label">Gesamtumsatz (30 Tage)</div>
-        <div class="metric-change">↑ +23% vs. Vormonat</div>
+  <!-- RIGHT: Live notification feed -->
+  <div class="hero-right">
+    <div class="feed-card">
+      <div class="feed-header">
+        <div class="feed-header-title">🔔 Live Verkaufs-Feed</div>
+        <div class="feed-live"><div class="feed-live-dot"></div> Live</div>
       </div>
-      <div class="metric-card">
-        <div class="metric-val blue" id="sales">0</div>
-        <div class="metric-label">Verkäufe</div>
-        <div class="metric-change">↑ +18 heute</div>
+      <div class="feed-body" id="feed-body">
+        <!-- notifications injected by JS -->
       </div>
-      <div class="metric-card">
-        <div class="metric-val cyan" id="affiliates">0</div>
-        <div class="metric-label">Aktive Affiliates</div>
-        <div class="metric-change">↑ +5 diese Woche</div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-val" style="color:#f59e0b;" id="conversion">0%</div>
-        <div class="metric-label">Conversion-Rate</div>
-        <div class="metric-change">↑ +0.8% vs. Vorwoche</div>
-      </div>
-    </div>
-    <div class="chart-area">
-      <div class="chart-title">📈 Umsatz-Verlauf — letzte 7 Tage</div>
-      <div class="chart-bars" id="chart-bars">
-        <div class="bar" style="height:40%" data-val="€824"></div>
-        <div class="bar" style="height:55%" data-val="€1.138"></div>
-        <div class="bar" style="height:45%" data-val="€933"></div>
-        <div class="bar" style="height:70%" data-val="€1.447"></div>
-        <div class="bar" style="height:60%" data-val="€1.241"></div>
-        <div class="bar" style="height:85%" data-val="€1.756"></div>
-        <div class="bar" style="height:95%" data-val="€1.965"></div>
-      </div>
-      <div class="chart-labels">
-        <div class="chart-label">Mo</div>
-        <div class="chart-label">Di</div>
-        <div class="chart-label">Mi</div>
-        <div class="chart-label">Do</div>
-        <div class="chart-label">Fr</div>
-        <div class="chart-label">Sa</div>
-        <div class="chart-label">So</div>
+      <div class="feed-footer">
+        <span class="feed-counter">Heute: <strong id="today-count">0</strong> Verkäufe · <strong id="today-rev">€0</strong></span>
+        <button class="feed-view-btn">Alle ansehen</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- AUTOMATION FEATURES -->
-<section class="features-section">
-  <div class="section-title">
-    <h2>6 Automatisierungen die alles verändern</h2>
-    <p>Einmal einrichten — für immer profitieren</p>
+<!-- ══════════════ WIE ES FUNKTIONIERT ══════════════ -->
+<div class="sec" id="how-it-works">
+  <div class="sec-header" style="text-align:center">
+    <div class="sec-label" style="text-align:center">Wie es funktioniert</div>
+    <h2 class="sec-title" style="text-align:center">In <span class="acc">4 Schritten</span> zum Autopilot</h2>
+    <p class="sec-sub" style="margin:0 auto;text-align:center">Setup dauert 10 Minuten — danach läuft alles von allein</p>
   </div>
-  <div class="features-grid">
-    <div class="feature-item">
-      <div class="feature-icon">🔄</div>
-      <div class="feature-text">
-        <h3>Real-time Webhooks</h3>
-        <p>Jeder Digistore24-Verkauf triggert sofort deinen Workflow. Keine manuelle Überprüfung mehr — alles passiert automatisch in Echtzeit.</p>
-      </div>
+  <div class="timeline" id="how-it-works">
+    <div class="timeline-step">
+      <div class="step-num">1</div>
+      <div class="step-title">Verbinden</div>
+      <div class="step-desc">Digistore24 Webhook-URL in dein Dashboard eintragen — einmalig, 2 Minuten.</div>
     </div>
-    <div class="feature-item">
-      <div class="feature-icon">📧</div>
-      <div class="feature-text">
-        <h3>Automatische E-Mail-Sequenzen</h3>
-        <p>Welcome-Mails, Onboarding-Sequenzen, Upsell-E-Mails und Reaktivierungs-Kampagnen — alles vollautomatisch und personalisiert.</p>
-      </div>
+    <div class="timeline-step">
+      <div class="step-num">2</div>
+      <div class="step-title">Konfigurieren</div>
+      <div class="step-desc">E-Mail-Sequenzen, Telegram-Alerts und Affiliate-Tracking per Klick aktivieren.</div>
     </div>
-    <div class="feature-item">
-      <div class="feature-icon">📊</div>
-      <div class="feature-text">
-        <h3>KI-gestützte Sales-Analytics</h3>
-        <p>Unsere KI analysiert Kaufmuster, identifiziert Best-Seller und gibt dir konkrete Handlungsempfehlungen für mehr Umsatz.</p>
-      </div>
+    <div class="timeline-step">
+      <div class="step-num">3</div>
+      <div class="step-title">Aktivieren</div>
+      <div class="step-desc">Ein Klick — alle Automationen laufen sofort. Dashboard zeigt Live-Daten.</div>
     </div>
-    <div class="feature-item">
-      <div class="feature-icon">🤝</div>
-      <div class="feature-text">
-        <h3>Affiliate-Management Autopilot</h3>
-        <p>Automatische Affiliate-Benachrichtigungen, Commission-Tracking, Top-Performer-Reports und Auszahlungs-Erinnerungen.</p>
-      </div>
-    </div>
-    <div class="feature-item">
-      <div class="feature-icon">📱</div>
-      <div class="feature-text">
-        <h3>Discord & Telegram Benachrichtigungen</h3>
-        <p>Sofort-Alert bei jedem Verkauf direkt in deinen Discord-Server oder Telegram-Chat. Feiere jeden Sale in Echtzeit!</p>
-      </div>
-    </div>
-    <div class="feature-item">
-      <div class="feature-icon">📈</div>
-      <div class="feature-text">
-        <h3>Google Sheets Export</h3>
-        <p>Alle Verkaufsdaten werden automatisch in Google Sheets exportiert — perfekt für Steuerberater, Team-Reports und Business-Analysen.</p>
-      </div>
+    <div class="timeline-step">
+      <div class="step-num">4</div>
+      <div class="step-title">Skalieren</div>
+      <div class="step-desc">KI-Analytics identifizieren Top-Performer. Du skalierst, wir automatisieren.</div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ROI EXAMPLE -->
-<div style="padding:0 2rem;">
-  <div class="roi-section">
-    <div class="roi-quote">
-      <p>"Ich verdiene <strong>€3.400 pro Monat</strong> mit Digistore24. Mit der Automation Suite spare ich <strong>15 Stunden pro Woche</strong> — Zeit, die ich jetzt in die Erstellung neuer Produkte investiere. ROI in den ersten 10 Tagen!"</p>
-      <div class="author">— Max K., Online-Marketer aus München</div>
-    </div>
-    <div class="roi-stats">
-      <div class="roi-stat">
-        <div class="roi-stat-val">15h</div>
-        <div class="roi-stat-label">Gesparte Stunden pro Woche</div>
+<!-- ══════════════ INTEGRATION STRIP ══════════════ -->
+<div style="padding:0 2rem">
+  <div class="integration-strip">
+    <div class="int-label">Nahtlose Integrationen</div>
+    <div class="int-row">
+      <div class="int-node">
+        <div class="int-icon">🏪</div>
+        <div class="int-name">Digistore24</div>
       </div>
-      <div class="roi-stat">
-        <div class="roi-stat-val">+34%</div>
-        <div class="roi-stat-label">Umsatzsteigerung in 30 Tagen</div>
+      <div class="int-arrow">→</div>
+      <div class="int-node">
+        <div class="int-icon">⚡</div>
+        <div class="int-name">Webhook</div>
       </div>
-      <div class="roi-stat">
-        <div class="roi-stat-val">10 Tage</div>
-        <div class="roi-stat-label">Amortisierungszeit</div>
+      <div class="int-arrow">→</div>
+      <div class="int-node">
+        <div class="int-icon">📧</div>
+        <div class="int-name">E-Mail</div>
+      </div>
+      <div class="int-arrow">→</div>
+      <div class="int-node">
+        <div class="int-icon">💬</div>
+        <div class="int-name">Discord</div>
+      </div>
+      <div class="int-arrow">→</div>
+      <div class="int-node">
+        <div class="int-icon">✈️</div>
+        <div class="int-name">Telegram</div>
+      </div>
+      <div class="int-arrow">→</div>
+      <div class="int-node">
+        <div class="int-icon">📊</div>
+        <div class="int-name">Sheets</div>
       </div>
     </div>
   </div>
 </div>
 
-<!-- VIDEO MOCKUP -->
-<div style="padding:0 2rem;max-width:1200px;margin:0 auto;">
-  <div class="video-mockup">
-    <h3 style="margin-bottom:1.5rem;font-size:1.3rem;">▶ Setup-Tutorial: In 10 Minuten vollautomatisch</h3>
-    <div class="video-player" onclick="playVideo(this)" id="video-player">
-      <div class="video-bg"></div>
-      <div class="play-btn" id="play-btn">▶</div>
-      <div class="play-animation" id="play-anim">
-        <div class="video-code" id="video-code-display">
-          <span style="color:#8b96a8"># Schritt 1: Webhook konfigurieren...</span>
+<!-- ══════════════ ALTERNATING FEATURE SECTIONS ══════════════ -->
+<div id="features">
+  <!-- Feature 1 -->
+  <div class="alt-section">
+    <div>
+      <div class="alt-label">Feature 01</div>
+      <h2 class="alt-title">Echtzeit <span class="acc">Webhook-Engine</span></h2>
+      <p class="alt-desc">Jeder Digistore24-Verkauf triggert in Millisekunden deinen gesamten Workflow. Nie wieder manuelle Überprüfung — alles passiert automatisch, 24/7, ohne Ausnahme.</p>
+      <ul class="alt-points">
+        <li>Unter 500ms Reaktionszeit pro Verkauf</li>
+        <li>Unbegrenzte parallele Webhooks (Pro)</li>
+        <li>Retry-Logik bei Verbindungsfehlern</li>
+        <li>Vollständiges Webhook-Log mit Filter</li>
+      </ul>
+    </div>
+    <div class="alt-visual">
+      <div class="visual-card">
+        <div class="visual-card-label">Letzter Verkauf</div>
+        <div class="visual-card-val green" id="last-sale">€97</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:0.25rem">Max M. aus München · vor 4s</div>
+      </div>
+      <div class="visual-card">
+        <div class="visual-card-label">Webhook Status</div>
+        <div style="display:flex;align-items:center;gap:0.4rem;margin-top:0.3rem">
+          <div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,0.7)"></div>
+          <span style="font-size:0.9rem;font-weight:700;color:#22c55e">Aktiv</span>
+          <span style="color:var(--muted);font-size:0.78rem;margin-left:auto">Response: 142ms</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-        <span style="color:var(--muted);font-size:0.8rem;">Setup läuft... 0:00 / 10:23</span>
+        <div class="visual-progress" style="margin-top:0.8rem"><div class="visual-progress-fill" style="width:95%"></div></div>
+      </div>
+      <div class="visual-card">
+        <div class="visual-card-label">Heute verarbeitete Events</div>
+        <div class="visual-card-val purple" id="events-today">0</div>
       </div>
     </div>
-    <p style="color:var(--muted);font-size:0.9rem;">Nach dem Setup läuft dein System vollautomatisch — du musst nie wieder manuell eingreifen.</p>
+  </div>
+
+  <!-- Feature 2 (reversed) -->
+  <div class="alt-section reverse">
+    <div>
+      <div class="alt-label">Feature 02</div>
+      <h2 class="alt-title">Automatische <span class="acc">E-Mail-Sequenzen</span></h2>
+      <p class="alt-desc">Welcome-Mails, Onboarding-Sequenzen, Upsell-E-Mails und Reaktivierungs-Kampagnen — alles vollautomatisch, personalisiert und zur richtigen Zeit.</p>
+      <ul class="alt-points">
+        <li>Welcome-Serie (5 E-Mails automatisch)</li>
+        <li>Upsell-Trigger nach erstem Kauf</li>
+        <li>Reaktivierung inaktiver Kunden (Tag 30+)</li>
+        <li>A/B-Test für Betreffzeilen</li>
+      </ul>
+    </div>
+    <div class="alt-visual">
+      <div style="display:flex;flex-direction:column;gap:0.6rem">
+        <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:0.8rem">
+          <div style="font-size:0.72rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">SOFORT</div>
+          <div style="font-size:0.85rem;font-weight:600">Welcome-Mail</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Öffnungsrate: 68%</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:0.8rem">
+          <div style="font-size:0.72rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">TAG 3</div>
+          <div style="font-size:0.85rem;font-weight:600">Onboarding-Guide</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Öffnungsrate: 52%</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:0.8rem">
+          <div style="font-size:0.72rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">TAG 7</div>
+          <div style="font-size:0.85rem;font-weight:600">Upsell-Angebot</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Conversion: 8.4%</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--border2);border-radius:10px;padding:0.8rem">
+          <div style="font-size:0.72rem;color:var(--violet);font-weight:700;margin-bottom:0.3rem">TAG 30</div>
+          <div style="font-size:0.85rem;font-weight:600">Reaktivierungs-Mail</div>
+          <div style="font-size:0.75rem;color:var(--muted)">Öffnungsrate: 34%</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature 3 -->
+  <div class="alt-section">
+    <div>
+      <div class="alt-label">Feature 03</div>
+      <h2 class="alt-title">Affiliate-Management <span class="acc">Autopilot</span></h2>
+      <p class="alt-desc">Automatische Affiliate-Benachrichtigungen, Commission-Tracking, Top-Performer-Reports und Auszahlungs-Erinnerungen — ohne einen Finger zu rühren.</p>
+      <ul class="alt-points">
+        <li>Automatische Benachrichtigung bei jedem Sale</li>
+        <li>Monatliche Top-Performer-Reports</li>
+        <li>Commission-Berechnung in Echtzeit</li>
+        <li>Auszahlungs-Reminder automatisch</li>
+      </ul>
+    </div>
+    <div class="alt-visual">
+      <div class="visual-card">
+        <div class="visual-card-label">Aktive Affiliates</div>
+        <div class="visual-card-val purple">38</div>
+        <div class="visual-progress" style="margin-top:0.6rem"><div class="visual-progress-fill" style="width:76%"></div></div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:0.3rem">76% aktiv in letzten 30 Tagen</div>
+      </div>
+      <div class="visual-card">
+        <div class="visual-card-label">Ausstehende Commissions</div>
+        <div class="visual-card-val green">€8.730</div>
+      </div>
+      <div class="visual-card">
+        <div class="visual-card-label">Gesamt Affiliate-Umsatz</div>
+        <div class="visual-card-val purple">€29.100</div>
+      </div>
+    </div>
   </div>
 </div>
 
-<!-- PRICING -->
-<section class="pricing-section" id="pricing">
-  <div class="section-title">
-    <h2>Einfache, faire Preise</h2>
-    <p>Starte mit dem 7-Tage-Trial — keine Kreditkarte nötig</p>
+<!-- ══════════════ COMPARISON TABLE ══════════════ -->
+<div class="sec" id="vergleich">
+  <div class="sec-header">
+    <div class="sec-label">Vergleich</div>
+    <h2 class="sec-title">Manuell vs. <span class="acc">Mit der Suite</span></h2>
+    <p class="sec-sub">Sieh selbst, wie viel Zeit und Nerven du sparst</p>
+  </div>
+  <table class="cmp-table">
+    <thead>
+      <tr>
+        <th>Aufgabe</th>
+        <th>Manuell</th>
+        <th>Mit DS24 Suite ⭐</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td class="cmp-feature">Verkauf benachrichtigen</td><td class="cmp-bad">Manuell prüfen (täglich)</td><td class="cmp-good">Sofort automatisch (&lt;500ms)</td></tr>
+      <tr><td class="cmp-feature">Welcome-Mail senden</td><td class="cmp-bad">Manuell pro Kunde (~15min)</td><td class="cmp-good">Automatisch, personalisiert</td></tr>
+      <tr><td class="cmp-feature">Affiliate-Report erstellen</td><td class="cmp-bad">Stunden Arbeit monatlich</td><td class="cmp-good">Automatisch wöchentlich</td></tr>
+      <tr><td class="cmp-feature">Conversion-Rate analysieren</td><td class="cmp-bad">Excel-Tabellen, Stunden</td><td class="cmp-good">KI-Analyse täglich</td></tr>
+      <tr><td class="cmp-feature">Refund-Erkennung</td><td class="cmp-bad">Keine Automatisierung</td><td class="cmp-good">Alert in Echtzeit</td></tr>
+      <tr><td class="cmp-feature">Google Sheets Export</td><td class="cmp-bad">Manueller Copy-Paste</td><td class="cmp-good">Automatisch nach jedem Sale</td></tr>
+      <tr><td class="cmp-feature">Telegram-Benachrichtigung</td><td class="cmp-bad">Nicht möglich</td><td class="cmp-good">Jeder Sale, sofort</td></tr>
+      <tr>
+        <td class="cmp-feature" style="font-weight:800">ZEITAUFWAND / Woche</td>
+        <td class="cmp-bad" style="font-weight:700">~15 Stunden</td>
+        <td class="cmp-good" style="font-weight:800">~15 Minuten</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════ PRICING ══════════════ -->
+<div class="sec" id="pricing">
+  <div class="sec-header" style="text-align:center">
+    <div class="sec-label" style="text-align:center">Preise</div>
+    <h2 class="sec-title" style="text-align:center">Einfache, <span class="acc">faire Preise</span></h2>
+    <p class="sec-sub" style="margin:0 auto;text-align:center">7-Tage-Trial · Keine Kreditkarte nötig</p>
   </div>
   <div class="pricing-grid">
-    <div class="pricing-card">
+    <div class="plan-card">
       <div class="plan-name">Basic</div>
-      <div class="plan-price">€39<span>/mo</span></div>
-      <ul class="plan-features">
-        <li>Real-time Webhooks</li>
-        <li>E-Mail-Benachrichtigungen</li>
-        <li>Basic Analytics Dashboard</li>
-        <li>Telegram-Benachrichtigungen</li>
-        <li>Google Sheets Export</li>
-        <li>Email-Support</li>
+      <div class="plan-price">€39</div>
+      <div class="plan-cycle">/ Monat · monatlich kündbar</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-feats">
+        <li><span class="ck">✓</span> Real-time Webhooks</li>
+        <li><span class="ck">✓</span> E-Mail-Benachrichtigungen</li>
+        <li><span class="ck">✓</span> Basic Analytics Dashboard</li>
+        <li><span class="ck">✓</span> Telegram-Alerts</li>
+        <li><span class="ck">✓</span> Google Sheets Export</li>
+        <li><span class="ck">✓</span> Email-Support</li>
       </ul>
-      <button class="plan-btn">7 Tage kostenlos</button>
+      <button class="plan-btn plan-btn-sec">7 Tage kostenlos</button>
     </div>
-    <div class="pricing-card featured">
-      <div class="featured-tag">🔥 Meistgewählt</div>
-      <div class="plan-name">Pro</div>
-      <div class="plan-price">€89<span>/mo</span></div>
-      <ul class="plan-features">
-        <li>Alles aus Basic</li>
-        <li>KI-gestützte Analytics</li>
-        <li>Automatische E-Mail-Sequenzen</li>
-        <li>Affiliate-Management</li>
-        <li>Discord-Integration</li>
-        <li>API-Zugang</li>
-        <li>Priority Support (24h)</li>
-        <li>Unbegrenzte Webhooks</li>
+    <div class="plan-card featured">
+      <div class="plan-badge">🔥 Meistgewählt</div>
+      <div class="plan-name" style="color:var(--purple)">Pro</div>
+      <div class="plan-price">€89</div>
+      <div class="plan-cycle">/ Monat · monatlich kündbar</div>
+      <div class="plan-divider"></div>
+      <ul class="plan-feats">
+        <li><span class="ck">✓</span> Alles aus Basic</li>
+        <li><span class="ck">✓</span> KI-gestützte Analytics</li>
+        <li><span class="ck">✓</span> Automatische E-Mail-Sequenzen</li>
+        <li><span class="ck">✓</span> Affiliate-Management</li>
+        <li><span class="ck">✓</span> Discord-Integration</li>
+        <li><span class="ck">✓</span> API-Zugang</li>
+        <li><span class="ck">✓</span> Priority Support 24h</li>
+        <li><span class="ck">✓</span> Unbegrenzte Webhooks</li>
       </ul>
-      <button class="plan-btn">7 Tage kostenlos</button>
+      <button class="plan-btn plan-btn-main">7 Tage kostenlos</button>
     </div>
   </div>
-</section>
+</div>
 
-<!-- TRIAL CTA -->
-<div class="trial-cta">
-  <h2>🚀 Starte deinen 7-Tage-Trial</h2>
-  <p>Vollständiger Zugang. Keine Kreditkarte. Kein Risiko.<br>Kündige jederzeit — kein Haken, keine versteckten Kosten.</p>
-  <button class="trial-cta-btn">Jetzt kostenlos starten →</button>
-  <div class="trial-note">✓ Setup in unter 10 Minuten &nbsp;·&nbsp; ✓ Keine technischen Kenntnisse nötig &nbsp;·&nbsp; ✓ Sofort einsatzbereit</div>
+<!-- ══════════════ LIVE STATS TICKER ══════════════ -->
+<div style="background:linear-gradient(135deg,#8b5cf6,#6366f1);padding:0.7rem 2rem;overflow:hidden;white-space:nowrap">
+  <div style="display:flex;gap:3rem;animation:ticker-move 25s linear infinite;color:rgba(255,255,255,0.85);font-size:0.8rem;font-weight:600">
+    <span>⚡ 1.240+ aktive Nutzer</span>
+    <span>🔔 Letzter Verkauf vor 3s</span>
+    <span>💰 €12M+ verarbeitet</span>
+    <span>✅ 99,9% Uptime</span>
+    <span>🚀 Setup in 10 Min</span>
+    <span>🌍 DSGVO-konform</span>
+    <span>⭐ 4,9/5 Bewertung</span>
+    <span>⚡ 1.240+ aktive Nutzer</span>
+    <span>🔔 Letzter Verkauf vor 3s</span>
+    <span>💰 €12M+ verarbeitet</span>
+    <span>✅ 99,9% Uptime</span>
+    <span>🚀 Setup in 10 Min</span>
+    <span>🌍 DSGVO-konform</span>
+    <span>⭐ 4,9/5 Bewertung</span>
+  </div>
+</div>
+
+<!-- ══════════════ ROI EXAMPLE ══════════════ -->
+<div style="max-width:1100px;margin:0 auto;padding:0 2rem 4rem">
+  <div style="background:linear-gradient(135deg,#1a0b3d,#0d1535);border:1px solid rgba(139,92,246,0.25);border-radius:24px;padding:3rem;display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center">
+    <div style="border-left:3px solid rgba(139,92,246,0.6);padding-left:1.5rem">
+      <div style="font-size:0.72rem;font-weight:700;color:var(--violet);text-transform:uppercase;letter-spacing:2px;margin-bottom:0.8rem">Nutzer-Erfolgsgeschichte</div>
+      <p style="font-size:1.1rem;line-height:1.75;color:var(--text);margin-bottom:1rem">"Ich verdiene <strong style="color:var(--light-purple)">€3.400 pro Monat</strong> mit Digistore24. Mit der Automation Suite spare ich <strong style="color:var(--light-purple)">15 Stunden pro Woche</strong> — Zeit, die ich in neue Produkte investiere. ROI in den ersten 10 Tagen!"</p>
+      <div style="color:var(--purple);font-weight:700;font-size:0.9rem">— Max K., Online-Marketer aus München</div>
+    </div>
+    <div style="display:grid;gap:1rem">
+      <div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:1.2rem;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:1.8rem;font-weight:900;color:#22c55e">15h</div>
+        <div style="color:var(--muted);font-size:0.82rem;margin-top:0.2rem">Gesparte Stunden pro Woche</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:1.2rem;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--purple)">+34%</div>
+        <div style="color:var(--muted);font-size:0.82rem;margin-top:0.2rem">Umsatzsteigerung in 30 Tagen</div>
+      </div>
+      <div style="background:rgba(0,0,0,0.3);border-radius:14px;padding:1.2rem;text-align:center;border:1px solid var(--border)">
+        <div style="font-size:1.8rem;font-weight:900;color:var(--light-purple)">10 Tage</div>
+        <div style="color:var(--muted);font-size:0.82rem;margin-top:0.2rem">Amortisierungszeit</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TESTIMONIALS ══════════════ -->
+<div class="sec" style="padding-bottom:2rem">
+  <div class="sec-header" style="text-align:center">
+    <div class="sec-label" style="text-align:center">Kundenstimmen</div>
+    <h2 class="sec-title" style="text-align:center">Was unsere <span class="acc">Nutzer sagen</span></h2>
+    <p class="sec-sub" style="margin:0 auto;text-align:center">Echte Ergebnisse von echten Digistore24-Verkäufern</p>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.5),transparent)"></div>
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">👨</div>
+        <div><div style="font-size:0.88rem;font-weight:700">Max K.</div><div style="font-size:0.75rem;color:var(--muted)">Online-Marketer, München</div></div>
+        <div style="margin-left:auto;color:#fbbf24;font-size:0.8rem">★★★★★</div>
+      </div>
+      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65">"Ich spare <strong style="color:var(--text)">15 Stunden pro Woche</strong>. Jeder Verkauf triggert automatisch Welcome-Mail, Telegram-Alert und Google Sheets — ohne mein Zutun."</p>
+      <div style="margin-top:0.8rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:0.5rem 0.8rem;font-size:0.78rem;color:var(--purple);font-weight:600">ROI in 10 Tagen · +34% Umsatz</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid rgba(139,92,246,0.35);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.7),transparent)"></div>
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ec4899,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">👩</div>
+        <div><div style="font-size:0.88rem;font-weight:700">Sarah L.</div><div style="font-size:0.75rem;color:var(--muted)">Kurs-Autorin, Wien</div></div>
+        <div style="margin-left:auto;color:#fbbf24;font-size:0.8rem">★★★★★</div>
+      </div>
+      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65">"Das Affiliate-Dashboard ist unglaublich. Ich sehe sofort wer verkauft, Commission, Top-Performer — und <strong style="color:var(--text)">alles läuft vollautomatisch</strong>."</p>
+      <div style="margin-top:0.8rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:0.5rem 0.8rem;font-size:0.78rem;color:var(--purple);font-weight:600">38 Affiliates · €4.200 Commission/mo</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:1.5rem;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,0.5),transparent)"></div>
+      <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem">
+        <div style="width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#06b6d4);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">🧑</div>
+        <div><div style="font-size:0.88rem;font-weight:700">Thomas B.</div><div style="font-size:0.75rem;color:var(--muted)">DS24 Seller, Berlin</div></div>
+        <div style="margin-left:auto;color:#fbbf24;font-size:0.8rem">★★★★★</div>
+      </div>
+      <p style="color:var(--muted);font-size:0.85rem;line-height:1.65">"Setup dauerte <strong style="color:var(--text)">exakt 8 Minuten</strong>. Seitdem kommt jeden Morgen der Tages-Report mit allen Zahlen — wie ein eigener Assistent."</p>
+      <div style="margin-top:0.8rem;background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2);border-radius:8px;padding:0.5rem 0.8rem;font-size:0.78rem;color:var(--purple);font-weight:600">8 min Setup · Sofort produktiv</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FAQ ══════════════ -->
+<div class="sec" style="padding-top:2rem;padding-bottom:2rem">
+  <div class="sec-header" style="text-align:center">
+    <div class="sec-label" style="text-align:center">FAQ</div>
+    <h2 class="sec-title" style="text-align:center">Häufig gestellte <span class="acc">Fragen</span></h2>
+  </div>
+  <div style="max-width:700px;margin:0 auto;display:flex;flex-direction:column;gap:0.8rem">
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Brauche ich technische Kenntnisse?</div>
+      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Nein. Das Setup funktioniert per Klick — Webhook-URL einfügen, E-Mail verbinden, fertig. Kein Code, kein Server, keine Vorkenntnisse nötig.</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Funktioniert es mit meinem Digistore24-Konto?</div>
+      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Ja. Die Suite verbindet sich über den Standard-Digistore24-Webhook. Keine Migration, keine Unterbrechung deines Geschäfts.</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Was passiert nach dem 7-Tage-Trial?</div>
+      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Du wirst per E-Mail benachrichtigt und kannst wählen ob du weiterführen möchtest. Keine automatische Belastung, keine versteckten Kosten.</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Kann ich jederzeit kündigen?</div>
+      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Ja. Monatlich kündbar, keine Mindestlaufzeit. Ein Klick in den Account-Einstellungen. Deine Daten bleiben 30 Tage nach Kündigung gespeichert.</div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.2rem 1.5rem">
+      <div style="font-size:0.9rem;font-weight:700;margin-bottom:0.5rem">Wie viele Produkte kann ich verbinden?</div>
+      <div style="color:var(--muted);font-size:0.85rem;line-height:1.6">Basic: bis zu 5 Produkte, 10 Webhooks. Pro: unbegrenzte Produkte und Webhooks. Mehrere DS24-Accounts in einem Dashboard verwaltbar.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ SECURITY & COMPLIANCE ══════════════ -->
+<div class="sec" style="padding-top:0;padding-bottom:2rem">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem">
+    <div style="display:flex;align-items:center;gap:0.8rem;margin-bottom:1.5rem">
+      <div style="width:40px;height:40px;background:rgba(139,92,246,0.12);border:1px solid rgba(139,92,246,0.3);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem">🛡️</div>
+      <div>
+        <div style="font-weight:800;font-size:0.95rem">Sicherheit &amp; Datenschutz</div>
+        <div style="color:var(--muted);font-size:0.78rem">Enterprise-grade Sicherheit für dein Business</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem">
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1rem">
+        <div style="font-size:1.2rem;margin-bottom:0.4rem">🔐</div>
+        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.3rem">SSL-Verschlüsselung</div>
+        <div style="font-size:0.78rem;color:var(--muted)">Alle Daten werden TLS 1.3 verschlüsselt übertragen</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1rem">
+        <div style="font-size:1.2rem;margin-bottom:0.4rem">🇪🇺</div>
+        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.3rem">DSGVO-konform</div>
+        <div style="font-size:0.78rem;color:var(--muted)">Server in der EU, vollständig DSGVO-konform</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1rem">
+        <div style="font-size:1.2rem;margin-bottom:0.4rem">💾</div>
+        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.3rem">Tägliche Backups</div>
+        <div style="font-size:0.78rem;color:var(--muted)">Deine Daten werden täglich gesichert und 30 Tage aufbewahrt</div>
+      </div>
+      <div style="background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:1rem">
+        <div style="font-size:1.2rem;margin-bottom:0.4rem">⚡</div>
+        <div style="font-size:0.85rem;font-weight:700;margin-bottom:0.3rem">99,9% Uptime SLA</div>
+        <div style="font-size:0.78rem;color:var(--muted)">Redundante Infrastruktur mit automatischem Failover</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ TRUST STATS ══════════════ -->
+<div style="background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:2.5rem 2rem;margin-bottom:0">
+  <div style="max-width:1100px;margin:0 auto;display:flex;justify-content:space-around;flex-wrap:wrap;gap:2rem;text-align:center">
+    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">1.240+</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Aktive Nutzer</div></div>
+    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">€12M+</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Verarbeiteter Umsatz</div></div>
+    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">4,9/5</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Durchschnitt-Bewertung</div></div>
+    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">99,9%</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Uptime-Garantie</div></div>
+    <div><div style="font-size:2rem;font-weight:900;background:linear-gradient(90deg,#8b5cf6,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent">&lt;500ms</div><div style="color:var(--muted);font-size:0.82rem;margin-top:0.3rem">Webhook-Reaktionszeit</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ CTA ══════════════ -->
+<div class="cta-strip">
+  <div class="cta-box">
+    <h2>Starte deinen 7-Tage-Trial</h2>
+    <p>Vollständiger Zugang. Keine Kreditkarte. Kein Risiko.<br>Kündige jederzeit — kein Haken, keine versteckten Kosten.</p>
+    <button class="cta-main-btn" onclick="window.open('https://digistore24-automation-suite.netlify.app','_blank')">⚡ Jetzt kostenlos starten →</button>
+    <div class="cta-note">✓ Setup in unter 10 Minuten &nbsp;·&nbsp; ✓ Keine technischen Kenntnisse nötig &nbsp;·&nbsp; ✓ Sofort einsatzbereit</div>
+  </div>
 </div>
 
 <footer>
-  <p>© 2026 Digistore24 Automation Suite · Alle Rechte vorbehalten · <a href="#" style="color:var(--blue)">Datenschutz</a> · <a href="#" style="color:var(--blue)">AGB</a></p>
-  <p style="margin-top:0.5rem;color:var(--muted)">Dieses Produkt ist nicht offiziell mit Digistore24 GmbH verbunden.</p>
+  <p>© 2026 Digistore24 Automation Suite · Alle Rechte vorbehalten · <a href="#">Datenschutz</a> · <a href="#">AGB</a></p>
+  <p style="margin-top:0.5rem">Dieses Produkt ist nicht offiziell mit Digistore24 GmbH verbunden.</p>
 </footer>
 
 <script>
-  // Counter animation
-  function animateVal(id, target, prefix, suffix, duration) {
-    const el = document.getElementById(id);
-    const step = target / (duration / 16);
-    let current = 0;
-    const timer = setInterval(() => {
-      current = Math.min(current + step, target);
-      const val = Math.round(current);
-      el.textContent = prefix + val.toLocaleString('de-DE') + suffix;
-      if (current >= target) clearInterval(timer);
-    }, 16);
+// ── NOTIFICATION FEED ──
+var notifications = [
+  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Max M. aus München', amount:'€97', atype:'green'},
+  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Sarah K. aus Wien', amount:'€47', atype:'green'},
+  {type:'affiliate', icon:'💼', title:'Affiliate-Provision!', meta:'Affiliate #284', amount:'€19.40', atype:'purple'},
+  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Thomas B. aus Berlin', amount:'€197', atype:'green'},
+  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Lisa M. aus Hamburg', amount:'€97', atype:'green'},
+  {type:'affiliate', icon:'💼', title:'Affiliate-Provision!', meta:'Affiliate #112', amount:'€38.80', atype:'purple'},
+  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Stefan K. aus Zürich', amount:'€147', atype:'green'},
+  {type:'sale', icon:'🔔', title:'Neuer Verkauf!', meta:'Anna W. aus Stuttgart', amount:'€47', atype:'green'},
+];
+
+var feedBody = document.getElementById('feed-body');
+var todayCount = 0;
+var todayRev = 0;
+var notifIdx = 0;
+
+function getTimeStr(){
+  var now = new Date();
+  return now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+}
+
+function addNotification(n){
+  var div = document.createElement('div');
+  div.className = 'notif ' + n.type;
+  div.innerHTML = '<div class="notif-icon">'+n.icon+'</div><div class="notif-body"><div class="notif-title">'+n.title+'</div><div class="notif-meta">'+n.meta+'</div><div class="notif-amount '+n.atype+'">'+n.amount+'</div></div><div class="notif-time">'+getTimeStr()+'</div>';
+  feedBody.insertBefore(div, feedBody.firstChild);
+  // remove oldest if too many
+  var items = feedBody.querySelectorAll('.notif');
+  if(items.length > 5) feedBody.removeChild(items[items.length-1]);
+  // update counter
+  if(n.type === 'sale'){
+    todayCount++;
+    todayRev += parseFloat(n.amount.replace('€','').replace(',','.'));
+    document.getElementById('today-count').textContent = todayCount;
+    document.getElementById('today-rev').textContent = '€'+todayRev.toLocaleString('de-DE');
   }
-  setTimeout(() => {
-    animateVal('revenue', 12450, '€', '', 2000);
-    animateVal('sales', 247, '', '', 1500);
-    animateVal('affiliates', 38, '', '', 1200);
-    animateVal('conversion', 4.8, '', '%', 1500);
-  }, 600);
+}
 
-  // Bar chart animation
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      document.querySelectorAll('.bar').forEach((bar, i) => {
-        const h = bar.style.height;
-        bar.style.height = '0%';
-        setTimeout(() => { bar.style.height = h; }, i * 100);
-      });
-    }, 800);
-  });
+// seed initial notifications
+(function(){
+  var seed = [notifications[0], notifications[1], notifications[2]];
+  seed.reverse().forEach(addNotification);
+})();
 
-  // Video player simulation
-  const codeLines = [
-    '# Schritt 1: Webhook-URL kopieren...',
-    '✓ Webhook konfiguriert: ds24.io/webhook/xxxx',
-    '# Schritt 2: E-Mail-Sequenz einrichten...',
-    '✓ 5 E-Mails erstellt (Welcome, Tag 3, Tag 7...)',
-    '# Schritt 3: Telegram-Bot verbinden...',
-    '✓ Bot-Token validiert: @dein_bot',
-    '# Schritt 4: Analytics aktivieren...',
-    '✓ Dashboard live — Daten fließen bereits!',
-    '🎉 Setup abgeschlossen! Du bist auf Autopilot.',
-  ];
-  function playVideo(el) {
-    const anim = document.getElementById('play-anim');
-    const playBtn = document.getElementById('play-btn');
-    playBtn.style.display = 'none';
-    anim.style.display = 'flex';
-    const codeDisplay = document.getElementById('video-code-display');
-    let lineIdx = 0;
-    const lineTimer = setInterval(() => {
-      if (lineIdx < codeLines.length) {
-        const color = codeLines[lineIdx].startsWith('#') ? '#8b96a8' : (codeLines[lineIdx].startsWith('✓') ? '#10b981' : '#f59e0b');
-        codeDisplay.innerHTML += '<br><span style="color:' + color + '">' + codeLines[lineIdx] + '</span>';
-        lineIdx++;
-      } else {
-        clearInterval(lineTimer);
-      }
-    }, 900);
+// new notification every 2s
+setInterval(function(){
+  notifIdx = (notifIdx + 1) % notifications.length;
+  addNotification(notifications[notifIdx]);
+}, 2000);
+
+// ── EVENTS COUNTER ──
+(function(){
+  var el = document.getElementById('events-today');
+  var target = 1247;
+  var start = null;
+  function step(ts){
+    if(!start) start = ts;
+    var p = Math.min((ts-start)/2000,1);
+    el.textContent = Math.round(p*target);
+    if(p<1) requestAnimationFrame(step);
   }
+  setTimeout(function(){requestAnimationFrame(step);},600);
+})();
 
-  // Periodic revenue update simulation
-  setInterval(() => {
-    const el = document.getElementById('revenue');
-    const current = parseInt(el.textContent.replace(/[€.,]/g, ''));
-    const newVal = current + Math.floor(Math.random() * 50 + 10);
-    el.textContent = '€' + newVal.toLocaleString('de-DE');
-  }, 5000);
+// ── LAST SALE LIVE UPDATE ──
+var saleAmounts = [97,47,197,147,297,97,247,127];
+var saleIdx = 0;
+setInterval(function(){
+  saleIdx = (saleIdx+1) % saleAmounts.length;
+  document.getElementById('last-sale').textContent = '€'+saleAmounts[saleIdx];
+}, 3500);
 </script>
 </body>
 </html>
