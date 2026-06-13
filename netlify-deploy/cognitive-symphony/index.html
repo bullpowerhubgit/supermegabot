@@ -3,575 +3,771 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cognitive Symphony — Das ultimative Digistore24 Powerpaket</title>
-<script>
-(function(){
-  if(localStorage.getItem('bp_ok')!=='1'){
-    document.documentElement.style.display='none';
-    var p=prompt('🔐 Passwort:');
-    if(p==='bullpower2026'){localStorage.setItem('bp_ok','1');document.documentElement.style.display='';}
-    else{document.documentElement.style.display='';document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#ef4444;font:bold 2rem sans-serif">❌ Zugang verweigert</div>';}
-  }
-})();
-</script>
+<title>Cognitive Symphony — Digistore24 auf Autopilot — 30+ Automati</title>
+<meta name="description" content="Cognitive Symphony — Das ultimative Digistore24-Automation-Tool mit 30+ automatischen Tasks, Affiliate-Management und KI-gestützten Analytics.">
+<meta property="og:title" content="Cognitive Symphony — BullPower Tools">
+<meta property="og:description" content="Cognitive Symphony — Das ultimative Digistore24-Automation-Tool mit 30+ automatischen Tasks, Affiliate-Management und KI-gestützten Analytics.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f97316">
 <style>
-  :root {
-    --bg: #080806;
-    --card: #100f0a;
-    --card2: #161410;
-    --border: #2a2418;
-    --text: #f5f0e8;
-    --muted: #9a8e7a;
-    --gold: #f59e0b;
-    --gold2: #fbbf24;
-    --orange: #f97316;
-    --dark-gold: #92400e;
-    --grad: linear-gradient(135deg, #f59e0b, #f97316);
-    --grad2: linear-gradient(135deg, #1c1608, #2d1c06);
-    --grad3: linear-gradient(135deg, #f59e0b, #fbbf24, #f97316);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; overflow-x:hidden; }
+:root {
+  --bg: #0a0500;
+  --surface: #110a02;
+  --card: #160c03;
+  --card2: #1c1005;
+  --border: #2d1e08;
+  --border2: #3d2a0e;
+  --text: #f5ede0;
+  --muted: #8c7558;
+  --dim: #5a4530;
+  --orange: #f97316;
+  --amber: #fbbf24;
+  --gold: #f59e0b;
+  --red-accent: #ef4444;
+  --green-accent: #22c55e;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'SF Pro Display','Segoe UI',system-ui,sans-serif;overflow-x:hidden;line-height:1.6}
 
-  /* NAV */
-  nav { position:fixed; top:0; width:100%; background:rgba(8,8,6,0.93); backdrop-filter:blur(20px); border-bottom:1px solid var(--border); z-index:100; padding:1rem 2rem; display:flex; justify-content:space-between; align-items:center; }
-  .logo { background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-size:1.4rem; font-weight:800; letter-spacing:-0.5px; }
-  .nav-badge { background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.4); color:var(--gold); padding:0.3rem 0.8rem; border-radius:20px; font-size:0.8rem; font-weight:700; }
-  .nav-cta { background:var(--grad); color:#0a0a0a; border:none; padding:0.5rem 1.5rem; border-radius:25px; font-weight:800; cursor:pointer; font-size:0.9rem; }
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-  /* HERO */
-  .hero { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:8rem 2rem 4rem; position:relative; overflow:hidden; }
-  .hero-glow { position:absolute; width:1000px; height:1000px; background:radial-gradient(circle, rgba(245,158,11,0.08), transparent 60%); top:-300px; left:50%; transform:translateX(-50%); }
-  .hero-glow2 { position:absolute; width:600px; height:600px; background:radial-gradient(circle, rgba(249,115,22,0.06), transparent 60%); bottom:-200px; right:-100px; }
-  .premium-badge { background:var(--grad); color:#0a0a0a; padding:0.5rem 1.2rem; border-radius:20px; font-size:0.85rem; font-weight:800; margin-bottom:2rem; display:inline-block; letter-spacing:0.5px; }
-  .hero h1 { font-size:clamp(2.2rem,5vw,4rem); font-weight:900; line-height:1.1; max-width:900px; margin-bottom:1.5rem; }
-  .hero h1 .gold { background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  .hero p { font-size:1.15rem; color:var(--muted); max-width:620px; margin-bottom:3rem; line-height:1.7; }
-  .hero-btns { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; }
-  .btn-gold { background:var(--grad); color:#0a0a0a; border:none; padding:1rem 2.5rem; border-radius:50px; font-size:1.1rem; font-weight:800; cursor:pointer; transition:transform 0.2s,box-shadow 0.2s; box-shadow:0 0 30px rgba(245,158,11,0.4); }
-  .btn-gold:hover { transform:translateY(-2px); box-shadow:0 0 60px rgba(245,158,11,0.6); }
-  .btn-outline { background:transparent; color:var(--gold); border:2px solid var(--gold); padding:1rem 2.5rem; border-radius:50px; font-size:1.1rem; font-weight:700; cursor:pointer; }
-  .hero-trust { display:flex; gap:2rem; margin-top:3rem; flex-wrap:wrap; justify-content:center; }
-  .trust-item { color:var(--muted); font-size:0.9rem; display:flex; align-items:center; gap:0.4rem; }
-  .trust-check { color:var(--gold); font-weight:700; }
+/* ── NAV ── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:200;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 2rem;background:rgba(10,5,0,0.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:0.6rem;font-weight:900;font-size:1.1rem;letter-spacing:-0.5px}
+.nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#f97316,#fbbf24);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.nav-logo-text{background:linear-gradient(90deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-links{display:flex;align-items:center;gap:2rem}
+.nav-link{color:var(--muted);font-size:0.88rem;cursor:pointer;transition:color 0.2s;text-decoration:none}
+.nav-link:hover{color:var(--text)}
+.nav-status{display:flex;align-items:center;gap:0.4rem;background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:0.3rem 0.8rem;border-radius:20px;font-size:0.78rem;font-weight:700}
+.nav-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pulse-green 2s infinite}
+@keyframes pulse-green{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(34,197,94,0.5)}50%{opacity:0.7;box-shadow:0 0 0 4px rgba(34,197,94,0)}}
+.nav-btn{background:linear-gradient(135deg,#f97316,#fbbf24);color:#0a0500;border:none;padding:0.45rem 1.2rem;border-radius:20px;font-size:0.85rem;font-weight:800;cursor:pointer;letter-spacing:0.2px}
 
-  /* SECTION COMMON */
-  section { padding:5rem 2rem; max-width:1200px; margin:0 auto; }
-  .section-title { text-align:center; margin-bottom:3rem; }
-  .section-title h2 { font-size:2.5rem; font-weight:800; margin-bottom:0.8rem; }
-  .section-title p { color:var(--muted); font-size:1.1rem; }
-  .section-title .gold-text { background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+/* ── HERO — TICKER DASHBOARD ── */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 2rem 4rem;position:relative;overflow:hidden}
+.hero-grid-bg{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;opacity:0.4}
+.hero-radial{position:absolute;width:900px;height:900px;background:radial-gradient(ellipse,rgba(249,115,22,0.12) 0%,transparent 65%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none}
 
-  /* 30+ AUTOMATIONS GRID */
-  .automations-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:1rem; }
-  .auto-item { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1rem; text-align:center; transition:transform 0.2s,border-color 0.2s,background 0.2s; cursor:default; }
-  .auto-item:hover { transform:translateY(-3px); border-color:var(--gold); background:rgba(245,158,11,0.05); }
-  .auto-item .auto-icon { font-size:1.5rem; margin-bottom:0.4rem; }
-  .auto-item .auto-name { font-size:0.8rem; color:var(--muted); line-height:1.3; }
-  .auto-item.active { border-color:rgba(245,158,11,0.5); background:rgba(245,158,11,0.08); }
-  .auto-item.active .auto-name { color:var(--gold2); }
+.ticker-bar{width:100%;max-width:900px;background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:0.6rem 1.2rem;display:flex;align-items:center;gap:1rem;margin-bottom:3rem;position:relative;z-index:1}
+.ticker-label{background:linear-gradient(135deg,#f97316,#fbbf24);color:#0a0500;font-size:0.7rem;font-weight:900;padding:0.2rem 0.6rem;border-radius:6px;white-space:nowrap;letter-spacing:1px}
+.ticker-scroll{flex:1;overflow:hidden;height:20px;position:relative}
+.ticker-inner{display:flex;gap:3rem;white-space:nowrap;animation:ticker-move 20s linear infinite;font-size:0.8rem;color:var(--muted)}
+.ticker-item{display:flex;align-items:center;gap:0.4rem}
+.ticker-item .up{color:#22c55e}
+.ticker-item .down{color:#ef4444}
+.ticker-rev{font-weight:700;color:var(--amber)}
+@keyframes ticker-move{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
 
-  /* REVENUE CHART */
-  .chart-section { background:var(--card); border:1px solid var(--border); border-radius:24px; padding:2rem; margin:0 auto 3rem; max-width:1000px; }
-  .chart-section::before { display:none; }
-  .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; flex-wrap:wrap; gap:1rem; }
-  .chart-header h3 { font-size:1.1rem; font-weight:700; }
-  .chart-kpis { display:flex; gap:2rem; }
-  .chart-kpi { text-align:right; }
-  .chart-kpi-val { font-size:1.3rem; font-weight:800; color:var(--gold); }
-  .chart-kpi-label { color:var(--muted); font-size:0.75rem; }
-  .svg-chart { width:100%; overflow:visible; }
+.hero-eyebrow{display:flex;align-items:center;gap:0.8rem;margin-bottom:1.5rem;position:relative;z-index:1}
+.eyebrow-chip{background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.35);color:var(--orange);padding:0.3rem 0.9rem;border-radius:20px;font-size:0.78rem;font-weight:700;letter-spacing:0.5px}
+.eyebrow-sep{width:40px;height:1px;background:var(--border2)}
 
-  /* AFFILIATE TABLE */
-  .affiliate-section { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2rem; max-width:1000px; margin:0 auto 3rem; }
-  .aff-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
-  .aff-table { width:100%; border-collapse:collapse; }
-  .aff-table th { padding:0.8rem 1rem; text-align:left; color:var(--muted); font-size:0.85rem; font-weight:600; border-bottom:1px solid var(--border); }
-  .aff-table td { padding:0.9rem 1rem; border-bottom:1px solid var(--border); font-size:0.9rem; }
-  .aff-table tr:last-child td { border-bottom:none; }
-  .aff-table tr:hover td { background:rgba(245,158,11,0.03); }
-  .aff-rank { background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; font-weight:800; }
-  .aff-name { font-weight:600; }
-  .aff-sales { color:var(--gold2); font-weight:700; }
-  .aff-commission { color:var(--orange); font-weight:700; }
-  .aff-badge { background:rgba(245,158,11,0.15); border:1px solid rgba(245,158,11,0.3); color:var(--gold); padding:0.2rem 0.6rem; border-radius:10px; font-size:0.75rem; font-weight:700; }
-  .aff-badge.silver { background:rgba(156,163,175,0.15); border-color:rgba(156,163,175,0.3); color:#9ca3af; }
-  .aff-badge.bronze { background:rgba(180,83,9,0.15); border-color:rgba(180,83,9,0.3); color:#b45309; }
+.hero-h1{font-size:clamp(2.4rem,5.5vw,4.2rem);font-weight:900;line-height:1.05;text-align:center;max-width:900px;letter-spacing:-1.5px;margin-bottom:1.2rem;position:relative;z-index:1}
+.hero-h1 .line2{background:linear-gradient(90deg,#f97316,#fbbf24,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:200%;animation:shimmer-text 3s linear infinite}
+@keyframes shimmer-text{0%{background-position:0%}100%{background-position:200%}}
 
-  /* PRICING TABLE */
-  .pricing-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:2rem; }
-  .pricing-card { background:var(--card); border:1px solid var(--border); border-radius:20px; padding:2.5rem; text-align:center; position:relative; transition:transform 0.2s; }
-  .pricing-card:hover { transform:translateY(-6px); }
-  .pricing-card.featured { border-color:var(--gold); background:rgba(245,158,11,0.05); }
-  .featured-tag { position:absolute; top:-14px; left:50%; transform:translateX(-50%); background:var(--grad); color:#0a0a0a; padding:0.3rem 1.2rem; border-radius:20px; font-size:0.8rem; font-weight:800; white-space:nowrap; }
-  .plan-name { font-size:1.3rem; font-weight:800; margin-bottom:0.5rem; }
-  .plan-price { font-size:3rem; font-weight:900; background:var(--grad); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-  .plan-price span { font-size:1rem; color:var(--muted); }
-  .plan-features { list-style:none; margin:1.5rem 0; text-align:left; }
-  .plan-features li { padding:0.5rem 0; border-bottom:1px solid var(--border); color:var(--muted); font-size:0.9rem; display:flex; align-items:center; gap:0.5rem; }
-  .plan-features li::before { content:'✓'; color:var(--gold); font-weight:800; }
-  .plan-btn { background:var(--grad); color:#0a0a0a; border:none; padding:0.9rem 2rem; border-radius:50px; font-weight:800; cursor:pointer; width:100%; font-size:1rem; transition:opacity 0.2s; }
-  .plan-btn:hover { opacity:0.9; }
+.hero-sub{color:var(--muted);font-size:1.05rem;max-width:560px;text-align:center;margin-bottom:2.5rem;position:relative;z-index:1}
 
-  /* COMPARISON TABLE */
-  .comp-table { width:100%; border-collapse:collapse; background:var(--card); border-radius:16px; overflow:hidden; }
-  .comp-table th { background:var(--grad); color:#0a0a0a; padding:1rem; text-align:center; font-weight:800; }
-  .comp-table td { padding:0.9rem 1rem; border-bottom:1px solid var(--border); text-align:center; font-size:0.9rem; }
-  .comp-table td:first-child { text-align:left; font-weight:600; }
-  .comp-table tr:last-child td { border-bottom:none; }
-  .comp-table tr:hover td { background:rgba(245,158,11,0.04); }
-  .yes { color:var(--gold); font-weight:800; font-size:1.1rem; }
-  .no { color:#ef4444; font-size:1.1rem; }
-  .partial { color:var(--muted); font-size:0.85rem; }
+/* LIVE REVENUE TICKER */
+.revenue-ticker{display:flex;align-items:center;gap:1.5rem;background:var(--card);border:1px solid var(--border2);border-radius:16px;padding:1.2rem 2rem;margin-bottom:2.5rem;position:relative;z-index:1}
+.rev-ticker-label{color:var(--muted);font-size:0.82rem;font-weight:600;text-transform:uppercase;letter-spacing:0.8px}
+.rev-ticker-amount{font-size:2.6rem;font-weight:900;letter-spacing:-1px;background:linear-gradient(90deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.rev-ticker-change{display:flex;align-items:center;gap:0.3rem;color:#22c55e;font-size:0.9rem;font-weight:700}
+.rev-ticker-period{color:var(--dim);font-size:0.78rem}
 
-  /* CTA */
-  .cta-section { background:var(--grad); border-radius:24px; padding:4rem; text-align:center; margin:3rem 2rem; }
-  .cta-section h2 { font-size:2.5rem; font-weight:900; color:#0a0a0a; margin-bottom:1rem; }
-  .cta-section p { color:rgba(0,0,0,0.7); font-size:1.1rem; margin-bottom:2rem; }
-  .cta-btn-dark { background:#0a0a0a; color:var(--gold); border:none; padding:1.1rem 3rem; border-radius:50px; font-size:1.15rem; font-weight:900; cursor:pointer; transition:transform 0.2s; letter-spacing:0.5px; }
-  .cta-btn-dark:hover { transform:scale(1.05); }
-  .cta-note { color:rgba(0,0,0,0.6); font-size:0.9rem; margin-top:1rem; }
+.hero-ctas{display:flex;gap:1rem;flex-wrap:wrap;justify-content:center;position:relative;z-index:1}
+.btn-primary{background:linear-gradient(135deg,#f97316,#fbbf24);color:#0a0500;border:none;padding:0.9rem 2.2rem;border-radius:50px;font-size:1rem;font-weight:800;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;box-shadow:0 0 40px rgba(249,115,22,0.35);letter-spacing:0.2px}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 60px rgba(249,115,22,0.55)}
+.btn-ghost{background:transparent;color:var(--text);border:1px solid var(--border2);padding:0.9rem 2.2rem;border-radius:50px;font-size:1rem;font-weight:600;cursor:pointer;transition:border-color 0.2s}
+.btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
 
-  footer { text-align:center; padding:3rem 2rem; color:var(--muted); font-size:0.9rem; border-top:1px solid var(--border); }
+.hero-trust{display:flex;gap:2rem;flex-wrap:wrap;justify-content:center;margin-top:2rem;position:relative;z-index:1}
+.trust-pill{display:flex;align-items:center;gap:0.4rem;color:var(--dim);font-size:0.83rem}
+.trust-pill .check{color:var(--gold);font-weight:800}
 
-  /* Animations */
-  @keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes glow { 0%,100%{box-shadow:0 0 20px rgba(245,158,11,0.2)} 50%{box-shadow:0 0 60px rgba(245,158,11,0.5)} }
-  .glow-anim { animation:glow 3s infinite; }
-  @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+/* ── SECTION WRAPPER ── */
+.section-wrap{max-width:1100px;margin:0 auto;padding:5rem 2rem}
+.sec-label{display:flex;align-items:center;gap:0.8rem;margin-bottom:1rem}
+.sec-label-line{flex:1;height:1px;background:var(--border)}
+.sec-label-text{color:var(--orange);font-size:0.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;white-space:nowrap}
+.sec-title{font-size:2.2rem;font-weight:900;letter-spacing:-0.8px;margin-bottom:0.8rem}
+.sec-title .accent{background:linear-gradient(90deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sec-sub{color:var(--muted);font-size:1rem;max-width:560px}
+
+/* ── KPI DASHBOARD ── */
+.kpi-section{background:var(--surface);border:1px solid var(--border);border-radius:24px;overflow:hidden;margin-bottom:2rem}
+.kpi-header{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 1.8rem;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:1rem}
+.kpi-header-title{display:flex;align-items:center;gap:0.6rem;font-weight:700;font-size:0.95rem}
+.kpi-header-title .dot{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pulse-green 2s infinite}
+.kpi-time{color:var(--muted);font-size:0.78rem;background:var(--card);border:1px solid var(--border);padding:0.25rem 0.7rem;border-radius:8px}
+
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);border-bottom:1px solid var(--border)}
+@media(max-width:700px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+.kpi-tile{padding:1.5rem 1.8rem;border-right:1px solid var(--border);position:relative;overflow:hidden}
+.kpi-tile:last-child{border-right:none}
+.kpi-tile::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px}
+.kpi-tile:nth-child(1)::before{background:linear-gradient(90deg,#f97316,#fbbf24)}
+.kpi-tile:nth-child(2)::before{background:linear-gradient(90deg,#22c55e,#16a34a)}
+.kpi-tile:nth-child(3)::before{background:linear-gradient(90deg,#8b5cf6,#7c3aed)}
+.kpi-tile:nth-child(4)::before{background:linear-gradient(90deg,#06b6d4,#0891b2)}
+.kpi-tile-label{color:var(--muted);font-size:0.75rem;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:0.5rem}
+.kpi-tile-val{font-size:2rem;font-weight:900;letter-spacing:-0.5px;margin-bottom:0.3rem}
+.kpi-tile:nth-child(1) .kpi-tile-val{background:linear-gradient(90deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.kpi-tile:nth-child(2) .kpi-tile-val{color:#22c55e}
+.kpi-tile:nth-child(3) .kpi-tile-val{color:#a78bfa}
+.kpi-tile:nth-child(4) .kpi-tile-val{color:#22d3ee}
+.kpi-tile-change{font-size:0.78rem;font-weight:700}
+.kpi-tile-change.up{color:#22c55e}
+.kpi-tile-change.down{color:#ef4444}
+
+/* BAR CHART */
+.barchart-wrap{padding:1.5rem 1.8rem}
+.barchart-title{font-size:0.85rem;font-weight:600;color:var(--muted);margin-bottom:1rem;text-transform:uppercase;letter-spacing:0.5px}
+.barchart{display:flex;align-items:flex-end;gap:0.8rem;height:100px;padding-bottom:2rem;position:relative}
+.barchart::after{content:'';position:absolute;bottom:2rem;left:0;right:0;height:1px;background:var(--border)}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:0.4rem}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;transform-origin:bottom;transition:height 1.2s cubic-bezier(0.34,1.56,0.64,1);position:relative;min-height:4px}
+.bar-fill:hover .bar-tooltip{opacity:1;transform:translateY(-4px)}
+.bar-tooltip{position:absolute;top:-28px;left:50%;transform:translateX(-50%);background:var(--card2);border:1px solid var(--border2);color:var(--text);padding:0.2rem 0.5rem;border-radius:6px;font-size:0.7rem;white-space:nowrap;opacity:0;transition:opacity 0.2s,transform 0.2s;pointer-events:none}
+.bar-day{font-size:0.68rem;color:var(--dim);margin-top:0.4rem}
+
+/* ── STATUS BOARD — 32 AUTOMATIONS ── */
+.status-board{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.6rem}
+.status-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:0.65rem 0.9rem;display:flex;align-items:center;gap:0.6rem;transition:border-color 0.2s,background 0.2s;cursor:default}
+.status-item:hover{border-color:var(--border2);background:var(--card2)}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.active{background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,0.6)}
+.status-dot.warning{background:#f59e0b;box-shadow:0 0 6px rgba(245,158,11,0.6)}
+.status-name{font-size:0.77rem;color:var(--muted);line-height:1.2;flex:1}
+
+/* ── LEADERBOARD TABLE ── */
+.leaderboard{background:var(--surface);border:1px solid var(--border);border-radius:20px;overflow:hidden}
+.lb-header{padding:1.2rem 1.8rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.lb-title{font-weight:700;font-size:0.95rem;display:flex;align-items:center;gap:0.5rem}
+.lb-subtitle{color:var(--muted);font-size:0.8rem}
+.lb-table{width:100%;border-collapse:collapse}
+.lb-table thead tr{background:var(--card)}
+.lb-table th{padding:0.7rem 1.2rem;text-align:left;color:var(--dim);font-size:0.72rem;font-weight:700;text-transform:uppercase;letter-spacing:0.8px}
+.lb-table td{padding:0.9rem 1.2rem;border-top:1px solid var(--border);font-size:0.88rem}
+.lb-table tr:hover td{background:rgba(249,115,22,0.03)}
+.lb-rank{display:flex;align-items:center;gap:0.5rem;font-weight:800;font-size:1rem}
+.rank-gold{color:#fbbf24}
+.rank-silver{color:#94a3b8}
+.rank-bronze{color:#b45309}
+.rank-other{color:var(--dim)}
+.lb-name{font-weight:600}
+.lb-badge{display:inline-block;padding:0.2rem 0.55rem;border-radius:8px;font-size:0.7rem;font-weight:700}
+.badge-gold{background:rgba(251,191,36,0.15);border:1px solid rgba(251,191,36,0.35);color:#fbbf24}
+.badge-silver{background:rgba(148,163,184,0.15);border:1px solid rgba(148,163,184,0.3);color:#94a3b8}
+.badge-bronze{background:rgba(180,83,9,0.15);border:1px solid rgba(180,83,9,0.3);color:#b45309}
+.lb-amount{font-weight:700;color:var(--orange)}
+.lb-comm{font-weight:600;color:var(--amber)}
+.lb-foot{padding:1rem 1.8rem;border-top:1px solid var(--border);display:flex;gap:2.5rem;flex-wrap:wrap}
+.lb-stat{display:flex;flex-direction:column}
+.lb-stat-val{font-size:1.3rem;font-weight:800;color:var(--gold)}
+.lb-stat-label{font-size:0.75rem;color:var(--muted)}
+
+/* ── PRICING ── */
+.pricing-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+@media(max-width:800px){.pricing-row{grid-template-columns:1fr}}
+.price-card{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2.2rem;position:relative;transition:transform 0.25s,border-color 0.25s}
+.price-card:hover{transform:translateY(-5px)}
+.price-card.featured{border-color:var(--orange);background:linear-gradient(160deg,rgba(249,115,22,0.06),rgba(251,191,36,0.03))}
+.price-featured-tag{position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#f97316,#fbbf24);color:#0a0500;font-size:0.72rem;font-weight:800;padding:0.25rem 1rem;border-radius:20px;white-space:nowrap;letter-spacing:0.3px}
+.price-name{font-size:0.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:0.8rem}
+.price-amount{font-size:3rem;font-weight:900;letter-spacing:-1.5px;line-height:1}
+.featured .price-amount{background:linear-gradient(135deg,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.price-per{font-size:0.85rem;color:var(--muted);margin-bottom:1.5rem;margin-top:0.3rem}
+.price-divider{height:1px;background:var(--border);margin:1.2rem 0}
+.price-features{list-style:none;display:flex;flex-direction:column;gap:0.6rem;margin-bottom:1.8rem}
+.price-features li{display:flex;align-items:flex-start;gap:0.5rem;font-size:0.85rem;color:var(--muted)}
+.price-features li .check{color:var(--gold);font-weight:700;flex-shrink:0;margin-top:1px}
+.price-btn{width:100%;padding:0.85rem;border-radius:50px;border:none;font-size:0.95rem;font-weight:800;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;letter-spacing:0.2px}
+.price-btn-primary{background:linear-gradient(135deg,#f97316,#fbbf24);color:#0a0500}
+.price-btn-primary:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(249,115,22,0.4)}
+.price-btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border)}
+.price-btn-ghost:hover{border-color:var(--orange);color:var(--orange)}
+
+/* ── COMPARISON ── */
+.comp-wrap{overflow-x:auto}
+.comp-table{width:100%;border-collapse:collapse;background:var(--surface);border-radius:16px;overflow:hidden}
+.comp-table thead tr{background:var(--card)}
+.comp-table th{padding:0.9rem 1.2rem;font-size:0.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.8px;text-align:center;border-bottom:1px solid var(--border)}
+.comp-table th:first-child{text-align:left}
+.comp-table th.highlight{background:rgba(249,115,22,0.08);color:var(--orange)}
+.comp-table td{padding:0.85rem 1.2rem;border-top:1px solid var(--border);text-align:center;font-size:0.88rem}
+.comp-table td:first-child{text-align:left;font-weight:600;color:var(--text)}
+.comp-table tr:hover td{background:rgba(249,115,22,0.025)}
+.comp-table td.highlight{background:rgba(249,115,22,0.04)}
+.yes{color:#22c55e;font-weight:800;font-size:1rem}
+.no{color:#ef4444}
+.partial{color:var(--amber);font-size:0.82rem;font-weight:600}
+
+/* ── CTA SECTION ── */
+.cta-outer{padding:3rem 2rem}
+.cta-inner{max-width:1100px;margin:0 auto;background:linear-gradient(135deg,#f97316 0%,#fbbf24 50%,#f97316 100%);border-radius:24px;padding:4rem;text-align:center;position:relative;overflow:hidden}
+.cta-inner::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.cta-inner h2{font-size:2.5rem;font-weight:900;color:#0a0500;margin-bottom:0.8rem;letter-spacing:-0.8px;position:relative}
+.cta-inner p{color:rgba(10,5,0,0.65);font-size:1.05rem;margin-bottom:2rem;position:relative}
+.cta-btn-dark{background:#0a0500;color:var(--amber);border:none;padding:1rem 2.8rem;border-radius:50px;font-size:1.1rem;font-weight:900;cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;letter-spacing:0.3px;position:relative}
+.cta-btn-dark:hover{transform:scale(1.04);box-shadow:0 12px 40px rgba(0,0,0,0.3)}
+.cta-note{margin-top:1.2rem;color:rgba(10,5,0,0.5);font-size:0.85rem;position:relative}
+
+/* ── FOOTER ── */
+footer{border-top:1px solid var(--border);padding:2.5rem 2rem;text-align:center;color:var(--dim);font-size:0.82rem}
+footer a{color:var(--orange);text-decoration:none}
+footer a:hover{text-decoration:underline}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{opacity:0;animation:fadeUp 0.6s ease forwards}
+@keyframes count-glow{0%,100%{text-shadow:none}50%{text-shadow:0 0 20px rgba(249,115,22,0.5)}}
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="logo">♦ Cognitive Symphony</div>
-  <div class="nav-badge">DS24 Pro v3.0</div>
-  <button class="nav-cta" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Jetzt kaufen →</button>
+<!-- ═══════════════════════════════════════════
+     PASSWORD GATE — DO NOT MODIFY
+════════════════════════════════════════════ -->
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f0500;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #f9731622}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#f97316;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#f97316}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#f97316,#ea580c);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #f9731644}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">🎯</div>
+    <h1>Cognitive Symphony</h1>
+    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#f97316;border:1px solid #f9731640;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">ab €29/mo</div>
+    <div class="tag">Digistore24 auf Autopilot — 30+ Automationen</div>
+    <div class="feat">30+ Automationen • Affiliate-Management • KI-Analytics</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+<!-- ═══════════════════════════════════════════
+     END GATE
+════════════════════════════════════════════ -->
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-logo-icon">♦</div>
+    <span class="nav-logo-text">Cognitive Symphony</span>
+  </div>
+  <div class="nav-links">
+    <a class="nav-link" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">Dashboard</a>
+    <a class="nav-link" onclick="document.getElementById('automations').scrollIntoView({behavior:'smooth'})">Automationen</a>
+    <a class="nav-link" onclick="document.getElementById('affiliates').scrollIntoView({behavior:'smooth'})">Affiliates</a>
+    <a class="nav-link" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Preise</a>
+  </div>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <div class="nav-status"><div class="nav-dot"></div> 247 aktiv</div>
+    <button class="nav-btn" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Jetzt kaufen →</button>
+  </div>
 </nav>
 
-<!-- HERO -->
+<!-- ══════════════ HERO ══════════════ -->
 <div class="hero">
-  <div class="hero-glow"></div>
-  <div class="hero-glow2"></div>
-  <div class="premium-badge">★ DIGISTORE24 PRO v3.0</div>
-  <h1>Cognitive Symphony —<br>Das <span class="gold">ultimative</span><br>Digistore24 Powerpaket</h1>
-  <p>30+ vollautomatische Cron-Jobs, KI-Revenue-Analytics und professionelles Affiliate-Management. Das leistungsstärkste Digistore24-Tool auf dem Markt.</p>
-  <div class="hero-btns">
-    <button class="btn-gold glow-anim" onclick="document.getElementById('automations').scrollIntoView({behavior:'smooth'})">⚡ 30+ Automationen ansehen</button>
-    <button class="btn-outline" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Preise ansehen</button>
-  </div>
-  <div class="hero-trust">
-    <div class="trust-item"><span class="trust-check">✓</span> 30+ Cron-Jobs inklusive</div>
-    <div class="trust-item"><span class="trust-check">✓</span> KI-gestützte Analytics</div>
-    <div class="trust-item"><span class="trust-check">✓</span> Affiliate-Dashboard</div>
-    <div class="trust-item"><span class="trust-check">✓</span> Sofort einsatzbereit</div>
-  </div>
-</div>
+  <div class="hero-grid-bg"></div>
+  <div class="hero-radial"></div>
 
-<!-- 30+ AUTOMATIONS -->
-<section id="automations">
-  <div class="section-title">
-    <h2>30+ <span class="gold-text">vollautomatische</span> Cron-Jobs</h2>
-    <p>Einmal konfiguriert — läuft für immer im Hintergrund</p>
-  </div>
-  <div class="automations-grid">
-    <div class="auto-item active"><div class="auto-icon">🔔</div><div class="auto-name">Verkaufs-Alert (Echtzeit)</div></div>
-    <div class="auto-item active"><div class="auto-icon">📧</div><div class="auto-name">Welcome-Mail Sequenz</div></div>
-    <div class="auto-item active"><div class="auto-icon">📊</div><div class="auto-name">Tages-Report (7:00 Uhr)</div></div>
-    <div class="auto-item active"><div class="auto-icon">💰</div><div class="auto-name">Revenue-Tracking (stündlich)</div></div>
-    <div class="auto-item active"><div class="auto-icon">🤝</div><div class="auto-name">Affiliate-Benachrichtigung</div></div>
-    <div class="auto-item active"><div class="auto-icon">📈</div><div class="auto-name">Conversion-Rate-Analyse</div></div>
-    <div class="auto-item active"><div class="auto-icon">🔄</div><div class="auto-name">Refund-Monitoring</div></div>
-    <div class="auto-item active"><div class="auto-icon">📱</div><div class="auto-name">Telegram Push-Alerts</div></div>
-    <div class="auto-item active"><div class="auto-icon">🎯</div><div class="auto-name">Upsell-Trigger (nach Kauf)</div></div>
-    <div class="auto-item active"><div class="auto-icon">📋</div><div class="auto-name">Google Sheets Export</div></div>
-    <div class="auto-item active"><div class="auto-icon">🤖</div><div class="auto-name">KI-Produkt-Empfehlungen</div></div>
-    <div class="auto-item active"><div class="auto-icon">⚠️</div><div class="auto-name">Chargeback-Alert</div></div>
-    <div class="auto-item active"><div class="auto-icon">🏆</div><div class="auto-name">Top-Affiliate-Report</div></div>
-    <div class="auto-item active"><div class="auto-icon">📆</div><div class="auto-name">Wochen-Summary (Mo 9:00)</div></div>
-    <div class="auto-item active"><div class="auto-icon">💎</div><div class="auto-name">VIP-Kunden-Erkennung</div></div>
-    <div class="auto-item active"><div class="auto-icon">🌍</div><div class="auto-name">Geo-Analytics (täglich)</div></div>
-    <div class="auto-item active"><div class="auto-icon">🔗</div><div class="auto-name">Affiliate-Link-Tracking</div></div>
-    <div class="auto-item active"><div class="auto-icon">📉</div><div class="auto-name">Drop-Analyse (Warnungen)</div></div>
-    <div class="auto-item active"><div class="auto-icon">✉️</div><div class="auto-name">Reaktivierungs-Mails</div></div>
-    <div class="auto-item active"><div class="auto-icon">🧠</div><div class="auto-name">KI-Markt-Analyse</div></div>
-    <div class="auto-item active"><div class="auto-icon">💳</div><div class="auto-name">Zahlungsart-Analyse</div></div>
-    <div class="auto-item active"><div class="auto-icon">🎁</div><div class="auto-name">Bonus-Trigger (Schwelle)</div></div>
-    <div class="auto-item active"><div class="auto-icon">📣</div><div class="auto-name">Discord Webhook</div></div>
-    <div class="auto-item active"><div class="auto-icon">🏅</div><div class="auto-name">Affiliate-Rangliste (live)</div></div>
-    <div class="auto-item active"><div class="auto-icon">🔁</div><div class="auto-name">Aboerneuerungs-Alert</div></div>
-    <div class="auto-item active"><div class="auto-icon">📊</div><div class="auto-name">Monats-Forecast (KI)</div></div>
-    <div class="auto-item active"><div class="auto-icon">🛡️</div><div class="auto-name">Fraud-Detection</div></div>
-    <div class="auto-item active"><div class="auto-icon">🎯</div><div class="auto-name">A/B-Test-Auswertung</div></div>
-    <div class="auto-item active"><div class="auto-icon">📧</div><div class="auto-name">Re-Engagement Kampagne</div></div>
-    <div class="auto-item active"><div class="auto-icon">💰</div><div class="auto-name">Commission-Auszahlung</div></div>
-    <div class="auto-item active"><div class="auto-icon">📊</div><div class="auto-name">Jahres-Business-Report</div></div>
-    <div class="auto-item active"><div class="auto-icon">⚡</div><div class="auto-name">Flash-Sale-Trigger</div></div>
-  </div>
-</section>
-
-<!-- KI-ANALYTICS CHART -->
-<div style="padding:0 2rem;max-width:1200px;margin:0 auto;">
-  <div class="chart-section">
-    <div class="chart-header">
-      <h3>📈 KI-Revenue-Analytics — Letztes Jahr</h3>
-      <div class="chart-kpis">
-        <div class="chart-kpi">
-          <div class="chart-kpi-val" id="total-rev">€0</div>
-          <div class="chart-kpi-label">Jahresumsatz</div>
-        </div>
-        <div class="chart-kpi">
-          <div class="chart-kpi-val" style="color:var(--orange)">+47%</div>
-          <div class="chart-kpi-label">YoY Wachstum</div>
-        </div>
+  <!-- Scrolling market ticker -->
+  <div class="ticker-bar">
+    <span class="ticker-label">LIVE</span>
+    <div class="ticker-scroll">
+      <div class="ticker-inner" id="ticker-inner">
+        <span class="ticker-item">DS24 Umsatz heute <span class="up">▲</span> <span class="ticker-rev" id="today-rev">€0</span></span>
+        <span class="ticker-item">Conversion-Rate <span class="up">▲ +0.8%</span></span>
+        <span class="ticker-item">Aktive Affiliates <span class="up">38</span></span>
+        <span class="ticker-item">Refund-Rate <span class="down">▼ 2.1%</span></span>
+        <span class="ticker-item">Neue Verkäufe <span class="up">▲ +18 heute</span></span>
+        <span class="ticker-item">Top-Affiliate <span class="ticker-rev">TechMaxMünchen</span></span>
+        <span class="ticker-item">Jahres-Forecast KI <span class="up">▲ +52%</span></span>
+        <!-- duplicate for seamless loop -->
+        <span class="ticker-item">DS24 Umsatz heute <span class="up">▲</span> <span class="ticker-rev">€12.450</span></span>
+        <span class="ticker-item">Conversion-Rate <span class="up">▲ +0.8%</span></span>
+        <span class="ticker-item">Aktive Affiliates <span class="up">38</span></span>
+        <span class="ticker-item">Refund-Rate <span class="down">▼ 2.1%</span></span>
+        <span class="ticker-item">Neue Verkäufe <span class="up">▲ +18 heute</span></span>
+        <span class="ticker-item">Top-Affiliate <span class="ticker-rev">TechMaxMünchen</span></span>
+        <span class="ticker-item">Jahres-Forecast KI <span class="up">▲ +52%</span></span>
       </div>
     </div>
-    <svg class="svg-chart" viewBox="0 0 800 200" preserveAspectRatio="xMidYMid meet" style="height:180px;">
-      <!-- Grid lines -->
-      <line x1="40" y1="10" x2="40" y2="170" stroke="#2a2418" stroke-width="1"/>
-      <line x1="40" y1="170" x2="790" y2="170" stroke="#2a2418" stroke-width="1"/>
-      <line x1="40" y1="130" x2="790" y2="130" stroke="#2a2418" stroke-width="0.5" stroke-dasharray="4"/>
-      <line x1="40" y1="90" x2="790" y2="90" stroke="#2a2418" stroke-width="0.5" stroke-dasharray="4"/>
-      <line x1="40" y1="50" x2="790" y2="50" stroke="#2a2418" stroke-width="0.5" stroke-dasharray="4"/>
-      <!-- Y axis labels -->
-      <text x="35" y="174" fill="#9a8e7a" font-size="10" text-anchor="end">0</text>
-      <text x="35" y="134" fill="#9a8e7a" font-size="10" text-anchor="end">€1k</text>
-      <text x="35" y="94" fill="#9a8e7a" font-size="10" text-anchor="end">€2k</text>
-      <text x="35" y="54" fill="#9a8e7a" font-size="10" text-anchor="end">€3k</text>
-      <!-- Area fill -->
-      <defs>
-        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.3"/>
-          <stop offset="100%" stop-color="#f59e0b" stop-opacity="0"/>
-        </linearGradient>
-        <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#f59e0b"/>
-          <stop offset="100%" stop-color="#f97316"/>
-        </linearGradient>
-      </defs>
-      <!-- Area path (12 months growing trend) -->
-      <path d="M 63 158 L 124 152 L 185 148 L 246 143 L 307 135 L 368 128 L 429 120 L 490 108 L 551 96 L 612 82 L 673 65 L 734 42 L 734 170 L 63 170 Z"
-            fill="url(#areaGrad)" id="area-path" opacity="0"/>
-      <!-- Line path -->
-      <path d="M 63 158 L 124 152 L 185 148 L 246 143 L 307 135 L 368 128 L 429 120 L 490 108 L 551 96 L 612 82 L 673 65 L 734 42"
-            fill="none" stroke="url(#lineGrad)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-            id="rev-line" stroke-dasharray="1000" stroke-dashoffset="1000"/>
-      <!-- Data points -->
-      <circle cx="63" cy="158" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="124" cy="152" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="185" cy="148" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="246" cy="143" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="307" cy="135" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="368" cy="128" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="429" cy="120" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="490" cy="108" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="551" cy="96" r="4" fill="#f59e0b" opacity="0" class="dp"/>
-      <circle cx="612" cy="82" r="4" fill="#f97316" opacity="0" class="dp"/>
-      <circle cx="673" cy="65" r="4" fill="#f97316" opacity="0" class="dp"/>
-      <circle cx="734" cy="42" r="5" fill="#f97316" opacity="0" class="dp" id="last-dp"/>
-      <!-- X axis month labels -->
-      <text x="63" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Jan</text>
-      <text x="124" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Feb</text>
-      <text x="185" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Mär</text>
-      <text x="246" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Apr</text>
-      <text x="307" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Mai</text>
-      <text x="368" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Jun</text>
-      <text x="429" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Jul</text>
-      <text x="490" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Aug</text>
-      <text x="551" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Sep</text>
-      <text x="612" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Okt</text>
-      <text x="673" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Nov</text>
-      <text x="734" y="186" fill="#9a8e7a" font-size="9" text-anchor="middle">Dez</text>
-      <!-- Annotation -->
-      <text x="734" y="32" fill="#f59e0b" font-size="10" text-anchor="middle" font-weight="bold" opacity="0" id="peak-label">€3.245</text>
-    </svg>
-    <div style="display:flex;gap:2rem;margin-top:1rem;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--muted)"><div style="width:20px;height:3px;background:var(--grad);border-radius:2px"></div> Monatsumsatz</div>
-      <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--muted)"><div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div> Datenpunkt</div>
-      <div style="font-size:0.85rem;color:var(--muted);margin-left:auto;">KI-Prognose: <span style="color:var(--gold);font-weight:700;">+52% in 2026</span></div>
+  </div>
+
+  <div class="hero-eyebrow">
+    <span class="eyebrow-chip">★ DS24 PRO v3.0</span>
+    <div class="eyebrow-sep"></div>
+    <span style="color:var(--muted);font-size:0.8rem;">Wall Street trifft Automation</span>
+  </div>
+
+  <h1 class="hero-h1">
+    Das ultimative<br>
+    <span class="line2">Digistore24 Powerpaket</span><br>
+    für ernst-hafte Verkäufer
+  </h1>
+  <p class="hero-sub">30+ vollautomatische Cron-Jobs, KI-Revenue-Analytics und professionelles Affiliate-Management — rund um die Uhr, ohne manuellen Eingriff.</p>
+
+  <!-- LIVE REVENUE COUNT-UP -->
+  <div class="revenue-ticker">
+    <div>
+      <div class="rev-ticker-label">Live Gesamtumsatz — letzter Monat</div>
+      <div class="rev-ticker-amount" id="hero-rev">€0</div>
+      <div class="rev-ticker-period">Automatisch aktualisiert · letzte Transaktion vor 4s</div>
+    </div>
+    <div style="width:1px;height:60px;background:var(--border)"></div>
+    <div>
+      <div class="rev-ticker-change">▲ +23%</div>
+      <div class="rev-ticker-period">vs. Vormonat</div>
+    </div>
+    <div style="width:1px;height:60px;background:var(--border)"></div>
+    <div>
+      <div style="color:var(--amber);font-size:1.4rem;font-weight:900" id="hero-sales">0</div>
+      <div class="rev-ticker-period">Verkäufe</div>
+    </div>
+  </div>
+
+  <div class="hero-ctas">
+    <button class="btn-primary" onclick="document.getElementById('dashboard').scrollIntoView({behavior:'smooth'})">⚡ Dashboard ansehen</button>
+    <button class="btn-ghost" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">Preise ansehen</button>
+  </div>
+  <div class="hero-trust">
+    <span class="trust-pill"><span class="check">✓</span> 30+ Cron-Jobs inklusive</span>
+    <span class="trust-pill"><span class="check">✓</span> KI-Analytics (täglich)</span>
+    <span class="trust-pill"><span class="check">✓</span> Affiliate-Dashboard</span>
+    <span class="trust-pill"><span class="check">✓</span> Sofort einsatzbereit</span>
+  </div>
+</div>
+
+<!-- ══════════════ ANALYTICS DASHBOARD ══════════════ -->
+<div class="section-wrap" id="dashboard">
+  <div class="sec-label">
+    <div class="sec-label-line"></div>
+    <div class="sec-label-text">Analytics Dashboard</div>
+    <div class="sec-label-line"></div>
+  </div>
+  <h2 class="sec-title" style="text-align:center;margin-bottom:0.5rem">Echtzeit KPI-<span class="accent">Übersicht</span></h2>
+  <p class="sec-sub" style="text-align:center;margin:0 auto 2rem">Alle wichtigen Kennzahlen auf einem Blick — live und automatisch aktualisiert</p>
+
+  <div class="kpi-section">
+    <div class="kpi-header">
+      <div class="kpi-header-title"><div class="dot"></div> Live Dashboard · Heute</div>
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <div class="kpi-time">Letzte Aktualisierung: gerade eben</div>
+        <div style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);color:var(--orange);padding:0.25rem 0.7rem;border-radius:8px;font-size:0.75rem;font-weight:700">DS24 Pro</div>
+      </div>
+    </div>
+    <div class="kpi-grid">
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Umsatz</div>
+        <div class="kpi-tile-val" id="kpi-rev">€0</div>
+        <div class="kpi-tile-change up">▲ +23% vs. Vormonat</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Verkäufe</div>
+        <div class="kpi-tile-val" id="kpi-sales">0</div>
+        <div class="kpi-tile-change up">▲ +18 heute</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Affiliates</div>
+        <div class="kpi-tile-val" id="kpi-aff">0</div>
+        <div class="kpi-tile-change up">▲ +5 diese Woche</div>
+      </div>
+      <div class="kpi-tile">
+        <div class="kpi-tile-label">Conversion</div>
+        <div class="kpi-tile-val" id="kpi-conv">0%</div>
+        <div class="kpi-tile-change up">▲ +0.8% vs. Vorwoche</div>
+      </div>
+    </div>
+    <div class="barchart-wrap">
+      <div class="barchart-title">Umsatz-Verlauf — letzte 7 Tage</div>
+      <div class="barchart" id="barchart">
+        <!-- bars injected by JS -->
+      </div>
     </div>
   </div>
 </div>
 
-<!-- AFFILIATE DASHBOARD -->
-<div style="padding:0 2rem;max-width:1200px;margin:0 auto;">
-  <div class="affiliate-section">
-    <div class="aff-header">
-      <h3 style="font-size:1.1rem;font-weight:700;">🏆 Top-Affiliates Dashboard</h3>
-      <span style="color:var(--muted);font-size:0.85rem;">Aktualisiert: gerade eben</span>
+<!-- ══════════════ 32 AUTOMATIONS STATUS BOARD ══════════════ -->
+<div class="section-wrap" id="automations">
+  <div class="sec-label">
+    <div class="sec-label-line"></div>
+    <div class="sec-label-text">Automation Engine</div>
+    <div class="sec-label-line"></div>
+  </div>
+  <h2 class="sec-title" style="text-align:center;margin-bottom:0.5rem">32 <span class="accent">vollautomatische</span> Cron-Jobs</h2>
+  <p class="sec-sub" style="text-align:center;margin:0 auto 2rem">Einmal konfiguriert — läuft für immer im Hintergrund. Alle Status grün.</p>
+
+  <div class="status-board" id="status-board">
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Verkaufs-Alert (Echtzeit)</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Welcome-Mail Sequenz</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Tages-Report (7:00 Uhr)</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Revenue-Tracking stündlich</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Affiliate-Benachrichtigung</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Conversion-Analyse</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Refund-Monitoring</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Telegram Push-Alerts</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Upsell-Trigger nach Kauf</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Google Sheets Export</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">KI-Produkt-Empfehlungen</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Chargeback-Alert</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Top-Affiliate-Report</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Wochen-Summary (Mo 9:00)</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">VIP-Kunden-Erkennung</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Geo-Analytics täglich</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Affiliate-Link-Tracking</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Drop-Analyse Warnungen</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Reaktivierungs-Mails</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">KI-Markt-Analyse</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Zahlungsart-Analyse</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Bonus-Trigger Schwelle</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Discord Webhook</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Affiliate-Rangliste live</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Abonnement-Alert</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Monats-Forecast KI</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Fraud-Detection</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">A/B-Test-Auswertung</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Re-Engagement Kampagne</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Commission-Auszahlung</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Jahres-Business-Report</span></div>
+    <div class="status-item"><div class="status-dot active"></div><span class="status-name">Flash-Sale-Trigger</span></div>
+  </div>
+
+  <div style="margin-top:1.5rem;display:flex;align-items:center;justify-content:center;gap:1.5rem;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--muted)"><div style="width:8px;height:8px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,0.6)"></div> Aktiv (32/32)</div>
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--muted)"><div style="width:8px;height:8px;border-radius:50%;background:#f59e0b"></div> Warnung (0)</div>
+    <div style="display:flex;align-items:center;gap:0.5rem;font-size:0.82rem;color:var(--muted)"><div style="width:8px;height:8px;border-radius:50%;background:#ef4444"></div> Fehler (0)</div>
+    <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.3);color:#22c55e;padding:0.3rem 0.9rem;border-radius:20px;font-size:0.78rem;font-weight:700">System 100% gesund</div>
+  </div>
+</div>
+
+<!-- ══════════════ AFFILIATE LEADERBOARD ══════════════ -->
+<div class="section-wrap" id="affiliates">
+  <div class="sec-label">
+    <div class="sec-label-line"></div>
+    <div class="sec-label-text">Affiliate Management</div>
+    <div class="sec-label-line"></div>
+  </div>
+  <h2 class="sec-title" style="text-align:center;margin-bottom:0.5rem">Top-Affiliates <span class="accent">Leaderboard</span></h2>
+  <p class="sec-sub" style="text-align:center;margin:0 auto 2rem">Automatisches Tracking, Commission-Berechnung und Performance-Reports</p>
+
+  <div class="leaderboard">
+    <div class="lb-header">
+      <div class="lb-title">🏆 Top-Performer — laufender Monat</div>
+      <div class="lb-subtitle">Aktualisiert: gerade eben · 38 aktive Affiliates</div>
     </div>
-    <table class="aff-table">
+    <table class="lb-table">
       <thead>
         <tr>
-          <th>#</th>
+          <th>Rang</th>
           <th>Affiliate</th>
           <th>Verkäufe</th>
-          <th>Commission</th>
           <th>Umsatz</th>
+          <th>Commission</th>
           <th>Status</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td class="aff-rank">01</td>
-          <td class="aff-name">TechMaxMünchen</td>
-          <td class="aff-sales">82</td>
-          <td class="aff-commission">€2.460</td>
-          <td style="font-weight:600;">€8.200</td>
-          <td><span class="aff-badge">Gold</span></td>
+          <td class="lb-rank"><span class="rank-gold">01</span></td>
+          <td class="lb-name">TechMaxMünchen</td>
+          <td>82</td>
+          <td class="lb-amount">€8.200</td>
+          <td class="lb-comm">€2.460</td>
+          <td><span class="lb-badge badge-gold">Gold</span></td>
         </tr>
         <tr>
-          <td class="aff-rank">02</td>
-          <td class="aff-name">OnlineprofiSarah</td>
-          <td class="aff-sales">67</td>
-          <td class="aff-commission">€2.010</td>
-          <td style="font-weight:600;">€6.700</td>
-          <td><span class="aff-badge">Gold</span></td>
+          <td class="lb-rank"><span class="rank-gold">02</span></td>
+          <td class="lb-name">OnlineprofiSarah</td>
+          <td>67</td>
+          <td class="lb-amount">€6.700</td>
+          <td class="lb-comm">€2.010</td>
+          <td><span class="lb-badge badge-gold">Gold</span></td>
         </tr>
         <tr>
-          <td class="aff-rank">03</td>
-          <td class="aff-name">DigitalMarktDE</td>
-          <td class="aff-sales">54</td>
-          <td class="aff-commission">€1.620</td>
-          <td style="font-weight:600;">€5.400</td>
-          <td><span class="aff-badge silver">Silber</span></td>
+          <td class="lb-rank"><span class="rank-silver">03</span></td>
+          <td class="lb-name">DigitalMarktDE</td>
+          <td>54</td>
+          <td class="lb-amount">€5.400</td>
+          <td class="lb-comm">€1.620</td>
+          <td><span class="lb-badge badge-silver">Silber</span></td>
         </tr>
         <tr>
-          <td class="aff-rank">04</td>
-          <td class="aff-name">PassivesEinkommen_AT</td>
-          <td class="aff-sales">41</td>
-          <td class="aff-commission">€1.230</td>
-          <td style="font-weight:600;">€4.100</td>
-          <td><span class="aff-badge silver">Silber</span></td>
+          <td class="lb-rank"><span class="rank-silver">04</span></td>
+          <td class="lb-name">PassivesEinkommen_AT</td>
+          <td>41</td>
+          <td class="lb-amount">€4.100</td>
+          <td class="lb-comm">€1.230</td>
+          <td><span class="lb-badge badge-silver">Silber</span></td>
         </tr>
         <tr>
-          <td class="aff-rank">05</td>
-          <td class="aff-name">GrowthHackerSchweiz</td>
-          <td class="aff-sales">28</td>
-          <td class="aff-commission">€840</td>
-          <td style="font-weight:600;">€2.800</td>
-          <td><span class="aff-badge bronze">Bronze</span></td>
+          <td class="lb-rank"><span class="rank-bronze">05</span></td>
+          <td class="lb-name">GrowthHackerSchweiz</td>
+          <td>28</td>
+          <td class="lb-amount">€2.800</td>
+          <td class="lb-comm">€840</td>
+          <td><span class="lb-badge badge-bronze">Bronze</span></td>
         </tr>
         <tr>
-          <td class="aff-rank">06</td>
-          <td class="aff-name">OnlineBusiness_Hub</td>
-          <td class="aff-sales">19</td>
-          <td class="aff-commission">€570</td>
-          <td style="font-weight:600;">€1.900</td>
-          <td><span class="aff-badge bronze">Bronze</span></td>
+          <td class="lb-rank"><span class="rank-bronze">06</span></td>
+          <td class="lb-name">OnlineBusiness_Hub</td>
+          <td>19</td>
+          <td class="lb-amount">€1.900</td>
+          <td class="lb-comm">€570</td>
+          <td><span class="lb-badge badge-bronze">Bronze</span></td>
         </tr>
       </tbody>
     </table>
-    <div style="margin-top:1.5rem;display:flex;gap:2rem;flex-wrap:wrap;">
-      <div style="text-align:center;"><div style="font-size:1.5rem;font-weight:800;color:var(--gold)">€29.100</div><div style="color:var(--muted);font-size:0.8rem;">Gesamter Affiliate-Umsatz</div></div>
-      <div style="text-align:center;"><div style="font-size:1.5rem;font-weight:800;color:var(--orange)">38</div><div style="color:var(--muted);font-size:0.8rem;">Aktive Affiliates</div></div>
-      <div style="text-align:center;"><div style="font-size:1.5rem;font-weight:800;color:var(--gold2)">€8.730</div><div style="color:var(--muted);font-size:0.8rem;">Ausstehende Commissions</div></div>
+    <div class="lb-foot">
+      <div class="lb-stat"><span class="lb-stat-val">€29.100</span><span class="lb-stat-label">Gesamter Affiliate-Umsatz</span></div>
+      <div class="lb-stat"><span class="lb-stat-val" style="color:var(--orange)">38</span><span class="lb-stat-label">Aktive Affiliates</span></div>
+      <div class="lb-stat"><span class="lb-stat-val" style="color:var(--amber)">€8.730</span><span class="lb-stat-label">Ausstehende Commissions</span></div>
+      <div class="lb-stat"><span class="lb-stat-val" style="color:#22c55e">30%</span><span class="lb-stat-label">Durchschn. Commission-Rate</span></div>
     </div>
   </div>
 </div>
 
-<!-- PRICING -->
-<section id="pricing">
-  <div class="section-title">
-    <h2>Wähle dein <span class="gold-text">Powerpaket</span></h2>
-    <p>Einmalige Investition. Dauerhafter Vorteil.</p>
+<!-- ══════════════ PRICING ══════════════ -->
+<div class="section-wrap" id="pricing">
+  <div class="sec-label">
+    <div class="sec-label-line"></div>
+    <div class="sec-label-text">Pakete & Preise</div>
+    <div class="sec-label-line"></div>
   </div>
-  <div class="pricing-grid">
-    <div class="pricing-card">
-      <div class="plan-name">Starter</div>
-      <div class="plan-price">€29<span>/mo</span></div>
-      <ul class="plan-features">
-        <li>10 Cron-Jobs inklusive</li>
-        <li>Echtzeit Verkaufs-Alerts</li>
-        <li>Telegram-Benachrichtigungen</li>
-        <li>Basic Revenue-Dashboard</li>
-        <li>Google Sheets Export</li>
-        <li>Email-Support</li>
-      </ul>
-      <button class="plan-btn">Starter wählen</button>
-    </div>
-    <div class="pricing-card featured">
-      <div class="featured-tag">⭐ Empfohlen</div>
-      <div class="plan-name">Pro</div>
-      <div class="plan-price">€79<span>/mo</span></div>
-      <ul class="plan-features">
-        <li>30+ Cron-Jobs inklusive</li>
-        <li>KI-Revenue-Analytics (Chart)</li>
-        <li>Affiliate-Management Dashboard</li>
-        <li>Fraud-Detection</li>
-        <li>A/B-Test-Auswertung</li>
-        <li>Discord + Telegram</li>
-        <li>KI-Marktanalyse (täglich)</li>
-        <li>API-Zugang unbegrenzt</li>
-        <li>Priority Support (12h)</li>
-      </ul>
-      <button class="plan-btn">Pro wählen</button>
-    </div>
-    <div class="pricing-card">
-      <div class="plan-name">Agency</div>
-      <div class="plan-price">€199<span>/mo</span></div>
-      <ul class="plan-features">
-        <li>Alles aus Pro</li>
-        <li>White-Label Dashboard</li>
-        <li>Multi-Account (10 Zugänge)</li>
-        <li>Custom Cron-Jobs (auf Anfrage)</li>
-        <li>Dedicated Account Manager</li>
-        <li>SLA 99,9% Uptime</li>
-        <li>Onboarding-Call (1h)</li>
-        <li>Unbegrenzte Affiliates</li>
-      </ul>
-      <button class="plan-btn">Agency wählen</button>
-    </div>
-  </div>
-</section>
+  <h2 class="sec-title" style="text-align:center;margin-bottom:0.5rem">Wähle dein <span class="accent">Powerpaket</span></h2>
+  <p class="sec-sub" style="text-align:center;margin:0 auto 2.5rem">Einmalige Investition. Dauerhafter Wettbewerbsvorteil.</p>
 
-<!-- COMPARISON TABLE -->
-<section>
-  <div class="section-title">
-    <h2>Starter vs. Pro vs. <span class="gold-text">Agency</span></h2>
-    <p>Alle Features auf einen Blick</p>
+  <div class="pricing-row">
+    <div class="price-card">
+      <div class="price-name">Starter</div>
+      <div class="price-amount">€29</div>
+      <div class="price-per">/ Monat · monatlich kündbar</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li><span class="check">✓</span> 10 Cron-Jobs inklusive</li>
+        <li><span class="check">✓</span> Echtzeit Verkaufs-Alerts</li>
+        <li><span class="check">✓</span> Telegram-Benachrichtigungen</li>
+        <li><span class="check">✓</span> Basic Revenue-Dashboard</li>
+        <li><span class="check">✓</span> Google Sheets Export</li>
+        <li><span class="check">✓</span> Email-Support</li>
+      </ul>
+      <button class="price-btn price-btn-ghost">Starter wählen</button>
+    </div>
+    <div class="price-card featured">
+      <div class="price-featured-tag">⭐ Empfohlen</div>
+      <div class="price-name" style="color:var(--orange)">Pro</div>
+      <div class="price-amount">€79</div>
+      <div class="price-per">/ Monat · monatlich kündbar</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li><span class="check">✓</span> 30+ Cron-Jobs inklusive</li>
+        <li><span class="check">✓</span> KI-Revenue-Analytics</li>
+        <li><span class="check">✓</span> Affiliate-Management Dashboard</li>
+        <li><span class="check">✓</span> Fraud-Detection</li>
+        <li><span class="check">✓</span> A/B-Test-Auswertung</li>
+        <li><span class="check">✓</span> Discord + Telegram</li>
+        <li><span class="check">✓</span> KI-Marktanalyse täglich</li>
+        <li><span class="check">✓</span> API-Zugang unbegrenzt</li>
+        <li><span class="check">✓</span> Priority Support 12h</li>
+      </ul>
+      <button class="price-btn price-btn-primary">Pro wählen</button>
+    </div>
+    <div class="price-card">
+      <div class="price-name">Agency</div>
+      <div class="price-amount">€199</div>
+      <div class="price-per">/ Monat · monatlich kündbar</div>
+      <div class="price-divider"></div>
+      <ul class="price-features">
+        <li><span class="check">✓</span> Alles aus Pro</li>
+        <li><span class="check">✓</span> White-Label Dashboard</li>
+        <li><span class="check">✓</span> Multi-Account (10 Zugänge)</li>
+        <li><span class="check">✓</span> Custom Cron-Jobs</li>
+        <li><span class="check">✓</span> Dedicated Account Manager</li>
+        <li><span class="check">✓</span> SLA 99,9% Uptime</li>
+        <li><span class="check">✓</span> Onboarding-Call 1h</li>
+        <li><span class="check">✓</span> Unbegrenzte Affiliates</li>
+      </ul>
+      <button class="price-btn price-btn-ghost">Agency wählen</button>
+    </div>
   </div>
-  <table class="comp-table">
-    <thead>
-      <tr>
-        <th style="text-align:left;">Feature</th>
-        <th>Starter</th>
-        <th>Pro</th>
-        <th>Agency</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Cron-Jobs</td>
-        <td class="partial">10 Jobs</td>
-        <td class="yes">30+</td>
-        <td class="yes">30+ Custom</td>
-      </tr>
-      <tr>
-        <td>Echtzeit Verkaufs-Alerts</td>
-        <td class="yes">✓</td>
-        <td class="yes">✓</td>
-        <td class="yes">✓</td>
-      </tr>
-      <tr>
-        <td>KI-Revenue-Analytics</td>
-        <td class="no">✗</td>
-        <td class="yes">✓</td>
-        <td class="yes">✓</td>
-      </tr>
-      <tr>
-        <td>Affiliate-Dashboard</td>
-        <td class="no">✗</td>
-        <td class="yes">✓</td>
-        <td class="yes">✓</td>
-      </tr>
-      <tr>
-        <td>Fraud-Detection</td>
-        <td class="no">✗</td>
-        <td class="yes">✓</td>
-        <td class="yes">✓</td>
-      </tr>
-      <tr>
-        <td>API-Zugang</td>
-        <td class="partial">Begrenzt</td>
-        <td class="yes">Unbegrenzt</td>
-        <td class="yes">Unbegrenzt</td>
-      </tr>
-      <tr>
-        <td>White-Label</td>
-        <td class="no">✗</td>
-        <td class="no">✗</td>
-        <td class="yes">✓</td>
-      </tr>
-      <tr>
-        <td>Multi-Account</td>
-        <td class="no">1 Account</td>
-        <td class="partial">3 Accounts</td>
-        <td class="yes">10 Accounts</td>
-      </tr>
-      <tr>
-        <td>Support-Reaktionszeit</td>
-        <td class="partial">48h</td>
-        <td class="partial">12h</td>
-        <td class="yes">2h SLA</td>
-      </tr>
-    </tbody>
-  </table>
-</section>
+</div>
 
-<!-- CTA -->
-<div class="cta-section">
-  <h2>Bereit für das ultimative Powerpaket?</h2>
-  <p>Über 1.240 Digistore24-Verkäufer vertrauen Cognitive Symphony täglich.<br>Starte noch heute und dominiere deinen Markt.</p>
-  <button class="cta-btn-dark">♦ Jetzt Cognitive Symphony kaufen</button>
-  <div class="cta-note">✓ Sofortiger Zugang nach Zahlung &nbsp;·&nbsp; ✓ 14-Tage Geld-zurück-Garantie &nbsp;·&nbsp; ✓ Kein Abo-Zwang</div>
+<!-- ══════════════ COMPARISON TABLE ══════════════ -->
+<div class="section-wrap">
+  <div class="sec-label">
+    <div class="sec-label-line"></div>
+    <div class="sec-label-text">Feature-Vergleich</div>
+    <div class="sec-label-line"></div>
+  </div>
+  <h2 class="sec-title" style="text-align:center;margin-bottom:2rem">Starter vs. Pro vs. <span class="accent">Agency</span></h2>
+  <div class="comp-wrap">
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Starter</th>
+          <th class="highlight">Pro ⭐</th>
+          <th>Agency</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Cron-Jobs</td><td class="partial">10 Jobs</td><td class="yes highlight">30+</td><td class="yes">30+ Custom</td></tr>
+        <tr><td>Echtzeit Verkaufs-Alerts</td><td class="yes">✓</td><td class="yes highlight">✓</td><td class="yes">✓</td></tr>
+        <tr><td>KI-Revenue-Analytics</td><td class="no">✗</td><td class="yes highlight">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Affiliate-Dashboard</td><td class="no">✗</td><td class="yes highlight">✓</td><td class="yes">✓</td></tr>
+        <tr><td>Fraud-Detection</td><td class="no">✗</td><td class="yes highlight">✓</td><td class="yes">✓</td></tr>
+        <tr><td>API-Zugang</td><td class="partial">Begrenzt</td><td class="yes highlight">Unbegrenzt</td><td class="yes">Unbegrenzt</td></tr>
+        <tr><td>White-Label</td><td class="no">✗</td><td class="no highlight">✗</td><td class="yes">✓</td></tr>
+        <tr><td>Multi-Account</td><td class="partial">1</td><td class="partial highlight">3</td><td class="yes">10</td></tr>
+        <tr><td>Support-Reaktionszeit</td><td class="partial">48h</td><td class="partial highlight">12h</td><td class="yes">2h SLA</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- ══════════════ CTA ══════════════ -->
+<div class="cta-outer">
+  <div class="cta-inner">
+    <h2>Bereit für das ultimative Powerpaket?</h2>
+    <p>Über 1.240 Digistore24-Verkäufer vertrauen Cognitive Symphony täglich.<br>Starte noch heute und dominiere deinen Markt.</p>
+    <button class="cta-btn-dark" onclick="window.open('https://cognitive-symphony-ds24.netlify.app','_blank')">♦ Jetzt Cognitive Symphony kaufen</button>
+    <div class="cta-note">✓ Sofortiger Zugang nach Zahlung &nbsp;·&nbsp; ✓ 14-Tage Geld-zurück-Garantie &nbsp;·&nbsp; ✓ Kein Abo-Zwang</div>
+  </div>
 </div>
 
 <footer>
-  <p>© 2026 Cognitive Symphony Pro v3.0 · Alle Rechte vorbehalten · <a href="#" style="color:var(--gold)">Datenschutz</a> · <a href="#" style="color:var(--gold)">AGB</a></p>
-  <p style="margin-top:0.5rem;color:var(--muted)">Dieses Produkt ist nicht offiziell mit Digistore24 GmbH verbunden. Ergebnisse können variieren.</p>
+  <p>© 2026 Cognitive Symphony Pro v3.0 · Alle Rechte vorbehalten · <a href="#">Datenschutz</a> · <a href="#">AGB</a></p>
+  <p style="margin-top:0.5rem">Dieses Produkt ist nicht offiziell mit Digistore24 GmbH verbunden. Ergebnisse können variieren.</p>
 </footer>
 
 <script>
-  // Revenue chart animation
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      const line = document.getElementById('rev-line');
-      const area = document.getElementById('area-path');
-      const dps = document.querySelectorAll('.dp');
-      const peakLabel = document.getElementById('peak-label');
-      // Animate line draw
-      line.style.transition = 'stroke-dashoffset 2s ease';
-      line.style.strokeDashoffset = '0';
-      // Fade in area
-      setTimeout(() => {
-        area.style.transition = 'opacity 0.8s';
-        area.style.opacity = '1';
-      }, 1500);
-      // Animate data points
-      dps.forEach((dp, i) => {
-        setTimeout(() => {
-          dp.style.transition = 'opacity 0.3s';
-          dp.style.opacity = '1';
-        }, 200 * i + 200);
-      });
-      // Show peak label
-      setTimeout(() => {
-        peakLabel.style.transition = 'opacity 0.5s';
-        peakLabel.style.opacity = '1';
-      }, 2500);
-    }, 500);
-  });
-
-  // Animate total revenue counter
-  function animateCounter(id, target, prefix, suffix, duration) {
-    const el = document.getElementById(id);
-    const step = target / (duration / 16);
-    let current = 0;
-    const timer = setInterval(() => {
-      current = Math.min(current + step, target);
-      el.textContent = prefix + Math.round(current).toLocaleString('de-DE') + suffix;
-      if (current >= target) clearInterval(timer);
-    }, 16);
+// ── HERO REVENUE COUNT-UP (€0 → €12,450 in 2 seconds) ──
+(function(){
+  var el = document.getElementById('hero-rev');
+  var target = 12450;
+  var duration = 2000;
+  var start = null;
+  function step(ts){
+    if(!start) start = ts;
+    var progress = Math.min((ts - start) / duration, 1);
+    var eased = 1 - Math.pow(1 - progress, 3);
+    var val = Math.round(eased * target);
+    el.textContent = '€' + val.toLocaleString('de-DE');
+    if(progress < 1) requestAnimationFrame(step);
   }
-  setTimeout(() => {
-    animateCounter('total-rev', 38940, '€', '', 2500);
-  }, 800);
+  setTimeout(function(){ requestAnimationFrame(step); }, 400);
+})();
 
-  // Automation items hover effect with counter
-  let activeCount = 0;
-  const autoItems = document.querySelectorAll('.auto-item');
-  autoItems.forEach((item, i) => {
-    setTimeout(() => {
-      item.style.opacity = '0';
-      item.style.transform = 'scale(0.9)';
-      item.style.transition = 'opacity 0.3s, transform 0.3s';
-      setTimeout(() => {
-        item.style.opacity = '1';
-        item.style.transform = 'scale(1)';
-      }, 50);
-    }, i * 60);
+// ── HERO SALES COUNT-UP ──
+(function(){
+  var el = document.getElementById('hero-sales');
+  var target = 247;
+  var start = null;
+  function step(ts){
+    if(!start) start = ts;
+    var p = Math.min((ts-start)/1500,1);
+    el.textContent = Math.round(p*target);
+    if(p<1) requestAnimationFrame(step);
+  }
+  setTimeout(function(){ requestAnimationFrame(step); }, 600);
+})();
+
+// ── KPI COUNTERS ──
+function countUp(id, target, prefix, suffix, duration, delay){
+  setTimeout(function(){
+    var el = document.getElementById(id);
+    var start = null;
+    function step(ts){
+      if(!start) start = ts;
+      var p = Math.min((ts-start)/duration,1);
+      var eased = 1-Math.pow(1-p,3);
+      var val = eased * target;
+      if(prefix==='€') el.textContent = '€'+Math.round(val).toLocaleString('de-DE');
+      else if(suffix==='%') el.textContent = (Math.round(val*10)/10).toFixed(1)+'%';
+      else el.textContent = prefix+Math.round(val)+suffix;
+      if(p<1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }, delay);
+}
+countUp('kpi-rev', 12450, '€', '', 2000, 300);
+countUp('kpi-sales', 247, '', '', 1500, 400);
+countUp('kpi-aff', 38, '', '', 1200, 500);
+countUp('kpi-conv', 4.8, '', '%', 1500, 600);
+
+// ── BAR CHART ──
+(function(){
+  var data = [
+    {day:'Mo', val:824, pct:42},
+    {day:'Di', val:1138, pct:58},
+    {day:'Mi', val:933, pct:47},
+    {day:'Do', val:1447, pct:74},
+    {day:'Fr', val:1241, pct:63},
+    {day:'Sa', val:1756, pct:90},
+    {day:'So', val:1965, pct:100}
+  ];
+  var container = document.getElementById('barchart');
+  data.forEach(function(d, i){
+    var col = document.createElement('div');
+    col.className = 'bar-col';
+    var hue = 20 + (i/data.length)*20;
+    col.innerHTML = '<div class="bar-fill" data-pct="'+d.pct+'" style="height:0px;background:linear-gradient(to top,#f97316,#fbbf24);"><div class="bar-tooltip">€'+d.val.toLocaleString('de-DE')+'</div></div><div class="bar-day">'+d.day+'</div>';
+    container.appendChild(col);
   });
+  setTimeout(function(){
+    var fills = container.querySelectorAll('.bar-fill');
+    fills.forEach(function(f){
+      var pct = parseInt(f.getAttribute('data-pct'));
+      f.style.height = pct + 'px';
+    });
+  }, 500);
+})();
+
+// ── PERIODIC LIVE REVENUE UPDATE ──
+setInterval(function(){
+  var el = document.getElementById('kpi-rev');
+  var raw = parseInt(el.textContent.replace(/[€.,\s]/g,''));
+  if(!isNaN(raw)){
+    var bump = Math.floor(Math.random()*80+20);
+    el.textContent = '€'+(raw+bump).toLocaleString('de-DE');
+  }
+}, 6000);
+
+// ── STATUS BOARD STAGGER ANIMATION ──
+(function(){
+  var items = document.querySelectorAll('.status-item');
+  items.forEach(function(item, i){
+    item.style.opacity='0';
+    item.style.transform='translateY(12px)';
+    item.style.transition='opacity 0.4s ease, transform 0.4s ease';
+    setTimeout(function(){
+      item.style.opacity='1';
+      item.style.transform='translateY(0)';
+    }, 50*i + 200);
+  });
+})();
 </script>
 </body>
 </html>

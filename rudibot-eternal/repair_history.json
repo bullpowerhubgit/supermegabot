@@ -2,13 +2,21 @@
   "03f4c35825a9": {
     "error_type": "server_down",
     "first_seen": "2026-05-24T01:51:25.256417",
-    "count": 238,
-    "successes": 1,
-    "last_fix": "2026-05-27T16:13:59.096612",
+    "count": 26948,
+    "successes": 0,
+    "last_fix": null,
+    "solutions": [],
+    "last_seen": "2026-06-13T11:21:10.347499"
+  },
+  "2774ddc5acbc": {
+    "error_type": "missing_module",
+    "first_seen": "2026-05-28T17:08:06.409390",
+    "count": 34,
+    "successes": 34,
+    "last_fix": "npm_install",
     "solutions": [
-      "acknowledged_stuck_error_reset_2026-05-28"
+      "npm_install"
     ],
-    "last_seen": "2026-05-27T14:22:25.997326",
-    "status": "acknowledged"
+    "last_seen": "2026-05-28T18:53:37.400738"
   }
 }

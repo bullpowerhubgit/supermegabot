@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Telegram Marketing Bot — Telegram Marketing auf Autopilot</title>
+
+<script></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --tg-bg: #17212b;
+    --tg-bg2: #0e1621;
+    --tg-bg3: #1c2d3e;
+    --tg-sidebar: #1c2733;
+    --tg-blue: #2aabee;
+    --tg-blue2: #1a8dc8;
+    --tg-blue-dim: rgba(42,171,238,0.12);
+    --tg-green: #4dcd5e;
+    --tg-msg-out: #2b5278;
+    --tg-msg-in: #182533;
+    --tg-header: #1c2d3e;
+    --text: #ffffff;
+    --text-dim: #708899;
+    --text-mid: #96a3ad;
+    --border: rgba(42,171,238,0.15);
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--tg-bg2);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+    background: rgba(14,22,33,0.97); backdrop-filter: blur(12px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding: 0.8rem 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .nav-brand { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; }
+  .nav-brand-icon {
+    width: 36px; height: 36px; background: var(--tg-blue);
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+  }
+  .nav-brand-name { font-size: 1.05rem; font-weight: 700; color: #fff; }
+  .nav-links { display: flex; gap: 0.2rem; }
+  .nav-links a {
+    color: var(--text-dim); text-decoration: none; font-size: 0.85rem;
+    padding: 0.4rem 0.9rem; border-radius: 8px; transition: all 0.15s; font-weight: 500;
+  }
+  .nav-links a:hover { background: rgba(255,255,255,0.06); color: #fff; }
+  .nav-cta {
+    background: var(--tg-blue); color: #fff; font-weight: 600;
+    padding: 0.55rem 1.4rem; border-radius: 20px; text-decoration: none;
+    font-size: 0.85rem; transition: background 0.15s;
+  }
+  .nav-cta:hover { background: var(--tg-blue2); }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh; padding: 5.5rem 1.5rem 4rem;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(ellipse 50% 40% at 50% 20%, rgba(42,171,238,0.1) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 20% at 10% 70%, rgba(42,171,238,0.05) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .hero-label {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    background: var(--tg-blue-dim); border: 1px solid var(--border);
+    color: var(--tg-blue); padding: 0.35rem 1rem; border-radius: 20px;
+    font-size: 0.78rem; font-weight: 600; margin-bottom: 1.8rem; position: relative;
+  }
+  .hero-label .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--tg-green); animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+  .hero-title {
+    font-size: clamp(2.2rem, 6vw, 4.5rem); font-weight: 900;
+    color: #fff; text-align: center; line-height: 1.05;
+    letter-spacing: -1.5px; margin-bottom: 1rem; position: relative;
+  }
+  .hero-title .blue { color: var(--tg-blue); }
+  .hero-sub {
+    color: var(--text-mid); font-size: 1rem; text-align: center;
+    max-width: 520px; margin-bottom: 3rem; position: relative;
+  }
+
+  /* TELEGRAM PHONE MOCKUP */
+  .phone-wrap {
+    position: relative; margin-bottom: 3rem;
+  }
+  .phone-frame {
+    width: min(420px, 92vw);
+    background: var(--tg-bg);
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 30px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06);
+    position: relative;
+  }
+  /* Phone header */
+  .phone-header {
+    background: var(--tg-header);
+    padding: 0.8rem 1rem;
+    display: flex; align-items: center; gap: 0.8rem;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .phone-back { color: var(--tg-blue); font-size: 1rem; cursor: pointer; }
+  .phone-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--tg-blue), var(--tg-blue2));
+    display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+  .phone-info { flex: 1; min-width: 0; }
+  .phone-name { font-size: 0.95rem; font-weight: 600; color: #fff; }
+  .phone-status { font-size: 0.72rem; color: var(--tg-blue); }
+  .phone-icons { display: flex; gap: 1rem; color: var(--text-dim); font-size: 1.1rem; }
+
+  /* Chat messages */
+  .chat-area {
+    padding: 1rem; display: flex; flex-direction: column; gap: 0.6rem;
+    min-height: 360px;
+    background: linear-gradient(180deg, var(--tg-bg) 0%, #0f1c26 100%);
+  }
+  .chat-date-sep {
+    text-align: center; font-size: 0.7rem; color: var(--text-dim);
+    background: rgba(0,0,0,0.3); padding: 0.2rem 0.8rem; border-radius: 10px;
+    display: inline-block; margin: 0 auto;
+  }
+  /* Outgoing (user) */
+  .msg-out {
+    display: flex; justify-content: flex-end;
+    opacity: 0; animation: msgslide 0.35s forwards;
+  }
+  .msg-out .bubble {
+    background: var(--tg-msg-out); border-radius: 14px 14px 4px 14px;
+    padding: 0.65rem 0.9rem; max-width: 85%;
+    font-size: 0.88rem; color: #fff; position: relative;
+  }
+  /* Incoming (bot) */
+  .msg-in {
+    display: flex; justify-content: flex-start; align-items: flex-end; gap: 0.5rem;
+    opacity: 0; animation: msgslide 0.35s forwards;
+  }
+  .msg-in .b-av {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--tg-blue), #1e7ab8);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; flex-shrink: 0;
+  }
+  .msg-in .bubble {
+    background: var(--tg-msg-in); border-radius: 14px 14px 14px 4px;
+    padding: 0.65rem 0.9rem; max-width: 88%;
+    font-size: 0.88rem; color: #fff; position: relative;
+  }
+  .msg-in .bubble .bot-name-label {
+    font-size: 0.72rem; font-weight: 700; color: var(--tg-blue);
+    margin-bottom: 0.2rem;
+  }
+  .msg-time {
+    font-size: 0.62rem; color: rgba(255,255,255,0.35);
+    margin-top: 0.3rem; text-align: right;
+  }
+  .msg-progress {
+    background: rgba(42,171,238,0.15); border-radius: 8px;
+    padding: 0.5rem 0.7rem; margin-top: 0.4rem; font-size: 0.8rem;
+  }
+  .progress-bar-wrap { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 0.4rem; }
+  .progress-bar-fill {
+    height: 100%; background: var(--tg-blue); border-radius: 2px;
+    animation: pfill 2.5s ease-out forwards; animation-delay: 2s; width: 0;
+  }
+  @keyframes pfill { to { width: 68%; } }
+
+  @keyframes msgslide { to { opacity:1; transform:none; } }
+  .msg-out:nth-child(2) { animation-delay:0.3s; transform:translateX(20px); }
+  .msg-in:nth-child(3) { animation-delay:0.9s; transform:translateX(-20px); }
+  .msg-in:nth-child(4) { animation-delay:1.8s; transform:translateX(-20px); }
+  .msg-in:nth-child(5) { animation-delay:2.8s; transform:translateX(-20px); }
+
+  /* Input */
+  .chat-input {
+    padding: 0.7rem; display: flex; align-items: center; gap: 0.6rem;
+    background: var(--tg-header); border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .chat-input-fake {
+    flex: 1; background: rgba(255,255,255,0.07); border-radius: 20px;
+    padding: 0.55rem 1rem; font-size: 0.83rem; color: var(--text-dim);
+  }
+  .chat-send {
+    width: 36px; height: 36px; border-radius: 50%; background: var(--tg-blue);
+    display: flex; align-items: center; justify-content: center; font-size: 1rem; cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* BUTTONS */
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; }
+  .btn-tg {
+    background: var(--tg-blue); color: #fff; font-weight: 700;
+    padding: 1rem 2.5rem; border-radius: 24px; text-decoration: none;
+    font-size: 0.95rem; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;
+    box-shadow: 0 4px 20px rgba(42,171,238,0.3);
+  }
+  .btn-tg:hover { background: var(--tg-blue2); transform: translateY(-2px); box-shadow: 0 8px 30px rgba(42,171,238,0.4); }
+  .btn-ghost-tg {
+    background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+    color: #fff; font-weight: 600; padding: 1rem 2.5rem; border-radius: 24px;
+    text-decoration: none; font-size: 0.95rem; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+  }
+  .btn-ghost-tg:hover { background: rgba(255,255,255,0.08); }
+
+  /* SECTIONS */
+  section { padding: 5rem 1.5rem; }
+  .section-inner { max-width: 1000px; margin: 0 auto; }
+  .section-header { text-align: center; margin-bottom: 3rem; }
+  .kicker {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 3px; color: var(--tg-blue); margin-bottom: 0.7rem; display: block;
+  }
+  .s-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900;
+    color: #fff; letter-spacing: -0.5px; line-height: 1.1;
+  }
+  .s-title .tblue { color: var(--tg-blue); }
+  .s-sub { color: var(--text-mid); font-size: 0.95rem; margin-top: 0.8rem; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+  /* STATS */
+  .stats-row {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1px; background: rgba(255,255,255,0.06); margin: 4rem 0 0;
+  }
+  .stat-cell {
+    background: var(--tg-bg); padding: 2rem 1.5rem; text-align: center;
+  }
+  .stat-val {
+    font-size: 2.2rem; font-weight: 900; color: var(--tg-blue);
+    display: block; margin-bottom: 0.3rem;
+  }
+  .stat-name { font-size: 0.78rem; color: var(--text-dim); font-weight: 500; }
+
+  /* FEATURES LIST */
+  .features-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+  .feat-list { display: flex; flex-direction: column; gap: 1.2rem; }
+  .feat-row { display: flex; gap: 1rem; align-items: flex-start; }
+  .feat-ico {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: var(--tg-blue-dim); display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0; border: 1px solid var(--border);
+  }
+  .feat-info {}
+  .feat-t { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.2rem; }
+  .feat-d { font-size: 0.83rem; color: var(--text-mid); line-height: 1.5; }
+
+  /* Second features column: Command list */
+  .cmd-list { background: var(--tg-bg); border-radius: 12px; overflow: hidden; border: 1px solid rgba(255,255,255,0.06); }
+  .cmd-header {
+    background: var(--tg-header); padding: 0.8rem 1rem;
+    font-size: 0.8rem; font-weight: 600; color: var(--text-mid);
+    display: flex; align-items: center; gap: 0.5rem;
+  }
+  .cmd-item {
+    padding: 0.75rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex; align-items: flex-start; gap: 0.8rem;
+  }
+  .cmd-item:last-child { border-bottom: none; }
+  .cmd-name { font-family: 'Courier New', monospace; color: var(--tg-blue); font-size: 0.82rem; font-weight: 600; flex-shrink: 0; width: 150px; }
+  .cmd-desc { font-size: 0.8rem; color: var(--text-mid); line-height: 1.4; }
+
+  /* PLANS */
+  .plans-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+  .plan-card {
+    background: var(--tg-bg); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px; padding: 2rem;
+    position: relative; overflow: hidden; transition: all 0.2s;
+  }
+  .plan-card:hover { border-color: rgba(42,171,238,0.3); transform: translateY(-3px); }
+  .plan-card.featured {
+    border-color: var(--tg-blue);
+    box-shadow: 0 0 40px rgba(42,171,238,0.15);
+    background: linear-gradient(145deg, rgba(42,171,238,0.06), var(--tg-bg));
+  }
+  .plan-top-tag {
+    position: absolute; top: 1rem; right: 1rem;
+    background: var(--tg-blue); color: #000; font-size: 0.62rem;
+    font-weight: 700; letter-spacing: 1px; padding: 0.2rem 0.6rem;
+    border-radius: 10px; text-transform: uppercase;
+  }
+  /* Telegram forwarded message style */
+  .plan-forwarded {
+    background: rgba(42,171,238,0.08); border-left: 3px solid var(--tg-blue);
+    border-radius: 0 8px 8px 0; padding: 0.6rem 0.8rem; margin-bottom: 1.2rem;
+    font-size: 0.75rem; color: var(--tg-blue);
+  }
+  .plan-forwarded-from { font-weight: 700; margin-bottom: 0.1rem; }
+  .plan-forwarded-text { color: var(--text-mid); font-size: 0.7rem; }
+  .plan-name { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.5rem; font-weight: 600; }
+  .plan-price { font-size: 2.5rem; font-weight: 900; color: #fff; line-height: 1; margin-bottom: 0.3rem; }
+  .plan-price sub { font-size: 0.95rem; color: var(--text-mid); font-weight: 400; vertical-align: bottom; }
+  .plan-tagline { color: var(--text-mid); font-size: 0.83rem; margin-bottom: 1.5rem; }
+  .plan-feats { list-style: none; margin-bottom: 1.8rem; }
+  .plan-feats li {
+    padding: 0.5rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.85rem; color: var(--text-mid);
+    display: flex; align-items: center; gap: 0.6rem;
+  }
+  .plan-feats li:last-child { border-bottom: none; }
+  .plan-feats li .ck { color: var(--tg-green); }
+  .plan-btn {
+    display: block; text-align: center; padding: 0.85rem;
+    background: var(--tg-blue); color: #fff; font-weight: 700;
+    border-radius: 20px; text-decoration: none; font-size: 0.88rem; transition: background 0.15s;
+  }
+  .plan-btn:hover { background: var(--tg-blue2); }
+
+  /* CTA */
+  .cta-wrap {
+    background: var(--tg-bg); border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 5rem 1.5rem; text-align: center;
+    position: relative; overflow: hidden;
+  }
+  .cta-wrap::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 70% at 50% 100%, rgba(42,171,238,0.08) 0%, transparent 60%);
+  }
+  .cta-wrap h2 { font-size: clamp(1.8rem,4vw,3.2rem); font-weight: 900; color: #fff; margin-bottom: 1rem; position: relative; }
+  .cta-wrap p { color: var(--text-mid); margin-bottom: 2.5rem; font-size: 1rem; position: relative; }
+  .cta-main-btn {
+    display: inline-flex; align-items: center; gap: 0.7rem;
+    background: var(--tg-blue); color: #fff; font-weight: 800;
+    padding: 1.1rem 3rem; border-radius: 28px; text-decoration: none;
+    font-size: 1rem; box-shadow: 0 4px 30px rgba(42,171,238,0.4); position: relative;
+    transition: all 0.2s;
+  }
+  .cta-main-btn:hover { background: var(--tg-blue2); transform: translateY(-2px); box-shadow: 0 8px 40px rgba(42,171,238,0.6); }
+
+  /* FOOTER */
+  footer { background: var(--tg-bg2); border-top: 1px solid rgba(255,255,255,0.05); padding: 3rem 1.5rem; }
+  .footer-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+  .footer-brand2 { display: flex; align-items: center; gap: 0.6rem; }
+  .footer-brand2 .ico { width: 32px; height: 32px; border-radius: 50%; background: var(--tg-blue); display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .footer-brand2 .nm { font-weight: 700; color: #fff; font-size: 0.95rem; }
+  .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+  .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; transition: color 0.15s; }
+  .footer-links a:hover { color: var(--tg-blue); }
+  .footer-copy { font-size: 0.73rem; color: var(--text-dim); width: 100%; text-align: center; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.04); }
+
+  @media (max-width: 768px) {
+    .features-layout { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 500px) {
+    .nav-links { display: none; }
+    .hero-title { font-size: 2rem; }
+  }
+</style>
+</head>
+<body>
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#00080f;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #2aabee22}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#2aabee,#1a8dc8);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}<div style="display:inline-block;background:rgba(255,255,255,0.07);color:#2aabee;border:1px solid #2aabee40;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1.2rem">ab €29/mo</div>
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#2aabee;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#2aabee}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#2aabee,#1a8dc8);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #2aabee44}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">📱</div>
+    <h1>Telegram Marketing Bot</h1>
+    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#2aabee;border:1px solid #2aabee40;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">ab €29/mo</div>
+    <div class="tag">Telegram Marketing komplett auf Autopilot</div>
+    <div class="feat">Multi-Account • Auto-Messaging • Analytics • API</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <div class="nav-brand-icon">✈️</div>
+    <div class="nav-brand-name">TelegramBot</div>
+  </a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#commands">Befehle</a>
+    <a href="#pricing">Preise</a>
+  </div>
+  <a href="https://telegram-marketing-bot.netlify.app" class="nav-cta">Jetzt starten</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-label"><span class="dot"></span> LIVE — 3.421 Kontakte in aktiver Kampagne</div>
+  <h1 class="hero-title">Telegram Marketing<br><span class="blue">auf Autopilot</span></h1>
+  <p class="hero-sub">Sende Kampagnen, starte Sequenzen, tracke Konversionen — alles direkt per Bot-Befehl in Telegram.</p>
+
+  <!-- PHONE MOCKUP -->
+  <div class="phone-wrap">
+    <div class="phone-frame">
+      <div class="phone-header">
+        <div class="phone-back">←</div>
+        <div class="phone-avatar">🤖</div>
+        <div class="phone-info">
+          <div class="phone-name">@MarketingBot</div>
+          <div class="phone-status">● online</div>
+        </div>
+        <div class="phone-icons">
+          <span>🔍</span>
+          <span>⋮</span>
+        </div>
+      </div>
+      <div class="chat-area">
+        <div style="text-align:center;"><div class="chat-date-sep">Heute</div></div>
+        <!-- User command -->
+        <div class="msg-out">
+          <div class="bubble">
+            <code style="font-size:0.83rem;">/kampagne starten --ziel=500</code>
+            <div class="msg-time">14:23</div>
+          </div>
+        </div>
+        <!-- Bot response 1 -->
+        <div class="msg-in">
+          <div class="b-av">🤖</div>
+          <div class="bubble">
+            <div class="bot-name-label">MarketingBot</div>
+            ✅ Kampagne gestartet. Sende an <strong>3.421</strong> Kontakte aus deiner Liste <em>newsletter_2026</em>...
+            <div class="msg-time">14:23</div>
+          </div>
+        </div>
+        <!-- Bot update -->
+        <div class="msg-in">
+          <div class="b-av">🤖</div>
+          <div class="bubble">
+            <div class="bot-name-label">MarketingBot</div>
+            📊 <strong>Echtzeit-Update:</strong>
+            <div class="msg-progress">
+              ✉️ 1.204 zugestellt · 89 Antworten · 23 Konversionen
+              <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+              <div style="font-size:0.72rem;color:var(--text-dim);margin-top:0.3rem;">68% der Nachrichten abgearbeitet</div>
+            </div>
+            <div class="msg-time">14:31</div>
+          </div>
+        </div>
+        <!-- Bot final -->
+        <div class="msg-in">
+          <div class="b-av">🤖</div>
+          <div class="bubble">
+            <div class="bot-name-label">MarketingBot</div>
+            🎯 Kampagne beendet!<br>
+            <span style="color:#4dcd5e;">✓</span> Ziel 500 Konversionen: <strong style="color:#4dcd5e;">Erreicht</strong><br>
+            📈 Konversionsrate: 6.7% · Umsatz: <strong>€2.847</strong>
+            <div class="msg-time">15:12</div>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input">
+        <div class="chat-input-fake">Befehl eingeben...</div>
+        <div class="chat-send">↑</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-btns">
+    <a href="https://telegram-marketing-bot.netlify.app" class="btn-tg">✈️ Bot aktivieren</a>
+    <a href="#features" class="btn-ghost-tg">Features ansehen →</a>
+  </div>
+
+  <div class="stats-row" style="max-width:700px;width:100%;margin-top:3rem;">
+    <div class="stat-cell"><span class="stat-val" data-end="3421">0</span><span class="stat-name">Aktive Kontakte</span></div>
+    <div class="stat-cell"><span class="stat-val" data-end="6">0</span><span class="stat-name">% Konversionsrate</span></div>
+    <div class="stat-cell"><span class="stat-val" data-end="99">0</span><span class="stat-name">% Uptime</span></div>
+    <div class="stat-cell"><span class="stat-val" data-end="847">0</span><span class="stat-name">Nutzer aktiv</span></div>
+  </div>
+</section>
+
+<!-- FEATURES + COMMANDS -->
+<section id="features" style="background:var(--tg-bg);border-top:1px solid rgba(255,255,255,0.05);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="kicker">FUNKTIONEN & BEFEHLE</span>
+      <h2 class="s-title">Alles was du für<br><span class="tblue">Telegram-Marketing</span> brauchst</h2>
+    </div>
+    <div class="features-layout">
+      <div class="feat-list">
+        <div class="feat-row">
+          <div class="feat-ico">📢</div>
+          <div class="feat-info">
+            <div class="feat-t">Massen-Messaging</div>
+            <div class="feat-d">Sende an bis zu 100.000 Kontakte gleichzeitig. Mit personalisierten Variablen wie {vorname} und {produkt}.</div>
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-ico">🔄</div>
+          <div class="feat-info">
+            <div class="feat-t">Automatisierte Sequenzen</div>
+            <div class="feat-d">Erstelle Follow-up-Sequenzen: Nachricht 1 sofort, Nachricht 2 nach 24h, Nachricht 3 nach 72h.</div>
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-ico">🎯</div>
+          <div class="feat-info">
+            <div class="feat-t">Segmentierung & Targeting</div>
+            <div class="feat-d">Segmentiere Kontakte nach Quelle, Verhalten, Kaufhistorie und sende gezielt an die richtigen Nutzer.</div>
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-ico">📊</div>
+          <div class="feat-info">
+            <div class="feat-t">Echtzeit Analytics</div>
+            <div class="feat-d">Öffnungsraten, Klickraten, Konversionen und Umsatz — direkt als Bot-Nachricht oder Web-Dashboard.</div>
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-ico">🤖</div>
+          <div class="feat-info">
+            <div class="feat-t">KI-gestützte Antworten</div>
+            <div class="feat-d">Der Bot beantwortet einfache Kundenfragen automatisch mit Claude AI — nur komplexe Anfragen kommen zu dir.</div>
+          </div>
+        </div>
+        <div class="feat-row">
+          <div class="feat-ico">🔗</div>
+          <div class="feat-info">
+            <div class="feat-t">Shopify + Stripe Integration</div>
+            <div class="feat-d">Verbinde deinen Shop: Bestellbestätigungen, Versandbenachrichtigungen und Recovery-Nachrichten automatisch.</div>
+          </div>
+        </div>
+      </div>
+      <!-- Command list -->
+      <div>
+        <div id="commands" class="cmd-list">
+          <div class="cmd-header">✈️ Verfügbare Befehle</div>
+          <div class="cmd-item"><span class="cmd-name">/kampagne</span><span class="cmd-desc">Starte eine neue Marketing-Kampagne mit anpassbaren Parametern</span></div>
+          <div class="cmd-item"><span class="cmd-name">/sequenz</span><span class="cmd-desc">Erstelle automatisierte Follow-up-Sequenz mit Zeitplan</span></div>
+          <div class="cmd-item"><span class="cmd-name">/kontakte</span><span class="cmd-desc">Liste importieren, segmentieren oder exportieren</span></div>
+          <div class="cmd-item"><span class="cmd-name">/stats</span><span class="cmd-desc">Aktuelle Performance-Metriken abrufen</span></div>
+          <div class="cmd-item"><span class="cmd-name">/pause</span><span class="cmd-desc">Laufende Kampagne pausieren oder fortsetzen</span></div>
+          <div class="cmd-item"><span class="cmd-name">/template</span><span class="cmd-desc">Nachrichtenvorlagen verwalten und mit KI erstellen</span></div>
+          <div class="cmd-item"><span class="cmd-name">/abtest</span><span class="cmd-desc">A/B-Test für zwei Nachrichtenvarianten starten</span></div>
+          <div class="cmd-item"><span class="cmd-name">/broadcast</span><span class="cmd-desc">Sofortige Broadcast-Nachricht an alle Abonnenten</span></div>
+          <div class="cmd-item"><span class="cmd-name">/autoresponder</span><span class="cmd-desc">Keyword-basierte Auto-Replies einrichten</span></div>
+          <div class="cmd-item"><span class="cmd-name">/report</span><span class="cmd-desc">Detaillierten Kampagnen-Report generieren und senden</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--tg-bg2);border-top:1px solid rgba(255,255,255,0.05);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="kicker">PREISE</span>
+      <h2 class="s-title">Wähle deinen <span class="tblue">Plan</span></h2>
+      <p class="s-sub">14 Tage kostenlos testen. Keine Kreditkarte erforderlich.</p>
+    </div>
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-forwarded">
+          <div class="plan-forwarded-from">Weitergeleitet von @MarketingBot</div>
+          <div class="plan-forwarded-text">Starter Plan — perfekt für Einsteiger</div>
+        </div>
+        <div class="plan-name">STARTER</div>
+        <div class="plan-price">€29<sub>/mo</sub></div>
+        <div class="plan-tagline">Für kleine Kontaktlisten bis 5.000</div>
+        <ul class="plan-feats">
+          <li><span class="ck">✓</span> Bis zu 5.000 Kontakte</li>
+          <li><span class="ck">✓</span> 50.000 Nachrichten/Monat</li>
+          <li><span class="ck">✓</span> 1 Telegram-Konto</li>
+          <li><span class="ck">✓</span> Basis-Sequenzen</li>
+          <li><span class="ck">✓</span> E-Mail Support</li>
+        </ul>
+        <a href="https://telegram-marketing-bot.netlify.app" class="plan-btn">Starter wählen</a>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-top-tag">BELIEBT</div>
+        <div class="plan-forwarded">
+          <div class="plan-forwarded-from">Weitergeleitet von @MarketingBot</div>
+          <div class="plan-forwarded-text">Pro Plan — das meistgewählte Paket</div>
+        </div>
+        <div class="plan-name">PRO</div>
+        <div class="plan-price">€59<sub>/mo</sub></div>
+        <div class="plan-tagline">Für ernsthafte Marketer mit Wachstumszielen</div>
+        <ul class="plan-feats">
+          <li><span class="ck">✓</span> Bis zu 50.000 Kontakte</li>
+          <li><span class="ck">✓</span> Unbegrenzte Nachrichten</li>
+          <li><span class="ck">✓</span> 3 Telegram-Konten</li>
+          <li><span class="ck">✓</span> KI-Auto-Reply aktiv</li>
+          <li><span class="ck">✓</span> A/B Testing</li>
+          <li><span class="ck">✓</span> Echtzeit Analytics</li>
+          <li><span class="ck">✓</span> Shopify + Stripe Integration</li>
+          <li><span class="ck">✓</span> Telegram Support</li>
+        </ul>
+        <a href="https://telegram-marketing-bot.netlify.app" class="plan-btn">Pro wählen</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-forwarded">
+          <div class="plan-forwarded-from">Weitergeleitet von @MarketingBot</div>
+          <div class="plan-forwarded-text">Agency Plan — für Agenturen & Reseller</div>
+        </div>
+        <div class="plan-name">AGENCY</div>
+        <div class="plan-price">€149<sub>/mo</sub></div>
+        <div class="plan-tagline">Multi-Client mit White-Label Option</div>
+        <ul class="plan-feats">
+          <li><span class="ck">✓</span> Unbegrenzte Kontakte</li>
+          <li><span class="ck">✓</span> Unbegrenzte Konten</li>
+          <li><span class="ck">✓</span> White-Label Dashboard</li>
+          <li><span class="ck">✓</span> API-Zugriff komplett</li>
+          <li><span class="ck">✓</span> Reseller-Lizenz</li>
+          <li><span class="ck">✓</span> Priority 24/7 Support</li>
+        </ul>
+        <a href="https://telegram-marketing-bot.netlify.app" class="plan-btn">Agency wählen</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-wrap">
+  <h2>Starte deine erste<br><span style="color:var(--tg-blue);">Telegram-Kampagne</span> jetzt</h2>
+  <p>Über 847 Marketer versenden bereits Kampagnen auf Autopilot.</p>
+  <a href="https://telegram-marketing-bot.netlify.app" class="cta-main-btn">✈️ Kostenlos 14 Tage testen</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand2">
+      <div class="ico">✈️</div>
+      <div class="nm">TelegramBot</div>
+    </div>
+    <div class="footer-links">
+      <a href="#">Datenschutz</a>
+      <a href="#">Impressum</a>
+      <a href="#">AGB</a>
+      <a href="#">Telegram-Gruppe</a>
+      <a href="https://bullpower-hub-portal.netlify.app">BullPower Hub</a>
+    </div>
+  </div>
+  <div class="footer-copy">© 2026 Rudolf Sarkany · BullPower Tools GmbH · Telegram Marketing Autopilot</div>
+</footer>
+
+<script>
+function countUp(el,end,dur){
+  var s=Date.now();
+  (function tick(){
+    var p=Math.min((Date.now()-s)/dur,1),val=Math.floor(end*Math.pow(p,0.65));
+    el.textContent=val.toLocaleString('de-DE');
+    if(p<1) requestAnimationFrame(tick);
+  })();
+}
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting&&!e.target._done){
+      e.target._done=true;
+      countUp(e.target,parseInt(e.target.dataset.end),1600);
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('.stat-val[data-end]').forEach(function(el){ obs.observe(el); });
+</script>
+</body>
+</html>
