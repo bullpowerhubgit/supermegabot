@@ -183,21 +183,16 @@ async def task_shopify_sync() -> str:
             return "Shopify nicht konfiguriert"
         base = f"https://{domain}" if not domain.startswith("http") else domain
         headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
-        query = """{ shop { name } products(first:1){pageInfo{total}} orders(first:1){pageInfo{total}} }"""
+        api = f"{base}/admin/api/2024-10"
+        rest_headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
-            async with s.post(
-                f"{base}/api/2024-10/graphql.json",
-                headers=headers,
-                json={"query": query}
-            ) as r:
-                data = await r.json()
-        errs = data.get("errors")
-        if errs:
-            return f"GraphQL-Fehler: {errs[0].get('message','?')[:80]}"
-        shop = data["data"]["shop"]
-        prods = data["data"]["products"]["pageInfo"]["total"]
-        ords  = data["data"]["orders"]["pageInfo"]["total"]
-        result = {"shop": shop["name"], "products": prods, "orders": ords, "ts": datetime.now().isoformat()}
+            async with s.get(f"{api}/shop.json", headers=rest_headers) as r:
+                shop_data = (await r.json()).get("shop", {})
+            async with s.get(f"{api}/products/count.json", headers=rest_headers) as r:
+                prods = (await r.json()).get("count", 0)
+            async with s.get(f"{api}/orders/count.json?status=any", headers=rest_headers) as r:
+                ords = (await r.json()).get("count", 0)
+        result = {"shop": shop_data.get("name", domain), "products": prods, "orders": ords, "ts": datetime.now().isoformat()}
         (DATA_DIR / "shopify_cache.json").write_text(json.dumps(result))
         return f"Shopify: {prods} Produkte, {ords} Bestellungen gecacht"
     except Exception as e:
