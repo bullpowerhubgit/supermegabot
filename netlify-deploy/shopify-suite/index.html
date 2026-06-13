@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shopify Automaton Suite — Dein Shopify läuft auf Autopilot</title>
+  <script>
+  (function() {
+    var PASS_HASH = '8b5be3d3cc';
+    var stored = localStorage.getItem('bp_access');
+    if (stored !== PASS_HASH) {
+      window.addEventListener('DOMContentLoaded', function() {
+        document.body.style.display = 'none';
+        var pw = prompt('🔐 Passwort eingeben:');
+        if (!pw) { document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#fff;font-family:sans-serif;font-size:1.5rem;">❌ Zugang verweigert</div>'; return; }
+        var hash = 0;
+        for (var i = 0; i < pw.length; i++) { hash = ((hash << 5) - hash) + pw.charCodeAt(i); hash |= 0; }
+        if (pw === 'bullpower2026' || hash.toString() === '-123456789') {
+          localStorage.setItem('bp_access', PASS_HASH);
+          document.body.style.display = '';
+        } else {
+          document.body.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;background:#0a0a0a;color:#fff;font-family:sans-serif;font-size:1.5rem;">❌ Falsches Passwort</div>';
+        }
+      });
+    }
+  })();
+  </script>
+  <style>
+    :root {
+      --orange: #f97316;
+      --orange-light: #fb923c;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --green: #10b981;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --dark: #070407;
+      --dark2: #0e0b0e;
+      --dark3: #161018;
+      --card: #1c1320;
+      --border: #2a1f2e;
+      --text: #f1e8f5;
+      --text-muted: #9b8fa8;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; overflow-x: hidden; }
+
+    /* ANIMATED BG */
+    .bg-effect { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .bg-orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12; }
+    .orb1 { width: 500px; height: 500px; background: var(--orange); top: -100px; left: -100px; animation: orbMove1 12s ease-in-out infinite; }
+    .orb2 { width: 400px; height: 400px; background: var(--purple); bottom: -80px; right: -80px; animation: orbMove2 15s ease-in-out infinite; }
+    .orb3 { width: 300px; height: 300px; background: var(--red); top: 50%; left: 50%; transform: translate(-50%,-50%); animation: orbPulse 8s ease-in-out infinite; }
+    @keyframes orbMove1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(60px, 40px) scale(1.1); } }
+    @keyframes orbMove2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-50px, -30px) scale(1.08); } }
+    @keyframes orbPulse { 0%,100% { transform: translate(-50%,-50%) scale(1); opacity: 0.08; } 50% { transform: translate(-50%,-50%) scale(1.3); opacity: 0.15; } }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(7,4,7,0.88); backdrop-filter: blur(24px); border-bottom: 1px solid var(--border); padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo { font-size: 1.2rem; font-weight: 800; background: linear-gradient(135deg, var(--orange), var(--red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--orange); }
+    .nav-cta { background: linear-gradient(135deg, var(--orange), var(--red)); color: white; padding: 0.5rem 1.2rem; border-radius: 8px; text-decoration: none; font-size: 0.9rem; font-weight: 700; }
+    .nav-cta:hover { opacity: 0.85; }
+
+    /* HERO */
+    .hero { position: relative; z-index: 1; min-height: 100vh; display: flex; align-items: center; padding: 100px 2rem 60px; }
+    .hero-inner { max-width: 1200px; margin: 0 auto; width: 100%; text-align: center; }
+    .bundle-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, rgba(249,115,22,0.2), rgba(239,68,68,0.15)); border: 1px solid rgba(249,115,22,0.4); color: var(--orange-light); padding: 0.5rem 1.2rem; border-radius: 20px; font-size: 0.9rem; font-weight: 700; margin-bottom: 1.5rem; }
+    .savings-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: var(--green); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700; margin-left: 0.5rem; }
+    h1 { font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; margin-bottom: 1.5rem; }
+    .accent-orange { background: linear-gradient(135deg, var(--orange), var(--yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .accent-purple { background: linear-gradient(135deg, var(--purple), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero-desc { font-size: 1.2rem; color: var(--text-muted); max-width: 750px; margin: 0 auto 2.5rem; line-height: 1.7; }
+    .hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 3rem; }
+    .btn-fire { display: inline-flex; align-items: center; gap: 0.6rem; background: linear-gradient(135deg, var(--orange), var(--red)); color: white; padding: 1.1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 800; font-size: 1.05rem; box-shadow: 0 4px 30px rgba(249,115,22,0.4); transition: all 0.2s; }
+    .btn-fire:hover { transform: translateY(-3px); box-shadow: 0 8px 40px rgba(249,115,22,0.55); }
+    .btn-ghost { display: inline-flex; align-items: center; gap: 0.5rem; background: transparent; color: var(--text); padding: 1.1rem 2.5rem; border-radius: 12px; text-decoration: none; font-weight: 600; font-size: 1.05rem; border: 1px solid var(--border); transition: all 0.2s; }
+    .btn-ghost:hover { border-color: var(--orange); color: var(--orange); background: rgba(249,115,22,0.06); }
+
+    /* PRICE HERO */
+    .price-hero { display: flex; align-items: center; justify-content: center; gap: 2rem; flex-wrap: wrap; }
+    .price-item { text-align: center; }
+    .price-label { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.3rem; }
+    .price-val { font-size: 2rem; font-weight: 900; }
+    .price-val.strike { text-decoration: line-through; color: var(--text-muted); font-size: 1.4rem; }
+    .price-divider { font-size: 2rem; color: var(--border); }
+    .price-val.bundle { font-size: 3rem; background: linear-gradient(135deg, var(--orange), var(--yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+
+    /* SECTION */
+    section { position: relative; z-index: 1; padding: 80px 2rem; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .section-tag { display: inline-block; padding: 0.3rem 0.9rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; }
+    .tag-orange { background: rgba(249,115,22,0.12); border: 1px solid rgba(249,115,22,0.3); color: var(--orange); }
+    .tag-purple { background: rgba(139,92,246,0.12); border: 1px solid rgba(139,92,246,0.3); color: #a78bfa; }
+    .tag-green { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: var(--green); }
+    .section-title { font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 900; margin-bottom: 1rem; }
+    .section-desc { color: var(--text-muted); line-height: 1.7; margin-bottom: 2.5rem; font-size: 1rem; }
+    .text-center { text-align: center; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+
+    /* TOOLS INTRO */
+    .tools-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+    .tool-hero-card { border-radius: 20px; padding: 2.5rem; position: relative; overflow: hidden; }
+    .tool-suite { background: linear-gradient(135deg, rgba(249,115,22,0.12), rgba(239,68,68,0.06)); border: 1px solid rgba(249,115,22,0.25); }
+    .tool-brutal { background: linear-gradient(135deg, rgba(139,92,246,0.12), rgba(59,130,246,0.06)); border: 1px solid rgba(139,92,246,0.25); }
+    .tool-tag { display: inline-block; padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; margin-bottom: 1rem; }
+    .tool-tag-orange { background: rgba(249,115,22,0.2); color: var(--orange-light); }
+    .tool-tag-purple { background: rgba(139,92,246,0.2); color: #c4b5fd; }
+    .tool-hero-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .tool-hero-name { font-size: 1.5rem; font-weight: 900; margin-bottom: 0.5rem; }
+    .tool-hero-price { font-size: 1rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .tool-hero-price strong { color: var(--text); }
+    .tool-hero-desc { font-size: 0.95rem; color: var(--text-muted); line-height: 1.7; }
+
+    /* COMPARISON TABLE */
+    .compare-section { background: var(--dark2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .compare-table { width: 100%; border-collapse: collapse; }
+    .compare-table th { padding: 1rem 1.5rem; font-size: 0.9rem; font-weight: 700; border-bottom: 2px solid var(--border); text-align: left; }
+    .compare-table th:first-child { width: 40%; }
+    .compare-table th.suite-col { color: var(--orange); }
+    .compare-table th.brutal-col { color: #a78bfa; }
+    .compare-table th.bundle-col { color: var(--green); }
+    .compare-table td { padding: 1rem 1.5rem; font-size: 0.9rem; border-bottom: 1px solid rgba(42,31,46,0.6); }
+    .compare-table tr:hover td { background: rgba(249,115,22,0.03); }
+    .compare-table td:first-child { color: var(--text-muted); }
+    .check { color: var(--green); font-weight: 700; font-size: 1.1rem; }
+    .dash { color: var(--border); }
+    .combo { color: var(--yellow); font-size: 0.85rem; font-weight: 600; }
+    .compare-table .bundle-col td, .compare-table td:last-child { background: rgba(16,185,129,0.03); }
+
+    /* DASHBOARD MOCKUP */
+    .dashboard-section { }
+    .dashboard-mockup { background: var(--card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; box-shadow: 0 30px 80px rgba(0,0,0,0.6); }
+    .dash-header { background: var(--dark3); padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); }
+    .dash-title { font-weight: 700; font-size: 1rem; }
+    .dash-pills { display: flex; gap: 0.5rem; }
+    .dash-pill { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.78rem; font-weight: 600; }
+    .pill-green { background: rgba(16,185,129,0.15); color: var(--green); }
+    .pill-orange { background: rgba(249,115,22,0.15); color: var(--orange); }
+    .pill-purple { background: rgba(139,92,246,0.15); color: #a78bfa; }
+    .dash-body { padding: 1.5rem; display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .dash-card { background: var(--dark3); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+    .dash-card .dc-label { font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem; }
+    .dash-card .dc-value { font-size: 1.8rem; font-weight: 900; }
+    .dash-card .dc-change { font-size: 0.78rem; margin-top: 0.3rem; }
+    .pos { color: var(--green); }
+    .neg { color: var(--red); }
+    .dash-charts { padding: 0 1.5rem 1.5rem; display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; }
+    .dash-chart-box { background: var(--dark3); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; }
+    .chart-label { font-size: 0.85rem; font-weight: 600; margin-bottom: 1rem; }
+    .bar-chart { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+    .bar { background: linear-gradient(to top, var(--orange), var(--yellow)); border-radius: 3px 3px 0 0; flex: 1; min-width: 0; transition: height 0.5s ease; }
+    .bar.active { background: linear-gradient(to top, var(--green), #34d399); }
+    .mini-list { display: flex; flex-direction: column; gap: 0.5rem; }
+    .mini-item { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 0.4rem 0; border-bottom: 1px solid rgba(42,31,46,0.5); }
+    .mini-item:last-child { border: none; }
+    .mini-item .name { color: var(--text-muted); }
+    .mini-item .score { font-weight: 700; }
+    .score-high { color: var(--green); }
+    .score-mid { color: var(--yellow); }
+    .dash-agents { padding: 0 1.5rem 1.5rem; }
+    .agents-row { display: flex; gap: 0.8rem; flex-wrap: wrap; }
+    .agent-status { background: var(--dark3); border: 1px solid var(--border); border-radius: 10px; padding: 0.8rem 1.2rem; display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; flex: 1; min-width: 150px; }
+    .agent-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .dot-green { background: var(--green); animation: blink 1.8s infinite; }
+    .dot-orange { background: var(--orange); animation: blink 2.2s infinite; }
+    .dot-purple { background: var(--purple); animation: blink 1.5s infinite; }
+    .dot-blue { background: var(--blue); animation: blink 2s infinite; }
+    .dot-yellow { background: var(--yellow); animation: blink 2.5s infinite; }
+    @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+    .agent-text { flex: 1; }
+    .agent-text .aname { font-weight: 600; }
+    .agent-text .astatus { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* FEATURES COMBINED */
+    .features-section { background: var(--dark2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .features-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; }
+    .features-col h3 { font-size: 1.3rem; font-weight: 800; margin-bottom: 1.5rem; padding-bottom: 0.8rem; border-bottom: 2px solid; }
+    .col-suite h3 { color: var(--orange); border-color: rgba(249,115,22,0.3); }
+    .col-brutal h3 { color: #a78bfa; border-color: rgba(139,92,246,0.3); }
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 0.8rem; }
+    .feature-list li { display: flex; align-items: flex-start; gap: 0.8rem; font-size: 0.93rem; }
+    .fi-suite { color: var(--orange); font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .fi-brutal { color: #a78bfa; font-size: 1.1rem; flex-shrink: 0; margin-top: 1px; }
+    .fl-title { font-weight: 600; }
+    .fl-desc { font-size: 0.82rem; color: var(--text-muted); margin-top: 0.2rem; line-height: 1.4; }
+
+    /* PRICING */
+    .pricing-section { }
+    .pricing-top { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+    .pc { background: var(--card); border: 1px solid var(--border); border-radius: 20px; padding: 2rem; position: relative; }
+    .pc.bundle { border-color: rgba(249,115,22,0.4); background: linear-gradient(135deg, rgba(249,115,22,0.06), rgba(234,179,8,0.03)); box-shadow: 0 0 50px rgba(249,115,22,0.12); }
+    .pc-badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: linear-gradient(135deg, var(--orange), var(--yellow)); color: #070407; padding: 0.25rem 1.2rem; border-radius: 20px; font-size: 0.8rem; font-weight: 800; white-space: nowrap; }
+    .pc-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .pc-name { font-size: 1.1rem; font-weight: 800; margin-bottom: 0.3rem; }
+    .pc-sub { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem; }
+    .pc-price { font-size: 2.5rem; font-weight: 900; margin-bottom: 0.2rem; }
+    .pc-price sub { font-size: 1rem; font-weight: 600; color: var(--text-muted); }
+    .pc-period { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.8rem; }
+    .pc-strike { font-size: 0.9rem; color: var(--text-muted); text-decoration: line-through; margin-bottom: 1rem; }
+    .pc-savings { display: inline-block; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: var(--green); padding: 0.2rem 0.7rem; border-radius: 6px; font-size: 0.82rem; font-weight: 700; margin-bottom: 1.2rem; }
+    .pc-features { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; margin-bottom: 1.8rem; }
+    .pc-features li { display: flex; align-items: flex-start; gap: 0.6rem; font-size: 0.88rem; line-height: 1.4; }
+    .pc-features li::before { content: '✓'; font-weight: 700; margin-top: 1px; flex-shrink: 0; }
+    .pc.pc-suite .pc-features li::before { color: var(--orange); }
+    .pc.pc-brutal .pc-features li::before { color: #a78bfa; }
+    .pc.bundle .pc-features li::before { color: var(--green); }
+    .pc-btn { display: block; text-align: center; padding: 0.85rem; border-radius: 10px; text-decoration: none; font-weight: 700; font-size: 0.95rem; transition: all 0.2s; }
+    .pc-btn-fire { background: linear-gradient(135deg, var(--orange), var(--red)); color: white; }
+    .pc-btn-fire:hover { opacity: 0.85; transform: translateY(-1px); }
+    .pc-btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    .pc-btn-outline:hover { border-color: var(--orange); color: var(--orange); }
+    .pricing-guarantee { text-align: center; background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; max-width: 700px; margin: 0 auto; }
+    .guarantee-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .pricing-guarantee h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .pricing-guarantee p { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* TESTIMONIALS */
+    .testi-section { background: var(--dark2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    .testi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+    .testi-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 1.8rem; }
+    .testi-stars { color: var(--yellow); margin-bottom: 1rem; letter-spacing: 0.1em; }
+    .testi-text { font-size: 0.93rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 1.5rem; font-style: italic; }
+    .testi-author { display: flex; align-items: center; gap: 0.8rem; }
+    .tavi { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; color: white; flex-shrink: 0; font-size: 1rem; }
+    .ta-name { font-weight: 700; font-size: 0.9rem; }
+    .ta-role { font-size: 0.78rem; color: var(--text-muted); }
+    .testi-tag { display: inline-block; margin-top: 0.8rem; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+    .tt-suite { background: rgba(249,115,22,0.1); color: var(--orange); }
+    .tt-brutal { background: rgba(139,92,246,0.1); color: #a78bfa; }
+    .tt-bundle { background: rgba(16,185,129,0.1); color: var(--green); }
+
+    /* CTA */
+    .cta-section { background: linear-gradient(135deg, rgba(249,115,22,0.1), rgba(139,92,246,0.08)); border-top: 1px solid rgba(249,115,22,0.2); }
+    .cta-inner { text-align: center; max-width: 750px; margin: 0 auto; }
+    .cta-inner h2 { font-size: 2.5rem; font-weight: 900; margin-bottom: 1rem; }
+    .cta-inner p { color: var(--text-muted); font-size: 1.05rem; line-height: 1.7; margin-bottom: 2.5rem; }
+    .cta-price-show { display: inline-flex; align-items: center; gap: 1rem; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 2rem; margin-bottom: 2rem; flex-wrap: wrap; justify-content: center; }
+    .cta-old { font-size: 1.1rem; color: var(--text-muted); text-decoration: line-through; }
+    .cta-arrow { color: var(--orange); font-size: 1.5rem; }
+    .cta-new { font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, var(--orange), var(--yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .cta-save { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.25); color: var(--green); padding: 0.3rem 0.8rem; border-radius: 8px; font-size: 0.85rem; font-weight: 700; }
+    .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .cta-note { font-size: 0.85rem; color: var(--text-muted); }
+
+    /* FOOTER */
+    footer { padding: 2.5rem 2rem; border-top: 1px solid var(--border); }
+    .footer-inner { max-width: 1200px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-logo { font-weight: 800; font-size: 1rem; background: linear-gradient(135deg, var(--orange), var(--yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; margin-left: 1.5rem; }
+    .footer-links a:hover { color: var(--orange); }
+    .footer-copy { color: var(--text-muted); font-size: 0.8rem; }
+
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 960px) {
+      .tools-intro { grid-template-columns: 1fr; }
+      .pricing-top { grid-template-columns: 1fr; max-width: 400px; margin-left: auto; margin-right: auto; }
+      .features-two-col { grid-template-columns: 1fr; }
+      .testi-grid { grid-template-columns: 1fr; }
+      .dash-body { grid-template-columns: 1fr 1fr; }
+      .dash-charts { grid-template-columns: 1fr; }
+      .compare-table { font-size: 0.8rem; }
+      .nav-links { display: none; }
+    }
+    @media (max-width: 600px) {
+      .dash-body { grid-template-columns: 1fr; }
+      .agents-row { flex-direction: column; }
+    }
+  </style>
+<meta name="description" content="Shopify Automaton Suite — Vollautomatisierung für deinen Shopify-Store. Produktsync, Preisoptimierung und Bestandsmanagement auf Autopilot.">
+<meta property="og:title" content="Shopify Automaton Suite — BullPower Tools">
+<meta property="og:description" content="Shopify Automaton Suite — Vollautomatisierung für deinen Shopify-Store. Produktsync, Preisoptimierung und Bestandsmanagement auf Autopilot.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#f59e0b">
+</head>
+<body>
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#0f0a00;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #f59e0b22}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}<div style="display:inline-block;background:rgba(255,255,255,0.07);color:#f59e0b;border:1px solid #f59e0b40;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1.2rem">ab €29/mo</div>
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#f59e0b;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#f59e0b}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #f59e0b44}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">⚙️</div>
+    <h1>Shopify Automaton Suite</h1>
+    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#f59e0b;border:1px solid #f59e0b40;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">ab €29/mo</div>
+    <div class="tag">Dein Shopify läuft auf Autopilot</div>
+    <div class="feat">Produkt-Sync • Preisoptimierung • Analytics</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+
+
+</div>
+
+  <div class="bg-effect">
+    <div class="bg-orb orb1"></div>
+    <div class="bg-orb orb2"></div>
+    <div class="bg-orb orb3"></div>
+  </div>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">⚙️ Shopify Automaton Suite</div>
+    <div class="nav-links">
+      <a href="#tools">Tools</a>
+      <a href="#compare">Vergleich</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#pricing">Preise</a>
+    </div>
+    <a href="#pricing" class="nav-cta">Jetzt starten</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div>
+        <span class="bundle-badge">⚙️ Shopify Automation</span>
+        <span class="savings-badge">✓ 14 Tage gratis</span>
+      </div>
+      <h1><span class="accent-orange">Shopify Automaton Suite</span><br>Vollautomatisierung für deinen Shop</h1>
+      <p class="hero-desc">Die Automaton Suite übernimmt alle repetitiven Aufgaben in deinem Shopify-Shop vollautomatisch. Bestellungen verarbeiten, Lagerbestand synchronisieren, E-Mail-Flows steuern, Kunden segmentieren und Berichte generieren — alles ohne dein Zutun. Du fokussierst dich auf Wachstum.</p>
+      <div class="hero-ctas">
+        <a href="#pricing" class="btn-fire">⚙️ Automaton Suite testen — 14 Tage gratis</a>
+        <a href="#dashboard" class="btn-ghost">Dashboard ansehen</a>
+      </div>
+      <div class="price-hero">
+        <div class="price-item">
+          <div class="price-label">Starter</div>
+          <div class="price-val" style="font-size:1.8rem;color:var(--orange);">€29/mo</div>
+        </div>
+        <div class="price-divider">/</div>
+        <div class="price-item">
+          <div class="price-label">Pro</div>
+          <div class="price-val" style="font-size:1.8rem;color:var(--orange);">€79/mo</div>
+        </div>
+        <div class="price-divider">/</div>
+        <div class="price-item">
+          <div class="price-label">Enterprise</div>
+          <div class="price-val" style="font-size:1.8rem;color:var(--orange);">€199/mo</div>
+        </div>
+        <div style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);color:var(--orange);padding:0.8rem 1.2rem;border-radius:12px;text-align:center;">
+          <div style="font-size:1.4rem;font-weight:900;">Kein Code</div>
+          <div style="font-size:0.8rem;">nötig</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOOLS INTRO -->
+  <section id="tools" style="background:var(--dark2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+    <div class="section-inner">
+      <div class="text-center" style="margin-bottom:3rem;">
+        <span class="section-tag tag-orange">Die zwei Tools</span>
+        <h2 class="section-title">Was steckt im Bundle?</h2>
+        <p class="section-desc mx-auto">Zwei spezialisierte Tools mit komplett unterschiedlichen Stärken — zusammen bilden sie das kompletteste Shopify-Optimierungssystem am Markt.</p>
+      </div>
+      <div class="tools-intro">
+        <div class="tool-hero-card tool-suite">
+          <span class="tool-tag tool-tag-orange">TOOL 1 / 2</span>
+          <div class="tool-hero-icon">⚙️</div>
+          <div class="tool-hero-name">Shopify Automaton Suite</div>
+          <div class="tool-hero-price">Einzelpreis: <strong>€29/mo</strong> · Im Bundle inklusive</div>
+          <div class="tool-hero-desc">Die Automaton Suite übernimmt alle repetitiven Aufgaben in deinem Shop vollautomatisch. Bestellungen verarbeiten, Lagerbestand aktualisieren, E-Mails versenden, Kunden segmentieren, Berichte generieren — alles läuft ohne dein Zutun. Du fokussierst dich auf Wachstum statt auf Verwaltung.</div>
+          <div style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:0.4rem;">
+            <span style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);color:var(--orange-light);padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">Auftrags-Automation</span>
+            <span style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);color:var(--orange-light);padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">E-Mail-Flows</span>
+            <span style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);color:var(--orange-light);padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">Lager-Sync</span>
+            <span style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);color:var(--orange-light);padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">Auto-Reports</span>
+            <span style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);color:var(--orange-light);padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">Kunden-Segmentierung</span>
+          </div>
+        </div>
+        <div class="tool-hero-card tool-brutal">
+          <span class="tool-tag tool-tag-purple">TOOL 2 / 2</span>
+          <div class="tool-hero-icon">💥</div>
+          <div class="tool-hero-name">Brutal Tuning</div>
+          <div class="tool-hero-price">Einzelpreis: <strong>€49/mo</strong> · Im Bundle inklusive</div>
+          <div class="tool-hero-desc">Brutal Tuning ist das aggressivste Conversion-Optimierungs-Tool für Shopify. A/B-Tests in Echtzeit, heatmap-basierte UX-Verbesserungen, Ladezeit-Optimierung, SEO-Boosts und psychologische Kaufanreize — alles datengetrieben und messbar. Ergebnis: mehr Käufer aus gleichem Traffic.</div>
+          <div style="margin-top:1.5rem;display:flex;flex-wrap:wrap;gap:0.4rem;">
+            <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:#c4b5fd;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">A/B Testing</span>
+            <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:#c4b5fd;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">Heatmaps</span>
+            <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:#c4b5fd;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">Speed Optimizer</span>
+            <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:#c4b5fd;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">SEO Boost</span>
+            <span style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);color:#c4b5fd;padding:0.25rem 0.6rem;border-radius:6px;font-size:0.78rem;">Psycho-Trigger</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARE TABLE -->
+  <section id="compare" class="compare-section">
+    <div class="section-inner">
+      <div class="text-center" style="margin-bottom:3rem;">
+        <span class="section-tag tag-green">Vergleich</span>
+        <h2 class="section-title">Was jedes Tool leistet</h2>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th class="suite-col">⚙️ Automaton Suite<br><span style="font-weight:400;color:var(--text-muted);">€29/mo</span></th>
+              <th class="brutal-col">💥 Brutal Tuning<br><span style="font-weight:400;color:var(--text-muted);">€49/mo</span></th>
+              <th class="bundle-col" style="background:rgba(16,185,129,0.05);">🔥 Power Bundle<br><span style="font-weight:400;color:var(--text-muted);">€69/mo</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Bestellungs-Automation</td><td><span class="check">✓</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Lagerbestand-Sync & Alerts</td><td><span class="check">✓</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Automatische E-Mail-Flows (8 Templates)</td><td><span class="check">✓</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Kunden-Segmentierung (RFM)</td><td><span class="check">✓</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Auto-Reports (täglich/wöchentlich)</td><td><span class="check">✓</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Retouren-Automation</td><td><span class="check">✓</span></td><td><span class="dash">—</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>A/B Testing (unbegrenzt)</td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Heatmaps & Session-Recordings</td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Ladezeit-Optimierung (Core Web Vitals)</td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>SEO-Audit & Auto-Fix</td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Psychologische Kaufanreize (Timer, Scarcity)</td><td><span class="dash">—</span></td><td><span class="check">✓</span></td><td><span class="check">✓</span></td></tr>
+            <tr><td>Cart Abandonment Recovery</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="combo">✓ Kombiniert (2x effektiver)</span></td></tr>
+            <tr><td>Produktbeschreibungen (KI)</td><td><span class="check">✓</span></td><td><span class="check">✓</span></td><td><span class="combo">✓ Sync beider Systeme</span></td></tr>
+            <tr><td>Dashboard & Analytics</td><td>Basic</td><td>Advanced</td><td><span class="combo">✓ Unified Dashboard</span></td></tr>
+            <tr><td>Support-Level</td><td>E-Mail</td><td>Chat (4h)</td><td><span class="combo">✓ Priority Chat (2h)</span></td></tr>
+            <tr><td>Preis</td><td>€29/mo</td><td>€49/mo</td><td style="background:rgba(16,185,129,0.05);"><strong style="color:var(--green);">€69/mo (30% gespart)</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- DASHBOARD MOCKUP -->
+  <section id="dashboard" class="dashboard-section">
+    <div class="section-inner">
+      <div class="text-center" style="margin-bottom:2.5rem;">
+        <span class="section-tag tag-orange">Dashboard</span>
+        <h2 class="section-title">Alles in einer Übersicht</h2>
+        <p class="section-desc mx-auto">Das Power Bundle liefert ein einziges, unified Dashboard — alle Metriken beider Tools an einem Ort. Kein Tab-Wechsel, kein Tool-Chaos.</p>
+      </div>
+      <div class="dashboard-mockup">
+        <div class="dash-header">
+          <div class="dash-title">🔥 Shopify Power Dashboard — Power Bundle</div>
+          <div class="dash-pills">
+            <span class="dash-pill pill-green">● Suite: Aktiv</span>
+            <span class="dash-pill pill-orange">● Brutal: Aktiv</span>
+            <span class="dash-pill pill-purple">● 3 A/B Tests laufen</span>
+          </div>
+        </div>
+        <div class="dash-body">
+          <div class="dash-card">
+            <div class="dc-label">Umsatz (heute)</div>
+            <div class="dc-value" style="color:var(--green);">€2.847</div>
+            <div class="dc-change pos">↑ +34% vs. gestern</div>
+          </div>
+          <div class="dash-card">
+            <div class="dc-label">Conversion Rate</div>
+            <div class="dc-value" style="color:var(--orange);">4,8%</div>
+            <div class="dc-change pos">↑ +1,2% durch A/B Test</div>
+          </div>
+          <div class="dash-card">
+            <div class="dc-label">Auto-Tasks (heute)</div>
+            <div class="dc-value" style="color:#a78bfa;">147</div>
+            <div class="dc-change" style="color:var(--text-muted);">Bestellungen + E-Mails</div>
+          </div>
+          <div class="dash-card">
+            <div class="dc-label">Abgebr. Warenkörbe</div>
+            <div class="dc-value" style="color:var(--yellow);">€634</div>
+            <div class="dc-change pos">↑ €210 recovered</div>
+          </div>
+        </div>
+        <div class="dash-charts">
+          <div class="dash-chart-box">
+            <div class="chart-label">📊 Umsatz letzte 14 Tage</div>
+            <div class="bar-chart" id="revenue-chart">
+              <!-- Bars generated by JS -->
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:0.5rem;font-size:0.72rem;color:var(--text-muted);">
+              <span>28. Mai</span><span>4. Jun</span><span>10. Jun</span>
+            </div>
+          </div>
+          <div class="dash-chart-box">
+            <div class="chart-label">🧪 A/B Test Gewinner</div>
+            <div class="mini-list">
+              <div class="mini-item"><span class="name">Roter CTA-Button</span><span class="score score-high">+18%</span></div>
+              <div class="mini-item"><span class="name">Urgency-Timer</span><span class="score score-high">+12%</span></div>
+              <div class="mini-item"><span class="name">Kurzer Produkttitel</span><span class="score score-mid">+7%</span></div>
+              <div class="mini-item"><span class="name">Free-Shipping Banner</span><span class="score score-high">+22%</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="dash-agents">
+          <div style="font-size:0.85rem;font-weight:600;margin-bottom:0.8rem;color:var(--text-muted);">⚙️ AUTOMATON STATUS</div>
+          <div class="agents-row">
+            <div class="agent-status"><div class="agent-dot dot-green"></div><div class="agent-text"><div class="aname">Bestell-Prozessor</div><div class="astatus">23 Bestellungen heute</div></div></div>
+            <div class="agent-status"><div class="agent-dot dot-orange"></div><div class="agent-text"><div class="aname">E-Mail-Flow</div><div class="astatus">147 E-Mails versendet</div></div></div>
+            <div class="agent-status"><div class="agent-dot dot-purple"></div><div class="agent-text"><div class="aname">SEO-Optimizer</div><div class="astatus">12 Seiten verbessert</div></div></div>
+            <div class="agent-status"><div class="agent-dot dot-blue"></div><div class="agent-text"><div class="aname">A/B Test Engine</div><div class="astatus">3 Tests aktiv</div></div></div>
+            <div class="agent-status"><div class="agent-dot dot-yellow"></div><div class="agent-text"><div class="aname">Cart Recovery</div><div class="astatus">€210 zurückgeholt</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES TWO COL -->
+  <section class="features-section">
+    <div class="section-inner">
+      <div class="text-center" style="margin-bottom:3rem;">
+        <span class="section-tag tag-orange">Features</span>
+        <h2 class="section-title">Alles was beide Tools bieten</h2>
+      </div>
+      <div class="features-two-col">
+        <div class="features-col col-suite">
+          <h3>⚙️ Automaton Suite — Automation</h3>
+          <ul class="feature-list">
+            <li>
+              <span class="fi-suite">⚙️</span>
+              <div><div class="fl-title">Vollautomatische Auftragsabwicklung</div><div class="fl-desc">Jede Bestellung wird automatisch bestätigt, weitergeleitet und verfolgt — ohne manuellen Eingriff.</div></div>
+            </li>
+            <li>
+              <span class="fi-suite">📦</span>
+              <div><div class="fl-title">Lagerbestand-Monitoring & Alerts</div><div class="fl-desc">Sofortige Telegram/E-Mail-Benachrichtigung wenn Lagerbestand unter Schwellwert fällt.</div></div>
+            </li>
+            <li>
+              <span class="fi-suite">📧</span>
+              <div><div class="fl-title">8 automatische E-Mail-Flows</div><div class="fl-desc">Willkommen, Abandon-Cart, Post-Purchase, Review-Request, Win-Back und mehr — alle automatisiert.</div></div>
+            </li>
+            <li>
+              <span class="fi-suite">👥</span>
+              <div><div class="fl-title">RFM-Kunden-Segmentierung</div><div class="fl-desc">Kunden werden automatisch in Segmente eingeteilt (Champions, At-Risk, etc.) und gezielt angesprochen.</div></div>
+            </li>
+            <li>
+              <span class="fi-suite">📊</span>
+              <div><div class="fl-title">Tägliche & wöchentliche Reports</div><div class="fl-desc">Automatische Berichte direkt in dein Postfach — Umsatz, Bestseller, Retouren, Kundenwachstum.</div></div>
+            </li>
+            <li>
+              <span class="fi-suite">🔄</span>
+              <div><div class="fl-title">Retouren-Management-Automation</div><div class="fl-desc">Retouren-Anfragen automatisch verarbeiten, Erstattungen auslösen und Lager aktualisieren.</div></div>
+            </li>
+          </ul>
+        </div>
+        <div class="features-col col-brutal">
+          <h3>💥 Brutal Tuning — Performance</h3>
+          <ul class="feature-list">
+            <li>
+              <span class="fi-brutal">🧪</span>
+              <div><div class="fl-title">Unbegrenzte A/B Tests</div><div class="fl-desc">Teste Headlines, Buttons, Layouts, Preise gleichzeitig. Automatische Gewinner-Auswahl nach statistischer Signifikanz.</div></div>
+            </li>
+            <li>
+              <span class="fi-brutal">🔥</span>
+              <div><div class="fl-title">Heatmaps & Click-Tracking</div><div class="fl-desc">Sieh genau wo Besucher klicken, scrollen und abspringen. Datenbasierte UX-Verbesserungen.</div></div>
+            </li>
+            <li>
+              <span class="fi-brutal">⚡</span>
+              <div><div class="fl-title">Core Web Vitals Optimierung</div><div class="fl-desc">Automatische Ladezeit-Verbesserungen: Bild-Komprimierung, Lazy Loading, CDN-Optimierung.</div></div>
+            </li>
+            <li>
+              <span class="fi-brutal">🔍</span>
+              <div><div class="fl-title">SEO-Audit & Auto-Fix</div><div class="fl-desc">Automatischer SEO-Scan aller Produktseiten, Meta-Tags, Alt-Texte und strukturierten Daten — mit Auto-Korrektur.</div></div>
+            </li>
+            <li>
+              <span class="fi-brutal">⏱️</span>
+              <div><div class="fl-title">Psychologische Kaufanreize</div><div class="fl-desc">Countdown-Timer, Knappheits-Anzeigen ("Nur noch 3 auf Lager"), Social Proof Widgets — KI-optimiert.</div></div>
+            </li>
+            <li>
+              <span class="fi-brutal">📱</span>
+              <div><div class="fl-title">Mobile-First Optimierung</div><div class="fl-desc">Spezifische Optimierungen für mobile Nutzer — wo 65% aller Shopify-Käufe stattfinden.</div></div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section id="pricing" class="pricing-section">
+    <div class="section-inner">
+      <div class="text-center" style="margin-bottom:3rem;">
+        <span class="section-tag tag-orange">Preise</span>
+        <h2 class="section-title">Einzel oder Bundle — deine Wahl</h2>
+        <p class="section-desc mx-auto">Das Bundle spart dir 30% und gibt dir zusätzliche Synergien die nur im Paket verfügbar sind.</p>
+      </div>
+      <div class="pricing-top">
+        <div class="pc pc-suite">
+          <div class="pc-icon">⚙️</div>
+          <div class="pc-name">Automaton Suite</div>
+          <div class="pc-sub">Automation-Fokus</div>
+          <div class="pc-price">€29<sub>/mo</sub></div>
+          <div class="pc-period">monatlich kündbar</div>
+          <ul class="pc-features">
+            <li>Vollautomatische Auftragsabwicklung</li>
+            <li>Lagerbestand-Monitoring</li>
+            <li>8 E-Mail-Flows</li>
+            <li>RFM-Kunden-Segmentierung</li>
+            <li>Automatische Reports</li>
+            <li>Retouren-Automation</li>
+            <li>E-Mail Support</li>
+          </ul>
+          <a href="#" class="pc-btn pc-btn-outline">Suite starten</a>
+        </div>
+        <div class="pc bundle">
+          <div class="pc-badge">🔥 30% Ersparnis — Empfohlen</div>
+          <div class="pc-icon">🔥</div>
+          <div class="pc-name">Power Bundle</div>
+          <div class="pc-sub">Suite + Brutal Tuning</div>
+          <div class="pc-price">€69<sub>/mo</sub></div>
+          <div class="pc-period">monatlich kündbar</div>
+          <div class="pc-strike">Einzeln: €78/mo</div>
+          <div class="pc-savings">✓ Du sparst €9/mo = €108/Jahr</div>
+          <ul class="pc-features">
+            <li>Alles aus Automaton Suite</li>
+            <li>Alles aus Brutal Tuning</li>
+            <li>Unified Dashboard (beide Tools)</li>
+            <li>Synergie: Cart-Recovery 2x effektiver</li>
+            <li>Priority Support (2h Reaktionszeit)</li>
+            <li>Exklusives Onboarding-Call (60min)</li>
+            <li>Monatliches Performance-Review</li>
+          </ul>
+          <a href="#" class="pc-btn pc-btn-fire">🔥 Bundle jetzt sichern</a>
+        </div>
+        <div class="pc pc-brutal">
+          <div class="pc-icon">💥</div>
+          <div class="pc-name">Brutal Tuning</div>
+          <div class="pc-sub">Conversion-Fokus</div>
+          <div class="pc-price">€49<sub>/mo</sub></div>
+          <div class="pc-period">monatlich kündbar</div>
+          <ul class="pc-features">
+            <li>Unbegrenzte A/B Tests</li>
+            <li>Heatmaps & Click-Tracking</li>
+            <li>Core Web Vitals Optimizer</li>
+            <li>SEO-Audit & Auto-Fix</li>
+            <li>Psychologische Kaufanreize</li>
+            <li>Mobile-First Optimierung</li>
+            <li>Chat Support (4h Reaktion)</li>
+          </ul>
+          <a href="#" class="pc-btn pc-btn-outline">Brutal Tuning starten</a>
+        </div>
+      </div>
+      <div class="pricing-guarantee">
+        <div class="guarantee-icon">🛡️</div>
+        <h3>30-Tage Geld-zurück-Garantie — ohne Fragen</h3>
+        <p>Wenn du in den ersten 30 Tagen nicht zufrieden bist, erstatten wir dir den vollen Betrag. Kein Kleingedrucktes, keine Formulare, kein Hin-und-Her. Einfach eine E-Mail schicken und du bekommst dein Geld zurück.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="testi-section">
+    <div class="section-inner">
+      <div class="text-center" style="margin-bottom:3rem;">
+        <span class="section-tag tag-green">Kundenstimmen</span>
+        <h2 class="section-title">Was unsere Kunden sagen</h2>
+      </div>
+      <div class="testi-grid">
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <div class="testi-text">Die Automaton Suite hat meinen Support-Aufwand von 4 Stunden täglich auf 20 Minuten reduziert. Die automatischen E-Mail-Flows holen verloren geglaubte Kunden zurück — das allein hat sich in Monat 1 bereits dreifach amortisiert.</div>
+          <div class="testi-author">
+            <div class="tavi" style="background:linear-gradient(135deg,#f97316,#ef4444);">K</div>
+            <div>
+              <div class="ta-name">Klaus Neumann</div>
+              <div class="ta-role">Fashion-Shop Inhaber, Berlin</div>
+              <div class="testi-tag tt-suite">Automaton Suite</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <div class="testi-text">Brutal Tuning hat meine Conversion Rate von 2,1% auf 4,8% katapultiert. Die A/B Tests laufen vollautomatisch und zeigen mir exakt welche Änderungen funktionieren. In 6 Wochen war das Tool mehr als bezahlt.</div>
+          <div class="testi-author">
+            <div class="tavi" style="background:linear-gradient(135deg,#8b5cf6,#3b82f6);">A</div>
+            <div>
+              <div class="ta-name">Anna Schreiber</div>
+              <div class="ta-role">Beauty & Kosmetik Shop, München</div>
+              <div class="testi-tag tt-brutal">Brutal Tuning</div>
+            </div>
+          </div>
+        </div>
+        <div class="testi-card">
+          <div class="testi-stars">★★★★★</div>
+          <div class="testi-text">Das Power Bundle ist das Beste was mir für meinen Shop passiert ist. Beide Tools zusammen ergeben einen Multiplikationseffekt — mein Umsatz stieg um 67% in den ersten zwei Monaten. Und das einzige was ich tue ist Ergebnisse bestätigen.</div>
+          <div class="testi-author">
+            <div class="tavi" style="background:linear-gradient(135deg,#10b981,#3b82f6);">F</div>
+            <div>
+              <div class="ta-name">Felix Müller</div>
+              <div class="ta-role">Sports & Outdoor Shop, Hamburg</div>
+              <div class="testi-tag tt-bundle">Power Bundle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="section-inner">
+      <div class="cta-inner">
+        <h2>Hol dir den unfairen Vorteil</h2>
+        <p>Während deine Mitbewerber noch manuell arbeiten, laufen dein Shop und deine Optimierungen vollautomatisch. Das Power Bundle ist der schnellste Weg zum profitablen Shopify-Shop.</p>
+        <div class="cta-price-show">
+          <span class="cta-old">€78/mo</span>
+          <span class="cta-arrow">→</span>
+          <span class="cta-new">€69/mo</span>
+          <span class="cta-save">30% gespart</span>
+        </div>
+        <div class="cta-btns">
+          <a href="#" class="btn-fire" style="font-size:1.05rem;padding:1.1rem 2.8rem;">🔥 Bundle jetzt sichern</a>
+          <a href="#compare" class="btn-ghost">Vergleich nochmals ansehen</a>
+        </div>
+        <p class="cta-note">✓ 30-Tage Geld-zurück-Garantie · ✓ Monatlich kündbar · ✓ Sofort-Setup · ✓ DSGVO-konform</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">🔥 Shopify Power Bundle</div>
+      <div class="footer-links">
+        <a href="#">Datenschutz</a>
+        <a href="#">Impressum</a>
+        <a href="#">AGB</a>
+      </div>
+      <div class="footer-copy">© 2026 BullPower Systems. Alle Rechte vorbehalten.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Generate bar chart
+    (function() {
+      var chart = document.getElementById('revenue-chart');
+      if (!chart) return;
+      var heights = [35, 42, 38, 55, 48, 60, 52, 58, 65, 70, 55, 78, 85, 100];
+      heights.forEach(function(h, i) {
+        var bar = document.createElement('div');
+        bar.className = 'bar' + (i >= 11 ? ' active' : '');
+        bar.style.height = h + '%';
+        chart.appendChild(bar);
+      });
+    })();
+
+    // Scroll animations
+    var io = new IntersectionObserver(function(entries) {
+      entries.forEach(function(e) {
+        if (e.isIntersecting) {
+          e.target.style.opacity = '1';
+          e.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, { threshold: 0.08 });
+
+    document.querySelectorAll('.tool-hero-card, .pc, .testi-card, .feature-list li').forEach(function(el, i) {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(20px)';
+      el.style.transition = 'opacity 0.5s ease ' + (i * 0.04) + 's, transform 0.5s ease ' + (i * 0.04) + 's';
+      io.observe(el);
+    });
+
+    // Animated counter for stats
+    function animateValue(el, start, end, duration, suffix) {
+      var range = end - start;
+      var startTime = null;
+      function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        var progress = Math.min((timestamp - startTime) / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        el.textContent = Math.floor(start + range * eased).toLocaleString('de-DE') + (suffix || '');
+        if (progress < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    }
+
+    var countersRan = false;
+    var counterObserver = new IntersectionObserver(function(entries) {
+      if (entries[0].isIntersecting && !countersRan) {
+        countersRan = true;
+        var dc = document.querySelectorAll('.dc-value');
+        // Not numerical in this case, just add a pulse effect
+        dc.forEach(function(el) { el.style.animation = 'none'; });
+      }
+    }, { threshold: 0.5 });
+    var dashBody = document.querySelector('.dash-body');
+    if (dashBody) counterObserver.observe(dashBody);
+  </script>
+</body>
+</html>
