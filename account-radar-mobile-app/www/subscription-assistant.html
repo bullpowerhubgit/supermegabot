@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Subscription Assistant API</title>
+  <style>
+    body{font-family:Inter,Arial,sans-serif;background:#030712;color:#f9fafb;margin:0;padding:24px}h1,h2{margin:0 0 12px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px}.card{background:#1f2937;border:1px solid #374151;border-radius:16px;padding:16px}.btn,input,textarea,select,a{font:inherit}.btn{background:#0f766e;color:#fff;border:none;border-radius:999px;padding:12px 16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}.input,.textarea,.select{width:100%;margin-top:8px;background:#111827;color:#fff;border:1px solid #4b5563;border-radius:12px;padding:12px}.textarea{min-height:90px}pre{white-space:pre-wrap;background:#0b1220;padding:12px;border-radius:12px;overflow:auto}.row{display:flex;gap:8px;flex-wrap:wrap}
+  </style>
+</head>
+<body>
+  <h1>Subscription Assistant API</h1>
+  <p>Google OAuth, Gmail-Rechnungssuche, Calendar-Reminder und PayPal-Kuendigungswarteschlange. Standardmaessig im Dark Theme.</p>
+
+  <div id="monitorBanner" style="margin-bottom:16px;padding:12px 16px;border-radius:12px;font-weight:600;display:none"></div>
+
+  <div class="grid">
+    <div class="card" style="grid-column:1/-1">
+      <h2>Revenue Health Monitor <span id="monitorLastCheck" style="font-size:.8em;font-weight:400;color:#6b7280"></span></h2>
+      <div class="row"><button class="btn" id="monitorRefresh">Jetzt prüfen</button><button class="btn" id="monitorAutoToggle" style="background:#374151">Auto (1h) AN</button></div>
+      <div id="monitorGrid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h2>Stripe Plugin</h2>
+      <div id="stripeStatus" style="margin-bottom:10px;padding:10px;border-radius:8px;background:#111827;font-size:.85em"></div>
+      <div class="row">
+        <button class="btn" id="stripeStatusBtn">Status prüfen</button>
+        <a class="btn" id="stripeStarterLink" href="#" target="_blank" style="background:#7c3aed">Starter kaufen</a>
+        <a class="btn" id="stripeProLink" href="#" target="_blank" style="background:#059669">Pro kaufen</a>
+      </div>
+      <div style="margin-top:10px">
+        <input id="stripeSecretInput" class="input" type="password" autocomplete="off" placeholder="sk_live_... oder rk_live_..." />
+        <button class="btn" id="stripeSaveBtn" style="margin-top:8px;width:100%;background:#b45309">Stripe Key speichern</button>
+        <div style="margin-top:8px;font-size:.8em;color:#9ca3af">Hier kannst du den Secret Key direkt eingeben. Leerzeichen und Zeilenumbrueche werden automatisch entfernt.</div>
+      </div>
+      <div style="margin-top:10px">
+        <input id="stripeCheckoutEmail" class="input" placeholder="E-Mail für Checkout (optional)" />
+        <select id="stripeCheckoutPlan" class="select"><option value="starter">Starter 49€</option><option value="pro">Pro 149€</option><option value="enterprise">Enterprise 499€</option></select>
+        <button class="btn" id="stripeCheckoutBtn" style="margin-top:8px;width:100%">Checkout Session erstellen</button>
+      </div>
+      <pre id="stripeOut"></pre>
+    </div>
+    <div class="card">
+      <h2>Lokaler Connect-All Check</h2>
+      <div class="row"><button class="btn" id="runConnectAll">Alles verbinden prüfen</button><button class="btn" id="connectGoogleNow">Google Login starten</button></div>
+      <pre id="connectAllOut"></pre>
+    </div>
+    <div class="card">
+      <h2>Google OAuth</h2>
+      <button class="btn" id="googleConnect">Google verbinden</button>
+      <pre id="oauthOut"></pre>
+    </div>
+    <div class="card">
+      <h2>E-Mail Suche</h2>
+      <input id="emailAccount" class="input" placeholder="verbundenes konto@gmail.com" />
+      <input id="emailQuery" class="input" value="invoice OR rechnung OR receipt OR payment" />
+      <button class="btn" id="searchMail">Rechnungen suchen</button>
+      <pre id="mailOut"></pre>
+    </div>
+    <div class="card">
+      <h2>Krypto Plattform Finder</h2>
+      <input id="cryptoAccount" class="input" placeholder="verbundenes konto@gmail.com" />
+      <input id="cryptoQuery" class="input" value="(binance OR kraken OR coinbase OR bitpanda OR bybit OR kucoin OR okx OR bitget OR gate.io OR mexc OR crypto.com OR blockchain.com OR moonpay OR banxa OR transak) newer_than:1825d" />
+      <button class="btn" id="discoverCrypto">Plattformen erkennen</button>
+      <pre id="cryptoOut"></pre>
+    </div>
+    <div class="card">
+      <h2>Monatskosten Optimizer</h2>
+      <textarea id="optimizerInput" class="textarea" placeholder='[{"name":"Canva","platform":"canva","monthlyCost":12,"usedDays30":2,"hasFreePlan":true,"targetPlanPrice":0,"critical":false}]'></textarea>
+      <button class="btn" id="runOptimizer">Noetig vs unnoetig analysieren</button>
+      <pre id="optimizerOut"></pre>
+    </div>
+    <div class="card">
+      <h2>Kuendigungs Assistent</h2>
+      <textarea id="cancelInput" class="textarea" placeholder='{"name":"Canva","platform":"canva","monthlyCost":12,"action":"downgrade","targetPlan":"free","targetPlanPrice":0,"reason":"Kosten senken"}'></textarea>
+      <div class="row"><button class="btn" id="prepareCancel">Kuendigung planen</button><button class="btn" id="prepareAndQueue">Plan + Queue</button></div>
+      <pre id="cancelOut"></pre>
+    </div>
+    <div class="card">
+      <h2>Kalender Erinnerung</h2>
+      <input id="remAccount" class="input" placeholder="verbundenes konto@gmail.com" />
+      <input id="remSummary" class="input" placeholder="Abo prüfen: Shopify App" />
+      <input id="remDate" class="input" type="datetime-local" />
+      <button class="btn" id="createReminder">Reminder erstellen</button>
+      <pre id="remOut"></pre>
+    </div>
+    <div class="card">
+      <h2>PayPal Kündigungswarteschlange</h2>
+      <select id="ppAction" class="select"><option value="suspend">Suspendieren</option><option value="cancel">Kündigen</option></select>
+      <input id="ppSubId" class="input" placeholder="Subscription ID, z. B. I-XXXX" />
+      <textarea id="ppReason" class="textarea" placeholder="Grund"></textarea>
+      <div class="row"><button class="btn" id="addQueue">Zur Warteschlange</button><button class="btn" id="loadState">State laden</button></div>
+      <pre id="queueOut"></pre>
+    </div>
+  </div>
+  <script>
+    const j = async (url, opts={}) => {      const response = await fetch(url, {headers:{'Content-Type':'application/json'}, ...opts});
+      const raw = await response.text();
+      let data;
+      try {
+        data = raw ? JSON.parse(raw) : {};
+      } catch {
+        data = {
+          error: 'non_json_response',
+          status: response.status,
+          message: 'Server hat keine JSON Antwort geliefert',
+          raw
+        };
+      }
+
+      if (!response.ok) {
+        return {
+          error: data.error || 'request_failed',
+          status: response.status,
+          message: data.message || 'Request fehlgeschlagen',
+          details: data
+        };
+      }
+
+      return data;
+    };
+    const sampleOptimizerData = [
+      {name:'Canva', platform:'canva', monthlyCost:12, usedDays30:2, hasFreePlan:true, targetPlanPrice:0, critical:false},
+      {name:'ChatGPT Plus', platform:'chatgpt', monthlyCost:23, usedDays30:9, hasFreePlan:true, targetPlanPrice:0, critical:false},
+      {name:'Shopify Apps', platform:'shopify', monthlyCost:49, usedDays30:4, hasFreePlan:false, targetPlanPrice:19, critical:false},
+      {name:'Notion Team', platform:'notion', monthlyCost:16, usedDays30:18, hasFreePlan:true, targetPlanPrice:0, critical:true}
+    ];
+    const stripeStatusEl = document.getElementById('stripeStatus');
+    const stripeOutEl = document.getElementById('stripeOut');
+    const stripeSecretInput = document.getElementById('stripeSecretInput');
+    if (!optimizerInput.value.trim()) optimizerInput.value = JSON.stringify(sampleOptimizerData, null, 2);
+    if (!cancelInput.value.trim()) cancelInput.value = JSON.stringify(sampleOptimizerData[0], null, 2);
+
+    const googleInputs = [emailAccount, cryptoAccount, remAccount];
+    const popupFeatures = 'popup=yes,width=540,height=720,menubar=no,toolbar=no,location=yes,status=no';
+
+    const renderGoogleState = (state) => {
+      const google = state?.google || {};
+      oauthOut.textContent = JSON.stringify({
+        connected: Boolean(google.connected),
+        email: google.email || null,
+        scopes: google.scopes || [],
+        connectedAt: google.connectedAt || null,
+        expiresAt: google.expiresAt || null
+      }, null, 2);
+
+      if (google.connected && google.email) {
+        googleInputs.forEach((input) => {
+          if (input && !input.value.trim()) input.value = google.email;
+        });
+      }
+    };
+
+    const refreshAssistantState = async () => {
+      const state = await j('/api/assistant/state');
+      renderGoogleState(state);
+      return state;
+    };
+
+    runConnectAll.onclick = async () => {
+      const r = await j('/api/setup/connect-all');
+      connectAllOut.textContent = JSON.stringify(r, null, 2);
+      renderGoogleState(r);
+      return r;
+    };
+
+    const startGoogleLogin = async () => {
+      const r = await j('/api/oauth/google/start');
+      oauthOut.textContent = JSON.stringify(r, null, 2);
+      if (r.url) {
+        window.open(r.url, 'google-oauth', popupFeatures);
+      }
+      return r;
+    };
+
+    const loadStripeStatus = async () => {
+      const r = await j('/api/stripe/status');
+      const links = r.paymentLinks || r.links || {};
+      stripeStarterLink.href = links.starter || '#';
+      stripeProLink.href = links.pro || '#';
+      stripeStatusEl.style.background = r.configured ? '#052e16' : '#3f1d1d';
+      stripeStatusEl.textContent = JSON.stringify({
+        configured: Boolean(r.configured),
+        stripeSecretKeySet: Boolean(r.stripeSecretKeySet),
+        stripePublishableKeySet: Boolean(r.stripePublishableKeySet),
+        webhookConfigured: Boolean(r.webhookConfigured),
+        pricesConfigured: Boolean(r.pricesConfigured)
+      }, null, 2);
+      return r;
+    };
+
+    connectGoogleNow.onclick = async () => { await startGoogleLogin(); await runConnectAll.onclick(); };
+    googleConnect.onclick = async () => { await startGoogleLogin(); };
+    stripeStatusBtn.onclick = async () => { await loadStripeStatus(); };
+    stripeSaveBtn.onclick = async () => {
+      const secretKey = stripeSecretInput.value.trim();
+      if (!secretKey) {
+        stripeOutEl.textContent = JSON.stringify({ error:'missing_secret', message:'Bitte einen sk_live_... oder rk_live_... Key eingeben.' }, null, 2);
+        return;
+      }
+
+      const r = await j('/api/stripe/config', {
+        method:'POST',
+        body: JSON.stringify({ secretKey })
+      });
+
+      stripeOutEl.textContent = JSON.stringify(r, null, 2);
+      if (!r.error) {
+        stripeSecretInput.value = '';
+        await loadStripeStatus();
+      }
+    };
+    stripeCheckoutBtn.onclick = async () => {
+      const r = await j('/api/stripe/checkout/create', {
+        method:'POST',
+        body: JSON.stringify({
+          plan: stripeCheckoutPlan.value,
+          email: stripeCheckoutEmail.value
+        })
+      });
+      stripeOutEl.textContent = JSON.stringify(r, null, 2);
+      if (r.checkoutUrl) {
+        window.open(r.checkoutUrl, '_blank', 'noopener,noreferrer');
+      }
+    };
+    searchMail.onclick = async () => { const r = await j('/api/assistant/email/search', {method:'POST', body: JSON.stringify({account: emailAccount.value, query: emailQuery.value})}); mailOut.textContent = JSON.stringify(r, null, 2); };
+    discoverCrypto.onclick = async () => { const r = await j('/api/assistant/crypto/discover', {method:'POST', body: JSON.stringify({account: cryptoAccount.value, query: cryptoQuery.value, maxResults: 40})}); cryptoOut.textContent = JSON.stringify(r, null, 2); };
+    runOptimizer.onclick = async () => {
+      try {
+        const subscriptions = JSON.parse(optimizerInput.value || '[]');
+        const r = await j('/api/assistant/subscriptions/optimize', {method:'POST', body: JSON.stringify({subscriptions})});
+        optimizerOut.textContent = JSON.stringify(r, null, 2);
+      } catch (error) {
+        optimizerOut.textContent = JSON.stringify({error:'invalid_json', message:error.message}, null, 2);
+      }
+    };
+    prepareCancel.onclick = async () => {
+      try {
+        const subscription = JSON.parse(cancelInput.value || '{}');
+        const r = await j('/api/assistant/cancel/prepare', {method:'POST', body: JSON.stringify({subscription, enqueue:false})});
+        cancelOut.textContent = JSON.stringify(r, null, 2);
+      } catch (error) {
+        cancelOut.textContent = JSON.stringify({error:'invalid_json', message:error.message}, null, 2);
+      }
+    };
+    prepareAndQueue.onclick = async () => {
+      try {
+        const subscription = JSON.parse(cancelInput.value || '{}');
+        const r = await j('/api/assistant/cancel/prepare', {method:'POST', body: JSON.stringify({subscription, enqueue:true})});
+        cancelOut.textContent = JSON.stringify(r, null, 2);
+      } catch (error) {
+        cancelOut.textContent = JSON.stringify({error:'invalid_json', message:error.message}, null, 2);
+      }
+    };
+    createReminder.onclick = async () => { const dateTime = new Date(remDate.value).toISOString(); const r = await j('/api/assistant/reminders', {method:'POST', body: JSON.stringify({account: remAccount.value, summary: remSummary.value, dateTime})}); remOut.textContent = JSON.stringify(r, null, 2); };
+    addQueue.onclick = async () => { const q = await j('/api/assistant/queue', {method:'POST', body: JSON.stringify({action: ppAction.value, subscriptionId: ppSubId.value, reason: ppReason.value})}); queueOut.textContent = JSON.stringify(q, null, 2); };
+    loadState.onclick = async () => { const s = await j('/api/assistant/state'); queueOut.textContent = JSON.stringify(s, null, 2); };
+    window.addEventListener('message', async (event) => {
+      if (event.origin !== window.location.origin) return;
+      if (event.data?.type !== 'google-oauth') return;
+
+      if (event.data.status === 'connected') {
+        (async () => {
+          await refreshAssistantState();
+          await runConnectAll.onclick();
+        })();
+      } else if (event.data.status === 'invalid') {
+        oauthOut.textContent = JSON.stringify({ connected: false, message: 'Google Login fehlgeschlagen. Bitte erneut starten.' }, null, 2);
+      }
+    });
+
+    const googleFlag = new URLSearchParams(window.location.search).get('google');
+    if (googleFlag === 'connected' || googleFlag === 'invalid') {
+      history.replaceState({}, '', '/assistant');
+    }
+
+    (async () => {
+      await refreshAssistantState();
+      await runConnectAll.onclick();
+      await loadStripeStatus();
+
+    // ─── Revenue Health Monitor ─────────────────────────────────────
+    let monitorAutoInterval = null;
+
+    function renderMonitor(data) {
+      const grid = document.getElementById('monitorGrid');
+      const banner = document.getElementById('monitorBanner');
+      const lastCheck = document.getElementById('monitorLastCheck');
+      if (!data || !data.results) return;
+
+      lastCheck.textContent = `| Letzter Check: ${new Date(data.checkedAt).toLocaleTimeString('de-DE')}`;
+
+      const criticalOffline = data.results.filter(r => !r.online && r.critical);
+      if (criticalOffline.length) {
+        banner.style.display = 'block';
+        banner.style.background = '#7f1d1d';
+        banner.style.color = '#fca5a5';
+        banner.textContent = `ALERT: ${criticalOffline.map(r => r.name).join(', ')} offline!`;
+      } else {
+        banner.style.display = 'block';
+        banner.style.background = '#052e16';
+        banner.style.color = '#86efac';
+        banner.textContent = `Alle kritischen Services online (${data.onlineCount}/${data.totalCount})`;
+      }
+
+      grid.innerHTML = data.results.map(r => `
+        <div style="background:${r.online ? '#064e3b' : r.critical ? '#450a0a' : '#1c1917'};border-radius:10px;padding:10px 12px">
+          <div style="font-weight:600;color:${r.online ? '#34d399' : r.critical ? '#f87171' : '#a8a29e'}">${r.online ? '✓' : r.critical ? '✗' : '○'} ${r.name}</div>
+          <div style="font-size:.78em;color:#9ca3af;margin-top:2px">${r.online ? `HTTP ${r.statusCode} · ${r.latencyMs}ms` : (r.error || 'offline')}${r.critical ? '' : ' · optional'}</div>
+        </div>`).join('');
+    }
+
+    async function refreshMonitor() {
+      const data = await j('/api/monitor/status?refresh=1');
+      renderMonitor(data);
+    }
+
+    async function loadMonitor() {
+      const data = await j('/api/monitor/status');
+      renderMonitor(data);
+    }
+
+    monitorRefresh.onclick = refreshMonitor;
+
+    monitorAutoToggle.onclick = () => {
+      if (monitorAutoInterval) {
+        clearInterval(monitorAutoInterval);
+        monitorAutoInterval = null;
+        monitorAutoToggle.textContent = 'Auto (1h) AUS';
+        monitorAutoToggle.style.background = '#7f1d1d';
+      } else {
+        monitorAutoInterval = setInterval(refreshMonitor, 60 * 60 * 1000);
+        monitorAutoToggle.textContent = 'Auto (1h) AN';
+        monitorAutoToggle.style.background = '#374151';
+        refreshMonitor();
+      }
+    };
+
+      // Auto-Refresh im Browser alle 5 Minuten (extra Sicherheit)
+      setInterval(loadMonitor, 5 * 60 * 1000);
+      loadMonitor();
+    })();
+  </script>
+</body>
+</html>
