@@ -2132,7 +2132,8 @@ async def handle_gumroad_status(req):
     try:
         from modules.ecommerce_connectors import GumroadConnector
         gum = GumroadConnector()
-        ok, info = await gum.ping()
+        info = await gum.ping()
+        ok = info.get("connected", False)
         stats = await gum.get_stats() if ok else {}
         return web.json_response({"ok": ok, "info": info, **stats})
     except Exception as e:
@@ -3277,8 +3278,7 @@ async def handle_b2b_prospecting_run(req):
             data = await req.json()
         except Exception:
             pass
-        niches = data.get("niches") if data else None
-        result = await run_daily_prospecting(niches=niches)
+        result = await run_daily_prospecting()
         return web.json_response({"ok": True, **result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)

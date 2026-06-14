@@ -199,3 +199,8 @@ async def get_dashboard() -> dict:
                    "churn_days": churn_days},
         "timestamp": now.isoformat()
     }
+
+# Aliases for dashboard compatibility
+run_winback_automation = run_winback_campaign
+get_growth_dashboard = get_dashboard
+run_vip_automation = run_vip_promotion

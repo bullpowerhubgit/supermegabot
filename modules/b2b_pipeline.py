@@ -222,3 +222,6 @@ async def get_stats() -> dict:
             "enterprise": "https://buy.stripe.com/plink_1Ti4nwRJECiV6vSmgL2lZ7uk"
         }
     }
+
+# Aliases for dashboard compatibility
+run_daily_prospecting = run_prospecting
