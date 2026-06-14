@@ -3585,6 +3585,80 @@ async def handle_meta_oauth_url(req):
     })
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# SALESFORCE / AGENTFORCE CRM
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def handle_salesforce_stats(req):
+    try:
+        from modules.salesforce_client import get_stats
+        return web.json_response({"ok": True, **(await get_stats())})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_leads(req):
+    try:
+        from modules.salesforce_client import get_leads
+        status = req.rel_url.query.get("status")
+        leads = await get_leads(status=status)
+        return web.json_response({"ok": True, "count": len(leads), "leads": leads})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_contacts(req):
+    try:
+        from modules.salesforce_client import get_contacts
+        contacts = await get_contacts()
+        return web.json_response({"ok": True, "count": len(contacts), "contacts": contacts})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_opportunities(req):
+    try:
+        from modules.salesforce_client import get_opportunities
+        stage = req.rel_url.query.get("stage")
+        opps = await get_opportunities(stage=stage)
+        return web.json_response({"ok": True, "count": len(opps), "opportunities": opps})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_create_lead(req):
+    try:
+        data = await req.json() if req.can_read_body else {}
+        from modules.salesforce_client import create_lead
+        result = await create_lead(
+            first_name=data.get("first_name", ""),
+            last_name=data.get("last_name", "Lead"),
+            email=data.get("email", ""),
+            company=data.get("company", "Unknown"),
+            phone=data.get("phone", ""),
+            source=data.get("source", "SuperMegaBot"),
+        )
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_sync_klaviyo(req):
+    try:
+        from modules.salesforce_client import sync_klaviyo_to_sf
+        return web.json_response(await sync_klaviyo_to_sf())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_import_b2b(req):
+    try:
+        from modules.salesforce_client import import_sf_leads_to_b2b
+        return web.json_response(await import_sf_leads_to_b2b())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -3849,6 +3923,16 @@ async def create_app():
     app.router.add_post("/api/meta/saas-campaign",        handle_meta_saas_campaign)
     app.router.add_get("/api/meta/pixel",                 handle_meta_pixel_stats)
     app.router.add_get("/api/meta/oauth-url",             handle_meta_oauth_url)
+
+    # ── Salesforce handlers injected here (defined above create_app) ──────────
+    # Salesforce / Agentforce CRM
+    app.router.add_get("/api/salesforce/stats",           handle_salesforce_stats)
+    app.router.add_get("/api/salesforce/leads",           handle_salesforce_leads)
+    app.router.add_get("/api/salesforce/contacts",        handle_salesforce_contacts)
+    app.router.add_get("/api/salesforce/opportunities",   handle_salesforce_opportunities)
+    app.router.add_post("/api/salesforce/lead",           handle_salesforce_create_lead)
+    app.router.add_post("/api/salesforce/sync/klaviyo",   handle_salesforce_sync_klaviyo)
+    app.router.add_post("/api/salesforce/sync/b2b",       handle_salesforce_import_b2b)
 
     return app
 
