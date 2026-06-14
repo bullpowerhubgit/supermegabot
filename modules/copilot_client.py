@@ -15,6 +15,8 @@ log = logging.getLogger('CopilotClient')
 GITHUB_TOKEN = os.getenv('GITHUB_TOKEN', '')
 COPILOT_ENABLED = os.getenv('COPILOT_ENABLED', 'true').lower() == 'true'
 COPILOT_MODEL = os.getenv('COPILOT_MODEL', 'gpt-4o-copilot')
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY', '')
+CLAUDE_FALLBACK_MODEL = 'claude-haiku-4-5-20251001'
 
 BASE_HEADERS = {
     'Authorization': f'token {GITHUB_TOKEN}',
@@ -23,9 +25,41 @@ BASE_HEADERS = {
     'Content-Type': 'application/json',
 }
 
+_COPILOT_QUOTA_EXCEEDED = False
+
+
+def _claude_fallback(messages: list[dict]) -> str | None:
+    """Call Claude API when Copilot quota is exhausted."""
+    if not ANTHROPIC_API_KEY:
+        return None
+    try:
+        payload = json.dumps({
+            'model': CLAUDE_FALLBACK_MODEL,
+            'max_tokens': 2048,
+            'messages': [m for m in messages if m['role'] != 'system'],
+            'system': next((m['content'] for m in messages if m['role'] == 'system'), None),
+        }).encode()
+        req = urllib.request.Request(
+            'https://api.anthropic.com/v1/messages',
+            data=payload,
+            headers={
+                'x-api-key': ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+            },
+            method='POST',
+        )
+        with urllib.request.urlopen(req, timeout=30) as r:
+            data = json.loads(r.read())
+            return data['content'][0]['text']
+    except Exception as e:
+        log.error('Claude fallback failed: %s', e)
+        return None
+
 
 def _request(path, data=None, method='GET'):
     """Generic GitHub API request."""
+    global _COPILOT_QUOTA_EXCEEDED
     if not GITHUB_TOKEN or not COPILOT_ENABLED:
         return None
     url = f'https://api.github.com{path}'
@@ -36,20 +70,25 @@ def _request(path, data=None, method='GET'):
         with urllib.request.urlopen(req, timeout=30) as resp:
             return json.loads(resp.read().decode('utf-8'))
     except urllib.error.HTTPError as e:
-        log.error(f'GitHub API {path}: HTTP {e.code} - {e.reason}')
+        if e.code == 402:
+            _COPILOT_QUOTA_EXCEEDED = True
+            log.warning('Copilot spend limit reached — switching to Claude fallback')
+        else:
+            log.error('GitHub API %s: HTTP %s - %s', path, e.code, e.reason)
         return None
     except Exception as e:
-        log.error(f'GitHub API {path}: {e}')
+        log.error('GitHub API %s: %s', path, e)
         return None
 
 
 def chat_completion(messages, model=None):
     """
-    Copilot Chat Completion via GitHub API (beta).
+    Copilot Chat Completion via GitHub API — falls back to Claude on 402.
     messages: list of {"role": "user|assistant|system", "content": "..."}
     """
-    if not COPILOT_ENABLED:
-        return None
+    if _COPILOT_QUOTA_EXCEEDED or not COPILOT_ENABLED:
+        log.info('Using Claude fallback for chat_completion')
+        return _claude_fallback(messages)
     payload = {
         'model': model or COPILOT_MODEL,
         'messages': messages,
@@ -59,6 +98,9 @@ def chat_completion(messages, model=None):
     result = _request('/copilot/chat/completions', data=payload, method='POST')
     if result and 'choices' in result:
         return result['choices'][0]['message']['content']
+    # _request returned None — may have set _COPILOT_QUOTA_EXCEEDED
+    if _COPILOT_QUOTA_EXCEEDED:
+        return _claude_fallback(messages)
     return None
 
 
