@@ -206,7 +206,7 @@ class OllamaClient:
 
     MODELS: Dict[str, str] = {
         "fast":     os.getenv("OLLAMA_FAST_MODEL",     "llama3.2:latest"),
-        "smart":    os.getenv("OLLAMA_SMART_MODEL",    "gemma2:latest"),
+        "smart":    os.getenv("OLLAMA_SMART_MODEL",    "gemma4:latest"),
         "code":     os.getenv("OLLAMA_CODE_MODEL",     "codellama:latest"),
         "analysis": os.getenv("OLLAMA_ANALYSIS_MODEL", "mistral:latest"),
     }
@@ -1405,6 +1405,12 @@ class MegaOrchestrator:
         """Acquire a PID lock to prevent duplicate polling, then delegate to _do_telegram_polling."""
         if not TELEGRAM_TOKEN:
             log.warning("No Telegram token - polling disabled")
+            return
+
+        # Webhook mode: avoid getUpdates conflicts (409) when a webhook is active.
+        webhook_mode = os.getenv("TELEGRAM_WEBHOOK_MODE", "").strip().lower() in {"1", "true", "yes", "on"}
+        if webhook_mode or os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN"):
+            log.info("Telegram webhook mode active — polling disabled to avoid token conflicts")
             return
 
         # OpenClaw manages Telegram polling — yield to avoid getUpdates conflict

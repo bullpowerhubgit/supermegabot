@@ -9,7 +9,7 @@ import sqlite3
 import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 _SERVER_START_TIME = time.time()
@@ -1122,7 +1122,7 @@ async def handle_health(req):
         "service": "supermegabot-dashboard",
         "port": PORT,
         "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
-        "started_at": datetime.utcfromtimestamp(_SERVER_START_TIME).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "started_at": datetime.fromtimestamp(_SERVER_START_TIME, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "shopify_domain": os.getenv("SHOPIFY_SHOP_DOMAIN", ""),
         "bots": {
             "admin_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1")),
@@ -1619,6 +1619,105 @@ async def handle_github_push(req):
         if push_ok:
             return web.json_response({"ok": True, "message": f"Gepusht: {branch} ✅"})
         return web.json_response({"ok": False, "error": push_err[:200]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_pipedrive_status(req):
+    try:
+        from modules.pipedrive_client import check_status
+        return web.json_response(await check_status())
+    except Exception as e:
+        return web.json_response({"status": "error", "error": str(e)}, status=500)
+
+
+async def handle_pipedrive_deals(req):
+    try:
+        from modules.pipedrive_client import list_deals
+        limit = int(req.rel_url.query.get("limit", 20))
+        deals = await list_deals(limit=limit)
+        return web.json_response({"ok": True, "deals": deals, "count": len(deals)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_pipedrive_deal_create(req):
+    try:
+        from modules.pipedrive_client import create_deal
+        body = await req.json()
+        deal = await create_deal(
+            title=body["title"],
+            value=float(body.get("value", 0)),
+            currency=body.get("currency", "EUR"),
+            person_id=body.get("person_id"),
+            org_id=body.get("org_id"),
+        )
+        return web.json_response({"ok": True, "deal": deal})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_pipedrive_persons(req):
+    try:
+        from modules.pipedrive_client import list_persons
+        persons = await list_persons(limit=int(req.rel_url.query.get("limit", 20)))
+        return web.json_response({"ok": True, "persons": persons, "count": len(persons)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_railway_status(req):
+    try:
+        from modules.railway_client import check_status
+        result = await check_status()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"status": "error", "message": str(e)})
+
+
+async def handle_railway_volumes(req):
+    project_id = req.rel_url.query.get("project_id") or os.getenv("RAILWAY_PROJECT_ID", "")
+    if not project_id:
+        return web.json_response({"ok": False, "error": "project_id required"})
+    try:
+        from modules.railway_client import list_volumes
+        volumes = await list_volumes(project_id)
+        return web.json_response({"ok": True, "volumes": volumes})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_railway_backups(req):
+    volume_instance_id = req.rel_url.query.get("volume_instance_id", "")
+    if not volume_instance_id:
+        return web.json_response({"ok": False, "error": "volume_instance_id required"})
+    try:
+        from modules.railway_client import list_backups
+        backups = await list_backups(volume_instance_id)
+        return web.json_response({"ok": True, "backups": backups})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_railway_backup_create(req):
+    data = await req.json()
+    volume_instance_id = data.get("volume_instance_id", "")
+    if not volume_instance_id:
+        return web.json_response({"ok": False, "error": "volume_instance_id required"})
+    try:
+        from modules.railway_client import create_backup
+        backup_id = await create_backup(volume_instance_id)
+        return web.json_response({"ok": True, "backup_id": backup_id})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_railway_backup_restore(req):
+    data = await req.json()
+    try:
+        from modules.railway_client import restore_backup
+        ok = await restore_backup(data["backup_id"], data["volume_instance_id"])
+        return web.json_response({"ok": ok})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -2714,6 +2813,32 @@ async def handle_stripe_churn(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_stripe_subscriptions(req):
+    """GET /api/stripe/subscriptions — List active Stripe subscriptions."""
+    try:
+        import stripe as stripe_lib
+        stripe_lib.api_key = os.getenv("STRIPE_SECRET_KEY") or os.getenv("STRIPE_API_KEY", "")
+        if not stripe_lib.api_key:
+            return web.json_response({"ok": False, "subscriptions": [], "error": "No Stripe key configured"})
+        subs = stripe_lib.Subscription.list(status="active", limit=20)
+        result = []
+        for s in subs.data:
+            item = s["items"]["data"][0] if s.get("items") and s["items"]["data"] else {}
+            plan = item.get("plan") or item.get("price") or {}
+            result.append({
+                "id": s["id"],
+                "status": s["status"],
+                "created": s["created"],
+                "current_period_end": s["current_period_end"],
+                "amount": (plan.get("amount") or 0) / 100,
+                "currency": (plan.get("currency") or "eur").upper(),
+                "interval": plan.get("interval") or "month",
+            })
+        return web.json_response({"ok": True, "subscriptions": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "subscriptions": [], "error": str(e)})
+
+
 async def handle_stripe_setup_products(req):
     """POST /api/stripe/setup-products — Create all SaaS tiers in Stripe."""
     try:
@@ -3299,6 +3424,50 @@ async def handle_tiktok_promotion(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── TikTok Research / Ad Library handlers ────────────────────────────────────
+
+async def handle_tiktok_research_status(req):
+    try:
+        from modules.tiktok_research import check_status
+        result = await check_status()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"status": "error", "error": str(e)}, status=500)
+
+
+async def handle_tiktok_research_ads(req):
+    """POST /api/tiktok/research/ads — query Ad Library."""
+    try:
+        from modules.tiktok_research import query_ads
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+
+        date_min = body.get("date_min", "")
+        date_max = body.get("date_max", "")
+        if not date_min or not date_max:
+            return web.json_response(
+                {"ok": False, "error": "date_min and date_max required (YYYYMMDD)"},
+                status=400,
+            )
+
+        result = await query_ads(
+            date_min=date_min,
+            date_max=date_max,
+            country_code=body.get("country_code", "ALL"),
+            search_term=body.get("search_term", ""),
+            search_type=body.get("search_type", "fuzzy_phrase"),
+            advertiser_business_ids=body.get("advertiser_business_ids"),
+            unique_users_seen_min=body.get("unique_users_seen_min", ""),
+            unique_users_seen_max=body.get("unique_users_seen_max", ""),
+            max_count=int(body.get("max_count", 20)),
+            search_id=body.get("search_id", ""),
+        )
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def create_app():
@@ -3311,6 +3480,8 @@ async def create_app():
 
     # Existing routes
     app.router.add_get("/", handle_index)
+    app.router.add_get("/terms",   lambda r: web.FileResponse(BASE_DIR / "dashboard" / "terms.html"))
+    app.router.add_get("/privacy", lambda r: web.FileResponse(BASE_DIR / "dashboard" / "privacy.html"))
     app.router.add_post("/api/chat", handle_chat)
     app.router.add_post("/api/chat/clear", handle_chat_clear)
     # Telegram Hub Bridge endpoints
@@ -3375,7 +3546,16 @@ async def create_app():
     app.router.add_get("/api/keys",               handle_api_keys)
     app.router.add_get("/api/github/status",      handle_github_status)
     app.router.add_post("/api/github/push",       handle_github_push)
-    app.router.add_get("/api/cloud/status",       handle_cloud_status)
+    app.router.add_get("/api/cloud/status",           handle_cloud_status)
+    app.router.add_get("/api/pipedrive/status",        handle_pipedrive_status)
+    app.router.add_get("/api/pipedrive/deals",         handle_pipedrive_deals)
+    app.router.add_post("/api/pipedrive/deals",        handle_pipedrive_deal_create)
+    app.router.add_get("/api/pipedrive/persons",       handle_pipedrive_persons)
+    app.router.add_get("/api/railway/status",         handle_railway_status)
+    app.router.add_get("/api/railway/volumes",        handle_railway_volumes)
+    app.router.add_get("/api/railway/backups",        handle_railway_backups)
+    app.router.add_post("/api/railway/backup/create", handle_railway_backup_create)
+    app.router.add_post("/api/railway/backup/restore",handle_railway_backup_restore)
     app.router.add_get("/api/bot-repair/status",  handle_bot_repair_status)
     app.router.add_post("/api/bot-repair/run",    handle_bot_repair_run)
     app.router.add_get("/api/notes",              handle_notes_get)
@@ -3459,6 +3639,7 @@ async def create_app():
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
     app.router.add_get("/api/stripe/mrr",             handle_stripe_mrr)
     app.router.add_get("/api/stripe/churn",           handle_stripe_churn)
+    app.router.add_get("/api/stripe/subscriptions",   handle_stripe_subscriptions)
     app.router.add_post("/api/stripe/setup-products", handle_stripe_setup_products)
     app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
     app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
@@ -3480,6 +3661,7 @@ async def create_app():
     app.router.add_get("/api/creatorhub/status",              handle_agents_status_all)
     app.router.add_post("/api/creatorhub/run",                handle_agents_run)
     app.router.add_get("/api/creatorhub/logs",                handle_agents_logs)
+    app.router.add_get("/api/agents/logs",                    handle_agents_logs)
 
     # ── Revenue Autopilot ──────────────────────────────────────────────────────
     app.router.add_get("/revenue",                            handle_revenue_autopilot_ui)
@@ -3540,6 +3722,8 @@ async def create_app():
     app.router.add_get("/api/tiktok/analytics",           handle_tiktok_analytics)
     app.router.add_get("/api/tiktok/revenue",             handle_tiktok_combined_revenue)
     app.router.add_post("/api/tiktok/promotion",          handle_tiktok_promotion)
+    app.router.add_get("/api/tiktok/research/status",     handle_tiktok_research_status)
+    app.router.add_post("/api/tiktok/research/ads",       handle_tiktok_research_ads)
     app.router.add_get("/api/agents",                     handle_agents_legacy)
 
     return app
