@@ -275,6 +275,33 @@ async def handle_webhook_event(event: Dict) -> str:
     etype = event.get("type", "")
     data  = event.get("data", {}).get("object", {})
 
+    if etype == "checkout.session.completed":
+        session_id  = data.get("id", "")
+        amount      = (data.get("amount_total", 0) or 0) / 100
+        currency    = (data.get("currency", "eur") or "eur").upper()
+        email       = data.get("customer_details", {}).get("email", "?")
+        name        = data.get("customer_details", {}).get("name", "?")
+        mode        = data.get("mode", "payment")
+        sub_id      = data.get("subscription", "")
+        await _tg(
+            f"🎉 <b>Neuer Kauf!</b> — Stripe Checkout\n"
+            f"👤 {name} ({email})\n"
+            f"💰 {amount:.2f} {currency} | Modus: {mode}\n"
+            f"Session: <code>{session_id}</code>\n"
+            + (f"Abo-ID: <code>{sub_id}</code>" if sub_id else "")
+        )
+        # Auto-sync to Pipedrive if configured
+        try:
+            from modules.pipedrive_client import sync_shopify_customer
+            if os.getenv("PIPEDRIVE_API_TOKEN"):
+                await sync_shopify_customer(
+                    email=email, name=name,
+                    order_value=amount, order_id=session_id[:12]
+                )
+        except Exception:
+            pass
+        return f"checkout.session.completed — {email} {amount:.2f} {currency}"
+
     if etype == "payment_intent.succeeded":
         amount   = data.get("amount", 0) / 100
         currency = data.get("currency", "eur").upper()
