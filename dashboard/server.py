@@ -3470,6 +3470,118 @@ async def handle_tiktok_research_ads(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── Meta Ads handlers ─────────────────────────────────────────────────────────
+
+async def handle_meta_ads_status(req):
+    try:
+        from modules.meta_ads import check_status
+        return web.json_response(await check_status())
+    except Exception as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=500)
+
+
+async def handle_meta_campaigns(req):
+    try:
+        from modules.meta_ads import list_campaigns
+        campaigns = await list_campaigns()
+        return web.json_response({"ok": True, "campaigns": campaigns, "count": len(campaigns)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_campaign_create(req):
+    try:
+        from modules.meta_ads import create_campaign
+        body = await req.json()
+        result = await create_campaign(
+            name=body.get("name", "SuperMegaBot Campaign"),
+            objective=body.get("objective", "OUTCOME_SALES"),
+            daily_budget_eur=float(body.get("daily_budget_eur", 10.0)),
+            status=body.get("status", "PAUSED"),
+        )
+        return web.json_response({"ok": "id" in result, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_campaign_launch(req):
+    """Launch full campaign (campaign + adset + creative + ad) from Shopify product."""
+    try:
+        from modules.meta_ads import launch_shopify_campaign
+        body = await req.json()
+        result = await launch_shopify_campaign(
+            product_title=body.get("product_title", ""),
+            product_url=body.get("product_url", ""),
+            product_image=body.get("product_image", ""),
+            product_price=float(body.get("product_price", 0)),
+            daily_budget_eur=float(body.get("daily_budget_eur", 10.0)),
+            countries=body.get("countries", ["DE", "AT", "CH"]),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_saas_campaign(req):
+    """Launch SuperMegaBot SaaS lead-gen campaign."""
+    try:
+        from modules.meta_ads import launch_saas_campaign
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        result = await launch_saas_campaign(
+            daily_budget_eur=float(body.get("daily_budget_eur", 20.0))
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_pixel_stats(req):
+    try:
+        from modules.meta_ads import get_pixel_stats, get_pixel_events
+        stats = await get_pixel_stats()
+        events = await get_pixel_events(days=7)
+        return web.json_response({"ok": True, "pixel": stats, "events_7d": events})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_oauth_url(req):
+    """Return the OAuth URL to generate a Meta Marketing API token."""
+    app_id = os.getenv("FACEBOOK_APP_ID", "1225412136200609")
+    scopes = ",".join([
+        "ads_management", "ads_read", "pages_manage_ads",
+        "pages_read_engagement", "pages_manage_posts",
+        "instagram_basic", "instagram_content_publish",
+        "business_management", "public_profile",
+    ])
+    redirect = "https://developers.facebook.com/tools/explorer/"
+    url = (
+        f"https://www.facebook.com/v21.0/dialog/oauth"
+        f"?client_id={app_id}"
+        f"&redirect_uri={redirect}"
+        f"&scope={scopes}"
+        f"&response_type=token"
+    )
+    return web.json_response({
+        "ok": True,
+        "oauth_url": url,
+        "instructions": [
+            "1. Klick den oauth_url Link",
+            "2. Mit Facebook-Account einloggen (Aiitec)",
+            "3. Alle Berechtigungen genehmigen",
+            "4. Den generierten Token kopieren",
+            "5. Als META_ADS_TOKEN in .env speichern oder hier senden"
+        ],
+        "required_permissions": scopes.split(","),
+        "ad_account": os.getenv("META_AD_ACCOUNT_ID", ""),
+        "page_id": os.getenv("FACEBOOK_PAGE_ID", ""),
+    })
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -3725,6 +3837,15 @@ async def create_app():
     app.router.add_get("/api/tiktok/research/status",     handle_tiktok_research_status)
     app.router.add_post("/api/tiktok/research/ads",       handle_tiktok_research_ads)
     app.router.add_get("/api/agents",                     handle_agents_legacy)
+
+    # Meta Ads
+    app.router.add_get("/api/meta/status",                handle_meta_ads_status)
+    app.router.add_get("/api/meta/campaigns",             handle_meta_campaigns)
+    app.router.add_post("/api/meta/campaign/create",      handle_meta_campaign_create)
+    app.router.add_post("/api/meta/campaign/launch",      handle_meta_campaign_launch)
+    app.router.add_post("/api/meta/saas-campaign",        handle_meta_saas_campaign)
+    app.router.add_get("/api/meta/pixel",                 handle_meta_pixel_stats)
+    app.router.add_get("/api/meta/oauth-url",             handle_meta_oauth_url)
 
     return app
 
