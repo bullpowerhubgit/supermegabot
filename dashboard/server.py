@@ -2541,7 +2541,10 @@ async def handle_klaviyo_lists(req):
 
 async def handle_klaviyo_sync(req):
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            data = {}
         list_id = data.get("list_id", "")
         source  = data.get("source", "digistore")
         from modules.klaviyo_automation import sync_from_digistore, sync_from_shopify, get_lists
