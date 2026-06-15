@@ -3659,6 +3659,51 @@ async def handle_salesforce_import_b2b(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# SHOPIFY AUTONOMY MASTER
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def handle_autonomy_health(req):
+    try:
+        from modules.shopify_autonomy_master import get_service
+        svc = get_service()
+        return web.json_response({"ok": True, **svc.health()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_autonomy_trigger(req):
+    job_id = req.match_info.get("job_id", "")
+    try:
+        from modules.shopify_autonomy_master import get_service, order_orchestrator, inventory_sync, price_optimizer, telegram_digest, recovery_reconciliation, catalog_watchdog
+        svc = get_service()
+        job_map = {
+            "order_orchestrator": order_orchestrator,
+            "inventory_sync": inventory_sync,
+            "price_optimizer": price_optimizer,
+            "telegram_digest": telegram_digest,
+            "recovery_reconciliation": recovery_reconciliation,
+            "catalog_watchdog": catalog_watchdog,
+        }
+        if job_id not in job_map:
+            return web.json_response({"ok": False, "error": f"Unknown job: {job_id}", "available": list(job_map.keys())})
+        result = job_map[job_id](svc)
+        return web.json_response({"ok": True, "job_id": job_id, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_autonomy_history(req):
+    job_id = req.match_info.get("job_id", "")
+    try:
+        from modules.shopify_autonomy_master import get_service
+        svc = get_service()
+        history = svc.state.read(f"history:{job_id}", default={"runs": []})
+        return web.json_response({"ok": True, "job_id": job_id, **history})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -3933,6 +3978,11 @@ async def create_app():
     app.router.add_post("/api/salesforce/lead",           handle_salesforce_create_lead)
     app.router.add_post("/api/salesforce/sync/klaviyo",   handle_salesforce_sync_klaviyo)
     app.router.add_post("/api/salesforce/sync/b2b",       handle_salesforce_import_b2b)
+
+    # Shopify Autonomy Master
+    app.router.add_get("/api/autonomy/health",            handle_autonomy_health)
+    app.router.add_post("/api/autonomy/trigger/{job_id}", handle_autonomy_trigger)
+    app.router.add_get("/api/autonomy/history/{job_id}",  handle_autonomy_history)
 
     return app
 
