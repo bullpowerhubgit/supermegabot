@@ -1,0 +1,137 @@
+{
+  "runs": [
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T12:13:09.850376+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 60382,
+      "run_id": "fc88632f124743498bc3d4d473ec078d",
+      "started_at": "2026-06-15T12:13:09.849486+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T14:13:17.114142+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 60382,
+      "run_id": "f46bff07e81847a194bcdb7afc0fda83",
+      "started_at": "2026-06-15T14:13:17.113438+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-15T16:13:22.905614+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 60382,
+      "run_id": "81403d5cbf3843209b9763041172a366",
+      "started_at": "2026-06-15T16:13:22.904253+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-15T18:13:06.544946+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 60382,
+      "run_id": "89585ee3e0d44df58eccb1f4f5ee7ea7",
+      "started_at": "2026-06-15T18:13:06.542996+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T20:13:06.823356+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 60382,
+      "run_id": "d12f4b4f8e124dc89f45fd3075690c98",
+      "started_at": "2026-06-15T20:13:06.822599+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-15T22:13:10.178655+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 60382,
+      "run_id": "1ad097f699d444aaa532d53362fbbca9",
+      "started_at": "2026-06-15T22:13:10.177594+00:00",
+      "status": "success",
+      "traceback": null
+    }
+  ],
+  "updated_at": "2026-06-15T22:13:10.179135+00:00"
+}

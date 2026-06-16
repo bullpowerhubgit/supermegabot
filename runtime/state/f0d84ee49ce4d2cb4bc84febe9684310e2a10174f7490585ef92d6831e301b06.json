@@ -1,0 +1,2026 @@
+{
+  "runs": [
+    {
+      "attempt": 1,
+      "duration_ms": 301,
+      "error": null,
+      "finished_at": "2026-06-15T11:07:03.053231+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "20eb09723d1c4334bfd395e09657f0a7",
+      "started_at": "2026-06-15T11:07:02.751334+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 758,
+      "error": null,
+      "finished_at": "2026-06-15T11:22:07.508216+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "d80e51196b8a46fe9f0d7ed8cb00f0a7",
+      "started_at": "2026-06-15T11:22:06.749293+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 256,
+      "error": null,
+      "finished_at": "2026-06-15T11:37:14.455611+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "1afc92621b8a4aa490604daa3d703e4e",
+      "started_at": "2026-06-15T11:37:14.198875+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1585,
+      "error": null,
+      "finished_at": "2026-06-15T11:52:06.828777+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "874d162ce6c74d398f8ab6df3abfb3e5",
+      "started_at": "2026-06-15T11:52:05.242874+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1254,
+      "error": null,
+      "finished_at": "2026-06-15T12:07:02.856145+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "385f064049694c93a3f44f26f2a850e7",
+      "started_at": "2026-06-15T12:07:01.601706+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1739,
+      "error": null,
+      "finished_at": "2026-06-15T12:22:03.607296+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "e2ef2d26cfdf45038869a14128eb9b04",
+      "started_at": "2026-06-15T12:22:01.867861+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 277,
+      "error": null,
+      "finished_at": "2026-06-15T12:37:15.121688+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "cb0bb9535f6f462aa797f3c58c19a000",
+      "started_at": "2026-06-15T12:37:14.844208+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1244,
+      "error": null,
+      "finished_at": "2026-06-15T12:52:12.300868+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "db6ab836d65f4d58936ee08430a37e8d",
+      "started_at": "2026-06-15T12:52:11.056840+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 554,
+      "error": null,
+      "finished_at": "2026-06-15T13:07:03.845488+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "182a41a36119483b81c3593592de5cbe",
+      "started_at": "2026-06-15T13:07:03.290966+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 458,
+      "error": null,
+      "finished_at": "2026-06-15T13:22:03.404580+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "35.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "40.99"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "30.74"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "61.49"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "96.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "c18c85331b464013b3e6eae42e0aa3d1",
+      "started_at": "2026-06-15T13:22:02.945694+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 964,
+      "error": null,
+      "finished_at": "2026-06-15T13:37:03.983215+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "36.76"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "42.01"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "31.51"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "63.03"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "98.75"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "e91efdae09434758b6ed386414d5f562",
+      "started_at": "2026-06-15T13:37:03.018062+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 239,
+      "error": null,
+      "finished_at": "2026-06-15T13:52:01.130001+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "37.68"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "43.06"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "32.30"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "64.61"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "101.22"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "fee646e284c5439ab8d85d5d1c06693d",
+      "started_at": "2026-06-15T13:52:00.890808+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 501,
+      "error": null,
+      "finished_at": "2026-06-15T14:07:13.942126+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "39.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "45.24"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "33.94"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "67.89"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "103.75"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "32dbd5fc2e7149338e4805b968f715cd",
+      "started_at": "2026-06-15T14:07:13.440436+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 244,
+      "error": null,
+      "finished_at": "2026-06-15T14:22:12.380944+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "40.58"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "46.37"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "33.94"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "67.89"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "106.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "75906a6078934ac4822a1d2dcd78b520",
+      "started_at": "2026-06-15T14:22:12.136822+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 284,
+      "error": null,
+      "finished_at": "2026-06-15T14:37:05.414686+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "40.58"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "46.37"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "34.79"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "69.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "109.00"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "49720036cb2b48f9a3d41534b4886ca0",
+      "started_at": "2026-06-15T14:37:05.129774+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 493,
+      "error": null,
+      "finished_at": "2026-06-15T14:52:11.751475+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "41.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "47.53"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "35.66"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "71.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "111.72"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "12cd8b33de0642ba9df06b3054ef18b1",
+      "started_at": "2026-06-15T14:52:11.258116+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1242,
+      "error": null,
+      "finished_at": "2026-06-15T15:07:05.919425+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "42.63"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "48.72"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "36.55"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "73.11"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "114.51"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "dbf21e6dc07c43a79b455280ca0e3822",
+      "started_at": "2026-06-15T15:07:04.676751+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 485,
+      "error": null,
+      "finished_at": "2026-06-15T15:22:13.511733+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "44.79"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "51.19"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "37.46"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "74.94"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "117.37"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "f72bcab3fb3d445eac33c16b719c2bd1",
+      "started_at": "2026-06-15T15:22:13.025858+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2266,
+      "error": null,
+      "finished_at": "2026-06-15T15:37:11.687957+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "45.91"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "52.47"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "38.40"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "76.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "120.30"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "1696fed89ab1416090393f5652bbb338",
+      "started_at": "2026-06-15T15:37:09.421560+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2841,
+      "error": null,
+      "finished_at": "2026-06-15T15:52:17.010590+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "47.06"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "53.78"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "39.36"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "78.73"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "123.31"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "949fc433f824469198a460435acf73ab",
+      "started_at": "2026-06-15T15:52:14.168706+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 786,
+      "error": null,
+      "finished_at": "2026-06-15T16:07:15.624621+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "48.24"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "55.12"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "41.35"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "82.72"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "129.55"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "c6f6e258555942b8bcfa667c9926441b",
+      "started_at": "2026-06-15T16:07:14.838508+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1389,
+      "error": null,
+      "finished_at": "2026-06-15T16:22:10.749373+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "49.45"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "56.50"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "42.38"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "84.79"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "129.55"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "0f1151f8816444f48260551e218ee0b4",
+      "started_at": "2026-06-15T16:22:09.360200+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 224,
+      "error": null,
+      "finished_at": "2026-06-15T16:37:02.770650+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "49.45"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "56.50"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "42.38"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "84.79"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "132.79"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "aa123f856c19491cbd4a8c3969189cde",
+      "started_at": "2026-06-15T16:37:02.546425+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2473,
+      "error": null,
+      "finished_at": "2026-06-15T16:52:09.258408+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "50.69"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "57.91"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "43.44"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "86.91"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "136.11"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "b993917e8e6d40088ccf3dd726379b69",
+      "started_at": "2026-06-15T16:52:06.784546+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1272,
+      "error": null,
+      "finished_at": "2026-06-15T17:07:04.200917+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "51.96"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "59.36"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "44.53"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "89.08"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "139.51"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "58830c3a65c04ab9a10afb8184154f87",
+      "started_at": "2026-06-15T17:07:02.928162+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1292,
+      "error": null,
+      "finished_at": "2026-06-15T17:22:14.133329+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "54.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "62.36"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "46.78"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "93.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "146.57"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "2a896f8cdbd24c76a02158dd435cf855",
+      "started_at": "2026-06-15T17:22:12.840524+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 256,
+      "error": null,
+      "finished_at": "2026-06-15T17:37:00.424141+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "54.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "62.36"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "46.78"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "93.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "146.57"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "c15c8f5b92404498a65b6c593fc2dfc0",
+      "started_at": "2026-06-15T17:37:00.167403+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 241,
+      "error": null,
+      "finished_at": "2026-06-15T17:52:02.999947+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "55.95"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "63.92"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "47.95"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "95.93"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "150.23"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "5cb64ac1a2e2470eb221a8d473d7fb85",
+      "started_at": "2026-06-15T17:52:02.758663+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 329,
+      "error": null,
+      "finished_at": "2026-06-15T18:07:08.491869+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "58.78"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "65.52"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "49.15"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "98.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "153.99"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "46ab6e31822c4472b74f131df8cadca4",
+      "started_at": "2026-06-15T18:07:08.162328+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1279,
+      "error": null,
+      "finished_at": "2026-06-15T18:22:03.210799+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "58.78"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "67.16"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "50.38"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "100.79"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "157.84"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "dd50f59f974743709badfc9533fdf409",
+      "started_at": "2026-06-15T18:22:01.931600+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1255,
+      "error": null,
+      "finished_at": "2026-06-15T18:37:14.240701+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "61.76"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "70.56"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "52.93"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "105.89"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "165.83"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "9a8f62e1b5014f689caaaa0d783bd991",
+      "started_at": "2026-06-15T18:37:12.985125+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1243,
+      "error": null,
+      "finished_at": "2026-06-15T18:52:06.374976+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "63.30"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "72.32"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "52.93"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "105.89"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "165.83"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "985d6d52a65643358d88507f76b78567",
+      "started_at": "2026-06-15T18:52:05.131176+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 284,
+      "error": null,
+      "finished_at": "2026-06-15T19:07:09.513266+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "64.88"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "74.13"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "55.61"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "108.54"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "169.98"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "ca9eec19f0984c2ab1618a89c99c25f9",
+      "started_at": "2026-06-15T19:07:09.228939+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2228,
+      "error": null,
+      "finished_at": "2026-06-15T19:22:07.010532+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "64.88"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "74.13"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "55.61"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "111.25"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "174.23"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "cb9c7e929e454be79824475c2f602fcc",
+      "started_at": "2026-06-15T19:22:04.781953+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 470,
+      "error": null,
+      "finished_at": "2026-06-15T19:37:12.855428+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "68.16"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "77.88"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "58.42"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "116.88"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "183.05"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "1cf0ffd9ef2348089f6e81b57157a65a",
+      "started_at": "2026-06-15T19:37:12.384495+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 209,
+      "error": null,
+      "finished_at": "2026-06-15T19:52:13.821472+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "69.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "79.83"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "59.88"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "116.88"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "183.05"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "390a9af81cf14a64b52505ad08961179",
+      "started_at": "2026-06-15T19:52:13.612314+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 412,
+      "error": null,
+      "finished_at": "2026-06-15T20:07:03.438945+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "69.86"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "79.83"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "59.88"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "119.80"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "187.63"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "88ab5b901c3f4cedb37f8a731c9ab808",
+      "started_at": "2026-06-15T20:07:03.025965+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1164,
+      "error": null,
+      "finished_at": "2026-06-15T20:22:02.794473+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "73.40"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "81.83"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "61.38"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "122.79"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "192.32"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "26f0c600178c403080e27ad67b42582e",
+      "started_at": "2026-06-15T20:22:01.630372+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 751,
+      "error": null,
+      "finished_at": "2026-06-15T20:37:06.377583+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "75.23"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "85.98"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "64.48"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "129.01"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "202.06"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "986fe99c4aa247f99fce6974ac9a7fa5",
+      "started_at": "2026-06-15T20:37:05.625981+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 4804,
+      "error": null,
+      "finished_at": "2026-06-15T20:52:06.648637+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "75.23"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "85.98"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "64.48"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "129.01"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "202.06"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "c2188b94bd4248c5800ac1187d4bec37",
+      "started_at": "2026-06-15T20:52:01.844518+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 238,
+      "error": null,
+      "finished_at": "2026-06-15T21:07:05.583237+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "79.04"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "88.13"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "66.09"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "132.24"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "207.11"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "207545cd84f74559a19e98c3ebd612f8",
+      "started_at": "2026-06-15T21:07:05.345108+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1832,
+      "error": null,
+      "finished_at": "2026-06-15T21:22:15.441770+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "81.02"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "92.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "69.43"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "135.55"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "212.29"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "391917ff23e74ba48850daee9af948be",
+      "started_at": "2026-06-15T21:22:13.609588+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1227,
+      "error": null,
+      "finished_at": "2026-06-15T21:37:09.308800+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "83.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "94.90"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "71.17"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "142.41"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "217.60"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "2d95e20a10fd4bd7be460b49fdaf47f5",
+      "started_at": "2026-06-15T21:37:08.081197+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2194,
+      "error": null,
+      "finished_at": "2026-06-15T21:52:15.414389+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "85.13"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "97.27"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "72.95"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "145.97"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "228.62"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "570c204ce13f4a29aece5b6b69b56ba1",
+      "started_at": "2026-06-15T21:52:13.219481+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 623,
+      "error": null,
+      "finished_at": "2026-06-15T22:07:15.497228+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "87.26"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "99.70"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "72.95"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "145.97"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "228.62"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "2f416fbe3f684f4ba757daaaff5f8121",
+      "started_at": "2026-06-15T22:07:14.873426+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 266,
+      "error": null,
+      "finished_at": "2026-06-15T22:22:07.749594+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "89.44"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "99.70"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "74.77"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "149.62"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "234.34"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "12f439a6a0f149f1b0823e7fcd34cad7",
+      "started_at": "2026-06-15T22:22:07.482988+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1221,
+      "error": null,
+      "finished_at": "2026-06-15T22:37:11.419345+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "89.44"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "102.19"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "76.64"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "153.36"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "240.20"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 60382,
+      "run_id": "7d9a0f4a51424d2fab68b9077eba22dd",
+      "started_at": "2026-06-15T22:37:10.198200+00:00",
+      "status": "success",
+      "traceback": null
+    }
+  ],
+  "updated_at": "2026-06-15T22:37:11.420377+00:00"
+}
