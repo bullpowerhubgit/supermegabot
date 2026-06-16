@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Platform Integration Hub</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:Inter,Arial,sans-serif;background:#030712;color:#f9fafb;padding:20px;min-height:100vh}
+    h1{font-size:1.8rem;margin-bottom:4px;color:#f9fafb}
+    .subtitle{color:#6b7280;margin-bottom:20px;font-size:.9rem}
+    .stats{display:flex;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+    .stat{background:#1f2937;border:1px solid #374151;border-radius:10px;padding:12px 18px;min-width:100px;text-align:center}
+    .stat-num{font-size:1.6rem;font-weight:700}
+    .stat-num.green{color:#34d399}.stat-num.orange{color:#f59e0b}.stat-num.blue{color:#60a5fa}
+    .stat-label{font-size:.75rem;color:#9ca3af;margin-top:2px}
+    .filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+    .filter-btn{background:#1f2937;border:1px solid #374151;color:#9ca3af;padding:6px 14px;border-radius:999px;cursor:pointer;font-size:.8rem;transition:all .15s}
+    .filter-btn.active{background:#0f766e;border-color:#0f766e;color:#fff}
+    .search{background:#111827;border:1px solid #374151;color:#f9fafb;padding:8px 14px;border-radius:10px;font-size:.9rem;width:260px}
+    .search::placeholder{color:#6b7280}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+    .card{background:#1f2937;border:1px solid #374151;border-radius:12px;padding:14px;transition:border-color .2s}
+    .card.connected{border-left:3px solid #34d399}
+    .card.pending{border-left:3px solid #6b7280}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .platform-name{font-weight:600;font-size:.95rem}
+    .badge{padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:600}
+    .badge.connected{background:#052e16;color:#34d399}
+    .badge.pending{background:#1c1917;color:#a8a29e}
+    .cat-label{font-size:.72rem;color:#6b7280;margin-bottom:6px}
+    .input-row{display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap}
+    .key-input{flex:1;min-width:160px;background:#111827;border:1px solid #374151;color:#f9fafb;padding:7px 10px;border-radius:8px;font-size:.8rem;font-family:monospace}
+    .key-input::placeholder{color:#6b7280;font-family:Inter,sans-serif}
+    .key-input.filled{border-color:#34d399}
+    .save-btn{background:#0f766e;color:#fff;border:none;padding:7px 12px;border-radius:8px;cursor:pointer;font-size:.78rem;white-space:nowrap}
+    .save-btn:hover{background:#0d9488}
+    .save-btn:disabled{background:#374151;cursor:not-allowed}
+    .docs-link{color:#60a5fa;font-size:.75rem;text-decoration:none;margin-top:4px;display:inline-block}
+    .docs-link:hover{text-decoration:underline}
+    .extra-row{display:flex;gap:6px;margin-top:4px}
+    .toast{position:fixed;bottom:20px;right:20px;background:#052e16;border:1px solid #34d399;color:#34d399;padding:10px 18px;border-radius:10px;font-size:.85rem;display:none;z-index:999}
+    .section-header{font-size:1.1rem;font-weight:600;color:#e5e7eb;margin:20px 0 10px;padding-bottom:6px;border-bottom:1px solid #374151}
+    .hidden{display:none}
+    .all-done-banner{background:#052e16;border:1px solid #34d399;border-radius:10px;padding:12px 16px;margin-bottom:20px;color:#34d399;font-weight:600;display:none}
+  </style>
+</head>
+<body>
+  <h1>🔌 Platform Integration Hub</h1>
+  <p class="subtitle">Alle API-Keys verwalten, testen und verbinden</p>
+  <div id="allDoneBanner" class="all-done-banner">✅ Alle Plattformen verbunden!</div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num green" id="statConnected">…</div><div class="stat-label">Verbunden</div></div>
+    <div class="stat"><div class="stat-num orange" id="statPending">…</div><div class="stat-label">Ausstehend</div></div>
+    <div class="stat"><div class="stat-num blue" id="statTotal">…</div><div class="stat-label">Gesamt</div></div>
+  </div>
+
+  <div class="filter-bar">
+    <input class="search" id="searchInput" placeholder="Suchen…" oninput="renderPlatforms()">
+    <button class="filter-btn active" data-cat="all" onclick="setFilter('all')">Alle</button>
+    <button class="filter-btn" data-cat="connected" onclick="setFilter('connected')">✅ Verbunden</button>
+    <button class="filter-btn" data-cat="pending" onclick="setFilter('pending')">⏳ Ausstehend</button>
+  </div>
+
+  <div id="platformsGrid" class="grid"></div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    let allPlatforms = [];
+    let activeFilter = 'all';
+    const extraFields = {
+      shopify:     [{key:'SHOPIFY_SHOP_DOMAIN', placeholder:'shop.myshopify.com'}],
+      paypal:      [{key:'PAYPAL_SECRET', placeholder:'PayPal Secret'}],
+      slack:       [{key:'SLACK_WEBHOOK_URL', placeholder:'https://hooks.slack.com/services/…'}],
+      discord:     [{key:'DISCORD_WEBHOOK_URL', placeholder:'https://discord.com/api/webhooks/…'}],
+      twilio:      [{key:'TWILIO_AUTH_TOKEN', placeholder:'Auth Token'}, {key:'TWILIO_PHONE', placeholder:'+1234567890'}],
+      jira:        [{key:'JIRA_EMAIL', placeholder:'user@example.com'}, {key:'JIRA_DOMAIN', placeholder:'yourcompany.atlassian.net'}],
+      trello:      [{key:'TRELLO_TOKEN', placeholder:'Trello Token'}],
+      aws:         [{key:'AWS_SECRET_ACCESS_KEY', placeholder:'AWS Secret Access Key'}, {key:'AWS_DEFAULT_REGION', placeholder:'eu-central-1'}],
+      zendesk:     [{key:'ZENDESK_SUBDOMAIN', placeholder:'yourcompany.zendesk.com'}, {key:'ZENDESK_EMAIL', placeholder:'admin@company.com'}],
+      facebook:    [{key:'META_PAGE_ID', placeholder:'Facebook Page ID'}],
+      twitter:     [{key:'TWITTER_API_SECRET', placeholder:'API Secret'}, {key:'TWITTER_ACCESS_TOKEN', placeholder:'Access Token'}],
+      linkedin:    [{key:'LINKEDIN_CLIENT_SECRET', placeholder:'Client Secret'}],
+    };
+
+    async function loadPlatforms() {
+      const r = await fetch('/api/platforms/all-status').then(x=>x.json()).catch(()=>({platforms:[]}));
+      allPlatforms = r.platforms || [];
+      document.getElementById('statConnected').textContent = r.connected ?? 0;
+      document.getElementById('statPending').textContent = r.pending ?? 0;
+      document.getElementById('statTotal').textContent = r.total ?? 0;
+      if (r.connected === r.total && r.total > 0) {
+        document.getElementById('allDoneBanner').style.display = 'block';
+      }
+      renderPlatforms();
+    }
+
+    function setFilter(cat) {
+      activeFilter = cat;
+      document.querySelectorAll('.filter-btn[data-cat]').forEach(b => b.classList.toggle('active', b.dataset.cat === cat));
+      renderPlatforms();
+    }
+
+    function renderPlatforms() {
+      const search = document.getElementById('searchInput').value.toLowerCase();
+      let filtered = allPlatforms;
+      if (activeFilter === 'connected') filtered = filtered.filter(p => p.configured);
+      if (activeFilter === 'pending') filtered = filtered.filter(p => !p.configured);
+      if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search) || p.cat.toLowerCase().includes(search));
+
+      const byCategory = {};
+      for (const p of filtered) {
+        if (!byCategory[p.cat]) byCategory[p.cat] = [];
+        byCategory[p.cat].push(p);
+      }
+
+      let html = '';
+      for (const [cat, platforms] of Object.entries(byCategory)) {
+        html += `<div class="section-header">${cat} (${platforms.filter(p=>p.configured).length}/${platforms.length})</div><div class="grid">`;
+        for (const p of platforms) {
+          const extra = (extraFields[p.id] || []);
+          const extraInputs = extra.map(f =>
+            `<input id="extra_${p.id}_${f.key}" class="key-input" placeholder="${f.placeholder}" data-key="${f.key}">`
+          ).join('');
+          html += `<div class="card ${p.configured ? 'connected' : 'pending'}" id="card_${p.id}">
+            <div class="card-header">
+              <span class="platform-name">${p.name}</span>
+              <span class="badge ${p.configured ? 'connected' : 'pending'}" id="badge_${p.id}">${p.configured ? '✅ Verbunden' : '⏳ Ausstehend'}</span>
+            </div>
+            <div class="cat-label">${p.cat}</div>
+            <div class="input-row">
+              <input id="inp_${p.id}" class="key-input ${p.configured ? 'filled' : ''}" type="password"
+                placeholder="${p.envKey}${p.configured ? ' (gesetzt)' : ''}"
+                autocomplete="off">
+              ${extraInputs}
+              <button class="save-btn" onclick="saveKey('${p.id}','${p.envKey}')">💾 Speichern</button>
+            </div>
+            <a href="${p.signup}" target="_blank" rel="noopener" class="docs-link">🔗 API-Key holen →</a>
+          </div>`;
+        }
+        html += '</div>';
+      }
+
+      if (!html) html = '<div style="color:#6b7280;padding:24px;text-align:center">Keine Plattformen gefunden</div>';
+      document.getElementById('platformsGrid').innerHTML = html;
+    }
+
+    async function saveKey(id, envKey) {
+      const input = document.getElementById(`inp_${id}`);
+      const value = input.value.trim();
+      if (!value) { showToast('❌ Bitte Key eingeben', true); return; }
+
+      const card = input.closest('.card');
+      const btn = card.querySelector('.save-btn');
+      btn.disabled = true; btn.textContent = '🔍 Prüfen…';
+
+      const extra = (extraFields[id] || []);
+      const additionalKeys = {};
+      for (const f of extra) {
+        const el = document.getElementById(`extra_${id}_${f.key}`);
+        if (el && el.value.trim()) additionalKeys[f.key] = el.value.trim();
+      }
+
+      // ── 1. Validate first ─────────────────────────────────────────────────
+      const vr = await fetch('/api/platforms/validate', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ platformId: id, envKey, value, additionalKeys })
+      }).then(x=>x.json()).catch(e=>({valid:false, message:e.message}));
+
+      let validationDiv = card.querySelector('.validation-result');
+      if (!validationDiv) {
+        validationDiv = document.createElement('div');
+        validationDiv.className = 'validation-result';
+        validationDiv.style.cssText = 'margin-top:6px;font-size:.78rem;padding:5px 8px;border-radius:6px';
+        card.appendChild(validationDiv);
+      }
+
+      if (!vr.valid) {
+        validationDiv.style.background = '#451a03';
+        validationDiv.style.color = '#fbbf24';
+        validationDiv.textContent = `⚠️ ${vr.message}`;
+        btn.disabled = false; btn.textContent = '💾 Trotzdem speichern';
+        // Allow user to save anyway by clicking again
+        btn.onclick = null;
+        btn.onclick = async () => {
+          btn.disabled = true; btn.textContent = '💾 Speichern…';
+          const r2 = await fetch('/api/platforms/save-key', {
+            method: 'POST',
+            headers: {'Content-Type':'application/json'},
+            body: JSON.stringify({ envKey, value, additionalKeys })
+          }).then(x=>x.json()).catch(e=>({error:e.message}));
+          if (r2.ok) {
+            showToast(`💾 ${envKey} gespeichert (ohne Live-Test)`);
+            input.value = ''; input.classList.add('filled');
+            input.placeholder = `${envKey} (gesetzt)`;
+            btn.textContent = '💾 Speichern';
+            btn.onclick = () => saveKey(id, envKey);
+            await loadPlatforms();
+          } else {
+            showToast(`❌ ${r2.error || r2.message}`, true);
+            btn.disabled = false; btn.textContent = '💾 Trotzdem speichern';
+          }
+        };
+        return;
+      }
+
+      validationDiv.style.background = '#052e16';
+      validationDiv.style.color = '#34d399';
+      validationDiv.textContent = `✅ ${vr.message}`;
+      btn.textContent = '💾 Speichern…';
+
+      // ── 2. Save ───────────────────────────────────────────────────────────
+      const r = await fetch('/api/platforms/save-key', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ envKey, value, additionalKeys })
+      }).then(x=>x.json()).catch(e=>({error:e.message}));
+
+      btn.disabled = false;
+      if (r.ok) {
+        showToast(`✅ ${envKey} gespeichert!`);
+        input.value = '';
+        input.classList.add('filled');
+        input.placeholder = `${envKey} (gesetzt)`;
+        document.getElementById(`badge_${id}`).className = 'badge connected';
+        document.getElementById(`badge_${id}`).textContent = '✅ Verbunden';
+        document.getElementById(`card_${id}`).className = 'card connected';
+        btn.textContent = '💾 Speichern';
+        await loadPlatforms();
+      } else {
+        showToast(`❌ Speichern fehlgeschlagen: ${r.error || r.message}`, true);
+        btn.textContent = '💾 Speichern';
+      }
+    }
+
+    function showToast(msg, warn=false) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      t.style.background = warn ? '#451a03' : '#052e16';
+      t.style.borderColor = warn ? '#fbbf24' : '#34d399';
+      t.style.color = warn ? '#fbbf24' : '#34d399';
+      setTimeout(() => t.style.display = 'none', 4000);
+    }
+
+    loadPlatforms();
+    setInterval(loadPlatforms, 30000);
+  </script>
+</body>
+</html>
