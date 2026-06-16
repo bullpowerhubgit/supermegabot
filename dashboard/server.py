@@ -2772,6 +2772,12 @@ async def handle_stripe_webhook(req):
 
         event = json.loads(payload)
         result = await handle_webhook_event(event)
+        # Sofort-Benachrichtigung bei Revenue-Events
+        try:
+            from modules.notify_hub import handle_stripe_payment_event
+            handle_stripe_payment_event(event)
+        except Exception:
+            pass
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
@@ -3473,6 +3479,77 @@ async def handle_tiktok_research_ads(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── SEMrush handlers ──────────────────────────────────────────────────────────
+
+async def handle_semrush_keyword(req):
+    phrase = req.rel_url.query.get("phrase", "")
+    db = req.rel_url.query.get("db", "de")
+    if not phrase:
+        return web.json_response({"error": "phrase required"}, status=400)
+    try:
+        from modules.semrush_client import keyword_overview, keyword_related
+        import asyncio
+        overview, related = await asyncio.gather(
+            keyword_overview(phrase, db),
+            keyword_related(phrase, db, 20),
+        )
+        return web.json_response({"phrase": phrase, "overview": overview, "related": related})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_domain(req):
+    domain = req.rel_url.query.get("domain", "")
+    db = req.rel_url.query.get("db", "de")
+    if not domain:
+        return web.json_response({"error": "domain required"}, status=400)
+    try:
+        from modules.semrush_client import domain_overview, domain_organic_keywords, domain_competitors, domain_backlinks
+        import asyncio
+        overview, keywords, competitors, backlinks = await asyncio.gather(
+            domain_overview(domain, db),
+            domain_organic_keywords(domain, db, 20),
+            domain_competitors(domain, db, 10),
+            domain_backlinks(domain),
+        )
+        return web.json_response({
+            "domain": domain,
+            "overview": overview,
+            "top_keywords": keywords,
+            "competitors": competitors,
+            "backlinks": backlinks,
+        })
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_niche(req):
+    kw = req.rel_url.query.get("keyword", "")
+    domain = req.rel_url.query.get("domain", None)
+    db = req.rel_url.query.get("db", "de")
+    if not kw:
+        return web.json_response({"error": "keyword required"}, status=400)
+    try:
+        from modules.semrush_client import research_niche
+        result = await research_niche(kw, domain, db)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_serp(req):
+    phrase = req.rel_url.query.get("phrase", "")
+    db = req.rel_url.query.get("db", "de")
+    if not phrase:
+        return web.json_response({"error": "phrase required"}, status=400)
+    try:
+        from modules.semrush_client import keyword_organic_results
+        results = await keyword_organic_results(phrase, db)
+        return web.json_response({"phrase": phrase, "serp": results})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 # ── Meta Ads handlers ─────────────────────────────────────────────────────────
 
 async def handle_meta_ads_status(req):
@@ -3704,10 +3781,38 @@ async def handle_autonomy_history(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_queue_stats(req):
+    try:
+        from core.job_queue import HermesQueue
+        return web.json_response(HermesQueue.get().stats())
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_queue_enqueue(req):
+    try:
+        data = await req.json()
+        from core.job_queue import enqueue
+        job_id = await enqueue(data.get("name", "notify"),
+                               data.get("payload", {}),
+                               data.get("priority", 5))
+        return web.json_response({"ok": True, "job_id": job_id})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
     await bot.start()
+
+    # Start Hermes Job Queue
+    try:
+        from core.job_queue import HermesQueue
+        asyncio.create_task(HermesQueue.get().start(workers=3))
+        log.info("Hermes Job Queue started")
+    except Exception as e:
+        log.warning("Hermes start failed: %s", e)
 
     app = web.Application(middlewares=[logging_middleware, cors_middleware])
     app["bot"] = bot
@@ -3959,6 +4064,17 @@ async def create_app():
     app.router.add_get("/api/tiktok/research/status",     handle_tiktok_research_status)
     app.router.add_post("/api/tiktok/research/ads",       handle_tiktok_research_ads)
     app.router.add_get("/api/agents",                     handle_agents_legacy)
+
+    # SEMrush
+    # Hermes Job Queue
+    app.router.add_get("/api/queue/stats",                handle_queue_stats)
+    app.router.add_post("/api/queue/enqueue",             handle_queue_enqueue)
+
+    # SEMrush
+    app.router.add_get("/api/semrush/keyword",            handle_semrush_keyword)
+    app.router.add_get("/api/semrush/domain",             handle_semrush_domain)
+    app.router.add_get("/api/semrush/niche",              handle_semrush_niche)
+    app.router.add_get("/api/semrush/serp",               handle_semrush_serp)
 
     # Meta Ads
     app.router.add_get("/api/meta/status",                handle_meta_ads_status)

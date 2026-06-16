@@ -1,8 +1,8 @@
 {
   "attempt": 1,
-  "duration_ms": 222,
+  "duration_ms": 840,
   "error": null,
-  "finished_at": "2026-06-15T11:01:28.033434+00:00",
+  "finished_at": "2026-06-15T22:44:28.145860+00:00",
   "hostname": "MacBook-Pro-von-Rudolf.local",
   "job_id": "order_orchestrator",
   "metadata": {
@@ -16,8 +16,8 @@
     }
   },
   "pid": 60382,
-  "run_id": "e330177377094916bb7528e16fd8b72e",
-  "started_at": "2026-06-15T11:01:27.810845+00:00",
+  "run_id": "699b51cd451f47c2958e51ee83764f58",
+  "started_at": "2026-06-15T22:44:27.305689+00:00",
   "status": "success",
   "traceback": null
 }

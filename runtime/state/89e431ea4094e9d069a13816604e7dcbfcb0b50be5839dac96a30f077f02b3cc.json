@@ -1,0 +1,1545 @@
+{
+  "runs": [
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T11:07:38.978171+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "cc8327ddd0e8487ea27df254ad9a88dd",
+      "started_at": "2026-06-15T11:07:38.978102+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T11:16:42.112899+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "deb662aa93ef489ca511dfc51a58cd53",
+      "started_at": "2026-06-15T11:16:42.112718+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T11:25:58.466010+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "9948dba3b5fc4de2b31845f9e367ca28",
+      "started_at": "2026-06-15T11:25:58.465954+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T11:35:16.751331+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "51312026e737408bb82e80f7a5d281fa",
+      "started_at": "2026-06-15T11:35:16.751275+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T11:44:35.425950+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "57823a23e2f64483a56ac6a1d60a8405",
+      "started_at": "2026-06-15T11:44:35.425909+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T11:53:51.222698+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "1aa491cdce794aacbb9b28b5b444ec2e",
+      "started_at": "2026-06-15T11:53:51.222655+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T12:02:57.131392+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "f609557c231c47e6951d75ab9d146814",
+      "started_at": "2026-06-15T12:02:57.131352+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T12:12:11.831225+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "619afadf395c44a5ae0c3359f6d6fa82",
+      "started_at": "2026-06-15T12:12:11.831185+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T12:21:28.392383+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "9a5ac6025e7b49f9a2de11db01a25354",
+      "started_at": "2026-06-15T12:21:28.392333+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T12:30:29.593909+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "39ff62ecdcd54640891cbda17283ecd2",
+      "started_at": "2026-06-15T12:30:29.593868+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T12:39:32.843971+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "605a076c7c2945f8849508c4376dbfc5",
+      "started_at": "2026-06-15T12:39:32.843925+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T12:48:49.622350+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "a74185a0c8fe43dcb08a66f48620581b",
+      "started_at": "2026-06-15T12:48:49.622302+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T12:58:02.967847+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "701a0fb3a76844eba2e90a9b0865cf27",
+      "started_at": "2026-06-15T12:58:02.967774+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T13:07:09.350660+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "93710050dab54f4da45351f7db155025",
+      "started_at": "2026-06-15T13:07:09.350591+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T13:16:13.634757+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "f564d466da784a64b83e6a8c4c691f20",
+      "started_at": "2026-06-15T13:16:13.634552+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T13:25:21.907792+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "4139b13359ff40dbae1c9aa9c9fcfd78",
+      "started_at": "2026-06-15T13:25:21.907727+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T13:34:26.075190+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "47fe26619be64cc0a9a6088b027d9aa6",
+      "started_at": "2026-06-15T13:34:26.075030+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T13:43:39.931729+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "3f473c100a5542f19d4336dc56cca69f",
+      "started_at": "2026-06-15T13:43:39.931633+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T13:52:49.597175+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "19028f23551942c0ae62685f8fa681d3",
+      "started_at": "2026-06-15T13:52:49.597104+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T14:02:02.238524+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "c9a4ce47233e4135be4247012863d1a5",
+      "started_at": "2026-06-15T14:02:02.238425+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T14:11:19.855012+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "8f56202ce6ba48cd9b2c68c5cbc12e3c",
+      "started_at": "2026-06-15T14:11:19.854920+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T14:20:39.839676+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "ddd8b88e85734e7ebdbf731d4abafb70",
+      "started_at": "2026-06-15T14:20:39.839587+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T14:29:48.558444+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "51475b2e21514bf7a67f7589402dd9ed",
+      "started_at": "2026-06-15T14:29:48.558398+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T14:38:54.427267+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "660fd35ff9f64dd0b1aea511c40ffa3c",
+      "started_at": "2026-06-15T14:38:54.427193+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T14:48:00.755661+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "65a8e4bfd4304fd28de126cfa4c82db6",
+      "started_at": "2026-06-15T14:48:00.755545+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T14:57:16.556528+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "2374c8ab07744b59a02feec2a16feff0",
+      "started_at": "2026-06-15T14:57:16.556302+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T15:06:18.406353+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "da49e86573734fcaa92691c34a0a7954",
+      "started_at": "2026-06-15T15:06:18.406157+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T15:15:29.758452+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "c32f55ea8d674d7e911beefc51ec0ce2",
+      "started_at": "2026-06-15T15:15:29.758424+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T15:24:41.744619+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "f89bcb0d801441ec9411adb085987cc8",
+      "started_at": "2026-06-15T15:24:41.744507+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T15:33:47.489187+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "1e6529ccc2b34c2c90c68d4bf10d995d",
+      "started_at": "2026-06-15T15:33:47.489084+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T15:42:56.672999+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "707c98895c8b45128d9b0689916c8380",
+      "started_at": "2026-06-15T15:42:56.672898+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T15:52:13.273036+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "dfb27802ca404e3b896b07564d4a0008",
+      "started_at": "2026-06-15T15:52:13.272921+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T16:01:27.261285+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "72e9a300f47d4e5bab2da294ff734de7",
+      "started_at": "2026-06-15T16:01:27.261255+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T16:10:46.633881+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "7cd648aaf9c54002a3c7b609663057d0",
+      "started_at": "2026-06-15T16:10:46.633732+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T16:19:50.297610+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "3b3e12bcdd9e4f78b880ced1ed49ba52",
+      "started_at": "2026-06-15T16:19:50.297564+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T16:28:58.950012+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "911464d518d8419b9c4e7d32bd3463c1",
+      "started_at": "2026-06-15T16:28:58.949953+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T16:38:14.818996+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "765b4010406d40f6a325fe90a15d7001",
+      "started_at": "2026-06-15T16:38:14.818863+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T16:47:23.121626+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "2de478343a764730b6e97f032b8a43fc",
+      "started_at": "2026-06-15T16:47:23.121488+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T16:56:32.724937+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "f0ecef95b56644e19cf01d1e1cb17fcc",
+      "started_at": "2026-06-15T16:56:32.724707+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T17:05:44.671875+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "b0c281dbba6f4a9b8daa8755e4cd1a45",
+      "started_at": "2026-06-15T17:05:44.671578+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T17:15:01.379881+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "03a72188f4ae4dcc8afcb33fe47373c4",
+      "started_at": "2026-06-15T17:15:01.379837+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T17:24:11.832071+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "e6236209a4594b94bb0e38c13b65ae4f",
+      "started_at": "2026-06-15T17:24:11.832032+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T17:33:21.348297+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "bdf6a9e5264442e4a5afeb8220fd4cc0",
+      "started_at": "2026-06-15T17:33:21.348145+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T17:42:38.079784+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "22f3957e1a6b4437b5c134f7366c60f6",
+      "started_at": "2026-06-15T17:42:38.079441+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T17:51:51.104349+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "8d81582a6ddb49ef9d976d05b1ad9c2f",
+      "started_at": "2026-06-15T17:51:51.104158+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T18:01:03.993738+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "99748f8835f449e8b0405dc42282149f",
+      "started_at": "2026-06-15T18:01:03.993598+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T18:10:21.977368+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "a6da835acee742328af0fc6578b09ac8",
+      "started_at": "2026-06-15T18:10:21.977320+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T18:19:36.221058+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "f6162d7072124d1bbe3b1483a5a41918",
+      "started_at": "2026-06-15T18:19:36.221004+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T18:28:46.035575+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "1c3e14205f204f4bbd6d7c9e42d05144",
+      "started_at": "2026-06-15T18:28:46.035505+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T18:37:55.633929+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "947c98b108ab420da3ed8bc083752639",
+      "started_at": "2026-06-15T18:37:55.633882+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T18:47:12.440640+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "15128d23ac0941ffae9d6862ad6f4a05",
+      "started_at": "2026-06-15T18:47:12.440595+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T18:56:29.684605+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "0a5069e257ff41559e6f394b27dfbbec",
+      "started_at": "2026-06-15T18:56:29.684560+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T19:05:40.949674+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "5a1ff975c13a42c2bf0f9a0b6e141d9b",
+      "started_at": "2026-06-15T19:05:40.949595+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T19:14:53.702139+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "9472737dad8746bfbcef86470312fe75",
+      "started_at": "2026-06-15T19:14:53.701967+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T19:24:07.426920+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "4bd62042874f4b36b945b003faa4d57d",
+      "started_at": "2026-06-15T19:24:07.426837+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T19:33:26.046263+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "a8e601a1d0d74eb198c7731e83a8ee22",
+      "started_at": "2026-06-15T19:33:26.046228+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T19:42:35.719499+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "cf1b90dd25a7422981ccd00c90f31b9c",
+      "started_at": "2026-06-15T19:42:35.719469+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T19:51:43.141812+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "f16b17ecaf28412b879b69245f811c7d",
+      "started_at": "2026-06-15T19:51:43.141780+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T20:00:47.674619+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "d9e8148f92684ad0a6a427e979fa980a",
+      "started_at": "2026-06-15T20:00:47.674581+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T20:09:48.920134+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "c7c3d3ab490544588aca4bb2cb60656b",
+      "started_at": "2026-06-15T20:09:48.920103+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T20:18:58.340701+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "5bbedba6de3e483584521f4d3f60f79c",
+      "started_at": "2026-06-15T20:18:58.340684+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T20:28:02.755748+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "45cb5dcaf39e4f588f8fc6d9d069bee1",
+      "started_at": "2026-06-15T20:28:02.755712+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T20:37:11.213745+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "4eae42596ec340f5b2c6e2e8b36a4dc7",
+      "started_at": "2026-06-15T20:37:11.213712+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T20:46:24.984316+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "66b2ac003a8a4a83a551fc5e2b15e3fd",
+      "started_at": "2026-06-15T20:46:24.984238+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T20:55:31.770006+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "a0e98e454fff457f8e8b193d3a186679",
+      "started_at": "2026-06-15T20:55:31.769936+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T21:04:42.869795+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "c5ea1258a0174f72b30b84c000d99f45",
+      "started_at": "2026-06-15T21:04:42.869674+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T21:14:00.315092+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "34b92a2983a24e15975b841c42841a55",
+      "started_at": "2026-06-15T21:14:00.314784+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T21:23:07.388807+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "dcf69ce9b10a4ad6b2ab2d1bb1336a49",
+      "started_at": "2026-06-15T21:23:07.388739+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T21:32:10.830611+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "849d4f2aed2c46b3877af798b1e45c58",
+      "started_at": "2026-06-15T21:32:10.830556+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T21:41:24.875071+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "c0c9bf91c0d94931a6149dadc598b787",
+      "started_at": "2026-06-15T21:41:24.874987+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T21:50:34.430344+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "9f35a664da714e5b87e385a1749addbb",
+      "started_at": "2026-06-15T21:50:34.430283+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T21:59:48.623606+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "09f7fa6842034045a53eb43fb0623c77",
+      "started_at": "2026-06-15T21:59:48.623565+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T22:09:06.350213+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "fe878a970dbe4f2b89985337ce88ea5f",
+      "started_at": "2026-06-15T22:09:06.350135+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T22:18:16.187548+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "4e08278f446a4d2eb11da1251a9e1030",
+      "started_at": "2026-06-15T22:18:16.187480+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T22:27:24.029999+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "4432eeac9b214c55a96dc39605c29ae2",
+      "started_at": "2026-06-15T22:27:24.029937+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T22:36:43.067533+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "840e0bd1e2e4404ab05caf4a3d2b6b5f",
+      "started_at": "2026-06-15T22:36:43.067376+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-15T22:45:50.704907+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "inventory_sync",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "message": "SHOPIFY_LOCATION_ID missing",
+          "mode": "guarded"
+        }
+      },
+      "pid": 60382,
+      "run_id": "0c9cedfb78db41acb9d65c31bf1b063a",
+      "started_at": "2026-06-15T22:45:50.704793+00:00",
+      "status": "success",
+      "traceback": null
+    }
+  ],
+  "updated_at": "2026-06-15T22:45:50.706806+00:00"
+}
