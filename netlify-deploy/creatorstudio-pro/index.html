@@ -403,7 +403,7 @@ function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpo
       </div>
       <div class="cover-meta">
         <span class="cover-meta-tag">Format: 1600×1600px · PNG · Gemini AI</span>
-        <button class="cover-meta-btn">↓ Download</button>
+        <button class="cover-meta-btn" onclick="downloadCover()">↓ Download</button>
       </div>
     </div>
     <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap">
@@ -572,7 +572,7 @@ function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpo
         <li><span class="ck">✓</span> Income Calculator</li>
         <li><span class="ck">✓</span> Email-Support</li>
       </ul>
-      <button class="p-btn p-btn-ghost">Jetzt starten</button>
+      <button class="p-btn p-btn-ghost" onclick="window.open('https://buy.stripe.com/00weVf3Zgguu1gc40u4F206','_blank')">Jetzt starten — €19/mo</button>
     </div>
     <div class="p-card feat">
       <div class="p-card-badge">⭐ Beliebteste Wahl</div>
@@ -588,7 +588,7 @@ function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpo
         <li><span class="ck">✓</span> Priority Support</li>
         <li><span class="ck">✓</span> API Zugang</li>
       </ul>
-      <button class="p-btn p-btn-main">Pro starten</button>
+      <button class="p-btn p-btn-main" onclick="window.open('https://buy.stripe.com/7sY6oJ53kfqq5wseF84F207','_blank')">Pro starten — €49/mo</button>
     </div>
     <div class="p-card">
       <div class="p-name">Agency</div>
@@ -603,7 +603,7 @@ function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpo
         <li><span class="ck">✓</span> Dedicated Account Manager</li>
         <li><span class="ck">✓</span> SLA Garantie</li>
       </ul>
-      <button class="p-btn p-btn-ghost">Agency starten</button>
+      <button class="p-btn p-btn-ghost" onclick="window.open('https://buy.stripe.com/bJecN7gM23HIgb6dB44F204','_blank')">Agency starten — €99/mo</button>
     </div>
   </div>
 </div>
@@ -614,7 +614,7 @@ function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpo
     <div class="cta-eyebrow">✦ Bereit für den nächsten Level?</div>
     <h2>Dein Content-Business auf Autopilot</h2>
     <p>Schließe dich über 8.200 Creatoren an, die täglich Zeit und Geld sparen.<br>Keine Kreditkarte. Sofort loslegen.</p>
-    <button class="cta-btn" onclick="window.open('https://creatorstudio-pro.netlify.app','_blank')">🚀 Jetzt kostenlos starten</button>
+    <button class="cta-btn" onclick="window.open('https://buy.stripe.com/00weVf3Zgguu1gc40u4F206','_blank')">🚀 Jetzt starten — ab €19/mo</button>
     <div class="cta-note">✓ 7-Tage kostenlos · ✓ Setup in 5 Minuten · ✓ Jederzeit kündbar</div>
   </div>
 </div>
@@ -678,6 +678,20 @@ function generateCover(){
     // update bento demo too
     document.getElementById('cover-demo-emoji').textContent = emojiEl.textContent;
   }, 1800);
+}
+
+function downloadCover(){
+  var emoji = document.getElementById('cover-emoji').textContent || '🎙️';
+  var svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1600" viewBox="0 0 1600 1600"><rect width="1600" height="1600" fill="#1a1033"/><text x="800" y="820" font-size="460" text-anchor="middle" dominant-baseline="middle">'+emoji+'</text><text x="800" y="1500" font-size="64" fill="#ffffff" opacity="0.9" text-anchor="middle">AI-Generated Cover</text></svg>';
+  var blob = new Blob([svg], { type: 'image/svg+xml' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'creatorstudio-cover.svg';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
 }
 
 // ── SEO GENERATOR ──
