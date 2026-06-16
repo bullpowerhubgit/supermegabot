@@ -271,6 +271,14 @@ def verify_webhook_signature(payload: bytes, sig_header: str, secret: str) -> bo
 
 # ── Webhook Handler ───────────────────────────────────────────────────────────
 
+async def _trello_mirror(event_type: str, event_data: dict) -> None:
+    try:
+        from modules.trello_client import handle_stripe_event
+        await handle_stripe_event(event_type, event_data)
+    except Exception as exc:
+        log.warning("Trello mirror fehlgeschlagen für %s: %s", event_type, exc)
+
+
 async def handle_webhook_event(event: Dict) -> str:
     etype = event.get("type", "")
     data  = event.get("data", {}).get("object", {})
@@ -300,6 +308,7 @@ async def handle_webhook_event(event: Dict) -> str:
                 )
         except Exception:
             pass
+        await _trello_mirror(etype, event.get("data", {}))
         return f"checkout.session.completed — {email} {amount:.2f} {currency}"
 
     if etype == "payment_intent.succeeded":
@@ -311,6 +320,7 @@ async def handle_webhook_event(event: Dict) -> str:
             f"Betrag: <b>{amount:.2f} {currency}</b>\n"
             f"Email: {email}"
         )
+        await _trello_mirror(etype, event.get("data", {}))
         return "payment_intent.succeeded handled"
 
     if etype == "customer.subscription.created":
@@ -326,6 +336,7 @@ async def handle_webhook_event(event: Dict) -> str:
             f"Plan: {plan}\n"
             f"ID: {data.get('id', '')}"
         )
+        await _trello_mirror(etype, event.get("data", {}))
         return "subscription.created handled"
 
     if etype == "charge.refunded":
@@ -335,6 +346,7 @@ async def handle_webhook_event(event: Dict) -> str:
             f"↩️ <b>Stripe Rückerstattung</b>\n"
             f"Betrag: {amount:.2f} {currency}"
         )
+        await _trello_mirror(etype, event.get("data", {}))
         return "charge.refunded handled"
 
     if etype == "customer.subscription.deleted":
@@ -352,6 +364,7 @@ async def handle_webhook_event(event: Dict) -> str:
             f"Plan: {plan or 'unbekannt'}\n"
             f"Abo-ID: {data.get('id', '')}"
         )
+        await _trello_mirror(etype, event.get("data", {}))
         return "subscription.deleted handled"
 
     if etype == "invoice.payment_failed":
@@ -370,6 +383,7 @@ async def handle_webhook_event(event: Dict) -> str:
             f"Betrag: {amount:.2f} {currency}\n"
             f"Versuch #{attempt_cnt} | Nächster: {next_ts}"
         )
+        await _trello_mirror(etype, event.get("data", {}))
         return "invoice.payment_failed handled"
 
     return f"unhandled: {etype}"
