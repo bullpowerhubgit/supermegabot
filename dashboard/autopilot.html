@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperMegaBot — Autopilot</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#040508;color:#f0f4ff;font-family:Inter,sans-serif;padding:24px}
+h1{font-size:1.6rem;font-weight:700;margin-bottom:8px;color:#4f8ef7}
+p{color:#7b8db0;margin-bottom:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px}
+.card{background:#0c0f1a;border:1px solid #161c30;border-radius:12px;padding:20px}
+.card h3{font-size:.9rem;color:#7b8db0;margin-bottom:12px;text-transform:uppercase;letter-spacing:.05em}
+.btn{display:inline-block;padding:10px 20px;background:#4f8ef7;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.9rem;margin:4px;transition:opacity .2s}
+.btn:hover{opacity:.8}
+.btn.green{background:#10b981}
+.btn.red{background:#f43f5e}
+.status{margin-top:12px;font-size:.8rem;color:#7b8db0;background:#080a10;padding:8px 12px;border-radius:6px;min-height:32px}
+.badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600;background:#4f8ef710;color:#4f8ef7;border:1px solid #4f8ef730}
+</style>
+</head>
+<body>
+<h1>🤖 SuperMegaBot Autopilot</h1>
+<p>Alle Automationen zentral steuern</p>
+<div class="grid">
+  <div class="card">
+    <h3>🛍️ Shopify</h3>
+    <button class="btn" onclick="run('shopify_sync')">Sync starten</button>
+    <button class="btn green" onclick="run('shopify_orders_alert')">Bestellungen</button>
+    <div class="status" id="shopify">—</div>
+  </div>
+  <div class="card">
+    <h3>💰 Revenue</h3>
+    <button class="btn" onclick="run('revenue_report')">Report</button>
+    <button class="btn green" onclick="run('revenue_autopilot_carts')">Carts</button>
+    <div class="status" id="revenue">—</div>
+  </div>
+  <div class="card">
+    <h3>📧 Email</h3>
+    <button class="btn" onclick="apiPost('/api/email/enroll-new')">Neue Kunden</button>
+    <button class="btn green" onclick="apiPost('/api/email/process')">Sequenzen</button>
+    <button class="btn" onclick="apiPost('/api/growth/winback/run')">Winback</button>
+    <div class="status" id="email">—</div>
+  </div>
+  <div class="card">
+    <h3>💹 Pricing</h3>
+    <button class="btn" onclick="apiPost('/api/pricing/run')">Dynamic Pricing</button>
+    <button class="btn red" onclick="apiPost('/api/revenue/flash-sale',{discount_pct:20,max_products:50})">Flash Sale 20%</button>
+    <div class="status" id="pricing">—</div>
+  </div>
+  <div class="card">
+    <h3>📱 Social</h3>
+    <button class="btn" onclick="run('social_autoposter')">Auto-Post</button>
+    <button class="btn" onclick="run('content_calendar')">Content Kalender</button>
+    <div class="status" id="social">—</div>
+  </div>
+  <div class="card">
+    <h3>🔍 SEO</h3>
+    <button class="btn green" onclick="apiPost('/api/seo/run',{limit:50})">SEO optimieren</button>
+    <button class="btn" onclick="run('dropshipping_scan')">Trend-Scan</button>
+    <div class="status" id="seo">—</div>
+  </div>
+  <div class="card">
+    <h3>🤝 B2B</h3>
+    <button class="btn" onclick="apiPost('/api/b2b/prospect')">Prospecting</button>
+    <button class="btn green" onclick="apiPost('/api/b2b/outreach',{limit:5})">Outreach</button>
+    <div class="status" id="b2b">—</div>
+  </div>
+  <div class="card">
+    <h3>📊 Reports</h3>
+    <button class="btn" onclick="run('daily_summary')">Daily Summary</button>
+    <button class="btn" onclick="run('trading_report')">Trading</button>
+    <button class="btn green" onclick="run('youtube_stats')">YouTube</button>
+    <div class="status" id="reports">—</div>
+  </div>
+  <div class="card">
+    <h3>💾 Backup</h3>
+    <button class="btn" onclick="run('github_backup')">GitHub Backup</button>
+    <button class="btn" onclick="run('drive_backup')">Drive Backup</button>
+    <div class="status" id="backup">—</div>
+  </div>
+</div>
+
+<script>
+const BASE = '';
+async function run(task) {
+  const section = task.split('_')[0];
+  const el = document.getElementById(section) || document.getElementById('reports');
+  if(el) el.textContent = '⏳ Läuft...';
+  try {
+    const r = await fetch(BASE+'/api/automation/run', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({task})
+    });
+    const d = await r.json();
+    if(el) el.textContent = d.result || JSON.stringify(d).slice(0,120);
+  } catch(e) {
+    if(el) el.textContent = '❌ ' + e.message;
+  }
+}
+async function apiPost(path, body={}) {
+  const parts = path.split('/');
+  const section = parts[2] || 'reports';
+  const el = document.getElementById(section) || document.getElementById('reports');
+  if(el) el.textContent = '⏳ Läuft...';
+  try {
+    const r = await fetch(BASE+path, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if(el) el.textContent = d.result || JSON.stringify(d).slice(0,120);
+  } catch(e) {
+    if(el) el.textContent = '❌ ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
