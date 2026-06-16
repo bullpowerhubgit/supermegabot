@@ -18,6 +18,14 @@ logger = logging.getLogger(__name__)
 def _store_domain() -> str:
     return os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 
+def _normalize_shop_domain(raw: str) -> str:
+    domain = (raw or "").strip().lower().replace("https://", "").replace("http://", "").strip("/")
+    if domain.endswith(".myshopify.com"):
+        return domain
+    if domain:
+        return f"{domain}.myshopify.com"
+    return ""
+
 def _api_version() -> str:
     return os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
@@ -128,8 +136,9 @@ async def _refresh_client_credentials() -> Optional[str]:
             "client_id": _cred_client_id(),
             "client_secret": _cred_client_secret(),
         }
-        shop = os.getenv("SHOPIFY_SHOP", "autopilot-store-suite-fmbka")
-        url = f"https://{shop}.myshopify.com/admin/oauth/access_token"
+        shop_raw = os.getenv("SHOPIFY_SHOP") or os.getenv("SHOPIFY_SHOP_DOMAIN") or "autopilot-store-suite-fmbka"
+        shop_domain = _normalize_shop_domain(shop_raw)
+        url = f"https://{shop_domain}/admin/oauth/access_token"
         async with _client_session(10) as session:
             async with session.post(
                 url, data=payload,

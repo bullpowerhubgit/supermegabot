@@ -1,0 +1,35 @@
+{
+  "mcpServers": {
+    "perplexity": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-perplexity"],
+      "env": { "PERPLEXITY_API_KEY": "" }
+    },
+    "supabase": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-postgres"],
+      "env": { "DATABASE_URL": "" }
+    },
+    "shopify": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-shopify"],
+      "env": {
+        "SHOPIFY_STORE_DOMAIN": "",
+        "SHOPIFY_ADMIN_TOKEN": ""
+      }
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "/Users/rudolfsarkany/supermegabot-windsurf-agents/CascadeProjects/windsurf-project"]
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": { "GITHUB_PERSONAL_ACCESS_TOKEN": "" }
+    },
+    "supermegabot": {
+      "command": "/Library/Developer/CommandLineTools/usr/bin/python3",
+      "args": ["/Users/rudolfsarkany/supermegabot/mcp_server.py"]
+    }
+  }
+}
