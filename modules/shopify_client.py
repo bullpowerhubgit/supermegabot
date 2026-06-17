@@ -63,8 +63,18 @@ async def get_store2_shop_info() -> Dict:
     r = await graphql_store2(q)
     return r.get("data", {}).get("shop", {})
 
+def _normalize_shop_domain(raw: str) -> str:
+    raw = raw.strip().rstrip("/")
+    if not raw.endswith(".myshopify.com"):
+        raw = f"{raw}.myshopify.com"
+    return raw
+
 def _shpat_token() -> str:
-    return os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    return (
+        os.getenv("SHOPIFY_ADMIN_API_TOKEN")
+        or os.getenv("SHOPIFY_SUITE_ACCESS_TOKEN")
+        or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    )
 
 def _cli_client_id() -> str:
     return os.getenv("SHOPIFY_CLI_CLIENT_ID", "")
@@ -270,7 +280,7 @@ async def rest_get(endpoint: str) -> Dict:
 # ─── Convenience Functions ────────────────────────────────────────────────────
 
 async def get_products(limit: int = 20, status: str = "any") -> list:
-    """Produkte abrufen"""
+    """Produkte abrufen (inkl. Varianten für Preisänderungen)"""
     q = """
     query GetProducts($first: Int!) {
         products(first: $first) {
@@ -278,12 +288,30 @@ async def get_products(limit: int = 20, status: str = "any") -> list:
                 id title status totalInventory
                 priceRangeV2 { minVariantPrice { amount currencyCode } }
                 vendor productType tags
+                variants(first: 10) {
+                    edges { node { id price compareAtPrice inventoryQuantity } }
+                }
             }}
         }
     }
     """
     r = await graphql(q, {"first": limit})
-    return [e["node"] for e in r.get("data", {}).get("products", {}).get("edges", [])]
+    products = []
+    for e in r.get("data", {}).get("products", {}).get("edges", []):
+        node = e["node"]
+        # Flatten variants to REST-compatible shape for downstream consumers
+        raw_variants = node.pop("variants", {})
+        node["variants"] = [
+            {
+                "id": v["node"]["id"].split("/")[-1],  # numeric id from gid
+                "price": v["node"]["price"],
+                "compare_at_price": v["node"].get("compareAtPrice"),
+                "inventory_quantity": v["node"].get("inventoryQuantity", 0),
+            }
+            for v in raw_variants.get("edges", [])
+        ]
+        products.append(node)
+    return products
 
 
 async def get_orders(limit: int = 20, status: str = "any") -> list:
