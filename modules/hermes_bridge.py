@@ -129,3 +129,61 @@ async def health_check() -> dict:
         "error": "Hermes nicht konfiguriert. Setze HERMES_API_URL.",
         "dir": HERMES_DIR,
     }
+
+
+# ── Central Job Queue Dispatcher ─────────────────────────────────────────────
+
+QUEUE_WORKER_URL = os.getenv("QUEUE_WORKER_URL", "http://localhost:5555")
+
+
+async def dispatch_job(job_name: str, data: dict | None = None) -> dict:
+    """
+    Dispatch a job to the central BullMQ queue worker (shared/worker.js).
+    Falls back to direct HTTP call to supermegabot API if worker not available.
+    """
+    payload = {"name": job_name, "data": data or {}}
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{QUEUE_WORKER_URL}/job",
+                json=payload,
+                timeout=aiohttp.ClientTimeout(total=5),
+            ) as r:
+                if r.status == 200:
+                    result = await r.json()
+                    logger.info("Job dispatched via queue: %s id=%s", job_name, result.get("job_id"))
+                    return {"ok": True, "method": "queue", "job_id": result.get("job_id")}
+                logger.warning("Queue worker HTTP %s for job %s", r.status, job_name)
+    except Exception as exc:
+        logger.info("Queue worker not available (%s) — falling back to direct call", exc)
+
+    # Fallback: call supermegabot dashboard API directly
+    smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+    job_routes = {
+        "shopify_sync": "/api/shopify/sync",
+        "revenue_snapshot": "/api/revenue/summary",
+        "cart_recovery": "/api/revenue/carts/recover",
+        "flash_sale": "/api/revenue/flash-sale",
+        "flash_sale_restore": "/api/revenue/flash-sale/restore",
+        "telegram_blast": "/api/telegram/send",
+        "digistore24_sync": "/api/digistore24/sync",
+        "stripe_sync": "/api/stripe/subscriptions",
+    }
+    route = job_routes.get(job_name)
+    if route:
+        try:
+            method = "POST" if data else "GET"
+            async with aiohttp.ClientSession() as session:
+                async with session.request(
+                    method,
+                    f"{smb_url}{route}",
+                    json=data,
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    result = await r.json()
+                    logger.info("Job %s executed via direct API: %s", job_name, r.status)
+                    return {"ok": r.status < 400, "method": "direct_api", "result": result}
+        except Exception as exc:
+            logger.error("Direct API fallback for %s failed: %s", job_name, exc)
+
+    return {"ok": False, "error": f"Could not dispatch job {job_name}: queue and direct API unavailable"}

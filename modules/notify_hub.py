@@ -154,3 +154,19 @@ def handle_stripe_payment_event(event: dict) -> None:
         customer = obj.get("customer_email") or "?"
         notify_error("Stripe", f"Zahlung fehlgeschlagen — {customer}",
                      obj.get("last_payment_error", {}).get("message", ""))
+
+
+# ── Slack Integration (via slack_notify module) ───────────────────────────────
+
+async def send_slack_alert(message: str, level: str = "info") -> bool:
+    """
+    Send a Slack notification using the central slack_notify module.
+    level: info | warning | error | revenue | ops
+    """
+    try:
+        from modules.slack_notify import send_slack
+        return await send_slack(message, level=level)
+    except Exception as exc:
+        import logging
+        logging.getLogger("notify_hub").warning("Slack alert failed: %s", exc)
+        return False
