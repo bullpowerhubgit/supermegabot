@@ -3351,10 +3351,16 @@ async def create_app():
     app.router.add_post("/api/leads",                 handle_lead_capture)
     app.router.add_get("/api/leads",                  handle_leads_list)
 
-    # ── Hermes / Slack ────────────────────────────────────────────────────────
-    app.router.add_get("/api/hermes/events",          handle_hermes_events)
+    # ── Hermes Job Queue + Events (Slack fallback → Telegram) ────────────────
+    from dashboard.routes.hermes_routes import (
+        handle_hermes_jobs, handle_hermes_events,
+        handle_hermes_enqueue, handle_hermes_notify, handle_hermes_stats,
+    )
     app.router.add_get("/api/hermes/jobs",            handle_hermes_jobs)
+    app.router.add_get("/api/hermes/events",          handle_hermes_events)
+    app.router.add_post("/api/hermes/enqueue",        handle_hermes_enqueue)
     app.router.add_post("/api/hermes/notify",         handle_hermes_notify)
+    app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
 
     return app
 
@@ -3431,7 +3437,6 @@ async def handle_lead_capture(req):
 
     result = await _sb_insert("leads", row)
 
-    # Telegram instant notification
     msg = (
         f"🔥 *Neuer Lead!*\n"
         f"📧 {email}\n"
@@ -3440,7 +3445,12 @@ async def handle_lead_capture(req):
         f"📍 Quelle: {source}\n"
         f"\nDirektlink: https://buy.stripe.com/7sY5kFbrIemmcYU0Oi4F20o"
     )
-    await _tg_notify(msg)
+    try:
+        from modules.slack_client import push_event
+        await push_event("supermegabot", "new_lead", msg, "revenue",
+                         {"email": email, "source": source, "domain": domain})
+    except Exception:
+        await _tg_notify(msg)
 
     log.info("New lead captured: %s (source=%s)", email, source)
     return web.json_response({"ok": True, "email": email})

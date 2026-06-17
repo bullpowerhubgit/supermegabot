@@ -197,6 +197,54 @@ class HermesQueue:
                 "workers": len(self._workers)}
 
 
+# ── Remote Enqueue (Supabase cross-service visibility) ────────────────────────
+
+async def enqueue_remote(
+    job_name: str,
+    payload: dict,
+    service: str = "supermegabot",
+    priority: int = 5,
+) -> str | None:
+    """Push a job record to Supabase hermes_jobs for cross-service visibility."""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not url or not key:
+        log.warning("enqueue_remote: no Supabase credentials")
+        return None
+    row = {
+        "service": service,
+        "job_name": job_name,
+        "payload": payload,
+        "priority": priority,
+        "status": "pending",
+    }
+    headers = {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+        "Accept-Profile": "public",
+        "Content-Profile": "public",
+        "Prefer": "return=representation",
+    }
+    try:
+        async with _aio.ClientSession() as s:
+            async with s.post(
+                f"{url}/rest/v1/hermes_jobs",
+                json=row,
+                headers=headers,
+                timeout=_aio.ClientTimeout(total=8),
+            ) as r:
+                data = await r.json()
+                if isinstance(data, list) and data:
+                    job_id = data[0].get("id")
+                    log.debug("enqueue_remote: %s → %s", job_name, job_id)
+                    return job_id
+    except Exception as exc:
+        log.warning("enqueue_remote failed: %s", exc)
+    return None
+
+
 # ── Convenience shortcut ──────────────────────────────────────────────────────
 
 async def enqueue(name: str, payload: dict | None = None, priority: int = 5) -> str:
