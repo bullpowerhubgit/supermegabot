@@ -26,7 +26,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cd /home/user/supermegabot && python3 -m py_compile \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>/dev/null && echo 'Syntax OK' || echo 'Syntax ERROR'"
+            "command": "cd /Users/rudolfsarkany && python3 -m py_compile \"$CLAUDE_TOOL_INPUT_FILE_PATH\" 2>/dev/null && echo 'Syntax OK' || echo 'Syntax ERROR'"
           }
         ]
       }
