@@ -706,6 +706,92 @@ async def handle_status_full(req):
     })
 
 
+async def handle_guardian_status(req):
+    """Guardian security module status."""
+    import subprocess
+    guardian_running = False
+    try:
+        r = subprocess.run(["pgrep", "-f", "guardian"], capture_output=True, text=True)
+        guardian_running = r.returncode == 0 and bool(r.stdout.strip())
+    except Exception:
+        pass
+    return web.json_response({
+        "ok": True,
+        "status": "active" if guardian_running else "standby",
+        "guardian_process": guardian_running,
+        "api_key_configured": bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")),
+        "monitoring": True,
+        "alerts_enabled": bool(os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID")),
+    })
+
+
+async def handle_ai_status(req):
+    """AI integrations status."""
+    anthropic_ok = bool(os.getenv("ANTHROPIC_API_KEY"))
+    openai_ok = bool(os.getenv("OPENAI_API_KEY"))
+    ollama_ok = False
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as s:
+            async with s.get(f"{os.getenv('OLLAMA_HOST', 'http://localhost:11434')}/api/tags") as r:
+                ollama_ok = r.status == 200
+    except Exception:
+        pass
+    return web.json_response({
+        "ok": True,
+        "anthropic": {"configured": anthropic_ok, "model": os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")},
+        "openai": {"configured": openai_ok, "model": os.getenv("OPENAI_MODEL", "gpt-4o")},
+        "ollama": {"online": ollama_ok, "host": os.getenv("OLLAMA_HOST", "http://localhost:11434"), "model": os.getenv("OLLAMA_MODEL", "llama3.2")},
+        "gemini": {"configured": bool(os.getenv("GEMINI_API_KEY"))},
+    })
+
+
+async def handle_system_status(req):
+    """System metrics and health."""
+    import platform
+    try:
+        import psutil
+        cpu = psutil.cpu_percent(interval=0.1)
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage("/")
+        return web.json_response({
+            "ok": True,
+            "platform": platform.system(),
+            "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
+            "cpu_percent": cpu,
+            "memory_percent": round(mem.percent, 1),
+            "memory_used_mb": round(mem.used / 1024 / 1024),
+            "memory_total_mb": round(mem.total / 1024 / 1024),
+            "disk_percent": round(disk.percent, 1),
+            "disk_free_gb": round(disk.free / 1024 / 1024 / 1024, 1),
+        })
+    except Exception as e:
+        return web.json_response({"ok": True, "platform": platform.system(),
+                                   "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
+                                   "note": str(e)})
+
+
+async def handle_supabase_status(req):
+    """Supabase connection status."""
+    supabase_url = os.getenv("SUPABASE_URL", "")
+    configured = bool(supabase_url and os.getenv("SUPABASE_ANON_KEY"))
+    reachable = False
+    if configured:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=4)) as s:
+                async with s.get(f"{supabase_url}/rest/v1/",
+                                 headers={"apikey": os.getenv("SUPABASE_ANON_KEY", "")}) as r:
+                    reachable = r.status in (200, 400)
+        except Exception:
+            pass
+    return web.json_response({
+        "ok": True,
+        "configured": configured,
+        "reachable": reachable,
+        "url": supabase_url,
+        "service_key_configured": bool(os.getenv("SUPABASE_SERVICE_KEY")),
+    })
+
+
 # ── RudiBot Army Integration ─────────────────────────────────────────────────
 
 ARMY_STATE_FILE = BASE_DIR / "rudibot-army" / "shared" / "army_state.json"
@@ -2188,6 +2274,10 @@ async def create_app():
     app.router.add_get("/api/autopilot/agents", handle_autopilot_agents)
     app.router.add_post("/api/autopilot/run", handle_autopilot_run)
     app.router.add_get("/api/autopilot/logs", handle_autopilot_logs)
+    app.router.add_get("/api/guardian/status", handle_guardian_status)
+    app.router.add_get("/api/ai/status", handle_ai_status)
+    app.router.add_get("/api/system/status", handle_system_status)
+    app.router.add_get("/api/supabase/status", handle_supabase_status)
     app.router.add_post("/api/geheimwaffe/run", handle_geheimwaffe_run)
     app.router.add_post("/api/geheimwaffe/content", handle_geheimwaffe_content)
     app.router.add_get("/api/backup/status", handle_backup_status)
