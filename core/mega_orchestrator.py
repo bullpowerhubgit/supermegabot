@@ -1065,8 +1065,8 @@ class MegaOrchestrator:
 
         # Start health monitor
         asyncio.create_task(self._health_loop())
-        # Start Telegram polling
-        asyncio.create_task(self._telegram_polling_loop())
+        # Telegram polling DEAKTIVIERT — telegram-automation-bot (Node.js) übernimmt
+        # asyncio.create_task(self._telegram_polling_loop())
         # Start Guardian monitor
         asyncio.create_task(self._guardian_monitor_loop())
         # Start automation scheduler
