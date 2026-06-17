@@ -3390,6 +3390,8 @@ async def _sb_insert(table: str, data: dict) -> dict:
                     "apikey": auth_key,
                     "Authorization": f"Bearer {auth_key}",
                     "Content-Type": "application/json",
+                    "Accept-Profile": "public",
+                    "Content-Profile": "public",
                     "Prefer": "return=representation",
                 },
                 timeout=_aio.ClientTimeout(total=8)
