@@ -3347,7 +3347,118 @@ async def create_app():
     # ── Reality Check ─────────────────────────────────────────────────────────
     app.router.add_get("/api/reality",                handle_reality_check)
 
+    # ── Lead Capture ──────────────────────────────────────────────────────────
+    app.router.add_post("/api/leads",                 handle_lead_capture)
+    app.router.add_get("/api/leads",                  handle_leads_list)
+
     return app
+
+
+async def _tg_notify(text: str) -> None:
+    """Send Telegram message to owner chat."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+    if not token or not chat_id:
+        return
+    try:
+        import aiohttp as _aio
+        async with _aio.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+                timeout=_aio.ClientTimeout(total=5)
+            )
+    except Exception:
+        pass
+
+
+async def _sb_insert(table: str, data: dict) -> dict:
+    """Insert row into Supabase via REST."""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    anon = os.getenv("SUPABASE_ANON_KEY", "")
+    auth_key = key or anon
+    if not url or not auth_key:
+        return {"error": "no supabase credentials"}
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.post(
+                f"{url}/rest/v1/{table}",
+                json=data,
+                headers={
+                    "apikey": auth_key,
+                    "Authorization": f"Bearer {auth_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation",
+                },
+                timeout=_aio.ClientTimeout(total=8)
+            )
+            return await r.json()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+async def handle_lead_capture(req):
+    """POST /api/leads — capture email + optional name/domain, store + notify."""
+    try:
+        body = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
+
+    email = (body.get("email") or "").strip().lower()
+    if not email or "@" not in email:
+        return web.json_response({"ok": False, "error": "valid email required"}, status=400)
+
+    name = (body.get("name") or "").strip()
+    domain = (body.get("shopify_domain") or body.get("domain") or "").strip()
+    source = (body.get("source") or "landing_page").strip()
+
+    row = {
+        "email": email,
+        "name": name or None,
+        "shopify_domain": domain or None,
+        "source": source,
+        "status": "new",
+    }
+
+    result = await _sb_insert("leads", row)
+
+    # Telegram instant notification
+    msg = (
+        f"🔥 *Neuer Lead!*\n"
+        f"📧 {email}\n"
+        f"👤 {name or '(kein Name)'}\n"
+        f"🛍️ Shop: {domain or '(kein Domain)'}\n"
+        f"📍 Quelle: {source}\n"
+        f"\nDirektlink: https://buy.stripe.com/7sY5kFbrIemmcYU0Oi4F20o"
+    )
+    await _tg_notify(msg)
+
+    log.info("New lead captured: %s (source=%s)", email, source)
+    return web.json_response({"ok": True, "email": email})
+
+
+async def handle_leads_list(req):
+    """GET /api/leads — list all leads (internal use)."""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    anon = os.getenv("SUPABASE_ANON_KEY", "")
+    auth_key = key or anon
+    if not url or not auth_key:
+        return web.json_response({"ok": False, "error": "no supabase"})
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.get(
+                f"{url}/rest/v1/leads?order=created_at.desc&limit=50",
+                headers={"apikey": auth_key, "Authorization": f"Bearer {auth_key}"},
+                timeout=_aio.ClientTimeout(total=8)
+            )
+            data = await r.json()
+        return web.json_response({"ok": True, "count": len(data), "leads": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_reality_check(req):
