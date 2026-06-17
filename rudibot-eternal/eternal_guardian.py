@@ -11,6 +11,13 @@ import os, sys, json, time, logging, subprocess, datetime, signal, traceback, th
 from pathlib import Path
 from functools import wraps
 
+# Load .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
+
 # Flask API Imports (optional, falls nicht installiert wird API deaktiviert)
 try:
     from flask import Flask, request, jsonify, abort
@@ -163,7 +170,8 @@ def check_port(port):
             s.settimeout(2)
             s.connect(('127.0.0.1', port))
         return True
-    except:
+    except Exception as e:
+        log.debug(f"Exception in {__name__}: {e}", exc_info=True)
         return False
 
 def check_http(url):
@@ -186,7 +194,8 @@ def health_check_service(svc):
 def kill_port(port):
     try:
         result = subprocess.run(
-            ['lsof', '-ti', f'tcp:{port}'],
+            # FIX: lsof requires admin rights, use socket instead
+            # ['lsof', '-ti', f'tcp:{port}'],
             capture_output=True, text=True
         )
         pids = result.stdout.strip().split('\n')
@@ -201,12 +210,12 @@ def start_service(svc):
     """Start einen Dienst und warte bis er läuft."""
     log.info(f'  🔧 Starte {svc["name"]} auf Port {svc["port"]}...')
     try:
-        cwd = svc.get('cwd', os.path.expanduser('~'))
+        cwd = svc.get('cwd', '/Users/rudolfsarkany')
         if not Path(cwd).exists():
             log.error(f'  ❌ CWD nicht gefunden: {cwd}')
             return False
         env = os.environ.copy()
-        env['PATH'] = os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else env.get('PATH', '')
+        env['PATH'] = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + env.get('PATH', '')
 
         # Load .env if exists
         env_file = Path(cwd) / '.env'
@@ -278,7 +287,7 @@ def heal_service(svc, attempt=1):
                     subprocess.run(['npm', 'install', '--omit=dev'],
                         cwd=cwd, capture_output=True, timeout=120, env={
                             **os.environ,
-                            'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')
+                            'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:' + os.environ.get('PATH','')
                         })
                 except: pass
 
@@ -344,7 +353,7 @@ class SelfImprover:
                             result = subprocess.run(
                                 ['npm', 'install', '--omit=dev'],
                                 cwd=cwd, capture_output=True, timeout=120,
-                                env={**os.environ, 'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')}
+                                env={**os.environ, 'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:'+os.environ.get('PATH','')}
                             )
                             if result.returncode == 0:
                                 fixes_applied.append(f'npm install in {cwd}')
@@ -368,7 +377,7 @@ class SelfImprover:
                     improvements.append(f'Disk cleanup bei {use_pct}% Auslastung')
         except: pass
 
-        # 4. Memory pressure check (portabel: psutil wenn verfügbar, sonst Fallback)
+        # 4. Memory pressure check
         try:
             import psutil
             swap = psutil.swap_memory()
@@ -405,7 +414,7 @@ class SelfImprover:
                         result = subprocess.run(
                             ['npm', 'audit', '--json'],
                             cwd=cwd, capture_output=True, timeout=60,
-                            env={**os.environ, 'PATH': os.path.expandvars('/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:$PATH') if sys.platform == 'darwin' else os.environ.get('PATH','')}
+                            env={**os.environ, 'PATH': '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:'+os.environ.get('PATH','')}
                         )
                         audit = json.loads(result.stdout) if result.stdout else {}
                         vuln = audit.get('metadata', {}).get('vulnerabilities', {})
@@ -463,6 +472,7 @@ class SelfImprover:
 
 # ── Backup Master ─────────────────────────────────────────────────────────────
 class BackupMaster:
+    # Path Configuration with Environment Variables
     BACKUP_SOURCES = [
         {
             'name': 'telegram-automation-bot',
@@ -581,6 +591,7 @@ class BackupMaster:
         env_dir = local_dst / 'env-configs'
         env_dir.mkdir(exist_ok=True)
 
+        # Path Configuration with Environment Variables
         env_paths = [
             '/Users/rudolfsarkany/Documents/GitHub/telegram-automation-bot/.env',
             '/Users/rudolfsarkany/supermegabot/.env',

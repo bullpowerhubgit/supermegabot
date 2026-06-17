@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Konto-Prüfung - E-Mail Zuordnung</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .email-list {
+            background: #fff3cd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 4px solid #ffc107;
+        }
+        .platform {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .platform label {
+            display: block;
+            margin: 5px 0;
+            font-weight: bold;
+        }
+        .platform select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .platform a {
+            color: #3498db;
+            text-decoration: none;
+        }
+        .save-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 20px 0;
+            font-size: 16px;
+            width: 100%;
+        }
+        .save-btn:hover {
+            background: #219150;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Konto-Prüfung - E-Mail Zuordnung</h1>
+    
+    <div class="email-list">
+        <h3>Deine E-Mail Konten:</h3>
+        <ul>
+            <li>dragonadnp@gmail.com (Sarkany Timea)</li>
+            <li>nikolestimi@gmail.com</li>
+            <li>bullpowersrtkennels@gmail.com</li>
+            <li>looopwave@gmail.com</li>
+            <li>aitecbuuss@gmail.com</li>
+            <li>rudolf.sarkany@aitec.de</li>
+            <li>rudolf.sarkany.aiitec@gmail.com</li>
+        </ul>
+    </div>
+
+    <h2>Prüfe jede Plattform und trage die verwendete E-Mail ein:</h2>
+
+    <div class="platform">
+        <label>🛒 Shopify</label>
+        <a href="https://partners.shopify.com/" target="_blank">→ Dashboard öffnen</a>
+        <select id="shopify">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>💳 Stripe</label>
+        <a href="https://dashboard.stripe.com/apikeys" target="_blank">→ Dashboard öffnen</a>
+        <select id="stripe">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>👥 HubSpot</label>
+        <a href="https://developers.hubspot.com/" target="_blank">→ Dashboard öffnen</a>
+        <select id="hubspot">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>💬 Slack</label>
+        <a href="https://api.slack.com/apps" target="_blank">→ Dashboard öffnen</a>
+        <select id="slack">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>📋 Jira</label>
+        <a href="https://id.atlassian.com/manage-profile/security/api-tokens" target="_blank">→ Dashboard öffnen</a>
+        <select id="jira">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>📝 Trello</label>
+        <a href="https://trello.com/app-key" target="_blank">→ Dashboard öffnen</a>
+        <select id="trello">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>📧 SendGrid</label>
+        <a href="https://app.sendgrid.com/settings/api_keys" target="_blank">→ Dashboard öffnen</a>
+        <select id="sendgrid">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>📨 Mailchimp</label>
+        <a href="https://us1.admin.mailchimp.com/account/api/" target="_blank">→ Dashboard öffnen</a>
+        <select id="mailchimp">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>☁️ AWS</label>
+        <a href="https://console.aws.amazon.com/iam/" target="_blank">→ Dashboard öffnen</a>
+        <select id="aws">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>🌐 Google Cloud</label>
+        <a href="https://console.cloud.google.com/apis/credentials" target="_blank">→ Dashboard öffnen</a>
+        <select id="google">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>🤖 OpenAI</label>
+        <a href="https://platform.openai.com/api-keys" target="_blank">→ Dashboard öffnen</a>
+        <select id="openai">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>🐙 GitHub</label>
+        <a href="https://github.com/settings/tokens" target="_blank">→ Dashboard öffnen</a>
+        <select id="github">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>📓 Notion</label>
+        <a href="https://www.notion.so/my-integrations" target="_blank">→ Dashboard öffnen</a>
+        <select id="notion">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>📊 Airtable</label>
+        <a href="https://airtable.com/create/tokens" target="_blank">→ Dashboard öffnen</a>
+        <select id="airtable">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>🚀 Heroku</label>
+        <a href="https://dashboard.heroku.com/account" target="_blank">→ Dashboard öffnen</a>
+        <select id="heroku">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>🛡️ Cloudflare</label>
+        <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">→ Dashboard öffnen</a>
+        <select id="cloudflare">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>🏢 Salesforce</label>
+        <a href="https://developer.salesforce.com/" target="_blank">→ Dashboard öffnen</a>
+        <select id="salesforce">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>💼 Pipedrive</label>
+        <a href="https://app.pipedrive.com/settings/api" target="_blank">→ Dashboard öffnen</a>
+        <select id="pipedrive">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>🎫 Zendesk</label>
+        <a href="https://support.zendesk.com/hc/en-us/articles/203663866-Where-do-I-find-my-API-token-" target="_blank">→ Dashboard öffnen</a>
+        <select id="zendesk">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <div class="platform">
+        <label>💡 Intercom</label>
+        <a href="https://app.intercom.com/a/apps/" target="_blank">→ Dashboard öffnen</a>
+        <select id="intercom">
+            <option value="">-- Wähle E-Mail --</option>
+            <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+            <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+            <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+            <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+            <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+            <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+            <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+        </select>
+    </div>
+
+    <button class="save-btn" onclick="saveAndExport()">💾 Speichern & Exportieren</button>
+    <button class="save-btn" onclick="exportAsConfig()" style="background: #3498db;">📝 Als Config exportieren</button>
+
+    <script>
+        function saveAndExport() {
+            const data = {};
+            const platforms = ['shopify', 'stripe', 'hubspot', 'slack', 'jira', 'trello', 'sendgrid', 'mailchimp', 'aws', 'google', 'openai', 'github', 'notion', 'airtable', 'heroku', 'cloudflare', 'salesforce', 'pipedrive', 'zendesk', 'intercom'];
+            
+            platforms.forEach(platform => {
+                const select = document.getElementById(platform);
+                data[platform] = select.value;
+            });
+            
+            const json = JSON.stringify(data, null, 2);
+            const blob = new Blob([json], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'account-emails.json';
+            a.click();
+        }
+
+        function exportAsConfig() {
+            const data = {};
+            const platforms = ['shopify', 'stripe', 'hubspot', 'slack', 'jira', 'trello', 'sendgrid', 'mailchimp', 'aws', 'google', 'openai', 'github', 'notion', 'airtable', 'heroku', 'cloudflare', 'salesforce', 'pipedrive', 'zendesk', 'intercom'];
+            
+            platforms.forEach(platform => {
+                const select = document.getElementById(platform);
+                data[platform] = select.value;
+            });
+            
+            let config = '# Account Configuration\n\n';
+            for (const [platform, email] of Object.entries(data)) {
+                if (email) {
+                    config += `${platform.toUpperCase()}_EMAIL=${email}\n`;
+                }
+            }
+            
+            const blob = new Blob([config], {type: 'text/plain'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '.env.accounts';
+            a.click();
+        }
+    </script>
+</body>
+</html>

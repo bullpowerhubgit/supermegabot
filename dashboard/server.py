@@ -9,7 +9,7 @@ import sqlite3
 import subprocess
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 _SERVER_START_TIME = time.time()
@@ -50,6 +50,21 @@ PORT = int(os.getenv("PORT") or os.getenv("DASHBOARD_PORT", "8888"))
 
 log = logging.getLogger("Dashboard")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
+
+# ---------------------------------------------------------------------------
+# In-memory cache: {key: (timestamp, data)}
+# ---------------------------------------------------------------------------
+_cache: dict = {}
+
+def _cache_get(key: str, ttl: int):
+    """Return cached value if still fresh, else None."""
+    entry = _cache.get(key)
+    if entry and (time.time() - entry[0]) < ttl:
+        return entry[1]
+    return None
+
+def _cache_set(key: str, data):
+    _cache[key] = (time.time(), data)
 
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -139,14 +154,52 @@ async def handle_index(req):
 
 async def handle_chat(req):
     try:
-        data = await req.json()
-        text = data.get("text", "")
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
+        text = data.get("text") or data.get("message") or ""
         session_id = data.get("session_id", "dashboard")
         bot = req.app["bot"]
         response = await bot.process(text, session_id)
-        return web.json_response({"response": response, "session_id": session_id})
+        return web.json_response({"ok": True, "response": response, "session_id": session_id})
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bot_execute(req):
+    """Telegram Hub Bridge → Dashboard CommandRouter.
+    Called by telegram_hub_bridge.py for every incoming Telegram message.
+    """
+    try:
+        data = await req.json()
+        command = data.get("command", "").strip()
+        session_id = data.get("session_id", "telegram")
+        if not command:
+            return web.json_response({"ok": False, "error": "command is required"}, status=400)
+        bot = req.app["bot"]
+        response = await bot.process(command, session_id)
+        return web.json_response({"ok": True, "response": response})
+    except Exception as e:
+        log.error("handle_bot_execute error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bot_commands(req):
+    """Return all registered bot commands (for /commands meta-command in Telegram)."""
+    try:
+        bot = req.app["bot"]
+        all_cmds = list(bot.router.routes.keys())
+        slash_cmds = sorted(c for c in all_cmds if c.startswith("/"))
+        other_cmds = sorted(c for c in all_cmds if not c.startswith("/"))
+        return web.json_response({
+            "ok": True,
+            "total": len(all_cmds),
+            "slash": slash_cmds,
+            "all": slash_cmds + other_cmds,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_bot_execute(req):
@@ -190,6 +243,7 @@ async def handle_system(req):
         mem = psutil.virtual_memory()
         disk = psutil.disk_usage("/")
         return web.json_response({
+            "ok": True,
             "cpu_percent": psutil.cpu_percent(interval=0.5),
             "memory_used_gb": round(mem.used / 1024**3, 1),
             "memory_total_gb": round(mem.total / 1024**3, 1),
@@ -200,7 +254,9 @@ async def handle_system(req):
             "process_count": len(psutil.pids()),
         })
     except ImportError:
-        return web.json_response({"error": "psutil not installed"})
+        return web.json_response({"ok": False, "error": "psutil not installed"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_services_legacy(req):
@@ -250,6 +306,7 @@ async def handle_trading_arbitrage(req):
 async def handle_telegram_status(req):
     token = TELEGRAM_TOKEN or os.getenv("TELEGRAM_BOT_TOKEN", "")
     return web.json_response({
+        "ok": True,
         "configured": bool(token),
         "chat_id": TELEGRAM_CHAT_ID or os.getenv("TELEGRAM_CHAT_ID", ""),
     })
@@ -353,56 +410,73 @@ async def handle_ollama_models(req):
                         {"name": m["name"], "size": f"{m.get('size', 0) // 1024//1024//1024:.1f}GB"}
                         for m in data.get("models", [])
                     ]
-                    return web.json_response({"models": models})
-                return web.json_response({"models": []})
-    except Exception:
-        return web.json_response({"models": []})
+                    return web.json_response({"ok": True, "models": models})
+                return web.json_response({"ok": False, "models": []})
+    except Exception as e:
+        return web.json_response({"ok": False, "models": [], "error": str(e)})
 
 
 async def handle_autopilot_agents(req):
-    from modules.autopilot import AutoPilot
-    ap = AutoPilot()
-    return web.json_response({"agents": ap.get_agent_list()})
+    try:
+        from modules.autopilot import AutoPilot
+        ap = AutoPilot()
+        return web.json_response({"ok": True, "agents": ap.get_agent_list()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_autopilot_run(req):
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
         goal = data.get("goal", "")
         agent_id = data.get("agent_id") or None
         from modules.autopilot import AutoPilot
         ap = AutoPilot()
         if agent_id:
             result = await ap.run_task(goal, agent_id)
-            return web.json_response({"results": [result]})
+            return web.json_response({"ok": True, "results": [result]})
         else:
             results = await ap.run_autopilot_mode(goal)
-            return web.json_response({"results": results})
+            return web.json_response({"ok": True, "results": results})
     except Exception as e:
         log.error(f"AutoPilot error: {e}")
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_autopilot_logs(req):
-    from modules.autopilot import AutoPilot
-    ap = AutoPilot()
-    return web.json_response({"logs": ap.get_logs(30)})
+    try:
+        from modules.autopilot import AutoPilot
+        ap = AutoPilot()
+        return web.json_response({"ok": True, "logs": ap.get_logs(30)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_geheimwaffe_run(req):
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
         niche = data.get("niche", "General")
         from modules.geheimwaffe import run_full_automation
         result = await run_full_automation(niche)
+        if "ok" not in result:
+            result["ok"] = True
         return web.json_response(result)
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_geheimwaffe_content(req):
     try:
-        data = await req.json()
+        try:
+            data = await req.json()
+        except Exception:
+            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
         product = data.get("product", "")
         content_type = data.get("type", "listing")
         platform = data.get("platform", "tiktok")
@@ -414,10 +488,12 @@ async def handle_geheimwaffe_content(req):
         elif content_type == "ads":
             result = await generate_ad_copy(product)
         else:
-            result = {"error": "Unbekannter content_type"}
+            return web.json_response({"ok": False, "error": "Unbekannter content_type"}, status=400)
+        if "ok" not in result:
+            result["ok"] = True
         return web.json_response(result)
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_gmc(req):
@@ -425,9 +501,11 @@ async def handle_gmc(req):
         sys.path.insert(0, str(BASE_DIR))
         from modules.gmc_monitor import get_full_status
         status = await get_full_status()
+        if "ok" not in status:
+            status["ok"] = True
         return web.json_response(status)
     except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_backup_status(req):
@@ -457,12 +535,30 @@ async def handle_backup_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_revenue_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/revenue."""
+    return await handle_revenue_summary(req)
+
+
+async def handle_analytics_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/analytics."""
+    return await handle_revenue_analytics(req)
+
+
+async def handle_kpis_legacy(req):
+    """Compatibility alias for older dashboards expecting /api/kpis."""
+    return await handle_revenue_summary(req)
+
+
 # ---------------------------------------------------------------------------
 # NEW API Routes
 # ---------------------------------------------------------------------------
 
 async def handle_mac_action(req):
-    data = await req.json()
+    try:
+        data = await req.json()
+    except Exception:
+        data = {}
     action = data.get("action", "")
     try:
         from modules.mac_controller import MacController
@@ -552,7 +648,10 @@ async def handle_services_status(req):
 
 
 async def handle_service_action(req):
-    data = await req.json()
+    try:
+        data = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
     action = data.get("action", "")
     svc_id = data.get("id", "")
 
@@ -621,21 +720,43 @@ async def handle_start_all(req):
 
 
 async def handle_logs(req):
-    lines = []
-    for lf in [BASE_DIR / "logs" / "supermegabot.log", Path("/tmp/supermegabot.log")]:
-        if lf.exists():
-            try:
-                content = lf.read_text(errors='replace').split('\n')
-                lines.extend(content[-60:])
-            except Exception:
-                pass
-    if not lines:
-        lines = ["Keine Logs vorhanden — Bot läuft möglicherweise ohne Log-Datei"]
-    return web.json_response({"lines": lines[-80:]})
+    try:
+        lines = []
+        for lf in [BASE_DIR / "logs" / "supermegabot.log", Path("/tmp/supermegabot.log")]:
+            if lf.exists():
+                try:
+                    content = lf.read_text(errors='replace').split('\n')
+                    lines.extend(content[-60:])
+                except Exception:
+                    pass
+        if not lines:
+            lines = ["Keine Logs vorhanden — Bot läuft möglicherweise ohne Log-Datei"]
+        return web.json_response({"ok": True, "lines": lines[-80:]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_logs_clear(req):
+    """Clear the primary dashboard log files used by the legacy UI."""
+    try:
+        cleared = []
+        for lf in [BASE_DIR / "logs" / "supermegabot.log", Path("/tmp/supermegabot.log")]:
+            if lf.exists():
+                lf.write_text("")
+                cleared.append(str(lf))
+        return web.json_response({"ok": True, "cleared": cleared})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_health(req):
-    return web.json_response({
+    cached = _cache_get("system_health", 30)
+    if cached is not None:
+        # Always return fresh uptime
+        cached = dict(cached)
+        cached["uptime_seconds"] = round(time.time() - _SERVER_START_TIME, 1)
+        return web.json_response(cached)
+    result = {
         "status": "ok",
         "service": "supermegabot-dashboard",
         "port": PORT,
@@ -893,9 +1014,9 @@ async def handle_processes(req):
                 "mem": round(p.info['memory_percent'] or 0, 1),
                 "cmd": cmd,
             })
-        return web.json_response({"processes": procs})
+        return web.json_response({"ok": True, "processes": procs})
     except Exception as e:
-        return web.json_response({"error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ---------------------------------------------------------------------------
@@ -2254,7 +2375,804 @@ async def create_app():
     bot = MegaOrchestrator()
     await bot.start()
 
-    app = web.Application()
+
+
+
+# ---------------------------------------------------------------------------
+# GROWTH ENGINE API
+# ---------------------------------------------------------------------------
+async def handle_growth_dashboard(req):
+    try:
+        from modules.growth_engine import get_growth_dashboard
+        data = await get_growth_dashboard()
+        return web.json_response({"ok": True, "data": data})
+    except Exception as e:
+        log.error("handle_growth_dashboard: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_referral_create(req):
+    try:
+        body = await req.json()
+        email = body.get("email", "").strip()
+        name  = body.get("name", "").strip()
+        if not email:
+            return web.json_response({"ok": False, "error": "email required"}, status=400)
+        from modules.growth_engine import create_referral_code
+        data = await create_referral_code(email, name)
+        return web.json_response({"ok": True, "data": data})
+    except Exception as e:
+        log.error("handle_referral_create: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_referral_stats(req):
+    try:
+        from modules.growth_engine import get_referral_stats
+        data = await get_referral_stats()
+        return web.json_response({"ok": True, "data": data})
+    except Exception as e:
+        log.error("handle_referral_stats: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_referral_top(req):
+    try:
+        try:
+            limit = int(req.rel_url.query.get("limit", "10"))
+        except (ValueError, TypeError):
+            limit = 10
+        from modules.growth_engine import get_top_referrers
+        data = await get_top_referrers(limit=limit)
+        return web.json_response({"ok": True, "data": data})
+    except Exception as e:
+        log.error("handle_referral_top: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_review_automation_run(req):
+    try:
+        from modules.growth_engine import run_review_automation
+        result = await run_review_automation()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        log.error("handle_review_automation_run: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_winback_run(req):
+    try:
+        from modules.growth_engine import run_winback_automation
+        result = await run_winback_automation()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        log.error("handle_winback_run: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+
+
+# ---------------------------------------------------------------------------
+# DYNAMIC PRICING + EMAIL SEQUENCES API
+# ---------------------------------------------------------------------------
+async def handle_pricing_dashboard(req):
+    """GET /api/pricing/dashboard — pricing metrics for last 30 days."""
+    try:
+        from modules.dynamic_pricing import get_pricing_dashboard
+        data = await get_pricing_dashboard()
+        return web.json_response({"ok": True, **data})
+    except Exception as e:
+        log.error("handle_pricing_dashboard: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_pricing_run(req):
+    """POST /api/pricing/run — trigger a dynamic pricing cycle."""
+    try:
+        body = {}
+        if req.can_read_body:
+            try:
+                body = await req.json()
+            except Exception:
+                pass
+        max_products = int(body.get("max_products", 20))
+        from modules.dynamic_pricing import run_dynamic_pricing_cycle
+        result = await run_dynamic_pricing_cycle(max_products=max_products)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        log.error("handle_pricing_run: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_pricing_history(req):
+    """GET /api/pricing/history?product_id=...&days=30"""
+    try:
+        product_id = req.rel_url.query.get("product_id")
+        try:
+            days = int(req.rel_url.query.get("days", "30"))
+        except (ValueError, TypeError):
+            days = 30
+        from modules.dynamic_pricing import get_pricing_history
+        history = await get_pricing_history(product_id=product_id, days=days)
+        return web.json_response({"ok": True, "history": history, "count": len(history)})
+    except Exception as e:
+        log.error("handle_pricing_history: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_pricing_enable(req):
+    """POST /api/pricing/enable — {product_id, min_price, max_price}"""
+    try:
+        body = await req.json()
+        product_id = str(body.get("product_id", ""))
+        min_price  = float(body.get("min_price", 0))
+        max_price  = float(body.get("max_price", 0))
+        if not product_id:
+            return web.json_response({"ok": False, "error": "product_id required"}, status=400)
+        from modules.dynamic_pricing import enable_auto_pricing
+        result = await enable_auto_pricing(product_id, min_price, max_price)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_pricing_enable: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Email Sequence handlers ───────────────────────────────────────────────────
+
+async def handle_email_sequence_stats(req):
+    """GET /api/email/stats — open/send stats per sequence."""
+    try:
+        from modules.email_sequence_engine import get_sequence_stats
+        result = await get_sequence_stats()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_email_sequence_stats: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_email_sequence_enroll(req):
+    """POST /api/email/enroll — {email, name, sequence, metadata}"""
+    try:
+        body     = await req.json()
+        email    = str(body.get("email", "")).strip()
+        name     = str(body.get("name", "")).strip()
+        sequence = str(body.get("sequence", "")).strip()
+        metadata = body.get("metadata") or {}
+        if not email or not sequence:
+            return web.json_response(
+                {"ok": False, "error": "email and sequence are required"}, status=400
+            )
+        from modules.email_sequence_engine import enroll_customer
+        result = await enroll_customer(email, name, sequence, metadata)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_email_sequence_enroll: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_email_sequence_process(req):
+    """POST /api/email/process — process all due emails."""
+    try:
+        from modules.email_sequence_engine import process_due_emails
+        result = await process_due_emails()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_email_sequence_process: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_email_sequence_enroll_new(req):
+    """POST /api/email/enroll-new — auto-enroll new Shopify customers."""
+    try:
+        from modules.email_sequence_engine import auto_enroll_new_customers
+        result = await auto_enroll_new_customers()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_email_sequence_enroll_new: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+
+
+# ---------------------------------------------------------------------------
+# B2B PIPELINE + WHATSAPP + TIKTOK API
+# ---------------------------------------------------------------------------
+async def handle_b2b_pipeline_stats(req):
+    try:
+        from modules.b2b_pipeline import get_pipeline_stats
+        stats = await get_pipeline_stats()
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_pipeline_leads(req):
+    try:
+        from modules.b2b_pipeline import get_pipeline_leads
+        stage = req.rel_url.query.get("stage")
+        try:
+            limit = int(req.rel_url.query.get("limit", "50"))
+        except (ValueError, TypeError):
+            limit = 50
+        leads = await get_pipeline_leads(stage=stage, limit=limit)
+        return web.json_response({"ok": True, "leads": leads, "count": len(leads)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_lead_add(req):
+    try:
+        from modules.b2b_pipeline import add_lead
+        data = await req.json()
+        lead = await add_lead(
+            email=data.get("email", ""),
+            name=data.get("name", ""),
+            company=data.get("company", ""),
+            website=data.get("website", ""),
+            niche=data.get("niche", ""),
+            source=data.get("source", "manual_import"),
+            score=int(data.get("score", 0)),
+            notes=data.get("notes", ""),
+        )
+        return web.json_response({"ok": True, "lead": lead})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_lead_update(req):
+    try:
+        from modules.b2b_pipeline import update_lead_stage
+        data = await req.json()
+        lead_id = int(data.get("id", 0))
+        stage   = data.get("stage", "")
+        notes   = data.get("notes", "")
+        if not lead_id or not stage:
+            return web.json_response({"ok": False, "error": "id and stage required"}, status=400)
+        result = await update_lead_stage(lead_id, stage, notes)
+        return web.json_response({"ok": True, "lead": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_prospecting_run(req):
+    try:
+        from modules.b2b_pipeline import run_daily_prospecting
+        data = {}
+        try:
+            data = await req.json()
+        except Exception:
+            pass
+        result = await run_daily_prospecting()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_outreach_send(req):
+    try:
+        from modules.b2b_pipeline import send_outreach_email
+        data = await req.json()
+        lead_id = int(data.get("lead_id", 0))
+        if not lead_id:
+            return web.json_response({"ok": False, "error": "lead_id required"}, status=400)
+        success = await send_outreach_email(lead_id)
+        return web.json_response({"ok": success})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── WhatsApp handlers ─────────────────────────────────────────────────────────
+
+async def handle_whatsapp_webhook_verify(req):
+    """Meta webhook verification (GET)."""
+    try:
+        from modules.whatsapp_automation import verify_webhook
+        mode      = req.rel_url.query.get("hub.mode", "")
+        token     = req.rel_url.query.get("hub.verify_token", "")
+        challenge = req.rel_url.query.get("hub.challenge", "")
+        if mode == "subscribe":
+            response = await verify_webhook(token, challenge)
+            if response:
+                return web.Response(text=response)
+        return web.Response(status=403, text="Forbidden")
+    except Exception as e:
+        return web.Response(status=500, text=str(e))
+
+
+async def handle_whatsapp_webhook(req):
+    """Meta webhook events (POST)."""
+    try:
+        from modules.whatsapp_automation import process_webhook
+        data = await req.json()
+        await process_webhook(data)
+        return web.json_response({"ok": True})
+    except Exception as e:
+        log.error("WhatsApp webhook error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_whatsapp_send(req):
+    try:
+        from modules.whatsapp_automation import send_message
+        data = await req.json()
+        to      = data.get("to", "")
+        message = data.get("message", "")
+        if not to or not message:
+            return web.json_response({"ok": False, "error": "to and message required"}, status=400)
+        success = await send_message(to, message)
+        return web.json_response({"ok": success})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_whatsapp_broadcast(req):
+    try:
+        from modules.whatsapp_automation import broadcast_to_subscribers
+        data    = await req.json()
+        message = data.get("message", "")
+        numbers = data.get("numbers", [])
+        if not message or not numbers:
+            return web.json_response({"ok": False, "error": "message and numbers required"}, status=400)
+        result = await broadcast_to_subscribers(message, numbers)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_whatsapp_stats(req):
+    try:
+        from modules.whatsapp_automation import get_whatsapp_stats
+        stats = await get_whatsapp_stats()
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── TikTok Shop handlers ──────────────────────────────────────────────────────
+
+async def handle_tiktok_sync_products(req):
+    try:
+        from modules.tiktok_shop_sync import sync_products_to_tiktok
+        data = {}
+        try:
+            data = await req.json()
+        except Exception:
+            pass
+        limit  = int((data or {}).get("limit", 50))
+        result = await sync_products_to_tiktok(limit=limit)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_tiktok_orders(req):
+    try:
+        from modules.tiktok_shop_sync import get_tiktok_orders
+        try:
+            days = int(req.rel_url.query.get("days", "7"))
+        except (ValueError, TypeError):
+            days = 7
+        orders = await get_tiktok_orders(days=days)
+        return web.json_response({"ok": True, "orders": orders, "count": len(orders)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_tiktok_analytics(req):
+    try:
+        from modules.tiktok_shop_sync import get_tiktok_analytics
+        analytics = await get_tiktok_analytics()
+        return web.json_response({"ok": True, **analytics})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_tiktok_combined_revenue(req):
+    try:
+        from modules.tiktok_shop_sync import get_combined_revenue
+        revenue = await get_combined_revenue()
+        return web.json_response({"ok": True, **revenue})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_tiktok_promotion(req):
+    try:
+        from modules.tiktok_shop_sync import create_tiktok_promotion
+        data         = await req.json()
+        product_id   = data.get("product_id", "")
+        discount_pct = int(data.get("discount_pct", 10))
+        hours        = int(data.get("hours", 24))
+        if not product_id:
+            return web.json_response({"ok": False, "error": "product_id required"}, status=400)
+        result = await create_tiktok_promotion(product_id, discount_pct, hours)
+        return web.json_response({"ok": result.get("success", False), **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── TikTok Research / Ad Library handlers ────────────────────────────────────
+
+async def handle_tiktok_research_status(req):
+    try:
+        from modules.tiktok_research import check_status
+        result = await check_status()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"status": "error", "error": str(e)}, status=500)
+
+
+async def handle_tiktok_research_ads(req):
+    """POST /api/tiktok/research/ads — query Ad Library."""
+    try:
+        from modules.tiktok_research import query_ads
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+
+        date_min = body.get("date_min", "")
+        date_max = body.get("date_max", "")
+        if not date_min or not date_max:
+            return web.json_response(
+                {"ok": False, "error": "date_min and date_max required (YYYYMMDD)"},
+                status=400,
+            )
+
+        result = await query_ads(
+            date_min=date_min,
+            date_max=date_max,
+            country_code=body.get("country_code", "ALL"),
+            search_term=body.get("search_term", ""),
+            search_type=body.get("search_type", "fuzzy_phrase"),
+            advertiser_business_ids=body.get("advertiser_business_ids"),
+            unique_users_seen_min=body.get("unique_users_seen_min", ""),
+            unique_users_seen_max=body.get("unique_users_seen_max", ""),
+            max_count=int(body.get("max_count", 20)),
+            search_id=body.get("search_id", ""),
+        )
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── SEMrush handlers ──────────────────────────────────────────────────────────
+
+async def handle_semrush_keyword(req):
+    phrase = req.rel_url.query.get("phrase", "")
+    db = req.rel_url.query.get("db", "de")
+    if not phrase:
+        return web.json_response({"error": "phrase required"}, status=400)
+    try:
+        from modules.semrush_client import keyword_overview, keyword_related
+        import asyncio
+        overview, related = await asyncio.gather(
+            keyword_overview(phrase, db),
+            keyword_related(phrase, db, 20),
+        )
+        return web.json_response({"phrase": phrase, "overview": overview, "related": related})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_domain(req):
+    domain = req.rel_url.query.get("domain", "")
+    db = req.rel_url.query.get("db", "de")
+    if not domain:
+        return web.json_response({"error": "domain required"}, status=400)
+    try:
+        from modules.semrush_client import domain_overview, domain_organic_keywords, domain_competitors, domain_backlinks
+        import asyncio
+        overview, keywords, competitors, backlinks = await asyncio.gather(
+            domain_overview(domain, db),
+            domain_organic_keywords(domain, db, 20),
+            domain_competitors(domain, db, 10),
+            domain_backlinks(domain),
+        )
+        return web.json_response({
+            "domain": domain,
+            "overview": overview,
+            "top_keywords": keywords,
+            "competitors": competitors,
+            "backlinks": backlinks,
+        })
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_niche(req):
+    kw = req.rel_url.query.get("keyword", "")
+    domain = req.rel_url.query.get("domain", None)
+    db = req.rel_url.query.get("db", "de")
+    if not kw:
+        return web.json_response({"error": "keyword required"}, status=400)
+    try:
+        from modules.semrush_client import research_niche
+        result = await research_niche(kw, domain, db)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_serp(req):
+    phrase = req.rel_url.query.get("phrase", "")
+    db = req.rel_url.query.get("db", "de")
+    if not phrase:
+        return web.json_response({"error": "phrase required"}, status=400)
+    try:
+        from modules.semrush_client import keyword_organic_results
+        results = await keyword_organic_results(phrase, db)
+        return web.json_response({"phrase": phrase, "serp": results})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# ── Meta Ads handlers ─────────────────────────────────────────────────────────
+
+async def handle_meta_ads_status(req):
+    try:
+        from modules.meta_ads import check_status
+        return web.json_response(await check_status())
+    except Exception as e:
+        return web.json_response({"status": "error", "message": str(e)}, status=500)
+
+
+async def handle_meta_campaigns(req):
+    try:
+        from modules.meta_ads import list_campaigns
+        campaigns = await list_campaigns()
+        return web.json_response({"ok": True, "campaigns": campaigns, "count": len(campaigns)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_campaign_create(req):
+    try:
+        from modules.meta_ads import create_campaign
+        body = await req.json()
+        result = await create_campaign(
+            name=body.get("name", "SuperMegaBot Campaign"),
+            objective=body.get("objective", "OUTCOME_SALES"),
+            daily_budget_eur=float(body.get("daily_budget_eur", 10.0)),
+            status=body.get("status", "PAUSED"),
+        )
+        return web.json_response({"ok": "id" in result, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_campaign_launch(req):
+    """Launch full campaign (campaign + adset + creative + ad) from Shopify product."""
+    try:
+        from modules.meta_ads import launch_shopify_campaign
+        body = await req.json()
+        result = await launch_shopify_campaign(
+            product_title=body.get("product_title", ""),
+            product_url=body.get("product_url", ""),
+            product_image=body.get("product_image", ""),
+            product_price=float(body.get("product_price", 0)),
+            daily_budget_eur=float(body.get("daily_budget_eur", 10.0)),
+            countries=body.get("countries", ["DE", "AT", "CH"]),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_saas_campaign(req):
+    """Launch SuperMegaBot SaaS lead-gen campaign."""
+    try:
+        from modules.meta_ads import launch_saas_campaign
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        result = await launch_saas_campaign(
+            daily_budget_eur=float(body.get("daily_budget_eur", 20.0))
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_pixel_stats(req):
+    try:
+        from modules.meta_ads import get_pixel_stats, get_pixel_events
+        stats = await get_pixel_stats()
+        events = await get_pixel_events(days=7)
+        return web.json_response({"ok": True, "pixel": stats, "events_7d": events})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_meta_oauth_url(req):
+    """Return the OAuth URL to generate a Meta Marketing API token."""
+    app_id = os.getenv("FACEBOOK_APP_ID", "1225412136200609")
+    scopes = ",".join([
+        "ads_management", "ads_read", "pages_manage_ads",
+        "pages_read_engagement", "pages_manage_posts",
+        "instagram_basic", "instagram_content_publish",
+        "business_management", "public_profile",
+    ])
+    redirect = "https://developers.facebook.com/tools/explorer/"
+    url = (
+        f"https://www.facebook.com/v21.0/dialog/oauth"
+        f"?client_id={app_id}"
+        f"&redirect_uri={redirect}"
+        f"&scope={scopes}"
+        f"&response_type=token"
+    )
+    return web.json_response({
+        "ok": True,
+        "oauth_url": url,
+        "instructions": [
+            "1. Klick den oauth_url Link",
+            "2. Mit Facebook-Account einloggen (Aiitec)",
+            "3. Alle Berechtigungen genehmigen",
+            "4. Den generierten Token kopieren",
+            "5. Als META_ADS_TOKEN in .env speichern oder hier senden"
+        ],
+        "required_permissions": scopes.split(","),
+        "ad_account": os.getenv("META_AD_ACCOUNT_ID", ""),
+        "page_id": os.getenv("FACEBOOK_PAGE_ID", ""),
+    })
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SALESFORCE / AGENTFORCE CRM
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def handle_salesforce_stats(req):
+    try:
+        from modules.salesforce_client import get_stats
+        return web.json_response({"ok": True, **(await get_stats())})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_leads(req):
+    try:
+        from modules.salesforce_client import get_leads
+        status = req.rel_url.query.get("status")
+        leads = await get_leads(status=status)
+        return web.json_response({"ok": True, "count": len(leads), "leads": leads})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_contacts(req):
+    try:
+        from modules.salesforce_client import get_contacts
+        contacts = await get_contacts()
+        return web.json_response({"ok": True, "count": len(contacts), "contacts": contacts})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_opportunities(req):
+    try:
+        from modules.salesforce_client import get_opportunities
+        stage = req.rel_url.query.get("stage")
+        opps = await get_opportunities(stage=stage)
+        return web.json_response({"ok": True, "count": len(opps), "opportunities": opps})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_create_lead(req):
+    try:
+        data = await req.json() if req.can_read_body else {}
+        from modules.salesforce_client import create_lead
+        result = await create_lead(
+            first_name=data.get("first_name", ""),
+            last_name=data.get("last_name", "Lead"),
+            email=data.get("email", ""),
+            company=data.get("company", "Unknown"),
+            phone=data.get("phone", ""),
+            source=data.get("source", "SuperMegaBot"),
+        )
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_sync_klaviyo(req):
+    try:
+        from modules.salesforce_client import sync_klaviyo_to_sf
+        return web.json_response(await sync_klaviyo_to_sf())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_salesforce_import_b2b(req):
+    try:
+        from modules.salesforce_client import import_sf_leads_to_b2b
+        return web.json_response(await import_sf_leads_to_b2b())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SHOPIFY AUTONOMY MASTER
+# ══════════════════════════════════════════════════════════════════════════════
+
+async def handle_autonomy_health(req):
+    try:
+        from modules.shopify_autonomy_master import get_service
+        svc = get_service()
+        return web.json_response({"ok": True, **svc.health()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_autonomy_trigger(req):
+    job_id = req.match_info.get("job_id", "")
+    try:
+        from modules.shopify_autonomy_master import get_service, order_orchestrator, inventory_sync, price_optimizer, telegram_digest, recovery_reconciliation, catalog_watchdog
+        svc = get_service()
+        job_map = {
+            "order_orchestrator": order_orchestrator,
+            "inventory_sync": inventory_sync,
+            "price_optimizer": price_optimizer,
+            "telegram_digest": telegram_digest,
+            "recovery_reconciliation": recovery_reconciliation,
+            "catalog_watchdog": catalog_watchdog,
+        }
+        if job_id not in job_map:
+            return web.json_response({"ok": False, "error": f"Unknown job: {job_id}", "available": list(job_map.keys())})
+        result = job_map[job_id](svc)
+        return web.json_response({"ok": True, "job_id": job_id, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_autonomy_history(req):
+    job_id = req.match_info.get("job_id", "")
+    try:
+        from modules.shopify_autonomy_master import get_service
+        svc = get_service()
+        history = svc.state.read(f"history:{job_id}", default={"runs": []})
+        return web.json_response({"ok": True, "job_id": job_id, **history})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_queue_stats(req):
+    try:
+        from core.job_queue import HermesQueue
+        return web.json_response(HermesQueue.get().stats())
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_queue_enqueue(req):
+    try:
+        data = await req.json()
+        from core.job_queue import enqueue
+        job_id = await enqueue(data.get("name", "notify"),
+                               data.get("payload", {}),
+                               data.get("priority", 5))
+        return web.json_response({"ok": True, "job_id": job_id})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def create_app():
+    from core.mega_orchestrator import MegaOrchestrator
+    bot = MegaOrchestrator()
+    await bot.start()
+
+    # Start Hermes Job Queue
+    try:
+        from core.job_queue import HermesQueue
+        asyncio.create_task(HermesQueue.get().start(workers=3))
+        log.info("Hermes Job Queue started")
+    except Exception as e:
+        log.warning("Hermes start failed: %s", e)
+
+    app = web.Application(middlewares=[logging_middleware, cors_middleware])
     app["bot"] = bot
 
     # Existing routes
@@ -2264,11 +3182,14 @@ async def create_app():
     app.router.add_post("/api/bot/execute", handle_bot_execute)
     app.router.add_get("/api/bot/commands", handle_bot_commands)
     app.router.add_get("/api/system", handle_system)
+    app.router.add_get("/api/status", handle_status_legacy)
+    app.router.add_get("/api/metrics", handle_metrics_legacy)
     app.router.add_get("/api/services", handle_services_legacy)
     app.router.add_get("/api/trading/prices", handle_trading_prices)
     app.router.add_get("/api/trading/arbitrage", handle_trading_arbitrage)
     app.router.add_get("/api/telegram/status", handle_telegram_status)
     app.router.add_post("/api/telegram/send", handle_telegram_send)
+    app.router.add_get("/api/shopify", handle_shopify_legacy)
     app.router.add_get("/api/shopify/status", handle_shopify_status)
     app.router.add_get("/api/ollama/models", handle_ollama_models)
     app.router.add_get("/api/autopilot/agents", handle_autopilot_agents)
@@ -2282,6 +3203,7 @@ async def create_app():
     app.router.add_post("/api/geheimwaffe/content", handle_geheimwaffe_content)
     app.router.add_get("/api/backup/status", handle_backup_status)
     app.router.add_post("/api/backup/run", handle_backup_run)
+    app.router.add_post("/api/backup", handle_backup_run)
 
     # GMC route
     app.router.add_get("/api/gmc", handle_gmc)
@@ -2292,6 +3214,7 @@ async def create_app():
     app.router.add_post("/api/services/action", handle_service_action)
     app.router.add_post("/api/start-all", handle_start_all)
     app.router.add_get("/api/logs", handle_logs)
+    app.router.add_post("/api/logs/clear", handle_logs_clear)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
     app.router.add_get("/api/status/full", handle_status_full)

@@ -1,0 +1,15 @@
+{
+  "name": "keyring-cli",
+  "version": "1.0.0",
+  "description": "A CLI tool to manage and rotate API keys across projects",
+  "main": "cli.js",
+  "bin": {
+    "keyring": "./cli.js"
+  },
+  "scripts": {
+    "test": "node cli.js --help"
+  },
+  "keywords": ["api", "keys", "env", "secrets", "cli"],
+  "author": "",
+  "license": "MIT"
+}

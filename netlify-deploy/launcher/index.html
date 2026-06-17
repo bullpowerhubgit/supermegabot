@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BullPower Launcher — 12 Tools starten — 1 Klick genügt</title>
+  <script>
+  
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{
+      --bg:#030712;
+      --bg2:#0f172a;
+      --bg3:#1e293b;
+      --border:#1e293b;
+      --border2:#334155;
+      --text:#f8fafc;
+      --muted:#94a3b8;
+      --muted2:#64748b;
+      --gold:#f59e0b;
+      --gold2:#d97706;
+      --purple:#8b5cf6;
+      --purple2:#6d28d9;
+      --green:#10b981;
+      --red:#ef4444;
+      --blue:#3b82f6;
+      --teal:#00ad9f;
+    }
+    html{scroll-behavior:smooth}
+    body{
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      min-height:100vh;
+      line-height:1.6;
+    }
+
+    /* ─── NAV ─── */
+    nav{
+      position:fixed;top:0;left:0;right:0;
+      padding:1rem 2rem;
+      background:rgba(3,7,18,0.97);
+      backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;
+      z-index:200;
+    }
+    .nav-logo{display:flex;align-items:center;gap:0.75rem}
+    .nav-icon{
+      width:38px;height:38px;
+      background:linear-gradient(135deg,var(--gold),var(--purple));
+      border-radius:9px;
+      display:flex;align-items:center;justify-content:center;
+      font-size:1.25rem;
+      box-shadow:0 0 18px rgba(245,158,11,0.35);
+    }
+    .nav-title{font-size:1.1rem;font-weight:700;color:#fff}
+    .nav-title span{color:var(--gold)}
+    .nav-right{display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+    #totalRevenue{color:var(--green);font-weight:600;font-size:0.88rem}
+    .btn-deploy-all{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#000;border:none;
+      padding:0.55rem 1.3rem;
+      border-radius:8px;font-weight:700;
+      cursor:pointer;font-size:0.85rem;
+      transition:transform 0.15s,box-shadow 0.15s;
+      white-space:nowrap;
+    }
+    .btn-deploy-all:hover{transform:scale(1.04);box-shadow:0 4px 18px rgba(245,158,11,0.45)}
+
+    /* ─── HERO ─── */
+    .hero{
+      padding:8rem 2rem 3.5rem;
+      text-align:center;
+      background:radial-gradient(ellipse 80% 55% at 50% -10%,rgba(139,92,246,0.15) 0%,transparent 70%);
+      border-bottom:1px solid var(--border);
+    }
+    .hero-badge{
+      display:inline-flex;align-items:center;gap:0.5rem;
+      background:rgba(245,158,11,0.12);
+      border:1px solid rgba(245,158,11,0.3);
+      color:var(--gold);
+      padding:0.3rem 0.9rem;
+      border-radius:999px;
+      font-size:0.78rem;font-weight:600;
+      letter-spacing:0.05em;text-transform:uppercase;
+      margin-bottom:1.5rem;
+    }
+    .hero h1{
+      font-size:clamp(2rem,5vw,3.4rem);
+      font-weight:800;
+      line-height:1.15;
+      margin-bottom:0.75rem;
+    }
+    .hero h1 span.gold{color:var(--gold)}
+    .hero h1 span.purple{color:var(--purple)}
+    .hero-sub{
+      font-size:1.1rem;color:var(--muted);
+      margin-bottom:2.5rem;
+    }
+    .hero-stats{
+      display:flex;flex-wrap:wrap;justify-content:center;gap:1.25rem;
+    }
+    .hero-stat{
+      background:var(--bg2);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:1rem 1.75rem;
+      text-align:center;
+      min-width:160px;
+    }
+    .hero-stat-val{font-size:1.4rem;font-weight:800;color:var(--gold)}
+    .hero-stat-lbl{font-size:0.78rem;color:var(--muted);margin-top:0.15rem}
+
+    /* ─── SECTION TITLES ─── */
+    .section-title{
+      font-size:1.4rem;font-weight:700;
+      margin-bottom:1.25rem;
+      display:flex;align-items:center;gap:0.6rem;
+    }
+    .section-title .dot{
+      width:8px;height:8px;border-radius:50%;
+      background:linear-gradient(135deg,var(--gold),var(--purple));
+      flex-shrink:0;
+    }
+
+    /* ─── MAIN CONTENT ─── */
+    .container{max-width:1280px;margin:0 auto;padding:2.5rem 1.5rem}
+
+    /* ─── TABLE SECTION ─── */
+    .table-wrap{
+      overflow-x:auto;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:var(--bg2);
+    }
+    table{width:100%;border-collapse:collapse;min-width:880px}
+    thead tr{background:rgba(139,92,246,0.08);border-bottom:1px solid var(--border2)}
+    thead th{
+      padding:0.9rem 1rem;
+      text-align:left;
+      font-size:0.75rem;
+      text-transform:uppercase;
+      letter-spacing:0.08em;
+      color:var(--muted);
+      font-weight:600;
+      white-space:nowrap;
+    }
+    tbody tr{
+      border-bottom:1px solid var(--border);
+      transition:background 0.15s;
+    }
+    tbody tr:last-child{border-bottom:none}
+    tbody tr:hover{background:rgba(139,92,246,0.05)}
+    tbody td{padding:0.85rem 1rem;font-size:0.88rem;vertical-align:middle}
+    .td-num{color:var(--muted2);font-size:0.78rem;font-weight:600;text-align:center;width:36px}
+    .td-tool{font-weight:700;color:var(--text)}
+    .td-tool small{display:block;font-weight:400;color:var(--muted);font-size:0.75rem;margin-top:0.1rem}
+    .badge{
+      display:inline-block;
+      padding:0.2rem 0.65rem;
+      border-radius:999px;
+      font-size:0.72rem;font-weight:600;
+      letter-spacing:0.03em;
+    }
+    .badge-shopify{background:rgba(149,191,71,0.15);color:#95bf47}
+    .badge-ai{background:rgba(139,92,246,0.15);color:#a78bfa}
+    .badge-digistore{background:rgba(59,130,246,0.15);color:#60a5fa}
+    .badge-creator{background:rgba(236,72,153,0.15);color:#f472b6}
+    .badge-auto{background:rgba(245,158,11,0.15);color:#fbbf24}
+    .badge-utility{background:rgba(16,185,129,0.15);color:#34d399}
+    .badge-telegram{background:rgba(0,136,204,0.15);color:#38bdf8}
+    .td-price{color:var(--gold);font-weight:700;white-space:nowrap}
+    .td-trial{color:var(--muted);font-size:0.8rem;white-space:nowrap}
+    .td-status{white-space:nowrap}
+    .status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--green);margin-right:0.4rem;animation:pulse-green 2s infinite}
+    @keyframes pulse-green{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.4)}50%{box-shadow:0 0 0 5px rgba(16,185,129,0)}}
+    .td-folder{font-family:monospace;font-size:0.77rem;color:var(--muted);background:var(--bg3);padding:0.2rem 0.5rem;border-radius:5px;white-space:nowrap}
+    .btn-launch{
+      background:linear-gradient(135deg,var(--purple),var(--purple2));
+      color:#fff;border:none;
+      padding:0.55rem 1.3rem;
+      border-radius:8px;font-weight:700;
+      cursor:pointer;font-size:0.82rem;
+      transition:transform 0.15s,box-shadow 0.15s;
+      white-space:nowrap;
+    }
+    .btn-launch:hover{transform:scale(1.06);box-shadow:0 4px 18px rgba(139,92,246,0.45)}
+
+    /* ─── BUNDLE ─── */
+    .bundle{
+      margin-top:2.5rem;
+      background:linear-gradient(135deg,rgba(245,158,11,0.08),rgba(139,92,246,0.08));
+      border:1px solid rgba(245,158,11,0.25);
+      border-radius:16px;
+      padding:2rem 2.5rem;
+      display:flex;align-items:center;justify-content:space-between;
+      flex-wrap:wrap;gap:1.5rem;
+    }
+    .bundle-left{}
+    .bundle-tag{
+      font-size:0.75rem;text-transform:uppercase;letter-spacing:0.1em;
+      color:var(--gold);font-weight:700;margin-bottom:0.5rem;
+    }
+    .bundle-title{font-size:1.6rem;font-weight:800;margin-bottom:0.35rem}
+    .bundle-desc{color:var(--muted);font-size:0.9rem}
+    .bundle-desc s{color:var(--muted2)}
+    .bundle-desc strong{color:var(--green);font-size:1.1rem}
+    .btn-bundle{
+      background:linear-gradient(135deg,var(--gold),var(--gold2));
+      color:#000;border:none;
+      padding:0.85rem 2rem;
+      border-radius:10px;font-weight:800;
+      cursor:pointer;font-size:1rem;
+      transition:transform 0.15s,box-shadow 0.15s;
+      white-space:nowrap;
+      flex-shrink:0;
+    }
+    .btn-bundle:hover{transform:scale(1.04);box-shadow:0 6px 24px rgba(245,158,11,0.4)}
+
+    /* ─── SOCIAL GRID ─── */
+    .social-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+      gap:1rem;
+      margin-top:0.5rem;
+    }
+    .social-card{
+      background:var(--bg2);
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:1rem;
+      text-decoration:none;
+      color:var(--text);
+      transition:border-color 0.2s,transform 0.15s,box-shadow 0.15s;
+      display:block;
+      cursor:pointer;
+    }
+    .social-card:hover{
+      border-color:var(--border2);
+      transform:translateY(-2px);
+      box-shadow:0 8px 24px rgba(0,0,0,0.3);
+    }
+    .social-icon{font-size:1.6rem;margin-bottom:0.4rem}
+    .social-name{font-weight:700;font-size:0.9rem;margin-bottom:0.2rem}
+    .social-status{font-size:0.75rem;color:var(--green)}
+
+    /* ─── MODAL ─── */
+    #launchModal{
+      display:none;
+      position:fixed;inset:0;
+      background:rgba(0,0,0,0.75);
+      backdrop-filter:blur(6px);
+      z-index:500;
+      align-items:center;
+      justify-content:center;
+      padding:1rem;
+    }
+    .modal-box{
+      background:var(--bg2);
+      border:1px solid var(--border2);
+      border-radius:16px;
+      padding:2rem;
+      width:100%;max-width:480px;
+      box-shadow:0 24px 60px rgba(0,0,0,0.6);
+      animation:modal-in 0.2s ease;
+    }
+    @keyframes modal-in{from{opacity:0;transform:scale(0.94)}to{opacity:1;transform:scale(1)}}
+    .modal-header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:1.5rem;
+    }
+    #modalTitle{font-size:1.15rem;font-weight:700}
+    .modal-close{
+      background:var(--bg3);border:none;
+      color:var(--muted);cursor:pointer;
+      width:32px;height:32px;border-radius:8px;
+      font-size:1rem;
+      display:flex;align-items:center;justify-content:center;
+      transition:background 0.15s,color 0.15s;
+    }
+    .modal-close:hover{background:var(--border2);color:var(--text)}
+
+    /* ─── FOOTER ─── */
+    footer{
+      border-top:1px solid var(--border);
+      padding:1.5rem 2rem;
+      text-align:center;
+      color:var(--muted2);
+      font-size:0.82rem;
+      margin-top:3rem;
+    }
+    footer span{color:var(--gold);font-weight:600}
+
+    /* ─── TOAST ─── */
+    #toast{
+      position:fixed;bottom:2rem;left:50%;transform:translateX(-50%);
+      background:var(--bg2);border:1px solid var(--green);
+      color:var(--green);
+      padding:0.7rem 1.5rem;border-radius:10px;
+      font-size:0.88rem;font-weight:600;
+      box-shadow:0 8px 24px rgba(0,0,0,0.4);
+      opacity:0;transition:opacity 0.3s;pointer-events:none;z-index:999;
+    }
+    #toast.show{opacity:1}
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar{width:6px;height:6px}
+    ::-webkit-scrollbar-track{background:var(--bg)}
+    ::-webkit-scrollbar-thumb{background:var(--bg3);border-radius:999px}
+    ::-webkit-scrollbar-thumb:hover{background:var(--border2)}
+  </style>
+<meta name="description" content="BullPower Launcher — Das Master-Kontrollzentrum für alle 12 BullPower SaaS-Tools. Starte, verwalte und deploye alle Tools mit einem Klick.">
+<meta property="og:title" content="BullPower Launcher — BullPower Tools">
+<meta property="og:description" content="BullPower Launcher — Das Master-Kontrollzentrum für alle 12 BullPower SaaS-Tools. Starte, verwalte und deploye alle Tools mit einem Klick.">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#64748b">
+</head>
+<body>
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#03070f;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #64748b22}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#64748b,#475569);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#64748b;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#64748b}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#64748b,#475569);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #64748b44}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">🎛️</div>
+    <h1>BullPower Launcher</h1>
+    
+    <div class="tag">12 Tools starten — 1 Klick genügt</div>
+    <div class="feat">Master-Kontrollzentrum für alle BullPower Tools</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+
+
+</div>
+
+
+<!-- ─── NAVIGATION ─── -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-icon">⚡</div>
+    <span class="nav-title">BullPower <span>Launcher</span></span>
+  </div>
+  <div class="nav-right">
+    <span id="totalRevenue">💰 Potenzial: €8.000–€48.000/mo</span>
+    <button class="btn-deploy-all" onclick="deployAll()">🚀 Alle deployen</button>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<div class="hero">
+  <div class="hero-badge">⚡ Kontrollzentrum · Rudolf Sarkany · 2026</div>
+  <h1>
+    <span class="gold">BullPower</span> <span class="purple">Launcher</span>
+  </h1>
+  <p class="hero-sub">12 Tools &mdash; 1 Klick &mdash; Sofort Live</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-val">12</div>
+      <div class="hero-stat-lbl">SaaS-Tools bereit</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">€8k–€48k</div>
+      <div class="hero-stat-lbl">Umsatz-Potenzial/mo</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">12</div>
+      <div class="hero-stat-lbl">Netlify-Ordner bereit</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-val">€99/mo</div>
+      <div class="hero-stat-lbl">Bundle-Preis</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MAIN CONTAINER ─── -->
+<div class="container">
+
+  <!-- TOOLS TABLE -->
+  <div class="section-title"><span class="dot"></span> Alle 12 SaaS-Tools</div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align:center">#</th>
+          <th>Tool</th>
+          <th>Kategorie</th>
+          <th>Preis/mo</th>
+          <th>Trial</th>
+          <th>Status</th>
+          <th>Netlify-Ordner</th>
+          <th style="text-align:center">Starten</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- 1 -->
+        <tr>
+          <td class="td-num">1</td>
+          <td class="td-tool">BullPower AI<small>KI-Chatbot &amp; Assistent</small></td>
+          <td><span class="badge badge-ai">KI-Chatbot</span></td>
+          <td class="td-price">€19–€49</td>
+          <td class="td-trial">7 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/bullpower-ai/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('bullpower-ai')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 2 -->
+        <tr>
+          <td class="td-num">2</td>
+          <td class="td-tool">Shopify Acquisition Engine<small>Lead &amp; Kunden-Akquise</small></td>
+          <td><span class="badge badge-shopify">Shopify</span></td>
+          <td class="td-price">€49–€299</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/shopify-acquisition-engine/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('shopify-acquisition-engine')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 3 -->
+        <tr>
+          <td class="td-num">3</td>
+          <td class="td-tool">Shopify Automaton Suite<small>Vollautomatisierung</small></td>
+          <td><span class="badge badge-shopify">Shopify</span></td>
+          <td class="td-price">€29–€79</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/shopify-suite/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('shopify-suite')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 4 -->
+        <tr>
+          <td class="td-num">4</td>
+          <td class="td-tool">Shopify Brutal Tuning<small>Performance-Optimierung</small></td>
+          <td><span class="badge badge-shopify">Shopify</span></td>
+          <td class="td-price">€49–€149</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/shopify-suite/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('shopify-brutal-tuning')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 5 -->
+        <tr>
+          <td class="td-num">5</td>
+          <td class="td-tool">Cognitive Symphony<small>KI-gestützte Workflows</small></td>
+          <td><span class="badge badge-digistore">Digistore24</span></td>
+          <td class="td-price">€29–€199</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/cognitive-symphony/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('cognitive-symphony')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 6 -->
+        <tr>
+          <td class="td-num">6</td>
+          <td class="td-tool">Digistore24 Automation<small>Affiliate &amp; Produkt-Auto</small></td>
+          <td><span class="badge badge-digistore">Digistore24</span></td>
+          <td class="td-price">€39–€89</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/digistore24-suite/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('digistore24-suite')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 7 -->
+        <tr>
+          <td class="td-num">7</td>
+          <td class="td-tool">CreatorStudio Pro<small>Content &amp; Video-Produktion</small></td>
+          <td><span class="badge badge-creator">Creator</span></td>
+          <td class="td-price">€19–€99</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/creatorstudio-pro/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('creatorstudio-pro')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 8 -->
+        <tr>
+          <td class="td-num">8</td>
+          <td class="td-tool">iComeAuto<small>Income-Automatisierung</small></td>
+          <td><span class="badge badge-auto">Automation</span></td>
+          <td class="td-price">€29–€79</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/icomeauto/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('icomeauto')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 9 -->
+        <tr>
+          <td class="td-num">9</td>
+          <td class="td-tool">AutoIncome AI<small>KI-gesteuertes Einkommen</small></td>
+          <td><span class="badge badge-auto">Automation</span></td>
+          <td class="td-price">€29–€79</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/autoincome-ai/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('autoincome-ai')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 10 -->
+        <tr>
+          <td class="td-num">10</td>
+          <td class="td-tool">Gumroad Discord Bot<small>Community-Monetisierung</small></td>
+          <td><span class="badge badge-utility">Utility</span></td>
+          <td class="td-price">€9–€49</td>
+          <td class="td-trial">7 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/gumroad-discord/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('gumroad-discord')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 11 -->
+        <tr>
+          <td class="td-num">11</td>
+          <td class="td-tool">Telegram Bot<small>Subscription &amp; Notifications</small></td>
+          <td><span class="badge badge-telegram">Telegram</span></td>
+          <td class="td-price">€29–€199</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/telegram-bot/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('telegram-bot')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+        <!-- 12 -->
+        <tr>
+          <td class="td-num">12</td>
+          <td class="td-tool">CreatorAI Ultra<small>KI-Content &amp; Skalierung</small></td>
+          <td><span class="badge badge-ai">KI-Content</span></td>
+          <td class="td-price">€19–€99</td>
+          <td class="td-trial">14 Tage</td>
+          <td class="td-status"><span class="status-dot"></span>Bereit</td>
+          <td><span class="td-folder">/creatorai-ultra/</span></td>
+          <td style="text-align:center">
+            <button class="btn-launch" onclick="launchTool('creatorai-ultra')"
+              onmouseover="this.style.transform='scale(1.06)'"
+              onmouseout="this.style.transform='scale(1)'">▶ Jetzt starten</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- BUNDLE SECTION -->
+  <div class="bundle">
+    <div class="bundle-left">
+      <div class="bundle-tag">💰 Bundle Deal</div>
+      <div class="bundle-title">Alle 12 Tools &mdash; 1 Paket</div>
+      <div class="bundle-desc">
+        Normaler Wert: <s>€233/mo</s> &nbsp;&rarr;&nbsp;
+        <strong>BullPower Bundle: €99/mo</strong>
+        &nbsp;&nbsp;<span style="background:rgba(16,185,129,0.12);color:var(--green);padding:0.2rem 0.6rem;border-radius:999px;font-size:0.8rem;font-weight:700">57% Ersparnis</span>
+      </div>
+    </div>
+    <button class="btn-bundle" onclick="launchBundle()">🚀 Jetzt Bundle starten</button>
+  </div>
+
+  <!-- SOCIAL SECTION -->
+  <div style="margin-top:3rem">
+    <div class="section-title"><span class="dot"></span> Plattform Quick-Links</div>
+    <div class="social-grid">
+      <a class="social-card" href="https://app.netlify.com/drop" target="_blank">
+        <div class="social-icon">🌐</div>
+        <div class="social-name">Netlify</div>
+        <div class="social-status">12 Ordner bereit</div>
+      </a>
+      <a class="social-card" href="https://gumroad.com/dashboard" target="_blank">
+        <div class="social-icon">🛒</div>
+        <div class="social-name">Gumroad</div>
+        <div class="social-status">Dashboard öffnen</div>
+      </a>
+      <a class="social-card" href="https://www.fiverr.com/selling/gigs" target="_blank">
+        <div class="social-icon">💼</div>
+        <div class="social-name">Fiverr</div>
+        <div class="social-status">Gigs verwalten</div>
+      </a>
+      <a class="social-card" href="https://www.upwork.com/freelancer" target="_blank">
+        <div class="social-icon">🔨</div>
+        <div class="social-name">Upwork</div>
+        <div class="social-status">Freelancer-Profil</div>
+      </a>
+      <a class="social-card" href="https://www.reddit.com" target="_blank">
+        <div class="social-icon">🤖</div>
+        <div class="social-name">Reddit</div>
+        <div class="social-status">Community</div>
+      </a>
+      <a class="social-card" href="https://www.facebook.com" target="_blank">
+        <div class="social-icon">📘</div>
+        <div class="social-name">Facebook</div>
+        <div class="social-status">Seite &amp; Gruppen</div>
+      </a>
+      <a class="social-card" href="https://www.instagram.com" target="_blank">
+        <div class="social-icon">📸</div>
+        <div class="social-name">Instagram</div>
+        <div class="social-status">Content posten</div>
+      </a>
+      <a class="social-card" href="https://www.pinterest.com" target="_blank">
+        <div class="social-icon">📌</div>
+        <div class="social-name">Pinterest</div>
+        <div class="social-status">Pins &amp; Boards</div>
+      </a>
+      <a class="social-card" href="https://www.tiktok.com" target="_blank">
+        <div class="social-icon">🎵</div>
+        <div class="social-name">TikTok</div>
+        <div class="social-status">Videos hochladen</div>
+      </a>
+      <a class="social-card" href="https://x.com" target="_blank">
+        <div class="social-icon">𝕏</div>
+        <div class="social-name">Twitter/X</div>
+        <div class="social-status">Feed &amp; Posts</div>
+      </a>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <span>Rudolf Sarkany</span> &times; <span>BullPower</span>
+  &mdash; 12 Tools, 1 Launcher &nbsp;|&nbsp; 2026
+</footer>
+
+<!-- ─── MODAL ─── -->
+<div id="launchModal" onclick="closeModal(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <span id="modalTitle">Tool deployen</span>
+      <button class="modal-close" onclick="document.getElementById('launchModal').style.display='none'">&times;</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- ─── TOAST ─── -->
+<div id="toast">✅ Pfad kopiert!</div>
+
+<!-- ─── JAVASCRIPT ─── -->
+<script>
+  const TOOLS = {
+    'bullpower-ai': {
+      name: 'BullPower AI',
+      folder: 'bullpower-ai',
+      netlifyUrl: ''
+    },
+    'shopify-acquisition-engine': {
+      name: 'Shopify Acquisition Engine',
+      folder: 'shopify-acquisition-engine',
+      netlifyUrl: ''
+    },
+    'shopify-suite': {
+      name: 'Shopify Automaton Suite',
+      folder: 'shopify-suite',
+      netlifyUrl: ''
+    },
+    'shopify-brutal-tuning': {
+      name: 'Shopify Brutal Tuning',
+      folder: 'shopify-suite',
+      netlifyUrl: ''
+    },
+    'cognitive-symphony': {
+      name: 'Cognitive Symphony',
+      folder: 'cognitive-symphony',
+      netlifyUrl: ''
+    },
+    'digistore24-suite': {
+      name: 'Digistore24 Automation',
+      folder: 'digistore24-suite',
+      netlifyUrl: ''
+    },
+    'creatorstudio-pro': {
+      name: 'CreatorStudio Pro',
+      folder: 'creatorstudio-pro',
+      netlifyUrl: ''
+    },
+    'icomeauto': {
+      name: 'iComeAuto',
+      folder: 'icomeauto',
+      netlifyUrl: ''
+    },
+    'autoincome-ai': {
+      name: 'AutoIncome AI',
+      folder: 'autoincome-ai',
+      netlifyUrl: ''
+    },
+    'gumroad-discord': {
+      name: 'Gumroad Discord Bot',
+      folder: 'gumroad-discord',
+      netlifyUrl: ''
+    },
+    'telegram-bot': {
+      name: 'Telegram Bot',
+      folder: 'telegram-bot',
+      netlifyUrl: ''
+    },
+    'creatorai-ultra': {
+      name: 'CreatorAI Ultra',
+      folder: 'creatorai-ultra',
+      netlifyUrl: ''
+    }
+  };
+
+  function launchTool(id) {
+    var tool = TOOLS[id];
+    if (!tool) return;
+    var modal = document.getElementById('launchModal');
+    document.getElementById('modalTitle').textContent = '🚀 ' + tool.name + ' deployen';
+    document.getElementById('modalContent').innerHTML =
+      '<p style="color:#94a3b8;margin-bottom:1.5rem">Wähle, wie du das Tool starten möchtest:</p>' +
+      '<div style="display:flex;flex-direction:column;gap:1rem">' +
+
+        '<a href="https://app.netlify.com/drop" target="_blank" ' +
+           'style="display:block;background:linear-gradient(135deg,#00ad9f,#0077b6);color:#fff;' +
+           'padding:1rem 1.5rem;border-radius:10px;text-decoration:none;font-weight:700;text-align:center;' +
+           'transition:transform 0.15s,box-shadow 0.15s" ' +
+           'onmouseover="this.style.transform=\'scale(1.02)\'" onmouseout="this.style.transform=\'scale(1)\'">' +
+          '📂 Auf Netlify hochladen (Drag &amp; Drop)<br>' +
+          '<small style="font-weight:400;opacity:0.85;font-size:0.8rem">Ordner: netlify-deploy/' + tool.folder + '/</small>' +
+        '</a>' +
+
+        '<button onclick="copyPath(\'' + tool.folder + '\')" ' +
+           'style="background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:1rem;border-radius:10px;' +
+           'cursor:pointer;font-size:0.88rem;text-align:left;transition:border-color 0.15s" ' +
+           'onmouseover="this.style.borderColor=\'#8b5cf6\'" onmouseout="this.style.borderColor=\'#334155\'">' +
+          '📋 Pfad kopieren<br>' +
+          '<span style="font-family:monospace;font-size:0.8rem;opacity:0.7">/Users/rudolfsarkany/netlify-deploy/' + tool.folder + '/</span>' +
+        '</button>' +
+
+        '<a href="../' + tool.folder + '/index.html" target="_blank" ' +
+           'style="display:block;background:#1e293b;color:#94a3b8;border:1px solid #334155;' +
+           'padding:1rem 1.5rem;border-radius:10px;text-decoration:none;text-align:center;' +
+           'transition:border-color 0.15s" ' +
+           'onmouseover="this.style.borderColor=\'#f59e0b\'" onmouseout="this.style.borderColor=\'#334155\'">' +
+          '👁️ Vorschau lokal öffnen' +
+        '</a>' +
+
+      '</div>';
+    modal.style.display = 'flex';
+  }
+
+  function launchBundle() {
+    var modal = document.getElementById('launchModal');
+    document.getElementById('modalTitle').textContent = '💰 BullPower Bundle — Alle 12 Tools';
+    document.getElementById('modalContent').innerHTML =
+      '<p style="color:#94a3b8;margin-bottom:1.5rem">Deploye alle 12 Tools auf einmal oder starte den Bundle-Checkout:</p>' +
+      '<div style="display:flex;flex-direction:column;gap:1rem">' +
+
+        '<a href="https://app.netlify.com/drop" target="_blank" ' +
+           'style="display:block;background:linear-gradient(135deg,#f59e0b,#d97706);color:#000;' +
+           'padding:1rem 1.5rem;border-radius:10px;text-decoration:none;font-weight:800;text-align:center">' +
+          '🚀 Alle 12 Ordner auf Netlify hochladen<br>' +
+          '<small style="font-weight:600;opacity:0.75;font-size:0.8rem">/Users/rudolfsarkany/netlify-deploy/ &rarr; Drag &amp; Drop</small>' +
+        '</a>' +
+
+        '<button onclick="copyAllPath()" ' +
+           'style="background:#1e293b;color:#94a3b8;border:1px solid #334155;padding:1rem;border-radius:10px;cursor:pointer;font-size:0.88rem">' +
+          '📋 Basis-Pfad kopieren: /Users/rudolfsarkany/netlify-deploy/' +
+        '</button>' +
+
+        '<div style="background:#0f172a;border:1px solid #1e293b;border-radius:10px;padding:1rem;font-size:0.8rem;color:#64748b">' +
+          '<strong style="color:#94a3b8;display:block;margin-bottom:0.5rem">Bundle-Inhalt (12 Tools):</strong>' +
+          'bullpower-ai · shopify-acquisition-engine · shopify-suite · cognitive-symphony<br>' +
+          'digistore24-suite · creatorstudio-pro · icomeauto · autoincome-ai<br>' +
+          'gumroad-discord · telegram-bot · creatorai-ultra' +
+        '</div>' +
+
+      '</div>';
+    modal.style.display = 'flex';
+  }
+
+  function copyPath(folder) {
+    var path = '/Users/rudolfsarkany/netlify-deploy/' + folder + '/';
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(path).then(function() { showToast('✅ Pfad kopiert!'); });
+    } else {
+      var ta = document.createElement('textarea');
+      ta.value = path;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast('✅ Pfad kopiert!');
+    }
+  }
+
+  function copyAllPath() {
+    copyPath('');
+  }
+
+  function deployAll() {
+    window.open('https://app.netlify.com/drop', '_blank');
+    showToast('🚀 Netlify Drop geöffnet!');
+  }
+
+  function closeModal(e) {
+    if (e.target === document.getElementById('launchModal')) {
+      document.getElementById('launchModal').style.display = 'none';
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      document.getElementById('launchModal').style.display = 'none';
+    }
+  });
+
+  var toastTimer;
+  function showToast(msg) {
+    var t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function() { t.classList.remove('show'); }, 2400);
+  }
+</script>
+
+</body>
+</html>

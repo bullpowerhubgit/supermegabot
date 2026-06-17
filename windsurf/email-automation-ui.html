@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Mail Automatisierungs-Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        .header p {
+            opacity: 0.9;
+        }
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .tab {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 600;
+            color: #6c757d;
+        }
+        .tab:hover {
+            background: #e9ecef;
+        }
+        .tab.active {
+            background: white;
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+        }
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        .account-list {
+            margin-top: 20px;
+        }
+        .account-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .account-item .email {
+            font-weight: 600;
+            color: #495057;
+        }
+        .account-item .status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .account-item .status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        .account-item .status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .rule-list {
+            margin-top: 20px;
+        }
+        .rule-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .rule-item .name {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 10px;
+        }
+        .rule-item .conditions {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .rule-item .actions {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .stat-card .number {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        .stat-card .label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .log {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 5px;
+            border-bottom: 1px solid #333;
+        }
+        .log-entry .timestamp {
+            color: #888;
+            margin-right: 10px;
+        }
+        .log-entry .message {
+            color: #00ff00;
+        }
+        .log-entry .error {
+            color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📧 E-Mail Automatisierungs-Tool</h1>
+            <p>Vollautomatische E-Mail-Verwaltung für alle deine Konten</p>
+        </div>
+
+        <div class="tabs">
+            <div class="tab active" onclick="showTab('accounts')">📱 Konten</div>
+            <div class="tab" onclick="showTab('mapping')">🔗 Zuordnung</div>
+            <div class="tab" onclick="showTab('rules')">⚙️ Regeln</div>
+            <div class="tab" onclick="showTab('automation')">🤖 Automation</div>
+            <div class="tab" onclick="showTab('stats')">📊 Statistiken</div>
+        </div>
+
+        <div id="accounts" class="tab-content active">
+            <h2>E-Mail Konten hinzufügen</h2>
+            <div class="form-group">
+                <label>E-Mail Adresse</label>
+                <input type="email" id="email" placeholder="deine@email.com">
+            </div>
+            <div class="form-group">
+                <label>IMAP Server</label>
+                <input type="text" id="imapHost" placeholder="imap.gmail.com">
+            </div>
+            <div class="form-group">
+                <label>IMAP Port</label>
+                <input type="number" id="imapPort" value="993">
+            </div>
+            <div class="form-group">
+                <label>Passwort / App Password</label>
+                <input type="password" id="password" placeholder="Dein Passwort">
+            </div>
+            <button class="btn btn-primary" onclick="addAccount()">Konto hinzufügen</button>
+
+            <div class="account-list" id="accountList">
+                <!-- Konten werden hier angezeigt -->
+            </div>
+        </div>
+
+        <div id="mapping" class="tab-content">
+            <h2>Plattform-Zuordnung</h2>
+            <p>Weise jede Plattform der verwendeten E-Mail zu:</p>
+            
+            <div class="form-group">
+                <label>Wähle E-Mail für Zuordnung</label>
+                <select id="mappingEmail">
+                    <option value="dragonadnp@gmail.com">dragonadnp@gmail.com (Sarkany Timea)</option>
+                    <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+                    <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+                    <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+                    <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+                    <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+                    <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+                </select>
+            </div>
+
+            <div id="platformMapping">
+                <h3>Projektmanagement</h3>
+                <div class="form-group">
+                    <label>Jira</label>
+                    <select class="platform-select" data-platform="jira">
+                        <option value="">-- Nicht zugeordnet --</option>
+                        <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+                        <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+                        <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+                        <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+                        <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+                        <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+                        <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Trello</label>
+                    <select class="platform-select" data-platform="trello">
+                        <option value="">-- Nicht zugeordnet --</option>
+                        <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+                        <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+                        <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+                        <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+                        <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+                        <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+                        <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Asana</label>
+                    <select class="platform-select" data-platform="asana">
+                        <option value="">-- Nicht zugeordnet --</option>
+                        <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+                        <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+                        <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+                        <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+                        <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+                        <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+                        <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+                    </select>
+                </div>
+
+                <h3>E-Commerce & Payments</h3>
+                <div class="form-group">
+                    <label>Shopify</label>
+                    <select class="platform-select" data-platform="shopify">
+                        <option value="">-- Nicht zugeordnet --</option>
+                        <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+                        <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+                        <option value="bullpowersrtkennels@gmail.com" selected>bullpowersrtkennels@gmail.com</option>
+                        <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+                        <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+                        <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+                        <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Stripe</label>
+                    <select class="platform-select" data-platform="stripe">
+                        <option value="">-- Nicht zugeordnet --</option>
+                        <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+                        <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+                        <option value="bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</option>
+                        <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+                        <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+                        <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+                        <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+                    </select>
+                </div>
+
+                <h3>Email Marketing</h3>
+                <div class="form-group">
+                    <label>Mailchimp</label>
+                    <select class="platform-select" data-platform="mailchimp">
+                        <option value="">-- Nicht zugeordnet --</option>
+                        <option value="dragonadnp@gmail.com">dragonadnp@gmail.com</option>
+                        <option value="nikolestimi@gmail.com">nikolestimi@gmail.com</option>
+                        <option value="bullpowersrtkennels@gmail.com" selected>bullpowersrtkennels@gmail.com</option>
+                        <option value="looopwave@gmail.com">looopwave@gmail.com</option>
+                        <option value="aitecbuuss@gmail.com">aitecbuuss@gmail.com</option>
+                        <option value="rudolf.sarkany@aitec.de">rudolf.sarkany@aitec.de</option>
+                        <option value="rudolf.sarkany.aiitec@gmail.com">rudolf.sarkany.aiitec@gmail.com</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="saveMapping()">💾 Zuordnung speichern</button>
+            <button class="btn btn-success" onclick="exportMapping()">📤 Exportieren</button>
+        </div>
+
+        <div id="rules" class="tab-content">
+            <h2>Automatisierungs-Regeln erstellen</h2>
+            <div class="form-group">
+                <label>Regel Name</label>
+                <input type="text" id="ruleName" placeholder="Wichtig: Kunden-E-Mails">
+            </div>
+            <div class="form-group">
+                <label>Bedingung: Absender enthält</label>
+                <input type="text" id="ruleFrom" placeholder="@kunde.de">
+            </div>
+            <div class="form-group">
+                <label>Bedingung: Betreff enthält</label>
+                <input type="text" id="ruleSubject" placeholder="Anfrage">
+            </div>
+            <div class="form-group">
+                <label>Aktion: Verschieben nach Ordner</label>
+                <input type="text" id="ruleFolder" placeholder="Wichtig">
+            </div>
+            <div class="form-group">
+                <label>Aktion: Automatische Antwort</label>
+                <textarea id="ruleAutoReply" rows="3" placeholder="Vielen Dank für deine E-Mail..."></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="addRule()">Regel hinzufügen</button>
+
+            <div class="rule-list" id="ruleList">
+                <!-- Regeln werden hier angezeigt -->
+            </div>
+        </div>
+
+        <div id="automation" class="tab-content">
+            <h2>E-Mail Automation starten</h2>
+            <div class="form-group">
+                <label>OpenAI API Key (für AI-Klassifizierung)</label>
+                <input type="password" id="openaiKey" placeholder="sk-...">
+            </div>
+            <button class="btn btn-primary" onclick="fetchEmails()">📥 E-Mails abrufen</button>
+            <button class="btn btn-success" onclick="processAll()">🤖 Alle Konten verarbeiten</button>
+            <button class="btn btn-danger" onclick="deleteSpam()">🗑️ Spam löschen</button>
+
+            <div class="log" id="log">
+                <div class="log-entry">
+                    <span class="timestamp">[System]</span>
+                    <span class="message">Bereit für Automation...</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="stats" class="tab-content">
+            <h2>Statistiken</h2>
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="number" id="totalAccounts">0</div>
+                    <div class="label">Konten</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="totalRules">0</div>
+                    <div class="label">Regeln</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="processedEmails">0</div>
+                    <div class="label">Verarbeitete E-Mails</div>
+                </div>
+                <div class="stat-card">
+                    <div class="number" id="deletedSpam">0</div>
+                    <div class="label">Gelöschter Spam</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:3001/api/email-automation';
+        let accounts = [];
+        let rules = [];
+        let stats = {
+            processedEmails: 0,
+            deletedSpam: 0
+        };
+
+        function showTab(tabId) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            document.querySelector(`[onclick="showTab('${tabId}')"]`).classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
+
+        function addLog(message, isError = false) {
+            const log = document.getElementById('log');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `
+                <span class="timestamp">[${new Date().toLocaleTimeString()}]</span>
+                <span class="${isError ? 'error' : 'message'}">${message}</span>
+            `;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function addAccount() {
+            const account = {
+                email: document.getElementById('email').value,
+                imapHost: document.getElementById('imapHost').value,
+                imapPort: parseInt(document.getElementById('imapPort').value),
+                imapSecure: true,
+                smtpHost: document.getElementById('imapHost').value.replace('imap', 'smtp'),
+                smtpPort: document.getElementById('imapPort').value,
+                smtpSecure: true,
+                password: document.getElementById('password').value
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'default',
+                        openaiApiKey: document.getElementById('openaiKey').value,
+                        action: 'addAccount',
+                        account
+                    })
+                });
+
+                const result = await response.json();
+                if (result.result.success) {
+                    accounts.push(account);
+                    updateAccountList();
+                    addLog(`Konto ${account.email} hinzugefügt`);
+                    updateStats();
+                }
+            } catch (error) {
+                addLog(`Fehler: ${error.message}`, true);
+            }
+        }
+
+        async function addRule() {
+            const rule = {
+                id: Date.now().toString(),
+                name: document.getElementById('ruleName').value,
+                conditions: {
+                    from: document.getElementById('ruleFrom').value ? [document.getElementById('ruleFrom').value] : [],
+                    subject: document.getElementById('ruleSubject').value ? [document.getElementById('ruleSubject').value] : []
+                },
+                actions: {
+                    moveToFolder: document.getElementById('ruleFolder').value,
+                    autoReply: document.getElementById('ruleAutoReply').value
+                }
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'default',
+                        openaiApiKey: document.getElementById('openaiKey').value,
+                        action: 'addRule',
+                        rule
+                    })
+                });
+
+                const result = await response.json();
+                if (result.result.success) {
+                    rules.push(rule);
+                    updateRuleList();
+                    addLog(`Regel "${rule.name}" hinzugefügt`);
+                    updateStats();
+                }
+            } catch (error) {
+                addLog(`Fehler: ${error.message}`, true);
+            }
+        }
+
+        async function fetchEmails() {
+            if (accounts.length === 0) {
+                addLog('Keine Konten vorhanden', true);
+                return;
+            }
+
+            const email = accounts[0].email;
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'default',
+                        openaiApiKey: document.getElementById('openaiKey').value,
+                        action: 'fetchEmails',
+                        email,
+                        limit: 20
+                    })
+                });
+
+                const result = await response.json();
+                addLog(`${result.result.length} E-Mails abgerufen von ${email}`);
+            } catch (error) {
+                addLog(`Fehler: ${error.message}`, true);
+            }
+        }
+
+        async function processAll() {
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'default',
+                        openaiApiKey: document.getElementById('openaiKey').value,
+                        action: 'processAll'
+                    })
+                });
+
+                const result = await response.json();
+                result.result.forEach(r => {
+                    stats.processedEmails += r.processed;
+                    addLog(`${r.email}: ${r.processed} E-Mails verarbeitet`);
+                });
+                updateStats();
+            } catch (error) {
+                addLog(`Fehler: ${error.message}`, true);
+            }
+        }
+
+        async function deleteSpam() {
+            if (accounts.length === 0) {
+                addLog('Keine Konten vorhanden', true);
+                return;
+            }
+
+            const email = accounts[0].email;
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        sessionId: 'default',
+                        openaiApiKey: document.getElementById('openaiKey').value,
+                        action: 'deleteSpam',
+                        email,
+                        threshold: 0.8
+                    })
+                });
+
+                const result = await response.json();
+                stats.deletedSpam += result.result;
+                addLog(`${result.result} Spam-E-Mails gelöscht`);
+                updateStats();
+            } catch (error) {
+                addLog(`Fehler: ${error.message}`, true);
+            }
+        }
+
+        function updateAccountList() {
+            const list = document.getElementById('accountList');
+            list.innerHTML = accounts.map(account => `
+                <div class="account-item">
+                    <div>
+                        <div class="email">${account.email}</div>
+                        <div style="font-size: 12px; color: #6c757d;">${account.imapHost}:${account.imapPort}</div>
+                    </div>
+                    <span class="status active">Aktiv</span>
+                </div>
+            `).join('');
+        }
+
+        function updateRuleList() {
+            const list = document.getElementById('ruleList');
+            list.innerHTML = rules.map(rule => `
+                <div class="rule-item">
+                    <div class="name">${rule.name}</div>
+                    <div class="conditions">
+                        Von: ${rule.conditions.from.join(', ') || 'Alle'} | 
+                        Betreff: ${rule.conditions.subject.join(', ') || 'Alle'}
+                    </div>
+                    <div class="actions">
+                        Ordner: ${rule.actions.moveToFolder || 'Kein'} | 
+                        Auto-Antwort: ${rule.actions.autoReply ? 'Ja' : 'Nein'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalAccounts').textContent = accounts.length;
+            document.getElementById('totalRules').textContent = rules.length;
+            document.getElementById('processedEmails').textContent = stats.processedEmails;
+            document.getElementById('deletedSpam').textContent = stats.deletedSpam;
+        }
+
+        function saveMapping() {
+            const mapping = {};
+            document.querySelectorAll('.platform-select').forEach(select => {
+                const platform = select.dataset.platform;
+                const email = select.value;
+                if (email) {
+                    mapping[platform] = email;
+                }
+            });
+            
+            localStorage.setItem('platformMapping', JSON.stringify(mapping));
+            addLog('Plattform-Zuordnung gespeichert');
+            alert('Zuordnung gespeichert!');
+        }
+
+        function exportMapping() {
+            const mapping = {};
+            document.querySelectorAll('.platform-select').forEach(select => {
+                const platform = select.dataset.platform;
+                const email = select.value;
+                if (email) {
+                    mapping[platform] = email;
+                }
+            });
+            
+            const blob = new Blob([JSON.stringify(mapping, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'platform-mapping.json';
+            a.click();
+        }
+
+        function loadMapping() {
+            const saved = localStorage.getItem('platformMapping');
+            if (saved) {
+                const mapping = JSON.parse(saved);
+                document.querySelectorAll('.platform-select').forEach(select => {
+                    const platform = select.dataset.platform;
+                    if (mapping[platform]) {
+                        select.value = mapping[platform];
+                    }
+                });
+            }
+        }
+
+        // Vorbelegte Werte für Gmail
+        document.getElementById('imapHost').value = 'imap.gmail.com';
+        document.getElementById('imapPort').value = 993;
+
+        // Zuordnung beim Laden
+        loadMapping();
+    </script>
+</body>
+</html>

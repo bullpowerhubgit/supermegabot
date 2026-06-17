@@ -1,0 +1,27 @@
+{
+  "updatedAt": "2026-06-03T19:43:06.155Z",
+  "jobs": [
+    {
+      "id": "cancel_1780515786155",
+      "subscriptionId": "sub_adobe",
+      "subscriptionName": "Adobe Creative Cloud",
+      "platform": "adobe",
+      "monthlyCost": 60,
+      "riskLevel": "red",
+      "requiresApproval": true,
+      "cancelUrl": "https://account.adobe.com/plans",
+      "steps": [
+        {
+          "action": "click",
+          "selector": "[data-testid=\"cancel-plan-button\"]"
+        },
+        {
+          "action": "click",
+          "selector": "[data-testid=\"confirm-cancel\"]"
+        }
+      ],
+      "status": "prepared",
+      "preparedAt": "2026-06-03T19:43:06.155Z"
+    }
+  ]
+}

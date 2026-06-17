@@ -13,7 +13,7 @@ import time
 import traceback
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Callable, Dict, List, Optional
 
 import aiohttp
 import sqlite3
@@ -74,11 +74,15 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 # ---------------------------------------------------------------------------
 
 class MemorySystem:
-    def __init__(self):
+    """Persistent SQLite-backed memory for conversations, facts, repairs, and task history."""
+
+    def __init__(self) -> None:
+        """Initialize the memory database at the configured data directory."""
         self.db_path = DATA_DIR / "memory.db"
         self._init_db()
 
-    def _init_db(self):
+    def _init_db(self) -> None:
+        """Create all required tables if they do not already exist."""
         conn = sqlite3.connect(self.db_path)
         conn.executescript("""
             CREATE TABLE IF NOT EXISTS conversations (
@@ -116,7 +120,8 @@ class MemorySystem:
         conn.commit()
         conn.close()
 
-    def save_message(self, session_id: str, role: str, content: str, context: str = ""):
+    def save_message(self, session_id: str, role: str, content: str, context: str = "") -> None:
+        """Persist a single conversation turn for the given session."""
         conn = sqlite3.connect(self.db_path)
         conn.execute(
             "INSERT INTO conversations (session_id,role,content,timestamp,context) VALUES (?,?,?,?,?)",
@@ -125,7 +130,8 @@ class MemorySystem:
         conn.commit()
         conn.close()
 
-    def get_history(self, session_id: str, limit: int = 20) -> List[Dict]:
+    def get_history(self, session_id: str, limit: int = 20) -> List[Dict[str, str]]:
+        """Return the most recent conversation turns for a session, oldest first."""
         conn = sqlite3.connect(self.db_path)
         rows = conn.execute(
             "SELECT role,content,timestamp FROM conversations WHERE session_id=? ORDER BY id DESC LIMIT ?",
@@ -134,7 +140,17 @@ class MemorySystem:
         conn.close()
         return [{"role": r[0], "content": r[1], "timestamp": r[2]} for r in reversed(rows)]
 
-    def learn_fact(self, category: str, key: str, value: str, confidence: float = 1.0):
+    def clear_history(self, session_id: str) -> int:
+        """Delete all persisted conversation turns for a session and return the deleted row count."""
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.execute("DELETE FROM conversations WHERE session_id=?", (session_id,))
+        conn.commit()
+        deleted = cur.rowcount
+        conn.close()
+        return deleted
+
+    def learn_fact(self, category: str, key: str, value: str, confidence: float = 1.0) -> None:
+        """Upsert a named fact so the bot can recall it across sessions."""
         conn = sqlite3.connect(self.db_path)
         conn.execute(
             "INSERT OR REPLACE INTO learned_facts (category,key,value,confidence,updated_at) VALUES (?,?,?,?,?)",
@@ -144,12 +160,14 @@ class MemorySystem:
         conn.close()
 
     def get_fact(self, key: str) -> Optional[str]:
+        """Retrieve a previously learned fact by key, or None if unknown."""
         conn = sqlite3.connect(self.db_path)
         row = conn.execute("SELECT value FROM learned_facts WHERE key=?", (key,)).fetchone()
         conn.close()
         return row[0] if row else None
 
-    def save_repair(self, error_pattern: str, solution: str, success: bool):
+    def save_repair(self, error_pattern: str, solution: str, success: bool) -> None:
+        """Record whether an auto-repair solution worked so future errors can reuse it."""
         conn = sqlite3.connect(self.db_path)
         existing = conn.execute(
             "SELECT id, attempts FROM repair_history WHERE error_pattern=? AND solution=?",
@@ -169,6 +187,7 @@ class MemorySystem:
         conn.close()
 
     def get_best_repair(self, error_pattern: str) -> Optional[str]:
+        """Return the most-used successful repair solution for a matching error pattern."""
         conn = sqlite3.connect(self.db_path)
         row = conn.execute(
             "SELECT solution FROM repair_history WHERE error_pattern LIKE ? AND success=1 ORDER BY attempts DESC LIMIT 1",
@@ -190,11 +209,13 @@ class OllamaClient:
         "analysis": os.getenv("OLLAMA_ANALYSIS_MODEL", "mistral:latest"),
     }
 
-    def __init__(self):
-        self.base = OLLAMA_BASE
+    def __init__(self) -> None:
+        """Set up the Ollama base URL and initialize the available-model cache."""
+        self.base: str = OLLAMA_BASE
         self.available_models: List[str] = []
 
     async def check_health(self) -> bool:
+        """Probe the Ollama server and populate the available-model list on success."""
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=5)) as s:
                 async with s.get(f"{self.base}/api/tags") as r:
@@ -207,6 +228,7 @@ class OllamaClient:
         return False
 
     def _pick_model(self, task: str) -> str:
+        """Select the best locally-available model for the given task tier."""
         for key, model in self.MODELS.items():
             for m in self.available_models:
                 if model.split(":")[0] in m:
@@ -215,7 +237,8 @@ class OllamaClient:
         # fallback: first available
         return self.available_models[0] if self.available_models else "llama3.2:latest"
 
-    async def chat(self, messages: List[Dict], task: str = "smart", stream: bool = False) -> str:
+    async def chat(self, messages: List[Dict[str, str]], task: str = "smart", stream: bool = False) -> str:
+        """Send a multi-turn chat to Ollama and return the assistant reply as a string."""
         model = self._pick_model(task)
         payload = {"model": model, "messages": messages, "stream": False}
         prompt_fallback = "\n".join(
@@ -240,6 +263,7 @@ class OllamaClient:
             return f"Ollama unavailable: {e}"
 
     async def generate(self, prompt: str, task: str = "fast") -> str:
+        """Send a single-turn completion prompt and return the generated text."""
         model = self._pick_model(task)
         payload = {"model": model, "prompt": prompt, "stream": False}
         try:
@@ -258,13 +282,22 @@ class OllamaClient:
 # ---------------------------------------------------------------------------
 
 class SelfHealingEngine:
-    def __init__(self, memory: MemorySystem, ai: OllamaClient):
+    """Diagnoses runtime errors via AI and attempts automatic package-level repairs."""
+
+    def __init__(self, memory: MemorySystem, ai: OllamaClient) -> None:
+        """Wire up the memory store and AI client used for diagnosis and repair logging."""
         self.memory = memory
         self.ai = ai
         self.repair_attempts: Dict[str, int] = {}
-        self.MAX_ATTEMPTS = 10
+        self.MAX_ATTEMPTS: int = 10
 
-    async def heal(self, error: Exception, context: str, retry_fn=None) -> Dict:
+    async def heal(
+        self,
+        error: Exception,
+        context: str,
+        retry_fn: Optional[Callable[[], Any]] = None,
+    ) -> Dict[str, Any]:
+        """Attempt to repair an error automatically, optionally retrying the original call."""
         error_key = type(error).__name__ + str(error)[:80]
         attempts = self.repair_attempts.get(error_key, 0) + 1
         self.repair_attempts[error_key] = attempts
@@ -286,7 +319,7 @@ Provide a SHORT repair solution (1-3 steps, Python code if needed):"""
             solution = await self.ai.generate(prompt, task="code")
             log.info(f"[HEAL] AI solution: {solution[:120]}")
 
-        result = {"success": False, "solution": solution, "attempts": attempts}
+        result: Dict[str, Any] = {"success": False, "solution": solution, "attempts": attempts}
 
         # Execute repair steps automatically
         repair_actions = self._parse_repair_actions(solution)
@@ -360,12 +393,16 @@ Provide a SHORT repair solution (1-3 steps, Python code if needed):"""
 # ---------------------------------------------------------------------------
 
 class CommandRouter:
-    def __init__(self, orchestrator: "MegaOrchestrator"):
+    """Maps incoming command strings to their handler coroutines and dispatches them."""
+
+    def __init__(self, orchestrator: "MegaOrchestrator") -> None:
+        """Register all command routes using the given orchestrator as context."""
         self.bot = orchestrator
-        self.routes: Dict[str, Any] = {}
+        self.routes: Dict[str, Callable[..., Any]] = {}
         self._register_routes()
 
-    def _register_routes(self):
+    def _register_routes(self) -> None:
+        """Build the full command-to-handler mapping covering all 110+ bot commands."""
         self.routes = {
             # Mac control
             "screenshot": self._cmd_screenshot,
@@ -504,6 +541,7 @@ class CommandRouter:
         }
 
     async def route(self, text: str, session_id: str) -> str:
+        """Dispatch the input text to the matching command handler or AI chat fallback."""
         text_lower = text.lower().strip()
 
         # Direct route match
@@ -514,7 +552,8 @@ class CommandRouter:
         # AI chat fallback (local Ollama)
         return await self._cmd_ai_chat(text, session_id)
 
-    async def _cmd_screenshot(self, text, session_id) -> str:
+    async def _cmd_screenshot(self, text: str, session_id: str) -> str:
+        """Take a Mac screenshot and return the saved file path."""
         try:
             from modules.mac_controller import MacController
             mac = MacController()
@@ -523,7 +562,8 @@ class CommandRouter:
         except Exception as e:
             return f"Screenshot fehlgeschlagen: {e}"
 
-    async def _cmd_status(self, text, session_id) -> str:
+    async def _cmd_status(self, text: str, session_id: str) -> str:
+        """Report current CPU, RAM, disk usage, and Ollama availability."""
         try:
             import psutil
             cpu = psutil.cpu_percent(interval=1)
@@ -539,7 +579,8 @@ class CommandRouter:
         except ImportError:
             return "psutil nicht installiert. Führe: pip install psutil"
 
-    async def _cmd_processes(self, text, session_id) -> str:
+    async def _cmd_processes(self, text: str, session_id: str) -> str:
+        """List the top 10 processes sorted by CPU usage."""
         try:
             import psutil
             procs = []
@@ -549,7 +590,8 @@ class CommandRouter:
         except Exception as e:
             return f"Fehler: {e}"
 
-    async def _cmd_disk(self, text, session_id) -> str:
+    async def _cmd_disk(self, text: str, session_id: str) -> str:
+        """Show disk usage for every mounted partition."""
         try:
             import psutil
             result = []
@@ -563,7 +605,8 @@ class CommandRouter:
         except Exception as e:
             return f"Fehler: {e}"
 
-    async def _cmd_arbitrage(self, text, session_id) -> str:
+    async def _cmd_arbitrage(self, text: str, session_id: str) -> str:
+        """Scan exchanges for crypto arbitrage opportunities above 0.5% profit."""
         try:
             from modules.trading_bot import TradingBot
             bot = TradingBot()
@@ -577,7 +620,8 @@ class CommandRouter:
         except Exception as e:
             return f"Trading Bot Fehler: {e}"
 
-    async def _cmd_prices(self, text, session_id) -> str:
+    async def _cmd_prices(self, text: str, session_id: str) -> str:
+        """Fetch and display current average prices for the top 6 crypto pairs."""
         try:
             from modules.trading_bot import TradingBot
             bot = TradingBot()
@@ -589,7 +633,8 @@ class CommandRouter:
         except Exception as e:
             return f"Preis-Fehler: {e}"
 
-    async def _cmd_open_browser(self, text, session_id) -> str:
+    async def _cmd_open_browser(self, text: str, session_id: str) -> str:
+        """Open Safari with the URL extracted from the command text."""
         url = text.replace("öffne browser", "").replace("browser", "").strip()
         if not url:
             url = "https://google.com"
@@ -600,7 +645,8 @@ class CommandRouter:
         except Exception as e:
             return f"Fehler: {e}"
 
-    async def _cmd_finances(self, text, session_id) -> str:
+    async def _cmd_finances(self, text: str, session_id: str) -> str:
+        """List available finance-related sub-commands."""
         return (
             "Finanz-Funktionen verfügbar:\n"
             "• 'abos' - Abonnements anzeigen/kündigen\n"
@@ -609,7 +655,8 @@ class CommandRouter:
             "Tippe einen Befehl für Details."
         )
 
-    async def _cmd_subscriptions(self, text, session_id) -> str:
+    async def _cmd_subscriptions(self, text: str, session_id: str) -> str:
+        """Delegate subscription listing to the Mac controller module."""
         try:
             from modules.mac_controller import MacController
             mac = MacController()
@@ -617,9 +664,10 @@ class CommandRouter:
         except Exception as e:
             return f"Abo-Check Fehler: {e}"
 
-    async def _cmd_ai_chat(self, text, session_id) -> str:
+    async def _cmd_ai_chat(self, text: str, session_id: str) -> str:
+        """Forward unrecognized input to Ollama with conversation history as context."""
         history = self.bot.memory.get_history(session_id, limit=10)
-        messages = [
+        messages: List[Dict[str, str]] = [
             {
                 "role": "system",
                 "content": (
@@ -640,14 +688,16 @@ class CommandRouter:
 
         return response
 
-    async def _cmd_gmc_status(self, text, session_id) -> str:
+    async def _cmd_gmc_status(self, text: str, session_id: str) -> str:
+        """Return a formatted Google Merchant Center status summary."""
         try:
             from modules.gmc_monitor import format_telegram_status
             return await format_telegram_status()
         except Exception as e:
             return f"GMC Status Fehler: {e}"
 
-    async def _cmd_produkte(self, text, session_id) -> str:
+    async def _cmd_produkte(self, text: str, session_id: str) -> str:
+        """Show total, active, and draft Shopify product counts."""
         try:
             from modules.gmc_monitor import get_shopify_product_count
             products = await get_shopify_product_count()
@@ -663,7 +713,8 @@ class CommandRouter:
         except Exception as e:
             return f"Produkte Fehler: {e}"
 
-    async def _cmd_ads(self, text, session_id) -> str:
+    async def _cmd_ads(self, text: str, session_id: str) -> str:
+        """Fetch and format active Google Ads campaign data."""
         try:
             from modules.campaign_manager import get_campaigns, format_telegram_ads
             campaigns = await get_campaigns()
@@ -672,6 +723,7 @@ class CommandRouter:
             return f"Ads Fehler: {e}"
 
     async def _cmd_api(self, text: str, session_id: str) -> str:
+        """Delegate API-builder commands to the api_builder module dispatcher."""
         try:
             from modules.api_builder import get_manager
             mgr = get_manager()
@@ -680,6 +732,7 @@ class CommandRouter:
             return f"API Builder Fehler: {e}"
 
     async def _cmd_hub(self, text: str, session_id: str) -> str:
+        """Delegate hub commands (PM2, Geheimwaffe, Army, ImmortalBot, etc.) to mega_hub."""
         try:
             from modules.mega_hub import get_hub
             hub = get_hub()
@@ -688,6 +741,7 @@ class CommandRouter:
             return f"Hub Fehler: {e}"
 
     async def _cmd_learner(self, text: str, session_id: str) -> str:
+        """Route self-learner skill commands to the learner bridge module."""
         try:
             from self_learner_bridge import get_learner
             learner = get_learner()
@@ -699,6 +753,7 @@ class CommandRouter:
             return f"Learner Fehler: {e}"
 
     async def _cmd_micro(self, text: str, session_id: str) -> str:
+        """Read the shared army state file and report the status of all 5 micro bots."""
         try:
             import json, os
             from pathlib import Path
@@ -977,7 +1032,8 @@ class CommandRouter:
 
   Kosten: 95% lokal (Ollama), 5% externe APIs"""
 
-    async def _cmd_start(self, text, session_id) -> str:
+    async def _cmd_start(self, text: str, session_id: str) -> str:
+        """Send the welcome message listing all active modules."""
         return (
             "SuperMegaBot gestartet!\n"
             "Ich bin dein lokaler KI-Assistent.\n"
@@ -997,7 +1053,12 @@ class CommandRouter:
 # Telegram Sender
 # ---------------------------------------------------------------------------
 
-async def send_telegram(text: str, chat_id: str = None, token: str = None):
+async def send_telegram(
+    text: str,
+    chat_id: Optional[str] = None,
+    token: Optional[str] = None,
+) -> None:
+    """Send a Telegram HTML message, silently dropping errors to avoid cascading failures."""
     token = token or TELEGRAM_TOKEN
     chat_id = chat_id or TELEGRAM_CHAT_ID
     if not token or not chat_id:
@@ -1016,7 +1077,10 @@ async def send_telegram(text: str, chat_id: str = None, token: str = None):
 # ---------------------------------------------------------------------------
 
 class MegaOrchestrator:
-    def __init__(self):
+    """Top-level controller that wires together memory, AI, healing, routing, and Telegram."""
+
+    def __init__(self) -> None:
+        """Instantiate all sub-systems and attempt to connect to the Guardian API."""
         self.memory = MemorySystem()
         self.ai = OllamaClient()
         self.healer = SelfHealingEngine(self.memory, self.ai)
@@ -1100,6 +1164,7 @@ class MegaOrchestrator:
         await send_telegram("🚀 SuperMegaBot + @RudiCludiBot gestartet! Tippe /help")
 
     async def process(self, text: str, session_id: str = "default") -> str:
+        """Route a command, persist timing data, and trigger self-healing on failure."""
         start = time.time()
         try:
             result = await self.router.route(text, session_id)
@@ -1130,7 +1195,8 @@ class MegaOrchestrator:
                 return await self.router.route(text, session_id)
             return f"Fehler (wird repariert): {type(e).__name__}: {str(e)[:100]}"
 
-    async def _health_loop(self):
+    async def _health_loop(self) -> None:
+        """Periodically verify Ollama is reachable and restart it if it has gone offline."""
         while self.running:
             try:
                 await asyncio.sleep(60)
@@ -1270,7 +1336,8 @@ class MegaOrchestrator:
                 log.error(f"Telegram poll Fehler: {type(e).__name__}: {e}")
                 await asyncio.sleep(retry_wait)
 
-    async def _handle_telegram_update(self, update: Dict):
+    async def _handle_telegram_update(self, update: Dict[str, Any]) -> None:
+        """Process a single Telegram update: route callback queries or text messages."""
         try:
             # ── Inline-Keyboard Button-Klick ──────────────────────────────
             cq = update.get("callback_query")
@@ -1329,7 +1396,8 @@ class MegaOrchestrator:
 # Entry point
 # ---------------------------------------------------------------------------
 
-async def main():
+async def main() -> None:
+    """Bootstrap the orchestrator and either start interactive mode or keep-alive loop."""
     bot = MegaOrchestrator()
     await bot.start()
 
