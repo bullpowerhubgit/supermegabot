@@ -767,7 +767,9 @@ async def handle_health(req):
             "admin_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1")),
             "customer_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN_2")),
         },
-    })
+    }
+    _cache_set("system_health", result)
+    return web.json_response(result)
 
 
 async def handle_status_full(req):
