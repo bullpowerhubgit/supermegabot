@@ -202,11 +202,9 @@ class MemorySystem:
 # ---------------------------------------------------------------------------
 
 class OllamaClient:
-    """HTTP client for the local Ollama inference server, with model-tier selection."""
-
-    MODELS: Dict[str, str] = {
+    MODELS = {
         "fast":     os.getenv("OLLAMA_FAST_MODEL",     "llama3.2:latest"),
-        "smart":    os.getenv("OLLAMA_SMART_MODEL",    "gemma4:latest"),
+        "smart":    os.getenv("OLLAMA_SMART_MODEL",    "gemma2:latest"),
         "code":     os.getenv("OLLAMA_CODE_MODEL",     "codellama:latest"),
         "analysis": os.getenv("OLLAMA_ANALYSIS_MODEL", "mistral:latest"),
     }
@@ -350,7 +348,7 @@ Provide a SHORT repair solution (1-3 steps, Python code if needed):"""
         return result
 
     # Erlaubte Package-Manager und ihre Executables
-    _REPAIR_MANAGERS: Dict[str, List[str]] = {
+    _REPAIR_MANAGERS = {
         "pip":    [sys.executable, "-m", "pip", "install"],
         "pip3":   [sys.executable, "-m", "pip", "install"],
         "brew":   ["brew", "install"],
@@ -358,8 +356,8 @@ Provide a SHORT repair solution (1-3 steps, Python code if needed):"""
     }
 
     def _parse_repair_actions(self, solution: str) -> List[List[str]]:
-        """Extract and validate package-install commands from an AI repair suggestion."""
-        actions: List[List[str]] = []
+        """Gibt validierte Befehle als Listen zurück (kein shell=True)."""
+        actions = []
         import re
         pkg_re = re.compile(r'^[a-zA-Z0-9_\-\.\[\]>=<!\s]+$')
         for raw in solution.strip().split("\n"):
@@ -380,7 +378,6 @@ Provide a SHORT repair solution (1-3 steps, Python code if needed):"""
         return actions
 
     async def _execute_repair_action(self, action: List[str]) -> bool:
-        """Run a validated repair command in a subprocess and return True on success."""
         import subprocess
         try:
             result = subprocess.run(
@@ -541,15 +538,6 @@ class CommandRouter:
             "/subscribe": self._cmd_subscribe,
             "/team_run": self._cmd_team_run,
             "/mrr": self._cmd_mrr,
-            # ── New Growth / Revenue Commands ────────────────────────────────
-            "/growth_dashboard": self._cmd_growth_dashboard,
-            "/referral_create": self._cmd_referral_create,
-            "/pricing_run": self._cmd_pricing_run,
-            "/b2b_stats": self._cmd_b2b_stats,
-            "/tiktok_sync": self._cmd_tiktok_sync,
-            "/churn": self._cmd_churn,
-            # stripe /mrr alias via stripe module
-            "/stripe_mrr": self._cmd_stripe_mrr,
         }
 
     async def route(self, text: str, session_id: str) -> str:
@@ -786,14 +774,13 @@ class CommandRouter:
             return f"Micro Status Fehler: {e}"
 
     async def _cmd_menu(self, text: str, session_id: str) -> str:
-        """Return a prompt directing the user to open the inline keyboard control panel."""
         return (
             "🤖 <b>Control Panel</b>\n\n"
             "Tippe /menu um das interaktive Steuerungsmenü mit Buttons zu öffnen.\n\n"
             "📊 Status · 🪖 Army · 🔧 Services · 🩺 Repair · 📋 Logs · ⚡ Actions"
         )
     async def _cmd_guardian(self, text: str, session_id: str) -> str:
-        """Handle all Guardian/Eternal sub-commands: health, services, agents, brain, heal, backup, restore."""
+        """Guardian/Eternal API Commands"""
         try:
             if not self.bot.guardian:
                 return "⚠️ Guardian API nicht verfügbar. API läuft auf Port 3201?"
@@ -906,7 +893,7 @@ class CommandRouter:
             return f"Guardian Fehler: {e}"
 
     async def _cmd_plans(self, text: str, session_id: str) -> str:
-        """Show available subscription plan tiers with pricing and features."""
+        """Zeigt verfügbare Abo-Pläne"""
         return (
             "📦 SuperMegaBot Abo-Pläne:\n\n"
             "🟢 Starter  — €49/Monat\n"
@@ -919,18 +906,47 @@ class CommandRouter:
         )
 
     async def _cmd_subscribe(self, text: str, session_id: str) -> str:
-        """Return Stripe checkout links for all subscription plans."""
-        dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-        return (
-            "🛒 Abonnement abschließen:\n\n"
-            f"Starter  (€49/mo): {dashboard_url}/checkout?plan=starter\n"
-            f"Pro      (€99/mo): {dashboard_url}/checkout?plan=pro\n"
-            f"Enterprise(€299/mo): {dashboard_url}/checkout?plan=enterprise\n\n"
-            "Zahlung via Stripe • Sofort aktiv"
+        """Create live Stripe checkout sessions for all subscription plans."""
+        import stripe as _stripe
+        dashboard_url = os.getenv(
+            "DASHBOARD_URL",
+            os.getenv("SUPERMEGABOT_DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
         )
+        sk = os.getenv("STRIPE_SECRET_KEY", "")
+        price_starter = os.getenv("STRIPE_PRICE_STARTER", "")
+        price_pro = os.getenv("STRIPE_PRICE_PRO", "")
+        price_enterprise = os.getenv("STRIPE_PRICE_ENTERPRISE", "")
+
+        lines = ["🛒 Abonnement abschließen — Live Stripe Checkout:\n"]
+        for label, amount, price_id in [
+            ("Starter", "€49/mo", price_starter),
+            ("Pro", "€99/mo", price_pro),
+            ("Enterprise", "€299/mo", price_enterprise),
+        ]:
+            url = None
+            if price_id and sk:
+                try:
+                    client = _stripe.StripeClient(sk)
+                    sess = client.checkout.sessions.create(params={
+                        "mode": "subscription",
+                        "line_items": [{"price": price_id, "quantity": 1}],
+                        "success_url": f"{dashboard_url}/pricing?success=true",
+                        "cancel_url": f"{dashboard_url}/pricing?canceled=true",
+                        "allow_promotion_codes": True,
+                    })
+                    url = sess.url
+                except Exception as e:
+                    logging.error(f"Checkout error {label}: {e}")
+            if url:
+                lines.append(f"• {label} ({amount}): {url}")
+            else:
+                lines.append(f"• {label} ({amount}): {'Preis-ID fehlt' if not price_id else 'Checkout-Fehler'}")
+
+        lines.append("\n✅ Zahlung via Stripe • Sofort aktiv")
+        return "\n".join(lines)
 
     async def _cmd_team_run(self, text: str, session_id: str) -> str:
-        """Trigger the default agent team via the dashboard API and report the result."""
+        """Agent Team ausführen"""
         try:
             dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
             async with aiohttp.ClientSession() as s:
@@ -947,7 +963,7 @@ class CommandRouter:
             return f"❌ /team_run Fehler: {e}"
 
     async def _cmd_mrr(self, text: str, session_id: str) -> str:
-        """Fetch and display Monthly Recurring Revenue from the dashboard API."""
+        """MRR (Monthly Recurring Revenue) anzeigen"""
         try:
             dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
             async with aiohttp.ClientSession() as s:
@@ -967,152 +983,7 @@ class CommandRouter:
         except Exception as e:
             return f"❌ /mrr Fehler: {e}"
 
-    async def _cmd_growth_dashboard(self, text: str, session_id: str) -> str:
-        """Fetch and display the growth dashboard (referrals, conversions, new customers)."""
-        try:
-            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-            async with aiohttp.ClientSession() as s:
-                async with s.get(
-                    f"{dashboard_url}/api/growth/dashboard",
-                    timeout=aiohttp.ClientTimeout(total=20),
-                ) as r:
-                    data = await r.json()
-                    if r.status == 200 and data.get("ok"):
-                        d = data.get("data", {})
-                        return (
-                            f"📈 Growth Dashboard:\n"
-                            f"  Referrals: {d.get('total_referrals', 'N/A')}\n"
-                            f"  Conversions: {d.get('conversions', 'N/A')}\n"
-                            f"  New Customers (30T): {d.get('new_customers_30d', 'N/A')}\n"
-                            f"  Winback Rate: {d.get('winback_rate', 'N/A')}"
-                        )
-                    return f"⚠️ Growth Dashboard Fehler: {data.get('error', r.status)}"
-        except Exception as e:
-            return f"❌ /growth_dashboard Fehler: {e}"
-
-    async def _cmd_referral_create(self, text: str, session_id: str) -> str:
-        """Create a referral code for a given email address via the growth API."""
-        try:
-            parts = text.strip().split()
-            email = parts[1] if len(parts) > 1 else ""
-            name  = " ".join(parts[2:]) if len(parts) > 2 else ""
-            if not email:
-                return "⚠️ Usage: /referral_create <email> [name]"
-            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    f"{dashboard_url}/api/growth/referral/create",
-                    json={"email": email, "name": name},
-                    timeout=aiohttp.ClientTimeout(total=15),
-                ) as r:
-                    data = await r.json()
-                    if r.status == 200 and data.get("ok"):
-                        d = data.get("data", {})
-                        return (
-                            f"✅ Referral Code erstellt!\n"
-                            f"  Email: {email}\n"
-                            f"  Code: {d.get('code', 'N/A')}\n"
-                            f"  Link: {d.get('link', 'N/A')}"
-                        )
-                    return f"⚠️ Fehler: {data.get('error', r.status)}"
-        except Exception as e:
-            return f"❌ /referral_create Fehler: {e}"
-
-    async def _cmd_pricing_run(self, text: str, session_id: str) -> str:
-        """Trigger a dynamic pricing cycle and report how many products were updated."""
-        try:
-            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    f"{dashboard_url}/api/pricing/run",
-                    json={},
-                    timeout=aiohttp.ClientTimeout(total=60),
-                ) as r:
-                    data = await r.json()
-                    if r.status == 200 and data.get("ok"):
-                        return (
-                            f"✅ Dynamic Pricing Zyklus abgeschlossen!\n"
-                            f"  Produkte analysiert: {data.get('analyzed', 'N/A')}\n"
-                            f"  Preise angepasst: {data.get('updated', 'N/A')}\n"
-                            f"  Ø Änderung: {data.get('avg_change_pct', 'N/A')}%"
-                        )
-                    return f"⚠️ Pricing Fehler: {data.get('error', r.status)}"
-        except Exception as e:
-            return f"❌ /pricing_run Fehler: {e}"
-
-    async def _cmd_b2b_stats(self, text: str, session_id: str) -> str:
-        """Show B2B pipeline statistics including lead counts and pipeline value."""
-        try:
-            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-            async with aiohttp.ClientSession() as s:
-                async with s.get(
-                    f"{dashboard_url}/api/b2b/stats",
-                    timeout=aiohttp.ClientTimeout(total=15),
-                ) as r:
-                    data = await r.json()
-                    if r.status == 200 and data.get("ok"):
-                        return (
-                            f"🏢 B2B Pipeline Stats:\n"
-                            f"  Leads gesamt: {data.get('total_leads', 'N/A')}\n"
-                            f"  Aktiv: {data.get('active_leads', 'N/A')}\n"
-                            f"  Gewonnen: {data.get('won', 'N/A')}\n"
-                            f"  Pipeline-Wert: {data.get('pipeline_value', 'N/A')}"
-                        )
-                    return f"⚠️ B2B Stats Fehler: {data.get('error', r.status)}"
-        except Exception as e:
-            return f"❌ /b2b_stats Fehler: {e}"
-
-    async def _cmd_tiktok_sync(self, text: str, session_id: str) -> str:
-        """Trigger a TikTok Shop product sync and report how many items were updated."""
-        try:
-            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    f"{dashboard_url}/api/tiktok/sync",
-                    json={},
-                    timeout=aiohttp.ClientTimeout(total=60),
-                ) as r:
-                    data = await r.json()
-                    if r.status == 200 and data.get("ok"):
-                        return (
-                            f"✅ TikTok Shop Sync abgeschlossen!\n"
-                            f"  Produkte synced: {data.get('synced', 'N/A')}\n"
-                            f"  Fehler: {data.get('errors', 0)}\n"
-                            f"  Stand: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}"
-                        )
-                    return f"⚠️ TikTok Sync Fehler: {data.get('error', r.status)}"
-        except Exception as e:
-            return f"❌ /tiktok_sync Fehler: {e}"
-
-    async def _cmd_churn(self, text: str, session_id: str) -> str:
-        """Fetch the 30-day churn rate and cancellation count from Stripe."""
-        try:
-            dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-            async with aiohttp.ClientSession() as s:
-                async with s.get(
-                    f"{dashboard_url}/api/stripe/churn",
-                    timeout=aiohttp.ClientTimeout(total=15),
-                ) as r:
-                    data = await r.json()
-                    if r.status == 200:
-                        rate = data.get("churn_rate", data.get("rate", "N/A"))
-                        canceled = data.get("canceled", "N/A")
-                        return (
-                            f"📉 Churn Rate (30T):\n"
-                            f"  Rate: {rate}%\n"
-                            f"  Gekündigt: {canceled} Abos\n"
-                            f"  Stand: {datetime.utcnow().strftime('%Y-%m-%d')}"
-                        )
-                    return f"⚠️ Churn Fehler: {data.get('error', r.status)}"
-        except Exception as e:
-            return f"❌ /churn Fehler: {e}"
-
-    async def _cmd_stripe_mrr(self, text: str, session_id: str) -> str:
-        """Alias for /mrr — delegates directly to _cmd_mrr."""
-        return await self._cmd_mrr(text, session_id)
-
-    async def _cmd_help(self, text: str, session_id: str) -> str:
-        """Return the full command reference for all bot modules."""
+    async def _cmd_help(self, text, session_id) -> str:
         return """SuperMegaBot Befehle:
 
   System:
@@ -1243,16 +1114,16 @@ class MegaOrchestrator:
         self.ai = OllamaClient()
         self.healer = SelfHealingEngine(self.memory, self.ai)
         self.router = CommandRouter(self)
-        self.running: bool = True
+        self.running = True
 
         # Guardian Integration
-        self.guardian: Optional[Any] = None
+        self.guardian = None
         self._init_guardian()
 
         log.info("MegaOrchestrator initialized")
 
-    def _init_guardian(self) -> None:
-        """Load the GuardianClient from the eternal bot directory if available."""
+    def _init_guardian(self):
+        """Initialize Guardian API client"""
         try:
             sys.path.insert(0, _ETERNAL_DIR)
             from guardian_client import GuardianClient
@@ -1262,8 +1133,7 @@ class MegaOrchestrator:
             log.warning(f"Guardian client not available: {e}")
             self.guardian = None
 
-    async def start(self) -> None:
-        """Start all background tasks: health monitor, Telegram polling, scheduler, and clones."""
+    async def start(self):
         log.info("Starting SuperMegaBot...")
 
         # Check Ollama
@@ -1288,8 +1158,8 @@ class MegaOrchestrator:
 
         # Start health monitor
         asyncio.create_task(self._health_loop())
-        # Start Telegram polling
-        asyncio.create_task(self._telegram_polling_loop())
+        # Telegram polling DEAKTIVIERT — telegram-automation-bot (Node.js) übernimmt
+        # asyncio.create_task(self._telegram_polling_loop())
         # Start Guardian monitor
         asyncio.create_task(self._guardian_monitor_loop())
         # Start automation scheduler
@@ -1367,8 +1237,8 @@ class MegaOrchestrator:
             except Exception as e:
                 log.error(f"Health loop error: {e}")
 
-    async def _guardian_monitor_loop(self) -> None:
-        """Check Guardian service health every 5 minutes and auto-heal critical failures."""
+    async def _guardian_monitor_loop(self):
+        """Monitor Guardian API health and services"""
         while self.running:
             try:
                 await asyncio.sleep(300)  # Check every 5 minutes
@@ -1401,27 +1271,10 @@ class MegaOrchestrator:
             except Exception as e:
                 log.error(f"Guardian monitor error: {e}")
 
-    async def _telegram_polling_loop(self) -> None:
-        """Acquire a PID lock to prevent duplicate polling, then delegate to _do_telegram_polling."""
+    async def _telegram_polling_loop(self):
         if not TELEGRAM_TOKEN:
             log.warning("No Telegram token - polling disabled")
             return
-
-        # Webhook mode: avoid getUpdates conflicts (409) when a webhook is active.
-        webhook_mode = os.getenv("TELEGRAM_WEBHOOK_MODE", "").strip().lower() in {"1", "true", "yes", "on"}
-        if webhook_mode or os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN"):
-            log.info("Telegram webhook mode active — polling disabled to avoid token conflicts")
-            return
-
-        # OpenClaw manages Telegram polling — yield to avoid getUpdates conflict
-        openclaw_url = os.getenv("OPENCLAW_URL", "http://127.0.0.1:18789")
-        try:
-            import urllib.request
-            urllib.request.urlopen(f"{openclaw_url}/health", timeout=2)
-            log.info("OpenClaw detected — Telegram polling delegated to OpenClaw gateway")
-            return
-        except Exception:
-            pass  # OpenClaw not running — take over polling
 
         # PID-Lock: verhindert doppeltes Polling bei mehrfachem Start
         lock_path = DATA_DIR / "telegram_polling.pid"
@@ -1446,8 +1299,7 @@ class MegaOrchestrator:
             except Exception:
                 pass
 
-    async def _do_telegram_polling(self) -> None:
-        """Delete any active webhook and run the long-poll loop to receive Telegram updates."""
+    async def _do_telegram_polling(self):
         # Webhook löschen (verhindert Konflikt mit Polling)
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
@@ -1461,9 +1313,9 @@ class MegaOrchestrator:
         except Exception as e:
             log.warning(f"Webhook delete fehlgeschlagen: {type(e).__name__}: {e}")
 
-        offset: int = 0
-        retry_wait: int = 5
-        conflict_wait: int = 15
+        offset = 0
+        retry_wait = 5
+        conflict_wait = 15
         log.info("Telegram polling gestartet")
         while self.running:
             try:

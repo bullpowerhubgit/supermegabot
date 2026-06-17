@@ -1,0 +1,80 @@
+{
+  "runs": [
+    {
+      "attempt": 1,
+      "duration_ms": 881,
+      "error": null,
+      "finished_at": "2026-06-15T14:17:12.099378+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 3,
+          "sample": [
+            "Profi Nacken & R\u00fccken Massager Kit | Tiefenentspannung f\u00fcr Zuhause",
+            "AI Lernkarten Set: Digitale Lernhilfen f\u00fcr Studenten",
+            "Smart Energy Monitoring: Stromverbrauch Messen & Energie Sparen"
+          ],
+          "scanned": 50
+        }
+      },
+      "pid": 60382,
+      "run_id": "fa95a09834e240429d0c76e5f7428958",
+      "started_at": "2026-06-15T14:17:11.217476+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1957,
+      "error": null,
+      "finished_at": "2026-06-15T18:17:03.253011+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 3,
+          "sample": [
+            "Profi Nacken & R\u00fccken Massager Kit | Tiefenentspannung f\u00fcr Zuhause",
+            "AI Lernkarten Set: Digitale Lernhilfen f\u00fcr Studenten",
+            "Smart Energy Monitoring: Stromverbrauch Messen & Energie Sparen"
+          ],
+          "scanned": 50
+        }
+      },
+      "pid": 60382,
+      "run_id": "7d03d07c588047c48657487a3c54ae12",
+      "started_at": "2026-06-15T18:17:01.294998+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 231,
+      "error": null,
+      "finished_at": "2026-06-15T22:17:10.208423+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 3,
+          "sample": [
+            "Profi Nacken & R\u00fccken Massager Kit | Tiefenentspannung f\u00fcr Zuhause",
+            "AI Lernkarten Set: Digitale Lernhilfen f\u00fcr Studenten",
+            "Smart Energy Monitoring: Stromverbrauch Messen & Energie Sparen"
+          ],
+          "scanned": 50
+        }
+      },
+      "pid": 60382,
+      "run_id": "ba1f5d72015a4e46a6e824020cbcb8ae",
+      "started_at": "2026-06-15T22:17:09.976677+00:00",
+      "status": "success",
+      "traceback": null
+    }
+  ],
+  "updated_at": "2026-06-15T22:17:10.209350+00:00"
+}
