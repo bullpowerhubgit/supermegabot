@@ -3351,6 +3351,11 @@ async def create_app():
     app.router.add_post("/api/leads",                 handle_lead_capture)
     app.router.add_get("/api/leads",                  handle_leads_list)
 
+    # ── Hermes / Slack ────────────────────────────────────────────────────────
+    app.router.add_get("/api/hermes/events",          handle_hermes_events)
+    app.router.add_get("/api/hermes/jobs",            handle_hermes_jobs)
+    app.router.add_post("/api/hermes/notify",         handle_hermes_notify)
+
     return app
 
 
@@ -3461,6 +3466,139 @@ async def handle_leads_list(req):
         return web.json_response({"ok": True, "count": len(data), "leads": data})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Hermes / Slack handlers ───────────────────────────────────────────────────
+
+def _sb_headers(auth_key: str) -> dict:
+    return {
+        "apikey": auth_key,
+        "Authorization": f"Bearer {auth_key}",
+        "Content-Type": "application/json",
+        "Accept-Profile": "public",
+        "Content-Profile": "public",
+        "Prefer": "return=representation",
+    }
+
+
+async def _hermes_push_event(service: str, event_type: str, message: str,
+                              channel: str = "general", metadata: dict = None) -> bool:
+    """Insert into hermes_events + notify Slack or Telegram."""
+    import aiohttp as _aio
+    sb_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    sb_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    slack_url = os.getenv("SLACK_WEBHOOK_URL", "")
+    tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+
+    row = {
+        "service": service, "event_type": event_type, "channel": channel,
+        "message": message, "metadata": metadata or {},
+        "notified_slack": False, "notified_telegram": False,
+    }
+
+    async with _aio.ClientSession() as s:
+        # 1. Persist to Supabase
+        if sb_url and sb_key:
+            try:
+                await s.post(f"{sb_url}/rest/v1/hermes_events",
+                             json=row, headers=_sb_headers(sb_key),
+                             timeout=_aio.ClientTimeout(total=6))
+            except Exception:
+                pass
+
+        # 2. Slack (primary)
+        if slack_url:
+            try:
+                channel_emoji = {"revenue": "💰", "alerts": "🚨", "ops": "⚙️",
+                                 "marketing": "📣", "errors": "❌"}.get(channel, "ℹ️")
+                text = f"{channel_emoji} *[{service}]* {message}"
+                r = await s.post(slack_url, json={"text": text},
+                                 timeout=_aio.ClientTimeout(total=5))
+                return r.status == 200
+            except Exception:
+                pass
+
+        # 3. Telegram fallback
+        if tg_token and tg_chat:
+            try:
+                await s.post(
+                    f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                    json={"chat_id": tg_chat, "text": f"[{service}/{channel}] {message}",
+                          "parse_mode": "Markdown"},
+                    timeout=_aio.ClientTimeout(total=5)
+                )
+            except Exception:
+                pass
+    return True
+
+
+async def handle_hermes_events(req):
+    """GET /api/hermes/events?limit=50&service=all"""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not url or not key:
+        return web.json_response({"ok": False, "error": "no supabase"})
+    limit = min(int(req.rel_url.query.get("limit", 100)), 500)
+    service = req.rel_url.query.get("service", "")
+    qs = f"order=created_at.desc&limit={limit}"
+    if service and service != "all":
+        qs += f"&service=eq.{service}"
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.get(f"{url}/rest/v1/hermes_events?{qs}",
+                            headers={"apikey": key, "Authorization": f"Bearer {key}",
+                                     "Accept-Profile": "public"},
+                            timeout=_aio.ClientTimeout(total=8))
+            data = await r.json()
+        return web.json_response({"ok": True, "count": len(data), "events": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_hermes_jobs(req):
+    """GET /api/hermes/jobs?status=pending&service=all"""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not url or not key:
+        return web.json_response({"ok": False, "error": "no supabase"})
+    limit = min(int(req.rel_url.query.get("limit", 100)), 500)
+    status = req.rel_url.query.get("status", "")
+    service = req.rel_url.query.get("service", "")
+    qs = f"order=created_at.desc&limit={limit}"
+    if status:
+        qs += f"&status=eq.{status}"
+    if service and service != "all":
+        qs += f"&service=eq.{service}"
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.get(f"{url}/rest/v1/hermes_jobs?{qs}",
+                            headers={"apikey": key, "Authorization": f"Bearer {key}",
+                                     "Accept-Profile": "public"},
+                            timeout=_aio.ClientTimeout(total=8))
+            data = await r.json()
+        return web.json_response({"ok": True, "count": len(data), "jobs": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_hermes_notify(req):
+    """POST /api/hermes/notify — push event from any service."""
+    try:
+        body = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
+    message = (body.get("message") or "").strip()
+    if not message:
+        return web.json_response({"ok": False, "error": "message required"}, status=400)
+    service = body.get("service", "supermegabot")
+    event_type = body.get("event_type", "info")
+    channel = body.get("channel", "general")
+    metadata = body.get("metadata", {})
+    await _hermes_push_event(service, event_type, message, channel, metadata)
+    return web.json_response({"ok": True, "service": service, "channel": channel})
 
 
 async def handle_reality_check(req):
