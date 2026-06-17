@@ -1,0 +1,13 @@
+{
+  "name": "supermegabot-slack",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node index.mjs",
+    "dev": "node --watch index.mjs"
+  },
+  "dependencies": {
+    "@slack/bolt": "^3.19.0",
+    "@slack/web-api": "^7.3.0"
+  }
+}
