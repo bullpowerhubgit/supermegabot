@@ -550,6 +550,41 @@ async def handle_kpis_legacy(req):
     return await handle_revenue_summary(req)
 
 
+async def handle_status_legacy(req):
+    return await handle_system_status(req)
+
+
+async def handle_metrics_legacy(req):
+    return await handle_system_status(req)
+
+
+async def handle_shopify_legacy(req):
+    return await handle_shopify_status(req)
+
+
+async def handle_hermes_enqueue(req):
+    try:
+        data = await req.json()
+        from core.job_queue import HermesQueue
+        job_id = await HermesQueue.get().enqueue(
+            data.get("type", "generic"),
+            data.get("payload", {}),
+            data.get("priority", 5)
+        )
+        return web.json_response({"ok": True, "job_id": job_id})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_hermes_stats(req):
+    try:
+        from core.job_queue import HermesQueue
+        stats = await HermesQueue.get().get_stats()
+        return web.json_response({"ok": True, "stats": stats})
+    except Exception as e:
+        return web.json_response({"ok": True, "stats": {}, "note": str(e)})
+
+
 # ---------------------------------------------------------------------------
 # NEW API Routes
 # ---------------------------------------------------------------------------
@@ -3159,6 +3194,28 @@ async def handle_queue_enqueue(req):
         return web.json_response({"ok": True, "job_id": job_id})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
+
+
+@web.middleware
+async def logging_middleware(request, handler):
+    resp = await handler(request)
+    log.debug("%s %s → %s", request.method, request.path, resp.status)
+    return resp
+
+
+@web.middleware
+async def cors_middleware(request, handler):
+    if request.method == "OPTIONS":
+        resp = web.Response()
+    else:
+        try:
+            resp = await handler(request)
+        except web.HTTPException as exc:
+            resp = exc
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key"
+    return resp
 
 
 async def create_app():
