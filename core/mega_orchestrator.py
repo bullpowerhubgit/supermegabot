@@ -907,11 +907,12 @@ class CommandRouter:
 
     async def _cmd_subscribe(self, text: str, session_id: str) -> str:
         """Create live Stripe checkout sessions for all subscription plans."""
-        from modules.stripe_automation import create_checkout_session
+        import stripe as _stripe
         dashboard_url = os.getenv(
             "DASHBOARD_URL",
             os.getenv("SUPERMEGABOT_DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
         )
+        sk = os.getenv("STRIPE_SECRET_KEY", "")
         price_starter = os.getenv("STRIPE_PRICE_STARTER", "")
         price_pro = os.getenv("STRIPE_PRICE_PRO", "")
         price_enterprise = os.getenv("STRIPE_PRICE_ENTERPRISE", "")
@@ -922,19 +923,24 @@ class CommandRouter:
             ("Pro", "€99/mo", price_pro),
             ("Enterprise", "€299/mo", price_enterprise),
         ]:
-            if price_id:
-                result = await create_checkout_session(
-                    price_id,
-                    success_url=f"{dashboard_url}/pricing?success=true",
-                    cancel_url=f"{dashboard_url}/pricing?canceled=true",
-                )
-                url = result.get("url") if result.get("ok") else None
-            else:
-                url = None
+            url = None
+            if price_id and sk:
+                try:
+                    client = _stripe.StripeClient(sk)
+                    sess = client.checkout.sessions.create(params={
+                        "mode": "subscription",
+                        "line_items": [{"price": price_id, "quantity": 1}],
+                        "success_url": f"{dashboard_url}/pricing?success=true",
+                        "cancel_url": f"{dashboard_url}/pricing?canceled=true",
+                        "allow_promotion_codes": True,
+                    })
+                    url = sess.url
+                except Exception as e:
+                    logging.error(f"Checkout error {label}: {e}")
             if url:
                 lines.append(f"• {label} ({amount}): {url}")
             else:
-                lines.append(f"• {label} ({amount}): Preis-ID fehlt")
+                lines.append(f"• {label} ({amount}): {'Preis-ID fehlt' if not price_id else 'Checkout-Fehler'}")
 
         lines.append("\n✅ Zahlung via Stripe • Sofort aktiv")
         return "\n".join(lines)
