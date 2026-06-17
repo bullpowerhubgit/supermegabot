@@ -30,9 +30,19 @@ jobs:
     if: github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v4
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-      - name: Deploy to Railway
+
+      # Option A: Deploy Hook (preferred — no token needed)
+      - name: Trigger Railway Deploy Hook
+        if: ${{ secrets.RAILWAY_DEPLOY_HOOK != '' }}
+        run: |
+          curl -s -X POST "${{ secrets.RAILWAY_DEPLOY_HOOK }}"
+          echo "Deploy hook triggered"
+
+      # Option B: Railway CLI with project token
+      - name: Deploy via Railway CLI
+        if: ${{ secrets.RAILWAY_DEPLOY_HOOK == '' && secrets.RAILWAY_TOKEN != '' }}
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --detach --service dudirudibot-mega
+        run: |
+          npm install -g @railway/cli
+          railway up --detach --service dudirudibot-mega
