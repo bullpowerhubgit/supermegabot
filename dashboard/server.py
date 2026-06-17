@@ -2419,7 +2419,143 @@ async def create_app():
     app.router.add_get("/api/drive/files",            handle_drive_files)
     app.router.add_post("/api/drive/backup",          handle_drive_backup)
 
+    # ── Reality Check ─────────────────────────────────────────────────────────
+    app.router.add_get("/api/reality",                handle_reality_check)
+
     return app
+
+
+async def handle_reality_check(req):
+    """Real-time aggregation of all actually-connected platforms."""
+    import aiohttp as _aiohttp
+
+    results = {}
+    ts = datetime.utcnow().isoformat() + "Z"
+
+    async with _aiohttp.ClientSession() as session:
+
+        # ── Stripe ────────────────────────────────────────────────────────────
+        stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
+        if stripe_key:
+            try:
+                async with session.get(
+                    "https://api.stripe.com/v1/balance",
+                    headers={"Authorization": f"Bearer {stripe_key}"},
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    d = await r.json()
+                available = sum(b["amount"] for b in d.get("available", [])) / 100
+                pending   = sum(b["amount"] for b in d.get("pending", [])) / 100
+                results["stripe"] = {"connected": True, "balance_eur": available,
+                                     "pending_eur": pending, "status": "live"}
+            except Exception as e:
+                results["stripe"] = {"connected": False, "error": str(e)}
+        else:
+            results["stripe"] = {"connected": False, "error": "no key"}
+
+        # ── Shopify ────────────────────────────────────────────────────────────
+        shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+        shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+        if shopify_domain and shopify_token:
+            try:
+                async with session.get(
+                    f"https://{shopify_domain}/admin/api/{shopify_ver}/orders/count.json?status=any",
+                    headers={"X-Shopify-Access-Token": shopify_token},
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    od = await r.json()
+                async with session.get(
+                    f"https://{shopify_domain}/admin/api/{shopify_ver}/customers/count.json",
+                    headers={"X-Shopify-Access-Token": shopify_token},
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    cd = await r.json()
+                results["shopify"] = {
+                    "connected": True,
+                    "orders": od.get("count", 0),
+                    "customers": cd.get("count", 0),
+                    "domain": shopify_domain,
+                    "status": "live"
+                }
+            except Exception as e:
+                results["shopify"] = {"connected": False, "error": str(e)}
+        else:
+            results["shopify"] = {"connected": False, "error": "no credentials"}
+
+        # ── YouTube ────────────────────────────────────────────────────────────
+        yt_key  = os.getenv("YOUTUBE_API_KEY", "")
+        yt_chan  = os.getenv("YOUTUBE_CHANNEL_ID", "")
+        if yt_key and yt_chan:
+            try:
+                async with session.get(
+                    f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={yt_chan}&key={yt_key}",
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    yd = await r.json()
+                s = yd["items"][0]["statistics"]
+                results["youtube"] = {
+                    "connected": True,
+                    "subscribers": int(s.get("subscriberCount", 0)),
+                    "videos": int(s.get("videoCount", 0)),
+                    "total_views": int(s.get("viewCount", 0)),
+                    "status": "live"
+                }
+            except Exception as e:
+                results["youtube"] = {"connected": False, "error": str(e)}
+        else:
+            results["youtube"] = {"connected": False, "error": "no key"}
+
+        # ── Telegram ────────────────────────────────────────────────────────────
+        tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        if tg_token:
+            try:
+                async with session.get(
+                    f"https://api.telegram.org/bot{tg_token}/getMe",
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    td = await r.json()
+                bot = td.get("result", {})
+                results["telegram"] = {
+                    "connected": True,
+                    "bot_username": bot.get("username"),
+                    "bot_name": bot.get("first_name"),
+                    "status": "live"
+                }
+            except Exception as e:
+                results["telegram"] = {"connected": False, "error": str(e)}
+        else:
+            results["telegram"] = {"connected": False, "error": "no token"}
+
+    # ── Broken connections ─────────────────────────────────────────────────────
+    broken = []
+    if not os.getenv("DIGISTORE24_API_KEY"):
+        broken.append({"platform": "Digistore24", "reason": "API key missing or invalid"})
+    if not os.getenv("MAILCHIMP_API_KEY"):
+        broken.append({"platform": "Mailchimp", "reason": "API key missing or invalid"})
+
+    connected_count = sum(1 for v in results.values() if v.get("connected"))
+    total_count = len(results) + len(broken)
+
+    return web.json_response({
+        "timestamp": ts,
+        "summary": {
+            "platforms_connected": connected_count,
+            "platforms_broken": len(broken),
+            "platforms_total": total_count,
+            "stripe_balance_eur": results.get("stripe", {}).get("balance_eur", 0),
+            "youtube_subscribers": results.get("youtube", {}).get("subscribers", 0),
+            "shopify_orders": results.get("shopify", {}).get("orders", 0),
+        },
+        "platforms": results,
+        "needs_fix": broken,
+        "next_actions": [
+            "Regenerate Digistore24 API key at digistore24.com → Settings → API",
+            "Regenerate Mailchimp API key at mailchimp.com → Account → Extras → API keys",
+            "Post 1 YouTube video linking to buy.stripe.com/7sY5kFbrIemmcYU0Oi4F20o",
+            "Share landing page in 3 German e-commerce Telegram groups",
+        ]
+    })
 
 
 def _free_port(port: int) -> None:
