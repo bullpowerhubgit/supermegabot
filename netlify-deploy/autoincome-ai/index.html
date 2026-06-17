@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoIncome AI — Alle Einkommensströme. Ein Dashboard. Autopilot.</title>
+  <script></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #010816;
+      --bg2: #020d1e;
+      --bg3: #041428;
+      --card: #040f1f;
+      --card2: #071830;
+      --cyan: #06b6d4;
+      --sky: #38bdf8;
+      --blue: #1e40af;
+      --bluelight: #3b82f6;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --text: #e2e8f0;
+      --text-dim: #475569;
+      --text-mid: #94a3b8;
+      --border: rgba(6,182,212,0.15);
+      --border2: rgba(56,189,248,0.1);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* TOP BAR — Bloomberg style */
+    .top-ticker {
+      background: var(--card); border-bottom: 1px solid var(--border);
+      padding: 0.4rem 0; overflow: hidden; position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      height: 32px;
+    }
+    .ticker-scroll {
+      display: flex; gap: 3rem; white-space: nowrap;
+      animation: scrollticker 30s linear infinite;
+    }
+    @keyframes scrollticker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+    .tick-item {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .tick-name { color: var(--text-mid); }
+    .tick-val { color: #fff; font-weight: 600; }
+    .tick-chg.up { color: var(--green); }
+    .tick-chg.dn { color: var(--red); }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 32px; left: 0; right: 0; z-index: 900;
+      background: rgba(1,8,22,0.96);
+      border-bottom: 1px solid var(--border);
+      padding: 0.75rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+      backdrop-filter: blur(20px);
+    }
+    .nav-logo {
+      font-size: 1.2rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--sky), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-status {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; color: var(--green);
+    }
+    .nav-status::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+    .nav-links { display: flex; gap: 1.5rem; }
+    .nav-links a {
+      color: var(--text-mid); text-decoration: none; font-size: 0.82rem;
+      font-weight: 500; transition: color 0.2s; padding: 0.3rem 0.6rem;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--cyan), var(--bluelight));
+      color: #000; font-weight: 700; padding: 0.5rem 1.4rem;
+      font-size: 0.82rem; border-radius: 4px; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .nav-cta:hover { opacity: 0.85; transform: translateY(-1px); }
+
+    /* HERO — Dashboard Overview */
+    .hero {
+      min-height: 100vh;
+      padding: 9rem 2rem 4rem;
+      display: flex; flex-direction: column; align-items: center;
+      position: relative; overflow: hidden;
+    }
+    .hero-grid-bg {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(6,182,212,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(6,182,212,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+    }
+    .hero-glow {
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 400px; pointer-events: none;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(6,182,212,0.12) 0%, transparent 65%);
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(6,182,212,0.08); border: 1px solid rgba(6,182,212,0.25);
+      border-radius: 4px; padding: 0.35rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem; color: var(--cyan); letter-spacing: 1px;
+      margin-bottom: 1.5rem; position: relative;
+    }
+    .hero h1 {
+      font-size: clamp(2.5rem, 7vw, 5.5rem); font-weight: 900;
+      line-height: 1.0; text-align: center; letter-spacing: -2px;
+      margin-bottom: 1.2rem; position: relative;
+    }
+    .hero h1 .line1 { display: block; color: #fff; }
+    .hero h1 .line2 {
+      display: block;
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--sky) 50%, var(--bluelight) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero-sub {
+      color: var(--text-mid); font-size: 1.05rem; text-align: center;
+      max-width: 580px; margin-bottom: 3rem; position: relative;
+    }
+
+    /* PORTFOLIO OVERVIEW CARD */
+    .portfolio-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 2rem;
+      width: 100%; max-width: 900px;
+      position: relative; margin-bottom: 3rem;
+    }
+    .portfolio-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.8rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .portfolio-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; color: var(--text-mid); text-transform: uppercase; letter-spacing: 2px;
+    }
+    .portfolio-total {
+      font-size: 3rem; font-weight: 900; color: var(--cyan);
+      font-family: 'JetBrains Mono', monospace;
+      text-shadow: 0 0 30px rgba(6,182,212,0.4);
+      line-height: 1;
+    }
+    .portfolio-change {
+      font-size: 0.9rem; color: var(--green); font-weight: 600;
+      display: flex; align-items: center; gap: 0.3rem;
+    }
+    .income-bars { display: flex; flex-direction: column; gap: 0.85rem; }
+    .income-bar-row {
+      display: grid; grid-template-columns: 140px 1fr 80px;
+      align-items: center; gap: 1rem;
+    }
+    .income-bar-label { font-size: 0.82rem; color: var(--text-mid); font-weight: 500; }
+    .income-bar-track {
+      height: 6px; background: rgba(255,255,255,0.06); border-radius: 3px;
+      overflow: hidden; position: relative;
+    }
+    .income-bar-fill {
+      height: 100%; border-radius: 3px;
+      animation: barfill 1.5s cubic-bezier(0.4,0,0.2,1) forwards;
+      transform-origin: left;
+    }
+    @keyframes barfill { from { width: 0 !important; } }
+    .income-bar-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem; color: #fff; text-align: right; font-weight: 600;
+    }
+
+    /* SVG CHART */
+    .chart-section {
+      width: 100%; max-width: 900px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.5rem; margin-bottom: 2.5rem;
+    }
+    .chart-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.5rem;
+    }
+    .chart-title {
+      font-size: 0.85rem; font-weight: 600; color: var(--text);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .chart-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.65rem; background: rgba(6,182,212,0.1);
+      border: 1px solid rgba(6,182,212,0.2);
+      color: var(--cyan); padding: 0.15rem 0.6rem; border-radius: 3px;
+    }
+    .chart-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem; color: var(--text-dim);
+    }
+    svg.line-chart { width: 100%; height: 160px; overflow: visible; }
+    .chart-area { fill: url(#areaGrad); }
+    .chart-line { fill: none; stroke: var(--cyan); stroke-width: 2; vector-effect: non-scaling-stroke; }
+    .chart-dot { fill: var(--cyan); }
+
+    /* HERO BUTTONS */
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), var(--bluelight));
+      color: #000; font-weight: 700; padding: 0.95rem 2.5rem;
+      font-size: 0.95rem; border-radius: 6px; text-decoration: none;
+      transition: all 0.2s; box-shadow: 0 0 30px rgba(6,182,212,0.3);
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 0 50px rgba(6,182,212,0.5); }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--border2);
+      color: var(--sky); font-weight: 600; padding: 0.95rem 2.5rem;
+      font-size: 0.95rem; border-radius: 6px; text-decoration: none;
+      transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-ghost:hover { border-color: var(--cyan); }
+
+    /* SECTION */
+    section { padding: 5.5rem 2rem; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-header { margin-bottom: 3rem; }
+    .section-kicker {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; color: var(--cyan); text-transform: uppercase;
+      letter-spacing: 3px; margin-bottom: 0.7rem; display: block;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 900;
+      color: #fff; letter-spacing: -1px; line-height: 1.1;
+    }
+    .section-title .hl {
+      background: linear-gradient(135deg, var(--cyan), var(--sky));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .section-sub { color: var(--text-mid); margin-top: 0.8rem; font-size: 0.95rem; max-width: 520px; }
+
+    /* INCOME STREAM CARDS */
+    .stream-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+    .stream-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.8rem;
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .stream-card:hover { border-color: var(--cyan); transform: translateY(-3px); }
+    .stream-card-top {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 1.2rem;
+    }
+    .stream-icon {
+      width: 44px; height: 44px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.3rem; flex-shrink: 0;
+    }
+    .stream-change {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem; font-weight: 600; padding: 0.25rem 0.6rem;
+      border-radius: 4px;
+    }
+    .stream-change.up { color: var(--green); background: rgba(16,185,129,0.1); }
+    .stream-change.dn { color: var(--red); background: rgba(239,68,68,0.1); }
+    .stream-name { font-size: 0.8rem; color: var(--text-mid); font-weight: 500; margin-bottom: 0.3rem; }
+    .stream-amount {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: 1rem;
+    }
+    .mini-chart { width: 100%; height: 40px; }
+    .mini-chart-line { fill: none; stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+
+    /* DASHBOARD WIDGET GRID */
+    .widget-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 1.5rem;
+    }
+    .widget {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1.5rem; height: 100%;
+    }
+    .widget-title {
+      font-size: 0.78rem; font-weight: 600; color: var(--text-mid);
+      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 1.2rem;
+      font-family: 'JetBrains Mono', monospace;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .widget-title::before { content: '▪'; color: var(--cyan); }
+    .metric-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.65rem 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .metric-row:last-child { border-bottom: none; }
+    .metric-name { font-size: 0.85rem; color: var(--text-mid); }
+    .metric-val {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.88rem; font-weight: 600; color: var(--text);
+    }
+    .metric-val.positive { color: var(--green); }
+    .metric-val.highlight { color: var(--cyan); }
+
+    .kpi-list { display: flex; flex-direction: column; gap: 1rem; }
+    .kpi-item {}
+    .kpi-label { font-size: 0.75rem; color: var(--text-dim); margin-bottom: 0.3rem; text-transform: uppercase; letter-spacing: 1px; }
+    .kpi-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.6rem; font-weight: 700; color: var(--sky);
+    }
+
+    /* FEATURE TABLE */
+    .compare-table { width: 100%; border-collapse: collapse; }
+    .compare-table th {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem; text-transform: uppercase; letter-spacing: 2px;
+      color: var(--text-dim); padding: 0.8rem 1rem; text-align: left;
+      border-bottom: 2px solid var(--border);
+    }
+    .compare-table td {
+      padding: 0.85rem 1rem; border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.88rem; color: var(--text-mid);
+    }
+    .compare-table tr:hover td { background: rgba(6,182,212,0.03); }
+    .compare-table .col-feat { color: var(--text); font-weight: 500; }
+    .compare-table .chk { color: var(--green); font-size: 1rem; }
+    .compare-table .cross { color: var(--text-dim); opacity: 0.4; }
+    .compare-table .plan-head {
+      font-weight: 700; color: #fff; font-size: 0.85rem;
+    }
+    .compare-table .plan-head.featured { color: var(--cyan); }
+
+    /* PRICING */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+    .price-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 8px; padding: 2rem;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    .price-card:hover { border-color: var(--cyan); box-shadow: 0 0 30px rgba(6,182,212,0.08); }
+    .price-card.featured {
+      border-color: var(--cyan);
+      box-shadow: 0 0 40px rgba(6,182,212,0.12);
+      background: linear-gradient(145deg, rgba(6,182,212,0.04), var(--card));
+    }
+    .price-tag {
+      position: absolute; top: -1px; right: 2rem;
+      background: var(--cyan); color: #000;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 1px;
+      padding: 0.25rem 0.7rem; border-radius: 0 0 6px 6px;
+      text-transform: uppercase;
+    }
+    .price-plan {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; color: var(--cyan); text-transform: uppercase;
+      letter-spacing: 3px; margin-bottom: 1rem;
+    }
+    .price-amount { font-size: 2.8rem; font-weight: 900; color: #fff; line-height: 1; }
+    .price-amount span { font-size: 1rem; color: var(--text-mid); font-weight: 400; }
+    .price-tagline { color: var(--text-dim); font-size: 0.83rem; margin: 0.5rem 0 1.5rem; }
+    .price-divider { height: 1px; background: var(--border); margin-bottom: 1.5rem; }
+    .price-feat-list { list-style: none; margin-bottom: 1.8rem; }
+    .price-feat-list li {
+      display: flex; align-items: flex-start; gap: 0.6rem;
+      padding: 0.45rem 0; font-size: 0.85rem; color: var(--text-mid);
+    }
+    .price-feat-list li .icon { color: var(--cyan); flex-shrink: 0; font-size: 0.7rem; margin-top: 3px; }
+    .price-btn {
+      display: block; text-align: center; padding: 0.85rem;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--sky); font-weight: 700; font-size: 0.88rem;
+      border-radius: 6px; text-decoration: none; transition: all 0.2s;
+    }
+    .price-btn:hover { border-color: var(--cyan); background: rgba(6,182,212,0.08); }
+    .price-card.featured .price-btn {
+      background: linear-gradient(135deg, var(--cyan), var(--bluelight));
+      color: #000; border-color: transparent;
+    }
+    .price-card.featured .price-btn:hover { opacity: 0.88; }
+
+    /* CTA */
+    .cta-section {
+      background: var(--card2); border-top: 1px solid var(--border);
+      padding: 6rem 2rem; text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 70% at 50% 100%, rgba(6,182,212,0.08) 0%, transparent 60%);
+    }
+    .cta-section h2 {
+      font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; color: #fff;
+      margin-bottom: 1rem; position: relative;
+    }
+    .cta-section p { color: var(--text-mid); font-size: 1rem; margin-bottom: 2.5rem; position: relative; }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 0.7rem;
+      background: linear-gradient(135deg, var(--cyan), var(--sky));
+      color: #000; font-weight: 800; padding: 1.1rem 3rem;
+      font-size: 1rem; border-radius: 8px; text-decoration: none;
+      box-shadow: 0 0 50px rgba(6,182,212,0.4); position: relative;
+      transition: all 0.25s;
+    }
+    .cta-btn:hover { transform: translateY(-2px); box-shadow: 0 0 70px rgba(6,182,212,0.6); }
+
+    /* FOOTER */
+    footer {
+      background: var(--bg); border-top: 1px solid var(--border);
+      padding: 3rem 2rem;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 2rem;
+    }
+    .footer-logo {
+      font-size: 1.1rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--sky), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .footer-links { display: flex; gap: 2rem; flex-wrap: wrap; }
+    .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--cyan); }
+    .footer-copy {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem; color: var(--text-dim); text-align: center; width: 100%;
+      padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.04);
+    }
+
+    @media (max-width: 768px) {
+      .widget-grid { grid-template-columns: 1fr; }
+      .income-bar-row { grid-template-columns: 100px 1fr 70px; }
+    }
+    @media (max-width: 640px) {
+      nav { padding: 0.75rem 1.2rem; }
+      .nav-links { display: none; }
+      .portfolio-total { font-size: 2.2rem; }
+    }
+  </style>
+</head>
+<body>
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#000d0f;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #06b6d422}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#06b6d4,#0891b2);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}<div style="display:inline-block;background:rgba(255,255,255,0.07);color:#06b6d4;border:1px solid #06b6d440;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1.2rem">ab €29/mo</div>
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#06b6d4;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#06b6d4}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#06b6d4,#0891b2);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #06b6d444}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">🚀</div>
+    <h1>AutoIncome AI</h1>
+    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#06b6d4;border:1px solid #06b6d440;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">ab €29/mo</div>
+    <div class="tag">Alle Einkommensströme. Ein Dashboard. Autopilot.</div>
+    <div class="feat">Shopify + Affiliate + Digital + SaaS in einem</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+
+<!-- TOP TICKER -->
+<div class="top-ticker">
+  <div class="ticker-scroll" id="tickerScroll">
+    <span class="tick-item"><span class="tick-name">SHOPIFY</span><span class="tick-val">€1,247</span><span class="tick-chg up">+12.4%</span></span>
+    <span class="tick-item"><span class="tick-name">AFFILIATE</span><span class="tick-val">€834</span><span class="tick-chg up">+8.1%</span></span>
+    <span class="tick-item"><span class="tick-name">DIGITAL</span><span class="tick-val">€623</span><span class="tick-chg up">+22.7%</span></span>
+    <span class="tick-item"><span class="tick-name">SAAS</span><span class="tick-val">€499</span><span class="tick-chg up">+5.3%</span></span>
+    <span class="tick-item"><span class="tick-name">FREELANCE</span><span class="tick-val">€380</span><span class="tick-chg dn">-2.1%</span></span>
+    <span class="tick-item"><span class="tick-name">GESAMT</span><span class="tick-val">€3,583</span><span class="tick-chg up">+14.2%</span></span>
+    <span class="tick-item"><span class="tick-name">MONAT</span><span class="tick-val">€12,847</span><span class="tick-chg up">+18.9%</span></span>
+    <span class="tick-item"><span class="tick-name">SHOPIFY</span><span class="tick-val">€1,247</span><span class="tick-chg up">+12.4%</span></span>
+    <span class="tick-item"><span class="tick-name">AFFILIATE</span><span class="tick-val">€834</span><span class="tick-chg up">+8.1%</span></span>
+    <span class="tick-item"><span class="tick-name">DIGITAL</span><span class="tick-val">€623</span><span class="tick-chg up">+22.7%</span></span>
+    <span class="tick-item"><span class="tick-name">SAAS</span><span class="tick-val">€499</span><span class="tick-chg up">+5.3%</span></span>
+    <span class="tick-item"><span class="tick-name">FREELANCE</span><span class="tick-val">€380</span><span class="tick-chg dn">-2.1%</span></span>
+    <span class="tick-item"><span class="tick-name">GESAMT</span><span class="tick-val">€3,583</span><span class="tick-chg up">+14.2%</span></span>
+    <span class="tick-item"><span class="tick-name">MONAT</span><span class="tick-val">€12,847</span><span class="tick-chg up">+18.9%</span></span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">AutoIncome AI</a>
+  <div class="nav-status">LIVE DATEN</div>
+  <div class="nav-links">
+    <a href="#streams">Streams</a>
+    <a href="#dashboard">Dashboard</a>
+    <a href="#pricing">Preise</a>
+  </div>
+  <a href="https://autoincome-ai.netlify.app" class="nav-cta">Dashboard öffnen</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-badge">📊 LIVE — 5 Einkommensströme aktiv</div>
+
+  <h1>
+    <span class="line1">Alle Einkommensströme.</span>
+    <span class="line2">Ein Dashboard.</span>
+  </h1>
+  <p class="hero-sub">AutoIncome AI verbindet alle deine Einnahmen in einem einzigen Bloomberg-ähnlichen Dashboard — mit KI-Optimierung auf Autopilot.</p>
+
+  <!-- PORTFOLIO CARD -->
+  <div class="portfolio-card">
+    <div class="portfolio-header">
+      <div>
+        <div class="portfolio-label">GESAMTEINKOMMEN — LAUFENDER MONAT</div>
+        <div class="portfolio-total">€<span id="totalCount">0</span></div>
+        <div class="portfolio-change">▲ +18.4% vs. Vormonat</div>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-dim);text-align:right;">
+        <div>Zuletzt aktualisiert</div>
+        <div style="color:var(--cyan);" id="liveTime">--:--:--</div>
+        <div style="margin-top:0.3rem;color:var(--green);">● LIVE</div>
+      </div>
+    </div>
+    <div class="income-bars">
+      <div class="income-bar-row">
+        <div class="income-bar-label">🛍️ Shopify</div>
+        <div class="income-bar-track"><div class="income-bar-fill" style="width:100%;background:linear-gradient(90deg,#06b6d4,#38bdf8);"></div></div>
+        <div class="income-bar-val">€4,920</div>
+      </div>
+      <div class="income-bar-row">
+        <div class="income-bar-label">🔗 Affiliate</div>
+        <div class="income-bar-track"><div class="income-bar-fill" style="width:72%;background:linear-gradient(90deg,#3b82f6,#60a5fa);"></div></div>
+        <div class="income-bar-val">€3,540</div>
+      </div>
+      <div class="income-bar-row">
+        <div class="income-bar-label">📦 Digital</div>
+        <div class="income-bar-track"><div class="income-bar-fill" style="width:55%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);"></div></div>
+        <div class="income-bar-val">€2,700</div>
+      </div>
+      <div class="income-bar-row">
+        <div class="income-bar-label">⚙️ SaaS</div>
+        <div class="income-bar-track"><div class="income-bar-fill" style="width:40%;background:linear-gradient(90deg,#10b981,#34d399);"></div></div>
+        <div class="income-bar-val">€1,980</div>
+      </div>
+      <div class="income-bar-row">
+        <div class="income-bar-label">💼 Freelance</div>
+        <div class="income-bar-track"><div class="income-bar-fill" style="width:22%;background:linear-gradient(90deg,#f59e0b,#fbbf24);"></div></div>
+        <div class="income-bar-val">€1,080</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SVG LINE CHART -->
+  <div class="chart-section">
+    <div class="chart-header">
+      <div class="chart-title">Gesamteinkommen — 12 Monate <span class="chart-pill">WACHSTUM +247%</span></div>
+      <div class="chart-meta">Jul 2025 — Jun 2026</div>
+    </div>
+    <svg class="line-chart" viewBox="0 0 800 160" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.25"/>
+          <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <path class="chart-area" d="M 0 150 L 66 138 L 133 130 L 200 118 L 266 108 L 333 95 L 400 82 L 466 68 L 533 55 L 600 40 L 666 28 L 733 15 L 800 8 L 800 160 Z"/>
+      <path class="chart-line" d="M 0 150 L 66 138 L 133 130 L 200 118 L 266 108 L 333 95 L 400 82 L 466 68 L 533 55 L 600 40 L 666 28 L 733 15 L 800 8"/>
+      <circle cx="800" cy="8" r="4" class="chart-dot"/>
+    </svg>
+  </div>
+
+  <div class="hero-btns">
+    <a href="https://autoincome-ai.netlify.app" class="btn-primary">📊 Dashboard öffnen</a>
+    <a href="#streams" class="btn-ghost">Streams ansehen →</a>
+  </div>
+</section>
+
+<!-- INCOME STREAMS -->
+<section id="streams" style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-kicker">EINKOMMENSSTRÖME</span>
+      <h2 class="section-title">5 parallele <span class="hl">Geldquellen</span></h2>
+      <p class="section-sub">Jeder Strom läuft unabhängig — kombiniert entsteht ein stabiles, diversifiziertes Einkommen.</p>
+    </div>
+    <div class="stream-grid">
+      <div class="stream-card">
+        <div class="stream-card-top">
+          <div class="stream-icon" style="background:rgba(6,182,212,0.12);">🛍️</div>
+          <div class="stream-change up">▲ +12.4%</div>
+        </div>
+        <div class="stream-name">SHOPIFY STORE</div>
+        <div class="stream-amount">€<span class="scount" data-end="4920">0</span></div>
+        <svg class="mini-chart" viewBox="0 0 200 40">
+          <polyline class="mini-chart-line" points="0,35 30,30 60,25 90,20 120,15 150,10 170,8 200,5" style="stroke:#06b6d4;"/>
+        </svg>
+      </div>
+      <div class="stream-card">
+        <div class="stream-card-top">
+          <div class="stream-icon" style="background:rgba(59,130,246,0.12);">🔗</div>
+          <div class="stream-change up">▲ +8.1%</div>
+        </div>
+        <div class="stream-name">AFFILIATE MARKETING</div>
+        <div class="stream-amount">€<span class="scount" data-end="3540">0</span></div>
+        <svg class="mini-chart" viewBox="0 0 200 40">
+          <polyline class="mini-chart-line" points="0,38 30,35 60,30 90,28 120,22 150,16 170,12 200,8" style="stroke:#3b82f6;"/>
+        </svg>
+      </div>
+      <div class="stream-card">
+        <div class="stream-card-top">
+          <div class="stream-icon" style="background:rgba(139,92,246,0.12);">📦</div>
+          <div class="stream-change up">▲ +22.7%</div>
+        </div>
+        <div class="stream-name">DIGITALE PRODUKTE</div>
+        <div class="stream-amount">€<span class="scount" data-end="2700">0</span></div>
+        <svg class="mini-chart" viewBox="0 0 200 40">
+          <polyline class="mini-chart-line" points="0,38 30,36 60,32 90,24 120,18 150,14 170,8 200,4" style="stroke:#8b5cf6;"/>
+        </svg>
+      </div>
+      <div class="stream-card">
+        <div class="stream-card-top">
+          <div class="stream-icon" style="background:rgba(16,185,129,0.12);">⚙️</div>
+          <div class="stream-change up">▲ +5.3%</div>
+        </div>
+        <div class="stream-name">SAAS SUBSCRIPTIONS</div>
+        <div class="stream-amount">€<span class="scount" data-end="1980">0</span></div>
+        <svg class="mini-chart" viewBox="0 0 200 40">
+          <polyline class="mini-chart-line" points="0,36 30,34 60,33 90,30 120,26 150,22 170,18 200,14" style="stroke:#10b981;"/>
+        </svg>
+      </div>
+      <div class="stream-card">
+        <div class="stream-card-top">
+          <div class="stream-icon" style="background:rgba(245,158,11,0.12);">💼</div>
+          <div class="stream-change dn">▼ -2.1%</div>
+        </div>
+        <div class="stream-name">FREELANCE / BERATUNG</div>
+        <div class="stream-amount">€<span class="scount" data-end="1080">0</span></div>
+        <svg class="mini-chart" viewBox="0 0 200 40">
+          <polyline class="mini-chart-line" points="0,20 30,18 60,22 90,25 120,20 150,23 170,26 200,28" style="stroke:#f59e0b;"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DASHBOARD WIDGETS -->
+<section id="dashboard">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-kicker">ANALYTICS COCKPIT</span>
+      <h2 class="section-title">Alles auf einen <span class="hl">Blick</span></h2>
+    </div>
+    <div class="widget-grid">
+      <div class="widget">
+        <div class="widget-title">Performance Metriken</div>
+        <div class="metric-row"><span class="metric-name">Heutiger Umsatz</span><span class="metric-val highlight">€<span id="todayRev">847</span></span></div>
+        <div class="metric-row"><span class="metric-name">Aktive Kunden</span><span class="metric-val">1,247</span></div>
+        <div class="metric-row"><span class="metric-name">Conversion Rate</span><span class="metric-val positive">3.8%</span></div>
+        <div class="metric-row"><span class="metric-name">Avg. Order Value</span><span class="metric-val">€67.40</span></div>
+        <div class="metric-row"><span class="metric-name">Churn Rate</span><span class="metric-val positive">1.2%</span></div>
+        <div class="metric-row"><span class="metric-name">MRR Wachstum</span><span class="metric-val positive">+18.4%</span></div>
+        <div class="metric-row"><span class="metric-name">LTV (Ø)</span><span class="metric-val">€890</span></div>
+        <div class="metric-row"><span class="metric-name">CAC</span><span class="metric-val highlight">€24</span></div>
+      </div>
+      <div class="widget">
+        <div class="widget-title">Monatsziele</div>
+        <div class="kpi-list">
+          <div class="kpi-item">
+            <div class="kpi-label">Aktueller MRR</div>
+            <div class="kpi-value">€14.2k</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">Ziel MRR</div>
+            <div class="kpi-value" style="color:var(--text-mid);">€20k</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">Fortschritt</div>
+            <div class="kpi-value" style="color:var(--green);">71%</div>
+          </div>
+          <div class="kpi-item">
+            <div class="kpi-label">Prognose</div>
+            <div class="kpi-value" style="color:var(--amber);">€18.9k</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMPARISON TABLE -->
+<section style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-kicker">PLAN VERGLEICH</span>
+      <h2 class="section-title">Was du <span class="hl">bekommst</span></h2>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="compare-table">
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th><span class="plan-head">Starter</span></th>
+            <th><span class="plan-head featured">Pro</span></th>
+            <th><span class="plan-head">Enterprise</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="col-feat">Aktive Einkommensströme</td><td>2</td><td class="plan-head featured">5</td><td>Unbegrenzt</td></tr>
+          <tr><td class="col-feat">KI-Optimierung</td><td class="cross">—</td><td class="chk">✓</td><td class="chk">✓</td></tr>
+          <tr><td class="col-feat">Live-Dashboard</td><td class="cross">—</td><td class="chk">✓</td><td class="chk">✓</td></tr>
+          <tr><td class="col-feat">Tägliche Reports</td><td>Wöchentlich</td><td class="chk">✓ täglich</td><td class="chk">✓ stündlich</td></tr>
+          <tr><td class="col-feat">Shopify Integration</td><td class="chk">✓</td><td class="chk">✓</td><td class="chk">✓</td></tr>
+          <tr><td class="col-feat">Affiliate Tracking</td><td class="cross">—</td><td class="chk">✓</td><td class="chk">✓</td></tr>
+          <tr><td class="col-feat">A/B Testing</td><td class="cross">—</td><td class="chk">✓</td><td class="chk">✓</td></tr>
+          <tr><td class="col-feat">API-Zugriff</td><td class="cross">—</td><td class="cross">—</td><td class="chk">✓</td></tr>
+          <tr><td class="col-feat">White-Label</td><td class="cross">—</td><td class="cross">—</td><td class="chk">✓</td></tr>
+          <tr><td class="col-feat">Support</td><td>E-Mail</td><td>Telegram</td><td>24/7 Hotline</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-kicker">INVESTITION</span>
+      <h2 class="section-title">Wähle deinen <span class="hl">Plan</span></h2>
+      <p class="section-sub">Alle Pläne mit 14-tägiger Geld-zurück-Garantie. Sofortiger Dashboard-Zugriff.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-plan">STARTER</div>
+        <div class="price-amount">€29<span>/mo</span></div>
+        <div class="price-tagline">Perfekt für den Einstieg in passive Einnahmen</div>
+        <div class="price-divider"></div>
+        <ul class="price-feat-list">
+          <li><span class="icon">▸</span>2 Einkommensströme</li>
+          <li><span class="icon">▸</span>Basis-Dashboard</li>
+          <li><span class="icon">▸</span>Wöchentliche Reports</li>
+          <li><span class="icon">▸</span>Shopify + Affiliate</li>
+          <li><span class="icon">▸</span>E-Mail Support</li>
+        </ul>
+        <a href="https://autoincome-ai.netlify.app" class="price-btn">Starter wählen</a>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tag">BELIEBT</div>
+        <div class="price-plan">PRO</div>
+        <div class="price-amount">€59<span>/mo</span></div>
+        <div class="price-tagline">Das komplette System für maximales Einkommen</div>
+        <div class="price-divider"></div>
+        <ul class="price-feat-list">
+          <li><span class="icon">▸</span>Alle 5 Einkommensströme</li>
+          <li><span class="icon">▸</span>Live-Dashboard + KI-Optimierung</li>
+          <li><span class="icon">▸</span>Tägliche Telegram-Reports</li>
+          <li><span class="icon">▸</span>A/B Testing automatisch</li>
+          <li><span class="icon">▸</span>Alle Integrationen</li>
+          <li><span class="icon">▸</span>Priority Telegram Support</li>
+        </ul>
+        <a href="https://autoincome-ai.netlify.app" class="price-btn">Pro wählen</a>
+      </div>
+      <div class="price-card">
+        <div class="price-plan">ENTERPRISE</div>
+        <div class="price-amount">€149<span>/mo</span></div>
+        <div class="price-tagline">Für Agenturen die mehrere Kunden verwalten</div>
+        <div class="price-divider"></div>
+        <ul class="price-feat-list">
+          <li><span class="icon">▸</span>Unbegrenzte Streams</li>
+          <li><span class="icon">▸</span>Multi-Client Management</li>
+          <li><span class="icon">▸</span>API + White-Label</li>
+          <li><span class="icon">▸</span>Stündliche Reports</li>
+          <li><span class="icon">▸</span>Dedizierter Account Manager</li>
+          <li><span class="icon">▸</span>Custom Integrationen</li>
+        </ul>
+        <a href="https://autoincome-ai.netlify.app" class="price-btn">Enterprise wählen</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div style="position:relative;">
+    <h2>Bereit für <span style="background:linear-gradient(135deg,var(--cyan),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">passives Einkommen?</span></h2>
+    <p>Mehr als 1.200 Unternehmer nutzen bereits AutoIncome AI.</p>
+    <a href="https://autoincome-ai.netlify.app" class="cta-btn">📊 Jetzt Dashboard öffnen</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">AutoIncome AI</div>
+    <div class="footer-links">
+      <a href="#">Datenschutz</a>
+      <a href="#">Impressum</a>
+      <a href="#">AGB</a>
+      <a href="https://autoincome-ai.netlify.app">Dashboard</a>
+      <a href="https://bullpower-hub-portal.netlify.app">BullPower Hub</a>
+    </div>
+  </div>
+  <div class="footer-copy" style="max-width:1100px;margin:0 auto;">© 2026 Rudolf Sarkany · BullPower Tools GmbH · Alle Einkommensströme. Ein Dashboard.</div>
+</footer>
+
+<script>
+// Live time
+function liveTime(){
+  var t=new Date();
+  document.getElementById('liveTime').textContent=t.toLocaleTimeString('de-DE');
+}
+liveTime(); setInterval(liveTime,1000);
+
+// Count-up helper
+function countUp(el,end,dur,prefix){
+  var s=Date.now();
+  (function tick(){
+    var p=Math.min((Date.now()-s)/dur,1),val=Math.floor(end*Math.pow(p,0.65));
+    el.textContent=(prefix||'')+val.toLocaleString('de-DE');
+    if(p<1) requestAnimationFrame(tick);
+  })();
+}
+
+// Total count hero
+setTimeout(function(){ countUp(document.getElementById('totalCount'),14220,2000); },600);
+
+// Today revenue — live updates
+var todayBase=847;
+document.getElementById('todayRev').textContent=todayBase;
+setInterval(function(){
+  todayBase+=Math.floor(Math.random()*18);
+  document.getElementById('todayRev').textContent=todayBase.toLocaleString('de-DE');
+},4500);
+
+// Stream counts
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting&&!e.target._done){
+      e.target._done=true;
+      countUp(e.target,parseInt(e.target.dataset.end),1600);
+    }
+  });
+},{threshold:0.3});
+document.querySelectorAll('.scount').forEach(function(el){ obs.observe(el); });
+</script>
+</body>
+</html>

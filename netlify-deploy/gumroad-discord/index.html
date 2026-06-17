@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gumroad Discord Bot — Käufer automatisch verifizieren</title>
+  <script></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=gg+sans:wght@400;500;600;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --dc-bg: #313338;
+      --dc-bg2: #2b2d31;
+      --dc-bg3: #1e1f22;
+      --dc-sidebar: #2b2d31;
+      --dc-sidebar-dark: #1e1f22;
+      --dc-msg: #383a40;
+      --dc-blurple: #5865f2;
+      --dc-blurple-light: #7289da;
+      --dc-green: #57f287;
+      --dc-red: #ed4245;
+      --dc-yellow: #fee75c;
+      --dc-fuchsia: #eb459e;
+      --dc-white: #ffffff;
+      --dc-text: #dcddde;
+      --dc-text-dim: #96989d;
+      --dc-text-muted: #72767d;
+      --bg: #1e1f22;
+      --border: rgba(88,101,242,0.2);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--dc-text);
+      font-family: 'gg sans','Helvetica Neue',Helvetica,Arial,sans-serif;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    .topnav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      background: rgba(30,31,34,0.96); backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 0.85rem 2rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .topnav-logo {
+      display: flex; align-items: center; gap: 0.7rem;
+      text-decoration: none;
+    }
+    .topnav-logo-icon {
+      width: 34px; height: 34px; background: var(--dc-blurple);
+      border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .topnav-logo-text { font-size: 1.1rem; font-weight: 700; color: var(--dc-white); }
+    .topnav-logo-text span { color: var(--dc-blurple-light); }
+    .topnav-links { display: flex; gap: 0.5rem; }
+    .topnav-links a {
+      color: var(--dc-text-dim); text-decoration: none; font-size: 0.88rem;
+      padding: 0.4rem 0.8rem; border-radius: 4px; transition: all 0.15s; font-weight: 500;
+    }
+    .topnav-links a:hover { background: rgba(255,255,255,0.06); color: var(--dc-white); }
+    .topnav-cta {
+      background: var(--dc-blurple); color: #fff; font-weight: 600;
+      padding: 0.5rem 1.3rem; border-radius: 4px; text-decoration: none;
+      font-size: 0.88rem; transition: background 0.15s;
+    }
+    .topnav-cta:hover { background: #4752c4; }
+
+    /* HERO — Discord interface mockup */
+    .hero {
+      min-height: 100vh;
+      padding: 6rem 2rem 4rem;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 30% 40%, rgba(88,101,242,0.1) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 30% at 80% 60%, rgba(235,69,158,0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(88,101,242,0.15); border: 1px solid rgba(88,101,242,0.3);
+      color: var(--dc-blurple-light); padding: 0.35rem 1rem; border-radius: 100px;
+      font-size: 0.78rem; font-weight: 600; margin-bottom: 2rem; position: relative;
+    }
+    .hero-badge .live-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--dc-green);
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero-headline {
+      font-size: clamp(2.2rem, 6vw, 4.5rem); font-weight: 800;
+      color: var(--dc-white); text-align: center; line-height: 1.1;
+      letter-spacing: -1px; margin-bottom: 1rem; position: relative;
+    }
+    .hero-headline .blurple { color: var(--dc-blurple-light); }
+    .hero-sub {
+      color: var(--dc-text-dim); font-size: 1.05rem; text-align: center;
+      max-width: 560px; margin-bottom: 3rem; position: relative;
+    }
+
+    /* DISCORD UI MOCKUP */
+    .discord-mockup {
+      width: 100%; max-width: 860px;
+      background: var(--dc-bg2);
+      border-radius: 8px; overflow: hidden;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+      display: flex; height: 480px;
+      position: relative; margin-bottom: 3rem;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* Server sidebar */
+    .dc-server-bar {
+      width: 72px; background: var(--dc-sidebar-dark);
+      display: flex; flex-direction: column; align-items: center;
+      padding: 0.75rem 0; gap: 0.5rem; overflow: hidden; flex-shrink: 0;
+    }
+    .dc-server-icon {
+      width: 48px; height: 48px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 1.1rem; transition: border-radius 0.15s;
+      position: relative;
+    }
+    .dc-server-icon:hover { border-radius: 16px; }
+    .dc-server-icon.active {
+      border-radius: 16px;
+      background: var(--dc-blurple);
+    }
+    .dc-server-icon.active::before {
+      content: '';
+      position: absolute; left: -8px; top: 50%; transform: translateY(-50%);
+      width: 4px; height: 40px; background: var(--dc-white); border-radius: 0 2px 2px 0;
+    }
+    .dc-server-sep {
+      width: 32px; height: 2px; background: rgba(255,255,255,0.1); border-radius: 1px;
+    }
+
+    /* Channel sidebar */
+    .dc-sidebar {
+      width: 220px; background: var(--dc-sidebar); flex-shrink: 0;
+      display: flex; flex-direction: column;
+    }
+    .dc-server-name {
+      padding: 0 1rem; height: 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(0,0,0,0.2);
+      font-weight: 700; font-size: 0.95rem; cursor: pointer;
+    }
+    .dc-server-name:hover { background: rgba(255,255,255,0.04); }
+    .dc-channel-group { padding: 1.5rem 0.5rem 0.3rem; }
+    .dc-group-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      color: var(--dc-text-muted); letter-spacing: 1px; padding: 0 0.5rem;
+      margin-bottom: 0.3rem;
+    }
+    .dc-channel {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 0.5rem; border-radius: 4px; cursor: pointer;
+      color: var(--dc-text-muted); font-size: 0.9rem; font-weight: 500;
+      transition: all 0.12s; position: relative;
+    }
+    .dc-channel:hover { background: rgba(255,255,255,0.06); color: var(--dc-text); }
+    .dc-channel.active { background: rgba(255,255,255,0.1); color: var(--dc-white); }
+    .dc-channel.active::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 2px; background: var(--dc-blurple); border-radius: 1px;
+    }
+    .dc-channel .ch-icon { font-size: 1rem; opacity: 0.7; }
+    .dc-channel .ch-lock { font-size: 0.7rem; margin-left: auto; opacity: 0.5; }
+    .dc-channel.premium { color: var(--dc-yellow); }
+    .dc-channel.premium .ch-icon { opacity: 1; }
+
+    /* Main content */
+    .dc-main {
+      flex: 1; display: flex; flex-direction: column; min-width: 0;
+    }
+    .dc-topbar {
+      height: 48px; padding: 0 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+      border-bottom: 1px solid rgba(0,0,0,0.2);
+      flex-shrink: 0;
+    }
+    .dc-topbar-ch { font-weight: 600; color: var(--dc-white); font-size: 0.95rem; }
+    .dc-topbar-sep { color: rgba(255,255,255,0.15); }
+    .dc-topbar-desc { font-size: 0.8rem; color: var(--dc-text-muted); }
+
+    /* Messages */
+    .dc-messages { flex: 1; padding: 1rem; overflow: hidden; display: flex; flex-direction: column; gap: 0.5rem; }
+    .dc-msg-group { display: flex; gap: 0.8rem; align-items: flex-start; }
+    .dc-avatar {
+      width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 700;
+    }
+    .dc-msg-body {}
+    .dc-msg-header {
+      display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.15rem;
+    }
+    .dc-msg-name { font-weight: 600; font-size: 0.9rem; }
+    .dc-msg-name.bot { color: var(--dc-blurple-light); }
+    .dc-msg-name.user { color: var(--dc-white); }
+    .dc-msg-name.admin { color: var(--dc-fuchsia); }
+    .dc-bot-tag {
+      background: var(--dc-blurple); color: #fff;
+      font-size: 0.6rem; font-weight: 700; padding: 0.05rem 0.4rem;
+      border-radius: 3px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .dc-msg-time { font-size: 0.72rem; color: var(--dc-text-muted); }
+    .dc-msg-text { font-size: 0.9rem; color: var(--dc-text); line-height: 1.45; }
+    .dc-embed {
+      margin-top: 0.4rem;
+      background: rgba(0,0,0,0.2);
+      border-left: 4px solid var(--dc-green);
+      border-radius: 0 4px 4px 0;
+      padding: 0.75rem 0.9rem;
+      font-size: 0.85rem;
+    }
+    .dc-embed.blue { border-left-color: var(--dc-blurple); }
+    .dc-embed-title { font-weight: 700; color: var(--dc-white); margin-bottom: 0.25rem; font-size: 0.92rem; }
+    .dc-embed-desc { color: var(--dc-text-dim); font-size: 0.83rem; line-height: 1.4; }
+    .dc-embed-fields { display: flex; gap: 1rem; margin-top: 0.5rem; flex-wrap: wrap; }
+    .dc-embed-field-name { font-size: 0.72rem; font-weight: 700; color: var(--dc-text-dim); text-transform: uppercase; letter-spacing: 0.5px; }
+    .dc-embed-field-val { font-size: 0.85rem; color: var(--dc-white); font-weight: 600; }
+
+    /* Message animation */
+    .dc-msg-group { opacity: 0; transform: translateY(8px); animation: msgappear 0.4s forwards; }
+    .dc-msg-group:nth-child(1) { animation-delay: 0.2s; }
+    .dc-msg-group:nth-child(2) { animation-delay: 0.7s; }
+    .dc-msg-group:nth-child(3) { animation-delay: 1.2s; }
+    .dc-msg-group:nth-child(4) { animation-delay: 1.7s; }
+    @keyframes msgappear { to { opacity:1; transform:translateY(0); } }
+
+    /* Input bar */
+    .dc-input-bar {
+      padding: 0 1rem 0.85rem; flex-shrink: 0;
+    }
+    .dc-input-fake {
+      background: rgba(0,0,0,0.2); border-radius: 8px;
+      padding: 0.65rem 0.9rem; font-size: 0.88rem;
+      color: var(--dc-text-muted); display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    /* HERO BUTTONS */
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; }
+    .btn-blurple {
+      background: var(--dc-blurple); color: #fff; font-weight: 700;
+      padding: 0.95rem 2.5rem; border-radius: 4px; text-decoration: none;
+      font-size: 0.95rem; transition: background 0.15s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-blurple:hover { background: #4752c4; }
+    .btn-outline {
+      background: transparent; border: 1px solid rgba(255,255,255,0.15);
+      color: var(--dc-white); font-weight: 600;
+      padding: 0.95rem 2.5rem; border-radius: 4px; text-decoration: none;
+      font-size: 0.95rem; transition: all 0.15s;
+      display: inline-flex; align-items: center; gap: 0.5rem;
+    }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.04); }
+
+    /* SECTIONS */
+    section { padding: 5rem 2rem; }
+    .section-inner { max-width: 1000px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 3.5rem; }
+    .section-eyebrow {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 3px; color: var(--dc-blurple-light); margin-bottom: 0.8rem; display: block;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 2.8rem); font-weight: 800;
+      color: var(--dc-white); letter-spacing: -0.5px; line-height: 1.15;
+    }
+    .section-title .blurple { color: var(--dc-blurple-light); }
+    .section-desc { color: var(--dc-text-dim); font-size: 0.95rem; margin-top: 0.8rem; max-width: 520px; margin-left: auto; margin-right: auto; }
+
+    /* SETUP STEPS */
+    .steps-grid { display: flex; flex-direction: column; gap: 2.5rem; }
+    .step-item { display: grid; grid-template-columns: auto 1fr; gap: 1.5rem; align-items: start; }
+    .step-num-badge {
+      width: 44px; height: 44px; border-radius: 50%;
+      background: var(--dc-blurple); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem; font-weight: 800; flex-shrink: 0;
+      box-shadow: 0 0 20px rgba(88,101,242,0.4);
+    }
+    .step-content {}
+    .step-title { font-size: 1.1rem; font-weight: 700; color: var(--dc-white); margin-bottom: 0.4rem; }
+    .step-desc { color: var(--dc-text-dim); font-size: 0.9rem; line-height: 1.6; margin-bottom: 1rem; }
+
+    /* Step mockup */
+    .step-mockup {
+      background: var(--dc-bg2); border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 1rem; font-size: 0.82rem;
+    }
+    .step-mockup .cmd-line { font-family: 'Courier New', monospace; color: var(--dc-green); margin-bottom: 0.3rem; }
+    .step-mockup .cmd-result { color: var(--dc-text-dim); font-size: 0.78rem; }
+    .step-mockup .bot-response {
+      background: rgba(88,101,242,0.12); border-left: 3px solid var(--dc-blurple);
+      padding: 0.6rem 0.8rem; border-radius: 0 4px 4px 0; margin-top: 0.4rem;
+      color: var(--dc-text); font-size: 0.82rem;
+    }
+
+    /* FEATURES */
+    .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.2rem; }
+    .feat-card {
+      background: var(--dc-bg2); border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.06);
+      padding: 1.5rem; transition: border-color 0.2s, transform 0.2s;
+    }
+    .feat-card:hover { border-color: rgba(88,101,242,0.3); transform: translateY(-2px); }
+    .feat-card-icon { font-size: 1.5rem; margin-bottom: 0.8rem; display: block; }
+    .feat-card-title { font-size: 0.95rem; font-weight: 700; color: var(--dc-white); margin-bottom: 0.4rem; }
+    .feat-card-desc { color: var(--dc-text-dim); font-size: 0.84rem; line-height: 1.5; }
+
+    /* PRICING — Discord Nitro style */
+    .nitro-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1.5rem; }
+    .nitro-card {
+      background: var(--dc-bg2); border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.08);
+      padding: 2rem; text-align: center;
+      position: relative; overflow: hidden;
+      transition: all 0.2s;
+    }
+    .nitro-card:hover { border-color: rgba(88,101,242,0.4); transform: translateY(-3px); }
+    .nitro-card.featured {
+      border-color: var(--dc-blurple);
+      background: linear-gradient(145deg, rgba(88,101,242,0.08), var(--dc-bg2));
+      box-shadow: 0 0 40px rgba(88,101,242,0.2);
+    }
+    .nitro-crown { font-size: 2rem; margin-bottom: 0.8rem; display: block; }
+    .nitro-plan { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--dc-text-dim); margin-bottom: 0.5rem; }
+    .nitro-price { font-size: 2.5rem; font-weight: 900; color: var(--dc-white); line-height: 1; }
+    .nitro-price span { font-size: 0.95rem; color: var(--dc-text-muted); font-weight: 400; }
+    .nitro-desc { color: var(--dc-text-dim); font-size: 0.83rem; margin: 0.6rem 0 1.5rem; }
+    .nitro-feats { list-style: none; text-align: left; margin-bottom: 1.8rem; }
+    .nitro-feats li {
+      padding: 0.45rem 0; font-size: 0.85rem; color: var(--dc-text-dim);
+      display: flex; align-items: center; gap: 0.6rem;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .nitro-feats li:last-child { border-bottom: none; }
+    .nitro-feats li .icon-chk { color: var(--dc-green); font-size: 0.9rem; flex-shrink: 0; }
+    .nitro-btn {
+      display: block; padding: 0.8rem; background: var(--dc-blurple);
+      color: #fff; font-weight: 700; font-size: 0.88rem;
+      border-radius: 4px; text-decoration: none; transition: background 0.15s;
+      letter-spacing: 0.5px;
+    }
+    .nitro-btn:hover { background: #4752c4; }
+
+    /* STATS */
+    .stats-band {
+      background: var(--dc-bg2); border-top: 1px solid rgba(255,255,255,0.06);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      padding: 3rem 2rem;
+    }
+    .stats-inner { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr)); gap: 2rem; text-align: center; }
+    .stat-num { font-size: 2.2rem; font-weight: 900; color: var(--dc-blurple-light); display: block; margin-bottom: 0.3rem; }
+    .stat-lbl { font-size: 0.8rem; color: var(--dc-text-muted); font-weight: 500; }
+
+    /* CTA */
+    .cta-block {
+      background: linear-gradient(135deg, rgba(88,101,242,0.15) 0%, rgba(235,69,158,0.08) 100%);
+      border-top: 1px solid rgba(88,101,242,0.2);
+      padding: 5rem 2rem; text-align: center;
+    }
+    .cta-block h2 { font-size: clamp(1.8rem,4vw,3rem); font-weight: 800; color: var(--dc-white); margin-bottom: 1rem; }
+    .cta-block p { color: var(--dc-text-dim); margin-bottom: 2.5rem; font-size: 1rem; }
+    .cta-block .cta-btn {
+      display: inline-flex; align-items: center; gap: 0.7rem;
+      background: var(--dc-blurple); color: #fff; font-weight: 700;
+      padding: 1rem 3rem; border-radius: 6px; text-decoration: none;
+      font-size: 1rem; box-shadow: 0 0 30px rgba(88,101,242,0.4); transition: all 0.2s;
+    }
+    .cta-block .cta-btn:hover { background: #4752c4; transform: translateY(-2px); box-shadow: 0 0 50px rgba(88,101,242,0.6); }
+
+    /* FOOTER */
+    footer { background: var(--dc-sidebar-dark); border-top: 1px solid rgba(255,255,255,0.06); padding: 3rem 2rem; }
+    .footer-inner { max-width: 1000px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+    .footer-brand { display: flex; align-items: center; gap: 0.6rem; }
+    .footer-brand-icon { width: 32px; height: 32px; background: var(--dc-blurple); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+    .footer-brand-name { font-weight: 700; color: var(--dc-white); font-size: 0.95rem; }
+    .footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+    .footer-links a { color: var(--dc-text-muted); text-decoration: none; font-size: 0.82rem; transition: color 0.15s; }
+    .footer-links a:hover { color: var(--dc-white); }
+    .footer-copy { font-size: 0.75rem; color: var(--dc-text-muted); width: 100%; text-align: center; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 1.5rem; }
+
+    @media (max-width: 700px) {
+      .discord-mockup { height: 380px; }
+      .dc-server-bar { display: none; }
+      .dc-sidebar { width: 160px; }
+      .topnav-links { display: none; }
+    }
+    @media (max-width: 500px) {
+      .dc-sidebar { display: none; }
+      .discord-mockup { height: 320px; }
+    }
+  </style>
+</head>
+<body>
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#02020f;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #5865f222}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#5865f2,#4752c4);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}<div style="display:inline-block;background:rgba(255,255,255,0.07);color:#5865f2;border:1px solid #5865f240;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1.2rem">€9/mo oder €49 lifetime</div>
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#5865f2;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#5865f2}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#5865f2,#4752c4);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #5865f244}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">🔐</div>
+    <h1>Gumroad Discord Bot</h1>
+    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#5865f2;border:1px solid #5865f240;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">€9/mo oder €49 lifetime</div>
+    <div class="tag">Käufer in Sekunden automatisch verifizieren</div>
+    <div class="feat">Gumroad Kauf → Webhook → Discord-Rolle sofort</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+
+<!-- NAV -->
+<nav class="topnav">
+  <a href="#" class="topnav-logo">
+    <div class="topnav-logo-icon">🤖</div>
+    <div class="topnav-logo-text">Gumroad<span>Bot</span></div>
+  </a>
+  <div class="topnav-links">
+    <a href="#setup">Setup</a>
+    <a href="#features">Features</a>
+    <a href="#pricing">Preise</a>
+  </div>
+  <a href="https://gumroad-discord-bot.netlify.app" class="topnav-cta">Bot hinzufügen</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge"><span class="live-dot"></span> 2.847 Discord-Server nutzen diesen Bot</div>
+  <h1 class="hero-headline">Gumroad-Käufer<br><span class="blurple">automatisch verifizieren</span></h1>
+  <p class="hero-sub">Kauf auf Gumroad → Webhook empfangen → Discord-Rolle sofort vergeben. Vollautomatisch in unter 3 Sekunden.</p>
+
+  <!-- DISCORD MOCKUP -->
+  <div class="discord-mockup">
+    <!-- Server icons bar -->
+    <div class="dc-server-bar">
+      <div class="dc-server-icon" style="background:rgba(255,255,255,0.08);">🏠</div>
+      <div class="dc-server-sep"></div>
+      <div class="dc-server-icon active" title="Dein Server">🛒</div>
+      <div class="dc-server-icon" style="background:rgba(255,255,255,0.06);">🎮</div>
+      <div class="dc-server-icon" style="background:rgba(255,255,255,0.06);">📚</div>
+    </div>
+    <!-- Channel sidebar -->
+    <div class="dc-sidebar">
+      <div class="dc-server-name">
+        <span>MeinKurs Community</span>
+        <span>∨</span>
+      </div>
+      <div class="dc-channel-group">
+        <div class="dc-group-label">Allgemein</div>
+        <div class="dc-channel"><span class="ch-icon">#</span> allgemein</div>
+        <div class="dc-channel active"><span class="ch-icon">#</span> käufer-bereich</div>
+        <div class="dc-channel"><span class="ch-icon">#</span> support</div>
+      </div>
+      <div class="dc-channel-group">
+        <div class="dc-group-label">Premium</div>
+        <div class="dc-channel premium"><span class="ch-icon">🔒</span> premium-only <span class="ch-lock">🔐</span></div>
+        <div class="dc-channel premium"><span class="ch-icon">🔒</span> vip-resources <span class="ch-lock">🔐</span></div>
+        <div class="dc-channel premium"><span class="ch-icon">🔒</span> live-calls <span class="ch-lock">🔐</span></div>
+      </div>
+    </div>
+    <!-- Main chat -->
+    <div class="dc-main">
+      <div class="dc-topbar">
+        <span style="opacity:0.5;">#</span>
+        <span class="dc-topbar-ch">käufer-bereich</span>
+        <span class="dc-topbar-sep">|</span>
+        <span class="dc-topbar-desc">Automatische Käufer-Verifikation</span>
+      </div>
+      <div class="dc-messages">
+        <div class="dc-msg-group">
+          <div class="dc-avatar" style="background:#5865f2;">🤖</div>
+          <div class="dc-msg-body">
+            <div class="dc-msg-header">
+              <span class="dc-msg-name bot">GumroadBot</span>
+              <span class="dc-bot-tag">BOT</span>
+              <span class="dc-msg-time">Heute um 14:23</span>
+            </div>
+            <div class="dc-msg-text">Bereit zur Verifikation. Käufe werden automatisch verarbeitet.</div>
+          </div>
+        </div>
+        <div class="dc-msg-group">
+          <div class="dc-avatar" style="background:#ed4245;font-size:0.85rem;color:#fff;">MM</div>
+          <div class="dc-msg-body">
+            <div class="dc-msg-header">
+              <span class="dc-msg-name user">MaxMustermann</span>
+              <span class="dc-msg-time">Heute um 14:31</span>
+            </div>
+            <div class="dc-msg-text">Habe gerade gekauft, wie bekomme ich Zugang?</div>
+          </div>
+        </div>
+        <div class="dc-msg-group">
+          <div class="dc-avatar" style="background:#5865f2;">🤖</div>
+          <div class="dc-msg-body">
+            <div class="dc-msg-header">
+              <span class="dc-msg-name bot">GumroadBot</span>
+              <span class="dc-bot-tag">BOT</span>
+              <span class="dc-msg-time">Heute um 14:31</span>
+            </div>
+            <div class="dc-msg-text">✅ @MaxMustermann Dein Kauf wurde verifiziert! Rolle <strong style="color:#fee75c;">@Premium</strong> wurde vergeben.</div>
+            <div class="dc-embed">
+              <div class="dc-embed-title">🎉 Willkommen im Premium-Bereich!</div>
+              <div class="dc-embed-desc">Du hast jetzt Zugriff auf alle Premium-Kanäle, Ressourcen und Live-Calls.</div>
+              <div class="dc-embed-fields">
+                <div><div class="dc-embed-field-name">Produkt</div><div class="dc-embed-field-val">KI Marketing Kurs</div></div>
+                <div><div class="dc-embed-field-name">Rolle erhalten</div><div class="dc-embed-field-val" style="color:#57f287;">@Premium ✓</div></div>
+                <div><div class="dc-embed-field-name">Verifikationszeit</div><div class="dc-embed-field-val">2.1 Sek.</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="dc-msg-group">
+          <div class="dc-avatar" style="background:#eb459e;font-size:0.7rem;color:#fff;font-weight:700;">ADMIN</div>
+          <div class="dc-msg-body">
+            <div class="dc-msg-header">
+              <span class="dc-msg-name admin">RudolfAdmin</span>
+              <span class="dc-msg-time">Heute um 14:32</span>
+            </div>
+            <div class="dc-msg-text">Der Bot läuft perfekt 🚀 Keine manuelle Verifikation mehr nötig!</div>
+          </div>
+        </div>
+      </div>
+      <div class="dc-input-bar">
+        <div class="dc-input-fake">
+          <span>💬</span>
+          <span>Nachricht an #käufer-bereich senden...</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-btns">
+    <a href="https://gumroad-discord-bot.netlify.app" class="btn-blurple">🤖 Bot jetzt hinzufügen</a>
+    <a href="#setup" class="btn-outline">Setup ansehen →</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-band">
+  <div class="stats-inner">
+    <div><span class="stat-num" id="sc1">0</span><span class="stat-lbl">Discord-Server</span></div>
+    <div><span class="stat-num" id="sc2">0</span><span class="stat-lbl">Käufer verifiziert</span></div>
+    <div><span class="stat-num" id="sc3">0</span><span class="stat-lbl">Sekunden Ø Verifikation</span></div>
+    <div><span class="stat-num" id="sc4">0</span><span class="stat-lbl">Uptime %</span></div>
+  </div>
+</div>
+
+<!-- SETUP STEPS -->
+<section id="setup" style="background:var(--dc-bg2);border-top:1px solid rgba(255,255,255,0.06);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-eyebrow">SETUP GUIDE</span>
+      <h2 class="section-title">In <span class="blurple">4 Schritten</span> live gehen</h2>
+      <p class="section-desc">Keine Programmierkenntnisse nötig. Von Einrichtung bis live in unter 10 Minuten.</p>
+    </div>
+    <div class="steps-grid">
+      <div class="step-item">
+        <div class="step-num-badge">1</div>
+        <div class="step-content">
+          <div class="step-title">Bot zu deinem Server hinzufügen</div>
+          <div class="step-desc">Klicke auf "Bot hinzufügen", wähle deinen Server und bestätige die Berechtigungen. Der Bot braucht: Rollen verwalten, Nachrichten senden, Kanäle lesen.</div>
+          <div class="step-mockup">
+            <div class="bot-response">🤖 GumroadBot wurde deinem Server hinzugefügt! Tippe /setup um zu beginnen.</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-badge">2</div>
+        <div class="step-content">
+          <div class="step-title">Gumroad Webhook verbinden</div>
+          <div class="step-desc">Kopiere deine Webhook-URL aus dem Bot-Dashboard und füge sie in deinen Gumroad-Produkt-Einstellungen unter "Ping-URL" ein.</div>
+          <div class="step-mockup">
+            <div class="cmd-line">/setup webhook</div>
+            <div class="bot-response">📋 Deine Webhook-URL:<br><span style="color:#57f287;font-size:0.78rem;">https://gumroadbot.app/wh/xyz123</span><br>Füge diese URL in Gumroad ein ✓</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-badge">3</div>
+        <div class="step-content">
+          <div class="step-title">Premium-Rolle konfigurieren</div>
+          <div class="step-desc">Sag dem Bot welche Discord-Rolle er nach einem Kauf vergeben soll. Du kannst verschiedene Rollen für verschiedene Produkte einrichten.</div>
+          <div class="step-mockup">
+            <div class="cmd-line">/role set @Premium KI-Kurs-2026</div>
+            <div class="bot-response">✅ Konfiguriert: Produkt "KI-Kurs-2026" → Rolle @Premium<br><span style="color:#fee75c;">Tipp: Setze auch /role set @VIP für andere Produkte</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num-badge">4</div>
+        <div class="step-content">
+          <div class="step-title">Fertig — Test machen</div>
+          <div class="step-desc">Kaufe dein eigenes Produkt einmal mit einer Test-E-Mail und beobachte wie der Bot in weniger als 3 Sekunden die Rolle vergibt.</div>
+          <div class="step-mockup">
+            <div class="cmd-line">/test verify test@email.com</div>
+            <div class="cmd-result">Simuliere Kauf für test@email.com...</div>
+            <div class="bot-response">🎉 Test erfolgreich! Rolle wurde vergeben in <strong>1.8 Sekunden</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-eyebrow">FUNKTIONEN</span>
+      <h2 class="section-title">Was der Bot <span class="blurple">alles kann</span></h2>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card">
+        <span class="feat-card-icon">⚡</span>
+        <div class="feat-card-title">Sofortige Verifikation</div>
+        <div class="feat-card-desc">Käufe werden in unter 3 Sekunden verifiziert. Kein Warten, kein manuelles Eingreifen deinerseits.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-card-icon">🎭</span>
+        <div class="feat-card-title">Mehrere Rollen & Produkte</div>
+        <div class="feat-card-desc">Verschiedene Gumroad-Produkte können verschiedene Rollen vergeben. Perfekt für Bundles und Upsells.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-card-icon">🔄</span>
+        <div class="feat-card-title">Rückerstattungs-Handling</div>
+        <div class="feat-card-desc">Bei Rückerstattung wird die Rolle automatisch wieder entzogen. Keine Zugang-Missbrauch möglich.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-card-icon">📊</span>
+        <div class="feat-card-title">Analytics Dashboard</div>
+        <div class="feat-card-desc">Sieh wie viele Käufer verifiziert wurden, welche Produkte am meisten verkauft werden und mehr.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-card-icon">🎉</span>
+        <div class="feat-card-title">Custom Willkommensnachrichten</div>
+        <div class="feat-card-desc">Passe die Willkommensnachricht für neue Käufer an — mit eigenem Branding, Embeds und Links.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-card-icon">🛡️</span>
+        <div class="feat-card-title">Anti-Betrug Protection</div>
+        <div class="feat-card-desc">Jede Verifikation wird kryptografisch durch Gumroad signiert. Keine gefälschten Käufe möglich.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-card-icon">📧</span>
+        <div class="feat-card-title">E-Mail Matching</div>
+        <div class="feat-card-desc">Nutzer verknüpfen ihre Kauf-E-Mail mit Discord. Funktioniert nahtlos für alle Käufer.</div>
+      </div>
+      <div class="feat-card">
+        <span class="feat-card-icon">🔔</span>
+        <div class="feat-card-title">Sale-Benachrichtigungen</div>
+        <div class="feat-card-desc">Lass dich optional im Admin-Kanal über jeden neuen Verkauf benachrichtigen — in Echtzeit.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--dc-bg2);border-top:1px solid rgba(255,255,255,0.06);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-eyebrow">PREISE</span>
+      <h2 class="section-title">Einfache <span class="blurple">Preisgestaltung</span></h2>
+      <p class="section-desc">Einmalig kaufen oder monatlich — du entscheidest. Keine versteckten Kosten.</p>
+    </div>
+    <div class="nitro-grid">
+      <div class="nitro-card">
+        <span class="nitro-crown">⚙️</span>
+        <div class="nitro-plan">Basic</div>
+        <div class="nitro-price">€9<span>/mo</span></div>
+        <div class="nitro-desc">1 Server, 1 Produkt</div>
+        <ul class="nitro-feats">
+          <li><span class="icon-chk">✓</span> 1 Discord-Server</li>
+          <li><span class="icon-chk">✓</span> 1 Gumroad-Produkt</li>
+          <li><span class="icon-chk">✓</span> Automatische Verifikation</li>
+          <li><span class="icon-chk">✓</span> Basis-Dashboard</li>
+          <li><span class="icon-chk">✓</span> E-Mail Support</li>
+        </ul>
+        <a href="https://gumroad-discord-bot.netlify.app" class="nitro-btn">Basic starten</a>
+      </div>
+      <div class="nitro-card featured">
+        <span class="nitro-crown">👑</span>
+        <div class="nitro-plan">Lifetime</div>
+        <div class="nitro-price">€49<span> einmalig</span></div>
+        <div class="nitro-desc">Unbegrenzt — einmal zahlen, für immer nutzen</div>
+        <ul class="nitro-feats">
+          <li><span class="icon-chk">✓</span> Unbegrenzte Server</li>
+          <li><span class="icon-chk">✓</span> Alle Gumroad-Produkte</li>
+          <li><span class="icon-chk">✓</span> Mehrere Rollen pro Produkt</li>
+          <li><span class="icon-chk">✓</span> Rückerstattungs-Handling</li>
+          <li><span class="icon-chk">✓</span> Sale-Benachrichtigungen</li>
+          <li><span class="icon-chk">✓</span> Priority Discord-Support</li>
+          <li><span class="icon-chk">✓</span> Alle zukünftigen Updates</li>
+        </ul>
+        <a href="https://gumroad-discord-bot.netlify.app" class="nitro-btn">Lifetime kaufen</a>
+      </div>
+      <div class="nitro-card">
+        <span class="nitro-crown">🚀</span>
+        <div class="nitro-plan">Pro Monthly</div>
+        <div class="nitro-price">€19<span>/mo</span></div>
+        <div class="nitro-desc">Für Seller mit mehreren Produkten</div>
+        <ul class="nitro-feats">
+          <li><span class="icon-chk">✓</span> 5 Discord-Server</li>
+          <li><span class="icon-chk">✓</span> Unbegrenzte Produkte</li>
+          <li><span class="icon-chk">✓</span> Analytics Dashboard</li>
+          <li><span class="icon-chk">✓</span> Custom Embeds</li>
+          <li><span class="icon-chk">✓</span> Telegram Support</li>
+        </ul>
+        <a href="https://gumroad-discord-bot.netlify.app" class="nitro-btn">Pro starten</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-block">
+  <h2>Nie wieder manuell <span style="color:var(--dc-blurple-light);">verifizieren</span></h2>
+  <p>Über 2.847 Discord-Server automatisieren ihre Gumroad-Verifikation bereits.</p>
+  <a href="https://gumroad-discord-bot.netlify.app" class="cta-btn">🤖 Bot jetzt hinzufügen — kostenlos testen</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <div class="footer-brand-icon">🤖</div>
+      <div class="footer-brand-name">GumroadBot</div>
+    </div>
+    <div class="footer-links">
+      <a href="#">Datenschutz</a>
+      <a href="#">Impressum</a>
+      <a href="#">AGB</a>
+      <a href="#">Discord Server</a>
+      <a href="https://bullpower-hub-portal.netlify.app">BullPower Hub</a>
+    </div>
+  </div>
+  <div class="footer-copy">© 2026 Rudolf Sarkany · BullPower Tools GmbH</div>
+</footer>
+
+<script>
+function countUp(el,end,dur,suffix){
+  var s=Date.now();
+  (function tick(){
+    var p=Math.min((Date.now()-s)/dur,1),val=Math.floor(end*Math.pow(p,0.6));
+    el.textContent=val.toLocaleString('de-DE')+(suffix||'');
+    if(p<1) requestAnimationFrame(tick);
+  })();
+}
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting&&!e.target._done){
+      e.target._done=true;
+      var id=e.target.id;
+      if(id==='sc1') countUp(e.target,2847,1500,'');
+      if(id==='sc2') countUp(e.target,47230,1800,'');
+      if(id==='sc3') e.target.textContent='2.4';
+      if(id==='sc4') countUp(e.target,99,1200,'%');
+    }
+  });
+},{threshold:0.3});
+['sc1','sc2','sc3','sc4'].forEach(function(id){
+  var el=document.getElementById(id); if(el) obs.observe(el);
+});
+</script>
+</body>
+</html>

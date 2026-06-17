@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>🔐 RudiBot API Key Vault</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:1400px;margin:0 auto;padding:20px;background:#f8f9fc;color:#1a1a2e}
+h1{text-align:center;margin-bottom:8px;font-size:32px}
+.subtitle{text-align:center;color:#6b7280;margin-bottom:24px}
+
+.login-screen{background:#fff;border-radius:16px;padding:48px;margin:60px auto;max-width:500px;box-shadow:0 4px 20px rgba(0,0,0,.1);text-align:center}
+.login-screen h2{margin-bottom:24px;color:#1a1a2e}
+.login-screen input{width:100%;padding:14px;border:2px solid #e5e7eb;border-radius:12px;font-size:16px;margin-bottom:16px;text-align:center}
+.login-screen input:focus{outline:none;border-color:#e94560}
+.login-screen .btn{width:100%;padding:14px;background:#e94560;color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer}
+.login-screen .btn:hover{background:#d63d57}
+.login-screen .error{color:#dc2626;font-size:14px;margin-top:8px;display:none}
+
+.warning{background:#fef2f2;border:2px solid #fecaca;border-radius:12px;padding:16px;margin-bottom:24px;color:#991b1b;font-size:14px}
+.warning strong{color:#dc2626}
+
+.actions{display:flex;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.btn{padding:10px 20px;border-radius:10px;font-weight:600;font-size:13px;cursor:pointer;border:none;transition:all .2s}
+.btn-primary{background:#e94560;color:#fff}
+.btn-primary:hover{background:#d63d57}
+.btn-secondary{background:#fff;color:#1a1a2e;border:2px solid #e5e7eb}
+.btn-secondary:hover{background:#f8f9fc}
+.btn-success{background:#f0fdf4;color:#16a34a;border:2px solid #bbf7d0}
+.btn-success:hover{background:#dcfce7}
+.btn-danger{background:#fef2f2;color:#dc2626;border:2px solid #fecaca}
+.btn-danger:hover{background:#fee2e2}
+
+.category{background:#fff;border-radius:16px;padding:24px;margin-bottom:20px;box-shadow:0 4px 20px rgba(0,0,0,.05)}
+.category-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:2px solid #e5e7eb;padding-bottom:12px}
+.category h2{font-size:18px;color:#1a1a2e}
+.category-count{font-size:13px;color:#6b7280;background:#f3f4f6;padding:4px 12px;border-radius:100px}
+
+.platform-row{display:grid;grid-template-columns:200px 1fr 1fr 80px;gap:12px;align-items:center;padding:12px;border-bottom:1px solid #f3f4f6}
+.platform-row:last-child{border-bottom:none}
+.platform-name{font-weight:600;font-size:14px}
+.platform-input{width:100%;padding:10px 12px;border:2px solid #e5e7eb;border-radius:8px;font-size:13px;font-family:monospace;transition:all .2s}
+.platform-input:focus{outline:none;border-color:#e94560;background:#fff}
+.platform-input.filled{border-color:#4ade80;background:#f0fdf4}
+.platform-input::placeholder{color:#9ca3af;font-size:12px}
+
+.status-dot{width:12px;height:12px;border-radius:50%;display:inline-block;margin-right:6px}
+.status-dot.empty{background:#e5e7eb}
+.status-dot.filled{background:#4ade80}
+
+.hidden{display:none!important}
+.masked{color:transparent;text-shadow:0 0 8px rgba(0,0,0,.3);user-select:none}
+.revealed{color:#1a1a2e}
+
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:none;justify-content:center;align-items:center;z-index:1000}
+.modal-overlay.active{display:flex}
+.modal{background:#fff;border-radius:16px;padding:32px;max-width:600px;width:90%;max-height:80vh;overflow:auto}
+.modal h3{margin-bottom:16px}
+.modal textarea{width:100%;min-height:200px;padding:12px;border:2px solid #e5e7eb;border-radius:12px;font-family:monospace;font-size:13px;resize:vertical}
+.modal-actions{display:flex;gap:12px;margin-top:16px;justify-content:flex-end}
+
+.search-box{width:100%;padding:12px 16px;border:2px solid #e5e7eb;border-radius:12px;font-size:14px;margin-bottom:20px}
+.search-box:focus{outline:none;border-color:#e94560}
+
+.toggle-group{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.toggle-btn{padding:8px 16px;border-radius:100px;border:2px solid #e5e7eb;background:#fff;font-size:13px;cursor:pointer;font-weight:600;color:#6b7280}
+.toggle-btn.active{background:#1a1a2e;color:#fff;border-color:#1a1a2e}
+
+.copy-btn{padding:6px 12px;border-radius:6px;background:#f3f4f6;border:none;cursor:pointer;font-size:12px;color:#6b7280}
+.copy-btn:hover{background:#e5e7eb}
+.copy-btn.copied{background:#dcfce7;color:#16a34a}
+
+.security-note{background:#fffbeb;border:2px solid #fcd34d;border-radius:12px;padding:16px;margin-bottom:24px;color:#92400e;font-size:14px}
+.security-note strong{color:#b45309}
+</style>
+</head>
+<body>
+
+<div id="login-screen" class="login-screen">
+  <h2>🔐 API Key Vault</h2>
+  <p style="margin-bottom:24px;color:#6b7280">Alle 48 Plattform-API-Keys an einem sicheren Ort.</p>
+  <input type="password" id="vault-password" placeholder="Vault-Passwort eingeben" onkeypress="if(event.key==='Enter')unlockVault()">
+  <button class="btn" onclick="unlockVault()">Vault öffnen</button>
+  <div class="error" id="login-error">Falsches Passwort. Versuche es erneut.</div>
+  <p style="margin-top:24px;font-size:13px;color:#9ca3af">Hinweis: Standardpasswort ist <strong>rudibot2026</strong> (kann geändert werden)</p>
+</div>
+
+<div id="vault-content" class="hidden">
+  <h1>🔐 RudiBot API Key Vault</h1>
+  <p class="subtitle">48 Plattformen — sicher dokumentiert & verschlüsselt gespeichert</p>
+  
+  <div class="warning">
+    <strong>⚠️ Wichtiger Sicherheitshinweis:</strong><br>
+    Diese Datei speichert API-Keys im <strong>localStorage deines Browsers</strong>. 
+    Das ist NICHT für Produktion gedacht. Für Produktion verwende: 1Password, Bitwarden oder einen eigenen Server.
+    Leere niemals API-Keys in Git-Repositorys!
+  </div>
+
+  <div class="security-note">
+    <strong>🔒 Verschlüsselung:</strong> Die Keys werden mit deinem Passwort verschlüsselt im Browser gespeichert. 
+    Ohne Passwort sind die Daten unlesbar.
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-success" onclick="saveAllKeys()">💾 Alle speichern</button>
+    <button class="btn btn-secondary" onclick="toggleMask()">👁️ Keys anzeigen/verstecken</button>
+    <button class="btn btn-secondary" onclick="showExport()">📤 Exportieren (JSON)</button>
+    <button class="btn btn-secondary" onclick="showImport()">📥 Importieren (JSON)</button>
+    <button class="btn btn-danger" onclick="lockVault()">🔒 Vault schließen</button>
+    <button class="btn btn-danger" onclick="clearAllData()">🗑️ Alle Daten löschen</button>
+  </div>
+
+  <input type="text" class="search-box" id="search-input" placeholder="🔍 Plattform suchen..." oninput="filterPlatforms()">
+
+  <div class="toggle-group">
+    <button class="toggle-btn active" onclick="filterCategory('all')">Alle</button>
+    <button class="toggle-btn" onclick="filterCategory('filled')">Mit Keys</button>
+    <button class="toggle-btn" onclick="filterCategory('empty')">Ohne Keys</button>
+  </div>
+
+  <div id="platforms-container"></div>
+</div>
+
+<div class="modal-overlay" id="export-modal">
+  <div class="modal">
+    <h3>📤 Export — Kopiere deine Daten</h3>
+    <textarea id="export-data" readonly></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Schließen</button>
+      <button class="btn btn-success" onclick="copyToClipboard('export-data')">📋 Kopieren</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="import-modal">
+  <div class="modal">
+    <h3>📥 Import — Füge JSON-Daten ein</h3>
+    <textarea id="import-data" placeholder='{"platforms":[{"id":"stripe","key":"sk_live_..."}]}'></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeModal()">Abbrechen</button>
+      <button class="btn btn-success" onclick="importData()">📥 Importieren</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const VAULT_KEY = 'rudibot_api_vault_v2';
+const PASSWORD_KEY = 'rudibot_vault_pwd';
+let vaultPassword = 'rudibot2026';
+let keysData = {};
+let isMasked = true;
+
+const PLATFORMS = [
+  {cat:'Social Media',items:[{id:'twitter',name:'Twitter/X',placeholder:'Bearer Token oder API Key'},{id:'facebook',name:'Facebook',placeholder:'App ID + App Secret'},{id:'linkedin',name:'LinkedIn',placeholder:'Client ID + Secret'},{id:'instagram',name:'Instagram',placeholder:'Graph API Token'},{id:'youtube',name:'YouTube',placeholder:'API Key (Data v3)'}]},
+  {cat:'E-Commerce & Payments',items:[{id:'shopify',name:'Shopify',placeholder:'Admin API Token'},{id:'stripe',name:'Stripe',placeholder:'sk_live_... oder sk_test_...'},{id:'paypal',name:'PayPal',placeholder:'Client ID + Secret'}]},
+  {cat:'AI & Machine Learning',items:[{id:'openai',name:'OpenAI',placeholder:'sk-...'},{id:'anthropic',name:'Anthropic',placeholder:'sk-ant-...'},{id:'perplexity',name:'Perplexity',placeholder:'pplx-...'},{id:'opencode',name:'OpenCode',placeholder:'API Token'}]},
+  {cat:'Communication',items:[{id:'slack',name:'Slack',placeholder:'Bot Token (xoxb-...)'},{id:'discord',name:'Discord',placeholder:'Bot Token'},{id:'telegram',name:'Telegram',placeholder:'Bot Token (123456:ABC...)'},{id:'twilio',name:'Twilio',placeholder:'Account SID + Auth Token'}]},
+  {cat:'Cloud Storage',items:[{id:'aws',name:'AWS',placeholder:'Access Key ID + Secret'},{id:'azure',name:'Azure',placeholder:'Subscription ID + Client Secret'},{id:'gcp',name:'Google Cloud',placeholder:'Service Account JSON Key'}]},
+  {cat:'Support',items:[{id:'zendesk',name:'Zendesk',placeholder:'API Token + Email'},{id:'intercom',name:'Intercom',placeholder:'Access Token'},{id:'freshdesk',name:'Freshdesk',placeholder:'API Key'},{id:'helpscout',name:'Help Scout',placeholder:'App ID + App Secret'}]},
+  {cat:'Email Marketing',items:[{id:'sendgrid',name:'SendGrid',placeholder:'SG.xxx...'},{id:'mailchimp',name:'Mailchimp',placeholder:'API Key'},{id:'brevo',name:'Brevo',placeholder:'xkeysib-...'},{id:'mailgun',name:'Mailgun',placeholder:'API Key'},{id:'klaviyo',name:'Klaviyo',placeholder:'Private API Key'},{id:'activecampaign',name:'ActiveCampaign',placeholder:'API URL + Key'},{id:'convertkit',name:'ConvertKit',placeholder:'API Secret'}]},
+  {cat:'CRM',items:[{id:'hubspot',name:'HubSpot',placeholder:'Private App Token'},{id:'salesforce',name:'Salesforce',placeholder:'Consumer Key + Secret'},{id:'pipedrive',name:'Pipedrive',placeholder:'API Token'},{id:'copper',name:'Copper',placeholder:'API Key'},{id:'zoho',name:'Zoho CRM',placeholder:'Client ID + Secret'}]},
+  {cat:'Projektmanagement',items:[{id:'jira',name:'Jira',placeholder:'API Token + Email'},{id:'trello',name:'Trello',placeholder:'API Key + Token'},{id:'asana',name:'Asana',placeholder:'Personal Access Token'},{id:'monday',name:'Monday.com',placeholder:'API Token'},{id:'linear',name:'Linear',placeholder:'Personal API Key'}]},
+  {cat:'E-Signature',items:[{id:'docusign',name:'DocuSign',placeholder:'Integration Key + Secret'},{id:'pandadoc',name:'PandaDoc',placeholder:'API Key'}]},
+  {cat:'Datenbanken & Daten',items:[{id:'notion',name:'Notion',placeholder:'Internal Integration Token'},{id:'airtable',name:'Airtable',placeholder:'Personal Access Token'}]},
+  {cat:'Deployment & Infrastructure',items:[{id:'heroku',name:'Heroku',placeholder:'API Key'},{id:'cloudflare',name:'Cloudflare',placeholder:'Global API Key'}]},
+  {cat:'System & Browser',items:[{id:'github',name:'GitHub',placeholder:'Personal Access Token (classic)'}]},
+  {cat:'Microsoft',items:[{id:'microsoft365',name:'Microsoft 365',placeholder:'Tenant ID + Client Secret'}]}
+];
+
+function simpleEncrypt(text, password) {
+  if (!text) return '';
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    result += String.fromCharCode(text.charCodeAt(i) ^ password.charCodeAt(i % password.length));
+  }
+  return btoa(result);
+}
+
+function simpleDecrypt(text, password) {
+  if (!text) return '';
+  try {
+    let decoded = atob(text);
+    let result = '';
+    for (let i = 0; i < decoded.length; i++) {
+      result += String.fromCharCode(decoded.charCodeAt(i) ^ password.charCodeAt(i % password.length));
+    }
+    return result;
+  } catch(e) { return ''; }
+}
+
+function unlockVault() {
+  const pwd = document.getElementById('vault-password').value;
+  if (!pwd) return;
+  vaultPassword = pwd;
+  loadData();
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('vault-content').classList.remove('hidden');
+  renderAll();
+}
+
+function lockVault() {
+  document.getElementById('vault-content').classList.add('hidden');
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('vault-password').value = '';
+  vaultPassword = '';
+  keysData = {};
+}
+
+function loadData() {
+  try {
+    const saved = localStorage.getItem(VAULT_KEY);
+    if (saved) {
+      const encrypted = JSON.parse(saved);
+      keysData = {};
+      for (let id in encrypted) {
+        keysData[id] = simpleDecrypt(encrypted[id], vaultPassword);
+      }
+    }
+  } catch(e) { keysData = {}; }
+}
+
+function saveAllKeys() {
+  const inputs = document.querySelectorAll('.platform-input');
+  inputs.forEach(input => {
+    const id = input.dataset.id;
+    keysData[id] = input.value;
+  });
+  
+  const encrypted = {};
+  for (let id in keysData) {
+    if (keysData[id]) encrypted[id] = simpleEncrypt(keysData[id], vaultPassword);
+  }
+  localStorage.setItem(VAULT_KEY, JSON.stringify(encrypted));
+  
+  renderAll();
+  alert('✅ Alle API-Keys verschlüsselt gespeichert!');
+}
+
+function renderAll() {
+  const container = document.getElementById('platforms-container');
+  let html = '';
+  let filledCount = 0;
+  let totalCount = 0;
+  
+  PLATFORMS.forEach(group => {
+    const groupItems = group.items.map(item => {
+      totalCount++;
+      if (keysData[item.id]) filledCount++;
+      const hasValue = !!keysData[item.id];
+      return {item, hasValue};
+    });
+    
+    html += `<div class="category" data-cat="${group.cat}">`;
+    html += `<div class="category-header">`;
+    html += `<h2>${group.cat}</h2>`;
+    html += `<span class="category-count">${groupItems.filter(x=>x.hasValue).length}/${groupItems.length} Keys</span>`;
+    html += `</div>`;
+    
+    groupItems.forEach(({item, hasValue}) => {
+      const value = keysData[item.id] || '';
+      const inputClass = hasValue ? 'platform-input filled' : 'platform-input';
+      const displayClass = isMasked && value ? 'masked' : 'revealed';
+      html += `<div class="platform-row" data-id="${item.id}" data-filled="${hasValue}">`;
+      html += `<div><span class="status-dot ${hasValue?'filled':'empty'}"></span><span class="platform-name">${item.name}</span></div>`;
+      html += `<input type="text" class="${inputClass} ${displayClass}" data-id="${item.id}" value="${escapeHtml(value)}" placeholder="${item.placeholder}">`;
+      html += `<input type="text" class="${inputClass} ${displayClass}" data-id="${item.id}_note" value="${escapeHtml(keysData[item.id+'_note']||'')}" placeholder="Notizen (z.B. Sandbox/Test)">`;
+      html += `<button class="copy-btn" onclick="copyKey('${item.id}')">📋</button>`;
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+  
+  container.innerHTML = html;
+  
+  // Add input listeners
+  document.querySelectorAll('.platform-input').forEach(input => {
+    input.addEventListener('input', (e) => {
+      const id = e.target.dataset.id;
+      keysData[id] = e.target.value;
+      e.target.classList.toggle('filled', !!e.target.value);
+    });
+  });
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function toggleMask() {
+  isMasked = !isMasked;
+  const inputs = document.querySelectorAll('.platform-input');
+  inputs.forEach(input => {
+    if (isMasked && input.value) {
+      input.classList.add('masked');
+      input.classList.remove('revealed');
+    } else {
+      input.classList.remove('masked');
+      input.classList.add('revealed');
+    }
+  });
+}
+
+function copyKey(id) {
+  const value = keysData[id];
+  if (!value) { alert('Kein Key vorhanden'); return; }
+  navigator.clipboard.writeText(value).then(() => {
+    const btn = document.querySelector(`button[onclick="copyKey('${id}')"]`);
+    const original = btn.textContent;
+    btn.textContent = '✅';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = original; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+function showExport() {
+  const exportObj = {platforms: [], exportedAt: new Date().toISOString()};
+  for (let id in keysData) {
+    if (keysData[id]) exportObj.platforms.push({id, key: keysData[id]});
+  }
+  document.getElementById('export-data').value = JSON.stringify(exportObj, null, 2);
+  document.getElementById('export-modal').classList.add('active');
+}
+
+function showImport() {
+  document.getElementById('import-modal').classList.add('active');
+}
+
+function closeModal() {
+  document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+}
+
+function importData() {
+  try {
+    const data = JSON.parse(document.getElementById('import-data').value);
+    if (data.platforms) {
+      data.platforms.forEach(p => {
+        keysData[p.id] = p.key;
+      });
+      renderAll();
+      closeModal();
+      alert('✅ Import erfolgreich!');
+    }
+  } catch(e) {
+    alert('❌ Fehler beim Import: Ungültiges JSON');
+  }
+}
+
+function copyToClipboard(elementId) {
+  const el = document.getElementById(elementId);
+  el.select();
+  document.execCommand('copy');
+  alert('📋 In Zwischenablage kopiert!');
+}
+
+function clearAllData() {
+  if (!confirm('⚠️ ALLE API-Keys unwiderruflich löschen?')) return;
+  if (!confirm('Wirklich ALLE Daten löschen? Das kann nicht rückgängig gemacht werden!')) return;
+  localStorage.removeItem(VAULT_KEY);
+  keysData = {};
+  renderAll();
+  alert('🗑️ Alle Daten gelöscht');
+}
+
+function filterPlatforms() {
+  const query = document.getElementById('search-input').value.toLowerCase();
+  document.querySelectorAll('.category').forEach(cat => {
+    let hasMatch = false;
+    cat.querySelectorAll('.platform-row').forEach(row => {
+      const name = row.querySelector('.platform-name').textContent.toLowerCase();
+      const visible = name.includes(query);
+      row.style.display = visible ? 'grid' : 'none';
+      if (visible) hasMatch = true;
+    });
+    cat.style.display = hasMatch ? 'block' : 'none';
+  });
+}
+
+function filterCategory(type) {
+  document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
+  event.target.classList.add('active');
+  
+  document.querySelectorAll('.category').forEach(cat => {
+    let hasMatch = false;
+    cat.querySelectorAll('.platform-row').forEach(row => {
+      const filled = row.dataset.filled === 'true';
+      let visible = true;
+      if (type === 'filled') visible = filled;
+      if (type === 'empty') visible = !filled;
+      row.style.display = visible ? 'grid' : 'none';
+      if (visible) hasMatch = true;
+    });
+    cat.style.display = hasMatch ? 'block' : 'none';
+  });
+}
+
+// Close modal on overlay click
+window.onclick = function(e) {
+  if (e.target.classList.contains('modal-overlay')) closeModal();
+}
+</script>
+
+</body>
+</html>

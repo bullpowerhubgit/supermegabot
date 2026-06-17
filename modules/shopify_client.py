@@ -128,8 +128,9 @@ async def _refresh_client_credentials() -> Optional[str]:
             "client_id": _cred_client_id(),
             "client_secret": _cred_client_secret(),
         }
-        shop = os.getenv("SHOPIFY_SHOP", "autopilot-store-suite-fmbka")
-        url = f"https://{shop}.myshopify.com/admin/oauth/access_token"
+        shop_raw = os.getenv("SHOPIFY_SHOP") or os.getenv("SHOPIFY_SHOP_DOMAIN") or "autopilot-store-suite-fmbka"
+        shop_domain = _normalize_shop_domain(shop_raw)
+        url = f"https://{shop_domain}/admin/oauth/access_token"
         async with _client_session(10) as session:
             async with session.post(
                 url, data=payload,

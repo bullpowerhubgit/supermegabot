@@ -1,8 +1,0 @@
-#!/bin/bash
-# Mac Optimizer Suite - Ein-Klick Mega Turbo Launcher
-# Doppelklick startet sofort alle Optimierungen
-
-BASE_DIR="/Users/rudolfsarkany/supermegabot-windsurf-agents/CascadeProjects/windsurf-project"
-
-osascript -e "tell application \"Terminal\" to activate"
-osascript -e "tell application \"Terminal\" to do script \"cd '$BASE_DIR' && clear && echo '========================================' && echo '   🚀 MAC OPTIMIZER MEGA TURBO' && echo '========================================' && echo '' && echo 'Starte alle Optimierungen...' && echo '' && python3 mac-optimizer.py --optimize && echo '' && echo '--- Browser Turbo ---' && python3 browser-turbo.py --quick && echo '' && echo '--- Deep System Scan ---' && python3 deep-scan-fix-mac.py --quick && echo '' && echo '--- Dateisortierer Status ---' && python3 file-sorter.py --status && echo '' && echo '--- Cloud Backup ---' && python3 cloud-backup.py --backup && echo '' && echo '========================================' && echo '   ✅ MEGA TURBO ABGESCHLOSSEN!' && echo '========================================' && echo '' && echo 'Druecke Enter zum Beenden...' && read\""

@@ -1,0 +1,64 @@
+{
+  "scan_id": "adaptive-deepscan-report-1780500155362",
+  "timestamp": "2026-06-03T15:22:35.362Z",
+  "duration_ms": 1,
+  "duration_human": "0s",
+  "config": {
+    "maxDepth": 3,
+    "maxFileSize": 104857600,
+    "excludePatterns": [
+      "node_modules",
+      ".git",
+      ".cache",
+      "temp",
+      "tmp",
+      ".DS_Store",
+      "Thumbs.db"
+    ],
+    "includePatterns": [],
+    "securityScan": true,
+    "generateReports": true,
+    "autoEncrypt": false
+  },
+  "statistics": {
+    "total_files": 0,
+    "total_folders": 0,
+    "total_size": 0,
+    "security_issues": 0,
+    "file_types": [],
+    "largest_files": [],
+    "oldest_files": [],
+    "newest_files": [],
+    "size_human": "0.00 B",
+    "avg_file_size": 0,
+    "avg_file_size_human": "0.00 B"
+  },
+  "security_issues": [],
+  "patterns": {},
+  "recommendations": [],
+  "report_path": "/Users/rudolfsarkany/CascadeProjects/rudibot/reports/adaptive-deepscan-report-1780500155361.json",
+  "system_info": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "node_version": "v26.0.0",
+    "scanner_version": "1.0.0",
+    "timestamp": "2026-06-03T15:22:35.362Z"
+  },
+  "configuration_analysis": {
+    "found_configs": [],
+    "missing_configs": [
+      "gcp-config.json",
+      "API_CONFIG_TEMPLATE.env",
+      ".env"
+    ],
+    "security_risks": [],
+    "recommendations": []
+  },
+  "security_score": {
+    "score": 100,
+    "grade": "A",
+    "issues_count": 0,
+    "files_scanned": 1,
+    "risk_level": "low"
+  }
+}

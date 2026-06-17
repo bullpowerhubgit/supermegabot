@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apitool - Automatisierung fur E-Commerce</title>
+    <script src="https://js.stripe.com/v3/"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0e27; color: #fff; }
+        .hero { text-align: center; padding: 80px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .hero h1 { font-size: 3.5em; margin-bottom: 20px; }
+        .hero p { font-size: 1.3em; opacity: 0.9; max-width: 600px; margin: 0 auto 30px; }
+        .btn { display: inline-block; padding: 15px 40px; background: #fff; color: #764ba2; text-decoration: none; border-radius: 50px; font-weight: bold; font-size: 1.1em; transition: transform 0.3s; cursor: pointer; border: none; }
+        .btn:hover { transform: translateY(-3px); }
+        .features { padding: 80px 20px; max-width: 1200px; margin: 0 auto; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 50px; }
+        .feature-card { background: #1a1f4b; padding: 40px; border-radius: 20px; text-align: center; }
+        .feature-card h3 { color: #667eea; margin-bottom: 15px; font-size: 1.5em; }
+        .pricing { padding: 80px 20px; background: #0d1135; }
+        .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 30px; max-width: 1000px; margin: 50px auto 0; }
+        .pricing-card { background: #1a1f4b; padding: 50px 40px; border-radius: 20px; text-align: center; position: relative; }
+        .pricing-card.popular { border: 2px solid #667eea; }
+        .popular-badge { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: #667eea; padding: 5px 20px; border-radius: 20px; font-size: 0.9em; }
+        .price { font-size: 3em; font-weight: bold; margin: 20px 0; }
+        .price span { font-size: 0.5em; opacity: 0.7; }
+        .pricing-card ul { list-style: none; margin: 30px 0; }
+        .pricing-card li { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .btn-subscribe { background: #667eea; color: #fff; width: 100%; margin-top: 20px; }
+        footer { text-align: center; padding: 40px; opacity: 0.6; }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>Apitool</h1>
+        <p>Automatisierung fur Shopify, Telegram, Social Media & mehr. 8 Services in einer Plattform.</p>
+        <a href="#pricing" class="btn">Jetzt Starten</a>
+    </section>
+
+    <section class="features">
+        <h2 style="text-align:center; font-size: 2.5em;">Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Shopify Automation</h3>
+                <p>Webhook-basierte Order Automation mit Google Sheets Integration und Echtzeit-Benachrichtigungen.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Telegram Bot Armee</h3>
+                <p>2-Bot System mit Real-time Notifications, DeepScan Integration und Command Handling.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Multi-Agent System</h3>
+                <p>7 spezialisierte Agenten plus 5 Micro Bots mit Self-Healing und Telegram Reports.</p>
+            </div>
+            <div class="feature-card">
+                <h3>20+ Cloud Services</h3>
+                <p>GCP, AWS, Azure, Shopify, Notion, Airtable und viele mehr - alles uber eine API.</p>
+            </div>
+            <div class="feature-card">
+                <h3>AI Integration</h3>
+                <p>OpenAI, Anthropic, Google AI und Perplexity - automatisierte Content-Erstellung.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Self-Improvement</h3>
+                <p>Automatische Performance-Optimierung, Log-Rotation und System-Monitoring.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="pricing" id="pricing">
+        <h2 style="text-align:center; font-size: 2.5em;">Preise</h2>
+        <div class="pricing-grid">
+            <div class="pricing-card">
+                <h3>Starter</h3>
+                <div class="price">29<span>EUR/Monat</span></div>
+                <ul>
+                    <li>Shopify Webhooks</li>
+                    <li>Basic Automation</li>
+                    <li>Telegram Notifications</li>
+                    <li>1 Shop</li>
+                    <li>Email Support</li>
+                </ul>
+                <button class="btn btn-subscribe" onclick="checkout('starter')">Abonnieren</button>
+            </div>
+            <div class="pricing-card popular">
+                <div class="popular-badge">Empfohlen</div>
+                <h3>Pro</h3>
+                <div class="price">99<span>EUR/Monat</span></div>
+                <ul>
+                    <li>Alle Starter Features</li>
+                    <li>Multi-Shop Support</li>
+                    <li>AI Content Generation</li>
+                    <li>API Gateway Zugang</li>
+                    <li>Priority Support</li>
+                </ul>
+                <button class="btn btn-subscribe" onclick="checkout('pro')">Abonnieren</button>
+            </div>
+            <div class="pricing-card">
+                <h3>Enterprise</h3>
+                <div class="price">499<span>EUR/Monat</span></div>
+                <ul>
+                    <li>Alle Pro Features</li>
+                    <li>Unlimited Shops</li>
+                    <li>Custom Agenten</li>
+                    <li>Dedicated Server</li>
+                    <li>24/7 Premium Support</li>
+                </ul>
+                <button class="btn btn-subscribe" onclick="checkout('enterprise')">Abonnieren</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>2026 Apitool. Alle Rechte vorbehalten.</p>
+    </footer>
+
+    <script>
+        async function checkout(plan) {
+            try {
+                const response = await fetch('/api/payments/create-checkout-session', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        priceKey: plan,
+                        successUrl: window.location.origin + '/success',
+                        cancelUrl: window.location.origin + '/cancel'
+                    })
+                });
+                const data = await response.json();
+                if (data.url) {
+                    window.location.href = data.url;
+                } else {
+                    alert('Fehler beim Erstellen der Checkout-Session');
+                }
+            } catch (error) {
+                alert('Fehler: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
