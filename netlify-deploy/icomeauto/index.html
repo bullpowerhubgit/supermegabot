@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iComeAuto — Deine persönliche Bot-Armee. 24/7. Autopilot.</title>
+  <script></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Exo+2:wght@300;400;600;700;900&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --g: #00ff87;
+      --g2: #00cc6a;
+      --g3: #39ff14;
+      --bg: #000000;
+      --bg2: #001a00;
+      --bg3: #002200;
+      --card: #030d03;
+      --card2: #061206;
+      --text: #c8ffc8;
+      --text-dim: #4a7a4a;
+      --border: rgba(0,255,135,0.18);
+      --glow: rgba(0,255,135,0.35);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Exo 2', 'Segoe UI', system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* SCANLINE OVERLAY */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,135,0.015) 2px, rgba(0,255,135,0.015) 4px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      background: rgba(0,0,0,0.93);
+      border-bottom: 1px solid var(--border);
+      padding: 0.85rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.3rem; color: var(--g);
+      text-decoration: none; letter-spacing: 2px;
+      text-shadow: 0 0 12px var(--g);
+    }
+    .nav-logo span { color: #fff; }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a {
+      color: var(--text-dim); text-decoration: none;
+      font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;
+      transition: color 0.2s, text-shadow 0.2s;
+    }
+    .nav-links a:hover { color: var(--g); text-shadow: 0 0 8px var(--g); }
+    .nav-cta {
+      background: transparent; border: 1px solid var(--g);
+      color: var(--g); padding: 0.45rem 1.2rem;
+      font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; transition: all 0.2s; font-family: 'Share Tech Mono', monospace;
+      text-decoration: none;
+    }
+    .nav-cta:hover { background: var(--g); color: #000; box-shadow: 0 0 20px var(--glow); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 7rem 2rem 5rem;
+      position: relative; overflow: hidden;
+      text-align: center;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 20%, rgba(0,255,135,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse 30% 20% at 20% 80%, rgba(0,255,135,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 30% 20% at 80% 60%, rgba(0,204,106,0.04) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    /* Matrix rain side panels */
+    .matrix-left, .matrix-right {
+      position: absolute; top: 0; width: 120px; height: 100%;
+      overflow: hidden; pointer-events: none; opacity: 0.25;
+    }
+    .matrix-left { left: 0; }
+    .matrix-right { right: 0; }
+    .matrix-col {
+      position: absolute; top: 0;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; color: var(--g);
+      animation: matrixfall linear infinite;
+      white-space: nowrap;
+      writing-mode: vertical-rl;
+      letter-spacing: 4px;
+    }
+    @keyframes matrixfall {
+      from { transform: translateY(-100%); }
+      to { transform: translateY(100vh); }
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      border: 1px solid var(--border);
+      background: rgba(0,255,135,0.05);
+      padding: 0.4rem 1.2rem; border-radius: 2px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; color: var(--g); letter-spacing: 2px;
+      margin-bottom: 2rem; text-transform: uppercase;
+    }
+    .hero-badge::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--g);
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    .hero h1 {
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 900; line-height: 0.95;
+      color: #fff; letter-spacing: -2px;
+      margin-bottom: 0.5rem;
+    }
+    .hero h1 .accent {
+      color: var(--g);
+      text-shadow: 0 0 30px var(--g), 0 0 60px rgba(0,255,135,0.4);
+    }
+    .hero-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1rem; color: var(--text-dim);
+      letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 3rem;
+    }
+
+    /* BOT ARMY ROW */
+    .bot-army {
+      display: flex; gap: 1.5rem; margin-bottom: 3.5rem;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .bot-icon {
+      width: 72px; height: 72px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: var(--bg2);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      position: relative; cursor: pointer;
+      transition: transform 0.3s;
+    }
+    .bot-icon:hover { transform: scale(1.15); }
+    .bot-icon .bot-emoji { font-size: 1.6rem; }
+    .bot-icon .bot-pulse {
+      position: absolute; inset: -3px;
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      background: transparent;
+      border: 1px solid var(--g);
+      animation: pulse-hex 2s infinite;
+      opacity: 0;
+    }
+    @keyframes pulse-hex {
+      0% { opacity: 0.8; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.4); }
+    }
+    .bot-icon:nth-child(1) .bot-pulse { animation-delay: 0s; }
+    .bot-icon:nth-child(2) .bot-pulse { animation-delay: 0.4s; }
+    .bot-icon:nth-child(3) .bot-pulse { animation-delay: 0.8s; }
+    .bot-icon:nth-child(4) .bot-pulse { animation-delay: 1.2s; }
+    .bot-icon:nth-child(5) .bot-pulse { animation-delay: 1.6s; }
+    .bot-name {
+      margin-top: 0.7rem; font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: var(--g); letter-spacing: 1px;
+      text-align: center;
+    }
+
+    /* LIVE TICKER */
+    .ticker {
+      background: var(--bg2); border: 1px solid var(--border);
+      padding: 1rem 2.5rem; display: inline-flex; align-items: center; gap: 1rem;
+      margin-bottom: 2.5rem;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+    }
+    .ticker-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px;
+    }
+    .ticker-value {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.8rem; color: var(--g); font-weight: 700;
+      text-shadow: 0 0 20px var(--g);
+    }
+    .ticker-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--g); box-shadow: 0 0 8px var(--g);
+      animation: blink 0.8s infinite;
+    }
+
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      background: var(--g); color: #000; font-weight: 700;
+      padding: 1rem 2.5rem; font-size: 1rem; letter-spacing: 1px;
+      text-decoration: none; text-transform: uppercase;
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: all 0.25s; box-shadow: 0 0 30px rgba(0,255,135,0.4);
+      font-family: 'Exo 2', sans-serif;
+    }
+    .btn-primary:hover { background: #fff; box-shadow: 0 0 50px rgba(0,255,135,0.7); transform: translateY(-2px); }
+    .btn-ghost {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      background: transparent; color: var(--g); font-weight: 600;
+      padding: 1rem 2.5rem; font-size: 0.9rem; letter-spacing: 1px;
+      text-decoration: none; text-transform: uppercase;
+      border: 1px solid var(--border);
+      clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+      transition: all 0.25s;
+    }
+    .btn-ghost:hover { border-color: var(--g); background: rgba(0,255,135,0.06); }
+
+    /* SECTION */
+    section { padding: 6rem 2rem; position: relative; z-index: 1; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-header { text-align: center; margin-bottom: 4rem; }
+    .section-tag {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--g); letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 0.8rem; display: block;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 900;
+      color: #fff; letter-spacing: -1px; line-height: 1.1;
+    }
+    .section-title .g { color: var(--g); }
+    .section-desc { color: var(--text-dim); margin-top: 1rem; font-size: 1rem; max-width: 580px; margin-left: auto; margin-right: auto; }
+
+    /* BOT CARDS — angular hex-inspired layout */
+    .bots-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1px;
+      background: var(--border);
+    }
+    .bot-card {
+      background: var(--card);
+      padding: 2rem 1.8rem;
+      position: relative; overflow: hidden;
+      transition: background 0.3s, transform 0.3s;
+      cursor: default;
+    }
+    .bot-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 3px; height: 100%;
+      background: var(--g);
+      box-shadow: 0 0 12px var(--g);
+    }
+    .bot-card::after {
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 40px; height: 40px;
+      border-top: 2px solid var(--border);
+      border-right: 2px solid var(--border);
+    }
+    .bot-card:hover { background: var(--card2); }
+    .bot-card-head {
+      display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem;
+    }
+    .bot-card-icon {
+      width: 52px; height: 52px;
+      background: var(--bg2);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem; flex-shrink: 0;
+      border: 1px solid var(--border);
+    }
+    .bot-card-name {
+      font-size: 1.15rem; font-weight: 700; color: #fff;
+    }
+    .bot-card-task {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--text-dim); letter-spacing: 1px;
+    }
+    .bot-status {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      background: rgba(0,255,135,0.08); border: 1px solid rgba(0,255,135,0.2);
+      padding: 0.3rem 0.8rem; font-size: 0.75rem; font-family: 'Share Tech Mono', monospace;
+      color: var(--g); margin-bottom: 1rem; letter-spacing: 1px;
+    }
+    .bot-status::before {
+      content: '';
+      width: 6px; height: 6px; border-radius: 50%; background: var(--g);
+      animation: blink 1s infinite;
+    }
+    .bot-card-desc { color: var(--text-dim); font-size: 0.88rem; line-height: 1.6; margin-bottom: 1.2rem; }
+    .bot-counter {
+      font-family: 'Share Tech Mono', monospace; font-size: 0.75rem;
+      color: var(--text-dim); border-top: 1px solid var(--border);
+      padding-top: 0.8rem; margin-top: 0.8rem;
+    }
+    .bot-counter .count { color: var(--g); font-size: 1.1rem; }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1px; background: var(--border);
+      margin: 4rem 0;
+    }
+    .stat-box {
+      background: var(--card); padding: 2rem 1.5rem; text-align: center;
+      position: relative;
+    }
+    .stat-box::before {
+      content: '';
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 60px; height: 2px; background: var(--g);
+      box-shadow: 0 0 10px var(--g);
+    }
+    .stat-num {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 2.5rem; color: var(--g);
+      text-shadow: 0 0 20px rgba(0,255,135,0.5);
+      display: block; margin-bottom: 0.3rem;
+    }
+    .stat-label { font-size: 0.78rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
+
+    /* HOW IT WORKS */
+    .how-steps {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 2rem;
+    }
+    .how-step { position: relative; padding-left: 1.5rem; }
+    .how-step::before {
+      content: '';
+      position: absolute; left: 0; top: 0; bottom: 0;
+      width: 2px; background: linear-gradient(180deg, var(--g) 0%, transparent 100%);
+    }
+    .step-num {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.7rem; color: var(--g); letter-spacing: 3px;
+      margin-bottom: 0.6rem; text-transform: uppercase;
+    }
+    .step-title { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; }
+    .step-desc { color: var(--text-dim); font-size: 0.88rem; }
+
+    /* FEATURES GRID */
+    .feat-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 1.5rem;
+    }
+    .feat-item {
+      background: var(--card); padding: 1.5rem;
+      border: 1px solid var(--border);
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+      position: relative; overflow: hidden;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .feat-item:hover {
+      border-color: var(--g);
+      box-shadow: 0 0 20px rgba(0,255,135,0.1);
+    }
+    .feat-icon { font-size: 1.5rem; margin-bottom: 0.8rem; display: block; }
+    .feat-title { font-weight: 700; color: #fff; margin-bottom: 0.4rem; }
+    .feat-desc { color: var(--text-dim); font-size: 0.85rem; }
+
+    /* PRICING */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 2rem; align-items: start;
+    }
+    .price-card {
+      background: var(--card); border: 1px solid var(--border);
+      padding: 2.5rem 2rem; position: relative;
+      clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 20px 100%, 0 calc(100% - 20px));
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+    .price-card:hover { border-color: var(--g); box-shadow: 0 0 40px rgba(0,255,135,0.1); }
+    .price-card.featured {
+      border-color: var(--g);
+      box-shadow: 0 0 40px rgba(0,255,135,0.15);
+      background: linear-gradient(145deg, rgba(0,255,135,0.05) 0%, var(--card) 100%);
+    }
+    .price-card.featured::before {
+      content: '// EMPFOHLEN';
+      position: absolute; top: 1rem; right: 1rem;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.65rem; color: var(--g); letter-spacing: 2px;
+    }
+    .price-tier {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.72rem; color: var(--g); letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 0.8rem;
+    }
+    .price-amount {
+      font-size: 3rem; font-weight: 900; color: #fff; line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+    .price-amount span { font-size: 1.2rem; color: var(--text-dim); font-weight: 400; }
+    .price-desc { color: var(--text-dim); font-size: 0.85rem; margin-bottom: 1.8rem; }
+    .price-features { list-style: none; margin-bottom: 2rem; }
+    .price-features li {
+      padding: 0.55rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-size: 0.88rem; color: var(--text-dim);
+      display: flex; align-items: center; gap: 0.6rem;
+    }
+    .price-features li::before { content: '▶'; color: var(--g); font-size: 0.5rem; flex-shrink: 0; }
+    .price-btn {
+      display: block; text-align: center; text-decoration: none;
+      background: transparent; border: 1px solid var(--g); color: var(--g);
+      padding: 0.85rem; font-weight: 700; font-size: 0.88rem;
+      letter-spacing: 2px; text-transform: uppercase;
+      font-family: 'Share Tech Mono', monospace;
+      clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+      transition: all 0.2s;
+    }
+    .price-btn:hover, .price-card.featured .price-btn { background: var(--g); color: #000; }
+
+    /* TERMINAL SECTION */
+    .terminal {
+      background: #050505; border: 1px solid var(--border);
+      font-family: 'Share Tech Mono', monospace;
+      padding: 0;
+      margin: 3rem 0;
+      clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 0 100%);
+    }
+    .terminal-bar {
+      background: #0a0a0a; border-bottom: 1px solid var(--border);
+      padding: 0.6rem 1rem; display: flex; align-items: center; gap: 0.5rem;
+    }
+    .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+    .t-dot.r { background: #ff5f57; }
+    .t-dot.y { background: #febc2e; }
+    .t-dot.g2 { background: var(--g); }
+    .t-title { font-size: 0.7rem; color: var(--text-dim); margin-left: 0.5rem; letter-spacing: 2px; }
+    .terminal-body { padding: 1.5rem 1.5rem; font-size: 0.82rem; line-height: 2; }
+    .t-line { display: flex; gap: 0.8rem; }
+    .t-prompt { color: var(--g); }
+    .t-cmd { color: #fff; }
+    .t-out { color: var(--text-dim); padding-left: 1.5rem; }
+    .t-success { color: var(--g); padding-left: 1.5rem; }
+    .t-cursor {
+      display: inline-block; width: 8px; height: 14px;
+      background: var(--g); animation: blink 0.8s infinite;
+      vertical-align: middle;
+    }
+
+    /* CTA */
+    .cta-section {
+      background: linear-gradient(135deg, var(--bg2) 0%, #000 100%);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 6rem 2rem; text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(0,255,135,0.08) 0%, transparent 70%);
+    }
+    .cta-title {
+      font-size: clamp(2rem, 5vw, 4rem); font-weight: 900;
+      color: #fff; margin-bottom: 1rem; position: relative;
+    }
+    .cta-sub { color: var(--text-dim); font-size: 1rem; margin-bottom: 2.5rem; position: relative; }
+    .cta-btn {
+      display: inline-flex; align-items: center; gap: 0.8rem;
+      background: var(--g); color: #000; font-weight: 900;
+      padding: 1.2rem 3.5rem; font-size: 1.1rem; letter-spacing: 1px;
+      text-decoration: none; text-transform: uppercase;
+      clip-path: polygon(10px 0%, 100% 0%, calc(100% - 10px) 100%, 0% 100%);
+      box-shadow: 0 0 50px rgba(0,255,135,0.5);
+      transition: all 0.25s; position: relative; font-family: 'Exo 2', sans-serif;
+    }
+    .cta-btn:hover { transform: scale(1.04); box-shadow: 0 0 80px rgba(0,255,135,0.7); }
+
+    /* FOOTER */
+    footer {
+      background: #000; border-top: 1px solid var(--border);
+      padding: 3rem 2rem; text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.2rem; color: var(--g); letter-spacing: 3px;
+      text-shadow: 0 0 10px var(--g); margin-bottom: 1rem;
+    }
+    .footer-links { display: flex; gap: 2rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem; }
+    .footer-links a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--g); }
+    .footer-copy { font-family: 'Share Tech Mono', monospace; font-size: 0.7rem; color: #1a331a; }
+
+    @media (max-width: 640px) {
+      nav { padding: 0.75rem 1.2rem; }
+      .nav-links { display: none; }
+      .bot-army { gap: 1rem; }
+      .bot-icon { width: 56px; height: 56px; }
+    }
+  </style>
+</head>
+<body>
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#000f08;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #10b98122}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#10b981,#047857);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}<div style="display:inline-block;background:rgba(255,255,255,0.07);color:#10b981;border:1px solid #10b98140;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1.2rem">ab €29/mo</div>
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#10b981;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#10b981}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#10b981,#047857);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #10b98144}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">💰</div>
+    <h1>iComeAuto</h1>
+    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#10b981;border:1px solid #10b98140;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">ab €29/mo</div>
+    <div class="tag">5 KI-Bots die rund um die Uhr für dich verdienen</div>
+    <div class="feat">Affiliate Bot • Email Bot • Social Media Bot • 24/7</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">iCome<span>Auto</span></a>
+  <div class="nav-links">
+    <a href="#bots">// BOTS</a>
+    <a href="#features">// FEATURES</a>
+    <a href="#pricing">// PREISE</a>
+  </div>
+  <a href="https://icomeauto-bots.netlify.app" class="nav-cta">Jetzt starten</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="matrix-left" aria-hidden="true" id="matL"></div>
+  <div class="matrix-right" aria-hidden="true" id="matR"></div>
+
+  <div class="hero-badge">SYSTEM ONLINE // 5/5 BOTS AKTIV</div>
+
+  <h1>DEINE PERSÖNLICHE<br><span class="accent">BOT-ARMEE</span></h1>
+  <p class="hero-sub">// Verdient. Während du schläfst.</p>
+
+  <div class="bot-army">
+    <div>
+      <div class="bot-icon">
+        <div class="bot-pulse"></div>
+        <span class="bot-emoji">🤖</span>
+      </div>
+      <div class="bot-name">AFFILIATE</div>
+    </div>
+    <div>
+      <div class="bot-icon">
+        <div class="bot-pulse"></div>
+        <span class="bot-emoji">📧</span>
+      </div>
+      <div class="bot-name">E-MAIL</div>
+    </div>
+    <div>
+      <div class="bot-icon">
+        <div class="bot-pulse"></div>
+        <span class="bot-emoji">📱</span>
+      </div>
+      <div class="bot-name">SOCIAL</div>
+    </div>
+    <div>
+      <div class="bot-icon">
+        <div class="bot-pulse"></div>
+        <span class="bot-emoji">🛒</span>
+      </div>
+      <div class="bot-name">SHOP</div>
+    </div>
+    <div>
+      <div class="bot-icon">
+        <div class="bot-pulse"></div>
+        <span class="bot-emoji">📊</span>
+      </div>
+      <div class="bot-name">ANALYTICS</div>
+    </div>
+  </div>
+
+  <div class="ticker">
+    <div class="ticker-dot"></div>
+    <div class="ticker-label">HEUTE GENERIERT</div>
+    <div class="ticker-value" id="earningsTicker">€0</div>
+  </div>
+
+  <div class="hero-btns">
+    <a href="https://icomeauto-bots.netlify.app" class="btn-primary">▶ Bot-Armee aktivieren</a>
+    <a href="#bots" class="btn-ghost">// Bots ansehen</a>
+  </div>
+</section>
+
+<!-- TERMINAL -->
+<section style="padding:3rem 2rem; background:#000;">
+  <div class="section-inner">
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="t-dot r"></div>
+        <div class="t-dot y"></div>
+        <div class="t-dot g2"></div>
+        <span class="t-title">ICOMEAUTO — SYSTEM LOG // 2026-06-11 09:42:17</span>
+      </div>
+      <div class="terminal-body">
+        <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd"> icomeauto start --all-bots</span></div>
+        <div class="t-out">[OK] AffiliateBot gestartet — 234 Links aktiv</div>
+        <div class="t-out">[OK] EmailBot gestartet — Sequenz läuft, 1.847 Empfänger</div>
+        <div class="t-out">[OK] SocialBot gestartet — 12 Posts geplant</div>
+        <div class="t-out">[OK] ShopBot gestartet — Shopify-Sync aktiv</div>
+        <div class="t-out">[OK] AnalyticsBot gestartet — Dashboard live</div>
+        <div class="t-success">[✓] 5/5 Bots online. Einnahmen: €<span id="termCount">0</span>/Tag</div>
+        <div class="t-line"><span class="t-prompt">$</span><span class="t-cmd"> <span class="t-cursor"></span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BOT CARDS -->
+<section id="bots">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-tag">// DEINE BOTS</span>
+      <h2 class="section-title">5 Spezialisierte <span class="g">KI-Agenten</span></h2>
+      <p class="section-desc">Jeder Bot übernimmt eine Aufgabe vollautomatisch — rund um die Uhr, ohne Pause, ohne Fehler.</p>
+    </div>
+    <div class="bots-grid">
+      <div class="bot-card">
+        <div class="bot-card-head">
+          <div class="bot-card-icon">🤖</div>
+          <div>
+            <div class="bot-card-name">AffiliateBot</div>
+            <div class="bot-card-task">// AFFILIATE.MARKETING.ENGINE</div>
+          </div>
+        </div>
+        <div class="bot-status">STATUS: AKTIV 🟢</div>
+        <p class="bot-card-desc">Findet automatisch die besten Affiliate-Produkte, erstellt Links, platziert sie strategisch und trackt jede Konversion in Echtzeit.</p>
+        <div class="bot-counter">Nachrichten gesendet: <span class="count" data-start="1200" data-end="3847">1200</span></div>
+      </div>
+      <div class="bot-card">
+        <div class="bot-card-head">
+          <div class="bot-card-icon">📧</div>
+          <div>
+            <div class="bot-card-name">EmailBot</div>
+            <div class="bot-card-task">// EMAIL.AUTOMATION.CORE</div>
+          </div>
+        </div>
+        <div class="bot-status">STATUS: AKTIV 🟢</div>
+        <p class="bot-card-desc">Schreibt, personalisiert und verschickt E-Mail-Kampagnen. A/B-Testing automatisch. Öffnungsrate: Ø 34% — weit über Marktdurchschnitt.</p>
+        <div class="bot-counter">E-Mails zugestellt: <span class="count" data-start="5000" data-end="18420">5000</span></div>
+      </div>
+      <div class="bot-card">
+        <div class="bot-card-head">
+          <div class="bot-card-icon">📱</div>
+          <div>
+            <div class="bot-card-name">SocialBot</div>
+            <div class="bot-card-task">// SOCIAL.MEDIA.AUTOPILOT</div>
+          </div>
+        </div>
+        <div class="bot-status">STATUS: AKTIV 🟢</div>
+        <p class="bot-card-desc">Postet täglich auf Instagram, Twitter/X, LinkedIn und TikTok. KI schreibt Texte, wählt Hashtags und analysiert Performance.</p>
+        <div class="bot-counter">Posts veröffentlicht: <span class="count" data-start="400" data-end="1243">400</span></div>
+      </div>
+      <div class="bot-card">
+        <div class="bot-card-head">
+          <div class="bot-card-icon">🛒</div>
+          <div>
+            <div class="bot-card-name">ShopBot</div>
+            <div class="bot-card-task">// SHOPIFY.REVENUE.ENGINE</div>
+          </div>
+        </div>
+        <div class="bot-status">STATUS: AKTIV 🟢</div>
+        <p class="bot-card-desc">Optimiert Produkttexte, senkt Warenkörbe zurück, erstellt Flash-Sales und schreibt SEO-Beschreibungen mit Claude AI.</p>
+        <div class="bot-counter">Wiederhergestellte Carts: <span class="count" data-start="80" data-end="287">80</span></div>
+      </div>
+      <div class="bot-card">
+        <div class="bot-card-head">
+          <div class="bot-card-icon">📊</div>
+          <div>
+            <div class="bot-card-name">AnalyticsBot</div>
+            <div class="bot-card-task">// INTELLIGENCE.DASHBOARD</div>
+          </div>
+        </div>
+        <div class="bot-status">STATUS: AKTIV 🟢</div>
+        <p class="bot-card-desc">Trackt alle KPIs in Echtzeit, erstellt tägliche Reports und gibt KI-basierte Empfehlungen für Optimierungen.</p>
+        <div class="bot-counter">Reports generiert: <span class="count" data-start="30" data-end="124">30</span></div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-box">
+        <span class="stat-num">€<span class="count" data-start="0" data-end="4280">0</span></span>
+        <span class="stat-label">Ø Monatsverdienst</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num"><span class="count" data-start="0" data-end="99">0</span>%</span>
+        <span class="stat-label">Uptime 24/7</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num"><span class="count" data-start="0" data-end="5">0</span></span>
+        <span class="stat-label">Aktive Bots</span>
+      </div>
+      <div class="stat-box">
+        <span class="stat-num"><span class="count" data-start="0" data-end="834">0</span>+</span>
+        <span class="stat-label">Aktive Nutzer</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-tag">// PROTOKOLL</span>
+      <h2 class="section-title">In <span class="g">4 Schritten</span> zur Bot-Armee</h2>
+    </div>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="step-num">// STEP_01</div>
+        <div class="step-title">Account erstellen</div>
+        <div class="step-desc">Registriere dich in 60 Sekunden. Kreditkarte optional, keine Einrichtungsgebühr, sofortiger Zugriff.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">// STEP_02</div>
+        <div class="step-title">APIs verbinden</div>
+        <div class="step-desc">Shopify, Digistore24, Telegram oder E-Mail — verbinde deine Kanäle mit einem Klick über unser Dashboard.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">// STEP_03</div>
+        <div class="step-title">Bots konfigurieren</div>
+        <div class="step-desc">Wähle deine 5 Bots, setze Ziele und Budgets. Das System optimiert automatisch auf maximale Einnahmen.</div>
+      </div>
+      <div class="how-step">
+        <div class="step-num">// STEP_04</div>
+        <div class="step-title">Einnahmen tracken</div>
+        <div class="step-desc">Sieh in Echtzeit, wie deine Bots arbeiten. Daily Reports direkt per Telegram oder E-Mail.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-tag">// CAPABILITIES</span>
+      <h2 class="section-title">Was iComeAuto <span class="g">kann</span></h2>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-item">
+        <span class="feat-icon">⚡</span>
+        <div class="feat-title">Echtzeit-Monitoring</div>
+        <div class="feat-desc">Live-Dashboard zeigt alle Bot-Aktivitäten, Einnahmen und KPIs in Echtzeit.</div>
+      </div>
+      <div class="feat-item">
+        <span class="feat-icon">🧠</span>
+        <div class="feat-title">KI-gestützte Optimierung</div>
+        <div class="feat-desc">Claude AI analysiert deine Kampagnen und optimiert automatisch für bessere Performance.</div>
+      </div>
+      <div class="feat-item">
+        <span class="feat-icon">🔗</span>
+        <div class="feat-title">50+ Integrationen</div>
+        <div class="feat-desc">Shopify, Digistore24, Mailchimp, Telegram, WhatsApp, Instagram, TikTok und mehr.</div>
+      </div>
+      <div class="feat-item">
+        <span class="feat-icon">🛡️</span>
+        <div class="feat-title">Spam-Schutz</div>
+        <div class="feat-desc">Intelligente Rate-Limits und Anti-Ban-Mechanismen schützen deine Accounts.</div>
+      </div>
+      <div class="feat-item">
+        <span class="feat-icon">📈</span>
+        <div class="feat-title">A/B Testing</div>
+        <div class="feat-desc">Automatisches Split-Testing für E-Mails, Landingpages und Ad-Texte.</div>
+      </div>
+      <div class="feat-item">
+        <span class="feat-icon">🌐</span>
+        <div class="feat-title">Multi-Language</div>
+        <div class="feat-desc">Bots erstellen Content in Deutsch, Englisch, Spanisch und 20 weiteren Sprachen.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing" style="background: #000; border-top: 1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-tag">// PREISSTRUKTUR</span>
+      <h2 class="section-title">Wähle dein <span class="g">Arsenal</span></h2>
+      <p class="section-desc">Kein Abo-Risiko. 14 Tage Geld-zurück-Garantie. Sofortiger Zugriff nach Zahlung.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card">
+        <div class="price-tier">// STARTER</div>
+        <div class="price-amount">€29<span>/mo</span></div>
+        <div class="price-desc">Für Einsteiger die automatisieren wollen</div>
+        <ul class="price-features">
+          <li>2 aktive Bots</li>
+          <li>Bis zu 1.000 Nachrichten/Tag</li>
+          <li>E-Mail + Affiliate Bot</li>
+          <li>Basis-Dashboard</li>
+          <li>E-Mail Support</li>
+        </ul>
+        <a href="https://icomeauto-bots.netlify.app" class="price-btn">STARTER WÄHLEN</a>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tier">// PRO</div>
+        <div class="price-amount">€59<span>/mo</span></div>
+        <div class="price-desc">Für ernsthafte Unternehmer mit Wachstumsambitionen</div>
+        <ul class="price-features">
+          <li>Alle 5 Bots aktiv</li>
+          <li>Unbegrenzte Nachrichten</li>
+          <li>KI-Optimierung inklusive</li>
+          <li>Live-Dashboard + Reports</li>
+          <li>Telegram + E-Mail Support</li>
+          <li>A/B Testing automatisch</li>
+        </ul>
+        <a href="https://icomeauto-bots.netlify.app" class="price-btn">PRO WÄHLEN</a>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">// ENTERPRISE</div>
+        <div class="price-amount">€149<span>/mo</span></div>
+        <div class="price-desc">Für Agenturen und skalierte Businesses</div>
+        <ul class="price-features">
+          <li>Unbegrenzte Bots</li>
+          <li>White-Label Option</li>
+          <li>Multi-Account Management</li>
+          <li>Dedizierter Account Manager</li>
+          <li>Custom Integrationen via API</li>
+          <li>Priority Support 24/7</li>
+        </ul>
+        <a href="https://icomeauto-bots.netlify.app" class="price-btn">ENTERPRISE WÄHLEN</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div style="position:relative;">
+    <h2 class="cta-title">Bereit deine <span style="color:var(--g);">Bot-Armee</span> zu aktivieren?</h2>
+    <p class="cta-sub">Tritt 834+ Unternehmern bei die bereits auf Autopilot verdienen.</p>
+    <a href="https://icomeauto-bots.netlify.app" class="cta-btn">▶▶ JETZT AKTIVIEREN</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">iComeAuto // BOT-ARMEE</div>
+  <div class="footer-links">
+    <a href="#">Datenschutz</a>
+    <a href="#">Impressum</a>
+    <a href="#">AGB</a>
+    <a href="https://icomeauto-bots.netlify.app">Zum Dashboard</a>
+    <a href="https://bullpower-hub-portal.netlify.app">BullPower Hub</a>
+  </div>
+  <div class="footer-copy">© 2026 Rudolf Sarkany · BullPower Tools GmbH · All Systems Online</div>
+</footer>
+
+<script>
+// Matrix rain
+(function(){
+  ['matL','matR'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(!el)return;
+    var chars='01アイウエオカキクケコサシスセソタチツテトナニヌネノ';
+    for(var i=0;i<6;i++){
+      var col=document.createElement('div');
+      col.className='matrix-col';
+      col.style.left=(i*18+4)+'px';
+      col.style.animationDuration=(3+Math.random()*4)+'s';
+      col.style.animationDelay=(-Math.random()*4)+'s';
+      var txt='';
+      for(var j=0;j<30;j++) txt+=chars[Math.floor(Math.random()*chars.length)];
+      col.textContent=txt;
+      el.appendChild(col);
+    }
+  });
+})();
+
+// Count-up
+function countUp(el,start,end,dur){
+  var s=Date.now(),range=end-start;
+  (function tick(){
+    var elapsed=Date.now()-s,progress=Math.min(elapsed/dur,1);
+    var val=Math.floor(start+range*Math.pow(progress,0.6));
+    el.textContent=val.toLocaleString('de-DE');
+    if(progress<1) requestAnimationFrame(tick);
+  })();
+}
+
+// Earnings ticker
+var earnings=Math.floor(Math.random()*300+400);
+var earningEl=document.getElementById('earningsTicker');
+earningEl.textContent='€0';
+setTimeout(function(){
+  var s=Date.now();
+  (function tick(){
+    var p=Math.min((Date.now()-s)/2000,1);
+    earningEl.textContent='€'+Math.floor(earnings*Math.pow(p,0.7)).toLocaleString('de-DE');
+    if(p<1) requestAnimationFrame(tick);
+    else {
+      setInterval(function(){
+        earnings+=Math.floor(Math.random()*12+3);
+        earningEl.textContent='€'+earnings.toLocaleString('de-DE');
+      },3000);
+    }
+  })();
+},800);
+
+// Terminal count
+var termEl=document.getElementById('termCount');
+if(termEl){
+  setTimeout(function(){ countUp(termEl,0,earnings,1500); },1200);
+}
+
+// Intersection observer for count-up
+var counters=document.querySelectorAll('.count[data-end]');
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting && !e.target._counted){
+      e.target._counted=true;
+      countUp(e.target,parseInt(e.target.dataset.start)||0,parseInt(e.target.dataset.end),1800);
+    }
+  });
+},{threshold:0.3});
+counters.forEach(function(c){ obs.observe(c); });
+</script>
+</body>
+</html>

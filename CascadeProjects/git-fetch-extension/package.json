@@ -1,0 +1,74 @@
+{
+  "name": "git-fetch-extension",
+  "displayName": "Git Fetch Extension",
+  "description": "Automatically runs git fetch periodically to keep your repositories up to date",
+  "version": "1.0.0",
+  "publisher": "your-publisher",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "git",
+    "fetch",
+    "repository",
+    "sync"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "gitFetchExtension.start",
+        "title": "Start Git Fetch",
+        "category": "Git Fetch"
+      },
+      {
+        "command": "gitFetchExtension.stop",
+        "title": "Stop Git Fetch",
+        "category": "Git Fetch"
+      },
+      {
+        "command": "gitFetchExtension.manual",
+        "title": "Manual Git Fetch",
+        "category": "Git Fetch"
+      }
+    ],
+    "configuration": {
+      "title": "Git Fetch Extension",
+      "properties": {
+        "gitFetchExtension.interval": {
+          "type": "number",
+          "default": 300000,
+          "minimum": 60000,
+          "maximum": 3600000,
+          "description": "Fetch interval in milliseconds (default: 5 minutes, min: 1 minute, max: 1 hour)"
+        },
+        "gitFetchExtension.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic fetch on startup"
+        },
+        "gitFetchExtension.showNotifications": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show notifications when fetch completes"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^5.0.0"
+  }
+}

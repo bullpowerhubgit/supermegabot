@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RUDIBOT Revenue First Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f172a; color: #e2e8f0; line-height: 1.6; }
+    .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    header { text-align: center; margin-bottom: 30px; padding: 20px; }
+    header h1 { font-size: 2.5rem; color: #22c55e; margin-bottom: 10px; }
+    header p { color: #94a3b8; font-size: 1.1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .card { background: #1e293b; border-radius: 12px; padding: 20px; border: 1px solid #334155; }
+    .card h2 { font-size: 1.2rem; color: #22c55e; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+    .metric { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #334155; }
+    .metric:last-child { border-bottom: none; }
+    .metric-label { color: #94a3b8; font-size: 0.9rem; }
+    .metric-value { font-weight: 600; font-size: 1.1rem; }
+    .positive { color: #22c55e; }
+    .negative { color: #ef4444; }
+    .warning { color: #f59e0b; }
+    .info { color: #3b82f6; }
+    .status-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .status-active { background: #22c55e; }
+    .status-pending { background: #f59e0b; }
+    .status-inactive { background: #64748b; }
+    .action-list { list-style: none; max-height: 300px; overflow-y: auto; }
+    .action-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #334155; }
+    .action-item:last-child { border-bottom: none; }
+    .action-priority { font-size: 0.8rem; padding: 2px 6px; border-radius: 4px; }
+    .priority-high { background: #ef4444; color: white; }
+    .priority-medium { background: #f59e0b; color: white; }
+    .priority-low { background: #3b82f6; color: white; }
+    .btn { background: #22c55e; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+    .btn:hover { background: #16a34a; }
+    .btn-danger { background: #ef4444; }
+    .btn-danger:hover { background: #dc2626; }
+    .loading { text-align: center; color: #94a3b8; padding: 20px; }
+    .error { background: #450a0a; color: #fca5a5; padding: 12px; border-radius: 8px; margin: 10px 0; }
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+    .tab { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 8px 16px; border-radius: 6px; cursor: pointer; }
+    .tab.active { background: #22c55e; color: white; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .progress-bar { width: 100%; height: 20px; background: #334155; border-radius: 10px; overflow: hidden; margin: 10px 0; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); transition: width 0.3s; }
+    .revenue-trend { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+    .trend-up { color: #22c55e; }
+    .trend-down { color: #ef4444; }
+    .trend-stable { color: #94a3b8; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>💰 RUDIBOT Revenue First</h1>
+      <p>Umsatz, Kostenkontrolle und produktive Automationen in Echtzeit</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showSection('revenue')">💸 Umsatz</button>
+      <button class="tab" onclick="showSection('costs')">📊 Kosten</button>
+      <button class="tab" onclick="showSection('actions')">🎯 Aktionen</button>
+      <button class="tab" onclick="showSection('trends')">📈 Trends</button>
+    </div>
+
+    <!-- REVENUE SECTION -->
+    <div id="revenue" class="section active">
+      <div class="grid">
+        <div class="card">
+          <h2>💸 Heute</h2>
+          <div class="metric">
+            <span class="metric-label">Umsatz</span>
+            <span class="metric-value positive" id="revenue-today">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Orders</span>
+            <span class="metric-value" id="orders-today">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Ø Order Value</span>
+            <span class="metric-value" id="aov-today">€0</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>📅 Woche</h2>
+          <div class="metric">
+            <span class="metric-label">Umsatz</span>
+            <span class="metric-value positive" id="revenue-week">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Orders</span>
+            <span class="metric-value" id="orders-week">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Trend</span>
+            <span class="metric-value" id="revenue-trend-week">
+              <span class="trend-stable">→</span> Stabil
+            </span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>📆 Monat</h2>
+          <div class="metric">
+            <span class="metric-label">Umsatz</span>
+            <span class="metric-value positive" id="revenue-month">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Orders</span>
+            <span class="metric-value" id="orders-month">0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Ø Order Value</span>
+            <span class="metric-value" id="aov-month">€0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🔥 Top Produkte (Heute)</h2>
+        <div id="top-products">
+          <div class="loading">Lade Top Produkte...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COSTS SECTION -->
+    <div id="costs" class="section">
+      <div class="grid">
+        <div class="card">
+          <h2>💸 Heute</h2>
+          <div class="metric">
+            <span class="metric-label">Kosten</span>
+            <span class="metric-value negative" id="costs-today">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Subscriptions</span>
+            <span class="metric-value" id="subscriptions-today">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Transaktionen</span>
+            <span class="metric-value" id="transactions-today">€0</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>📅 Woche</h2>
+          <div class="metric">
+            <span class="metric-label">Kosten</span>
+            <span class="metric-value negative" id="costs-week">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Subscriptions</span>
+            <span class="metric-value" id="subscriptions-week">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Trend</span>
+            <span class="metric-value" id="costs-trend-week">
+              <span class="trend-stable">→</span> Stabil
+            </span>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>📆 Monat</h2>
+          <div class="metric">
+            <span class="metric-label">Kosten</span>
+            <span class="metric-value negative" id="costs-month">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Subscriptions</span>
+            <span class="metric-value" id="subscriptions-month">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Profit</span>
+            <span class="metric-value" id="profit-month">€0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>⚠️ Risiko-Subscriptions</h2>
+        <div id="risk-subscriptions">
+          <div class="loading">Lade Risiko-Subscriptions...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTIONS SECTION -->
+    <div id="actions" class="section">
+      <div class="grid">
+        <div class="card">
+          <h2>🎯 Sofort Kündigen</h2>
+          <ul class="action-list" id="cancel-immediate">
+            <li class="loading">Lade Kandidaten...</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>📋 Review & Downgrade</h2>
+          <ul class="action-list" id="review-downgrade">
+            <li class="loading">Lade Kandidaten...</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h2>💰 Einsparungspotenzial</h2>
+          <div class="metric">
+            <span class="metric-label">Monatlich</span>
+            <span class="metric-value positive" id="savings-monthly">€0</span>
+          </div>
+          <div class="metric">
+            <span class="metric-label">Jährlich</span>
+            <span class="metric-value positive" id="savings-yearly">€0</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="savings-progress" style="width: 0%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRENDS SECTION -->
+    <div id="trends" class="section">
+      <div class="card">
+        <h2>📈 Umsatz-Trends (4 Wochen)</h2>
+        <div id="revenue-trends">
+          <div class="loading">Lade Trends...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>📊 Kosten-Trends (4 Wochen)</h2>
+        <div id="costs-trends">
+          <div class="loading">Lade Trends...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>🎯 Revenue First Status</h2>
+        <div class="metric">
+          <span class="metric-label">Modus</span>
+          <span class="metric-value positive">REVENUE FIRST</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Fokus</span>
+          <span class="metric-value">Umsatz, Kosten, Automation</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Priorität</span>
+          <span class="metric-value">Nur produktive Funktionen</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = '/revenue-first';
+
+    function showSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      event.target.classList.add('active');
+      
+      // Load section-specific data
+      if (id === 'revenue') loadRevenueData();
+      if (id === 'costs') loadCostsData();
+      if (id === 'actions') loadActionsData();
+      if (id === 'trends') loadTrendsData();
+    }
+
+    async function loadRevenueData() {
+      try {
+        const res = await fetch(`${API}/dashboard`);
+        const data = await res.json();
+
+        if (data.revenue) {
+          document.getElementById('revenue-today').textContent = `€${data.revenue.today.toFixed(2)}`;
+          document.getElementById('revenue-week').textContent = `€${data.revenue.weekly.toFixed(2)}`;
+          document.getElementById('revenue-month').textContent = `€${data.revenue.monthly.toFixed(2)}`;
+        }
+
+        if (data.metrics) {
+          document.getElementById('orders-today').textContent = data.metrics.ordersToday || 0;
+          document.getElementById('orders-week').textContent = data.metrics.ordersWeek || 0;
+          document.getElementById('orders-month').textContent = data.metrics.ordersMonth || 0;
+          document.getElementById('aov-today').textContent = `€${(data.metrics.avgOrderValue || 0).toFixed(2)}`;
+          document.getElementById('aov-month').textContent = `€${(data.metrics.avgOrderValue || 0).toFixed(2)}`;
+        }
+
+        // Load top products
+        await loadTopProducts();
+      } catch (err) {
+        console.error('Revenue data load failed:', err);
+      }
+    }
+
+    async function loadCostsData() {
+      try {
+        const res = await fetch(`${API}/costs`);
+        const data = await res.json();
+
+        if (data.costs) {
+          document.getElementById('costs-today').textContent = `€${data.costs.today.toFixed(2)}`;
+          document.getElementById('costs-week').textContent = `€${data.costs.weekly.toFixed(2)}`;
+          document.getElementById('costs-month').textContent = `€${data.costs.monthly.toFixed(2)}`;
+          document.getElementById('subscriptions-today').textContent = `€${data.subscriptions.today.toFixed(2)}`;
+          document.getElementById('subscriptions-week').textContent = `€${data.subscriptions.weekly.toFixed(2)}`;
+          document.getElementById('subscriptions-month').textContent = `€${data.subscriptions.monthly.toFixed(2)}`;
+          
+          const profit = data.revenue?.monthly - data.costs?.monthly || 0;
+          document.getElementById('profit-month').textContent = `€${profit.toFixed(2)}`;
+          document.getElementById('profit-month').className = `metric-value ${profit >= 0 ? 'positive' : 'negative'}`;
+        }
+
+        // Load risk subscriptions
+        await loadRiskSubscriptions();
+      } catch (err) {
+        console.error('Costs data load failed:', err);
+      }
+    }
+
+    async function loadActionsData() {
+      try {
+        const res = await fetch(`${API}/actions`);
+        const data = await res.json();
+
+        if (data.cancellations) {
+          const immediate = data.cancellations.filter(c => c.action === 'CANCEL_IMMEDIATELY');
+          const review = data.cancellations.filter(c => c.action === 'DOWNGRADE_REVIEW');
+          
+          renderActionList('cancel-immediate', immediate, 'priority-high', 'Kündigen');
+          renderActionList('review-downgrade', review, 'priority-medium', 'Review');
+          
+          const totalSavings = data.cancellations.reduce((sum, c) => sum + (c.potentialSavings || 0), 0);
+          document.getElementById('savings-monthly').textContent = `€${totalSavings.toFixed(2)}`;
+          document.getElementById('savings-yearly').textContent = `€${(totalSavings * 12).toFixed(2)}`;
+          
+          // Update progress bar (based on potential vs current costs)
+          const progress = Math.min((totalSavings / 1000) * 100, 100); // Max at €1000
+          document.getElementById('savings-progress').style.width = `${progress}%`;
+        }
+      } catch (err) {
+        console.error('Actions data load failed:', err);
+      }
+    }
+
+    async function loadTrendsData() {
+      try {
+        const res = await fetch(`${API}/trends`);
+        const data = await res.json();
+
+        if (data.revenueTrends) {
+          renderTrends('revenue-trends', data.revenueTrends.weeklyData, 'Umsatz');
+        }
+        
+        if (data.costsTrends) {
+          renderTrends('costs-trends', data.costsTrends.weeklyData, 'Kosten');
+        }
+      } catch (err) {
+        console.error('Trends data load failed:', err);
+      }
+    }
+
+    async function loadTopProducts() {
+      try {
+        const res = await fetch(`${API}/top-products`);
+        const products = await res.json();
+        
+        const container = document.getElementById('top-products');
+        container.innerHTML = products.map(product => `
+          <div class="metric">
+            <span class="metric-label">${product.name}</span>
+            <span class="metric-value">${product.quantity}x</span>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Top products load failed:', err);
+      }
+    }
+
+    async function loadRiskSubscriptions() {
+      try {
+        const res = await fetch(`${API}/risk-subscriptions`);
+        const subscriptions = await res.json();
+        
+        const container = document.getElementById('risk-subscriptions');
+        if (subscriptions.length === 0) {
+          container.innerHTML = '<div style="color: #94a3b8; padding: 20px;">Keine Risiko-Subscriptions</div>';
+          return;
+        }
+        
+        container.innerHTML = subscriptions.map(sub => `
+          <div class="action-item">
+            <div>
+              <strong>${sub.name}</strong>
+              <div style="font-size: 0.8rem; color: #94a3b8;">${sub.provider} - €${sub.monthlyCost}/Monat</div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-weight: 600; color: #ef4444;">${sub.riskScore}</div>
+              <span class="action-priority priority-high">RISK</span>
+            </div>
+          </div>
+        `).join('');
+      } catch (err) {
+        console.error('Risk subscriptions load failed:', err);
+      }
+    }
+
+    function renderActionList(elementId, items, priorityClass, action) {
+      const list = document.getElementById(elementId);
+      if (!items || items.length === 0) {
+        list.innerHTML = '<li>Keine Kandidaten</li>';
+        return;
+      }
+      
+      list.innerHTML = items.map(item => `
+        <li class="action-item">
+          <div>
+            <strong>${item.name}</strong>
+            <div style="font-size: 0.8rem; color: #94a3b8;">${item.provider} - €${item.monthlyCost}/Monat</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-weight: 600;">€${(item.potentialSavings || 0).toFixed(2)}/Monat</div>
+            <span class="action-priority ${priorityClass}">${action}</span>
+          </div>
+        </li>
+      `).join('');
+    }
+
+    function renderTrends(elementId, weeklyData, label) {
+      const container = document.getElementById(elementId);
+      if (!weeklyData || weeklyData.length === 0) {
+        container.innerHTML = '<div class="loading">Keine Trend-Daten verfügbar</div>';
+        return;
+      }
+      
+      container.innerHTML = weeklyData.map((week, index) => {
+        const trend = index > 0 ? 
+          (week.total > weeklyData[index - 1].total ? 'up' : 
+           week.total < weeklyData[index - 1].total ? 'down' : 'stable') : 'stable';
+        
+        return `
+          <div class="metric">
+            <span class="metric-label">Woche ${week.week || index + 1}</span>
+            <span class="metric-value">
+              <span class="trend-${trend}">
+                ${trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
+              </span>
+              €${week.total.toFixed(2)}
+            </span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function executeAction(action, params) {
+      try {
+        const res = await fetch(`${API}/execute`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action, ...params })
+        });
+        
+        const result = await res.json();
+        
+        if (result.success) {
+          alert(`✅ Aktion ausgeführt: ${action}`);
+          loadActionsData(); // Refresh actions
+        } else {
+          alert(`❌ Aktion fehlgeschlagen: ${result.error}`);
+        }
+      } catch (err) {
+        alert(`❌ Fehler: ${err.message}`);
+      }
+    }
+
+    // Auto-refresh every 30 seconds
+    setInterval(() => {
+      const activeSection = document.querySelector('.section.active');
+      if (activeSection) {
+        const sectionId = activeSection.id;
+        if (sectionId === 'revenue') loadRevenueData();
+        if (sectionId === 'costs') loadCostsData();
+        if (sectionId === 'actions') loadActionsData();
+      }
+    }, 30000);
+
+    // Initial load
+    loadRevenueData();
+  </script>
+</body>
+</html>

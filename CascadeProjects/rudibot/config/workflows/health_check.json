@@ -1,0 +1,31 @@
+{
+  "id": "health_check",
+  "name": "System Health Check",
+  "description": "Perform comprehensive health check of all systems",
+  "steps": [
+    {
+      "id": "check_apis",
+      "type": "api_health_check",
+      "timeout": 30000
+    },
+    {
+      "id": "check_databases",
+      "type": "database_health_check",
+      "timeout": 10000
+    },
+    {
+      "id": "check_services",
+      "type": "service_health_check",
+      "timeout": 15000
+    },
+    {
+      "id": "generate_report",
+      "type": "report_generation",
+      "timeout": 20000
+    }
+  ],
+  "retryPolicy": {
+    "maxAttempts": 3,
+    "backoff": "exponential"
+  }
+}

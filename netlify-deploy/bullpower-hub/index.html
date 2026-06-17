@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BullPower Hub — Alle 12 Tools. Ein Preis. Maximaler Profit.</title>
+  <script></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #04040a;
+      --bg2: #07070f;
+      --bg3: #0b0b18;
+      --card: #080810;
+      --card2: #0d0d1a;
+      --gold: #f59e0b;
+      --gold2: #d97706;
+      --gold3: #fcd34d;
+      --gold-dim: rgba(245,158,11,0.12);
+      --gold-border: rgba(245,158,11,0.2);
+      --text: #f5f0e8;
+      --text-dim: #5c5240;
+      --text-mid: #a89070;
+      --border: rgba(245,158,11,0.12);
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      background: rgba(4,4,10,0.97); backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.9rem 3rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      display: flex; align-items: center; gap: 0.8rem; text-decoration: none;
+    }
+    .nav-logo-icon {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+    }
+    .nav-logo-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem; font-weight: 700; letter-spacing: 1px;
+      background: linear-gradient(135deg, var(--gold3), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links { display: flex; gap: 0.2rem; }
+    .nav-links a {
+      color: var(--text-mid); text-decoration: none; font-size: 0.84rem;
+      padding: 0.4rem 0.9rem; border-radius: 6px; transition: all 0.2s; font-weight: 500;
+    }
+    .nav-links a:hover { color: var(--gold3); background: var(--gold-dim); }
+    .nav-cta {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #000; font-weight: 800; padding: 0.6rem 1.6rem;
+      border-radius: 6px; text-decoration: none; font-size: 0.85rem;
+      letter-spacing: 0.5px; transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(245,158,11,0.25);
+    }
+    .nav-cta:hover { opacity: 0.88; transform: translateY(-1px); box-shadow: 0 8px 30px rgba(245,158,11,0.4); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh; padding: 8rem 3rem 6rem;
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; text-align: center; position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 60% 40% at 50% 10%, rgba(245,158,11,0.08) 0%, transparent 55%),
+        radial-gradient(ellipse 30% 20% at 10% 80%, rgba(245,158,11,0.04) 0%, transparent 50%),
+        radial-gradient(ellipse 25% 15% at 90% 60%, rgba(252,211,77,0.03) 0%, transparent 50%);
+    }
+    /* Gold grid */
+    .hero-grid {
+      position: absolute; inset: 0; pointer-events: none;
+      background-image:
+        linear-gradient(rgba(245,158,11,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245,158,11,0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    .hero-pretag {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      border: 1px solid var(--gold-border);
+      background: var(--gold-dim);
+      color: var(--gold3); padding: 0.4rem 1.3rem; border-radius: 3px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+      margin-bottom: 2.5rem; position: relative;
+    }
+
+    .hero h1 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 8vw, 7rem); font-weight: 700;
+      line-height: 0.95; letter-spacing: -2px;
+      position: relative; margin-bottom: 1.5rem;
+    }
+    .hero h1 .line-gold {
+      background: linear-gradient(135deg, var(--gold3) 0%, var(--gold) 40%, var(--gold2) 70%, var(--gold3) 100%);
+      background-size: 200% auto;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      animation: goldshift 5s linear infinite;
+      display: block;
+    }
+    .hero h1 .line-white { color: #fff; display: block; }
+    @keyframes goldshift { to { background-position: 200% center; } }
+
+    .hero-sub {
+      color: var(--text-mid); font-size: 1.05rem; max-width: 560px;
+      margin: 0 auto 3.5rem; position: relative; line-height: 1.7;
+    }
+
+    /* HERO STATS */
+    .hero-stats {
+      display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center;
+      margin-bottom: 3.5rem; position: relative;
+    }
+    .hero-stat {}
+    .hero-stat-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.5rem; font-weight: 700; color: var(--gold);
+      line-height: 1; display: block; margin-bottom: 0.2rem;
+    }
+    .hero-stat-lbl { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 2px; }
+
+    /* HERO BUTTONS */
+    .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; position: relative; }
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #000; font-weight: 800; padding: 1.1rem 3rem;
+      font-size: 1rem; border-radius: 6px; text-decoration: none; letter-spacing: 0.5px;
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      box-shadow: 0 0 40px rgba(245,158,11,0.35); transition: all 0.25s;
+    }
+    .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 0 60px rgba(245,158,11,0.55); }
+    .btn-outline-gold {
+      background: transparent; border: 1px solid var(--gold-border);
+      color: var(--gold3); font-weight: 600; padding: 1.1rem 3rem;
+      font-size: 1rem; border-radius: 6px; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 0.6rem; transition: all 0.2s;
+    }
+    .btn-outline-gold:hover { border-color: var(--gold); background: var(--gold-dim); }
+
+    /* SECTIONS */
+    section { padding: 5.5rem 3rem; position: relative; z-index: 1; }
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+    .sec-eyebrow {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 4px; color: var(--gold); margin-bottom: 0.8rem; display: block;
+    }
+    .sec-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 700;
+      color: #fff; letter-spacing: -1px; line-height: 1.05;
+    }
+    .sec-title .gold { color: var(--gold); }
+    .sec-sub { color: var(--text-mid); font-size: 0.95rem; margin-top: 0.8rem; max-width: 540px; line-height: 1.7; }
+
+    /* PRODUCT GRID — 12 cards */
+    .product-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1px; background: var(--border); margin-top: 3.5rem;
+    }
+    .product-card {
+      background: var(--card); padding: 2rem 1.8rem;
+      position: relative; overflow: hidden; transition: background 0.3s;
+      cursor: default;
+    }
+    .product-card:hover { background: var(--card2); }
+    .product-card::after {
+      content: '';
+      position: absolute; top: 0; right: 0;
+      width: 0; height: 0;
+      border-style: solid;
+      border-width: 0 28px 28px 0;
+      border-color: transparent var(--bg) transparent transparent;
+      transition: border-color 0.3s;
+    }
+    .product-card:hover::after { border-color: transparent var(--card2) transparent transparent; }
+    .product-card-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 1rem; }
+    .product-icon {
+      width: 50px; height: 50px;
+      background: var(--gold-dim); border: 1px solid var(--gold-border);
+      border-radius: 10px; display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .product-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem; font-weight: 700; color: var(--gold);
+    }
+    .product-price .mo { font-size: 0.65rem; color: var(--text-dim); font-weight: 400; font-family: 'Inter', sans-serif; }
+    .product-name { font-size: 0.95rem; font-weight: 700; color: #fff; margin-bottom: 0.4rem; }
+    .product-desc { font-size: 0.8rem; color: var(--text-mid); line-height: 1.5; margin-bottom: 1.2rem; }
+    .product-link {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-size: 0.78rem; color: var(--gold); font-weight: 600;
+      text-decoration: none; letter-spacing: 0.5px; transition: opacity 0.2s;
+      border-bottom: 1px solid rgba(245,158,11,0.3); padding-bottom: 1px;
+    }
+    .product-link:hover { opacity: 0.7; }
+
+    /* BUNDLE DEAL */
+    .bundle-box {
+      border: 1px solid var(--gold);
+      background: linear-gradient(135deg, rgba(245,158,11,0.06) 0%, var(--card) 60%);
+      border-radius: 12px; padding: 3rem; position: relative; overflow: hidden;
+      margin-top: 4rem;
+    }
+    .bundle-box::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold3), var(--gold), transparent);
+    }
+    .bundle-box::after {
+      content: '';
+      position: absolute; bottom: -80px; right: -80px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,158,11,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .bundle-grid { display: grid; grid-template-columns: 1fr auto; gap: 3rem; align-items: center; }
+    .bundle-headline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.2rem; font-weight: 700; color: #fff; line-height: 1.1; margin-bottom: 1rem;
+    }
+    .bundle-headline .gold { color: var(--gold); }
+    .bundle-math { display: flex; flex-direction: column; gap: 0.8rem; }
+    .bundle-line {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 0.6rem 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.85rem; color: var(--text-mid);
+    }
+    .bundle-line.total {
+      border-bottom: none; margin-top: 0.5rem; padding-top: 1rem;
+      border-top: 1px solid var(--gold-border);
+    }
+    .bundle-line .line-val { font-weight: 600; color: var(--text); }
+    .bundle-line .line-val.strike { text-decoration: line-through; color: var(--text-dim); }
+    .bundle-line .line-val.gold { color: var(--gold); font-size: 1.3rem; font-family: 'Cormorant Garamond', serif; }
+    .bundle-savings {
+      background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(245,158,11,0.05));
+      border: 1px solid var(--gold-border); border-radius: 8px;
+      padding: 1rem 1.5rem; margin-top: 1.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .bundle-savings .save-label { font-size: 0.82rem; color: var(--text-mid); }
+    .bundle-savings .save-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem; font-weight: 700; color: var(--gold3);
+    }
+    .bundle-cta-box { text-align: center; }
+    .bundle-price-display {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 5rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--gold3), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      line-height: 1; display: block;
+    }
+    .bundle-price-sub { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+    .bundle-cta-btn {
+      display: block; background: linear-gradient(135deg, var(--gold), var(--gold2));
+      color: #000; font-weight: 800; padding: 1rem 2.5rem;
+      border-radius: 8px; text-decoration: none; font-size: 0.95rem;
+      letter-spacing: 0.5px; box-shadow: 0 0 40px rgba(245,158,11,0.3);
+      transition: all 0.25s; text-align: center;
+    }
+    .bundle-cta-btn:hover { box-shadow: 0 0 60px rgba(245,158,11,0.5); transform: translateY(-2px); }
+
+    /* RUDOLF SECTION */
+    .rudolf-section {
+      background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 5.5rem 3rem;
+    }
+    .rudolf-grid { display: grid; grid-template-columns: auto 1fr; gap: 3.5rem; align-items: center; max-width: 900px; margin: 0 auto; }
+    .rudolf-avatar {
+      width: 120px; height: 120px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--gold-dim), rgba(245,158,11,0.08));
+      border: 2px solid var(--gold-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3.5rem; flex-shrink: 0;
+    }
+    .rudolf-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem; font-weight: 700; color: var(--gold3); margin-bottom: 0.3rem;
+    }
+    .rudolf-title { font-size: 0.78rem; color: var(--gold); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 1.2rem; }
+    .rudolf-bio { color: var(--text-mid); font-size: 0.92rem; line-height: 1.8; }
+    .rudolf-facts { display: flex; gap: 2.5rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    .rudolf-fact-val { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 700; color: var(--gold); display: block; }
+    .rudolf-fact-lbl { font-size: 0.72rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px; }
+
+    /* TOOLS FOOTER LIST */
+    .tools-footer {
+      background: var(--card); border-top: 1px solid var(--border);
+      padding: 4rem 3rem;
+    }
+    .tools-footer-inner { max-width: 1200px; margin: 0 auto; }
+    .tools-footer-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.3rem; font-weight: 700; color: var(--gold);
+      margin-bottom: 2rem; letter-spacing: 1px;
+    }
+    .tools-link-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.8rem; }
+    .tool-link-item {
+      display: flex; align-items: center; gap: 0.6rem;
+      padding: 0.7rem 0.9rem; border: 1px solid rgba(255,255,255,0.05);
+      border-radius: 6px; text-decoration: none; color: var(--text-mid);
+      font-size: 0.82rem; font-weight: 500; transition: all 0.2s;
+      background: rgba(255,255,255,0.02);
+    }
+    .tool-link-item:hover { border-color: var(--gold-border); color: var(--gold3); background: var(--gold-dim); }
+    .tool-link-item .tl-icon { font-size: 1rem; }
+
+    /* CTA SECTION */
+    .cta-final {
+      background: var(--bg); border-top: 1px solid var(--border);
+      padding: 7rem 3rem; text-align: center; position: relative; overflow: hidden;
+    }
+    .cta-final::before {
+      content: '';
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-60%);
+      width: 700px; height: 350px;
+      background: radial-gradient(ellipse, rgba(245,158,11,0.07) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .cta-final h2 {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 700;
+      color: #fff; line-height: 1.05; letter-spacing: -1px;
+      margin-bottom: 1.2rem; position: relative;
+    }
+    .cta-final h2 .gold { color: var(--gold); }
+    .cta-final p { color: var(--text-mid); font-size: 1rem; margin-bottom: 3rem; position: relative; }
+    .cta-main {
+      display: inline-flex; align-items: center; gap: 0.8rem;
+      background: linear-gradient(135deg, var(--gold3), var(--gold), var(--gold2));
+      background-size: 200% auto; animation: goldshift 4s linear infinite;
+      color: #000; font-weight: 900; padding: 1.3rem 4rem;
+      font-size: 1.05rem; border-radius: 8px; text-decoration: none; letter-spacing: 0.5px;
+      box-shadow: 0 0 60px rgba(245,158,11,0.4); position: relative; transition: all 0.25s;
+    }
+    .cta-main:hover { transform: scale(1.04); box-shadow: 0 0 80px rgba(245,158,11,0.6); }
+
+    /* MAIN FOOTER */
+    footer {
+      background: #02020507;
+      background: var(--bg2); border-top: 1px solid var(--border); padding: 3rem 3rem 2rem;
+    }
+    .footer-main { max-width: 1200px; margin: 0 auto; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 2.5rem; }
+    .footer-brand { }
+    .footer-brand-logo {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; font-weight: 700;
+      background: linear-gradient(135deg, var(--gold3), var(--gold));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+    .footer-brand-sub { font-size: 0.8rem; color: var(--text-dim); max-width: 220px; line-height: 1.5; }
+    .footer-col-title { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: var(--gold); margin-bottom: 1rem; }
+    .footer-col-links { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .footer-col-links a { color: var(--text-dim); text-decoration: none; font-size: 0.82rem; transition: color 0.2s; }
+    .footer-col-links a:hover { color: var(--gold3); }
+    .footer-bottom { max-width: 1200px; margin: 2rem auto 0; padding-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.04); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
+    .footer-copy { font-size: 0.73rem; color: var(--text-dim); }
+    .footer-legal { display: flex; gap: 1.5rem; }
+    .footer-legal a { font-size: 0.73rem; color: var(--text-dim); text-decoration: none; }
+    .footer-legal a:hover { color: var(--gold); }
+
+    @media (max-width: 900px) {
+      .bundle-grid { grid-template-columns: 1fr; }
+      .bundle-cta-box { text-align: left; }
+      .rudolf-grid { grid-template-columns: 1fr; text-align: center; }
+      .rudolf-avatar { margin: 0 auto; }
+      .rudolf-facts { justify-content: center; }
+    }
+    @media (max-width: 640px) {
+      nav { padding: 0.75rem 1.2rem; }
+      .nav-links { display: none; }
+      section, .hero { padding-left: 1.2rem; padding-right: 1.2rem; }
+      .bundle-box { padding: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+<style>
+#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#04040a;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #f59e0b22}
+#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
+#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}<div style="display:inline-block;background:rgba(255,255,255,0.07);color:#f59e0b;border:1px solid #f59e0b40;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1.2rem">Bundle €99/mo</div>
+#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
+#bp-gate .feat{color:#f59e0b;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
+#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
+#bp-gate input:focus{border-color:#f59e0b}
+#bp-gate input::placeholder{color:#475569}
+#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
+#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #f59e0b44}
+#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
+#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
+</style>
+<div id="bp-gate">
+  <div class="box">
+    <div class="logo">⚡</div>
+    <h1>BullPower Hub</h1>
+    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#f59e0b;border:1px solid #f59e0b40;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">Bundle €99/mo</div>
+    <div class="tag">Alle 12 Tools. Ein Portal. 55% Ersparnis.</div>
+    <div class="feat">12 SaaS-Tools im Bundle für nur €99/mo</div>
+    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
+    <button onclick="bpCheck()">🔓 Demo freischalten</button>
+    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: bullpower2026</div>
+    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
+  </div>
+</div>
+<script>
+(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
+function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpower2026'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
+</script>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <div class="nav-logo-icon">⚡</div>
+    <div class="nav-logo-text">BullPower Hub</div>
+  </a>
+  <div class="nav-links">
+    <a href="#tools">Tools</a>
+    <a href="#bundle">Bundle Deal</a>
+    <a href="#rudolf">Über mich</a>
+  </div>
+  <a href="https://bullpower-hub-portal.netlify.app" class="nav-cta">Alle Tools freischalten</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+
+  <div class="hero-pretag">⚡ PREMIUM TOOL BUNDLE — 12 TOOLS</div>
+
+  <h1>
+    <span class="line-white">Alle 12 Tools.</span>
+    <span class="line-gold">Ein Preis.</span>
+    <span class="line-white" style="font-size:0.55em;color:var(--text-mid);font-family:'Inter',sans-serif;font-weight:300;letter-spacing:0;margin-top:0.3rem;">Maximaler Profit.</span>
+  </h1>
+  <p class="hero-sub">BullPower Hub vereint alle 12 SaaS-Tools von Rudolf Sarkany in einem einzigen Portal. Shopify-Automation, KI-Content, Telegram-Bots, Discord-Tools — alles für einen Preis, der weniger kostet als ein einzelnes Tool.</p>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-val" id="hs1">0</span>
+      <span class="hero-stat-lbl">Tools inklusive</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">€<span id="hs2">0</span></span>
+      <span class="hero-stat-lbl">Normalpreis/Monat</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val">€99<span style="font-size:1.2rem;color:var(--text-dim);">/mo</span></span>
+      <span class="hero-stat-lbl">Bundle-Preis</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-val" id="hs3">0</span><span class="hero-stat-val">%</span>
+      <span class="hero-stat-lbl">Ersparnis</span>
+    </div>
+  </div>
+
+  <div class="hero-btns">
+    <a href="https://bullpower-hub-portal.netlify.app" class="btn-gold">⚡ Alle 12 Tools für €99/mo freischalten</a>
+    <a href="#tools" class="btn-outline-gold">Alle Tools ansehen →</a>
+  </div>
+</section>
+
+<!-- PRODUCT GRID -->
+<section id="tools" style="background:var(--bg2);border-top:1px solid var(--border);">
+  <div class="section-inner">
+    <div style="margin-bottom:3.5rem;">
+      <span class="sec-eyebrow">DAS ARSENAL</span>
+      <h2 class="sec-title">Die 12 <span class="gold">BullPower Tools</span></h2>
+      <p class="sec-sub">Jedes Tool ist standalone verwendbar — zusammen sind sie ein unaufhaltsames System.</p>
+    </div>
+    <div class="product-grid">
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">🤖</div>
+          <div class="product-price">€29<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">iComeAuto</div>
+        <div class="product-desc">5 KI-Bots die rund um die Uhr automatisch Einnahmen generieren. Affiliate, E-Mail, Social, Shop.</div>
+        <a href="https://icomeauto-bots.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">📊</div>
+          <div class="product-price">€29<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">AutoIncome AI</div>
+        <div class="product-desc">Bloomberg-ähnliches Dashboard für alle Einkommensströme. Shopify, Affiliate, Digital, SaaS.</div>
+        <a href="https://autoincome-ai.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">🎭</div>
+          <div class="product-price">€9<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">Gumroad Discord Bot</div>
+        <div class="product-desc">Käufer automatisch in Discord verifizieren. Gumroad Webhook → Rolle in unter 3 Sekunden.</div>
+        <a href="https://gumroad-discord-bot.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">✈️</div>
+          <div class="product-price">€29<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">Telegram Marketing Bot</div>
+        <div class="product-desc">Massenversand, Sequenzen, KI-Autoresponder. Telegram-Marketing vollständig automatisiert.</div>
+        <a href="https://telegram-marketing-bot.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">✨</div>
+          <div class="product-price">€19<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">CreatorAI Ultra</div>
+        <div class="product-desc">Blog, Instagram, TikTok, E-Mail, YouTube — KI schreibt alle Content-Typen in Sekunden.</div>
+        <a href="https://creatorai-ultra.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">🛍️</div>
+          <div class="product-price">€39<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">Shopify Revenue Engine</div>
+        <div class="product-desc">Abandoned Cart Recovery, Flash Sales, KI-Produktbeschreibungen, Bulk Pricing automatisch.</div>
+        <a href="https://bullpower-hub-portal.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">💰</div>
+          <div class="product-price">€19<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">Digistore24 Autopilot</div>
+        <div class="product-desc">Affiliate-Produkte automatisch finden, bewerben und Provisionen tracken. Revenue ohne Aufwand.</div>
+        <a href="https://bullpower-hub-portal.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">🧠</div>
+          <div class="product-price">€29<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">AI Strategy Advisor</div>
+        <div class="product-desc">Persönlicher KI-Berater der deine Business-Strategie analysiert und täglich neue Wachstumschancen findet.</div>
+        <a href="https://bullpower-hub-portal.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">🎯</div>
+          <div class="product-price">€19<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">Lead Capture Pro</div>
+        <div class="product-desc">Landing Pages, Opt-in-Formulare und Lead-Magnete mit KI erstellen und A/B testen.</div>
+        <a href="https://bullpower-hub-portal.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">📈</div>
+          <div class="product-price">€29<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">Analytics Command Center</div>
+        <div class="product-desc">Alle KPIs aus Shopify, Digistore24, Stripe und Affiliate in einem einzigen Dashboard vereint.</div>
+        <a href="https://bullpower-hub-portal.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">🔐</div>
+          <div class="product-price">€14<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">Community Guard</div>
+        <div class="product-desc">Mitglieder-Gating für Telegram, Discord und Skool. Automatische Verifikation für alle Plattformen.</div>
+        <a href="https://bullpower-hub-portal.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+      <div class="product-card">
+        <div class="product-card-top">
+          <div class="product-icon">⚙️</div>
+          <div class="product-price">€19<span class="mo">/mo</span></div>
+        </div>
+        <div class="product-name">Automation Scheduler</div>
+        <div class="product-desc">Plane und automatisiere alle Tasks across alle Tools. Ein Kalender für dein gesamtes Business-System.</div>
+        <a href="https://bullpower-hub-portal.netlify.app" class="product-link">Mehr erfahren →</a>
+      </div>
+    </div>
+
+    <!-- BUNDLE DEAL -->
+    <div class="bundle-box" id="bundle">
+      <div class="bundle-grid">
+        <div>
+          <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:4px;color:var(--gold);margin-bottom:1rem;">BUNDLE DEAL</div>
+          <div class="bundle-headline">Alle 12 Tools.<br><span class="gold">Ein Preis.</span><br>55% günstiger.</div>
+          <p style="color:var(--text-mid);font-size:0.88rem;line-height:1.7;margin-top:1rem;max-width:420px;">Kauf alle Tools einzeln und zahle €233/Monat. Oder nimm das BullPower Bundle und bekomme alles für €99/Monat — sofortiger Zugriff, keine Bindung.</p>
+          <div class="bundle-math" style="margin-top:2rem;max-width:380px;">
+            <div class="bundle-line">
+              <span>12 Tools einzeln</span>
+              <span class="line-val strike">€233/mo</span>
+            </div>
+            <div class="bundle-line">
+              <span>Bundle-Preis</span>
+              <span class="line-val gold">€99/mo</span>
+            </div>
+            <div class="bundle-savings">
+              <span class="save-label">Du sparst jeden Monat</span>
+              <span class="save-val">€134</span>
+            </div>
+          </div>
+        </div>
+        <div class="bundle-cta-box">
+          <span class="bundle-price-display">€99</span>
+          <div class="bundle-price-sub">pro Monat · alle 12 Tools · jederzeit kündbar</div>
+          <a href="https://bullpower-hub-portal.netlify.app" class="bundle-cta-btn">⚡ Jetzt Bundle aktivieren</a>
+          <div style="margin-top:1rem;font-size:0.75rem;color:var(--text-dim);">30 Tage Geld-zurück-Garantie</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RUDOLF SECTION -->
+<div class="rudolf-section" id="rudolf">
+  <div class="section-inner">
+    <div class="rudolf-grid">
+      <div class="rudolf-avatar">👤</div>
+      <div>
+        <div class="rudolf-name">Rudolf Sarkany</div>
+        <div class="rudolf-title">Gründer · BullPower Tools</div>
+        <div class="rudolf-bio">
+          Ich baue seit 2020 Automatisierungs-Tools für E-Commerce und Online-Marketing. Angefangen mit einem Shopify-Store, heute betreibe ich 12 SaaS-Produkte die täglich von über 5.000 Unternehmern genutzt werden. Alle Tools sind aus echten Problemen entstanden die ich selbst erlebt habe — und die ich gelöst habe, indem ich KI und Automatisierung zusammengebracht habe.
+        </div>
+        <div class="rudolf-facts">
+          <div>
+            <span class="rudolf-fact-val">12</span>
+            <span class="rudolf-fact-lbl">SaaS-Produkte</span>
+          </div>
+          <div>
+            <span class="rudolf-fact-val">5k+</span>
+            <span class="rudolf-fact-lbl">Aktive Nutzer</span>
+          </div>
+          <div>
+            <span class="rudolf-fact-val">6</span>
+            <span class="rudolf-fact-lbl">Jahre Erfahrung</span>
+          </div>
+          <div>
+            <span class="rudolf-fact-val">€0</span>
+            <span class="rudolf-fact-lbl">Investor-Kapital</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLS FOOTER LIST -->
+<div class="tools-footer">
+  <div class="tools-footer-inner">
+    <div class="tools-footer-title">Alle 12 BullPower Tools</div>
+    <div class="tools-link-grid">
+      <a href="https://icomeauto-bots.netlify.app" class="tool-link-item"><span class="tl-icon">🤖</span> iComeAuto</a>
+      <a href="https://autoincome-ai.netlify.app" class="tool-link-item"><span class="tl-icon">📊</span> AutoIncome AI</a>
+      <a href="https://gumroad-discord-bot.netlify.app" class="tool-link-item"><span class="tl-icon">🎭</span> Gumroad Discord Bot</a>
+      <a href="https://telegram-marketing-bot.netlify.app" class="tool-link-item"><span class="tl-icon">✈️</span> Telegram Marketing Bot</a>
+      <a href="https://creatorai-ultra.netlify.app" class="tool-link-item"><span class="tl-icon">✨</span> CreatorAI Ultra</a>
+      <a href="https://bullpower-hub-portal.netlify.app" class="tool-link-item"><span class="tl-icon">🛍️</span> Shopify Revenue Engine</a>
+      <a href="https://bullpower-hub-portal.netlify.app" class="tool-link-item"><span class="tl-icon">💰</span> Digistore24 Autopilot</a>
+      <a href="https://bullpower-hub-portal.netlify.app" class="tool-link-item"><span class="tl-icon">🧠</span> AI Strategy Advisor</a>
+      <a href="https://bullpower-hub-portal.netlify.app" class="tool-link-item"><span class="tl-icon">🎯</span> Lead Capture Pro</a>
+      <a href="https://bullpower-hub-portal.netlify.app" class="tool-link-item"><span class="tl-icon">📈</span> Analytics Command Center</a>
+      <a href="https://bullpower-hub-portal.netlify.app" class="tool-link-item"><span class="tl-icon">🔐</span> Community Guard</a>
+      <a href="https://bullpower-hub-portal.netlify.app" class="tool-link-item"><span class="tl-icon">⚙️</span> Automation Scheduler</a>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL CTA -->
+<div class="cta-final">
+  <h2>Alle 12 Tools.<br><span class="gold">Ein Preis.</span></h2>
+  <p>Maximaler Profit. Minimaler Aufwand. Starte heute.</p>
+  <a href="https://bullpower-hub-portal.netlify.app" class="cta-main">⚡ Alle Tools für €99/mo freischalten</a>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-main">
+    <div class="footer-brand">
+      <div class="footer-brand-logo">BullPower Hub</div>
+      <div class="footer-brand-sub">Das Premium-Portal für alle 12 BullPower Tools. Einmal zahlen, alles bekommen.</div>
+    </div>
+    <div>
+      <div class="footer-col-title">TOOLS</div>
+      <ul class="footer-col-links">
+        <li><a href="https://icomeauto-bots.netlify.app">iComeAuto</a></li>
+        <li><a href="https://autoincome-ai.netlify.app">AutoIncome AI</a></li>
+        <li><a href="https://creatorai-ultra.netlify.app">CreatorAI Ultra</a></li>
+        <li><a href="https://telegram-marketing-bot.netlify.app">Telegram Bot</a></li>
+        <li><a href="https://gumroad-discord-bot.netlify.app">Discord Bot</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">RECHTLICHES</div>
+      <ul class="footer-col-links">
+        <li><a href="#">Datenschutzerklärung</a></li>
+        <li><a href="#">Impressum</a></li>
+        <li><a href="#">AGB</a></li>
+        <li><a href="#">Widerrufsrecht</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">KONTAKT</div>
+      <ul class="footer-col-links">
+        <li><a href="#">support@bullpower.tools</a></li>
+        <li><a href="#">Telegram-Support</a></li>
+        <li><a href="#">YouTube-Kanal</a></li>
+        <li><a href="#">Newsletter</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 Rudolf Sarkany · BullPower Tools GmbH · Alle Rechte vorbehalten</div>
+    <div class="footer-legal">
+      <a href="#">Datenschutz</a>
+      <a href="#">Impressum</a>
+      <a href="#">AGB</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function countUp(el,end,dur){
+  var s=Date.now();
+  (function tick(){
+    var p=Math.min((Date.now()-s)/dur,1),val=Math.floor(end*Math.pow(p,0.65));
+    el.textContent=val.toLocaleString('de-DE');
+    if(p<1) requestAnimationFrame(tick);
+  })();
+}
+var obs=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+    if(e.isIntersecting&&!e.target._done){
+      e.target._done=true;
+      var id=e.target.id;
+      if(id==='hs1') countUp(e.target,12,1000);
+      if(id==='hs2') countUp(e.target,233,1200);
+      if(id==='hs3') countUp(e.target,55,1100);
+    }
+  });
+},{threshold:0.3});
+['hs1','hs2','hs3'].forEach(function(id){
+  var el=document.getElementById(id); if(el) obs.observe(el);
+});
+</script>
+</body>
+</html>

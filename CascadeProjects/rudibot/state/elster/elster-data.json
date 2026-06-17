@@ -1,0 +1,75 @@
+{
+  "updatedAt": "2026-06-03T21:08:48.759Z",
+  "taxYears": [
+    [
+      "2024",
+      {
+        "year": "2024",
+        "status": "preparation",
+        "filingDeadline": "2025-05-31",
+        "paymentDeadlines": [],
+        "documents": [],
+        "requirements": [
+          {
+            "id": "req_steuerbescheid_2024",
+            "type": "steuerbescheid",
+            "year": "2024",
+            "status": "pending",
+            "priority": "high",
+            "deadline": "2025-05-01",
+            "description": "Offizieller Steuerbescheid vom Finanzamt",
+            "category": "official",
+            "uploaded": false,
+            "verified": false,
+            "notes": ""
+          },
+          {
+            "id": "req_einnahmenuebersicht_2024",
+            "type": "einnahmenuebersicht",
+            "year": "2024",
+            "status": "pending",
+            "priority": "medium",
+            "deadline": "2025-05-17",
+            "description": "Übersicht aller Einnahmen im Steuerjahr",
+            "category": "financial",
+            "uploaded": false,
+            "verified": false,
+            "notes": ""
+          },
+          {
+            "id": "req_ausgabenbelege_2024",
+            "type": "ausgabenbelege",
+            "year": "2024",
+            "status": "pending",
+            "priority": "medium",
+            "deadline": "2025-05-17",
+            "description": "Alle betrieblichen Ausgaben mit Belegen",
+            "category": "financial",
+            "uploaded": false,
+            "verified": false,
+            "notes": ""
+          },
+          {
+            "id": "req_elster_zertifikat_2024",
+            "type": "elster_zertifikat",
+            "year": "2024",
+            "status": "pending",
+            "priority": "medium",
+            "deadline": "2025-05-24",
+            "description": "Aktuelles ELSTER-Benutzerzertifikat",
+            "category": "technical",
+            "uploaded": false,
+            "verified": false,
+            "notes": ""
+          }
+        ],
+        "createdAt": "2026-06-03T21:08:48.759Z",
+        "updatedAt": "2026-06-03T21:08:48.759Z",
+        "notes": "Test Steuerjahr",
+        "assignedTo": null
+      }
+    ]
+  ],
+  "documents": [],
+  "requirements": []
+}

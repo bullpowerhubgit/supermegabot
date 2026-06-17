@@ -1,0 +1,45 @@
+{
+  "runs": [
+    {
+      "attempt": 1,
+      "duration_ms": 591,
+      "error": null,
+      "finished_at": "2026-06-15T16:00:00.604148+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "telegram_digest",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "job_count": 6,
+          "sent": true
+        }
+      },
+      "pid": 60382,
+      "run_id": "699d2b8c6463489da4aa0f6aa5f7975b",
+      "started_at": "2026-06-15T16:00:00.012224+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 147,
+      "error": null,
+      "finished_at": "2026-06-15T21:00:00.157395+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.local",
+      "job_id": "telegram_digest",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "job_count": 6,
+          "sent": true
+        }
+      },
+      "pid": 60382,
+      "run_id": "8b11a3c8f5e44e0fb2dd995c63e5b248",
+      "started_at": "2026-06-15T21:00:00.009465+00:00",
+      "status": "success",
+      "traceback": null
+    }
+  ],
+  "updated_at": "2026-06-15T21:00:00.158187+00:00"
+}

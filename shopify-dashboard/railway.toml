@@ -1,0 +1,11 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "node railway-server.js"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+
+[nixpacks]
+node-version = "20"

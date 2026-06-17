@@ -1,0 +1,46 @@
+{
+  "name": "rudibot-autopilot",
+  "version": "2.0.0",
+  "description": "AutoPilot Business Bot — Complete Automation System",
+  "main": "dev/server.js",
+  "scripts": {
+    "start": "node dev/server.js",
+    "bot": "node bot.js",
+    "monitor": "node windsurf-monitoring.js",
+    "setup": "chmod +x setup.sh && ./setup.sh",
+    "deploy": "chmod +x deploy-all.sh && ./deploy-all.sh",
+    "deploy-prod": "node scripts/deploy-automation.js",
+    "printify": "node scripts/printify-automation.js",
+    "digistore": "node scripts/digistore-automation.js",
+    "youtube": "node scripts/youtube-automation.js",
+    "earnings": "node scripts/earnings-tracker.js",
+    "all": "node scripts/deploy-automation.js && node scripts/printify-automation.js generate 10 && node scripts/digistore-automation.js campaign --count 10 --social --email && node scripts/youtube-automation.js calendar 14 && node scripts/earnings-tracker.js sync"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
+    "@apollo/server": "^5.5.1",
+    "@supabase/supabase-js": "^2.107.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.3.1",
+    "graphql": "^16.14.1",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.3",
+    "klaviyo-api": "^22.0.1",
+    "node-fetch": "^2.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "automation",
+    "telegram-bot",
+    "ecommerce",
+    "affiliate-marketing",
+    "print-on-demand",
+    "youtube",
+    "revenue-automation"
+  ],
+  "private": true
+}
