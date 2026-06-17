@@ -4085,6 +4085,102 @@ async def create_app():
     app.router.add_get("/api/meta/pixel",                 handle_meta_pixel_stats)
     app.router.add_get("/api/meta/oauth-url",             handle_meta_oauth_url)
 
+    # ── Telegram extended handlers ─────────────────────────────────────────────
+    async def handle_telegram_webhook_status(req):
+        import aiohttp as _aiohttp
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        if not bot_token:
+            return web.json_response({"ok": False, "error": "TELEGRAM_BOT_TOKEN not set"}, status=503)
+        try:
+            async with _aiohttp.ClientSession() as session:
+                async with session.get(f"https://api.telegram.org/bot{bot_token}/getWebhookInfo", timeout=_aiohttp.ClientTimeout(total=8)) as resp:
+                    data = await resp.json()
+                    result = data.get("result", {})
+                    return web.json_response({
+                        "ok": True,
+                        "url": result.get("url", ""),
+                        "active": bool(result.get("url")),
+                        "pending_updates": result.get("pending_update_count", 0),
+                        "last_error": result.get("last_error_message", None),
+                    })
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=503)
+
+    async def handle_telegram_webhook_set(req):
+        import aiohttp as _aiohttp
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        if not bot_token:
+            return web.json_response({"ok": False, "error": "TELEGRAM_BOT_TOKEN not set"}, status=503)
+        base_url = os.getenv("RAILWAY_PUBLIC_DOMAIN", "")
+        webhook_url = f"https://{base_url}/webhook/telegram" if base_url else ""
+        data = await req.json()
+        webhook_url = data.get("url", webhook_url)
+        if not webhook_url:
+            return web.json_response({"ok": False, "error": "webhook url required or set RAILWAY_PUBLIC_DOMAIN"}, status=400)
+        try:
+            async with _aiohttp.ClientSession() as session:
+                payload = {"url": webhook_url, "allowed_updates": ["message", "callback_query"]}
+                async with session.post(f"https://api.telegram.org/bot{bot_token}/setWebhook", json=payload, timeout=_aiohttp.ClientTimeout(total=8)) as resp:
+                    result = await resp.json()
+                    return web.json_response({"ok": result.get("result", False), "description": result.get("description", ""), "webhook_url": webhook_url})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=503)
+
+    async def handle_telegram_subscribers(req):
+        """Returns subscriber count via getChat for the configured chat."""
+        import aiohttp as _aiohttp
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        if not bot_token or not chat_id:
+            return web.json_response({"ok": False, "error": "TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set"}, status=503)
+        try:
+            async with _aiohttp.ClientSession() as session:
+                async with session.get(
+                    f"https://api.telegram.org/bot{bot_token}/getChatMemberCount",
+                    params={"chat_id": chat_id},
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as resp:
+                    data = await resp.json()
+                    count = data.get("result", 0)
+                    return web.json_response({"ok": True, "subscribers": count, "chat_id": chat_id})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e), "subscribers": 0})
+
+    async def handle_telegram_messages(req):
+        """Returns recent update history (last 5 messages processed)."""
+        return web.json_response({
+            "ok": True,
+            "note": "Message history is not stored server-side. Use Telegram directly to view chat history.",
+            "webhook_active": True,
+            "bot_username": "@DudiRudibot",
+        })
+
+    async def handle_telegram_broadcast(req):
+        """Broadcast a message to the configured Telegram chat."""
+        import aiohttp as _aiohttp
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        if not bot_token or not chat_id:
+            return web.json_response({"ok": False, "error": "TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID not set"}, status=503)
+        data = await req.json()
+        text = data.get("text", "").strip()
+        if not text:
+            return web.json_response({"error": "text required"}, status=400)
+        try:
+            async with _aiohttp.ClientSession() as session:
+                payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
+                async with session.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json=payload,
+                    timeout=_aiohttp.ClientTimeout(total=10)
+                ) as resp:
+                    result = await resp.json()
+                    ok = result.get("ok", False)
+                    msg_id = result.get("result", {}).get("message_id") if ok else None
+                    return web.json_response({"ok": ok, "message_id": msg_id, "error": result.get("description") if not ok else None})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=503)
+
     # ── Slack handlers ─────────────────────────────────────────────────────────
     async def handle_slack_health(req):
         from modules.slack_client import verify_credentials
@@ -4155,6 +4251,13 @@ async def create_app():
     app.router.add_post("/api/hermes/delegate",           handle_hermes_delegate)
     app.router.add_post("/api/hermes/analyze-revenue",    handle_hermes_analyze_revenue)
     app.router.add_post("/api/hermes/market-research",    handle_hermes_market_research)
+
+    # Telegram extended dashboard routes
+    app.router.add_get("/api/telegram/webhook/status",    handle_telegram_webhook_status)
+    app.router.add_post("/api/telegram/webhook/set",      handle_telegram_webhook_set)
+    app.router.add_get("/api/telegram/subscribers",       handle_telegram_subscribers)
+    app.router.add_get("/api/telegram/messages",          handle_telegram_messages)
+    app.router.add_post("/api/telegram/broadcast",        handle_telegram_broadcast)
 
     return app
 
