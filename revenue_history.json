@@ -1,0 +1,84 @@
+[
+  {
+    "platforms": {
+      "shopify": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "EUR",
+        "ok": true
+      },
+      "gumroad": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "USD",
+        "ok": false,
+        "error": "GUMROAD_ACCESS_TOKEN not set"
+      },
+      "etsy": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "EUR",
+        "ok": false,
+        "error": "ETSY_API_KEY not set"
+      },
+      "digistore": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "EUR",
+        "ok": false,
+        "status": "not_configured",
+        "error": "DIGISTORE24_API_KEY not set"
+      },
+      "printify": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "USD",
+        "ok": false,
+        "error": "PRINTIFY_API_TOKEN not set"
+      }
+    },
+    "total_eur": 0,
+    "period": "today",
+    "timestamp": "2026-06-15T21:51:38.575877+00:00"
+  },
+  {
+    "platforms": {
+      "shopify": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "EUR",
+        "ok": true
+      },
+      "gumroad": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "USD",
+        "ok": false,
+        "error": "GUMROAD_ACCESS_TOKEN not set"
+      },
+      "etsy": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "EUR",
+        "ok": false,
+        "error": "ETSY_API_KEY not set"
+      },
+      "digistore": {
+        "revenue": 0,
+        "orders": 0,
+        "currency": "EUR",
+        "ok": true
+      },
+      "printify": {
+        "revenue": 0.0,
+        "orders": 0,
+        "currency": "USD",
+        "ok": false,
+        "error": "PRINTIFY_API_TOKEN not set"
+      }
+    },
+    "total_eur": 0,
+    "period": "today",
+    "timestamp": "2026-06-15T22:36:44.189328+00:00"
+  }
+]

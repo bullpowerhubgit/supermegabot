@@ -1,0 +1,22 @@
+{
+  "attempt": 1,
+  "duration_ms": 1,
+  "error": null,
+  "finished_at": "2026-06-15T22:13:10.178655+00:00",
+  "hostname": "MacBook-Pro-von-Rudolf.local",
+  "job_id": "recovery_reconciliation",
+  "metadata": {
+    "priority": "critical",
+    "result": {
+      "inventory_state": true,
+      "order_state": true,
+      "pricing_state": true,
+      "reconciled": true
+    }
+  },
+  "pid": 60382,
+  "run_id": "1ad097f699d444aaa532d53362fbbca9",
+  "started_at": "2026-06-15T22:13:10.177594+00:00",
+  "status": "success",
+  "traceback": null
+}

@@ -1,0 +1,12 @@
+{
+  "timestamp": 1779908938716,
+  "result": {
+    "api": "supabase",
+    "name": "Supabase REST API",
+    "status": "SKIP",
+    "ok": false,
+    "error": "Fehlende Env-Vars: SUPABASE_URL, SUPABASE_ANON_KEY",
+    "latency": 0,
+    "timestamp": "2026-05-27T19:08:58.716Z"
+  }
+}
