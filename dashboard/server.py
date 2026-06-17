@@ -4085,6 +4085,52 @@ async def create_app():
     app.router.add_get("/api/meta/pixel",                 handle_meta_pixel_stats)
     app.router.add_get("/api/meta/oauth-url",             handle_meta_oauth_url)
 
+    # ── Slack handlers ─────────────────────────────────────────────────────────
+    async def handle_slack_health(req):
+        from modules.slack_client import verify_credentials
+        result = await verify_credentials()
+        status = 200 if result.get("method") else 503
+        return web.json_response(result, status=status)
+
+    async def handle_slack_notify(req):
+        data = await req.json()
+        text = data.get("text", "")
+        if not text:
+            return web.json_response({"error": "text required"}, status=400)
+        from modules.slack_client import notify
+        ok = await notify(text, channel=data.get("channel"), emoji=data.get("emoji", "robot_face"))
+        return web.json_response({"ok": ok})
+
+    # ── Hermes Agent handlers ──────────────────────────────────────────────────
+    async def handle_hermes_health(req):
+        from modules.hermes_bridge import health_check
+        result = await health_check()
+        return web.json_response(result, status=200 if result.get("ok") else 503)
+
+    async def handle_hermes_delegate(req):
+        data = await req.json()
+        prompt = data.get("prompt", "")
+        if not prompt:
+            return web.json_response({"error": "prompt required"}, status=400)
+        from modules.hermes_bridge import delegate
+        result = await delegate(prompt, context=data.get("context", ""))
+        return web.json_response(result)
+
+    async def handle_hermes_analyze_revenue(req):
+        data = await req.json()
+        from modules.hermes_bridge import analyze_revenue
+        result = await analyze_revenue(data)
+        return web.json_response(result)
+
+    async def handle_hermes_market_research(req):
+        data = await req.json()
+        topic = data.get("topic", "")
+        if not topic:
+            return web.json_response({"error": "topic required"}, status=400)
+        from modules.hermes_bridge import market_research
+        result = await market_research(topic)
+        return web.json_response(result)
+
     # ── Salesforce handlers injected here (defined above create_app) ──────────
     # Salesforce / Agentforce CRM
     app.router.add_get("/api/salesforce/stats",           handle_salesforce_stats)
@@ -4099,6 +4145,16 @@ async def create_app():
     app.router.add_get("/api/autonomy/health",            handle_autonomy_health)
     app.router.add_post("/api/autonomy/trigger/{job_id}", handle_autonomy_trigger)
     app.router.add_get("/api/autonomy/history/{job_id}",  handle_autonomy_history)
+
+    # Slack
+    app.router.add_get("/api/slack/health",               handle_slack_health)
+    app.router.add_post("/api/slack/notify",              handle_slack_notify)
+
+    # Hermes Agent Bridge
+    app.router.add_get("/api/hermes/health",              handle_hermes_health)
+    app.router.add_post("/api/hermes/delegate",           handle_hermes_delegate)
+    app.router.add_post("/api/hermes/analyze-revenue",    handle_hermes_analyze_revenue)
+    app.router.add_post("/api/hermes/market-research",    handle_hermes_market_research)
 
     return app
 
