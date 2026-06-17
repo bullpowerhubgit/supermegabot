@@ -14,11 +14,8 @@ from pathlib import Path
 
 _SERVER_START_TIME = time.time()
 
-_REPO_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(_REPO_ROOT))
-_HOME_PATH = str(Path.home())
-if _HOME_PATH not in sys.path:
-    sys.path.append(_HOME_PATH)
+sys.path.insert(0, str(Path(__file__).parent.parent))
+sys.path.insert(0, str(Path.home()))
 
 from aiohttp import web
 import aiohttp
@@ -141,383 +138,6 @@ SERVICES = [
 _INDEX_HTML = Path(__file__).parent / 'index.html'
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# REVENUE AUTOPILOT DASHBOARD HTML
-# ══════════════════════════════════════════════════════════════════════════════
-_REVENUE_AUTOPILOT_HTML = """<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>💰 Revenue Autopilot — SuperMegaBot</title>
-<style>
-  :root{--green:#00d4aa;--red:#ff4757;--yellow:#ffa502;--blue:#1e90ff;--dark:#0d1117;--card:#161b22;--border:#30363d;--text:#e6edf3;--muted:#8b949e}
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--dark);color:var(--text);min-height:100vh}
-  header{background:linear-gradient(135deg,#1a1f2e,#0d1117);border-bottom:1px solid var(--border);padding:18px 24px;display:flex;align-items:center;gap:12px}
-  header h1{font-size:1.4rem;font-weight:700}header span{font-size:.85rem;color:var(--muted)}
-  .badge{background:#00d4aa22;color:var(--green);border:1px solid var(--green);border-radius:20px;padding:3px 10px;font-size:.75rem;font-weight:600}
-  .container{padding:20px 24px;max-width:1600px;margin:0 auto}
-  .grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px;margin-bottom:24px}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
-  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
-  .card h2{font-size:.8rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px}
-  .stat{font-size:2rem;font-weight:800;color:var(--text)}
-  .stat-sub{font-size:.8rem;color:var(--muted);margin-top:4px}
-  .green{color:var(--green)} .red{color:var(--red)} .yellow{color:var(--yellow)} .blue{color:var(--blue)}
-  .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:none;font-size:.85rem;font-weight:600;cursor:pointer;transition:.2s}
-  .btn:disabled{opacity:.5;cursor:not-allowed}
-  .btn-green{background:#00d4aa22;color:var(--green);border:1px solid var(--green)}
-  .btn-green:hover:not(:disabled){background:#00d4aa44}
-  .btn-red{background:#ff475722;color:var(--red);border:1px solid var(--red)}
-  .btn-red:hover:not(:disabled){background:#ff475744}
-  .btn-blue{background:#1e90ff22;color:var(--blue);border:1px solid var(--blue)}
-  .btn-blue:hover:not(:disabled){background:#1e90ff44}
-  .btn-yellow{background:#ffa50222;color:var(--yellow);border:1px solid var(--yellow)}
-  .btn-yellow:hover:not(:disabled){background:#ffa50244}
-  .btn-solid{background:var(--green);color:#000;font-weight:700}
-  .btn-solid:hover:not(:disabled){background:#00b899}
-  .actions{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px}
-  table{width:100%;border-collapse:collapse;font-size:.85rem}
-  th{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase}
-  td{padding:10px 12px;border-bottom:1px solid #21262d}
-  tr:hover td{background:#1c2128}
-  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:.75rem;font-weight:600}
-  .tag-green{background:#00d4aa22;color:var(--green)}
-  .tag-red{background:#ff475722;color:var(--red)}
-  .tag-yellow{background:#ffa50222;color:var(--yellow)}
-  .tag-blue{background:#1e90ff22;color:var(--blue)}
-  input,select{background:#21262d;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:.85rem;width:100%}
-  input:focus,select:focus{outline:none;border-color:var(--green)}
-  .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
-  label{font-size:.8rem;color:var(--muted);margin-bottom:4px;display:block}
-  .flash-msg{padding:12px 16px;border-radius:8px;font-size:.85rem;margin-bottom:16px;display:none}
-  .flash-msg.show{display:block}
-  .flash-ok{background:#00d4aa22;color:var(--green);border:1px solid #00d4aa44}
-  .flash-err{background:#ff475722;color:var(--red);border:1px solid #ff475744}
-  .spinner{display:inline-block;width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .6s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .section-title{font-size:1.1rem;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
-  .empty{color:var(--muted);font-style:italic;padding:20px;text-align:center}
-  .progress-bar{height:6px;background:#21262d;border-radius:3px;overflow:hidden;margin-top:6px}
-  .progress-fill{height:100%;border-radius:3px;background:var(--green)}
-  .share-box{background:#21262d;border:1px solid var(--border);border-radius:8px;padding:12px;font-family:monospace;font-size:.9rem;word-break:break-all;color:var(--green);margin-top:8px}
-  @media(max-width:900px){.grid-2,.grid-3{grid-template-columns:1fr}.form-row{grid-template-columns:1fr}}
-</style>
-</head>
-<body>
-<header>
-  <div style="font-size:1.8rem">💰</div>
-  <div>
-    <h1>Revenue Autopilot</h1>
-    <span>SuperMegaBot · Shopify Automation Suite</span>
-  </div>
-  <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
-    <span class="badge" id="live-badge">⚡ LIVE</span>
-    <button class="btn btn-green" onclick="loadAll()">🔄 Refresh</button>
-  </div>
-</header>
-
-<div class="container">
-
-  <!-- Flash message -->
-  <div class="flash-msg" id="flash"></div>
-
-  <!-- ── KPI Cards ── -->
-  <div class="grid-4" id="kpi-grid">
-    <div class="card"><h2>💶 Heute</h2><div class="stat green" id="kpi-today">—</div><div class="stat-sub" id="kpi-today-orders">—</div></div>
-    <div class="card"><h2>📅 7 Tage</h2><div class="stat" id="kpi-7d">—</div><div class="stat-sub" id="kpi-7d-orders">—</div></div>
-    <div class="card"><h2>📆 30 Tage</h2><div class="stat" id="kpi-30d">—</div><div class="stat-sub" id="kpi-30d-orders">—</div></div>
-    <div class="card"><h2>🛒 Offene Carts</h2><div class="stat yellow" id="kpi-carts">—</div><div class="stat-sub" id="kpi-carts-value">potentieller Umsatz</div></div>
-    <div class="card"><h2>📦 Offene Bestellungen</h2><div class="stat blue" id="kpi-pending">—</div><div class="stat-sub" id="kpi-pending-value">—</div></div>
-    <div class="card"><h2>⚠️ Wenig Lager</h2><div class="stat red" id="kpi-inventory">—</div><div class="stat-sub">≤ 5 Stück</div></div>
-    <div class="card"><h2>💡 Ø Bestellwert (30T)</h2><div class="stat" id="kpi-aov">—</div><div class="stat-sub">Average Order Value</div></div>
-    <div class="card"><h2>🎯 Umsatz gestern</h2><div class="stat" id="kpi-yesterday">—</div><div class="stat-sub" id="kpi-yesterday-orders">—</div></div>
-  </div>
-
-  <div class="grid-2">
-
-    <!-- ── Aktionen ── -->
-    <div class="card">
-      <div class="section-title">⚡ Schnell-Aktionen</div>
-
-      <!-- Abandoned Cart Recovery -->
-      <div style="margin-bottom:20px">
-        <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">🛒 Abandoned Cart Recovery</div>
-        <div class="actions">
-          <button class="btn btn-yellow" onclick="recoverCarts(24)">Letzte 24h</button>
-          <button class="btn btn-yellow" onclick="recoverCarts(48)">Letzte 48h</button>
-          <button class="btn btn-red" onclick="recoverCarts(72)">Letzte 72h</button>
-        </div>
-      </div>
-
-      <!-- Flash Sale -->
-      <div style="margin-bottom:20px">
-        <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">🔥 Flash Sale erstellen</div>
-        <div class="form-row">
-          <div><label>Rabatt %</label><input id="fs-pct" type="number" value="20" min="5" max="80"></div>
-          <div><label>Dauer (Std)</label><input id="fs-hours" type="number" value="24" min="1" max="168"></div>
-        </div>
-        <div style="margin-bottom:8px"><label>Code (leer = auto)</label><input id="fs-code" placeholder="z.B. SOMMER20"></div>
-        <div style="margin-bottom:12px"><label>Mindestbestellwert (€)</label><input id="fs-min" type="number" value="0" min="0"></div>
-        <button class="btn btn-solid" onclick="createFlashSale()" style="width:100%">🔥 Flash Sale starten</button>
-        <div id="fs-result" class="share-box" style="display:none"></div>
-      </div>
-
-      <!-- Bulk Price -->
-      <div style="margin-bottom:20px">
-        <div style="font-size:.85rem;color:var(--muted);margin-bottom:8px">💲 Preise anpassen</div>
-        <div class="form-row">
-          <div><label>Methode</label>
-            <select id="bp-method">
-              <option value="percent">% Änderung</option>
-              <option value="fixed_add">+ Fester Betrag (€)</option>
-              <option value="fixed_set">Preis setzen (€)</option>
-            </select>
-          </div>
-          <div><label>Wert</label><input id="bp-value" type="number" value="10" step="0.01"></div>
-        </div>
-        <div class="form-row">
-          <div><label>Min Preis (€)</label><input id="bp-min" type="number" value="0"></div>
-          <div><label>Max Preis (€)</label><input id="bp-max" type="number" value="9999"></div>
-        </div>
-        <button class="btn btn-blue" onclick="bulkPrice()" style="width:100%">💲 Alle Preise anpassen</button>
-      </div>
-
-      <!-- Auto Publish & AI Descriptions -->
-      <div class="actions">
-        <button class="btn btn-green" onclick="publishDrafts()" id="btn-publish">📢 Drafts veröffentlichen</button>
-        <button class="btn btn-blue" onclick="aiDescriptions()" id="btn-ai">🤖 AI Beschreibungen (5)</button>
-      </div>
-    </div>
-
-    <!-- ── Abandoned Carts Table ── -->
-    <div class="card">
-      <div class="section-title">🛒 Verlassene Warenkörbe <span id="carts-count" class="badge" style="font-size:.7rem"></span></div>
-      <div id="carts-table"><div class="empty">Lade Daten…</div></div>
-    </div>
-  </div>
-
-  <div class="grid-3">
-    <!-- ── Top Sellers ── -->
-    <div class="card">
-      <div class="section-title">🏆 Top-Seller (30 Tage)</div>
-      <div id="top-sellers"><div class="empty">Lade…</div></div>
-    </div>
-
-    <!-- ── Zero/Slow Sellers ── -->
-    <div class="card">
-      <div class="section-title">😴 Null-Verkäufe (aktive Produkte)</div>
-      <div id="zero-sellers"><div class="empty">Lade…</div></div>
-    </div>
-
-    <!-- ── Upsell Pairs ── -->
-    <div class="card">
-      <div class="section-title">🔗 Zusammen gekauft (Upsell)</div>
-      <div id="upsell-pairs"><div class="empty">Lade…</div></div>
-    </div>
-  </div>
-
-  <!-- ── Low Inventory ── -->
-  <div class="card" style="margin-bottom:24px">
-    <div class="section-title">⚠️ Niedriger Lagerbestand (≤ 5 Stück)</div>
-    <div id="inventory-table"><div class="empty">Lade…</div></div>
-  </div>
-
-</div>
-
-<script>
-const API = '';
-const fmt = (v,c='EUR')=>new Intl.NumberFormat('de-DE',{style:'currency',currency:c}).format(v||0);
-
-function flash(msg,ok=true){
-  const el=document.getElementById('flash');
-  el.className='flash-msg show '+(ok?'flash-ok':'flash-err');
-  el.textContent=msg;
-  setTimeout(()=>el.classList.remove('show'),5000);
-}
-
-function setBtn(id,loading){
-  const b=document.getElementById(id);
-  if(!b)return;
-  b.disabled=loading;
-  if(loading)b.dataset.orig=b.innerHTML;
-  b.innerHTML=loading?'<span class="spinner"></span> Läuft…':b.dataset.orig;
-}
-
-async function api(path,method='GET',body=null){
-  const opts={method,headers:{'Content-Type':'application/json'}};
-  if(body)opts.body=JSON.stringify(body);
-  const r=await fetch(API+path,opts);
-  return r.json();
-}
-
-async function loadRevenue(){
-  try{
-    const d=await api('/api/revenue/dashboard');
-    if(!d.ok)return;
-    const r=d.revenue||{};
-    document.getElementById('kpi-today').textContent=fmt(r.today?.revenue);
-    document.getElementById('kpi-today-orders').textContent=`${r.today?.orders||0} Bestellungen`;
-    document.getElementById('kpi-7d').textContent=fmt(r['7d']?.revenue);
-    document.getElementById('kpi-7d-orders').textContent=`${r['7d']?.orders||0} Bestellungen`;
-    document.getElementById('kpi-30d').textContent=fmt(r['30d']?.revenue);
-    document.getElementById('kpi-30d-orders').textContent=`${r['30d']?.orders||0} Bestellungen`;
-    document.getElementById('kpi-yesterday').textContent=fmt(r.yesterday?.revenue);
-    document.getElementById('kpi-yesterday-orders').textContent=`${r.yesterday?.orders||0} Bestellungen`;
-    document.getElementById('kpi-aov').textContent=fmt(r['30d']?.aov);
-    document.getElementById('kpi-pending').textContent=r.pending_orders||0;
-    document.getElementById('kpi-pending-value').textContent=fmt(r.pending_revenue)+' ausstehend';
-
-    const carts=d.abandoned_carts||[];
-    document.getElementById('kpi-carts').textContent=carts.length;
-    const cartVal=carts.reduce((s,c)=>s+c.total,0);
-    document.getElementById('kpi-carts-value').textContent=fmt(cartVal)+' potentiell';
-    document.getElementById('carts-count').textContent=carts.length;
-
-    const inv=d.low_inventory||[];
-    document.getElementById('kpi-inventory').textContent=inv.length;
-
-    renderCarts(carts);
-    renderInventory(inv);
-  }catch(e){console.error(e)}
-}
-
-function renderCarts(carts){
-  const el=document.getElementById('carts-table');
-  if(!carts.length){el.innerHTML='<div class="empty">Keine offenen Warenkörbe 🎉</div>';return;}
-  el.innerHTML=`<table><thead><tr><th>E-Mail</th><th>Artikel</th><th>Wert</th><th>Erstellt</th></tr></thead><tbody>
-    ${carts.slice(0,10).map(c=>`<tr>
-      <td>${c.email||'<span style="color:var(--muted)">anonym</span>'}</td>
-      <td><small>${c.product_titles.slice(0,2).join(', ')||'—'}</small></td>
-      <td class="yellow">${fmt(c.total)}</td>
-      <td><small>${new Date(c.created_at).toLocaleDateString('de')}</small></td>
-    </tr>`).join('')}
-  </tbody></table>`;
-}
-
-function renderInventory(items){
-  const el=document.getElementById('inventory-table');
-  if(!items.length){el.innerHTML='<div class="empty">Lager OK — kein Handlungsbedarf</div>';return;}
-  el.innerHTML=`<table><thead><tr><th>Produkt</th><th>SKU</th><th>Bestand</th><th>Preis</th></tr></thead><tbody>
-    ${items.map(i=>`<tr>
-      <td>${i.title}</td>
-      <td><code style="color:var(--muted)">${i.sku||'—'}</code></td>
-      <td><span class="tag ${i.inventory<=0?'tag-red':i.inventory<=2?'tag-yellow':'tag-blue'}">${i.inventory} Stk</span></td>
-      <td>${fmt(i.price)}</td>
-    </tr>`).join('')}
-  </tbody></table>`;
-}
-
-async function loadPerformance(){
-  try{
-    const d=await api('/api/revenue/product-performance?days=30');
-    if(!d.ok)return;
-    const topEl=document.getElementById('top-sellers');
-    if(d.top_sellers?.length){
-      const maxR=d.top_sellers[0].revenue;
-      topEl.innerHTML=d.top_sellers.slice(0,8).map((p,i)=>`
-        <div style="margin-bottom:10px">
-          <div style="display:flex;justify-content:space-between;font-size:.85rem">
-            <span>${i+1}. ${p.title.slice(0,30)}${p.title.length>30?'…':''}</span>
-            <span class="green">${fmt(p.revenue)}</span>
-          </div>
-          <div class="progress-bar"><div class="progress-fill" style="width:${Math.round(p.revenue/maxR*100)}%"></div></div>
-          <div style="font-size:.75rem;color:var(--muted)">${p.units_sold} Stk · ${p.orders} Bestellungen</div>
-        </div>`).join('');
-    }else{topEl.innerHTML='<div class="empty">Keine Verkäufe in 30 Tagen</div>';}
-
-    const zeroEl=document.getElementById('zero-sellers');
-    if(d.zero_sellers?.length){
-      zeroEl.innerHTML=`<div style="color:var(--muted);font-size:.8rem;margin-bottom:8px">${d.zero_seller_count} Produkte ohne Verkauf</div>
-        <table><thead><tr><th>Produkt</th><th>Preis</th></tr></thead><tbody>
-        ${d.zero_sellers.slice(0,10).map(p=>`<tr>
-          <td style="font-size:.82rem">${p.title.slice(0,35)}${p.title.length>35?'…':''}</td>
-          <td>${fmt(p.price)}</td>
-        </tr>`).join('')}</tbody></table>`;
-    }else{zeroEl.innerHTML='<div class="empty">Alle Produkte haben Verkäufe 🎉</div>';}
-  }catch(e){console.error(e)}
-}
-
-async function loadUpsell(){
-  try{
-    const d=await api('/api/revenue/upsell-pairs?limit=8');
-    const el=document.getElementById('upsell-pairs');
-    if(!d.pairs?.length){el.innerHTML='<div class="empty">Nicht genug Bestelldaten</div>';return;}
-    el.innerHTML=d.pairs.map(p=>`
-      <div style="border-bottom:1px solid var(--border);padding:10px 0">
-        <div style="font-size:.82rem;font-weight:600">${p.product_a.slice(0,25)}…</div>
-        <div style="font-size:.75rem;color:var(--muted)">➜ wird oft mit gekauft:</div>
-        <div style="font-size:.82rem;color:var(--green)">${p.product_b.slice(0,25)}…</div>
-        <span class="tag tag-blue">${p.bought_together}× zusammen</span>
-      </div>`).join('');
-  }catch(e){console.error(e)}
-}
-
-async function recoverCarts(hours){
-  flash(`Starte Cart Recovery für letzte ${hours}h…`);
-  const d=await api('/api/revenue/recover-carts','POST',{hours});
-  if(d.ok)flash(`✅ ${d.emails_sent} Recovery-Emails gesendet · ${fmt(d.potential_revenue)} potentiell`);
-  else flash('❌ Fehler: '+d.error,false);
-}
-
-async function createFlashSale(){
-  const pct=parseInt(document.getElementById('fs-pct').value)||20;
-  const hours=parseInt(document.getElementById('fs-hours').value)||24;
-  const code=document.getElementById('fs-code').value.trim().toUpperCase();
-  const min=parseFloat(document.getElementById('fs-min').value)||0;
-  flash('Erstelle Flash Sale…');
-  const d=await api('/api/revenue/flash-sale','POST',{discount_pct:pct,title:code||undefined,duration_hours:hours,min_purchase:min});
-  const el=document.getElementById('fs-result');
-  if(d.ok){
-    el.style.display='block';
-    el.textContent=d.share_message+'\n\nCode: '+d.code;
-    flash(`✅ Flash Sale aktiv! Code: ${d.code} · ${pct}% für ${hours}h`);
-  }else{el.style.display='none';flash('❌ '+d.error,false);}
-}
-
-async function bulkPrice(){
-  const method=document.getElementById('bp-method').value;
-  const value=parseFloat(document.getElementById('bp-value').value)||10;
-  const min=parseFloat(document.getElementById('bp-min').value)||0;
-  const max=parseFloat(document.getElementById('bp-max').value)||9999;
-  const label=method==='percent'?`${value>0?'+':''}${value}%`:`${value>0?'+':''}${fmt(value)}`;
-  if(!confirm(`Alle Preise um ${label} anpassen?\nPreisbereich: ${fmt(min)} – ${fmt(max)}`))return;
-  flash('Passe Preise an…');
-  const d=await api('/api/revenue/bulk-price','POST',{method,value,min_price:min,max_price:max});
-  if(d.ok)flash(`✅ ${d.updated_variants} Varianten aktualisiert`);
-  else flash('❌ '+d.error,false);
-}
-
-async function publishDrafts(){
-  setBtn('btn-publish',true);
-  flash('Veröffentliche Draft-Produkte…');
-  const d=await api('/api/revenue/publish-drafts','POST');
-  setBtn('btn-publish',false);
-  if(d.ok)flash(`✅ ${d.published} Produkte veröffentlicht`);
-  else flash('❌ '+d.error,false);
-}
-
-async function aiDescriptions(){
-  setBtn('btn-ai',true);
-  flash('Claude generiert SEO-Beschreibungen…');
-  const d=await api('/api/revenue/ai-descriptions','POST',{limit:5,language:'de'});
-  setBtn('btn-ai',false);
-  if(d.ok)flash(`✅ ${d.updated} Beschreibungen aktualisiert`);
-  else flash('❌ '+d.error,false);
-}
-
-async function loadAll(){
-  await Promise.all([loadRevenue(),loadPerformance(),loadUpsell()]);
-}
-
-// Auto-refresh every 60 seconds
-loadAll();
-setInterval(loadAll,60000);
-</script>
-</body>
-</html>"""
 
 
 # ---------------------------------------------------------------------------
@@ -543,6 +163,41 @@ async def handle_chat(req):
         bot = req.app["bot"]
         response = await bot.process(text, session_id)
         return web.json_response({"ok": True, "response": response, "session_id": session_id})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bot_execute(req):
+    """Telegram Hub Bridge → Dashboard CommandRouter.
+    Called by telegram_hub_bridge.py for every incoming Telegram message.
+    """
+    try:
+        data = await req.json()
+        command = data.get("command", "").strip()
+        session_id = data.get("session_id", "telegram")
+        if not command:
+            return web.json_response({"ok": False, "error": "command is required"}, status=400)
+        bot = req.app["bot"]
+        response = await bot.process(command, session_id)
+        return web.json_response({"ok": True, "response": response})
+    except Exception as e:
+        log.error("handle_bot_execute error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bot_commands(req):
+    """Return all registered bot commands (for /commands meta-command in Telegram)."""
+    try:
+        bot = req.app["bot"]
+        all_cmds = list(bot.router.routes.keys())
+        slash_cmds = sorted(c for c in all_cmds if c.startswith("/"))
+        other_cmds = sorted(c for c in all_cmds if not c.startswith("/"))
+        return web.json_response({
+            "ok": True,
+            "total": len(all_cmds),
+            "slash": slash_cmds,
+            "all": slash_cmds + other_cmds,
+        })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
@@ -633,9 +288,9 @@ async def handle_trading_prices(req):
         from modules.trading_bot import TradingBot
         bot = TradingBot()
         prices = await bot.get_quick_prices()
-        return web.json_response({"ok": True, "prices": prices})
+        return web.json_response({"prices": prices})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"error": str(e)})
 
 
 async def handle_trading_arbitrage(req):
@@ -643,9 +298,9 @@ async def handle_trading_arbitrage(req):
         from modules.trading_bot import TradingBot
         bot = TradingBot()
         opps = await bot.scan_quick()
-        return web.json_response({"ok": True, "opportunities": opps})
+        return web.json_response({"opportunities": opps})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"error": str(e)})
 
 
 async def handle_telegram_status(req):
@@ -661,21 +316,16 @@ async def handle_telegram_send(req):
     if not TELEGRAM_TOKEN:
         return web.json_response({"ok": False, "error": "No token configured"})
     try:
-        try:
-            data = await req.json()
-        except Exception:
-            return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
+        data = await req.json()
         message = data.get("message", "")
-        if not message:
-            return web.json_response({"ok": False, "error": "message is required"}, status=400)
         chat_id = TELEGRAM_CHAT_ID
         url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+        async with aiohttp.ClientSession() as s:
             async with s.post(url, json={"chat_id": chat_id, "text": message}) as r:
                 ok = r.status == 200
                 return web.json_response({"ok": ok})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_shopify_status(req):
@@ -748,11 +398,6 @@ async def handle_shopify_status(req):
         return web.json_response({"ok": False, "error": "Timeout — Shopify nicht erreichbar"})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_shopify_legacy(req):
-    """Compatibility alias for older dashboards expecting /api/shopify."""
-    return await handle_shopify_status(req)
 
 
 async def handle_ollama_models(req):
@@ -905,6 +550,41 @@ async def handle_kpis_legacy(req):
     return await handle_revenue_summary(req)
 
 
+async def handle_status_legacy(req):
+    return await handle_system_status(req)
+
+
+async def handle_metrics_legacy(req):
+    return await handle_system_status(req)
+
+
+async def handle_shopify_legacy(req):
+    return await handle_shopify_status(req)
+
+
+async def handle_hermes_enqueue(req):
+    try:
+        data = await req.json()
+        from core.job_queue import HermesQueue
+        job_id = await HermesQueue.get().enqueue(
+            data.get("type", "generic"),
+            data.get("payload", {}),
+            data.get("priority", 5)
+        )
+        return web.json_response({"ok": True, "job_id": job_id})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_hermes_stats(req):
+    try:
+        from core.job_queue import HermesQueue
+        stats = await HermesQueue.get().get_stats()
+        return web.json_response({"ok": True, "stats": stats})
+    except Exception as e:
+        return web.json_response({"ok": True, "stats": {}, "note": str(e)})
+
+
 # ---------------------------------------------------------------------------
 # NEW API Routes
 # ---------------------------------------------------------------------------
@@ -945,22 +625,6 @@ async def handle_mac_action(req):
         return web.json_response({"ok": True, "result": str(result)})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_agents_legacy(req):
-    """Compatibility alias for older dashboards expecting /api/agents."""
-    return await handle_autopilot_agents(req)
-
-
-async def handle_chat_clear(req):
-    """Delete stored conversation history for a session."""
-    try:
-        data = await req.json() if req.can_read_body else {}
-        session_id = str(data.get("session_id", "dashboard")).strip() or "dashboard"
-        deleted = req.app["bot"].memory.clear_history(session_id)
-        return web.json_response({"ok": True, "session_id": session_id, "deleted": deleted})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_services_status(req):
@@ -1025,6 +689,27 @@ async def handle_service_action(req):
         return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
     action = data.get("action", "")
     svc_id = data.get("id", "")
+
+    # ── START ALL ──────────────────────────────────────────────────────────
+    if svc_id == "all" and action == "start":
+        started, skipped, failed = [], [], []
+        for svc in SERVICES:
+            if svc["id"] == "dashboard":
+                skipped.append(svc["name"])
+                continue
+            try:
+                subprocess.Popen(svc["start_cmd"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                started.append(svc["name"])
+            except Exception as e:
+                failed.append(f"{svc['name']}: {e}")
+        await asyncio.sleep(2)
+        return web.json_response({
+            "ok": True, "action": "start_all",
+            "started": started, "skipped": skipped, "failed": failed,
+            "summary": f"{len(started)} gestartet, {len(failed)} Fehler"
+        })
+
+    # ── SINGLE SERVICE ─────────────────────────────────────────────────────
     svc = next((s for s in SERVICES if s["id"] == svc_id), None)
     if not svc:
         return web.json_response({"ok": False, "error": f"Service {svc_id} not found"})
@@ -1042,42 +727,31 @@ async def handle_service_action(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
-async def handle_service_start(req):
-    """Startet einen Service (dedizierter Endpoint für /api/service/start)."""
-    try:
-        data = await req.json()
-    except Exception:
-        return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
-    svc_id = data.get("id", "")
-    svc = next((s for s in SERVICES if s["id"] == svc_id), None)
-    if not svc:
-        return web.json_response({"ok": False, "error": f"Service {svc_id} not found"}, status=404)
-    if svc["id"] == "dashboard":
-        return web.json_response({"ok": False, "error": "Dashboard kann sich nicht selbst starten"}, status=400)
-    try:
-        subprocess.Popen(svc["start_cmd"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        await asyncio.sleep(1.5)
-        return web.json_response({"ok": True, "action": "start", "service": svc["name"]})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_service_stop(req):
-    """Stoppt einen Service (dedizierter Endpoint für /api/service/stop)."""
-    try:
-        data = await req.json()
-    except Exception:
-        return web.json_response({"ok": False, "error": "Invalid JSON body"}, status=400)
-    svc_id = data.get("id", "")
-    svc = next((s for s in SERVICES if s["id"] == svc_id), None)
-    if not svc:
-        return web.json_response({"ok": False, "error": f"Service {svc_id} not found"}, status=404)
-    try:
-        subprocess.run(["pkill", "-f", svc["pattern"]], capture_output=True)
-        await asyncio.sleep(0.8)
-        return web.json_response({"ok": True, "action": "stop", "service": svc["name"]})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+async def handle_start_all(req):
+    """POST /api/start-all — startet alle Services außer Dashboard mit einem Klick."""
+    started, skipped, failed = [], [], []
+    for svc in SERVICES:
+        if svc["id"] == "dashboard":
+            skipped.append(svc["name"])
+            continue
+        try:
+            subprocess.Popen(svc["start_cmd"], shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            started.append(svc["name"])
+            log.info(f"Start-All: {svc['name']} gestartet")
+        except Exception as e:
+            failed.append(f"{svc['name']}: {e}")
+            log.warning(f"Start-All: {svc['name']} Fehler: {e}")
+    await asyncio.sleep(2)
+    msg = f"🚀 {len(started)} Services gestartet"
+    if failed:
+        msg += f" | ⚠️ {len(failed)} Fehler"
+    return web.json_response({
+        "ok": True,
+        "started": started,
+        "skipped": skipped,
+        "failed": failed,
+        "summary": msg,
+    })
 
 
 async def handle_logs(req):
@@ -1122,7 +796,7 @@ async def handle_health(req):
         "service": "supermegabot-dashboard",
         "port": PORT,
         "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
-        "started_at": datetime.fromtimestamp(_SERVER_START_TIME, timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "started_at": datetime.utcfromtimestamp(_SERVER_START_TIME).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "shopify_domain": os.getenv("SHOPIFY_SHOP_DOMAIN", ""),
         "bots": {
             "admin_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1")),
@@ -1131,16 +805,6 @@ async def handle_health(req):
     }
     _cache_set("system_health", result)
     return web.json_response(result)
-
-
-async def handle_status_legacy(req):
-    """Compatibility alias for older dashboards expecting /api/status."""
-    return await handle_status_full(req)
-
-
-async def handle_metrics_legacy(req):
-    """Compatibility alias for older dashboards expecting /api/metrics."""
-    return await handle_system(req)
 
 
 async def handle_status_full(req):
@@ -1197,6 +861,92 @@ async def handle_status_full(req):
             "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
             "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
         },
+    })
+
+
+async def handle_guardian_status(req):
+    """Guardian security module status."""
+    import subprocess
+    guardian_running = False
+    try:
+        r = subprocess.run(["pgrep", "-f", "guardian"], capture_output=True, text=True)
+        guardian_running = r.returncode == 0 and bool(r.stdout.strip())
+    except Exception:
+        pass
+    return web.json_response({
+        "ok": True,
+        "status": "active" if guardian_running else "standby",
+        "guardian_process": guardian_running,
+        "api_key_configured": bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")),
+        "monitoring": True,
+        "alerts_enabled": bool(os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID")),
+    })
+
+
+async def handle_ai_status(req):
+    """AI integrations status."""
+    anthropic_ok = bool(os.getenv("ANTHROPIC_API_KEY"))
+    openai_ok = bool(os.getenv("OPENAI_API_KEY"))
+    ollama_ok = False
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as s:
+            async with s.get(f"{os.getenv('OLLAMA_HOST', 'http://localhost:11434')}/api/tags") as r:
+                ollama_ok = r.status == 200
+    except Exception:
+        pass
+    return web.json_response({
+        "ok": True,
+        "anthropic": {"configured": anthropic_ok, "model": os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")},
+        "openai": {"configured": openai_ok, "model": os.getenv("OPENAI_MODEL", "gpt-4o")},
+        "ollama": {"online": ollama_ok, "host": os.getenv("OLLAMA_HOST", "http://localhost:11434"), "model": os.getenv("OLLAMA_MODEL", "llama3.2")},
+        "gemini": {"configured": bool(os.getenv("GEMINI_API_KEY"))},
+    })
+
+
+async def handle_system_status(req):
+    """System metrics and health."""
+    import platform
+    try:
+        import psutil
+        cpu = psutil.cpu_percent(interval=0.1)
+        mem = psutil.virtual_memory()
+        disk = psutil.disk_usage("/")
+        return web.json_response({
+            "ok": True,
+            "platform": platform.system(),
+            "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
+            "cpu_percent": cpu,
+            "memory_percent": round(mem.percent, 1),
+            "memory_used_mb": round(mem.used / 1024 / 1024),
+            "memory_total_mb": round(mem.total / 1024 / 1024),
+            "disk_percent": round(disk.percent, 1),
+            "disk_free_gb": round(disk.free / 1024 / 1024 / 1024, 1),
+        })
+    except Exception as e:
+        return web.json_response({"ok": True, "platform": platform.system(),
+                                   "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
+                                   "note": str(e)})
+
+
+async def handle_supabase_status(req):
+    """Supabase connection status."""
+    supabase_url = os.getenv("SUPABASE_URL", "")
+    configured = bool(supabase_url and os.getenv("SUPABASE_ANON_KEY"))
+    reachable = False
+    if configured:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=4)) as s:
+                async with s.get(f"{supabase_url}/rest/v1/",
+                                 headers={"apikey": os.getenv("SUPABASE_ANON_KEY", "")}) as r:
+                    reachable = r.status in (200, 400)
+        except Exception:
+            pass
+    return web.json_response({
+        "ok": True,
+        "configured": configured,
+        "reachable": reachable,
+        "url": supabase_url,
+        "service_key_configured": bool(os.getenv("SUPABASE_SERVICE_KEY")),
     })
 
 
@@ -1344,27 +1094,21 @@ async def handle_storage_offload(req):
 async def handle_storage_large_files(req):
     try:
         directory = req.rel_url.query.get("dir", str(BASE_DIR))
-        try:
-            min_mb = float(req.rel_url.query.get("min_mb", "50"))
-        except (ValueError, TypeError):
-            min_mb = 50.0
+        min_mb = float(req.rel_url.query.get("min_mb", "50"))
         from modules.storage_monitor import find_large_files
         files = find_large_files(Path(directory), min_size_mb=min_mb, limit=30)
-        return web.json_response({"ok": True, "files": files, "directory": directory})
+        return web.json_response({"files": files, "directory": directory})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def handle_storage_history(req):
     try:
-        try:
-            limit = int(req.rel_url.query.get("limit", "50"))
-        except (ValueError, TypeError):
-            limit = 50
+        limit = int(req.rel_url.query.get("limit", "50"))
         from modules.storage_monitor import get_event_history
-        return web.json_response({"ok": True, "events": get_event_history(limit)})
+        return web.json_response({"events": get_event_history(limit)})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def handle_storage_widget(req):
@@ -1623,105 +1367,6 @@ async def handle_github_push(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
-async def handle_pipedrive_status(req):
-    try:
-        from modules.pipedrive_client import check_status
-        return web.json_response(await check_status())
-    except Exception as e:
-        return web.json_response({"status": "error", "error": str(e)}, status=500)
-
-
-async def handle_pipedrive_deals(req):
-    try:
-        from modules.pipedrive_client import list_deals
-        limit = int(req.rel_url.query.get("limit", 20))
-        deals = await list_deals(limit=limit)
-        return web.json_response({"ok": True, "deals": deals, "count": len(deals)})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_pipedrive_deal_create(req):
-    try:
-        from modules.pipedrive_client import create_deal
-        body = await req.json()
-        deal = await create_deal(
-            title=body["title"],
-            value=float(body.get("value", 0)),
-            currency=body.get("currency", "EUR"),
-            person_id=body.get("person_id"),
-            org_id=body.get("org_id"),
-        )
-        return web.json_response({"ok": True, "deal": deal})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_pipedrive_persons(req):
-    try:
-        from modules.pipedrive_client import list_persons
-        persons = await list_persons(limit=int(req.rel_url.query.get("limit", 20)))
-        return web.json_response({"ok": True, "persons": persons, "count": len(persons)})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_railway_status(req):
-    try:
-        from modules.railway_client import check_status
-        result = await check_status()
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"status": "error", "message": str(e)})
-
-
-async def handle_railway_volumes(req):
-    project_id = req.rel_url.query.get("project_id") or os.getenv("RAILWAY_PROJECT_ID", "")
-    if not project_id:
-        return web.json_response({"ok": False, "error": "project_id required"})
-    try:
-        from modules.railway_client import list_volumes
-        volumes = await list_volumes(project_id)
-        return web.json_response({"ok": True, "volumes": volumes})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_railway_backups(req):
-    volume_instance_id = req.rel_url.query.get("volume_instance_id", "")
-    if not volume_instance_id:
-        return web.json_response({"ok": False, "error": "volume_instance_id required"})
-    try:
-        from modules.railway_client import list_backups
-        backups = await list_backups(volume_instance_id)
-        return web.json_response({"ok": True, "backups": backups})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_railway_backup_create(req):
-    data = await req.json()
-    volume_instance_id = data.get("volume_instance_id", "")
-    if not volume_instance_id:
-        return web.json_response({"ok": False, "error": "volume_instance_id required"})
-    try:
-        from modules.railway_client import create_backup
-        backup_id = await create_backup(volume_instance_id)
-        return web.json_response({"ok": True, "backup_id": backup_id})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_railway_backup_restore(req):
-    data = await req.json()
-    try:
-        from modules.railway_client import restore_backup
-        ok = await restore_backup(data["backup_id"], data["volume_instance_id"])
-        return web.json_response({"ok": ok})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
 async def handle_cloud_status(req):
     """Check Railway + ngrok availability."""
     railway_url = os.getenv("SHOPIFY_SUITE_URL",
@@ -1901,12 +1546,11 @@ async def handle_automation_status(req):
         from core.automation_scheduler import get_scheduler, get_last_runs
         sched = get_scheduler()
         return web.json_response({
-            "ok": True,
             "status": sched.status(),
             "recent_runs": get_last_runs(limit=30),
         })
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def handle_automation_run(req):
@@ -1942,9 +1586,9 @@ async def handle_automation_tasks(req):
                 "ok_runs":    s.get("ok", 0),
                 "avg_ms":     s.get("avg_ms", 0),
             })
-        return web.json_response({"ok": True, "tasks": tasks, "count": len(tasks)})
+        return web.json_response({"tasks": tasks, "count": len(tasks)})
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def handle_social_status(req):
@@ -1952,11 +1596,9 @@ async def handle_social_status(req):
     try:
         from modules.social_connectors import ping_all
         results = await ping_all()
-        if "ok" not in results:
-            results["ok"] = True
         return web.json_response(results)
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def handle_digistore_status(req):
@@ -1973,14 +1615,11 @@ async def handle_digistore_status(req):
 async def handle_digistore_orders(req):
     try:
         from modules.digistore24_automation import get_orders
-        try:
-            page = int(req.rel_url.query.get("page", "1"))
-        except (ValueError, TypeError):
-            page = 1
+        page = int(req.rel_url.query.get("page", 1))
         orders = await get_orders(page=page)
-        return web.json_response({"ok": True, "orders": orders})
+        return web.json_response({"orders": orders})
     except Exception as e:
-        return web.json_response({"ok": False, "orders": [], "error": str(e)})
+        return web.json_response({"orders": [], "error": str(e)})
 
 
 async def handle_mailchimp_status(req):
@@ -2132,8 +1771,7 @@ async def handle_gumroad_status(req):
     try:
         from modules.ecommerce_connectors import GumroadConnector
         gum = GumroadConnector()
-        info = await gum.ping()
-        ok = info.get("connected", False)
+        ok, info = await gum.ping()
         stats = await gum.get_stats() if ok else {}
         return web.json_response({"ok": ok, "info": info, **stats})
     except Exception as e:
@@ -2182,311 +1820,6 @@ async def handle_seo_run(req):
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# REVENUE AUTOPILOT — Shopify Revenue Engine Handlers
-# ══════════════════════════════════════════════════════════════════════════════
-
-async def handle_revenue_dashboard(req):
-    """Vollständiges Revenue Dashboard (Umsatz + Carts + Inventory)."""
-    try:
-        from modules.shopify_revenue_engine import get_full_dashboard
-        data = await get_full_dashboard()
-        return web.json_response({"ok": True, **data})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_revenue_summary(req):
-    """GET /api/revenue/summary — Cached 5min revenue summary."""
-    cached = _cache_get("revenue_summary", 300)
-    if cached is not None:
-        return web.json_response(cached)
-    try:
-        from modules.shopify_revenue_engine import get_revenue_summary
-        data = await get_revenue_summary()
-        result = {"ok": True, **data}
-        _cache_set("revenue_summary", result)
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_revenue_analytics(req):
-    """Umsatz-Analyse: heute, 7T, 30T, offene Bestellungen. Cached 5min."""
-    cached = _cache_get("revenue_summary", 300)
-    if cached is not None:
-        return web.json_response(cached)
-    try:
-        from modules.shopify_revenue_engine import get_revenue_summary
-        data = await get_revenue_summary()
-        result = {"ok": True, **data}
-        _cache_set("revenue_summary", result)
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_abandoned_carts(req):
-    """Alle offenen / verlassenen Warenkörbe."""
-    try:
-        try:
-            hours = int(req.rel_url.query.get("hours", "24"))
-        except (ValueError, TypeError):
-            hours = 24
-        from modules.shopify_revenue_engine import get_abandoned_carts
-        carts = await get_abandoned_carts(hours)
-        return web.json_response({"ok": True, "count": len(carts), "carts": carts})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_recover_carts(req):
-    """Alle offenen Carts per Recovery-E-Mail ansprechen."""
-    try:
-        data = await req.json() if req.can_read_body else {}
-        hours = int(data.get("hours", 24))
-        from modules.shopify_revenue_engine import recover_all_carts
-        result = await recover_all_carts(hours)
-        return web.json_response({"ok": True, **result})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_flash_sale(req):
-    """Flash Sale durch direkte Preisaktualisierung — kein Discount-Code nötig."""
-    try:
-        data = await req.json() if req.can_read_body else {}
-        from modules.shopify_revenue_engine import create_flash_sale
-        pct = int(data.get("discount_percent", data.get("discount_pct", 20)))
-        result = await create_flash_sale(
-            discount_pct=pct,
-            title=data.get("title", ""),
-            duration_hours=int(data.get("duration_hours", 24)),
-            collection_id=data.get("collection_id"),
-            min_purchase=float(data.get("min_purchase", 0)),
-            product_ids=data.get("product_ids"),
-        )
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_restore_flash_sale(req):
-    """Originalpreise nach Flash Sale wiederherstellen."""
-    try:
-        from modules.shopify_revenue_engine import restore_flash_sale
-        result = await restore_flash_sale()
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_bulk_price_update(req):
-    """Preise für alle oder ausgewählte Produkte auf einmal anpassen."""
-    try:
-        data = await req.json() if req.can_read_body else {}
-        from modules.shopify_revenue_engine import bulk_price_update
-        result = await bulk_price_update(
-            product_ids=data.get("product_ids"),
-            method=data.get("method", "percent"),
-            value=float(data.get("value", 10)),
-            min_price=float(data.get("min_price", 0)),
-            max_price=float(data.get("max_price", 99999)),
-        )
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_product_performance(req):
-    """Top-Seller, Slow-Mover und Zero-Seller Analyse."""
-    try:
-        try:
-            days = int(req.rel_url.query.get("days", "30"))
-        except (ValueError, TypeError):
-            days = 30
-        from modules.shopify_revenue_engine import get_product_performance
-        data = await get_product_performance(days)
-        return web.json_response({"ok": True, **data})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_all_products_prices(req):
-    """Alle Produkte mit aktuellen Preisen. Cached 2min."""
-    cached = _cache_get("shopify_products", 120)
-    if cached is not None:
-        return web.json_response(cached)
-    try:
-        from modules.shopify_revenue_engine import get_all_products_with_prices
-        products = await get_all_products_with_prices()
-        result = {"ok": True, "count": len(products), "products": products}
-        _cache_set("shopify_products", result)
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_ai_descriptions(req):
-    """Claude generiert SEO-Beschreibungen für Produkte (Bulk)."""
-    try:
-        data = await req.json() if req.can_read_body else {}
-        from modules.shopify_revenue_engine import generate_ai_descriptions_bulk
-        result = await generate_ai_descriptions_bulk(
-            product_ids=data.get("product_ids"),
-            limit=int(data.get("limit", 5)),
-            language=data.get("language", "de"),
-        )
-        return web.json_response({"ok": True, **result})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_low_inventory(req):
-    """Produkte mit niedrigem Lagerbestand."""
-    try:
-        try:
-            threshold = int(req.rel_url.query.get("threshold", "5"))
-        except (ValueError, TypeError):
-            threshold = 5
-        from modules.shopify_revenue_engine import get_low_inventory
-        items = await get_low_inventory(threshold)
-        return web.json_response({"ok": True, "count": len(items), "items": items})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_publish_drafts(req):
-    """Alle Draft-Produkte automatisch veröffentlichen."""
-    try:
-        from modules.shopify_revenue_engine import auto_publish_drafts
-        result = await auto_publish_drafts()
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_upsell_pairs(req):
-    """Produkte die häufig zusammen gekauft werden (Upsell-Empfehlungen)."""
-    try:
-        try:
-            limit = int(req.rel_url.query.get("limit", "10"))
-        except (ValueError, TypeError):
-            limit = 10
-        from modules.shopify_revenue_engine import get_upsell_pairs
-        pairs = await get_upsell_pairs(limit)
-        return web.json_response({"ok": True, "pairs": pairs})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-# ── YouTube Analytics ─────────────────────────────────────────────────────────
-
-async def handle_youtube_dashboard(req):
-    """YouTube Kanal-Dashboard: Abonnenten, Views, Videos."""
-    try:
-        from modules.youtube_analytics import get_full_dashboard
-        return web.json_response(await get_full_dashboard())
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_youtube_stats(req):
-    try:
-        from modules.youtube_analytics import get_channel_stats
-        return web.json_response(await get_channel_stats())
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_youtube_latest(req):
-    try:
-        try:
-            n = int(req.rel_url.query.get("limit", "10"))
-        except (ValueError, TypeError):
-            n = 10
-        from modules.youtube_analytics import get_latest_videos
-        return web.json_response(await get_latest_videos(n))
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_youtube_top(req):
-    try:
-        try:
-            n = int(req.rel_url.query.get("limit", "10"))
-        except (ValueError, TypeError):
-            n = 10
-        from modules.youtube_analytics import get_top_videos
-        return web.json_response(await get_top_videos(n))
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-# ── Revenue Autopilot Frontend ─────────────────────────────────────────────────
-
-async def handle_revenue_autopilot_ui(req):
-    """Standalone Revenue Autopilot Dashboard HTML."""
-    html = _REVENUE_AUTOPILOT_HTML
-    return web.Response(text=html, content_type="text/html", charset="utf-8")
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# AUTOPILOT CREATORHUB — Agent System Handlers
-# ══════════════════════════════════════════════════════════════════════════════
-
-_AUTOPILOT_HTML_PATH = Path(__file__).parent / "autopilot.html"
-
-
-async def handle_autopilot_ui(req):
-    """AutoPilot CreatorHub Dashboard."""
-    try:
-        html = _AUTOPILOT_HTML_PATH.read_text(encoding="utf-8")
-        return web.Response(text=html, content_type="text/html", charset="utf-8")
-    except Exception as e:
-        return web.Response(text=f"Error: {e}", status=500)
-
-
-async def handle_agents_status_all(req):
-    """Status aller 10 AI-Agenten."""
-    try:
-        from modules.autopilot_agents import get_all_status
-        statuses = await get_all_status()
-        return web.json_response({"ok": True, "agents": statuses})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_agents_run(req):
-    """Einen Agenten ausführen: {agent, task, params}."""
-    try:
-        data = await req.json()
-        agent = data.get("agent", "ceo")
-        task = data.get("task", "status")
-        params = data.get("params", {})
-        from modules.autopilot_agents import run_agent
-        result = await run_agent(agent, task, params)
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_agents_logs(req):
-    """Letzte Logs aller Agenten."""
-    try:
-        try:
-            limit = int(req.rel_url.query.get("limit", "50"))
-        except (ValueError, TypeError):
-            limit = 50
-        from modules.autopilot_agents import get_all_logs
-        logs = await get_all_logs(limit)
-        return web.json_response({"ok": True, "logs": logs})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-# ══════════════════════════════════════════════════════════════════════════════
 
 async def handle_dropshipping_status(req):
     """Dropshipping pipeline status."""
@@ -2542,10 +1875,7 @@ async def handle_klaviyo_lists(req):
 
 async def handle_klaviyo_sync(req):
     try:
-        try:
-            data = await req.json()
-        except Exception:
-            data = {}
+        data = await req.json()
         list_id = data.get("list_id", "")
         source  = data.get("source", "digistore")
         from modules.klaviyo_automation import sync_from_digistore, sync_from_shopify, get_lists
@@ -2587,8 +1917,9 @@ async def handle_klaviyo_campaign(req):
 
 
 async def handle_bot_clones_status(req):
-    """Return status of all specialized bot-clone workers."""
+    """Return status of all bot-clone workers (base + specialized)."""
     try:
+        import core.specialized_bots  # registers specialized bots into BOT_REGISTRY
         from core.bot_clones import get_bot_status
         return web.json_response(await get_bot_status())
     except Exception as e:
@@ -2706,7 +2037,13 @@ async def handle_mrr(req):
 
 async def handle_stripe_status(req):
     try:
-        from modules.stripe_automation import get_stats
+        from modules.stripe_automation import stripe_available, get_stats
+        if not stripe_available():
+            return web.json_response({
+                "ok": False,
+                "configured": False,
+                "message": "STRIPE_SECRET_KEY nicht gesetzt — in .env eintragen",
+            })
         data = await get_stats()
         return web.json_response(data)
     except Exception as e:
@@ -2725,11 +2062,8 @@ async def handle_stripe_balance(req):
 async def handle_stripe_charges(req):
     try:
         from modules.stripe_automation import get_charges
-        try:
-            days = int(req.rel_url.query.get("days", "30"))
-            limit = int(req.rel_url.query.get("limit", "20"))
-        except (ValueError, TypeError):
-            days, limit = 30, 20
+        days = int(req.rel_url.query.get("days", "30"))
+        limit = int(req.rel_url.query.get("limit", "20"))
         data = await get_charges(limit=limit, days_back=days)
         return web.json_response({"ok": True, "charges": data})
     except Exception as e:
@@ -2748,14 +2082,205 @@ async def handle_stripe_customers(req):
 async def handle_stripe_revenue(req):
     try:
         from modules.stripe_automation import get_revenue_summary
-        try:
-            days = int(req.rel_url.query.get("days", "30"))
-        except (ValueError, TypeError):
-            days = 30
+        days = int(req.rel_url.query.get("days", "30"))
         data = await get_revenue_summary(days_back=days)
-        if "ok" not in data:
-            data["ok"] = True
         return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+_PLANS_MSG = """💰 *RudiBot Premium Pläne*
+
+🥉 *Starter — €49/Monat*
+• Shopify Produkt-Automation
+• AI-Antworten unbegrenzt
+• Tägliche Trend-Analyse
+
+🥈 *Pro — €99/Monat*
+• Alles aus Starter
+• Digistore24 Integration
+• Stripe Revenue Tracking
+• Priority Support
+
+🏆 *Enterprise — €299/Monat*
+• Alles aus Pro
+• Eigene Agent Teams
+• White-Label Branding
+• Dedizierter Support
+
+👇 Jetzt starten:"""
+
+_WELCOME_MSG = """🤖 *Willkommen bei RudiBot!*
+
+Ich bin dein KI-Assistent für E-Commerce & Business Automation.
+
+*Befehle:*
+/start — Diese Nachricht
+/premium — Pläne & Preise
+/hilfe — Alle Funktionen
+
+Oder einfach schreib mir — ich antworte sofort! 💬"""
+
+
+async def _tg_send(bot_token: str, chat_id: int, text: str, reply_markup: dict = None):
+    payload = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
+    async with aiohttp.ClientSession() as s:
+        await s.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", json=payload)
+
+
+async def handle_telegram_webhook(req):
+    """Telegram webhook — processes incoming messages via Claude AI."""
+    try:
+        data = await req.json()
+        msg = data.get("message") or data.get("edited_message")
+        if not msg:
+            return web.Response(status=200)
+
+        chat_id = msg.get("chat", {}).get("id")
+        text = (msg.get("text") or "").strip()
+        bot_token = os.getenv("TELEGRAM_BOT_TOKEN_2") or os.getenv("TELEGRAM_BOT_TOKEN", "")
+
+        if not chat_id or not bot_token:
+            return web.Response(status=200)
+
+        base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
+
+        # --- Befehle ---
+        if text in ("/start", "/hilfe", "/help"):
+            await _tg_send(bot_token, chat_id, _WELCOME_MSG)
+            return web.Response(status=200)
+
+        if text in ("/shopify", "/shop", "/status"):
+            from modules.shopify_automation import get_shopify_status_message
+            await _tg_send(bot_token, chat_id, get_shopify_status_message())
+            return web.Response(status=200)
+
+        if text in ("/bestellungen", "/orders"):
+            from modules.shopify_automation import get_recent_orders, format_orders_message
+            orders = get_recent_orders(limit=5)
+            await _tg_send(bot_token, chat_id, format_orders_message(orders))
+            return web.Response(status=200)
+
+        if text in ("/umsatz", "/revenue", "/geld"):
+            from modules.shopify_automation import get_revenue_today
+            r = get_revenue_today()
+            msg = f"💰 *Umsatz heute:* €{r['revenue']}\n📋 Bestellungen: {r['orders']}"
+            await _tg_send(bot_token, chat_id, msg)
+            return web.Response(status=200)
+
+        if text.startswith("/produkt "):
+            parts = text[9:].split("|")
+            if len(parts) >= 2:
+                from modules.shopify_automation import create_product_simple
+                p = create_product_simple(parts[0].strip(), parts[1].strip(), parts[2].strip() if len(parts) > 2 else "")
+                if p.get("id"):
+                    await _tg_send(bot_token, chat_id, f"✅ Produkt erstellt: *{p['title']}* — €{parts[1].strip()}")
+                else:
+                    await _tg_send(bot_token, chat_id, f"❌ Fehler: {p.get('error', p)}")
+            else:
+                await _tg_send(bot_token, chat_id, "Format: `/produkt Name | Preis | Beschreibung`\nBeispiel: `/produkt T-Shirt | 29.99 | Hochwertiges Shirt`")
+            return web.Response(status=200)
+
+        if text in ("/premium", "/kaufen", "/plans", "/preise", "/buy"):
+            keyboard = {"inline_keyboard": [
+                [{"text": "🥉 Starter €49/Mo", "url": f"{base_url}/checkout?plan=starter&chat_id={chat_id}"}],
+                [{"text": "🥈 Pro €99/Mo", "url": f"{base_url}/checkout?plan=pro&chat_id={chat_id}"}],
+                [{"text": "🏆 Enterprise €299/Mo", "url": f"{base_url}/checkout?plan=enterprise&chat_id={chat_id}"}],
+            ]}
+            await _tg_send(bot_token, chat_id, _PLANS_MSG, reply_markup=keyboard)
+            return web.Response(status=200)
+
+        # --- AI Antwort ---
+        try:
+            import anthropic
+            client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
+            reply_msg = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=500,
+                system=(
+                    "Du bist RudiBot, ein KI-Assistent für E-Commerce und Business Automation. "
+                    "Antworte auf Deutsch, kurz und hilfreich. "
+                    "Wenn jemand nach Preisen, Abo oder Kauf fragt, sage: 'Tippe /premium für unsere Pläne ab €49/Monat.'"
+                ),
+                messages=[{"role": "user", "content": text or "(leere Nachricht)"}]
+            )
+            reply_text = reply_msg.content[0].text if reply_msg.content else "Entschuldigung, keine Antwort verfügbar."
+        except Exception as ai_err:
+            log.error("AI error in telegram webhook: %s", ai_err)
+            reply_text = "Hallo! Ich bin RudiBot. Tippe /premium für unsere Pläne. (KI momentan nicht verfügbar)"
+
+        await _tg_send(bot_token, chat_id, reply_text)
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("Telegram webhook error: %s", e)
+        return web.Response(status=200)
+
+
+async def handle_checkout_page(req):
+    """Redirect to Stripe Checkout für Telegram-Nutzer."""
+    plan = req.rel_url.query.get("plan", "starter")
+    chat_id = req.rel_url.query.get("chat_id", "")
+    base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
+    try:
+        from modules.monetization import create_checkout_session
+        session = create_checkout_session(
+            plan=plan,
+            customer_email="",
+            success_url=f"{base_url}/checkout/success?session_id={{CHECKOUT_SESSION_ID}}&chat_id={chat_id}",
+            cancel_url=f"{base_url}/checkout/cancel",
+        )
+        checkout_url = session.get("url", "")
+        if checkout_url:
+            raise web.HTTPFound(checkout_url)
+        return web.Response(text="Checkout nicht verfügbar.", status=500)
+    except web.HTTPFound:
+        raise
+    except Exception as e:
+        log.error("Checkout page error: %s", e)
+        return web.Response(text=f"Fehler: {e}", status=500)
+
+
+async def handle_checkout_success(req):
+    """Nach erfolgreichem Kauf — Telegram Bestätigung senden."""
+    chat_id = req.rel_url.query.get("chat_id", "")
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN_2") or os.getenv("TELEGRAM_BOT_TOKEN", "")
+    if chat_id and bot_token:
+        try:
+            await _tg_send(bot_token, int(chat_id),
+                "✅ *Zahlung erfolgreich!* Willkommen bei RudiBot Premium! 🎉\n\nDu hast jetzt Zugang zu allen Features. Schreib mir einfach!")
+        except Exception:
+            pass
+    html = "<html><body style='font-family:sans-serif;text-align:center;padding:50px'><h1>✅ Zahlung erfolgreich!</h1><p>Gehe zurück zu Telegram und schreib @RudiCludiBot</p></body></html>"
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_shopify_order_webhook_route(req):
+    """Shopify Order Webhook — sendet Telegram-Alarm bei neuer Bestellung."""
+    try:
+        data = await req.json()
+        from modules.shopify_automation import handle_shopify_order_webhook
+        await handle_shopify_order_webhook(data)
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("Shopify order webhook error: %s", e)
+        return web.Response(status=200)
+
+
+async def handle_shopify_orders(req):
+    try:
+        from modules.shopify_automation import get_recent_orders, format_orders_message
+        orders = get_recent_orders(limit=10)
+        return web.json_response({"ok": True, "orders": orders, "count": len(orders)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_shopify_revenue(req):
+    try:
+        from modules.shopify_automation import get_revenue_today
+        return web.json_response({"ok": True, **get_revenue_today()})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -2773,97 +2298,6 @@ async def handle_stripe_webhook(req):
         event = json.loads(payload)
         result = await handle_webhook_event(event)
         return web.json_response({"ok": True, "result": result})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_stripe_checkout(req):
-    """Create Stripe Checkout Session for subscription."""
-    try:
-        data = await req.json()
-        price_id = data.get("price_id")
-        if not price_id:
-            return web.json_response({"ok": False, "error": "price_id required"}, status=400)
-
-        from modules.stripe_automation import create_checkout_session
-        result = await create_checkout_session(price_id)
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-
-async def handle_stripe_mrr(req):
-    """GET /api/stripe/mrr — Monthly Recurring Revenue from active subscriptions."""
-    try:
-        from modules.stripe_automation import get_mrr
-        result = await get_mrr()
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_stripe_churn(req):
-    """GET /api/stripe/churn — Churn rate from canceled subscriptions."""
-    try:
-        try:
-            days_back = int(req.rel_url.query.get("days", "30"))
-        except (ValueError, TypeError):
-            days_back = 30
-        from modules.stripe_automation import get_churn_rate
-        result = await get_churn_rate(days_back=days_back)
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_stripe_subscriptions(req):
-    """GET /api/stripe/subscriptions — List active Stripe subscriptions."""
-    try:
-        import stripe as stripe_lib
-        stripe_lib.api_key = os.getenv("STRIPE_SECRET_KEY") or os.getenv("STRIPE_API_KEY", "")
-        if not stripe_lib.api_key:
-            return web.json_response({"ok": False, "subscriptions": [], "error": "No Stripe key configured"})
-        subs = stripe_lib.Subscription.list(status="active", limit=20)
-        result = []
-        for s in subs.data:
-            item = s["items"]["data"][0] if s.get("items") and s["items"]["data"] else {}
-            plan = item.get("plan") or item.get("price") or {}
-            result.append({
-                "id": s["id"],
-                "status": s["status"],
-                "created": s["created"],
-                "current_period_end": s["current_period_end"],
-                "amount": (plan.get("amount") or 0) / 100,
-                "currency": (plan.get("currency") or "eur").upper(),
-                "interval": plan.get("interval") or "month",
-            })
-        return web.json_response({"ok": True, "subscriptions": result})
-    except Exception as e:
-        return web.json_response({"ok": False, "subscriptions": [], "error": str(e)})
-
-
-async def handle_stripe_setup_products(req):
-    """POST /api/stripe/setup-products — Create all SaaS tiers in Stripe."""
-    try:
-        from modules.stripe_automation import setup_saas_products
-        result = await setup_saas_products()
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
-
-
-async def handle_stripe_portal(req):
-    """Create Stripe Customer Portal session."""
-    try:
-        data = await req.json()
-        customer_id = data.get("customer_id")
-        if not customer_id:
-            return web.json_response({"ok": False, "error": "customer_id required"}, status=400)
-
-        from modules.stripe_automation import create_customer_portal_session
-        result = await create_customer_portal_session(customer_id)
-        return web.json_response(result)
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -2957,10 +2391,7 @@ async def handle_drive_files(req):
     try:
         from modules.google_drive_automation import list_files
         query = req.rel_url.query.get("q", "")
-        try:
-            limit = int(req.rel_url.query.get("limit", "20"))
-        except (ValueError, TypeError):
-            limit = 20
+        limit = int(req.rel_url.query.get("limit", "20"))
         data  = await list_files(query=query, page_size=limit)
         return web.json_response({"ok": True, "files": data})
     except Exception as e:
@@ -2976,40 +2407,10 @@ async def handle_drive_backup(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
-@web.middleware
-async def logging_middleware(request, handler):
-    """Log all POST requests with body size and response time."""
-    start = time.time()
-    try:
-        response = await handler(request)
-    except web.HTTPException as ex:
-        response = ex
-    except Exception as exc:
-        elapsed_ms = int((time.time() - start) * 1000)
-        if request.method == "POST":
-            log.warning("POST %s failed in %dms: %s", request.path, elapsed_ms, exc)
-        raise
-    elapsed_ms = int((time.time() - start) * 1000)
-    if request.method == "POST":
-        body_size = request.content_length or 0
-        log.info("POST %s %dms body=%db status=%s",
-                 request.path, elapsed_ms, body_size, response.status)
-    return response
-
-
-@web.middleware
-async def cors_middleware(request, handler):
-    if request.method == "OPTIONS":
-        response = web.Response()
-    else:
-        try:
-            response = await handler(request)
-        except web.HTTPException as ex:
-            response = ex
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization"
-    return response
+async def create_app():
+    from core.mega_orchestrator import MegaOrchestrator
+    bot = MegaOrchestrator()
+    await bot.start()
 
 
 
@@ -3473,6 +2874,77 @@ async def handle_tiktok_research_ads(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── SEMrush handlers ──────────────────────────────────────────────────────────
+
+async def handle_semrush_keyword(req):
+    phrase = req.rel_url.query.get("phrase", "")
+    db = req.rel_url.query.get("db", "de")
+    if not phrase:
+        return web.json_response({"error": "phrase required"}, status=400)
+    try:
+        from modules.semrush_client import keyword_overview, keyword_related
+        import asyncio
+        overview, related = await asyncio.gather(
+            keyword_overview(phrase, db),
+            keyword_related(phrase, db, 20),
+        )
+        return web.json_response({"phrase": phrase, "overview": overview, "related": related})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_domain(req):
+    domain = req.rel_url.query.get("domain", "")
+    db = req.rel_url.query.get("db", "de")
+    if not domain:
+        return web.json_response({"error": "domain required"}, status=400)
+    try:
+        from modules.semrush_client import domain_overview, domain_organic_keywords, domain_competitors, domain_backlinks
+        import asyncio
+        overview, keywords, competitors, backlinks = await asyncio.gather(
+            domain_overview(domain, db),
+            domain_organic_keywords(domain, db, 20),
+            domain_competitors(domain, db, 10),
+            domain_backlinks(domain),
+        )
+        return web.json_response({
+            "domain": domain,
+            "overview": overview,
+            "top_keywords": keywords,
+            "competitors": competitors,
+            "backlinks": backlinks,
+        })
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_niche(req):
+    kw = req.rel_url.query.get("keyword", "")
+    domain = req.rel_url.query.get("domain", None)
+    db = req.rel_url.query.get("db", "de")
+    if not kw:
+        return web.json_response({"error": "keyword required"}, status=400)
+    try:
+        from modules.semrush_client import research_niche
+        result = await research_niche(kw, domain, db)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_semrush_serp(req):
+    phrase = req.rel_url.query.get("phrase", "")
+    db = req.rel_url.query.get("db", "de")
+    if not phrase:
+        return web.json_response({"error": "phrase required"}, status=400)
+    try:
+        from modules.semrush_client import keyword_organic_results
+        results = await keyword_organic_results(phrase, db)
+        return web.json_response({"phrase": phrase, "serp": results})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 # ── Meta Ads handlers ─────────────────────────────────────────────────────────
 
 async def handle_meta_ads_status(req):
@@ -3704,20 +3176,67 @@ async def handle_autonomy_history(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_queue_stats(req):
+    try:
+        from core.job_queue import HermesQueue
+        return web.json_response(HermesQueue.get().stats())
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_queue_enqueue(req):
+    try:
+        data = await req.json()
+        from core.job_queue import enqueue
+        job_id = await enqueue(data.get("name", "notify"),
+                               data.get("payload", {}),
+                               data.get("priority", 5))
+        return web.json_response({"ok": True, "job_id": job_id})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+@web.middleware
+async def logging_middleware(request, handler):
+    resp = await handler(request)
+    log.debug("%s %s → %s", request.method, request.path, resp.status)
+    return resp
+
+
+@web.middleware
+async def cors_middleware(request, handler):
+    if request.method == "OPTIONS":
+        resp = web.Response()
+    else:
+        try:
+            resp = await handler(request)
+        except web.HTTPException as exc:
+            resp = exc
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
+    resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key"
+    return resp
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
     await bot.start()
+
+    # Start Hermes Job Queue
+    try:
+        from core.job_queue import HermesQueue
+        asyncio.create_task(HermesQueue.get().start(workers=3))
+        log.info("Hermes Job Queue started")
+    except Exception as e:
+        log.warning("Hermes start failed: %s", e)
 
     app = web.Application(middlewares=[logging_middleware, cors_middleware])
     app["bot"] = bot
 
     # Existing routes
     app.router.add_get("/", handle_index)
-    app.router.add_get("/terms",   lambda r: web.FileResponse(BASE_DIR / "dashboard" / "terms.html"))
-    app.router.add_get("/privacy", lambda r: web.FileResponse(BASE_DIR / "dashboard" / "privacy.html"))
     app.router.add_post("/api/chat", handle_chat)
-    app.router.add_post("/api/chat/clear", handle_chat_clear)
     # Telegram Hub Bridge endpoints
     app.router.add_post("/api/bot/execute", handle_bot_execute)
     app.router.add_get("/api/bot/commands", handle_bot_commands)
@@ -3735,6 +3254,10 @@ async def create_app():
     app.router.add_get("/api/autopilot/agents", handle_autopilot_agents)
     app.router.add_post("/api/autopilot/run", handle_autopilot_run)
     app.router.add_get("/api/autopilot/logs", handle_autopilot_logs)
+    app.router.add_get("/api/guardian/status", handle_guardian_status)
+    app.router.add_get("/api/ai/status", handle_ai_status)
+    app.router.add_get("/api/system/status", handle_system_status)
+    app.router.add_get("/api/supabase/status", handle_supabase_status)
     app.router.add_post("/api/geheimwaffe/run", handle_geheimwaffe_run)
     app.router.add_post("/api/geheimwaffe/content", handle_geheimwaffe_content)
     app.router.add_get("/api/backup/status", handle_backup_status)
@@ -3748,13 +3271,11 @@ async def create_app():
     app.router.add_post("/api/mac/action", handle_mac_action)
     app.router.add_get("/api/services/status", handle_services_status)
     app.router.add_post("/api/services/action", handle_service_action)
-    app.router.add_post("/api/service/start", handle_service_start)
-    app.router.add_post("/api/service/stop", handle_service_stop)
+    app.router.add_post("/api/start-all", handle_start_all)
     app.router.add_get("/api/logs", handle_logs)
     app.router.add_post("/api/logs/clear", handle_logs_clear)
     app.router.add_get("/api/processes", handle_processes)
     app.router.add_get("/health", handle_health)
-    app.router.add_get("/api/health", handle_health)
     app.router.add_get("/api/status/full", handle_status_full)
     app.router.add_get("/api/army/status", handle_army_status)
     app.router.add_post("/api/army/start", handle_army_start)
@@ -3780,16 +3301,7 @@ async def create_app():
     app.router.add_get("/api/keys",               handle_api_keys)
     app.router.add_get("/api/github/status",      handle_github_status)
     app.router.add_post("/api/github/push",       handle_github_push)
-    app.router.add_get("/api/cloud/status",           handle_cloud_status)
-    app.router.add_get("/api/pipedrive/status",        handle_pipedrive_status)
-    app.router.add_get("/api/pipedrive/deals",         handle_pipedrive_deals)
-    app.router.add_post("/api/pipedrive/deals",        handle_pipedrive_deal_create)
-    app.router.add_get("/api/pipedrive/persons",       handle_pipedrive_persons)
-    app.router.add_get("/api/railway/status",         handle_railway_status)
-    app.router.add_get("/api/railway/volumes",        handle_railway_volumes)
-    app.router.add_get("/api/railway/backups",        handle_railway_backups)
-    app.router.add_post("/api/railway/backup/create", handle_railway_backup_create)
-    app.router.add_post("/api/railway/backup/restore",handle_railway_backup_restore)
+    app.router.add_get("/api/cloud/status",       handle_cloud_status)
     app.router.add_get("/api/bot-repair/status",  handle_bot_repair_status)
     app.router.add_post("/api/bot-repair/run",    handle_bot_repair_run)
     app.router.add_get("/api/notes",              handle_notes_get)
@@ -3859,8 +3371,6 @@ async def create_app():
 
     # ── Monetization ──────────────────────────────────────────────────────────
     app.router.add_get("/api/plans",                  handle_plans_list)
-    app.router.add_post("/api/stripe/checkout",       handle_stripe_checkout)
-    app.router.add_post("/api/stripe/portal",         handle_stripe_portal)
     app.router.add_post("/api/checkout",              handle_checkout_create)
     app.router.add_get("/api/mrr",                    handle_mrr)
 
@@ -3871,12 +3381,13 @@ async def create_app():
     app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
-    app.router.add_get("/api/stripe/mrr",             handle_stripe_mrr)
-    app.router.add_get("/api/stripe/churn",           handle_stripe_churn)
-    app.router.add_get("/api/stripe/subscriptions",   handle_stripe_subscriptions)
-    app.router.add_post("/api/stripe/setup-products", handle_stripe_setup_products)
+    app.router.add_post("/api/shopify/order-webhook", handle_shopify_order_webhook_route)
+    app.router.add_get("/api/shopify/orders",         handle_shopify_orders)
+    app.router.add_get("/api/shopify/revenue",        handle_shopify_revenue)
     app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
     app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
+    app.router.add_get("/checkout",                   handle_checkout_page)
+    app.router.add_get("/checkout/success",           handle_checkout_success)
 
     # ── Google OAuth2 ─────────────────────────────────────────────────────────
     app.router.add_get("/api/google/auth",            handle_google_auth)
@@ -3890,101 +3401,404 @@ async def create_app():
     app.router.add_get("/api/drive/files",            handle_drive_files)
     app.router.add_post("/api/drive/backup",          handle_drive_backup)
 
-    # ── AutoPilot CreatorHub ───────────────────────────────────────────────────
-    app.router.add_get("/autopilot",                          handle_autopilot_ui)
-    app.router.add_get("/api/creatorhub/status",              handle_agents_status_all)
-    app.router.add_post("/api/creatorhub/run",                handle_agents_run)
-    app.router.add_get("/api/creatorhub/logs",                handle_agents_logs)
-    app.router.add_get("/api/agents/logs",                    handle_agents_logs)
+    # ── Reality Check ─────────────────────────────────────────────────────────
+    app.router.add_get("/api/reality",                handle_reality_check)
 
-    # ── Revenue Autopilot ──────────────────────────────────────────────────────
-    app.router.add_get("/revenue",                            handle_revenue_autopilot_ui)
-    app.router.add_get("/api/revenue",                       handle_revenue_legacy)
-    app.router.add_get("/api/analytics",                     handle_analytics_legacy)
-    app.router.add_get("/api/kpis",                          handle_kpis_legacy)
-    app.router.add_get("/api/revenue/dashboard",             handle_revenue_dashboard)
-    app.router.add_get("/api/revenue/summary",              handle_revenue_summary)
-    app.router.add_get("/api/revenue/analytics",             handle_revenue_analytics)
-    app.router.add_get("/api/revenue/abandoned-carts",       handle_abandoned_carts)
-    app.router.add_post("/api/revenue/recover-carts",        handle_recover_carts)
-    app.router.add_post("/api/revenue/flash-sale",           handle_flash_sale)
-    app.router.add_post("/api/revenue/restore-flash-sale",   handle_restore_flash_sale)
-    app.router.add_post("/api/revenue/bulk-price",           handle_bulk_price_update)
-    app.router.add_get("/api/revenue/product-performance",   handle_product_performance)
-    app.router.add_get("/api/revenue/products",              handle_all_products_prices)
-    app.router.add_post("/api/revenue/ai-descriptions",      handle_ai_descriptions)
-    app.router.add_get("/api/revenue/low-inventory",         handle_low_inventory)
-    app.router.add_post("/api/revenue/publish-drafts",       handle_publish_drafts)
-    app.router.add_get("/api/revenue/upsell-pairs",          handle_upsell_pairs)
-    app.router.add_get("/api/youtube/dashboard",             handle_youtube_dashboard)
-    app.router.add_get("/api/youtube/stats",                 handle_youtube_stats)
-    app.router.add_get("/api/youtube/latest",                handle_youtube_latest)
-    app.router.add_get("/api/youtube/top",                   handle_youtube_top)
+    # ── Lead Capture ──────────────────────────────────────────────────────────
+    app.router.add_post("/api/leads",                 handle_lead_capture)
+    app.router.add_get("/api/leads",                  handle_leads_list)
 
-    # Growth Engine
-    app.router.add_get("/api/growth/dashboard",           handle_growth_dashboard)
-    app.router.add_post("/api/growth/referral/create",    handle_referral_create)
-    app.router.add_get("/api/growth/referral/stats",      handle_referral_stats)
-    app.router.add_get("/api/growth/referral/top",        handle_referral_top)
-    app.router.add_post("/api/growth/reviews/run",        handle_review_automation_run)
-    app.router.add_post("/api/growth/winback/run",        handle_winback_run)
-
-    # Dynamic Pricing + Email Sequences
-    app.router.add_get("/api/pricing/dashboard",          handle_pricing_dashboard)
-    app.router.add_post("/api/pricing/run",               handle_pricing_run)
-    app.router.add_get("/api/pricing/history",            handle_pricing_history)
-    app.router.add_post("/api/pricing/enable",            handle_pricing_enable)
-    app.router.add_get("/api/email/stats",                handle_email_sequence_stats)
-    app.router.add_post("/api/email/enroll",              handle_email_sequence_enroll)
-    app.router.add_post("/api/email/process",             handle_email_sequence_process)
-    app.router.add_post("/api/email/enroll-new",          handle_email_sequence_enroll_new)
-
-    # B2B Pipeline + WhatsApp + TikTok
-    app.router.add_get("/api/b2b/stats",                  handle_b2b_pipeline_stats)
-    app.router.add_get("/api/b2b/leads",                  handle_b2b_pipeline_leads)
-    app.router.add_post("/api/b2b/lead",                  handle_b2b_lead_add)
-    app.router.add_post("/api/b2b/lead/update",           handle_b2b_lead_update)
-    app.router.add_post("/api/b2b/prospect",              handle_b2b_prospecting_run)
-    app.router.add_post("/api/b2b/outreach",              handle_b2b_outreach_send)
-    app.router.add_get("/webhook/whatsapp",               handle_whatsapp_webhook_verify)
-    app.router.add_post("/webhook/whatsapp",              handle_whatsapp_webhook)
-    app.router.add_post("/api/whatsapp/send",             handle_whatsapp_send)
-    app.router.add_post("/api/whatsapp/broadcast",        handle_whatsapp_broadcast)
-    app.router.add_get("/api/whatsapp/stats",             handle_whatsapp_stats)
-    app.router.add_post("/api/tiktok/sync",               handle_tiktok_sync_products)
-    app.router.add_get("/api/tiktok/orders",              handle_tiktok_orders)
-    app.router.add_get("/api/tiktok/analytics",           handle_tiktok_analytics)
-    app.router.add_get("/api/tiktok/revenue",             handle_tiktok_combined_revenue)
-    app.router.add_post("/api/tiktok/promotion",          handle_tiktok_promotion)
-    app.router.add_get("/api/tiktok/research/status",     handle_tiktok_research_status)
-    app.router.add_post("/api/tiktok/research/ads",       handle_tiktok_research_ads)
-    app.router.add_get("/api/agents",                     handle_agents_legacy)
-
-    # Meta Ads
-    app.router.add_get("/api/meta/status",                handle_meta_ads_status)
-    app.router.add_get("/api/meta/campaigns",             handle_meta_campaigns)
-    app.router.add_post("/api/meta/campaign/create",      handle_meta_campaign_create)
-    app.router.add_post("/api/meta/campaign/launch",      handle_meta_campaign_launch)
-    app.router.add_post("/api/meta/saas-campaign",        handle_meta_saas_campaign)
-    app.router.add_get("/api/meta/pixel",                 handle_meta_pixel_stats)
-    app.router.add_get("/api/meta/oauth-url",             handle_meta_oauth_url)
-
-    # ── Salesforce handlers injected here (defined above create_app) ──────────
-    # Salesforce / Agentforce CRM
-    app.router.add_get("/api/salesforce/stats",           handle_salesforce_stats)
-    app.router.add_get("/api/salesforce/leads",           handle_salesforce_leads)
-    app.router.add_get("/api/salesforce/contacts",        handle_salesforce_contacts)
-    app.router.add_get("/api/salesforce/opportunities",   handle_salesforce_opportunities)
-    app.router.add_post("/api/salesforce/lead",           handle_salesforce_create_lead)
-    app.router.add_post("/api/salesforce/sync/klaviyo",   handle_salesforce_sync_klaviyo)
-    app.router.add_post("/api/salesforce/sync/b2b",       handle_salesforce_import_b2b)
-
-    # Shopify Autonomy Master
-    app.router.add_get("/api/autonomy/health",            handle_autonomy_health)
-    app.router.add_post("/api/autonomy/trigger/{job_id}", handle_autonomy_trigger)
-    app.router.add_get("/api/autonomy/history/{job_id}",  handle_autonomy_history)
+    # ── Hermes Job Queue + Events (Slack fallback → Telegram) ────────────────
+    from dashboard.routes.hermes_routes import (
+        handle_hermes_jobs, handle_hermes_events,
+        handle_hermes_enqueue, handle_hermes_notify, handle_hermes_stats,
+    )
+    app.router.add_get("/api/hermes/jobs",            handle_hermes_jobs)
+    app.router.add_get("/api/hermes/events",          handle_hermes_events)
+    app.router.add_post("/api/hermes/enqueue",        handle_hermes_enqueue)
+    app.router.add_post("/api/hermes/notify",         handle_hermes_notify)
+    app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
 
     return app
+
+
+async def _tg_notify(text: str) -> None:
+    """Send Telegram message to owner chat."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+    if not token or not chat_id:
+        return
+    try:
+        import aiohttp as _aio
+        async with _aio.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+                timeout=_aio.ClientTimeout(total=5)
+            )
+    except Exception:
+        pass
+
+
+async def _sb_insert(table: str, data: dict) -> dict:
+    """Insert row into Supabase via REST."""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    anon = os.getenv("SUPABASE_ANON_KEY", "")
+    auth_key = key or anon
+    if not url or not auth_key:
+        return {"error": "no supabase credentials"}
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.post(
+                f"{url}/rest/v1/{table}",
+                json=data,
+                headers={
+                    "apikey": auth_key,
+                    "Authorization": f"Bearer {auth_key}",
+                    "Content-Type": "application/json",
+                    "Accept-Profile": "public",
+                    "Content-Profile": "public",
+                    "Prefer": "return=representation",
+                },
+                timeout=_aio.ClientTimeout(total=8)
+            )
+            return await r.json()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+async def handle_lead_capture(req):
+    """POST /api/leads — capture email + optional name/domain, store + notify."""
+    try:
+        body = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
+
+    email = (body.get("email") or "").strip().lower()
+    if not email or "@" not in email:
+        return web.json_response({"ok": False, "error": "valid email required"}, status=400)
+
+    name = (body.get("name") or "").strip()
+    domain = (body.get("shopify_domain") or body.get("domain") or "").strip()
+    source = (body.get("source") or "landing_page").strip()
+
+    row = {
+        "email": email,
+        "name": name or None,
+        "shopify_domain": domain or None,
+        "source": source,
+        "status": "new",
+    }
+
+    result = await _sb_insert("leads", row)
+
+    msg = (
+        f"🔥 *Neuer Lead!*\n"
+        f"📧 {email}\n"
+        f"👤 {name or '(kein Name)'}\n"
+        f"🛍️ Shop: {domain or '(kein Domain)'}\n"
+        f"📍 Quelle: {source}\n"
+        f"\nDirektlink: https://buy.stripe.com/7sY5kFbrIemmcYU0Oi4F20o"
+    )
+    try:
+        from modules.slack_client import push_event
+        await push_event("supermegabot", "new_lead", msg, "revenue",
+                         {"email": email, "source": source, "domain": domain})
+    except Exception:
+        await _tg_notify(msg)
+
+    log.info("New lead captured: %s (source=%s)", email, source)
+    return web.json_response({"ok": True, "email": email})
+
+
+async def handle_leads_list(req):
+    """GET /api/leads — list all leads (internal use)."""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    anon = os.getenv("SUPABASE_ANON_KEY", "")
+    auth_key = key or anon
+    if not url or not auth_key:
+        return web.json_response({"ok": False, "error": "no supabase"})
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.get(
+                f"{url}/rest/v1/leads?order=created_at.desc&limit=50",
+                headers={"apikey": auth_key, "Authorization": f"Bearer {auth_key}"},
+                timeout=_aio.ClientTimeout(total=8)
+            )
+            data = await r.json()
+        return web.json_response({"ok": True, "count": len(data), "leads": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Hermes / Slack handlers ───────────────────────────────────────────────────
+
+def _sb_headers(auth_key: str) -> dict:
+    return {
+        "apikey": auth_key,
+        "Authorization": f"Bearer {auth_key}",
+        "Content-Type": "application/json",
+        "Accept-Profile": "public",
+        "Content-Profile": "public",
+        "Prefer": "return=representation",
+    }
+
+
+async def _hermes_push_event(service: str, event_type: str, message: str,
+                              channel: str = "general", metadata: dict = None) -> bool:
+    """Insert into hermes_events + notify Slack or Telegram."""
+    import aiohttp as _aio
+    sb_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    sb_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    slack_url = os.getenv("SLACK_WEBHOOK_URL", "")
+    tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+
+    row = {
+        "service": service, "event_type": event_type, "channel": channel,
+        "message": message, "metadata": metadata or {},
+        "notified_slack": False, "notified_telegram": False,
+    }
+
+    async with _aio.ClientSession() as s:
+        # 1. Persist to Supabase
+        if sb_url and sb_key:
+            try:
+                await s.post(f"{sb_url}/rest/v1/hermes_events",
+                             json=row, headers=_sb_headers(sb_key),
+                             timeout=_aio.ClientTimeout(total=6))
+            except Exception:
+                pass
+
+        # 2. Slack (primary)
+        if slack_url:
+            try:
+                channel_emoji = {"revenue": "💰", "alerts": "🚨", "ops": "⚙️",
+                                 "marketing": "📣", "errors": "❌"}.get(channel, "ℹ️")
+                text = f"{channel_emoji} *[{service}]* {message}"
+                r = await s.post(slack_url, json={"text": text},
+                                 timeout=_aio.ClientTimeout(total=5))
+                return r.status == 200
+            except Exception:
+                pass
+
+        # 3. Telegram fallback
+        if tg_token and tg_chat:
+            try:
+                await s.post(
+                    f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                    json={"chat_id": tg_chat, "text": f"[{service}/{channel}] {message}",
+                          "parse_mode": "Markdown"},
+                    timeout=_aio.ClientTimeout(total=5)
+                )
+            except Exception:
+                pass
+    return True
+
+
+async def handle_hermes_events(req):
+    """GET /api/hermes/events?limit=50&service=all"""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not url or not key:
+        return web.json_response({"ok": False, "error": "no supabase"})
+    limit = min(int(req.rel_url.query.get("limit", 100)), 500)
+    service = req.rel_url.query.get("service", "")
+    qs = f"order=created_at.desc&limit={limit}"
+    if service and service != "all":
+        qs += f"&service=eq.{service}"
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.get(f"{url}/rest/v1/hermes_events?{qs}",
+                            headers={"apikey": key, "Authorization": f"Bearer {key}",
+                                     "Accept-Profile": "public"},
+                            timeout=_aio.ClientTimeout(total=8))
+            data = await r.json()
+        return web.json_response({"ok": True, "count": len(data), "events": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_hermes_jobs(req):
+    """GET /api/hermes/jobs?status=pending&service=all"""
+    import aiohttp as _aio
+    url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not url or not key:
+        return web.json_response({"ok": False, "error": "no supabase"})
+    limit = min(int(req.rel_url.query.get("limit", 100)), 500)
+    status = req.rel_url.query.get("status", "")
+    service = req.rel_url.query.get("service", "")
+    qs = f"order=created_at.desc&limit={limit}"
+    if status:
+        qs += f"&status=eq.{status}"
+    if service and service != "all":
+        qs += f"&service=eq.{service}"
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.get(f"{url}/rest/v1/hermes_jobs?{qs}",
+                            headers={"apikey": key, "Authorization": f"Bearer {key}",
+                                     "Accept-Profile": "public"},
+                            timeout=_aio.ClientTimeout(total=8))
+            data = await r.json()
+        return web.json_response({"ok": True, "count": len(data), "jobs": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_hermes_notify(req):
+    """POST /api/hermes/notify — push event from any service."""
+    try:
+        body = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
+    message = (body.get("message") or "").strip()
+    if not message:
+        return web.json_response({"ok": False, "error": "message required"}, status=400)
+    service = body.get("service", "supermegabot")
+    event_type = body.get("event_type", "info")
+    channel = body.get("channel", "general")
+    metadata = body.get("metadata", {})
+    await _hermes_push_event(service, event_type, message, channel, metadata)
+    return web.json_response({"ok": True, "service": service, "channel": channel})
+
+
+async def handle_reality_check(req):
+    """Real-time aggregation of all actually-connected platforms."""
+    import aiohttp as _aiohttp
+
+    results = {}
+    ts = datetime.utcnow().isoformat() + "Z"
+
+    async with _aiohttp.ClientSession() as session:
+
+        # ── Stripe ────────────────────────────────────────────────────────────
+        stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
+        if stripe_key:
+            try:
+                async with session.get(
+                    "https://api.stripe.com/v1/balance",
+                    headers={"Authorization": f"Bearer {stripe_key}"},
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    d = await r.json()
+                available = sum(b["amount"] for b in d.get("available", [])) / 100
+                pending   = sum(b["amount"] for b in d.get("pending", [])) / 100
+                results["stripe"] = {"connected": True, "balance_eur": available,
+                                     "pending_eur": pending, "status": "live"}
+            except Exception as e:
+                results["stripe"] = {"connected": False, "error": str(e)}
+        else:
+            results["stripe"] = {"connected": False, "error": "no key"}
+
+        # ── Shopify ────────────────────────────────────────────────────────────
+        shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+        shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+        if shopify_domain and shopify_token:
+            try:
+                async with session.get(
+                    f"https://{shopify_domain}/admin/api/{shopify_ver}/orders/count.json?status=any",
+                    headers={"X-Shopify-Access-Token": shopify_token},
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    od = await r.json()
+                async with session.get(
+                    f"https://{shopify_domain}/admin/api/{shopify_ver}/customers/count.json",
+                    headers={"X-Shopify-Access-Token": shopify_token},
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    cd = await r.json()
+                results["shopify"] = {
+                    "connected": True,
+                    "orders": od.get("count", 0),
+                    "customers": cd.get("count", 0),
+                    "domain": shopify_domain,
+                    "status": "live"
+                }
+            except Exception as e:
+                results["shopify"] = {"connected": False, "error": str(e)}
+        else:
+            results["shopify"] = {"connected": False, "error": "no credentials"}
+
+        # ── YouTube ────────────────────────────────────────────────────────────
+        yt_key  = os.getenv("YOUTUBE_API_KEY", "")
+        yt_chan  = os.getenv("YOUTUBE_CHANNEL_ID", "")
+        if yt_key and yt_chan:
+            try:
+                async with session.get(
+                    f"https://www.googleapis.com/youtube/v3/channels?part=statistics&id={yt_chan}&key={yt_key}",
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    yd = await r.json()
+                s = yd["items"][0]["statistics"]
+                results["youtube"] = {
+                    "connected": True,
+                    "subscribers": int(s.get("subscriberCount", 0)),
+                    "videos": int(s.get("videoCount", 0)),
+                    "total_views": int(s.get("viewCount", 0)),
+                    "status": "live"
+                }
+            except Exception as e:
+                results["youtube"] = {"connected": False, "error": str(e)}
+        else:
+            results["youtube"] = {"connected": False, "error": "no key"}
+
+        # ── Telegram ────────────────────────────────────────────────────────────
+        tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        if tg_token:
+            try:
+                async with session.get(
+                    f"https://api.telegram.org/bot{tg_token}/getMe",
+                    timeout=_aiohttp.ClientTimeout(total=8)
+                ) as r:
+                    td = await r.json()
+                bot = td.get("result", {})
+                results["telegram"] = {
+                    "connected": True,
+                    "bot_username": bot.get("username"),
+                    "bot_name": bot.get("first_name"),
+                    "status": "live"
+                }
+            except Exception as e:
+                results["telegram"] = {"connected": False, "error": str(e)}
+        else:
+            results["telegram"] = {"connected": False, "error": "no token"}
+
+    # ── Broken connections ─────────────────────────────────────────────────────
+    broken = []
+    if not os.getenv("DIGISTORE24_API_KEY"):
+        broken.append({"platform": "Digistore24", "reason": "API key missing or invalid"})
+    if not os.getenv("MAILCHIMP_API_KEY"):
+        broken.append({"platform": "Mailchimp", "reason": "API key missing or invalid"})
+
+    connected_count = sum(1 for v in results.values() if v.get("connected"))
+    total_count = len(results) + len(broken)
+
+    return web.json_response({
+        "timestamp": ts,
+        "summary": {
+            "platforms_connected": connected_count,
+            "platforms_broken": len(broken),
+            "platforms_total": total_count,
+            "stripe_balance_eur": results.get("stripe", {}).get("balance_eur", 0),
+            "youtube_subscribers": results.get("youtube", {}).get("subscribers", 0),
+            "shopify_orders": results.get("shopify", {}).get("orders", 0),
+        },
+        "platforms": results,
+        "needs_fix": broken,
+        "next_actions": [
+            "Regenerate Digistore24 API key at digistore24.com → Settings → API",
+            "Regenerate Mailchimp API key at mailchimp.com → Account → Extras → API keys",
+            "Post 1 YouTube video linking to buy.stripe.com/7sY5kFbrIemmcYU0Oi4F20o",
+            "Share landing page in 3 German e-commerce Telegram groups",
+        ]
+    })
 
 
 def _free_port(port: int) -> None:
@@ -3997,71 +3811,16 @@ def _free_port(port: int) -> None:
         for pid in pids:
             try:
                 os.kill(int(pid), 9)
-                log.info("Killed PID %s on port %s", pid, port)
+                print(f"  Killed PID {pid} on port {port}")
             except Exception:
                 pass
     except Exception:
         pass
 
 
-async def handle_telegram_webhook(req):
-    """Handle incoming Telegram webhook messages via Railway deployment."""
-    try:
-        data = await req.json()
-        log.info("📨 Telegram webhook: %s", json.dumps(data, indent=2)[:500])
-        
-        if "message" in data:
-            message = data["message"]
-            chat_id = message["chat"]["id"]
-            text = message.get("text", "")
-            user = message.get("from", {})
-            
-            # Process through existing bot system
-            bot = req.app["bot"]
-            response = await bot.process(text, f"tg-{chat_id}")
-            
-            # Send response back
-            if TELEGRAM_TOKEN:
-                url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-                async with aiohttp.ClientSession() as s:
-                    await s.post(url, json={
-                        "chat_id": chat_id,
-                        "text": response[:3800] or "(leere Antwort)",
-                        "disable_web_page_preview": True
-                    })
-            
-        return web.json_response({"status": "ok"})
-    except Exception as e:
-        log.error("Telegram webhook error: %s", e)
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def _register_telegram_webhook():
-    """Auto-register Telegram webhook on Railway startup."""
-    railway_url = os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN")
-    if railway_url and TELEGRAM_TOKEN:
-        base = f"https://{railway_url}" if not railway_url.startswith("http") else railway_url
-        try:
-            wh_url = f"{base}/webhook/telegram"
-            async with aiohttp.ClientSession() as s:
-                r = await s.post(
-                    f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/setWebhook",
-                    json={"url": wh_url, "allowed_updates": ["message", "edited_message"]}
-                )
-                result = await r.json()
-                log.info("Telegram webhook set: %s → %s", wh_url, result.get("description", ""))
-        except Exception as e:
-            log.warning("Telegram webhook setup failed: %s", e)
-
-
 if __name__ == "__main__":
     async def _main():
-        # Startup ENV check
-        missing = [v for v in ["TELEGRAM_BOT_TOKEN", "SHOPIFY_ACCESS_TOKEN", "SUPABASE_URL"] if not os.getenv(v)]
-        if missing:
-            log.warning("⚠️ Fehlende ENV-Variablen: %s", ', '.join(missing))
-
-        log.info("Prüfe Port %s...", PORT)
+        print(f"\n🔍 Prüfe Port {PORT}...")
         _free_port(PORT)
         import asyncio as _aio
         await _aio.sleep(0.5)   # kurz warten damit OS den Port freigibt
@@ -4069,13 +3828,28 @@ if __name__ == "__main__":
         app = await create_app()
         runner = web.AppRunner(app, access_log=None)
         await runner.setup()
-        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True)
+        site = web.TCPSite(runner, "0.0.0.0", PORT, reuse_address=True, reuse_port=True)
         await site.start()
-        log.info("SuperMegaBot Dashboard läuft auf http://localhost:%s", PORT)
-        
+        print(f"\n{'='*50}\n  SuperMegaBot Dashboard\n  http://localhost:{PORT}\n{'='*50}\n")
+
         # Auto-register Telegram webhook on Railway
-        await _register_telegram_webhook()
-        
+        railway_url = os.getenv("RAILWAY_STATIC_URL") or os.getenv("RAILWAY_PUBLIC_DOMAIN")
+        if railway_url:
+            base = f"https://{railway_url}" if not railway_url.startswith("http") else railway_url
+            for token_env in ("TELEGRAM_BOT_TOKEN_2", "TELEGRAM_BOT_TOKEN"):
+                tok = os.getenv(token_env)
+                if tok:
+                    try:
+                        async with aiohttp.ClientSession() as _s:
+                            wh_url = f"{base}/webhook/telegram"
+                            r = await _s.post(
+                                f"https://api.telegram.org/bot{tok}/setWebhook",
+                                json={"url": wh_url, "allowed_updates": ["message", "edited_message"]}
+                            )
+                            result = await r.json()
+                            log.info("Telegram webhook set (%s): %s → %s", token_env, wh_url, result.get("description",""))
+                    except Exception as _e:
+                        log.warning("Telegram webhook setup failed: %s", _e)
         try:
             await asyncio.Event().wait()
         finally:
