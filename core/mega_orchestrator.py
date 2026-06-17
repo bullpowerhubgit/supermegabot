@@ -906,15 +906,38 @@ class CommandRouter:
         )
 
     async def _cmd_subscribe(self, text: str, session_id: str) -> str:
-        """Checkout-Link für Abonnement"""
-        dashboard_url = os.getenv("DASHBOARD_URL", "http://localhost:8888")
-        return (
-            "🛒 Abonnement abschließen:\n\n"
-            f"Starter  (€49/mo): {dashboard_url}/checkout?plan=starter\n"
-            f"Pro      (€99/mo): {dashboard_url}/checkout?plan=pro\n"
-            f"Enterprise(€299/mo): {dashboard_url}/checkout?plan=enterprise\n\n"
-            "Zahlung via Stripe • Sofort aktiv"
+        """Create live Stripe checkout sessions for all subscription plans."""
+        from modules.stripe_automation import create_checkout_session
+        dashboard_url = os.getenv(
+            "DASHBOARD_URL",
+            os.getenv("SUPERMEGABOT_DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
         )
+        price_starter = os.getenv("STRIPE_PRICE_STARTER", "")
+        price_pro = os.getenv("STRIPE_PRICE_PRO", "")
+        price_enterprise = os.getenv("STRIPE_PRICE_ENTERPRISE", "")
+
+        lines = ["🛒 Abonnement abschließen — Live Stripe Checkout:\n"]
+        for label, amount, price_id in [
+            ("Starter", "€49/mo", price_starter),
+            ("Pro", "€99/mo", price_pro),
+            ("Enterprise", "€299/mo", price_enterprise),
+        ]:
+            if price_id:
+                result = await create_checkout_session(
+                    price_id,
+                    success_url=f"{dashboard_url}/pricing?success=true",
+                    cancel_url=f"{dashboard_url}/pricing?canceled=true",
+                )
+                url = result.get("url") if result.get("ok") else None
+            else:
+                url = None
+            if url:
+                lines.append(f"• {label} ({amount}): {url}")
+            else:
+                lines.append(f"• {label} ({amount}): Preis-ID fehlt")
+
+        lines.append("\n✅ Zahlung via Stripe • Sofort aktiv")
+        return "\n".join(lines)
 
     async def _cmd_team_run(self, text: str, session_id: str) -> str:
         """Agent Team ausführen"""
