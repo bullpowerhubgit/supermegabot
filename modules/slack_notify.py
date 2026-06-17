@@ -37,16 +37,30 @@ def _get_webhook_url() -> str:
 
 
 def _get_bot_token() -> str:
-    # xoxb- tokens for chat.postMessage; xoxe-1- (MCP/OAuth) also work
+    # Only xoxb- tokens work for chat.postMessage
     for key in ("SLACK_BOT_TOKEN_XOXB", "SLACK_BOT_TOKEN"):
         t = os.getenv(key, "").strip()
         if t.startswith("xoxb-"):
             return t
-    # Fall back to MCP token (xoxe-1- OAuth token) — works for chat.postMessage
-    mcp = os.getenv("SLACK_MCP_TOKEN", "").strip()
-    if mcp.startswith("xoxe-"):
-        return mcp
     return ""
+
+
+async def _telegram_fallback(text: str) -> bool:
+    """Send via Telegram when Slack is not configured."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+    chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+    if not token or not chat_id:
+        return False
+    try:
+        import aiohttp
+        url = f"https://api.telegram.org/bot{token}/sendMessage"
+        async with aiohttp.ClientSession() as s:
+            async with s.post(url, json={"chat_id": chat_id, "text": f"[SuperMegaBot] {text}"[:4096]},
+                              timeout=aiohttp.ClientTimeout(total=10)) as r:
+                return r.status == 200
+    except Exception as exc:
+        log.warning("Telegram fallback failed: %s", exc)
+        return False
 
 
 async def send_slack(
@@ -68,8 +82,8 @@ async def send_slack(
     bot_token = _get_bot_token()
 
     if not webhook_url and not bot_token:
-        log.warning("Slack: no SLACK_WEBHOOK_URL or bot token configured — message dropped")
-        return False
+        log.warning("Slack: no SLACK_WEBHOOK_URL or xoxb token — routing via Telegram")
+        return await _telegram_fallback(text)
 
     payload_webhook = {
         "channel": ch,
@@ -133,7 +147,8 @@ async def send_slack(
         if attempt < 2:
             await asyncio.sleep(2 ** attempt)
 
-    return False
+    log.warning("Slack failed after 3 attempts — routing via Telegram")
+    return await _telegram_fallback(text)
 
 
 def send_slack_sync(message: str, channel: Optional[str] = None, level: str = "info") -> bool:
