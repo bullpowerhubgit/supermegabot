@@ -340,15 +340,31 @@ async def health_handler(request):
     count = conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
     posted = conn.execute("SELECT COUNT(*) FROM posts WHERE status='posted'").fetchone()[0]
     conn.close()
+    # Validate Facebook token with a lightweight Graph API call
+    fb_token_valid = False
+    if FB_ACCESS_TOKEN and FB_PAGE_ID:
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"https://graph.facebook.com/v19.0/{FB_PAGE_ID}",
+                    params={"fields": "id", "access_token": FB_ACCESS_TOKEN},
+                    timeout=aiohttp.ClientTimeout(total=5)
+                ) as r:
+                    data = await r.json()
+                    fb_token_valid = "id" in data and "error" not in data
+        except Exception:
+            fb_token_valid = False
     return web.json_response({
         "status": "ok",
         "service": "meta-social-engine",
         "total_posts_queued": count,
         "auto_posted": posted,
-        "facebook_connected": bool(FB_ACCESS_TOKEN and FB_PAGE_ID),
-        "instagram_connected": bool(IG_ACCOUNT_ID and FB_ACCESS_TOKEN),
+        "facebook_connected": fb_token_valid,
+        "facebook_token_set": bool(FB_ACCESS_TOKEN and FB_PAGE_ID),
+        "instagram_connected": bool(IG_ACCOUNT_ID) and fb_token_valid,
         "pinterest_connected": bool(PINTEREST_ACCESS_TOKEN and PINTEREST_BOARD_ID),
         "schedule": "every 4 hours",
+        "warning": None if fb_token_valid else ("Facebook token expired or invalid — refresh at developers.facebook.com" if FB_ACCESS_TOKEN else "FACEBOOK_ACCESS_TOKEN not set"),
     })
 
 
