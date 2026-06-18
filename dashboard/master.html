@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SuperMegaBot — Master Control</title>
+<style>
+  :root {
+    --bg: #07070d;
+    --bg2: #0f0f1a;
+    --bg3: #161625;
+    --border: #1e1e35;
+    --green: #00ff88;
+    --blue: #00d2ff;
+    --purple: #7c6fff;
+    --yellow: #ffd700;
+    --red: #ff4757;
+    --orange: #ff9f43;
+    --text: #e8e8f0;
+    --muted: #5a5a8a;
+    --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
+    font-size: 13px;
+    min-height: 100vh;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .logo span { color: var(--purple); }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3);
+    border-radius: 20px; padding: 4px 12px; font-size: 11px; color: var(--green);
+  }
+  .live-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(0.8); } }
+  .header-right { display: flex; align-items: center; gap: 20px; color: var(--muted); font-size: 12px; }
+  #clock { color: var(--text); font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; }
+  .refresh-btn {
+    background: rgba(124,111,255,0.15); border: 1px solid rgba(124,111,255,0.4);
+    color: var(--purple); border-radius: 8px; padding: 6px 14px;
+    cursor: pointer; font-size: 12px; transition: all 0.2s;
+  }
+  .refresh-btn:hover { background: rgba(124,111,255,0.3); }
+
+  /* ── Grid Layout ── */
+  .main { padding: 20px 24px; }
+  .row { display: grid; gap: 16px; margin-bottom: 16px; }
+  .row-4 { grid-template-columns: repeat(4, 1fr); }
+  .row-3 { grid-template-columns: repeat(3, 1fr); }
+  .row-2 { grid-template-columns: repeat(2, 1fr); }
+  .row-25 { grid-template-columns: 2fr 1fr; }
+  .row-52 { grid-template-columns: 1fr 2fr; }
+  .row-333 { grid-template-columns: 1fr 1fr 1fr; }
+
+  /* ── Cards ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: var(--card-shadow);
+    transition: border-color 0.2s;
+  }
+  .card:hover { border-color: rgba(124,111,255,0.3); }
+  .card-title {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--muted); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card-title .icon { font-size: 14px; }
+
+  /* ── Metric Cards ── */
+  .metric { text-align: center; padding: 20px 16px; }
+  .metric .val {
+    font-size: 32px; font-weight: 700; line-height: 1;
+    margin-bottom: 4px; font-variant-numeric: tabular-nums;
+  }
+  .metric .label { font-size: 11px; color: var(--muted); }
+  .metric .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
+  .metric .trend { font-size: 11px; margin-top: 4px; }
+  .trend-up { color: var(--green); }
+  .trend-dn { color: var(--red); }
+
+  /* ── Color helpers ── */
+  .green { color: var(--green); }
+  .blue { color: var(--blue); }
+  .purple { color: var(--purple); }
+  .yellow { color: var(--yellow); }
+  .red { color: var(--red); }
+  .orange { color: var(--orange); }
+
+  /* ── Status dot ── */
+  .dot {
+    display: inline-block; width: 8px; height: 8px;
+    border-radius: 50%; margin-right: 6px;
+  }
+  .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot-red { background: var(--red); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-muted { background: var(--muted); }
+
+  /* ── Services grid ── */
+  .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .service-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg3); border-radius: 8px; padding: 8px 12px;
+    font-size: 12px;
+  }
+  .service-name { color: var(--text); flex: 1; }
+  .service-badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px;
+    border-radius: 10px; letter-spacing: 0.5px;
+  }
+  .badge-ok { background: rgba(0,255,136,0.1); color: var(--green); }
+  .badge-err { background: rgba(255,71,87,0.1); color: var(--red); }
+  .badge-warn { background: rgba(255,159,67,0.1); color: var(--orange); }
+
+  /* ── Email accounts ── */
+  .email-list { display: flex; flex-direction: column; gap: 7px; }
+  .email-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--bg3); border-radius: 8px; padding: 9px 12px;
+  }
+  .email-addr { font-size: 11px; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .email-stats { display: flex; gap: 10px; font-size: 11px; }
+  .email-stat { text-align: center; }
+  .email-stat .n { font-weight: 700; }
+  .email-stat .l { color: var(--muted); font-size: 9px; }
+
+  /* ── Task list ── */
+  .task-list { display: flex; flex-direction: column; gap: 6px; }
+  .task-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--bg3); border-radius: 8px; padding: 8px 12px;
+  }
+  .task-name { flex: 1; font-size: 12px; }
+  .task-time { font-size: 10px; color: var(--muted); }
+  .task-result { font-size: 10px; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ── Social channels ── */
+  .social-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .social-card {
+    background: var(--bg3); border-radius: 10px; padding: 14px;
+    text-align: center; border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .social-card.active { border-color: rgba(0,255,136,0.25); }
+  .social-icon { font-size: 24px; margin-bottom: 6px; }
+  .social-name { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
+  .social-stat { font-size: 18px; font-weight: 700; }
+  .social-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+  /* ── Revenue bar ── */
+  .rev-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+  .rev-seg { height: 100%; transition: width 0.5s ease; }
+
+  /* ── Progress ring ── */
+  .ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  svg.ring { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--bg3); stroke-width: 6; }
+  .ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+
+  /* ── Log feed ── */
+  .log-feed { height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+  .log-feed::-webkit-scrollbar { width: 4px; }
+  .log-feed::-webkit-scrollbar-track { background: var(--bg3); }
+  .log-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .log-entry {
+    background: var(--bg3); border-radius: 6px; padding: 6px 10px;
+    font-size: 11px; display: flex; gap: 8px; align-items: flex-start;
+  }
+  .log-time { color: var(--muted); white-space: nowrap; font-size: 10px; }
+  .log-msg { color: var(--text); }
+
+  /* ── Section title ── */
+  .section-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1.5px; color: var(--muted); margin-bottom: 12px;
+    padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Quick Actions ── */
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .action-btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); border-radius: 8px; padding: 8px 14px;
+    cursor: pointer; font-size: 11px; transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .action-btn:hover { background: rgba(124,111,255,0.15); border-color: var(--purple); color: var(--purple); }
+  .action-btn:active { transform: scale(0.97); }
+
+  /* ── Responsive ── */
+  @media (max-width: 1200px) {
+    .row-4 { grid-template-columns: repeat(2,1fr); }
+    .row-333 { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 768px) {
+    .row-3,.row-2,.row-25,.row-52 { grid-template-columns: 1fr; }
+    .services-grid { grid-template-columns: 1fr; }
+    .social-grid { grid-template-columns: repeat(2,1fr); }
+  }
+
+  /* ── Spinner ── */
+  .loading { opacity: 0.4; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--border); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo">Super<span>Mega</span>Bot</div>
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+  </div>
+  <div class="header-right">
+    <span>Auto-Refresh: <strong id="countdown" class="green">30s</strong></span>
+    <span id="clock">--:--:--</span>
+    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ROW 1: Revenue KPIs -->
+  <div class="row row-4">
+    <div class="card metric">
+      <div class="card-title"><span class="icon">💰</span>Umsatz Heute</div>
+      <div class="val green" id="rev-today">€0</div>
+      <div class="label">Stripe + Shopify + DS24</div>
+      <div class="sub" id="rev-today-stripe">Stripe: €0</div>
+    </div>
+    <div class="card metric">
+      <div class="card-title"><span class="icon">📅</span>Diesen Monat</div>
+      <div class="val blue" id="rev-month">€0</div>
+      <div class="label">Alle Kanäle</div>
+      <div class="sub" id="rev-month-orders">0 Bestellungen</div>
+    </div>
+    <div class="card metric">
+      <div class="card-title"><span class="icon">🛍️</span>Shopify</div>
+      <div class="val purple" id="shopify-orders">0</div>
+      <div class="label">Offene Bestellungen</div>
+      <div class="sub" id="shopify-products">0 Produkte aktiv</div>
+    </div>
+    <div class="card metric">
+      <div class="card-title"><span class="icon">📧</span>Email Heute</div>
+      <div class="val yellow" id="email-total">0</div>
+      <div class="label">Verarbeitet (8 Konten)</div>
+      <div class="sub" id="email-replied">0 Auto-beantwortet</div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Services + Email Accounts -->
+  <div class="row row-25">
+
+    <!-- Services -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🚀</span>Railway Services</div>
+      <div class="services-grid" id="services-grid">
+        <div class="service-row"><span class="service-name"><span class="dot dot-muted"></span>Laden...</span></div>
+      </div>
+    </div>
+
+    <!-- Email Accounts -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📬</span>Email Brain — 8 Konten</div>
+      <div class="email-list" id="email-list">
+        <div class="email-row"><span class="email-addr">Laden...</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 3: Scheduler + Social -->
+  <div class="row row-25">
+
+    <!-- Scheduler Tasks -->
+    <div class="card">
+      <div class="card-title"><span class="icon">⚙️</span>Scheduler Tasks</div>
+      <div class="task-list" id="task-list">
+        <div class="task-row"><span class="task-name">Laden...</span></div>
+      </div>
+    </div>
+
+    <!-- Social Media -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📱</span>BRUTUS — Social Channels</div>
+      <div class="social-grid" id="social-grid">
+        <div class="social-card"><div class="social-icon">⏳</div><div class="social-name">Laden</div></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 4: System Health + Quick Actions + Log -->
+  <div class="row row-333">
+
+    <!-- System Health -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🖥️</span>System Health</div>
+      <div id="system-health">
+        <div style="display:flex;justify-content:space-around;margin-bottom:14px">
+          <div class="ring-wrap">
+            <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
+              <circle class="ring-bg" cx="35" cy="35" r="28"/>
+              <circle class="ring-fill" id="ring-cpu" cx="35" cy="35" r="28" stroke="var(--blue)"
+                stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
+            </svg>
+            <div style="text-align:center;margin-top:-4px">
+              <div id="cpu-val" class="blue" style="font-size:16px;font-weight:700">0%</div>
+              <div style="font-size:10px;color:var(--muted)">CPU</div>
+            </div>
+          </div>
+          <div class="ring-wrap">
+            <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
+              <circle class="ring-bg" cx="35" cy="35" r="28"/>
+              <circle class="ring-fill" id="ring-ram" cx="35" cy="35" r="28" stroke="var(--purple)"
+                stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
+            </svg>
+            <div style="text-align:center;margin-top:-4px">
+              <div id="ram-val" class="purple" style="font-size:16px;font-weight:700">0%</div>
+              <div style="font-size:10px;color:var(--muted)">RAM</div>
+            </div>
+          </div>
+          <div class="ring-wrap">
+            <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
+              <circle class="ring-bg" cx="35" cy="35" r="28"/>
+              <circle class="ring-fill" id="ring-disk" cx="35" cy="35" r="28" stroke="var(--orange)"
+                stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
+            </svg>
+            <div style="text-align:center;margin-top:-4px">
+              <div id="disk-val" class="orange" style="font-size:16px;font-weight:700">0%</div>
+              <div style="font-size:10px;color:var(--muted)">Disk</div>
+            </div>
+          </div>
+        </div>
+        <div id="health-details" style="font-size:11px;color:var(--muted);line-height:1.8"></div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="card">
+      <div class="card-title"><span class="icon">⚡</span>Quick Actions</div>
+      <div class="actions" style="margin-bottom:12px">
+        <button class="action-btn" onclick="triggerAction('/api/email/brain/check','POST')">📧 Email Check</button>
+        <button class="action-btn" onclick="triggerAction('/api/bot/execute','POST',{command:'brutus_run'})">📣 BRUTUS Run</button>
+        <button class="action-btn" onclick="triggerAction('/api/backup/run','POST')">💾 Backup</button>
+        <button class="action-btn" onclick="triggerAction('/api/monitor/refresh','POST')">📊 Monitor</button>
+        <button class="action-btn" onclick="triggerAction('/api/geheimwaffe/run','POST')">🕵️ Geheimwaffe</button>
+        <button class="action-btn" onclick="window.open('/monitor','_blank')">📈 Plotly Monitor</button>
+        <button class="action-btn" onclick="window.open('/','_blank')">🏠 Dashboard</button>
+        <button class="action-btn" onclick="triggerAction('/api/email/brain/setup','GET')">🔌 Email Test</button>
+      </div>
+      <div id="action-log" style="font-size:11px;color:var(--muted);background:var(--bg3);border-radius:8px;padding:8px;min-height:40px;max-height:80px;overflow-y:auto"></div>
+    </div>
+
+    <!-- Live Activity Log -->
+    <div class="card">
+      <div class="card-title"><span class="icon">📋</span>Live Activity</div>
+      <div class="log-feed" id="log-feed">
+        <div class="log-entry"><span class="log-time">--:--</span><span class="log-msg">Warte auf Daten...</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ROW 5: CRO + Telegram + GitHub -->
+  <div class="row row-3">
+
+    <div class="card">
+      <div class="card-title"><span class="icon">📈</span>CRO + Auto-Funnel</div>
+      <div id="cro-stats" style="display:flex;flex-direction:column;gap:8px">
+        <div class="service-row"><span class="service-name">Klaviyo Subscribers</span><span id="klaviyo-subs" class="green">—</span></div>
+        <div class="service-row"><span class="service-name">Mailchimp Subscribers</span><span id="mailchimp-subs" class="blue">—</span></div>
+        <div class="service-row"><span class="service-name">DS24 Käufer heute</span><span id="ds24-buyers" class="yellow">—</span></div>
+        <div class="service-row"><span class="service-name">Upsells gesendet</span><span id="upsells" class="purple">—</span></div>
+        <div class="service-row"><span class="service-name">WELCOME15 Rabattcode</span><span class="green">aktiv</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">✈️</span>Telegram Bot</div>
+      <div id="tg-stats" style="display:flex;flex-direction:column;gap:8px">
+        <div class="service-row"><span class="service-name">Bot Status</span><span id="tg-status" class="green">—</span></div>
+        <div class="service-row"><span class="service-name">Chat ID</span><span class="muted" style="font-size:10px">5088771245</span></div>
+        <div class="service-row"><span class="service-name">Befehle verfügbar</span><span id="tg-commands" class="blue">—</span></div>
+        <div class="service-row"><span class="service-name">Webhook</span><span id="tg-webhook" class="green">—</span></div>
+        <div class="service-row"><span class="service-name">Letzter Update</span><span id="tg-last" class="muted" style="font-size:10px">—</span></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🐙</span>GitHub + Supabase</div>
+      <div id="gh-stats" style="display:flex;flex-direction:column;gap:8px">
+        <div class="service-row"><span class="service-name">GitHub Status</span><span id="gh-status" class="green">—</span></div>
+        <div class="service-row"><span class="service-name">Letzter Backup</span><span id="last-backup" class="muted" style="font-size:10px">—</span></div>
+        <div class="service-row"><span class="service-name">Supabase</span><span id="sb-status" class="green">—</span></div>
+        <div class="service-row"><span class="service-name">AI Keys OK</span><span id="ai-keys" class="green">—</span></div>
+        <div class="service-row"><span class="service-name">Stripe Webhooks</span><span class="green">4 aktiv</span></div>
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const BASE = '';
+let refreshTimer = 30;
+let refreshInterval;
+
+// ── Clock ──────────────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ── Countdown ──────────────────────────────────────────────────────────────
+function startCountdown() {
+  clearInterval(refreshInterval);
+  refreshTimer = 30;
+  refreshInterval = setInterval(() => {
+    refreshTimer--;
+    document.getElementById('countdown').textContent = refreshTimer + 's';
+    if (refreshTimer <= 0) { loadAll(); }
+  }, 1000);
+}
+
+// ── Fetch helper ──────────────────────────────────────────────────────────
+async function api(path, method='GET', body=null) {
+  try {
+    const opts = { method, headers: {'Content-Type':'application/json'} };
+    if (body) opts.body = JSON.stringify(body);
+    const r = await fetch(BASE + path, opts);
+    return await r.json();
+  } catch(e) { return null; }
+}
+
+// ── Ring helper ───────────────────────────────────────────────────────────
+function setRing(id, pct) {
+  const circ = 175.9;
+  const offset = circ - (pct / 100) * circ;
+  const el = document.getElementById(id);
+  if (el) el.style.strokeDashoffset = offset;
+}
+
+// ── Log helper ────────────────────────────────────────────────────────────
+function addLog(msg, color='var(--text)') {
+  const feed = document.getElementById('log-feed');
+  const now = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const div = document.createElement('div');
+  div.className = 'log-entry';
+  div.innerHTML = `<span class="log-time">${now}</span><span class="log-msg" style="color:${color}">${msg}</span>`;
+  feed.insertBefore(div, feed.firstChild);
+  while (feed.children.length > 50) feed.removeChild(feed.lastChild);
+}
+
+// ── Quick Action ──────────────────────────────────────────────────────────
+async function triggerAction(path, method='POST', body=null) {
+  const al = document.getElementById('action-log');
+  al.textContent = '⏳ Ausführen...';
+  const result = await api(path, method, body);
+  if (result) {
+    const msg = result.result || result.status || result.message || JSON.stringify(result).slice(0,80);
+    al.textContent = '✅ ' + msg;
+    addLog(path.split('/').pop() + ': ' + msg, 'var(--green)');
+  } else {
+    al.textContent = '❌ Fehler';
+  }
+}
+
+// ── Health ────────────────────────────────────────────────────────────────
+async function loadHealth() {
+  const d = await api('/api/system');
+  if (!d) return;
+  const cpu = d.cpu_percent || 0;
+  const ram = d.memory_percent || 0;
+  const disk = d.disk_percent || 0;
+  document.getElementById('cpu-val').textContent = cpu.toFixed(1) + '%';
+  document.getElementById('ram-val').textContent = ram.toFixed(1) + '%';
+  document.getElementById('disk-val').textContent = disk.toFixed(1) + '%';
+  setRing('ring-cpu', cpu);
+  setRing('ring-ram', ram);
+  setRing('ring-disk', disk);
+  const details = document.getElementById('health-details');
+  details.innerHTML = [
+    `Uptime: <strong style="color:var(--text)">${d.uptime || '—'}</strong>`,
+    `RAM: <strong style="color:var(--text)">${(d.memory_used_gb||0).toFixed(1)} / ${(d.memory_total_gb||0).toFixed(1)} GB</strong>`,
+    `Disk: <strong style="color:var(--text)">${(d.disk_used_gb||0).toFixed(0)} / ${(d.disk_total_gb||0).toFixed(0)} GB</strong>`,
+    `Python: <strong style="color:var(--text)">${d.python_version || '3.11'}</strong>`,
+  ].join('<br>');
+}
+
+// ── Services ──────────────────────────────────────────────────────────────
+const SERVICES = [
+  ['SuperMegaBot','dudirudibot-mega-production.up.railway.app'],
+  ['Shopify Acq. Engine','shopify-acquisition-engine-production.up.railway.app'],
+  ['SEO Turbo Tools','seo-turbo-tools-production.up.railway.app'],
+  ['Telegram Bot','telegram-automation-bot-production.up.railway.app'],
+  ['iComeAuto SaaS','icomeauto-saas-production.up.railway.app'],
+  ['CreatorAI Ultra','creatorai-ultra-production.up.railway.app'],
+  ['Digistore24 Suite','digistore24-automation-production.up.railway.app'],
+  ['Cognitive Symphony','cognitive-symphony-production.up.railway.app'],
+  ['Revenue Hub','revenue-hub-notifications-production.up.railway.app'],
+  ['AdPoster Engine','adposter-engine-production.up.railway.app'],
+  ['Shopify Automaton','shopify-automaton-suite-production-e405.up.railway.app'],
+  ['Meta Social Engine','meta-social-engine-production.up.railway.app'],
+  ['Freelance Gig Engine','freelance-gig-engine-production.up.railway.app'],
+  ['SEO Traffic Engine','seo-traffic-engine-production.up.railway.app'],
+  ['Social Traffic Engine','social-traffic-engine-production.up.railway.app'],
+  ['Analytics Marketing','analytics-marketing-pro-production.up.railway.app'],
+  ['Shopify KI Suite','shopify-ki-suite-production.up.railway.app'],
+  ['Visual Content Engine','visual-content-engine-production.up.railway.app'],
+];
+
+async function loadServices() {
+  const d = await api('/api/cloud/status');
+  const grid = document.getElementById('services-grid');
+  // Use static list + check local status
+  let html = '';
+  const online = d ? (d.services_online || []) : [];
+  const offline = d ? (d.services_offline || []) : [];
+  for (const [name, url] of SERVICES) {
+    const isOffline = offline.some(s => s.includes(url.split('.')[0]));
+    const dot = isOffline ? 'dot-red' : 'dot-green';
+    const badge = isOffline ? 'badge-err">ERR' : 'badge-ok">OK';
+    html += `<div class="service-row">
+      <span class="service-name"><span class="dot ${dot}"></span>${name}</span>
+      <span class="service-badge ${badge}</span>
+    </div>`;
+  }
+  grid.innerHTML = html || '<div class="service-row"><span class="service-name"><span class="dot dot-green"></span>Alle Services aktiv</span></div>';
+}
+
+// ── Email Stats ───────────────────────────────────────────────────────────
+const EMAIL_ACCOUNTS = [
+  ['dragonadnp@gmail.com','1'],
+  ['nikolestimi@gmail.com','2'],
+  ['bullpowersrtkennels@gmail.com','3'],
+  ['aiitecbuuss@gmail.com','5'],
+  ['rudolf.sarkany.aiitec@gmail.com','7'],
+  ['rudolfsarkany1984@gmail.com','8'],
+];
+
+async function loadEmailStats() {
+  const d = await api('/api/email/brain/stats');
+  const stats = d ? (d.stats || {}) : {};
+  const today = new Date().toISOString().slice(0,10);
+  const dayStats = stats[today] || {};
+  let totalProc = 0, totalRepl = 0;
+  let html = '';
+  for (const [addr] of EMAIL_ACCOUNTS) {
+    const s = dayStats[addr] || {};
+    const proc = s.processed || 0;
+    const repl = s.replied || 0;
+    const arch = s.archived || 0;
+    totalProc += proc; totalRepl += repl;
+    const shortAddr = addr.length > 30 ? addr.slice(0,27)+'...' : addr;
+    html += `<div class="email-row">
+      <span class="dot ${proc > 0 ? 'dot-green' : 'dot-muted'}"></span>
+      <span class="email-addr" title="${addr}">${shortAddr}</span>
+      <div class="email-stats">
+        <div class="email-stat"><div class="n ${proc>0?'green':''}">${proc}</div><div class="l">Mails</div></div>
+        <div class="email-stat"><div class="n ${repl>0?'yellow':''}">${repl}</div><div class="l">Antw.</div></div>
+        <div class="email-stat"><div class="n">${arch}</div><div class="l">Arch.</div></div>
+      </div>
+    </div>`;
+  }
+  document.getElementById('email-list').innerHTML = html || '<div class="email-row"><span class="email-addr">Keine Daten heute</span></div>';
+  document.getElementById('email-total').textContent = totalProc;
+  document.getElementById('email-replied').textContent = totalRepl + ' Auto-beantwortet';
+}
+
+// ── Scheduler ─────────────────────────────────────────────────────────────
+async function loadScheduler() {
+  const d = await api('/api/status/full');
+  const tasks = d ? (d.scheduler_tasks || d.tasks || []) : [];
+  if (!tasks.length) {
+    document.getElementById('task-list').innerHTML = '<div class="task-row"><span class="task-name" style="color:var(--muted)">Scheduler läuft auf Railway</span></div>';
+    return;
+  }
+  let html = '';
+  for (const t of tasks.slice(0,12)) {
+    const ok = t.last_success !== false;
+    const dot = ok ? 'dot-green' : 'dot-red';
+    const when = t.last_run ? new Date(t.last_run).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : '—';
+    html += `<div class="task-row">
+      <span class="dot ${dot}"></span>
+      <span class="task-name">${t.name || t.task_name || '?'}</span>
+      <span class="task-time">${when}</span>
+      <span class="task-result">${(t.last_result || '').slice(0,40)}</span>
+    </div>`;
+  }
+  document.getElementById('task-list').innerHTML = html;
+}
+
+// ── Social / BRUTUS ───────────────────────────────────────────────────────
+const SOCIALS = [
+  {icon:'📣',name:'Telegram',key:'telegram',color:'var(--blue)'},
+  {icon:'🛍️',name:'Shopify Blog',key:'shopify',color:'var(--green)'},
+  {icon:'📮',name:'Klaviyo',key:'klaviyo',color:'var(--purple)'},
+  {icon:'📘',name:'Facebook',key:'facebook',color:'#4267B2'},
+  {icon:'📸',name:'Instagram',key:'instagram',color:'var(--orange)'},
+  {icon:'▶️',name:'YouTube',key:'youtube',color:'var(--red)'},
+];
+
+async function loadSocial() {
+  const d = await api('/api/social/status') || {};
+  let html = '';
+  for (const s of SOCIALS) {
+    const stat = d[s.key] || {};
+    const active = stat.ok !== false;
+    const count = stat.count || stat.posts || stat.subscribers || stat.followers || '—';
+    html += `<div class="social-card ${active?'active':''}">
+      <div class="social-icon">${s.icon}</div>
+      <div class="social-name" style="color:${s.color}">${s.name}</div>
+      <div class="social-stat" style="color:${s.color}">${count}</div>
+      <div class="social-label">${active?'aktiv':'—'}</div>
+    </div>`;
+  }
+  document.getElementById('social-grid').innerHTML = html;
+}
+
+// ── Revenue ───────────────────────────────────────────────────────────────
+async function loadRevenue() {
+  const [stripe, shopify] = await Promise.all([
+    api('/api/stripe/revenue'),
+    api('/api/shopify/revenue'),
+  ]);
+  const stripeToday = stripe ? (stripe.today_eur || stripe.today || 0) : 0;
+  const shopifyToday = shopify ? (shopify.today_eur || shopify.today || 0) : 0;
+  const total = stripeToday + shopifyToday;
+  document.getElementById('rev-today').textContent = '€' + total.toFixed(0);
+  document.getElementById('rev-today-stripe').textContent = `Stripe: €${stripeToday.toFixed(0)} | Shopify: €${shopifyToday.toFixed(0)}`;
+  const month = stripe ? (stripe.month_eur || stripe.month || 0) : 0;
+  const orders = shopify ? (shopify.orders_count || 0) : 0;
+  document.getElementById('rev-month').textContent = '€' + month.toFixed(0);
+  document.getElementById('rev-month-orders').textContent = orders + ' Bestellungen';
+}
+
+// ── Shopify ───────────────────────────────────────────────────────────────
+async function loadShopify() {
+  const d = await api('/api/shopify/status');
+  if (!d) return;
+  document.getElementById('shopify-orders').textContent = d.open_orders || d.orders || '0';
+  document.getElementById('shopify-products').textContent = (d.active_products || d.products || '0') + ' Produkte aktiv';
+}
+
+// ── Telegram ─────────────────────────────────────────────────────────────
+async function loadTelegram() {
+  const d = await api('/api/telegram/status');
+  if (!d) return;
+  document.getElementById('tg-status').textContent = d.ok || d.status === 'ok' ? 'Online' : 'Offline';
+  document.getElementById('tg-status').className = d.ok ? 'green' : 'red';
+  document.getElementById('tg-commands').textContent = (d.commands_count || '110') + ' Befehle';
+  document.getElementById('tg-webhook').textContent = d.webhook_set ? 'Aktiv' : 'Nicht gesetzt';
+  document.getElementById('tg-last').textContent = d.last_update || '—';
+}
+
+// ── GitHub + Supabase ─────────────────────────────────────────────────────
+async function loadGitHub() {
+  const [gh, sb, ai] = await Promise.all([
+    api('/api/github/status'),
+    api('/api/supabase/status'),
+    api('/api/ai/status'),
+  ]);
+  if (gh) {
+    document.getElementById('gh-status').textContent = gh.ok ? 'Verbunden' : 'Fehler';
+    document.getElementById('last-backup').textContent = gh.last_backup || gh.last_push || '—';
+  }
+  if (sb) {
+    document.getElementById('sb-status').textContent = sb.ok || sb.status === 'ok' ? 'Online' : 'Fehler';
+  }
+  if (ai) {
+    const keysOk = [ai.anthropic, ai.openai].filter(Boolean).length;
+    document.getElementById('ai-keys').textContent = keysOk + '/2 OK';
+  }
+}
+
+// ── LOAD ALL ──────────────────────────────────────────────────────────────
+async function loadAll() {
+  addLog('Dashboard wird aktualisiert...', 'var(--muted)');
+  startCountdown();
+  await Promise.allSettled([
+    loadHealth(),
+    loadServices(),
+    loadEmailStats(),
+    loadScheduler(),
+    loadSocial(),
+    loadRevenue(),
+    loadShopify(),
+    loadTelegram(),
+    loadGitHub(),
+  ]);
+  addLog('Alle Daten aktualisiert', 'var(--green)');
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>
