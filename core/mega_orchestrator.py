@@ -538,6 +538,17 @@ class CommandRouter:
             "/subscribe": self._cmd_subscribe,
             "/team_run": self._cmd_team_run,
             "/mrr": self._cmd_mrr,
+            # ── Master Dashboard ──────────────────────────────────────────────
+            "/dashboard": self._cmd_master_dashboard,
+            "/alle_dienste": self._cmd_alle_dienste,
+            "/alle dienste": self._cmd_alle_dienste,
+            "/seo_push": self._cmd_seo_push,
+            "/agent_status": self._cmd_agent_status,
+            "/agenten": self._cmd_agent_status,
+            "/deploy_status": self._cmd_deploy_status,
+            "/revenue": self._cmd_revenue,
+            "dashboard": self._cmd_master_dashboard,
+            "alle dienste": self._cmd_alle_dienste,
         }
 
     async def route(self, text: str, session_id: str) -> str:
@@ -1059,6 +1070,14 @@ class CommandRouter:
     /guardian_restore <proj> [datum] - Restore
     /guardian_backups - Liste alle Backups
 
+  🖥️ MASTER DASHBOARD (alle 19 Dienste):
+    /dashboard          - Health-Check aller Railway-Dienste
+    /alle_dienste       - Liste aller Services + URLs
+    /revenue            - Revenue-Übersicht
+    /seo_push <keyword> - Keyword an SEO Engine pushen
+    /agent_status       - Alle autonomen Agenten
+    /deploy_status      - Kritische Dienste prüfen
+
   Kosten: 95% lokal (Ollama), 5% externe APIs"""
 
     async def _cmd_start(self, text: str, session_id: str) -> str:
@@ -1074,8 +1093,41 @@ class CommandRouter:
             "✓ Trading Bot\n"
             "✓ Self-Healing\n"
             "✓ Persistentes Gedächtnis\n"
-            "✓ Guardian API (RudiBot Eternal)"
+            "✓ Guardian API (RudiBot Eternal)\n"
+            "✓ Master Dashboard (alle 19 Dienste)"
         )
+
+    # ── Master Dashboard Commands ─────────────────────────────────────────────
+
+    async def _cmd_master_dashboard(self, text: str, session_id: str) -> str:
+        """Health-Check aller Railway-Dienste."""
+        from modules.telegram_master_dashboard import cmd_dashboard
+        return await cmd_dashboard(text, session_id)
+
+    async def _cmd_alle_dienste(self, text: str, session_id: str) -> str:
+        """Liste aller Dienste mit URLs."""
+        from modules.telegram_master_dashboard import cmd_alle_dienste
+        return await cmd_alle_dienste(text, session_id)
+
+    async def _cmd_seo_push(self, text: str, session_id: str) -> str:
+        """Keyword an SEO Traffic Engine pushen."""
+        from modules.telegram_master_dashboard import cmd_seo_push
+        return await cmd_seo_push(text, session_id)
+
+    async def _cmd_agent_status(self, text: str, session_id: str) -> str:
+        """Status aller autonomen Agenten."""
+        from modules.telegram_master_dashboard import cmd_agent_status
+        return await cmd_agent_status(text, session_id)
+
+    async def _cmd_revenue(self, text: str, session_id: str) -> str:
+        """Revenue-Übersicht von allen Diensten."""
+        from modules.telegram_master_dashboard import cmd_revenue
+        return await cmd_revenue(text, session_id)
+
+    async def _cmd_deploy_status(self, text: str, session_id: str) -> str:
+        """Schneller Health-Check der kritischsten Dienste."""
+        from modules.telegram_master_dashboard import cmd_deploy_status
+        return await cmd_deploy_status(text, session_id)
 
 
 # ---------------------------------------------------------------------------
