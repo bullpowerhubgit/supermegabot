@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://bullpower-lead.netlify.app/sitemap.xml
