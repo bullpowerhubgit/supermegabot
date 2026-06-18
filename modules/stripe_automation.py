@@ -271,6 +271,29 @@ def verify_webhook_signature(payload: bytes, sig_header: str, secret: str) -> bo
 
 # ── Webhook Handler ───────────────────────────────────────────────────────────
 
+async def _auto_enroll_buyer(email: str, first_name: str, amount: float, sequence: str) -> None:
+    """Enroll buyer in email sequence + Klaviyo profile + track event."""
+    try:
+        from modules.email_sequence_engine import enroll
+        await enroll(email, sequence, first_name=first_name,
+                     metadata={"amount": amount, "source": "stripe"})
+    except Exception as e:
+        log.warning("Email sequence enroll failed: %s", e)
+    try:
+        from modules.klaviyo_automation import upsert_profile, get_lists, add_profile_to_list
+        pid = await upsert_profile(email, first_name=first_name,
+                                   properties={"stripe_purchase_amount": amount,
+                                               "purchase_source": "stripe"})
+        if pid:
+            lists = await get_lists()
+            buyers_list = next((l["id"] for l in lists
+                                if "buyer" in l["name"].lower() or "kunde" in l["name"].lower()), None)
+            if buyers_list:
+                await add_profile_to_list(buyers_list, pid)
+    except Exception as e:
+        log.warning("Klaviyo enroll failed: %s", e)
+
+
 async def handle_webhook_event(event: Dict) -> str:
     etype = event.get("type", "")
     data  = event.get("data", {}).get("object", {})
@@ -278,17 +301,37 @@ async def handle_webhook_event(event: Dict) -> str:
     if etype == "payment_intent.succeeded":
         amount   = data.get("amount", 0) / 100
         currency = data.get("currency", "eur").upper()
-        email    = data.get("receipt_email", "?")
+        email    = data.get("receipt_email") or data.get("customer_email") or "?"
+        name     = (data.get("shipping", {}) or {}).get("name", "") or email.split("@")[0]
         await _tg(
             f"💳 <b>Stripe Zahlung</b> ✅\n"
             f"Betrag: <b>{amount:.2f} {currency}</b>\n"
             f"Email: {email}"
         )
-        return "payment_intent.succeeded handled"
+        if email and "@" in email:
+            asyncio.create_task(_auto_enroll_buyer(email, name, amount, "post_purchase"))
+        return "payment_intent.succeeded handled + email_sequence enrolled"
+
+    if etype == "checkout.session.completed":
+        email    = data.get("customer_email") or data.get("customer_details", {}).get("email", "?")
+        name     = (data.get("customer_details") or {}).get("name", "") or email.split("@")[0]
+        amount   = (data.get("amount_total") or 0) / 100
+        currency = (data.get("currency") or "eur").upper()
+        mode     = data.get("mode", "payment")
+        seq      = "saas_onboarding" if mode == "subscription" else "post_purchase"
+        await _tg(
+            f"🛒 <b>Checkout abgeschlossen</b> ✅\n"
+            f"Betrag: <b>{amount:.2f} {currency}</b> ({mode})\n"
+            f"Email: {email}"
+        )
+        if email and "@" in email:
+            asyncio.create_task(_auto_enroll_buyer(email, name, amount, seq))
+        return f"checkout.session.completed handled → {seq}"
 
     if etype == "customer.subscription.created":
         plan = ""
         items = data.get("items", {}).get("data", [])
+        customer_email = data.get("customer_email", "?")
         if items:
             price = items[0].get("price", {})
             amount = (price.get("unit_amount", 0) or 0) / 100
@@ -297,16 +340,22 @@ async def handle_webhook_event(event: Dict) -> str:
         await _tg(
             f"🔔 <b>Neues Abo</b> — Stripe\n"
             f"Plan: {plan}\n"
-            f"ID: {data.get('id', '')}"
+            f"Email: {customer_email}"
         )
-        return "subscription.created handled"
+        if customer_email and "@" in customer_email:
+            asyncio.create_task(_auto_enroll_buyer(customer_email, customer_email.split("@")[0],
+                                                    float(plan.split()[0]) if plan else 0,
+                                                    "saas_onboarding"))
+        return "subscription.created handled + onboarding enrolled"
 
     if etype == "charge.refunded":
         amount   = data.get("amount_refunded", 0) / 100
         currency = data.get("currency", "eur").upper()
+        email    = data.get("billing_details", {}).get("email", "?")
         await _tg(
             f"↩️ <b>Stripe Rückerstattung</b>\n"
-            f"Betrag: {amount:.2f} {currency}"
+            f"Betrag: {amount:.2f} {currency}\n"
+            f"Email: {email}"
         )
         return "charge.refunded handled"
 
