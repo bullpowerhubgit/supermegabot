@@ -75,6 +75,21 @@
 - INSTAGRAM_ID_AIITEC: 17841478315197796  (4.939 Follower, @aaiitecc)
 - INSTAGRAM_USER_AIITEC: aaiitecc
 
+### Gmail EmailBrain (NEU 2026-06-18 — 6/8 Konten aktiv)
+| Nr | Account | App-Password (Spaces entfernen für SMTP) | Status |
+|----|---------|----------------------------------------|--------|
+| 1 | dragonadnp@gmail.com | emnm bawd adqe lvbu | ✅ aktiv |
+| 2 | nikolestimi@gmail.com | bcgp vjuv dkgl qmxt | ✅ aktiv |
+| 3 | bullpowersrtkennels@gmail.com | xvmm vqzm gpft wvzn | ✅ aktiv |
+| 4 | looopwave@gmail.com | — | ⏳ ausstehend |
+| 5 | aiitecbuuss@gmail.com | huyy xlln dovc smtu | ✅ aktiv |
+| 6 | rudolf.sarkany@aitec.de | — (braucht IMAP_HOST_6=imap.strato.de) | ⏳ ausstehend |
+| 7 | rudolf.sarkany.aiitec@gmail.com | erea dgvd ubxa yuwx | ✅ aktiv |
+| 8 | rudolfsarkany1984@gmail.com | adso mjrc fgud bcby | ✅ aktiv |
+- Railway Env Vars: GMAIL_USER_1..8 + GMAIL_APP_PASSWORD_1..8
+- Modul: modules/email_brain.py — IMAP polling alle 15 Min, Claude Haiku Classification, Auto-Reply
+- WICHTIG: aiitecbuuss hat 2 i's (aiitecbuuss, nicht aitecbuuss)!
+
 ### GitHub
 - GITHUB_TOKEN: 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
 - GITHUB_USER: bullpowerhubgit
@@ -130,7 +145,7 @@ Das brutalste Traffic-Tool das je gebaut wurde.
 | Facebook | IWIN (1135864516276500) | ~500 | ✅ Auto-Post aktiv |
 | Facebook | I Need It (1058648427339278) | ~500 | ✅ Token bereit |
 | Facebook | Aiitec (1016738738178786) | ~500 | ✅ Token bereit |
-| Instagram | @aaiitecc (17841478315197796) | 4.939 | ✅ Token bereit |
+| Instagram | @aaiitecc (17841478315197796) | 4.939 | ✅ Auto-Post aktiv (pixel: bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png) |
 | YouTube | UCy5U7UGOMNkvUR2-5Qm4yiA | ~4.000 | ✅ API Key aktiv |
 | Telegram | Bot (Chat 5088771245) | direkt | ✅ Notifications |
 | Shopify Blog | autopilot-store-suite | SEO | ✅ Auto-Publish |
@@ -155,7 +170,7 @@ Das brutalste Traffic-Tool das je gebaut wurde.
 
 ## PENDING / NÄCHSTE SCHRITTE
 1. Pinterest neu einreichen (fix: Datenschutz-URL, professionelle Beschreibung)
-2. Instagram @aaiitecc Auto-Posting zu BRUTUS Phase 4 hinzufügen
+2. ✅ Instagram @aaiitecc Auto-Posting in BRUTUS Phase 4 aktiv (pixel live)
 3. YouTube Community Posts zu BRUTUS Phase 4 hinzufügen
 4. Twilio FROM Number kaufen → SMS-Marketing aktivieren
 5. Meta Ads Appeal oder TikTok Ads Alternative
