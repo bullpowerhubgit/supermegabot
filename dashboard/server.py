@@ -4261,6 +4261,8 @@ async def create_app():
     app.router.add_get("/api/facebook/refresh",       handle_facebook_refresh)
     app.router.add_get("/api/facebook/callback",      handle_facebook_callback)
     app.router.add_get("/api/facebook/status",        handle_facebook_status)
+    app.router.add_post("/api/brutus/run",            handle_brutus_run)
+    app.router.add_get("/api/brutus/status",          handle_brutus_status)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -4920,6 +4922,51 @@ async def handle_scheduler_status(req):
             "cro_run", "auto_funnel", "email_check", "email_daily_summary"
         ]
         return web.json_response({"status": "ok", "tasks": {t: {"state": "running"} for t in tasks}})
+
+
+async def handle_brutus_run(req):
+    """POST /api/brutus/run — manually trigger BRUTUS traffic engine."""
+    try:
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        niche = body.get("niche", "shopify automation ecommerce")
+        keywords = body.get("keywords", ["Shopify Automatisierung", "Dropshipping 2026", "Passives Einkommen"])
+
+        from modules.brutus_traffic_engine import brutus_run
+        result = await brutus_run(niche=niche, custom_keywords=keywords)
+        return web.json_response({"status": "ok", "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_brutus_status(req):
+    """GET /api/brutus/status — BRUTUS channels and config."""
+    channels = os.getenv("BRUTUS_CHANNELS", "telegram,shopify,klaviyo,facebook,instagram").split(",")
+    version   = os.getenv("BRUTUS_VERSION", "2.0")
+    active    = os.getenv("BRUTUS_STATUS", "active") == "active"
+    fb_token  = bool(os.getenv("FACEBOOK_PAGE_TOKEN", ""))
+    ig_token  = bool(os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", ""))
+    kl_key    = bool(os.getenv("KLAVIYO_API_KEY", ""))
+    shopify   = bool(os.getenv("SHOPIFY_ADMIN_API_TOKEN", ""))
+    tg        = bool(os.getenv("TELEGRAM_BOT_TOKEN", ""))
+
+    channel_status = {
+        "telegram":  {"active": tg,       "label": "Telegram"},
+        "shopify":   {"active": shopify,   "label": "Shopify Blog"},
+        "klaviyo":   {"active": kl_key,    "label": "Klaviyo Campaign"},
+        "facebook":  {"active": fb_token,  "label": "Facebook IWIN"},
+        "instagram": {"active": ig_token,  "label": "Instagram @aaiitecc"},
+        "youtube":   {"active": bool(os.getenv("YOUTUBE_API_KEY", "")), "label": "YouTube"},
+    }
+    return web.json_response({
+        "version": version,
+        "active":  active,
+        "channels": channel_status,
+        "pixel_url": "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png",
+    })
 
 
 async def handle_facebook_refresh(req):
