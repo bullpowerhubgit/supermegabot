@@ -532,4 +532,16 @@ async def run_full_auto_post() -> dict:
         "total_channels_hit": total_ok,
     }
     log.info("MegaAutoPoster done: %d total channel hits", total_ok)
+
+    # Fire BRUTUS traffic wave after every full post cycle
+    try:
+        from modules.brutus_traffic_engine import brutus_run
+        asyncio.ensure_future(brutus_run(
+            niche="shopify automation ecommerce",
+            custom_keywords=["AI Income Machine", "Passives Einkommen Online", "KI Business Blueprint"],
+        ))
+        log.info("BRUTUS traffic wave triggered after MegaPost")
+    except Exception as exc:
+        log.warning("BRUTUS trigger skipped: %s", exc)
+
     return results
