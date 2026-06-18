@@ -1914,6 +1914,283 @@ async def _run_sitemap_ping_loop() -> None:
         await asyncio.sleep(604800)
 
 
+# ---------------------------------------------------------------------------
+# SEO Blog Content Pipeline
+# ---------------------------------------------------------------------------
+
+_SEO_KEYWORDS = [
+    "Shopify Shop automatisieren 2025",
+    "Digistore24 Automatisierung Anleitung",
+    "KI Tools E-Commerce Deutschland",
+    "Shopify SEO verbessern kostenlos",
+    "Dropshipping Automatisierung Tools",
+    "Shopify Bestellungen automatisch bearbeiten",
+    "Digistore24 Affiliate Marketing Software",
+    "E-Commerce Automation Software Vergleich",
+]
+
+_SEO_BLOG_DIR = Path.home() / "netlify-deploy" / "shopify-suite" / "blog"
+_SEO_NETLIFY_SITE_ID = "1859ba2f-66de-4012-b912-52b46e847810"
+_SEO_NETLIFY_DIR = Path.home() / "netlify-deploy" / "shopify-suite"
+
+
+def _md_to_html(md: str) -> str:
+    """Convert markdown to HTML (h2/h3/bold/paragraphs)."""
+    import re as _re
+    lines = md.split("\n")
+    html_parts: list = []
+    paragraph_buf: list = []
+
+    def flush_paragraph():
+        text = " ".join(paragraph_buf).strip()
+        if text:
+            html_parts.append(f"<p>{text}</p>")
+        paragraph_buf.clear()
+
+    for line in lines:
+        if line.startswith("### "):
+            flush_paragraph()
+            html_parts.append(f"<h3>{line[4:].strip()}</h3>")
+        elif line.startswith("## "):
+            flush_paragraph()
+            html_parts.append(f"<h2>{line[3:].strip()}</h2>")
+        elif line.startswith("# "):
+            flush_paragraph()
+            html_parts.append(f"<h1>{line[2:].strip()}</h1>")
+        elif line.strip() == "":
+            flush_paragraph()
+        else:
+            processed = _re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", line)
+            paragraph_buf.append(processed)
+
+    flush_paragraph()
+    return "\n".join(html_parts)
+
+
+def _build_blog_page(keyword: str, slug: str, article_html: str) -> str:
+    """Wrap article HTML in the dark-theme template."""
+    import re as _re
+    text_only = _re.sub(r"<[^>]+>", "", article_html)
+    meta_desc = text_only[:155].replace('"', "&quot;").strip()
+    return f"""<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{keyword} | BullPower Hub Blog</title>
+<meta name="description" content="{meta_desc}">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://shopify-automaton-suite.netlify.app/blog/{slug}/">
+<script defer data-domain="shopify-automaton-suite.netlify.app" src="https://plausible.io/js/script.js"></script>
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{background:#0a0a0f;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.7}}
+.header{{background:#13131f;border-bottom:1px solid rgba(139,92,246,0.2);padding:1rem 2rem;display:flex;align-items:center;gap:1rem}}
+.header a{{color:#a78bfa;text-decoration:none;font-weight:700;font-size:1.1rem}}
+.header span{{color:#475569;font-size:.85rem}}
+.container{{max-width:780px;margin:0 auto;padding:3rem 1.5rem}}
+h1{{font-size:2rem;font-weight:900;margin-bottom:1.5rem;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+h2{{font-size:1.4rem;font-weight:800;color:#c4b5fd;margin:2rem 0 .8rem}}
+h3{{font-size:1.15rem;font-weight:700;color:#a78bfa;margin:1.5rem 0 .6rem}}
+p{{margin-bottom:1.2rem;color:#cbd5e1}}
+strong,b{{color:#e2e8f0;font-weight:700}}
+.cta{{background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;text-decoration:none;display:inline-block;padding:.9rem 2rem;border-radius:12px;font-weight:700;margin-top:1.5rem}}
+.back{{color:#64748b;font-size:.85rem;margin-top:3rem;display:block}}
+</style>
+</head>
+<body>
+<div class="header">
+  <a href="https://bullpower-hub-portal.netlify.app">&#9889; BullPower Hub</a>
+  <span>/ Blog</span>
+</div>
+<div class="container">
+{article_html}
+<a href="https://bullpower-lead.netlify.app" class="cta">&#128269; Kostenlosen Shopify-Audit holen</a>
+<a href="https://shopify-automaton-suite.netlify.app/blog/" class="back">&larr; Alle Artikel</a>
+</div>
+</body>
+</html>"""
+
+
+def _rebuild_blog_index() -> None:
+    """Regenerate blog/index.html listing all published articles."""
+    blog_dir = _SEO_BLOG_DIR
+    entries = []
+    for slug_dir in sorted(blog_dir.iterdir()):
+        if slug_dir.is_dir() and (slug_dir / "index.html").exists():
+            title = slug_dir.name.replace("-", " ").title()
+            entries.append(f'<li><a href="/blog/{slug_dir.name}/">{title}</a></li>')
+
+    items_html = "\n".join(entries) if entries else "<li>Noch keine Artikel vorhanden.</li>"
+    index_html = f"""<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blog | BullPower Hub</title>
+<meta name="description" content="SEO-Artikel rund um E-Commerce-Automatisierung, Shopify und Digistore24.">
+<meta name="robots" content="index, follow">
+<style>
+*{{margin:0;padding:0;box-sizing:border-box}}
+body{{background:#0a0a0f;color:#e2e8f0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;line-height:1.7}}
+.header{{background:#13131f;border-bottom:1px solid rgba(139,92,246,0.2);padding:1rem 2rem;display:flex;align-items:center;gap:1rem}}
+.header a{{color:#a78bfa;text-decoration:none;font-weight:700;font-size:1.1rem}}
+.container{{max-width:780px;margin:0 auto;padding:3rem 1.5rem}}
+h1{{font-size:2rem;font-weight:900;margin-bottom:1.5rem;background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}}
+ul{{list-style:none;padding:0}}
+li{{margin:.8rem 0}}
+a{{color:#a78bfa;text-decoration:none;font-size:1.05rem}}
+a:hover{{color:#c4b5fd;text-decoration:underline}}
+</style>
+</head>
+<body>
+<div class="header">
+  <a href="https://bullpower-hub-portal.netlify.app">&#9889; BullPower Hub</a>
+</div>
+<div class="container">
+<h1>Blog</h1>
+<ul>
+{items_html}
+</ul>
+</div>
+</body>
+</html>"""
+    (blog_dir / "index.html").write_text(index_html, encoding="utf-8")
+    log.info("SEO blog index rebuilt (%d articles)", len(entries))
+
+
+async def handle_seo_generate(req):
+    """POST /api/seo/generate — generate German SEO blog article and deploy to Netlify."""
+    try:
+        try:
+            data = await req.json()
+        except Exception:
+            data = {}
+
+        keyword = data.get("keyword") or _SEO_KEYWORDS[datetime.now().day % len(_SEO_KEYWORDS)]
+
+        api_key = os.getenv("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            return web.json_response({"ok": False, "error": "ANTHROPIC_API_KEY not set"}, status=500)
+
+        prompt = (
+            f'Schreibe einen SEO-optimierten deutschen Blog-Artikel zum Thema: "{keyword}"\n\n'
+            "Anforderungen:\n"
+            "- 1200-1500 Wörter\n"
+            "- H2/H3 Struktur (Markdown)\n"
+            "- Natürliche Keyword-Dichte ~2%\n"
+            '- Enthält einen CTA am Ende: "Jetzt kostenlos testen auf bullpower-hub-portal.netlify.app"\n'
+            "- Praktische Tipps, keine leeren Phrasen\n"
+            "- Schreibstil: professionell aber zugänglich\n"
+            "Gib NUR den Artikel-Text zurück, keine Erklärungen."
+        )
+
+        log.info("SEO generate: requesting article for keyword '%s'", keyword)
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
+            payload = {
+                "model": "claude-haiku-4-5-20251001",
+                "max_tokens": 2048,
+                "messages": [{"role": "user", "content": prompt}],
+            }
+            headers_anthropic = {
+                "x-api-key": api_key,
+                "anthropic-version": "2023-06-01",
+                "Content-Type": "application/json",
+            }
+            async with s.post(
+                "https://api.anthropic.com/v1/messages",
+                json=payload,
+                headers=headers_anthropic,
+            ) as r:
+                if r.status != 200:
+                    err = await r.text()
+                    log.error("Anthropic API error %d: %s", r.status, err)
+                    return web.json_response(
+                        {"ok": False, "error": f"Anthropic API {r.status}", "detail": err},
+                        status=502,
+                    )
+                resp = await r.json()
+                article_md = resp["content"][0]["text"]
+
+        # Build slug
+        import re as _re
+        slug = keyword.lower()
+        for ch_from, ch_to in [("ä", "ae"), ("ö", "oe"), ("ü", "ue"), ("ß", "ss")]:
+            slug = slug.replace(ch_from, ch_to)
+        slug = _re.sub(r"[^a-z0-9]+", "-", slug).strip("-")[:50]
+
+        article_html = _md_to_html(article_md)
+        page_html = _build_blog_page(keyword, slug, article_html)
+
+        # Write article file
+        article_dir = _SEO_BLOG_DIR / slug
+        article_dir.mkdir(parents=True, exist_ok=True)
+        (article_dir / "index.html").write_text(page_html, encoding="utf-8")
+        log.info("SEO article written: %s", article_dir / "index.html")
+
+        # Rebuild blog index
+        _rebuild_blog_index()
+
+        # Deploy to Netlify
+        deploy_result: dict = {"stdout": "", "stderr": "", "returncode": -1}
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "netlify", "deploy", "--prod",
+                f"--dir={_SEO_NETLIFY_DIR}",
+                f"--site={_SEO_NETLIFY_SITE_ID}",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+            stdout_b, stderr_b = await asyncio.wait_for(proc.communicate(), timeout=120)
+            deploy_result = {
+                "stdout": stdout_b.decode(errors="replace"),
+                "stderr": stderr_b.decode(errors="replace"),
+                "returncode": proc.returncode,
+            }
+            if proc.returncode == 0:
+                log.info("SEO Netlify deploy succeeded for slug '%s'", slug)
+            else:
+                log.warning("SEO Netlify deploy exited %d: %s", proc.returncode, deploy_result["stderr"])
+        except asyncio.TimeoutError:
+            log.error("SEO Netlify deploy timed out for slug '%s'", slug)
+            deploy_result["stderr"] = "deploy timed out after 120s"
+        except FileNotFoundError:
+            log.warning("netlify CLI not found — article saved locally but not deployed")
+            deploy_result["stderr"] = "netlify CLI not installed"
+
+        url = f"https://shopify-automaton-suite.netlify.app/blog/{slug}/"
+        return web.json_response({
+            "ok": True,
+            "url": url,
+            "keyword": keyword,
+            "slug": slug,
+            "deploy": deploy_result,
+        })
+
+    except Exception as e:
+        log.exception("handle_seo_generate error")
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def _run_seo_loop() -> None:
+    """Daily background task: auto-generate one SEO blog article per day."""
+    # Initial delay so the server is fully up before first run
+    await asyncio.sleep(60)
+    while True:
+        try:
+            log.info("_run_seo_loop: generating daily SEO article")
+
+            class _FakeSeoReq:
+                can_read_body = False
+                async def json(self):
+                    return {}
+
+            await handle_seo_generate(_FakeSeoReq())
+        except Exception as e:
+            log.error("_run_seo_loop error: %s", e)
+        await asyncio.sleep(86400)
+
+
 async def handle_dropshipping_status(req):
     """Dropshipping pipeline status."""
     try:
@@ -3437,6 +3714,7 @@ async def create_app():
     app.router.add_get("/api/seo/status",             handle_seo_status)
     app.router.add_post("/api/seo/run",               handle_seo_run)
     app.router.add_post("/api/seo/ping-sitemaps",     handle_ping_sitemaps)
+    app.router.add_post("/api/seo/generate",          handle_seo_generate)
 
     # ── Dropshipping ──────────────────────────────────────────────────────────
     app.router.add_get("/api/dropshipping/status",    handle_dropshipping_status)
@@ -3521,6 +3799,10 @@ async def create_app():
     # Start weekly sitemap ping background task (Google + Bing)
     asyncio.create_task(_run_sitemap_ping_loop())
     log.info("Weekly sitemap ping task started")
+
+    # Start daily SEO blog content pipeline
+    asyncio.create_task(_run_seo_loop())
+    log.info("SEO blog content pipeline started")
 
     return app
 
