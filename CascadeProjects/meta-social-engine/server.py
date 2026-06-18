@@ -551,6 +551,110 @@ async def handle_pinterest_boards(request):
         "boards": [{"id": b["id"], "name": b["name"]} for b in boards],
     })
 
+async def handle_pinterest_callback(request):
+    """GET /auth/pinterest/callback — receives OAuth code, exchanges for token, saves to Railway."""
+    from aiohttp import web
+    import base64, subprocess
+
+    code = request.rel_url.query.get("code", "")
+    error = request.rel_url.query.get("error", "")
+
+    if error:
+        return web.Response(
+            content_type="text/html",
+            text=f"<h2 style='color:red'>Pinterest Fehler: {error}</h2>"
+        )
+    if not code:
+        return web.Response(
+            content_type="text/html",
+            text="<h2 style='color:orange'>Kein Code erhalten — bitte erneut versuchen.</h2>"
+        )
+
+    app_id = os.getenv("PINTEREST_APP_ID", "")
+    app_secret = os.getenv("PINTEREST_APP_SECRET", "")
+    redirect_uri = "https://meta-social-engine-production.up.railway.app/auth/pinterest/callback"
+
+    if not app_id or not app_secret:
+        return web.json_response({"ok": False, "error": "PINTEREST_APP_ID or PINTEREST_APP_SECRET not set"})
+
+    creds = base64.b64encode(f"{app_id}:{app_secret}".encode()).decode()
+
+    async with aiohttp.ClientSession() as s:
+        r = await s.post(
+            "https://api.pinterest.com/v5/oauth/token",
+            headers={
+                "Authorization": f"Basic {creds}",
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            data={
+                "grant_type": "authorization_code",
+                "code": code,
+                "redirect_uri": redirect_uri,
+            },
+        )
+        token_data = await r.json()
+
+    access_token = token_data.get("access_token", "")
+    refresh_token = token_data.get("refresh_token", "")
+    expires_in = token_data.get("expires_in", 0)
+    scope = token_data.get("scope", "")
+
+    if not access_token:
+        return web.json_response({"ok": False, "error": token_data})
+
+    # Get user info to confirm token works
+    async with aiohttp.ClientSession() as s:
+        ur = await s.get(
+            "https://api.pinterest.com/v5/user_account",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        user_data = await ur.json()
+    username = user_data.get("username", "?")
+
+    # Get first board ID
+    board_id = ""
+    async with aiohttp.ClientSession() as s:
+        br = await s.get(
+            "https://api.pinterest.com/v5/boards",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+        board_data = await br.json()
+    boards = board_data.get("items", [])
+    if boards:
+        board_id = boards[0]["id"]
+
+    # Save to Railway env vars via railway CLI (fire-and-forget)
+    vars_to_set = f"PINTEREST_ACCESS_TOKEN={access_token}"
+    if refresh_token:
+        vars_to_set += f" PINTEREST_REFRESH_TOKEN={refresh_token}"
+    if board_id:
+        vars_to_set += f" PINTEREST_BOARD_ID={board_id}"
+
+    try:
+        subprocess.Popen(
+            f"railway variables set {vars_to_set}",
+            shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+    except Exception:
+        pass
+
+    days = round(expires_in / 86400) if expires_in else "?"
+    html = f"""<!DOCTYPE html>
+<html><body style="background:#0a0a0f;color:#f0f0ff;font-family:sans-serif;padding:2rem;max-width:600px;margin:0 auto">
+<div style="background:#13131f;border:1px solid rgba(229,78,78,.4);border-radius:16px;padding:2rem">
+<h1 style="color:#e60023">📌 Pinterest verbunden!</h1>
+<p>Account: <strong>@{username}</strong></p>
+<p>Token läuft ab in: <strong>~{days} Tage</strong></p>
+<p>Scopes: <code style="color:#f0c040">{scope}</code></p>
+{"<p>Board: <strong>" + (boards[0]['name'] if boards else "—") + "</strong> (" + board_id + ")</p>" if board_id else ""}
+<p style="color:#a3e635;margin-top:1rem">✅ Token + Board ID wurden automatisch in Railway gesetzt.</p>
+<p style="color:#94a3b8;font-size:.85rem">Du kannst dieses Fenster schließen.</p>
+</div></body></html>"""
+
+    logger.info("Pinterest OAuth complete: @%s board=%s", username, board_id)
+    return web.Response(content_type="text/html", text=html)
+
+
 async def seo_products_handler(request):
     from aiohttp import web
     keyword = request.rel_url.query.get("keyword", "facebook marketing automatisierung")
@@ -585,6 +689,7 @@ async def main():
     app.router.add_post("/auth/facebook/exchange", handle_fb_token_exchange)
     app.router.add_get("/auth/facebook/pages",     handle_fb_pages)
     app.router.add_get("/auth/pinterest",          handle_pinterest_auth)
+    app.router.add_get("/auth/pinterest/callback", handle_pinterest_callback)
     app.router.add_get("/auth/pinterest/boards",   handle_pinterest_boards)
 
     runner = web.AppRunner(app)
