@@ -1928,6 +1928,32 @@ async def handle_gumroad_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_gumroad_webhook(req):
+    """POST /api/gumroad/webhook — Gumroad sale/refund ping notifications."""
+    try:
+        data = dict(await req.post()) if req.content_type == "application/x-www-form-urlencoded" else await req.json()
+        sale_id    = data.get("sale_id") or data.get("id", "?")
+        product    = data.get("product_name", "?")
+        email      = data.get("email", "?")
+        price      = data.get("price", "?")
+        event_type = data.get("type", "sale")
+        emoji = "🎉" if event_type == "sale" else "↩️"
+        msg = (
+            f"{emoji} <b>Gumroad {event_type.upper()}</b>\n\n"
+            f"🛒 Produkt: <b>{product}</b>\n"
+            f"📧 {email}\n"
+            f"💰 ${price}\n"
+            f"🆔 {sale_id}\n"
+            f"⏰ {__import__('datetime').datetime.now().strftime('%d.%m.%Y %H:%M')}"
+        )
+        await _tg_notify(msg)
+        log.info("Gumroad webhook: %s product=%s email=%s", event_type, product, email)
+        return web.json_response({"ok": True, "event": event_type, "sale_id": sale_id})
+    except Exception as e:
+        log.error("Gumroad webhook error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=200)
+
+
 async def handle_revenue_status(req):
     """Revenue aggregation across all platforms."""
     try:
@@ -4134,6 +4160,7 @@ async def create_app():
     # ── Etsy + Gumroad ────────────────────────────────────────────────────────
     app.router.add_get("/api/etsy/status",            handle_etsy_status)
     app.router.add_get("/api/gumroad/status",         handle_gumroad_status)
+    app.router.add_post("/api/gumroad/webhook",       handle_gumroad_webhook)
 
     # ── Revenue Aggregator ────────────────────────────────────────────────────
     app.router.add_get("/api/revenue/status",         handle_revenue_status)
