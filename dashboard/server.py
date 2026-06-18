@@ -1613,11 +1613,18 @@ async def handle_social_status(req):
 
 async def handle_digistore_status(req):
     try:
-        from modules.digistore24_automation import ping, get_sales_stats, get_products
+        from modules.digistore24_automation import ping, get_sales_stats, get_products, setup_ipn
         ok = await ping()
         stats = await get_sales_stats() if ok else {}
         products = await get_products() if ok else []
-        return web.json_response({"ok": ok, "stats": stats, "product_count": len(products)})
+        ipn_info = await setup_ipn()
+        return web.json_response({
+            "ok": ok,
+            "stats": stats,
+            "product_count": len(products),
+            "ipn_url": ipn_info["ipn_url"],
+            "ipn_setup_needed": True,
+        })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
