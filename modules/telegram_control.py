@@ -202,13 +202,45 @@ def kb_seo() -> list:
 def kb_projects() -> list:
     return [
         [{"text": "🤖 SuperMegaBot",        "callback_data": "proj:smb"},
-         {"text": "🚗 MacOBD-Pro",          "callback_data": "proj:macobd"}],
-        [{"text": "💻 local-coder",         "callback_data": "proj:localcoder"},
-         {"text": "🛒 Shopify Suite",       "url": "https://shopify-automaton-suite.netlify.app"}],
-        [{"text": "◀️ Hauptmenü",           "callback_data": "menu:main"}],
+         {"text": "🛒 Shopify Acquisition",  "callback_data": "proj:acquisition"}],
+        [{"text": "🔍 SEO Turbo Tools",      "callback_data": "proj:seo"},
+         {"text": "📊 SteuercockPit",        "callback_data": "proj:steuer"}],
+        [{"text": "💰 iComeAuto",            "callback_data": "proj:icome"},
+         {"text": "📢 AdPoster Engine",      "callback_data": "proj:adposter"}],
+        [{"text": "🚗 MacOBD-Pro",           "callback_data": "proj:macobd"},
+         {"text": "💻 local-coder",          "callback_data": "proj:localcoder"}],
+        [{"text": "◀️ Hauptmenü",            "callback_data": "menu:main"}],
     ]
 
 
+_RAILWAY_SERVICES = {
+    "smb":         ("SuperMegaBot",          "https://dudirudibot-mega-production.up.railway.app"),
+    "acquisition": ("Shopify Acquisition",   "https://shopify-acquisition-engine-production.up.railway.app"),
+    "seo":         ("SEO Turbo Tools",       "https://seo-turbo-tools-production.up.railway.app"),
+    "steuer":      ("SteuercockPit",         "https://steuercockpit-production-44c9.up.railway.app"),
+    "icome":       ("iComeAuto",             "https://icomeauto-production-e4e5.up.railway.app"),
+    "adposter":    ("AdPoster Engine",       "https://adposter-engine-production-2d15.up.railway.app"),
+}
+
+
+def _check_railway_service(key: str) -> str:
+    name, url = _RAILWAY_SERVICES[key]
+    try:
+        r = urllib.request.urlopen(f"{url}/health", timeout=8)
+        body = json.loads(r.read().decode())
+        status = body.get("status", "?")
+        icon = "🟢" if status == "ok" else "🟡"
+        extra = ""
+        if "stripe" in body:
+            extra += f"\n💳 Stripe: {'✅' if body['stripe'] else '❌'}"
+        if "uptime" in body:
+            up = body["uptime"]
+            extra += f"\n⏱ Uptime: {int(up)//3600}h {(int(up)%3600)//60}m"
+        if "cycles_done" in body:
+            extra += f"\n🔄 Cycles: {body['cycles_done']}"
+        return f"{icon} <b>{name}</b>\n\nStatus: {status}{extra}\n🔗 <a href='{url}'>{url}</a>"
+    except Exception as e:
+        return f"🔴 <b>{name}</b>\n\nFehler: {str(e)[:120]}\n🔗 {url}"
 # ── Content Builder ──────────────────────────────────────────────────────────
 
 def _get_system_status() -> str:
@@ -762,6 +794,20 @@ def handle_callback(data: str, chat_id: str, message_id: int,
             edit_message(chat_id, message_id,
                          f"📋 <b>KIVO Logs</b>\n<pre>{html.escape(tail)}</pre>", kb_kivo())
 
+    # ── Alle Railway-Projekte ────────────────────────────────────────────────
+    elif action == "proj":
+        if param in _RAILWAY_SERVICES:
+            txt = _check_railway_service(param)
+            edit_message(chat_id, message_id, txt, kb_projects())
+        elif param == "macobd":
+            txt = "🚗 <b>MacOBD-Pro</b>\n\nOBD-II Diagnose App\nPort: 8765 (lokal)\nRepo: by-rudolf-sarkany-medicalculator"
+            edit_message(chat_id, message_id, txt, kb_projects())
+        elif param == "localcoder":
+            txt = "💻 <b>local-coder</b>\n\nLokaler Ollama Code-Assistent\nPort: 7777 (lokal)\nCLI: <code>lc</code>"
+            edit_message(chat_id, message_id, txt, kb_projects())
+        else:
+            edit_message(chat_id, message_id, f"❓ Unbekanntes Projekt: {param}", kb_projects())
+
     # ── Railway Shopify AI Suite ─────────────────────────────────────────────
     elif action == "railway":
         if param == "status":
@@ -820,19 +866,6 @@ def handle_callback(data: str, chat_id: str, message_id: int,
                 lines.append(f"• <b>{platform}</b>: {title}…")
             lines.append("\n👉 <a href='https://bullpower-hub-portal.netlify.app'>Portal</a>")
             edit_message(chat_id, message_id, "\n".join(lines), kb_seo())
-
-    elif action == "proj":
-        if param == "smb":
-            r = _call_dashboard("/health")
-            status = "🟢 Online" if r.get("status") == "ok" else "🔴 Offline"
-            txt = f"🤖 <b>SuperMegaBot</b>\n\nStatus: {status}\nURL: dudirudibot-mega-production.up.railway.app\nRoutes: 93+"
-            edit_message(chat_id, message_id, txt, kb_projects())
-        elif param == "macobd":
-            txt = "🚗 <b>MacOBD-Pro</b>\n\nOBD-II Diagnose App\nPort: 8765 (lokal)\nStatus: Eigenständiges Projekt"
-            edit_message(chat_id, message_id, txt, kb_projects())
-        elif param == "localcoder":
-            txt = "💻 <b>local-coder</b>\n\nLokaler Ollama Code-Assistent\nPort: 7777 (lokal)\nCLI: lc"
-            edit_message(chat_id, message_id, txt, kb_projects())
 
 
 def send_main_menu(chat_id: str) -> None:
