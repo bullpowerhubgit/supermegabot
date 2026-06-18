@@ -1314,6 +1314,55 @@ async def task_freelance_cycle() -> str:
         return f"FreelanceCycle Fehler: {e}"
 
 
+async def task_linkedin_auto_post() -> str:
+    """Post AI-generated business content to LinkedIn every 6 hours."""
+    try:
+        import aiohttp
+        linkedin_token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
+        linkedin_urn   = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
+        anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
+        if not linkedin_token:
+            return "LINKEDIN_ACCESS_TOKEN fehlt"
+        if not anthropic_key:
+            return "ANTHROPIC_API_KEY fehlt"
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            async with s.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
+                      "messages": [{"role": "user", "content":
+                          "Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
+                          "Max 1200 Zeichen. Erwähne am Ende die AI Income Machine auf Digistore24. Nur Text, kein JSON."}]},
+            ) as r:
+                data = await r.json(content_type=None)
+        text = data.get("content", [{}])[0].get("text", "").strip()
+        if not text:
+            return "Kein LinkedIn-Content generiert"
+        headers = {
+            "Authorization": f"Bearer {linkedin_token}",
+            "Content-Type": "application/json",
+            "X-Restli-Protocol-Version": "2.0.0",
+        }
+        payload = {
+            "author": linkedin_urn,
+            "lifecycleState": "PUBLISHED",
+            "specificContent": {"com.linkedin.ugc.ShareContent": {
+                "shareCommentary": {"text": text},
+                "shareMediaCategory": "NONE",
+            }},
+            "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+        }
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.post("https://api.linkedin.com/v2/ugcPosts", headers=headers, json=payload) as r:
+                if r.status in (200, 201):
+                    resp = await r.json(content_type=None)
+                    return f"LinkedIn Post veröffentlicht (ID: {resp.get('id','?')}): {text[:60]}..."
+                err = await r.text()
+                return f"LinkedIn HTTP {r.status}: {err[:80]}"
+    except Exception as e:
+        return f"LinkedIn Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -1384,6 +1433,7 @@ TASKS = [
     ("pinterest_auto_post",     task_pinterest_auto_post,    7200,    80),   # 2h — Pinterest pins
     ("telegram_broadcast",      task_telegram_broadcast,     21600,   90),   # 6h — Telegram channel post
     ("instagram_auto_post",     task_instagram_auto_post,    14400,  100),   # 4h — Instagram post
+    ("linkedin_auto_post",      task_linkedin_auto_post,     21600,  110),   # 6h — LinkedIn AI post
 ]
 
 
