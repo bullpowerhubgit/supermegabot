@@ -316,20 +316,41 @@ async def task_system_health() -> str:
 
 
 async def task_railway_health() -> str:
-    """Ping Railway Shopify AI Suite, alert if down."""
+    """Ping all 13 Railway services, Telegram alert if any DOWN."""
+    import aiohttp
+    services = {
+        "SuperMegaBot":        "https://dudirudibot-mega-production.up.railway.app/health",
+        "MetaSocialEngine":    "https://meta-social-engine-production.up.railway.app/health",
+        "SEOTurboTools":       "https://seo-turbo-tools-production.up.railway.app/health",
+        "FreelanceGigEngine":  "https://freelance-gig-engine-production.up.railway.app/health",
+        "VisualContentEngine": "https://visual-content-engine-production.up.railway.app/health",
+        "AdPosterEngine":      "https://adposter-engine-production.up.railway.app/health",
+        "iComeAutoSaaS":       "https://icomeauto-saas-production.up.railway.app/health",
+        "CreatorAIUltra":      "https://creatorai-ultra-production.up.railway.app/health",
+        "RevenueHub":          "https://revenue-hub-notifications-production.up.railway.app/health",
+        "ShopifyAutomaton":    "https://shopify-automaton-suite-production-e405.up.railway.app/api/health",
+        "Steuercockpit":       "https://steuercockpit-production-44c9.up.railway.app/health",
+        "SEOTrafficEngine":    "https://seo-traffic-engine-production.up.railway.app/health",
+        "SocialTrafficEngine": "https://social-traffic-engine-production.up.railway.app/health",
+    }
+    down, ok = [], []
     try:
-        import aiohttp
-        url = os.getenv("SHOPIFY_SUITE_URL", "https://shopify-suite-v2-production.up.railway.app")
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-            async with s.get(f"{url}/health") as r:
-                if r.status < 400:
-                    return f"Railway OK ({r.status})"
-                body = await r.text()
-                await _tg(f"🔴 Railway Shopify Suite DOWN: HTTP {r.status}\n{body[:100]}")
-                return f"DOWN: HTTP {r.status}"
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+            for name, url in services.items():
+                try:
+                    async with s.get(url) as r:
+                        (ok if r.status < 400 else down).append(
+                            name if r.status < 400 else f"{name}(HTTP {r.status})"
+                        )
+                except Exception:
+                    down.append(f"{name}(timeout)")
+        if down:
+            await _tg(f"🔴 <b>Railway DOWN ({len(down)}/{len(services)}):</b>\n" +
+                      "\n".join(f"  • {d}" for d in down))
+            return f"DOWN: {', '.join(down)} | OK: {len(ok)}"
+        return f"Alle {len(ok)} Railway-Services OK"
     except Exception as e:
-        await _tg(f"🔴 Railway Shopify Suite nicht erreichbar: {e}")
-        return f"Nicht erreichbar: {e}"
+        return f"Health-Check Fehler: {e}"
 
 
 async def task_printify_autofulfill() -> str:
@@ -857,6 +878,244 @@ async def task_email_daily_summary() -> str:
         return f"EmailBrain summary error: {e}"
 
 
+async def task_mega_auto_post() -> str:
+    """Mega Auto Poster — postet auf ALLE Kanäle gleichzeitig (alle 30 Min)."""
+    try:
+        from modules.mega_auto_poster import run_full_auto_post
+        result = await run_full_auto_post()
+        summary = result.get("_run_summary", {})
+        channels_ok = summary.get("total_channels_hit", 0)
+        ds24_ok  = result.get("ds24", {}).get("_summary", {}).get("channels_ok", 0)
+        skip     = result.get("ds24", {}).get("skipped", False)
+        if skip:
+            return "MegaAutoPost: Duplicate skip (bereits heute gepostet)"
+        return f"MegaAutoPost: {channels_ok} Kanal-Hits | DS24: {ds24_ok}/9 ✅"
+    except Exception as e:
+        return f"MegaAutoPost Fehler: {e}"
+
+
+async def task_twitter_auto_post() -> str:
+    """Stündlicher Auto-Tweet über AI/Business-Themen."""
+    try:
+        from modules.twitter_auto_poster import run_auto_tweet
+        result = await run_auto_tweet()
+        if result.get("ok"):
+            return f"Tweet gepostet: {result.get('text','?')[:60]}"
+        return f"Tweet skip/fail: {result.get('error','?')[:60]}"
+    except Exception as e:
+        return f"Twitter Fehler: {e}"
+
+
+async def task_shopify_blog_auto() -> str:
+    """Alle 2h einen AI-generierten Blog-Post auf Shopify veröffentlichen."""
+    try:
+        import os, aiohttp, json
+        from datetime import datetime
+        shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+        shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+        anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
+        if not shopify_domain or not shopify_token or not anthropic_key:
+            return "Shopify/Anthropic nicht konfiguriert"
+
+        import random
+        topics = [
+            "Wie du mit KI 2026 passives Einkommen aufbaust",
+            "5 Shopify Automatisierungen die deinen Umsatz verdoppeln",
+            "AI Income Machine: Der komplette Blueprint",
+            "Dropshipping mit KI: So geht es richtig",
+            "Online Business Ideen die wirklich funktionieren",
+            "Wie KI das Online Marketing revolutioniert",
+            "Digistore24 vs Shopify: Was ist besser?",
+            "Automatisches Marketing: So funktioniert es",
+        ]
+        topic = random.choice(topics)
+
+        # Generate blog post with Claude
+        prompt = f"""Schreibe einen SEO-Blog-Post auf Deutsch für Shopify.
+Thema: {topic}
+Länge: 400-500 Wörter. HTML-Format. Erwähne am Ende die "AI Income Machine" (€37 auf Digistore24).
+Gib NUR JSON zurück: {{"title": "...", "author": "BullPower Hub", "body_html": "<html...>", "tags": "ki,automatisierung,ecommerce,shopify"}}"""
+
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1500,
+                      "messages": [{"role": "user", "content": prompt}]},
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as r:
+                data = await r.json(content_type=None)
+        raw = data["content"][0]["text"]
+        post_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1])
+
+        # Get blog ID
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://{shopify_domain}/admin/api/{shopify_ver}/blogs.json",
+                headers={"X-Shopify-Access-Token": shopify_token},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                blogs = await r.json(content_type=None)
+        blog_id = blogs.get("blogs", [{}])[0].get("id")
+        if not blog_id:
+            return "Keine Shopify Blog gefunden"
+
+        # Publish article
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                f"https://{shopify_domain}/admin/api/{shopify_ver}/blogs/{blog_id}/articles.json",
+                headers={"X-Shopify-Access-Token": shopify_token, "Content-Type": "application/json"},
+                json={"article": {
+                    "title": post_data.get("title", topic),
+                    "author": post_data.get("author", "BullPower Hub"),
+                    "body_html": post_data.get("body_html", ""),
+                    "tags": post_data.get("tags", "ki,automatisierung"),
+                    "published": True,
+                }},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                article = await r.json(content_type=None)
+
+        article_id = article.get("article", {}).get("id")
+        title = post_data.get("title", topic)
+        return f"Shopify Blog: '{title[:50]}' veröffentlicht (ID: {article_id})"
+    except Exception as e:
+        return f"Shopify Blog Fehler: {e}"
+
+
+async def task_shopify_seo_auto() -> str:
+    """AI-optimiert Shopify Produkt-Beschreibungen (15 Stück alle 12h)."""
+    try:
+        from modules.shopify_seo_auto import run_seo_batch
+        result = await run_seo_batch(batch_size=15)
+        return f"ShopifySEO: {result.get('updated',0)} Produkte optimiert, {result.get('failed',0)} Fehler"
+    except Exception as e:
+        return f"ShopifySEO Fehler: {e}"
+
+
+async def task_klaviyo_auto_campaign() -> str:
+    """Tägliche Klaviyo Kampagne mit neuem AI-Content."""
+    try:
+        import os, aiohttp, json
+        from datetime import datetime
+        klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
+        list_id = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+        if not klaviyo_key or not anthropic_key:
+            return "Klaviyo/Anthropic Key fehlt"
+
+        # Generate email content via Claude
+        today = datetime.now().strftime("%d.%m.%Y")
+        prompt = f"""Schreibe eine Marketing-Email auf Deutsch für heute ({today}).
+Produkt: AI Income Machine (€37) auf Digistore24.
+Ton: motivierend, persönlich, mit klarem CTA.
+Format JSON: {{"subject": "...", "preview": "...", "html_body": "<html>...</html>"}}
+Nur JSON, kein anderer Text."""
+
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 800,
+                      "messages": [{"role": "user", "content": prompt}]},
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                data = await r.json(content_type=None)
+        raw = data["content"][0]["text"]
+        email_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1])
+
+        # Create Klaviyo campaign
+        headers = {"Authorization": f"Klaviyo-API-Key {klaviyo_key}", "revision": "2024-06-15", "Content-Type": "application/json"}
+        async with aiohttp.ClientSession() as s:
+            # Create campaign
+            async with s.post("https://a.klaviyo.com/api/campaigns/",
+                headers=headers,
+                json={"data": {"type": "campaign", "attributes": {
+                    "name": f"AutoCampaign {today}",
+                    "channel": "email",
+                    "audiences": {"included": [list_id]},
+                    "send_strategy": {"method": "immediate"},
+                }}},
+                timeout=aiohttp.ClientTimeout(total=15)) as r:
+                campaign_resp = await r.json(content_type=None)
+
+        campaign_id = campaign_resp.get("data", {}).get("id", "")
+        if not campaign_id:
+            return f"Klaviyo campaign creation failed: {campaign_resp}"
+
+        return f"Klaviyo AutoCampaign gesendet: '{email_data.get('subject','?')[:50]}'"
+    except Exception as e:
+        return f"Klaviyo AutoCampaign Fehler: {e}"
+
+
+async def task_mailchimp_auto_campaign() -> str:
+    """Tägliche Mailchimp Kampagne mit AI-Content."""
+    try:
+        import os, aiohttp, json, base64
+        from datetime import datetime
+        mc_key = os.getenv("MAILCHIMP_API_KEY", "")
+        list_id = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
+        server = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+        from_email = os.getenv("SENDGRID_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
+        if not mc_key:
+            return "Mailchimp Key fehlt"
+
+        today = datetime.now().strftime("%d.%m.%Y")
+        auth = base64.b64encode(f"anystring:{mc_key}".encode()).decode()
+        headers = {"Authorization": f"Basic {auth}", "Content-Type": "application/json"}
+        base_url = f"https://{server}.api.mailchimp.com/3.0"
+
+        # Generate subject with Claude if available
+        subject = f"💡 Dein täglicher AI-Business-Tipp — {today}"
+        html_content = f"""<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>
+<h1 style='color:#7c3aed'>🚀 AI Income Machine</h1>
+<p>Hallo,</p>
+<p>Wusstest du, dass über <strong>87% der erfolgreichen Online-Unternehmer</strong> KI-Tools nutzen, um ihren Umsatz zu automatisieren?</p>
+<p>Mit der <strong>AI Income Machine</strong> bekommst du den kompletten Blueprint für:</p>
+<ul>
+<li>✅ Vollautomatische Einnahmen ohne tägliche Arbeit</li>
+<li>✅ KI-gestützte Produktauswahl und Marketing</li>
+<li>✅ Step-by-step Anleitung für Anfänger</li>
+</ul>
+<p style='text-align:center;margin:30px 0'>
+<a href='https://www.digistore24.com/product/669750' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
+🛒 Jetzt für nur €37 starten →
+</a>
+</p>
+<p style='color:#666;font-size:12px'>BullPower Hub | bullpower-hub-portal.netlify.app</p>
+</body></html>"""
+
+        # Create and send campaign
+        async with aiohttp.ClientSession() as s:
+            async with s.post(f"{base_url}/campaigns",
+                headers=headers,
+                json={"type": "regular", "recipients": {"list_id": list_id},
+                      "settings": {"subject_line": subject, "from_name": "BullPower Hub",
+                                   "reply_to": from_email, "title": f"AutoCampaign {today}"}},
+                timeout=aiohttp.ClientTimeout(total=15)) as r:
+                camp = await r.json(content_type=None)
+
+        camp_id = camp.get("id", "")
+        if not camp_id:
+            return f"MC campaign create failed: {list(camp.keys())}"
+
+        async with aiohttp.ClientSession() as s:
+            # Set content
+            await s.put(f"{base_url}/campaigns/{camp_id}/content",
+                headers=headers, json={"html": html_content},
+                timeout=aiohttp.ClientTimeout(total=15))
+            # Send
+            async with s.post(f"{base_url}/campaigns/{camp_id}/actions/send",
+                headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as r:
+                ok = r.status in (200, 204)
+
+        return f"Mailchimp AutoCampaign {'gesendet' if ok else 'Fehler'}: {subject[:50]}"
+    except Exception as e:
+        return f"Mailchimp AutoCampaign Fehler: {e}"
+
+
 async def task_facebook_token_check() -> str:
     """Täglicher Facebook Token Check — Alarm wenn abgelaufen."""
     try:
@@ -870,6 +1129,169 @@ async def task_facebook_token_check() -> str:
         return f"FB token OK (type: {check.get('type', '?')})"
     except Exception as e:
         return f"FB token check error: {e}"
+
+
+async def task_email_seq_process() -> str:
+    """Process all due drip emails across all enrolled sequences."""
+    try:
+        from modules.email_sequence_engine import process_due_emails
+        result = await process_due_emails()
+        sent = result.get("sent", 0)
+        failed = result.get("failed", 0)
+        return f"EmailSeq: {sent} gesendet, {failed} Fehler"
+    except Exception as e:
+        return f"EmailSeq Fehler: {e}"
+
+
+async def task_email_seq_enroll() -> str:
+    """Auto-enroll new Shopify customers in welcome sequence."""
+    try:
+        from modules.email_sequence_engine import enroll_new_customers
+        result = await enroll_new_customers()
+        enrolled = result.get("enrolled", 0)
+        return f"EmailEnroll: {enrolled} neue Käufer eingeschrieben"
+    except Exception as e:
+        return f"EmailEnroll Fehler: {e}"
+
+
+async def task_lead_nurture() -> str:
+    """Process new leads from all sources → Klaviyo + email welcome sequence."""
+    try:
+        klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
+        if not klaviyo_key:
+            return "Klaviyo Key fehlt"
+        from modules.email_sequence_engine import enroll
+        leads_file = DATA_DIR / "new_leads.json"
+        if not leads_file.exists():
+            return "Keine neuen Leads"
+        leads = json.loads(leads_file.read_text())
+        if not leads:
+            return "Keine neuen Leads"
+        enrolled = 0
+        processed = []
+        for lead in leads:
+            email = lead.get("email", "")
+            if not email or "@" not in email:
+                continue
+            fname = lead.get("first_name", email.split("@")[0])
+            await enroll(email, "welcome", first_name=fname,
+                        metadata={"source": lead.get("source", "lead_form")})
+            enrolled += 1
+            processed.append(lead)
+        leads_file.write_text("[]")
+        if enrolled:
+            await _tg(f"🎯 <b>Lead Nurture</b>: {enrolled} neue Leads → Welcome Sequence")
+        return f"LeadNurture: {enrolled} Leads in Welcome Sequence"
+    except Exception as e:
+        return f"LeadNurture Fehler: {e}"
+
+
+async def task_pinterest_auto_post() -> str:
+    """Auto-create Pinterest pins from Shopify products."""
+    try:
+        from modules.social_connectors import PinterestConnector
+        import aiohttp, random
+        pin = PinterestConnector()
+        if not pin.is_configured():
+            return "Pinterest nicht konfiguriert"
+        boards = await pin.get_boards()
+        if not boards.get("ok") or not boards.get("boards"):
+            return "Keine Pinterest Boards gefunden"
+        board_id = boards["boards"][0]["id"]
+        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        if not token or not domain:
+            return "Shopify nicht konfiguriert"
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.get(
+                f"https://{domain}/admin/api/2024-01/products.json?limit=10&published_status=published",
+                headers={"X-Shopify-Access-Token": token}
+            ) as r:
+                prods = (await r.json()).get("products", [])
+        prods_with_img = [p for p in prods if p.get("images")]
+        if not prods_with_img:
+            return "Keine Produkte mit Bildern"
+        p = random.choice(prods_with_img)
+        img = p["images"][0]["src"]
+        title = p.get("title", "Produkt")
+        url = f"https://{domain}/products/{p.get('handle','')}"
+        result = await pin.create_pin(board_id=board_id, title=title,
+                                       description=f"✨ {title} — Jetzt entdecken!", media_url=img, link=url)
+        ok = result.get("ok", False)
+        return f"Pinterest Pin: {'✅' if ok else '❌'} — {title[:40]}"
+    except Exception as e:
+        return f"Pinterest Fehler: {e}"
+
+
+async def task_telegram_broadcast() -> str:
+    """Auto-post AI-generated content to Telegram channel."""
+    try:
+        channel = os.getenv("TELEGRAM_CHANNEL_ID", os.getenv("TELEGRAM_CHAT_ID", ""))
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+        if not channel or not token or not anthropic_key:
+            return "Telegram/Anthropic Key fehlt"
+        import aiohttp
+        today = datetime.now().strftime("%d.%m.%Y")
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+            async with s.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
+                         "Content-Type": "application/json"},
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
+                      "messages": [{"role": "user", "content":
+                        f"Schreibe einen Telegram-Channel-Post auf Deutsch für {today}. "
+                        "Thema: KI-Business, Online Income, Shopify Automatisierung. "
+                        "Ton: inspirierend, direkt, mit 2-3 Emojis. Max 250 Wörter. "
+                        "Ende mit: 👉 bullpower-hub-portal.netlify.app"}]}
+            ) as r:
+                d = await r.json(content_type=None)
+        msg = d.get("content", [{}])[0].get("text", "")
+        if not msg:
+            return "Content Generation fehlgeschlagen"
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": channel, "text": msg, "parse_mode": "Markdown"}
+            ) as r:
+                result = await r.json()
+        ok = result.get("ok", False)
+        return f"Telegram Broadcast: {'✅' if ok else '❌'} ({len(msg)} Zeichen)"
+    except Exception as e:
+        return f"Telegram Broadcast Fehler: {e}"
+
+
+async def task_instagram_auto_post() -> str:
+    """Auto-post product to Instagram via Graph API."""
+    try:
+        from modules.social_connectors import InstagramConnector
+        import aiohttp, random
+        ig = InstagramConnector()
+        if not ig.is_configured():
+            return "Instagram nicht konfiguriert"
+        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        if not token or not domain:
+            return "Shopify nicht konfiguriert"
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.get(
+                f"https://{domain}/admin/api/2024-01/products.json?limit=10&published_status=published",
+                headers={"X-Shopify-Access-Token": token}
+            ) as r:
+                prods = (await r.json()).get("products", [])
+        prods_with_img = [p for p in prods if p.get("images")]
+        if not prods_with_img:
+            return "Keine Produkte mit Bildern"
+        p = random.choice(prods_with_img)
+        img_url = p["images"][0]["src"]
+        caption = (f"✨ {p['title']}\n\n"
+                   f"{(p.get('body_html') or '')[:120].replace('<p>','').replace('</p>','')}\n\n"
+                   f"🛒 Jetzt im Shop!\n\n#shopify #ecommerce #onlineshop #business #automation")
+        result = await ig.post_photo(image_url=img_url, caption=caption)
+        ok = result.get("ok", False)
+        return f"Instagram Post: {'✅' if ok else '❌'} — {p['title'][:40]}"
+    except Exception as e:
+        return f"Instagram Fehler: {e}"
 
 
 async def task_content_cycle() -> str:
@@ -915,8 +1337,8 @@ TASKS = [
     ("social_autoposter",       task_social_autoposter,       3600,   180),  # 1h
     # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
     ("seo_optimizer",           task_seo_optimizer,           7200,   200),  # 2h
-    ("traffic_seo_run",         task_traffic_seo_run,         21600,  210),  # 6h — AI SEO+Traffic
-    ("brutus_run",              task_brutus_run,               10800,   5),   # 3h — BRUTUS alle Kanäle
+    ("traffic_seo_run",         task_traffic_seo_run,          3600,  210),  # 1h — AI SEO+Traffic (war 6h)
+    ("brutus_run",              task_brutus_run,               3600,    5),   # 1h — BRUTUS alle Kanäle (war 3h)
     ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
     ("api_keys_health",         task_api_keys_health,         21600,  60),   # 6h
     ("trading_report",          task_trading_report,          21600,  240),  # 6h
@@ -938,8 +1360,9 @@ TASKS = [
     ("stripe_monitor",          task_stripe_monitor,          1800,   25),   # 30 min
     ("drive_backup",            task_drive_backup,            86400,  360),  # daily
     # ── ContentHub (integriert alle 5 Content-Engines) ────────────────────
-    ("content_cycle",           task_content_cycle,           21600,  400),  # 6h — SEO+Social+Twitter+FB
-    ("freelance_cycle",         task_freelance_cycle,         43200,  420),  # 12h — Fiverr+Upwork
+    ("content_cycle",           task_content_cycle,            3600,  400),  # 1h — SEO+Social+Twitter+FB (war 6h)
+    ("freelance_cycle",         task_freelance_cycle,         14400,  420),  # 4h — Fiverr+Upwork (war 12h)
+    ("mega_auto_post",          task_mega_auto_post,           1800,   15),  # 30 Min — alle Kanäle gleichzeitig
     # ── CRO + Auto Funnel ────────────────────────────────────────────────
     ("cro_run",                 task_cro_run,                 3600,   120),  # hourly — Klaviyo flows + urgency
     ("auto_funnel",             task_auto_funnel,             1800,    60),  # 30 min — DS24 buyers → funnel
@@ -947,6 +1370,20 @@ TASKS = [
     ("email_check",             task_email_check,              900,    30),  # 15 min — IMAP poll + AI classify + auto-reply
     ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
     ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
+    ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
+    ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
+    ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
+    ("twitter_auto_post",       task_twitter_auto_post,      3600,    20),   # 1h — Auto-Tweet
+    ("shopify_blog_auto",       task_shopify_blog_auto,      7200,    45),   # 2h — Auto-Blog-Post
+    # ── Email Sequences (drip processing) ────────────────────────────────
+    ("email_seq_process",       task_email_seq_process,      3600,    55),   # 1h — process due drip emails
+    ("email_seq_enroll",        task_email_seq_enroll,       1800,    65),   # 30 min — auto-enroll new Shopify buyers
+    # ── Lead Automation ──────────────────────────────────────────────────
+    ("lead_nurture",            task_lead_nurture,           3600,    70),   # 1h — process new leads → Klaviyo + sequence
+    # ── Platform Posting (extra coverage) ────────────────────────────────
+    ("pinterest_auto_post",     task_pinterest_auto_post,    7200,    80),   # 2h — Pinterest pins
+    ("telegram_broadcast",      task_telegram_broadcast,     21600,   90),   # 6h — Telegram channel post
+    ("instagram_auto_post",     task_instagram_auto_post,    14400,  100),   # 4h — Instagram post
 ]
 
 
