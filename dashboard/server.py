@@ -4358,6 +4358,7 @@ async def create_app():
     app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
     app.router.add_get("/api/content/stats",          handle_content_stats)
     app.router.add_post("/api/ingest",                handle_seo_ingest)
+    app.router.add_post("/api/lead",                  handle_lead_capture)
     app.router.add_get("/master",                     handle_master_dashboard)
     app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
     app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
@@ -4926,6 +4927,60 @@ async def handle_master_dashboard(req):
     """GET /master — großes Master Control Dashboard."""
     html_file = Path(__file__).parent / "master.html"
     return web.Response(content_type="text/html", text=html_file.read_text())
+
+
+async def handle_lead_capture(req):
+    """POST /api/lead — Universal lead capture from any source (Netlify forms, landing pages, etc.)
+    Body: {email, first_name?, source?, product?}
+    → saves to data/new_leads.json → picked up by task_lead_nurture → Klaviyo + email sequence
+    """
+    try:
+        data = await req.json()
+        email = (data.get("email") or "").strip().lower()
+        if not email or "@" not in email:
+            return web.json_response({"ok": False, "error": "Valid email required"}, status=400)
+        first_name = (data.get("first_name") or data.get("name") or email.split("@")[0]).strip()
+        source = data.get("source", "api")
+        product = data.get("product", "")
+
+        leads_file = Path(__file__).parent.parent / "data" / "new_leads.json"
+        leads_file.parent.mkdir(exist_ok=True)
+        leads = []
+        if leads_file.exists():
+            try:
+                leads = json.loads(leads_file.read_text())
+            except Exception:
+                leads = []
+        if not any(l.get("email") == email for l in leads):
+            leads.append({"email": email, "first_name": first_name,
+                          "source": source, "product": product,
+                          "ts": datetime.now().isoformat()})
+            leads_file.write_text(json.dumps(leads, indent=2))
+
+        # Immediate Klaviyo upsert + email sequence enroll (async, non-blocking)
+        async def _enroll():
+            try:
+                from modules.email_sequence_engine import enroll
+                await enroll(email, "welcome", first_name=first_name,
+                             metadata={"source": source, "product": product})
+            except Exception as ex:
+                log.warning("Lead enroll error: %s", ex)
+            try:
+                from modules.klaviyo_automation import upsert_profile
+                await upsert_profile(email, first_name=first_name,
+                                     properties={"lead_source": source, "lead_product": product})
+            except Exception as ex:
+                log.warning("Klaviyo upsert error: %s", ex)
+        asyncio.create_task(_enroll())
+
+        if TELEGRAM_TOKEN and TELEGRAM_CHAT_ID:
+            asyncio.create_task(_tg_notify(
+                f"🎯 <b>Neuer Lead</b>\nEmail: {email}\nName: {first_name}\nQuelle: {source}"
+            ))
+        return web.json_response({"ok": True, "enrolled": True, "email": email})
+    except Exception as e:
+        log.error(f"Lead capture error: {e}")
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_email_brain_stats(req):
