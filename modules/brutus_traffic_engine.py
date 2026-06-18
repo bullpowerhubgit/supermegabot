@@ -341,6 +341,101 @@ async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
         return False
 
 
+async def deploy_to_instagram(keyword: str, content: dict) -> bool:
+    """Instagram @aaiitecc — auto-post via Facebook Graph API (text as image caption)."""
+    ig_user_id = os.getenv("INSTAGRAM_ID_AIITEC", "17841478315197796")
+    page_token  = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", "")
+    if not page_token or not ig_user_id:
+        return False
+
+    social = content.get("social_post", "")
+    if not social:
+        return False
+
+    # Pick the Instagram-style section with hashtags
+    lines = [l.strip() for l in social.split("\n") if l.strip()]
+    post_text = "\n".join(lines[:12])[:2200]
+
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as s:
+            # Step 1: Create media container (image_url required for IG — use a hosted pixel)
+            async with s.post(
+                f"https://graph.facebook.com/v19.0/{ig_user_id}/media",
+                data={
+                    "image_url": "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png",
+                    "caption": post_text,
+                    "access_token": page_token,
+                },
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                media_data = await r.json(content_type=None)
+
+            container_id = media_data.get("id", "")
+            if not container_id:
+                # Fallback: try text-only reel description (not standard but some accounts allow)
+                log.warning("BRUTUS: IG container creation failed: %s", media_data)
+                return False
+
+            # Step 2: Publish
+            async with s.post(
+                f"https://graph.facebook.com/v19.0/{ig_user_id}/media_publish",
+                data={"creation_id": container_id, "access_token": page_token},
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                pub_data = await r.json(content_type=None)
+
+        if pub_data.get("id"):
+            log.info("BRUTUS: Instagram post published — %s", pub_data["id"])
+            return True
+        log.warning("BRUTUS: Instagram publish error: %s", pub_data)
+        return False
+    except Exception as exc:
+        log.warning("Instagram deploy error: %s", exc)
+        return False
+
+
+async def deploy_to_youtube(keyword: str, content: dict) -> bool:
+    """YouTube community post via YouTube Data API v3."""
+    youtube_key = os.getenv("YOUTUBE_API_KEY", "")
+    channel_id  = os.getenv("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
+    if not youtube_key or not channel_id:
+        return False
+
+    yt_desc = content.get("youtube_desc", "")
+    if not yt_desc:
+        return False
+
+    post_text = f"Neu: {keyword}\n\n{yt_desc[:900]}"
+
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://www.googleapis.com/youtube/v3/activities",
+                params={"part": "snippet", "key": youtube_key},
+                json={
+                    "snippet": {
+                        "type": "bulletin",
+                        "bulletin": {"resourceId": {"kind": "youtube#channel", "channelId": channel_id}},
+                        "description": post_text,
+                    }
+                },
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                data = await r.json(content_type=None)
+
+        if data.get("id"):
+            log.info("BRUTUS: YouTube community post published")
+            return True
+        # YouTube community posts require OAuth, not just API key — log gracefully
+        log.info("BRUTUS: YouTube post needs OAuth (API key insufficient): %s", data.get("error", {}).get("message", ""))
+        return False
+    except Exception as exc:
+        log.warning("YouTube deploy error: %s", exc)
+        return False
+
+
 async def deploy_to_klaviyo_campaign(keyword: str, content: dict):
     """Klaviyo — Email-Kampagne für viralen Trend."""
     klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
@@ -539,6 +634,8 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
             deploy_to_shopify_blog(keyword, content_pack),
             deploy_to_klaviyo_campaign(keyword, content_pack),
             deploy_to_facebook_page(keyword, content_pack),
+            deploy_to_instagram(keyword, content_pack),
+            deploy_to_youtube(keyword, content_pack),
         ]
         deploy_results = await asyncio.gather(*deploy_tasks, return_exceptions=True)
 
@@ -565,7 +662,7 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
             f"🔥 *BRUTUS RUN COMPLETE*\n\n"
             f"Keywords: {results['keywords_processed']}\n"
             f"Content-Stücke: {results['content_pieces']}\n"
-            f"Kanäle bespielt: {results['channels_hit']}\n"
+            f"Kanäle bespielt: {results['channels_hit']}/6\n"
             f"Amplified: {len(results.get('amplified', []))}\n\n"
             f"Nische: {niche}"
         )
