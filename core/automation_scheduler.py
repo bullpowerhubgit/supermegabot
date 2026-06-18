@@ -854,6 +854,21 @@ async def task_email_daily_summary() -> str:
         return f"EmailBrain summary error: {e}"
 
 
+async def task_facebook_token_check() -> str:
+    """Täglicher Facebook Token Check — Alarm wenn abgelaufen."""
+    try:
+        from modules.facebook_token_manager import check_token, refresh_all_tokens
+        import os
+        user_token = os.getenv("FACEBOOK_USER_TOKEN", "")
+        check = await check_token(user_token)
+        if not check.get("valid"):
+            result = await refresh_all_tokens()  # sends Telegram alert with OAuth URL
+            return f"FB token invalid — alert sent: {result.get('action_needed', False)}"
+        return f"FB token OK (type: {check.get('type', '?')})"
+    except Exception as e:
+        return f"FB token check error: {e}"
+
+
 async def task_content_cycle() -> str:
     """SEO-Artikel + alle Social-Inhalte generieren. ContentHub Monorepo-Task."""
     try:
@@ -928,6 +943,7 @@ TASKS = [
     # ── Email Brain ──────────────────────────────────────────────────────
     ("email_check",             task_email_check,              900,    30),  # 15 min — IMAP poll + AI classify + auto-reply
     ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
+    ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
 ]
 
 
