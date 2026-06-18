@@ -585,6 +585,15 @@ async def handle_hermes_stats(req):
         return web.json_response({"ok": True, "stats": {}, "note": str(e)})
 
 
+async def handle_content_stats(req):
+    try:
+        from modules.content_hub import get_stats
+        stats = await get_stats()
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"ok": True, "articles_generated": 0, "note": str(e)})
+
+
 # ---------------------------------------------------------------------------
 # NEW API Routes
 # ---------------------------------------------------------------------------
@@ -3418,6 +3427,7 @@ async def create_app():
     app.router.add_post("/api/hermes/enqueue",        handle_hermes_enqueue)
     app.router.add_post("/api/hermes/notify",         handle_hermes_notify)
     app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
+    app.router.add_get("/api/content/stats",          handle_content_stats)
 
     return app
 
