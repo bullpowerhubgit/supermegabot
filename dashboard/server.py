@@ -4365,6 +4365,8 @@ async def create_app():
     app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
     app.router.add_get("/api/revenue/summary",        handle_revenue_summary)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
+    app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
+    app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
     app.router.add_get("/api/facebook/refresh",       handle_facebook_refresh)
     app.router.add_get("/api/facebook/callback",      handle_facebook_callback)
     app.router.add_get("/api/facebook/status",        handle_facebook_status)
@@ -5119,13 +5121,75 @@ async def handle_scheduler_status(req):
         status = get_scheduler_status()
         return web.json_response({"status": "ok", "tasks": status})
     except Exception as e:
-        # Fallback: return basic task list
         tasks = [
             "shopify_sync", "ds24_revenue_sync", "health_alert", "trend_analysis",
             "backup", "ds24_funnel_sync", "traffic_seo_run", "brutus_run",
             "cro_run", "auto_funnel", "email_check", "email_daily_summary"
         ]
         return web.json_response({"status": "ok", "tasks": {t: {"state": "running"} for t in tasks}})
+
+
+async def handle_scheduler_trigger(req):
+    """POST /api/scheduler/trigger — run any named scheduler task immediately.
+    Body: {"task": "task_name"}
+    """
+    try:
+        body = await req.json()
+    except Exception:
+        return web.json_response({"error": "JSON body required: {\"task\": \"task_name\"}"}, status=400)
+    task_name = body.get("task", "").strip()
+    if not task_name:
+        try:
+            from core.automation_scheduler import TASKS
+            available = [t[0] for t in TASKS]
+        except Exception:
+            available = []
+        return web.json_response({"error": "task name required", "available": available}, status=400)
+    try:
+        from core.automation_scheduler import get_scheduler
+        sched = get_scheduler()
+        result = await sched.run_now(task_name)
+        return web.json_response({"status": "ok", "task": task_name, "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_broadcast_trigger(req):
+    """POST /api/broadcast/trigger — fire all social posting tasks simultaneously."""
+    import asyncio
+    social_tasks = [
+        "mega_auto_post", "social_autoposter", "twitter_auto_post",
+        "telegram_broadcast", "instagram_auto_post", "pinterest_auto_post",
+        "linkedin_auto_post", "shopify_blog_auto",
+    ]
+    try:
+        from core.automation_scheduler import get_scheduler
+        sched = get_scheduler()
+        results = await asyncio.gather(
+            *[sched.run_now(t) for t in social_tasks],
+            return_exceptions=True
+        )
+        report = {t: (str(r) if isinstance(r, Exception) else r) for t, r in zip(social_tasks, results)}
+        ok = sum(1 for r in results if not isinstance(r, Exception))
+        await _tg_notify(f"📡 <b>Broadcast Trigger</b>: {ok}/{len(social_tasks)} Kanäle gefeuert")
+        return web.json_response({"status": "ok", "fired": ok, "total": len(social_tasks), "results": report})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def _tg_notify(msg: str):
+    """Send Telegram notification from server context."""
+    try:
+        import aiohttp as _aio
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat  = os.getenv("TELEGRAM_CHAT_ID", "")
+        if not token or not chat:
+            return
+        async with _aio.ClientSession(timeout=_aio.ClientTimeout(total=8)) as s:
+            await s.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                         json={"chat_id": chat, "text": msg, "parse_mode": "HTML"})
+    except Exception:
+        pass
 
 
 async def handle_brutus_run(req):
