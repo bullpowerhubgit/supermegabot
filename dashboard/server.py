@@ -3429,6 +3429,10 @@ async def create_app():
     app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
     app.router.add_get("/api/content/stats",          handle_content_stats)
 
+    # Start hourly lead follow-up reminder background task
+    asyncio.create_task(_run_followup_loop())
+    log.info("Lead follow-up reminder task started")
+
     return app
 
 
@@ -3478,6 +3482,104 @@ async def _sb_insert(table: str, data: dict) -> dict:
     except Exception as e:
         return {"error": str(e)}
 
+
+
+async def check_followup_leads() -> None:
+    """Query leads created 23-25h ago with followed_up=false and notify owner via Telegram."""
+    import aiohttp as _aio
+    sb_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    sb_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    anon = os.getenv("SUPABASE_ANON_KEY", "")
+    auth_key = sb_key or anon
+    if not sb_url or not auth_key:
+        log.warning("check_followup_leads: no Supabase credentials, skipping")
+        return
+
+    from datetime import datetime, timezone, timedelta
+    now = datetime.now(timezone.utc)
+    ts_from = (now - timedelta(hours=25)).isoformat()
+    ts_to   = (now - timedelta(hours=23)).isoformat()
+
+    headers = {
+        "apikey": auth_key,
+        "Authorization": f"Bearer {auth_key}",
+        "Content-Type": "application/json",
+    }
+
+    # Fetch leads created between 25h and 23h ago with followed_up = false (or missing)
+    params = (
+        f"created_at=gte.{ts_from}"
+        f"&created_at=lte.{ts_to}"
+        f"&followed_up=is.false"
+    )
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.get(
+                f"{sb_url}/rest/v1/leads?{params}",
+                headers=headers,
+                timeout=_aio.ClientTimeout(total=10),
+            )
+            if r.status == 400:
+                # Column may not exist — fall back to time-only filter
+                params_fallback = f"created_at=gte.{ts_from}&created_at=lte.{ts_to}"
+                r = await s.get(
+                    f"{sb_url}/rest/v1/leads?{params_fallback}",
+                    headers=headers,
+                    timeout=_aio.ClientTimeout(total=10),
+                )
+            leads = await r.json()
+    except Exception as e:
+        log.error("check_followup_leads: fetch error: %s", e)
+        return
+
+    if not isinstance(leads, list):
+        log.warning("check_followup_leads: unexpected response: %s", leads)
+        return
+
+    log.info("check_followup_leads: %d leads to follow up", len(leads))
+
+    for lead in leads:
+        email  = lead.get("email", "(unbekannt)")
+        name   = lead.get("name") or "kein Name"
+        domain = lead.get("shopify_domain") or "nicht angegeben"
+        source = lead.get("source") or "unbekannt"
+        lead_id = lead.get("id")
+
+        msg = (
+            "🔔 *Follow-up fällig!*\n"
+            f"Lead von gestern: {email} ({name})\n"
+            f"Shop: {domain}\n"
+            f"Quelle: {source}\n\n"
+            "👉 https://bullpower-lead.netlify.app"
+        )
+        await _tg_notify(msg)
+        log.info("Follow-up reminder sent for lead: %s", email)
+
+        # Mark as followed_up if the column exists and we have an id
+        if lead_id:
+            try:
+                async with _aio.ClientSession() as s:
+                    await s.patch(
+                        f"{sb_url}/rest/v1/leads?id=eq.{lead_id}",
+                        json={"followed_up": True},
+                        headers={
+                            **headers,
+                            "Prefer": "return=minimal",
+                        },
+                        timeout=_aio.ClientTimeout(total=8),
+                    )
+            except Exception as e:
+                log.warning("check_followup_leads: patch error for %s: %s", lead_id, e)
+
+
+async def _run_followup_loop() -> None:
+    """Infinite loop: run check_followup_leads() every hour."""
+    while True:
+        try:
+            await check_followup_leads()
+        except Exception as e:
+            log.error("_run_followup_loop: unexpected error: %s", e)
+        await asyncio.sleep(3600)
 
 async def handle_lead_capture(req):
     """POST /api/leads — capture email + optional name/domain, store + notify."""
