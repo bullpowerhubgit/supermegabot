@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "5088771245")
-PORT = int(os.getenv("PORT", 8093))
+PORT              = int(os.getenv("PORT", 8093))
+KV_API_KEY        = os.getenv("KLAVIYO_API_KEY", "")
 
 # ── SEO Traffic Engine Bridge ──────────────────────────────────────────────
 _SEO_ENGINE = os.getenv("SEO_ENGINE_URL", "https://seo-traffic-engine-production.up.railway.app")
@@ -121,6 +122,25 @@ def init_db():
     )""")
     conn.commit()
     conn.close()
+
+
+async def klaviyo_track(event: str, props: dict):
+    if not KV_API_KEY:
+        return
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                "https://a.klaviyo.com/api/events/",
+                headers={"Authorization": f"Klaviyo-API-Key {KV_API_KEY}",
+                         "revision": "2024-06-15", "Content-Type": "application/json"},
+                json={"data": {"type": "event", "attributes": {
+                    "metric": {"data": {"type": "metric", "attributes": {"name": event}}},
+                    "properties": props,
+                }}},
+                timeout=aiohttp.ClientTimeout(total=8),
+            )
+    except Exception:
+        pass
 
 
 async def send_telegram(msg: str):
@@ -262,6 +282,7 @@ async def content_cycle():
     )
 
     logger.info("Content cycle done.")
+    await klaviyo_track("Freelance Gig Cycle", {"gigs": 2, "proposals": 2})
 
 
 async def scheduler():
