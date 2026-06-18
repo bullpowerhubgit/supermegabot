@@ -1363,6 +1363,34 @@ async def task_linkedin_auto_post() -> str:
         return f"LinkedIn Fehler: {e}"
 
 
+async def task_youtube_auto_post() -> str:
+    """Post YouTube community post via BRUTUS every 2h."""
+    try:
+        from modules.brutus_traffic_engine import deploy_to_youtube
+        import random
+        topics = [
+            "💡 AI Income Machine — Automatisch Geld verdienen mit KI | Jetzt für €37 starten!",
+            "🚀 Shopify Automatisierung 2026 — So läuft dein Business von selbst",
+            "🤖 KI-Tools die wirklich Geld verdienen — Live Demo",
+            "📈 Passives Einkommen mit KI — Der komplette Blueprint",
+        ]
+        title = random.choice(topics)
+        result = await deploy_to_youtube(
+            title=title,
+            description=(
+                f"{title}\n\n"
+                "👉 https://www.digistore24.com/product/669750\n\n"
+                "#KI #PassivesEinkommen #OnlineBusiness"
+            ),
+            tags=["KI", "passives einkommen", "online business", "shopify", "automatisierung"],
+        )
+        return f"YouTube: {result.get(chr(39)+'status'+chr(39), str(result)[:80])}"
+    except ImportError:
+        return "YouTube: brutus_traffic_engine nicht verfügbar"
+    except Exception as e:
+        return f"YouTube Auto-Post Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -1434,6 +1462,7 @@ TASKS = [
     ("telegram_broadcast",      task_telegram_broadcast,     21600,   90),   # 6h — Telegram channel post
     ("instagram_auto_post",     task_instagram_auto_post,    14400,  100),   # 4h — Instagram post
     ("linkedin_auto_post",      task_linkedin_auto_post,     21600,  110),   # 6h — LinkedIn AI post
+    ("youtube_auto_post",       task_youtube_auto_post,       7200,  120),   # 2h — YouTube community post
 ]
 
 
