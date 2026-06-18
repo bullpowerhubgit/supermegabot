@@ -28,7 +28,14 @@
 | Stripe (Neu) | €0 (Checkouts bereit, noch kein Kauf) |
 | Shopify | €0 heute |
 
-## Neue Features (2026-06-19 Session)
+## Neue Features (2026-06-19 Session v2 — BRUTUS ÜBERALL)
+- `modules/mega_auto_poster.py` — 9-Kanal gleichzeitig (TG+FB×2+IG+Shopify+Klaviyo+MC+SG+Twitter) ✅
+- BRUTUS wird nach jedem MegaPost automatisch gefeuert ✅
+- Scheduler: MegaPost 30min, Twitter 1h, SEO 12h, Klaviyo+MC täglich ✅
+- Dashboard: SEO Run + Tweet Buttons ✅
+- Endpoints: /api/auto-poster/run, /api/shopify/seo/run, /api/twitter/post ✅
+
+## Neue Features (2026-06-19 Session v1)
 - `/api/shopify/products` — Live-Shopify-Produktliste ✅
 - `/api/stripe/subscriptions` — MRR-Tracking ✅
 - `/api/offers` — 4 Angebots-Pakete ✅
@@ -70,8 +77,10 @@ shopify-acquisition starter: POST https://shopify-acquisition-engine-production.
 |------|------|
 | 🟡 | gh auth refresh -s workflow (für Workflow-Dateien pushen) |
 | ✅ DONE | DS24 IPN URL eingetragen (2026-06-19) — Echtzeit-Käufe aktiv! |
+| ✅ DONE | MegaAutoPoster 9-Kanal-System + BRUTUS überall (2026-06-19) |
 | 🟢 | Pinterest App Review (wartet auf Support) |
 | 🟢 | Twilio FROM-Nummer kaufen |
+| 🟢 | Twitter Bearer Token prüfen (TWITTER_API_KEY gesetzt, aber v2 braucht OAuth 2.0 Bearer) |
 
 ## System-Fixes (2026-06-19 Session)
 - ✅ Stripe status: `stripe_available` → `ping` (ImportError behoben)
@@ -87,7 +96,7 @@ shopify-acquisition starter: POST https://shopify-acquisition-engine-production.
 - ✅ vitest CVE 1.4→4.1.9 gefixt, package.json dedupliziert
 - ✅ CURRENT_STATUS.md + CLAUDE.md Session-Start-Protokoll
 
-## Alle Live-Endpoints (Stand 2026-06-19)
+## Alle Live-Endpoints (Stand 2026-06-19 v2)
 ```
 GET  /health                          ✅
 GET  /master                          Master Control Dashboard
@@ -98,13 +107,17 @@ GET  /api/telegram/status             ✅ DudiRudibot
 GET  /api/brutus/status               ✅ 6/6 Kanäle
 GET  /api/facebook/status             ✅ all tokens valid
 GET  /api/revenue/summary             ✅ Stripe+Shopify+DS24
-GET  /api/scheduler/status            ✅ 32 Tasks
+GET  /api/scheduler/status            ✅ 32+ Tasks
 POST /api/brutus/run                  Manueller BRUTUS-Start
 GET  /api/facebook/refresh            FB Token Refresh
 GET  /api/facebook/callback           FB OAuth Callback
 POST /api/email/brain/check           Email Brain Trigger
 GET  /api/email/brain/stats           Email Stats
-POST /api/digistore24/ipn             DS24 IPN Webhook ← NOCH NICHT IN DS24 EINGETRAGEN!
+POST /api/digistore24/ipn             DS24 IPN Webhook ✅ AKTIV
+POST /api/auto-poster/run             MegaAutoPoster (9 Kanäle + BRUTUS) ✅ NEU
+GET  /api/auto-poster/status          Letzter MegaPost-Run ✅ NEU
+POST /api/shopify/seo/run             AI-SEO Batch (15 Produkte/Run) ✅ NEU
+POST /api/twitter/post                Auto-Tweet oder Custom Text ✅ NEU
 ```
 
 ## Wie Claude beim nächsten Start weitermacht
