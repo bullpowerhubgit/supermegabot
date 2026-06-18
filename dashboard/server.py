@@ -4252,6 +4252,7 @@ async def create_app():
     app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
     app.router.add_get("/api/content/stats",          handle_content_stats)
     app.router.add_post("/api/ingest",                handle_seo_ingest)
+    app.router.add_get("/master",                     handle_master_dashboard)
     app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
     app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
     app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
@@ -4803,6 +4804,12 @@ async def handle_seo_ingest(req):
     except Exception as e:
         log.error(f"SEO ingest error: {e}")
         return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_master_dashboard(req):
+    """GET /master — großes Master Control Dashboard."""
+    html_file = Path(__file__).parent / "master.html"
+    return web.Response(content_type="text/html", text=html_file.read_text())
 
 
 async def handle_email_brain_stats(req):
