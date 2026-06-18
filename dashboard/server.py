@@ -4433,6 +4433,10 @@ async def handle_lead_capture(req):
 
     result = await _sb_insert("leads", row)
 
+    # Subscribe to Mailchimp + Klaviyo in parallel (fire-and-forget)
+    asyncio.create_task(_mailchimp_subscribe(email, name))
+    asyncio.create_task(_klaviyo_subscribe(email, name))
+
     msg = (
         f"🔥 *Neuer Lead!*\n"
         f"📧 {email}\n"
@@ -4448,8 +4452,143 @@ async def handle_lead_capture(req):
     except Exception:
         await _tg_notify(msg)
 
+    # Send welcome email via SendGrid
+    asyncio.create_task(_sendgrid_welcome(email, name))
+
     log.info("New lead captured: %s (source=%s)", email, source)
     return web.json_response({"ok": True, "email": email})
+
+
+async def _sendgrid_welcome(email: str, name: str = "") -> None:
+    """Send Shopify-Audit welcome email via SendGrid."""
+    import aiohttp as _aio
+    api_key = os.getenv("SENDGRID_API_KEY", "")
+    from_email = os.getenv("SENDGRID_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
+    from_name = os.getenv("SENDGRID_FROM_NAME", "BullPower Hub")
+    if not api_key:
+        return
+    fname = name.split()[0] if name else "Shopify-Händler"
+    html_body = f"""<!DOCTYPE html>
+<html><body style="background:#0a0a0f;color:#f0f0ff;font-family:sans-serif;padding:2rem;max-width:600px;margin:0 auto">
+<div style="background:#13131f;border:1px solid rgba(139,92,246,.3);border-radius:16px;padding:2rem">
+<h1 style="color:#a78bfa">🚀 Dein Shopify-Audit startet!</h1>
+<p>Hey {fname},</p>
+<p>Danke für deine Anfrage! Dein persönlicher KI-Shopify-Audit wird gerade vorbereitet.</p>
+<h2 style="color:#a78bfa">Was dich erwartet:</h2>
+<ul>
+<li>✓ Analyse deiner Produktbeschreibungen auf SEO-Potenzial</li>
+<li>✓ Preisoptimierungs-Check auf Basis von Marktdaten</li>
+<li>✓ Fulfillment & Lagerbestand-Engpässe</li>
+<li>✓ Persönlicher Aktionsplan mit konkreten Schritten</li>
+</ul>
+<p>Du erhältst dein Ergebnis innerhalb von 24 Stunden.</p>
+<div style="margin:2rem 0;text-align:center">
+<a href="https://buy.stripe.com/7sY5kFbrIemmcYU0Oi4F20o"
+   style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;padding:1rem 2rem;
+          border-radius:12px;text-decoration:none;font-weight:700;display:inline-block">
+⚡ Jetzt 14 Tage kostenlos — alle 8 KI-Tools sofort verfügbar
+</a>
+</div>
+<p style="color:#64748b;font-size:.85rem">BullPower Hub | KI-Automatisierung für Shopify</p>
+</div></body></html>"""
+    payload = {
+        "personalizations": [{"to": [{"email": email, "name": name or fname}]}],
+        "from": {"email": from_email, "name": from_name},
+        "subject": f"🔍 Dein Shopify-Audit startet, {fname}!",
+        "content": [{"type": "text/html", "value": html_body}],
+    }
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json=payload,
+            )
+            if r.status == 202:
+                log.info("SendGrid welcome email sent to %s", email)
+            else:
+                body = await r.text()
+                log.warning("SendGrid failed (%s): %s", r.status, body[:200])
+    except Exception as e:
+        log.warning("SendGrid error: %s", e)
+
+
+async def _mailchimp_subscribe(email: str, name: str = "") -> None:
+    """Add subscriber to Mailchimp audience list."""
+    import aiohttp as _aio, base64
+    api_key = os.getenv("MAILCHIMP_API_KEY", "")
+    list_id = os.getenv("MAILCHIMP_LIST_ID", "")
+    if not api_key or not list_id:
+        return
+    dc = api_key.split("-")[-1]
+    auth = base64.b64encode(f"anystring:{api_key}".encode()).decode()
+    fname = name.split()[0] if name else ""
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.post(
+                f"https://{dc}.api.mailchimp.com/3.0/lists/{list_id}/members",
+                headers={"Authorization": f"Basic {auth}", "Content-Type": "application/json"},
+                json={"email_address": email, "status": "subscribed",
+                      "merge_fields": {"FNAME": fname}},
+            )
+            status = r.status
+            if status in (200, 201):
+                log.info("Mailchimp subscribe OK: %s", email)
+            elif status == 400:
+                body = await r.json()
+                if body.get("title") == "Member Exists":
+                    log.info("Mailchimp: %s already subscribed", email)
+                else:
+                    log.warning("Mailchimp subscribe failed (%s): %s", status, body.get("detail"))
+    except Exception as e:
+        log.warning("Mailchimp subscribe error: %s", e)
+
+
+async def _klaviyo_subscribe(email: str, name: str = "") -> None:
+    """Add subscriber to Klaviyo E-Mail-Liste."""
+    import aiohttp as _aio
+    api_key = os.getenv("KLAVIYO_API_KEY", "")
+    list_id = os.getenv("KLAVIYO_LIST_ID", "")
+    if not api_key or not list_id:
+        return
+    parts = name.split(" ", 1) if name else []
+    fname = parts[0] if parts else ""
+    lname = parts[1] if len(parts) > 1 else ""
+    payload = {
+        "data": {
+            "type": "profile-subscription-bulk-create-job",
+            "attributes": {
+                "profiles": {"data": [{
+                    "type": "profile",
+                    "attributes": {
+                        "email": email,
+                        "first_name": fname,
+                        "last_name": lname,
+                        "subscriptions": {"email": {"marketing": {"consent": "SUBSCRIBED"}}},
+                    },
+                }]},
+            },
+            "relationships": {"list": {"data": {"type": "list", "id": list_id}}},
+        }
+    }
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.post(
+                "https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs/",
+                headers={
+                    "Authorization": f"Klaviyo-API-Key {api_key}",
+                    "Content-Type": "application/json",
+                    "revision": "2024-10-15",
+                },
+                json=payload,
+            )
+            if r.status in (200, 201, 202):
+                log.info("Klaviyo subscribe OK: %s", email)
+            else:
+                body = await r.text()
+                log.warning("Klaviyo subscribe failed (%s): %s", r.status, body[:200])
+    except Exception as e:
+        log.warning("Klaviyo subscribe error: %s", e)
 
 
 async def handle_leads_list(req):
