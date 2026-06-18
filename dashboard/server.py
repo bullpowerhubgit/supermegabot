@@ -4358,7 +4358,7 @@ async def create_app():
     app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
     app.router.add_get("/api/content/stats",          handle_content_stats)
     app.router.add_post("/api/ingest",                handle_seo_ingest)
-    app.router.add_post("/api/lead",                  handle_lead_capture)
+    app.router.add_post("/api/lead",                  handle_universal_lead_capture)
     app.router.add_get("/master",                     handle_master_dashboard)
     app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
     app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
@@ -4933,7 +4933,7 @@ async def handle_master_dashboard(req):
     return web.Response(content_type="text/html", text=html_file.read_text())
 
 
-async def handle_lead_capture(req):
+async def handle_universal_lead_capture(req):
     """POST /api/lead — Universal lead capture from any source (Netlify forms, landing pages, etc.)
     Body: {email, first_name?, source?, product?}
     → saves to data/new_leads.json → picked up by task_lead_nurture → Klaviyo + email sequence
