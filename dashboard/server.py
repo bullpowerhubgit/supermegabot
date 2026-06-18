@@ -1637,15 +1637,33 @@ async def handle_digistore_ipn(req):
     try:
         # DS24 sends form-encoded POST data
         data = await req.post()
+
+        # sha_sign verification — DS24 IPN passphrase set in account Settings > IPN
+        passphrase = os.getenv("DIGISTORE24_IPN_PASSPHRASE", "")
+        if passphrase:
+            received_sign = (data.get("sha_sign") or "").upper()
+            fields = {k: v for k, v in data.items() if k != "sha_sign" and v}
+            sorted_values = "".join(fields[k] for k in sorted(fields.keys()))
+            computed_sign = hashlib.sha512((passphrase + sorted_values).encode()).hexdigest().upper()
+            if received_sign != computed_sign:
+                log.warning("DS24 IPN: sha_sign mismatch — spoofed request rejected, order_id=%s", data.get("order_id", "?"))
+                return web.Response(text="OK", status=200)  # Always 200 but don't process
+
         event_type   = data.get("event", data.get("order_status", "unknown"))
         order_id     = data.get("order_id", data.get("id", "?"))
         buyer_email  = data.get("buyer_email", data.get("email", "?"))
         product_id   = data.get("product_id", "?")
-        amount       = data.get("order_total", data.get("total", "0"))
         currency     = data.get("currency", "EUR")
         product_name = data.get("product_name", "Digistore24 Produkt")
 
-        log.info("DS24 IPN: event=%s order=%s email=%s amount=%s %s",
+        # Robust amount parsing (handles "10,50", "€10.50", etc.)
+        raw_amount = data.get("order_total", data.get("total", "0")) or "0"
+        try:
+            amount = float(str(raw_amount).replace(",", ".").replace("€", "").strip())
+        except (ValueError, TypeError):
+            amount = 0.0
+
+        log.info("DS24 IPN: event=%s order=%s email=%s amount=%.2f %s",
                  event_type, order_id, buyer_email, amount, currency)
 
         # Store in Supabase
@@ -1655,23 +1673,32 @@ async def handle_digistore_ipn(req):
             "order_id": order_id,
             "email": buyer_email,
             "product_id": product_id,
-            "amount": float(amount) if amount else 0.0,
+            "amount": amount,
             "currency": currency,
             "raw": dict(data),
         })
 
-        # Telegram notification on purchase
         if event_type in ("ipn_purchase", "purchase", "order_complete", "completed"):
             msg = (
                 f"💰 *KAUF! Digistore24*\n"
                 f"📦 {product_name}\n"
-                f"💵 {amount} {currency}\n"
+                f"💵 {amount:.2f} {currency}\n"
                 f"📧 {buyer_email}\n"
                 f"🆔 Order: {order_id}"
             )
             await _tg_notify(msg)
+            # Immediate funnel: push to Mailchimp + Klaviyo without waiting for scheduler
+            try:
+                from modules.ds24_funnel_automation import _add_to_mailchimp, _add_to_klaviyo
+                fname = data.get("buyer_firstname", data.get("first_name", ""))
+                lname = data.get("buyer_lastname", data.get("last_name", ""))
+                await _add_to_mailchimp(buyer_email, fname, lname, product_name)
+                await _add_to_klaviyo(buyer_email, fname, lname, product_name, f"{amount:.2f}")
+                log.info("DS24 IPN: immediate funnel sync done for %s", buyer_email)
+            except Exception as fe:
+                log.warning("DS24 IPN funnel sync failed: %s", fe)
         elif event_type in ("ipn_rebill", "rebill"):
-            msg = f"🔄 *Digistore24 Rebill*\n💵 {amount} {currency}\n📧 {buyer_email}"
+            msg = f"🔄 *Digistore24 Rebill*\n💵 {amount:.2f} {currency}\n📧 {buyer_email}"
             await _tg_notify(msg)
 
         return web.Response(text="OK", status=200)
@@ -2790,6 +2817,26 @@ async def handle_stripe_revenue(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_stripe_subscriptions(req):
+    try:
+        import stripe as _stripe
+        _stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "")
+        if not _stripe.api_key:
+            return web.json_response({"ok": False, "error": "STRIPE_SECRET_KEY not set"})
+        subs = _stripe.Subscription.list(limit=50, status="all")
+        data = [{"id": s.id, "status": s.status, "customer": s.customer,
+                 "amount": s.items.data[0].price.unit_amount / 100 if s.items.data else 0,
+                 "currency": s.items.data[0].price.currency if s.items.data else "eur",
+                 "interval": s.items.data[0].price.recurring.interval if s.items.data else "month",
+                 "created": s.created} for s in subs.auto_paging_iter()]
+        active = [s for s in data if s["status"] == "active"]
+        mrr = sum(s["amount"] for s in active)
+        return web.json_response({"ok": True, "subscriptions": data, "count": len(data),
+                                  "active": len(active), "mrr_eur": round(mrr, 2)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 _PLANS_MSG = """💰 *RudiBot Premium Pläne*
 
 🥉 *Starter — €49/Monat*
@@ -3104,6 +3151,25 @@ async def handle_shopify_revenue(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_shopify_products(req):
+    try:
+        import aiohttp as _aiohttp
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+        if not shop or not token:
+            return web.json_response({"ok": False, "error": "SHOPIFY_SHOP_DOMAIN / SHOPIFY_ADMIN_API_TOKEN not set"})
+        limit = int(req.rel_url.query.get("limit", "20"))
+        url = f"https://{shop}/admin/api/{version}/products.json?limit={limit}"
+        async with _aiohttp.ClientSession() as session:
+            async with session.get(url, headers={"X-Shopify-Access-Token": token}, timeout=_aiohttp.ClientTimeout(total=10)) as resp:
+                data = await resp.json()
+        products = data.get("products", [])
+        return web.json_response({"ok": True, "products": products, "count": len(products)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_stripe_webhook(req):
     try:
         payload = await req.read()
@@ -3193,6 +3259,26 @@ async def handle_google_revoke(req):
         from modules.google_oauth import revoke
         ok = await revoke()
         return web.json_response({"ok": ok})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_youtube_auth(req):
+    """Redirect to Google OAuth2 with YouTube write scopes."""
+    try:
+        from modules.google_oauth import get_youtube_auth_url
+        url = get_youtube_auth_url()
+        raise web.HTTPFound(url)
+    except web.HTTPFound:
+        raise
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_youtube_status(req):
+    try:
+        from modules.google_oauth import get_youtube_status
+        return web.json_response(await get_youtube_status())
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -4211,9 +4297,11 @@ async def create_app():
     app.router.add_get("/api/stripe/charges",         handle_stripe_charges)
     app.router.add_get("/api/stripe/customers",       handle_stripe_customers)
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
+    app.router.add_get("/api/stripe/subscriptions",   handle_stripe_subscriptions)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
     app.router.add_post("/api/shopify/order-webhook", handle_shopify_order_webhook_route)
     app.router.add_get("/api/shopify/orders",         handle_shopify_orders)
+    app.router.add_get("/api/shopify/products",       handle_shopify_products)
     app.router.add_get("/api/shopify/revenue",        handle_shopify_revenue)
     app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
     app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
@@ -4228,6 +4316,12 @@ async def create_app():
     app.router.add_get("/api/google/status",          handle_google_status)
     app.router.add_post("/api/google/refresh",        handle_google_refresh)
     app.router.add_post("/api/google/revoke",         handle_google_revoke)
+
+    # ── YouTube OAuth ─────────────────────────────────────────────────────────
+    app.router.add_get("/api/youtube/auth",           handle_youtube_auth)
+    app.router.add_get("/api/youtube/callback",       handle_google_callback)
+    app.router.add_get("/api/youtube/status",         handle_youtube_status)
+    app.router.add_post("/api/youtube/refresh",       handle_google_refresh)
 
     # ── Google Drive ──────────────────────────────────────────────────────────
     app.router.add_get("/api/drive/status",           handle_drive_status)
@@ -4264,6 +4358,7 @@ async def create_app():
     app.router.add_get("/api/facebook/status",        handle_facebook_status)
     app.router.add_post("/api/brutus/run",            handle_brutus_run)
     app.router.add_get("/api/brutus/status",          handle_brutus_status)
+    app.router.add_get("/api/offers",                 handle_offers)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -4907,6 +5002,44 @@ async def handle_revenue_summary(req):
         return web.json_response(results)
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_offers(req):
+    """GET /api/offers — current monetizable product offers."""
+    return web.json_response({
+        "offers": [
+            {
+                "name": "Shopify Brutal Tuning — Starter",
+                "price_eur": 297,
+                "type": "einmalig",
+                "description": "Audit + Top-3 Conversion-Fixes in 48h",
+                "cta_url": "https://t.me/bullpowerhub",
+            },
+            {
+                "name": "Shopify Brutal Tuning — Pro",
+                "price_eur": 197,
+                "type": "monatlich",
+                "description": "Monatliche Optimierungsrunde + Reports + Monitoring",
+                "cta_url": "https://t.me/bullpowerhub",
+            },
+            {
+                "name": "Revenue Alert System",
+                "price_eur": 97,
+                "type": "monatlich",
+                "description": "Telegram-Alerts, Umsatz-Dashboard, AI-Reports täglich",
+                "cta_url": "https://t.me/bullpowerhub",
+            },
+            {
+                "name": "Done-for-You Automation Setup",
+                "price_eur": 497,
+                "type": "einmalig",
+                "description": "Vollautomatischer Shopify+Telegram+Email-Funnel in 72h",
+                "cta_url": "https://t.me/bullpowerhub",
+            },
+        ],
+        "contact": "https://t.me/bullpowerhub",
+        "updated": "2026-06-19",
+    })
 
 
 async def handle_scheduler_status(req):
