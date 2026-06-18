@@ -436,6 +436,71 @@ async def run_email_check() -> str:
     )
 
 
+async def send_outreach_batch(leads: list) -> dict:
+    """Send proactive outreach emails to a list of leads via the primary Gmail account.
+
+    leads: list of dicts with at least {"email": "..."}, optionally {"first_name": "..."}
+    Returns: {"sent": N, "failed": N}
+    """
+    accounts = _accounts()
+    if not accounts:
+        log.warning("send_outreach_batch: no email accounts configured")
+        return {"sent": 0, "failed": 0}
+
+    sender = accounts[0]
+    replied = _load_replied()
+    sent = 0
+    failed = 0
+
+    subject = "Kostenloser Shopify-Audit für deinen Store | BullPower Hub"
+    body_template = (
+        "Hallo{name_part},\n\n"
+        "ich bin Rudolf von BullPower Hub — wir automatisieren Shopify-Stores mit KI.\n\n"
+        "Kurze Frage: Hast du gerade Probleme mit zu niedrigen Konversionsraten, "
+        "manuellem Content-Erstellen oder fehlender Sichtbarkeit auf Social Media?\n\n"
+        "Ich biete dir einen kostenlosen 15-Minuten-Audit an:\n"
+        "→ KI-Content-Analyse deiner Produktseiten\n"
+        "→ Konkrete Maßnahmen für sofortige Umsatzsteigerung\n"
+        "→ Kein Pitching — nur echter Mehrwert\n\n"
+        "Interesse? Einfach kurz antworten.\n\n"
+        "Mehr unter: https://bullpower-hub-portal.netlify.app\n\n"
+        "Beste Grüße,\n"
+        "Rudolf Sarkany | BullPower Hub | aiitec.online"
+    )
+
+    for lead in leads:
+        email = (lead.get("email") or "").strip().lower()
+        if not email or "@" not in email:
+            continue
+        guard_key = f"outreach:{email}"
+        if guard_key in replied:
+            continue  # already contacted
+
+        fname = (lead.get("first_name") or "").strip()
+        name_part = f" {fname}" if fname else ""
+        body = body_template.format(name_part=name_part)
+
+        ok = _send_reply(
+            sender_user=sender["user"],
+            sender_pw=sender["password"],
+            sender_name=sender["name"],
+            to_addr=email,
+            subject=subject,
+            body=body,
+            smtp_host=sender.get("smtp_host", "smtp.gmail.com"),
+        )
+        if ok:
+            replied.add(guard_key)
+            sent += 1
+            log.info("Outreach sent to %s", email)
+        else:
+            failed += 1
+
+    _save_replied(replied)
+    log.info("send_outreach_batch done: sent=%d failed=%d", sent, failed)
+    return {"sent": sent, "failed": failed}
+
+
 async def run_email_setup_check() -> str:
     """One-time: verify IMAP connectivity for all configured accounts."""
     accounts = _accounts()
