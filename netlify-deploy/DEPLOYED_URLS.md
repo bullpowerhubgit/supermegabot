@@ -18,3 +18,4 @@
 | bullpower-launcher | https://bullpower-launcher.netlify.app | OK |
 
 Passwort für alle: `bullpower2026`
+| bullpower-steuercockpit | https://bullpower-steuercockpit.netlify.app | OK |

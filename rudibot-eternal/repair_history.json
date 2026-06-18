@@ -2,11 +2,11 @@
   "03f4c35825a9": {
     "error_type": "server_down",
     "first_seen": "2026-05-24T01:51:25.256417",
-    "count": 26948,
+    "count": 37444,
     "successes": 0,
     "last_fix": null,
     "solutions": [],
-    "last_seen": "2026-06-13T11:21:10.347499"
+    "last_seen": "2026-06-17T18:33:52.730876"
   },
   "2774ddc5acbc": {
     "error_type": "missing_module",

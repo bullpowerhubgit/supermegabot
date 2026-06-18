@@ -10,7 +10,7 @@
 </head>
 <body>
   <h1>Subscription Assistant API</h1>
-  <p>Google OAuth, Gmail-Rechnungssuche, Calendar-Reminder und PayPal-Kuendigungswarteschlange. Standardmaessig im Dark Theme.</p>
+  <p>Google OAuth, Gmail-Rechnungssuche, Kostenoptimierung und PayPal-Kuendigungswarteschlange. Standardmaessig im Dark Theme.</p>
 
   <div id="monitorBanner" style="margin-bottom:16px;padding:12px 16px;border-radius:12px;font-weight:600;display:none"></div>
 
@@ -77,14 +77,6 @@
       <pre id="cancelOut"></pre>
     </div>
     <div class="card">
-      <h2>Kalender Erinnerung</h2>
-      <input id="remAccount" class="input" placeholder="verbundenes konto@gmail.com" />
-      <input id="remSummary" class="input" placeholder="Abo prüfen: Shopify App" />
-      <input id="remDate" class="input" type="datetime-local" />
-      <button class="btn" id="createReminder">Reminder erstellen</button>
-      <pre id="remOut"></pre>
-    </div>
-    <div class="card">
       <h2>PayPal Kündigungswarteschlange</h2>
       <select id="ppAction" class="select"><option value="suspend">Suspendieren</option><option value="cancel">Kündigen</option></select>
       <input id="ppSubId" class="input" placeholder="Subscription ID, z. B. I-XXXX" />
@@ -131,7 +123,7 @@
     if (!optimizerInput.value.trim()) optimizerInput.value = JSON.stringify(sampleOptimizerData, null, 2);
     if (!cancelInput.value.trim()) cancelInput.value = JSON.stringify(sampleOptimizerData[0], null, 2);
 
-    const googleInputs = [emailAccount, cryptoAccount, remAccount];
+    const googleInputs = [emailAccount, cryptoAccount];
     const popupFeatures = 'popup=yes,width=540,height=720,menubar=no,toolbar=no,location=yes,status=no';
 
     const renderGoogleState = (state) => {
@@ -252,7 +244,6 @@
         cancelOut.textContent = JSON.stringify({error:'invalid_json', message:error.message}, null, 2);
       }
     };
-    createReminder.onclick = async () => { const dateTime = new Date(remDate.value).toISOString(); const r = await j('/api/assistant/reminders', {method:'POST', body: JSON.stringify({account: remAccount.value, summary: remSummary.value, dateTime})}); remOut.textContent = JSON.stringify(r, null, 2); };
     addQueue.onclick = async () => { const q = await j('/api/assistant/queue', {method:'POST', body: JSON.stringify({action: ppAction.value, subscriptionId: ppSubId.value, reason: ppReason.value})}); queueOut.textContent = JSON.stringify(q, null, 2); };
     loadState.onclick = async () => { const s = await j('/api/assistant/state'); queueOut.textContent = JSON.stringify(s, null, 2); };
     window.addEventListener('message', async (event) => {
