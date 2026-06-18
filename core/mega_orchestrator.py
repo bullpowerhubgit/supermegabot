@@ -1070,6 +1070,14 @@ class CommandRouter:
     /guardian_restore <proj> [datum] - Restore
     /guardian_backups - Liste alle Backups
 
+  🖥️ MASTER DASHBOARD (alle 19 Dienste):
+    /dashboard          - Health-Check aller Railway-Dienste
+    /alle_dienste       - Liste aller Services + URLs
+    /revenue            - Revenue-Übersicht
+    /seo_push <keyword> - Keyword an SEO Engine pushen
+    /agent_status       - Alle autonomen Agenten
+    /deploy_status      - Kritische Dienste prüfen
+
   Kosten: 95% lokal (Ollama), 5% externe APIs"""
 
     async def _cmd_start(self, text: str, session_id: str) -> str:
