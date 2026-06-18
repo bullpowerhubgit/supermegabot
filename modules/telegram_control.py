@@ -93,17 +93,18 @@ def _call_dashboard(path: str, method: str = "GET", body: dict | None = None) ->
 
 def kb_main() -> list:
     return [
-        [{"text": "📊 System Status",  "callback_data": "menu:status"},
-         {"text": "🪖 Army Control",   "callback_data": "menu:army"}],
-        [{"text": "🔧 Services",        "callback_data": "menu:services"},
-         {"text": "🩺 Self-Repair",     "callback_data": "menu:repair"}],
-        [{"text": "📋 Logs",            "callback_data": "menu:logs"},
-         {"text": "⚡ Quick Actions",   "callback_data": "menu:actions"}],
-        [{"text": "🛒 Shopify",         "callback_data": "menu:shopify"},
-         {"text": "🤖 KI-Modelle",      "callback_data": "menu:models"}],
-        [{"text": "♾️ RudiBot Eternal", "callback_data": "menu:eternal"},
-         {"text": "🎙️ KIVO Voice",      "callback_data": "menu:kivo"}],
-        [{"text": "🛍️ Shopify AI Suite","callback_data": "menu:railway"}],
+        [{"text": "📊 System Status",    "callback_data": "menu:status"},
+         {"text": "💰 Monetization",     "callback_data": "menu:monetization"}],
+        [{"text": "🌐 SEO & Traffic",    "callback_data": "menu:seo"},
+         {"text": "🗂 Alle Projekte",    "callback_data": "menu:projects"}],
+        [{"text": "🪖 Army Control",     "callback_data": "menu:army"},
+         {"text": "🔧 Services",         "callback_data": "menu:services"}],
+        [{"text": "🩺 Self-Repair",      "callback_data": "menu:repair"},
+         {"text": "⚡ Quick Actions",    "callback_data": "menu:actions"}],
+        [{"text": "🛒 Shopify",          "callback_data": "menu:shopify"},
+         {"text": "♾️ Eternal Bot",      "callback_data": "menu:eternal"}],
+        [{"text": "📋 Logs",             "callback_data": "menu:logs"},
+         {"text": "🎙️ KIVO Voice",       "callback_data": "menu:kivo"}],
     ]
 
 def kb_back() -> list:
@@ -177,6 +178,27 @@ def kb_railway() -> list:
     ]
 
 
+def kb_monetization() -> list:
+    return [
+        [{"text": "👥 Leads anzeigen",     "callback_data": "money:leads"},
+         {"text": "💰 Revenue heute",       "callback_data": "money:revenue"}],
+        [{"text": "🔍 Audit-Seite öffnen", "url": "https://bullpower-lead.netlify.app"},
+         {"text": "💳 Stripe Dashboard",   "url": "https://dashboard.stripe.com"}],
+        [{"text": "📈 Portal öffnen",      "url": "https://bullpower-hub-portal.netlify.app"}],
+        [{"text": "◀️ Hauptmenü",          "callback_data": "menu:main"}],
+    ]
+
+
+def kb_seo() -> list:
+    return [
+        [{"text": "✍️ Artikel generieren", "callback_data": "seo:generate"},
+         {"text": "🏓 Sitemaps pingen",     "callback_data": "seo:ping"}],
+        [{"text": "📣 Social Drafts",       "callback_data": "seo:social"},
+         {"text": "📝 Blog ansehen",        "url": "https://shopify-automaton-suite.netlify.app/blog/"}],
+        [{"text": "◀️ Hauptmenü",           "callback_data": "menu:main"}],
+    ]
+
+
 def kb_projects() -> list:
     return [
         [{"text": "🤖 SuperMegaBot",        "callback_data": "proj:smb"},
@@ -219,8 +241,6 @@ def _check_railway_service(key: str) -> str:
         return f"{icon} <b>{name}</b>\n\nStatus: {status}{extra}\n🔗 <a href='{url}'>{url}</a>"
     except Exception as e:
         return f"🔴 <b>{name}</b>\n\nFehler: {str(e)[:120]}\n🔗 {url}"
-
-
 # ── Content Builder ──────────────────────────────────────────────────────────
 
 def _get_system_status() -> str:
@@ -660,6 +680,15 @@ def handle_callback(data: str, chat_id: str, message_id: int,
             edit_message(chat_id, message_id, _kivo_status(), kb_kivo())
         elif param == "railway":
             edit_message(chat_id, message_id, _railway_status(), kb_railway())
+        elif param == "monetization":
+            txt = "<b>💰 Monetization & Leads</b>\n\nLead-Funnel, Revenue & Stripe-Dashboard:"
+            edit_message(chat_id, message_id, txt, kb_monetization())
+        elif param == "seo":
+            txt = "<b>🌐 SEO & Traffic</b>\n\nAutomatisierte Content-Pipeline & Indexing:"
+            edit_message(chat_id, message_id, txt, kb_seo())
+        elif param == "projects":
+            txt = "<b>🗂 Alle Projekte</b>\n\nRudolfs aktive Projekte:"
+            edit_message(chat_id, message_id, txt, kb_projects())
 
     # ── Army Actions ─────────────────────────────────────────────────────────
     elif action == "army":
@@ -799,6 +828,44 @@ def handle_callback(data: str, chat_id: str, message_id: int,
                          f"ℹ️ Railway Logs sind nur im Railway Dashboard verfügbar:\n"
                          f"<code>railway logs</code> (CLI)\n"
                          f"Oder: {_SHOPIFY_SUITE_URL}/logs", kb_railway())
+
+    elif action == "money":
+        if param == "leads":
+            r = _call_dashboard("/api/leads")
+            leads = r.get("leads", [])
+            if leads:
+                lines = ["👥 <b>Letzte Leads:</b>", ""]
+                for lead in leads[:10]:
+                    lines.append(f"• {lead.get('email','?')} — {lead.get('source','?')} ({str(lead.get('created_at','?'))[:10]})")
+            else:
+                lines = ["Noch keine Leads."]
+            edit_message(chat_id, message_id, "\n".join(lines), kb_monetization())
+        elif param == "revenue":
+            r = _call_dashboard("/api/revenue/today")
+            txt = f"💰 <b>Revenue heute:</b> €{r.get('revenue_eur', 0):.2f}\n📋 Bestellungen: {r.get('orders', 0)}"
+            edit_message(chat_id, message_id, txt, kb_monetization())
+
+    elif action == "seo":
+        if param == "generate":
+            edit_message(chat_id, message_id, "⏳ Generiere SEO-Artikel… (dauert ~30s)", kb_back())
+            r = _call_dashboard("/api/seo/generate", method="POST")
+            url = r.get("url", "?")
+            txt = f"✅ <b>Artikel deployed!</b>\n\n🔗 <a href='{url}'>{url}</a>\n\nKeyword: {r.get('keyword','?')}"
+            edit_message(chat_id, message_id, txt, kb_seo())
+        elif param == "ping":
+            r = _call_dashboard("/api/seo/ping-sitemaps", method="POST")
+            txt = f"🏓 <b>Sitemap Pings:</b> {r.get('pinged', 0)} gesendet\nFehler: {len(r.get('errors', []))}"
+            edit_message(chat_id, message_id, txt, kb_seo())
+        elif param == "social":
+            edit_message(chat_id, message_id, "⏳ Generiere Social Drafts… (dauert ~20s)", kb_back())
+            r = _call_dashboard("/api/seo/social-drafts")
+            drafts = r.get("drafts", {})
+            lines = ["📣 <b>Social Drafts bereit:</b>", ""]
+            for platform, d in drafts.items():
+                title = d.get("title") or d.get("text", "")[:60]
+                lines.append(f"• <b>{platform}</b>: {title}…")
+            lines.append("\n👉 <a href='https://bullpower-hub-portal.netlify.app'>Portal</a>")
+            edit_message(chat_id, message_id, "\n".join(lines), kb_seo())
 
 
 def send_main_menu(chat_id: str) -> None:

@@ -2664,9 +2664,22 @@ async def _tg_send(bot_token: str, chat_id: int, text: str, reply_markup: dict =
 
 
 async def handle_telegram_webhook(req):
-    """Telegram webhook — processes incoming messages via Claude AI."""
+    """Telegram webhook — processes incoming messages and callback queries."""
     try:
         data = await req.json()
+
+        # Handle inline button presses (callback_query) first
+        cb = data.get("callback_query")
+        if cb:
+            cb_chat_id = str(cb["message"]["chat"]["id"])
+            cb_message_id = cb["message"]["message_id"]
+            cb_data = cb.get("data", "")
+            cb_id = cb["id"]
+            from modules.telegram_control import handle_callback
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, handle_callback, cb_data, cb_chat_id, cb_message_id, cb_id)
+            return web.Response(status=200)
+
         msg = data.get("message") or data.get("edited_message")
         if not msg:
             return web.Response(status=200)
@@ -2681,8 +2694,70 @@ async def handle_telegram_webhook(req):
         base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
 
         # --- Befehle ---
-        if text in ("/start", "/hilfe", "/help"):
-            await _tg_send(bot_token, chat_id, _WELCOME_MSG)
+        if text in ("/start", "/menu", "/dashboard", "/hilfe", "/help"):
+            from modules.telegram_control import send_main_menu
+            loop = asyncio.get_event_loop()
+            await loop.run_in_executor(None, send_main_menu, str(chat_id))
+            return web.Response(status=200)
+
+        if text in ("/leads",):
+            try:
+                async with aiohttp.ClientSession() as _s:
+                    async with _s.get("http://localhost:8888/api/leads") as _r:
+                        _d = await _r.json()
+                leads = _d.get("leads", [])
+                if leads:
+                    lines = ["👥 <b>Letzte Leads:</b>", ""]
+                    for lead in leads[:10]:
+                        lines.append(f"• {lead.get('email','?')} — {lead.get('source','?')} ({str(lead.get('created_at','?'))[:10]})")
+                    reply = "\n".join(lines)
+                else:
+                    reply = "Noch keine Leads."
+            except Exception as _e:
+                reply = f"❌ Leads nicht abrufbar: {_e}"
+            await _tg_send(bot_token, chat_id, reply)
+            return web.Response(status=200)
+
+        if text in ("/seo",):
+            await _tg_send(bot_token, chat_id, "⏳ Generiere SEO-Artikel… (dauert ~30s)")
+            try:
+                async with aiohttp.ClientSession() as _s:
+                    async with _s.post("http://localhost:8888/api/seo/generate") as _r:
+                        _d = await _r.json()
+                url = _d.get("url", "?")
+                reply = f"✅ <b>Artikel deployed!</b>\n🔗 {url}\nKeyword: {_d.get('keyword','?')}"
+            except Exception as _e:
+                reply = f"❌ SEO-Generierung fehlgeschlagen: {_e}"
+            await _tg_send(bot_token, chat_id, reply)
+            return web.Response(status=200)
+
+        if text in ("/social",):
+            await _tg_send(bot_token, chat_id, "⏳ Generiere Social Drafts… (dauert ~20s)")
+            try:
+                async with aiohttp.ClientSession() as _s:
+                    async with _s.get("http://localhost:8888/api/seo/social-drafts") as _r:
+                        _d = await _r.json()
+                drafts = _d.get("drafts", {})
+                lines = ["📣 <b>Social Drafts bereit:</b>", ""]
+                for platform, d in drafts.items():
+                    title = d.get("title") or d.get("text", "")[:60]
+                    lines.append(f"• <b>{platform}</b>: {title}…")
+                lines.append("\n👉 bullpower-hub-portal.netlify.app")
+                reply = "\n".join(lines)
+            except Exception as _e:
+                reply = f"❌ Social Drafts fehlgeschlagen: {_e}"
+            await _tg_send(bot_token, chat_id, reply)
+            return web.Response(status=200)
+
+        if text in ("/ping",):
+            try:
+                async with aiohttp.ClientSession() as _s:
+                    async with _s.post("http://localhost:8888/api/seo/ping-sitemaps") as _r:
+                        _d = await _r.json()
+                reply = f"🏓 <b>Sitemap Pings:</b> {_d.get('pinged', 0)} gesendet\nFehler: {len(_d.get('errors', []))}"
+            except Exception as _e:
+                reply = f"❌ Ping fehlgeschlagen: {_e}"
+            await _tg_send(bot_token, chat_id, reply)
             return web.Response(status=200)
 
         if text in ("/shopify", "/shop", "/status"):
@@ -2787,6 +2862,49 @@ async def handle_checkout_success(req):
             pass
     html = "<html><body style='font-family:sans-serif;text-align:center;padding:50px'><h1>✅ Zahlung erfolgreich!</h1><p>Gehe zurück zu Telegram und schreib @RudiCludiBot</p></body></html>"
     return web.Response(text=html, content_type="text/html")
+
+
+async def handle_telegram_setup(req):
+    """GET /api/telegram/setup — Register bot commands + webhook with Telegram API."""
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "") or os.getenv("TELEGRAM_BOT_TOKEN_2", "")
+    if not token:
+        return web.json_response({"ok": False, "error": "No TELEGRAM_BOT_TOKEN configured"})
+
+    base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
+    results = {}
+
+    async with aiohttp.ClientSession() as session:
+        # 1. Set webhook
+        webhook_url = f"{base_url}/api/telegram/webhook"
+        async with session.post(
+            f"https://api.telegram.org/bot{token}/setWebhook",
+            json={"url": webhook_url, "allowed_updates": ["message", "callback_query", "edited_message"]}
+        ) as r:
+            results["setWebhook"] = await r.json()
+
+        # 2. Set commands
+        commands = [
+            {"command": "start",     "description": "🏠 Hauptmenü öffnen"},
+            {"command": "menu",      "description": "📋 Dashboard Menü"},
+            {"command": "dashboard", "description": "📊 System Dashboard"},
+            {"command": "leads",     "description": "👥 Letzte Leads anzeigen"},
+            {"command": "revenue",   "description": "💰 Umsatz heute"},
+            {"command": "seo",       "description": "✍️ SEO Artikel generieren"},
+            {"command": "social",    "description": "📣 Social Media Drafts"},
+            {"command": "status",    "description": "🟢 System Status"},
+            {"command": "shopify",   "description": "🛒 Shopify Status"},
+            {"command": "ping",      "description": "🏓 Sitemaps pingen"},
+            {"command": "orders",    "description": "📦 Letzte Bestellungen"},
+            {"command": "premium",   "description": "💳 Abo-Pläne"},
+        ]
+        async with session.post(
+            f"https://api.telegram.org/bot{token}/setMyCommands",
+            json={"commands": commands}
+        ) as r:
+            results["setMyCommands"] = await r.json()
+
+    log.info("Telegram setup completed: %s", results)
+    return web.json_response({"ok": True, "results": results, "webhook": webhook_url})
 
 
 async def handle_shopify_order_webhook_route(req):
@@ -3923,6 +4041,8 @@ async def create_app():
     app.router.add_get("/api/shopify/revenue",        handle_shopify_revenue)
     app.router.add_post("/webhook/telegram",          handle_telegram_webhook)
     app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
+    app.router.add_post("/api/telegram/webhook",      handle_telegram_webhook)
+    app.router.add_get("/api/telegram/setup",         handle_telegram_setup)
     app.router.add_get("/checkout",                   handle_checkout_page)
     app.router.add_get("/checkout/success",           handle_checkout_success)
 
@@ -3969,6 +4089,20 @@ async def create_app():
     # Start daily SEO blog content pipeline
     asyncio.create_task(_run_seo_loop())
     log.info("SEO blog content pipeline started")
+
+    # Auto-configure Telegram webhook + commands on startup
+    async def _setup_tg_on_start():
+        await asyncio.sleep(5)  # wait for server to be ready
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("http://localhost:8888/api/telegram/setup") as r:
+                    result = await r.json()
+                    log.info("Telegram setup: %s", result)
+        except Exception as e:
+            log.warning("Telegram setup failed: %s", e)
+
+    asyncio.create_task(_setup_tg_on_start())
+    log.info("Telegram auto-setup task scheduled")
 
     return app
 
