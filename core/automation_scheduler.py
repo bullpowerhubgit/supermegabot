@@ -775,6 +775,26 @@ async def task_drive_backup() -> str:
         return f"Drive Backup Fehler: {e}"
 
 
+async def task_content_cycle() -> str:
+    """SEO-Artikel + alle Social-Inhalte generieren. ContentHub Monorepo-Task."""
+    try:
+        from modules.content_hub import run_content_cycle, init_db as _init_content
+        _init_content()
+        return await run_content_cycle()
+    except Exception as e:
+        return f"ContentHub Fehler: {e}"
+
+
+async def task_freelance_cycle() -> str:
+    """Fiverr Gig + Upwork Proposals generieren. ContentHub Monorepo-Task."""
+    try:
+        from modules.content_hub import run_freelance_cycle, init_db as _init_content
+        _init_content()
+        return await run_freelance_cycle()
+    except Exception as e:
+        return f"FreelanceCycle Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -817,6 +837,9 @@ TASKS = [
     # ── Stripe & Drive ───────────────────────────────────────────────────────
     ("stripe_monitor",          task_stripe_monitor,          1800,   25),   # 30 min
     ("drive_backup",            task_drive_backup,            86400,  360),  # daily
+    # ── ContentHub (integriert alle 5 Content-Engines) ────────────────────
+    ("content_cycle",           task_content_cycle,           21600,  400),  # 6h — SEO+Social+Twitter+FB
+    ("freelance_cycle",         task_freelance_cycle,         43200,  420),  # 12h — Fiverr+Upwork
 ]
 
 

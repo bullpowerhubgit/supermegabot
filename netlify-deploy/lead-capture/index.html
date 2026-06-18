@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kostenloser Shopify-Audit — BullPower Hub</title>
+<meta name="description" content="Lass deinen Shopify-Shop kostenlos analysieren. KI findet Optimierungspotenzial in Minuten — Produktbeschreibungen, SEO, Preise, Fulfillment.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://bullpower-lead.netlify.app/">
+<script defer data-domain="bullpower-lead.netlify.app" src="https://plausible.io/js/script.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a0a0f;color:#f0f0ff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:1rem}
+.card{background:#13131f;border:1px solid rgba(139,92,246,0.25);border-radius:24px;padding:2.5rem 2rem;width:100%;max-width:480px;box-shadow:0 0 80px rgba(139,92,246,0.12)}
+.logo{width:48px;height:48px;background:linear-gradient(135deg,#8b5cf6,#6d28d9);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin:0 auto 1.2rem}
+.badge{display:inline-block;background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.3);border-radius:20px;padding:.3rem .9rem;font-size:.8rem;font-weight:600;margin-bottom:1rem;text-align:center;width:100%}
+h1{font-size:1.7rem;font-weight:900;text-align:center;margin-bottom:.5rem;letter-spacing:-.02em}
+h1 span{background:linear-gradient(135deg,#a78bfa,#7c3aed);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.sub{text-align:center;color:#94a3b8;font-size:.95rem;margin-bottom:2rem;line-height:1.5}
+.benefits{list-style:none;margin-bottom:2rem;display:flex;flex-direction:column;gap:.65rem}
+.benefits li{display:flex;align-items:flex-start;gap:.6rem;font-size:.9rem;color:#cbd5e1}
+.benefits li::before{content:"✓";color:#a78bfa;font-weight:700;flex-shrink:0;margin-top:.05rem}
+label{display:block;font-size:.85rem;color:#94a3b8;margin-bottom:.4rem;font-weight:500}
+input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:.85rem 1rem;color:#f0f0ff;font-size:.95rem;outline:none;transition:border-color .2s;margin-bottom:1rem}
+input:focus{border-color:#8b5cf6}
+input::placeholder{color:#475569}
+.btn{width:100%;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;border:none;border-radius:12px;padding:1rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.01em}
+.btn:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(139,92,246,0.4)}
+.btn:disabled{opacity:.6;cursor:not-allowed;transform:none}
+.note{text-align:center;font-size:.78rem;color:#475569;margin-top:1rem}
+.success{display:none;text-align:center;padding:1.5rem 0}
+.success .icon{font-size:3rem;margin-bottom:1rem}
+.success h2{font-size:1.3rem;font-weight:800;margin-bottom:.5rem}
+.success p{color:#94a3b8;font-size:.9rem;line-height:1.6;margin-bottom:1.5rem}
+.success a{display:inline-block;background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;text-decoration:none;border-radius:12px;padding:.85rem 1.8rem;font-weight:700;font-size:.95rem}
+.err{color:#ef4444;font-size:.85rem;margin-top:-.5rem;margin-bottom:.75rem;display:none}
+</style>
+</head>
+<body>
+<div class="card">
+  <div id="form-section">
+    <div class="logo">🔍</div>
+    <div class="badge">100% kostenlos — kein Kreditkarte nötig</div>
+    <h1>Dein <span>Shopify-Audit</span><br>in 60 Sekunden</h1>
+    <p class="sub">KI analysiert deinen Shop kostenlos auf Optimierungspotenzial bei Produktbeschreibungen, SEO, Preisen und Conversion.</p>
+    <ul class="benefits">
+      <li>Fehlende SEO-Tags in Produktbeschreibungen finden</li>
+      <li>Preisoptimierung auf Basis von Marktdaten</li>
+      <li>Fulfillment-Engpässe im Lagerbestand erkennen</li>
+      <li>Content-Lücken die Conversion kosten</li>
+      <li>Dein persönlicher Aktionsplan per E-Mail</li>
+    </ul>
+
+    <label for="email">E-Mail-Adresse</label>
+    <input type="email" id="email" placeholder="deine@email.com" required>
+
+    <label for="name">Dein Name (optional)</label>
+    <input type="text" id="name" placeholder="Vorname">
+
+    <label for="domain">Shopify-Domain (optional)</label>
+    <input type="text" id="domain" placeholder="meinshop.myshopify.com">
+
+    <p class="err" id="err">Bitte gib eine gültige E-Mail ein.</p>
+
+    <button class="btn" id="btn" onclick="submitLead()">
+      🔍 Kostenlosen Audit starten
+    </button>
+    <p class="note">Kein Spam. Kein Abo. Nur dein Audit-Ergebnis.</p>
+  </div>
+
+  <div class="success" id="success-section">
+    <div class="icon">🚀</div>
+    <h2>Audit läuft!</h2>
+    <p>Wir analysieren deinen Shop gerade. Du bekommst dein persönliches Ergebnis innerhalb von 24 Stunden per E-Mail.<br><br>
+    Möchtest du sofort starten? Mit dem Bundle hast du alle 8 KI-Tools direkt verfügbar — 14 Tage kostenlos.</p>
+    <a href="https://buy.stripe.com/7sY5kFbrIemmcYU0Oi4F20o" target="_blank">⚡ 14 Tage kostenlos testen</a>
+  </div>
+</div>
+
+<script>
+async function submitLead() {
+  const email = document.getElementById('email').value.trim();
+  const name = document.getElementById('name').value.trim();
+  const domain = document.getElementById('domain').value.trim();
+  const btn = document.getElementById('btn');
+  const err = document.getElementById('err');
+
+  err.style.display = 'none';
+  if (!email || !email.includes('@')) {
+    err.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Wird gesendet…';
+
+  try {
+    const res = await fetch('https://dudirudibot-mega-production.up.railway.app/api/leads', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ email, name, shopify_domain: domain, source: 'shopify-audit-page' })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      document.getElementById('form-section').style.display = 'none';
+      document.getElementById('success-section').style.display = 'block';
+    } else {
+      throw new Error(data.error || 'Fehler');
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '🔍 Kostenlosen Audit starten';
+    err.textContent = 'Fehler: ' + e.message + ' — bitte nochmal versuchen.';
+    err.style.display = 'block';
+  }
+}
+document.getElementById('email').addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitLead();
+});
+</script>
+</body>
+</html>
