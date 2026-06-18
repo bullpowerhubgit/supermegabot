@@ -4317,11 +4317,15 @@ async def handle_leads_list(req):
         async with _aio.ClientSession() as s:
             r = await s.get(
                 f"{url}/rest/v1/leads?order=created_at.desc&limit=50",
-                headers={"apikey": auth_key, "Authorization": f"Bearer {auth_key}"},
+                headers={
+                    "apikey": auth_key,
+                    "Authorization": f"Bearer {auth_key}",
+                    "Accept-Profile": "public",
+                },
                 timeout=_aio.ClientTimeout(total=8)
             )
             data = await r.json()
-        return web.json_response({"ok": True, "count": len(data), "leads": data})
+        return web.json_response({"ok": True, "count": len(data) if isinstance(data, list) else 0, "leads": data})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -4660,7 +4664,7 @@ if __name__ == "__main__":
                             wh_url = f"{base}/webhook/telegram"
                             r = await _s.post(
                                 f"https://api.telegram.org/bot{tok}/setWebhook",
-                                json={"url": wh_url, "allowed_updates": ["message", "edited_message"]}
+                                json={"url": wh_url, "allowed_updates": ["message", "edited_message", "callback_query"]}
                             )
                             result = await r.json()
                             log.info("Telegram webhook set (%s): %s → %s", token_env, wh_url, result.get("description",""))
