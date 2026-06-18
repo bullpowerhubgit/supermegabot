@@ -1,14 +1,21 @@
 """
-EmailBrain — Vollautonomes Email-Management für alle Konten.
+EmailBrain — Vollautonomes Email-Management für alle 7 Konten.
 
-Funktionen:
-- IMAP polling (Gmail bullpowersrtkennels@ + aiitecbuuss@)
-- KI-Klassifizierung (Claude): Priorität / Kategorie / Antwort nötig?
-- Automatische Antworten für Kundenanfragen, Business-Kontakte, Support
-- Label-Verwaltung: Priority / Newsletter / Spam / Beantwortet / Archiv
-- Duplicate-Guard: replied_ids.json verhindert Doppel-Antworten
-- Telegram-Notification bei dringenden Mails
-- Täglicher Summary-Report an Telegram
+Konten:
+  dragonadnp@gmail.com         (Sarkany Timea)
+  nikolestimi@gmail.com
+  bullpowersrtkennels@gmail.com
+  looopwave@gmail.com
+  aitecbuuss@gmail.com
+  rudolf.sarkany@aitec.de      (custom domain — IMAP_HOST_6 konfigurierbar)
+  rudolf.sarkany.aiitec@gmail.com
+
+Env-Vars Schema:
+  GMAIL_USER_1 … GMAIL_USER_7
+  GMAIL_APP_PASSWORD_1 … GMAIL_APP_PASSWORD_7
+  GMAIL_DISPLAY_NAME_1 … GMAIL_DISPLAY_NAME_7   (optional)
+  IMAP_HOST_1 … IMAP_HOST_7                     (optional, default: imap.gmail.com)
+  SMTP_HOST_1 … SMTP_HOST_7                     (optional, default: smtp.gmail.com)
 """
 
 from __future__ import annotations
@@ -41,25 +48,45 @@ STATS_FILE   = DATA_DIR / "email_stats.json"
 
 # ── Account config ────────────────────────────────────────────────────────────
 
+# Default display names per known address
+_DEFAULT_NAMES = {
+    "dragonadnp@gmail.com":              "Sarkany Timea",
+    "nikolestimi@gmail.com":             "Nikole Stimi",
+    "bullpowersrtkennels@gmail.com":     "Rudolf Sarkany — BullPower Hub",
+    "looopwave@gmail.com":               "Loopwave — BullPower Hub",
+    "aiitecbuuss@gmail.com":             "AIITEC — BullPower Hub",
+    "rudolf.sarkany@aitec.de":           "Rudolf Sarkany — AIITEC",
+    "rudolf.sarkany.aiitec@gmail.com":   "Rudolf Sarkany — AIITEC",
+}
+
+
 def _accounts() -> list[dict]:
-    """Return configured Gmail accounts from env vars."""
+    """Return all configured email accounts from GMAIL_USER_1..7 env vars."""
     accounts = []
-    for idx in ["", "_2"]:
-        user = os.getenv(f"GMAIL_USER{idx}", "")
-        pw   = os.getenv(f"GMAIL_APP_PASSWORD{idx}", "")
-        name = os.getenv(f"GMAIL_DISPLAY_NAME{idx}", "Rudolf Sarkany — BullPower Hub")
-        if user and pw:
-            accounts.append({"user": user, "password": pw, "name": name})
-    # Fallback: at least show config missing warning
+    for i in range(1, 8):
+        user = os.getenv(f"GMAIL_USER_{i}", "")
+        pw   = os.getenv(f"GMAIL_APP_PASSWORD_{i}", "")
+        if not user or not pw:
+            continue
+        name      = os.getenv(f"GMAIL_DISPLAY_NAME_{i}", _DEFAULT_NAMES.get(user.lower(), "Rudolf Sarkany"))
+        imap_host = os.getenv(f"IMAP_HOST_{i}", "imap.gmail.com")
+        smtp_host = os.getenv(f"SMTP_HOST_{i}", "smtp.gmail.com")
+        accounts.append({
+            "user": user,
+            "password": pw,
+            "name": name,
+            "imap_host": imap_host,
+            "smtp_host": smtp_host,
+        })
     if not accounts:
-        log.warning("No Gmail accounts configured. Set GMAIL_USER + GMAIL_APP_PASSWORD in .env")
+        log.warning("No email accounts configured. Set GMAIL_USER_1..7 + GMAIL_APP_PASSWORD_1..7 in Railway.")
     return accounts
 
 
 # ── IMAP helpers ──────────────────────────────────────────────────────────────
 
-def _imap_connect(user: str, password: str) -> imaplib.IMAP4_SSL:
-    mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+def _imap_connect(user: str, password: str, host: str = "imap.gmail.com") -> imaplib.IMAP4_SSL:
+    mail = imaplib.IMAP4_SSL(host, 993)
     mail.login(user, password)
     return mail
 
@@ -124,7 +151,7 @@ def _gmail_archive(mail: imaplib.IMAP4_SSL, uid: str):
 
 def _send_reply(sender_user: str, sender_pw: str, sender_name: str,
                 to_addr: str, subject: str, body: str,
-                in_reply_to: str = "") -> bool:
+                in_reply_to: str = "", smtp_host: str = "smtp.gmail.com") -> bool:
     try:
         msg = MIMEMultipart("alternative")
         msg["From"]    = f"{sender_name} <{sender_user}>"
@@ -136,12 +163,12 @@ def _send_reply(sender_user: str, sender_pw: str, sender_name: str,
         msg.attach(MIMEText(body, "plain", "utf-8"))
 
         ctx = ssl.create_default_context()
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=ctx) as server:
+        with smtplib.SMTP_SSL(smtp_host, 465, context=ctx) as server:
             server.login(sender_user, sender_pw)
             server.sendmail(sender_user, to_addr, msg.as_string())
         return True
     except Exception as e:
-        log.error(f"SMTP send failed: {e}")
+        log.error(f"SMTP send failed ({sender_user}): {e}")
         return False
 
 
@@ -252,13 +279,15 @@ def _save_replied(ids: set):
 # ── Core: process one account ─────────────────────────────────────────────────
 
 async def _process_account(account: dict, replied: set) -> dict:
-    user = account["user"]
-    pw   = account["password"]
-    name = account["name"]
+    user      = account["user"]
+    pw        = account["password"]
+    name      = account["name"]
+    imap_host = account.get("imap_host", "imap.gmail.com")
+    smtp_host = account.get("smtp_host", "smtp.gmail.com")
     stats = {"processed": 0, "replied": 0, "labeled": 0, "archived": 0, "alerts": 0}
 
     try:
-        mail = _imap_connect(user, pw)
+        mail = _imap_connect(user, pw, imap_host)
     except Exception as e:
         log.error(f"IMAP login failed for {user}: {e}")
         return stats
@@ -303,7 +332,7 @@ async def _process_account(account: dict, replied: set) -> dict:
             _, from_addr = parseaddr(m["from"])
             if do_reply and draft and from_addr and from_addr != user:
                 sent = _send_reply(user, pw, name, from_addr,
-                                   m["subject"], draft, m["msg_id"])
+                                   m["subject"], draft, m["msg_id"], smtp_host)
                 if sent:
                     stats["replied"] += 1
                     replied.add(msg_id)
@@ -415,7 +444,7 @@ async def run_email_setup_check() -> str:
     for acc in accounts:
         user = acc["user"]
         try:
-            mail = _imap_connect(user, acc["password"])
+            mail = _imap_connect(user, acc["password"], acc.get("imap_host", "imap.gmail.com"))
             mail.select("INBOX")
             _, data = mail.search(None, "UNSEEN")
             unread = len(data[0].split()) if data[0] else 0
