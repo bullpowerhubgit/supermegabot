@@ -1631,6 +1631,54 @@ async def handle_digistore_orders(req):
         return web.json_response({"orders": [], "error": str(e)})
 
 
+async def handle_digistore_ipn(req):
+    """POST /api/digistore24/ipn — receive Digistore24 purchase notifications."""
+    try:
+        # DS24 sends form-encoded POST data
+        data = await req.post()
+        event_type   = data.get("event", data.get("order_status", "unknown"))
+        order_id     = data.get("order_id", data.get("id", "?"))
+        buyer_email  = data.get("buyer_email", data.get("email", "?"))
+        product_id   = data.get("product_id", "?")
+        amount       = data.get("order_total", data.get("total", "0"))
+        currency     = data.get("currency", "EUR")
+        product_name = data.get("product_name", "Digistore24 Produkt")
+
+        log.info("DS24 IPN: event=%s order=%s email=%s amount=%s %s",
+                 event_type, order_id, buyer_email, amount, currency)
+
+        # Store in Supabase
+        await _sb_insert("lead_events", {
+            "source": "digistore24",
+            "event_type": event_type,
+            "order_id": order_id,
+            "email": buyer_email,
+            "product_id": product_id,
+            "amount": float(amount) if amount else 0.0,
+            "currency": currency,
+            "raw": dict(data),
+        })
+
+        # Telegram notification on purchase
+        if event_type in ("ipn_purchase", "purchase", "order_complete", "completed"):
+            msg = (
+                f"💰 *KAUF! Digistore24*\n"
+                f"📦 {product_name}\n"
+                f"💵 {amount} {currency}\n"
+                f"📧 {buyer_email}\n"
+                f"🆔 Order: {order_id}"
+            )
+            await _tg_notify(msg)
+        elif event_type in ("ipn_rebill", "rebill"):
+            msg = f"🔄 *Digistore24 Rebill*\n💵 {amount} {currency}\n📧 {buyer_email}"
+            await _tg_notify(msg)
+
+        return web.Response(text="OK", status=200)
+    except Exception as e:
+        log.error("DS24 IPN error: %s", e)
+        return web.Response(text="OK", status=200)  # Always 200 to DS24
+
+
 async def handle_mailchimp_status(req):
     try:
         from modules.mailchimp_automation import ping, get_lists
@@ -1655,49 +1703,142 @@ async def handle_mailchimp_sync(req):
 
 
 async def handle_mailchimp_campaign(req):
-    """Create and send a Mailchimp campaign."""
+    """POST /api/mailchimp/campaign — create a Mailchimp cold email campaign (BullPower Hub)."""
     try:
-        data = await req.json()
-        from modules.mailchimp_automation import ping, get_lists
-        ok, account = await ping()
-        if not ok:
-            return web.json_response({"ok": False, "error": "Mailchimp nicht konfiguriert"})
-        import aiohttp, os
-        key    = os.getenv("MAILCHIMP_API_KEY", "")
-        prefix = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
-        if "-" in key:
-            prefix = key.split("-")[-1]
-        base = f"https://{prefix}.api.mailchimp.com/3.0"
-        headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
-        lists = await get_lists()
-        list_id = data.get("list_id") or (lists[0]["id"] if lists else "")
-        if not list_id:
-            return web.json_response({"ok": False, "error": "Keine Mailchimp-Liste gefunden"})
-        campaign_body = {
-            "type": "regular",
-            "recipients": {"list_id": list_id},
-            "settings": {
-                "subject_line": data.get("subject", "SuperMegaBot Newsletter"),
-                "from_name":    data.get("from_name", "SuperMegaBot"),
-                "reply_to":     data.get("reply_to", "noreply@supermegabot.com"),
-            },
-        }
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-            async with s.post(f"{base}/campaigns", headers=headers, json=campaign_body) as r:
-                if r.status not in (200, 201):
-                    body = await r.text()
-                    return web.json_response({"ok": False, "error": f"HTTP {r.status}: {body[:200]}"})
-                camp = await r.json()
-            camp_id = camp["id"]
-            content_body = {"html": data.get("body_html", "<p>Hallo!</p>")}
-            async with s.put(f"{base}/campaigns/{camp_id}/content", headers=headers, json=content_body) as r:
-                if r.status not in (200, 204):
-                    return web.json_response({"ok": False, "error": "Content-Upload fehlgeschlagen"})
-            async with s.post(f"{base}/campaigns/{camp_id}/actions/send", headers=headers) as r:
-                if r.status not in (200, 204):
-                    return web.json_response({"ok": False, "error": "Senden fehlgeschlagen"})
-        return web.json_response({"ok": True, "campaign_id": camp_id, "subject": data.get("subject")})
+        body = await req.json()
+    except Exception:
+        body = {}
+
+    mc_key = os.getenv("MAILCHIMP_API_KEY", "")
+    mc_server = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
+    if not mc_key:
+        return web.json_response({"ok": False, "error": "MAILCHIMP_API_KEY not set"})
+    # auto-detect server prefix from key suffix (e.g. key ending in -us17)
+    if "-" in mc_key:
+        mc_server = mc_key.split("-")[-1]
+
+    base_url = f"https://{mc_server}.api.mailchimp.com/3.0"
+    headers = {"Authorization": f"Bearer {mc_key}", "Content-Type": "application/json"}
+
+    try:
+        async with aiohttp.ClientSession() as s:
+            # 1. Get audience list
+            async with s.get(f"{base_url}/lists?count=1", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                lists_data = await r.json()
+
+            lists = lists_data.get("lists", [])
+            if not lists:
+                return web.json_response({"ok": False, "error": "No Mailchimp audience found. Create one at mailchimp.com first."})
+
+            list_id = body.get("list_id") or lists[0]["id"]
+            list_name = lists[0]["name"]
+
+            # 2. Create campaign
+            subject = body.get("subject", "Dein Shopify-Shop läuft auf 60% — KI holt den Rest raus")
+            campaign_payload = {
+                "type": "regular",
+                "recipients": {"list_id": list_id},
+                "settings": {
+                    "subject_line": subject,
+                    "preview_text": "Kostenloser Shop-Audit zeigt was du liegen lässt",
+                    "title": f"BullPower Campaign {datetime.now().strftime('%Y-%m-%d')}",
+                    "from_name": "Rudolf — BullPower Hub",
+                    "reply_to": "bullpowersrtkennels@gmail.com",
+                }
+            }
+            async with s.post(f"{base_url}/campaigns", headers=headers, json=campaign_payload, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                campaign = await r.json()
+
+            if "id" not in campaign:
+                return web.json_response({"ok": False, "error": str(campaign)[:200]})
+
+            campaign_id = campaign["id"]
+
+            # 3. Set email content (rich HTML + plain text)
+            html_body = """<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+  body{font-family:-apple-system,Arial,sans-serif;background:#f5f5f5;margin:0;padding:0}
+  .wrap{max-width:600px;margin:0 auto;background:#fff;padding:40px}
+  h1{color:#1a1a2e;font-size:24px;margin-bottom:8px}
+  p{color:#444;line-height:1.7;font-size:15px}
+  .cta{display:inline-block;background:#8b5cf6;color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:700;font-size:16px;margin:20px 0}
+  .box{background:#f9f7ff;border-left:4px solid #8b5cf6;padding:16px 20px;margin:20px 0;border-radius:4px}
+  .footer{color:#888;font-size:12px;margin-top:40px;border-top:1px solid #eee;padding-top:20px}
+</style></head>
+<body><div class="wrap">
+  <h1>Hallo,</h1>
+  <p>ich bin Rudolf aus Wien — ich baue KI-Tools für Shopify-Händler.</p>
+  <p>Die meisten Shops lassen 30–40% Umsatz auf dem Tisch, weil Produktbeschreibungen fehlen, SEO-Tags falsch gesetzt sind und Preise nicht marktgerecht optimiert werden.</p>
+  <div class="box">
+    <strong>Was ich dir anbiete:</strong><br><br>
+    Ich analysiere deinen Shopify-Shop <strong>kostenlos</strong> mit KI — Produktbeschreibungen, SEO, Preise, Conversion-Optimierung. Du bekommst einen konkreten Aktionsplan innerhalb von 24 Stunden.
+  </div>
+  <a href="https://bullpower-lead.netlify.app" class="cta">Kostenlosen Audit anfordern →</a>
+  <p>Keine Kosten, kein Abo, kein Risiko. Nur ein ehrliches Audit was dir zeigt wo dein Shop Geld verliert.</p>
+  <p>Wenn dir der Audit gefällt und du die Tools nutzen willst: BullPower Hub gibt dir alle 8 KI-Automatisierungs-Tools für €49/Monat — 14 Tage kostenlos testen.</p>
+  <a href="https://bullpower-hub-portal.netlify.app" style="color:#8b5cf6">→ Alle Tools ansehen</a>
+  <div class="footer">
+    Rudolf Sarkany · Wien, Österreich<br>
+    <a href="*|UNSUB|*" style="color:#888">Abmelden</a>
+  </div>
+</div></body></html>"""
+
+            plain_text = (
+                "Hallo,\n\n"
+                "ich bin Rudolf aus Wien — ich baue KI-Tools für Shopify-Händler.\n\n"
+                "Die meisten Shops lassen 30-40% Umsatz auf dem Tisch durch fehlende SEO-Optimierung.\n\n"
+                "Kostenlosen Shop-Audit anfordern: https://bullpower-lead.netlify.app\n\n"
+                "Rudolf Sarkany\n"
+                "BullPower Hub — https://bullpower-hub-portal.netlify.app"
+            )
+
+            content_payload = {"html": html_body, "plain_text": plain_text}
+            async with s.put(f"{base_url}/campaigns/{campaign_id}/content", headers=headers, json=content_payload, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                await r.json()
+
+        log.info("Mailchimp campaign created: %s subject=%s list=%s", campaign_id, subject, list_id)
+        return web.json_response({
+            "ok": True,
+            "campaign_id": campaign_id,
+            "list_id": list_id,
+            "list_name": list_name,
+            "subject": subject,
+            "status": campaign.get("status"),
+            "note": "Campaign created. POST to /api/mailchimp/send with campaign_id to send.",
+        })
     except Exception as e:
+        log.error("Mailchimp campaign error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mailchimp_send(req):
+    """POST /api/mailchimp/send — send a prepared Mailchimp campaign."""
+    try:
+        body = await req.json()
+        campaign_id = body.get("campaign_id", "")
+        if not campaign_id:
+            return web.json_response({"ok": False, "error": "campaign_id required"})
+
+        mc_key = os.getenv("MAILCHIMP_API_KEY", "")
+        mc_server = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
+        if not mc_key:
+            return web.json_response({"ok": False, "error": "MAILCHIMP_API_KEY not set"})
+        if "-" in mc_key:
+            mc_server = mc_key.split("-")[-1]
+
+        base_url = f"https://{mc_server}.api.mailchimp.com/3.0"
+        headers = {"Authorization": f"Bearer {mc_key}", "Content-Type": "application/json"}
+
+        async with aiohttp.ClientSession() as s:
+            async with s.post(f"{base_url}/campaigns/{campaign_id}/actions/send", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                if r.status == 204:
+                    await _tg_notify(f"📧 Mailchimp-Kampagne {campaign_id} wurde gesendet!")
+                    return web.json_response({"ok": True, "sent": True})
+                result = await r.json()
+                return web.json_response({"ok": False, "error": result})
+    except Exception as e:
+        log.error("Mailchimp send error: %s", e)
         return web.json_response({"ok": False, "error": str(e)})
 
 
@@ -3971,11 +4112,18 @@ async def create_app():
     # ── Digistore24 ───────────────────────────────────────────────────────────
     app.router.add_get("/api/digistore/status",       handle_digistore_status)
     app.router.add_get("/api/digistore/orders",       handle_digistore_orders)
+    app.router.add_post("/api/digistore24/ipn",       handle_digistore_ipn)
+    app.router.add_get("/api/digistore24/ipn",        lambda r: web.json_response({
+        "ok": True,
+        "endpoint": "DS24 IPN active",
+        "url": "https://dudirudibot-mega-production.up.railway.app/api/digistore24/ipn",
+    }))
 
     # ── Mailchimp ─────────────────────────────────────────────────────────────
     app.router.add_get("/api/mailchimp/status",       handle_mailchimp_status)
     app.router.add_post("/api/mailchimp/sync",        handle_mailchimp_sync)
     app.router.add_post("/api/mailchimp/campaign",    handle_mailchimp_campaign)
+    app.router.add_post("/api/mailchimp/send",        handle_mailchimp_send)
     app.router.add_post("/api/memory/save",           handle_memory_save)
     app.router.add_post("/api/notes/save",            handle_notes_save_alias)
 
@@ -4285,6 +4433,10 @@ async def handle_lead_capture(req):
 
     result = await _sb_insert("leads", row)
 
+    # Subscribe to Mailchimp + Klaviyo in parallel (fire-and-forget)
+    asyncio.create_task(_mailchimp_subscribe(email, name))
+    asyncio.create_task(_klaviyo_subscribe(email, name))
+
     msg = (
         f"🔥 *Neuer Lead!*\n"
         f"📧 {email}\n"
@@ -4300,8 +4452,143 @@ async def handle_lead_capture(req):
     except Exception:
         await _tg_notify(msg)
 
+    # Send welcome email via SendGrid
+    asyncio.create_task(_sendgrid_welcome(email, name))
+
     log.info("New lead captured: %s (source=%s)", email, source)
     return web.json_response({"ok": True, "email": email})
+
+
+async def _sendgrid_welcome(email: str, name: str = "") -> None:
+    """Send Shopify-Audit welcome email via SendGrid."""
+    import aiohttp as _aio
+    api_key = os.getenv("SENDGRID_API_KEY", "")
+    from_email = os.getenv("SENDGRID_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
+    from_name = os.getenv("SENDGRID_FROM_NAME", "BullPower Hub")
+    if not api_key:
+        return
+    fname = name.split()[0] if name else "Shopify-Händler"
+    html_body = f"""<!DOCTYPE html>
+<html><body style="background:#0a0a0f;color:#f0f0ff;font-family:sans-serif;padding:2rem;max-width:600px;margin:0 auto">
+<div style="background:#13131f;border:1px solid rgba(139,92,246,.3);border-radius:16px;padding:2rem">
+<h1 style="color:#a78bfa">🚀 Dein Shopify-Audit startet!</h1>
+<p>Hey {fname},</p>
+<p>Danke für deine Anfrage! Dein persönlicher KI-Shopify-Audit wird gerade vorbereitet.</p>
+<h2 style="color:#a78bfa">Was dich erwartet:</h2>
+<ul>
+<li>✓ Analyse deiner Produktbeschreibungen auf SEO-Potenzial</li>
+<li>✓ Preisoptimierungs-Check auf Basis von Marktdaten</li>
+<li>✓ Fulfillment & Lagerbestand-Engpässe</li>
+<li>✓ Persönlicher Aktionsplan mit konkreten Schritten</li>
+</ul>
+<p>Du erhältst dein Ergebnis innerhalb von 24 Stunden.</p>
+<div style="margin:2rem 0;text-align:center">
+<a href="https://buy.stripe.com/7sY5kFbrIemmcYU0Oi4F20o"
+   style="background:linear-gradient(135deg,#8b5cf6,#7c3aed);color:#fff;padding:1rem 2rem;
+          border-radius:12px;text-decoration:none;font-weight:700;display:inline-block">
+⚡ Jetzt 14 Tage kostenlos — alle 8 KI-Tools sofort verfügbar
+</a>
+</div>
+<p style="color:#64748b;font-size:.85rem">BullPower Hub | KI-Automatisierung für Shopify</p>
+</div></body></html>"""
+    payload = {
+        "personalizations": [{"to": [{"email": email, "name": name or fname}]}],
+        "from": {"email": from_email, "name": from_name},
+        "subject": f"🔍 Dein Shopify-Audit startet, {fname}!",
+        "content": [{"type": "text/html", "value": html_body}],
+    }
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.post(
+                "https://api.sendgrid.com/v3/mail/send",
+                headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+                json=payload,
+            )
+            if r.status == 202:
+                log.info("SendGrid welcome email sent to %s", email)
+            else:
+                body = await r.text()
+                log.warning("SendGrid failed (%s): %s", r.status, body[:200])
+    except Exception as e:
+        log.warning("SendGrid error: %s", e)
+
+
+async def _mailchimp_subscribe(email: str, name: str = "") -> None:
+    """Add subscriber to Mailchimp audience list."""
+    import aiohttp as _aio, base64
+    api_key = os.getenv("MAILCHIMP_API_KEY", "")
+    list_id = os.getenv("MAILCHIMP_LIST_ID", "")
+    if not api_key or not list_id:
+        return
+    dc = api_key.split("-")[-1]
+    auth = base64.b64encode(f"anystring:{api_key}".encode()).decode()
+    fname = name.split()[0] if name else ""
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.post(
+                f"https://{dc}.api.mailchimp.com/3.0/lists/{list_id}/members",
+                headers={"Authorization": f"Basic {auth}", "Content-Type": "application/json"},
+                json={"email_address": email, "status": "subscribed",
+                      "merge_fields": {"FNAME": fname}},
+            )
+            status = r.status
+            if status in (200, 201):
+                log.info("Mailchimp subscribe OK: %s", email)
+            elif status == 400:
+                body = await r.json()
+                if body.get("title") == "Member Exists":
+                    log.info("Mailchimp: %s already subscribed", email)
+                else:
+                    log.warning("Mailchimp subscribe failed (%s): %s", status, body.get("detail"))
+    except Exception as e:
+        log.warning("Mailchimp subscribe error: %s", e)
+
+
+async def _klaviyo_subscribe(email: str, name: str = "") -> None:
+    """Add subscriber to Klaviyo E-Mail-Liste."""
+    import aiohttp as _aio
+    api_key = os.getenv("KLAVIYO_API_KEY", "")
+    list_id = os.getenv("KLAVIYO_LIST_ID", "")
+    if not api_key or not list_id:
+        return
+    parts = name.split(" ", 1) if name else []
+    fname = parts[0] if parts else ""
+    lname = parts[1] if len(parts) > 1 else ""
+    payload = {
+        "data": {
+            "type": "profile-subscription-bulk-create-job",
+            "attributes": {
+                "profiles": {"data": [{
+                    "type": "profile",
+                    "attributes": {
+                        "email": email,
+                        "first_name": fname,
+                        "last_name": lname,
+                        "subscriptions": {"email": {"marketing": {"consent": "SUBSCRIBED"}}},
+                    },
+                }]},
+            },
+            "relationships": {"list": {"data": {"type": "list", "id": list_id}}},
+        }
+    }
+    try:
+        async with _aio.ClientSession() as s:
+            r = await s.post(
+                "https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs/",
+                headers={
+                    "Authorization": f"Klaviyo-API-Key {api_key}",
+                    "Content-Type": "application/json",
+                    "revision": "2024-10-15",
+                },
+                json=payload,
+            )
+            if r.status in (200, 201, 202):
+                log.info("Klaviyo subscribe OK: %s", email)
+            else:
+                body = await r.text()
+                log.warning("Klaviyo subscribe failed (%s): %s", r.status, body[:200])
+    except Exception as e:
+        log.warning("Klaviyo subscribe error: %s", e)
 
 
 async def handle_leads_list(req):
