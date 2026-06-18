@@ -150,11 +150,25 @@ async def ping():
     if not HAS_AIOHTTP:
         return False
     try:
-        url = _url("listProductsForVendor")
+        url = _url("listProducts")
+        headers = {"X-DS-API-KEY": DS24_KEY}
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as resp:
                 data = await resp.json(content_type=None)
         return data.get("result") == "success"
     except Exception as exc:
         log.error("DS24 ping error: %s", exc)
         return False
+
+
+async def setup_ipn(product_id: str = "669750") -> dict:
+    """Return info about IPN setup — user must set this URL in DS24 manually."""
+    ipn_url = "https://dudirudibot-mega-production.up.railway.app/api/digistore24/ipn"
+    return {
+        "ipn_url": ipn_url,
+        "product_id": product_id,
+        "instructions": (
+            f"In Digistore24 → Vendor → Products → {product_id} → "
+            f"Integration → IPN URL setzen auf: {ipn_url}"
+        ),
+    }
