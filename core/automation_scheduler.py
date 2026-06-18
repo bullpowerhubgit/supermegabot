@@ -857,8 +857,8 @@ class AutomationScheduler:
         for name, fn, interval, delay in TASKS:
             handle = asyncio.create_task(self._run_loop(name, fn, interval, delay))
             self._task_handles.append(handle)
-        # NOTE: Telegram polling is handled by mega_orchestrator._telegram_polling_loop()
-        # Do NOT start a second poller here — causes Conflict errors on same token
+        # Telegram bot uses webhook mode (server.py /webhook/telegram) — polling disabled
+        log.info("Telegram: webhook mode active, polling disabled")
 
     async def stop(self):
         self._running = False

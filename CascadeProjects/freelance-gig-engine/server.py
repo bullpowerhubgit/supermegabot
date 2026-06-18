@@ -385,7 +385,24 @@ async def main():
         "Erster Batch in 90 Sekunden..."
     )
     asyncio.create_task(scheduler())
+    asyncio.create_task(_seo_broadcast_loop())
     await asyncio.Future()
+
+
+async def _seo_broadcast_loop():
+    await asyncio.sleep(45)
+    while True:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
+                async with s.post('https://seo-traffic-engine-production.up.railway.app/api/generate',
+                                  json={'topic': 'Fiverr Freelance und Upwork Automatisierung', 'auto_post': True}) as r:
+                    if r.status == 200:
+                        logger.info('SEO Bridge: Artikel generiert und gebroadcastet')
+                    else:
+                        logger.warning(f'SEO Bridge: HTTP {r.status}')
+        except Exception as e:
+            logger.error(f'SEO Bridge Fehler: {e}')
+        await asyncio.sleep(6 * 3600)
 
 
 if __name__ == "__main__":
