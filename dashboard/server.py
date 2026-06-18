@@ -4898,7 +4898,7 @@ async def handle_revenue_summary(req):
                 from modules.digistore24_automation import get_sales_stats
                 stats = await get_sales_stats()
                 results["ds24"] = {"ok": True, "stats": stats}
-                results["total_today_eur"] += float(stats.get("today", {}).get("revenue", 0))
+                results["total_today_eur"] += float(stats.get("today", 0))
             except Exception as e:
                 results["ds24"] = {"ok": False, "error": str(e)}
 
