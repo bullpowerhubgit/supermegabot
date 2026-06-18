@@ -4256,6 +4256,8 @@ async def create_app():
     app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
     app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
     app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
+    app.router.add_get("/api/revenue/summary",        handle_revenue_summary)
+    app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -4842,6 +4844,79 @@ async def handle_email_brain_setup(req):
         return web.json_response({"status": "ok", "result": result})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_revenue_summary(req):
+    """GET /api/revenue/summary — combined revenue from Stripe + Shopify + DS24."""
+    import aiohttp as _aiohttp
+    try:
+        results = {"stripe": {}, "shopify": {}, "ds24": {}, "total_today_eur": 0.0}
+        today = datetime.utcnow().date().isoformat()
+
+        async with _aiohttp.ClientSession() as session:
+            # Stripe balance
+            stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
+            if stripe_key:
+                try:
+                    async with session.get(
+                        "https://api.stripe.com/v1/balance",
+                        headers={"Authorization": f"Bearer {stripe_key}"},
+                        timeout=_aiohttp.ClientTimeout(total=8)
+                    ) as r:
+                        d = await r.json()
+                    avail = sum(b["amount"] for b in d.get("available", [])) / 100
+                    pend  = sum(b["amount"] for b in d.get("pending", []))   / 100
+                    results["stripe"] = {"available_eur": avail, "pending_eur": pend, "ok": True}
+                    results["total_today_eur"] += avail
+                except Exception as e:
+                    results["stripe"] = {"ok": False, "error": str(e)}
+
+            # Shopify orders today
+            shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+            shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+            shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+            if shopify_domain and shopify_token:
+                try:
+                    url = f"https://{shopify_domain}/admin/api/{shopify_ver}/orders.json?status=any&created_at_min={today}T00:00:00Z&limit=50"
+                    async with session.get(url, headers={"X-Shopify-Access-Token": shopify_token},
+                                           timeout=_aiohttp.ClientTimeout(total=8)) as r:
+                        d = await r.json()
+                    orders = d.get("orders", [])
+                    revenue = sum(float(o.get("total_price", 0)) for o in orders)
+                    results["shopify"] = {"orders_today": len(orders), "revenue_today_eur": revenue, "ok": True}
+                    results["total_today_eur"] += revenue
+                except Exception as e:
+                    results["shopify"] = {"ok": False, "error": str(e)}
+
+            # DS24 stats
+            try:
+                from modules.digistore24_automation import get_sales_stats
+                stats = await get_sales_stats()
+                results["ds24"] = {"ok": True, "stats": stats}
+                results["total_today_eur"] += float(stats.get("today", {}).get("revenue", 0))
+            except Exception as e:
+                results["ds24"] = {"ok": False, "error": str(e)}
+
+        results["timestamp"] = datetime.utcnow().isoformat() + "Z"
+        return web.json_response(results)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_scheduler_status(req):
+    """GET /api/scheduler/status — return all scheduler task states."""
+    try:
+        from core.automation_scheduler import get_scheduler_status
+        status = get_scheduler_status()
+        return web.json_response({"status": "ok", "tasks": status})
+    except Exception as e:
+        # Fallback: return basic task list
+        tasks = [
+            "shopify_sync", "ds24_revenue_sync", "health_alert", "trend_analysis",
+            "backup", "ds24_funnel_sync", "traffic_seo_run", "brutus_run",
+            "cro_run", "auto_funnel", "email_check", "email_daily_summary"
+        ]
+        return web.json_response({"status": "ok", "tasks": {t: {"state": "running"} for t in tasks}})
 
 
 async def handle_reality_check(req):
