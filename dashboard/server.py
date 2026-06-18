@@ -331,11 +331,11 @@ async def handle_telegram_send(req):
 
 async def handle_shopify_status(req):
     store = os.getenv("SHOPIFY_STORE_URL", "").strip().rstrip("/")
-    token = os.getenv("SHOPIFY_ACCESS_TOKEN", "").strip()
+    token = (os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")).strip()
     domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "").strip().rstrip("/")
 
     if not token:
-        return web.json_response({"ok": False, "error": "SHOPIFY_ACCESS_TOKEN nicht gesetzt"})
+        return web.json_response({"ok": False, "error": "SHOPIFY_ADMIN_API_TOKEN nicht gesetzt"})
 
     # Build base URL: prefer explicit domain, fall back to SHOPIFY_STORE_URL
     if domain:
@@ -2772,13 +2772,17 @@ async def handle_mrr(req):
 
 async def handle_stripe_status(req):
     try:
-        from modules.stripe_automation import stripe_available, get_stats
-        if not stripe_available():
+        from modules.stripe_automation import ping, get_stats
+        import os
+        if not os.getenv("STRIPE_SECRET_KEY", ""):
             return web.json_response({
                 "ok": False,
                 "configured": False,
-                "message": "STRIPE_SECRET_KEY nicht gesetzt — in .env eintragen",
+                "message": "STRIPE_SECRET_KEY nicht gesetzt",
             })
+        ok, msg = await ping()
+        if not ok:
+            return web.json_response({"ok": False, "error": msg})
         data = await get_stats()
         return web.json_response(data)
     except Exception as e:
