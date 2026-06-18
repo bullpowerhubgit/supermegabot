@@ -190,8 +190,11 @@ async def task_brutus_run() -> str:
     try:
         from modules.brutus_traffic_engine import brutus_run
         result = await brutus_run(
-            niche="shopify automation ecommerce",
-            custom_keywords=["Shopify Automatisierung", "Dropshipping 2026", "Passives Einkommen Online"]
+            niche="AI income online business automatisierung",
+            custom_keywords=[
+                "AI Income Machine", "Passives Einkommen Online", "Shopify Automatisierung",
+                "Online Geld verdienen 2026", "KI Business Blueprint", "Dropshipping KI",
+            ]
         )
         kw = result.get("keywords_processed", 0)
         pieces = result.get("content_pieces", 0)
