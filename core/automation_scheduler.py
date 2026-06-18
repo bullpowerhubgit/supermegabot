@@ -185,6 +185,22 @@ async def task_traffic_seo_run() -> str:
         return f"Traffic/SEO Fehler: {e}"
 
 
+async def task_brutus_run() -> str:
+    """BRUTUS — Brutal Traffic Engine: Scan→Predict→Swarm→Deploy alle Kanäle."""
+    try:
+        from modules.brutus_traffic_engine import brutus_run
+        result = await brutus_run(
+            niche="shopify automation ecommerce",
+            custom_keywords=["Shopify Automatisierung", "Dropshipping 2026", "Passives Einkommen Online"]
+        )
+        kw = result.get("keywords_processed", 0)
+        pieces = result.get("content_pieces", 0)
+        channels = result.get("channels_hit", 0)
+        return f"BRUTUS: {kw} Keywords × {pieces} Content-Stücke → {channels} Kanäle bespielt"
+    except Exception as e:
+        return f"BRUTUS Fehler: {e}"
+
+
 async def task_shopify_sync() -> str:
     """Fetch Shopify product + order counts and cache them."""
     try:
@@ -842,6 +858,7 @@ TASKS = [
     # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
     ("seo_optimizer",           task_seo_optimizer,           7200,   200),  # 2h
     ("traffic_seo_run",         task_traffic_seo_run,         21600,  210),  # 6h — AI SEO+Traffic
+    ("brutus_run",              task_brutus_run,               10800,   5),   # 3h — BRUTUS alle Kanäle
     ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
     ("api_keys_health",         task_api_keys_health,         21600,  60),   # 6h
     ("trading_report",          task_trading_report,          21600,  240),  # 6h
