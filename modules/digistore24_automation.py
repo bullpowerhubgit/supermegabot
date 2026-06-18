@@ -16,11 +16,14 @@ log = logging.getLogger("Digistore24")
 
 DS24_BASE = "https://www.digistore24.com/api/call"
 DS24_KEY  = os.getenv("DIGISTORE24_API_KEY", "")
-DS24_FORMAT = "json"
+DS24_FORMAT = "JSON"
+
+# DS24 API v1.2: use X-DS-API-KEY header (URL-based key auth deprecated)
+DS24_HEADERS = {"X-DS-API-KEY": DS24_KEY} if DS24_KEY else {}
 
 
 def _url(action: str) -> str:
-    return f"{DS24_BASE}/{DS24_KEY}/{action}/{DS24_FORMAT}"
+    return f"{DS24_BASE}/{action}/{DS24_FORMAT}/"
 
 
 def is_configured() -> bool:
@@ -39,9 +42,10 @@ async def get_orders(page=1, per_page=50):
 
     url = _url("listOrdersForVendor")
     params = {"page": page, "items_per_page": per_page}
+    headers = {"X-DS-API-KEY": DS24_KEY}
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+            async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
                 data = await resp.json(content_type=None)
         if data.get("result") == "success":
             raw = data.get("data", {})
