@@ -4370,6 +4370,8 @@ async def create_app():
     app.router.add_post("/api/brutus/run",            handle_brutus_run)
     app.router.add_get("/api/brutus/status",          handle_brutus_status)
     app.router.add_get("/api/offers",                 handle_offers)
+    app.router.add_post("/api/auto-poster/run",       handle_auto_poster_run)
+    app.router.add_get("/api/auto-poster/status",     handle_auto_poster_status)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -5310,6 +5312,43 @@ async def handle_reality_check(req):
             "Share landing page in 3 German e-commerce Telegram groups",
         ]
     })
+
+
+async def handle_auto_poster_run(req):
+    """POST /api/auto-poster/run — trigger full multi-channel auto-post."""
+    try:
+        asyncio.create_task(_run_auto_poster_bg())
+        return web.json_response({"ok": True, "message": "MegaAutoPoster gestartet — 9 Kanäle werden bespielt"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def _run_auto_poster_bg():
+    try:
+        from modules.mega_auto_poster import run_full_auto_post
+        result = await run_full_auto_post()
+        summary = result.get("_run_summary", {})
+        log.info("MegaAutoPoster background run done: %d channel hits", summary.get("total_channels_hit", 0))
+    except Exception as exc:
+        log.error("MegaAutoPoster background run failed: %s", exc)
+
+
+async def handle_auto_poster_status(req):
+    """GET /api/auto-poster/status — last post results from scheduler DB."""
+    try:
+        from core.automation_scheduler import get_last_runs
+        runs = [r for r in get_last_runs(100) if r["task"] == "mega_auto_post"]
+        return web.json_response({
+            "ok": True,
+            "runs_total": len(runs),
+            "last_run": runs[0] if runs else None,
+            "channels": [
+                "telegram", "facebook_iwin", "facebook_aiitec", "instagram",
+                "shopify_blog", "klaviyo", "mailchimp", "sendgrid", "twitter",
+            ],
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 def _free_port(port: int) -> None:
