@@ -69,7 +69,7 @@ shopify-acquisition starter: POST https://shopify-acquisition-engine-production.
 | Prio | Task |
 |------|------|
 | 🟡 | gh auth refresh -s workflow (für Workflow-Dateien pushen) |
-| 🟡 | DS24 IPN URL in Produkt 669750 eintragen |
+| ✅ DONE | DS24 IPN URL eingetragen (2026-06-19) — Echtzeit-Käufe aktiv! |
 | 🟢 | Pinterest App Review (wartet auf Support) |
 | 🟢 | Twilio FROM-Nummer kaufen |
 
