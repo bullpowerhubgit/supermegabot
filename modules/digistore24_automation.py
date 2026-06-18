@@ -16,11 +16,14 @@ log = logging.getLogger("Digistore24")
 
 DS24_BASE = "https://www.digistore24.com/api/call"
 DS24_KEY  = os.getenv("DIGISTORE24_API_KEY", "")
-DS24_FORMAT = "json"
+DS24_FORMAT = "JSON"
+
+# DS24 API v1.2: use X-DS-API-KEY header (URL-based key auth deprecated)
+DS24_HEADERS = {"X-DS-API-KEY": DS24_KEY} if DS24_KEY else {}
 
 
 def _url(action: str) -> str:
-    return f"{DS24_BASE}/{DS24_KEY}/{action}/{DS24_FORMAT}"
+    return f"{DS24_BASE}/{action}/{DS24_FORMAT}/"
 
 
 def is_configured() -> bool:
@@ -37,18 +40,23 @@ async def get_orders(page=1, per_page=50):
         log.error("aiohttp not installed")
         return []
 
-    url = _url("listOrdersForVendor")
-    params = {"page": page, "items_per_page": per_page}
+    url = _url("listTransactions")
+    now = datetime.now()
+    params = {
+        "page_no": page,
+        "page_size": per_page,
+        "from": (now - timedelta(days=90)).strftime("%Y-%m-%d"),
+        "to": now.strftime("%Y-%m-%d"),
+    }
+    headers = {"X-DS-API-KEY": DS24_KEY}
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, params=params, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+            async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
                 data = await resp.json(content_type=None)
         if data.get("result") == "success":
             raw = data.get("data", {})
-            # DS24 nests orders under data.order_list or data.orders
-            orders = raw.get("order_list", raw.get("orders", raw if isinstance(raw, list) else []))
-            return orders
-        log.warning("DS24 get_orders: result=%s", data.get("result"))
+            return raw.get("transaction_list", [])
+        log.warning("DS24 get_orders: result=%s msg=%s", data.get("result"), data.get("message",""))
         return []
     except Exception as exc:
         log.error("DS24 get_orders error: %s", exc)
@@ -65,14 +73,15 @@ async def get_products():
         log.error("aiohttp not installed")
         return []
 
-    url = _url("listProductsForVendor")
+    url = _url("listProducts")
+    headers = {"X-DS-API-KEY": DS24_KEY}
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
                 data = await resp.json(content_type=None)
         if data.get("result") == "success":
             raw = data.get("data", {})
-            products = raw.get("product_list", raw.get("products", raw if isinstance(raw, list) else []))
+            products = raw.get("products", raw.get("product_list", []))
             return products
         log.warning("DS24 get_products: result=%s", data.get("result"))
         return []
