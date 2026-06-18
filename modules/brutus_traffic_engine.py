@@ -396,14 +396,23 @@ async def deploy_to_instagram(keyword: str, content: dict) -> bool:
 
 
 async def deploy_to_youtube(keyword: str, content: dict) -> bool:
-    """YouTube community post via YouTube Data API v3."""
-    youtube_key = os.getenv("YOUTUBE_API_KEY", "")
-    channel_id  = os.getenv("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
-    if not youtube_key or not channel_id:
+    """YouTube community post via YouTube Data API v3 (requires OAuth with youtube.force-ssl scope)."""
+    channel_id = os.getenv("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
+    if not channel_id:
         return False
 
     yt_desc = content.get("youtube_desc", "")
     if not yt_desc:
+        return False
+
+    try:
+        from modules.google_oauth import ensure_valid_token
+        token = await ensure_valid_token()
+    except Exception:
+        token = None
+
+    if not token:
+        log.info("BRUTUS: YouTube post skipped — OAuth nicht aktiv. Bitte /api/youtube/auth aufrufen.")
         return False
 
     post_text = f"Neu: {keyword}\n\n{yt_desc[:900]}"
@@ -412,24 +421,19 @@ async def deploy_to_youtube(keyword: str, content: dict) -> bool:
         import aiohttp
         async with aiohttp.ClientSession() as s:
             async with s.post(
-                "https://www.googleapis.com/youtube/v3/activities",
-                params={"part": "snippet", "key": youtube_key},
-                json={
-                    "snippet": {
-                        "type": "bulletin",
-                        "bulletin": {"resourceId": {"kind": "youtube#channel", "channelId": channel_id}},
-                        "description": post_text,
-                    }
-                },
+                "https://www.googleapis.com/youtube/v3/communityPosts",
+                params={"part": "snippet"},
+                headers={"Authorization": f"Bearer {token}"},
+                json={"snippet": {"type": "textPost", "textOriginal": post_text}},
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:
                 data = await r.json(content_type=None)
 
         if data.get("id"):
-            log.info("BRUTUS: YouTube community post published")
+            log.info("BRUTUS: YouTube community post published (id=%s)", data["id"])
             return True
-        # YouTube community posts require OAuth, not just API key — log gracefully
-        log.info("BRUTUS: YouTube post needs OAuth (API key insufficient): %s", data.get("error", {}).get("message", ""))
+        err_msg = data.get("error", {}).get("message", str(data))
+        log.info("BRUTUS: YouTube community post failed: %s", err_msg)
         return False
     except Exception as exc:
         log.warning("YouTube deploy error: %s", exc)
