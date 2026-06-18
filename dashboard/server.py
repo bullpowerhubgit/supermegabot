@@ -4104,6 +4104,14 @@ async def create_app():
     asyncio.create_task(_setup_tg_on_start())
     log.info("Telegram auto-setup task scheduled")
 
+    # Send Telegram Master Dashboard startup notification
+    try:
+        from modules.telegram_master_dashboard import send_startup_notification
+        asyncio.create_task(send_startup_notification())
+        log.info("Telegram Master Dashboard startup notification queued")
+    except Exception as _e:
+        log.warning(f"Telegram Master Dashboard startup failed: {_e}")
+
     return app
 
 
