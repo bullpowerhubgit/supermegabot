@@ -4258,6 +4258,9 @@ async def create_app():
     app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
     app.router.add_get("/api/revenue/summary",        handle_revenue_summary)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
+    app.router.add_get("/api/facebook/refresh",       handle_facebook_refresh)
+    app.router.add_get("/api/facebook/callback",      handle_facebook_callback)
+    app.router.add_get("/api/facebook/status",        handle_facebook_status)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -4917,6 +4920,60 @@ async def handle_scheduler_status(req):
             "cro_run", "auto_funnel", "email_check", "email_daily_summary"
         ]
         return web.json_response({"status": "ok", "tasks": {t: {"state": "running"} for t in tasks}})
+
+
+async def handle_facebook_refresh(req):
+    """GET /api/facebook/refresh — try to refresh all Facebook page tokens."""
+    try:
+        from modules.facebook_token_manager import refresh_all_tokens
+        result = await refresh_all_tokens()
+        return web.json_response({"status": "ok", "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_facebook_callback(req):
+    """GET /api/facebook/callback — OAuth callback for token exchange."""
+    try:
+        from modules.facebook_token_manager import handle_facebook_oauth_callback
+        code = req.rel_url.query.get("code", "")
+        if not code:
+            return web.Response(text="Missing code parameter", status=400)
+        redirect_uri = "https://dudirudibot-mega-production.up.railway.app/api/facebook/callback"
+        result = await handle_facebook_oauth_callback(code, redirect_uri)
+        if result.get("ok"):
+            html = ("<html><body style='background:#1a1a2e;color:#fff;font-family:Arial;text-align:center;padding:50px'>"
+                    "<h1 style='color:#4ade80'>✅ Facebook Tokens erfolgreich erneuert!</h1>"
+                    "<p>Alle Page Tokens wurden automatisch aktualisiert.</p>"
+                    "<p>Du kannst dieses Fenster schließen.</p>"
+                    "</body></html>")
+        else:
+            html = (f"<html><body style='background:#1a1a2e;color:#fff;font-family:Arial;text-align:center;padding:50px'>"
+                    f"<h1 style='color:#f87171'>❌ Fehler: {result.get('error')}</h1>"
+                    "</body></html>")
+        return web.Response(text=html, content_type="text/html")
+    except Exception as e:
+        return web.Response(text=f"Error: {e}", status=500)
+
+
+async def handle_facebook_status(req):
+    """GET /api/facebook/status — check if tokens are valid."""
+    try:
+        from modules.facebook_token_manager import check_token
+        tokens = {
+            "user_token":        os.getenv("FACEBOOK_USER_TOKEN", ""),
+            "page_token_iwin":   os.getenv("FACEBOOK_PAGE_TOKEN_IWIN", ""),
+            "page_token_aiitec": os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", ""),
+        }
+        results = {}
+        for name, token in tokens.items():
+            if token:
+                results[name] = await check_token(token)
+            else:
+                results[name] = {"valid": False, "reason": "not set"}
+        return web.json_response(results)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def handle_reality_check(req):
