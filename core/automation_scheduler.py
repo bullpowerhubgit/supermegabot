@@ -814,6 +814,27 @@ async def task_drive_backup() -> str:
         return f"Drive Backup Fehler: {e}"
 
 
+async def task_cro_run() -> str:
+    """CRO Engine — Klaviyo flows, urgency campaigns, Shopify urgency banner."""
+    try:
+        from modules.cro_engine import run_cro
+        result = await run_cro()
+        return f"CRO done: {result}"
+    except Exception as e:
+        return f"CRO error: {e}"
+
+
+async def task_auto_funnel() -> str:
+    """Auto Funnel — DS24 buyers → purchase sequence → upsell → discount."""
+    try:
+        from modules.auto_funnel import run_auto_funnel
+        result = await run_auto_funnel()
+        processed = result.get("daily_funnel", {}).get("processed", 0)
+        return f"AutoFunnel done: {processed} buyers processed, {result}"
+    except Exception as e:
+        return f"AutoFunnel error: {e}"
+
+
 async def task_content_cycle() -> str:
     """SEO-Artikel + alle Social-Inhalte generieren. ContentHub Monorepo-Task."""
     try:
@@ -882,6 +903,9 @@ TASKS = [
     # ── ContentHub (integriert alle 5 Content-Engines) ────────────────────
     ("content_cycle",           task_content_cycle,           21600,  400),  # 6h — SEO+Social+Twitter+FB
     ("freelance_cycle",         task_freelance_cycle,         43200,  420),  # 12h — Fiverr+Upwork
+    # ── CRO + Auto Funnel ────────────────────────────────────────────────
+    ("cro_run",                 task_cro_run,                 3600,   120),  # hourly — Klaviyo flows + urgency
+    ("auto_funnel",             task_auto_funnel,             1800,    60),  # 30 min — DS24 buyers → funnel
 ]
 
 
