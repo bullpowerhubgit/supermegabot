@@ -857,14 +857,8 @@ class AutomationScheduler:
         for name, fn, interval, delay in TASKS:
             handle = asyncio.create_task(self._run_loop(name, fn, interval, delay))
             self._task_handles.append(handle)
-        # Start Telegram Master Dashboard polling
-        try:
-            from modules.telegram_master_dashboard import run_polling
-            tg_handle = asyncio.create_task(run_polling())
-            self._task_handles.append(tg_handle)
-            log.info("Telegram Master Dashboard: Polling gestartet")
-        except Exception as e:
-            log.warning(f"Telegram Master Dashboard konnte nicht gestartet werden: {e}")
+        # NOTE: Telegram polling is handled by mega_orchestrator._telegram_polling_loop()
+        # Do NOT start a second poller here — causes Conflict errors on same token
 
     async def stop(self):
         self._running = False
