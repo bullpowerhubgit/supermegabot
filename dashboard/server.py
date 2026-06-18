@@ -4373,6 +4373,8 @@ async def create_app():
     app.router.add_get("/api/offers",                 handle_offers)
     app.router.add_post("/api/auto-poster/run",       handle_auto_poster_run)
     app.router.add_get("/api/auto-poster/status",     handle_auto_poster_status)
+    app.router.add_post("/api/shopify/seo/run",       handle_shopify_seo_run)
+    app.router.add_post("/api/twitter/post",          handle_twitter_post)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -5367,6 +5369,42 @@ async def handle_reality_check(req):
             "Share landing page in 3 German e-commerce Telegram groups",
         ]
     })
+
+
+async def handle_shopify_seo_run(req):
+    """POST /api/shopify/seo/run — AI-SEO batch for Shopify products."""
+    try:
+        from modules.shopify_seo_auto import run_seo_batch
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        batch_size = int(body.get("batch_size", 15))
+        result = await run_seo_batch(batch_size=batch_size)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_twitter_post(req):
+    """POST /api/twitter/post — post a tweet (auto or custom text)."""
+    try:
+        from modules.twitter_auto_poster import run_auto_tweet, post_tweet
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        custom_text = body.get("text", "").strip()
+        if custom_text:
+            result = await post_tweet(custom_text)
+        else:
+            topics = body.get("topics") or None
+            result = await run_auto_tweet(topics=topics)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_auto_poster_run(req):
