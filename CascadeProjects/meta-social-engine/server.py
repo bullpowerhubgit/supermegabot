@@ -379,6 +379,178 @@ async def ingest_handler(request):
         return web.json_response({"error": str(e)}, status=500)
 
 
+
+async def handle_fb_auth_page(request):
+    """GET /auth/facebook — Step-by-step Facebook token setup guide."""
+    from aiohttp import web
+    fb_app_id = os.getenv("FACEBOOK_APP_ID", "")
+    html = f"""<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8">
+<title>Facebook Token Setup</title>
+<style>
+body{{background:#111;color:#e0e0e0;font-family:monospace;padding:2rem;max-width:700px;margin:0 auto}}
+h1{{color:#1877f2}}h2{{color:#4a9eff;margin-top:2rem}}
+.step{{background:#1a1a2a;border-left:3px solid #1877f2;padding:1rem;margin:1rem 0;border-radius:4px}}
+.url{{background:#0a0a15;padding:.5rem;border-radius:4px;word-break:break-all;color:#4af;font-size:.85rem}}
+.btn{{display:inline-block;background:#1877f2;color:#fff;padding:.6rem 1.2rem;border-radius:6px;text-decoration:none;margin:.5rem 0}}
+code{{background:#1a1a2a;padding:2px 6px;border-radius:3px;color:#f0c040}}
+</style></head><body>
+<h1>🔵 Facebook Token Setup</h1>
+<p>Einmalig einrichten — danach automatische Verlängerung alle 60 Tage.</p>
+
+<h2>Schritt 1: Graph API Explorer öffnen</h2>
+<div class="step">
+<a href="https://developers.facebook.com/tools/explorer" target="_blank" class="btn">→ Graph API Explorer öffnen</a>
+<p>1. Wähle oben rechts deine App: <code>{{fb_app_id or 'deine App'}}</code><br>
+2. Klicke "Generate Access Token"<br>
+3. Wähle deine Facebook-Seite<br>
+4. Permissions aktivieren: <code>pages_manage_posts</code>, <code>pages_read_engagement</code>, <code>instagram_basic</code>, <code>instagram_content_publish</code></p>
+</div>
+
+<h2>Schritt 2: Long-Lived Token erstellen</h2>
+<div class="step">
+<p>Kopiere den Token aus Schritt 1, dann POST an:</p>
+<div class="url">POST /auth/facebook/exchange</div>
+<p>Body: <code>{{"short_token": "DEIN_TOKEN_HIER", "fb_app_id": "DEINE_APP_ID", "fb_app_secret": "DEIN_APP_SECRET"}}</code></p>
+<p>Oder direkt per curl:</p>
+<div class="url">curl -X POST http://localhost:8091/auth/facebook/exchange -H "Content-Type: application/json" -d '{{"short_token":"EAA...","fb_app_id":"...","fb_app_secret":"..."}}' </div>
+</div>
+
+<h2>Schritt 3: Page Token holen</h2>
+<div class="step">
+<p>Rufe auf: <code>GET /auth/facebook/pages?token=LONG_LIVED_TOKEN</code><br>
+Du bekommst alle deine Pages + Page Access Tokens zurück.</p>
+</div>
+
+<h2>Schritt 4: ENV Variablen setzen</h2>
+<div class="step">
+<p>In Railway → meta-social-engine → Variables:</p>
+<code>FACEBOOK_ACCESS_TOKEN</code> = Page Access Token<br>
+<code>FACEBOOK_PAGE_ID</code> = Page ID<br>
+<code>INSTAGRAM_ACCOUNT_ID</code> = IG Account ID (aus /me/accounts)<br>
+<code>FACEBOOK_APP_ID</code> = App ID<br>
+<code>FACEBOOK_APP_SECRET</code> = App Secret
+</div>
+</body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_fb_token_exchange(request):
+    """POST /auth/facebook/exchange — exchange short for long-lived token."""
+    from aiohttp import web
+    try:
+        body = await request.json()
+        short_token = body.get("short_token", "")
+        app_id = body.get("fb_app_id", os.getenv("FACEBOOK_APP_ID", ""))
+        app_secret = body.get("fb_app_secret", os.getenv("FACEBOOK_APP_SECRET", ""))
+
+        if not all([short_token, app_id, app_secret]):
+            return web.json_response({"ok": False, "error": "short_token, fb_app_id, fb_app_secret required"})
+
+        async with aiohttp.ClientSession() as s:
+            url = (
+                f"https://graph.facebook.com/v19.0/oauth/access_token"
+                f"?grant_type=fb_exchange_token"
+                f"&client_id={app_id}&client_secret={app_secret}"
+                f"&fb_exchange_token={short_token}"
+            )
+            async with s.get(url, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                data = await r.json()
+
+        if "access_token" in data:
+            long_token = data["access_token"]
+            expires_in = data.get("expires_in", 5184000)
+            return web.json_response({
+                "ok": True,
+                "long_lived_token": long_token,
+                "expires_in_days": expires_in // 86400,
+                "next_step": "Use GET /auth/facebook/pages?token=LONG_TOKEN to get page tokens",
+                "env_var": "Set FACEBOOK_ACCESS_TOKEN=" + long_token[:20] + "...",
+            })
+        return web.json_response({"ok": False, "error": data})
+    except Exception as e:
+        logger.error(f"FB token exchange error: {e}")
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_fb_pages(request):
+    """GET /auth/facebook/pages?token=... — list pages and their tokens."""
+    from aiohttp import web
+    token = request.rel_url.query.get("token", os.getenv("FACEBOOK_ACCESS_TOKEN", ""))
+    if not token:
+        return web.json_response({"ok": False, "error": "token param required"})
+
+    async with aiohttp.ClientSession() as s:
+        async with s.get(
+            f"https://graph.facebook.com/v19.0/me/accounts?access_token={token}",
+            timeout=aiohttp.ClientTimeout(total=10),
+        ) as r:
+            data = await r.json()
+
+    pages = data.get("data", [])
+    result = []
+    for p in pages:
+        result.append({
+            "page_name": p.get("name"),
+            "page_id": p.get("id"),
+            "page_token": p.get("access_token", "")[:30] + "...",
+            "page_token_full": p.get("access_token", ""),
+            "env": f"FACEBOOK_PAGE_ID={p.get('id')} FACEBOOK_ACCESS_TOKEN={p.get('access_token','')[:20]}...",
+        })
+    return web.json_response({"ok": True, "pages": result, "count": len(result)})
+
+
+async def handle_pinterest_auth(request):
+    """GET /auth/pinterest — Pinterest token setup guide."""
+    from aiohttp import web
+    html = """<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><title>Pinterest Token Setup</title>
+<style>body{background:#111;color:#e0e0e0;font-family:monospace;padding:2rem;max-width:700px;margin:0 auto}
+h1{color:#e60023}h2{color:#ff6b81;margin-top:2rem}
+.step{background:#1a1a2a;border-left:3px solid #e60023;padding:1rem;margin:1rem 0;border-radius:4px}
+.url{background:#0a0a15;padding:.5rem;border-radius:4px;word-break:break-all;color:#f96a6a}
+a{color:#e60023}.btn{display:inline-block;background:#e60023;color:#fff;padding:.6rem 1.2rem;border-radius:6px;text-decoration:none}
+code{background:#1a1a2a;padding:2px 6px;border-radius:3px;color:#f0c040}</style></head><body>
+<h1>📌 Pinterest Token Setup</h1>
+<h2>Schritt 1: App öffnen</h2>
+<div class="step">
+<a href="https://developers.pinterest.com/apps/1580762" target="_blank" class="btn">→ Pinterest App 1580762 öffnen</a>
+<p>→ "Generate access token"<br>
+→ Scopes: <code>boards:read</code>, <code>pins:read</code>, <code>pins:write</code></p>
+</div>
+<h2>Schritt 2: Board ID holen</h2>
+<div class="step">
+<div class="url">GET /auth/pinterest/boards?token=DEIN_TOKEN</div>
+<p>Gibt alle Boards mit IDs zurück</p>
+</div>
+<h2>Schritt 3: Railway Variables setzen</h2>
+<div class="step">
+<code>PINTEREST_ACCESS_TOKEN</code> = dein Token<br>
+<code>PINTEREST_BOARD_ID</code> = Board ID für BullPower Posts
+</div>
+</body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_pinterest_boards(request):
+    """GET /auth/pinterest/boards?token=... — list boards."""
+    from aiohttp import web
+    token = request.rel_url.query.get("token", os.getenv("PINTEREST_ACCESS_TOKEN", ""))
+    if not token:
+        return web.json_response({"ok": False, "error": "token param required"})
+    async with aiohttp.ClientSession() as s:
+        async with s.get(
+            "https://api.pinterest.com/v5/boards",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=aiohttp.ClientTimeout(total=10),
+        ) as r:
+            data = await r.json()
+    boards = data.get("items", [])
+    return web.json_response({
+        "ok": True,
+        "boards": [{"id": b["id"], "name": b["name"]} for b in boards],
+    })
+
 async def seo_products_handler(request):
     from aiohttp import web
     keyword = request.rel_url.query.get("keyword", "facebook marketing automatisierung")
@@ -409,6 +581,11 @@ async def main():
     app.router.add_get("/api/posts", posts_handler)
     app.router.add_post("/api/ingest", ingest_handler)
     app.router.add_get("/api/seo/products", seo_products_handler)
+    app.router.add_get("/auth/facebook",           handle_fb_auth_page)
+    app.router.add_post("/auth/facebook/exchange", handle_fb_token_exchange)
+    app.router.add_get("/auth/facebook/pages",     handle_fb_pages)
+    app.router.add_get("/auth/pinterest",          handle_pinterest_auth)
+    app.router.add_get("/auth/pinterest/boards",   handle_pinterest_boards)
 
     runner = web.AppRunner(app)
     await runner.setup()
