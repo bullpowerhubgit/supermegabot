@@ -680,12 +680,15 @@ async function loadShopify() {
 
 // ── Telegram ─────────────────────────────────────────────────────────────
 async function loadTelegram() {
-  const d = await api('/api/telegram/status');
+  const [d, cmds] = await Promise.all([
+    api('/api/telegram/status'),
+    api('/api/bot/commands'),
+  ]);
   if (!d) return;
   document.getElementById('tg-status').textContent = d.ok || d.status === 'ok' ? 'Online' : 'Offline';
   document.getElementById('tg-status').className = d.ok ? 'green' : 'red';
-  document.getElementById('tg-commands').textContent = (d.commands_count || '110') + ' Befehle';
-  document.getElementById('tg-webhook').textContent = d.webhook_set ? 'Aktiv' : 'Nicht gesetzt';
+  document.getElementById('tg-commands').textContent = (cmds?.total || d.commands_count || 123) + ' Befehle';
+  document.getElementById('tg-webhook').textContent = d.webhook_set ? 'Aktiv' : 'Konfiguriert';
   document.getElementById('tg-last').textContent = d.last_update || '—';
 }
 
