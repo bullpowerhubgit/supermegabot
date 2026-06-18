@@ -1,14 +1,35 @@
 # SuperMegaBot — Aktueller Status (Auto-Update)
-> Zuletzt aktualisiert: 2026-06-19 | Wenn Claude neu startet → Diese Datei zuerst lesen!
+> Zuletzt aktualisiert: 2026-06-19 02:30 UTC | Wenn Claude neu startet → Diese Datei zuerst lesen!
 
-## System-Status
-- **Railway**: `dudirudibot-mega-production.up.railway.app` — LIVE ✅
-- **Master Dashboard**: `/master` — läuft ✅
-- **EmailBrain**: 6 Konten aktiv, Emails werden verarbeitet ✅
-- **BRUTUS v2**: 6-Kanal-Deployment aktiv (Telegram, Shopify, Klaviyo, Facebook, Instagram, YouTube) ✅
-- **CRO Engine**: aktiv (stündlich) ✅
-- **Auto Funnel**: aktiv (alle 30 Min) ✅
-- **DS24 Funnel Sync**: aktiv (alle 15 Min) ✅
+## System-Status (geprüft 2026-06-19)
+| Service | URL | Status |
+|---------|-----|--------|
+| SuperMegaBot | dudirudibot-mega-production.up.railway.app | ✅ LIVE |
+| MetaSocialEngine | meta-social-engine-production.up.railway.app | ✅ LIVE |
+| SEOTurboTools | seo-turbo-tools-production.up.railway.app | ✅ LIVE |
+| FreelanceGigEngine | freelance-gig-engine-production.up.railway.app | ✅ LIVE |
+| VisualContentEngine | visual-content-engine-production.up.railway.app | ✅ LIVE |
+| AdPosterEngine | adposter-engine-production.up.railway.app | ✅ LIVE |
+| iComeAutoSaaS | icomeauto-saas-production.up.railway.app | ✅ LIVE |
+| CreatorAIUltra | creatorai-ultra-production.up.railway.app | ✅ LIVE (status: healthy) |
+| RevenueHub | revenue-hub-notifications-production.up.railway.app | ✅ LIVE |
+| ShopifyAutomaton | shopify-automaton-suite-production-e405.up.railway.app | ✅ LIVE (/api/health) |
+| Steuercockpit | steuercockpit-production-44c9.up.railway.app | ✅ LIVE |
+| SEOTrafficEngine | seo-traffic-engine-production.up.railway.app | ✅ LIVE |
+| SocialTrafficEngine | social-traffic-engine-production.up.railway.app | ✅ LIVE |
+
+**Alle 13 geprüften Services LIVE!**
+
+## Neue Features (2026-06-19 Session)
+- `modules/facebook_token_manager.py` — Auto-Check, Token-Refresh, OAuth-Callback ✅
+- `/api/revenue/summary` — Combined Stripe+Shopify+DS24 Revenue ✅
+- `/api/scheduler/status` — Alle Scheduler-Tasks Status ✅
+- `/api/facebook/status|refresh|callback` — FB Token Management ✅
+- Master Dashboard: neue Buttons FB Tokens + Revenue ✅
+- BRUTUS Instagram Pixel: 1x1px → 1080x1080 Branded ✅
+- META_ACCESS_TOKEN + META_PAGE_ID in Railway gesetzt ✅
+- vitest CVE: 1.4.0 → 4.1.9 gefixt ✅
+- package.json doppeltes dependencies-Feld gefixt ✅
 
 ## Letzter Commit
 `f9fbe5c` — Master Control Dashboard at /master
