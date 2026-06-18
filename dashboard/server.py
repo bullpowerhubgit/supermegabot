@@ -1830,6 +1830,90 @@ async def handle_seo_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ---------------------------------------------------------------------------
+# SEO: Sitemap ping — Google + Bing indexing for all BullPower Hub Netlify sites
+# ---------------------------------------------------------------------------
+
+_SITEMAPS = [
+    "https://bullpower-hub-portal.netlify.app/sitemap.xml",
+    "https://shopify-automaton-suite.netlify.app/sitemap.xml",
+    "https://cognitive-symphony-ds24.netlify.app/sitemap.xml",
+    "https://creatorstudio-pro.netlify.app/sitemap.xml",
+    "https://digistore24-automation-suite.netlify.app/sitemap.xml",
+    "https://bullpower-lead.netlify.app/sitemap.xml",
+]
+
+_PING_ENGINES = [
+    "https://www.google.com/ping?sitemap={sitemap}",
+    "https://www.bing.com/ping?sitemap={sitemap}",
+]
+
+
+async def _do_sitemap_pings() -> dict:
+    """Fire async GET pings to Google and Bing for all sitemaps.
+
+    Returns a summary dict: {pinged: int, errors: list[str], ok: bool}
+    """
+    errors = []
+    pinged = 0
+    timeout = aiohttp.ClientTimeout(total=10)
+    async with aiohttp.ClientSession(timeout=timeout) as session:
+        tasks = []
+        pairs = []
+        for sitemap in _SITEMAPS:
+            for tmpl in _PING_ENGINES:
+                url = tmpl.format(sitemap=sitemap)
+                pairs.append((sitemap, url))
+                tasks.append(session.get(url))
+
+        results = await asyncio.gather(*tasks, return_exceptions=True)
+
+        for (sitemap, url), result in zip(pairs, results):
+            if isinstance(result, Exception):
+                msg = f"{url}: {result}"
+                log.warning("sitemap ping error: %s", msg)
+                errors.append(msg)
+            else:
+                status = result.status
+                result.release()
+                if status < 400:
+                    pinged += 1
+                    log.info("sitemap ping OK %s → %s", sitemap, status)
+                else:
+                    msg = f"{url}: HTTP {status}"
+                    log.warning("sitemap ping failed: %s", msg)
+                    errors.append(msg)
+
+    return {"pinged": pinged, "errors": errors, "ok": len(errors) == 0}
+
+
+async def handle_ping_sitemaps(req):
+    """POST /api/seo/ping-sitemaps — ping Google + Bing for all BullPower Hub sitemaps."""
+    log.info("Manual sitemap ping triggered via API")
+    try:
+        result = await _do_sitemap_pings()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_ping_sitemaps error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def _run_sitemap_ping_loop() -> None:
+    """Infinite loop: ping Google + Bing sitemaps once per week (604800 s)."""
+    while True:
+        try:
+            log.info("Weekly sitemap ping starting ...")
+            result = await _do_sitemap_pings()
+            log.info(
+                "Weekly sitemap ping done: pinged=%d errors=%d",
+                result["pinged"],
+                len(result["errors"]),
+            )
+        except Exception as e:
+            log.error("_run_sitemap_ping_loop unexpected error: %s", e)
+        await asyncio.sleep(604800)
+
+
 async def handle_dropshipping_status(req):
     """Dropshipping pipeline status."""
     try:
@@ -3352,6 +3436,7 @@ async def create_app():
     # ── SEO Autopilot ─────────────────────────────────────────────────────────
     app.router.add_get("/api/seo/status",             handle_seo_status)
     app.router.add_post("/api/seo/run",               handle_seo_run)
+    app.router.add_post("/api/seo/ping-sitemaps",     handle_ping_sitemaps)
 
     # ── Dropshipping ──────────────────────────────────────────────────────────
     app.router.add_get("/api/dropshipping/status",    handle_dropshipping_status)
@@ -3432,6 +3517,10 @@ async def create_app():
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
+
+    # Start weekly sitemap ping background task (Google + Bing)
+    asyncio.create_task(_run_sitemap_ping_loop())
+    log.info("Weekly sitemap ping task started")
 
     return app
 
