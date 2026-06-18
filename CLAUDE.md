@@ -1,5 +1,17 @@
 # SuperMegaBot — Claude Code Instructions
 
+## SESSION START — IMMER ZUERST LESEN!
+```bash
+# Schritt 1: Aktuellen Status lesen
+cat CURRENT_STATUS.md
+
+# Schritt 2: System-Health prüfen
+curl -s https://dudirudibot-mega-production.up.railway.app/health
+
+# Schritt 3: Offene Punkte aus CURRENT_STATUS.md abarbeiten — OHNE FRAGEN!
+```
+**WICHTIG:** `CURRENT_STATUS.md` enthält immer den neuesten Stand aller Aufgaben, fehlenden Passwörter und Systemstatus. Bei Kontext-Neustart → direkt weitermachen wo aufgehört!
+
 ## Project Overview
 SuperMegaBot is a production SaaS platform for e-commerce automation (Shopify, Digistore24, AI tools, Telegram subscription bots). Deployed on Railway. Owner: Rudolf Sarkany (@bullpowerhubgit).
 
