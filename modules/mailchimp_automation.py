@@ -211,21 +211,24 @@ async def sync_from_digistore(list_id: str) -> int:
     seen = set()
 
     for order in orders:
-        email = order.get("buyer_email") or order.get("customer_email") or order.get("email") or ""
+        buyer = order.get("buyer") or {}
+        email = (buyer.get("email") or order.get("buyer_email") or
+                 order.get("customer_email") or order.get("email") or "")
         email = email.strip().lower()
         if not email or "@" not in email or email in seen:
             continue
         seen.add(email)
 
-        fname = order.get("first_name") or order.get("buyer_first_name") or ""
-        lname = order.get("last_name") or order.get("buyer_last_name") or ""
+        fname = buyer.get("first_name") or order.get("first_name") or ""
+        lname = buyer.get("last_name") or order.get("last_name") or ""
+        product = order.get("main_product_name") or order.get("product_name") or "DS24"
 
         result = await add_subscriber(
             list_id=list_id,
             email=email,
             fname=fname,
             lname=lname,
-            tags=["digistore24", "buyer"],
+            tags=["digistore24", "buyer", product[:50]],
         )
         if "error" not in result:
             synced += 1

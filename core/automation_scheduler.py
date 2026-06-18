@@ -162,6 +162,29 @@ async def task_mailchimp_sync() -> str:
         return f"Fehler: {e}"
 
 
+async def task_ds24_funnel_sync() -> str:
+    """DS24 neue Käufer → Mailchimp + Klaviyo + Telegram vollautomatisch."""
+    try:
+        from modules.ds24_funnel_automation import run_sync
+        result = await run_sync()
+        return (f"DS24 Funnel: {result['new_buyers']} neue Käufer synced "
+                f"({result['total_seen']} gesamt)")
+    except Exception as e:
+        return f"DS24 Funnel Fehler: {e}"
+
+
+async def task_traffic_seo_run() -> str:
+    """AI-generierter SEO Content für DS24 + Shopify Produkte."""
+    try:
+        from modules.traffic_seo_engine import run_full_traffic_seo
+        result = await run_full_traffic_seo()
+        ds = result.get("ds24_products_optimized", 0)
+        sh = result.get("shopify_result", {}).get("products_updated", 0)
+        return f"SEO: {ds} DS24-Produkte + {sh} Shopify-Produkte optimiert"
+    except Exception as e:
+        return f"Traffic/SEO Fehler: {e}"
+
+
 async def task_shopify_sync() -> str:
     """Fetch Shopify product + order counts and cache them."""
     try:
@@ -811,12 +834,14 @@ TASKS = [
     ("gumroad_sync",            task_gumroad_sync,            1800,   75),   # 30 min
     ("digistore_products_check",task_digistore_products_check,1800,   85),   # 30 min
     # ── Marketing & Sync (hourly) ─────────────────────────────────────────────
+    ("ds24_funnel_sync",         task_ds24_funnel_sync,        900,    35),   # 15 min — neue Käufer sofort
     ("mailchimp_sync",          task_mailchimp_sync,          3600,   90),   # 1h
     ("shopify_sync",            task_shopify_sync,            3600,   120),  # 1h
     ("social_status",           task_social_status,           3600,   150),  # 1h
     ("social_autoposter",       task_social_autoposter,       3600,   180),  # 1h
     # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
     ("seo_optimizer",           task_seo_optimizer,           7200,   200),  # 2h
+    ("traffic_seo_run",         task_traffic_seo_run,         21600,  210),  # 6h — AI SEO+Traffic
     ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
     ("api_keys_health",         task_api_keys_health,         21600,  60),   # 6h
     ("trading_report",          task_trading_report,          21600,  240),  # 6h
