@@ -2191,6 +2191,169 @@ async def _run_seo_loop() -> None:
         await asyncio.sleep(86400)
 
 
+# ---------------------------------------------------------------------------
+# Social Media Draft Generator — Reddit / Twitter / LinkedIn
+# ---------------------------------------------------------------------------
+
+_SOCIAL_PLATFORMS = {
+    "reddit_shopify": {
+        "subreddit": "r/shopify",
+        "style": "helpful community member, no direct promotion, value-first",
+        "cta": "bullpower-lead.netlify.app",
+        "lang": "English",
+    },
+    "reddit_ecommerce": {
+        "subreddit": "r/ecommerce",
+        "style": "sharing experience and tool",
+        "cta": "bullpower-hub-portal.netlify.app",
+        "lang": "English",
+    },
+    "reddit_de": {
+        "subreddit": "r/Unternehmertum",
+        "style": "German language, sharing tool as Unternehmer",
+        "cta": "bullpower-lead.netlify.app",
+        "lang": "German",
+    },
+    "twitter": {
+        "style": "concise, 280 chars max, German + English mix",
+        "cta": "bullpower-lead.netlify.app",
+        "lang": "German/English mix",
+    },
+    "linkedin": {
+        "style": "professional German post, 3 paragraphs, value-focused",
+        "cta": "bullpower-hub-portal.netlify.app",
+        "lang": "German",
+    },
+}
+
+
+async def handle_social_drafts(req):
+    """GET /api/seo/social-drafts — generate social media post drafts via Claude API."""
+    import json as _json
+    from datetime import timezone as _tz, datetime as _dt
+    try:
+        import anthropic as _anthropic
+        api_key = os.getenv("ANTHROPIC_API_KEY", "")
+        if not api_key:
+            return web.json_response({"ok": False, "error": "ANTHROPIC_API_KEY not configured"}, status=500)
+
+        client = _anthropic.Anthropic(api_key=api_key)
+
+        prompt_parts = [
+            "You are a social media copywriter for a Shopify automation SaaS called BullPower Hub.",
+            "Generate authentic, non-spammy social media posts about Shopify automation tools.",
+            "The posts should provide real value to store owners, not read like advertisements.",
+            "Topics to draw from: automating product imports, SEO optimization, revenue tracking,",
+            "reducing manual work for Shopify merchants, free store audit tools.",
+            "",
+            "Generate one post draft for each of the following 5 platforms/audiences.",
+            "Return ONLY a valid JSON object with this exact structure (no markdown, no extra text):",
+            "{",
+            '  "reddit_shopify": {"title": "...", "body": "..."},',
+            '  "reddit_ecommerce": {"title": "...", "body": "..."},',
+            '  "reddit_de": {"title": "...", "body": "..."},',
+            '  "twitter": {"text": "..."},',
+            '  "linkedin": {"text": "..."}',
+            "}",
+            "",
+            "Platform-specific instructions:",
+        ]
+        for platform, cfg in _SOCIAL_PLATFORMS.items():
+            if platform.startswith("reddit"):
+                prompt_parts.append(
+                    f"- {platform} (subreddit: {cfg['subreddit']}): "
+                    f"Style: {cfg['style']}. Language: {cfg['lang']}. "
+                    f"Include CTA naturally at the end mentioning: {cfg['cta']}"
+                )
+            else:
+                prompt_parts.append(
+                    f"- {platform}: Style: {cfg['style']}. Language: {cfg['lang']}. "
+                    f"CTA: {cfg['cta']}"
+                )
+        prompt_parts.append("")
+        prompt_parts.append(
+            "For reddit posts: title should be 60-100 chars, body should be 150-300 words. "
+            "For twitter: keep under 280 characters including the URL. "
+            "For linkedin: write 3 short paragraphs, professional tone, end with the CTA link."
+        )
+
+        prompt = "\n".join(prompt_parts)
+
+        log.info("Generating social media drafts via Claude API")
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=2048,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        raw_text = response.content[0].text if response.content else "{}"
+
+        # Strip markdown code fences if present
+        raw_text = raw_text.strip()
+        if raw_text.startswith("```"):
+            raw_text = raw_text.split("```", 2)[1]
+            if raw_text.startswith("json"):
+                raw_text = raw_text[4:]
+            raw_text = raw_text.rsplit("```", 1)[0].strip()
+
+        try:
+            drafts = _json.loads(raw_text)
+        except _json.JSONDecodeError as parse_err:
+            log.error("Failed to parse Claude response as JSON: %s \u2014 raw: %s", parse_err, raw_text[:200])
+            return web.json_response(
+                {"ok": False, "error": f"JSON parse error: {parse_err}", "raw": raw_text[:500]},
+                status=500
+            )
+
+        # Add subreddit metadata to reddit drafts
+        for key in ("reddit_shopify", "reddit_ecommerce", "reddit_de"):
+            if key in drafts and key in _SOCIAL_PLATFORMS:
+                drafts[key]["subreddit"] = _SOCIAL_PLATFORMS[key].get("subreddit", "")
+
+        generated_at = _dt.now(_tz.utc).isoformat()
+
+        # Persist to Supabase agent_messages
+        await _sb_insert("agent_messages", {
+            "role": "social_draft",
+            "content": _json.dumps(drafts),
+        })
+        log.info("Social drafts stored in Supabase agent_messages")
+
+        return web.json_response({
+            "ok": True,
+            "drafts": drafts,
+            "generated_at": generated_at,
+        })
+    except Exception as e:
+        log.error("handle_social_drafts error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_social_schedule(req):
+    """POST /api/seo/social-schedule — send a social post draft to owner via Telegram."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        platform = data.get("platform", "")
+        text = data.get("text", "")
+        if not platform or not text:
+            return web.json_response({"ok": False, "error": "platform and text are required"}, status=400)
+
+        msg = (
+            "\U0001f4e3 Social Post bereit zum Posten:\n\n"
+            f"Platform: {platform}\n"
+            "---\n"
+            f"{text}\n"
+            "---\n"
+            "\U0001f449 Jetzt manuell posten oder /approve senden"
+        )
+        await _tg_notify(msg)
+        log.info("Social schedule notification sent for platform: %s", platform)
+        return web.json_response({"ok": True, "platform": platform, "notified": True})
+    except Exception as e:
+        log.error("handle_social_schedule error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_dropshipping_status(req):
     """Dropshipping pipeline status."""
     try:
@@ -3715,6 +3878,8 @@ async def create_app():
     app.router.add_post("/api/seo/run",               handle_seo_run)
     app.router.add_post("/api/seo/ping-sitemaps",     handle_ping_sitemaps)
     app.router.add_post("/api/seo/generate",          handle_seo_generate)
+    app.router.add_get("/api/seo/social-drafts",      handle_social_drafts)
+    app.router.add_post("/api/seo/social-schedule",   handle_social_schedule)
 
     # ── Dropshipping ──────────────────────────────────────────────────────────
     app.router.add_get("/api/dropshipping/status",    handle_dropshipping_status)
