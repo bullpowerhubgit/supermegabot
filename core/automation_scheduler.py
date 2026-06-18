@@ -1009,14 +1009,6 @@ def get_scheduler() -> AutomationScheduler:
 
 
 def get_scheduler_status() -> dict:
-    """Return all scheduler tasks with last_run, next_run, status."""
+    """Return all scheduler tasks with stats."""
     s = get_scheduler()
-    result = {}
-    for task in s.tasks:
-        name = task.get("name", "unknown")
-        result[name] = {
-            "interval_seconds": task.get("interval", 0),
-            "last_run": task.get("last_run", "never"),
-            "enabled": task.get("enabled", True),
-        }
-    return result
+    return s.status()
