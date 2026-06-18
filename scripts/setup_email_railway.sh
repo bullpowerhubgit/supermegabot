@@ -61,3 +61,9 @@ echo "Fertig! Railway deployt neu."
 echo "Test: curl https://dudirudibot-mega-production.up.railway.app/api/email/brain/setup"
 echo ""
 echo "WICHTIG: App-Passwörter aus diesem Script entfernen und nicht committen!"
+
+# ── Konto 8: rudolfsarkany1984@gmail.com (LinkedIn) ──────────────────────────
+railway variables set \
+  GMAIL_USER_8="rudolfsarkany1984@gmail.com" \
+  GMAIL_APP_PASSWORD_8="HIER_APP_PASSWORT_EINTRAGEN" \
+  --service "$SERVICE"

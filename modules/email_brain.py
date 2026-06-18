@@ -9,9 +9,10 @@ Konten:
   aitecbuuss@gmail.com
   rudolf.sarkany@aitec.de      (custom domain — IMAP_HOST_6 konfigurierbar)
   rudolf.sarkany.aiitec@gmail.com
+  rudolfsarkany1984@gmail.com      (LinkedIn-Konto)
 
 Env-Vars Schema:
-  GMAIL_USER_1 … GMAIL_USER_7
+  GMAIL_USER_1 … GMAIL_USER_8
   GMAIL_APP_PASSWORD_1 … GMAIL_APP_PASSWORD_7
   GMAIL_DISPLAY_NAME_1 … GMAIL_DISPLAY_NAME_7   (optional)
   IMAP_HOST_1 … IMAP_HOST_7                     (optional, default: imap.gmail.com)
@@ -57,13 +58,14 @@ _DEFAULT_NAMES = {
     "aiitecbuuss@gmail.com":             "AIITEC — BullPower Hub",
     "rudolf.sarkany@aitec.de":           "Rudolf Sarkany — AIITEC",
     "rudolf.sarkany.aiitec@gmail.com":   "Rudolf Sarkany — AIITEC",
+    "rudolfsarkany1984@gmail.com":       "Rudolf Sarkany",
 }
 
 
 def _accounts() -> list[dict]:
     """Return all configured email accounts from GMAIL_USER_1..7 env vars."""
     accounts = []
-    for i in range(1, 8):
+    for i in range(1, 9):
         user = os.getenv(f"GMAIL_USER_{i}", "")
         pw   = os.getenv(f"GMAIL_APP_PASSWORD_{i}", "")
         if not user or not pw:
