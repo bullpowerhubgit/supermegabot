@@ -40,8 +40,14 @@ async def get_orders(page=1, per_page=50):
         log.error("aiohttp not installed")
         return []
 
-    url = _url("listOrdersForVendor")
-    params = {"page": page, "items_per_page": per_page}
+    url = _url("listTransactions")
+    now = datetime.now()
+    params = {
+        "page_no": page,
+        "page_size": per_page,
+        "from": (now - timedelta(days=90)).strftime("%Y-%m-%d"),
+        "to": now.strftime("%Y-%m-%d"),
+    }
     headers = {"X-DS-API-KEY": DS24_KEY}
     try:
         async with aiohttp.ClientSession() as session:
@@ -49,10 +55,8 @@ async def get_orders(page=1, per_page=50):
                 data = await resp.json(content_type=None)
         if data.get("result") == "success":
             raw = data.get("data", {})
-            # DS24 nests orders under data.order_list or data.orders
-            orders = raw.get("order_list", raw.get("orders", raw if isinstance(raw, list) else []))
-            return orders
-        log.warning("DS24 get_orders: result=%s", data.get("result"))
+            return raw.get("transaction_list", [])
+        log.warning("DS24 get_orders: result=%s msg=%s", data.get("result"), data.get("message",""))
         return []
     except Exception as exc:
         log.error("DS24 get_orders error: %s", exc)
@@ -69,14 +73,15 @@ async def get_products():
         log.error("aiohttp not installed")
         return []
 
-    url = _url("listProductsForVendor")
+    url = _url("listProducts")
+    headers = {"X-DS-API-KEY": DS24_KEY}
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
                 data = await resp.json(content_type=None)
         if data.get("result") == "success":
             raw = data.get("data", {})
-            products = raw.get("product_list", raw.get("products", raw if isinstance(raw, list) else []))
+            products = raw.get("products", raw.get("product_list", []))
             return products
         log.warning("DS24 get_products: result=%s", data.get("result"))
         return []
