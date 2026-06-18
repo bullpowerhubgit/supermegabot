@@ -20,6 +20,46 @@ PINTEREST_ACCESS_TOKEN = os.getenv("PINTEREST_ACCESS_TOKEN", "")
 PINTEREST_BOARD_ID = os.getenv("PINTEREST_BOARD_ID", "")
 PORT = int(os.getenv("PORT", 8091))
 
+# ── SEO Traffic Engine Bridge ──────────────────────────────────────────────
+_SEO_ENGINE = os.getenv("SEO_ENGINE_URL", "https://seo-traffic-engine-production.up.railway.app")
+_AMAZON_TAG = os.getenv("AMAZON_AFFILIATE_TAG", "bullpower-21")
+_EBAY_APP_ID = os.getenv("EBAY_APP_ID", "")
+
+
+async def seo_get_products(keyword: str, source: str = "all") -> list:
+    import urllib.parse
+    results = []
+    if source in ("amazon", "all"):
+        amazon_url = f"https://www.amazon.de/s?k={urllib.parse.quote(keyword)}&tag={_AMAZON_TAG}"
+        results.append({"title": f"Amazon: {keyword}", "url": amazon_url, "source": "amazon", "price": ""})
+    if source in ("ebay", "all") and _EBAY_APP_ID:
+        try:
+            params = f"OPERATION-NAME=findItemsByKeywords&SERVICE-VERSION=1.0.0&SECURITY-APPNAME={_EBAY_APP_ID}&RESPONSE-DATA-FORMAT=JSON&keywords={urllib.parse.quote(keyword)}&paginationInput.entriesPerPage=3"
+            async with aiohttp.ClientSession() as s:
+                async with s.get(f"https://svcs.ebay.com/services/search/FindingService/v1?{params}", timeout=aiohttp.ClientTimeout(total=8)) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        items = data.get("findItemsByKeywordsResponse", [{}])[0].get("searchResult", [{}])[0].get("item", [])
+                        for item in items[:3]:
+                            results.append({"title": item.get("title", [""])[0], "url": item.get("viewItemURL", [""])[0], "source": "ebay", "price": item.get("sellingStatus", [{}])[0].get("currentPrice", [{}])[0].get("__value__", "")})
+        except Exception as e:
+            logger.warning(f"eBay API: {e}")
+    elif source in ("ebay", "all"):
+        import urllib.parse as _up
+        ebay_url = f"https://www.ebay.de/sch/i.html?_nkw={_up.quote(keyword)}"
+        results.append({"title": f"eBay: {keyword}", "url": ebay_url, "source": "ebay", "price": ""})
+    return results
+
+
+async def seo_push_keyword(keyword: str, url: str = "") -> bool:
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(f"{_SEO_ENGINE}/api/trigger/articles", json={"keyword": keyword}, timeout=aiohttp.ClientTimeout(total=8)) as r:
+                return r.status == 200
+    except Exception:
+        return False
+# ── End SEO Bridge ──────────────────────────────────────────────────────────
+
 PRODUCTS = [
     {"name": "Shopify Acquisition Engine", "url": "https://shopify-acquisition-engine-production.up.railway.app", "price": "€49/mo", "tagline": "KI findet automatisch Bestseller-Produkte für deinen Shopify-Store"},
     {"name": "SEO Turbo Tools", "url": "https://seo-turbo-tools-production.up.railway.app", "price": "€29/mo", "tagline": "Automatische SEO-Analyse & Meta-Description Generator"},
@@ -339,6 +379,14 @@ async def ingest_handler(request):
         return web.json_response({"error": str(e)}, status=500)
 
 
+async def seo_products_handler(request):
+    from aiohttp import web
+    keyword = request.rel_url.query.get("keyword", "facebook marketing automatisierung")
+    source = request.rel_url.query.get("source", "all")
+    products = await seo_get_products(keyword, source)
+    return web.json_response({"keyword": keyword, "products": products, "seo_engine": _SEO_ENGINE})
+
+
 async def posts_handler(request):
     from aiohttp import web
     conn = sqlite3.connect(DB_PATH)
@@ -360,6 +408,7 @@ async def main():
     app.router.add_post("/api/trigger", trigger_handler)
     app.router.add_get("/api/posts", posts_handler)
     app.router.add_post("/api/ingest", ingest_handler)
+    app.router.add_get("/api/seo/products", seo_products_handler)
 
     runner = web.AppRunner(app)
     await runner.setup()
