@@ -19,6 +19,11 @@ IG_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID", os.getenv("IG_ACCOUNT_ID", "")
 PINTEREST_ACCESS_TOKEN = os.getenv("PINTEREST_ACCESS_TOKEN", "")
 PINTEREST_BOARD_ID = os.getenv("PINTEREST_BOARD_ID", "")
 PORT = int(os.getenv("PORT", 8091))
+MC_API_KEY  = os.getenv("MAILCHIMP_API_KEY", "")
+MC_SERVER   = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
+MC_LIST_ID  = os.getenv("MAILCHIMP_LIST_ID", "")
+KV_API_KEY  = os.getenv("KLAVIYO_API_KEY", "")
+KV_LIST_ID  = os.getenv("KLAVIYO_LIST_ID", "")
 
 # ── SEO Traffic Engine Bridge ──────────────────────────────────────────────
 _SEO_ENGINE = os.getenv("SEO_ENGINE_URL", "https://seo-traffic-engine-production.up.railway.app")
@@ -49,6 +54,25 @@ async def seo_get_products(keyword: str, source: str = "all") -> list:
         ebay_url = f"https://www.ebay.de/sch/i.html?_nkw={_up.quote(keyword)}"
         results.append({"title": f"eBay: {keyword}", "url": ebay_url, "source": "ebay", "price": ""})
     return results
+
+
+async def klaviyo_track(event: str, props: dict):
+    if not KV_API_KEY:
+        return
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                "https://a.klaviyo.com/api/events/",
+                headers={"Authorization": f"Klaviyo-API-Key {KV_API_KEY}",
+                         "revision": "2024-06-15", "Content-Type": "application/json"},
+                json={"data": {"type": "event", "attributes": {
+                    "metric": {"data": {"type": "metric", "attributes": {"name": event}}},
+                    "properties": props,
+                }}},
+                timeout=aiohttp.ClientTimeout(total=8),
+            )
+    except Exception:
+        pass
 
 
 async def seo_push_keyword(keyword: str, url: str = "") -> bool:
@@ -290,6 +314,12 @@ async def content_cycle():
         f"🔗 {product['url']}"
     )
 
+    await klaviyo_track("Meta Content Cycle", {
+        "product": product["name"],
+        "facebook_posted": fb_posted,
+        "instagram_posted": ig_posted,
+        "pinterest_posted": pin_posted,
+    })
     logger.info(f"Content cycle done — FB:{fb_posted} IG:{ig_posted} PIN:{pin_posted} Product:{product['name']}")
 
 

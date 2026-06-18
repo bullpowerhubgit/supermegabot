@@ -18,7 +18,11 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
 TIKTOK_APP_KEY = os.getenv("TIKTOK_APP_KEY", "")
 TIKTOK_APP_SECRET = os.getenv("TIKTOK_APP_SECRET", "")
 TIKTOK_ACCESS_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN", os.getenv("TIKTOK_RESEARCH_TOKEN", ""))
-PORT = int(os.getenv("PORT", 8092))
+PORT        = int(os.getenv("PORT", 8092))
+KV_API_KEY  = os.getenv("KLAVIYO_API_KEY", "")
+MC_API_KEY  = os.getenv("MAILCHIMP_API_KEY", "")
+MC_SERVER   = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
+MC_LIST_ID  = os.getenv("MAILCHIMP_LIST_ID", "")
 
 PRODUCTS = [
     {"name": "Shopify Acquisition Engine", "url": "https://shopify-acquisition-engine-production.up.railway.app", "price": "49€/mo", "niche": "E-Commerce Automatisierung"},
@@ -43,6 +47,25 @@ def init_db():
     )""")
     conn.commit()
     conn.close()
+
+
+async def klaviyo_track(event: str, props: dict):
+    if not KV_API_KEY:
+        return
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                "https://a.klaviyo.com/api/events/",
+                headers={"Authorization": f"Klaviyo-API-Key {KV_API_KEY}",
+                         "revision": "2024-06-15", "Content-Type": "application/json"},
+                json={"data": {"type": "event", "attributes": {
+                    "metric": {"data": {"type": "metric", "attributes": {"name": event}}},
+                    "properties": props,
+                }}},
+                timeout=aiohttp.ClientTimeout(total=8),
+            )
+    except Exception:
+        pass
 
 
 async def send_telegram(msg: str):
@@ -206,6 +229,11 @@ async def content_cycle():
     )
 
     logger.info(f"Cycle done — Pinterest:{pinterest_posted} Discord:{discord_posted}")
+    await klaviyo_track("Visual Content Cycle", {
+        "product": product["name"],
+        "pinterest_posted": pinterest_posted,
+        "discord_posted": discord_posted,
+    })
 
 
 async def scheduler():
