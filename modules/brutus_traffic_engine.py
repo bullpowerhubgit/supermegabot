@@ -310,6 +310,37 @@ async def deploy_to_shopify_blog(keyword: str, content: dict) -> bool:
     return False
 
 
+async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
+    """Facebook Page IWIN — automatisch posten."""
+    page_token = os.getenv("FACEBOOK_PAGE_TOKEN", "")
+    page_id    = os.getenv("FACEBOOK_PAGE_ID", "1135864516276500")
+    if not page_token:
+        return False
+    social = content.get("social_post", "")
+    if not social:
+        return False
+    # Take the LinkedIn-style part (medium length)
+    lines = [l.strip() for l in social.split("\n") if l.strip()]
+    post_text = "\n".join(lines[:8])[:900]
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                f"https://graph.facebook.com/v19.0/{page_id}/feed",
+                data={"message": post_text, "access_token": page_token},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                data = await r.json(content_type=None)
+        if data.get("id"):
+            log.info("BRUTUS: Facebook post published — %s", data["id"])
+            return True
+        log.warning("BRUTUS: Facebook post error: %s", data)
+        return False
+    except Exception as exc:
+        log.warning("Facebook deploy error: %s", exc)
+        return False
+
+
 async def deploy_to_klaviyo_campaign(keyword: str, content: dict):
     """Klaviyo — Email-Kampagne für viralen Trend."""
     klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
@@ -507,6 +538,7 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
             deploy_to_telegram(keyword, content_pack),
             deploy_to_shopify_blog(keyword, content_pack),
             deploy_to_klaviyo_campaign(keyword, content_pack),
+            deploy_to_facebook_page(keyword, content_pack),
         ]
         deploy_results = await asyncio.gather(*deploy_tasks, return_exceptions=True)
 
