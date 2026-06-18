@@ -5070,7 +5070,7 @@ async def handle_scheduler_status(req):
 
 
 async def handle_brutus_run(req):
-    """POST /api/brutus/run — manually trigger BRUTUS traffic engine."""
+    """POST /api/brutus/run — trigger BRUTUS in background, returns immediately."""
     try:
         body = {}
         try:
@@ -5080,9 +5080,20 @@ async def handle_brutus_run(req):
         niche = body.get("niche", "shopify automation ecommerce")
         keywords = body.get("keywords", ["Shopify Automatisierung", "Dropshipping 2026", "Passives Einkommen"])
 
-        from modules.brutus_traffic_engine import brutus_run
-        result = await brutus_run(niche=niche, custom_keywords=keywords)
-        return web.json_response({"status": "ok", "result": result})
+        async def _bg():
+            try:
+                from modules.brutus_traffic_engine import brutus_run
+                await brutus_run(niche=niche, custom_keywords=keywords)
+            except Exception as exc:
+                logging.getLogger("BRUTUS").error("Background run error: %s", exc)
+
+        asyncio.ensure_future(_bg())
+        return web.json_response({
+            "status": "started",
+            "niche": niche,
+            "keywords": keywords,
+            "message": "BRUTUS läuft im Hintergrund — Check /api/brutus/status in 3-5 Min"
+        })
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
