@@ -31,7 +31,17 @@ SCOPES = [
     "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/youtube.readonly",
+    "https://www.googleapis.com/auth/youtube.force-ssl",  # write: community posts, playlists
+    "https://www.googleapis.com/auth/youtube.upload",     # upload videos
     "https://www.googleapis.com/auth/content",   # GMC Merchant Center
+    "https://www.googleapis.com/auth/userinfo.email",
+    "openid",
+]
+
+YOUTUBE_SCOPES = [
+    "https://www.googleapis.com/auth/youtube.readonly",
+    "https://www.googleapis.com/auth/youtube.force-ssl",
+    "https://www.googleapis.com/auth/youtube.upload",
     "https://www.googleapis.com/auth/userinfo.email",
     "openid",
 ]
@@ -93,7 +103,7 @@ def _update_env_token(access_token: str):
 
 # ── Authorization URL ─────────────────────────────────────────────────────────
 
-def get_auth_url(state: str = "smb") -> str:
+def get_auth_url(state: str = "smb", scopes: list = None) -> str:
     """Generate the Google OAuth2 authorization URL."""
     cid = _client_id()
     if not cid:
@@ -102,12 +112,17 @@ def get_auth_url(state: str = "smb") -> str:
         "client_id":     cid,
         "redirect_uri":  _redirect_uri(),
         "response_type": "code",
-        "scope":         " ".join(SCOPES),
+        "scope":         " ".join(scopes or SCOPES),
         "access_type":   "offline",
         "prompt":        "consent",
         "state":         state,
     }
     return f"{_AUTH_URL}?{urllib.parse.urlencode(params)}"
+
+
+def get_youtube_auth_url() -> str:
+    """Generate OAuth2 URL scoped specifically for YouTube write access."""
+    return get_auth_url(state="youtube", scopes=YOUTUBE_SCOPES)
 
 
 # ── Token Exchange ────────────────────────────────────────────────────────────
@@ -248,6 +263,61 @@ async def get_status() -> Dict:
         "obtained_at":  tokens.get("obtained_at", ""),
         "refreshed_at": tokens.get("refreshed_at", ""),
     }
+
+
+# ── YouTube-specific status ───────────────────────────────────────────────────
+
+async def get_youtube_status() -> Dict:
+    """Return YouTube connection status, including channel info if authenticated."""
+    import os as _os
+    tokens = _load_tokens()
+    yt_key  = _os.getenv("YOUTUBE_API_KEY", "")
+    chan_id = _os.getenv("YOUTUBE_CHANNEL_ID", "")
+    has_oauth = bool(tokens and tokens.get("access_token"))
+    has_upload_scope = "youtube.upload" in tokens.get("scope", "") if tokens else False
+
+    base = {
+        "ok":               has_oauth,
+        "has_oauth":        has_oauth,
+        "has_api_key":      bool(yt_key),
+        "has_channel_id":   bool(chan_id),
+        "has_upload_scope": has_upload_scope,
+        "auth_url":         get_youtube_auth_url() if _client_id() and not has_oauth else None,
+    }
+
+    if not has_oauth:
+        base["error"] = "Nicht eingeloggt — OAuth2 Flow starten"
+        return base
+
+    token = await ensure_valid_token()
+    if not token:
+        base["ok"] = False
+        base["error"] = "Token abgelaufen und Refresh fehlgeschlagen"
+        return base
+
+    if chan_id:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.get(
+                    "https://www.googleapis.com/youtube/v3/channels",
+                    params={"part": "snippet,statistics", "id": chan_id},
+                    headers={"Authorization": f"Bearer {token}"},
+                ) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        items = data.get("items", [])
+                        if items:
+                            snippet = items[0].get("snippet", {})
+                            stats   = items[0].get("statistics", {})
+                            base["channel_title"]      = snippet.get("title", "")
+                            base["subscriber_count"]   = stats.get("subscriberCount", "?")
+                            base["video_count"]        = stats.get("videoCount", "?")
+                    else:
+                        base["channel_error"] = f"HTTP {r.status}"
+        except Exception as exc:
+            base["channel_error"] = str(exc)
+
+    return base
 
 
 # ── Revoke ────────────────────────────────────────────────────────────────────
