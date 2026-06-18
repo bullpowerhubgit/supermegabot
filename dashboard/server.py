@@ -3956,6 +3956,7 @@ async def create_app():
     app.router.add_post("/api/hermes/notify",         handle_hermes_notify)
     app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
     app.router.add_get("/api/content/stats",          handle_content_stats)
+    app.router.add_post("/api/ingest",                handle_seo_ingest)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -4314,6 +4315,31 @@ async def handle_hermes_notify(req):
     metadata = body.get("metadata", {})
     await _hermes_push_event(service, event_type, message, channel, metadata)
     return web.json_response({"ok": True, "service": service, "channel": channel})
+
+
+async def handle_seo_ingest(req):
+    """Receive SEO article broadcasts from seo-traffic-engine and notify via Telegram."""
+    try:
+        data = await req.json()
+        title = data.get("title", "")
+        keyword = data.get("keyword", "")
+        url = data.get("url", "")
+        product_name = data.get("product_name", "")
+        product_url = data.get("product_url", "")
+        msg = (
+            f"📰 <b>SEO Artikel → SuperMegaBot</b>\n"
+            f"🔑 {keyword}\n"
+            f"📄 {title}\n"
+            f"🔗 {url}"
+        )
+        if product_name:
+            msg += f"\n🛒 {product_name}: {product_url}"
+        if TELEGRAM_TOKEN and TELEGRAM_CHAT_ID:
+            asyncio.create_task(_tg_notify(msg))
+        return web.json_response({"status": "ok", "service": "supermegabot", "processed": title})
+    except Exception as e:
+        log.error(f"SEO ingest error: {e}")
+        return web.json_response({"error": str(e)}, status=500)
 
 
 async def handle_reality_check(req):
