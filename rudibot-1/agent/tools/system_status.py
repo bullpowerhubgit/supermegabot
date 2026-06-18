@@ -2,10 +2,13 @@ import aiohttp
 from claude_agent_sdk import tool
 
 SERVICES = {
-    "icomeauto":   "https://icomeauto-production.up.railway.app/health",
-    "shopify":     "https://shopify-acquisition-engine-production.up.railway.app/health",
-    "digistore":   "https://digistore24-automation-production.up.railway.app/api/health",
-    "supermegabot":"https://supermegabot-production.up.railway.app/health",
+    "icomeauto":    "https://icomeauto-saas-production.up.railway.app/health",
+    "shopify":      "https://shopify-acquisition-engine-production.up.railway.app/health",
+    "digistore":    "https://digistore24-automation-production.up.railway.app/api/health",
+    "supermegabot": "https://dudirudibot-mega-production.up.railway.app/health",
+    "seo-tools":    "https://seo-turbo-tools-production.up.railway.app/health",
+    "adposter":     "https://adposter-engine-production.up.railway.app/health",
+    "steuercockpit":"https://steuercockpit-production-44c9.up.railway.app/health",
 }
 
 

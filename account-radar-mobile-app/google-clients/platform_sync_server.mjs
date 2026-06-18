@@ -280,7 +280,6 @@ const cancellationTargets = {
 const defaultState = {
   google: null,
   queue: [],
-  reminders: [],
   oauthStates: {},
   kmuSuite: {
     trial: {
@@ -427,7 +426,6 @@ function sanitizeState(state) {
   return {
     google,
     queue: state.queue || [],
-    reminders: state.reminders || [],
   };
 }
 
@@ -874,30 +872,6 @@ function discoverCryptoPlatformsFromMessages(messages) {
       }
       return a.name.localeCompare(b.name, "de");
     });
-}
-
-async function createCalendarReminder(accessToken, summary, dateTime) {
-  const start = new Date(dateTime);
-  const end = new Date(start.getTime() + 30 * 60 * 1000);
-  const response = await fetch("https://www.googleapis.com/calendar/v3/calendars/primary/events", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      summary,
-      start: { dateTime: start.toISOString() },
-      end: { dateTime: end.toISOString() },
-    }),
-  });
-
-  const payload = await response.json();
-  if (!response.ok) {
-    throw new Error(payload.error?.message || "Failed to create Google Calendar event");
-  }
-
-  return payload;
 }
 
 function googleConfigSummary(state) {
@@ -1532,32 +1506,6 @@ const server = http.createServer(async (req, res) => {
         plan,
         queued,
       });
-    }
-
-    if (req.method === "POST" && url.pathname === "/api/assistant/reminders") {
-      const body = await readJsonBody(req);
-      const summary = (body.summary || "").trim();
-      const dateTime = (body.dateTime || "").trim();
-      if (!summary || !dateTime) {
-        return json(res, 400, { error: "missing_fields" });
-      }
-
-      const { state: nextState, accessToken } = await ensureGoogleAccessToken(state);
-      const event = await createCalendarReminder(accessToken, summary, dateTime);
-      const reminder = {
-        id: event.id,
-        summary,
-        dateTime,
-        htmlLink: event.htmlLink || "",
-        createdAt: new Date().toISOString(),
-      };
-      const persistedState = {
-        ...nextState,
-        reminders: [reminder, ...(nextState.reminders || [])].slice(0, 25),
-      };
-      await writeState(persistedState);
-
-      return json(res, 200, reminder);
     }
 
     if (req.method === "POST" && url.pathname === "/api/assistant/queue") {
