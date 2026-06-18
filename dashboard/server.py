@@ -4252,6 +4252,9 @@ async def create_app():
     app.router.add_get("/api/hermes/stats",           handle_hermes_stats)
     app.router.add_get("/api/content/stats",          handle_content_stats)
     app.router.add_post("/api/ingest",                handle_seo_ingest)
+    app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
+    app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
+    app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -4799,6 +4802,38 @@ async def handle_seo_ingest(req):
         return web.json_response({"status": "ok", "service": "supermegabot", "processed": title})
     except Exception as e:
         log.error(f"SEO ingest error: {e}")
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_email_brain_stats(req):
+    """GET /api/email/brain/stats — daily stats from EmailBrain."""
+    try:
+        from pathlib import Path as _Path
+        import json as _json
+        stats_file = _Path(os.getenv("DATA_DIR", "data")) / "email_stats.json"
+        stats = _json.loads(stats_file.read_text()) if stats_file.exists() else {}
+        return web.json_response({"status": "ok", "stats": stats})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_email_brain_check(req):
+    """POST /api/email/brain/check — trigger immediate email check."""
+    try:
+        from modules.email_brain import run_email_check
+        result = await run_email_check()
+        return web.json_response({"status": "ok", "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_email_brain_setup(req):
+    """GET /api/email/brain/setup — verify IMAP connectivity."""
+    try:
+        from modules.email_brain import run_email_setup_check
+        result = await run_email_setup_check()
+        return web.json_response({"status": "ok", "result": result})
+    except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
 
