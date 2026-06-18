@@ -45,7 +45,7 @@ async def get_orders(page=1, per_page=50):
     params = {
         "page_no": page,
         "page_size": per_page,
-        "from": (now - timedelta(days=90)).strftime("%Y-%m-%d"),
+        "from": (now - timedelta(days=365)).strftime("%Y-%m-%d"),
         "to": now.strftime("%Y-%m-%d"),
     }
     headers = {"X-DS-API-KEY": DS24_KEY}
@@ -98,12 +98,14 @@ async def get_sales_stats():
     week_start  = now - timedelta(days=7)
     month_start = now - timedelta(days=30)
 
-    totals = {"today": 0.0, "week": 0.0, "month": 0.0,
-              "orders_today": 0, "orders_week": 0, "orders_month": 0}
+    quarter_start = now - timedelta(days=90)
+    totals = {
+        "today": 0.0, "week": 0.0, "month": 0.0, "quarter": 0.0, "total": 0.0,
+        "orders_today": 0, "orders_week": 0, "orders_month": 0, "orders_quarter": 0, "orders_total": 0,
+    }
 
     for order in orders:
-        # Try to parse date from various DS24 field names
-        raw_date = order.get("date") or order.get("order_date") or order.get("created_at") or ""
+        raw_date = order.get("transaction_pay_date") or order.get("created_at") or order.get("transaction_created_at") or ""
         try:
             if raw_date:
                 order_dt = datetime.strptime(raw_date[:10], "%Y-%m-%d")
@@ -113,7 +115,7 @@ async def get_sales_stats():
             continue
 
         amount = 0.0
-        for field in ("amount", "total", "gross_revenue", "price"):
+        for field in ("amount", "transaction_amount", "earned_amount", "total", "price"):
             try:
                 amount = float(order.get(field, 0) or 0)
                 if amount:
@@ -121,6 +123,11 @@ async def get_sales_stats():
             except (ValueError, TypeError):
                 pass
 
+        totals["total"] += amount
+        totals["orders_total"] += 1
+        if order_dt >= quarter_start:
+            totals["quarter"] += amount
+            totals["orders_quarter"] += 1
         if order_dt >= month_start:
             totals["month"] += amount
             totals["orders_month"] += 1
@@ -131,9 +138,8 @@ async def get_sales_stats():
             totals["today"] += amount
             totals["orders_today"] += 1
 
-    totals["today"]  = round(totals["today"], 2)
-    totals["week"]   = round(totals["week"], 2)
-    totals["month"]  = round(totals["month"], 2)
+    for k in ("today", "week", "month", "quarter", "total"):
+        totals[k] = round(totals[k], 2)
     return totals
 
 
