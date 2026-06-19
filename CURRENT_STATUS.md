@@ -1,5 +1,5 @@
 # SuperMegaBot — Aktueller Status (Auto-Update)
-> Zuletzt aktualisiert: 2026-06-19 00:45 UTC | Wenn Claude neu startet → Diese Datei zuerst lesen!
+> Zuletzt aktualisiert: 2026-06-19 03:30 UTC | Wenn Claude neu startet → Diese Datei zuerst lesen!
 
 ## System-Status (geprüft 2026-06-19)
 | Service | URL | Status |
@@ -27,6 +27,13 @@
 | Digistore24 | €111 (3 Bestellungen gesamt) |
 | Stripe (Neu) | €0 (Checkouts bereit, noch kein Kauf) |
 | Shopify | €0 heute |
+
+## Neue Features (2026-06-19 Session v3 — REVOLUTION MAX)
+- Twitter OAuth 1.0a implementiert — Credentials gesetzt in Railway ✅
+- BRUTUS aiohttp Import Fix — alle 10 Content-Agenten aktiv ✅
+- CRO Klaviyo Revision Fix (2024-10-15) ✅
+- Google Trends XML Parse robust gemacht ✅
+- Twitter: developer.twitter.com → App → Read+Write Permission nötig (1 Klick)
 
 ## Neue Features (2026-06-19 Session v2 — BRUTUS ÜBERALL)
 - `modules/mega_auto_poster.py` — 9-Kanal gleichzeitig (TG+FB×2+IG+Shopify+Klaviyo+MC+SG+Twitter) ✅
