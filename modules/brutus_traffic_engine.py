@@ -26,6 +26,8 @@ from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
 
+from modules.circuit_breaker import is_open, success as cb_success, failure as cb_failure, protected
+
 log = logging.getLogger("BRUTUS")
 
 DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "brutus"))
@@ -389,6 +391,8 @@ async def deploy_to_shopify_blog(keyword: str, content: dict) -> bool:
 
 async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
     """Facebook Page IWIN — automatisch posten."""
+    if is_open("facebook"):
+        return False
     page_token = os.getenv("FACEBOOK_PAGE_TOKEN", "")
     page_id    = os.getenv("FACEBOOK_PAGE_ID", "1135864516276500")
     if not page_token:
@@ -409,21 +413,29 @@ async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
             ) as r:
                 data = await r.json(content_type=None)
         if data.get("id"):
+            cb_success("facebook")
             log.info("BRUTUS: Facebook post published — %s", data["id"])
             return True
         err = data.get("error", {})
-        if err.get("code") in (100, 190, 10):
-            log.debug("BRUTUS: Facebook skip (token/permission): %s", err.get("message","")[:80])
+        code = err.get("code", 0)
+        msg  = err.get("message", "")[:80]
+        if code in (100, 190, 10, 200):
+            cb_failure("facebook", msg, code)
+            log.debug("BRUTUS: Facebook circuit opened (perm/auth %s)", code)
         else:
-            log.warning("BRUTUS: Facebook post error %s: %s", err.get("code"), err.get("message","")[:80])
+            cb_failure("facebook", msg, code)
+            log.warning("BRUTUS: Facebook post error %s: %s", code, msg)
         return False
     except Exception as exc:
+        cb_failure("facebook", str(exc))
         log.warning("Facebook deploy error: %s", exc)
         return False
 
 
 async def deploy_to_instagram(keyword: str, content: dict) -> bool:
     """Instagram @aaiitecc — auto-post via Facebook Graph API (text as image caption)."""
+    if is_open("instagram"):
+        return False
     ig_user_id = os.getenv("INSTAGRAM_ID_AIITEC", "17841478315197796")
     page_token  = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", "")
     if not page_token or not ig_user_id:
@@ -454,8 +466,9 @@ async def deploy_to_instagram(keyword: str, content: dict) -> bool:
 
             container_id = media_data.get("id", "")
             if not container_id:
-                # Fallback: try text-only reel description (not standard but some accounts allow)
-                log.warning("BRUTUS: IG container creation failed: %s", media_data)
+                err = media_data.get("error", {})
+                cb_failure("instagram", err.get("message", str(media_data))[:80], err.get("code", 0))
+                log.debug("BRUTUS: IG container failed (circuit opened): %s", err.get("message","")[:60])
                 return False
 
             # Step 2: Publish
@@ -467,12 +480,16 @@ async def deploy_to_instagram(keyword: str, content: dict) -> bool:
                 pub_data = await r.json(content_type=None)
 
         if pub_data.get("id"):
+            cb_success("instagram")
             log.info("BRUTUS: Instagram post published — %s", pub_data["id"])
             return True
-        log.warning("BRUTUS: Instagram publish error: %s", pub_data)
+        err = pub_data.get("error", {})
+        cb_failure("instagram", err.get("message", str(pub_data))[:80], err.get("code", 0))
+        log.debug("BRUTUS: Instagram publish error (circuit opened): %s", err.get("message","")[:60])
         return False
     except Exception as exc:
-        log.warning("Instagram deploy error: %s", exc)
+        cb_failure("instagram", str(exc))
+        log.debug("Instagram deploy error: %s", exc)
         return False
 
 
@@ -700,6 +717,8 @@ async def post_to_reddit(keyword: str, content_pack: dict) -> dict:
 
 async def post_to_linkedin_brutus(keyword: str, content_pack: dict) -> dict:
     """Post AI content to LinkedIn via BRUTUS."""
+    if is_open("linkedin"):
+        return {"skipped": True, "reason": "circuit_open:linkedin"}
     import aiohttp
     token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
     urn   = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
@@ -726,15 +745,15 @@ async def post_to_linkedin_brutus(keyword: str, content_pack: dict) -> dict:
             async with s.post("https://api.linkedin.com/v2/ugcPosts",
                               headers=headers, json=payload) as r:
                 if r.status in (200, 201):
+                    cb_success("linkedin")
                     log.info("BRUTUS LinkedIn: posted for '%s'", keyword)
                     return {"posted": True}
-                if r.status == 429:
-                    log.info("BRUTUS LinkedIn 429 — rate limit, skipping this cycle")
-                    return {"skipped": True, "reason": "rate_limit_429"}
-                err = await r.text()
-                log.warning("BRUTUS LinkedIn HTTP %s: %s", r.status, err[:80])
+                err_text = await r.text()
+                cb_failure("linkedin", err_text[:80], r.status)
+                log.debug("BRUTUS LinkedIn %s — circuit opened", r.status)
                 return {"skipped": True, "status": r.status}
     except Exception as e:
+        cb_failure("linkedin", str(e))
         log.error("BRUTUS LinkedIn error: %s", e)
         return {"skipped": True, "error": str(e)}
 
