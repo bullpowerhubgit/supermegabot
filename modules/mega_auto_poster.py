@@ -109,12 +109,25 @@ Antworte NUR mit JSON:
         return _fallback_content(product_name, price, url)
 
 
+_FALLBACK_ROTATION = [
+    ("🔥 Limitiert", "🚀 {n} — Dein Weg zu passivem Einkommen! Nur €{p}. Jetzt starten: {u}", "KI verdient für dich — 24/7 automatisch. Starte noch heute!"),
+    ("💡 KI-Einkommen", "💡 Mit KI-Automatisierung zu passivem Einkommen. {n} für nur €{p} 👉 {u}", "Das vollautomatische Business-System — starte sofort durch!"),
+    ("📈 Passiv verdienen", "📈 Während du schläfst verdient {n} für dich. €{p} — einmalig investieren: {u}", "Finanzielle Freiheit durch KI-Automatisierung. Jetzt testen!"),
+    ("🎯 Jetzt starten", "🎯 Stop working hard — start working smart! {n} für €{p}: {u}", "KI-gestütztes passives Einkommen. Bereits hunderte zufriedene Kunden."),
+    ("⚡ Vollautomatisch", "⚡ {n}: Das vollautomatische Einkommens-System. €{p}. Klick: {u}", "Nie wieder aktiv für Geld arbeiten müssen. KI macht alles."),
+]
+
+
 def _fallback_content(name: str, price: float, url: str) -> dict:
+    import time
+    idx = int(time.time() // 1800) % len(_FALLBACK_ROTATION)  # rotates every 30min
+    ttl, body_tmpl, email_tmpl = _FALLBACK_ROTATION[idx]
+    body = body_tmpl.format(n=name, p=f"{price:.2f}", u=url)
     return {
-        "title": f"🔥 {name} — jetzt für €{price:.2f}",
-        "body": f"🚀 {name} — Dein Weg zu passivem Einkommen! Nur €{price:.2f}. Jetzt starten: {url}",
-        "email_subject": f"Exklusiv: {name} für €{price:.2f}",
-        "email_body": f"Entdecke {name} für nur €{price:.2f}. Klick jetzt: {url}",
+        "title": f"{ttl}: {name} — €{price:.2f}",
+        "body": body,
+        "email_subject": f"{ttl}: {name} für €{price:.2f}",
+        "email_body": f"{email_tmpl}\n\n{name} für nur €{price:.2f}. Klick jetzt: {url}",
         "hashtags": ["PassivesEinkommen", "OnlineGeldVerdienen", "KI", "Ecommerce", "BullPower"],
         "cta": f"Jetzt kaufen für €{price:.2f}",
         "blog_title": f"{name} — Der komplette Guide 2026",

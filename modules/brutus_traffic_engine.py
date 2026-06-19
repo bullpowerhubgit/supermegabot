@@ -211,11 +211,56 @@ async def _generate_single(session, keyword: str, format_type: str, angle: str =
         return ""
 
 
+_BRUTUS_TEMPLATES = [
+    {
+        "social_post": "🔥 {kw} — Der smarteste Weg zu passivem Einkommen 2026!\n\n✅ Vollautomatisch\n✅ KI-gestützt\n✅ Bereits hunderte zufriedene Kunden\n\n👉 Jetzt starten: https://www.digistore24.com/product/669750\n\n#PassivesEinkommen #KI #OnlineGeldVerdienen #BullPower #Digistore24",
+        "blog_post": "<h1>{kw} — Dein Weg zu passivem Einkommen 2026</h1><p>Mit modernster KI-Technologie generierst du vollautomatisch Einnahmen. Unser System läuft 24/7 für dich. <a href='https://www.digistore24.com/product/669750'>Jetzt starten →</a></p>",
+        "email_subject_lines": "5 Wege zu passivem Einkommen mit {kw}\nWarum {kw} 2026 funktioniert\nDein vollautomatisches Einkommen mit KI\nSo verdienst du mit {kw} im Schlaf\nNeu: {kw} — Jetzt kostenlos testen",
+        "ad_copy": "HEADLINE: {kw} — Jetzt €497 sparen!\nBODY: Vollautomatisches Einkommen mit KI. 24/7 für dich. Bereits 500+ zufriedene Kunden.\nCTA: Jetzt starten →\nURL: https://www.digistore24.com/product/669750",
+    },
+    {
+        "social_post": "💡 Kennst du das? Arbeitest du hart, aber das Geld reicht nicht?\n\n{kw} hat bei mir alles verändert:\n→ Vollautomatisch €500–2000/Monat\n→ KI übernimmt alles\n→ Starte heute noch\n\n🔗 https://www.digistore24.com/product/669750\n\n#Freiheit #PassivesEinkommen #KIBusiness",
+        "blog_post": "<h1>Wie {kw} dein Leben verändern kann</h1><p>Stell dir vor: Dein Einkommen läuft automatisch. KI arbeitet für dich. Du hast Zeit für das Wichtige. Das ist kein Traum — das ist <a href='https://www.digistore24.com/product/669750'>{kw}</a>.</p>",
+        "email_subject_lines": "Achtung: {kw} verändert alles\n[Neu] Passives Einkommen mit {kw}\nLetzter Platz: {kw} Masterkurs\nKostenlose Demo: {kw}\nWie Max €2.400/Monat mit {kw} verdient",
+        "ad_copy": "HEADLINE: {kw} — Passives Einkommen mit KI\nBODY: Vollautomatisch Geld verdienen. Kein Vorwissen nötig. Sofort starten.\nCTA: Kostenlos testen →\nURL: https://www.digistore24.com/product/669750",
+    },
+    {
+        "social_post": "📊 ERGEBNIS nach 30 Tagen mit {kw}:\n\nWoche 1: System aufgesetzt (2h)\nWoche 2: Erste €89 Einnahmen\nWoche 3: €312 passives Einkommen\nWoche 4: €847 ohne aktive Arbeit\n\nAlles automatisch. KI macht alles.\n👉 https://www.digistore24.com/product/669750\n\n#Ergebnis #KIBusiness #DigitalNomad",
+        "blog_post": "<h1>{kw}: Meine Erfahrung nach 30 Tagen</h1><p>Ich war skeptisch. Aber nach einem Monat mit <a href='https://www.digistore24.com/product/669750'>{kw}</a> bin ich überzeugt: Das System funktioniert. Vollautomatisch, KI-gestützt, und wirklich passiv.</p>",
+        "email_subject_lines": "Mein 30-Tage-Ergebnis mit {kw}\n€847 passiv — so geht's mit {kw}\n{kw}: Vorher/Nachher Vergleich\nWarum ich {kw} jedem empfehle\n{kw} — jetzt 50% Rabatt sichern",
+        "ad_copy": "HEADLINE: €847 in 30 Tagen — mit {kw}\nBODY: Echte Ergebnisse. KI-Automatisierung. Sofort startklar.\nCTA: Mein Ergebnis ansehen →\nURL: https://www.digistore24.com/product/669750",
+    },
+    {
+        "social_post": "🚀 BREAKING: {kw} jetzt verfügbar!\n\nWas du bekommst:\n✅ Vollautomatisches KI-System\n✅ Fertige Templates & Strategien\n✅ 24/7 Support\n✅ 30 Tage Geld-zurück-Garantie\n\nNur für kurze Zeit: Jetzt starten!\n🔗 https://www.digistore24.com/product/669750",
+        "blog_post": "<h1>{kw} 2026 — Alles was du wissen musst</h1><p>Das KI Business Blueprint revolutioniert passive Einnahmen. Mit <a href='https://www.digistore24.com/product/669750'>{kw}</a> startest du heute noch durch.</p>",
+        "email_subject_lines": "🚀 {kw} ist jetzt live!\nNeu: {kw} mit 30-Tage-Garantie\n{kw} — dein digitales Einkommen startet jetzt\nHast du {kw} schon gesehen?\n[Wichtig] {kw} Sonderangebot endet bald",
+        "ad_copy": "HEADLINE: {kw} — 30 Tage Geld-zurück!\nBODY: Risikolos starten. Vollautomatisch. KI macht alles für dich.\nCTA: Risikolos starten →\nURL: https://www.digistore24.com/product/669750",
+    },
+    {
+        "social_post": "💰 Frage: Wieviel verdienst du im Schlaf?\n\nMit {kw}:\n→ KI arbeitet 24h für dich\n→ Vollautomatische Leads\n→ Passives Einkommen Monat für Monat\n\nAntwort: So viel wie du willst.\n\n👉 Starte heute: https://www.digistore24.com/product/669750\n\n#PassivesEinkommen #KI2026 #FinanzielleFreiheit",
+        "blog_post": "<h1>Passives Einkommen mit {kw}: Der ultimative Guide</h1><p>Finanzielle Freiheit ist möglich. Mit <a href='https://www.digistore24.com/product/669750'>{kw}</a> automatisierst du dein Einkommen — KI übernimmt alles.</p>",
+        "email_subject_lines": "Passives Einkommen mit {kw}: So geht's\n{kw} — dein Einkommen läuft jetzt automatisch\nFinanzielle Freiheit mit {kw}\nNoch heute starten: {kw}\n{kw} — limitiertes Angebot sichern",
+        "ad_copy": "HEADLINE: Passives Einkommen mit {kw} — KI macht alles!\nBODY: Vollautomatisch. 24/7. Sofort startklar. Keine Vorkenntnisse nötig.\nCTA: Gratis Demo ansehen →\nURL: https://www.digistore24.com/product/669750",
+    },
+]
+
+
+def _fallback_content_swarm(keyword: str) -> dict:
+    import hashlib
+    idx = int(hashlib.md5(keyword.encode()).hexdigest(), 16) % len(_BRUTUS_TEMPLATES)
+    tmpl = _BRUTUS_TEMPLATES[idx]
+    return {k: v.replace("{kw}", keyword) for k, v in tmpl.items()}
+
+
 async def content_swarm(keyword: str, angle: str = "") -> dict:
     """
     10 parallele AI-Agenten generieren gleichzeitig alle Content-Formate.
-    Das ist der Kern von BRUTUS — was kein anderes Tool macht.
+    Fällt auf Template-Rotation zurück wenn kein Anthropic-Credit verfügbar.
     """
+    if not ANTHROPIC:
+        log.info("BRUTUS: kein Anthropic-Key — Template-Fallback für '%s'", keyword)
+        return _fallback_content_swarm(keyword)
+
     formats = [
         "blog_post", "youtube_desc", "email_subject_lines",
         "social_post", "product_seo", "ad_copy",
@@ -233,6 +278,10 @@ async def content_swarm(keyword: str, angle: str = "") -> dict:
     for fmt, result in zip(formats, results):
         if isinstance(result, str) and result:
             content_pack[fmt] = result
+
+    if not content_pack:
+        log.info("BRUTUS: AI returned empty — Template-Fallback für '%s'", keyword)
+        return _fallback_content_swarm(keyword)
 
     log.info("BRUTUS Swarm fertig: %d/%d Formate generiert", len(content_pack), len(formats))
     return content_pack
@@ -773,6 +822,20 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
 
     if custom_keywords:
         raw_trends = [{"keyword": k, "source": "custom"} for k in custom_keywords] + raw_trends
+
+    # Always seed with DS24 product keywords so Brutus runs even with no trend data
+    _ds24_seeds = [
+        {"keyword": "passives einkommen ki automatisierung 2026", "source": "seed"},
+        {"keyword": "digistore24 ki business blueprint", "source": "seed"},
+        {"keyword": "online geld verdienen vollautomatisch", "source": "seed"},
+        {"keyword": "shopify dropshipping automatisiert ki", "source": "seed"},
+        {"keyword": "finanzielle freiheit digitales business", "source": "seed"},
+    ]
+    if not raw_trends:
+        raw_trends = _ds24_seeds
+        log.info("Phase 1: No trends found — using DS24 seed keywords")
+    else:
+        raw_trends = _ds24_seeds[:2] + raw_trends  # always include 2 DS24 seeds
 
     log.info("Phase 1 done: %d raw trends found", len(raw_trends))
 
