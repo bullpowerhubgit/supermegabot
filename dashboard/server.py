@@ -4728,6 +4728,7 @@ async def create_app():
     app.router.add_post("/api/gumroad/webhook",       handle_gumroad_webhook)
 
     # ── Revenue Aggregator ────────────────────────────────────────────────────
+    app.router.add_get("/api/revenue",                handle_revenue_legacy)
     app.router.add_get("/api/revenue/status",         handle_revenue_status)
     app.router.add_get("/api/revenue/report",         handle_revenue_report)
 
