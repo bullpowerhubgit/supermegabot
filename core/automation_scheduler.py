@@ -1996,6 +1996,16 @@ async def task_twitter_seo_thread() -> str:
         return f"Twitter Thread Fehler: {e}"
 
 
+async def task_social_scheduler() -> str:
+    """Social Scheduler: Twitter → Telegram Fallback (alle 6h)."""
+    try:
+        from modules.social_scheduler import post_daily_content
+        result = await post_daily_content()
+        return f"SocialScheduler: {result}"
+    except Exception as e:
+        return f"SocialScheduler Fehler: {e}"
+
+
 # ── SEO MEGA ENGINE ───────────────────────────────────────────────────────────
 
 async def task_seo_mega_factory() -> str:
@@ -2407,6 +2417,8 @@ TASKS = [
     ("ultra_seo_cycle",         task_ultra_seo_cycle,         10800, 1130),  # 3h — Full Ultra SEO: IndexNow+Sitemap+Content
     ("ultra_indexnow_all",      task_ultra_indexnow_all,      21600, 1140),  # 6h — Alle 14+ Properties IndexNow
     ("ultra_seo_health",        task_ultra_seo_health,        14400, 1150),  # 4h — Property Health Check
+    # ── SOCIAL SCHEDULER — Twitter + Telegram Fallback ────────────────────────
+    ("social_scheduler",        task_social_scheduler,        21600, 1200),  # 6h — Twitter post; Telegram fallback
 ]
 
 
