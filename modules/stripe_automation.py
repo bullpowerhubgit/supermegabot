@@ -294,9 +294,19 @@ async def _auto_enroll_buyer(email: str, first_name: str, amount: float, sequenc
         log.warning("Klaviyo enroll failed: %s", e)
 
 
+async def _trello_card_for_event(etype: str, event_data: dict) -> None:
+    """Fire-and-forget Trello card creation for Stripe events."""
+    try:
+        from modules.trello_client import handle_stripe_event
+        await handle_stripe_event(etype, event_data)
+    except Exception as exc:
+        log.debug("Trello card skipped (token not set?): %s", exc)
+
+
 async def handle_webhook_event(event: Dict) -> str:
     etype = event.get("type", "")
     data  = event.get("data", {}).get("object", {})
+    asyncio.create_task(_trello_card_for_event(etype, event.get("data", {})))
 
     if etype == "payment_intent.succeeded":
         amount   = data.get("amount", 0) / 100
