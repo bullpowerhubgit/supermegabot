@@ -71,6 +71,9 @@ async def get_trending_topics() -> list[str]:
                 raw = await r.read()
         text = raw.decode("utf-8", errors="replace").lstrip("﻿")
         text = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
+        if not text.lstrip().startswith("<rss") and not text.lstrip().startswith("<?xml"):
+            log.warning("Trends: non-XML response — using fallback")
+            raise ValueError("non-XML")
         root = ET.fromstring(text)
         topics = [item.find("title").text.strip()
                   for item in root.iter("item")
