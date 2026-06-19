@@ -2284,9 +2284,9 @@ TASKS = [
     ("traffic_seo_run",         task_traffic_seo_run,          3600,  210),  # 1h — AI SEO+Traffic (war 6h)
     ("brutus_run",              task_brutus_run,               3600,    5),   # 1h — BRUTUS alle Kanäle (war 3h)
     ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
-    ("api_keys_health",         task_api_keys_health,         21600,  60),   # 6h
+    ("api_keys_health",         task_api_keys_health,         21600,  61),   # 6h
     ("trading_report",          task_trading_report,          21600,  240),  # 6h
-    ("printify_discover_shop",  task_printify_discover_shop,  21600,   5),   # 6h (fast start)
+    ("printify_discover_shop",  task_printify_discover_shop,  21600,   6),   # 6h (fast start)
     # ── Maintenance (hourly) ──────────────────────────────────────────────────
     ("env_auto_update",         task_env_auto_update,         3600,   8),    # 1h (fast start)
     ("printify_shopify_sync",   task_printify_shopify_sync,   3600,   170),  # 1h
@@ -2306,19 +2306,19 @@ TASKS = [
     # ── ContentHub (integriert alle 5 Content-Engines) ────────────────────
     ("content_cycle",           task_content_cycle,            3600,  400),  # 1h — SEO+Social+Twitter+FB (war 6h)
     ("freelance_cycle",         task_freelance_cycle,         14400,  420),  # 4h — Fiverr+Upwork (war 12h)
-    ("mega_auto_post",          task_mega_auto_post,           1800,   15),  # 30 Min — alle Kanäle gleichzeitig
+    ("mega_auto_post",          task_mega_auto_post,           1800,   16),  # 30 Min — alle Kanäle gleichzeitig
     # ── CRO + Auto Funnel ────────────────────────────────────────────────
-    ("cro_run",                 task_cro_run,                 3600,   120),  # hourly — Klaviyo flows + urgency
-    ("auto_funnel",             task_auto_funnel,             1800,    60),  # 30 min — DS24 buyers → funnel
+    ("cro_run",                 task_cro_run,                 3600,   121),  # hourly — Klaviyo flows + urgency
+    ("auto_funnel",             task_auto_funnel,             1800,    62),  # 30 min — DS24 buyers → funnel
     # ── Email Brain ──────────────────────────────────────────────────────
-    ("email_check",             task_email_check,              900,    30),  # 15 min — IMAP poll + AI classify + auto-reply
+    ("email_check",             task_email_check,              900,    31),  # 15 min — IMAP poll + AI classify + auto-reply
     ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
     ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
     ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
     ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
     ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
-    ("twitter_auto_post",       task_twitter_auto_post,      3600,    20),   # 1h — Auto-Tweet
-    ("shopify_blog_auto",       task_shopify_blog_auto,      7200,    45),   # 2h — Auto-Blog-Post
+    ("twitter_auto_post",       task_twitter_auto_post,      3600,    21),   # 1h — Auto-Tweet
+    ("shopify_blog_auto",       task_shopify_blog_auto,      7200,    46),   # 2h — Auto-Blog-Post
     # ── Email Sequences (drip processing) ────────────────────────────────
     ("email_seq_process",       task_email_seq_process,      3600,    55),   # 1h — process due drip emails
     ("email_seq_enroll",        task_email_seq_enroll,       1800,    65),   # 30 min — auto-enroll new Shopify buyers
@@ -2326,10 +2326,10 @@ TASKS = [
     ("lead_nurture",            task_lead_nurture,           3600,    70),   # 1h — process new leads → Klaviyo + sequence
     # ── Platform Posting (extra coverage) ────────────────────────────────
     ("pinterest_auto_post",     task_pinterest_auto_post,    7200,    80),   # 2h — Pinterest pins
-    ("telegram_broadcast",      task_telegram_broadcast,     21600,   90),   # 6h — Telegram channel post
+    ("telegram_broadcast",      task_telegram_broadcast,     21600,   91),   # 6h — Telegram channel post
     ("instagram_auto_post",     task_instagram_auto_post,    14400,  100),   # 4h — Instagram post
     ("linkedin_auto_post",      task_linkedin_auto_post,     21600,  110),   # 6h — LinkedIn AI post
-    ("youtube_auto_post",       task_youtube_auto_post,       7200,  120),   # 2h — YouTube community post
+    ("youtube_auto_post",       task_youtube_auto_post,       7200,  122),   # 2h — YouTube community post
     # ── Autonomy Max-Upgrades ─────────────────────────────────────────────
     ("competitor_monitor",      task_competitor_monitor,     86400,  500),   # daily — Konkurrenz-Check
     ("ab_test_analyze",         task_ab_test_analyze,        43200,  510),   # 12h — A/B Gewinner auswählen
@@ -2342,17 +2342,17 @@ TASKS = [
     ("viral_referral_trigger",  task_viral_referral_trigger, 86400,  570),   # daily — Viral Referral Loop
     ("onboarding_seq_trigger",  task_onboarding_sequence_trigger, 43200, 580), # 12h — 7-Day Onboarding
     # ── REVOLUTION v3: 10.000x SEO + Traffic + Backlinks + Revenue ───────────
-    ("seo_dominator",           task_seo_dominator,          7200,    25),   # 2h — Schema.org + IndexNow + Sitemap
-    ("backlink_bomber",         task_backlink_bomber,        7200,    35),   # 2h — IndexNow + RSS XML-RPC pings
-    ("content_velocity",        task_content_velocity,       7200,    55),   # 2h — 10-Format Content überall
-    ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   75),   # 4h — Reddit + Medium + LinkedIn
+    ("seo_dominator",           task_seo_dominator,          7200,    26),   # 2h — Schema.org + IndexNow + Sitemap
+    ("backlink_bomber",         task_backlink_bomber,        7200,    36),   # 2h — IndexNow + RSS XML-RPC pings
+    ("content_velocity",        task_content_velocity,       7200,    56),   # 2h — 10-Format Content überall
+    ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   76),   # 4h — Reddit + Medium + LinkedIn
     ("revenue_maximizer",       task_revenue_maximizer,      14400,   95),   # 4h — Cart Recovery + Winback
     ("free_syndication",        task_free_syndication,       21600,  115),   # 6h — Dev.to + Hashnode + Medium + Discord
     ("github_blog",             task_github_blog,            14400,  135),   # 4h — GitHub Pages SEO Blog
     # ── CONTENT FACTORY: AI-powered omnichannel content engine ───────────────
     ("content_factory_run",     task_content_factory_run,   14400,  130),   # 4h — full package from trending
-    ("social_batch_gen",        task_social_batch_gen,      86400,  150),   # daily — 30-day social calendar
-    ("trending_topic_scan",     task_trending_topic_scan,   43200,  170),   # 12h — catch viral waves early
+    ("social_batch_gen",        task_social_batch_gen,      86400,  151),   # daily — 30-day social calendar
+    ("trending_topic_scan",     task_trending_topic_scan,   43200,  171),   # 12h — catch viral waves early
     ("content_calendar_weekly", task_content_calendar_weekly, 604800, 190), # weekly — Monday calendar build
     # ── CONVERSION MAXIMIZER — 10 AI systems ─────────────────────────────────
     ("conversion_scan",         task_conversion_scan,         900,   610),  # 15min — A/B + social proof + lead scoring
@@ -2376,33 +2376,33 @@ TASKS = [
     # ── TRAFFIC SWARM — Multi-Platform Distribution ───────────────────────────
     ("traffic_swarm_full",      task_traffic_swarm_full,      21600, 4800),  # 6h — Full Swarm alle Module (1h20m)
     ("traffic_velocity",        task_traffic_velocity_check,   3600, 2700),  # 1h — Drop/Spike Detection (45m)
-    ("rss_rebuild",             task_rss_rebuild,             43200, 5400),  # 12h — RSS Feed rebuild (1h30m)
+    ("rss_rebuild",             task_rss_rebuild,             43200, 5401),  # 12h — RSS Feed rebuild (1h30m)
     ("content_freshness",       task_content_freshness,       86400, 6000),  # daily — Update alte Artikel (1h40m)
     ("backlink_outreach",       task_backlink_outreach_gen,   86400, 6600),  # daily — Outreach Emails (1h50m)
     # ── ADS ENGINE — Facebook/Google/TikTok ──────────────────────────────────
     ("ads_monitor",             task_ads_performance_monitor,  3600, 3000),  # 1h — Performance Check (50m)
-    ("ads_optimize",            task_ads_optimize_run,        14400, 5400),  # 4h — Pause Loser/Scale Winner (1h30m)
+    ("ads_optimize",            task_ads_optimize_run,        14400, 5402),  # 4h — Pause Loser/Scale Winner (1h30m)
     ("ads_rotate",              task_ads_creative_rotate,     86400, 7200),  # daily — Fresh Ad Copy (2h)
     # ── REVENUE INTELLIGENCE — Forecast + Leaks + Churn ──────────────────────
     ("revenue_autopilot",       task_revenue_autopilot_run,    3600, 2400),  # 1h — Full Revenue Scan (40m)
-    ("revenue_morning",         task_revenue_briefing_morning, 86400, 3600),  # daily — 8am Briefing (1h)
+    ("revenue_morning",         task_revenue_briefing_morning, 86400, 3601),  # daily — 8am Briefing (1h)
     ("revenue_leaks",           task_revenue_leak_check,       1800, 1800),  # 30min — Failed Payments (30m)
-    ("churn_prevention",        task_churn_prevention,        21600, 5400),  # 6h — Churn Risk Score (1h30m)
+    ("churn_prevention",        task_churn_prevention,        21600, 5403),  # 6h — Churn Risk Score (1h30m)
     # ── SHOPIFY MAX TUNER — Full Conversion Machine ───────────────────────────
-    ("shopify_max_seo",         task_shopify_max_seo,         14400, 4800),  # 4h — AI SEO alle Produkte (1h20m)
+    ("shopify_max_seo",         task_shopify_max_seo,         14400, 4801),  # 4h — AI SEO alle Produkte (1h20m)
     ("shopify_cart_recover",    task_shopify_cart_recover,     3600, 2100),  # 1h — Abandoned Cart Recovery (35m)
-    ("shopify_price_optimize",  task_shopify_price_optimize,  86400, 7200),  # daily — .99 Psychological Pricing (2h)
-    ("shopify_daily_intel",     task_shopify_daily_intel,     86400, 7200),  # daily — 7-Day Revenue Report (2h)
-    ("shopify_inventory",       task_shopify_inventory_check,  7200, 3600),  # 2h — Low Stock Alerts (1h)
-    ("shopify_reviews",         task_shopify_review_request,  14400, 5400),  # 4h — Review Request Emails (1h30m)
+    ("shopify_price_optimize",  task_shopify_price_optimize,  86400, 7201),  # daily — .99 Psychological Pricing (2h)
+    ("shopify_daily_intel",     task_shopify_daily_intel,     86400, 7202),  # daily — 7-Day Revenue Report (2h)
+    ("shopify_inventory",       task_shopify_inventory_check,  7200, 3602),  # 2h — Low Stock Alerts (1h)
+    ("shopify_reviews",         task_shopify_review_request,  14400, 5404),  # 4h — Review Request Emails (1h30m)
     # ── GROWTH HACKER — Viral + Influencer + Referral ────────────────────────
-    ("viral_trend",             task_viral_trend_scan,         7200, 2400),  # 2h — Reddit Trends (40m)
-    ("community_growth",        task_community_growth_post,    7200, 3600),  # 2h — Community Post (1h)
-    ("growth_briefing",         task_growth_morning_briefing, 86400, 7200),  # daily — 7am Briefing (2h)
-    ("influencer_pipeline",     task_influencer_pipeline,     86400, 7200),  # daily — Outreach List (2h)
-    ("press_release",           task_press_release_generate,  86400, 7200),  # daily — AI Press Release (2h)
-    ("testimonials",            task_testimonial_engine,      43200, 5400),  # 12h — Social Proof (1h30m)
-    ("referral_system",         task_referral_system_run,     43200, 6000),  # 12h — Referral Codes (1h40m)
+    ("viral_trend",             task_viral_trend_scan,         7200, 2401),  # 2h — Reddit Trends (40m)
+    ("community_growth",        task_community_growth_post,    7200, 3603),  # 2h — Community Post (1h)
+    ("growth_briefing",         task_growth_morning_briefing, 86400, 7203),  # daily — 7am Briefing (2h)
+    ("influencer_pipeline",     task_influencer_pipeline,     86400, 7204),  # daily — Outreach List (2h)
+    ("press_release",           task_press_release_generate,  86400, 7205),  # daily — AI Press Release (2h)
+    ("testimonials",            task_testimonial_engine,      43200, 5405),  # 12h — Social Proof (1h30m)
+    ("referral_system",         task_referral_system_run,     43200, 6001),  # 12h — Referral Codes (1h40m)
     # ── ULTRA SEO ARSENAL — 14+ Services IndexNow + Parasite SEO ─────────────
     ("ultra_seo_cycle",         task_ultra_seo_cycle,         10800, 1130),  # 3h — Full Ultra SEO: IndexNow+Sitemap+Content
     ("ultra_indexnow_all",      task_ultra_indexnow_all,      21600, 1140),  # 6h — Alle 14+ Properties IndexNow
