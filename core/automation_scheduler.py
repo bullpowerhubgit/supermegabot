@@ -1117,16 +1117,21 @@ async def task_mailchimp_auto_campaign() -> str:
 
 
 async def task_facebook_token_check() -> str:
-    """Täglicher Facebook Token Check — Alarm wenn abgelaufen."""
+    """Täglicher Facebook Token Check — Alarm wenn abgelaufen oder pages_manage_posts fehlt."""
     try:
         from modules.facebook_token_manager import check_token, refresh_all_tokens
         import os
+        # Check the page token (which is what's actually used for posting)
+        page_token = os.getenv("FACEBOOK_PAGE_TOKEN_IWIN") or os.getenv("FACEBOOK_PAGE_TOKEN", "")
         user_token = os.getenv("FACEBOOK_USER_TOKEN", "")
-        check = await check_token(user_token)
-        if not check.get("valid"):
-            result = await refresh_all_tokens()  # sends Telegram alert with OAuth URL
-            return f"FB token invalid — alert sent: {result.get('action_needed', False)}"
-        return f"FB token OK (type: {check.get('type', '?')})"
+        check = await check_token(page_token or user_token)
+        scopes = check.get("scopes", [])
+        has_post_scope = "pages_manage_posts" in scopes
+        if not check.get("valid") or not has_post_scope:
+            result = await refresh_all_tokens()  # sends Telegram OAuth URL
+            reason = "invalid" if not check.get("valid") else "missing pages_manage_posts"
+            return f"FB token {reason} — OAuth alert sent via Telegram"
+        return f"FB token OK — pages_manage_posts: {has_post_scope}, scopes: {len(scopes)}"
     except Exception as e:
         return f"FB token check error: {e}"
 
