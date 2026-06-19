@@ -60,6 +60,11 @@ def _tg_send(text: str) -> bool:
     return _http_post(url, {"chat_id": TG_CHAT, "text": text, "parse_mode": "HTML"})
 
 
+def send_telegram(text: str) -> bool:
+    """Public alias for _tg_send — used by traffic_seo_engine, brutus, ds24_funnel."""
+    return _tg_send(text)
+
+
 def _discord_send(title: str, body: str, color: int = 0x00ff88) -> bool:
     if not DISCORD_WH:
         return False
