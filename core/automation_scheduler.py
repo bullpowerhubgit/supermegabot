@@ -2142,6 +2142,41 @@ async def task_backlink_outreach_gen() -> str:
         return f"Outreach error: {e}"
 
 
+# ── TRAFFIC BLITZ ─────────────────────────────────────────────────────────────
+
+async def task_traffic_blitz_full() -> str:
+    try:
+        from modules.traffic_blitz import run_traffic_blitz
+        r = await run_traffic_blitz()
+        return f"TrafficBlitz: {r.get('channels_ok',0)}/4 OK | {r.get('topic','?')[:40]}"
+    except Exception as e:
+        return f"TrafficBlitz error: {e}"
+
+async def task_linkedin_burst() -> str:
+    try:
+        from modules.traffic_blitz import run_linkedin_burst
+        r = await run_linkedin_burst()
+        return f"LinkedIn Burst: {r.get('posted',0)}/{r.get('total',0)} posts"
+    except Exception as e:
+        return f"LinkedIn burst error: {e}"
+
+async def task_shopify_seo_blast() -> str:
+    try:
+        from modules.traffic_blitz import run_shopify_seo_blast
+        r = await run_shopify_seo_blast()
+        return f"Shopify SEO Blast: {r.get('published',0)} Artikel"
+    except Exception as e:
+        return f"Shopify SEO blast error: {e}"
+
+async def task_indexnow_mega_blast() -> str:
+    try:
+        from modules.traffic_blitz import indexnow_blast
+        r = await indexnow_blast()
+        return f"IndexNow: {r.get('submitted',0)} URLs an Google+Bing"
+    except Exception as e:
+        return f"IndexNow blast error: {e}"
+
+
 # ── ADS ENGINE ────────────────────────────────────────────────────────────────
 
 async def task_ads_performance_monitor() -> str:
@@ -2518,6 +2553,11 @@ TASKS = [
     ("dynamic_pricing_cycle",   task_dynamic_pricing_cycle,   14400, 7800),  # 4h — psychological .99 pricing
     ("tiktok_product_sync",     task_tiktok_sync,             21600, 8100),  # 6h — Shopify→TikTok Shop sync
     ("upsell_sequence_run",     task_upsell_sequence_run,     86400, 8400),  # daily — upsell enrolled buyers
+    # ── TRAFFIC BLITZ — Maximale Frequenz alle Kanäle ────────────────────────
+    ("traffic_blitz_full",      task_traffic_blitz_full,       7200, 9000),  # 2h — LinkedIn+Shopify+IndexNow+Telegram
+    ("linkedin_burst",          task_linkedin_burst,           8*3600, 9100), # 3x täglich LinkedIn Posts
+    ("shopify_seo_blast",       task_shopify_seo_blast,        14400, 9200), # 4h — 3 neue Shopify Blog-Posts
+    ("indexnow_mega_blast",     task_indexnow_mega_blast,      3600,  9300), # stündlich — alle URLs bei Google+Bing
 ]
 
 
