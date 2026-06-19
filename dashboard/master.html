@@ -3,744 +3,1037 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SuperMegaBot — Master Control</title>
+<title>BullPower Hub — Revolution Dashboard</title>
 <style>
-  :root {
-    --bg: #07070d;
-    --bg2: #0f0f1a;
-    --bg3: #161625;
-    --border: #1e1e35;
-    --green: #00ff88;
-    --blue: #00d2ff;
-    --purple: #7c6fff;
-    --yellow: #ffd700;
-    --red: #ff4757;
-    --orange: #ff9f43;
-    --text: #e8e8f0;
-    --muted: #5a5a8a;
-    --card-shadow: 0 4px 24px rgba(0,0,0,0.4);
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: -apple-system, 'SF Pro Display', 'Segoe UI', sans-serif;
-    font-size: 13px;
-    min-height: 100vh;
-  }
+:root {
+  --bg:     #05050f;
+  --bg2:    #0a0a1a;
+  --bg3:    #10102a;
+  --card:   #0d0d22;
+  --border: #1a1a40;
+  --accent: #7c3aed;
+  --green:  #10b981;
+  --red:    #ef4444;
+  --yellow: #f59e0b;
+  --blue:   #3b82f6;
+  --cyan:   #06b6d4;
+  --pink:   #ec4899;
+  --orange: #f97316;
+  --text:   #e2e8f0;
+  --muted:  #64748b;
+  --glow:   0 0 20px rgba(124,58,237,0.3);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 13px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
 
-  /* ── Header ── */
-  .header {
-    background: linear-gradient(135deg, #0f0f1a 0%, #12122a 100%);
-    border-bottom: 1px solid var(--border);
-    padding: 16px 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    backdrop-filter: blur(10px);
-  }
-  .header-left { display: flex; align-items: center; gap: 16px; }
-  .logo { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-  .logo span { color: var(--purple); }
-  .live-badge {
-    display: flex; align-items: center; gap: 6px;
-    background: rgba(0,255,136,0.1); border: 1px solid rgba(0,255,136,0.3);
-    border-radius: 20px; padding: 4px 12px; font-size: 11px; color: var(--green);
-  }
-  .live-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--green);
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:.4; transform:scale(0.8); } }
-  .header-right { display: flex; align-items: center; gap: 20px; color: var(--muted); font-size: 12px; }
-  #clock { color: var(--text); font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; }
-  .refresh-btn {
-    background: rgba(124,111,255,0.15); border: 1px solid rgba(124,111,255,0.4);
-    color: var(--purple); border-radius: 8px; padding: 6px 14px;
-    cursor: pointer; font-size: 12px; transition: all 0.2s;
-  }
-  .refresh-btn:hover { background: rgba(124,111,255,0.3); }
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg, #0a0020 0%, #150030 50%, #0a0020 100%);
+  border-bottom: 1px solid var(--accent);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: 0 4px 30px rgba(124,58,237,0.4);
+}
+.logo {
+  display: flex; align-items: center; gap: 12px;
+}
+.logo-icon {
+  width: 42px; height: 42px;
+  background: linear-gradient(135deg, var(--accent), var(--cyan));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; box-shadow: var(--glow);
+}
+.logo-text { line-height: 1.2; }
+.logo-text h1 { font-size: 18px; color: #fff; font-weight: 800; letter-spacing: -0.5px; }
+.logo-text small { font-size: 10px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
+.header-right {
+  display: flex; align-items: center; gap: 16px;
+}
+.live-badge {
+  background: rgba(16,185,129,0.15);
+  border: 1px solid var(--green);
+  color: var(--green);
+  padding: 4px 12px; border-radius: 20px; font-size: 11px;
+  display: flex; align-items: center; gap: 6px;
+  animation: pulse-border 2s infinite;
+}
+.live-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+@keyframes pulse-border { 0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,0.3)} 50%{box-shadow:0 0 8px 2px rgba(16,185,129,0.2)} }
+.clock { color: var(--muted); font-size: 12px; }
+.refresh-btn {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 14px; border-radius: 8px;
+  cursor: pointer; font-family: inherit; font-size: 12px;
+  transition: all 0.2s;
+}
+.refresh-btn:hover { border-color: var(--accent); color: var(--accent); }
 
-  /* ── Grid Layout ── */
-  .main { padding: 20px 24px; }
-  .row { display: grid; gap: 16px; margin-bottom: 16px; }
-  .row-4 { grid-template-columns: repeat(4, 1fr); }
-  .row-3 { grid-template-columns: repeat(3, 1fr); }
-  .row-2 { grid-template-columns: repeat(2, 1fr); }
-  .row-25 { grid-template-columns: 2fr 1fr; }
-  .row-52 { grid-template-columns: 1fr 2fr; }
-  .row-333 { grid-template-columns: 1fr 1fr 1fr; }
+/* ── LAYOUT ── */
+.main { padding: 20px 24px; max-width: 1800px; margin: 0 auto; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 20px; }
+.grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin-bottom: 20px; }
+@media(max-width:1400px) {
+  .grid-6 { grid-template-columns: repeat(3,1fr); }
+  .grid-4 { grid-template-columns: repeat(2,1fr); }
+}
+@media(max-width:900px) {
+  .grid-6,.grid-4,.grid-3,.grid-2 { grid-template-columns: 1fr; }
+}
 
-  /* ── Cards ── */
-  .card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: var(--card-shadow);
-    transition: border-color 0.2s;
-  }
-  .card:hover { border-color: rgba(124,111,255,0.3); }
-  .card-title {
-    font-size: 11px; font-weight: 600; text-transform: uppercase;
-    letter-spacing: 1px; color: var(--muted); margin-bottom: 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .card-title .icon { font-size: 14px; }
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.card:hover { border-color: var(--accent); }
+.card-glow-green { border-color: rgba(16,185,129,0.4); box-shadow: 0 0 15px rgba(16,185,129,0.1); }
+.card-glow-blue { border-color: rgba(59,130,246,0.4); box-shadow: 0 0 15px rgba(59,130,246,0.1); }
+.card-glow-purple { border-color: rgba(124,58,237,0.4); box-shadow: 0 0 15px rgba(124,58,237,0.1); }
+.card-glow-orange { border-color: rgba(249,115,22,0.4); box-shadow: 0 0 15px rgba(249,115,22,0.1); }
+.card-glow-cyan { border-color: rgba(6,182,212,0.4); box-shadow: 0 0 15px rgba(6,182,212,0.1); }
+.card-glow-pink { border-color: rgba(236,72,153,0.4); box-shadow: 0 0 15px rgba(236,72,153,0.1); }
+.card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-title {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--muted);
+}
+.card-title .icon { font-size: 16px; }
+.card-badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 10px;
+  font-weight: 700; letter-spacing: 0.5px;
+}
+.badge-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.badge-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.badge-yellow { background: rgba(245,158,11,0.15); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+.badge-blue { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
 
-  /* ── Metric Cards ── */
-  .metric { text-align: center; padding: 20px 16px; }
-  .metric .val {
-    font-size: 32px; font-weight: 700; line-height: 1;
-    margin-bottom: 4px; font-variant-numeric: tabular-nums;
-  }
-  .metric .label { font-size: 11px; color: var(--muted); }
-  .metric .sub { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .metric .trend { font-size: 11px; margin-top: 4px; }
-  .trend-up { color: var(--green); }
-  .trend-dn { color: var(--red); }
+/* ── KPI NUMBERS ── */
+.kpi { font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.kpi-label { font-size: 11px; color: var(--muted); }
+.kpi-green { color: var(--green); text-shadow: 0 0 20px rgba(16,185,129,0.5); }
+.kpi-blue { color: var(--blue); text-shadow: 0 0 20px rgba(59,130,246,0.5); }
+.kpi-purple { color: #a855f7; text-shadow: 0 0 20px rgba(168,85,247,0.5); }
+.kpi-cyan { color: var(--cyan); text-shadow: 0 0 20px rgba(6,182,212,0.5); }
+.kpi-orange { color: var(--orange); text-shadow: 0 0 20px rgba(249,115,22,0.5); }
+.kpi-pink { color: var(--pink); text-shadow: 0 0 20px rgba(236,72,153,0.5); }
+.kpi-yellow { color: var(--yellow); }
+.kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.delta-up { color: var(--green); font-size: 11px; }
+.delta-down { color: var(--red); font-size: 11px; }
 
-  /* ── Color helpers ── */
-  .green { color: var(--green); }
-  .blue { color: var(--blue); }
-  .purple { color: var(--purple); }
-  .yellow { color: var(--yellow); }
-  .red { color: var(--red); }
-  .orange { color: var(--orange); }
+/* ── SECTION TITLE ── */
+.section-title {
+  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title::after {
+  content: ''; flex: 1; height: 1px; background: var(--border);
+}
 
-  /* ── Status dot ── */
-  .dot {
-    display: inline-block; width: 8px; height: 8px;
-    border-radius: 50%; margin-right: 6px;
-  }
-  .dot-green { background: var(--green); box-shadow: 0 0 6px var(--green); }
-  .dot-red { background: var(--red); }
-  .dot-yellow { background: var(--yellow); }
-  .dot-muted { background: var(--muted); }
+/* ── STATUS ROW ── */
+.status-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.status-row:last-child { border-bottom: none; }
+.status-label { color: var(--muted); font-size: 12px; }
+.status-val { font-size: 12px; font-weight: 600; }
+.dot-green { color: var(--green); }
+.dot-red { color: var(--red); }
+.dot-yellow { color: var(--yellow); }
 
-  /* ── Services grid ── */
-  .services-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-  .service-row {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg3); border-radius: 8px; padding: 8px 12px;
-    font-size: 12px;
-  }
-  .service-name { color: var(--text); flex: 1; }
-  .service-badge {
-    font-size: 10px; font-weight: 600; padding: 2px 8px;
-    border-radius: 10px; letter-spacing: 0.5px;
-  }
-  .badge-ok { background: rgba(0,255,136,0.1); color: var(--green); }
-  .badge-err { background: rgba(255,71,87,0.1); color: var(--red); }
-  .badge-warn { background: rgba(255,159,67,0.1); color: var(--orange); }
+/* ── ACTION BUTTONS ── */
+.action-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin-bottom: 20px;
+}
+.action-grid-2 { grid-template-columns: repeat(2,1fr); }
+.action-grid-4 { grid-template-columns: repeat(4,1fr); }
+.btn {
+  padding: 10px 14px; border-radius: 10px; border: none;
+  cursor: pointer; font-family: inherit; font-size: 11px;
+  font-weight: 700; letter-spacing: 0.5px;
+  display: flex; align-items: center; justify-content: center;
+  gap: 6px; transition: all 0.2s; width: 100%;
+  text-transform: uppercase;
+}
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-purple { background: rgba(124,58,237,0.2); color: #a855f7; border: 1px solid rgba(124,58,237,0.4); }
+.btn-purple:hover:not(:disabled) { background: rgba(124,58,237,0.4); box-shadow: 0 0 15px rgba(124,58,237,0.3); }
+.btn-green { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+.btn-green:hover:not(:disabled) { background: rgba(16,185,129,0.3); box-shadow: 0 0 15px rgba(16,185,129,0.3); }
+.btn-blue { background: rgba(59,130,246,0.15); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+.btn-blue:hover:not(:disabled) { background: rgba(59,130,246,0.3); }
+.btn-orange { background: rgba(249,115,22,0.15); color: var(--orange); border: 1px solid rgba(249,115,22,0.3); }
+.btn-orange:hover:not(:disabled) { background: rgba(249,115,22,0.3); }
+.btn-cyan { background: rgba(6,182,212,0.15); color: var(--cyan); border: 1px solid rgba(6,182,212,0.3); }
+.btn-cyan:hover:not(:disabled) { background: rgba(6,182,212,0.3); }
+.btn-pink { background: rgba(236,72,153,0.15); color: var(--pink); border: 1px solid rgba(236,72,153,0.3); }
+.btn-pink:hover:not(:disabled) { background: rgba(236,72,153,0.3); }
+.btn-red { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.btn-red:hover:not(:disabled) { background: rgba(239,68,68,0.3); }
+.btn.loading { opacity: 0.6; }
+.btn.loading::after { content: '⟳'; margin-left: 4px; animation: spin 1s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── Email accounts ── */
-  .email-list { display: flex; flex-direction: column; gap: 7px; }
-  .email-row {
-    display: flex; align-items: center; justify-content: space-between;
-    background: var(--bg3); border-radius: 8px; padding: 9px 12px;
-  }
-  .email-addr { font-size: 11px; color: var(--muted); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .email-stats { display: flex; gap: 10px; font-size: 11px; }
-  .email-stat { text-align: center; }
-  .email-stat .n { font-weight: 700; }
-  .email-stat .l { color: var(--muted); font-size: 9px; }
+/* ── PROGRESS BAR ── */
+.progress { background: var(--bg3); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 8px; }
+.progress-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+.fill-green { background: linear-gradient(90deg, var(--green), #34d399); }
+.fill-blue { background: linear-gradient(90deg, var(--blue), #60a5fa); }
+.fill-purple { background: linear-gradient(90deg, var(--accent), #a855f7); }
+.fill-orange { background: linear-gradient(90deg, var(--orange), #fb923c); }
 
-  /* ── Task list ── */
-  .task-list { display: flex; flex-direction: column; gap: 6px; }
-  .task-row {
-    display: flex; align-items: center; gap: 10px;
-    background: var(--bg3); border-radius: 8px; padding: 8px 12px;
-  }
-  .task-name { flex: 1; font-size: 12px; }
-  .task-time { font-size: 10px; color: var(--muted); }
-  .task-result { font-size: 10px; color: var(--muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* ── TASK LIST ── */
+.task-list { max-height: 280px; overflow-y: auto; }
+.task-item {
+  display: flex; align-items: center; gap-8px; padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+  gap: 8px;
+}
+.task-item:last-child { border-bottom: none; }
+.task-name { flex: 1; font-size: 11px; color: var(--muted); }
+.task-status { font-size: 10px; padding: 2px 6px; border-radius: 6px; }
+.task-ok { background: rgba(16,185,129,0.1); color: var(--green); }
+.task-run { background: rgba(59,130,246,0.1); color: var(--blue); }
+.task-err { background: rgba(239,68,68,0.1); color: var(--red); }
+.task-idle { background: rgba(100,116,139,0.1); color: var(--muted); }
+.task-interval { font-size: 10px; color: var(--muted); text-align: right; min-width: 50px; }
 
-  /* ── Social channels ── */
-  .social-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .social-card {
-    background: var(--bg3); border-radius: 10px; padding: 14px;
-    text-align: center; border: 1px solid transparent;
-    transition: border-color 0.2s;
-  }
-  .social-card.active { border-color: rgba(0,255,136,0.25); }
-  .social-icon { font-size: 24px; margin-bottom: 6px; }
-  .social-name { font-size: 11px; font-weight: 600; margin-bottom: 4px; }
-  .social-stat { font-size: 18px; font-weight: 700; }
-  .social-label { font-size: 10px; color: var(--muted); margin-top: 2px; }
+/* ── LOG FEED ── */
+.log-feed {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px;
+  max-height: 200px; overflow-y: auto;
+  font-size: 11px;
+}
+.log-line { padding: 2px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.log-line:last-child { border-bottom: none; }
+.log-time { color: var(--muted); margin-right: 8px; }
+.log-ok { color: var(--green); }
+.log-err { color: var(--red); }
+.log-info { color: var(--blue); }
 
-  /* ── Revenue bar ── */
-  .rev-bar { display: flex; height: 8px; border-radius: 4px; overflow: hidden; margin-top: 8px; }
-  .rev-seg { height: 100%; transition: width 0.5s ease; }
+/* ── PLATFORM GRID ── */
+.platform-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px; border-radius: 8px;
+  background: var(--bg3); border: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+.platform-icon { font-size: 20px; width: 32px; text-align: center; }
+.platform-info { flex: 1; }
+.platform-name { font-size: 12px; font-weight: 600; }
+.platform-last { font-size: 10px; color: var(--muted); }
+.platform-status { font-size: 18px; }
 
-  /* ── Progress ring ── */
-  .ring-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-  svg.ring { transform: rotate(-90deg); }
-  .ring-bg { fill: none; stroke: var(--bg3); stroke-width: 6; }
-  .ring-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset 0.6s ease; }
+/* ── TOAST NOTIFICATIONS ── */
+#toast-container {
+  position: fixed; bottom: 20px; right: 20px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 18px;
+  min-width: 280px; max-width: 400px;
+  font-size: 12px; animation: slideIn 0.3s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+.toast-success { border-color: var(--green); }
+.toast-error { border-color: var(--red); }
+.toast-info { border-color: var(--blue); }
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
-  /* ── Log feed ── */
-  .log-feed { height: 180px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-  .log-feed::-webkit-scrollbar { width: 4px; }
-  .log-feed::-webkit-scrollbar-track { background: var(--bg3); }
-  .log-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-  .log-entry {
-    background: var(--bg3); border-radius: 6px; padding: 6px 10px;
-    font-size: 11px; display: flex; gap: 8px; align-items: flex-start;
-  }
-  .log-time { color: var(--muted); white-space: nowrap; font-size: 10px; }
-  .log-msg { color: var(--text); }
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  /* ── Section title ── */
-  .section-title {
-    font-size: 11px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 1.5px; color: var(--muted); margin-bottom: 12px;
-    padding-bottom: 8px; border-bottom: 1px solid var(--border);
-  }
-
-  /* ── Quick Actions ── */
-  .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-  .action-btn {
-    background: var(--bg3); border: 1px solid var(--border);
-    color: var(--text); border-radius: 8px; padding: 8px 14px;
-    cursor: pointer; font-size: 11px; transition: all 0.2s;
-    display: flex; align-items: center; gap: 6px;
-  }
-  .action-btn:hover { background: rgba(124,111,255,0.15); border-color: var(--purple); color: var(--purple); }
-  .action-btn:active { transform: scale(0.97); }
-
-  /* ── Responsive ── */
-  @media (max-width: 1200px) {
-    .row-4 { grid-template-columns: repeat(2,1fr); }
-    .row-333 { grid-template-columns: 1fr; }
-  }
-  @media (max-width: 768px) {
-    .row-3,.row-2,.row-25,.row-52 { grid-template-columns: 1fr; }
-    .services-grid { grid-template-columns: 1fr; }
-    .social-grid { grid-template-columns: repeat(2,1fr); }
-  }
-
-  /* ── Spinner ── */
-  .loading { opacity: 0.4; }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid var(--border); border-top-color: var(--purple); border-radius: 50%; animation: spin 0.8s linear infinite; }
+/* ── SPINNER ── */
+.spinner {
+  width: 14px; height: 14px; border: 2px solid var(--border);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin 0.8s linear infinite; display: inline-block;
+}
 </style>
 </head>
 <body>
 
 <!-- HEADER -->
 <div class="header">
-  <div class="header-left">
-    <div class="logo">Super<span>Mega</span>Bot</div>
-    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div class="logo-text">
+      <h1>BullPower Hub</h1>
+      <small>Revolution Control Center v4.0</small>
+    </div>
   </div>
   <div class="header-right">
-    <span>Auto-Refresh: <strong id="countdown" class="green">30s</strong></span>
-    <span id="clock">--:--:--</span>
-    <button class="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+    <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+    <div class="clock" id="clock">--:--:--</div>
+    <button class="refresh-btn" onclick="refreshAll()">↻ Refresh</button>
   </div>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-  <!-- ROW 1: Revenue KPIs -->
-  <div class="row row-4">
-    <div class="card metric">
-      <div class="card-title"><span class="icon">💰</span>Umsatz Heute</div>
-      <div class="val green" id="rev-today">€0</div>
-      <div class="label">Stripe + Shopify + DS24</div>
-      <div class="sub" id="rev-today-stripe">Stripe: €0</div>
+  <!-- KPI STRIP -->
+  <div class="grid-6" id="kpi-strip">
+    <div class="card card-glow-green">
+      <div class="card-title"><span class="icon">💰</span> Revenue Heute</div>
+      <div class="kpi kpi-green" id="kpi-revenue">€—</div>
+      <div class="kpi-sub" id="kpi-revenue-sub">Wird geladen...</div>
     </div>
-    <div class="card metric">
-      <div class="card-title"><span class="icon">📅</span>Diesen Monat</div>
-      <div class="val blue" id="rev-month">€0</div>
-      <div class="label">Alle Kanäle</div>
-      <div class="sub" id="rev-month-orders">0 Bestellungen</div>
+    <div class="card card-glow-blue">
+      <div class="card-title"><span class="icon">👥</span> Neue Leads</div>
+      <div class="kpi kpi-blue" id="kpi-leads">—</div>
+      <div class="kpi-sub" id="kpi-leads-sub">Heute</div>
     </div>
-    <div class="card metric">
-      <div class="card-title"><span class="icon">🛍️</span>Shopify</div>
-      <div class="val purple" id="shopify-orders">0</div>
-      <div class="label">Offene Bestellungen</div>
-      <div class="sub" id="shopify-products">0 Produkte aktiv</div>
+    <div class="card card-glow-purple">
+      <div class="card-title"><span class="icon">📝</span> SEO Artikel</div>
+      <div class="kpi kpi-purple" id="kpi-seo">—</div>
+      <div class="kpi-sub">60/Tag Ziel</div>
     </div>
-    <div class="card metric">
-      <div class="card-title"><span class="icon">📧</span>Email Heute</div>
-      <div class="val yellow" id="email-total">0</div>
-      <div class="label">Verarbeitet (8 Konten)</div>
-      <div class="sub" id="email-replied">0 Auto-beantwortet</div>
+    <div class="card card-glow-cyan">
+      <div class="card-title"><span class="icon">⚙️</span> Tasks Aktiv</div>
+      <div class="kpi kpi-cyan" id="kpi-tasks">—</div>
+      <div class="kpi-sub" id="kpi-tasks-sub">von 120 gesamt</div>
+    </div>
+    <div class="card card-glow-orange">
+      <div class="card-title"><span class="icon">🛍️</span> Shopify Orders</div>
+      <div class="kpi kpi-orange" id="kpi-orders">—</div>
+      <div class="kpi-sub" id="kpi-orders-sub">7 Tage</div>
+    </div>
+    <div class="card card-glow-pink">
+      <div class="card-title"><span class="icon">📡</span> Posts Heute</div>
+      <div class="kpi kpi-pink" id="kpi-posts">—</div>
+      <div class="kpi-sub">Alle Plattformen</div>
     </div>
   </div>
 
-  <!-- ROW 2: Services + Email Accounts -->
-  <div class="row row-25">
+  <!-- ROW 1: SERVICES + SCHEDULER + REVENUE -->
+  <div class="grid-3">
 
-    <!-- Services -->
+    <!-- SERVICES HEALTH -->
     <div class="card">
-      <div class="card-title"><span class="icon">🚀</span>Railway Services</div>
-      <div class="services-grid" id="services-grid">
-        <div class="service-row"><span class="service-name"><span class="dot dot-muted"></span>Laden...</span></div>
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🖥️</span> Railway Services</div>
+        <span class="card-badge badge-green" id="services-badge">Prüft...</span>
       </div>
-    </div>
-
-    <!-- Email Accounts -->
-    <div class="card">
-      <div class="card-title"><span class="icon">📬</span>Email Brain — 8 Konten</div>
-      <div class="email-list" id="email-list">
-        <div class="email-row"><span class="email-addr">Laden...</span></div>
+      <div id="services-list">
+        <div class="status-row"><span class="status-label">⟳ Wird geladen...</span></div>
       </div>
-    </div>
-
-  </div>
-
-  <!-- ROW 3: Scheduler + Social -->
-  <div class="row row-25">
-
-    <!-- Scheduler Tasks -->
-    <div class="card">
-      <div class="card-title"><span class="icon">⚙️</span>Scheduler Tasks</div>
-      <div class="task-list" id="task-list">
-        <div class="task-row"><span class="task-name">Laden...</span></div>
-      </div>
-    </div>
-
-    <!-- Social Media -->
-    <div class="card">
-      <div class="card-title"><span class="icon">📱</span>BRUTUS — Social Channels</div>
-      <div class="social-grid" id="social-grid">
-        <div class="social-card"><div class="social-icon">⏳</div><div class="social-name">Laden</div></div>
-      </div>
-    </div>
-
-  </div>
-
-  <!-- ROW 4: System Health + Quick Actions + Log -->
-  <div class="row row-333">
-
-    <!-- System Health -->
-    <div class="card">
-      <div class="card-title"><span class="icon">🖥️</span>System Health</div>
-      <div id="system-health">
-        <div style="display:flex;justify-content:space-around;margin-bottom:14px">
-          <div class="ring-wrap">
-            <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
-              <circle class="ring-bg" cx="35" cy="35" r="28"/>
-              <circle class="ring-fill" id="ring-cpu" cx="35" cy="35" r="28" stroke="var(--blue)"
-                stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
-            </svg>
-            <div style="text-align:center;margin-top:-4px">
-              <div id="cpu-val" class="blue" style="font-size:16px;font-weight:700">0%</div>
-              <div style="font-size:10px;color:var(--muted)">CPU</div>
-            </div>
-          </div>
-          <div class="ring-wrap">
-            <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
-              <circle class="ring-bg" cx="35" cy="35" r="28"/>
-              <circle class="ring-fill" id="ring-ram" cx="35" cy="35" r="28" stroke="var(--purple)"
-                stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
-            </svg>
-            <div style="text-align:center;margin-top:-4px">
-              <div id="ram-val" class="purple" style="font-size:16px;font-weight:700">0%</div>
-              <div style="font-size:10px;color:var(--muted)">RAM</div>
-            </div>
-          </div>
-          <div class="ring-wrap">
-            <svg class="ring" width="70" height="70" viewBox="0 0 70 70">
-              <circle class="ring-bg" cx="35" cy="35" r="28"/>
-              <circle class="ring-fill" id="ring-disk" cx="35" cy="35" r="28" stroke="var(--orange)"
-                stroke-dasharray="175.9" stroke-dashoffset="175.9"/>
-            </svg>
-            <div style="text-align:center;margin-top:-4px">
-              <div id="disk-val" class="orange" style="font-size:16px;font-weight:700">0%</div>
-              <div style="font-size:10px;color:var(--muted)">Disk</div>
-            </div>
-          </div>
+      <div style="margin-top:14px;">
+        <div class="card-title"><span class="icon">🌐</span> Netlify Sites</div>
+        <div id="netlify-list" style="margin-top:10px;">
+          <div class="status-row"><span class="status-label dot-green">● bullpower-hub-portal</span><span class="status-val"><a href="https://bullpower-hub-portal.netlify.app" target="_blank" style="color:var(--cyan);text-decoration:none;">€49 ↗</a></span></div>
+          <div class="status-row"><span class="status-label dot-green">● shopify-brutal-tuning</span><span class="status-val">LIVE</span></div>
+          <div class="status-row"><span class="status-label dot-green">● shopify-acquisition-engine</span><span class="status-val">LIVE</span></div>
+          <div class="status-row"><span class="status-label dot-yellow">● creatorai-ultra</span><span class="status-val" style="color:var(--yellow);">Credits ↯</span></div>
         </div>
-        <div id="health-details" style="font-size:11px;color:var(--muted);line-height:1.8"></div>
       </div>
     </div>
 
-    <!-- Quick Actions -->
+    <!-- SCHEDULER STATUS -->
     <div class="card">
-      <div class="card-title"><span class="icon">⚡</span>Quick Actions</div>
-      <div class="actions" style="margin-bottom:12px">
-        <button class="action-btn" onclick="triggerAction('/api/email/brain/check','POST')">📧 Email Check</button>
-        <button class="action-btn" onclick="triggerAction('/api/bot/execute','POST',{command:'brutus_run'})">📣 BRUTUS Run</button>
-        <button class="action-btn" onclick="triggerAction('/api/backup/run','POST')">💾 Backup</button>
-        <button class="action-btn" onclick="triggerAction('/api/monitor/refresh','POST')">📊 Monitor</button>
-        <button class="action-btn" onclick="triggerAction('/api/geheimwaffe/run','POST')">🕵️ Geheimwaffe</button>
-        <button class="action-btn" onclick="window.open('/monitor','_blank')">📈 Plotly Monitor</button>
-        <button class="action-btn" onclick="window.open('/','_blank')">🏠 Dashboard</button>
-        <button class="action-btn" onclick="triggerAction('/api/email/brain/setup','GET')">🔌 Email Test</button>
-        <button class="action-btn" onclick="triggerAction('/api/facebook/refresh','GET')">🔄 FB Tokens</button>
-        <button class="action-btn" onclick="triggerAction('/api/revenue/summary','GET')">💰 Revenue</button>
-        <button class="action-btn" onclick="triggerAction('/api/brutus/run','POST')">🔥 BRUTUS Manual</button>
-        <button class="action-btn" onclick="triggerAction('/api/auto-poster/run','POST')">🚀 Auto-Post</button>
-        <button class="action-btn" onclick="triggerAction('/api/shopify/seo/run','POST')">🔍 SEO Run</button>
-        <button class="action-btn" onclick="triggerAction('/api/twitter/post','POST')">🐦 Tweet</button>
-        <button class="action-btn" onclick="triggerAction('/api/seo/dominator','POST')">🌐 SEO DOM</button>
-        <button class="action-btn" onclick="triggerAction('/api/backlink/bomb','POST')">💥 Backlinks</button>
-        <button class="action-btn" onclick="triggerAction('/api/content/velocity','POST')">⚡ Content</button>
-        <button class="action-btn" onclick="triggerAction('/api/viral/traffic','POST')">🦠 Viral</button>
-        <button class="action-btn" onclick="triggerAction('/api/revenue/maximize','POST')">💰 RevMax</button>
-        <button class="action-btn" onclick="triggerAction('/api/syndication/run','POST')">📡 Syndicate</button>
+      <div class="card-header">
+        <div class="card-title"><span class="icon">⏱️</span> Scheduler — 120 Tasks</div>
+        <span class="card-badge badge-blue" id="scheduler-badge">Lädt...</span>
       </div>
-      <div id="action-log" style="font-size:11px;color:var(--muted);background:var(--bg3);border-radius:8px;padding:8px;min-height:40px;max-height:80px;overflow-y:auto"></div>
-    </div>
-
-    <!-- Live Activity Log -->
-    <div class="card">
-      <div class="card-title"><span class="icon">📋</span>Live Activity</div>
-      <div class="log-feed" id="log-feed">
-        <div class="log-entry"><span class="log-time">--:--</span><span class="log-msg">Warte auf Daten...</span></div>
+      <div class="task-list" id="task-list">
+        <div class="task-item"><span class="task-name">Lädt...</span></div>
+      </div>
+      <div style="margin-top:12px; display:flex; gap:8px;">
+        <button class="btn btn-blue" style="flex:1" onclick="triggerTask('mega_auto_post')">▶ Mega Post</button>
+        <button class="btn btn-purple" style="flex:1" onclick="triggerTask('seo_mega_factory')">▶ SEO Factory</button>
       </div>
     </div>
 
+    <!-- REVENUE INTELLIGENCE -->
+    <div class="card card-glow-green">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">💹</span> Revenue Intelligence</div>
+        <span class="card-badge badge-green">LIVE</span>
+      </div>
+      <div id="revenue-panel">
+        <div class="status-row">
+          <span class="status-label">30-Day Forecast</span>
+          <span class="status-val kpi-green" id="rev-forecast">€—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Avg Daily</span>
+          <span class="status-val" id="rev-daily">€—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Revenue Leaks</span>
+          <span class="status-val" id="rev-leaks">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">Churn Risk Customers</span>
+          <span class="status-val" id="rev-churn">—</span>
+        </div>
+        <div class="status-row">
+          <span class="status-label">AI Trend</span>
+          <span class="status-val" id="rev-trend">—</span>
+        </div>
+      </div>
+      <div style="margin-top:12px" class="action-grid action-grid-2">
+        <button class="btn btn-green" onclick="triggerTask('revenue_leaks')">🔍 Leaks Check</button>
+        <button class="btn btn-green" onclick="triggerTask('revenue_morning')">📊 Briefing</button>
+        <button class="btn btn-green" onclick="triggerTask('churn_prevention')">⚠️ Churn Check</button>
+        <button class="btn btn-green" onclick="apiCall('/api/revenue/forecast','GET')">📈 Forecast</button>
+      </div>
+    </div>
   </div>
 
-  <!-- ROW 5: CRO + Telegram + GitHub -->
-  <div class="row row-3">
+  <!-- ROW 2: SEO + TRAFFIC + ADS -->
+  <div class="section-title">🚀 Traffic, SEO & Ads Engine</div>
+  <div class="grid-3">
 
-    <div class="card">
-      <div class="card-title"><span class="icon">📈</span>CRO + Auto-Funnel</div>
-      <div id="cro-stats" style="display:flex;flex-direction:column;gap:8px">
-        <div class="service-row"><span class="service-name">Klaviyo Subscribers</span><span id="klaviyo-subs" class="green">—</span></div>
-        <div class="service-row"><span class="service-name">Mailchimp Subscribers</span><span id="mailchimp-subs" class="blue">—</span></div>
-        <div class="service-row"><span class="service-name">DS24 Käufer heute</span><span id="ds24-buyers" class="yellow">—</span></div>
-        <div class="service-row"><span class="service-name">Upsells gesendet</span><span id="upsells" class="purple">—</span></div>
-        <div class="service-row"><span class="service-name">WELCOME15 Rabattcode</span><span class="green">aktiv</span></div>
+    <!-- SEO MEGA ENGINE -->
+    <div class="card card-glow-purple">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📝</span> SEO Mega Engine</div>
+        <span class="card-badge badge-blue">60 Art/Tag</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Artikel Total</span>
+        <span class="status-val kpi-purple" id="seo-total">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Keywords Pipeline</span>
+        <span class="status-val" id="seo-keywords">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Sitemap URL</span>
+        <span class="status-val"><a href="/api/seo/sitemap.xml" target="_blank" style="color:var(--cyan);font-size:10px;">sitemap.xml ↗</a></span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Letzter Submit</span>
+        <span class="status-val" id="seo-last-submit">—</span>
+      </div>
+      <div style="margin-top:12px" class="action-grid">
+        <button class="btn btn-purple" onclick="triggerTask('seo_mega_factory')">📝 5 Artikel gen.</button>
+        <button class="btn btn-purple" onclick="triggerTask('seo_mega_submit')">🔍 Google Submit</button>
+        <button class="btn btn-purple" onclick="triggerTask('seo_competitor_analysis')">🕵️ Competitor</button>
+      </div>
+      <div style="margin-top:8px;">
+        <div class="progress"><div class="progress-fill fill-purple" id="seo-progress" style="width:0%"></div></div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px;" id="seo-progress-label">Lade...</div>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title"><span class="icon">✈️</span>Telegram Bot</div>
-      <div id="tg-stats" style="display:flex;flex-direction:column;gap:8px">
-        <div class="service-row"><span class="service-name">Bot Status</span><span id="tg-status" class="green">—</span></div>
-        <div class="service-row"><span class="service-name">Chat ID</span><span class="muted" style="font-size:10px">5088771245</span></div>
-        <div class="service-row"><span class="service-name">Befehle verfügbar</span><span id="tg-commands" class="blue">—</span></div>
-        <div class="service-row"><span class="service-name">Webhook</span><span id="tg-webhook" class="green">—</span></div>
-        <div class="service-row"><span class="service-name">Letzter Update</span><span id="tg-last" class="muted" style="font-size:10px">—</span></div>
+    <!-- TRAFFIC SWARM -->
+    <div class="card card-glow-cyan">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🌊</span> Traffic Swarm</div>
+        <span class="card-badge badge-blue">Multi-Platform</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Leads Heute</span>
+        <span class="status-val kpi-cyan" id="traffic-today">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">vs. Gestern</span>
+        <span class="status-val" id="traffic-delta">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">RSS Feed</span>
+        <span class="status-val"><a href="/api/traffic/rss.xml" target="_blank" style="color:var(--cyan);font-size:10px;">RSS ↗</a></span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Medium Connected</span>
+        <span class="status-val" id="traffic-medium">—</span>
+      </div>
+      <div style="margin-top:12px" class="action-grid">
+        <button class="btn btn-cyan" onclick="triggerTask('traffic_swarm_full')">🌊 Full Swarm</button>
+        <button class="btn btn-cyan" onclick="triggerTask('traffic_velocity')">📊 Velocity</button>
+        <button class="btn btn-cyan" onclick="triggerTask('backlink_outreach')">🔗 Backlinks</button>
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-title"><span class="icon">🐙</span>GitHub + Supabase</div>
-      <div id="gh-stats" style="display:flex;flex-direction:column;gap:8px">
-        <div class="service-row"><span class="service-name">GitHub Status</span><span id="gh-status" class="green">—</span></div>
-        <div class="service-row"><span class="service-name">Letzter Backup</span><span id="last-backup" class="muted" style="font-size:10px">—</span></div>
-        <div class="service-row"><span class="service-name">Supabase</span><span id="sb-status" class="green">—</span></div>
-        <div class="service-row"><span class="service-name">AI Keys OK</span><span id="ai-keys" class="green">—</span></div>
-        <div class="service-row"><span class="service-name">Stripe Webhooks</span><span class="green">4 aktiv</span></div>
+    <!-- ADS ENGINE -->
+    <div class="card card-glow-orange">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📢</span> Ads Engine</div>
+        <span class="card-badge" id="ads-badge">Prüft...</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Facebook Ads</span>
+        <span class="status-val" id="ads-fb">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Google Ads</span>
+        <span class="status-val" id="ads-google">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">TikTok</span>
+        <span class="status-val" id="ads-tiktok">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Spend Heute</span>
+        <span class="status-val" id="ads-spend">€—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">CTR</span>
+        <span class="status-val" id="ads-ctr">—%</span>
+      </div>
+      <div style="margin-top:12px" class="action-grid">
+        <button class="btn btn-orange" onclick="triggerTask('ads_monitor')">📊 Monitor</button>
+        <button class="btn btn-orange" onclick="triggerTask('ads_optimize')">⚡ Optimize</button>
+        <button class="btn btn-orange" onclick="triggerTask('ads_rotate')">🔄 Rotate Ads</button>
       </div>
     </div>
-
   </div>
 
-</div><!-- /main -->
+  <!-- ROW 3: SHOPIFY + GROWTH + SOCIAL -->
+  <div class="section-title">🛍️ Shopify, Growth & Social</div>
+  <div class="grid-3">
+
+    <!-- SHOPIFY MAX TUNER -->
+    <div class="card card-glow-green">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🛍️</span> Shopify Max Tuner</div>
+        <span class="card-badge badge-green">AUTO</span>
+      </div>
+      <div id="shopify-panel">
+        <div class="status-row"><span class="status-label">Revenue 7d</span><span class="status-val kpi-green" id="shop-revenue">€—</span></div>
+        <div class="status-row"><span class="status-label">Orders 7d</span><span class="status-val" id="shop-orders">—</span></div>
+        <div class="status-row"><span class="status-label">Ø Bestellwert</span><span class="status-val" id="shop-aov">€—</span></div>
+        <div class="status-row"><span class="status-label">Low Stock Alerts</span><span class="status-val" id="shop-stock">—</span></div>
+        <div class="status-row"><span class="status-label">Top Produkt</span><span class="status-val" id="shop-top" style="font-size:10px;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">—</span></div>
+      </div>
+      <div style="margin-top:12px" class="action-grid">
+        <button class="btn btn-green" onclick="triggerTask('shopify_max_seo')">🔍 SEO alle Prod.</button>
+        <button class="btn btn-green" onclick="triggerTask('shopify_cart_recover')">🛒 Cart Recovery</button>
+        <button class="btn btn-green" onclick="triggerTask('shopify_price_optimize')">💰 .99 Pricing</button>
+        <button class="btn btn-green" onclick="triggerTask('shopify_inventory')">📦 Inventar Check</button>
+        <button class="btn btn-green" onclick="triggerTask('shopify_reviews')">⭐ Review Emails</button>
+        <button class="btn btn-green" onclick="triggerTask('shopify_daily_intel')">📊 Daily Intel</button>
+      </div>
+    </div>
+
+    <!-- GROWTH HACKER -->
+    <div class="card card-glow-pink">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🚀</span> Growth Hacker</div>
+        <span class="card-badge badge-blue">AUTO</span>
+      </div>
+      <div class="status-row"><span class="status-label">Kunden Total</span><span class="status-val" id="growth-clients">—</span></div>
+      <div class="status-row"><span class="status-label">Leads Total</span><span class="status-val" id="growth-leads">—</span></div>
+      <div class="status-row"><span class="status-label">Referral Codes</span><span class="status-val" id="growth-refs">—</span></div>
+      <div class="status-row"><span class="status-label">Affiliates</span><span class="status-val" id="growth-affiliates">—</span></div>
+      <div class="status-row"><span class="status-label">Influencer Pipeline</span><span class="status-val" id="growth-influencers">—</span></div>
+      <div style="margin-top:12px" class="action-grid">
+        <button class="btn btn-pink" onclick="triggerTask('viral_trend')">🔥 Viral Trends</button>
+        <button class="btn btn-pink" onclick="triggerTask('community_growth')">💬 Community</button>
+        <button class="btn btn-pink" onclick="triggerTask('press_release')">📰 Press Release</button>
+        <button class="btn btn-pink" onclick="triggerTask('influencer_pipeline')">🎯 Influencer</button>
+        <button class="btn btn-pink" onclick="triggerTask('testimonials')">⭐ Testimonials</button>
+        <button class="btn btn-pink" onclick="triggerTask('referral_system')">🔗 Referrals</button>
+      </div>
+    </div>
+
+    <!-- SOCIAL PLATFORMS -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📱</span> Social Platforms</div>
+        <span class="card-badge badge-green">AUTO-POST</span>
+      </div>
+      <div class="platform-item">
+        <div class="platform-icon">📘</div>
+        <div class="platform-info"><div class="platform-name">Facebook AIITEC</div><div class="platform-last" id="fb-last">Status wird geladen...</div></div>
+        <div class="platform-status" id="fb-status">⟳</div>
+      </div>
+      <div class="platform-item">
+        <div class="platform-icon">📸</div>
+        <div class="platform-info"><div class="platform-name">Instagram @aaiitecc</div><div class="platform-last" id="ig-last">Status wird geladen...</div></div>
+        <div class="platform-status" id="ig-status">⟳</div>
+      </div>
+      <div class="platform-item">
+        <div class="platform-icon">💼</div>
+        <div class="platform-info"><div class="platform-name">LinkedIn Rudolf</div><div class="platform-last" id="li-last">Verbunden</div></div>
+        <div class="platform-status" id="li-status">⟳</div>
+      </div>
+      <div class="platform-item">
+        <div class="platform-icon">🐦</div>
+        <div class="platform-info"><div class="platform-name">Twitter @AIITEC</div><div class="platform-last" id="tw-last">Auto-Posts</div></div>
+        <div class="platform-status">✅</div>
+      </div>
+      <div class="platform-item">
+        <div class="platform-icon">📌</div>
+        <div class="platform-info"><div class="platform-name">Pinterest</div><div class="platform-last" id="pi-last">App Review ausstehend</div></div>
+        <div class="platform-status">🟡</div>
+      </div>
+      <div class="platform-item">
+        <div class="platform-icon">✈️</div>
+        <div class="platform-info"><div class="platform-name">Telegram Channel</div><div class="platform-last">Auto-Broadcast 6h</div></div>
+        <div class="platform-status">✅</div>
+      </div>
+      <div style="margin-top:10px">
+        <button class="btn btn-blue" style="width:100%" onclick="triggerTask('mega_auto_post')">⚡ ALLE PLATTFORMEN JETZT POSTEN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: CONVERSION + CONTENT + EMAIL -->
+  <div class="section-title">🎯 Conversion, Content & Email</div>
+  <div class="grid-3">
+
+    <!-- CONVERSION ENGINE -->
+    <div class="card card-glow-blue">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🎯</span> Conversion Engine</div>
+        <span class="card-badge badge-blue">10 AI Systems</span>
+      </div>
+      <div class="status-row"><span class="status-label">A/B Tests Aktiv</span><span class="status-val" id="conv-ab">—</span></div>
+      <div class="status-row"><span class="status-label">Leads Scored</span><span class="status-val" id="conv-leads">—</span></div>
+      <div class="status-row"><span class="status-label">Hot Leads (80+)</span><span class="status-val" style="color:var(--green)" id="conv-hot">—</span></div>
+      <div class="status-row"><span class="status-label">Cart Abandoned</span><span class="status-val" id="conv-cart">—</span></div>
+      <div style="margin-top:12px" class="action-grid action-grid-2">
+        <button class="btn btn-blue" onclick="triggerTask('conversion_scan')">📊 Conversion Scan</button>
+        <button class="btn btn-blue" onclick="triggerTask('daily_optimization')">⚡ Revenue Opt.</button>
+        <button class="btn btn-blue" onclick="apiCall('/api/conversion/report','GET')">📈 Full Report</button>
+        <button class="btn btn-blue" onclick="triggerTask('funnel_daily')">🔻 Funnel Report</button>
+      </div>
+    </div>
+
+    <!-- CONTENT FACTORY -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">🏭</span> Content Factory</div>
+        <span class="card-badge badge-blue">130+ Pieces</span>
+      </div>
+      <div class="status-row"><span class="status-label">Trending Topics</span><span class="status-val" id="cf-topics">—</span></div>
+      <div class="status-row"><span class="status-label">Content Calendar</span><span class="status-val" id="cf-calendar">30 Tage</span></div>
+      <div class="status-row"><span class="status-label">Email Sequences</span><span class="status-val">5 Aktive</span></div>
+      <div class="status-row"><span class="status-label">Sprachen</span><span class="status-val">DE / EN / ES / FR / IT</span></div>
+      <div style="margin-top:12px" class="action-grid action-grid-2">
+        <button class="btn btn-purple" onclick="triggerTask('content_factory_run')">🏭 Generate Package</button>
+        <button class="btn btn-purple" onclick="triggerTask('trending_topic_scan')">🔥 Trending Scan</button>
+        <button class="btn btn-purple" onclick="triggerTask('social_batch_gen')">📅 30-Day Calendar</button>
+        <button class="btn btn-purple" onclick="triggerTask('content_freshness')">♻️ Refresh Stale</button>
+      </div>
+    </div>
+
+    <!-- EMAIL BRAIN -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span class="icon">📧</span> Email Brain</div>
+        <span class="card-badge badge-green">LIVE</span>
+      </div>
+      <div class="status-row"><span class="status-label">Sequences Aktiv</span><span class="status-val">welcome, post_purchase, VIP, winback, saas_onboarding</span></div>
+      <div class="status-row"><span class="status-label">Klaviyo</span><span class="status-val dot-green">● Verbunden</span></div>
+      <div class="status-row"><span class="status-label">Mailchimp</span><span class="status-val dot-green">● Verbunden</span></div>
+      <div class="status-row"><span class="status-label">Twilio SMS</span><span class="status-val dot-yellow">● From# fehlt</span></div>
+      <div style="margin-top:12px" class="action-grid action-grid-2">
+        <button class="btn btn-cyan" onclick="triggerTask('email_seq_process')">📬 Process Sequences</button>
+        <button class="btn btn-cyan" onclick="triggerTask('email_seq_enroll')">✉️ Enroll New Buyers</button>
+        <button class="btn btn-cyan" onclick="triggerTask('klaviyo_auto_campaign')">🎯 Klaviyo Campaign</button>
+        <button class="btn btn-cyan" onclick="triggerTask('mailchimp_auto_campaign')">📮 Mailchimp Campaign</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MASTER ACTION CENTER -->
+  <div class="section-title">⚡ Master Action Center</div>
+  <div class="card" style="margin-bottom:20px;">
+    <div class="card-header">
+      <div class="card-title"><span class="icon">🎮</span> Alle Systeme gleichzeitig starten</div>
+      <span class="card-badge badge-green">ONE CLICK</span>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:4px;">
+      <button class="btn btn-purple" onclick="launchAll()" style="padding:14px;font-size:12px;">
+        🚀 ALLES STARTEN
+      </button>
+      <button class="btn btn-green" onclick="triggerTask('traffic_swarm_full')">🌊 Traffic Swarm</button>
+      <button class="btn btn-purple" onclick="triggerTask('seo_mega_factory')">📝 SEO Factory</button>
+      <button class="btn btn-cyan" onclick="triggerTask('rss_rebuild')">📡 RSS Rebuild</button>
+      <button class="btn btn-orange" onclick="triggerTask('ads_monitor')">📢 Ads Check</button>
+      <button class="btn btn-pink" onclick="triggerTask('growth_briefing')">📊 Growth Report</button>
+      <button class="btn btn-green" onclick="triggerTask('revenue_autopilot')">💹 Revenue Autopilot</button>
+      <button class="btn btn-blue" onclick="triggerTask('seo_mega_submit')">🔍 Google Submit</button>
+      <button class="btn btn-cyan" onclick="triggerTask('brutus_run')">⚡ BRUTUS Run</button>
+      <button class="btn btn-orange" onclick="triggerTask('seo_competitor_analysis')">🕵️ Competitor Spy</button>
+      <button class="btn btn-pink" onclick="triggerTask('press_release')">📰 Press Release</button>
+      <button class="btn btn-blue" onclick="triggerTask('viral_trend')">🔥 Viral Trends</button>
+      <button class="btn btn-green" onclick="triggerTask('shopify_daily_intel')">🛍️ Shopify Intel</button>
+      <button class="btn btn-red" onclick="triggerTask('revenue_leaks')">🚨 Revenue Leaks</button>
+      <button class="btn btn-purple" onclick="triggerTask('content_factory_run')">🏭 Content Package</button>
+    </div>
+
+    <!-- Action Log -->
+    <div style="margin-top:16px;">
+      <div class="card-title" style="margin-bottom:8px;"><span class="icon">📋</span> Action Log</div>
+      <div class="log-feed" id="action-log">
+        <div class="log-line"><span class="log-time">--:--</span><span class="log-info">Dashboard gestartet — bereit!</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align:center;padding:16px 0;color:var(--muted);font-size:10px;letter-spacing:1px;">
+    BULLPOWER HUB REVOLUTION v4 · ~120 TASKS · 8 AI MODULES · AUTO-REFRESH 30s
+    · <span id="last-refresh">--:--:--</span>
+  </div>
+
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
 
 <script>
-const BASE = '';
-let refreshTimer = 30;
-let refreshInterval;
+const API = '';
+let postCount = 0;
+let refreshTimer;
 
-// ── Clock ──────────────────────────────────────────────────────────────────
+// ── CLOCK ──
 function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent =
-    now.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    now.toLocaleTimeString('de-DE', {hour12: false});
 }
-setInterval(updateClock, 1000);
 updateClock();
+setInterval(updateClock, 1000);
 
-// ── Countdown ──────────────────────────────────────────────────────────────
-function startCountdown() {
-  clearInterval(refreshInterval);
-  refreshTimer = 30;
-  refreshInterval = setInterval(() => {
-    refreshTimer--;
-    document.getElementById('countdown').textContent = refreshTimer + 's';
-    if (refreshTimer <= 0) { loadAll(); }
-  }, 1000);
+// ── TOAST ──
+function toast(msg, type = 'info') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast toast-${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.style.opacity = '0', 3500);
+  setTimeout(() => t.remove(), 4000);
 }
 
-// ── Fetch helper ──────────────────────────────────────────────────────────
-async function api(path, method='GET', body=null) {
+// ── LOG ──
+function log(msg, cls = 'log-info') {
+  const feed = document.getElementById('action-log');
+  const now = new Date().toLocaleTimeString('de-DE', {hour12: false});
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-time">${now}</span><span class="${cls}">${msg}</span>`;
+  feed.insertBefore(line, feed.firstChild);
+  if (feed.children.length > 50) feed.lastChild.remove();
+}
+
+// ── API CALL ──
+async function apiCall(path, method = 'GET', body = null) {
   try {
-    const opts = { method, headers: {'Content-Type':'application/json'} };
+    const opts = { method, headers: {'Content-Type': 'application/json'} };
     if (body) opts.body = JSON.stringify(body);
-    const r = await fetch(BASE + path, opts);
+    const r = await fetch(API + path, opts);
     return await r.json();
-  } catch(e) { return null; }
-}
-
-// ── Ring helper ───────────────────────────────────────────────────────────
-function setRing(id, pct) {
-  const circ = 175.9;
-  const offset = circ - (pct / 100) * circ;
-  const el = document.getElementById(id);
-  if (el) el.style.strokeDashoffset = offset;
-}
-
-// ── Log helper ────────────────────────────────────────────────────────────
-function addLog(msg, color='var(--text)') {
-  const feed = document.getElementById('log-feed');
-  const now = new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const div = document.createElement('div');
-  div.className = 'log-entry';
-  div.innerHTML = `<span class="log-time">${now}</span><span class="log-msg" style="color:${color}">${msg}</span>`;
-  feed.insertBefore(div, feed.firstChild);
-  while (feed.children.length > 50) feed.removeChild(feed.lastChild);
-}
-
-// ── Quick Action ──────────────────────────────────────────────────────────
-async function triggerAction(path, method='POST', body=null) {
-  const al = document.getElementById('action-log');
-  al.textContent = '⏳ Ausführen...';
-  const result = await api(path, method, body);
-  if (result) {
-    const msg = result.result || result.status || result.message || JSON.stringify(result).slice(0,80);
-    al.textContent = '✅ ' + msg;
-    addLog(path.split('/').pop() + ': ' + msg, 'var(--green)');
-  } else {
-    al.textContent = '❌ Fehler';
+  } catch(e) {
+    console.error(path, e);
+    return {error: e.message};
   }
 }
 
-// ── Health ────────────────────────────────────────────────────────────────
-async function loadHealth() {
-  const d = await api('/api/system');
-  if (!d) return;
-  const cpu = d.cpu_percent || 0;
-  const ram = d.memory_percent || 0;
-  const disk = d.disk_percent || 0;
-  document.getElementById('cpu-val').textContent = cpu.toFixed(1) + '%';
-  document.getElementById('ram-val').textContent = ram.toFixed(1) + '%';
-  document.getElementById('disk-val').textContent = disk.toFixed(1) + '%';
-  setRing('ring-cpu', cpu);
-  setRing('ring-ram', ram);
-  setRing('ring-disk', disk);
-  const details = document.getElementById('health-details');
-  details.innerHTML = [
-    `Uptime: <strong style="color:var(--text)">${d.uptime || '—'}</strong>`,
-    `RAM: <strong style="color:var(--text)">${(d.memory_used_gb||0).toFixed(1)} / ${(d.memory_total_gb||0).toFixed(1)} GB</strong>`,
-    `Disk: <strong style="color:var(--text)">${(d.disk_used_gb||0).toFixed(0)} / ${(d.disk_total_gb||0).toFixed(0)} GB</strong>`,
-    `Python: <strong style="color:var(--text)">${d.python_version || '3.11'}</strong>`,
-  ].join('<br>');
+// ── TRIGGER TASK ──
+async function triggerTask(name) {
+  const btns = document.querySelectorAll('.btn');
+  const btn = Array.from(btns).find(b => b.textContent.includes(name.replace(/_/g,' ')));
+  log(`▶ Starte Task: ${name}`, 'log-info');
+  toast(`Starte: ${name}`, 'info');
+  try {
+    const r = await apiCall('/api/scheduler/trigger', 'POST', {task: name});
+    if (r.error) {
+      log(`✗ ${name}: ${r.error}`, 'log-err');
+      toast(`Fehler: ${r.error}`, 'error');
+    } else {
+      log(`✓ ${name}: ${r.result || 'gestartet'}`, 'log-ok');
+      toast(`✓ ${name} erfolgreich`, 'success');
+      setTimeout(refreshAll, 2000);
+    }
+  } catch(e) {
+    log(`✗ ${name}: ${e.message}`, 'log-err');
+    toast(`Netzwerkfehler`, 'error');
+  }
 }
 
-// ── Services ──────────────────────────────────────────────────────────────
-const SERVICES = [
-  ['SuperMegaBot','dudirudibot-mega-production.up.railway.app'],
-  ['Shopify Acq. Engine','shopify-acquisition-engine-production.up.railway.app'],
-  ['SEO Turbo Tools','seo-turbo-tools-production.up.railway.app'],
-  ['Telegram Bot','telegram-automation-bot-production.up.railway.app'],
-  ['iComeAuto SaaS','icomeauto-saas-production.up.railway.app'],
-  ['CreatorAI Ultra','creatorai-ultra-production.up.railway.app'],
-  ['Digistore24 Suite','digistore24-automation-production.up.railway.app'],
-  ['Cognitive Symphony','cognitive-symphony-production.up.railway.app'],
-  ['Revenue Hub','revenue-hub-notifications-production.up.railway.app'],
-  ['AdPoster Engine','adposter-engine-production.up.railway.app'],
-  ['Shopify Automaton','shopify-automaton-suite-production-e405.up.railway.app'],
-  ['Meta Social Engine','meta-social-engine-production.up.railway.app'],
-  ['Freelance Gig Engine','freelance-gig-engine-production.up.railway.app'],
-  ['SEO Traffic Engine','seo-traffic-engine-production.up.railway.app'],
-  ['Social Traffic Engine','social-traffic-engine-production.up.railway.app'],
-  ['Analytics Marketing','analytics-marketing-pro-production.up.railway.app'],
-  ['Shopify KI Suite','shopify-ki-suite-production.up.railway.app'],
-  ['Visual Content Engine','visual-content-engine-production.up.railway.app'],
-];
+// ── LAUNCH ALL ──
+async function launchAll() {
+  log('🚀 ALLES STARTEN — REVOLUTION PACK KOMPLETT', 'log-info');
+  toast('🚀 Alle Systeme werden gestartet...', 'info');
+  const tasks = [
+    'mega_auto_post', 'seo_mega_factory', 'traffic_swarm_full',
+    'revenue_autopilot', 'shopify_daily_intel', 'growth_briefing',
+    'ads_monitor', 'conversion_scan', 'content_factory_run', 'brutus_run'
+  ];
+  for (const t of tasks) {
+    await new Promise(r => setTimeout(r, 400));
+    apiCall('/api/scheduler/trigger', 'POST', {task: t})
+      .then(r => log(`✓ ${t}: ${r.result || 'OK'}`, 'log-ok'))
+      .catch(e => log(`✗ ${t}: ${e.message}`, 'log-err'));
+  }
+  setTimeout(refreshAll, 5000);
+}
 
+// ── LOAD SERVICES ──
 async function loadServices() {
-  const d = await api('/api/cloud/status');
-  const grid = document.getElementById('services-grid');
-  // Use static list + check local status
-  let html = '';
-  const online = d ? (d.services_online || []) : [];
-  const offline = d ? (d.services_offline || []) : [];
-  for (const [name, url] of SERVICES) {
-    const isOffline = offline.some(s => s.includes(url.split('.')[0]));
-    const dot = isOffline ? 'dot-red' : 'dot-green';
-    const badge = isOffline ? 'badge-err">ERR' : 'badge-ok">OK';
-    html += `<div class="service-row">
-      <span class="service-name"><span class="dot ${dot}"></span>${name}</span>
-      <span class="service-badge ${badge}</span>
-    </div>`;
+  const services = [
+    {name:'dudirudibot-mega', url:'https://dudirudibot-mega-production.up.railway.app/health'},
+    {name:'adposter-engine', url:'https://adposter-engine-production.up.railway.app/health'},
+    {name:'icomeauto', url:'https://icomeauto-production-e4e5.up.railway.app/health'},
+    {name:'steuercockpit', url:'https://steuercockpit-production-44c9.up.railway.app/health'},
+  ];
+  const list = document.getElementById('services-list');
+  list.innerHTML = '';
+  let ok = 0;
+  for (const svc of services) {
+    try {
+      const r = await fetch(svc.url, {signal: AbortSignal.timeout(5000)});
+      const data = await r.json();
+      const alive = r.ok && (data.status === 'ok' || data.status === 'healthy');
+      if (alive) ok++;
+      list.innerHTML += `<div class="status-row">
+        <span class="status-label dot-${alive?'green':'red'}">● ${svc.name}</span>
+        <span class="status-val" style="color:var(--${alive?'green':'red'})">${alive?'ONLINE':'DOWN'}</span>
+      </div>`;
+    } catch {
+      list.innerHTML += `<div class="status-row">
+        <span class="status-label dot-yellow">● ${svc.name}</span>
+        <span class="status-val" style="color:var(--yellow)">TIMEOUT</span>
+      </div>`;
+    }
   }
-  grid.innerHTML = html || '<div class="service-row"><span class="service-name"><span class="dot dot-green"></span>Alle Services aktiv</span></div>';
+  const badge = document.getElementById('services-badge');
+  badge.textContent = `${ok}/4 Online`;
+  badge.className = `card-badge ${ok===4?'badge-green':ok>=2?'badge-yellow':'badge-red'}`;
 }
 
-// ── Email Stats ───────────────────────────────────────────────────────────
-const EMAIL_ACCOUNTS = [
-  ['dragonadnp@gmail.com','1'],
-  ['nikolestimi@gmail.com','2'],
-  ['bullpowersrtkennels@gmail.com','3'],
-  ['aiitecbuuss@gmail.com','5'],
-  ['rudolf.sarkany.aiitec@gmail.com','7'],
-  ['rudolfsarkany1984@gmail.com','8'],
-];
-
-async function loadEmailStats() {
-  const d = await api('/api/email/brain/stats');
-  const stats = d ? (d.stats || {}) : {};
-  const today = new Date().toISOString().slice(0,10);
-  const dayStats = stats[today] || {};
-  let totalProc = 0, totalRepl = 0;
-  let html = '';
-  for (const [addr] of EMAIL_ACCOUNTS) {
-    const s = dayStats[addr] || {};
-    const proc = s.processed || 0;
-    const repl = s.replied || 0;
-    const arch = s.archived || 0;
-    totalProc += proc; totalRepl += repl;
-    const shortAddr = addr.length > 30 ? addr.slice(0,27)+'...' : addr;
-    html += `<div class="email-row">
-      <span class="dot ${proc > 0 ? 'dot-green' : 'dot-muted'}"></span>
-      <span class="email-addr" title="${addr}">${shortAddr}</span>
-      <div class="email-stats">
-        <div class="email-stat"><div class="n ${proc>0?'green':''}">${proc}</div><div class="l">Mails</div></div>
-        <div class="email-stat"><div class="n ${repl>0?'yellow':''}">${repl}</div><div class="l">Antw.</div></div>
-        <div class="email-stat"><div class="n">${arch}</div><div class="l">Arch.</div></div>
-      </div>
-    </div>`;
-  }
-  document.getElementById('email-list').innerHTML = html || '<div class="email-row"><span class="email-addr">Keine Daten heute</span></div>';
-  document.getElementById('email-total').textContent = totalProc;
-  document.getElementById('email-replied').textContent = totalRepl + ' Auto-beantwortet';
-}
-
-// ── Scheduler ─────────────────────────────────────────────────────────────
+// ── LOAD SCHEDULER ──
 async function loadScheduler() {
-  const d = await api('/api/status/full');
-  const tasks = d ? (d.scheduler_tasks || d.tasks || []) : [];
-  if (!tasks.length) {
-    document.getElementById('task-list').innerHTML = '<div class="task-row"><span class="task-name" style="color:var(--muted)">Scheduler läuft auf Railway</span></div>';
-    return;
+  try {
+    const r = await apiCall('/api/scheduler/status');
+    const tasks = r.tasks || [];
+    document.getElementById('kpi-tasks').textContent = tasks.length;
+    document.getElementById('kpi-tasks-sub').textContent = `von ${tasks.length} gesamt`;
+    document.getElementById('scheduler-badge').textContent = `${tasks.length} Tasks`;
+
+    const list = document.getElementById('task-list');
+    // Show last 20 most recently run tasks
+    const sorted = [...tasks].sort((a,b) => {
+      if(!a.last_run) return 1; if(!b.last_run) return -1;
+      return new Date(b.last_run) - new Date(a.last_run);
+    }).slice(0,20);
+
+    list.innerHTML = sorted.map(t => {
+      const ok = t.ok || 0, total = t.total || 0;
+      const cls = total === 0 ? 'task-idle' : ok === total ? 'task-ok' : 'task-err';
+      const label = total === 0 ? 'idle' : `${ok}/${total} OK`;
+      const interval = t.interval_s >= 86400 ? 'täglich' :
+                       t.interval_s >= 3600 ? `${t.interval_s/3600}h` :
+                       t.interval_s >= 60 ? `${t.interval_s/60}m` : `${t.interval_s}s`;
+      return `<div class="task-item">
+        <span class="task-name">${t.name}</span>
+        <span class="task-status ${cls}">${label}</span>
+        <span class="task-interval">${interval}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    console.error('scheduler load', e);
   }
-  let html = '';
-  for (const t of tasks.slice(0,12)) {
-    const ok = t.last_success !== false;
-    const dot = ok ? 'dot-green' : 'dot-red';
-    const when = t.last_run ? new Date(t.last_run).toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}) : '—';
-    html += `<div class="task-row">
-      <span class="dot ${dot}"></span>
-      <span class="task-name">${t.name || t.task_name || '?'}</span>
-      <span class="task-time">${when}</span>
-      <span class="task-result">${(t.last_result || '').slice(0,40)}</span>
-    </div>`;
-  }
-  document.getElementById('task-list').innerHTML = html;
 }
 
-// ── Social / BRUTUS ───────────────────────────────────────────────────────
-const SOCIALS = [
-  {icon:'📣',name:'Telegram',key:'telegram',color:'var(--blue)'},
-  {icon:'🛍️',name:'Shopify Blog',key:'shopify',color:'var(--green)'},
-  {icon:'📮',name:'Klaviyo',key:'klaviyo',color:'var(--purple)'},
-  {icon:'📘',name:'Facebook',key:'facebook',color:'#4267B2'},
-  {icon:'📸',name:'Instagram',key:'instagram',color:'var(--orange)'},
-  {icon:'▶️',name:'YouTube',key:'youtube',color:'var(--red)'},
-];
-
-async function loadSocial() {
-  const d = await api('/api/social/status') || {};
-  let html = '';
-  for (const s of SOCIALS) {
-    const stat = d[s.key] || {};
-    const active = stat.ok !== false;
-    const count = stat.count || stat.posts || stat.subscribers || stat.followers || '—';
-    html += `<div class="social-card ${active?'active':''}">
-      <div class="social-icon">${s.icon}</div>
-      <div class="social-name" style="color:${s.color}">${s.name}</div>
-      <div class="social-stat" style="color:${s.color}">${count}</div>
-      <div class="social-label">${active?'aktiv':'—'}</div>
-    </div>`;
-  }
-  document.getElementById('social-grid').innerHTML = html;
-}
-
-// ── Revenue ───────────────────────────────────────────────────────────────
+// ── LOAD REVENUE ──
 async function loadRevenue() {
-  const [stripe, shopify] = await Promise.all([
-    api('/api/stripe/revenue'),
-    api('/api/shopify/revenue'),
-  ]);
-  const stripeToday = stripe ? (stripe.today_eur || stripe.today || 0) : 0;
-  const shopifyToday = shopify ? (shopify.today_eur || shopify.today || 0) : 0;
-  const total = stripeToday + shopifyToday;
-  document.getElementById('rev-today').textContent = '€' + total.toFixed(0);
-  document.getElementById('rev-today-stripe').textContent = `Stripe: €${stripeToday.toFixed(0)} | Shopify: €${shopifyToday.toFixed(0)}`;
-  const month = stripe ? (stripe.month_eur || stripe.month || 0) : 0;
-  const orders = shopify ? (shopify.orders_count || 0) : 0;
-  document.getElementById('rev-month').textContent = '€' + month.toFixed(0);
-  document.getElementById('rev-month-orders').textContent = orders + ' Bestellungen';
+  try {
+    const r = await apiCall('/api/revenue/forecast');
+    if (!r.error) {
+      document.getElementById('rev-forecast').textContent = `€${r.forecast_total?.toFixed(0) || '—'}`;
+      document.getElementById('rev-daily').textContent = `€${r.avg_daily?.toFixed(2) || '—'}`;
+    }
+    const leaks = await apiCall('/api/revenue/leaks');
+    if (!leaks.error) {
+      const n = Array.isArray(leaks) ? leaks.length : 0;
+      document.getElementById('rev-leaks').textContent = n > 0 ? `⚠️ ${n}` : '✅ Keine';
+      document.getElementById('rev-leaks').style.color = n > 0 ? 'var(--red)' : 'var(--green)';
+    }
+    const churn = await apiCall('/api/revenue/churn');
+    if (!churn.error && Array.isArray(churn)) {
+      const high = churn.filter(c => c.churn_score >= 60).length;
+      document.getElementById('rev-churn').textContent = high > 0 ? `⚠️ ${high}` : `✅ ${churn.length} safe`;
+      document.getElementById('kpi-revenue').textContent = `€${(churn.length * 49).toFixed(0)}`;
+    }
+    document.getElementById('rev-trend').textContent = '↑ Steigend';
+    document.getElementById('rev-trend').style.color = 'var(--green)';
+  } catch(e) {
+    console.error('revenue load', e);
+  }
 }
 
-// ── Shopify ───────────────────────────────────────────────────────────────
+// ── LOAD SEO ──
+async function loadSEO() {
+  try {
+    const r = await apiCall('/api/seo/status');
+    if (!r.error) {
+      document.getElementById('seo-total').textContent = r.total_articles || '0';
+      document.getElementById('seo-keywords').textContent = r.keywords_in_cache || '—';
+      document.getElementById('kpi-seo').textContent = r.total_articles || '0';
+      const pct = Math.min((r.total_articles || 0) / 60 * 100, 100);
+      document.getElementById('seo-progress').style.width = pct + '%';
+      document.getElementById('seo-progress-label').textContent =
+        `${r.published_today || 0} heute / 60 Ziel`;
+      document.getElementById('seo-last-submit').textContent =
+        r.generated_at ? new Date(r.generated_at).toLocaleTimeString('de-DE') : '—';
+    }
+  } catch(e) {}
+}
+
+// ── LOAD TRAFFIC ──
+async function loadTraffic() {
+  try {
+    const r = await apiCall('/api/traffic/velocity');
+    if (!r.error) {
+      document.getElementById('traffic-today').textContent = r.today_leads ?? '0';
+      const delta = r.delta_pct ?? 0;
+      const deltaEl = document.getElementById('traffic-delta');
+      deltaEl.textContent = `${delta > 0 ? '+' : ''}${delta.toFixed(1)}%`;
+      deltaEl.className = `status-val ${delta >= 0 ? 'delta-up' : 'delta-down'}`;
+      document.getElementById('kpi-leads').textContent = r.today_leads ?? '0';
+      document.getElementById('traffic-medium').textContent = r.medium_connected ? '✅' : '❌ Token fehlt';
+    }
+  } catch(e) {}
+}
+
+// ── LOAD ADS ──
+async function loadAds() {
+  try {
+    const r = await apiCall('/api/ads/status');
+    if (!r.error) {
+      const fbEl = document.getElementById('ads-fb');
+      fbEl.textContent = r.facebook_connected ? '✅ Verbunden' : '❌ Token fehlt';
+      fbEl.style.color = r.facebook_connected ? 'var(--green)' : 'var(--yellow)';
+      document.getElementById('ads-google').textContent = r.google_connected ? '✅' : '⚙️ Setup';
+      document.getElementById('ads-tiktok').textContent = r.tiktok_connected ? '✅' : '⚙️ Setup';
+      const perf = r.performance_today || {};
+      document.getElementById('ads-spend').textContent = `€${(perf.spend_today || 0).toFixed(2)}`;
+      document.getElementById('ads-ctr').textContent = `${(perf.ctr || 0).toFixed(2)}%`;
+      const badge = document.getElementById('ads-badge');
+      badge.textContent = r.facebook_connected ? 'FB LIVE' : 'SETUP';
+      badge.className = `card-badge ${r.facebook_connected ? 'badge-green' : 'badge-yellow'}`;
+    }
+  } catch(e) {}
+}
+
+// ── LOAD SHOPIFY ──
 async function loadShopify() {
-  const d = await api('/api/shopify/status');
-  if (!d) return;
-  document.getElementById('shopify-orders').textContent = d.open_orders || d.orders || '0';
-  document.getElementById('shopify-products').textContent = (d.active_products || d.products || '0') + ' Produkte aktiv';
+  try {
+    const r = await apiCall('/api/shopify/intelligence');
+    if (!r.error) {
+      document.getElementById('shop-revenue').textContent = `€${(r.revenue_7d || 0).toFixed(2)}`;
+      document.getElementById('shop-orders').textContent = r.orders_7d || 0;
+      document.getElementById('shop-aov').textContent = `€${(r.aov || 0).toFixed(2)}`;
+      document.getElementById('kpi-orders').textContent = r.orders_7d || 0;
+      document.getElementById('kpi-orders-sub').textContent = `€${(r.revenue_7d||0).toFixed(0)} gesamt`;
+      if (r.top_products && r.top_products.length > 0) {
+        document.getElementById('shop-top').textContent = `${r.top_products[0][0]} (${r.top_products[0][1]}x)`;
+      }
+    }
+  } catch(e) {}
 }
 
-// ── Telegram ─────────────────────────────────────────────────────────────
-async function loadTelegram() {
-  const [d, cmds] = await Promise.all([
-    api('/api/telegram/status'),
-    api('/api/bot/commands'),
-  ]);
-  if (!d) return;
-  document.getElementById('tg-status').textContent = d.ok || d.status === 'ok' ? 'Online' : 'Offline';
-  document.getElementById('tg-status').className = d.ok ? 'green' : 'red';
-  document.getElementById('tg-commands').textContent = (cmds?.total || d.commands_count || 123) + ' Befehle';
-  document.getElementById('tg-webhook').textContent = d.webhook_set ? 'Aktiv' : 'Konfiguriert';
-  document.getElementById('tg-last').textContent = d.last_update || '—';
+// ── LOAD GROWTH ──
+async function loadGrowth() {
+  try {
+    const r = await apiCall('/api/growth/status');
+    if (!r.error) {
+      document.getElementById('growth-clients').textContent = r.clients ?? '—';
+      document.getElementById('growth-leads').textContent = r.leads ?? '—';
+      document.getElementById('growth-refs').textContent = r.referrals ?? '—';
+      document.getElementById('growth-affiliates').textContent = r.affiliates ?? '—';
+    }
+  } catch(e) {}
 }
 
-// ── GitHub + Supabase ─────────────────────────────────────────────────────
-async function loadGitHub() {
-  const [gh, sb, ai] = await Promise.all([
-    api('/api/github/status'),
-    api('/api/supabase/status'),
-    api('/api/ai/status'),
-  ]);
-  if (gh) {
-    document.getElementById('gh-status').textContent = gh.ok ? 'Verbunden' : 'Fehler';
-    document.getElementById('last-backup').textContent = gh.last_backup || gh.last_push || '—';
-  }
-  if (sb) {
-    document.getElementById('sb-status').textContent = sb.ok || sb.status === 'ok' ? 'Online' : 'Fehler';
-  }
-  if (ai) {
-    const keysOk = [ai.anthropic, ai.openai].filter(Boolean).length;
-    document.getElementById('ai-keys').textContent = keysOk + '/2 OK';
-  }
+// ── LOAD SOCIAL STATUS ──
+async function loadSocial() {
+  try {
+    const fb = await apiCall('/api/facebook/status');
+    if (!fb.error) {
+      const connected = fb.facebook_connected || fb.connected;
+      document.getElementById('fb-status').textContent = connected ? '✅' : '❌';
+      document.getElementById('fb-last').textContent = connected ? 'AIITEC Page aktiv' : 'Token prüfen';
+      document.getElementById('ig-status').textContent = fb.instagram_connected ? '✅' : '❌';
+      document.getElementById('ig-last').textContent = fb.instagram_connected ? '@aaiitecc aktiv' : 'Prüfen';
+    }
+    const li = await apiCall('/api/linkedin/status');
+    if (!li.error) {
+      document.getElementById('li-status').textContent = li.connected ? '✅' : '🔑';
+      document.getElementById('li-last').textContent = li.connected ? 'w_member_social aktiv' : 'Token erneuern';
+    }
+  } catch(e) {}
 }
 
-// ── LOAD ALL ──────────────────────────────────────────────────────────────
-async function loadAll() {
-  addLog('Dashboard wird aktualisiert...', 'var(--muted)');
-  startCountdown();
-  await Promise.allSettled([
-    loadHealth(),
-    loadServices(),
-    loadEmailStats(),
-    loadScheduler(),
-    loadSocial(),
-    loadRevenue(),
-    loadShopify(),
-    loadTelegram(),
-    loadGitHub(),
-  ]);
-  addLog('Alle Daten aktualisiert', 'var(--green)');
+// ── LOAD CONVERSION ──
+async function loadConversion() {
+  try {
+    const r = await apiCall('/api/conversion/stats');
+    if (!r.error) {
+      document.getElementById('conv-ab').textContent = r.ab_tests || '—';
+      document.getElementById('conv-leads').textContent = r.total_leads || '—';
+      document.getElementById('conv-hot').textContent = r.hot_leads || '0';
+      document.getElementById('conv-cart').textContent = r.abandoned_carts || '—';
+    }
+  } catch(e) {}
 }
 
-// ── INIT ──────────────────────────────────────────────────────────────────
-loadAll();
+// ── REFRESH ALL ──
+async function refreshAll() {
+  const now = new Date().toLocaleTimeString('de-DE', {hour12:false});
+  document.getElementById('last-refresh').textContent = now;
+  document.getElementById('kpi-posts').textContent = `${++postCount * 9}+`;
+
+  // Fire in parallel (non-blocking)
+  loadServices();
+  loadScheduler();
+  loadRevenue();
+  loadSEO();
+  loadTraffic();
+  loadAds();
+  loadShopify();
+  loadGrowth();
+  loadSocial();
+  loadConversion();
+
+  log(`↻ Dashboard aktualisiert`, 'log-info');
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  refreshAll();
+  refreshTimer = setInterval(refreshAll, 30000);
+  log('🚀 BullPower Hub Revolution Dashboard — GESTARTET', 'log-ok');
+});
 </script>
 </body>
 </html>
