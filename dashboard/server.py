@@ -203,41 +203,6 @@ async def handle_bot_commands(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
-async def handle_bot_execute(req):
-    """Telegram Hub Bridge → Dashboard CommandRouter.
-    Called by telegram_hub_bridge.py for every incoming Telegram message.
-    """
-    try:
-        data = await req.json()
-        command = data.get("command", "").strip()
-        session_id = data.get("session_id", "telegram")
-        if not command:
-            return web.json_response({"ok": False, "error": "command is required"}, status=400)
-        bot = req.app["bot"]
-        response = await bot.process(command, session_id)
-        return web.json_response({"ok": True, "response": response})
-    except Exception as e:
-        log.error("handle_bot_execute error: %s", e)
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
-async def handle_bot_commands(req):
-    """Return all registered bot commands (for /commands meta-command in Telegram)."""
-    try:
-        bot = req.app["bot"]
-        all_cmds = list(bot.router.routes.keys())
-        slash_cmds = sorted(c for c in all_cmds if c.startswith("/"))
-        other_cmds = sorted(c for c in all_cmds if not c.startswith("/"))
-        return web.json_response({
-            "ok": True,
-            "total": len(all_cmds),
-            "slash": slash_cmds,
-            "all": slash_cmds + other_cmds,
-        })
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
-
-
 async def handle_system(req):
     try:
         import psutil
@@ -3321,14 +3286,6 @@ async def handle_drive_backup(req):
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
-
-
-async def create_app():
-    from core.mega_orchestrator import MegaOrchestrator
-    bot = MegaOrchestrator()
-    await bot.start()
-
-
 
 
 # ---------------------------------------------------------------------------

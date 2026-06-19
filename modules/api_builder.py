@@ -176,7 +176,7 @@ KNOWN_APIS: Dict[str, Dict] = {
         "base_url": lambda: "https://a.klaviyo.com/api",
         "headers":  lambda: {
             "Authorization": f"Klaviyo-API-Key {_e('KLAVIYO_API_KEY')}",
-            "revision": "2024-02-15",
+            "revision": "2024-10-15",
         },
         "test_path": "/accounts/",
         "test_method": "GET",
