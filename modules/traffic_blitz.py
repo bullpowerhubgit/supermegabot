@@ -15,10 +15,12 @@ Channels ohne neue Credentials:
 from __future__ import annotations
 
 import asyncio
+import base64
 import json
 import logging
 import os
 import random
+import re
 from datetime import datetime, timezone
 
 import aiohttp
@@ -34,6 +36,9 @@ TG_CHAT          = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_DOMAIN   = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN    = lambda: os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VER      = lambda: os.getenv("SHOPIFY_API_VERSION", "2024-10")
+GITHUB_TOKEN     = lambda: os.getenv("GITHUB_TOKEN", "")
+GITHUB_PAGES_REPO = "bullpowerhubgit/bullpowerhubgit.github.io"
+DEVTO_KEY        = lambda: os.getenv("DEVTO_API_KEY", "")
 DS24_URL         = "https://www.digistore24.com/product/669750"
 INDEXNOW_KEY     = "bullpowerhubgit"
 INDEXNOW_DOMAINS = [
@@ -216,7 +221,8 @@ Antworte NUR mit JSON:
                     blog_id = (await r.json(content_type=None)).get("blog", {}).get("id")
 
             if not blog_id:
-                return {"ok": False, "error": "Could not get/create blog"}
+                log.warning("Shopify blog unavailable (write_content scope missing) — falling back to GitHub Pages")
+                return await create_github_seo_post(topic)
 
             async with s.post(
                 f"https://{domain}/admin/api/{ver}/blogs/{blog_id}/articles.json",
@@ -339,6 +345,129 @@ Nur JSON zurückgeben."""
         return {"ok": False, "topic": topic, "qa_pairs": 0}
 
 
+# ── GitHub Pages Blog Publisher ───────────────────────────────────────────────
+
+async def post_github_pages(title: str, body_md: str, tags: list[str] | None = None) -> dict:
+    """Push a new HTML blog post to bullpowerhubgit.github.io via GitHub API."""
+    token = GITHUB_TOKEN()
+    if not token:
+        return {"ok": False, "error": "GITHUB_TOKEN missing"}
+
+    now   = datetime.now(timezone.utc)
+    date  = now.strftime("%Y-%m-%d")
+    slug  = re.sub(r"[^a-z0-9]+", "-", title.lower())[:60].strip("-")
+    path  = f"blog/{date}-{slug}.html"
+    tag_str = ", ".join(tags or ["KI", "E-Commerce", "Automatisierung"])
+    # Convert markdown-ish to HTML
+    body_html = body_md.replace("\n## ", "\n<h2>").replace("\n### ", "\n<h3>")
+    body_html = re.sub(r"<h2>([^\n]+)", r"<h2>\1</h2>", body_html)
+    body_html = re.sub(r"<h3>([^\n]+)", r"<h3>\1</h3>", body_html)
+    body_html = "\n".join(
+        f"<p>{l}</p>" if l and not l.startswith("<") else l
+        for l in body_html.split("\n")
+    )
+    content = f"""<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{title}</title>
+<meta name="description" content="KI & E-Commerce Automatisierung — {tag_str}">
+<meta name="keywords" content="{tag_str}">
+<link rel="stylesheet" href="/style.css">
+<script type="application/ld+json">{{"@context":"https://schema.org","@type":"Article","headline":"{title}","datePublished":"{date}","author":{{"@type":"Person","name":"Rudolf Sarkany"}}}}</script>
+</head>
+<body>
+<article>
+<h1>{title}</h1>
+<p><time datetime="{date}">{date}</time> | Tags: {tag_str}</p>
+{body_html}
+</article>
+<footer><p><a href="/">Zurück zur Startseite</a> | <a href="{DS24_URL}">KI Income System</a></p></footer>
+</body>
+</html>"""
+    encoded = base64.b64encode(content.encode()).decode()
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.put(
+                f"https://api.github.com/repos/{GITHUB_PAGES_REPO}/contents/{path}",
+                headers={"Authorization": f"token {token}", "Accept": "application/vnd.github+json"},
+                json={"message": f"blog: {title[:72]}", "content": encoded},
+            ) as r:
+                if r.status in (200, 201):
+                    url = f"https://bullpowerhubgit.github.io/{path}"
+                    await _indexnow_ping(url)
+                    log.info("GitHub Pages: published '%s'", title)
+                    return {"ok": True, "title": title, "url": url, "path": path}
+                body = await r.text()
+                log.warning("GitHub Pages %s: %s", r.status, body[:120])
+                return {"ok": False, "error": f"HTTP {r.status}"}
+    except Exception as exc:
+        log.error("GitHub Pages error: %s", exc)
+        return {"ok": False, "error": str(exc)}
+
+
+async def create_github_seo_post(topic: str | None = None) -> dict:
+    """Generate AI article and publish to GitHub Pages."""
+    topic = topic or random.choice(SEO_TOPICS)
+    prompt = f"""Erstelle einen SEO-optimierten Blog-Artikel auf Deutsch:
+
+Thema: "{topic}"
+
+Anforderungen:
+- 600-800 Wörter in Markdown
+- H2/H3-Überschriften (## / ###)
+- 2 natürliche Links zu: {DS24_URL}
+- FAQ-Sektion (3 Fragen) am Ende
+
+Antworte NUR mit JSON:
+{{"title": "SEO Titel max 65 Zeichen", "body": "vollständiger Markdown-Artikel", "tags": ["tag1","tag2","tag3"]}}"""
+
+    raw = await ai_complete(prompt, max_tokens=1500)
+    try:
+        s, e = raw.find("{"), raw.rfind("}") + 1
+        data = json.loads(raw[s:e])
+    except Exception:
+        data = {
+            "title": f"{topic} — Anleitung 2026",
+            "body": f"## {topic}\n\nErfahre wie du mit KI-Tools dein Online-Business automatisierst.\n\n[Jetzt starten]({DS24_URL})\n\n## FAQ\n\n**Was ist das?**\nEin System für automatische Online-Einnahmen.\n\n**Wie starte ich?**\nRegistriere dich und folge der Anleitung.",
+            "tags": ["KI", "E-Commerce", "Automatisierung"],
+        }
+    return await post_github_pages(data["title"], data["body"], data.get("tags"))
+
+
+# ── DEV.to Publisher ──────────────────────────────────────────────────────────
+
+async def post_devto(title: str, body_md: str, tags: list[str] | None = None) -> dict:
+    """Publish article to DEV.to (needs DEVTO_API_KEY)."""
+    key = DEVTO_KEY()
+    if not key or key.startswith("MISSING"):
+        return {"ok": False, "error": "DEVTO_API_KEY not set"}
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            async with s.post(
+                "https://dev.to/api/articles",
+                headers={"api-key": key, "Content-Type": "application/json"},
+                json={"article": {
+                    "title": title,
+                    "body_markdown": body_md,
+                    "published": True,
+                    "tags": (tags or ["ai", "ecommerce", "automation"])[:4],
+                }},
+            ) as r:
+                if r.status in (200, 201):
+                    d = await r.json(content_type=None)
+                    url = d.get("url", "")
+                    await _indexnow_ping(url)
+                    log.info("DEV.to published: %s", url)
+                    return {"ok": True, "url": url, "title": title}
+                body = await r.text()
+                log.warning("DEV.to %s: %s", r.status, body[:120])
+                return {"ok": False, "error": f"HTTP {r.status}"}
+    except Exception as exc:
+        return {"ok": False, "error": str(exc)}
+
+
 # ── Telegram SEO Post ─────────────────────────────────────────────────────────
 
 async def post_telegram_seo(topic: str | None = None) -> bool:
@@ -412,13 +541,16 @@ async def run_linkedin_burst() -> dict:
 
 
 async def run_shopify_seo_blast() -> dict:
-    """Publish 3 SEO blog posts to Shopify in one run."""
+    """Publish 3 SEO blog posts — Shopify if scope available, GitHub Pages as fallback."""
     results = []
     topics  = random.sample(SEO_TOPICS, min(3, len(SEO_TOPICS)))
     for t in topics:
-        r = await create_shopify_blog_post(t)
+        r = await create_shopify_blog_post(t)  # auto-falls back to GitHub Pages
         results.append(r)
         await asyncio.sleep(5)
+    # Always also push 1 dedicated GitHub Pages + 1 DEV.to post
+    gh = await create_github_seo_post(random.choice(SEO_TOPICS))
+    results.append(gh)
     await indexnow_blast()
     ok = sum(1 for r in results if r.get("ok"))
     return {"ok": ok > 0, "published": ok, "topics": topics}
