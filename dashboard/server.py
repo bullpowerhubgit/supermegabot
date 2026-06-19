@@ -3371,17 +3371,54 @@ async def _push_order_to_pipedrive(order: dict):
             log.info("[PIPEDRIVE] Deal erstellt: #%s → Deal ID %s", order_num, deal_id)
 
 async def handle_shopify_order_webhook_route(req):
-    """Shopify Order Webhook — Telegram-Alarm + Pipedrive Deal."""
+    """Shopify Order Webhook — Telegram-Alarm + Printify + Printful + Pipedrive."""
     try:
         data = await req.json()
+        import asyncio
         from modules.shopify_automation import handle_shopify_order_webhook
         await handle_shopify_order_webhook(data)
-        import asyncio
         asyncio.create_task(_push_order_to_pipedrive(data))
+        # Auto-submit to Printify if configured
+        asyncio.create_task(_pod_fulfill_order(data))
         return web.Response(status=200)
     except Exception as e:
         log.error("Shopify order webhook error: %s", e)
         return web.Response(status=200)
+
+
+async def _pod_fulfill_order(order: dict) -> None:
+    """Try Printify then Printful fulfillment for a Shopify order."""
+    try:
+        from modules.printify_automation import ping as py_ping, handle_shopify_order as py_fulfill
+        if await py_ping():
+            await py_fulfill(order)
+    except Exception as e:
+        log.debug("Printify order fulfill skipped: %s", e)
+    try:
+        from modules.printful_automation import ping as pf_ping, create_order_from_shopify as pf_fulfill
+        if await pf_ping():
+            await pf_fulfill(order)
+    except Exception as e:
+        log.debug("Printful order fulfill skipped: %s", e)
+
+
+async def handle_printful_status(req):
+    try:
+        from modules.printful_automation import ping, get_stats
+        ok = await ping()
+        stats = await get_stats() if ok else {}
+        return web.json_response({"ok": ok, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_printful_autofulfill(req):
+    try:
+        from modules.printful_automation import auto_fulfill_pending
+        result = await auto_fulfill_pending()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
 
 async def handle_shopify_order_webhook_v2(req):
     """Alias /api/webhooks/shopify-order → gleiche Logik."""
@@ -4911,6 +4948,8 @@ async def create_app():
     # ── Printify ──────────────────────────────────────────────────────────────
     app.router.add_get("/api/printify/status",        handle_printify_status)
     app.router.add_post("/api/printify/autofulfill",  handle_printify_autofulfill)
+    app.router.add_get("/api/printful/status",        handle_printful_status)
+    app.router.add_post("/api/printful/autofulfill",  handle_printful_autofulfill)
 
     # ── Etsy + Gumroad ────────────────────────────────────────────────────────
     app.router.add_get("/api/etsy/status",            handle_etsy_status)
