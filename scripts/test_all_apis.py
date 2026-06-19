@@ -84,16 +84,16 @@ async def test_ollama():
                 return True, f"{len(models)} Modelle: {', '.join(models[:3])}"
             return False, f"HTTP {r.status}"
 
-async def test_openai():
-    key = os.getenv("OPENAI_API_KEY", "")
+async def test_deepseek():
+    key = os.getenv("DEEPSEEK_API_KEY", "")
     if not key:
-        return False, "OPENAI_API_KEY fehlt"
+        return False, "DEEPSEEK_API_KEY fehlt"
     import aiohttp
     async with aiohttp.ClientSession() as s:
-        async with s.get("https://api.openai.com/v1/models",
+        async with s.get("https://api.deepseek.com/v1/models",
                          headers={"Authorization": f"Bearer {key}"}) as r:
             if r.status == 200:
-                return True, "OpenAI API erreichbar"
+                return True, "DeepSeek API erreichbar"
             return False, f"HTTP {r.status}"
 
 async def test_anthropic():
@@ -220,7 +220,7 @@ async def main():
         ("🤖  AI Provider", [
             ("Ollama (lokal)", test_ollama()),
             ("Anthropic",     test_anthropic()),
-            ("OpenAI",        test_openai()),
+            ("DeepSeek",      test_deepseek()),
             ("Perplexity",    test_perplexity()),
         ]),
         ("📱  Social Media", [

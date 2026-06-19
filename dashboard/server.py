@@ -834,7 +834,7 @@ async def handle_status_full(req):
         },
         "ai": {
             "anthropic_configured": bool(os.getenv("ANTHROPIC_API_KEY")),
-            "openai_configured": bool(os.getenv("OPENAI_API_KEY")),
+            "deepseek_configured": bool(os.getenv("DEEPSEEK_API_KEY")),
         },
     })
 
@@ -852,7 +852,7 @@ async def handle_guardian_status(req):
         "ok": True,
         "status": "active" if guardian_running else "standby",
         "guardian_process": guardian_running,
-        "api_key_configured": bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY")),
+        "api_key_configured": bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("DEEPSEEK_API_KEY")),
         "monitoring": True,
         "alerts_enabled": bool(os.getenv("TELEGRAM_BOT_TOKEN") and os.getenv("TELEGRAM_CHAT_ID")),
     })
@@ -861,7 +861,7 @@ async def handle_guardian_status(req):
 async def handle_ai_status(req):
     """AI integrations status."""
     anthropic_ok = bool(os.getenv("ANTHROPIC_API_KEY"))
-    openai_ok = bool(os.getenv("OPENAI_API_KEY"))
+    deepseek_ok = bool(os.getenv("DEEPSEEK_API_KEY"))
     ollama_ok = False
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=2)) as s:
@@ -872,9 +872,10 @@ async def handle_ai_status(req):
     return web.json_response({
         "ok": True,
         "anthropic": {"configured": anthropic_ok, "model": os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")},
-        "openai": {"configured": openai_ok, "model": os.getenv("OPENAI_MODEL", "gpt-4o")},
+        "deepseek": {"configured": deepseek_ok, "model": "deepseek-chat"},
         "ollama": {"online": ollama_ok, "host": os.getenv("OLLAMA_HOST", "http://localhost:11434"), "model": os.getenv("OLLAMA_MODEL", "llama3.2")},
         "gemini": {"configured": bool(os.getenv("GEMINI_API_KEY"))},
+        "perplexity": {"configured": bool(os.getenv("PERPLEXITY_API_KEY"))},
     })
 
 
@@ -910,7 +911,8 @@ async def handle_env_check(req):
             "TELEGRAM_BOT_TOKEN":        bool(os.getenv("TELEGRAM_BOT_TOKEN")),
             "TELEGRAM_CHAT_ID":          bool(os.getenv("TELEGRAM_CHAT_ID")),
             "ANTHROPIC_API_KEY":         bool(os.getenv("ANTHROPIC_API_KEY")),
-            "OPENAI_API_KEY":            bool(os.getenv("OPENAI_API_KEY")),
+            "DEEPSEEK_API_KEY":          bool(os.getenv("DEEPSEEK_API_KEY")),
+            "PERPLEXITY_API_KEY":        bool(os.getenv("PERPLEXITY_API_KEY")),
         },
         "database": {
             "SUPABASE_URL":              bool(os.getenv("SUPABASE_URL")),
@@ -1257,7 +1259,7 @@ _WATCHED_ENV_KEYS = [
     "SHOPIFY_ACCESS_TOKEN", "SHOPIFY_ADMIN_API_TOKEN",
     "SHOPIFY_STORE_URL", "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_API_VERSION",
     "OLLAMA_HOST", "OLLAMA_FAST_MODEL", "OLLAMA_SMART_MODEL", "OLLAMA_CODE_MODEL",
-    "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "PERPLEXITY_API_KEY",
+    "DEEPSEEK_API_KEY", "ANTHROPIC_API_KEY", "PERPLEXITY_API_KEY",
     "SUPABASE_URL", "SUPABASE_ANON_KEY", "SUPABASE_SERVICE_KEY",
     "GOOGLE_ADS_CLIENT_ID", "GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET",
     "GCP_PROJECT_ID", "GMC_MERCHANT_ID",
@@ -1280,7 +1282,7 @@ _WATCHED_ENV_KEYS = [
 
 # Key format validators (no network needed)
 _KEY_FORMATS = {
-    "OPENAI_API_KEY":        lambda v: v.startswith("sk-"),
+    "DEEPSEEK_API_KEY":      lambda v: v.startswith("sk-"),
     "ANTHROPIC_API_KEY":     lambda v: v.startswith("sk-ant-"),
     "PERPLEXITY_API_KEY":    lambda v: v.startswith("pplx-") or len(v) > 20,
     "TELEGRAM_BOT_TOKEN":    lambda v: ":" in v and len(v) > 20,
@@ -1306,9 +1308,9 @@ async def _validate_key(session: aiohttp.ClientSession, key: str, val: str) -> s
     # Network validation for critical keys
     timeout = aiohttp.ClientTimeout(total=5)
     try:
-        if key == "OPENAI_API_KEY":
+        if key == "DEEPSEEK_API_KEY":
             async with session.get(
-                "https://api.openai.com/v1/models",
+                "https://api.deepseek.com/v1/models",
                 headers={"Authorization": f"Bearer {val}"},
                 timeout=timeout
             ) as r:

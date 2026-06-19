@@ -44,7 +44,7 @@ SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 KLAVIYO_KEY    = os.getenv("KLAVIYO_API_KEY", "")
 MAILCHIMP_KEY  = os.getenv("MAILCHIMP_API_KEY", "")
 MAILCHIMP_LIST = os.getenv("MAILCHIMP_LIST_ID", "")
-OPENAI_KEY     = os.getenv("OPENAI_API_KEY", "")
+DEEPSEEK_KEY   = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "omega"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)

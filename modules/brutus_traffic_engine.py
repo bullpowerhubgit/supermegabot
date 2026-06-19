@@ -30,7 +30,7 @@ log = logging.getLogger("BRUTUS")
 
 DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "brutus"))
 ANTHROPIC  = os.getenv("ANTHROPIC_API_KEY", "")
-OPENAI     = os.getenv("OPENAI_API_KEY", "")
+DEEPSEEK   = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 YOUTUBE_KEY    = os.getenv("YOUTUBE_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
