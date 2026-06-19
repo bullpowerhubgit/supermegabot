@@ -3186,16 +3186,69 @@ async def handle_telegram_setup(req):
     return web.json_response({"ok": True, "results": results, "webhook": webhook_url})
 
 
+async def _push_order_to_pipedrive(order: dict):
+    """Shopify Order → Pipedrive Deal (Stage 19 = Neue Bestellung)."""
+    import aiohttp, os
+    pd_token = os.getenv("PIPEDRIVE_API_TOKEN", "e38c4f57be03a0a33fb39c087b397f57c09bd1a1")
+    customer = order.get("customer") or {}
+    email = customer.get("email") or order.get("email") or "unknown@shopify.com"
+    name = f'{customer.get("first_name","")} {customer.get("last_name","")}'.strip() or email
+    order_num = order.get("order_number", "?")
+    total = float(order.get("total_price", 0))
+    currency = order.get("currency", "EUR")
+
+    async with aiohttp.ClientSession() as session:
+        # Person suchen oder anlegen
+        async with session.get(
+            f"https://api.pipedrive.com/v1/persons/search?term={email}&fields=email&api_token={pd_token}"
+        ) as r:
+            rd = await r.json()
+            persons = rd.get("data", {}).get("items", []) if rd.get("success") else []
+            person_id = persons[0]["item"]["id"] if persons else None
+
+        if not person_id:
+            async with session.post(
+                f"https://api.pipedrive.com/v1/persons?api_token={pd_token}",
+                json={"name": name, "email": [{"value": email, "primary": True}]}
+            ) as r:
+                rd = await r.json()
+                person_id = rd.get("data", {}).get("id")
+
+        # Deal anlegen
+        deal_payload = {
+            "title": f"Shopify #{order_num} — {name}",
+            "value": total,
+            "currency": currency,
+            "person_id": person_id,
+            "pipeline_id": 4,
+            "stage_id": 19,
+        }
+        if order.get("financial_status") == "paid":
+            deal_payload["stage_id"] = 20
+        async with session.post(
+            f"https://api.pipedrive.com/v1/deals?api_token={pd_token}",
+            json=deal_payload
+        ) as r:
+            rd = await r.json()
+            deal_id = rd.get("data", {}).get("id")
+            log.info("[PIPEDRIVE] Deal erstellt: #%s → Deal ID %s", order_num, deal_id)
+
 async def handle_shopify_order_webhook_route(req):
-    """Shopify Order Webhook — sendet Telegram-Alarm bei neuer Bestellung."""
+    """Shopify Order Webhook — Telegram-Alarm + Pipedrive Deal."""
     try:
         data = await req.json()
         from modules.shopify_automation import handle_shopify_order_webhook
         await handle_shopify_order_webhook(data)
+        import asyncio
+        asyncio.create_task(_push_order_to_pipedrive(data))
         return web.Response(status=200)
     except Exception as e:
         log.error("Shopify order webhook error: %s", e)
         return web.Response(status=200)
+
+async def handle_shopify_order_webhook_v2(req):
+    """Alias /api/webhooks/shopify-order → gleiche Logik."""
+    return await handle_shopify_order_webhook_route(req)
 
 
 async def handle_shopify_orders(req):
@@ -4778,7 +4831,8 @@ async def create_app():
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_get("/api/stripe/subscriptions",   handle_stripe_subscriptions)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
-    app.router.add_post("/api/shopify/order-webhook", handle_shopify_order_webhook_route)
+    app.router.add_post("/api/shopify/order-webhook",     handle_shopify_order_webhook_route)
+    app.router.add_post("/api/webhooks/shopify-order",    handle_shopify_order_webhook_v2)
     app.router.add_get("/api/shopify/orders",         handle_shopify_orders)
     app.router.add_get("/api/shopify/products",       handle_shopify_products)
     app.router.add_get("/api/shopify/revenue",        handle_shopify_revenue)
