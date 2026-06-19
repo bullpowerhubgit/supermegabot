@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://telegram-marketing-bot.netlify.app/sitemap.xml

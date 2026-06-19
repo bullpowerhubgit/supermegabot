@@ -43,3 +43,12 @@ Passwort für alle Password-Gates: `bullpower2026`
 2. https://icomeauto-production-e4e5.up.railway.app — Stripe Checkout live
 3. https://steuercockpit-production-44c9.up.railway.app — Stripe Checkout live
 4. https://shopify-brutal-tuning.vercel.app — NEU: Stripe CTAs jetzt korrekt
+
+## GitHub Pages (kostenlos, kein Limit) — Stand 2026-06-19
+| Tool | URL | Status |
+|------|-----|--------|
+| bullpower-lead | https://bullpowerhubgit.github.io/bullpower-lead/ | ✅ GitHub Pages |
+| shopify-suite-landing | https://bullpowerhubgit.github.io/shopify-suite-landing/ | ✅ GitHub Pages |
+| shopify-brutal-tuning-landing | https://bullpowerhubgit.github.io/shopify-brutal-tuning-landing/ | ✅ GitHub Pages |
+
+> Netlify deploy-limit erreicht — alle neuen Sites auf GitHub Pages migriert.

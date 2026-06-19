@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://bullpower-launcher.netlify.app/sitemap.xml
