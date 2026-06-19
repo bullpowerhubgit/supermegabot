@@ -18,6 +18,7 @@ log = logging.getLogger("TrafficSEO")
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 DEEPSEEK_KEY  = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
+GROQ_KEY      = os.getenv("GROQ_API_KEY", "")
 
 
 async def _ai_generate(prompt: str, max_tokens: int = 800) -> str:
@@ -63,6 +64,25 @@ async def _ai_generate(prompt: str, max_tokens: int = 800) -> str:
                     return data["choices"][0]["message"]["content"]
         except Exception as exc:
             log.warning("DeepSeek generation failed: %s", exc)
+
+    if GROQ_KEY:
+        try:
+            import aiohttp
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"},
+                    json={
+                        "model": "llama-3.1-8b-instant",
+                        "max_tokens": max_tokens,
+                        "messages": [{"role": "user", "content": prompt}],
+                    },
+                    timeout=aiohttp.ClientTimeout(total=20),
+                ) as resp:
+                    data = await resp.json(content_type=None)
+                    return data["choices"][0]["message"]["content"]
+        except Exception as exc:
+            log.warning("Groq generation failed: %s", exc)
 
     return ""
 
