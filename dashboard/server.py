@@ -4353,6 +4353,8 @@ async def handle_traffic_velocity(request: web.Request) -> web.Response:
     try:
         from modules.traffic_swarm import monitor_traffic_velocity
         r = await monitor_traffic_velocity()
+        r.setdefault("delta_pct", 0)
+        r["medium_connected"] = bool(os.getenv("MEDIUM_ACCESS_TOKEN"))
         return web.json_response(r)
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
