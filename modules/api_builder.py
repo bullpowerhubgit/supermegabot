@@ -63,16 +63,16 @@ KNOWN_APIS: Dict[str, Dict] = {
         "docs": None,
     },
     # ── Cloud KI ───────────────────────────────────────────────────────────────
-    "openai": {
-        "name": "OpenAI",
+    "deepseek": {
+        "name": "DeepSeek",
         "category": "KI",
-        "base_url": lambda: "https://api.openai.com/v1",
-        "headers":  lambda: {"Authorization": f"Bearer {_e('OPENAI_API_KEY')}"},
+        "base_url": lambda: "https://api.deepseek.com/v1",
+        "headers":  lambda: {"Authorization": f"Bearer {_e('DEEPSEEK_API_KEY')}"},
         "test_path": "/models",
         "test_method": "GET",
-        "env_keys": ["OPENAI_API_KEY"],
+        "env_keys": ["DEEPSEEK_API_KEY"],
         "module_file": None,
-        "docs": "https://platform.openai.com/docs",
+        "docs": "https://api-docs.deepseek.com",
     },
     "anthropic": {
         "name": "Anthropic (Claude)",

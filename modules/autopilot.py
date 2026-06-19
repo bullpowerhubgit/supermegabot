@@ -21,7 +21,7 @@ log = logging.getLogger("AutoPilot")
 DATA_DIR = Path(__file__).parent.parent / "data"
 DB_PATH = DATA_DIR / "autopilot.db"
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
+DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 try:
@@ -219,26 +219,26 @@ async def ai_complete(system: str, prompt: str, model_hint: str = "fast") -> str
                         data = await r.json()
                         return data.get("message", {}).get("content", "")
         except Exception as e:
-            log.warning(f"Ollama failed: {e} - trying OpenAI")
+            log.warning(f"Ollama failed: {e} - trying DeepSeek")
 
-        # Fallback: OpenAI
-        if OPENAI_KEY:
+        # Fallback: DeepSeek
+        if DEEPSEEK_KEY:
             try:
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                     payload = {
-                        "model": "gpt-4o-mini",
+                        "model": "deepseek-chat",
                         "messages": [
                             {"role": "system", "content": system},
                             {"role": "user", "content": prompt}
                         ]
                     }
-                    headers = {"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"}
-                    async with s.post("https://api.openai.com/v1/chat/completions", json=payload, headers=headers) as r:
+                    headers = {"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"}
+                    async with s.post("https://api.deepseek.com/v1/chat/completions", json=payload, headers=headers) as r:
                         if r.status == 200:
                             data = await r.json()
                             return data["choices"][0]["message"]["content"]
             except Exception as e:
-                log.warning(f"OpenAI failed: {e}")
+                log.warning(f"DeepSeek failed: {e}")
 
     return "AI nicht verfügbar - starte Ollama: ollama serve"
 

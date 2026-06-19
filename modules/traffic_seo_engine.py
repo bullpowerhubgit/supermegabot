@@ -17,7 +17,7 @@ log = logging.getLogger("TrafficSEO")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-OPENAI_KEY    = os.getenv("OPENAI_API_KEY", "")
+DEEPSEEK_KEY  = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 
 
 async def _ai_generate(prompt: str, max_tokens: int = 800) -> str:
@@ -43,17 +43,17 @@ async def _ai_generate(prompt: str, max_tokens: int = 800) -> str:
                     data = await resp.json(content_type=None)
                     return data["content"][0]["text"]
         except Exception as exc:
-            log.warning("Claude generation failed: %s", exc)
+            log.warning("Claude generation failed: %s — falling back to DeepSeek", exc)
 
-    if OPENAI_KEY:
+    if DEEPSEEK_KEY:
         try:
             import aiohttp
             async with aiohttp.ClientSession() as session:
                 async with session.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {OPENAI_KEY}", "Content-Type": "application/json"},
+                    "https://api.deepseek.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"},
                     json={
-                        "model": "gpt-4o-mini",
+                        "model": "deepseek-chat",
                         "max_tokens": max_tokens,
                         "messages": [{"role": "user", "content": prompt}],
                     },
@@ -62,7 +62,7 @@ async def _ai_generate(prompt: str, max_tokens: int = 800) -> str:
                     data = await resp.json(content_type=None)
                     return data["choices"][0]["message"]["content"]
         except Exception as exc:
-            log.warning("OpenAI generation failed: %s", exc)
+            log.warning("DeepSeek generation failed: %s", exc)
 
     return ""
 
