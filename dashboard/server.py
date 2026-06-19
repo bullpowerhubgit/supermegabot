@@ -766,6 +766,13 @@ async def handle_health(req):
         cached = dict(cached)
         cached["uptime_seconds"] = round(time.time() - _SERVER_START_TIME, 1)
         return web.json_response(cached)
+    try:
+        from modules.circuit_breaker import get_status as cb_status
+        circuits = {k: v["state"] for k, v in cb_status().items()}
+        open_circuits = [k for k, v in circuits.items() if v == "open"]
+    except Exception:
+        circuits = {}
+        open_circuits = []
     result = {
         "status": "ok",
         "service": "supermegabot-dashboard",
@@ -773,6 +780,7 @@ async def handle_health(req):
         "uptime_seconds": round(time.time() - _SERVER_START_TIME, 1),
         "started_at": datetime.utcfromtimestamp(_SERVER_START_TIME).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "shopify_domain": os.getenv("SHOPIFY_SHOP_DOMAIN", ""),
+        "circuits_open": open_circuits,
         "bots": {
             "admin_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1")),
             "customer_bot": bool(os.getenv("TELEGRAM_BOT_TOKEN_2")),
@@ -4041,6 +4049,32 @@ async def handle_indexnow_blast(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_circuit_status(req):
+    """GET /api/circuit/status — show all circuit breaker states."""
+    try:
+        from modules.circuit_breaker import get_status
+        return web.json_response({"ok": True, "circuits": get_status()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_circuit_reset(req):
+    """POST /api/circuit/reset — reset one or all circuits to closed.
+    Body: {"service": "linkedin"} or {} for all."""
+    try:
+        from modules.circuit_breaker import reset, get_status, _STATE
+        body = await req.json() if req.content_length else {}
+        svc  = body.get("service")
+        if svc:
+            reset(svc)
+            return web.json_response({"ok": True, "reset": svc})
+        for name in list(_STATE.keys()):
+            reset(name)
+        return web.json_response({"ok": True, "reset": "all"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ---------------------------------------------------------------------------
 # DYNAMIC PRICING + EMAIL SEQUENCES API
 # ---------------------------------------------------------------------------
@@ -5434,6 +5468,10 @@ async def create_app():
     app.router.add_post("/api/traffic/github-post",      handle_github_seo_post)
     app.router.add_post("/api/traffic/linkedin-burst",   handle_linkedin_burst)
     app.router.add_post("/api/traffic/indexnow",         handle_indexnow_blast)
+
+    # Circuit Breaker routes
+    app.router.add_get( "/api/circuit/status",           handle_circuit_status)
+    app.router.add_post("/api/circuit/reset",            handle_circuit_reset)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
