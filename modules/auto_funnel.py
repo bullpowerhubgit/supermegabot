@@ -52,7 +52,7 @@ async def _klaviyo_add_profile(email: str, first_name: str = "", properties: dic
     import aiohttp
     headers = {
         "Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
-        "revision": "2024-06-15",
+        "revision": "2024-10-15",
         "Content-Type": "application/json",
     }
     profile_payload = {
@@ -203,7 +203,7 @@ async def trigger_purchase_sequence(email: str, product: str, amount_eur: float)
         try:
             headers = {
                 "Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
-                "revision": "2024-06-15",
+                "revision": "2024-10-15",
                 "Content-Type": "application/json",
             }
             event_payload = {

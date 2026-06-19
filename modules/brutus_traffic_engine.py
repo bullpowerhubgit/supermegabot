@@ -17,7 +17,6 @@ Ablauf:
   7. PROFIT  — Revenue direkt zu Traffic-Quelle zurückverfolgen
 """
 import asyncio
-import asyncio
 import json
 import logging
 import os
@@ -464,7 +463,7 @@ async def deploy_to_klaviyo_campaign(keyword: str, content: dict):
 
     try:
         import aiohttp
-        headers = {"Authorization": f"Klaviyo-API-Key {klaviyo_key}", "revision": "2024-06-15",
+        headers = {"Authorization": f"Klaviyo-API-Key {klaviyo_key}", "revision": "2024-10-15",
                    "Content-Type": "application/json"}
         campaign_payload = {
             "data": {
