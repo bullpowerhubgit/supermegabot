@@ -168,7 +168,7 @@ async def _post_facebook_page(page_id: str, token: str, content: dict) -> bool:
 
 
 async def _post_instagram(content: dict) -> bool:
-    token = FB_TOKEN_AIITEC
+    token = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", FB_TOKEN_AIITEC)
     if not token or not IG_ACCOUNT_ID:
         return False
     try:
@@ -458,10 +458,14 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
         log.info("Skipping duplicate content: %s", h)
         return {"skipped": True, "reason": "duplicate"}
 
+    # Re-read FB tokens at runtime so updated Railway vars take effect without restart
+    fb_token_iwin   = os.getenv("FACEBOOK_PAGE_TOKEN_IWIN",   FB_TOKEN_IWIN)
+    fb_token_aiitec = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", FB_TOKEN_AIITEC)
+
     results = await asyncio.gather(
         _post_telegram(content),
-        _post_facebook_page(FB_PAGE_IWIN,   FB_TOKEN_IWIN,   content),
-        _post_facebook_page(FB_PAGE_AIITEC, FB_TOKEN_AIITEC, content),
+        _post_facebook_page(FB_PAGE_IWIN,   fb_token_iwin,   content),
+        _post_facebook_page(FB_PAGE_AIITEC, fb_token_aiitec, content),
         _post_instagram(content),
         _post_shopify_blog(content),
         _post_klaviyo_campaign(content),
