@@ -22,8 +22,8 @@ from typing import Optional
 log = logging.getLogger("TwitterAutoPoster")
 
 # ── Credentials ──────────────────────────────────────────────────────────────
-API_KEY          = os.getenv("TWITTER_API_KEY", "HJ32z6o1fiE0onDxWwogHWzi4")
-API_SECRET       = os.getenv("TWITTER_API_SECRET", "laYAg5ryn22eEGLTzOMQhuIeqIXt3iDIosjKyC3BIV1lazes4i")
+API_KEY          = os.getenv("TWITTER_API_KEY", "gjYgqqqMwOH5tfaKdxOmOIcIG")
+API_SECRET       = os.getenv("TWITTER_API_SECRET", "vND5rZnqbsOqeCQ4GOyt26EFhrf09MCjls9erbmgG7J1ccRXOE")
 ACCESS_TOKEN     = os.getenv("TWITTER_ACCESS_TOKEN", "")
 ACCESS_SECRET    = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "")
 BEARER_TOKEN     = os.getenv("TWITTER_BEARER_TOKEN", "AAAAAAAAAAAAAAAAAAAAAJqK7QEAAAAAnXVEODfbyABWhvU2i5hDM%2BofsTg%3DGSumD9UBcpqtZ8ZZUfnXR2GbIt8GUaW7E0d3WL72vYMPzZLW31")
