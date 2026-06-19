@@ -569,6 +569,170 @@ def _save_state(keyword: str, content_pack: dict, utm_links: dict):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# NEUE KANÄLE — Reddit, LinkedIn, Pinterest, Video-Scripts
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def post_to_reddit(keyword: str, content_pack: dict) -> dict:
+    """Post to r/shopify, r/ecommerce, r/entrepreneur with value-first content."""
+    import aiohttp
+    client_id     = os.getenv("REDDIT_CLIENT_ID", "")
+    client_secret = os.getenv("REDDIT_CLIENT_SECRET", "")
+    username      = os.getenv("REDDIT_USERNAME", "")
+    password      = os.getenv("REDDIT_PASSWORD", "")
+    if not all([client_id, client_secret, username, password]):
+        log.info("BRUTUS Reddit: nicht konfiguriert — skip")
+        return {"skipped": True}
+    try:
+        auth = aiohttp.BasicAuth(client_id, client_secret)
+        headers = {"User-Agent": f"BullPowerBot/1.0 by {username}"}
+        token_data = {"grant_type": "password", "username": username, "password": password}
+        async with aiohttp.ClientSession() as s:
+            async with s.post("https://www.reddit.com/api/v1/access_token",
+                              auth=auth, data=token_data, headers=headers,
+                              timeout=aiohttp.ClientTimeout(total=10)) as r:
+                tok = (await r.json()).get("access_token", "")
+            if not tok:
+                return {"skipped": True, "reason": "auth failed"}
+            api_headers = {**headers, "Authorization": f"bearer {tok}"}
+            title = content_pack.get("headline", keyword)[:300]
+            body  = content_pack.get("caption", content_pack.get("blog_intro", ""))[:2000]
+            body += f"\n\n🔗 Mehr: https://bullpowerhubgit.github.io/shopify-brutal-tuning-landing/"
+            posted = 0
+            for sub in ["shopify", "ecommerce", "entrepreneur"]:
+                try:
+                    async with s.post("https://oauth.reddit.com/api/submit",
+                                      headers=api_headers,
+                                      data={"sr": sub, "kind": "self", "title": title,
+                                            "text": body, "resubmit": True},
+                                      timeout=aiohttp.ClientTimeout(total=10)) as rr:
+                        data = await rr.json(content_type=None)
+                        if data.get("success") or rr.status in (200, 201):
+                            posted += 1
+                            log.info("BRUTUS Reddit: posted to r/%s", sub)
+                except Exception as e:
+                    log.warning("BRUTUS Reddit r/%s: %s", sub, e)
+        return {"posted": posted, "subreddits": posted}
+    except Exception as e:
+        log.error("BRUTUS Reddit error: %s", e)
+        return {"skipped": True, "error": str(e)}
+
+
+async def post_to_linkedin_brutus(keyword: str, content_pack: dict) -> dict:
+    """Post AI content to LinkedIn via BRUTUS."""
+    import aiohttp
+    token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
+    urn   = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
+    if not token:
+        log.info("BRUTUS LinkedIn: nicht konfiguriert — skip")
+        return {"skipped": True}
+    try:
+        text = content_pack.get("linkedin_post") or content_pack.get("caption", "")
+        if not text:
+            text = f"🚀 {keyword}\n\n{content_pack.get('blog_intro','')[:800]}\n\n#Shopify #eCommerce #KI #Automatisierung"
+        text = text[:1250]
+        payload = {
+            "author": urn,
+            "lifecycleState": "PUBLISHED",
+            "specificContent": {"com.linkedin.ugc.ShareContent": {
+                "shareCommentary": {"text": text},
+                "shareMediaCategory": "NONE",
+            }},
+            "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+        }
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json",
+                   "X-Restli-Protocol-Version": "2.0.0"}
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.post("https://api.linkedin.com/v2/ugcPosts",
+                              headers=headers, json=payload) as r:
+                if r.status in (200, 201):
+                    log.info("BRUTUS LinkedIn: posted for '%s'", keyword)
+                    return {"posted": True}
+                err = await r.text()
+                log.warning("BRUTUS LinkedIn HTTP %s: %s", r.status, err[:80])
+                return {"skipped": True, "status": r.status}
+    except Exception as e:
+        log.error("BRUTUS LinkedIn error: %s", e)
+        return {"skipped": True, "error": str(e)}
+
+
+async def post_to_pinterest(keyword: str, content_pack: dict, image_url: str = "") -> dict:
+    """Post pins to Pinterest boards."""
+    import aiohttp
+    token    = os.getenv("PINTEREST_ACCESS_TOKEN", "")
+    board_id = os.getenv("PINTEREST_BOARD_ID", "")
+    if not token or not board_id:
+        log.info("BRUTUS Pinterest: nicht konfiguriert — skip")
+        return {"skipped": True}
+    try:
+        if not image_url:
+            image_url = "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png"
+        title       = content_pack.get("headline", keyword)[:100]
+        description = content_pack.get("caption", "")[:500]
+        link        = f"https://bullpowerhubgit.github.io/shopify-brutal-tuning-landing/?utm_source=pinterest&utm_medium=pin&utm_campaign={keyword.replace(' ','_')}"
+        payload = {"board_id": board_id, "title": title, "description": description,
+                   "link": link, "media_source": {"source_type": "image_url", "url": image_url}}
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.post("https://api.pinterest.com/v5/pins",
+                              headers=headers, json=payload) as r:
+                if r.status in (200, 201):
+                    log.info("BRUTUS Pinterest: pin created for '%s'", keyword)
+                    return {"posted": True}
+                err = await r.text()
+                log.warning("BRUTUS Pinterest HTTP %s: %s", r.status, err[:80])
+                return {"skipped": True, "status": r.status}
+    except Exception as e:
+        log.error("BRUTUS Pinterest error: %s", e)
+        return {"skipped": True, "error": str(e)}
+
+
+async def generate_video_script(keyword: str, content_pack: dict) -> dict:
+    """Generate 60s TikTok/Shorts video script via Claude, save to Supabase."""
+    import aiohttp
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        return {"skipped": True}
+    try:
+        prompt = (
+            f"Erstelle ein 60-Sekunden TikTok/YouTube-Shorts-Skript auf Deutsch zum Thema: '{keyword}'\n"
+            "Format:\n"
+            "HOOK (0-3s): [Aufmerksamkeit sofort]\n"
+            "PROBLEM (3-10s): [Schmerzpunkt]\n"
+            "LÖSUNG (10-45s): [Unsere AI-Automatisierung als Lösung, 3 Punkte]\n"
+            "CTA (45-60s): [Link in Bio: BullPower Hub]\n"
+            "HASHTAGS: [10 relevante Hashtags]\n"
+            "Nur Text, kein JSON."
+        )
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            async with s.post("https://api.anthropic.com/v1/messages",
+                              headers={"x-api-key": api_key, "anthropic-version": "2023-06-01"},
+                              json={"model": "claude-haiku-4-5-20251001", "max_tokens": 600,
+                                    "messages": [{"role": "user", "content": prompt}]}) as r:
+                data = await r.json(content_type=None)
+        script = data.get("content", [{}])[0].get("text", "").strip()
+        if not script:
+            return {"skipped": True}
+        # Save to Supabase
+        supa_url = os.getenv("SUPABASE_URL", "")
+        supa_key = os.getenv("SUPABASE_SERVICE_KEY", "")
+        if supa_url and supa_key:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                    await s.post(f"{supa_url}/rest/v1/video_scripts",
+                                 headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}",
+                                          "Content-Type": "application/json", "Prefer": "return=minimal"},
+                                 json={"keyword": keyword, "script": script,
+                                       "created_at": datetime.now(timezone.utc).isoformat()})
+            except Exception:
+                pass
+        log.info("BRUTUS VideoScript: created for '%s' (%d chars)", keyword, len(script))
+        return {"created": True, "chars": len(script)}
+    except Exception as e:
+        log.error("BRUTUS VideoScript error: %s", e)
+        return {"skipped": True, "error": str(e)}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # BRUTUS MAIN RUN — Alles in einem Durchlauf
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -647,11 +811,24 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
             if not isinstance(r, Exception) and r is not False:
                 channels_hit += 1
 
+        # Phase 4b: Neue Kanäle — Reddit, LinkedIn, Pinterest, VideoScript
+        pixel_url = utm_links.get("pixel_url", "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png")
+        new_channel_tasks = [
+            post_to_reddit(keyword, content_pack),
+            post_to_linkedin_brutus(keyword, content_pack),
+            post_to_pinterest(keyword, content_pack, pixel_url),
+            generate_video_script(keyword, content_pack),
+        ]
+        new_results = await asyncio.gather(*new_channel_tasks, return_exceptions=True)
+        for r in new_results:
+            if isinstance(r, dict) and not r.get("skipped") and not isinstance(r, Exception):
+                channels_hit += 1
+
         results["keywords_processed"] += 1
         results["content_pieces"] += len(content_pack)
         results["channels_hit"] += channels_hit
 
-        log.info("'%s': %d Formate, %d Kanäle", keyword, len(content_pack), channels_hit)
+        log.info("'%s': %d Formate, %d Kanäle (10 total)", keyword, len(content_pack), channels_hit)
 
     # Phase 5+6: Amplify winners
     amplified = await detect_and_amplify()
@@ -666,7 +843,7 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
             f"🔥 *BRUTUS RUN COMPLETE*\n\n"
             f"Keywords: {results['keywords_processed']}\n"
             f"Content-Stücke: {results['content_pieces']}\n"
-            f"Kanäle bespielt: {results['channels_hit']}/6\n"
+            f"Kanäle bespielt: {results['channels_hit']}/10\n"
             f"Amplified: {len(results.get('amplified', []))}\n\n"
             f"Nische: {niche}"
         )
