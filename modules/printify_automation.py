@@ -120,7 +120,7 @@ async def get_orders(page: int = 1, limit: int = 50) -> List[Dict]:
 
 
 async def get_pending_orders() -> List[Dict]:
-    orders = await get_orders(limit=100)
+    orders = await get_orders(limit=50)
     return [o for o in orders if o.get("status") in ("pending", "on-hold")]
 
 
@@ -165,7 +165,7 @@ async def publish_product_to_shopify(product_id: str) -> Dict:
 
 async def sync_all_products_to_shopify() -> Dict:
     """Push all unpublished Printify products to Shopify."""
-    products = await get_products(limit=100)
+    products = await get_products(limit=50)
     published, failed, already = [], [], 0
     for p in products:
         if p.get("external", {}).get("id"):
@@ -188,7 +188,7 @@ async def sync_all_products_to_shopify() -> Dict:
 
 
 async def get_stats() -> Dict:
-    orders = await get_orders(limit=100)
+    orders = await get_orders(limit=50)
     today = datetime.now().strftime("%Y-%m-%d")
     return {
         "total_orders":   len(orders),
