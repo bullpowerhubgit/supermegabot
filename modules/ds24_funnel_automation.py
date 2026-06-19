@@ -69,7 +69,7 @@ async def _add_to_klaviyo(email: str, fname: str, lname: str, product: str, amou
         import aiohttp
         headers = {
             "Authorization": f"Klaviyo-API-Key {klaviyo_key}",
-            "revision": "2024-06-15",
+            "revision": "2024-10-15",
             "Content-Type": "application/json",
         }
         profile_data = {
