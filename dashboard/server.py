@@ -543,7 +543,7 @@ async def handle_revenue_legacy(req):
 
 async def handle_analytics_legacy(req):
     """Compatibility alias for older dashboards expecting /api/analytics."""
-    return await handle_revenue_analytics(req)
+    return await handle_revenue_summary(req)
 
 
 async def handle_kpis_legacy(req):
@@ -4835,8 +4835,7 @@ async def create_app():
     app.router.add_get( "/api/pinterest/callback",     handle_pinterest_callback)
     app.router.add_get( "/api/oauth/status",           handle_oauth_status)
 
-    # ── SEO Mega Engine routes ──────────────────────────────────────────────
-    app.router.add_post("/api/seo/generate",           handle_seo_generate)
+    # ── SEO Mega Engine routes (no duplicates) ──────────────────────────────
     app.router.add_get( "/api/seo/sitemap.xml",        handle_seo_sitemap)
     app.router.add_post("/api/seo/submit",             handle_seo_submit)
     app.router.add_post("/api/seo/competitor",         handle_seo_competitor)
@@ -4864,6 +4863,12 @@ async def create_app():
     app.router.add_post("/api/growth/press-release",   handle_growth_pr)
     app.router.add_get( "/api/growth/referral-url",    handle_growth_referral)
     app.router.add_get( "/api/growth/status",          handle_growth_status)
+
+    # ── TURBO Engines panel ─────────────────────────────────────────────────
+    app.router.add_get( "/api/engines/status",           handle_engines_status)
+    app.router.add_post("/api/engines/trigger/{engine}", handle_engine_trigger)
+    app.router.add_post("/api/engines/trigger/all",      handle_engines_trigger_all)
+    app.router.add_get( "/engines",                      handle_engines_page)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -6424,6 +6429,241 @@ async def handle_conversion_personalize(req):
     visitor_id = data.pop("visitor_id", "anonymous")
     result     = await personalize_experience(visitor_id, data)
     return web.json_response(result)
+
+
+# ── TURBO ENGINES panel ───────────────────────────────────────────────────────
+
+ENGINE_URLS = {
+    "seo_traffic":        "https://seo-traffic-engine-production.up.railway.app",
+    "social_traffic":     "https://social-traffic-engine-production.up.railway.app",
+    "adposter":           "https://adposter-engine-production.up.railway.app",
+    "creatorai":          "https://creatorai-ultra-production.up.railway.app",
+    "shopify_acquisition":"https://shopify-acquisition-engine-production.up.railway.app",
+    "analytics_marketing":"https://analytics-marketing-pro-production.up.railway.app",
+    "visual_content":     "https://visual-content-engine-production.up.railway.app",
+    "freelance_gig":      "https://freelance-gig-engine-production.up.railway.app",
+    "meta_social":        "https://meta-social-engine-production.up.railway.app",
+}
+
+ENGINE_LABELS = {
+    "seo_traffic":        "SEO Traffic Engine",
+    "social_traffic":     "Social Traffic Engine",
+    "adposter":           "AdPoster Engine",
+    "creatorai":          "CreatorAI Ultra",
+    "shopify_acquisition":"Shopify Acquisition",
+    "analytics_marketing":"Analytics Marketing",
+    "visual_content":     "Visual Content Engine",
+    "freelance_gig":      "Freelance Gig Engine",
+    "meta_social":        "Meta Social Engine",
+}
+
+async def _fetch_one_engine(name: str, base_url: str, session: aiohttp.ClientSession) -> tuple:
+    try:
+        async with session.get(f"{base_url}/health", timeout=aiohttp.ClientTimeout(total=5)) as r:
+            data = await r.json(content_type=None)
+            return name, {"status": "online", "http": r.status,
+                          **{k: v for k, v in data.items() if k not in ("status",)}}
+    except Exception as e:
+        return name, {"status": "offline", "error": str(e)[:80]}
+
+
+async def handle_engines_status(req):
+    async with aiohttp.ClientSession() as session:
+        results = await asyncio.gather(
+            *[_fetch_one_engine(n, u, session) for n, u in ENGINE_URLS.items()]
+        )
+    engines = dict(results)
+    return web.json_response({
+        "engines": engines,
+        "timestamp": datetime.now().isoformat(),
+        "online": sum(1 for v in engines.values() if v["status"] == "online"),
+        "total": len(engines),
+    })
+
+
+async def handle_engine_trigger(req):
+    engine = req.match_info["engine"]
+    url = ENGINE_URLS.get(engine)
+    if not url:
+        return web.json_response({"error": "unknown engine"}, status=404)
+    trigger_eps = ["/api/trigger/articles", "/api/trigger/batch", "/api/trigger", "/trigger"]
+    async with aiohttp.ClientSession() as session:
+        for ep in trigger_eps:
+            try:
+                async with session.post(f"{url}{ep}", timeout=aiohttp.ClientTimeout(total=8)) as r:
+                    if r.status in (200, 202):
+                        return web.json_response({"triggered": engine, "endpoint": ep, "status": r.status})
+            except Exception:
+                continue
+    return web.json_response({"triggered": engine, "status": "sent", "note": "no trigger endpoint responded 200"})
+
+
+async def handle_engines_trigger_all(req):
+    async def _trigger_one(name, base_url, session):
+        for ep in ["/api/trigger/articles", "/api/trigger/batch", "/api/trigger", "/trigger"]:
+            try:
+                async with session.post(f"{base_url}{ep}", timeout=aiohttp.ClientTimeout(total=8)) as r:
+                    if r.status in (200, 202):
+                        return name, {"ok": True, "endpoint": ep}
+            except Exception:
+                continue
+        return name, {"ok": False}
+
+    async with aiohttp.ClientSession() as session:
+        results = await asyncio.gather(*[_trigger_one(n, u, session) for n, u in ENGINE_URLS.items()])
+    return web.json_response({"results": dict(results), "triggered": sum(1 for _, v in results if v["ok"])})
+
+
+async def handle_engines_page(req):
+    html = """<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>TURBO Engines — SuperMegaBot</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+header{background:#161b22;border-bottom:1px solid #30363d;padding:16px 24px;display:flex;align-items:center;gap:16px;justify-content:space-between}
+header h1{font-size:1.3rem;background:linear-gradient(90deg,#0066ff,#00d4ff);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav a{color:#58a6ff;text-decoration:none;margin-left:16px;font-size:.9rem}
+.toolbar{padding:16px 24px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.btn{padding:9px 18px;border-radius:6px;border:none;cursor:pointer;font-weight:600;font-size:.88rem;transition:opacity .15s}
+.btn-primary{background:linear-gradient(90deg,#0066ff,#00d4ff);color:#fff}
+.btn-danger{background:#da3633;color:#fff}
+.btn:hover{opacity:.85}
+.counter{color:#8b949e;font-size:.85rem;margin-left:auto}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;padding:0 24px 40px}
+.card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:20px;transition:border-color .2s}
+.card.online{border-color:#238636}
+.card.offline{border-color:#da3633}
+.card-header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.badge{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.badge.online{background:#2ea043;box-shadow:0 0 6px #2ea043}
+.badge.offline{background:#da3633;box-shadow:0 0 6px #da3633}
+.card-title{font-weight:700;font-size:1rem;color:#e6edf3}
+.card-url{color:#58a6ff;font-size:.75rem;opacity:.7}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:12px 0}
+.stat{background:#0d1117;border-radius:6px;padding:8px 10px}
+.stat-label{color:#8b949e;font-size:.72rem;margin-bottom:2px}
+.stat-value{color:#e6edf3;font-weight:600;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card-footer{margin-top:14px;display:flex;gap:8px}
+.btn-sm{padding:6px 14px;font-size:.8rem;border-radius:5px;border:none;cursor:pointer;font-weight:600}
+.btn-trigger{background:#238636;color:#fff}
+.btn-trigger:hover{background:#2ea043}
+.btn-open{background:#21262d;color:#58a6ff;border:1px solid #30363d}
+.btn-open:hover{background:#30363d}
+.error-msg{color:#f85149;font-size:.8rem;margin-top:8px}
+#status-bar{padding:10px 24px;background:#161b22;border-bottom:1px solid #30363d;font-size:.82rem;color:#8b949e;display:flex;gap:20px}
+.pulse{animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+</style>
+</head>
+<body>
+<header>
+  <h1>⚡ TURBO Engines Control Panel</h1>
+  <nav class="nav">
+    <a href="/">Dashboard</a>
+    <a href="/engines">Engines</a>
+  </nav>
+</header>
+<div id="status-bar">
+  <span id="online-count" class="pulse">Lade...</span>
+  <span id="last-refresh"></span>
+  <span style="margin-left:auto">Auto-refresh: 30s</span>
+</div>
+<div class="toolbar">
+  <button class="btn btn-primary" onclick="triggerAll()">⚡ Alle Engines triggern</button>
+  <button class="btn btn-primary" onclick="refreshAll()" style="background:#21262d;border:1px solid #30363d;color:#58a6ff">🔄 Jetzt aktualisieren</button>
+  <span class="counter" id="trigger-log"></span>
+</div>
+<div class="grid" id="engine-grid">
+  <div style="grid-column:1/-1;text-align:center;padding:40px;color:#8b949e">Lade Engine-Status...</div>
+</div>
+<script>
+const ENGINES = """ + str({k: {"label": v, "url": ENGINE_URLS[k]} for k, v in ENGINE_LABELS.items()}).replace("'", '"') + """;
+
+async function fetchStatus() {
+  const r = await fetch('/api/engines/status');
+  return await r.json();
+}
+
+function renderCard(key, label, url, data) {
+  const online = data.status === 'online';
+  const stats = Object.entries(data)
+    .filter(([k]) => !['status','http','error','service','version','timestamp','features','integrations','platforms','warning'].includes(k))
+    .slice(0, 6);
+  const statsHtml = stats.map(([k,v]) => {
+    const val = typeof v === 'object' ? JSON.stringify(v).slice(0,30) : String(v).slice(0,30);
+    return `<div class="stat"><div class="stat-label">${k.replace(/_/g,' ')}</div><div class="stat-value">${val}</div></div>`;
+  }).join('');
+  const errHtml = data.error ? `<div class="error-msg">⚠ ${data.error}</div>` : '';
+  return `<div class="card ${online ? 'online' : 'offline'}" id="card-${key}">
+  <div class="card-header">
+    <div class="badge ${online ? 'online' : 'offline'}"></div>
+    <div>
+      <div class="card-title">${label}</div>
+      <div class="card-url">${url.replace('https://','')}</div>
+    </div>
+    <span style="margin-left:auto;font-size:.75rem;color:${online?'#2ea043':'#da3633'};font-weight:700">${online?'ONLINE':'OFFLINE'}</span>
+  </div>
+  <div class="stats">${statsHtml}</div>
+  ${errHtml}
+  <div class="card-footer">
+    <button class="btn-sm btn-trigger" onclick="triggerEngine('${key}')">▶ Trigger</button>
+    <a href="${url}" target="_blank" class="btn-sm btn-open">↗ Öffnen</a>
+    <a href="${url}/stats" target="_blank" class="btn-sm btn-open">📊 Stats</a>
+  </div>
+</div>`;
+}
+
+async function refreshAll() {
+  try {
+    const data = await fetchStatus();
+    const grid = document.getElementById('engine-grid');
+    grid.innerHTML = Object.entries(ENGINES).map(([key, {label, url}]) => {
+      const d = data.engines[key] || {status:'offline',error:'no data'};
+      return renderCard(key, label, url, d);
+    }).join('');
+    document.getElementById('online-count').textContent = `✅ ${data.online}/${data.total} Engines online`;
+    document.getElementById('online-count').classList.remove('pulse');
+    document.getElementById('last-refresh').textContent = `Aktualisiert: ${new Date().toLocaleTimeString('de-DE')}`;
+  } catch(e) {
+    document.getElementById('online-count').textContent = '⚠ Fehler beim Laden';
+  }
+}
+
+async function triggerEngine(key) {
+  const btn = document.querySelector(`#card-${key} .btn-trigger`);
+  if(btn) { btn.textContent = '⏳...'; btn.disabled = true; }
+  try {
+    const r = await fetch(`/api/engines/trigger/${key}`, {method:'POST'});
+    const d = await r.json();
+    if(btn) { btn.textContent = '✅ Gestartet'; setTimeout(()=>{btn.textContent='▶ Trigger';btn.disabled=false;},3000); }
+    document.getElementById('trigger-log').textContent = `${key}: Trigger gesendet (${new Date().toLocaleTimeString('de-DE')})`;
+  } catch(e) {
+    if(btn) { btn.textContent = '▶ Trigger'; btn.disabled = false; }
+  }
+}
+
+async function triggerAll() {
+  document.getElementById('trigger-log').textContent = '⏳ Alle Engines werden getriggert...';
+  try {
+    const r = await fetch('/api/engines/trigger/all', {method:'POST'});
+    const d = await r.json();
+    document.getElementById('trigger-log').textContent = `✅ ${d.triggered}/${Object.keys(ENGINES).length} Engines getriggert`;
+    setTimeout(refreshAll, 2000);
+  } catch(e) {
+    document.getElementById('trigger-log').textContent = '⚠ Fehler';
+  }
+}
+
+refreshAll();
+setInterval(refreshAll, 30000);
+</script>
+</body>
+</html>"""
+    return web.Response(text=html, content_type="text/html")
 
 
 def _free_port(port: int) -> None:
