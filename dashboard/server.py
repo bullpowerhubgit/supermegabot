@@ -4800,6 +4800,7 @@ async def create_app():
     app.router.add_post("/api/content/velocity",      handle_content_velocity)
     app.router.add_post("/api/viral/traffic",         handle_viral_traffic)
     app.router.add_post("/api/revenue/maximize",      handle_revenue_maximizer_run)
+    app.router.add_post("/api/syndication/run",       handle_free_syndication)
     app.router.add_get( "/api/paypal/status",         handle_paypal_status)
     app.router.add_post("/api/paypal/checkout",       handle_paypal_checkout)
     app.router.add_post("/api/paypal/ipn",            handle_paypal_ipn)
@@ -6162,6 +6163,24 @@ async def handle_revenue_maximizer_run(req):
             logging.getLogger("RevMax").error("BG error: %s", exc)
     asyncio.ensure_future(_bg())
     return web.json_response({"status": "started", "message": "RevenueMaximizer läuft — Cart Recovery + Winback + Urgency"})
+
+
+async def handle_free_syndication(req):
+    """POST /api/syndication/run — post to Dev.to, Hashnode, Medium, Discord, Telegram."""
+    async def _bg():
+        try:
+            body = {}
+            try:
+                body = await req.json()
+            except Exception:
+                pass
+            from modules.free_syndication_network import run_free_syndication
+            await run_free_syndication(topic=body.get("topic"))
+        except Exception as exc:
+            logging.getLogger("Syndication").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started",
+                              "message": "FreeSyndication läuft — Dev.to + Hashnode + Medium + Discord + Telegram"})
 
 
 async def handle_shopify_seo_run(req):
