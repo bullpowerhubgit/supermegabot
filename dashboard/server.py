@@ -5115,6 +5115,7 @@ async def create_app():
     app.router.add_get( "/api/linkedin/auth",         handle_linkedin_auth)
     app.router.add_get( "/api/linkedin/callback",     handle_linkedin_callback)
     app.router.add_get( "/api/linkedin/status",       handle_linkedin_status)
+    app.router.add_post("/api/linkedin/refresh",      handle_linkedin_refresh)
     # CONVERSION MAXIMIZER
     app.router.add_get( "/api/conversion/stats",      handle_conversion_stats)
     app.router.add_post("/api/conversion/ab-test",    handle_conversion_ab_test)
@@ -6780,6 +6781,14 @@ async def handle_linkedin_callback(req):
 async def handle_linkedin_status(req):
     from modules.linkedin_oauth import get_linkedin_status
     return web.json_response(await get_linkedin_status())
+
+
+async def handle_linkedin_refresh(req):
+    from modules.linkedin_oauth import refresh_access_token
+    new_token = await refresh_access_token()
+    if new_token:
+        return web.json_response({"ok": True, "message": "LinkedIn token refreshed"})
+    return web.json_response({"ok": False, "message": "Refresh failed — LINKEDIN_REFRESH_TOKEN missing or expired. Re-do OAuth flow via /api/linkedin/auth"}, status=400)
 
 
 # ── CONVERSION MAXIMIZER handlers ────────────────────────────────────────────
