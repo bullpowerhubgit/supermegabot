@@ -210,7 +210,7 @@ async def optimize_shopify_seo_auto() -> dict:
 async def post_content_to_telegram(content: dict):
     """Post generated SEO content as Telegram message for review."""
     try:
-        from modules.notify_hub import send_telegram
+        from modules.notify_hub import async_send_telegram as send_telegram
         product = content.get("product", "")
         seo = content.get("seo", {})
         msg = (
