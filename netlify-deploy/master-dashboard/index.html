@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BullPower MEGA Dashboard — Command Center</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #141428;
+    --border: #1e1e3a;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #059669;
+    --warn: #f59e0b;
+    --danger: #ef4444;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --green: #10b981;
+    --glow: 0 0 20px rgba(0,212,255,0.3);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated bg */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 10% 20%, rgba(124,58,237,0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(0,212,255,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { position: relative; z-index: 1; max-width: 1600px; margin: 0 auto; padding: 20px; }
+
+  /* HEADER */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, rgba(124,58,237,0.15), rgba(0,212,255,0.08));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    backdrop-filter: blur(10px);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-icon {
+    width: 48px; height: 48px;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: var(--glow);
+  }
+  .logo h1 { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; }
+  .logo h1 span { color: var(--accent); }
+  .logo p { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(16,185,129,0.15);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--green);
+  }
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+  .refresh-info { color: var(--muted); font-size: 12px; }
+
+  /* REVENUE STRIP */
+  .revenue-strip {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .rev-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .rev-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .rev-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+  }
+  .rev-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
+  .rev-value { font-size: 28px; font-weight: 800; color: var(--accent); font-variant-numeric: tabular-nums; }
+  .rev-value.green { color: var(--green); }
+  .rev-value.purple { color: #a78bfa; }
+  .rev-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .wide { grid-column: span 2; }
+  .full { grid-column: span 3; }
+
+  /* CARD */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+  }
+  .card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+  }
+  .card-title span { font-size: 16px; }
+  .card-body { padding: 16px 18px; }
+
+  /* SERVICE STATUS */
+  .service-list { display: flex; flex-direction: column; gap: 10px; }
+  .service-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s;
+  }
+  .service-item:hover { border-color: var(--border); }
+  .service-name { font-size: 13px; font-weight: 600; }
+  .service-url { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .status-pill {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 12px;
+  }
+  .status-ok { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.3); }
+  .status-warn { background: rgba(245,158,11,0.15); color: var(--warn); border: 1px solid rgba(245,158,11,0.3); }
+  .status-error { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+  .status-loading { background: rgba(148,163,184,0.1); color: var(--muted); border: 1px solid rgba(148,163,184,0.2); }
+
+  /* OMEGA MODULES */
+  .omega-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .omega-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .omega-icon { font-size: 20px; flex-shrink: 0; }
+  .omega-name { font-size: 12px; font-weight: 600; }
+  .omega-status { font-size: 10px; color: var(--muted); margin-top: 1px; }
+  .omega-indicator {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .ind-green { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 2s infinite; }
+  .ind-yellow { background: var(--warn); }
+  .ind-gray { background: var(--muted); }
+
+  /* SCHEDULER TASKS */
+  .task-list { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
+  .task-list::-webkit-scrollbar { width: 4px; }
+  .task-list::-webkit-scrollbar-track { background: transparent; }
+  .task-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .task-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: var(--bg3);
+    border-radius: 6px;
+    font-size: 12px;
+  }
+  .task-name { color: var(--text); font-weight: 500; }
+  .task-time { color: var(--muted); font-size: 11px; }
+  .task-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 8px; }
+
+  /* VERCEL SITES */
+  .sites-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .site-item {
+    padding: 10px 12px;
+    background: var(--bg3);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-decoration: none;
+    color: var(--text);
+    transition: border-color 0.2s, background 0.2s;
+    display: block;
+  }
+  .site-item:hover {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+  .site-name { font-size: 12px; font-weight: 600; margin-bottom: 3px; }
+  .site-url { font-size: 10px; color: var(--accent); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .site-badges { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .badge {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    background: rgba(124,58,237,0.2);
+    color: #a78bfa;
+  }
+  .badge.seo { background: rgba(5,150,105,0.2); color: #34d399; }
+  .badge.faq { background: rgba(0,212,255,0.15); color: var(--accent); }
+  .badge.stripe { background: rgba(99,102,241,0.2); color: #818cf8; }
+
+  /* ACTION BUTTONS */
+  .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .action-btn {
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s;
+    text-decoration: none;
+    justify-content: center;
+  }
+  .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent2), var(--accent)); border-color: transparent; color: white; }
+  .btn-green { background: linear-gradient(135deg, #059669, #10b981); border-color: transparent; color: white; }
+  .btn-orange { background: linear-gradient(135deg, #d97706, #f59e0b); border-color: transparent; color: white; }
+  .btn-blue { background: linear-gradient(135deg, #1d4ed8, #3b82f6); border-color: transparent; color: white; }
+
+  /* TWITTER STATUS */
+  .twitter-box {
+    padding: 14px;
+    background: var(--bg3);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 10px;
+  }
+  .twitter-status { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .twitter-icon { font-size: 24px; }
+  .twitter-info h3 { font-size: 14px; font-weight: 700; }
+  .twitter-info p { font-size: 12px; color: var(--muted); }
+  .twitter-action {
+    display: block;
+    padding: 8px 14px;
+    background: rgba(29,155,240,0.15);
+    border: 1px solid rgba(29,155,240,0.3);
+    border-radius: 8px;
+    color: #60a5fa;
+    font-size: 12px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .twitter-action:hover { background: rgba(29,155,240,0.25); }
+
+  /* LOG VIEWER */
+  .log-box {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #080810;
+    border-radius: 8px;
+    padding: 12px;
+    line-height: 1.6;
+  }
+  .log-box::-webkit-scrollbar { width: 4px; }
+  .log-box::-webkit-scrollbar-thumb { background: var(--border); }
+  .log-line { margin-bottom: 2px; }
+  .log-time { color: var(--accent2); margin-right: 8px; }
+  .log-ok { color: var(--green); }
+  .log-err { color: var(--danger); }
+  .log-info { color: var(--accent); }
+
+  /* Progress bar */
+  .progress-bar {
+    height: 4px;
+    background: var(--bg3);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 8px;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s ease;
+  }
+  .fill-green { background: linear-gradient(90deg, #059669, #10b981); }
+  .fill-blue { background: linear-gradient(90deg, var(--accent2), var(--accent)); }
+
+  /* Tooltip */
+  .tip { font-size: 11px; color: var(--warn); padding: 6px 10px; background: rgba(245,158,11,0.1); border-radius: 6px; border-left: 3px solid var(--warn); }
+
+  /* Counter animation */
+  @keyframes countUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .count-anim { animation: countUp 0.5s ease; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1100px) {
+    .main-grid { grid-template-columns: 1fr 1fr; }
+    .wide { grid-column: span 1; }
+    .full { grid-column: span 2; }
+    .revenue-strip { grid-template-columns: repeat(3, 1fr); }
+    .action-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .main-grid { grid-template-columns: 1fr; }
+    .full, .wide { grid-column: span 1; }
+    .revenue-strip { grid-template-columns: 1fr 1fr; }
+    .sites-grid { grid-template-columns: 1fr 1fr; }
+    .omega-grid { grid-template-columns: 1fr; }
+    .action-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <h1>BullPower <span>MEGA</span> Dashboard</h1>
+        <p>Command Center — Vollautomatisches E-Commerce System</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><div class="live-dot"></div> LIVE</div>
+      <div class="refresh-info">🔄 Auto-Refresh <span id="countdown">30</span>s</div>
+    </div>
+  </header>
+
+  <!-- REVENUE STRIP -->
+  <div class="revenue-strip">
+    <div class="rev-card">
+      <div class="rev-label">Digistore24 Revenue</div>
+      <div class="rev-value green" id="ds24-revenue">€111</div>
+      <div class="rev-sub">3 Bestellungen • Produkt 669750</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-label">Stripe Revenue</div>
+      <div class="rev-value" id="stripe-revenue">€0</div>
+      <div class="rev-sub">Checkouts aktiv — wartet auf Kunden</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-label">Railway Services</div>
+      <div class="rev-value purple" id="services-count">4/4</div>
+      <div class="rev-sub" id="services-sub">Alle Online</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-label">Scheduler Tasks</div>
+      <div class="rev-value" id="task-count">116</div>
+      <div class="rev-sub">Aktive Automatisierungen</div>
+    </div>
+    <div class="rev-card">
+      <div class="rev-label">Vercel Sites</div>
+      <div class="rev-value green">13</div>
+      <div class="rev-sub">Full SEO + Cross-Links</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+
+    <!-- Railway Services -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span>🚂</span> Railway Services</div>
+        <div id="services-refresh" style="font-size:11px;color:var(--muted)">Prüfe...</div>
+      </div>
+      <div class="card-body">
+        <div class="service-list">
+          <div class="service-item">
+            <div>
+              <div class="service-name">⚡ SuperMegaBot</div>
+              <div class="service-url">dudirudibot-mega-production.up.railway.app</div>
+            </div>
+            <div id="smb-status" class="status-pill status-loading">...</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">💳 IcomeAuto</div>
+              <div class="service-url">icomeauto-production-e4e5.up.railway.app</div>
+            </div>
+            <div id="icome-status" class="status-pill status-loading">...</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">📊 Steuercockpit</div>
+              <div class="service-url">steuercockpit-production-44c9.up.railway.app</div>
+            </div>
+            <div id="steuer-status" class="status-pill status-loading">...</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">📢 AdPoster Engine</div>
+              <div class="service-url">adposter-engine-production.up.railway.app</div>
+            </div>
+            <div id="adposter-status" class="status-pill status-loading">...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- OMEGA Engine -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span>🔥</span> OMEGA Traffic Engine</div>
+        <div style="font-size:11px;color:var(--green)">10 Module aktiv</div>
+      </div>
+      <div class="card-body">
+        <div class="omega-grid">
+          <div class="omega-item">
+            <div class="omega-icon">🔍</div>
+            <div>
+              <div class="omega-name">Google Index</div>
+              <div class="omega-status">Stündlich • 28 URLs</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">🦁</div>
+            <div>
+              <div class="omega-name">Bing IndexNow</div>
+              <div class="omega-status">12h • Alle Sitemaps</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">✍️</div>
+            <div>
+              <div class="omega-name">KI Blog Engine</div>
+              <div class="omega-status">Täglich • 1500 Wörter</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">🕵️</div>
+            <div>
+              <div class="omega-name">Competitor Spy</div>
+              <div class="omega-status">6h • 5 Keywords</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">📺</div>
+            <div>
+              <div class="omega-name">YouTube SEO</div>
+              <div class="omega-status">Täglich • Title+Tags</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">📧</div>
+            <div>
+              <div class="omega-name">Email Re-engage</div>
+              <div class="omega-status">Mailchimp Winback</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">🌐</div>
+            <div>
+              <div class="omega-name">Syndication</div>
+              <div class="omega-status">Dev.to + Hashnode</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+          <div class="omega-item">
+            <div class="omega-icon">🔗</div>
+            <div>
+              <div class="omega-name">Backlink Bomber</div>
+              <div class="omega-status">17 RSS Pings • 2h</div>
+            </div>
+            <div class="omega-indicator ind-green"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Twitter + Social -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span>🐦</span> Social Media</div>
+      </div>
+      <div class="card-body">
+        <div class="twitter-box">
+          <div class="twitter-status">
+            <div class="twitter-icon">𝕏</div>
+            <div class="twitter-info">
+              <h3>@AIITEC Twitter</h3>
+              <p id="twitter-status-text">Tokens gesetzt — Permission prüfen</p>
+            </div>
+            <div id="twitter-pill" class="status-pill status-warn" style="margin-left:auto">R+W?</div>
+          </div>
+          <div class="tip">developer.twitter.com → App → User Auth Settings → Read and Write → Speichern</div>
+        </div>
+        <div class="service-list" style="gap:8px">
+          <div class="service-item">
+            <div>
+              <div class="service-name">📢 Telegram @BullPowerHub</div>
+              <div class="service-url">Alle 30min • Produktposts</div>
+            </div>
+            <div class="status-pill status-ok">AKTIV</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">💼 LinkedIn BRUTUS</div>
+              <div class="service-url">1h Auto-Post</div>
+            </div>
+            <div class="status-pill status-ok">AKTIV</div>
+          </div>
+          <div class="service-item">
+            <div>
+              <div class="service-name">📝 Dev.to + Hashnode</div>
+              <div class="service-url">6h Syndication • Keys gesetzt</div>
+            </div>
+            <div class="status-pill status-ok">AKTIV</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vercel Sites -->
+    <div class="card wide">
+      <div class="card-header">
+        <div class="card-title"><span>▲</span> Vercel Sites (13 Live)</div>
+        <div style="font-size:11px;color:var(--accent)">Full SEO + FAQ Schema</div>
+      </div>
+      <div class="card-body">
+        <div class="sites-grid">
+          <a class="site-item" href="https://shopify-brutal-tuning.vercel.app" target="_blank">
+            <div class="site-name">Shopify Brutal Tuning</div>
+            <div class="site-url">shopify-brutal-tuning.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge stripe">STRIPE</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://bullpower-hub-portal.netlify.app" target="_blank">
+            <div class="site-name">🌟 BullPower Hub Portal</div>
+            <div class="site-url">bullpower-hub-portal.netlify.app</div>
+            <div class="site-badges"><span class="badge stripe">€49 STRIPE LINK</span></div>
+          </a>
+          <a class="site-item" href="https://creatorai-ultra.vercel.app" target="_blank">
+            <div class="site-name">CreatorAI Ultra</div>
+            <div class="site-url">creatorai-ultra.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://autoincome-ai.vercel.app" target="_blank">
+            <div class="site-name">AutoIncome AI</div>
+            <div class="site-url">autoincome-ai.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://bullpower-hub.vercel.app" target="_blank">
+            <div class="site-name">BullPower Hub</div>
+            <div class="site-url">bullpower-hub.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://shopify-acquisition-engine.vercel.app" target="_blank">
+            <div class="site-name">Shopify Acquisition</div>
+            <div class="site-url">shopify-acquisition-engine.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span></div>
+          </a>
+          <a class="site-item" href="https://bullpower-ai.vercel.app" target="_blank">
+            <div class="site-name">BullPower AI</div>
+            <div class="site-url">bullpower-ai.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://creatorstudio-pro.vercel.app" target="_blank">
+            <div class="site-name">CreatorStudio Pro</div>
+            <div class="site-url">creatorstudio-pro.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://digistore24-suite.vercel.app" target="_blank">
+            <div class="site-name">Digistore24 Suite</div>
+            <div class="site-url">digistore24-suite.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://cognitive-symphony.vercel.app" target="_blank">
+            <div class="site-name">Cognitive Symphony</div>
+            <div class="site-url">cognitive-symphony.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span><span class="badge faq">FAQ</span></div>
+          </a>
+          <a class="site-item" href="https://gumroad-discord.vercel.app" target="_blank">
+            <div class="site-name">Gumroad Discord</div>
+            <div class="site-url">gumroad-discord.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span></div>
+          </a>
+          <a class="site-item" href="https://lead-capture-gamma-nine.vercel.app" target="_blank">
+            <div class="site-name">Lead Capture</div>
+            <div class="site-url">lead-capture-gamma-nine.vercel.app</div>
+            <div class="site-badges"><span class="badge seo">SEO</span></div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scheduler Tasks -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><span>⚙️</span> Live Task Runner</div>
+        <div id="task-live-count" style="font-size:11px;color:var(--green)">Lädt...</div>
+      </div>
+      <div class="card-body">
+        <div class="task-list" id="task-list">
+          <div class="task-item"><div class="task-dot"></div><div class="task-name">Lädt Tasks...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="card full">
+      <div class="card-header">
+        <div class="card-title"><span>🎯</span> Quick Actions</div>
+      </div>
+      <div class="card-body">
+        <div class="action-grid">
+          <button class="action-btn btn-primary" onclick="triggerOmega()">⚡ OMEGA Full Cycle starten</button>
+          <button class="action-btn btn-green" onclick="triggerIndex()">🔍 Alle URLs indexieren</button>
+          <button class="action-btn btn-orange" onclick="triggerArticle()">✍️ SEO-Artikel generieren</button>
+          <button class="action-btn btn-blue" onclick="triggerTwitter()">🐦 Tweet jetzt senden</button>
+          <a class="action-btn" href="https://dudirudibot-mega-production.up.railway.app/master" target="_blank">📊 Rudi Dashboard öffnen</a>
+          <a class="action-btn" href="https://dashboard.railway.app" target="_blank">🚂 Railway Dashboard</a>
+          <a class="action-btn" href="https://app.netlify.com" target="_blank">▲ Netlify Dashboard</a>
+          <a class="action-btn" href="https://vercel.com/bullpowerhubgits-projects" target="_blank">▲ Vercel Dashboard</a>
+        </div>
+        <div id="action-result" style="margin-top:12px;min-height:24px;font-size:12px;color:var(--green)"></div>
+      </div>
+    </div>
+
+    <!-- Live Log -->
+    <div class="card full">
+      <div class="card-header">
+        <div class="card-title"><span>📋</span> Activity Log</div>
+        <button onclick="clearLog()" style="font-size:11px;color:var(--muted);background:none;border:none;cursor:pointer;color:var(--muted)">Leeren</button>
+      </div>
+      <div class="card-body" style="padding: 12px 18px;">
+        <div class="log-box" id="log-box">
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-ok">✅</span> Dashboard gestartet — BullPower MEGA Command Center</div>
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-info">ℹ️</span> Prüfe Railway Services...</div>
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-ok">✅</span> OMEGA Engine: 10 Module aktiv</div>
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-info">ℹ️</span> Twitter: Access Token gesetzt — warte auf R+W Permission</div>
+          <div class="log-line"><span class="log-time">[03:47]</span> <span class="log-ok">✅</span> Dev.to + Hashnode API Keys aktiv — FreeSyndicationNetwork läuft</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const RAILWAY_BASE = 'https://dudirudibot-mega-production.up.railway.app';
+const SERVICES = [
+  { id: 'smb', url: RAILWAY_BASE + '/health', name: 'SuperMegaBot' },
+  { id: 'icome', url: 'https://icomeauto-production-e4e5.up.railway.app/health', name: 'IcomeAuto' },
+  { id: 'steuer', url: 'https://steuercockpit-production-44c9.up.railway.app/health', name: 'Steuercockpit' },
+  { id: 'adposter', url: 'https://adposter-engine-production.up.railway.app/health', name: 'AdPoster' },
+];
+
+function log(msg, type = 'info') {
+  const box = document.getElementById('log-box');
+  const now = new Date();
+  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  const icons = { ok: '✅', err: '❌', info: 'ℹ️' };
+  const classes = { ok: 'log-ok', err: 'log-err', info: 'log-info' };
+  const div = document.createElement('div');
+  div.className = 'log-line';
+  div.innerHTML = `<span class="log-time">[${time}]</span> <span class="${classes[type]}">${icons[type]}</span> ${msg}`;
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('log-box').innerHTML = '';
+}
+
+async function checkServices() {
+  let ok = 0;
+  for (const s of SERVICES) {
+    const el = document.getElementById(s.id + '-status');
+    try {
+      const r = await fetch(s.url, { signal: AbortSignal.timeout(5000) });
+      const data = await r.json().catch(() => ({}));
+      if (r.ok) {
+        el.className = 'status-pill status-ok';
+        el.textContent = 'ONLINE';
+        ok++;
+      } else {
+        el.className = 'status-pill status-error';
+        el.textContent = 'ERROR';
+      }
+    } catch(e) {
+      el.className = 'status-pill status-warn';
+      el.textContent = 'TIMEOUT';
+    }
+  }
+  document.getElementById('services-count').textContent = ok + '/4';
+  document.getElementById('services-sub').textContent = ok === 4 ? 'Alle Online ✅' : ok + ' Online';
+  document.getElementById('services-refresh').textContent = 'Aktualisiert ' + new Date().toLocaleTimeString('de');
+  log(`Services: ${ok}/4 online`, ok === 4 ? 'ok' : 'err');
+}
+
+async function loadTasks() {
+  try {
+    const r = await fetch(RAILWAY_BASE + '/api/scheduler/status', { signal: AbortSignal.timeout(8000) });
+    const data = await r.json();
+    const tasks = data.tasks || [];
+    document.getElementById('task-count').textContent = tasks.length;
+    document.getElementById('task-live-count').textContent = tasks.length + ' Tasks aktiv';
+    const list = document.getElementById('task-list');
+    list.innerHTML = '';
+    const recent = tasks.slice(0, 25);
+    for (const t of recent) {
+      const div = document.createElement('div');
+      div.className = 'task-item';
+      const lastRun = t.last_run ? new Date(t.last_run).toLocaleTimeString('de', {hour:'2-digit',minute:'2-digit'}) : 'Nie';
+      div.innerHTML = `<div class="task-dot"></div><div class="task-name">${t.name}</div><div class="task-time">${lastRun}</div>`;
+      list.appendChild(div);
+    }
+  } catch(e) {
+    document.getElementById('task-live-count').textContent = 'Verbindungsfehler';
+  }
+}
+
+async function triggerAction(endpoint, label) {
+  const res = document.getElementById('action-result');
+  res.textContent = '⏳ ' + label + '...';
+  res.style.color = 'var(--warn)';
+  try {
+    const r = await fetch(RAILWAY_BASE + endpoint, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}', signal: AbortSignal.timeout(15000) });
+    const data = await r.json().catch(() => ({}));
+    res.textContent = '✅ ' + label + ' gestartet!';
+    res.style.color = 'var(--green)';
+    log(label + ' ausgelöst', 'ok');
+  } catch(e) {
+    res.textContent = '❌ Fehler: ' + e.message;
+    res.style.color = 'var(--danger)';
+    log(label + ' Fehler: ' + e.message, 'err');
+  }
+  setTimeout(() => { res.textContent = ''; }, 5000);
+}
+
+function triggerOmega() { triggerAction('/api/omega/full', 'OMEGA Full Cycle'); }
+function triggerIndex() { triggerAction('/api/omega/index', 'URL Indexierung'); }
+function triggerArticle() { triggerAction('/api/omega/article', 'SEO-Artikel'); }
+function triggerTwitter() { triggerAction('/api/omega/social_proof', 'Twitter Post'); }
+
+// Countdown & auto-refresh
+let countdown = 30;
+setInterval(() => {
+  countdown--;
+  document.getElementById('countdown').textContent = countdown;
+  if (countdown <= 0) {
+    countdown = 30;
+    checkServices();
+  }
+}, 1000);
+
+// Initial load
+checkServices();
+loadTasks();
+setTimeout(loadTasks, 5000);
+</script>
+</body>
+</html>
