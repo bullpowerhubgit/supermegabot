@@ -3989,8 +3989,8 @@ async def handle_email_sequence_enroll_new(req):
 # ---------------------------------------------------------------------------
 async def handle_b2b_pipeline_stats(req):
     try:
-        from modules.b2b_pipeline import get_pipeline_stats
-        stats = await get_pipeline_stats()
+        from modules.b2b_pipeline import get_stats
+        stats = await get_stats()
         return web.json_response({"ok": True, **stats})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
@@ -3998,13 +3998,9 @@ async def handle_b2b_pipeline_stats(req):
 
 async def handle_b2b_pipeline_leads(req):
     try:
-        from modules.b2b_pipeline import get_pipeline_leads
+        from modules.b2b_pipeline import get_leads
         stage = req.rel_url.query.get("stage")
-        try:
-            limit = int(req.rel_url.query.get("limit", "50"))
-        except (ValueError, TypeError):
-            limit = 50
-        leads = await get_pipeline_leads(stage=stage, limit=limit)
+        leads = await get_leads(status=stage)
         return web.json_response({"ok": True, "leads": leads, "count": len(leads)})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
@@ -4015,14 +4011,12 @@ async def handle_b2b_lead_add(req):
         from modules.b2b_pipeline import add_lead
         data = await req.json()
         lead = await add_lead(
-            email=data.get("email", ""),
-            name=data.get("name", ""),
             company=data.get("company", ""),
-            website=data.get("website", ""),
+            email=data.get("email", ""),
+            domain=data.get("website", ""),
             niche=data.get("niche", ""),
+            contact_name=data.get("name", ""),
             source=data.get("source", "manual_import"),
-            score=int(data.get("score", 0)),
-            notes=data.get("notes", ""),
         )
         return web.json_response({"ok": True, "lead": lead})
     except Exception as e:
@@ -4031,14 +4025,17 @@ async def handle_b2b_lead_add(req):
 
 async def handle_b2b_lead_update(req):
     try:
-        from modules.b2b_pipeline import update_lead_stage
+        from modules.b2b_pipeline import update_lead
         data = await req.json()
-        lead_id = int(data.get("id", 0))
+        lead_id = data.get("id", "")
         stage   = data.get("stage", "")
         notes   = data.get("notes", "")
-        if not lead_id or not stage:
-            return web.json_response({"ok": False, "error": "id and stage required"}, status=400)
-        result = await update_lead_stage(lead_id, stage, notes)
+        if not lead_id:
+            return web.json_response({"ok": False, "error": "id required"}, status=400)
+        kwargs = {}
+        if stage: kwargs["status"] = stage
+        if notes: kwargs["notes"] = notes
+        result = await update_lead(lead_id, **kwargs)
         return web.json_response({"ok": True, "lead": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
@@ -4046,13 +4043,8 @@ async def handle_b2b_lead_update(req):
 
 async def handle_b2b_prospecting_run(req):
     try:
-        from modules.b2b_pipeline import run_daily_prospecting
-        data = {}
-        try:
-            data = await req.json()
-        except Exception:
-            pass
-        result = await run_daily_prospecting()
+        from modules.b2b_pipeline import run_prospecting
+        result = await run_prospecting()
         return web.json_response({"ok": True, **result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
@@ -4060,13 +4052,13 @@ async def handle_b2b_prospecting_run(req):
 
 async def handle_b2b_outreach_send(req):
     try:
-        from modules.b2b_pipeline import send_outreach_email
+        from modules.b2b_pipeline import run_outreach
         data = await req.json()
-        lead_id = int(data.get("lead_id", 0))
+        lead_id = data.get("lead_id", "")
         if not lead_id:
             return web.json_response({"ok": False, "error": "lead_id required"}, status=400)
-        success = await send_outreach_email(lead_id)
-        return web.json_response({"ok": success})
+        result = await run_outreach(str(lead_id))
+        return web.json_response({"ok": result.get("ok", False), **result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
