@@ -359,6 +359,50 @@ async def handle_webhook_event(event: Dict) -> str:
         )
         return "charge.refunded handled"
 
+    if etype == "customer.subscription.deleted":
+        customer_id = data.get("customer", "?")
+        items = data.get("items", {}).get("data", [])
+        plan = ""
+        if items:
+            price = items[0].get("price", {})
+            amount = (price.get("unit_amount", 0) or 0) / 100
+            cur    = price.get("currency", "eur").upper()
+            plan   = f"{amount:.2f} {cur}/{price.get('recurring', {}).get('interval', '')}"
+        customer_email = data.get("customer_email", customer_id)
+        await _tg(
+            f"❌ <b>Abo gekündigt</b> — Stripe\n"
+            f"Plan: {plan}\n"
+            f"Email: {customer_email}"
+        )
+        if customer_email and "@" in customer_email:
+            asyncio.create_task(_auto_enroll_buyer(
+                customer_email, customer_email.split("@")[0], 0, "winback"
+            ))
+        return "subscription.deleted handled + winback enrolled"
+
+    if etype == "invoice.payment_failed":
+        amount   = (data.get("amount_due") or 0) / 100
+        currency = (data.get("currency") or "eur").upper()
+        email    = data.get("customer_email") or "?"
+        attempt  = data.get("attempt_count", 1)
+        await _tg(
+            f"⚠️ <b>Zahlung fehlgeschlagen</b> — Stripe\n"
+            f"Betrag: {amount:.2f} {currency}\n"
+            f"Versuch #{attempt}\n"
+            f"Email: {email}"
+        )
+        return f"invoice.payment_failed handled (attempt #{attempt})"
+
+    if etype == "customer.subscription.updated":
+        customer_email = data.get("customer_email", "?")
+        status = data.get("status", "?")
+        await _tg(
+            f"🔄 <b>Abo aktualisiert</b> — Stripe\n"
+            f"Status: {status}\n"
+            f"Email: {customer_email}"
+        )
+        return f"subscription.updated handled (status={status})"
+
     return f"unhandled: {etype}"
 
 

@@ -153,6 +153,13 @@ async def run_sync() -> dict:
             await _add_to_mailchimp(email, fname, lname, product)
             await _add_to_klaviyo(email, fname, lname, product, amount)
             await _notify_telegram(buyer, product, amount)
+            try:
+                from modules.email_sequence_engine import enroll
+                await enroll(email, "post_purchase", first_name=fname,
+                             metadata={"product": product, "amount": amount, "source": "digistore24"})
+                log.info("Email sequence enrolled: %s", email)
+            except Exception as exc:
+                log.warning("Email sequence enroll failed for %s: %s", email, exc)
             new_buyers += 1
             log.info("Synced new buyer: %s — %s €%s", email, product, amount)
         except Exception as exc:
