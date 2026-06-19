@@ -22,11 +22,11 @@ from typing import Optional
 log = logging.getLogger("TwitterAutoPoster")
 
 # ── Credentials ──────────────────────────────────────────────────────────────
-API_KEY          = os.getenv("TWITTER_API_KEY", "nmOl22ARJH6DKmY0D6qzgeqOx")
-API_SECRET       = os.getenv("TWITTER_API_SECRET", "BH9rocGNlXVNEN5SHukO3vxTrwVYQTJxczcLpE0y6Rbr9VxPGQ")
-ACCESS_TOKEN     = os.getenv("TWITTER_ACCESS_TOKEN", "2015131234226102272-LyGuEv32VysjTntAsUAIeaD7QnQzxh")
-ACCESS_SECRET    = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "pZarv7uHdVqtQkSbHFj9hw71euG29W9cSyElOkRb24QBl")
-BEARER_TOKEN     = os.getenv("TWITTER_BEARER_TOKEN", "AAAAAAAAAAAAAAAAAAAAAJqK7QEAAAAADbeCx%2BOsS7ufHBX0mnhU54O3qHQ%3DE8QgCV3EBzgVmlkB6w40JmJXZczeJTtizVRdeR5Maus637PKDy")
+API_KEY          = os.getenv("TWITTER_API_KEY", "HJ32z6o1fiE0onDxWwogHWzi4")
+API_SECRET       = os.getenv("TWITTER_API_SECRET", "laYAg5ryn22eEGLTzOMQhuIeqIXt3iDIosjKyC3BIV1lazes4i")
+ACCESS_TOKEN     = os.getenv("TWITTER_ACCESS_TOKEN", "")
+ACCESS_SECRET    = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "")
+BEARER_TOKEN     = os.getenv("TWITTER_BEARER_TOKEN", "AAAAAAAAAAAAAAAAAAAAAODl%2BAEAAAAAn2IbeCUs5WTotjvvS03GQAL7BfA%3DyEHCzrKmaAvZ8ocPZmNCWMTZoNd4KPD9XsI7QcdBcdQUat4DDP")
 CLIENT_ID        = os.getenv("TWITTER_CLIENT_ID", "SGh5aXVSejJUTE00dzJXM3RXM0s6MTpjaQ")
 CLIENT_SECRET    = os.getenv("TWITTER_CLIENT_SECRET", "5ZEYC5Y1jo2sVZCY4htJVLkmSqNhg87Cn20NmCAvrFo5i-sgmW")
 
