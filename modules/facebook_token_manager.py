@@ -11,6 +11,33 @@ APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "bdd22b7b61fcfd9fd8eed1ab8fedf27b"
 TG_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
 BASE       = "https://graph.facebook.com/v19.0"
+CALLBACK_URL = "https://dudirudibot-mega-production.up.railway.app/api/facebook/callback"
+RAILWAY_SERVICE = "dudirudibot-mega"
+SCOPES = "pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish,pages_show_list,public_profile"
+
+
+def get_oauth_url() -> str:
+    return (
+        f"https://www.facebook.com/v19.0/dialog/oauth?"
+        f"client_id={APP_ID}"
+        f"&redirect_uri={CALLBACK_URL}"
+        f"&scope={SCOPES}"
+        f"&response_type=code"
+    )
+
+
+def _set_railway_var(key: str, value: str) -> bool:
+    """Set Railway env var using correct CLI syntax."""
+    try:
+        import subprocess
+        r = subprocess.run(
+            ["railway", "variables", "set", f"{key}={value}", "--service", RAILWAY_SERVICE],
+            capture_output=True, timeout=30
+        )
+        return r.returncode == 0
+    except Exception as e:
+        log.warning("Railway var set failed %s: %s", key, e)
+        return False
 
 PAGE_IDS = {
     "IWIN":       os.getenv("FACEBOOK_PAGE_ID_IWIN", "1135864516276500"),
@@ -102,20 +129,14 @@ async def refresh_all_tokens() -> dict:
     user_check = await check_token(user_token)
     results["user_token"] = user_check
 
-    if not user_check.get("valid"):
-        # Token is invalid — can't auto-fix without user action
-        oauth_url = (
-            f"https://www.facebook.com/v19.0/dialog/oauth?"
-            f"client_id={APP_ID}"
-            f"&redirect_uri=https://dudirudibot-mega-production.up.railway.app/api/facebook/callback"
-            f"&scope=pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish,pages_show_list"
-            f"&response_type=code"
-        )
+    if not user_check.get("valid") or "pages_manage_posts" not in user_check.get("scopes", []):
+        oauth_url = get_oauth_url()
+        reason = "abgelaufen" if not user_check.get("valid") else "fehlt pages_manage_posts scope"
         msg = (
-            "⚠️ *Facebook Token abgelaufen!*\n\n"
-            "Klick diesen Link um neue Tokens zu generieren:\n"
+            f"⚠️ *Facebook Token {reason}!*\n\n"
+            "Klick diesen Link → Login → Berechtigung erteilen:\n"
             f"{oauth_url}\n\n"
-            "Nach dem Login werden alle Page Tokens automatisch erneuert."
+            "Danach werden alle Page Tokens automatisch gesetzt und Posting funktioniert."
         )
         await _tg(msg)
         results["action_needed"] = True
@@ -134,30 +155,19 @@ async def refresh_all_tokens() -> dict:
             if page_token:
                 env_key = f"FACEBOOK_PAGE_TOKEN_{page_name}"
                 # Update Railway env var
-                try:
-                    import subprocess
-                    subprocess.run(
-                        ["railway", "variables", "--set", f"{env_key}={page_token}"],
-                        capture_output=True, timeout=30
-                    )
+                if _set_railway_var(env_key, page_token):
                     results[f"page_{page_name}"] = "refreshed"
                     log.info("FB: Page token refreshed for %s", page_name)
-                except Exception as e:
-                    results[f"page_{page_name}"] = f"error: {e}"
+                else:
+                    results[f"page_{page_name}"] = "railway_set_failed"
             else:
                 results[f"page_{page_name}"] = "failed"
 
-        # Also update META_ACCESS_TOKEN alias
+        # Also update META_ACCESS_TOKEN and FACEBOOK_PAGE_TOKEN aliases
         iwin_token = os.getenv("FACEBOOK_PAGE_TOKEN_IWIN", "")
         if iwin_token:
-            try:
-                import subprocess
-                subprocess.run(
-                    ["railway", "variables", "--set", f"META_ACCESS_TOKEN={iwin_token}"],
-                    capture_output=True, timeout=30
-                )
-            except Exception:
-                pass
+            _set_railway_var("META_ACCESS_TOKEN", iwin_token)
+            _set_railway_var("FACEBOOK_PAGE_TOKEN", iwin_token)
 
         await _tg(
             f"✅ *Facebook Tokens erfolgreich erneuert!*\n"
@@ -196,11 +206,7 @@ async def handle_facebook_oauth_callback(code: str, redirect_uri: str) -> dict:
             return {"ok": False, "error": "Could not extend token"}
 
         # Save to Railway
-        import subprocess
-        subprocess.run(
-            ["railway", "variables", "--set", f"FACEBOOK_USER_TOKEN={long_token}"],
-            capture_output=True, timeout=30
-        )
+        _set_railway_var("FACEBOOK_USER_TOKEN", long_token)
 
         # Refresh all page tokens
         result = await refresh_all_tokens()
