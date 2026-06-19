@@ -166,7 +166,7 @@ Nur JSON, kein anderer Text."""
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:
                 data = await r.json(content_type=None)
-        raw = data["content"][0]["text"]
+        raw = (data.get("content") or [{"text": "[]"}])[0].get("text", "[]")
         start = raw.find("[")
         end = raw.rfind("]") + 1
         result = json.loads(raw[start:end])
@@ -205,7 +205,7 @@ async def _generate_single(session, keyword: str, format_type: str, angle: str =
             timeout=aiohttp.ClientTimeout(total=25),
         ) as r:
             data = await r.json(content_type=None)
-        return data["content"][0]["text"]
+        return (data.get("content") or [{"text": ""}])[0].get("text", "")
     except Exception as exc:
         log.warning("Content agent error (%s): %s", format_type, exc)
         return ""

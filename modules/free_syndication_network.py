@@ -75,7 +75,7 @@ Antworte NUR mit JSON:
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
                 data = await r.json(content_type=None)
-        raw = data["content"][0]["text"]
+        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
         s, e = raw.find("{"), raw.rfind("}") + 1
         return json.loads(raw[s:e])
     except Exception as exc:

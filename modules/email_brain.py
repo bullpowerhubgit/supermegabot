@@ -233,6 +233,10 @@ async def _classify_email(subject: str, sender: str, body: str) -> dict:
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as resp:
                 data = await resp.json()
+                # Handle API errors (rate limit, overload, etc.)
+                if "error" in data or "content" not in data:
+                    log.debug("Claude classify skipped (API rate limit/error)")
+                    raise KeyError("content")
                 text = data["content"][0]["text"].strip()
                 # Strip markdown code fences if present
                 if text.startswith("```"):
@@ -240,8 +244,10 @@ async def _classify_email(subject: str, sender: str, body: str) -> dict:
                     if text.startswith("json"):
                         text = text[4:]
                 return json.loads(text)
+    except KeyError:
+        pass  # Rate limited or API error — use fallback silently
     except Exception as e:
-        log.warning(f"Claude classify failed: {e}")
+        log.debug(f"Claude classify failed: {e}")
         return {"category": "unknown", "priority": "normal", "reply_needed": False,
                 "label": "Priority", "archive": False, "telegram_alert": False,
                 "summary": subject[:80]}

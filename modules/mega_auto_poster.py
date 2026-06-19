@@ -98,7 +98,7 @@ Antworte NUR mit JSON:
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:
                 data = await r.json(content_type=None)
-        raw = data["content"][0]["text"]
+        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
         start, end = raw.find("{"), raw.rfind("}") + 1
         result = json.loads(raw[start:end])
         result.setdefault("image_url", IG_PIXEL)

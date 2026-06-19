@@ -94,7 +94,7 @@ Nur den Tweet-Text zurückgeben, kein anderer Text."""
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 data = await r.json(content_type=None)
-        return data["content"][0]["text"].strip()[:280]
+        return (data.get("content") or [{"text": ""}])[0].get("text", "").strip()[:280]
     except Exception as e:
         log.warning("Tweet gen error: %s", e)
         return None

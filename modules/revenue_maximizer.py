@@ -158,7 +158,7 @@ Gib NUR JSON zurück: [{{"name": "...", "reason": "...", "price_eur": 0}}]"""
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 data = await r.json(content_type=None)
-        raw = data["content"][0]["text"]
+        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
         start = raw.find("[")
         end = raw.rfind("]") + 1
         recs = json.loads(raw[start:end])
@@ -233,7 +233,7 @@ Gib NUR JSON zurück:
                     timeout=aiohttp.ClientTimeout(total=15),
                 ) as r:
                     data = await r.json(content_type=None)
-            raw = data["content"][0]["text"]
+            raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
             start = raw.find("{")
             end = raw.rfind("}") + 1
             result = json.loads(raw[start:end])
