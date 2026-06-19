@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Visual Content Engine — TikTok + Pinterest + Discord autonomous poster"""
-import asyncio, aiohttp, os, json, logging, sqlite3
-from datetime import datetime
+"""Visual Content Engine — MAXIMUM TUNING v2.0
+TikTok + Pinterest + Discord + Google Trends + IndexNow + turbo scheduler"""
+import asyncio, aiohttp, os, json, logging, sqlite3, uuid, time
+import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
+from urllib.parse import quote
 import anthropic
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -18,11 +21,15 @@ DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", "")
 TIKTOK_APP_KEY = os.getenv("TIKTOK_APP_KEY", "")
 TIKTOK_APP_SECRET = os.getenv("TIKTOK_APP_SECRET", "")
 TIKTOK_ACCESS_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN", os.getenv("TIKTOK_RESEARCH_TOKEN", ""))
-PORT        = int(os.getenv("PORT", 8092))
-KV_API_KEY  = os.getenv("KLAVIYO_API_KEY", "")
-MC_API_KEY  = os.getenv("MAILCHIMP_API_KEY", "")
-MC_SERVER   = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
-MC_LIST_ID  = os.getenv("MAILCHIMP_LIST_ID", "")
+PORT          = int(os.getenv("PORT", 8092))
+APP_URL       = os.getenv("APP_URL", "https://visual-content-engine-production.up.railway.app")
+KV_API_KEY    = os.getenv("KLAVIYO_API_KEY", "")
+MC_API_KEY    = os.getenv("MAILCHIMP_API_KEY", "")
+MC_SERVER     = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
+MC_LIST_ID    = os.getenv("MAILCHIMP_LIST_ID", "")
+INDEXNOW_KEY  = os.getenv("INDEXNOW_KEY", str(uuid.uuid5(uuid.NAMESPACE_URL, APP_URL)).replace("-",""))
+_trending_cache: list[str] = []
+_last_trends_fetch: float = 0
 
 PRODUCTS = [
     {"name": "Shopify Acquisition Engine", "url": "https://shopify-acquisition-engine-production.up.railway.app", "price": "49€/mo", "niche": "E-Commerce Automatisierung"},
@@ -47,6 +54,53 @@ def init_db():
     )""")
     conn.commit()
     conn.close()
+
+
+async def fetch_google_trends(geo: str = "DE") -> list[str]:
+    global _trending_cache, _last_trends_fetch
+    if time.time() - _last_trends_fetch < 7200:
+        return _trending_cache
+    url = f"https://trends.google.com/trends/trendingsearches/daily/rss?geo={geo}"
+    keywords = []
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(url, timeout=aiohttp.ClientTimeout(total=12),
+                             headers={"User-Agent": "Mozilla/5.0 (compatible; VisualBot/2.0)"}) as r:
+                if r.status == 200:
+                    root = ET.fromstring(await r.text())
+                    for item in root.findall(".//item"):
+                        el = item.find("title")
+                        if el is not None and el.text:
+                            kw = el.text.strip().lower()
+                            if any(t in kw for t in ["shop","amazon","ki","ai","geld","online","digital","seo","tool","auto","business"]):
+                                keywords.append(kw)
+    except Exception as e:
+        logger.warning(f"Google Trends: {e}")
+    if keywords:
+        _trending_cache = keywords[:10]
+        _last_trends_fetch = time.time()
+        logger.info(f"Trending topics updated: {len(keywords)}")
+    return _trending_cache
+
+
+async def indexnow_ping(urls: list[str]) -> bool:
+    if not urls:
+        return False
+    payload = {
+        "host": APP_URL.replace("https://","").replace("http://",""),
+        "key": INDEXNOW_KEY,
+        "keyLocation": f"{APP_URL}/{INDEXNOW_KEY}.txt",
+        "urlList": urls[:50],
+    }
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post("https://api.indexnow.org/indexnow", json=payload,
+                              headers={"Content-Type": "application/json; charset=utf-8"},
+                              timeout=aiohttp.ClientTimeout(total=10)) as r:
+                return r.status in (200, 202)
+    except Exception as e:
+        logger.warning(f"IndexNow: {e}")
+        return False
 
 
 async def klaviyo_track(event: str, props: dict):
@@ -189,6 +243,12 @@ async def post_to_discord_webhook(content: str) -> bool:
 async def content_cycle():
     import random
     product = random.choice(PRODUCTS)
+    # Inject trending topic as theme
+    trending = await fetch_google_trends("DE")
+    topic = random.choice(trending) if trending else ""
+    if topic:
+        product = dict(product)
+        product["niche"] = f"{product['niche']} + Trending: {topic}"
     now = datetime.now().isoformat()
     logger.info(f"Content cycle start — product: {product['name']}")
 
@@ -228,6 +288,8 @@ async def content_cycle():
         + ("\n\n<i>➡️ Poste in relevante Discord Server (Shopify, Online Business, KI)</i>" if not discord_posted else "")
     )
 
+    # IndexNow ping for product URLs
+    await indexnow_ping([p["url"] for p in PRODUCTS])
     logger.info(f"Cycle done — Pinterest:{pinterest_posted} Discord:{discord_posted}")
     await klaviyo_track("Visual Content Cycle", {
         "product": product["name"],
@@ -238,9 +300,14 @@ async def content_cycle():
 
 async def scheduler():
     await asyncio.sleep(30)
+    await fetch_google_trends("DE")
     await content_cycle()
+    last_trends = time.time()
     while True:
-        await asyncio.sleep(5 * 3600)
+        await asyncio.sleep(3 * 3600)  # Every 3h (was 5h)
+        if time.time() - last_trends >= 2 * 3600:
+            await fetch_google_trends("DE")
+            last_trends = time.time()
         try:
             await content_cycle()
         except Exception as e:
@@ -260,15 +327,42 @@ async def health_handler(request):
     return web.json_response({
         "status": "ok",
         "service": "visual-content-engine",
-        "version": "1.0.0",
+        "version": "2.0-TURBO",
         "total_content": total,
         "by_platform": by_platform,
+        "trending_topics": _trending_cache[:5],
+        "last_trends_fetch": datetime.fromtimestamp(_last_trends_fetch).isoformat() if _last_trends_fetch else None,
+        "indexnow_key": INDEXNOW_KEY[:8] + "...",
         "integrations": {
             "pinterest_api": bool(PINTEREST_ACCESS_TOKEN),
             "discord_webhook": bool(DISCORD_WEBHOOK),
             "tiktok_app_key": bool(TIKTOK_APP_KEY),
             "tiktok_manual_queue": True,
+            "google_trends": True,
+            "indexnow": True,
         }
+    })
+
+
+async def stats_handler(request):
+    from aiohttp import web
+    conn = sqlite3.connect(DB_PATH)
+    total = conn.execute("SELECT COUNT(*) FROM content").fetchone()[0]
+    posted = conn.execute("SELECT COUNT(*) FROM content WHERE status='posted'").fetchone()[0]
+    by_platform = {
+        row[0]: {"total": row[1]}
+        for row in conn.execute("SELECT platform, COUNT(*) FROM content GROUP BY platform")
+    }
+    recent = conn.execute("SELECT platform, product_name, created_at FROM content ORDER BY id DESC LIMIT 5").fetchall()
+    conn.close()
+    return web.json_response({
+        "total_content": total,
+        "posted": posted,
+        "queued": total - posted,
+        "by_platform": by_platform,
+        "recent": [{"platform": r[0], "product": r[1], "created_at": r[2]} for r in recent],
+        "trending_topics": _trending_cache,
+        "last_trends_fetch": datetime.fromtimestamp(_last_trends_fetch).isoformat() if _last_trends_fetch else None,
     })
 
 
@@ -347,9 +441,12 @@ async def main():
     init_db()
     app = web.Application()
     app.router.add_get("/health", health_handler)
+    app.router.add_get("/stats", stats_handler)
     app.router.add_post("/api/trigger", trigger_handler)
     app.router.add_get("/api/content", content_list_handler)
     app.router.add_post("/api/ingest", ingest_handler)
+    app.router.add_get(f"/{INDEXNOW_KEY}.txt",
+                       lambda r: web.Response(text=INDEXNOW_KEY, content_type="text/plain"))
 
     runner = web.AppRunner(app)
     await runner.setup()
