@@ -1972,6 +1972,234 @@ async def task_twitter_seo_thread() -> str:
         return f"Twitter Thread Fehler: {e}"
 
 
+# ── SEO MEGA ENGINE ───────────────────────────────────────────────────────────
+
+async def task_seo_mega_factory() -> str:
+    try:
+        from modules.seo_mega_engine import run_content_factory
+        r = await run_content_factory(batch_size=5)
+        return f"SEO Mega: saved={r.get('saved',0)} published={r.get('published_shopify',0)}"
+    except Exception as e:
+        return f"SEO Mega Factory error: {e}"
+
+async def task_seo_mega_submit() -> str:
+    try:
+        from modules.seo_mega_engine import submit_to_google, generate_sitemap
+        sitemap = await generate_sitemap()
+        r = await submit_to_google()
+        return f"SEO Submit: google={r.get('results',{}).get('google',{}).get('ok')} indexnow={r.get('results',{}).get('indexnow',{}).get('ok')}"
+    except Exception as e:
+        return f"SEO Submit error: {e}"
+
+async def task_seo_competitor_analysis() -> str:
+    try:
+        from modules.seo_mega_engine import analyze_all_competitors
+        r = await analyze_all_competitors()
+        return f"SEO Competitor: {r.get('competitors_analyzed',0)} analyzed, {r.get('quick_wins_added',0)} quick wins"
+    except Exception as e:
+        return f"SEO Competitor error: {e}"
+
+
+# ── TRAFFIC SWARM ─────────────────────────────────────────────────────────────
+
+async def task_traffic_swarm_full() -> str:
+    try:
+        from modules.traffic_swarm import run_full_traffic_swarm
+        r = await run_full_traffic_swarm()
+        return f"TrafficSwarm: {r.get('modules_ok',0)}/{r.get('modules_total',0)} OK"
+    except Exception as e:
+        return f"TrafficSwarm error: {e}"
+
+async def task_traffic_velocity_check() -> str:
+    try:
+        from modules.traffic_swarm import monitor_traffic_velocity
+        r = await monitor_traffic_velocity()
+        return f"Traffic: {r.get('today_leads',0)} leads, {r.get('delta_pct',0):+.1f}%"
+    except Exception as e:
+        return f"TrafficVelocity error: {e}"
+
+async def task_rss_rebuild() -> str:
+    try:
+        from modules.traffic_swarm import build_rss_feed
+        xml = await build_rss_feed()
+        return f"RSS: {len(xml)} chars"
+    except Exception as e:
+        return f"RSS error: {e}"
+
+async def task_content_freshness() -> str:
+    try:
+        from modules.traffic_swarm import refresh_stale_content
+        r = await refresh_stale_content(days_old=90)
+        return f"Freshness: {r.get('articles_updated',0)} updated"
+    except Exception as e:
+        return f"ContentFreshness error: {e}"
+
+async def task_backlink_outreach_gen() -> str:
+    try:
+        from modules.traffic_swarm import generate_outreach_emails
+        emails = await generate_outreach_emails(count=5)
+        sent = sum(1 for e in emails if e.get("sent"))
+        return f"Outreach: {len(emails)} drafts, {sent} sent"
+    except Exception as e:
+        return f"Outreach error: {e}"
+
+
+# ── ADS ENGINE ────────────────────────────────────────────────────────────────
+
+async def task_ads_performance_monitor() -> str:
+    try:
+        from modules.ads_engine import task_ads_monitor
+        return await task_ads_monitor()
+    except Exception as e:
+        return f"AdsMonitor error: {e}"
+
+async def task_ads_optimize_run() -> str:
+    try:
+        from modules.ads_engine import task_ads_optimize
+        return await task_ads_optimize()
+    except Exception as e:
+        return f"AdsOptimize error: {e}"
+
+async def task_ads_creative_rotate() -> str:
+    try:
+        from modules.ads_engine import task_ads_rotate
+        return await task_ads_rotate()
+    except Exception as e:
+        return f"AdsRotate error: {e}"
+
+
+# ── REVENUE INTELLIGENCE ──────────────────────────────────────────────────────
+
+async def task_revenue_autopilot_run() -> str:
+    try:
+        from modules.revenue_intelligence import revenue_autopilot
+        r = await revenue_autopilot()
+        return f"RevenueAutopilot: {len(r.get('actions',[]))} actions"
+    except Exception as e:
+        return f"RevenueAutopilot error: {e}"
+
+async def task_revenue_briefing_morning() -> str:
+    try:
+        from modules.revenue_intelligence import send_revenue_briefing
+        r = await send_revenue_briefing()
+        return f"RevenueBriefing: €{r.get('yesterday_revenue',0):.2f} yesterday, {r.get('leads_today',0)} leads"
+    except Exception as e:
+        return f"RevenueBriefing error: {e}"
+
+async def task_revenue_leak_check() -> str:
+    try:
+        from modules.revenue_intelligence import detect_revenue_leaks
+        leaks = await detect_revenue_leaks()
+        return f"RevenueLeaks: {len(leaks)} found"
+    except Exception as e:
+        return f"RevenueLeaks error: {e}"
+
+async def task_churn_prevention() -> str:
+    try:
+        from modules.revenue_intelligence import identify_churn_risk
+        at_risk = await identify_churn_risk()
+        return f"ChurnRisk: {len(at_risk)} customers at risk"
+    except Exception as e:
+        return f"ChurnPrevention error: {e}"
+
+
+# ── SHOPIFY MAX TUNER ─────────────────────────────────────────────────────────
+
+async def task_shopify_max_seo() -> str:
+    try:
+        from modules.shopify_max_tuner import task_shopify_seo_optimize
+        return await task_shopify_seo_optimize()
+    except Exception as e:
+        return f"ShopifyMaxSEO error: {e}"
+
+async def task_shopify_cart_recover() -> str:
+    try:
+        from modules.shopify_max_tuner import task_shopify_cart_recovery
+        return await task_shopify_cart_recovery()
+    except Exception as e:
+        return f"CartRecovery error: {e}"
+
+async def task_shopify_price_optimize() -> str:
+    try:
+        from modules.shopify_max_tuner import task_shopify_pricing
+        return await task_shopify_pricing()
+    except Exception as e:
+        return f"ShopifyPricing error: {e}"
+
+async def task_shopify_daily_intel() -> str:
+    try:
+        from modules.shopify_max_tuner import task_shopify_intelligence
+        return await task_shopify_intelligence()
+    except Exception as e:
+        return f"ShopifyIntel error: {e}"
+
+async def task_shopify_inventory_check() -> str:
+    try:
+        from modules.shopify_max_tuner import task_shopify_inventory
+        return await task_shopify_inventory()
+    except Exception as e:
+        return f"ShopifyInventory error: {e}"
+
+async def task_shopify_review_request() -> str:
+    try:
+        from modules.shopify_max_tuner import task_shopify_reviews
+        return await task_shopify_reviews()
+    except Exception as e:
+        return f"ShopifyReviews error: {e}"
+
+
+# ── GROWTH HACKER ─────────────────────────────────────────────────────────────
+
+async def task_viral_trend_scan() -> str:
+    try:
+        from modules.growth_hacker import task_viral_trend_detect
+        return await task_viral_trend_detect()
+    except Exception as e:
+        return f"ViralTrend error: {e}"
+
+async def task_community_growth_post() -> str:
+    try:
+        from modules.growth_hacker import task_community_grow
+        return await task_community_grow()
+    except Exception as e:
+        return f"CommunityGrowth error: {e}"
+
+async def task_growth_morning_briefing() -> str:
+    try:
+        from modules.growth_hacker import task_growth_metrics
+        return await task_growth_metrics()
+    except Exception as e:
+        return f"GrowthBriefing error: {e}"
+
+async def task_influencer_pipeline() -> str:
+    try:
+        from modules.growth_hacker import task_influencer_outreach
+        return await task_influencer_outreach()
+    except Exception as e:
+        return f"InfluencerPipeline error: {e}"
+
+async def task_press_release_generate() -> str:
+    try:
+        from modules.growth_hacker import task_press_release_auto
+        return await task_press_release_auto()
+    except Exception as e:
+        return f"PressRelease error: {e}"
+
+async def task_testimonial_engine() -> str:
+    try:
+        from modules.growth_hacker import task_testimonial_collect
+        return await task_testimonial_collect()
+    except Exception as e:
+        return f"Testimonial error: {e}"
+
+async def task_referral_system_run() -> str:
+    try:
+        from modules.growth_hacker import task_referral_refresh
+        return await task_referral_refresh()
+    except Exception as e:
+        return f"Referral error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -2081,6 +2309,40 @@ TASKS = [
     # ── TWITTER / X AUTOPOSTER (AIITEC Account) ──────────────────────────────
     ("twitter_daily_tweets",    task_twitter_daily_tweets,    14400,  800),  # 4h — 3 Tweets täglich
     ("twitter_seo_thread",      task_twitter_seo_thread,      86400,  810),  # daily — SEO-Thread (3 Tweets)
+    # ── SEO MEGA ENGINE — 60 Artikel/Tag, Auto-Indexierung ───────────────────
+    ("seo_mega_factory",        task_seo_mega_factory,         7200,  850),  # 2h — 5 Artikel generieren
+    ("seo_mega_submit",         task_seo_mega_submit,         14400,  860),  # 4h — Google+Bing+IndexNow ping
+    ("seo_competitor_analysis", task_seo_competitor_analysis, 43200,  870),  # 12h — Konkurrenz-Keywords
+    # ── TRAFFIC SWARM — Multi-Platform Distribution ───────────────────────────
+    ("traffic_swarm_full",      task_traffic_swarm_full,      21600,  880),  # 6h — Full Swarm alle Module
+    ("traffic_velocity",        task_traffic_velocity_check,   3600,  890),  # 1h — Drop/Spike Detection
+    ("rss_rebuild",             task_rss_rebuild,             43200,  900),  # 12h — RSS Feed rebuild
+    ("content_freshness",       task_content_freshness,       86400,  910),  # daily — Update alte Artikel
+    ("backlink_outreach",       task_backlink_outreach_gen,   86400,  920),  # daily — Outreach Emails
+    # ── ADS ENGINE — Facebook/Google/TikTok ──────────────────────────────────
+    ("ads_monitor",             task_ads_performance_monitor,  3600,  930),  # 1h — Performance Check
+    ("ads_optimize",            task_ads_optimize_run,        14400,  940),  # 4h — Pause Loser/Scale Winner
+    ("ads_rotate",              task_ads_creative_rotate,     86400,  950),  # daily — Fresh Ad Copy
+    # ── REVENUE INTELLIGENCE — Forecast + Leaks + Churn ──────────────────────
+    ("revenue_autopilot",       task_revenue_autopilot_run,    3600,  960),  # 1h — Full Revenue Scan
+    ("revenue_morning",         task_revenue_briefing_morning, 86400, 970),  # daily — 8am Briefing
+    ("revenue_leaks",           task_revenue_leak_check,       1800,  980),  # 30min — Failed Payments
+    ("churn_prevention",        task_churn_prevention,        21600,  990),  # 6h — Churn Risk Score
+    # ── SHOPIFY MAX TUNER — Full Conversion Machine ───────────────────────────
+    ("shopify_max_seo",         task_shopify_max_seo,         14400, 1000),  # 4h — AI SEO alle Produkte
+    ("shopify_cart_recover",    task_shopify_cart_recover,     3600, 1010),  # 1h — Abandoned Cart Recovery
+    ("shopify_price_optimize",  task_shopify_price_optimize,  86400, 1020),  # daily — .99 Psychological Pricing
+    ("shopify_daily_intel",     task_shopify_daily_intel,     86400, 1030),  # daily — 7-Day Revenue Report
+    ("shopify_inventory",       task_shopify_inventory_check,  7200, 1040),  # 2h — Low Stock Alerts
+    ("shopify_reviews",         task_shopify_review_request,  14400, 1050),  # 4h — Review Request Emails
+    # ── GROWTH HACKER — Viral + Influencer + Referral ────────────────────────
+    ("viral_trend",             task_viral_trend_scan,         7200, 1060),  # 2h — Reddit Trends
+    ("community_growth",        task_community_growth_post,    7200, 1070),  # 2h — Community Post
+    ("growth_briefing",         task_growth_morning_briefing, 86400, 1080),  # daily — 7am Briefing
+    ("influencer_pipeline",     task_influencer_pipeline,     86400, 1090),  # daily — Outreach List
+    ("press_release",           task_press_release_generate,  86400, 1100),  # daily — AI Press Release
+    ("testimonials",            task_testimonial_engine,      43200, 1110),  # 12h — Social Proof
+    ("referral_system",         task_referral_system_run,     43200, 1120),  # 12h — Referral Codes
 ]
 
 
