@@ -145,12 +145,15 @@ Gib NUR valides JSON zurück (kein anderer Text außerhalb):
             ) as r:
                 data = await r.json(content_type=None)
 
+        if "error" in data or not data.get("content"):
+            log.warning("Content generation: API error/rate limit — using fallback")
+            return None
         raw = data["content"][0]["text"]
         start = raw.find("{")
         end = raw.rfind("}") + 1
         return json.loads(raw[start:end])
     except Exception as e:
-        log.error("Content generation error: %s", e)
+        log.warning("Content generation error: %s", e)
         return None
 
 
