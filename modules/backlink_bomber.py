@@ -140,6 +140,22 @@ async def submit_rss_xmlrpc(page_url: str, page_title: str) -> dict:
         "http://xping.pubsub.com/ping/",
         "http://www.blogshares.com/rpc.php",
         "http://ping.blo.gs/",
+        # Extended ping network
+        "http://ping.feedmap.net/RPC2",
+        "http://www.pingmyblog.com/xmlrpc.php",
+        "http://www.lasermemory.com/lsrpc/",
+        "http://www.weblogalot.com/ping",
+        "http://www.newsisfree.com/xmlrpctest.php",
+        "http://www.popdex.com/addsite.php",
+        "http://xmlrpc.blogg.de",
+        "http://rpc.blogbuzzmachine.com/RPC2",
+        "http://www.snipsnap.org/RPC2",
+        "http://ping.rootblog.com/rpc.php",
+        "http://ping.bloggers.jp/rpc/",
+        "http://bblog.com/ping.php",
+        "http://bitacoras.net/ping",
+        "http://mod-pubsub.org/kn_apps/blogchatt",
+        "http://www.blogsearchengine.com/ping",
     ]
     ok = 0
     import aiohttp
