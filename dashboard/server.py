@@ -3216,6 +3216,93 @@ async def handle_discord_interactions(req: web.Request) -> web.Response:
         })
     return web.json_response({"type": 4, "data": {"content": f"Command /{name} empfangen."}})
 
+async def handle_datenschutz(req: web.Request) -> web.Response:
+    """DSGVO Datenschutzerklärung — für Pinterest API-Anfrage und allgemein."""
+    html = """<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Datenschutzerklärung – BullpowerHub / AIITEC</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8f9fa; color: #333; line-height: 1.7; }
+header { background: #e60023; color: white; padding: 20px 0; text-align: center; }
+header h1 { font-size: 1.6rem; font-weight: 700; }
+header p { font-size: 0.9rem; opacity: 0.85; margin-top: 4px; }
+.container { max-width: 860px; margin: 40px auto; padding: 0 20px 60px; }
+h2 { color: #e60023; font-size: 1.2rem; margin: 32px 0 10px; }
+p, li { font-size: 0.97rem; color: #444; }
+ul { padding-left: 20px; margin: 8px 0; }
+li { margin-bottom: 6px; }
+a { color: #e60023; }
+.card { background: white; border-radius: 10px; padding: 32px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); margin-bottom: 24px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Datenschutzerkl&auml;rung</h1>
+  <p>BullpowerHub / AIITEC &ndash; Rudolf Sarkany</p>
+</header>
+<div class="container">
+  <div class="card">
+    <h2>1. Verantwortlicher</h2>
+    <p>Rudolf Sarkany &bull; AIITEC &ndash; AI &amp; Internet Technology<br>
+    E-Mail: <a href="mailto:bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</a><br>
+    Website: <a href="https://bullpower-hub-portal.netlify.app">bullpower-hub-portal.netlify.app</a><br>
+    Letzte Aktualisierung: Juni 2026</p>
+  </div>
+  <div class="card">
+    <h2>2. Erhobene Daten (Pinterest API)</h2>
+    <p>Im Rahmen der Pinterest API-Integration verarbeiten wir:</p>
+    <ul>
+      <li>Pinterest Profil-Informationen (Name, Bio) &ndash; nur mit OAuth2-Einwilligung</li>
+      <li>Pinterest Pins und Board-Daten &ndash; nur f&uuml;r genehmigte Aktionen</li>
+      <li>Analytics-Daten (Impressionen, Klicks) &ndash; aggregiert, nicht personenbezogen</li>
+      <li>OAuth2-Token &ndash; verschl&uuml;sselt, keine Weitergabe an Dritte</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>3. Zweck der Verarbeitung</h2>
+    <ul>
+      <li>Automatisiertes Ver&ouml;ffentlichen von Pins im Auftrag des Nutzers</li>
+      <li>Analyse von Pinterest-Performance-Daten</li>
+      <li>Verwaltung von Pinterest-Boards und Inhalten</li>
+    </ul>
+    <p>Kein Verkauf von Daten. Keine Weitergabe an Dritte.</p>
+  </div>
+  <div class="card">
+    <h2>4. Pinterest API-Nutzung</h2>
+    <ul>
+      <li>Lesen/Schreiben von Pins nur mit expliziter OAuth2-Zustimmung</li>
+      <li>Pinterest-Daten werden nicht f&uuml;r KI-Training verwendet</li>
+      <li>Tokens werden nach Widerruf sofort gel&ouml;scht</li>
+    </ul>
+  </div>
+  <div class="card">
+    <h2>5. Cookies und Tracking</h2>
+    <p>Keine Tracking-Cookies. Keine Marketing- oder Analyse-Cookies. Nur technisch notwendige Session-Cookies f&uuml;r Authentifizierung.</p>
+  </div>
+  <div class="card">
+    <h2>6. Speicherdauer</h2>
+    <p>Daten werden gel&ouml;scht wenn: der Nutzer die Verbindung widerruft, L&ouml;schung beantragt wird, oder die Verbindung &uuml;ber 12 Monate inaktiv ist.</p>
+  </div>
+  <div class="card">
+    <h2>7. DSGVO-Rechte</h2>
+    <p>Auskunft (Art.15), Berichtigung (Art.16), L&ouml;schung (Art.17), Einschr&auml;nkung (Art.18), Widerspruch (Art.21).<br>
+    Kontakt: <a href="mailto:bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</a></p>
+  </div>
+  <div class="card">
+    <h2>8. Kontakt</h2>
+    <p><strong>Rudolf Sarkany &ndash; AIITEC</strong><br>
+    <a href="mailto:bullpowersrtkennels@gmail.com">bullpowersrtkennels@gmail.com</a></p>
+  </div>
+</div>
+</body>
+</html>"""
+    return web.Response(content_type="text/html", charset="utf-8", text=html)
+
+
 async def handle_discord_oauth_callback(req: web.Request) -> web.Response:
     """Discord OAuth2 Callback — tauscht code gegen access_token."""
     code = req.rel_url.query.get("code")
@@ -4893,6 +4980,9 @@ async def create_app():
     app.router.add_post("/api/telegram/webhook",      handle_telegram_webhook)
     app.router.add_get("/api/telegram/setup",         handle_telegram_setup)
     app.router.add_get("/checkout",                   handle_checkout_page)
+    app.router.add_get("/datenschutz",                handle_datenschutz)
+    app.router.add_get("/privacy",                    handle_datenschutz)
+    app.router.add_get("/privacy-policy",             handle_datenschutz)
     app.router.add_get("/checkout/success",           handle_checkout_success)
 
     # ── Google OAuth2 ─────────────────────────────────────────────────────────
