@@ -4490,6 +4490,11 @@ async def create_app():
     app.router.add_get("/api/auto-poster/status",     handle_auto_poster_status)
     app.router.add_post("/api/shopify/seo/run",       handle_shopify_seo_run)
     app.router.add_post("/api/twitter/post",          handle_twitter_post)
+    app.router.add_post("/api/seo/dominator",         handle_seo_dominator)
+    app.router.add_post("/api/backlink/bomb",         handle_backlink_bomber_run)
+    app.router.add_post("/api/content/velocity",      handle_content_velocity)
+    app.router.add_post("/api/viral/traffic",         handle_viral_traffic)
+    app.router.add_post("/api/revenue/maximize",      handle_revenue_maximizer_run)
     app.router.add_get( "/api/paypal/status",         handle_paypal_status)
     app.router.add_post("/api/paypal/checkout",       handle_paypal_checkout)
     app.router.add_post("/api/paypal/ipn",            handle_paypal_ipn)
@@ -5650,6 +5655,66 @@ async def handle_reality_check(req):
             "Share landing page in 3 German e-commerce Telegram groups",
         ]
     })
+
+
+async def handle_seo_dominator(req):
+    """POST /api/seo/dominator — run SEO Dominator (Schema.org + IndexNow + sitemap ping)."""
+    async def _bg():
+        try:
+            from modules.seo_dominator import run_seo_dominator
+            await run_seo_dominator(full=True)
+        except Exception as exc:
+            logging.getLogger("SEODom").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started", "message": "SEO Dominator läuft — Schema.org + IndexNow + 80+ Pings"})
+
+
+async def handle_backlink_bomber_run(req):
+    """POST /api/backlink/bomb — fire BacklinkBomber."""
+    async def _bg():
+        try:
+            from modules.backlink_bomber import run_backlink_bomber
+            await run_backlink_bomber()
+        except Exception as exc:
+            logging.getLogger("Backlink").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started", "message": "BacklinkBomber läuft — IndexNow + RSS XML-RPC"})
+
+
+async def handle_content_velocity(req):
+    """POST /api/content/velocity — generate + publish 10-format content from trending topic."""
+    async def _bg():
+        try:
+            from modules.content_velocity_engine import run_content_velocity
+            await run_content_velocity()
+        except Exception as exc:
+            logging.getLogger("ContentVel").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started", "message": "ContentVelocity läuft — 10 Formate werden generiert + veröffentlicht"})
+
+
+async def handle_viral_traffic(req):
+    """POST /api/viral/traffic — run ViralTrafficMachine (Reddit + Medium + LinkedIn)."""
+    async def _bg():
+        try:
+            from modules.viral_traffic_machine import run_viral_traffic_machine
+            await run_viral_traffic_machine()
+        except Exception as exc:
+            logging.getLogger("Viral").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started", "message": "ViralTraffic läuft — Reddit + Medium + LinkedIn"})
+
+
+async def handle_revenue_maximizer_run(req):
+    """POST /api/revenue/maximize — run RevenueMaximizer (cart recovery + winback + upsell)."""
+    async def _bg():
+        try:
+            from modules.revenue_maximizer import run_revenue_maximizer
+            await run_revenue_maximizer()
+        except Exception as exc:
+            logging.getLogger("RevMax").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started", "message": "RevenueMaximizer läuft — Cart Recovery + Winback + Urgency"})
 
 
 async def handle_shopify_seo_run(req):
