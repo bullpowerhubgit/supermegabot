@@ -33,7 +33,7 @@ def _save_seen(seen: set):
 
 async def _notify_telegram(buyer: dict, product: str, amount: str):
     try:
-        from modules.notify_hub import send_telegram
+        from modules.notify_hub import async_send_telegram as send_telegram
         msg = (
             f"💰 *Neuer DS24-Kauf!*\n"
             f"Produkt: {product}\n"

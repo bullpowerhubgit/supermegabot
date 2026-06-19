@@ -411,7 +411,11 @@ async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
         if data.get("id"):
             log.info("BRUTUS: Facebook post published — %s", data["id"])
             return True
-        log.warning("BRUTUS: Facebook post error: %s", data)
+        err = data.get("error", {})
+        if err.get("code") in (100, 190, 10):
+            log.debug("BRUTUS: Facebook skip (token/permission): %s", err.get("message","")[:80])
+        else:
+            log.warning("BRUTUS: Facebook post error %s: %s", err.get("code"), err.get("message","")[:80])
         return False
     except Exception as exc:
         log.warning("Facebook deploy error: %s", exc)
@@ -724,6 +728,9 @@ async def post_to_linkedin_brutus(keyword: str, content_pack: dict) -> dict:
                 if r.status in (200, 201):
                     log.info("BRUTUS LinkedIn: posted for '%s'", keyword)
                     return {"posted": True}
+                if r.status == 429:
+                    log.info("BRUTUS LinkedIn 429 — rate limit, skipping this cycle")
+                    return {"skipped": True, "reason": "rate_limit_429"}
                 err = await r.text()
                 log.warning("BRUTUS LinkedIn HTTP %s: %s", r.status, err[:80])
                 return {"skipped": True, "status": r.status}
@@ -790,11 +797,12 @@ async def generate_video_script(keyword: str, content_pack: dict) -> dict:
         if supa_url and supa_key:
             try:
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-                    await s.post(f"{supa_url}/rest/v1/video_scripts",
-                                 headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}",
-                                          "Content-Type": "application/json", "Prefer": "return=minimal"},
-                                 json={"keyword": keyword, "script": script,
-                                       "created_at": datetime.now(timezone.utc).isoformat()})
+                    async with s.post(f"{supa_url}/rest/v1/video_scripts",
+                                      headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}",
+                                               "Content-Type": "application/json", "Prefer": "return=minimal"},
+                                      json={"keyword": keyword, "script": script,
+                                            "created_at": datetime.now(timezone.utc).isoformat()}) as r:
+                        await r.read()
             except Exception:
                 pass
         log.info("BRUTUS VideoScript: created for '%s' (%d chars)", keyword, len(script))
@@ -924,7 +932,7 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
 
     # Report
     try:
-        from modules.notify_hub import send_telegram
+        from modules.notify_hub import async_send_telegram as send_telegram
         msg = (
             f"🔥 *BRUTUS RUN COMPLETE*\n\n"
             f"Keywords: {results['keywords_processed']}\n"
