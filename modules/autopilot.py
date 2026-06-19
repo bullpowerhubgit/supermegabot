@@ -20,9 +20,10 @@ log = logging.getLogger("AutoPilot")
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 DB_PATH = DATA_DIR / "autopilot.db"
-OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
-DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
+OLLAMA_BASE   = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+DEEPSEEK_KEY  = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+GROQ_KEY      = os.getenv("GROQ_API_KEY", "")
 
 try:
     import aiohttp
@@ -191,56 +192,92 @@ class AgentMemory:
 
 
 # ---------------------------------------------------------------------------
-# AI Provider (Ollama first, OpenAI fallback)
+# AI Provider — Anthropic → DeepSeek → Groq → Ollama (lokal)
 # ---------------------------------------------------------------------------
 
 async def ai_complete(system: str, prompt: str, model_hint: str = "fast") -> str:
-    # Try Ollama first (local, free)
-    if HAS_AIOHTTP:
+    if not HAS_AIOHTTP:
+        return "AI nicht verfügbar (aiohttp fehlt)"
+
+    messages = [{"role": "user", "content": f"{system}\n\n{prompt}" if system else prompt}]
+
+    # 1. Anthropic (Claude) — primär, immer konfiguriert
+    if ANTHROPIC_KEY:
         try:
-            default_model = os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:latest")
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                async with s.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
+                             "content-type": "application/json"},
+                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1024,
+                          "messages": [{"role": "user", "content": f"{system}\n\n{prompt}"}]},
+                ) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        return data["content"][0]["text"]
+        except Exception as e:
+            log.warning("Anthropic failed: %s", e)
+
+    # 2. DeepSeek — sekundär
+    if DEEPSEEK_KEY:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                async with s.post(
+                    "https://api.deepseek.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"},
+                    json={"model": "deepseek-chat", "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": prompt}
+                    ]},
+                ) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        return data["choices"][0]["message"]["content"]
+        except Exception as e:
+            log.warning("DeepSeek failed: %s", e)
+
+    # 3. Groq — gratis, schnell (LLaMA3 / Mixtral)
+    if GROQ_KEY:
+        try:
+            groq_model = {"fast": "llama-3.1-8b-instant", "smart": "llama-3.3-70b-versatile",
+                          "code": "llama-3.3-70b-versatile"}.get(model_hint, "llama-3.1-8b-instant")
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                async with s.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"},
+                    json={"model": groq_model, "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": prompt}
+                    ]},
+                ) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        return data["choices"][0]["message"]["content"]
+        except Exception as e:
+            log.warning("Groq failed: %s", e)
+
+    # 4. Ollama — nur lokal verfügbar, 10s Timeout damit kein Hang
+    if "localhost" not in OLLAMA_BASE and "127.0.0.1" not in OLLAMA_BASE:
+        try:
             model_map = {
                 "fast": os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest"),
                 "smart": os.getenv("OLLAMA_SMART_MODEL", "gemma2:latest"),
                 "code": os.getenv("OLLAMA_CODE_MODEL", "codellama:latest"),
             }
-            model = model_map.get(model_hint, default_model)
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
-                payload = {
-                    "model": model,
-                    "messages": [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": prompt}
-                    ],
-                    "stream": False
-                }
-                async with s.post(f"{OLLAMA_BASE}/api/chat", json=payload) as r:
+            model = model_map.get(model_hint, "llama3.2:latest")
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.post(f"{OLLAMA_BASE}/api/chat",
+                                  json={"model": model,
+                                        "messages": [{"role": "system", "content": system},
+                                                     {"role": "user", "content": prompt}],
+                                        "stream": False}) as r:
                     if r.status == 200:
                         data = await r.json()
                         return data.get("message", {}).get("content", "")
         except Exception as e:
-            log.warning(f"Ollama failed: {e} - trying DeepSeek")
+            log.warning("Ollama failed: %s", e)
 
-        # Fallback: DeepSeek
-        if DEEPSEEK_KEY:
-            try:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-                    payload = {
-                        "model": "deepseek-chat",
-                        "messages": [
-                            {"role": "system", "content": system},
-                            {"role": "user", "content": prompt}
-                        ]
-                    }
-                    headers = {"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"}
-                    async with s.post("https://api.deepseek.com/v1/chat/completions", json=payload, headers=headers) as r:
-                        if r.status == 200:
-                            data = await r.json()
-                            return data["choices"][0]["message"]["content"]
-            except Exception as e:
-                log.warning(f"DeepSeek failed: {e}")
-
-    return "AI nicht verfügbar - starte Ollama: ollama serve"
+    return "Kein AI-Provider verfügbar"
 
 
 # ---------------------------------------------------------------------------
