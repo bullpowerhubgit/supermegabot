@@ -1750,6 +1750,13 @@ async def handle_digistore_ipn(req):
                 log.info("DS24 IPN: immediate funnel sync done for %s", buyer_email)
             except Exception as fe:
                 log.warning("DS24 IPN funnel sync failed: %s", fe)
+            # Email sequence: enroll buyer into post-purchase drip
+            try:
+                from modules.email_sequence_engine import enroll
+                await enroll(buyer_email, "post_purchase")
+                log.info("DS24 IPN: email sequence enrolled for %s", buyer_email)
+            except Exception as ee:
+                log.warning("DS24 IPN email enroll failed: %s", ee)
         elif event_type in ("ipn_rebill", "rebill"):
             msg = f"🔄 *Digistore24 Rebill*\n💵 {amount:.2f} {currency}\n📧 {buyer_email}"
             await _tg_notify(msg)
@@ -4891,7 +4898,6 @@ async def create_app():
     app.router.add_get( "/api/seo/sitemap.xml",        handle_seo_sitemap)
     app.router.add_post("/api/seo/submit",             handle_seo_submit)
     app.router.add_post("/api/seo/competitor",         handle_seo_competitor)
-    app.router.add_get( "/api/seo/status",             handle_seo_status)
     # ── Traffic Swarm routes ────────────────────────────────────────────────
     app.router.add_post("/api/traffic/swarm",          handle_traffic_swarm)
     app.router.add_get( "/api/traffic/velocity",       handle_traffic_velocity)
@@ -4904,7 +4910,6 @@ async def create_app():
     app.router.add_get( "/api/revenue/forecast",       handle_revenue_forecast)
     app.router.add_get( "/api/revenue/leaks",          handle_revenue_leaks)
     app.router.add_get( "/api/revenue/churn",          handle_revenue_churn)
-    app.router.add_get( "/api/revenue/status",         handle_revenue_status)
     # ── Shopify Max Tuner routes ────────────────────────────────────────────
     app.router.add_post("/api/shopify/max-seo",        handle_shopify_max_seo)
     app.router.add_post("/api/shopify/cart-recover",   handle_shopify_cart_recover)
@@ -5001,7 +5006,6 @@ async def create_app():
     # ── Misc recovered handlers ──────────────────────────────────────────────
     app.router.add_post("/api/review/run",               handle_review_automation_run)
     app.router.add_post("/api/winback/run",              handle_winback_run)
-    app.router.add_post("/api/seo/generate",             handle_seo_generate)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
