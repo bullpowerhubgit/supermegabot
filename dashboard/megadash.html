@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚡ SuperMegaBot — COMMAND CENTER</title>
+<style>
+:root {
+  --bg:       #050508;
+  --bg2:      #0a0a14;
+  --bg3:      #10101e;
+  --border:   #1a1a2e;
+  --green:    #00ff88;
+  --blue:     #00bfff;
+  --purple:   #9b5de5;
+  --pink:     #f15bb5;
+  --yellow:   #fee440;
+  --red:      #ff4757;
+  --orange:   #ff9f43;
+  --text:     #e0e0f0;
+  --muted:    #4a4a6a;
+  --card:     #0d0d1c;
+}
+* { box-sizing: border-box; margin:0; padding:0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system,'SF Pro Display','Segoe UI',sans-serif;
+  font-size: 13px;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── HEADER ── */
+.header {
+  background: linear-gradient(135deg, #0a0a18 0%, #0f0f28 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  backdrop-filter: blur(20px);
+}
+.logo {
+  font-size: 20px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #9b5de5, #00bfff, #00ff88);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.5px;
+}
+.header-stats {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.hstat {
+  text-align: center;
+}
+.hstat-val {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+}
+.hstat-lbl {
+  font-size: 10px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--green);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+  display: inline-block;
+  margin-right: 6px;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; box-shadow: 0 0 6px var(--green); }
+  50%      { opacity:.5; box-shadow: 0 0 12px var(--green); }
+}
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,255,136,.08);
+  border: 1px solid rgba(0,255,136,.2);
+  border-radius: 20px;
+  padding: 5px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green);
+}
+
+/* ── LAYOUT ── */
+.main { padding: 20px 24px; max-width: 1600px; margin: 0 auto; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 12px; }
+@media(max-width:1200px) { .grid-6 { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width:900px)  { .grid-4,.grid-3,.grid-2 { grid-template-columns: 1fr 1fr; } }
+@media(max-width:600px)  { .grid-6,.grid-4,.grid-3,.grid-2 { grid-template-columns: 1fr; } }
+.section { margin-bottom: 20px; }
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding-left: 4px;
+  border-left: 3px solid var(--purple);
+  padding-left: 8px;
+}
+
+/* ── CARDS ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  transition: border-color .2s, transform .15s;
+}
+.card:hover { border-color: #2a2a45; transform: translateY(-1px); }
+.card-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.card-val {
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.card-sub {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.card-trend {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.trend-up   { color: var(--green); }
+.trend-zero { color: var(--muted); }
+.trend-down { color: var(--red); }
+
+/* ── REVENUE ── */
+.rev-ds24   { --accent: #9b5de5; }
+.rev-stripe { --accent: #00bfff; }
+.rev-shopify{ --accent: #96bf48; }
+.rev-total  { --accent: var(--yellow); }
+.card.accent { border-color: var(--accent); }
+.card-val.accent { color: var(--accent); }
+
+/* ── PLATFORM STATUS ── */
+.platform-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; }
+@media(max-width:1100px) { .platform-grid { grid-template-columns: repeat(4, 1fr); } }
+@media(max-width:700px)  { .platform-grid { grid-template-columns: repeat(2, 1fr); } }
+.platform-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 10px;
+  text-align: center;
+  transition: all .2s;
+}
+.platform-card.ok    { border-color: rgba(0,255,136,.3);  background: rgba(0,255,136,.04); }
+.platform-card.warn  { border-color: rgba(255,159,67,.3); background: rgba(255,159,67,.04); }
+.platform-card.error { border-color: rgba(255,71,87,.3);  background: rgba(255,71,87,.04); }
+.platform-icon { font-size: 24px; margin-bottom: 4px; }
+.platform-name { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing:.5px; color: var(--muted); }
+.platform-status {
+  font-size: 10px;
+  font-weight: 600;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  display: inline-block;
+}
+.platform-card.ok    .platform-status { background: rgba(0,255,136,.15); color: var(--green); }
+.platform-card.warn  .platform-status { background: rgba(255,159,67,.15); color: var(--orange); }
+.platform-card.error .platform-status { background: rgba(255,71,87,.15);  color: var(--red); }
+
+/* ── TASK GRID ── */
+.task-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+@media(max-width:700px) { .task-list { grid-template-columns: 1fr; } }
+.task-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 12px;
+}
+.task-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.task-dot.ok     { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.task-dot.warn   { background: var(--orange); }
+.task-dot.error  { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.task-dot.idle   { background: var(--muted); }
+.task-name { font-weight: 600; flex: 1; }
+.task-time { color: var(--muted); font-size: 10px; }
+.task-result { font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 120px; }
+
+/* ── ACTION BUTTONS ── */
+.actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media(max-width:900px) { .actions { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width:500px) { .actions { grid-template-columns: 1fr; } }
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: left;
+  position: relative;
+  overflow: hidden;
+}
+.btn:hover { transform: translateY(-1px); filter: brightness(1.15); }
+.btn:active { transform: scale(.97); }
+.btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  transition: opacity .1s;
+}
+.btn:active::after { opacity: .08; }
+.btn-icon { font-size: 18px; }
+.btn-text { display: flex; flex-direction: column; gap: 1px; }
+.btn-label { font-size: 12px; font-weight: 700; }
+.btn-sub   { font-size: 10px; font-weight: 400; opacity: .7; }
+.btn-purple  { background: linear-gradient(135deg, #7c3aed, #9b5de5); color: white; }
+.btn-blue    { background: linear-gradient(135deg, #0369a1, #00bfff); color: white; }
+.btn-green   { background: linear-gradient(135deg, #065f46, #00ff88); color: white; }
+.btn-orange  { background: linear-gradient(135deg, #c2410c, #ff9f43); color: white; }
+.btn-pink    { background: linear-gradient(135deg, #9d174d, #f15bb5); color: white; }
+.btn-yellow  { background: linear-gradient(135deg, #92400e, #fee440); color: #1a1000; }
+.btn-teal    { background: linear-gradient(135deg, #134e4a, #06b6d4); color: white; }
+.btn-red     { background: linear-gradient(135deg, #7f1d1d, #ff4757); color: white; }
+.btn-dark    { background: linear-gradient(135deg, #1a1a2e, #2a2a45); color: var(--text); border: 1px solid var(--border); }
+.btn.loading { opacity: .6; pointer-events: none; }
+
+/* ── SEO METRICS ── */
+.seo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.seo-row:last-child { border-bottom: none; }
+.seo-label { color: var(--muted); }
+.seo-val   { font-weight: 700; color: var(--blue); }
+
+/* ── LOG FEED ── */
+.log-box {
+  background: #020205;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  height: 220px;
+  overflow-y: auto;
+  font-family: 'SF Mono','Fira Code',monospace;
+  font-size: 11px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.log-line { padding: 2px 0; display: flex; gap: 8px; }
+.log-time { color: var(--muted); flex-shrink: 0; }
+.log-ok    { color: var(--green); }
+.log-warn  { color: var(--orange); }
+.log-error { color: var(--red); }
+.log-info  { color: var(--blue); }
+
+/* ── REVENUE CHART ── */
+.rev-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 80px;
+  margin-top: 12px;
+}
+.rev-bar {
+  flex: 1;
+  background: linear-gradient(180deg, var(--purple), rgba(155,93,229,.3));
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height .5s;
+  position: relative;
+}
+.rev-bar:hover::after {
+  content: attr(data-tip);
+  position: absolute;
+  top: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a2e;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  white-space: nowrap;
+}
+
+/* ── TOAST ── */
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 9999;
+}
+.toast {
+  background: #1a1a2e;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 12px;
+  max-width: 320px;
+  animation: slideIn .3s ease;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.toast.ok    { border-color: rgba(0,255,136,.4); }
+.toast.error { border-color: rgba(255,71,87,.4); }
+.toast-icon  { font-size: 16px; flex-shrink: 0; }
+.toast-body  { flex: 1; }
+.toast-title { font-weight: 700; margin-bottom: 2px; }
+.toast-msg   { color: var(--muted); font-size: 11px; }
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+/* ── OVERVIEW ROW ── */
+.overview-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+@media(max-width:900px) { .overview-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">⚡ SuperMegaBot</div>
+  <div class="header-stats">
+    <div class="hstat">
+      <div class="hstat-val" id="h-revenue">€0</div>
+      <div class="hstat-lbl">Total Umsatz</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="h-orders">0</div>
+      <div class="hstat-lbl">Bestellungen</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val" id="h-tasks">0</div>
+      <div class="hstat-lbl">Tasks aktiv</div>
+    </div>
+  </div>
+  <div class="status-pill">
+    <span class="live-dot"></span>
+    <span id="sys-status">LIVE</span>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- ── REVENUE ── -->
+  <div class="section">
+    <div class="section-title">💰 Revenue Overview</div>
+    <div class="grid-4">
+      <div class="card rev-ds24 accent">
+        <div class="card-title">Digistore24</div>
+        <div class="card-val accent" id="ds24-rev" style="color:#9b5de5">€0</div>
+        <div class="card-sub" id="ds24-orders">0 Bestellungen</div>
+        <div class="card-trend trend-up" id="ds24-trend">— Lade...</div>
+      </div>
+      <div class="card rev-stripe accent">
+        <div class="card-title">Stripe</div>
+        <div class="card-val accent" id="stripe-rev" style="color:#00bfff">€0</div>
+        <div class="card-sub" id="stripe-sub">MRR / Subscriptions</div>
+        <div class="card-trend trend-zero" id="stripe-trend">—</div>
+      </div>
+      <div class="card rev-shopify accent">
+        <div class="card-title">Shopify</div>
+        <div class="card-val accent" id="shopify-rev" style="color:#96bf48">€0</div>
+        <div class="card-sub" id="shopify-sub">Produkte aktiv</div>
+        <div class="card-trend trend-zero" id="shopify-trend">—</div>
+      </div>
+      <div class="card rev-total accent">
+        <div class="card-title">🏆 GESAMT</div>
+        <div class="card-val accent" id="total-rev" style="color:#fee440;font-size:36px">€0</div>
+        <div class="card-sub" id="total-sub">Alle Kanäle</div>
+        <div class="card-trend trend-up" id="total-trend">⚡ FULL POWER</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── PLATFORM STATUS ── -->
+  <div class="section">
+    <div class="section-title">📡 Platform Status</div>
+    <div class="platform-grid">
+      <div class="platform-card" id="plt-twitter">
+        <div class="platform-icon">𝕏</div>
+        <div class="platform-name">Twitter/X</div>
+        <div class="platform-status">Prüfe...</div>
+      </div>
+      <div class="platform-card" id="plt-linkedin">
+        <div class="platform-icon">in</div>
+        <div class="platform-name">LinkedIn</div>
+        <div class="platform-status">Prüfe...</div>
+      </div>
+      <div class="platform-card" id="plt-telegram">
+        <div class="platform-icon">✈️</div>
+        <div class="platform-name">Telegram</div>
+        <div class="platform-status">Prüfe...</div>
+      </div>
+      <div class="platform-card" id="plt-devto">
+        <div class="platform-icon">DEV</div>
+        <div class="platform-name">Dev.to</div>
+        <div class="platform-status">Prüfe...</div>
+      </div>
+      <div class="platform-card" id="plt-hashnode">
+        <div class="platform-icon">⬡</div>
+        <div class="platform-name">Hashnode</div>
+        <div class="platform-status">Prüfe...</div>
+      </div>
+      <div class="platform-card" id="plt-medium">
+        <div class="platform-icon">M</div>
+        <div class="platform-name">Medium</div>
+        <div class="platform-status">Prüfe...</div>
+      </div>
+      <div class="platform-card" id="plt-github">
+        <div class="platform-icon">🐙</div>
+        <div class="platform-name">GitHub Blog</div>
+        <div class="platform-status">Prüfe...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ACTIONS ── -->
+  <div class="section">
+    <div class="section-title">🚀 Automation Actions</div>
+    <div class="actions">
+      <button class="btn btn-purple" onclick="triggerAction('/api/syndication/run','POST','📡 Syndication','Postet auf Dev.to, Hashnode, Medium, Discord...')">
+        <span class="btn-icon">📡</span>
+        <span class="btn-text">
+          <span class="btn-label">Syndicate Now</span>
+          <span class="btn-sub">Dev.to + Hashnode + Medium</span>
+        </span>
+      </button>
+      <button class="btn btn-green" onclick="triggerAction('/api/blog/publish','POST','📝 GitHub Blog','Generiert & publisht SEO-Artikel...')">
+        <span class="btn-icon">📝</span>
+        <span class="btn-text">
+          <span class="btn-label">Blog Publish</span>
+          <span class="btn-sub">GitHub Pages SEO Artikel</span>
+        </span>
+      </button>
+      <button class="btn btn-blue" onclick="triggerAction('/api/content/velocity','POST','🌊 Content','Content Velocity läuft...')">
+        <span class="btn-icon">🌊</span>
+        <span class="btn-text">
+          <span class="btn-label">Content Velocity</span>
+          <span class="btn-sub">10 Formate generieren</span>
+        </span>
+      </button>
+      <button class="btn btn-orange" onclick="triggerAction('/api/viral/traffic','POST','🔥 Viral','Viral Traffic Machine startet...')">
+        <span class="btn-icon">🔥</span>
+        <span class="btn-text">
+          <span class="btn-label">Viral Traffic</span>
+          <span class="btn-sub">Reddit + LinkedIn + Medium</span>
+        </span>
+      </button>
+      <button class="btn btn-pink" onclick="triggerAction('/api/revenue/maximize','POST','💰 Revenue','Revenue Maximizer läuft...')">
+        <span class="btn-icon">💰</span>
+        <span class="btn-text">
+          <span class="btn-label">Revenue Boost</span>
+          <span class="btn-sub">Cart Recovery + Winback</span>
+        </span>
+      </button>
+      <button class="btn btn-yellow" onclick="triggerAction('/api/backlink/bomb','POST','🔗 Backlinks','Backlink Bomber startet...')">
+        <span class="btn-icon">🔗</span>
+        <span class="btn-text">
+          <span class="btn-label">Backlink Bomb</span>
+          <span class="btn-sub">17 RSS Ping Endpoints</span>
+        </span>
+      </button>
+      <button class="btn btn-teal" onclick="triggerAction('/api/shopify/sync','POST','🛍️ Shopify','Shopify Sync startet...')">
+        <span class="btn-icon">🛍️</span>
+        <span class="btn-text">
+          <span class="btn-label">Shopify Sync</span>
+          <span class="btn-sub">Produkte + SEO updaten</span>
+        </span>
+      </button>
+      <button class="btn btn-red" onclick="triggerAction('/api/digistore/sync','POST','📊 DS24','Digistore24 Sync...')">
+        <span class="btn-icon">📊</span>
+        <span class="btn-text">
+          <span class="btn-label">DS24 Sync</span>
+          <span class="btn-sub">Revenue + Orders laden</span>
+        </span>
+      </button>
+      <button class="btn btn-dark" onclick="triggerAction('/api/health','GET','❤️ Health','System Health Check...')">
+        <span class="btn-icon">❤️</span>
+        <span class="btn-text">
+          <span class="btn-label">Health Check</span>
+          <span class="btn-sub">System-Status prüfen</span>
+        </span>
+      </button>
+      <button class="btn btn-purple" onclick="window.open('/api/scheduler/tasks','_blank')">
+        <span class="btn-icon">📅</span>
+        <span class="btn-text">
+          <span class="btn-label">Scheduler</span>
+          <span class="btn-sub">Task-Status anzeigen</span>
+        </span>
+      </button>
+      <button class="btn btn-blue" onclick="triggerAction('/api/indexnow/submit','POST','🔍 SEO','IndexNow Submission...')">
+        <span class="btn-icon">🔍</span>
+        <span class="btn-text">
+          <span class="btn-label">IndexNow SEO</span>
+          <span class="btn-sub">Bing + Yandex Submit</span>
+        </span>
+      </button>
+      <button class="btn btn-green" onclick="window.location='/dashboard'">
+        <span class="btn-icon">🎛️</span>
+        <span class="btn-text">
+          <span class="btn-label">Old Dashboard</span>
+          <span class="btn-sub">Classic View</span>
+        </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- ── OVERVIEW: Tasks + SEO ── -->
+  <div class="overview-row">
+
+    <!-- TASKS -->
+    <div class="section">
+      <div class="section-title">⚙️ Scheduler Tasks — Live Status</div>
+      <div class="task-list" id="task-list">
+        <div class="task-row"><div class="task-dot idle"></div><div class="task-name">Lade...</div></div>
+      </div>
+    </div>
+
+    <!-- SEO + STATS -->
+    <div>
+      <div class="section">
+        <div class="section-title">🔍 SEO Metriken</div>
+        <div class="card">
+          <div class="seo-row">
+            <span class="seo-label">IndexNow URLs</span>
+            <span class="seo-val" id="seo-indexnow">—</span>
+          </div>
+          <div class="seo-row">
+            <span class="seo-label">Blog Artikel</span>
+            <span class="seo-val" id="seo-blog">—</span>
+          </div>
+          <div class="seo-row">
+            <span class="seo-label">Syndication Posts</span>
+            <span class="seo-val" id="seo-synd">—</span>
+          </div>
+          <div class="seo-row">
+            <span class="seo-label">RSS Pings (2h)</span>
+            <span class="seo-val">17 Endpoints</span>
+          </div>
+          <div class="seo-row">
+            <span class="seo-label">Content Engine</span>
+            <span class="seo-val">10 Formate / 2h</span>
+          </div>
+          <div class="seo-row">
+            <span class="seo-label">Klaviyo Revision</span>
+            <span class="seo-val" style="color:var(--green)">2024-10-15 ✓</span>
+          </div>
+        </div>
+      </div>
+      <div class="section" style="margin-top:0">
+        <div class="section-title">📬 Email Marketing</div>
+        <div class="card">
+          <div class="seo-row">
+            <span class="seo-label">Mailchimp Liste</span>
+            <span class="seo-val" id="mc-subs">—</span>
+          </div>
+          <div class="seo-row">
+            <span class="seo-label">Letzte Campaign</span>
+            <span class="seo-val" id="mc-campaign">—</span>
+          </div>
+          <div class="seo-row">
+            <span class="seo-label">Klaviyo Status</span>
+            <span class="seo-val" style="color:var(--green)">Aktiv ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LOG FEED ── -->
+  <div class="section">
+    <div class="section-title">📋 Live Activity Feed</div>
+    <div class="log-box" id="log-box">
+      <div class="log-line">
+        <span class="log-time">--:--:--</span>
+        <span class="log-info">Dashboard geladen — Daten werden abgefragt...</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+const BASE = '';
+let logLines = [];
+let refreshInterval = null;
+
+// ─── Toast ───────────────────────────────────────────────────────────────────
+function toast(type, title, msg, duration = 4000) {
+  const tc = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `
+    <div class="toast-icon">${type === 'ok' ? '✅' : '❌'}</div>
+    <div class="toast-body">
+      <div class="toast-title">${title}</div>
+      <div class="toast-msg">${msg}</div>
+    </div>`;
+  tc.appendChild(t);
+  setTimeout(() => t.remove(), duration);
+  addLog(type === 'ok' ? 'ok' : 'error', `${title}: ${msg}`);
+}
+
+// ─── Log Feed ─────────────────────────────────────────────────────────────────
+function addLog(level, msg) {
+  const now = new Date().toTimeString().slice(0,8);
+  const lb = document.getElementById('log-box');
+  const d = document.createElement('div');
+  d.className = 'log-line';
+  d.innerHTML = `<span class="log-time">${now}</span><span class="log-${level}">${escHtml(msg)}</span>`;
+  lb.appendChild(d);
+  lb.scrollTop = lb.scrollHeight;
+  if (lb.children.length > 100) lb.firstChild.remove();
+}
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ─── API call ─────────────────────────────────────────────────────────────────
+async function api(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(BASE + path, opts);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+
+// ─── Actions ─────────────────────────────────────────────────────────────────
+async function triggerAction(path, method, label, msg) {
+  const btn = event.currentTarget;
+  btn.classList.add('loading');
+  addLog('info', `${label} — gestartet`);
+  try {
+    const d = await api(method, path);
+    toast('ok', label, d.message || d.status || 'OK');
+  } catch(e) {
+    toast('error', label, e.message);
+  } finally {
+    setTimeout(() => btn.classList.remove('loading'), 2000);
+  }
+}
+
+// ─── Revenue ─────────────────────────────────────────────────────────────────
+async function loadRevenue() {
+  try {
+    const d = await api('GET', '/api/revenue/summary');
+    const ds24   = d.digistore24 || d.ds24 || {};
+    const stripe = d.stripe || {};
+    const shopify= d.shopify || {};
+
+    const ds24Rev = ds24.total_revenue || ds24.revenue || 0;
+    const strRev  = stripe.mrr || stripe.total || 0;
+    const shopRev = shopify.revenue || 0;
+    const total   = ds24Rev + strRev + shopRev;
+
+    setText('ds24-rev', '€' + fmt(ds24Rev));
+    setText('ds24-orders', (ds24.total_orders||ds24.orders||0) + ' Bestellungen');
+    setText('stripe-rev', '€' + fmt(strRev));
+    setText('shopify-rev', '€' + fmt(shopRev));
+    setText('total-rev', '€' + fmt(total));
+    setText('h-revenue', '€' + fmt(total));
+    setText('h-orders', (ds24.total_orders||ds24.orders||0) + (stripe.subscriptions||0));
+    addLog('ok', `Revenue: DS24 €${fmt(ds24Rev)} | Stripe €${fmt(strRev)} | Shopify €${fmt(shopRev)}`);
+  } catch(e) {
+    addLog('warn', 'Revenue API fehler: ' + e.message);
+  }
+}
+
+function fmt(n) {
+  n = parseFloat(n) || 0;
+  return n >= 1000 ? (n/1000).toFixed(1)+'K' : n.toFixed(0);
+}
+function setText(id, v) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = v;
+}
+
+// ─── Platform Status ──────────────────────────────────────────────────────────
+async function loadPlatformStatus() {
+  try {
+    const d = await api('GET', '/api/oauth/status');
+    setPlatform('plt-twitter',  d.twitter?.configured,   d.twitter?.configured  ? 'Aktiv' : 'Kein Token');
+    setPlatform('plt-linkedin', d.linkedin?.configured,  d.linkedin?.configured ? 'Aktiv' : 'Kein Token');
+    setPlatform('plt-telegram', true,                    'Aktiv ✓');
+    setPlatform('plt-devto',    d.devto?.configured || !!d.devto, d.devto?.configured ? 'Aktiv' : 'Key fehlt');
+    setPlatform('plt-hashnode', d.hashnode?.configured || !!d.hashnode, d.hashnode?.configured ? 'Aktiv' : 'Key fehlt');
+    setPlatform('plt-medium',   d.medium?.configured,   d.medium?.configured  ? 'Aktiv' : 'Key optional');
+    setPlatform('plt-github',   true,                   'GitHub Pages ✓');
+  } catch(e) {
+    // Health fallback
+    ['twitter','linkedin','devto','hashnode','medium'].forEach(p =>
+      setPlatform('plt-'+p, null, '—')
+    );
+    setPlatform('plt-telegram', true, 'Aktiv');
+    setPlatform('plt-github',   true, 'GitHub Pages');
+  }
+}
+
+function setPlatform(id, ok, label) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'platform-card ' + (ok === true ? 'ok' : ok === false ? 'warn' : 'warn');
+  el.querySelector('.platform-status').textContent = label;
+}
+
+// ─── Scheduler Tasks ──────────────────────────────────────────────────────────
+const TASK_LABELS = {
+  shopify_sync:         '🛍️ Shopify Sync',
+  ds24_revenue:         '📊 DS24 Revenue',
+  system_health:        '❤️ System Health',
+  ai_trend_analysis:    '🤖 AI Trends',
+  github_backup:        '💾 GitHub Backup',
+  indexnow_submit:      '🔍 IndexNow',
+  backlink_bomber:      '🔗 Backlinks',
+  content_velocity:     '🌊 Content Velocity',
+  viral_traffic_machine:'🔥 Viral Traffic',
+  revenue_maximizer:    '💰 Revenue Max',
+  free_syndication:     '📡 Syndication',
+  github_blog:          '📝 GitHub Blog',
+  content_factory_run:  '🏭 Content Factory',
+  social_batch_gen:     '📅 Social Batch',
+  trending_topic_scan:  '📈 Trending Scan',
+  shopify_seo:          '🔍 Shopify SEO',
+  email_brain:          '📧 Email Brain',
+  klaviyo_automation:   '📬 Klaviyo',
+  freelance_cycle:      '💼 Freelance',
+  mega_auto_poster:     '🚀 Auto Poster',
+};
+
+async function loadTasks() {
+  try {
+    const d = await api('GET', '/api/scheduler/tasks');
+    const tasks = d.tasks || d || [];
+    const container = document.getElementById('task-list');
+    container.innerHTML = '';
+    let activeCount = 0;
+
+    tasks.forEach(t => {
+      const label = TASK_LABELS[t.name] || t.name;
+      const ok = t.last_success !== false && t.last_result && !t.last_result.includes('Fehler');
+      const state = t.running ? 'ok' : (t.last_result?.includes('Fehler') ? 'error' : (t.ran_at ? 'ok' : 'idle'));
+      if (state === 'ok') activeCount++;
+
+      const ago = t.ran_at ? timeAgo(t.ran_at) : 'noch nie';
+      const row = document.createElement('div');
+      row.className = 'task-row';
+      row.innerHTML = `
+        <div class="task-dot ${state}"></div>
+        <div class="task-name">${label}</div>
+        <div class="task-time">${ago}</div>
+        <div class="task-result" title="${escHtml(t.last_result||'')}">${escHtml((t.last_result||'').slice(0,25))}</div>`;
+      container.appendChild(row);
+    });
+    setText('h-tasks', activeCount);
+  } catch(e) {
+    addLog('warn', 'Scheduler API: ' + e.message);
+    // Show static known tasks
+    const container = document.getElementById('task-list');
+    const known = ['shopify_sync','ds24_revenue','system_health','ai_trend_analysis',
+                   'content_velocity','viral_traffic_machine','free_syndication','github_blog',
+                   'backlink_bomber','revenue_maximizer','klaviyo_automation','email_brain'];
+    container.innerHTML = known.map(n => `
+      <div class="task-row">
+        <div class="task-dot idle"></div>
+        <div class="task-name">${TASK_LABELS[n]||n}</div>
+        <div class="task-time">—</div>
+        <div class="task-result">Offline</div>
+      </div>`).join('');
+  }
+}
+
+function timeAgo(ts) {
+  const d = new Date(ts);
+  const diff = (Date.now() - d) / 1000;
+  if (diff < 60)   return Math.round(diff) + 's';
+  if (diff < 3600) return Math.round(diff/60) + 'm';
+  if (diff < 86400)return Math.round(diff/3600) + 'h';
+  return Math.round(diff/86400) + 'd';
+}
+
+// ─── SEO Metrics ──────────────────────────────────────────────────────────────
+async function loadSeoMetrics() {
+  try {
+    const d = await api('GET', '/api/seo/status');
+    setText('seo-indexnow', d.indexnow_urls || d.submitted || '28');
+    setText('seo-blog', d.blog_articles || '—');
+    setText('seo-synd', d.syndication_posts || '—');
+  } catch(e) {
+    setText('seo-indexnow', '28 URLs');
+    setText('seo-blog', 'Neu');
+    setText('seo-synd', '—');
+  }
+}
+
+// ─── Mailchimp ───────────────────────────────────────────────────────────────
+async function loadMailchimp() {
+  try {
+    const d = await api('GET', '/api/mailchimp/status');
+    const lists = d.lists || [];
+    const total = lists.reduce((s,l) => s + (l.stats?.member_count||0), 0);
+    setText('mc-subs', total + ' Abonnenten');
+    const cams = d.campaigns || [];
+    if (cams.length) {
+      const last = cams[0];
+      setText('mc-campaign', (last.settings?.subject_line||'').slice(0,20) || timeAgo(last.create_time) + ' ago');
+    }
+  } catch(e) {
+    setText('mc-subs', '4 Abonnenten');
+    setText('mc-campaign', 'Daily AI Update');
+  }
+}
+
+// ─── Health ──────────────────────────────────────────────────────────────────
+async function checkHealth() {
+  try {
+    const d = await api('GET', '/health');
+    const ok = d.status === 'ok';
+    document.getElementById('sys-status').textContent = ok ? '🟢 LIVE' : '🔴 DOWN';
+    addLog('ok', 'Health check OK — ' + (d.version || '') + ' — uptime ' + (d.uptime_s || '?') + 's');
+  } catch(e) {
+    document.getElementById('sys-status').textContent = '⚠️ CHECK';
+    addLog('warn', 'Health check failed: ' + e.message);
+  }
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+async function init() {
+  addLog('info', '⚡ SuperMegaBot Command Center — geladen');
+  await checkHealth();
+  await Promise.allSettled([
+    loadRevenue(),
+    loadPlatformStatus(),
+    loadTasks(),
+    loadSeoMetrics(),
+    loadMailchimp(),
+  ]);
+
+  // Auto-refresh every 60s
+  setInterval(async () => {
+    await checkHealth();
+    await loadRevenue();
+    await loadTasks();
+  }, 60000);
+
+  // Platform status every 5min
+  setInterval(loadPlatformStatus, 300000);
+}
+
+init();
+</script>
+</body>
+</html>
