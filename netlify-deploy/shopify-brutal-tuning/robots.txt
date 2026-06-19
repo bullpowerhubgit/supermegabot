@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://shopify-brutal-tuning.vercel.app/sitemap.xml
+Sitemap: https://shopify-brutal-tuning.netlify.app/sitemap.xml
