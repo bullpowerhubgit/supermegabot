@@ -76,7 +76,7 @@ def _oauth1_header(method: str, url: str, params: dict = None) -> str:
     oauth_params = {
         "oauth_consumer_key": API_KEY,
         "oauth_nonce": hashlib.md5(str(time.time()).encode()).hexdigest(),
-        "oauth_signature_method": "HMAC-SHA256",
+        "oauth_signature_method": "HMAC-SHA1",
         "oauth_timestamp": str(int(time.time())),
         "oauth_token": ACCESS_TOKEN,
         "oauth_version": "1.0",
@@ -94,7 +94,7 @@ def _oauth1_header(method: str, url: str, params: dict = None) -> str:
     ])
     signing_key = f"{urllib.parse.quote(API_SECRET, safe='')}&{urllib.parse.quote(ACCESS_SECRET, safe='')}"
     signature = base64.b64encode(
-        hmac.new(signing_key.encode(), base_string.encode(), hashlib.sha256).digest()
+        hmac.new(signing_key.encode(), base_string.encode(), hashlib.sha1).digest()
     ).decode()
 
     oauth_params["oauth_signature"] = signature
