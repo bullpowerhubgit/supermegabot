@@ -903,6 +903,87 @@ async def handle_system_status(req):
                                    "note": str(e)})
 
 
+async def handle_env_check(req):
+    """GET /api/env/check — returns status of all required Railway env vars."""
+    checks = {
+        "core": {
+            "TELEGRAM_BOT_TOKEN":        bool(os.getenv("TELEGRAM_BOT_TOKEN")),
+            "TELEGRAM_CHAT_ID":          bool(os.getenv("TELEGRAM_CHAT_ID")),
+            "ANTHROPIC_API_KEY":         bool(os.getenv("ANTHROPIC_API_KEY")),
+            "OPENAI_API_KEY":            bool(os.getenv("OPENAI_API_KEY")),
+        },
+        "database": {
+            "SUPABASE_URL":              bool(os.getenv("SUPABASE_URL")),
+            "SUPABASE_ANON_KEY":         bool(os.getenv("SUPABASE_ANON_KEY")),
+            "SUPABASE_SERVICE_KEY":      bool(os.getenv("SUPABASE_SERVICE_KEY")),
+        },
+        "shopify": {
+            "SHOPIFY_SHOP_DOMAIN":       bool(os.getenv("SHOPIFY_SHOP_DOMAIN")),
+            "SHOPIFY_ADMIN_API_TOKEN":   bool(os.getenv("SHOPIFY_ADMIN_API_TOKEN")),
+        },
+        "stripe": {
+            "STRIPE_SECRET_KEY":         bool(os.getenv("STRIPE_SECRET_KEY")),
+            "STRIPE_WEBHOOK_SECRET":     bool(os.getenv("STRIPE_WEBHOOK_SECRET")),
+        },
+        "twitter": {
+            "TWITTER_API_KEY":           bool(os.getenv("TWITTER_API_KEY")),
+            "TWITTER_API_SECRET":        bool(os.getenv("TWITTER_API_SECRET")),
+            "TWITTER_ACCESS_TOKEN":      bool(os.getenv("TWITTER_ACCESS_TOKEN")),
+            "TWITTER_ACCESS_TOKEN_SECRET": bool(os.getenv("TWITTER_ACCESS_TOKEN_SECRET")),
+            "TWITTER_BEARER_TOKEN":      bool(os.getenv("TWITTER_BEARER_TOKEN")),
+            "TWITTER_CLIENT_ID":         bool(os.getenv("TWITTER_CLIENT_ID")),
+            "TWITTER_CLIENT_SECRET":     bool(os.getenv("TWITTER_CLIENT_SECRET")),
+            "TWITTER_PASSWORD":          bool(os.getenv("TWITTER_PASSWORD")),
+        },
+        "social": {
+            "DEVTO_API_KEY":             bool(os.getenv("DEVTO_API_KEY")),
+            "HASHNODE_API_KEY":          bool(os.getenv("HASHNODE_API_KEY")),
+            "KLAVIYO_API_KEY":           bool(os.getenv("KLAVIYO_API_KEY")),
+            "MAILCHIMP_API_KEY":         bool(os.getenv("MAILCHIMP_API_KEY")),
+            "PINTEREST_ACCESS_TOKEN":    bool(os.getenv("PINTEREST_ACCESS_TOKEN")),
+            "LINKEDIN_ACCESS_TOKEN":     bool(os.getenv("LINKEDIN_ACCESS_TOKEN")),
+            "REDDIT_CLIENT_ID":          bool(os.getenv("REDDIT_CLIENT_ID")),
+            "REDDIT_CLIENT_SECRET":      bool(os.getenv("REDDIT_CLIENT_SECRET")),
+            "REDDIT_USERNAME":           bool(os.getenv("REDDIT_USERNAME")),
+            "REDDIT_PASSWORD":           bool(os.getenv("REDDIT_PASSWORD")),
+        },
+        "whatsapp": {
+            "WHATSAPP_PHONE_NUMBER_ID":  bool(os.getenv("WHATSAPP_PHONE_NUMBER_ID")),
+            "WHATSAPP_ACCESS_TOKEN":     bool(os.getenv("WHATSAPP_ACCESS_TOKEN")),
+        },
+        "tiktok": {
+            "TIKTOK_ACCESS_TOKEN":       bool(os.getenv("TIKTOK_ACCESS_TOKEN")),
+            "TIKTOK_SHOP_ID":            bool(os.getenv("TIKTOK_SHOP_ID")),
+        },
+        "twilio": {
+            "TWILIO_ACCOUNT_SID":        bool(os.getenv("TWILIO_ACCOUNT_SID")),
+            "TWILIO_AUTH_TOKEN":         bool(os.getenv("TWILIO_AUTH_TOKEN")),
+            "TWILIO_FROM_NUMBER":        bool(os.getenv("TWILIO_FROM_NUMBER")),
+        },
+        "github": {
+            "GITHUB_TOKEN":              bool(os.getenv("GITHUB_TOKEN")),
+            "GITHUB_USER":               bool(os.getenv("GITHUB_USER")),
+        },
+        "digistore24": {
+            "DS24_API_KEY":              bool(os.getenv("DS24_API_KEY")),
+            "DS24_AFFILIATE_LINK":       bool(os.getenv("DS24_AFFILIATE_LINK")),
+        },
+    }
+    missing = {cat: [k for k, v in vars_.items() if not v] for cat, vars_ in checks.items()}
+    missing = {c: m for c, m in missing.items() if m}
+    total_set   = sum(v for cat in checks.values() for v in cat.values())
+    total_all   = sum(len(cat) for cat in checks.values())
+    return web.json_response({
+        "ok": True,
+        "total": total_all,
+        "configured": total_set,
+        "missing_count": total_all - total_set,
+        "percent": round(total_set / total_all * 100),
+        "checks": checks,
+        "missing": missing,
+    })
+
+
 async def handle_supabase_status(req):
     """Supabase connection status."""
     supabase_url = os.getenv("SUPABASE_URL", "")
@@ -4551,6 +4632,7 @@ async def create_app():
     app.router.add_get("/api/guardian/status", handle_guardian_status)
     app.router.add_get("/api/ai/status", handle_ai_status)
     app.router.add_get("/api/system/status", handle_system_status)
+    app.router.add_get("/api/env/check",     handle_env_check)
     app.router.add_get("/api/supabase/status", handle_supabase_status)
     app.router.add_post("/api/geheimwaffe/run", handle_geheimwaffe_run)
     app.router.add_post("/api/geheimwaffe/content", handle_geheimwaffe_content)
