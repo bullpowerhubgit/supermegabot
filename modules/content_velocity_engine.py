@@ -63,24 +63,41 @@ def _title_hash(title: str) -> str:
 async def _fetch_trending() -> list[str]:
     try:
         import aiohttp
+        import re as _re
+        # Google Trends RSS — needs browser-like headers
         url = "https://trends.google.com/trends/trendingsearches/daily/rss?geo=DE"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (compatible; BullPowerBot/2.0)",
+            "Accept": "application/rss+xml, application/xml, text/xml",
+        }
         async with aiohttp.ClientSession() as s:
-            async with s.get(url, timeout=aiohttp.ClientTimeout(total=10)) as r:
-                text = await r.text()
+            async with s.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=12),
+                             allow_redirects=True) as r:
+                raw = await r.read()
+
+        # Strip XML declaration and BOM if present
+        text = raw.decode("utf-8", errors="replace")
+        text = text.lstrip("﻿")
+        # Remove invalid XML chars
+        text = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
+
         root = ET.fromstring(text)
         topics = []
         for item in root.iter("item"):
             t = item.find("title")
             if t is not None and t.text:
                 topics.append(t.text.strip())
-        return topics[:10]
+        if topics:
+            return topics[:10]
     except Exception as e:
         log.warning("Trends fetch error: %s", e)
-        return [
-            "KI Geld verdienen 2026", "Passives Einkommen sofort",
-            "Shopify Automatisierung Deutschland", "AI Business Tools",
-            "Online Verkaufen ohne Lager",
-        ]
+
+    # Fallback: curated high-converting topics
+    return [
+        "KI Geld verdienen 2026", "Passives Einkommen sofort",
+        "Shopify Automatisierung Deutschland", "AI Business Tools",
+        "Online Verkaufen ohne Lager", "Dropshipping 2026 Tipps",
+    ]
 
 
 # ── Master Content Generator ──────────────────────────────────────────────────
