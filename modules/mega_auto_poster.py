@@ -39,6 +39,9 @@ TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT         = os.getenv("TELEGRAM_CHAT_ID", "")
 TWITTER_KEY     = os.getenv("TWITTER_API_KEY", "")
 ANTHROPIC_KEY   = os.getenv("ANTHROPIC_API_KEY", "")
+LINKEDIN_TOKEN  = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
+_ln_urn         = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
+LINKEDIN_URN    = _ln_urn if _ln_urn.startswith("urn:li:") else f"urn:li:person:{_ln_urn}"
 
 
 # ── Deduplication ─────────────────────────────────────────────────────────────
@@ -411,6 +414,41 @@ async def _post_twitter(content: dict) -> bool:
         return False
 
 
+async def _post_linkedin(content: dict) -> bool:
+    if not LINKEDIN_TOKEN:
+        return False
+    try:
+        import aiohttp
+        tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:3])
+        text = f"{content['body'][:600]}\n\n{tags}\n\n👉 {content.get('url','https://dudirudibot-mega-production.up.railway.app')}".strip()
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.linkedin.com/v2/ugcPosts",
+                headers={
+                    "Authorization": f"Bearer {LINKEDIN_TOKEN}",
+                    "Content-Type": "application/json",
+                    "X-Restli-Protocol-Version": "2.0.0",
+                },
+                json={
+                    "author": LINKEDIN_URN,
+                    "lifecycleState": "PUBLISHED",
+                    "specificContent": {
+                        "com.linkedin.ugc.ShareContent": {
+                            "shareCommentary": {"text": text},
+                            "shareMediaCategory": "NONE",
+                        }
+                    },
+                    "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+                },
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+        return bool(d.get("id"))
+    except Exception as exc:
+        log.warning("LinkedIn post failed: %s", exc)
+        return False
+
+
 # ── Master Post Function ───────────────────────────────────────────────────────
 
 async def post_to_all_channels(content: dict, product: dict = None) -> dict:
@@ -430,12 +468,13 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
         _post_mailchimp_campaign(content),
         _post_sendgrid(content),
         _post_twitter(content),
+        _post_linkedin(content),
         return_exceptions=True,
     )
 
     channel_names = [
         "telegram", "facebook_iwin", "facebook_aiitec", "instagram",
-        "shopify_blog", "klaviyo", "mailchimp", "sendgrid", "twitter",
+        "shopify_blog", "klaviyo", "mailchimp", "sendgrid", "twitter", "linkedin",
     ]
     out = {}
     success_count = 0
