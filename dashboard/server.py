@@ -6210,21 +6210,46 @@ async def handle_shopify_seo_run(req):
 
 
 async def handle_twitter_post(req):
-    """POST /api/twitter/post — post a tweet (auto or custom text)."""
+    """POST /api/twitter/post — Tweet Webhook (twikit + API Fallback).
+    Body: {"text": "...", "secret": "bullpower2026"} ODER leer für Auto-Tweet.
+    Webhook URL: https://dudirudibot-mega-production.up.railway.app/api/twitter/post
+    """
     try:
-        from modules.twitter_auto_poster import run_auto_tweet, post_tweet
         body = {}
         try:
             body = await req.json()
         except Exception:
             pass
+
+        # Optional secret check
+        wh_secret = os.getenv("TWITTER_WEBHOOK_SECRET", "bullpower2026")
+        if body.get("secret") and body.get("secret") != wh_secret:
+            return web.json_response({"ok": False, "error": "wrong secret"}, status=403)
+
         custom_text = body.get("text", "").strip()
-        if custom_text:
-            result = await post_tweet(custom_text)
-        else:
-            topics = body.get("topics") or None
-            result = await run_auto_tweet(topics=topics)
-        return web.json_response(result)
+
+        # Primär: twikit autoposter
+        try:
+            from modules.twitter_autoposter import post_tweet, post_daily_tweets
+            if custom_text:
+                result = await post_tweet(custom_text)
+            else:
+                result = await post_daily_tweets(count=1)
+            return web.json_response(result)
+        except Exception:
+            pass
+
+        # Fallback: alter auto-poster
+        try:
+            from modules.twitter_auto_poster import run_auto_tweet, post_tweet as pt_old
+            if custom_text:
+                result = await pt_old(custom_text)
+            else:
+                result = await run_auto_tweet()
+            return web.json_response(result)
+        except Exception as e2:
+            return web.json_response({"ok": False, "error": str(e2)}, status=500)
+
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
