@@ -3186,6 +3186,36 @@ async def handle_telegram_setup(req):
     return web.json_response({"ok": True, "results": results, "webhook": webhook_url})
 
 
+async def handle_discord_interactions(req: web.Request) -> web.Response:
+    """Discord Interactions Endpoint — Ed25519 Verifizierung + PING/PONG."""
+    PUBLIC_KEY = os.getenv("DISCORD_PUBLIC_KEY", "436bb930c7b1829783ef5579c1c079d568409535c856fefc0d390fd382e574a8")
+    signature = req.headers.get("X-Signature-Ed25519", "")
+    timestamp  = req.headers.get("X-Signature-Timestamp", "")
+    body_bytes = await req.read()
+
+    # Ed25519 Signatur prüfen
+    try:
+        from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+        from cryptography.exceptions import InvalidSignature
+        key = Ed25519PublicKey.from_public_bytes(bytes.fromhex(PUBLIC_KEY))
+        key.verify(bytes.fromhex(signature), timestamp.encode() + body_bytes)
+    except Exception as e:
+        log.warning("[DISCORD] Invalid signature: %s", e)
+        return web.Response(status=401, text="Invalid request signature")
+
+    data = json.loads(body_bytes)
+    if data.get("type") == 1:  # PING → PONG
+        return web.json_response({"type": 1})
+
+    # Slash Commands
+    name = data.get("data", {}).get("name", "")
+    if name == "status":
+        return web.json_response({
+            "type": 4,
+            "data": {"content": "✅ SuperMegaBot online! 9 Engines aktiv. /health für Details."}
+        })
+    return web.json_response({"type": 4, "data": {"content": f"Command /{name} empfangen."}})
+
 async def _push_order_to_pipedrive(order: dict):
     """Shopify Order → Pipedrive Deal (Stage 19 = Neue Bestellung)."""
     import aiohttp, os
@@ -4833,6 +4863,7 @@ async def create_app():
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
     app.router.add_post("/api/shopify/order-webhook",     handle_shopify_order_webhook_route)
     app.router.add_post("/api/webhooks/shopify-order",    handle_shopify_order_webhook_v2)
+    app.router.add_post("/api/discord/interactions",      handle_discord_interactions)
     app.router.add_get("/api/shopify/orders",         handle_shopify_orders)
     app.router.add_get("/api/shopify/products",       handle_shopify_products)
     app.router.add_get("/api/shopify/revenue",        handle_shopify_revenue)
