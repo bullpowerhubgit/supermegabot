@@ -60,22 +60,12 @@ async def _shopify_post(path: str, data: dict) -> dict:
 
 
 async def _claude(prompt: str, max_tokens: int = 1024) -> str:
-    if not ANTHROPIC_KEY:
-        return ""
+    """AI completion with full fallback chain (Anthropic → OpenAI → Groq → Perplexity)."""
     try:
-        import aiohttp
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "Content-Type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                      "messages": [{"role": "user", "content": prompt}]},
-            ) as r:
-                data = await r.json()
-                return data.get("content", [{}])[0].get("text", "")
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=max_tokens)
     except Exception as e:
-        logger.error(f"Claude error: {e}")
+        logger.error(f"ai_complete error: {e}")
         return ""
 
 

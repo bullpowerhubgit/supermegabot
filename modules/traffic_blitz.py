@@ -42,9 +42,26 @@ DEVTO_KEY        = lambda: os.getenv("DEVTO_API_KEY", "")
 DS24_URL         = "https://www.digistore24.com/product/669750"
 INDEXNOW_KEY     = "bullpowerhubgit"
 INDEXNOW_DOMAINS = [
+    # Railway
     "dudirudibot-mega-production.up.railway.app",
+    # Shopify
     "autopilot-store-suite-fmbka.myshopify.com",
+    # GitHub Pages
     "bullpowerhubgit.github.io",
+    # Vercel Sites (13 live properties)
+    "shopify-brutal-tuning.vercel.app",
+    "creatorai-ultra.vercel.app",
+    "autoincome-ai.vercel.app",
+    "bullpower-hub.vercel.app",
+    "shopify-acquisition-engine.vercel.app",
+    "bullpower-ai.vercel.app",
+    "creatorstudio-pro.vercel.app",
+    "digistore24-suite.vercel.app",
+    "cognitive-symphony.vercel.app",
+    "gumroad-discord.vercel.app",
+    "telegram-bot-six-gold.vercel.app",
+    "launcher-ten-livid.vercel.app",
+    "lead-capture-gamma-nine.vercel.app",
 ]
 
 SEO_TOPICS = [
@@ -160,7 +177,25 @@ Schreibe NUR den Post-Text, keine Erklärungen."""
 # ── Shopify SEO Blog Auto-Poster ──────────────────────────────────────────────
 
 async def create_shopify_blog_post(topic: str | None = None) -> dict:
-    """Generate + publish a Shopify blog post with full SEO."""
+    """Generate + publish a Shopify blog post — delegates to shopify_max_tuner."""
+    domain = SHOPIFY_DOMAIN()
+    token  = SHOPIFY_TOKEN()
+    if not domain or not token:
+        return {"ok": False, "error": "Shopify not configured"}
+    try:
+        from modules.shopify_max_tuner import auto_publish_seo_blog
+        result = await auto_publish_seo_blog()
+        if result.get("published"):
+            return {"ok": True, **result}
+        # Fallback to GitHub Pages on any Shopify failure
+        log.info("Shopify blog unavailable (%s) — GitHub Pages fallback", result.get("error","?"))
+        return await create_github_seo_post(topic)
+    except Exception as exc:
+        log.warning("Shopify blog error (%s) — GitHub Pages fallback", exc)
+        return await create_github_seo_post(topic)
+
+async def _create_shopify_blog_post_direct(topic: str | None = None) -> dict:
+    """Direct Shopify blog post (original implementation — kept as backup)."""
     domain = SHOPIFY_DOMAIN()
     token  = SHOPIFY_TOKEN()
     ver    = SHOPIFY_VER()
