@@ -61,25 +61,30 @@ async def get_trending_topics() -> list[str]:
     """Fetch trending topics from Google Trends RSS (DE)."""
     try:
         import aiohttp
+        import re as _re
         url = "https://trends.google.com/trends/trendingsearches/daily/rss?geo=DE"
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; BullPowerBot/2.0)",
+                   "Accept": "application/rss+xml, text/xml"}
         async with aiohttp.ClientSession() as s:
-            async with s.get(url, timeout=aiohttp.ClientTimeout(total=10)) as r:
-                text = await r.text()
+            async with s.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=12),
+                             allow_redirects=True) as r:
+                raw = await r.read()
+        text = raw.decode("utf-8", errors="replace").lstrip("﻿")
+        text = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
         root = ET.fromstring(text)
-        topics = []
-        for item in root.iter("item"):
-            title_el = item.find("title")
-            if title_el is not None and title_el.text:
-                topics.append(title_el.text.strip())
-        log.info("Trending topics fetched: %d", len(topics))
-        return topics[:10]
+        topics = [item.find("title").text.strip()
+                  for item in root.iter("item")
+                  if item.find("title") is not None and item.find("title").text]
+        if topics:
+            log.info("Trending topics fetched: %d", len(topics))
+            return topics[:10]
     except Exception as e:
         log.warning("Trending fetch error: %s", e)
-        return [
-            "KI Business 2026", "Passives Einkommen Online",
-            "Shopify Automatisierung", "AI Tools verdienen Geld",
-            "Online Business Deutschland",
-        ]
+    return [
+        "KI Business 2026", "Passives Einkommen Online",
+        "Shopify Automatisierung", "AI Tools verdienen Geld",
+        "Online Business Deutschland", "Dropshipping ohne Risiko",
+    ]
 
 
 # ── Content Generation ────────────────────────────────────────────────────────

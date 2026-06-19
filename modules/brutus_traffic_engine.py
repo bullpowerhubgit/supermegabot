@@ -17,10 +17,12 @@ Ablauf:
   7. PROFIT  — Revenue direkt zu Traffic-Quelle zurückverfolgen
 """
 import asyncio
+import asyncio
 import json
 import logging
 import os
 import hashlib
+import aiohttp
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional

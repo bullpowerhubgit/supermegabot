@@ -31,7 +31,7 @@ DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "b
 
 _KLAVIYO_HEADERS = lambda: {
     "Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
-    "revision": "2024-06-15",
+    "revision": "2024-10-15",
     "Content-Type": "application/json",
 }
 
