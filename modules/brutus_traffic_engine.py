@@ -87,9 +87,14 @@ async def scan_google_trends_rss(keywords: list[str]) -> list[dict]:
                 async with s.get(
                     f"https://trends.google.com/trends/trendingsearches/daily/rss?geo={region}",
                     timeout=aiohttp.ClientTimeout(total=10),
-                    headers={"User-Agent": "Mozilla/5.0"},
+                    headers={"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"},
                 ) as r:
                     xml_text = await r.text()
+                # Skip HTML responses (rate-limited/blocked by Google)
+                stripped = xml_text.lstrip()
+                if not stripped.startswith("<rss") and not stripped.startswith("<?xml"):
+                    log.warning("Trends %s: non-XML response (rate-limited)", region)
+                    continue
                 root = ET.fromstring(xml_text)
                 for item in root.findall(".//item")[:10]:
                     title = item.findtext("title", "")

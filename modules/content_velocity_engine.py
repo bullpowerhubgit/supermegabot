@@ -75,11 +75,13 @@ async def _fetch_trending() -> list[str]:
                              allow_redirects=True) as r:
                 raw = await r.read()
 
-        # Strip XML declaration and BOM if present
-        text = raw.decode("utf-8", errors="replace")
-        text = text.lstrip("﻿")
-        # Remove invalid XML chars
+        # Strip BOM + invalid XML chars
+        text = raw.decode("utf-8", errors="replace").lstrip("﻿")
         text = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', text)
+        # Google returns HTML when rate-limited — skip HTML responses
+        if not text.lstrip().startswith("<rss") and not text.lstrip().startswith("<?xml"):
+            log.warning("Trends: non-XML response (likely rate-limited) — using fallback")
+            raise ValueError("non-XML")
 
         root = ET.fromstring(text)
         topics = []
