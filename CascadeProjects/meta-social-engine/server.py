@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Meta Social Engine — Autonomous Facebook, Instagram & Pinterest poster"""
-import asyncio, aiohttp, os, json, logging, sqlite3, random
+import asyncio, aiohttp, os, json, logging, sqlite3, random, time as _time
+import xml.etree.ElementTree as ET
 from datetime import datetime
 import anthropic
 
@@ -20,6 +21,44 @@ PINTEREST_ACCESS_TOKEN = os.getenv("PINTEREST_ACCESS_TOKEN", "")
 PINTEREST_BOARD_ID = os.getenv("PINTEREST_BOARD_ID", "")
 PORT = int(os.getenv("PORT", 8091))
 SCHEDULE_INTERVAL = int(os.getenv("POST_INTERVAL_SECONDS", 1800))  # default 30 min
+INDEXNOW_KEY = os.getenv("INDEXNOW_KEY", "a1b2c3d4e5f6789012345678901234ab")
+
+_trending_cache: list = []
+_last_trends_fetch: float = 0
+
+
+async def fetch_google_trends() -> list:
+    global _trending_cache, _last_trends_fetch
+    if _time.time() - _last_trends_fetch < 7200:
+        return _trending_cache
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get("https://trends.google.com/trends/trendingsearches/daily/rss?geo=DE",
+                             timeout=aiohttp.ClientTimeout(total=10)) as r:
+                if r.status == 200:
+                    text = await r.text()
+                    root = ET.fromstring(text)
+                    topics = [item.findtext("title", "").strip()
+                              for item in root.findall(".//item")
+                              if item.findtext("title", "")][:10]
+                    _trending_cache = topics
+                    _last_trends_fetch = _time.time()
+                    logger.info(f"Google Trends DE: {topics[:5]}")
+                    return topics
+    except Exception as e:
+        logger.warning(f"Trends fetch: {e}")
+    return _trending_cache or ["E-Commerce", "Shopify", "KI Tools", "Dropshipping", "Online Geld verdienen"]
+
+
+async def indexnow_ping(url: str):
+    try:
+        payload = {"host": "bullpowerhub.de", "key": INDEXNOW_KEY, "urlList": [url]}
+        async with aiohttp.ClientSession() as s:
+            await s.post("https://api.indexnow.org/indexnow", json=payload,
+                         timeout=aiohttp.ClientTimeout(total=8))
+            logger.info(f"IndexNow ping: {url}")
+    except Exception as e:
+        logger.warning(f"IndexNow: {e}")
 MC_API_KEY  = os.getenv("MAILCHIMP_API_KEY", "")
 MC_SERVER   = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 MC_LIST_ID  = os.getenv("MAILCHIMP_LIST_ID", "")
@@ -118,11 +157,13 @@ async def send_telegram(msg: str):
 
 async def generate_meta_post(product: dict, post_type: str = "facebook") -> dict:
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+    trends = await fetch_google_trends()
+    trend_hint = f"\nAktuelle Trends (einbauen wenn relevant): {', '.join(trends[:5])}" if trends else ""
 
     if post_type == "instagram":
         prompt = f"""Erstelle einen Instagram-Post auf Deutsch für: {product['name']}
 Preis: {product['price']}
-Tagline: {product['tagline']}
+Tagline: {product['tagline']}{trend_hint}
 
 FORMAT:
 - Catchy Einstieg (1-2 Zeilen mit Emoji)
@@ -135,7 +176,7 @@ Beispiel-Hashtags: #Shopify #Automatisierung #OnlineBusiness #KI #Dropshipping #
         prompt = f"""Erstelle einen Facebook-Post auf Deutsch für: {product['name']}
 Preis: {product['price']}
 Tagline: {product['tagline']}
-URL: {product['url']}
+URL: {product['url']}{trend_hint}
 
 FORMAT:
 - Aufmerksamkeits-starker Titel (mit Emoji)
@@ -321,6 +362,7 @@ async def content_cycle():
         "instagram_posted": ig_posted,
         "pinterest_posted": pin_posted,
     })
+    await indexnow_ping(product["url"])
     logger.info(f"Content cycle done — FB:{fb_posted} IG:{ig_posted} PIN:{pin_posted} Product:{product['name']}")
 
 
@@ -736,6 +778,30 @@ async def posts_handler(request):
     ])
 
 
+async def stats_handler(request):
+    from aiohttp import web
+    trends = await fetch_google_trends()
+    conn = sqlite3.connect(DB_PATH)
+    total = conn.execute("SELECT COUNT(*) FROM posts").fetchone()[0]
+    by_platform = {r[0]: r[1] for r in conn.execute(
+        "SELECT platform, COUNT(*) FROM posts GROUP BY platform").fetchall()}
+    posted = conn.execute("SELECT COUNT(*) FROM posts WHERE status='posted'").fetchone()[0]
+    conn.close()
+    return web.json_response({
+        "version": "2.0-TURBO",
+        "total_posts": total,
+        "auto_posted": posted,
+        "by_platform": by_platform,
+        "trending": trends[:5],
+        "schedule_interval_min": SCHEDULE_INTERVAL // 60,
+    })
+
+
+async def indexnow_key_handler(request):
+    from aiohttp import web
+    return web.Response(text=INDEXNOW_KEY, content_type="text/plain")
+
+
 async def main():
     from aiohttp import web
     init_db()
@@ -753,6 +819,8 @@ async def main():
     app.router.add_get("/auth/pinterest",          handle_pinterest_auth)
     app.router.add_get("/auth/pinterest/callback", handle_pinterest_callback)
     app.router.add_get("/auth/pinterest/boards",   handle_pinterest_boards)
+    app.router.add_get("/stats",                   stats_handler)
+    app.router.add_get(f"/{INDEXNOW_KEY}.txt",     indexnow_key_handler)
 
     runner = web.AppRunner(app)
     await runner.setup()
