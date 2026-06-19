@@ -111,12 +111,34 @@ def _oauth1_header(method: str, url: str, params: dict = None) -> str:
 # Tweet senden via Twitter API v2
 # ─────────────────────────────────────────────────────────────────────────────
 
+MAKE_WEBHOOK_URL = os.getenv("TWITTER_MAKE_WEBHOOK", "")
+
+
 async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
-    """Sendet einen Tweet via Twitter API v2 mit OAuth 1.0a."""
+    """Sendet Tweet: zuerst Make.com Webhook, Fallback Twitter API v2."""
+    import aiohttp
+    text = text[:280]
+
+    # Weg 1: Make.com Webhook (kostenlos, umgeht API-Bezahlschranke)
+    if MAKE_WEBHOOK_URL:
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.post(
+                    MAKE_WEBHOOK_URL,
+                    json={"text": text, "reply_to": reply_to_id},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    if r.status in (200, 202, 204):
+                        log.info("Tweet via Make.com Webhook gesendet")
+                        return {"ok": True, "via": "make_webhook", "text": text[:50]}
+                    log.warning("Make webhook status %d", r.status)
+        except Exception as e:
+            log.warning("Make webhook error: %s", e)
+
+    # Weg 2: Direkte Twitter API v2
     try:
-        import aiohttp
         url = f"{TWITTER_API_V2}/tweets"
-        payload = {"text": text[:280]}
+        payload = {"text": text}
         if reply_to_id:
             payload["reply"] = {"in_reply_to_tweet_id": reply_to_id}
 
@@ -126,18 +148,15 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
             async with session.post(
                 url,
                 json=payload,
-                headers={
-                    "Authorization": auth_header,
-                    "Content-Type": "application/json",
-                },
+                headers={"Authorization": auth_header, "Content-Type": "application/json"},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 data = await r.json()
                 if r.status == 201:
                     tweet_id = data.get("data", {}).get("id", "?")
-                    log.info("Tweet posted: %s", tweet_id)
+                    log.info("Tweet posted via API: %s", tweet_id)
                     return {"ok": True, "id": tweet_id}
-                log.error("Tweet failed: %d %s", r.status, data)
+                log.error("Tweet API failed: %d %s", r.status, data)
                 return {"ok": False, "status": r.status, "detail": data}
     except Exception as e:
         log.error("Tweet exception: %s", e)
