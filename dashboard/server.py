@@ -4719,6 +4719,10 @@ async def create_app():
     app.router.add_get("/api/auto-poster/status",     handle_auto_poster_status)
     app.router.add_post("/api/shopify/seo/run",       handle_shopify_seo_run)
     app.router.add_post("/api/twitter/post",          handle_twitter_post)
+    app.router.add_post("/api/seo/ultra",              handle_ultra_seo)
+    app.router.add_post("/api/seo/indexnow",          handle_ultra_indexnow)
+    app.router.add_get( "/bullpower2026indexnow.txt", handle_indexnow_key)
+    app.router.add_get( "/sitemap.xml",               handle_sitemap_xml)
     app.router.add_post("/api/seo/dominator",         handle_seo_dominator)
     app.router.add_post("/api/backlink/bomb",         handle_backlink_bomber_run)
     app.router.add_post("/api/content/velocity",      handle_content_velocity)
@@ -5980,6 +5984,40 @@ async def handle_reality_check(req):
             "Share landing page in 3 German e-commerce Telegram groups",
         ]
     })
+
+
+async def handle_ultra_seo(req):
+    """POST /api/seo/ultra — Ultra SEO Arsenal: IndexNow all 14+ properties + sitemap ping + parasite content."""
+    async def _bg():
+        try:
+            from modules.ultra_seo_arsenal import run_ultra_seo_cycle
+            await run_ultra_seo_cycle()
+        except Exception as exc:
+            logging.getLogger("UltraSEO").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started", "message": "Ultra SEO Arsenal läuft — 14+ Properties IndexNow + Parasite Content"})
+
+
+async def handle_ultra_indexnow(req):
+    """POST /api/seo/indexnow — Submit all BullPower properties to IndexNow immediately."""
+    try:
+        from modules.ultra_seo_arsenal import submit_all_properties_to_indexnow
+        result = await submit_all_properties_to_indexnow()
+        return web.json_response({"status": "ok", **result})
+    except Exception as e:
+        return web.json_response({"status": "error", "error": str(e)}, status=500)
+
+
+async def handle_indexnow_key(req):
+    """GET /bullpower2026indexnow.txt — IndexNow key verification file."""
+    return web.Response(text="bullpower2026indexnow", content_type="text/plain")
+
+
+async def handle_sitemap_xml(req):
+    """GET /sitemap.xml — Master sitemap covering all 14+ BullPower properties."""
+    from modules.ultra_seo_arsenal import generate_master_sitemap
+    xml_content = generate_master_sitemap()
+    return web.Response(text=xml_content, content_type="application/xml")
 
 
 async def handle_seo_dominator(req):
