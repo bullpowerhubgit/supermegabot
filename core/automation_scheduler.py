@@ -1779,6 +1779,18 @@ async def task_free_syndication() -> str:
         return f"FreeSyndication Fehler: {e}"
 
 
+async def task_github_blog() -> str:
+    """GitHubBlog: publish SEO article to GitHub Pages every 4h."""
+    try:
+        from modules.github_blog_publisher import publish_blog_article
+        result = await publish_blog_article()
+        if result.get("ok"):
+            return f"GitHubBlog OK: '{result.get('title','')[:50]}' → {result.get('url','')}"
+        return f"GitHubBlog skip: {result.get('reason','no reason')}"
+    except Exception as e:
+        return f"GitHubBlog Fehler: {e}"
+
+
 # ── Content Factory Tasks ────────────────────────────────────────────────────
 
 async def task_content_factory_run() -> str:
@@ -2336,6 +2348,7 @@ TASKS = [
     ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   75),   # 4h — Reddit + Medium + LinkedIn
     ("revenue_maximizer",       task_revenue_maximizer,      14400,   95),   # 4h — Cart Recovery + Winback
     ("free_syndication",        task_free_syndication,       21600,  115),   # 6h — Dev.to + Hashnode + Medium + Discord
+    ("github_blog",             task_github_blog,            14400,  135),   # 4h — GitHub Pages SEO Blog
     # ── CONTENT FACTORY: AI-powered omnichannel content engine ───────────────
     ("content_factory_run",     task_content_factory_run,   14400,  130),   # 4h — full package from trending
     ("social_batch_gen",        task_social_batch_gen,      86400,  150),   # daily — 30-day social calendar
