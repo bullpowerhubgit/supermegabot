@@ -4795,6 +4795,7 @@ async def create_app():
     app.router.add_get( "/bullpower2026indexnow.txt", handle_indexnow_key)
     app.router.add_get( "/sitemap.xml",               handle_sitemap_xml)
     app.router.add_get( "/robots.txt",                handle_robots_txt)
+    app.router.add_get( "/bullpower2026indexnow.txt", handle_indexnow_key)
     app.router.add_post("/api/seo/dominator",         handle_seo_dominator)
     app.router.add_post("/api/backlink/bomb",         handle_backlink_bomber_run)
     app.router.add_post("/api/content/velocity",      handle_content_velocity)
@@ -6103,6 +6104,11 @@ async def handle_robots_txt(req):
         "Sitemap: https://dudirudibot-mega-production.up.railway.app/sitemap.xml\n"
     )
     return web.Response(text=content, content_type="text/plain")
+
+
+async def handle_indexnow_key(req):
+    """GET /bullpower2026indexnow.txt — IndexNow key verification file for Bing/Yandex/Seznam."""
+    return web.Response(text="bullpower2026indexnow", content_type="text/plain")
 
 
 async def handle_seo_dominator(req):
