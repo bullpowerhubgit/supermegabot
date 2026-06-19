@@ -2200,6 +2200,40 @@ async def task_referral_system_run() -> str:
         return f"Referral error: {e}"
 
 
+# ── ULTRA SEO ARSENAL TASKS ──────────────────────────────────────────────────
+
+async def task_ultra_seo_cycle() -> str:
+    """Full Ultra SEO cycle: IndexNow all properties + sitemap ping + parasite content."""
+    try:
+        from modules.ultra_seo_arsenal import run_ultra_seo_cycle
+        result = await run_ultra_seo_cycle()
+        urls = result.get("indexnow", {}).get("total_urls", 0)
+        indexed = result.get("indexnow", {}).get("submitted", 0)
+        return f"Ultra SEO: {urls} URLs → {indexed}/3 Engines | Content OK"
+    except Exception as e:
+        return f"UltraSEO error: {e}"
+
+
+async def task_ultra_indexnow_all() -> str:
+    """Submit all 14+ BullPower properties to IndexNow."""
+    try:
+        from modules.ultra_seo_arsenal import submit_all_properties_to_indexnow
+        result = await submit_all_properties_to_indexnow()
+        return f"IndexNow ALL: {result.get('total_urls',0)} URLs | {result.get('submitted',0)}/3 Engines"
+    except Exception as e:
+        return f"IndexNow ALL error: {e}"
+
+
+async def task_ultra_seo_health() -> str:
+    """Check all BullPower properties are online."""
+    try:
+        from modules.ultra_seo_arsenal import seo_health_check
+        result = await seo_health_check()
+        return f"SEO Health: {result.get('ok',0)}/{result.get('total',0)} Properties online"
+    except Exception as e:
+        return f"SEO Health error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -2343,6 +2377,10 @@ TASKS = [
     ("press_release",           task_press_release_generate,  86400, 1100),  # daily — AI Press Release
     ("testimonials",            task_testimonial_engine,      43200, 1110),  # 12h — Social Proof
     ("referral_system",         task_referral_system_run,     43200, 1120),  # 12h — Referral Codes
+    # ── ULTRA SEO ARSENAL — 14+ Services IndexNow + Parasite SEO ─────────────
+    ("ultra_seo_cycle",         task_ultra_seo_cycle,         10800, 1130),  # 3h — Full Ultra SEO: IndexNow+Sitemap+Content
+    ("ultra_indexnow_all",      task_ultra_indexnow_all,      21600, 1140),  # 6h — Alle 14+ Properties IndexNow
+    ("ultra_seo_health",        task_ultra_seo_health,        14400, 1150),  # 4h — Property Health Check
 ]
 
 
