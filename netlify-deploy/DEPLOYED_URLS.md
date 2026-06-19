@@ -2,16 +2,41 @@
 
 Passwort für alle Password-Gates: `bullpower2026`
 
-## Netlify Sites (live, Netlify Credits erschöpft — kein Redeploy möglich)
+## Vercel Sites (Haupt-Plattform — kein Credit-Limit)
 
 | Tool | URL | Status |
 |------|-----|--------|
-| bullpower-hub-portal | https://bullpower-hub-portal.netlify.app | ✅ LIVE — Stripe €49 |
+| shopify-brutal-tuning | https://shopify-brutal-tuning.vercel.app | ✅ LIVE — Full SEO + Stripe |
+| creatorai-ultra | https://creatorai-ultra.vercel.app | ✅ LIVE — Full SEO |
+| autoincome-ai | https://autoincome-ai.vercel.app | ✅ LIVE — Full SEO |
+| bullpower-hub | https://bullpower-hub.vercel.app | ✅ LIVE — Full SEO |
+| shopify-acquisition-engine | https://shopify-acquisition-engine.vercel.app | ✅ LIVE — Full SEO |
+| bullpower-ai | https://bullpower-ai.vercel.app | ✅ LIVE — Full SEO + FAQ Schema |
+| creatorstudio-pro | https://creatorstudio-pro.vercel.app | ✅ LIVE — Full SEO + FAQ Schema |
+| digistore24-suite | https://digistore24-suite.vercel.app | ✅ LIVE — Full SEO + FAQ Schema |
+| cognitive-symphony | https://cognitive-symphony.vercel.app | ✅ LIVE — Full SEO + FAQ Schema |
+| gumroad-discord | https://gumroad-discord.vercel.app | ✅ LIVE — Full SEO |
+| telegram-bot | https://telegram-bot-six-gold.vercel.app | ✅ LIVE — Full SEO |
+| launcher | https://launcher-ten-livid.vercel.app | ✅ LIVE — Full SEO |
+| lead-capture | https://lead-capture-gamma-nine.vercel.app | ✅ LIVE — Full SEO |
+
+## Railway Services (Live-Backend)
+
+| Service | URL | Status |
+|---------|-----|--------|
+| SuperMegaBot (Dashboard) | https://dudirudibot-mega-production.up.railway.app | ✅ LIVE — 54 Tasks |
+| AdPoster Engine | https://adposter-engine-production.up.railway.app | ✅ LIVE |
+| IcomeAuto | https://icomeauto-production-e4e5.up.railway.app | ✅ LIVE — Stripe |
+| Steuercockpit | https://steuercockpit-production-44c9.up.railway.app | ✅ LIVE — Stripe |
+
+## Netlify Sites (Credits erschöpft — Reset 20.06.2026)
+
+| Tool | URL | Status |
+|------|-----|--------|
+| bullpower-hub-portal | https://bullpower-hub-portal.netlify.app | ✅ LIVE — Stripe €49 direkt |
 | shopify-acquisition-engine | https://shopify-acquisition-engine.netlify.app | ✅ OK |
-| shopify-automaton-suite | https://shopify-automaton-suite.netlify.app | ✅ OK |
-| digistore24-automation-suite | https://digistore24-automation-suite.netlify.app | ✅ OK |
-| creatorstudio-pro | https://creatorstudio-pro.netlify.app | ✅ OK |
 | autoincome-ai | https://autoincome-ai.netlify.app | ✅ OK |
+| creatorstudio-pro | https://creatorstudio-pro.netlify.app | ✅ OK |
 | gumroad-discord-bot | https://gumroad-discord-bot.netlify.app | ✅ OK |
 | telegram-marketing-bot | https://telegram-marketing-bot.netlify.app | ✅ OK |
 | bullpower-launcher | https://bullpower-launcher.netlify.app | ✅ OK |
@@ -19,36 +44,32 @@ Passwort für alle Password-Gates: `bullpower2026`
 | bullpower-steuercockpit | https://bullpower-steuercockpit.netlify.app | ✅ OK |
 | bullpower-icomeauto | https://bullpower-icomeauto.netlify.app | ✅ OK |
 | cognitive-symphony-ds24 | https://cognitive-symphony-ds24.netlify.app | ✅ OK |
-| creatorai-ultra | https://creatorai-ultra.netlify.app | ❌ BROKEN (credits) |
-| shopify-brutal-tuning | https://shopify-brutal-tuning.netlify.app | ⚠️ OLD CTAs (credits) |
+| creatorai-ultra | https://creatorai-ultra.netlify.app | ⚠️ OLD (credits, ersetzt durch Vercel) |
+| shopify-brutal-tuning | https://shopify-brutal-tuning.netlify.app | ⚠️ OLD (credits, ersetzt durch Vercel) |
 
-## Vercel Sites (neu — kein Credit-Limit)
+## GitHub Pages (kostenlos, kein Limit)
 
-| Tool | URL | Status |
-|------|-----|--------|
-| shopify-brutal-tuning | https://shopify-brutal-tuning.vercel.app | ✅ LIVE — Stripe CTAs fixed! |
-| creatorai-ultra | https://creatorai-ultra.vercel.app | ✅ LIVE — ersetzt Netlify |
-
-## Railway Services (4 Live)
-
-| Service | URL | Status |
-|---------|-----|--------|
-| SuperMegaBot | https://dudirudibot-mega-production.up.railway.app | ✅ LIVE |
-| AdPoster Engine | https://adposter-engine-production.up.railway.app | ✅ LIVE |
-| IcomeAuto | https://icomeauto-production-e4e5.up.railway.app | ✅ LIVE — Stripe |
-| Steuercockpit | https://steuercockpit-production-44c9.up.railway.app | ✅ LIVE — Stripe |
-
-## Conversion-Priorität (wichtigste Seiten)
-1. https://bullpower-hub-portal.netlify.app — Stripe Buy Link €49 direkt
-2. https://icomeauto-production-e4e5.up.railway.app — Stripe Checkout live
-3. https://steuercockpit-production-44c9.up.railway.app — Stripe Checkout live
-4. https://shopify-brutal-tuning.vercel.app — NEU: Stripe CTAs jetzt korrekt
-
-## GitHub Pages (kostenlos, kein Limit) — Stand 2026-06-19
 | Tool | URL | Status |
 |------|-----|--------|
 | bullpower-lead | https://bullpowerhubgit.github.io/bullpower-lead/ | ✅ GitHub Pages |
 | shopify-suite-landing | https://bullpowerhubgit.github.io/shopify-suite-landing/ | ✅ GitHub Pages |
 | shopify-brutal-tuning-landing | https://bullpowerhubgit.github.io/shopify-brutal-tuning-landing/ | ✅ GitHub Pages |
 
-> Netlify deploy-limit erreicht — alle neuen Sites auf GitHub Pages migriert.
+## Conversion-Priorität TOP 5
+
+1. **https://bullpower-hub-portal.netlify.app** — Stripe Buy Link €49 direkt
+2. **https://icomeauto-production-e4e5.up.railway.app** — Stripe Checkout live
+3. **https://steuercockpit-production-44c9.up.railway.app** — Stripe Checkout live
+4. **https://shopify-brutal-tuning.vercel.app** — Full SEO + Stripe CTAs
+5. **https://dudirudibot-mega-production.up.railway.app** — OMEGA Engine aktiv
+
+## OMEGA Traffic Engine (Railway — Autonomous)
+
+Aktiv auf SuperMegaBot mit 9+2 neuen Tasks:
+- **Stündlich**: Google Instant Index + Bing IndexNow alle Revenue-URLs
+- **4-stündlich**: Twitter @AIITEC Auto-Posts (3 Tweets), Social Proof
+- **6-stündlich**: Competitor Content Steal
+- **12-stündlich**: Alle Sitemaps indexieren
+- **Täglich**: SEO-Artikel (1500 Wörter DE), YouTube Package, Twitter Thread, OMEGA Full Cycle
+
+> Twitter-Post braucht 1 manuellen Schritt: developer.twitter.com → App → User auth settings → Read and Write → Regenerate tokens
