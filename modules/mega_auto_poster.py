@@ -583,4 +583,15 @@ async def run_full_auto_post() -> dict:
     except Exception as exc:
         log.warning("BRUTUS trigger skipped: %s", exc)
 
+    # Instantly submit Shopify blog + all properties to IndexNow after each post
+    try:
+        from modules.ultra_seo_arsenal import instant_index_new_content, submit_all_properties_to_indexnow
+        shopify_url = content.get("url", "")
+        if shopify_url:
+            asyncio.ensure_future(instant_index_new_content(shopify_url))
+        asyncio.ensure_future(submit_all_properties_to_indexnow())
+        log.info("IndexNow instant submission triggered after MegaPost")
+    except Exception as exc:
+        log.warning("IndexNow trigger skipped: %s", exc)
+
     return results
