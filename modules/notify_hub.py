@@ -61,8 +61,14 @@ def _tg_send(text: str) -> bool:
 
 
 def send_telegram(text: str) -> bool:
-    """Public alias for _tg_send — used by traffic_seo_engine, brutus, ds24_funnel."""
+    """Sync alias for _tg_send."""
     return _tg_send(text)
+
+
+async def async_send_telegram(text: str) -> bool:
+    """Async-safe wrapper — runs sync send_telegram in executor to avoid 'bool can't be awaited'."""
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, _tg_send, text)
 
 
 def _discord_send(title: str, body: str, color: int = 0x00ff88) -> bool:
