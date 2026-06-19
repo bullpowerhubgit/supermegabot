@@ -1391,6 +1391,326 @@ async def task_youtube_auto_post() -> str:
         return f"YouTube Auto-Post Fehler: {e}"
 
 
+# ── Autonomy Max-Upgrade Tasks ───────────────────────────────────────────────
+
+async def task_competitor_monitor() -> str:
+    """Täglich: Konkurrenten-Preise & Features checken, Telegram-Alert bei Änderung."""
+    import aiohttp, re
+    competitors = [
+        {"name": "Dropispy", "url": "https://dropispy.com"},
+        {"name": "AutoDS", "url": "https://www.autods.com"},
+        {"name": "Zendrop", "url": "https://www.zendrop.com"},
+    ]
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not anthropic_key:
+        return "Competitor monitor: ANTHROPIC_API_KEY fehlt"
+    findings = []
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
+        for comp in competitors:
+            try:
+                async with session.get(comp["url"], headers={"User-Agent": "Mozilla/5.0"}) as resp:
+                    text = await resp.text()
+                    prices = re.findall(r'\$[\d,]+|€[\d,]+|[\d,]+\s*(?:€|\$|USD|EUR)', text[:8000])
+                    findings.append(f"{comp['name']}: {prices[:4] or ['kein Preis']}")
+            except Exception as exc:
+                findings.append(f"{comp['name']}: {exc.__class__.__name__}")
+    summary = " | ".join(str(f) for f in findings)
+    # Telegram alert
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+    if token and chat_id:
+        try:
+            async with aiohttp.ClientSession() as s:
+                await s.post(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    json={"chat_id": chat_id, "text": f"🔍 Konkurrenz-Check:\n{summary}"},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                )
+        except Exception:
+            pass
+    return f"Competitor check: {summary[:200]}"
+
+
+async def task_ab_test_analyze() -> str:
+    """Alle 12h: A/B-Test-Gewinner aus Supabase ermitteln und per Telegram melden."""
+    try:
+        from modules.ab_testing_engine import analyze_and_select_winner
+        results = await analyze_and_select_winner()
+        if "error" in results:
+            return f"A/B analyze: {results['error']}"
+        winners = [f"{t}: '{d['winner']}'" for t, d in results.items()]
+        msg = "🏆 A/B Gewinner: " + " | ".join(winners) if winners else "A/B: noch keine Daten"
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        if token and chat_id and winners:
+            import aiohttp
+            async with aiohttp.ClientSession() as s:
+                await s.post(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    json={"chat_id": chat_id, "text": msg},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                )
+        return msg
+    except ImportError:
+        return "ab_testing_engine nicht gefunden"
+    except Exception as e:
+        return f"A/B analyze Fehler: {e}"
+
+
+async def task_ai_content_calendar() -> str:
+    """Täglich 06:00: KI-Inhaltskalender für 7 Tage generieren."""
+    try:
+        from modules.ai_content_calendar import generate_daily_calendar
+        result = await generate_daily_calendar()
+        return f"KI-Kalender: {result.get('days', 0)} Tage, erstes Thema: {result.get('first_day', {}).get('content', {}).get('title', '?')[:60]}"
+    except ImportError:
+        return "ai_content_calendar Modul fehlt"
+    except Exception as e:
+        return f"KI-Kalender Fehler: {e}"
+
+
+async def task_revenue_optimize() -> str:
+    """Alle 12h: KI analysiert Revenue und sendet Optimierungs-Empfehlungen per Telegram."""
+    import aiohttp, json as _json
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not anthropic_key:
+        return "Revenue optimize: ANTHROPIC_API_KEY fehlt"
+    try:
+        from modules.digistore24_automation import get_sales_stats
+        ds24_stats = await get_sales_stats()
+    except Exception:
+        ds24_stats = {}
+    prompt = (
+        "Du bist ein E-Commerce Revenue-Experte (DACH-Markt).\n"
+        f"Revenue-Daten: {_json.dumps(ds24_stats, default=str)[:800]}\n"
+        "Gib 3 konkrete sofort umsetzbare Maßnahmen zur Umsatzsteigerung. "
+        "Format: nummerierte Liste, je 1 Satz."
+    )
+    try:
+        async with aiohttp.ClientSession() as session:
+            resp = await session.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
+                         "content-type": "application/json"},
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
+                      "messages": [{"role": "user", "content": prompt}]},
+                timeout=aiohttp.ClientTimeout(total=30),
+            )
+            data = await resp.json()
+            recommendations = data.get("content", [{}])[0].get("text", "Keine Empfehlung")
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        if token and chat_id:
+            async with aiohttp.ClientSession() as s:
+                await s.post(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    json={"chat_id": chat_id,
+                          "text": f"💰 Revenue-Optimierung KI:\n{recommendations[:800]}"},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                )
+        return f"Revenue optimize: {recommendations[:100]}"
+    except Exception as e:
+        return f"Revenue optimize Fehler: {e}"
+
+
+async def task_google_index_submit() -> str:
+    """Submit all key URLs to Google Indexing API / sitemap ping daily."""
+    import aiohttp
+    key = os.getenv("GOOGLE_INDEXING_KEY", "")
+    urls = [
+        "https://dudirudibot-mega-production.up.railway.app/",
+        "https://bullpowerhubgit.github.io/shopify-brutal-tuning-landing/",
+        "https://bullpower-lead.netlify.app/",
+        "https://bullpower-hub-portal.netlify.app/",
+        "https://bullpower-ai-tools.netlify.app/",
+    ]
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            if key:
+                submitted = 0
+                headers = {"Authorization": f"Bearer {key}", "Content-Type": "application/json"}
+                for url in urls:
+                    try:
+                        async with s.post(
+                            "https://indexing.googleapis.com/v3/urlNotifications:publish",
+                            headers=headers, json={"url": url, "type": "URL_UPDATED"},
+                        ) as r:
+                            if r.status in (200, 201):
+                                submitted += 1
+                    except Exception:
+                        pass
+                return f"Google Indexing API: {submitted}/{len(urls)} URLs"
+            # Fallback: free sitemap ping
+            sitemap = "https://dudirudibot-mega-production.up.railway.app/sitemap.xml"
+            for ping in [f"https://www.google.com/ping?sitemap={sitemap}",
+                         f"https://www.bing.com/ping?sitemap={sitemap}"]:
+                try:
+                    await s.get(ping)
+                except Exception:
+                    pass
+        return f"Sitemap Ping → Google+Bing ({len(urls)} URLs, GOOGLE_INDEXING_KEY optional)"
+    except Exception as e:
+        return f"Google Index Fehler: {e}"
+
+
+async def task_push_notify_broadcast() -> str:
+    """Attempt Web Push to all subscribers every 6h (requires pywebpush + VAPID keys)."""
+    import aiohttp
+    supa_url  = os.getenv("SUPABASE_URL", "")
+    supa_key  = os.getenv("SUPABASE_SERVICE_KEY", "")
+    vapid_key = os.getenv("VAPID_PRIVATE_KEY", "")
+    if not supa_url:
+        return "Supabase nicht konfiguriert"
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.get(
+                f"{supa_url}/rest/v1/push_subscriptions?select=id",
+                headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}",
+                         "Prefer": "count=exact"},
+            ) as r:
+                cr = r.headers.get("content-range", "0/0")
+                total = cr.split("/")[-1]
+        if not vapid_key:
+            return f"VAPID_PRIVATE_KEY fehlt — {total} Push-Subscriber bereit sobald VAPID gesetzt"
+        # pywebpush send
+        try:
+            import json as _json
+            from pywebpush import webpush
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.get(
+                    f"{supa_url}/rest/v1/push_subscriptions?select=endpoint,p256dh,auth&limit=500",
+                    headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}"},
+                ) as r:
+                    subs = await r.json(content_type=None)
+            sent = 0
+            payload = _json.dumps({"title": "🔥 BullPower Hub — Neues Update!",
+                                   "body": "KI-Automatisierung für deinen Shop. Jetzt starten!",
+                                   "url": "https://bullpower-lead.netlify.app/"})
+            for sub in (subs if isinstance(subs, list) else []):
+                try:
+                    webpush(subscription_info={"endpoint": sub["endpoint"],
+                                               "keys": {"p256dh": sub["p256dh"], "auth": sub["auth"]}},
+                            data=payload, vapid_private_key=vapid_key,
+                            vapid_claims={"sub": "mailto:bullpowersrtkennels@gmail.com",
+                                          "aud": sub["endpoint"].split("/")[2]})
+                    sent += 1
+                except Exception:
+                    pass
+            return f"Web Push: {sent}/{len(subs)} gesendet"
+        except ImportError:
+            return f"pywebpush nicht installiert — pip install pywebpush zum Aktivieren"
+    except Exception as e:
+        return f"Push Notify Fehler: {e}"
+
+
+async def task_shopify_seo_blog() -> str:
+    """Publish 3 AI-SEO blog posts to Shopify every 12h."""
+    try:
+        from modules.shopify_seo_auto import auto_publish_blog_post
+        kws = ["Shopify Automatisierung mit KI 2026",
+               "eCommerce Umsatz steigern Tipps",
+               "Dropshipping Tool Vergleich"]
+        done = 0
+        for kw in kws:
+            try:
+                res = await auto_publish_blog_post(kw)
+                if res and not isinstance(res, Exception):
+                    done += 1
+            except Exception:
+                pass
+        return f"Shopify SEO Blog: {done}/3 Posts published"
+    except ImportError:
+        return "shopify_seo_auto nicht verfügbar"
+    except Exception as e:
+        return f"Shopify SEO Blog Fehler: {e}"
+
+
+async def task_viral_referral_trigger() -> str:
+    """Tag recent leads in Klaviyo to trigger viral referral flow daily."""
+    import aiohttp
+    klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
+    supa_url    = os.getenv("SUPABASE_URL", "")
+    supa_key    = os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not klaviyo_key or not supa_url:
+        return "Klaviyo/Supabase fehlt"
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.get(
+                f"{supa_url}/rest/v1/lead_events?select=email,name&limit=50&order=created_at.desc",
+                headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}"},
+            ) as r:
+                leads = await r.json(content_type=None)
+        if not isinstance(leads, list) or not leads:
+            return "Keine Leads für Referral-Trigger"
+        tagged = 0
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            for lead in leads[:20]:
+                email = lead.get("email", "")
+                if not email:
+                    continue
+                ref = email.split("@")[0]
+                try:
+                    await s.post(
+                        "https://a.klaviyo.com/api/profile-import/",
+                        headers={"Authorization": f"Klaviyo-API-Key {klaviyo_key}",
+                                 "revision": "2024-06-15", "Content-Type": "application/json"},
+                        json={"data": {"type": "profile", "attributes": {
+                            "email": email,
+                            "properties": {"referral_url": f"https://dudirudibot-mega-production.up.railway.app/api/referral/{ref}",
+                                           "referral_triggered": True},
+                        }}},
+                    )
+                    tagged += 1
+                except Exception:
+                    pass
+        return f"Viral Referral: {tagged} Leads getagt"
+    except Exception as e:
+        return f"Referral Trigger Fehler: {e}"
+
+
+async def task_onboarding_sequence_trigger() -> str:
+    """Enroll new leads into Klaviyo 7-day onboarding sequence daily."""
+    import aiohttp
+    klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
+    supa_url    = os.getenv("SUPABASE_URL", "")
+    supa_key    = os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not klaviyo_key or not supa_url:
+        return "Klaviyo/Supabase fehlt"
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.get(
+                f"{supa_url}/rest/v1/lead_events?select=email,name,source&limit=30&order=created_at.desc",
+                headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}"},
+            ) as r:
+                leads = await r.json(content_type=None)
+        if not isinstance(leads, list):
+            leads = []
+        enrolled = 0
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            for lead in leads[:30]:
+                email = lead.get("email", "")
+                fname = (lead.get("name") or "").split()[0] or "Freund"
+                if not email:
+                    continue
+                try:
+                    await s.post(
+                        "https://a.klaviyo.com/api/profile-import/",
+                        headers={"Authorization": f"Klaviyo-API-Key {klaviyo_key}",
+                                 "revision": "2024-06-15", "Content-Type": "application/json"},
+                        json={"data": {"type": "profile", "attributes": {
+                            "email": email, "first_name": fname,
+                            "properties": {"onboarding_day": 1, "onboarding_started": True,
+                                           "product": lead.get("source", "shopify")},
+                        }}},
+                    )
+                    enrolled += 1
+                except Exception:
+                    pass
+        return f"Onboarding Sequenz: {enrolled} Leads enrolled (Day 1 Tag gesetzt)"
+    except Exception as e:
+        return f"Onboarding Sequenz Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -1463,6 +1783,17 @@ TASKS = [
     ("instagram_auto_post",     task_instagram_auto_post,    14400,  100),   # 4h — Instagram post
     ("linkedin_auto_post",      task_linkedin_auto_post,     21600,  110),   # 6h — LinkedIn AI post
     ("youtube_auto_post",       task_youtube_auto_post,       7200,  120),   # 2h — YouTube community post
+    # ── Autonomy Max-Upgrades ─────────────────────────────────────────────
+    ("competitor_monitor",      task_competitor_monitor,     86400,  500),   # daily — Konkurrenz-Check
+    ("ab_test_analyze",         task_ab_test_analyze,        43200,  510),   # 12h — A/B Gewinner auswählen
+    ("ai_content_calendar",     task_ai_content_calendar,    86400,  520),   # daily 06:00 — KI-Kalender
+    ("revenue_optimize",        task_revenue_optimize,       43200,  530),   # 12h — Revenue-KI-Empfehlungen
+    # ── REVOLUTION PACK — SEO + Traffic + Automation Max ─────────────────
+    ("google_index_submit",     task_google_index_submit,    86400,  540),   # daily — Google+Bing Indexierung
+    ("push_notify_broadcast",   task_push_notify_broadcast,  21600,  550),   # 6h — Web Push an Subscriber
+    ("shopify_seo_blog",        task_shopify_seo_blog,       43200,  560),   # 12h — 3x KI Shopify Blog Posts
+    ("viral_referral_trigger",  task_viral_referral_trigger, 86400,  570),   # daily — Viral Referral Loop
+    ("onboarding_seq_trigger",  task_onboarding_sequence_trigger, 43200, 580), # 12h — 7-Day Onboarding
 ]
 
 
@@ -1501,19 +1832,58 @@ class AutomationScheduler:
             log.debug(f"[{name}] {result}")
             await asyncio.sleep(interval)
 
+    # Self-healing: consecutive fail counter per task
+    _fail_counts: Dict[str, int] = {}
+
+    async def _send_healing_alert(self, task_name: str, error: str, fails: int) -> None:
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        if not token or not chat_id:
+            return
+        msg = (f"⚠️ Self-Healing Alert\n"
+               f"Task: {task_name}\n"
+               f"Fehler {fails}x: {error[:200]}\n"
+               f"Auto-Retry läuft...")
+        try:
+            import aiohttp as _aiohttp
+            async with _aiohttp.ClientSession() as s:
+                await s.post(
+                    f"https://api.telegram.org/bot{token}/sendMessage",
+                    json={"chat_id": chat_id, "text": msg},
+                    timeout=_aiohttp.ClientTimeout(total=10),
+                )
+        except Exception:
+            pass
+
     async def _execute(self, name: str, fn: Callable) -> str:
         t0 = time.monotonic()
         try:
             result = await fn()
             ms = int((time.monotonic() - t0) * 1000)
             _log_run(name, True, result or "", ms)
+            self._fail_counts[name] = 0  # reset on success
             return result or "OK"
         except Exception as e:
             ms = int((time.monotonic() - t0) * 1000)
             err = f"{type(e).__name__}: {e}"
             _log_run(name, False, err, ms)
             log.error(f"[{name}] {err}")
-            return err
+            # Self-healing: track consecutive failures
+            self._fail_counts[name] = self._fail_counts.get(name, 0) + 1
+            fails = self._fail_counts[name]
+            if fails >= 3:
+                await self._send_healing_alert(name, err, fails)
+                self._fail_counts[name] = 0  # reset after alert
+            # Exponential backoff retry (max 5 min)
+            backoff = min(60 * fails, 300)
+            log.info(f"[{name}] retry in {backoff}s (fail #{fails})")
+            await asyncio.sleep(backoff)
+            try:
+                retry_result = await fn()
+                self._fail_counts[name] = 0
+                return f"RECOVERED: {retry_result or 'OK'}"
+            except Exception as e2:
+                return f"FAILED after retry: {e2}"
 
     def status(self) -> Dict:
         stats = get_task_stats()
