@@ -4498,6 +4498,11 @@ async def create_app():
     app.router.add_get( "/api/linkedin/auth",         handle_linkedin_auth)
     app.router.add_get( "/api/linkedin/callback",     handle_linkedin_callback)
     app.router.add_get( "/api/linkedin/status",       handle_linkedin_status)
+    # REVOLUTION PACK — Traffic + SEO + Automation Max
+    app.router.add_get( "/api/referral/{ref_code}",   handle_referral_redirect)
+    app.router.add_post("/api/push/subscribe",         handle_push_subscribe)
+    app.router.add_post("/api/push/send",              handle_push_send)
+    app.router.add_get( "/api/push/vapid-key",         handle_vapid_public_key)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
