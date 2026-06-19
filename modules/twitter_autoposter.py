@@ -111,15 +111,69 @@ def _oauth1_header(method: str, url: str, params: dict = None) -> str:
 # Tweet senden via Twitter API v2
 # ─────────────────────────────────────────────────────────────────────────────
 
-MAKE_WEBHOOK_URL = os.getenv("TWITTER_MAKE_WEBHOOK", "")
+MAKE_WEBHOOK_URL  = os.getenv("TWITTER_MAKE_WEBHOOK", "")
+TWITTER_USERNAME  = os.getenv("TWITTER_USERNAME", "AIITEC")
+TWITTER_EMAIL     = os.getenv("TWITTER_EMAIL", "aiitecbuuss@gmail.com")
+TWITTER_PASSWORD  = os.getenv("TWITTER_PASSWORD", "")
+
+TWIKIT_COOKIES_FILE = Path(os.getenv("DATA_DIR", "/tmp")) / "twikit_cookies.json"
+_twikit_client = None
+
+
+async def _get_twikit_client():
+    """Twikit Client mit Login (inoffizielle Twitter Web API — kein bezahlter Plan nötig)."""
+    global _twikit_client
+    if _twikit_client:
+        return _twikit_client
+    if not TWITTER_PASSWORD:
+        return None
+    try:
+        from twikit import Client as TwikitClient
+        c = TwikitClient("de-DE")
+        if TWIKIT_COOKIES_FILE.exists():
+            c.load_cookies(str(TWIKIT_COOKIES_FILE))
+            log.info("twikit: cookies geladen")
+        else:
+            await c.login(
+                auth_info_1=TWITTER_USERNAME,
+                auth_info_2=TWITTER_EMAIL,
+                password=TWITTER_PASSWORD,
+            )
+            c.save_cookies(str(TWIKIT_COOKIES_FILE))
+            log.info("twikit: login erfolgreich, cookies gespeichert")
+        _twikit_client = c
+        return c
+    except Exception as e:
+        log.error("twikit login fehler: %s", e)
+        return None
 
 
 async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
-    """Sendet Tweet: zuerst Make.com Webhook, Fallback Twitter API v2."""
+    """Sendet Tweet: 1) twikit (web, kostenlos) → 2) Make.com Webhook → 3) API v2."""
     import aiohttp
     text = text[:280]
 
-    # Weg 1: Make.com Webhook (kostenlos, umgeht API-Bezahlschranke)
+    # Weg 1: twikit (inoffizielle Web-API, KEIN bezahlter Plan nötig)
+    client = await _get_twikit_client()
+    if client:
+        try:
+            tweet = await client.create_tweet(text=text, reply_to=reply_to_id)
+            tweet_id = str(tweet.id)
+            log.info("twikit tweet gesendet: %s", tweet_id)
+            # Telegram Notification
+            if TELEGRAM_TOKEN and TELEGRAM_CHAT:
+                async with aiohttp.ClientSession() as sess:
+                    await sess.post(
+                        f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+                        json={"chat_id": TELEGRAM_CHAT, "text": f"🐦 Tweet live!\nhttps://twitter.com/{TWITTER_USERNAME}/status/{tweet_id}\n\n{text[:100]}..."},
+                    )
+            return {"ok": True, "id": tweet_id, "via": "twikit", "url": f"https://twitter.com/{TWITTER_USERNAME}/status/{tweet_id}"}
+        except Exception as e:
+            log.warning("twikit fehler: %s — versuche Fallback", e)
+            _twikit_client = None  # Reset für nächsten Versuch
+            TWIKIT_COOKIES_FILE.unlink(missing_ok=True)
+
+    # Weg 2: Make.com Webhook (falls konfiguriert)
     if MAKE_WEBHOOK_URL:
         try:
             async with aiohttp.ClientSession() as session:
@@ -135,7 +189,7 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
         except Exception as e:
             log.warning("Make webhook error: %s", e)
 
-    # Weg 2: Direkte Twitter API v2
+    # Weg 3: Direkte Twitter API v2
     try:
         url = f"{TWITTER_API_V2}/tweets"
         payload = {"text": text}
