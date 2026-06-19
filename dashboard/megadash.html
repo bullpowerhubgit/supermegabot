@@ -702,28 +702,42 @@ async function triggerAction(path, method, label, msg) {
 }
 
 // ─── Revenue ─────────────────────────────────────────────────────────────────
+// API response: {ds24:{stats:{total,orders_total,...}}, stripe:{available_eur,...}, shopify:{revenue_today_eur,...}}
 async function loadRevenue() {
   try {
     const d = await api('GET', '/api/revenue/summary');
-    const ds24   = d.digistore24 || d.ds24 || {};
-    const stripe = d.stripe || {};
-    const shopify= d.shopify || {};
 
-    const ds24Rev = ds24.total_revenue || ds24.revenue || 0;
-    const strRev  = stripe.mrr || stripe.total || 0;
-    const shopRev = shopify.revenue || 0;
+    // DS24: nested under ds24.stats
+    const ds24stats = (d.ds24 || d.digistore24 || {}).stats || (d.ds24 || d.digistore24 || {});
+    const ds24Rev   = parseFloat(ds24stats.total || ds24stats.total_revenue || ds24stats.revenue || 0);
+    const ds24Ord   = parseInt(ds24stats.orders_total || ds24stats.orders || 0);
+
+    // Stripe
+    const stripe  = d.stripe || {};
+    const strRev  = parseFloat(stripe.available_eur || stripe.mrr || stripe.total || 0);
+    const strSubs = parseInt(stripe.subscriptions || 0);
+
+    // Shopify
+    const shopify = d.shopify || {};
+    const shopRev = parseFloat(shopify.revenue_today_eur || shopify.revenue || 0);
+    const shopOrd = parseInt(shopify.orders_today || 0);
+
     const total   = ds24Rev + strRev + shopRev;
 
-    setText('ds24-rev', '€' + fmt(ds24Rev));
-    setText('ds24-orders', (ds24.total_orders||ds24.orders||0) + ' Bestellungen');
-    setText('stripe-rev', '€' + fmt(strRev));
+    setText('ds24-rev',    '€' + fmt(ds24Rev));
+    setText('ds24-orders', ds24Ord + ' Bestellungen');
+    setText('ds24-trend',  ds24Ord > 0 ? `✅ ${ds24Ord} Käufe total` : '⏳ Warte auf nächste Bestellung');
+    setText('stripe-rev',  '€' + fmt(strRev));
+    setText('stripe-sub',  strSubs > 0 ? strSubs + ' aktive Abos' : 'MRR / Subscriptions');
     setText('shopify-rev', '€' + fmt(shopRev));
-    setText('total-rev', '€' + fmt(total));
-    setText('h-revenue', '€' + fmt(total));
-    setText('h-orders', (ds24.total_orders||ds24.orders||0) + (stripe.subscriptions||0));
-    addLog('ok', `Revenue: DS24 €${fmt(ds24Rev)} | Stripe €${fmt(strRev)} | Shopify €${fmt(shopRev)}`);
+    setText('shopify-sub', shopOrd > 0 ? shopOrd + ' Orders heute' : 'Produkte aktiv');
+    setText('total-rev',   '€' + fmt(total));
+    setText('total-sub',   `DS24 €${fmt(ds24Rev)} + Stripe €${fmt(strRev)} + Shopify €${fmt(shopRev)}`);
+    setText('h-revenue',   '€' + fmt(total));
+    setText('h-orders',    (ds24Ord + strSubs + shopOrd).toString());
+    addLog('ok', `Revenue geladen: DS24 €${fmt(ds24Rev)} (${ds24Ord} Orders) | Stripe €${fmt(strRev)} | Shopify €${fmt(shopRev)} | TOTAL €${fmt(total)}`);
   } catch(e) {
-    addLog('warn', 'Revenue API fehler: ' + e.message);
+    addLog('warn', 'Revenue API Fehler: ' + e.message);
   }
 }
 
@@ -743,8 +757,8 @@ async function loadPlatformStatus() {
     setPlatform('plt-twitter',  d.twitter?.configured,   d.twitter?.configured  ? 'Aktiv' : 'Kein Token');
     setPlatform('plt-linkedin', d.linkedin?.configured,  d.linkedin?.configured ? 'Aktiv' : 'Kein Token');
     setPlatform('plt-telegram', true,                    'Aktiv ✓');
-    setPlatform('plt-devto',    d.devto?.configured || !!d.devto, d.devto?.configured ? 'Aktiv' : 'Key fehlt');
-    setPlatform('plt-hashnode', d.hashnode?.configured || !!d.hashnode, d.hashnode?.configured ? 'Aktiv' : 'Key fehlt');
+    setPlatform('plt-devto',    d.devto?.configured,   d.devto?.configured   ? '✅ Key aktiv' : '⚠️ Key fehlt');
+    setPlatform('plt-hashnode', d.hashnode?.configured, d.hashnode?.configured ? '✅ Key aktiv' : '⚠️ Key fehlt');
     setPlatform('plt-medium',   d.medium?.configured,   d.medium?.configured  ? 'Aktiv' : 'Key optional');
     setPlatform('plt-github',   true,                   'GitHub Pages ✓');
   } catch(e) {
