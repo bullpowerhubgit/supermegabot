@@ -19,6 +19,7 @@ IG_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID", os.getenv("IG_ACCOUNT_ID", "")
 PINTEREST_ACCESS_TOKEN = os.getenv("PINTEREST_ACCESS_TOKEN", "")
 PINTEREST_BOARD_ID = os.getenv("PINTEREST_BOARD_ID", "")
 PORT = int(os.getenv("PORT", 8091))
+SCHEDULE_INTERVAL = int(os.getenv("POST_INTERVAL_SECONDS", 1800))  # default 30 min
 MC_API_KEY  = os.getenv("MAILCHIMP_API_KEY", "")
 MC_SERVER   = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 MC_LIST_ID  = os.getenv("MAILCHIMP_LIST_ID", "")
@@ -331,7 +332,7 @@ async def scheduler():
         except Exception as e:
             logger.error(f"Content cycle error: {e}")
             await send_telegram(f"⚠️ Meta Engine Fehler: {e}")
-        await asyncio.sleep(4 * 3600)
+        await asyncio.sleep(SCHEDULE_INTERVAL)
 
 
 async def health_handler(request):
@@ -363,7 +364,7 @@ async def health_handler(request):
         "facebook_token_set": bool(FB_ACCESS_TOKEN and FB_PAGE_ID),
         "instagram_connected": bool(IG_ACCOUNT_ID) and fb_token_valid,
         "pinterest_connected": bool(PINTEREST_ACCESS_TOKEN and PINTEREST_BOARD_ID),
-        "schedule": "every 4 hours",
+        "schedule": f"every {SCHEDULE_INTERVAL // 60} minutes",
         "warning": None if fb_token_valid else ("Facebook token expired or invalid — refresh at developers.facebook.com" if FB_ACCESS_TOKEN else "FACEBOOK_ACCESS_TOKEN not set"),
     })
 
@@ -372,6 +373,20 @@ async def trigger_handler(request):
     from aiohttp import web
     asyncio.create_task(content_cycle())
     return web.json_response({"status": "triggered", "message": "Content cycle started"})
+
+
+async def schedule_set_handler(request):
+    from aiohttp import web
+    global SCHEDULE_INTERVAL
+    try:
+        body = await request.json()
+        minutes = int(body.get("interval_minutes", 30))
+        if minutes < 5 or minutes > 1440:
+            return web.json_response({"error": "interval_minutes must be 5-1440"}, status=400)
+        SCHEDULE_INTERVAL = minutes * 60
+        return web.json_response({"status": "ok", "interval_minutes": minutes, "interval_seconds": SCHEDULE_INTERVAL})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=400)
 
 
 async def create_posts_from_article(title: str, url: str, keyword: str, excerpt: str):
@@ -728,6 +743,7 @@ async def main():
     app = web.Application()
     app.router.add_get("/health", health_handler)
     app.router.add_post("/api/trigger", trigger_handler)
+    app.router.add_post("/api/schedule/set", schedule_set_handler)
     app.router.add_get("/api/posts", posts_handler)
     app.router.add_post("/api/ingest", ingest_handler)
     app.router.add_get("/api/seo/products", seo_products_handler)
@@ -753,7 +769,7 @@ async def main():
         f"📘 Facebook: {fb_status}\n"
         f"📸 Instagram: {ig_status}\n"
         f"📌 Pinterest: {pin_status}\n"
-        f"⏰ Posting alle 4 Stunden\n"
+        f"⏰ Posting alle {SCHEDULE_INTERVAL // 60} Minuten\n"
         f"Erster Content in 30 Sekunden..."
     )
 
