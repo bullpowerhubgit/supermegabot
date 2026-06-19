@@ -3383,6 +3383,113 @@ async def handle_referral_top(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_referral_redirect(req):
+    """GET /api/referral/{ref_code} — track + redirect to landing page."""
+    ref_code = req.match_info.get("ref_code", "")
+    try:
+        supa_url = os.getenv("SUPABASE_URL", "")
+        supa_key = os.getenv("SUPABASE_SERVICE_KEY", "")
+        if supa_url and supa_key and ref_code:
+            import aiohttp as _aio
+            import datetime as _dt
+            async with _aio.ClientSession(timeout=_aio.ClientTimeout(total=5)) as s:
+                await s.post(
+                    f"{supa_url}/rest/v1/referral_clicks",
+                    headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}",
+                             "Content-Type": "application/json", "Prefer": "return=minimal"},
+                    json={"ref_code": ref_code,
+                          "clicked_at": _dt.datetime.utcnow().isoformat()},
+                )
+    except Exception:
+        pass
+    return web.HTTPFound(
+        f"https://bullpowerhubgit.github.io/shopify-brutal-tuning-landing/?ref={ref_code}"
+    )
+
+
+async def handle_push_subscribe(req):
+    """POST /api/push/subscribe — store Web Push subscription in Supabase."""
+    try:
+        data     = await req.json()
+        endpoint = data.get("endpoint", "")
+        p256dh   = data.get("keys", {}).get("p256dh", "")
+        auth_key = data.get("keys", {}).get("auth", "")
+        if not endpoint:
+            return web.json_response({"ok": False, "error": "endpoint required"}, status=400)
+        supa_url = os.getenv("SUPABASE_URL", "")
+        supa_key = os.getenv("SUPABASE_SERVICE_KEY", "")
+        if supa_url and supa_key:
+            import aiohttp as _aio
+            import datetime as _dt
+            async with _aio.ClientSession(timeout=_aio.ClientTimeout(total=8)) as s:
+                await s.post(
+                    f"{supa_url}/rest/v1/push_subscriptions",
+                    headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}",
+                             "Content-Type": "application/json", "Prefer": "return=minimal"},
+                    json={"endpoint": endpoint, "p256dh": p256dh, "auth": auth_key,
+                          "created_at": _dt.datetime.utcnow().isoformat()},
+                )
+        return web.json_response({"ok": True, "subscribed": True})
+    except Exception as e:
+        log.error("handle_push_subscribe: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_push_send(req):
+    """POST /api/push/send — broadcast push notification to all subscribers."""
+    try:
+        vapid_key = os.getenv("VAPID_PRIVATE_KEY", "")
+        supa_url  = os.getenv("SUPABASE_URL", "")
+        supa_key  = os.getenv("SUPABASE_SERVICE_KEY", "")
+        if not vapid_key:
+            return web.json_response({"ok": False, "error": "VAPID_PRIVATE_KEY not set",
+                                      "setup": "https://vapidkeys.com"})
+        body    = await req.json()
+        title   = body.get("title", "🔥 BullPower Hub")
+        message = body.get("message", "Neue KI-Automatisierung!")
+        url     = body.get("url", "https://bullpower-lead.netlify.app/")
+        import json as _json
+        import aiohttp as _aio
+        async with _aio.ClientSession(timeout=_aio.ClientTimeout(total=10)) as s:
+            async with s.get(
+                f"{supa_url}/rest/v1/push_subscriptions?select=endpoint,p256dh,auth&limit=500",
+                headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}"},
+            ) as r:
+                subs = await r.json(content_type=None)
+        payload = _json.dumps({"title": title, "body": message, "url": url,
+                               "icon": "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png"})
+        sent = 0
+        try:
+            from pywebpush import webpush
+            for sub in (subs if isinstance(subs, list) else []):
+                try:
+                    webpush(
+                        subscription_info={"endpoint": sub["endpoint"],
+                                           "keys": {"p256dh": sub["p256dh"], "auth": sub["auth"]}},
+                        data=payload, vapid_private_key=vapid_key,
+                        vapid_claims={"sub": "mailto:bullpowersrtkennels@gmail.com",
+                                      "aud": sub["endpoint"].split("/")[2]},
+                    )
+                    sent += 1
+                except Exception:
+                    pass
+        except ImportError:
+            return web.json_response({"ok": False, "error": "pip install pywebpush"})
+        return web.json_response({"ok": True, "sent": sent, "total": len(subs)})
+    except Exception as e:
+        log.error("handle_push_send: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_vapid_public_key(req):
+    """GET /api/push/vapid-key — public VAPID key for Service Worker registration."""
+    pub = os.getenv("VAPID_PUBLIC_KEY", "")
+    if not pub:
+        return web.json_response({"ok": False, "error": "VAPID_PUBLIC_KEY not set",
+                                  "setup": "Generate: https://vapidkeys.com → set in Railway"})
+    return web.json_response({"ok": True, "publicKey": pub})
+
+
 async def handle_review_automation_run(req):
     try:
         from modules.growth_engine import run_review_automation
@@ -4373,6 +4480,12 @@ async def create_app():
     app.router.add_post("/api/brutus/run",            handle_brutus_run)
     app.router.add_get("/api/brutus/status",          handle_brutus_status)
     app.router.add_get("/api/offers",                 handle_offers)
+    # Autonomy Max-Upgrades
+    app.router.add_get("/api/ab/{test_name}",         handle_ab_variant)
+    app.router.add_post("/api/ab/conversion",         handle_ab_conversion)
+    app.router.add_get("/api/ab/winners",             handle_ab_winners)
+    app.router.add_post("/api/revenue/optimize",      handle_revenue_optimize)
+    app.router.add_get("/api/content/calendar",       handle_content_calendar)
     app.router.add_post("/api/auto-poster/run",       handle_auto_poster_run)
     app.router.add_get("/api/auto-poster/status",     handle_auto_poster_status)
     app.router.add_post("/api/shopify/seo/run",       handle_shopify_seo_run)
@@ -5254,6 +5367,97 @@ async def handle_brutus_status(req):
         "channels": channel_status,
         "pixel_url": "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png",
     })
+
+
+async def handle_ab_variant(req):
+    """GET /api/ab/{test_name}?session=xxx — A/B Variante für Session."""
+    test_name = req.match_info.get("test_name", "headline")
+    session_id = req.rel_url.query.get("session", "anon")
+    try:
+        from modules.ab_testing_engine import get_variant, get_all_variants
+        if test_name == "all":
+            variants = await get_all_variants(session_id)
+            return web.json_response({"ok": True, "session": session_id, "variants": variants})
+        variant = await get_variant(test_name, session_id)
+        return web.json_response({"ok": True, "test": test_name, "variant": variant, "session": session_id})
+    except Exception as exc:
+        return web.json_response({"ok": False, "error": str(exc)}, status=500)
+
+
+async def handle_ab_conversion(req):
+    """POST /api/ab/conversion — Conversion-Event aufzeichnen."""
+    try:
+        data = await req.json()
+        from modules.ab_testing_engine import record_conversion
+        await record_conversion(
+            data.get("test", ""),
+            data.get("variant", ""),
+            bool(data.get("converted", True)),
+            data.get("session", ""),
+        )
+        return web.json_response({"ok": True})
+    except Exception as exc:
+        return web.json_response({"ok": False, "error": str(exc)}, status=500)
+
+
+async def handle_ab_winners(req):
+    """GET /api/ab/winners — aktuelle A/B Gewinner."""
+    try:
+        from modules.ab_testing_engine import analyze_and_select_winner, get_current_winners
+        results = await analyze_and_select_winner()
+        return web.json_response({"ok": True, "winners": get_current_winners(), "analysis": results})
+    except Exception as exc:
+        return web.json_response({"ok": False, "error": str(exc)}, status=500)
+
+
+async def handle_revenue_optimize(req):
+    """POST /api/revenue/optimize — KI-Empfehlungen zur Umsatzsteigerung."""
+    import aiohttp as _aio, json as _json
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not anthropic_key:
+        return web.json_response({"ok": False, "error": "ANTHROPIC_API_KEY fehlt"})
+    try:
+        from modules.digistore24_automation import get_sales_stats
+        ds24_stats = await get_sales_stats()
+    except Exception:
+        ds24_stats = {}
+    prompt = (
+        "Du bist ein E-Commerce Revenue-Optimierungs-Experte (DACH-Markt).\n"
+        f"Revenue-Daten: {_json.dumps(ds24_stats, default=str)[:1000]}\n"
+        "Gib 5 konkrete, sofort umsetzbare Maßnahmen zur Umsatzsteigerung.\n"
+        'Format: JSON Array [{"action":"...","expected_impact":"...","effort":"low|medium|high"}]'
+    )
+    try:
+        async with _aio.ClientSession() as session:
+            resp = await session.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
+                         "content-type": "application/json"},
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1000,
+                      "messages": [{"role": "user", "content": prompt}]},
+                timeout=_aio.ClientTimeout(total=30),
+            )
+            data = await resp.json()
+            raw = data.get("content", [{}])[0].get("text", "[]")
+            raw = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
+            recommendations = _json.loads(raw)
+        return web.json_response({"ok": True, "recommendations": recommendations, "based_on": ds24_stats})
+    except Exception as exc:
+        return web.json_response({"ok": False, "error": str(exc)})
+
+
+async def handle_content_calendar(req):
+    """GET /api/content/calendar — holt den KI-Inhaltskalender."""
+    try:
+        from modules.ai_content_calendar import get_todays_content, generate_daily_calendar
+        force = req.rel_url.query.get("force", "") == "1"
+        if force:
+            result = await generate_daily_calendar()
+            return web.json_response({"ok": True, "generated": result})
+        today = await get_todays_content()
+        return web.json_response({"ok": True, "today": today})
+    except Exception as exc:
+        return web.json_response({"ok": False, "error": str(exc)})
 
 
 async def handle_facebook_refresh(req):

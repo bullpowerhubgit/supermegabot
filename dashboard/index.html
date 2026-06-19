@@ -2347,6 +2347,45 @@ input[type="range"]::-webkit-slider-thumb {
       <div id="seo-status"></div>
     </section>
 
+    <!-- ═══════════════ AUTONOMIE STATUS ═══════════════ -->
+    <section id="section-autonomy" class="section">
+      <div class="section-header">
+        <div><h2>🤖 Autonomie-Status</h2><p>Self-Healing · A/B Testing · Competitor Watch · Revenue KI</p></div>
+        <div class="section-header-actions">
+          <button class="btn btn-primary btn-sm" onclick="loadAutonomyStatus()">↻ Refresh</button>
+          <button class="btn btn-secondary btn-sm" onclick="triggerRevenueOptimize()">💡 KI-Empfehlung</button>
+        </div>
+      </div>
+      <div id="autonomy-panel">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem">
+          <div class="card" style="text-align:center;padding:1.25rem">
+            <div style="font-size:2rem;font-weight:800;color:var(--green)" id="auto-tasks-today">—</div>
+            <div style="color:var(--text2);font-size:.85rem;margin-top:.25rem">Tasks heute</div>
+          </div>
+          <div class="card" style="text-align:center;padding:1.25rem">
+            <div style="font-size:2rem;font-weight:800;color:var(--blue)" id="auto-tasks-ok">—</div>
+            <div style="color:var(--text2);font-size:.85rem;margin-top:.25rem">Erfolgreich</div>
+          </div>
+          <div class="card" style="text-align:center;padding:1.25rem">
+            <div style="font-size:2rem;font-weight:800;color:var(--purple)" id="auto-tasks-total">—</div>
+            <div style="color:var(--text2);font-size:.85rem;margin-top:.25rem">Tasks registriert</div>
+          </div>
+          <div class="card" style="text-align:center;padding:1.25rem">
+            <div style="font-size:1rem;font-weight:700;color:var(--green)" id="auto-uptime">AKTIV</div>
+            <div style="color:var(--text2);font-size:.85rem;margin-top:.25rem">System-Status</div>
+          </div>
+        </div>
+        <div class="card" style="padding:1.25rem">
+          <div style="font-size:.8rem;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.75rem">Letzte Aktionen</div>
+          <div id="auto-last-actions" style="font-size:.82rem;color:var(--text2);line-height:1.8;font-family:'JetBrains Mono',monospace">Laden...</div>
+        </div>
+        <div id="ai-recommendations" style="display:none" class="card" style="padding:1.25rem;margin-top:1rem;border-color:rgba(124,93,250,.3)">
+          <div style="font-size:.8rem;font-weight:600;color:var(--purple);margin-bottom:.75rem">💡 KI Revenue-Empfehlungen</div>
+          <div id="ai-rec-content" style="font-size:.85rem;line-height:1.7"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- ═══════════════ REVENUE HUB ═══════════════ -->
     <section id="section-revenue" class="section">
       <div class="section-header"><h2>💹 Revenue Hub</h2><p>Umsatz aus allen Plattformen · Tages-Report</p></div>
@@ -4216,6 +4255,86 @@ async function sendKlaviyoCampaign() {
     ? `<div class="success-msg">✅ Campaign gesendet!</div>`
     : `<div class="error-msg">❌ ${d.error}</div>`;
 }
+
+// ════════════════════════════════════════════════════════════════
+// AUTONOMIE STATUS PANEL
+// ════════════════════════════════════════════════════════════════
+async function loadAutonomyStatus() {
+  try {
+    const r = await fetch('/api/scheduler/status');
+    const d = await r.json();
+    const tasks = d.tasks?.tasks || d.tasks || [];
+    const today = new Date().toISOString().slice(0, 10);
+
+    // Count today's runs from recent_runs (fallback to task stats)
+    let todayCount = 0, okCount = 0;
+    if (d.recent_runs) {
+      const todayRuns = d.recent_runs.filter(r => (r.started_at || '').startsWith(today));
+      todayCount = todayRuns.length;
+      okCount = todayRuns.filter(r => r.status === 'ok' || r.ok === true).length;
+    } else if (Array.isArray(tasks)) {
+      tasks.forEach(t => { if (t.last_run) todayCount++; if (t.ok > 0) okCount++; });
+    }
+
+    document.getElementById('auto-tasks-today').textContent = todayCount || '—';
+    document.getElementById('auto-tasks-ok').textContent = okCount || '—';
+    document.getElementById('auto-tasks-total').textContent =
+      (Array.isArray(tasks) ? tasks.length : d.task_count) || '—';
+
+    // Health uptime
+    try {
+      const hr = await fetch('/health');
+      const hd = await hr.json();
+      const upMin = Math.floor((hd.uptime_seconds || 0) / 60);
+      document.getElementById('auto-uptime').textContent =
+        hd.status === 'ok' ? `✅ UP ${upMin}min` : '⚠️ CHECK';
+    } catch(e) {}
+
+    // Last actions log
+    const runs = d.recent_runs || [];
+    const lines = runs.slice(0, 8).map(r => {
+      const time = (r.started_at || '').slice(11, 16);
+      const icon = (r.status === 'ok' || r.ok) ? '✅' : '⚠️';
+      return `${icon} ${time} — ${r.task || r.name || '?'}: ${String(r.result || r.status || '').slice(0, 60)}`;
+    });
+    document.getElementById('auto-last-actions').innerHTML =
+      lines.length ? lines.join('<br>') : 'Noch keine Aktionen heute — Tasks starten bald...';
+  } catch(e) {
+    document.getElementById('auto-last-actions').textContent = 'Fehler: ' + e.message;
+  }
+}
+
+async function triggerRevenueOptimize() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = '⏳ KI denkt...';
+  try {
+    const r = await fetch('/api/revenue/optimize', {method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}'});
+    const d = await r.json();
+    const panel = document.getElementById('ai-recommendations');
+    const content = document.getElementById('ai-rec-content');
+    panel.style.display = 'block';
+    if (d.ok && Array.isArray(d.recommendations)) {
+      content.innerHTML = d.recommendations.map((rec, i) =>
+        `<div style="padding:.5rem 0;border-bottom:1px solid var(--border)">
+          <strong style="color:var(--purple)">${i+1}. ${rec.action || rec}</strong>
+          ${rec.expected_impact ? `<br><span style="color:var(--text2)">Impact: ${rec.expected_impact} · Aufwand: ${rec.effort || '?'}</span>` : ''}
+        </div>`
+      ).join('');
+    } else {
+      content.textContent = d.error || JSON.stringify(d).slice(0, 300);
+    }
+  } catch(e) {
+    document.getElementById('ai-rec-content').textContent = 'Fehler: ' + e.message;
+    document.getElementById('ai-recommendations').style.display = 'block';
+  }
+  btn.disabled = false;
+  btn.textContent = '💡 KI-Empfehlung';
+}
+
+// Auto-refresh autonomy panel every 60s
+setInterval(loadAutonomyStatus, 60000);
+loadAutonomyStatus();
 
 // ════════════════════════════════════════════════════════════════
 // REVENUE HUB
