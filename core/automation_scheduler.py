@@ -2332,6 +2332,33 @@ async def task_ultra_seo_health() -> str:
         return f"SEO Health error: {e}"
 
 
+async def task_dynamic_pricing_cycle() -> str:
+    try:
+        from modules.dynamic_pricing import run_dynamic_pricing_cycle
+        r = await run_dynamic_pricing_cycle(max_products=50)
+        return f"Dynamic Pricing: checked={r.get('products_checked',0)} updated={r.get('prices_updated',0)}"
+    except Exception as e:
+        return f"Dynamic Pricing error: {e}"
+
+
+async def task_tiktok_sync() -> str:
+    try:
+        from modules.tiktok_shop_sync import sync_products_to_tiktok
+        r = await sync_products_to_tiktok()
+        return f"TikTok Sync: synced={r.get('synced',0)} skipped={r.get('skipped',0)}"
+    except Exception as e:
+        return f"TikTok Sync error: {e}"
+
+
+async def task_upsell_sequence_run() -> str:
+    try:
+        from modules.conversion_engine import generate_upsell_sequence
+        r = await generate_upsell_sequence()
+        return f"Upsell Sequence: {r.get('enrolled',0)} enrolled"
+    except Exception as e:
+        return f"Upsell Sequence error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -2487,6 +2514,10 @@ TASKS = [
     ("ultra_seo_health",        task_ultra_seo_health,        14400, 1150),  # 4h — Property Health Check
     # ── SOCIAL SCHEDULER — Twitter + Telegram Fallback ────────────────────────
     ("social_scheduler",        task_social_scheduler,        21600, 1200),  # 6h — Twitter post; Telegram fallback
+    # ── NEW MODULE SCHEDULER TASKS ────────────────────────────────────────────
+    ("dynamic_pricing_cycle",   task_dynamic_pricing_cycle,   14400, 7800),  # 4h — psychological .99 pricing
+    ("tiktok_product_sync",     task_tiktok_sync,             21600, 8100),  # 6h — Shopify→TikTok Shop sync
+    ("upsell_sequence_run",     task_upsell_sequence_run,     86400, 8400),  # daily — upsell enrolled buyers
 ]
 
 

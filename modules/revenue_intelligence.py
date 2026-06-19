@@ -188,6 +188,11 @@ async def identify_churn_risk() -> list[dict]:
         at_risk.append(entry)
         if score >= 60 and c.get("email"):
             log.info(f"High churn risk: {c.get('email')} score={score}")
+            try:
+                from modules.email_sequence_engine import enroll
+                await enroll(c["email"], "winback")
+            except Exception as _e:
+                log.warning(f"Winback enroll failed for {c.get('email')}: {_e}")
     return at_risk
 
 
