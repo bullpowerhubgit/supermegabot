@@ -313,7 +313,7 @@
   <!-- Revenue Strip -->
   <div class="rev-strip">
     <div class="rev-card c-green">
-      <div class="rev-label">💰 Digistore24</div>
+      <div class="rev-label">💰 Digistore24 — Gesamt</div>
       <div class="rev-val c-green" id="r-ds24">€–</div>
       <div class="rev-sub" id="r-ds24-o">– Bestellungen</div>
     </div>
@@ -323,17 +323,17 @@
       <div class="rev-sub" id="r-subs">– Abos aktiv</div>
     </div>
     <div class="rev-card c-purple">
-      <div class="rev-label">🛒 Shopify</div>
+      <div class="rev-label">🛒 Shopify Heute</div>
       <div class="rev-val c-purple" id="r-shop">€–</div>
       <div class="rev-sub" id="r-shop-o">– Orders heute</div>
     </div>
     <div class="rev-card c-orange">
-      <div class="rev-label">📊 Gesamt</div>
+      <div class="rev-label">📊 DS24 + Stripe + Shop</div>
       <div class="rev-val c-orange" id="r-tot">€–</div>
-      <div class="rev-sub">Alle Quellen</div>
+      <div class="rev-sub">Alle Quellen kombiniert</div>
     </div>
     <div class="rev-card c-pink">
-      <div class="rev-label">🎯 Tages-Ziel</div>
+      <div class="rev-label">🎯 Ziel €300/Tag</div>
       <div class="rev-val c-pink">€300</div>
       <div class="rev-sub">Mindest-Revenue/Tag</div>
       <div class="prog"><div class="prog-fill" id="prog" style="width:0%"></div></div>
@@ -578,24 +578,40 @@ async function loadHealth() {
   }
 }
 
-// Revenue
+// Revenue — uses /api/revenue/summary + /api/stripe/subscriptions
 async function loadRev() {
-  const d = await get('/api/revenue/status');
-  if(!d) return;
-  const pl = d.revenue?.platforms || {};
-  const ds24 = pl.digistore||{};
-  const st = d.revenue?.stripe||pl.stripe||{};
-  const sh = pl.shopify||{};
+  const [summ, stripeSubs] = await Promise.all([
+    get('/api/revenue/summary'),
+    get('/api/stripe/subscriptions'),
+  ]);
 
-  document.getElementById('r-ds24').textContent = '€'+(ds24.revenue||0).toFixed(0);
-  document.getElementById('r-ds24-o').textContent = (ds24.orders||0)+' Bestellungen';
-  document.getElementById('r-mrr').textContent = '€'+(st.mrr||0).toFixed(0)+'/mo';
-  document.getElementById('r-subs').textContent = (st.active_subscriptions||st.count||0)+' Abos aktiv';
-  document.getElementById('r-shop').textContent = '€'+(sh.revenue||0).toFixed(0);
-  document.getElementById('r-shop-o').textContent = (sh.orders||0)+' Orders';
-  const tot = (ds24.revenue||0)+(st.mrr||0)+(sh.revenue||0);
-  document.getElementById('r-tot').textContent = '€'+tot.toFixed(0);
-  document.getElementById('prog').style.width = Math.min(100,(tot/300)*100)+'%';
+  // DS24
+  const ds24stats = summ?.ds24?.stats || {};
+  const ds24Total = ds24stats.total || 0;
+  const ds24Today = ds24stats.today || 0;
+  const ds24Orders = ds24stats.orders_total || 0;
+  document.getElementById('r-ds24').textContent = '€' + ds24Total.toFixed(0);
+  document.getElementById('r-ds24-o').textContent = ds24Orders + ' Bestellungen gesamt';
+
+  // Stripe MRR
+  const mrr = stripeSubs?.mrr_eur || 0;
+  const activeSubs = stripeSubs?.active || 0;
+  document.getElementById('r-mrr').textContent = '€' + mrr.toFixed(0) + '/mo';
+  document.getElementById('r-subs').textContent = activeSubs + ' Abos aktiv';
+
+  // Shopify
+  const shopify = summ?.shopify || {};
+  const shopRev = shopify.revenue_today_eur || 0;
+  const shopOrders = shopify.orders_today || 0;
+  document.getElementById('r-shop').textContent = '€' + shopRev.toFixed(0);
+  document.getElementById('r-shop-o').textContent = shopOrders + ' Orders heute';
+
+  // Gesamt — DS24 total + Stripe MRR
+  const tot = ds24Total + mrr + shopRev;
+  document.getElementById('r-tot').textContent = '€' + tot.toFixed(0);
+  document.getElementById('prog').style.width = Math.min(100, (tot / 300) * 100) + '%';
+
+  addLog('Revenue: DS24 €'+ds24Total.toFixed(0)+' | Stripe €'+mrr.toFixed(0)+'/mo | Shopify €'+shopRev.toFixed(0), '');
 }
 
 // BRUTUS
