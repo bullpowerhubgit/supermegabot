@@ -4983,6 +4983,9 @@ async def create_app():
     app.router.add_get("/datenschutz",                handle_datenschutz)
     app.router.add_get("/privacy",                    handle_datenschutz)
     app.router.add_get("/privacy-policy",             handle_datenschutz)
+    app.router.add_get("/aiitec/datenschutz",         handle_datenschutz)
+    app.router.add_get("/aiitec/privacy-policy",      handle_datenschutz)
+    app.router.add_get("/bullpowerhub/datenschutz",   handle_datenschutz)
     app.router.add_get("/checkout/success",           handle_checkout_success)
 
     # ── Google OAuth2 ─────────────────────────────────────────────────────────
