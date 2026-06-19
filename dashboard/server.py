@@ -1809,10 +1809,10 @@ async def handle_mailchimp_campaign(req):
     <strong>Was ich dir anbiete:</strong><br><br>
     Ich analysiere deinen Shopify-Shop <strong>kostenlos</strong> mit KI — Produktbeschreibungen, SEO, Preise, Conversion-Optimierung. Du bekommst einen konkreten Aktionsplan innerhalb von 24 Stunden.
   </div>
-  <a href="https://bullpower-lead.netlify.app" class="cta">Kostenlosen Audit anfordern →</a>
+  <a href="https://bullpowerhubgit.github.io/bullpower-lead" class="cta">Kostenlosen Audit anfordern →</a>
   <p>Keine Kosten, kein Abo, kein Risiko. Nur ein ehrliches Audit was dir zeigt wo dein Shop Geld verliert.</p>
   <p>Wenn dir der Audit gefällt und du die Tools nutzen willst: BullPower Hub gibt dir alle 8 KI-Automatisierungs-Tools für €49/Monat — 14 Tage kostenlos testen.</p>
-  <a href="https://bullpower-hub-portal.netlify.app" style="color:#8b5cf6">→ Alle Tools ansehen</a>
+  <a href="https://bullpowerhubgit.github.io/bullpower-lead" style="color:#8b5cf6">→ Alle Tools ansehen</a>
   <div class="footer">
     Rudolf Sarkany · Wien, Österreich<br>
     <a href="*|UNSUB|*" style="color:#888">Abmelden</a>
@@ -1823,9 +1823,9 @@ async def handle_mailchimp_campaign(req):
                 "Hallo,\n\n"
                 "ich bin Rudolf aus Wien — ich baue KI-Tools für Shopify-Händler.\n\n"
                 "Die meisten Shops lassen 30-40% Umsatz auf dem Tisch durch fehlende SEO-Optimierung.\n\n"
-                "Kostenlosen Shop-Audit anfordern: https://bullpower-lead.netlify.app\n\n"
+                "Kostenlosen Shop-Audit anfordern: https://bullpowerhubgit.github.io/bullpower-lead\n\n"
                 "Rudolf Sarkany\n"
-                "BullPower Hub — https://bullpower-hub-portal.netlify.app"
+                "BullPower Hub — https://bullpowerhubgit.github.io/bullpower-lead"
             )
 
             content_payload = {"html": html_body, "plain_text": plain_text}
@@ -2037,12 +2037,12 @@ async def handle_seo_run(req):
 # ---------------------------------------------------------------------------
 
 _SITEMAPS = [
-    "https://bullpower-hub-portal.netlify.app/sitemap.xml",
-    "https://shopify-automaton-suite.netlify.app/sitemap.xml",
+    "https://bullpowerhubgit.github.io/bullpower-lead/sitemap.xml",
+    "https://bullpowerhubgit.github.io/shopify-suite-landing/sitemap.xml",
     "https://cognitive-symphony-ds24.netlify.app/sitemap.xml",
     "https://creatorstudio-pro.netlify.app/sitemap.xml",
     "https://digistore24-automation-suite.netlify.app/sitemap.xml",
-    "https://bullpower-lead.netlify.app/sitemap.xml",
+    "https://bullpowerhubgit.github.io/bullpower-lead/sitemap.xml",
 ]
 
 _PING_ENGINES = [
@@ -2182,7 +2182,7 @@ def _build_blog_page(keyword: str, slug: str, article_html: str) -> str:
 <title>{keyword} | BullPower Hub Blog</title>
 <meta name="description" content="{meta_desc}">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://shopify-automaton-suite.netlify.app/blog/{slug}/">
+<link rel="canonical" href="https://bullpowerhubgit.github.io/shopify-suite-landing/blog/{slug}/">
 <script defer data-domain="shopify-automaton-suite.netlify.app" src="https://plausible.io/js/script.js"></script>
 <style>
 *{{margin:0;padding:0;box-sizing:border-box}}
@@ -2202,12 +2202,12 @@ strong,b{{color:#e2e8f0;font-weight:700}}
 </head>
 <body>
 <div class="header">
-  <a href="https://bullpower-hub-portal.netlify.app">&#9889; BullPower Hub</a>
+  <a href="https://bullpowerhubgit.github.io/bullpower-lead">&#9889; BullPower Hub</a>
   <span>/ Blog</span>
 </div>
 <div class="container">
 {article_html}
-<a href="https://bullpower-lead.netlify.app" class="cta">&#128269; Kostenlosen Shopify-Audit holen</a>
+<a href="https://bullpowerhubgit.github.io/bullpower-lead" class="cta">&#128269; Kostenlosen Shopify-Audit holen</a>
 <a href="https://shopify-automaton-suite.netlify.app/blog/" class="back">&larr; Alle Artikel</a>
 </div>
 </body>
@@ -2247,7 +2247,7 @@ a:hover{{color:#c4b5fd;text-decoration:underline}}
 </head>
 <body>
 <div class="header">
-  <a href="https://bullpower-hub-portal.netlify.app">&#9889; BullPower Hub</a>
+  <a href="https://bullpowerhubgit.github.io/bullpower-lead">&#9889; BullPower Hub</a>
 </div>
 <div class="container">
 <h1>Blog</h1>
@@ -2360,7 +2360,7 @@ async def handle_seo_generate(req):
             log.warning("netlify CLI not found — article saved locally but not deployed")
             deploy_result["stderr"] = "netlify CLI not installed"
 
-        url = f"https://shopify-automaton-suite.netlify.app/blog/{slug}/"
+        url = f"https://bullpowerhubgit.github.io/shopify-suite-landing/blog/{slug}/"
         return web.json_response({
             "ok": True,
             "url": url,
@@ -3447,7 +3447,7 @@ async def handle_push_send(req):
         body    = await req.json()
         title   = body.get("title", "🔥 BullPower Hub")
         message = body.get("message", "Neue KI-Automatisierung!")
-        url     = body.get("url", "https://bullpower-lead.netlify.app/")
+        url     = body.get("url", "https://bullpowerhubgit.github.io/bullpower-lead/")
         import json as _json
         import aiohttp as _aio
         async with _aio.ClientSession(timeout=_aio.ClientTimeout(total=10)) as s:
@@ -4486,6 +4486,10 @@ async def create_app():
     app.router.add_get("/api/ab/winners",             handle_ab_winners)
     app.router.add_post("/api/revenue/optimize",      handle_revenue_optimize)
     app.router.add_get("/api/content/calendar",       handle_content_calendar)
+    app.router.add_post("/api/content/generate",      handle_content_generate)
+    app.router.add_get( "/api/content/trending",      handle_content_trending)
+    app.router.add_post("/api/content/translate",     handle_content_translate)
+    app.router.add_post("/api/content/predict",       handle_content_predict)
     app.router.add_post("/api/auto-poster/run",       handle_auto_poster_run)
     app.router.add_get("/api/auto-poster/status",     handle_auto_poster_status)
     app.router.add_post("/api/shopify/seo/run",       handle_shopify_seo_run)
@@ -4503,11 +4507,24 @@ async def create_app():
     app.router.add_get( "/api/linkedin/auth",         handle_linkedin_auth)
     app.router.add_get( "/api/linkedin/callback",     handle_linkedin_callback)
     app.router.add_get( "/api/linkedin/status",       handle_linkedin_status)
+    # CONVERSION MAXIMIZER
+    app.router.add_get( "/api/conversion/stats",      handle_conversion_stats)
+    app.router.add_post("/api/conversion/ab-test",    handle_conversion_ab_test)
+    app.router.add_get( "/api/conversion/leads",      handle_conversion_leads)
+    app.router.add_post("/api/conversion/upsell",     handle_conversion_upsell)
+    app.router.add_get( "/api/conversion/report",     handle_conversion_report)
+    app.router.add_post("/api/conversion/exit-intent",handle_conversion_exit_intent)
+    app.router.add_post("/api/conversion/personalize",handle_conversion_personalize)
     # REVOLUTION PACK — Traffic + SEO + Automation Max
     app.router.add_get( "/api/referral/{ref_code}",   handle_referral_redirect)
     app.router.add_post("/api/push/subscribe",         handle_push_subscribe)
     app.router.add_post("/api/push/send",              handle_push_send)
     app.router.add_get( "/api/push/vapid-key",         handle_vapid_public_key)
+    app.router.add_get( "/api/reddit/auth",            handle_reddit_auth_start)
+    app.router.add_get( "/api/reddit/callback",        handle_reddit_callback)
+    app.router.add_get( "/api/pinterest/auth",         handle_pinterest_auth)
+    app.router.add_get( "/api/pinterest/callback",     handle_pinterest_callback)
+    app.router.add_get( "/api/oauth/status",           handle_oauth_status)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -4660,7 +4677,7 @@ async def check_followup_leads() -> None:
             f"Lead von gestern: {email} ({name})\n"
             f"Shop: {domain}\n"
             f"Quelle: {source}\n\n"
-            "👉 https://bullpower-lead.netlify.app"
+            "👉 https://bullpowerhubgit.github.io/bullpower-lead"
         )
         await _tg_notify(msg)
         log.info("Follow-up reminder sent for lead: %s", email)
@@ -5456,6 +5473,59 @@ async def handle_revenue_optimize(req):
         return web.json_response({"ok": False, "error": str(exc)})
 
 
+async def handle_content_generate(req):
+    """POST /api/content/generate — {topic, product_url, languages} → full content package."""
+    try:
+        from modules.content_factory import generate_content_package
+        data = await req.json()
+        topic = data.get("topic", "Shopify Automation")
+        product_url = data.get("product_url", "")
+        languages = data.get("languages", ["de", "en"])
+        package = await generate_content_package(topic, product_url, languages)
+        return web.json_response({"ok": True, "package": package})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_content_trending(req):
+    """GET /api/content/trending — today's top trending topics for our niche."""
+    try:
+        from modules.content_factory import find_trending_topics
+        niche = req.rel_url.query.get("niche", "shopify ecommerce automation")
+        topics = await find_trending_topics(niche)
+        return web.json_response({"ok": True, "topics": topics, "count": len(topics)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_content_translate(req):
+    """POST /api/content/translate — {content, languages} → multilingual versions."""
+    try:
+        from modules.content_factory import translate_content
+        data = await req.json()
+        content = data.get("content", "")
+        languages = data.get("languages", ["de", "en", "fr", "es", "it"])
+        if not content:
+            return web.json_response({"ok": False, "error": "content required"}, status=400)
+        result = await translate_content(content, languages)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_content_predict(req):
+    """POST /api/content/predict — {content, platform} → performance prediction."""
+    try:
+        from modules.content_factory import predict_content_performance
+        data = await req.json()
+        content = data.get("content", "")
+        platform = data.get("platform", "instagram")
+        result = await predict_content_performance(content, platform)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_content_calendar(req):
     """GET /api/content/calendar — holt den KI-Inhaltskalender."""
     try:
@@ -5866,6 +5936,63 @@ async def handle_linkedin_callback(req):
 async def handle_linkedin_status(req):
     from modules.linkedin_oauth import get_linkedin_status
     return web.json_response(await get_linkedin_status())
+
+
+# ── CONVERSION MAXIMIZER handlers ────────────────────────────────────────────
+
+async def handle_conversion_stats(req):
+    """GET /api/conversion/stats — funnel + lead scoring overview."""
+    from modules.conversion_engine import analyze_funnel, score_all_leads
+    funnel, leads = await asyncio.gather(analyze_funnel(), score_all_leads())
+    return web.json_response({"funnel": funnel, "leads": leads})
+
+
+async def handle_conversion_ab_test(req):
+    """POST /api/conversion/ab-test — create new A/B test."""
+    from modules.conversion_engine import create_ab_test
+    data     = await req.json()
+    element  = data.get("element", "headline")
+    variants = data.get("variants", ["A", "B"])
+    goal     = data.get("goal", "conversion")
+    result   = await create_ab_test(element, variants, goal)
+    return web.json_response(result)
+
+
+async def handle_conversion_leads(req):
+    """GET /api/conversion/leads — scored lead list."""
+    from modules.conversion_engine import score_all_leads
+    return web.json_response(await score_all_leads())
+
+
+async def handle_conversion_upsell(req):
+    """POST /api/conversion/upsell — trigger upsell sequence for an order."""
+    from modules.conversion_engine import generate_upsell_sequence
+    data     = await req.json()
+    sequence = await generate_upsell_sequence(data)
+    return web.json_response({"steps": len(sequence), "sequence": sequence})
+
+
+async def handle_conversion_report(req):
+    """GET /api/conversion/report — today's AI revenue optimization report."""
+    from modules.conversion_engine import daily_revenue_optimization
+    return web.json_response(await daily_revenue_optimization())
+
+
+async def handle_conversion_exit_intent(req):
+    """POST /api/conversion/exit-intent — personalized exit offer."""
+    from modules.conversion_engine import generate_exit_intent_offer
+    data   = await req.json()
+    offer  = await generate_exit_intent_offer(data)
+    return web.json_response(offer)
+
+
+async def handle_conversion_personalize(req):
+    """POST /api/conversion/personalize — real-time visitor personalization."""
+    from modules.conversion_engine import personalize_experience
+    data       = await req.json()
+    visitor_id = data.pop("visitor_id", "anonymous")
+    result     = await personalize_experience(visitor_id, data)
+    return web.json_response(result)
 
 
 def _free_port(port: int) -> None:
