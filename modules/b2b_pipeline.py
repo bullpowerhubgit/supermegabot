@@ -225,3 +225,7 @@ async def get_stats() -> dict:
 
 # Aliases for dashboard compatibility
 run_daily_prospecting = run_prospecting
+get_pipeline_stats    = get_stats
+get_pipeline_leads    = get_leads
+update_lead_stage     = update_lead
+send_outreach_email   = run_outreach
