@@ -22,7 +22,7 @@ DB_PATH = DATA_DIR / "geheimwaffe.db"
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 SHOPIFY_URL = os.getenv("SHOPIFY_STORE_URL", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
+DEEPSEEK_KEY = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 PERPLEXITY_KEY = os.getenv("PERPLEXITY_API_KEY", "")
 
 try:
