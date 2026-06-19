@@ -17,7 +17,7 @@ import aiohttp
 log = logging.getLogger("Klaviyo")
 
 _BASE = "https://a.klaviyo.com/api"
-_REVISION = "2024-06-15"
+_REVISION = "2024-10-15"
 
 
 def _headers() -> Dict[str, str]:

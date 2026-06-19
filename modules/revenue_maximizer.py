@@ -69,7 +69,7 @@ async def klaviyo_trigger_flow(email: str, flow_id: str, properties: dict = None
         import aiohttp
         headers = {
             "Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
-            "revision": "2024-06-15",
+            "revision": "2024-10-15",
             "Content-Type": "application/json",
         }
         payload = {
@@ -176,7 +176,7 @@ async def klaviyo_winback_campaign() -> dict:
         import aiohttp
         headers = {
             "Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
-            "revision": "2024-06-15",
+            "revision": "2024-10-15",
         }
         async with aiohttp.ClientSession() as s:
             async with s.get(

@@ -259,7 +259,7 @@ async def _post_klaviyo_campaign(content: dict) -> bool:
         import aiohttp
         headers = {
             "Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
-            "revision": "2024-06-15",
+            "revision": "2024-10-15",
             "Content-Type": "application/json",
         }
         now_str = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
