@@ -4377,6 +4377,14 @@ async def create_app():
     app.router.add_get("/api/auto-poster/status",     handle_auto_poster_status)
     app.router.add_post("/api/shopify/seo/run",       handle_shopify_seo_run)
     app.router.add_post("/api/twitter/post",          handle_twitter_post)
+    app.router.add_get( "/api/paypal/status",         handle_paypal_status)
+    app.router.add_post("/api/paypal/checkout",       handle_paypal_checkout)
+    app.router.add_post("/api/paypal/ipn",            handle_paypal_ipn)
+    app.router.add_get( "/api/paypal/success",        handle_paypal_success)
+    app.router.add_get( "/api/paypal/cancel",         handle_paypal_cancel)
+    app.router.add_get( "/api/linkedin/auth",         handle_linkedin_auth)
+    app.router.add_get( "/api/linkedin/callback",     handle_linkedin_callback)
+    app.router.add_get( "/api/linkedin/status",       handle_linkedin_status)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -5506,6 +5514,84 @@ async def handle_auto_poster_status(req):
         })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_paypal_status(req):
+    from modules.paypal_client import get_paypal_status
+    return web.json_response(await get_paypal_status())
+
+
+async def handle_paypal_checkout(req):
+    from modules.paypal_client import create_checkout
+    try:
+        data = await req.json()
+    except Exception:
+        data = {}
+    amount = float(data.get("amount", 49.0))
+    item_name = data.get("item_name", "SuperMegaBot Pro")
+    return web.json_response(await create_checkout(amount=amount, item_name=item_name))
+
+
+async def handle_paypal_ipn(req):
+    from modules.paypal_client import verify_ipn
+    data = dict(await req.post())
+    verified = await verify_ipn(data)
+    if verified:
+        payment_status = data.get("payment_status", "")
+        payer_email = data.get("payer_email", "")
+        amount = data.get("mc_gross", "0")
+        log.info("PayPal IPN verified: %s from %s €%s", payment_status, payer_email, amount)
+        try:
+            bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+            msg = f"\U0001f4b0 PayPal Zahlung: {payment_status}\n\U0001f464 {payer_email}\n€{amount}"
+            async with aiohttp.ClientSession() as _s:
+                await _s.post(
+                    f"https://api.telegram.org/bot{bot_token}/sendMessage",
+                    json={"chat_id": chat_id, "text": msg},
+                )
+        except Exception as e:
+            log.error("PayPal Telegram alert failed: %s", e)
+    return web.Response(text="OK", status=200)
+
+
+async def handle_paypal_success(req):
+    return web.json_response({"status": "success", "message": "PayPal payment completed"})
+
+
+async def handle_paypal_cancel(req):
+    return web.json_response({"status": "cancelled"})
+
+
+async def handle_linkedin_auth(req):
+    from modules.linkedin_oauth import get_linkedin_auth_url, LINKEDIN_CLIENT_ID
+    if not LINKEDIN_CLIENT_ID:
+        return web.json_response(
+            {"error": "Set LINKEDIN_CLIENT_ID + LINKEDIN_CLIENT_SECRET in Railway first"},
+            status=400,
+        )
+    raise web.HTTPFound(get_linkedin_auth_url())
+
+
+async def handle_linkedin_callback(req):
+    import subprocess as _sp
+    from modules.linkedin_oauth import exchange_code_for_token
+    code = req.rel_url.query.get("code")
+    if not code:
+        return web.json_response({"error": "no code in callback"}, status=400)
+    result = await exchange_code_for_token(code)
+    token = result.get("access_token")
+    if token:
+        _sp.Popen(["railway", "variables", "set", f"LINKEDIN_ACCESS_TOKEN={token}"],
+                  cwd="/app", stdout=_sp.DEVNULL, stderr=_sp.DEVNULL)
+        log.info("LinkedIn OAuth token received and saved to Railway")
+        return web.json_response({"success": True, "message": "LinkedIn connected! Token saved."})
+    return web.json_response({"error": result}, status=400)
+
+
+async def handle_linkedin_status(req):
+    from modules.linkedin_oauth import get_linkedin_status
+    return web.json_response(await get_linkedin_status())
 
 
 def _free_port(port: int) -> None:
