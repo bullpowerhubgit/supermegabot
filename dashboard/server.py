@@ -3216,6 +3216,26 @@ async def handle_discord_interactions(req: web.Request) -> web.Response:
         })
     return web.json_response({"type": 4, "data": {"content": f"Command /{name} empfangen."}})
 
+async def handle_discord_oauth_callback(req: web.Request) -> web.Response:
+    """Discord OAuth2 Callback — tauscht code gegen access_token."""
+    code = req.rel_url.query.get("code")
+    if not code:
+        return web.Response(status=400, text="Missing code parameter")
+    client_id = os.getenv("DISCORD_CLIENT_ID", "1515460691664965672")
+    client_secret = os.getenv("DISCORD_CLIENT_SECRET", "6d5mLOnMBHgnHAOq8a2ngHdkcx4ClLjH")
+    redirect_uri = os.getenv("DISCORD_REDIRECT_URI", "https://dudirudibot-mega-production.up.railway.app/api/discord/oauth/callback")
+    import aiohttp as _aiohttp
+    async with _aiohttp.ClientSession() as session:
+        resp = await session.post("https://discord.com/api/oauth2/token", data={
+            "client_id": client_id, "client_secret": client_secret,
+            "grant_type": "authorization_code", "code": code,
+            "redirect_uri": redirect_uri,
+        })
+        token_data = await resp.json()
+    log.info("[DISCORD-OAUTH] Token exchange: %s", list(token_data.keys()))
+    return web.json_response({"ok": True, "discord_oauth": token_data})
+
+
 async def _push_order_to_pipedrive(order: dict):
     """Shopify Order → Pipedrive Deal (Stage 19 = Neue Bestellung)."""
     import aiohttp, os
@@ -4864,6 +4884,7 @@ async def create_app():
     app.router.add_post("/api/shopify/order-webhook",     handle_shopify_order_webhook_route)
     app.router.add_post("/api/webhooks/shopify-order",    handle_shopify_order_webhook_v2)
     app.router.add_post("/api/discord/interactions",      handle_discord_interactions)
+    app.router.add_get("/api/discord/oauth/callback",     handle_discord_oauth_callback)
     app.router.add_get("/api/shopify/orders",         handle_shopify_orders)
     app.router.add_get("/api/shopify/products",       handle_shopify_products)
     app.router.add_get("/api/shopify/revenue",        handle_shopify_revenue)
