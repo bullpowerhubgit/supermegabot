@@ -4911,6 +4911,7 @@ async def create_app():
     app.router.add_get( "/api/shopify/intelligence",   handle_shopify_intel)
     app.router.add_post("/api/shopify/price-optimize", handle_shopify_price_opt)
     # ── Growth Hacker routes ────────────────────────────────────────────────
+    app.router.add_get( "/api/growth/dashboard",        handle_growth_dashboard)
     app.router.add_get( "/api/growth/trends",          handle_growth_trends)
     app.router.add_post("/api/growth/press-release",   handle_growth_pr)
     app.router.add_get( "/api/growth/referral-url",    handle_growth_referral)
@@ -4921,6 +4922,86 @@ async def create_app():
     app.router.add_post("/api/engines/trigger/{engine}", handle_engine_trigger)
     app.router.add_post("/api/engines/trigger/all",      handle_engines_trigger_all)
     app.router.add_get( "/engines",                      handle_engines_page)
+
+    # ── Dynamic Pricing ─────────────────────────────────────────────────────
+    app.router.add_get( "/api/pricing/dashboard",        handle_pricing_dashboard)
+    app.router.add_post("/api/pricing/run",              handle_pricing_run)
+    app.router.add_get( "/api/pricing/history",          handle_pricing_history)
+    app.router.add_post("/api/pricing/enable",           handle_pricing_enable)
+
+    # ── Email Sequences ──────────────────────────────────────────────────────
+    app.router.add_get( "/api/email-sequence/stats",     handle_email_sequence_stats)
+    app.router.add_post("/api/email-sequence/enroll",    handle_email_sequence_enroll)
+    app.router.add_post("/api/email-sequence/process",   handle_email_sequence_process)
+    app.router.add_post("/api/email-sequence/enroll-new",handle_email_sequence_enroll_new)
+
+    # ── B2B Pipeline ────────────────────────────────────────────────────────
+    app.router.add_get( "/api/b2b/pipeline/stats",       handle_b2b_pipeline_stats)
+    app.router.add_get( "/api/b2b/pipeline/leads",       handle_b2b_pipeline_leads)
+    app.router.add_post("/api/b2b/lead/add",             handle_b2b_lead_add)
+    app.router.add_post("/api/b2b/lead/update",          handle_b2b_lead_update)
+    app.router.add_post("/api/b2b/prospecting/run",      handle_b2b_prospecting_run)
+    app.router.add_post("/api/b2b/outreach/send",        handle_b2b_outreach_send)
+
+    # ── WhatsApp Automation ──────────────────────────────────────────────────
+    app.router.add_get( "/api/whatsapp/webhook",         handle_whatsapp_webhook_verify)
+    app.router.add_post("/api/whatsapp/webhook",         handle_whatsapp_webhook)
+    app.router.add_post("/api/whatsapp/send",            handle_whatsapp_send)
+    app.router.add_post("/api/whatsapp/broadcast",       handle_whatsapp_broadcast)
+    app.router.add_get( "/api/whatsapp/stats",           handle_whatsapp_stats)
+
+    # ── TikTok Shop ──────────────────────────────────────────────────────────
+    app.router.add_post("/api/tiktok/sync-products",     handle_tiktok_sync_products)
+    app.router.add_get( "/api/tiktok/orders",            handle_tiktok_orders)
+    app.router.add_get( "/api/tiktok/analytics",         handle_tiktok_analytics)
+    app.router.add_get( "/api/tiktok/combined-revenue",  handle_tiktok_combined_revenue)
+    app.router.add_post("/api/tiktok/promotion",         handle_tiktok_promotion)
+    app.router.add_get( "/api/tiktok/research/status",   handle_tiktok_research_status)
+    app.router.add_get( "/api/tiktok/research/ads",      handle_tiktok_research_ads)
+
+    # ── SEMRush / SEO Research ───────────────────────────────────────────────
+    app.router.add_get( "/api/semrush/keyword",          handle_semrush_keyword)
+    app.router.add_get( "/api/semrush/domain",           handle_semrush_domain)
+    app.router.add_get( "/api/semrush/niche",            handle_semrush_niche)
+    app.router.add_get( "/api/semrush/serp",             handle_semrush_serp)
+
+    # ── Meta / Facebook Ads ──────────────────────────────────────────────────
+    app.router.add_get( "/api/meta/ads/status",          handle_meta_ads_status)
+    app.router.add_get( "/api/meta/campaigns",           handle_meta_campaigns)
+    app.router.add_post("/api/meta/campaign/create",     handle_meta_campaign_create)
+    app.router.add_post("/api/meta/campaign/launch",     handle_meta_campaign_launch)
+    app.router.add_post("/api/meta/saas-campaign",       handle_meta_saas_campaign)
+    app.router.add_get( "/api/meta/pixel/stats",         handle_meta_pixel_stats)
+    app.router.add_get( "/api/meta/oauth-url",           handle_meta_oauth_url)
+
+    # ── Salesforce CRM ───────────────────────────────────────────────────────
+    app.router.add_get( "/api/salesforce/stats",         handle_salesforce_stats)
+    app.router.add_get( "/api/salesforce/leads",         handle_salesforce_leads)
+    app.router.add_get( "/api/salesforce/contacts",      handle_salesforce_contacts)
+    app.router.add_get( "/api/salesforce/opportunities", handle_salesforce_opportunities)
+    app.router.add_post("/api/salesforce/lead/create",   handle_salesforce_create_lead)
+    app.router.add_post("/api/salesforce/sync-klaviyo",  handle_salesforce_sync_klaviyo)
+    app.router.add_post("/api/salesforce/import-b2b",    handle_salesforce_import_b2b)
+
+    # ── Autonomy Engine ──────────────────────────────────────────────────────
+    app.router.add_get( "/api/autonomy/health",          handle_autonomy_health)
+    app.router.add_post("/api/autonomy/trigger",         handle_autonomy_trigger)
+    app.router.add_get( "/api/autonomy/history",         handle_autonomy_history)
+
+    # ── Task Queue ───────────────────────────────────────────────────────────
+    app.router.add_get( "/api/queue/stats",              handle_queue_stats)
+    app.router.add_post("/api/queue/enqueue",            handle_queue_enqueue)
+
+    # ── Referral System ──────────────────────────────────────────────────────
+    app.router.add_post("/api/referral/create",          handle_referral_create)
+    app.router.add_get( "/api/referral/stats",           handle_referral_stats)
+    app.router.add_get( "/api/referral/top",             handle_referral_top)
+    app.router.add_get( "/api/referral/r/{code}",        handle_referral_redirect)
+
+    # ── Misc recovered handlers ──────────────────────────────────────────────
+    app.router.add_post("/api/review/run",               handle_review_automation_run)
+    app.router.add_post("/api/winback/run",              handle_winback_run)
+    app.router.add_post("/api/seo/generate",             handle_seo_generate)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
