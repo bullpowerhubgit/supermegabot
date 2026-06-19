@@ -107,7 +107,7 @@ Gib NUR valides JSON zurück (kein anderer Text):
             ) as r:
                 data = await r.json(content_type=None)
 
-        raw = data["content"][0]["text"]
+        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
         start = raw.find("{")
         end = raw.rfind("}") + 1
         return json.loads(raw[start:end])
