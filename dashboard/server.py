@@ -3490,6 +3490,77 @@ async def handle_vapid_public_key(req):
     return web.json_response({"ok": True, "publicKey": pub})
 
 
+async def handle_reddit_auth_start(req):
+    """GET /api/reddit/auth — Reddit OAuth2 start (password-grant mode, no redirect needed)."""
+    client_id = os.getenv("REDDIT_CLIENT_ID", "")
+    username = os.getenv("REDDIT_USERNAME", "")
+    if not client_id or not username:
+        return web.json_response({"ok": False, "mode": "password_grant",
+                                  "error": "Set REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD in Railway"})
+    return web.json_response({"ok": True, "mode": "password_grant",
+                              "info": "Reddit uses password grant — no browser OAuth needed",
+                              "username": username, "client_id": client_id[:8] + "..."})
+
+
+async def handle_reddit_callback(req):
+    """GET /api/reddit/callback — not used in password-grant mode."""
+    return web.json_response({"ok": True, "info": "Reddit uses password grant — callback not required"})
+
+
+async def handle_pinterest_auth(req):
+    """GET /api/pinterest/auth — redirect to Pinterest OAuth authorization."""
+    client_id = os.getenv("PINTEREST_APP_ID", os.getenv("PINTEREST_CLIENT_ID", ""))
+    if not client_id:
+        return web.json_response({"ok": False, "error": "PINTEREST_APP_ID not set in Railway"})
+    redirect_uri = os.getenv("PINTEREST_REDIRECT_URI",
+                             "https://dudirudibot-mega-production.up.railway.app/api/pinterest/callback")
+    scope = "boards:read,pins:read,pins:write"
+    auth_url = (f"https://www.pinterest.com/oauth/?client_id={client_id}"
+                f"&redirect_uri={redirect_uri}&response_type=code&scope={scope}")
+    raise web.HTTPFound(location=auth_url)
+
+
+async def handle_pinterest_callback(req):
+    """GET /api/pinterest/callback — exchange code for access token, save to Railway."""
+    code = req.rel_url.query.get("code", "")
+    if not code:
+        error = req.rel_url.query.get("error", "unknown")
+        return web.json_response({"ok": False, "error": error}, status=400)
+    client_id = os.getenv("PINTEREST_APP_ID", os.getenv("PINTEREST_CLIENT_ID", ""))
+    client_secret = os.getenv("PINTEREST_APP_SECRET", os.getenv("PINTEREST_CLIENT_SECRET", ""))
+    redirect_uri = os.getenv("PINTEREST_REDIRECT_URI",
+                             "https://dudirudibot-mega-production.up.railway.app/api/pinterest/callback")
+    if not client_id or not client_secret:
+        return web.json_response({"ok": False, "error": "Pinterest credentials not configured"}, status=500)
+    import base64
+    import aiohttp as _aio
+    creds = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+    async with _aio.ClientSession() as sess:
+        async with sess.post("https://api.pinterest.com/v5/oauth/token",
+                             headers={"Authorization": f"Basic {creds}",
+                                      "Content-Type": "application/x-www-form-urlencoded"},
+                             data=f"grant_type=authorization_code&code={code}&redirect_uri={redirect_uri}") as r:
+            data = await r.json()
+    if "access_token" in data:
+        token = data["access_token"]
+        log.info("Pinterest token obtained: %s...", token[:12])
+        return web.json_response({"ok": True, "access_token": token[:12] + "...",
+                                  "action": f"Set PINTEREST_ACCESS_TOKEN={token} in Railway env vars"})
+    return web.json_response({"ok": False, "error": data.get("message", str(data))}, status=400)
+
+
+async def handle_oauth_status(req):
+    """GET /api/oauth/status — show which OAuth integrations are configured."""
+    return web.json_response({
+        "ok": True,
+        "twitter":   {"configured": bool(os.getenv("TWITTER_API_KEY") and os.getenv("TWITTER_ACCESS_TOKEN"))},
+        "pinterest": {"configured": bool(os.getenv("PINTEREST_ACCESS_TOKEN"))},
+        "reddit":    {"configured": bool(os.getenv("REDDIT_CLIENT_ID") and os.getenv("REDDIT_USERNAME"))},
+        "linkedin":  {"configured": bool(os.getenv("LINKEDIN_ACCESS_TOKEN"))},
+        "medium":    {"configured": bool(os.getenv("MEDIUM_API_KEY"))},
+    })
+
+
 async def handle_review_automation_run(req):
     try:
         from modules.growth_engine import run_review_automation
