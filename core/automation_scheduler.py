@@ -1711,6 +1711,62 @@ async def task_onboarding_sequence_trigger() -> str:
         return f"Onboarding Sequenz Fehler: {e}"
 
 
+async def task_seo_dominator() -> str:
+    """SEO Dominator: sitemap ping + Schema.org injection + IndexNow every 2h."""
+    try:
+        from modules.seo_dominator import run_seo_dominator
+        result = await run_seo_dominator(full=True)
+        injected = result.get("schema_inject", {}).get("schema_injected", 0)
+        return f"SEO Dominator OK: {injected} Schema injected, sitemap pinged"
+    except Exception as e:
+        return f"SEO Dominator Fehler: {e}"
+
+
+async def task_backlink_bomber() -> str:
+    """BacklinkBomber: IndexNow + RSS XML-RPC pings every 2h."""
+    try:
+        from modules.backlink_bomber import run_backlink_bomber
+        result = await run_backlink_bomber()
+        total = result.get("results", {}).get("rss_xmlrpc", {}).get("total_pinged", 0)
+        return f"BacklinkBomber OK: {total} services pinged"
+    except Exception as e:
+        return f"BacklinkBomber Fehler: {e}"
+
+
+async def task_viral_traffic_machine() -> str:
+    """ViralTrafficMachine: Reddit + Medium + LinkedIn + trending content every 4h."""
+    try:
+        from modules.viral_traffic_machine import run_viral_traffic_machine
+        result = await run_viral_traffic_machine()
+        posted = sum(1 for v in result.get("platforms", {}).values() if isinstance(v, dict) and v.get("ok"))
+        return f"ViralTraffic OK: {posted} platforms hit"
+    except Exception as e:
+        return f"ViralTraffic Fehler: {e}"
+
+
+async def task_content_velocity() -> str:
+    """ContentVelocity: generate + publish 10-format content from trending topic every 2h."""
+    try:
+        from modules.content_velocity_engine import run_content_velocity
+        result = await run_content_velocity()
+        topic = result.get("topic", "?")[:40]
+        return f"ContentVelocity OK: '{topic}' published across all formats"
+    except Exception as e:
+        return f"ContentVelocity Fehler: {e}"
+
+
+async def task_revenue_maximizer() -> str:
+    """RevenueMaximizer: cart abandonment recovery + winback + urgency offers every 4h."""
+    try:
+        from modules.revenue_maximizer import run_revenue_maximizer
+        result = await run_revenue_maximizer()
+        recovered = result.get("results", {}).get("cart_recovery", {}).get("recovery_emails_sent", 0)
+        winback   = result.get("results", {}).get("winback", {}).get("winback_triggered", 0)
+        return f"RevenueMaximizer OK: {recovered} carts recovered, {winback} winback triggered"
+    except Exception as e:
+        return f"RevenueMaximizer Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -1794,6 +1850,12 @@ TASKS = [
     ("shopify_seo_blog",        task_shopify_seo_blog,       43200,  560),   # 12h — 3x KI Shopify Blog Posts
     ("viral_referral_trigger",  task_viral_referral_trigger, 86400,  570),   # daily — Viral Referral Loop
     ("onboarding_seq_trigger",  task_onboarding_sequence_trigger, 43200, 580), # 12h — 7-Day Onboarding
+    # ── REVOLUTION v3: 10.000x SEO + Traffic + Backlinks + Revenue ───────────
+    ("seo_dominator",           task_seo_dominator,          7200,    25),   # 2h — Schema.org + IndexNow + Sitemap
+    ("backlink_bomber",         task_backlink_bomber,        7200,    35),   # 2h — IndexNow + RSS XML-RPC pings
+    ("content_velocity",        task_content_velocity,       7200,    55),   # 2h — 10-Format Content überall
+    ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   75),   # 4h — Reddit + Medium + LinkedIn
+    ("revenue_maximizer",       task_revenue_maximizer,      14400,   95),   # 4h — Cart Recovery + Winback
 ]
 
 
