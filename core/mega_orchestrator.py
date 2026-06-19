@@ -1278,6 +1278,11 @@ class MegaOrchestrator:
 
     async def _health_loop(self) -> None:
         """Periodically verify Ollama is reachable and restart it if it has gone offline."""
+        import shutil
+        # On Railway/cloud: ollama is not available — skip silently
+        if not shutil.which("ollama"):
+            log.info("Ollama not available (cloud deployment) — health loop disabled")
+            return
         while self.running:
             try:
                 await asyncio.sleep(60)
