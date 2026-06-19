@@ -4241,6 +4241,231 @@ async def cors_middleware(request, handler):
     return resp
 
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# SEO MEGA ENGINE ROUTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def handle_seo_generate(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.content_length else {}
+        from modules.seo_mega_engine import run_content_factory
+        r = await run_content_factory(batch_size=int(body.get("batch_size", 5)))
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_seo_sitemap(request: web.Request) -> web.Response:
+    try:
+        from modules.seo_mega_engine import generate_sitemap
+        xml = await generate_sitemap()
+        return web.Response(text=xml, content_type="application/xml")
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_seo_submit(request: web.Request) -> web.Response:
+    try:
+        from modules.seo_mega_engine import submit_to_google
+        r = await submit_to_google()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_seo_competitor(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.content_length else {}
+        from modules.seo_mega_engine import analyze_competitor, analyze_all_competitors
+        url = body.get("url")
+        if url:
+            r = await analyze_competitor(url)
+        else:
+            r = await analyze_all_competitors()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_seo_status(request: web.Request) -> web.Response:
+    try:
+        from modules.seo_mega_engine import generate_seo_report
+        r = await generate_seo_report()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TRAFFIC SWARM ROUTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def handle_traffic_swarm(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.content_length else {}
+        from modules.traffic_swarm import run_full_traffic_swarm
+        r = await run_full_traffic_swarm(topic=body.get("topic"))
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_traffic_velocity(request: web.Request) -> web.Response:
+    try:
+        from modules.traffic_swarm import monitor_traffic_velocity
+        r = await monitor_traffic_velocity()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_traffic_rss(request: web.Request) -> web.Response:
+    try:
+        from modules.traffic_swarm import build_rss_feed
+        xml = await build_rss_feed()
+        return web.Response(text=xml, content_type="application/rss+xml")
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# ADS ENGINE ROUTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def handle_ads_status(request: web.Request) -> web.Response:
+    try:
+        from modules.ads_engine import get_ads_status
+        r = await get_ads_status()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_ads_campaign(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.content_length else {}
+        from modules.ads_engine import create_facebook_ad_campaign
+        r = await create_facebook_ad_campaign(body, budget_eur=float(body.get("budget", 5.0)))
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_ads_performance(request: web.Request) -> web.Response:
+    try:
+        from modules.ads_engine import monitor_ad_performance
+        r = await monitor_ad_performance()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# REVENUE INTELLIGENCE ROUTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def handle_revenue_forecast(request: web.Request) -> web.Response:
+    try:
+        days = int(request.rel_url.query.get("days", 30))
+        from modules.revenue_intelligence import forecast_revenue
+        r = await forecast_revenue(days_ahead=days)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_revenue_leaks(request: web.Request) -> web.Response:
+    try:
+        from modules.revenue_intelligence import detect_revenue_leaks
+        r = await detect_revenue_leaks()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_revenue_churn(request: web.Request) -> web.Response:
+    try:
+        from modules.revenue_intelligence import identify_churn_risk
+        r = await identify_churn_risk()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_revenue_status(request: web.Request) -> web.Response:
+    try:
+        from modules.revenue_intelligence import revenue_autopilot
+        r = await revenue_autopilot()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SHOPIFY MAX TUNER ROUTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def handle_shopify_max_seo(request: web.Request) -> web.Response:
+    try:
+        from modules.shopify_max_tuner import optimize_all_products_seo
+        r = await optimize_all_products_seo()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_shopify_cart_recover(request: web.Request) -> web.Response:
+    try:
+        from modules.shopify_max_tuner import recover_abandoned_checkouts
+        r = await recover_abandoned_checkouts()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_shopify_intel(request: web.Request) -> web.Response:
+    try:
+        from modules.shopify_max_tuner import shopify_daily_intelligence
+        r = await shopify_daily_intelligence()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_shopify_price_opt(request: web.Request) -> web.Response:
+    try:
+        from modules.shopify_max_tuner import optimize_shopify_pricing
+        r = await optimize_shopify_pricing()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# GROWTH HACKER ROUTES
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def handle_growth_trends(request: web.Request) -> web.Response:
+    try:
+        from modules.growth_hacker import detect_and_ride_viral_trends
+        r = await detect_and_ride_viral_trends()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_growth_pr(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.content_length else {}
+        from modules.growth_hacker import generate_press_release
+        r = await generate_press_release(body.get("topic", "KI-Shopify-Automation"))
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_growth_referral(request: web.Request) -> web.Response:
+    try:
+        email = request.rel_url.query.get("email", "")
+        from modules.growth_hacker import get_referral_url
+        url = await get_referral_url(email) if email else {"error": "email required"}
+        return web.json_response({"referral_url": url} if isinstance(url, str) else url)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+async def handle_growth_status(request: web.Request) -> web.Response:
+    try:
+        from modules.growth_hacker import growth_daily_metrics
+        r = await growth_daily_metrics()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -4525,6 +4750,36 @@ async def create_app():
     app.router.add_get( "/api/pinterest/auth",         handle_pinterest_auth)
     app.router.add_get( "/api/pinterest/callback",     handle_pinterest_callback)
     app.router.add_get( "/api/oauth/status",           handle_oauth_status)
+
+    # ── SEO Mega Engine routes ──────────────────────────────────────────────
+    app.router.add_post("/api/seo/generate",           handle_seo_generate)
+    app.router.add_get( "/api/seo/sitemap.xml",        handle_seo_sitemap)
+    app.router.add_post("/api/seo/submit",             handle_seo_submit)
+    app.router.add_post("/api/seo/competitor",         handle_seo_competitor)
+    app.router.add_get( "/api/seo/status",             handle_seo_status)
+    # ── Traffic Swarm routes ────────────────────────────────────────────────
+    app.router.add_post("/api/traffic/swarm",          handle_traffic_swarm)
+    app.router.add_get( "/api/traffic/velocity",       handle_traffic_velocity)
+    app.router.add_get( "/api/traffic/rss.xml",        handle_traffic_rss)
+    # ── Ads Engine routes ───────────────────────────────────────────────────
+    app.router.add_get( "/api/ads/status",             handle_ads_status)
+    app.router.add_post("/api/ads/campaign",           handle_ads_campaign)
+    app.router.add_get( "/api/ads/performance",        handle_ads_performance)
+    # ── Revenue Intelligence routes ─────────────────────────────────────────
+    app.router.add_get( "/api/revenue/forecast",       handle_revenue_forecast)
+    app.router.add_get( "/api/revenue/leaks",          handle_revenue_leaks)
+    app.router.add_get( "/api/revenue/churn",          handle_revenue_churn)
+    app.router.add_get( "/api/revenue/status",         handle_revenue_status)
+    # ── Shopify Max Tuner routes ────────────────────────────────────────────
+    app.router.add_post("/api/shopify/max-seo",        handle_shopify_max_seo)
+    app.router.add_post("/api/shopify/cart-recover",   handle_shopify_cart_recover)
+    app.router.add_get( "/api/shopify/intelligence",   handle_shopify_intel)
+    app.router.add_post("/api/shopify/price-optimize", handle_shopify_price_opt)
+    # ── Growth Hacker routes ────────────────────────────────────────────────
+    app.router.add_get( "/api/growth/trends",          handle_growth_trends)
+    app.router.add_post("/api/growth/press-release",   handle_growth_pr)
+    app.router.add_get( "/api/growth/referral-url",    handle_growth_referral)
+    app.router.add_get( "/api/growth/status",          handle_growth_status)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
