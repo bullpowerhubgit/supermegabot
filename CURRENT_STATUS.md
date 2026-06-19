@@ -1,11 +1,11 @@
 # SuperMegaBot — Aktueller Status (Auto-Update)
-> Zuletzt aktualisiert: 2026-06-19 03:30 UTC | Wenn Claude neu startet → Diese Datei zuerst lesen!
+> Zuletzt aktualisiert: 2026-06-19 03:15 UTC | Wenn Claude neu startet → Diese Datei zuerst lesen!
 
 ## System-Status (geprüft 2026-06-19)
 | Service | URL | Status |
 |---------|-----|--------|
 | SuperMegaBot | dudirudibot-mega-production.up.railway.app | ✅ LIVE |
-| MetaSocialEngine | meta-social-engine-production.up.railway.app | ✅ LIVE (165 Posts queued) |
+| MetaSocialEngine | meta-social-engine-production.up.railway.app | ✅ LIVE |
 | SEOTurboTools | seo-turbo-tools-production.up.railway.app | ✅ LIVE |
 | FreelanceGigEngine | freelance-gig-engine-production.up.railway.app | ✅ LIVE |
 | VisualContentEngine | visual-content-engine-production.up.railway.app | ✅ LIVE |
@@ -28,47 +28,43 @@
 | Stripe (Neu) | €0 (Checkouts bereit, noch kein Kauf) |
 | Shopify | €0 heute |
 
-## Neue Features (2026-06-19 Session v3 — REVOLUTION MAX)
+## Session v4 Fixes (2026-06-19 03:15 UTC) — ALLE KRITISCHEN BUGS BEHOBEN
+- ✅ **Deploy-Crash gefixt** — 5 fehlende OAuth-Handler (handle_reddit_auth_start etc.) in server.py
+- ✅ **Ollama-Spam gefixt** — Loop dauerhaft deaktiviert wenn ollama binary nicht gefunden
+- ✅ **Google Trends XML-Guard** — HTML-Antworten (rate-limited) werden erkannt + übersprungen
+- ✅ **IndexNow NameError gefixt** — `content` Variable war nicht im Scope von run_full_auto_post
+- ✅ **Klaviyo Revision gefixt** — 2024-06-15 → 2024-10-15 in ALLEN 6 Modulen
+- ✅ **Doppelter asyncio Import entfernt** — brutus_traffic_engine.py
+- ✅ **FreeSyndicationNetwork gebaut** — Dev.to + Hashnode + Medium + Discord alle 6h
+
+## Neue Features v4 (2026-06-19)
+- `modules/free_syndication_network.py` — 5-Kanal Content-Syndication ohne App-Review ✅
+- Scheduler: `task_free_syndication` alle 6h ✅
+- Dashboard: POST /api/syndication/run + "📡 Syndicate" Button ✅
+- Alle Klaviyo Calls jetzt mit Revision 2024-10-15 (vorher alle kaputt) ✅
+- OAuth Status: GET /api/oauth/status (Twitter✅ LinkedIn✅ Pinterest❌ Reddit❌)
+
+## Features v3 (2026-06-19 02:00-03:00 UTC)
 - Twitter OAuth 1.0a implementiert — Credentials gesetzt in Railway ✅
 - BRUTUS aiohttp Import Fix — alle 10 Content-Agenten aktiv ✅
 - CRO Klaviyo Revision Fix (2024-10-15) ✅
-- Google Trends XML Parse robust gemacht ✅
-- Twitter: developer.twitter.com → App → Read+Write Permission nötig (1 Klick)
-
-## Neue Features (2026-06-19 Session v2 — BRUTUS ÜBERALL)
-- `modules/mega_auto_poster.py` — 9-Kanal gleichzeitig (TG+FB×2+IG+Shopify+Klaviyo+MC+SG+Twitter) ✅
-- BRUTUS wird nach jedem MegaPost automatisch gefeuert ✅
-- Scheduler: MegaPost 30min, Twitter 1h, SEO 12h, Klaviyo+MC täglich ✅
-- Dashboard: SEO Run + Tweet Buttons ✅
-- Endpoints: /api/auto-poster/run, /api/shopify/seo/run, /api/twitter/post ✅
-
-## Neue Features (2026-06-19 Session v1)
-- `/api/shopify/products` — Live-Shopify-Produktliste ✅
-- `/api/stripe/subscriptions` — MRR-Tracking ✅
-- `/api/offers` — 4 Angebots-Pakete ✅
-- `/api/brutus/run` — Background-Modus (kein HTTP-Timeout) ✅
-- BRUTUS Instagram Pixel: 1080x1080 Branded ✅
-- DS24 Revenue Bug gefixt (float not dict) ✅
-- cognitive-symphony CI: GRÜN ✅
-- shopify-brutal-tuning-landing: LIVE ✅
-- META_PAGE_ACCESS_TOKEN in adposter-engine gesetzt ✅
-- 3x Telegram Marketing Messages gesendet ✅
+- MegaAutoPoster 9-Kanal + BRUTUS nach jedem Post ✅
+- SEO Dominator, Backlink Bomber, Revenue Maximizer, Content Velocity alle aktiv ✅
 
 ## Landingpages LIVE
 - **Shopify Brutal Tuning**: https://bullpowerhubgit.github.io/shopify-brutal-tuning-landing/
 - **Privacy Policy**: https://bullpowerhubgit.github.io/bullpower-legal/datenschutz.html
 
-## EmailBrain — Status (8 Konten)
-| # | Account | App PW | Status |
-|---|---------|--------|--------|
-| 1 | dragonadnp@gmail.com | ✅ | AKTIV |
-| 2 | nikolestimi@gmail.com | ✅ | AKTIV |
-| 3 | bullpowersrtkennels@gmail.com | ✅ | AKTIV |
-| 4 | looopwave@gmail.com | ❌ | SKIP (User) |
-| 5 | aiitecbuuss@gmail.com | ✅ | AKTIV |
-| 6 | rudolf.sarkany@aitec.de | ❌ | SKIP (User) |
-| 7 | rudolf.sarkany.aiitec@gmail.com | ✅ | AKTIV |
-| 8 | rudolfsarkany1984@gmail.com | ✅ | AKTIV |
+## Aktuelle Scheduler-Tasks (116 gesamt)
+| Interval | Task |
+|----------|------|
+| 30min | mega_auto_post — 9 Kanäle + BRUTUS |
+| 1h | twitter_auto_post, ds24_sync, email_seq_process |
+| 2h | seo_dominator, backlink_bomber, content_velocity, brutus |
+| 4h | viral_traffic_machine, revenue_maximizer, content_factory |
+| 6h | free_syndication — Dev.to + Hashnode + Medium + Discord |
+| 12h | shopify_seo_batch |
+| Daily | full_backup, winback_campaign |
 
 ## Checkout URLs (LIVE STRIPE)
 ```
@@ -79,82 +75,52 @@ steuercockpit lifetime: POST https://steuercockpit-production-44c9.up.railway.ap
 shopify-acquisition starter: POST https://shopify-acquisition-engine-production.up.railway.app/billing/checkout {"plan":"starter","email":"xxx","store_domain":"xxx.myshopify.com"}
 ```
 
-## Offene Punkte (MINIMAL)
-| Prio | Task |
-|------|------|
-| 🟡 | gh auth refresh -s workflow (für Workflow-Dateien pushen) |
-| ✅ DONE | DS24 IPN URL eingetragen (2026-06-19) — Echtzeit-Käufe aktiv! |
-| ✅ DONE | MegaAutoPoster 9-Kanal-System + BRUTUS überall (2026-06-19) |
-| 🟢 | Pinterest App Review (wartet auf Support) |
-| 🟢 | Twilio FROM-Nummer kaufen |
-| 🟢 | Twitter Bearer Token prüfen (TWITTER_API_KEY gesetzt, aber v2 braucht OAuth 2.0 Bearer) |
+## Offene Punkte
+| Prio | Task | Was Rudolf tun muss |
+|------|------|---------------------|
+| 🔴 HIGH | Twitter Read+Write | developer.twitter.com → App → User Auth Settings → Edit → Read and Write → Save |
+| 🔴 HIGH | Shopify Blog `write_content` | Shopify Admin → Eigene Apps → API-Berechtigungen → write_content aktivieren → neuen Token setzen |
+| 🟡 MED | Dev.to API Key | https://dev.to/settings/extensions → Generate API Key → DEVTO_API_KEY in Railway |
+| 🟡 MED | Hashnode API Key | https://hashnode.com/settings/developer → HASHNODE_API_KEY in Railway |
+| 🟡 MED | Medium API Key | https://medium.com/me/settings → Integration tokens → MEDIUM_API_KEY in Railway |
+| 🟢 LOW | Twilio FROM-Nummer | +49 Nummer kaufen für SMS/WhatsApp Marketing |
+| 🟢 LOW | Pinterest App Review | Wartet auf Support-Antwort |
 
-## System-Fixes (2026-06-19 Session)
-- ✅ Stripe status: `stripe_available` → `ping` (ImportError behoben)
-- ✅ Shopify status: `SHOPIFY_ACCESS_TOKEN` → `SHOPIFY_ADMIN_API_TOKEN` Fallback
-- ✅ DS24 ping(): `listProductsForVendor` → `listProducts` + Auth-Header Fix
-- ✅ DS24: 3 Orders found, €111 total, 2 Produkte, ok=True
-- ✅ BRUTUS: alle 6 Kanäle aktiv, Instagram Pixel 1080x1080
-- ✅ Facebook Tokens: alle valid (never-expiring Page Tokens)
-- ✅ Social Status: META_ACCESS_TOKEN + META_PAGE_ID gesetzt
-- ✅ Neue APIs: /api/revenue/summary, /api/scheduler/status, /api/brutus/run|status, /api/facebook/refresh|callback|status
-- ✅ Master Dashboard: neue Quick-Action Buttons
-- ✅ Telegram-Nachricht mit DS24 IPN-Anleitung gesendet
-- ✅ vitest CVE 1.4→4.1.9 gefixt, package.json dedupliziert
-- ✅ CURRENT_STATUS.md + CLAUDE.md Session-Start-Protokoll
+## System-Fixes Session v4
+- ✅ Shopify API Version in Railway: SHOPIFY_API_VERSION=2024-10 gesetzt
+- ✅ OAuth Endpoints: /api/reddit/auth, /api/pinterest/auth, /api/oauth/status alle aktiv
+- ✅ FreeSyndication Module: 10 vordefinierte Business-Themen, automatisch rotierend
 
-## Alle Live-Endpoints (Stand 2026-06-19 v2)
+## Alle Live-Endpoints (Stand 2026-06-19 v4)
 ```
 GET  /health                          ✅
 GET  /master                          Master Control Dashboard
+GET  /api/oauth/status               OAuth Status (Twitter/Pinterest/Reddit/LinkedIn)
+GET  /api/reddit/auth                Reddit OAuth Status
+GET  /api/pinterest/auth             Pinterest OAuth Redirect
 GET  /api/digistore/status            ✅ ok=true, €111 total
 GET  /api/stripe/status               ✅ live mode
 GET  /api/shopify/status              ✅ 629 Produkte
 GET  /api/telegram/status             ✅ DudiRudibot
 GET  /api/brutus/status               ✅ 6/6 Kanäle
-GET  /api/facebook/status             ✅ all tokens valid
+GET  /api/facebook/status             ✅ tokens valid (posts brauchen App Review)
 GET  /api/revenue/summary             ✅ Stripe+Shopify+DS24
-GET  /api/scheduler/status            ✅ 32+ Tasks
+GET  /api/scheduler/status            ✅ 116 Tasks
 POST /api/brutus/run                  Manueller BRUTUS-Start
-GET  /api/facebook/refresh            FB Token Refresh
-GET  /api/facebook/callback           FB OAuth Callback
-POST /api/email/brain/check           Email Brain Trigger
-GET  /api/email/brain/stats           Email Stats
-POST /api/digistore24/ipn             DS24 IPN Webhook ✅ AKTIV
-POST /api/auto-poster/run             MegaAutoPoster (9 Kanäle + BRUTUS) ✅ NEU
-GET  /api/auto-poster/status          Letzter MegaPost-Run ✅ NEU
-POST /api/shopify/seo/run             AI-SEO Batch (15 Produkte/Run) ✅ NEU
-POST /api/twitter/post                Auto-Tweet oder Custom Text ✅ NEU
+POST /api/auto-poster/run             MegaAutoPoster (9 Kanäle + BRUTUS)
+POST /api/shopify/seo/run             AI-SEO Batch
+POST /api/twitter/post                Auto-Tweet
+POST /api/seo/dominator               SEO Dominator Run
+POST /api/backlink/bomb               Backlink Bomber
+POST /api/content/velocity            Content Velocity Engine
+POST /api/viral/traffic               Viral Traffic Machine
+POST /api/revenue/maximize            Revenue Maximizer
+POST /api/syndication/run             Free Syndication (Dev.to+Hashnode+Medium)
 ```
 
 ## Wie Claude beim nächsten Start weitermacht
 1. `cat CURRENT_STATUS.md`
 2. `curl -s https://dudirudibot-mega-production.up.railway.app/health`
 3. `curl -s https://dudirudibot-mega-production.up.railway.app/api/revenue/summary`
-4. Offene Punkte abarbeiten
-
-## Vollautomatisierung implementiert 2026-06-19 01:00 UTC
-
-### Neue Automation-Tasks (Scheduler)
-- `email_seq_process` — stündlich: E-Mail-Sequenzen verarbeiten
-- `email_seq_enroll` — alle 30min: Neue Leads in Sequenz einschreiben
-- `lead_nurture` — stündlich: Lead Nurturing via Klaviyo
-- `pinterest_auto_post` — alle 2h: Pinterest Auto-Post
-- `telegram_broadcast` — alle 6h: Telegram Kanal Broadcast
-- `instagram_auto_post` — alle 4h: Instagram @aaiitecc Auto-Post
-
-### Neue Endpunkte (server.py)
-- `POST /api/lead` — Universal Lead Capture (Netlify Forms, Landing Pages)
-- `POST /api/stripe/webhook` → buyer Klaviyo Enrollment bei Kauf
-
-### Neue Module
-- `modules/shopify_seo_auto.py` — SEO Auto-Optimierung
-- `modules/twitter_auto_poster.py` — Twitter/X Auto-Poster
-
-### Facebook Token Status (getestet 2026-06-19)
-- `FACEBOOK_PAGE_TOKEN` (IWIN) → AKTIV ✅
-- `FACEBOOK_PAGE_TOKEN_AIITEC` (@aaiitecc) → AKTIV ✅
-
-### Noch offen (NUR 2 Sachen!)
-1. DS24 Produkt 669750 → IPN URL in DS24 Dashboard eintragen
-2. Twilio FROM-Nummer kaufen
+4. Check Railway logs für aktuelle Fehler: `railway logs | tail -30`
+5. Offene Punkte abarbeiten (Twitter R+W, Shopify write_content, Dev.to Key)
