@@ -1767,6 +1767,211 @@ async def task_revenue_maximizer() -> str:
         return f"RevenueMaximizer Fehler: {e}"
 
 
+# ── Content Factory Tasks ────────────────────────────────────────────────────
+
+async def task_content_factory_run() -> str:
+    """Every 4h: find top trending topic → generate full content package."""
+    try:
+        from modules.content_factory import find_trending_topics, generate_content_package
+        topics = await find_trending_topics("shopify ecommerce automation")
+        topic = topics[0]["topic"] if topics else "Shopify Automation mit KI"
+        package = await generate_content_package(topic)
+        stats = package.get("stats", {})
+        return (f"Content Factory: {topic} | "
+                f"Blog {stats.get('blog_words_de', 0)}w | "
+                f"{stats.get('email_count', 0)} emails | "
+                f"{stats.get('platforms', 0)} platforms")
+    except Exception as e:
+        return f"content_factory_run error: {e}"
+
+
+async def task_social_batch_gen() -> str:
+    """Daily: generate 30-day social media batch for all platforms."""
+    try:
+        from modules.content_factory import generate_social_batch, find_trending_topics
+        topics = await find_trending_topics()
+        topic = topics[0]["topic"] if topics else "E-Commerce Automation 2024"
+        batch = await generate_social_batch(topic)
+        counts = {k: len(v) for k, v in batch.items() if isinstance(v, list)}
+        return f"Social batch: {topic} | " + " | ".join(f"{k}:{v}" for k, v in counts.items())
+    except Exception as e:
+        return f"social_batch_gen error: {e}"
+
+
+async def task_trending_topic_scan() -> str:
+    """Every 12h: scan for trending topics and log top opportunities."""
+    try:
+        from modules.content_factory import find_trending_topics
+        topics = await find_trending_topics()
+        high = [t["topic"] for t in topics if t.get("urgency") == "high"]
+        token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+        if high and token and chat_id:
+            msg = f"🔥 Trending NOW:\n" + "\n".join(f"• {t}" for t in high[:5])
+            async with aiohttp.ClientSession() as s:
+                await s.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                             json={"chat_id": chat_id, "text": msg},
+                             timeout=aiohttp.ClientTimeout(total=10))
+        return f"Trending scan: {len(topics)} topics, {len(high)} high-urgency"
+    except Exception as e:
+        return f"trending_topic_scan error: {e}"
+
+
+async def task_content_calendar_weekly() -> str:
+    """Weekly (Monday): build next 30-day content calendar."""
+    try:
+        from datetime import datetime
+        from modules.content_factory import build_content_calendar
+        month = datetime.utcnow().strftime("%Y-%m")
+        cal = await build_content_calendar(month)
+        days = len(cal.get("days", []))
+        return f"Content calendar built: {month} | {days} days planned"
+    except Exception as e:
+        return f"content_calendar_weekly error: {e}"
+
+
+# ── Conversion Maximizer Tasks ───────────────────────────────────────────────
+
+async def task_conversion_scan() -> str:
+    """Every 15min: A/B winners + social proof + lead re-scoring."""
+    try:
+        from modules.conversion_engine import run_conversion_scan
+        return await run_conversion_scan()
+    except Exception as e:
+        return f"ConversionScan Fehler: {e}"
+
+
+async def task_daily_optimization() -> str:
+    """Every 1h: revenue AI diagnosis + funnel weak-point fix."""
+    try:
+        from modules.conversion_engine import run_daily_optimization
+        return await run_daily_optimization()
+    except Exception as e:
+        return f"DailyOptimization Fehler: {e}"
+
+
+async def task_funnel_daily() -> str:
+    """Daily: full funnel analytics report to Telegram."""
+    try:
+        from modules.conversion_engine import analyze_funnel
+        result = await analyze_funnel()
+        return (f"Funnel: {result.get('leads',0)} leads → {result.get('orders',0)} orders | "
+                f"Weakest: {result.get('weakest_stage','?')} {result.get('weakest_rate',0):.1%}")
+    except Exception as e:
+        return f"FunnelDaily Fehler: {e}"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# OMEGA TRAFFIC ENGINE TASKS — Revolution Pack
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def task_omega_full() -> str:
+    """OMEGA Full-Cycle: Google Index + Bing IndexNow + Artikel + Competitor + Proof."""
+    try:
+        from modules.omega_traffic_engine import run_omega_cycle
+        result = await run_omega_cycle(mode="full")
+        indexed = len(result.get("indexing", {}).get("submitted", []))
+        indexnow = result.get("indexnow", {}).get("submitted", 0)
+        article = result.get("article", {}).get("words", 0)
+        return f"OMEGA Full: {indexed} URLs indexiert | IndexNow: {indexnow} | Artikel: {article} Wörter"
+    except Exception as e:
+        return f"OMEGA Full Fehler: {e}"
+
+
+async def task_omega_index() -> str:
+    """Schnelle Indexierung: alle Money-URLs sofort an Google + Bing melden."""
+    try:
+        from modules.omega_traffic_engine import google_instant_index, bing_indexnow, MONEY_URLS
+        g = await google_instant_index(MONEY_URLS)
+        b = await bing_indexnow(MONEY_URLS)
+        return (f"Index: {len(g.get('submitted', []))} Google | "
+                f"{b.get('submitted', 0)} Bing IndexNow")
+    except Exception as e:
+        return f"OMEGA Index Fehler: {e}"
+
+
+async def task_omega_article() -> str:
+    """Generiert und veröffentlicht täglich rotierenden SEO-Artikel."""
+    try:
+        from modules.omega_traffic_engine import generate_seo_article, publish_article_to_vercel, ARTICLE_TOPICS
+        import datetime as dt
+        topic_idx = dt.datetime.now().timetuple().tm_yday % len(ARTICLE_TOPICS)
+        topic, slug = ARTICLE_TOPICS[topic_idx]
+        article = await generate_seo_article(topic, slug)
+        if not article:
+            return "Artikel-Generierung übersprungen (kein API-Key)"
+        result = await publish_article_to_vercel(article)
+        return f"SEO-Artikel: '{topic}' | {result.get('words', 0)} Wörter → {result.get('published', '?')}"
+    except Exception as e:
+        return f"OMEGA Artikel Fehler: {e}"
+
+
+async def task_omega_competitor() -> str:
+    """KI generiert Content der Competitor-Keywords für BullPower Hub klaut."""
+    try:
+        from modules.omega_traffic_engine import generate_competitor_content
+        result = await generate_competitor_content()
+        keyword = result.get("keyword", "?")
+        posts = len(result.get("posts", []))
+        return f"Competitor-Content: '{keyword}' → {posts} Posts generiert"
+    except Exception as e:
+        return f"OMEGA Competitor Fehler: {e}"
+
+
+async def task_omega_social_proof() -> str:
+    """Postet Kunden-Testimonial als Social Proof auf Telegram."""
+    try:
+        from modules.omega_traffic_engine import post_testimonial_social
+        result = await post_testimonial_social()
+        return f"Social Proof: {result.get('posted', '?')} gepostet"
+    except Exception as e:
+        return f"OMEGA Social Proof Fehler: {e}"
+
+
+async def task_omega_youtube() -> str:
+    """Generiert YouTube SEO-Paket (Titel, Description, Tags, Hook)."""
+    try:
+        from modules.omega_traffic_engine import generate_youtube_package
+        result = await generate_youtube_package()
+        return f"YouTube-Paket: '{result.get('idea', '?')[:50]}'"
+    except Exception as e:
+        return f"OMEGA YouTube Fehler: {e}"
+
+
+async def task_omega_indexnow_sitemap() -> str:
+    """Meldet alle Sitemaps bei IndexNow an (Bing/Yahoo/DuckDuckGo)."""
+    try:
+        from modules.omega_traffic_engine import bing_indexnow, SITEMAPS
+        result = await bing_indexnow(SITEMAPS)
+        return f"IndexNow Sitemaps: {result.get('submitted', 0)} bei {len(result.get('engines', []))} Engines"
+    except Exception as e:
+        return f"OMEGA IndexNow Fehler: {e}"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# TWITTER AUTOPOSTER TASKS
+# ─────────────────────────────────────────────────────────────────────────────
+
+async def task_twitter_daily_tweets() -> str:
+    """Postet 3 Tweets täglich auf @AIITEC — KI-generiert + Templates + Produkte."""
+    try:
+        from modules.twitter_autoposter import post_daily_tweets
+        result = await post_daily_tweets(count=3)
+        return f"Twitter: {result.get('posted', 0)} Tweets | {result.get('failed', 0)} Fehler"
+    except Exception as e:
+        return f"Twitter Daily Fehler: {e}"
+
+
+async def task_twitter_seo_thread() -> str:
+    """Postet täglich einen SEO-Thread (3 Tweets) auf @AIITEC."""
+    try:
+        from modules.twitter_autoposter import post_seo_thread
+        result = await post_seo_thread()
+        return f"Twitter Thread: {result.get('thread_length', 0)} Tweets gepostet"
+    except Exception as e:
+        return f"Twitter Thread Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -1856,6 +2061,26 @@ TASKS = [
     ("content_velocity",        task_content_velocity,       7200,    55),   # 2h — 10-Format Content überall
     ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   75),   # 4h — Reddit + Medium + LinkedIn
     ("revenue_maximizer",       task_revenue_maximizer,      14400,   95),   # 4h — Cart Recovery + Winback
+    # ── CONTENT FACTORY: AI-powered omnichannel content engine ───────────────
+    ("content_factory_run",     task_content_factory_run,   14400,  130),   # 4h — full package from trending
+    ("social_batch_gen",        task_social_batch_gen,      86400,  150),   # daily — 30-day social calendar
+    ("trending_topic_scan",     task_trending_topic_scan,   43200,  170),   # 12h — catch viral waves early
+    ("content_calendar_weekly", task_content_calendar_weekly, 604800, 190), # weekly — Monday calendar build
+    # ── CONVERSION MAXIMIZER — 10 AI systems ─────────────────────────────────
+    ("conversion_scan",         task_conversion_scan,         900,   610),  # 15min — A/B + social proof + lead scoring
+    ("daily_optimization",      task_daily_optimization,      3600,  620),  # 1h — revenue opt + funnel analysis
+    ("funnel_daily",            task_funnel_daily,            86400, 630),  # daily — full funnel Telegram report
+    # ── OMEGA TRAFFIC ENGINE — REVOLUTION ────────────────────────────────────
+    ("omega_full",              task_omega_full,              86400,  700),  # daily — full cycle: index+artikel+competitor
+    ("omega_index",             task_omega_index,              3600,  710),  # 1h — Google+Bing instant index aller URLs
+    ("omega_article",           task_omega_article,           86400,  720),  # daily — neuer SEO-Artikel (rotierend)
+    ("omega_competitor",        task_omega_competitor,        21600,  730),  # 6h — competitor keywords klauen
+    ("omega_social_proof",      task_omega_social_proof,      14400,  740),  # 4h — Testimonial auf Telegram
+    ("omega_youtube",           task_omega_youtube,           86400,  750),  # daily — YouTube SEO-Paket
+    ("omega_indexnow_sitemap",  task_omega_indexnow_sitemap,  43200,  760),  # 12h — Sitemaps bei IndexNow einreichen
+    # ── TWITTER / X AUTOPOSTER (AIITEC Account) ──────────────────────────────
+    ("twitter_daily_tweets",    task_twitter_daily_tweets,    14400,  800),  # 4h — 3 Tweets täglich
+    ("twitter_seo_thread",      task_twitter_seo_thread,      86400,  810),  # daily — SEO-Thread (3 Tweets)
 ]
 
 
