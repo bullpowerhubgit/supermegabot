@@ -3558,6 +3558,11 @@ async def handle_oauth_status(req):
         "reddit":    {"configured": bool(os.getenv("REDDIT_CLIENT_ID") and os.getenv("REDDIT_USERNAME"))},
         "linkedin":  {"configured": bool(os.getenv("LINKEDIN_ACCESS_TOKEN"))},
         "medium":    {"configured": bool(os.getenv("MEDIUM_API_KEY"))},
+        "devto":     {"configured": bool(os.getenv("DEVTO_API_KEY"))},
+        "hashnode":  {"configured": bool(os.getenv("HASHNODE_API_KEY"))},
+        "discord":   {"configured": bool(os.getenv("DISCORD_WEBHOOK_URL"))},
+        "telegram":  {"configured": bool(os.getenv("TELEGRAM_BOT_TOKEN"))},
+        "github":    {"configured": bool(os.getenv("GITHUB_TOKEN"))},
     })
 
 
@@ -4763,6 +4768,7 @@ async def create_app():
     app.router.add_post("/api/ingest",                handle_seo_ingest)
     app.router.add_post("/api/lead",                  handle_universal_lead_capture)
     app.router.add_get("/master",                     handle_master_dashboard)
+    app.router.add_get("/dashboard",                  handle_mega_dashboard)
     app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
     app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
     app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
@@ -4802,6 +4808,7 @@ async def create_app():
     app.router.add_post("/api/viral/traffic",         handle_viral_traffic)
     app.router.add_post("/api/revenue/maximize",      handle_revenue_maximizer_run)
     app.router.add_post("/api/syndication/run",       handle_free_syndication)
+    app.router.add_post("/api/blog/publish",          handle_github_blog_publish)
     app.router.add_get( "/api/paypal/status",         handle_paypal_status)
     app.router.add_post("/api/paypal/checkout",       handle_paypal_checkout)
     app.router.add_post("/api/paypal/ipn",            handle_paypal_ipn)
@@ -5411,6 +5418,12 @@ async def handle_seo_ingest(req):
 async def handle_master_dashboard(req):
     """GET /master — großes Master Control Dashboard."""
     html_file = Path(__file__).parent / "master.html"
+    return web.Response(content_type="text/html", text=html_file.read_text())
+
+
+async def handle_mega_dashboard(req):
+    """GET /dashboard — SuperMegaBot Command Center (neu)."""
+    html_file = Path(__file__).parent / "megadash.html"
     return web.Response(content_type="text/html", text=html_file.read_text())
 
 
@@ -6187,6 +6200,28 @@ async def handle_free_syndication(req):
     asyncio.ensure_future(_bg())
     return web.json_response({"status": "started",
                               "message": "FreeSyndication läuft — Dev.to + Hashnode + Medium + Discord + Telegram"})
+
+
+async def handle_github_blog_publish(req):
+    """POST /api/blog/publish — publish SEO article to GitHub Pages."""
+    async def _bg():
+        try:
+            body = {}
+            try:
+                body = await req.json()
+            except Exception:
+                pass
+            from modules.github_blog_publisher import publish_blog_article
+            result = await publish_blog_article(topic=body.get("topic"))
+            log = logging.getLogger("GitHubBlog")
+            if result.get("ok"):
+                log.info("Blog published: %s", result.get("url", ""))
+            else:
+                log.warning("Blog skip: %s", result.get("reason", ""))
+        except Exception as exc:
+            logging.getLogger("GitHubBlog").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started", "message": "GitHub Pages Blog Artikel wird generiert..."})
 
 
 async def handle_shopify_seo_run(req):
