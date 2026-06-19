@@ -3993,6 +3993,55 @@ async def handle_trello_create_card(req):
 
 
 # ---------------------------------------------------------------------------
+# TRAFFIC BLITZ API
+# ---------------------------------------------------------------------------
+async def handle_traffic_blitz(req):
+    """POST /api/traffic/blitz — run full traffic blitz (LinkedIn + GitHub Pages + IndexNow + Telegram)."""
+    try:
+        from modules.traffic_blitz import run_traffic_blitz
+        result = await run_traffic_blitz()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_traffic_blitz: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_github_seo_post(req):
+    """POST /api/traffic/github-post — publish one SEO article to GitHub Pages."""
+    try:
+        body  = await req.json() if req.content_length else {}
+        topic = body.get("topic")
+        from modules.traffic_blitz import create_github_seo_post
+        result = await create_github_seo_post(topic)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_github_seo_post: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_linkedin_burst(req):
+    """POST /api/traffic/linkedin-burst — post 3 AI posts to LinkedIn."""
+    try:
+        from modules.traffic_blitz import run_linkedin_burst
+        result = await run_linkedin_burst()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_linkedin_burst: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_indexnow_blast(req):
+    """POST /api/traffic/indexnow — ping Google+Bing IndexNow for all domains."""
+    try:
+        from modules.traffic_blitz import indexnow_blast
+        result = await indexnow_blast()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        log.error("handle_indexnow_blast: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ---------------------------------------------------------------------------
 # DYNAMIC PRICING + EMAIL SEQUENCES API
 # ---------------------------------------------------------------------------
 async def handle_pricing_dashboard(req):
@@ -5379,6 +5428,12 @@ async def create_app():
     app.router.add_get( "/api/trello/boards",            handle_trello_boards)
     app.router.add_get( "/api/trello/lists",             handle_trello_lists)
     app.router.add_post("/api/trello/card",              handle_trello_create_card)
+
+    # Traffic Blitz routes
+    app.router.add_post("/api/traffic/blitz",            handle_traffic_blitz)
+    app.router.add_post("/api/traffic/github-post",      handle_github_seo_post)
+    app.router.add_post("/api/traffic/linkedin-burst",   handle_linkedin_burst)
+    app.router.add_post("/api/traffic/indexnow",         handle_indexnow_blast)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
