@@ -4259,6 +4259,12 @@ async def logging_middleware(request, handler):
     return resp
 
 
+_CORS_TRUSTED = {
+    "https://dudirudibot-mega-production.up.railway.app",
+    "http://localhost:8888",
+    "http://127.0.0.1:8888",
+}
+
 @web.middleware
 async def cors_middleware(request, handler):
     if request.method == "OPTIONS":
@@ -4268,7 +4274,12 @@ async def cors_middleware(request, handler):
             resp = await handler(request)
         except web.HTTPException as exc:
             resp = exc
-    resp.headers["Access-Control-Allow-Origin"] = "*"
+    if request.path.startswith("/api/"):
+        origin = request.headers.get("Origin", "")
+        resp.headers["Access-Control-Allow-Origin"] = origin if origin in _CORS_TRUSTED else "https://dudirudibot-mega-production.up.railway.app"
+        resp.headers["Vary"] = "Origin"
+    else:
+        resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
     resp.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-API-Key"
     return resp
