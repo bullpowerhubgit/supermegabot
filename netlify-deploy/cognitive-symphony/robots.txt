@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://cognitive-symphony-ds24.netlify.app/sitemap.xml

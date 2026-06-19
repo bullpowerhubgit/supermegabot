@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://creatorstudio-pro.netlify.app/sitemap.xml
