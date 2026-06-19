@@ -162,7 +162,7 @@ async def create_campaign(list_id: str, subject: str, from_name: str, body_html:
         "settings": {
             "subject_line": subject,
             "from_name": from_name,
-            "reply_to": MC_API_KEY.split("-")[0] + "@mailchimp.com",
+            "reply_to": os.getenv("SENDGRID_FROM_EMAIL", "bullpowersrtkennels@gmail.com"),
         },
     }
     try:
@@ -191,6 +191,21 @@ async def create_campaign(list_id: str, subject: str, from_name: str, body_html:
                 content_result = await resp.json(content_type=None)
 
         campaign["content_set"] = resp.status == 200
+
+        # Step 3: Send the campaign immediately
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{MC_BASE}/campaigns/{campaign_id}/actions/send",
+                headers=_auth_header(),
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as resp:
+                campaign["sent"] = resp.status == 204
+                if resp.status == 204:
+                    log.info("Mailchimp campaign sent: %s", subject[:50])
+                else:
+                    err = await resp.text()
+                    log.warning("Mailchimp send failed: %s", err[:100])
+
         return campaign
 
     except Exception as exc:
