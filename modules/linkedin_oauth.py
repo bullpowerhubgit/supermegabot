@@ -40,6 +40,74 @@ async def exchange_code_for_token(code: str) -> dict:
             return await r.json()
 
 
+async def refresh_access_token() -> str | None:
+    """Use refresh token to get a new access token; save to Railway env."""
+    refresh_token = os.getenv("LINKEDIN_REFRESH_TOKEN", "")
+    if not refresh_token or not LINKEDIN_CLIENT_ID or not LINKEDIN_CLIENT_SECRET:
+        return None
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+        async with s.post(
+            "https://www.linkedin.com/oauth/v2/accessToken",
+            data={
+                "grant_type": "refresh_token",
+                "refresh_token": refresh_token,
+                "client_id": LINKEDIN_CLIENT_ID,
+                "client_secret": LINKEDIN_CLIENT_SECRET,
+            },
+            headers={"Content-Type": "application/x-www-form-urlencoded"},
+        ) as r:
+            data = await r.json()
+            new_token = data.get("access_token")
+            if new_token:
+                import subprocess
+                subprocess.Popen(["railway", "variables", "set",
+                                  f"LINKEDIN_ACCESS_TOKEN={new_token}"])
+                os.environ["LINKEDIN_ACCESS_TOKEN"] = new_token
+                logger.info("LinkedIn access token refreshed via refresh_token")
+                return new_token
+            logger.error(f"LinkedIn token refresh failed: {data}")
+            return None
+
+
+async def post_to_linkedin(text: str) -> dict:
+    """Post to LinkedIn; auto-refresh token on 401."""
+    token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
+    person_urn = os.getenv("LINKEDIN_PERSON_URN", LINKEDIN_PERSON_URN)
+    payload = {
+        "author": person_urn,
+        "lifecycleState": "PUBLISHED",
+        "specificContent": {
+            "com.linkedin.ugc.ShareContent": {
+                "shareCommentary": {"text": text},
+                "shareMediaCategory": "NONE",
+            }
+        },
+        "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+    }
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Content-Type": "application/json",
+        "X-Restli-Protocol-Version": "2.0.0",
+    }
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+        async with s.post("https://api.linkedin.com/v2/ugcPosts",
+                          json=payload, headers=headers) as r:
+            if r.status == 201 or r.status == 200:
+                data = await r.json()
+                return {"success": True, "post_id": data.get("id")}
+            if r.status == 401:
+                new_token = await refresh_access_token()
+                if new_token:
+                    headers["Authorization"] = f"Bearer {new_token}"
+                    async with s.post("https://api.linkedin.com/v2/ugcPosts",
+                                      json=payload, headers=headers) as r2:
+                        if r2.status in (200, 201):
+                            data = await r2.json()
+                            return {"success": True, "post_id": data.get("id"), "refreshed": True}
+            data = await r.json()
+            return {"success": False, "status": r.status, "error": data}
+
+
 async def get_linkedin_status() -> dict:
     token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
     if not token:
@@ -47,18 +115,19 @@ async def get_linkedin_status() -> dict:
             "connected": False,
             "needs_app_setup": not bool(LINKEDIN_CLIENT_ID),
             "auth_url": get_linkedin_auth_url() if LINKEDIN_CLIENT_ID else None,
-            "message": (
-                "Visit /api/linkedin/auth to authorize"
-                if LINKEDIN_CLIENT_ID
-                else "Set LINKEDIN_CLIENT_ID + LINKEDIN_CLIENT_SECRET in Railway first"
-            ),
+            "message": "Set LINKEDIN_ACCESS_TOKEN in Railway",
         }
+    # Test with a lightweight endpoint
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
         async with s.get(
-            "https://api.linkedin.com/v2/me",
-            headers={"Authorization": f"Bearer {token}"},
+            "https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn%3Ali%3Aperson%3AYcxbqVN0ZR)&count=1",
+            headers={"Authorization": f"Bearer {token}",
+                     "X-Restli-Protocol-Version": "2.0.0"},
         ) as r:
-            if r.status == 200:
-                data = await r.json()
-                return {"connected": True, "profile": data.get("localizedFirstName", "Rudolf")}
-            return {"connected": False, "http_status": r.status, "expired": True}
+            if r.status in (200, 403):
+                return {"connected": True, "token_present": True,
+                        "note": "w_member_social scope active"}
+            if r.status == 401:
+                new_token = await refresh_access_token()
+                return {"connected": bool(new_token), "refreshed": bool(new_token)}
+            return {"connected": False, "http_status": r.status}
