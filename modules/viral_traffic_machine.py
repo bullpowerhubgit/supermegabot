@@ -308,8 +308,26 @@ async def run_viral_traffic_machine(product_name: str = PRODUCT_NAME,
         )
         linkedin_task = asyncio.create_task(post_to_linkedin(content.get("linkedin_post", "")))
 
-        reddit_r, medium_r, linkedin_r = await asyncio.gather(
-            reddit_task, medium_task, linkedin_task, return_exceptions=True
+        tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        tg_chat  = os.getenv("TELEGRAM_CHAT_ID", "")
+        async def _post_telegram():
+            if not tg_token or not tg_chat:
+                return {"ok": False, "error": "no telegram"}
+            try:
+                import aiohttp as _ah
+                msg = f"🚀 {content.get('title','')}\n\n{content.get('linkedin_post','')[:600]}\n\n{product_url}"
+                async with _ah.ClientSession() as s:
+                    async with s.post(f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                                      json={"chat_id": tg_chat, "text": msg[:4096]},
+                                      timeout=_ah.ClientTimeout(total=10)) as r:
+                        d = await r.json()
+                return {"ok": d.get("ok", False)}
+            except Exception as e:
+                return {"ok": False, "error": str(e)}
+        telegram_task = asyncio.create_task(_post_telegram())
+
+        reddit_r, medium_r, linkedin_r, telegram_r = await asyncio.gather(
+            reddit_task, medium_task, linkedin_task, telegram_task, return_exceptions=True
         )
 
         topic_result = {
@@ -318,23 +336,26 @@ async def run_viral_traffic_machine(product_name: str = PRODUCT_NAME,
             "reddit":   reddit_r   if isinstance(reddit_r, dict)   else {"ok": False, "error": str(reddit_r)},
             "medium":   medium_r   if isinstance(medium_r, dict)   else {"ok": False, "error": str(medium_r)},
             "linkedin": linkedin_r if isinstance(linkedin_r, dict) else {"ok": False, "error": str(linkedin_r)},
+            "telegram": telegram_r if isinstance(telegram_r, dict) else {"ok": False, "error": str(telegram_r)},
             "ts": datetime.now(timezone.utc).isoformat(),
         }
         results.append(topic_result)
         posted.add(h)
 
-        log.info("Topic '%s': reddit=%s medium=%s linkedin=%s",
+        log.info("Topic '%s': reddit=%s medium=%s linkedin=%s telegram=%s",
                  topic[:40],
                  topic_result["reddit"].get("ok"),
                  topic_result["medium"].get("ok"),
-                 topic_result["linkedin"].get("ok"))
+                 topic_result["linkedin"].get("ok"),
+                 topic_result["telegram"].get("ok"))
 
     _save_posted(posted)
 
     channels_hit = sum(
-        int(r.get("reddit", {}).get("ok", False)) +
-        int(r.get("medium", {}).get("ok", False)) +
-        int(r.get("linkedin", {}).get("ok", False))
+        int(r.get("reddit",   {}).get("ok", False)) +
+        int(r.get("medium",   {}).get("ok", False)) +
+        int(r.get("linkedin", {}).get("ok", False)) +
+        int(r.get("telegram", {}).get("ok", False))
         for r in results
     )
 
