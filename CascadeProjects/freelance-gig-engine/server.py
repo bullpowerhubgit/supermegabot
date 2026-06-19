@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
-"""Freelance Gig Engine — Fiverr + Upwork Content Generator"""
-import asyncio, aiohttp, os, logging, sqlite3, random
-from datetime import datetime
+"""Freelance Gig Engine — MAXIMUM TUNING v2.0
+Fiverr + Upwork + Google Trends + IndexNow + LSI keywords + turbo scheduler"""
+import asyncio, aiohttp, os, logging, sqlite3, random, uuid, time
+import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
+from urllib.parse import quote
 import anthropic
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s %(levelname)s %(message)s')
@@ -11,12 +14,79 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "5088771245")
 PORT              = int(os.getenv("PORT", 8093))
+APP_URL           = os.getenv("APP_URL", "https://freelance-gig-engine-production.up.railway.app")
 KV_API_KEY        = os.getenv("KLAVIYO_API_KEY", "")
+MC_API_KEY        = os.getenv("MAILCHIMP_API_KEY", "")
+MC_SERVER         = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
+MC_LIST_ID        = os.getenv("MAILCHIMP_LIST_ID", "")
+INDEXNOW_KEY      = os.getenv("INDEXNOW_KEY", str(uuid.uuid5(uuid.NAMESPACE_URL, APP_URL)).replace("-",""))
+_trending_cache: list[str] = []
+_last_trends_fetch: float = 0
 
 # ── SEO Traffic Engine Bridge ──────────────────────────────────────────────
 _SEO_ENGINE = os.getenv("SEO_ENGINE_URL", "https://seo-traffic-engine-production.up.railway.app")
 _AMAZON_TAG = os.getenv("AMAZON_AFFILIATE_TAG", "bullpower-21")
 _EBAY_APP_ID = os.getenv("EBAY_APP_ID", "")
+
+
+async def fetch_google_trends(geo: str = "DE") -> list[str]:
+    global _trending_cache, _last_trends_fetch
+    if time.time() - _last_trends_fetch < 7200:
+        return _trending_cache
+    url = f"https://trends.google.com/trends/trendingsearches/daily/rss?geo={geo}"
+    keywords = []
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(url, timeout=aiohttp.ClientTimeout(total=12),
+                             headers={"User-Agent": "Mozilla/5.0 (compatible; GigBot/2.0)"}) as r:
+                if r.status == 200:
+                    root = ET.fromstring(await r.text())
+                    for item in root.findall(".//item"):
+                        el = item.find("title")
+                        if el is not None and el.text:
+                            kw = el.text.strip().lower()
+                            if any(t in kw for t in ["freelance","tech","ki","ai","geld","online","digital","seo","tool","software","entwickler","python","shopify"]):
+                                keywords.append(kw)
+    except Exception as e:
+        logger.warning(f"Google Trends: {e}")
+    if keywords:
+        _trending_cache = keywords[:10]
+        _last_trends_fetch = time.time()
+    return _trending_cache
+
+
+async def generate_lsi_keywords(keyword: str) -> list[str]:
+    """Generate LSI keywords to boost gig visibility in Fiverr/Upwork search."""
+    if not ANTHROPIC_API_KEY:
+        return []
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        msg = client.messages.create(
+            model="claude-haiku-4-5-20251001", max_tokens=200,
+            messages=[{"role": "user", "content":
+                f"Give 10 LSI keywords (related search terms) for freelance service: '{keyword}'\nOnly keywords, one per line, no numbering."}]
+        )
+        return [line.strip() for line in msg.content[0].text.strip().split("\n") if line.strip()][:10]
+    except Exception:
+        return []
+
+
+async def indexnow_ping(urls: list[str]) -> bool:
+    payload = {
+        "host": APP_URL.replace("https://","").replace("http://",""),
+        "key": INDEXNOW_KEY,
+        "keyLocation": f"{APP_URL}/{INDEXNOW_KEY}.txt",
+        "urlList": urls[:50],
+    }
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post("https://api.indexnow.org/indexnow", json=payload,
+                              headers={"Content-Type": "application/json; charset=utf-8"},
+                              timeout=aiohttp.ClientTimeout(total=10)) as r:
+                return r.status in (200, 202)
+    except Exception as e:
+        logger.warning(f"IndexNow: {e}")
+        return False
 
 
 async def seo_get_products(keyword: str, source: str = "all") -> list:
@@ -152,15 +222,19 @@ async def send_telegram(msg: str):
             logger.error(f"Telegram send failed: {e}")
 
 
-async def generate_fiverr_gig(service: dict) -> str:
+async def generate_fiverr_gig(service: dict, lsi: list[str] = None, trending_topic: str = "") -> str:
+    lsi_str = ", ".join(lsi[:8]) if lsi else ""
+    trend_line = f"Trending topic to weave in: {trending_topic}\n" if trending_topic else ""
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
     resp = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=1000,
-        messages=[{"role": "user", "content": f"""Create an optimized Fiverr gig description in ENGLISH:
+        messages=[{"role": "user", "content": f"""Create an optimized Fiverr gig description in ENGLISH that ranks #1 in Fiverr search:
 
 SERVICE: {service['title']}
 CATEGORY: {service['fiverr_category']}
+LSI KEYWORDS TO INCLUDE NATURALLY: {lsi_str}
+{trend_line}
 BASIC: ${service['price_basic']} / {service['delivery_days'][0]} days
 STANDARD: ${service['price_standard']} / {service['delivery_days'][1]} days
 PREMIUM: ${service['price_premium']} / {service['delivery_days'][2]} days
@@ -231,10 +305,14 @@ No spam. No "I am expert" cliches."""}]
 async def content_cycle():
     service = random.choice(SERVICES)
     now = datetime.now().isoformat()
-
     logger.info(f"Content cycle — service: {service['title']}")
 
-    fiverr_gig = await generate_fiverr_gig(service)
+    # Trending + LSI enrichment in parallel
+    trending = await fetch_google_trends("DE")
+    trending_topic = random.choice(trending) if trending else ""
+    lsi = await generate_lsi_keywords(service["title"])
+
+    fiverr_gig = await generate_fiverr_gig(service, lsi, trending_topic)
 
     job1 = random.choice(UPWORK_KEYWORDS)
     job2 = random.choice([k for k in UPWORK_KEYWORDS if k != job1])
@@ -281,18 +359,31 @@ async def content_cycle():
         f"Suche diese Jobs auf upwork.com und sende die Proposals!"
     )
 
+    # IndexNow ping for demo URLs
+    await indexnow_ping([s["demo_url"] for s in SERVICES])
+
     logger.info("Content cycle done.")
-    await klaviyo_track("Freelance Gig Cycle", {"gigs": 2, "proposals": 2})
+    await klaviyo_track("Freelance Gig Cycle", {
+        "gigs": 2, "proposals": 2,
+        "lsi_keywords": len(lsi),
+        "trending_topic": trending_topic,
+        "service": service["title"],
+    })
 
 
 async def scheduler():
     await asyncio.sleep(90)
+    await fetch_google_trends("DE")
+    last_trends = time.time()
     while True:
         try:
             await content_cycle()
         except Exception as e:
             logger.error(f"Cycle error: {e}")
-        await asyncio.sleep(12 * 3600)
+        await asyncio.sleep(6 * 3600)  # Every 6h (was 12h)
+        if time.time() - last_trends >= 2 * 3600:
+            await fetch_google_trends("DE")
+            last_trends = time.time()
 
 
 async def health_handler(request):
@@ -304,9 +395,28 @@ async def health_handler(request):
     return web.json_response({
         "status": "ok",
         "service": "freelance-gig-engine",
+        "version": "2.0-TURBO",
         "gigs_generated": gigs,
         "proposals_generated": props,
-        "platforms": ["fiverr", "upwork"]
+        "trending_topics": _trending_cache[:5],
+        "indexnow_key": INDEXNOW_KEY[:8] + "...",
+        "platforms": ["fiverr", "upwork"],
+        "features": ["google-trends", "indexnow", "lsi-keywords", "klaviyo"],
+    })
+
+
+async def stats_handler(request):
+    from aiohttp import web
+    conn = sqlite3.connect(DB_PATH)
+    gigs = conn.execute("SELECT COUNT(*) FROM gigs").fetchone()[0]
+    props = conn.execute("SELECT COUNT(*) FROM proposals").fetchone()[0]
+    recent_gigs = conn.execute("SELECT platform, service_title, created_at FROM gigs ORDER BY id DESC LIMIT 5").fetchall()
+    conn.close()
+    return web.json_response({
+        "gigs_total": gigs, "proposals_total": props,
+        "recent_gigs": [{"platform": r[0], "service": r[1], "created_at": r[2]} for r in recent_gigs],
+        "trending_topics": _trending_cache,
+        "last_trends_fetch": datetime.fromtimestamp(_last_trends_fetch).isoformat() if _last_trends_fetch else None,
     })
 
 
@@ -390,10 +500,13 @@ async def main():
     init_db()
     app = web.Application()
     app.router.add_get("/health", health_handler)
+    app.router.add_get("/stats", stats_handler)
     app.router.add_post("/api/trigger", trigger_handler)
     app.router.add_get("/api/gigs", gigs_handler)
     app.router.add_post("/api/ingest", ingest_handler)
     app.router.add_get("/api/seo/products", seo_products_handler)
+    app.router.add_get(f"/{INDEXNOW_KEY}.txt",
+                       lambda r: web.Response(text=INDEXNOW_KEY, content_type="text/plain"))
     runner = web.AppRunner(app)
     await runner.setup()
     await web.TCPSite(runner, "0.0.0.0", PORT).start()
