@@ -1767,6 +1767,18 @@ async def task_revenue_maximizer() -> str:
         return f"RevenueMaximizer Fehler: {e}"
 
 
+async def task_free_syndication() -> str:
+    """FreeSyndication: post to Dev.to, Hashnode, Medium, Discord, Telegram every 6h."""
+    try:
+        from modules.free_syndication_network import run_free_syndication
+        result = await run_free_syndication()
+        ok = result.get("platforms_ok", 0)
+        topic = result.get("topic", "")[:40]
+        return f"FreeSyndication OK: {ok}/5 platforms — '{topic}'"
+    except Exception as e:
+        return f"FreeSyndication Fehler: {e}"
+
+
 # ── Content Factory Tasks ────────────────────────────────────────────────────
 
 async def task_content_factory_run() -> str:
@@ -2323,6 +2335,7 @@ TASKS = [
     ("content_velocity",        task_content_velocity,       7200,    55),   # 2h — 10-Format Content überall
     ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   75),   # 4h — Reddit + Medium + LinkedIn
     ("revenue_maximizer",       task_revenue_maximizer,      14400,   95),   # 4h — Cart Recovery + Winback
+    ("free_syndication",        task_free_syndication,       21600,  115),   # 6h — Dev.to + Hashnode + Medium + Discord
     # ── CONTENT FACTORY: AI-powered omnichannel content engine ───────────────
     ("content_factory_run",     task_content_factory_run,   14400,  130),   # 4h — full package from trending
     ("social_batch_gen",        task_social_batch_gen,      86400,  150),   # daily — 30-day social calendar
