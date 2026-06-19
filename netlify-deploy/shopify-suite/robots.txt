@@ -1,3 +1,3 @@
 User-agent: *
 Allow: /
-Sitemap: https://shopify-automaton-suite.netlify.app/sitemap.xml
+Sitemap: https://shopify-brutal-tuning.netlify.app/sitemap.xml

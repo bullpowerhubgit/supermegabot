@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
 Sitemap: https://bullpower-ai-tools.netlify.app/sitemap.xml

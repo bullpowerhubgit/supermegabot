@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://creatorai-ultra.vercel.app/sitemap.xml
+Sitemap: https://creatorai-ultra.netlify.app/sitemap.xml

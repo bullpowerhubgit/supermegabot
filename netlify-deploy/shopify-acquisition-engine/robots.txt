@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://shopify-acquisition-engine.netlify.app/sitemap.xml
