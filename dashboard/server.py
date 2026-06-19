@@ -3861,6 +3861,103 @@ async def handle_winback_run(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ---------------------------------------------------------------------------
+# TRELLO — Revenue Board Automation
+# ---------------------------------------------------------------------------
+
+async def handle_trello_status(req):
+    """GET /api/trello/status — Verbindungsstatus + OAuth-Link."""
+    key   = os.getenv("TRELLO_API_KEY", "")
+    token = os.getenv("TRELLO_TOKEN", "")
+    configured = bool(key and token)
+    oauth_url = (
+        f"https://trello.com/1/authorize?expiration=never"
+        f"&name=SuperMegaBot&scope=read,write&response_type=token&key={key}"
+        if key else ""
+    )
+    if configured:
+        try:
+            from modules.trello_client import verify_credentials
+            member = await verify_credentials()
+            return web.json_response({"ok": True, "configured": True,
+                                      "member": member.get("member", {}).get("fullName")})
+        except Exception as e:
+            return web.json_response({"ok": False, "configured": True,
+                                      "error": str(e), "oauth_url": oauth_url})
+    return web.json_response({"ok": False, "configured": False,
+                              "oauth_url": oauth_url,
+                              "message": "Besuche oauth_url → kopiere Token → POST /api/trello/token"})
+
+
+async def handle_trello_set_token(req):
+    """POST /api/trello/token  body: {"token":"<64-char hex>"}
+    Setzt TRELLO_TOKEN in Railway und prüft sofort."""
+    try:
+        body  = await req.json()
+        token = (body.get("token") or "").strip()
+        if len(token) < 60:
+            return web.json_response({"ok": False, "error": "Token zu kurz (min 60 Zeichen)"}, status=400)
+        import subprocess
+        subprocess.run(
+            ["railway", "variables", "set", f"TRELLO_TOKEN={token}", "--service", "dudirudibot-mega"],
+            capture_output=True, timeout=30
+        )
+        os.environ["TRELLO_TOKEN"] = token
+        from modules.trello_client import verify_credentials, get_lists
+        member = await verify_credentials()
+        board_id = os.getenv("TRELLO_BOARD_ID", "")
+        lists = await get_lists(board_id) if board_id else []
+        if lists:
+            today_list = next((l for l in lists if "heute" in l["name"].lower() or "today" in l["name"].lower()), lists[0])
+            week_list  = next((l for l in lists if "woche" in l["name"].lower() or "week" in l["name"].lower()), lists[-1])
+            subprocess.run(["railway","variables","set",f"TRELLO_LIST_TODAY={today_list['id']}","--service","dudirudibot-mega"], capture_output=True, timeout=30)
+            subprocess.run(["railway","variables","set",f"TRELLO_LIST_WEEK={week_list['id']}","--service","dudirudibot-mega"], capture_output=True, timeout=30)
+            os.environ["TRELLO_LIST_TODAY"] = today_list["id"]
+            os.environ["TRELLO_LIST_WEEK"]  = week_list["id"]
+        return web.json_response({"ok": True,
+                                  "member": member.get("member", {}).get("fullName"),
+                                  "lists_found": len(lists),
+                                  "lists": [l["name"] for l in lists]})
+    except Exception as e:
+        log.error("handle_trello_set_token: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_trello_boards(req):
+    """GET /api/trello/boards — alle zugänglichen Boards."""
+    try:
+        from modules.trello_client import _get
+        boards = await _get("/members/me/boards", {"filter": "open", "fields": "id,name,url"})
+        return web.json_response({"ok": True, "boards": boards})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_trello_lists(req):
+    """GET /api/trello/lists — Listen des konfigurierten Boards."""
+    try:
+        from modules.trello_client import get_lists
+        board_id = req.rel_url.query.get("board_id") or os.getenv("TRELLO_BOARD_ID", "")
+        lists = await get_lists(board_id)
+        return web.json_response({"ok": True, "lists": lists})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_trello_create_card(req):
+    """POST /api/trello/card  body: {"name":"...","desc":"...","list_id":"..."}"""
+    try:
+        body = await req.json()
+        from modules.trello_client import create_card
+        card = await create_card(
+            name=body.get("name", "Neue Aufgabe"),
+            list_id=body.get("list_id"),
+            desc=body.get("desc", ""),
+        )
+        return web.json_response({"ok": True, "card": {"id": card["id"], "name": card["name"], "url": card.get("url")}})
+    except Exception as e:
+        log.error("handle_trello_create_card: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ---------------------------------------------------------------------------
@@ -5242,6 +5339,13 @@ async def create_app():
     # ── Misc recovered handlers ──────────────────────────────────────────────
     app.router.add_post("/api/review/run",               handle_review_automation_run)
     app.router.add_post("/api/winback/run",              handle_winback_run)
+
+    # ── Trello ────────────────────────────────────────────────────────────────
+    app.router.add_get( "/api/trello/status",            handle_trello_status)
+    app.router.add_post("/api/trello/token",             handle_trello_set_token)
+    app.router.add_get( "/api/trello/boards",            handle_trello_boards)
+    app.router.add_get( "/api/trello/lists",             handle_trello_lists)
+    app.router.add_post("/api/trello/card",              handle_trello_create_card)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
