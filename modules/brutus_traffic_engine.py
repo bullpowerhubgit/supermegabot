@@ -29,8 +29,9 @@ from typing import Optional
 log = logging.getLogger("BRUTUS")
 
 DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "brutus"))
-ANTHROPIC  = os.getenv("ANTHROPIC_API_KEY", "")
-DEEPSEEK   = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
+ANTHROPIC   = os.getenv("ANTHROPIC_API_KEY", "")
+PERPLEXITY  = os.getenv("PERPLEXITY_API_KEY", "")
+DEEPSEEK    = os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 YOUTUBE_KEY    = os.getenv("YOUTUBE_API_KEY", "") or os.getenv("GOOGLE_API_KEY", "")
@@ -144,7 +145,7 @@ async def predict_peak_trends(trends: list[dict]) -> list[dict]:
     AI analysiert Trends und bewertet Potential.
     Gibt nur Top-Trends zurück die noch VOR dem Peak sind.
     """
-    if not trends or not ANTHROPIC:
+    if not trends or (not PERPLEXITY and not ANTHROPIC):
         return trends[:3]
     try:
         import aiohttp
@@ -158,15 +159,7 @@ Gib JSON zurück:
 Nur JSON, kein anderer Text."""
 
         async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 800,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                data = await r.json(content_type=None)
-        raw = (data.get("content") or [{"text": "[]"}])[0].get("text", "[]")
+            raw = await _ai_text(s, prompt, max_tokens=800)
         start = raw.find("[")
         end = raw.rfind("]") + 1
         result = json.loads(raw[start:end])
@@ -179,6 +172,43 @@ Nur JSON, kein anderer Text."""
 # ─────────────────────────────────────────────────────────────────────────────
 # PHASE 3: CONTENT SWARM — 10 parallele AI-Agenten
 # ─────────────────────────────────────────────────────────────────────────────
+
+async def _ai_text(session, prompt: str, max_tokens: int = 600) -> str:
+    """Perplexity → Claude → '' fallback."""
+    import aiohttp
+    # 1. Perplexity (primary — cheaper, online)
+    if PERPLEXITY:
+        try:
+            async with session.post(
+                "https://api.perplexity.ai/chat/completions",
+                headers={"Authorization": f"Bearer {PERPLEXITY}", "Content-Type": "application/json"},
+                json={"model": "sonar", "max_tokens": max_tokens,
+                      "messages": [{"role": "user", "content": prompt}]},
+                timeout=aiohttp.ClientTimeout(total=25),
+            ) as r:
+                data = await r.json(content_type=None)
+                text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                if text:
+                    return text
+        except Exception as e:
+            log.warning("Perplexity error: %s", e)
+    # 2. Claude (fallback)
+    if ANTHROPIC:
+        try:
+            async with session.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01",
+                         "content-type": "application/json"},
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
+                      "messages": [{"role": "user", "content": prompt}]},
+                timeout=aiohttp.ClientTimeout(total=25),
+            ) as r:
+                data = await r.json(content_type=None)
+                return (data.get("content") or [{"text": ""}])[0].get("text", "")
+        except Exception as e:
+            log.warning("Claude error: %s", e)
+    return ""
+
 
 async def _generate_single(session, keyword: str, format_type: str, angle: str = "") -> str:
     """Ein einzelner Content-Agent."""
@@ -197,15 +227,7 @@ async def _generate_single(session, keyword: str, format_type: str, angle: str =
 
     prompt = prompts.get(format_type, prompts["blog_post"])
     try:
-        async with session.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-            json={"model": "claude-haiku-4-5-20251001", "max_tokens": 600,
-                  "messages": [{"role": "user", "content": prompt}]},
-            timeout=aiohttp.ClientTimeout(total=25),
-        ) as r:
-            data = await r.json(content_type=None)
-        return (data.get("content") or [{"text": ""}])[0].get("text", "")
+        return await _ai_text(session, prompt, max_tokens=600)
     except Exception as exc:
         log.warning("Content agent error (%s): %s", format_type, exc)
         return ""
@@ -257,8 +279,8 @@ async def content_swarm(keyword: str, angle: str = "") -> dict:
     10 parallele AI-Agenten generieren gleichzeitig alle Content-Formate.
     Fällt auf Template-Rotation zurück wenn kein Anthropic-Credit verfügbar.
     """
-    if not ANTHROPIC:
-        log.info("BRUTUS: kein Anthropic-Key — Template-Fallback für '%s'", keyword)
+    if not PERPLEXITY and not ANTHROPIC:
+        log.info("BRUTUS: kein AI-Key — Template-Fallback für '%s'", keyword)
         return _fallback_content_swarm(keyword)
 
     formats = [
@@ -742,10 +764,9 @@ async def post_to_pinterest(keyword: str, content_pack: dict, image_url: str = "
 
 
 async def generate_video_script(keyword: str, content_pack: dict) -> dict:
-    """Generate 60s TikTok/Shorts video script via Claude, save to Supabase."""
+    """Generate 60s TikTok/Shorts video script via Perplexity→Claude, save to Supabase."""
     import aiohttp
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key:
+    if not PERPLEXITY and not ANTHROPIC:
         return {"skipped": True}
     try:
         prompt = (
@@ -758,13 +779,9 @@ async def generate_video_script(keyword: str, content_pack: dict) -> dict:
             "HASHTAGS: [10 relevante Hashtags]\n"
             "Nur Text, kein JSON."
         )
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-            async with s.post("https://api.anthropic.com/v1/messages",
-                              headers={"x-api-key": api_key, "anthropic-version": "2023-06-01"},
-                              json={"model": "claude-haiku-4-5-20251001", "max_tokens": 600,
-                                    "messages": [{"role": "user", "content": prompt}]}) as r:
-                data = await r.json(content_type=None)
-        script = data.get("content", [{}])[0].get("text", "").strip()
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+            script = await _ai_text(s, prompt, max_tokens=600)
+        script = script.strip()
         if not script:
             return {"skipped": True}
         # Save to Supabase
