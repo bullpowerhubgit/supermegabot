@@ -189,7 +189,11 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
         except Exception as e:
             log.warning("Make webhook error: %s", e)
 
-    # Weg 3: Direkte Twitter API v2
+    # Weg 3: Direkte Twitter API v2 (nur wenn echte Access Tokens vorhanden)
+    _valid_token = ACCESS_TOKEN and not ACCESS_TOKEN.startswith("NEEDS_")
+    if not _valid_token:
+        log.info("Kein gültiges Access Token — OAuth1 übersprungen")
+        return {"ok": False, "error": "no_valid_access_token", "detail": "Bitte Access Token in Railway setzen"}
     try:
         url = f"{TWITTER_API_V2}/tweets"
         payload = {"text": text}
