@@ -751,20 +751,79 @@ async def task_shopify_webhooks_setup() -> str:
 
 
 async def task_printify_shopify_sync() -> str:
-    """Sync published Printify products to Shopify — create missing listings."""
+    """Push alle unpublizierten Printify-Produkte nach Shopify."""
     try:
-        from modules.printify_automation import ping, get_products as get_printify_products
+        from modules.printify_automation import ping, sync_all_products_to_shopify
         if not await ping():
-            return "Printify nicht konfiguriert"
-        products = await get_printify_products()
-        published = [p for p in products if p.get("visible")]
-        shopify_missing = [p for p in published if not p.get("external", {}).get("id")]
-        if not shopify_missing:
-            return f"Printify→Shopify: alle {len(published)} Produkte bereits verknüpft"
-        # Just report — actual publish needs full variant data
-        return f"Printify: {len(published)} veröffentlicht, {len(shopify_missing)} noch nicht in Shopify"
+            return "Printify nicht konfiguriert — PRINTIFY_API_KEY setzen"
+        result = await sync_all_products_to_shopify()
+        return f"Printify→Shopify: {result['published']} neu, {result['already_live']} bereits live, {result['failed']} Fehler"
     except Exception as e:
         return f"Fehler: {e}"
+
+
+async def task_printful_autofulfill() -> str:
+    """Auto-confirm alle pending Printful-Bestellungen → Produktion."""
+    try:
+        from modules.printful_automation import ping, auto_fulfill_pending
+        if not await ping():
+            return "Printful nicht konfiguriert — PRINTFUL_API_KEY setzen"
+        result = await auto_fulfill_pending()
+        confirmed = len(result.get("confirmed", []))
+        failed    = len(result.get("failed", []))
+        return f"Printful: {confirmed} bestätigt, {failed} Fehler, {result.get('total_pending',0)} pending gesamt"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_printful_shopify_sync() -> str:
+    """Prüfe ob alle Printful-Produkte mit Shopify synchronisiert sind."""
+    try:
+        from modules.printful_automation import ping, sync_catalog_to_shopify
+        if not await ping():
+            return "Printful nicht konfiguriert"
+        result = await sync_catalog_to_shopify()
+        return f"Printful Sync: {result['synced']} OK, {result['unsynced']} unsynced von {result['total']} gesamt"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_printful_discover_store() -> str:
+    """Auto-detect Printful Store-ID und in Railway speichern."""
+    try:
+        from modules.printful_automation import ping, auto_detect_store
+        if not await ping():
+            return "Printful nicht konfiguriert — PRINTFUL_API_KEY setzen"
+        sid = await auto_detect_store()
+        return f"Printful Store-ID: {sid}"
+    except Exception as e:
+        return f"Fehler: {e}"
+
+
+async def task_pod_combined_autofulfill() -> str:
+    """Print-on-Demand: Printify + Printful gleichzeitig auto-fulfillment."""
+    results = []
+    try:
+        from modules.printify_automation import ping as py_ping, auto_fulfill_pending as py_fulfill
+        if await py_ping():
+            r = await py_fulfill()
+            results.append(f"Printify: {len(r['submitted'])} submitted")
+        else:
+            results.append("Printify: kein Key")
+    except Exception as e:
+        results.append(f"Printify error: {e}")
+
+    try:
+        from modules.printful_automation import ping as pf_ping, auto_fulfill_pending as pf_fulfill
+        if await pf_ping():
+            r = await pf_fulfill()
+            results.append(f"Printful: {len(r['confirmed'])} confirmed")
+        else:
+            results.append("Printful: kein Key")
+    except Exception as e:
+        results.append(f"Printful error: {e}")
+
+    return " | ".join(results)
 
 
 async def task_daily_summary() -> str:
@@ -2302,9 +2361,13 @@ TASKS = [
     ("api_keys_health",         task_api_keys_health,         21600,  61),   # 6h
     ("trading_report",          task_trading_report,          21600,  240),  # 6h
     ("printify_discover_shop",  task_printify_discover_shop,  21600,   6),   # 6h (fast start)
+    ("printful_discover_store", task_printful_discover_store, 21600,   7),   # 6h (fast start)
     # ── Maintenance (hourly) ──────────────────────────────────────────────────
     ("env_auto_update",         task_env_auto_update,         3600,   8),    # 1h (fast start)
     ("printify_shopify_sync",   task_printify_shopify_sync,   3600,   170),  # 1h
+    ("printful_shopify_sync",   task_printful_shopify_sync,   3600,   175),  # 1h
+    ("pod_combined_autofulfill", task_pod_combined_autofulfill, 1800, 47),   # 30 min — Printify+Printful
+    ("printful_autofulfill",    task_printful_autofulfill,    1800,   46),   # 30 min
     # ── Setup (every 6h) ─────────────────────────────────────────────────────
     ("shopify_webhooks_setup",  task_shopify_webhooks_setup,  21600,  12),   # 6h (fast start)
     # ── Daily ─────────────────────────────────────────────────────────────────
