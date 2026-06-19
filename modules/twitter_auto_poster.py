@@ -1,17 +1,65 @@
-"""Twitter/X Auto Poster — postet automatisch Tweets via Twitter API v2."""
-import os
+"""Twitter/X Auto Poster — postet automatisch Tweets via Twitter API v2 (OAuth 1.0a)."""
+import base64
+import hashlib
+import hmac
 import json
 import logging
-import hashlib
+import os
+import time
+import urllib.parse
+import uuid
 from datetime import datetime
 from pathlib import Path
 
 log = logging.getLogger("TwitterPoster")
 
-TWITTER_BEARER = os.getenv("TWITTER_BEARER_TOKEN", "") or os.getenv("TWITTER_API_KEY", "")
+# OAuth 1.0a credentials (required for posting tweets)
+TWITTER_API_KEY        = os.getenv("TWITTER_API_KEY", "")
+TWITTER_API_SECRET     = os.getenv("TWITTER_API_SECRET", "") or os.getenv("TWITTER_API_KEY_SECRET", "")
+TWITTER_ACCESS_TOKEN   = os.getenv("TWITTER_ACCESS_TOKEN", "")
+TWITTER_ACCESS_SECRET  = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "") or os.getenv("TWITTER_ACCESS_SECRET", "")
+
 ANTHROPIC = os.getenv("ANTHROPIC_API_KEY", "")
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 POSTED_FILE = DATA_DIR / "twitter_posted.json"
+
+
+def _oauth1_header(method: str, url: str, body: dict) -> str:
+    """Build OAuth 1.0a Authorization header for Twitter API v2."""
+    if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
+        return ""
+
+    params = {
+        "oauth_consumer_key":     TWITTER_API_KEY,
+        "oauth_nonce":            uuid.uuid4().hex,
+        "oauth_signature_method": "HMAC-SHA1",
+        "oauth_timestamp":        str(int(time.time())),
+        "oauth_token":            TWITTER_ACCESS_TOKEN,
+        "oauth_version":          "1.0",
+    }
+
+    # Build signature base string
+    all_params = {**params}
+    param_str = "&".join(f"{urllib.parse.quote(k, safe='')}={urllib.parse.quote(str(v), safe='')}"
+                         for k, v in sorted(all_params.items()))
+    base_str = "&".join([
+        method.upper(),
+        urllib.parse.quote(url, safe=""),
+        urllib.parse.quote(param_str, safe=""),
+    ])
+
+    # Sign with HMAC-SHA1
+    signing_key = f"{urllib.parse.quote(TWITTER_API_SECRET, safe='')}&{urllib.parse.quote(TWITTER_ACCESS_SECRET, safe='')}"
+    signature = base64.b64encode(
+        hmac.new(signing_key.encode(), base_str.encode(), hashlib.sha1).digest()
+    ).decode()
+    params["oauth_signature"] = signature
+
+    header = "OAuth " + ", ".join(
+        f'{urllib.parse.quote(k, safe="")}="{urllib.parse.quote(str(v), safe="")}"'
+        for k, v in sorted(params.items())
+    )
+    return header
 
 
 def _load_posted() -> set:
@@ -53,28 +101,30 @@ Nur den Tweet-Text zurückgeben, kein anderer Text."""
 
 
 async def post_tweet(text: str) -> dict:
-    """Post a tweet via Twitter API v2."""
-    if not TWITTER_BEARER:
-        return {"ok": False, "error": "No Twitter bearer token"}
+    """Post a tweet via Twitter API v2 with OAuth 1.0a."""
+    if not all([TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_SECRET]):
+        return {"ok": False, "error": "Twitter OAuth 1.0a credentials not set (need API_KEY, API_SECRET, ACCESS_TOKEN, ACCESS_TOKEN_SECRET)"}
 
-    # Deduplicate
     content_hash = hashlib.md5(text.encode()).hexdigest()[:8]
     posted = _load_posted()
     if content_hash in posted:
         return {"ok": False, "error": "Already posted (duplicate)"}
 
+    url = "https://api.twitter.com/2/tweets"
+    body = {"text": text}
+    auth_header = _oauth1_header("POST", url, body)
+
     try:
         import aiohttp
-        # Twitter API v2 — try with Bearer token
         headers = {
-            "Authorization": f"Bearer {TWITTER_BEARER}",
+            "Authorization": auth_header,
             "Content-Type": "application/json",
         }
         async with aiohttp.ClientSession() as s:
             async with s.post(
-                "https://api.twitter.com/2/tweets",
+                url,
                 headers=headers,
-                json={"text": text},
+                json=body,
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 data = await r.json(content_type=None)
@@ -85,7 +135,7 @@ async def post_tweet(text: str) -> dict:
             log.info("Tweet posted: %s", data["data"]["id"])
             return {"ok": True, "tweet_id": data["data"]["id"], "text": text[:50]}
         else:
-            err = data.get("detail") or data.get("errors", [{}])[0].get("message", str(data))
+            err = data.get("detail") or str(data.get("errors", data))[:120]
             log.warning("Twitter post failed: %s", err)
             return {"ok": False, "error": err}
     except Exception as e:
