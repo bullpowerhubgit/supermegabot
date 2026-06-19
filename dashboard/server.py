@@ -1997,6 +1997,38 @@ async def handle_printify_autofulfill(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_printify_webhook(req):
+    """POST /api/printify/webhook — Printify order/shipment updates → Telegram."""
+    try:
+        data = await req.json()
+        topic = data.get("type", data.get("topic", "unknown"))
+        resource = data.get("resource", {})
+        order_id = resource.get("id", "?")
+        shop_id  = resource.get("shop_id", "?")
+
+        if "shipment" in topic:
+            shipments = resource.get("shipments", [])
+            for s in shipments:
+                carrier  = s.get("carrier", "?")
+                number   = s.get("number", "?")
+                url      = s.get("url", "")
+                await _tg_notify(
+                    f"📦 Printify versandt!\n"
+                    f"Order: {order_id}\n"
+                    f"Carrier: {carrier} {number}\n"
+                    f"Tracking: {url or '—'}"
+                )
+        elif "order:created" in topic or "order:updated" in topic:
+            status = resource.get("status", "?")
+            await _tg_notify(f"🖨️ Printify Order {order_id}: {status}")
+
+        log.info("Printify webhook: %s order=%s", topic, order_id)
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("Printify webhook error: %s", e)
+        return web.Response(status=200)
+
+
 async def handle_etsy_status(req):
     try:
         from modules.ecommerce_connectors import EtsyConnector
@@ -5040,6 +5072,7 @@ async def create_app():
     # ── Printify ──────────────────────────────────────────────────────────────
     app.router.add_get("/api/printify/status",        handle_printify_status)
     app.router.add_post("/api/printify/autofulfill",  handle_printify_autofulfill)
+    app.router.add_post("/api/printify/webhook",      handle_printify_webhook)
     app.router.add_get("/api/printful/status",        handle_printful_status)
     app.router.add_post("/api/printful/autofulfill",  handle_printful_autofulfill)
 
