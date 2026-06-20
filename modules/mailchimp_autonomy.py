@@ -305,7 +305,7 @@ async def run_dragon_campaign(topic: str = "") -> dict:
     if not DRAGON_API_KEY:
         return {"ok": False, "error": "MAILCHIMP_DRAGON_API_KEY not set"}
     try:
-        ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
+        ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
         shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
         shop_url = f"https://{shop}"
         subject_topic = topic or "KI-Business Automatisierung 2026"
