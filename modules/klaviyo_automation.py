@@ -247,7 +247,7 @@ async def create_and_send_campaign(
                     if r.status not in (200, 204):
                         log.warning("Klaviyo template upload HTTP %s", r.status)
 
-            # 3. Send
+            # 3. Send — campaign_id in attributes per Klaviyo API 2024-10-15
             async with s.post(
                 f"{_BASE}/campaign-send-jobs/",
                 headers=_headers(),

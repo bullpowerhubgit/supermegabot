@@ -128,6 +128,20 @@ async def _fetch_digistore() -> Dict:
         return {"revenue": 0.0, "orders": 0, "currency": "EUR", "ok": False, "error": str(exc)}
 
 
+async def _fetch_paypal() -> Dict:
+    """Fetch PayPal balance/status."""
+    try:
+        from modules.paypal_client import get_paypal_status, PAYPAL_API_USERNAME
+        if not PAYPAL_API_USERNAME:
+            return {"revenue": 0.0, "orders": 0, "currency": "EUR", "ok": False, "error": "PAYPAL credentials not set"}
+        status = await get_paypal_status()
+        return {"revenue": 0.0, "orders": 0, "currency": "EUR", "ok": status.get("connected", False),
+                "email": status.get("email", ""), "env": status.get("env", "")}
+    except Exception as exc:
+        log.warning("PayPal fetch failed: %s", exc)
+        return {"revenue": 0.0, "orders": 0, "currency": "EUR", "ok": False, "error": str(exc)}
+
+
 async def _fetch_printify() -> Dict:
     """Fetch fulfilled orders total from Printify."""
     token = os.getenv("PRINTIFY_API_TOKEN", "")
@@ -196,6 +210,7 @@ async def get_platform_revenue() -> Dict:
         _fetch_etsy(),
         _fetch_digistore(),
         _fetch_printify(),
+        _fetch_paypal(),
         return_exceptions=False,
     )
     platforms = {
@@ -204,6 +219,7 @@ async def get_platform_revenue() -> Dict:
         "etsy":      results[2],
         "digistore": results[3],
         "printify":  results[4],
+        "paypal":    results[5],
     }
     total_eur = sum(
         _to_eur(v["revenue"], v["currency"])
