@@ -167,6 +167,8 @@ async def _linkedin(text: str, session: aiohttp.ClientSession) -> bool:
 async def _mailchimp(subject: str, body_html: str, session: aiohttp.ClientSession) -> bool:
     if not MAILCHIMP_KEY or not MAILCHIMP_LIST:
         return False
+    if os.getenv("MAILCHIMP_AUTOMATION_ENABLED", "true").lower() in ("false", "0", "off"):
+        return False
     try:
         auth = aiohttp.BasicAuth("anystring", MAILCHIMP_KEY)
         base = f"https://{MAILCHIMP_SRV}.api.mailchimp.com/3.0"
