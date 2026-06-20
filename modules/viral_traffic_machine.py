@@ -34,7 +34,7 @@ DEFAULT_SUBREDDITS = [
 ]
 
 PRODUCT_NAME = os.getenv("DS24_PRODUCT_NAME", "AI Income Machine")
-PRODUCT_URL  = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+PRODUCT_URL  = os.getenv("DS24_AFFILIATE_LINK", os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))
 
 
 # ── Dedup ─────────────────────────────────────────────────────────────────────
