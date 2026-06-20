@@ -3416,6 +3416,12 @@ TASKS = [
     # ── GROWTH ENGINE — Review + Winback ──────────────────────────────────────
     ("growth_reviews",         task_growth_reviews,           86400, 11400), # daily — Review Requests
     ("growth_winback",         task_growth_winback,           86400, 11600), # daily — Winback Emails
+    # ── EBAY + AMAZON + TWITTER + DISCORD NEU ────────────────────────────────
+    ("ebay_auto_fill",         task_ebay_auto_fill,           14400, 11750), # 4h — eBay → Shopify Import
+    ("ebay_blast",             task_ebay_blast,                7200, 11760), # 2h — eBay Affiliate alle Kanäle
+    ("amazon_blast",           task_amazon_blast,              7200, 11770), # 2h — Amazon Affiliate Blast
+    ("twitter_blast",          task_twitter_blast,             3600, 11775), # 1h — Twitter Auto-Tweets
+    ("discord_blast",          task_discord_blast,             7200, 11780), # 2h — Discord Community Posts
     # ── AMAZON AFFILIATE — Product Links + BRUTUS Traffic ─────────────────────
     ("amazon_affiliate_blast", task_amazon_affiliate_blast,   14400, 11800), # 4h — Amazon Links + BRUTUS
     # ── BRUTUS IN JEDEM MODUL — Alle Kanäle aus jedem Tool ───────────────────
