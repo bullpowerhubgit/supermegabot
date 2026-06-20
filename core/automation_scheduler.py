@@ -3461,6 +3461,61 @@ async def task_gcp_translate_products() -> str:
         return f"GCP translate error: {e}"
 
 
+async def task_shopify_full_auto_quick() -> str:
+    """Shopify Quick-Fix: Drafts aktivieren, Inventar, Preise — läuft jede Stunde."""
+    try:
+        from modules.shopify_full_autonomy import run_full_autonomy_cycle
+        r = await run_full_autonomy_cycle(quick=True, restock=False)
+        return (f"Shopify Quick: drafts={r.get('drafts_activated',{}).get('activated',0)} "
+                f"inv={r.get('inventory_fixed',{}).get('fixed',0)} "
+                f"prices={r.get('prices_fixed',{}).get('fixed',0)}")
+    except Exception as e:
+        return f"Shopify QuickFix error: {e}"
+
+
+async def task_shopify_full_auto() -> str:
+    """Shopify Voll-Autonomie: SEO, Collections, Bilder, CTAs, Restock — alle 6h."""
+    try:
+        from modules.shopify_full_autonomy import run_full_autonomy_cycle
+        r = await run_full_autonomy_cycle(quick=False, restock=True)
+        return (f"Shopify FullAuto: ok={r.get('ok')} steps={r.get('steps_ok',0)} "
+                f"collections={r.get('collections',{}).get('collections',0)} "
+                f"seo={r.get('seo_fix',{}).get('fixed',0)} "
+                f"restock={r.get('restock',{}).get('created',0)}")
+    except Exception as e:
+        return f"Shopify FullAuto error: {e}"
+
+
+async def task_shopify_restock() -> str:
+    """Shopify Restock: 5 meistgesuchte Trending-Produkte nachladen — alle 2h."""
+    try:
+        from modules.shopify_full_autonomy import auto_restock_trending
+        r = await auto_restock_trending(count=5)
+        return f"Shopify Restock: {r.get('created',0)} neue Produkte | {r.get('products',[])}"
+    except Exception as e:
+        return f"Shopify Restock error: {e}"
+
+
+async def task_shopify_image_fix() -> str:
+    """Shopify Image-Fix: Produkte ohne Bild bekommen Bilder von Pexels — alle 4h."""
+    try:
+        from modules.shopify_full_autonomy import fix_missing_images
+        r = await fix_missing_images(limit=30)
+        return f"Shopify ImageFix: {r.get('fixed',0)} Produkte mit Bild | no_image_total={r.get('no_image_total',0)}"
+    except Exception as e:
+        return f"Shopify ImageFix error: {e}"
+
+
+async def task_shopify_title_fix() -> str:
+    """Shopify Titel+Text Korrektur: KI verbessert schwache Titel — alle 4h."""
+    try:
+        from modules.shopify_full_autonomy import auto_correct_titles_and_descriptions
+        r = await auto_correct_titles_and_descriptions(limit=15)
+        return f"Shopify TitleFix: {r.get('fixed',0)} korrigiert | weak_found={r.get('weak_found',0)}"
+    except Exception as e:
+        return f"Shopify TitleFix error: {e}"
+
+
 async def task_nexus_cycle() -> str:
     """NEXUS-1: Autonomer Revenue-Superintelligenz Zyklus — alle 10 Minuten."""
     try:
@@ -3780,6 +3835,12 @@ TASKS = [
     ("aliexpress_import",       task_aliexpress_import,       21600,  9600),  # 6h — AliExpress trending → Shopify
     ("printify_seo",            task_printify_seo,            43200,  9700),  # 12h — AI SEO alle Printify Produkte
     ("multi_platform_hourly",   task_multi_platform_post,      7200,  9800),  # 2h — Topic-Post alle Kanäle
+    # ── SHOPIFY FULL AUTONOMY — Komplette Shop-Verwaltung ────────────────────
+    ("shopify_full_auto_quick", task_shopify_full_auto_quick,  3600,  9820), # 1h — Quick: Drafts+Inventory+Preise
+    ("shopify_full_auto",      task_shopify_full_auto,        21600,  9830), # 6h — Voll: SEO+Collections+Images+CTAs+Restock
+    ("shopify_restock",        task_shopify_restock,           7200,  9840), # 2h — Trending Produkte nachladen
+    ("shopify_image_fix",      task_shopify_image_fix,        14400,  9845), # 4h — Bilder auto-hinzufügen
+    ("shopify_title_fix",      task_shopify_title_fix,        14400,  9847), # 4h — Titel+Texte KI-Korrektur
     # ── SHOPIFY AUTO-FILL — Produkte + Bilder + Text autonom ─────────────────
     ("shopify_auto_fill",      task_shopify_auto_fill,        14400, 9850),  # 4h — Shopify: reparieren + neue Produkte + BrutusCore
     # ── DS24 FULL AUTO — Affiliate + Mailing + Traffic ───────────────────────
