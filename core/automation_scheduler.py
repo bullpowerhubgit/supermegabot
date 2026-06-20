@@ -3378,6 +3378,8 @@ TASKS = [
     # ── NEW MODULE SCHEDULER TASKS ────────────────────────────────────────────
     ("dynamic_pricing_cycle",   task_dynamic_pricing_cycle,   14400, 7800),  # 4h — psychological .99 pricing
     ("tiktok_product_sync",     task_tiktok_sync,             21600, 8100),  # 6h — Shopify→TikTok Shop sync
+    ("tiktok_brutus",           task_tiktok_brutus,           14400, 13000), # 4h — TikTok BRUTUS traffic blast
+    ("tiktok_analytics_report", task_tiktok_analytics_report, 43200, 13100), # 12h — TikTok analytics log
     ("upsell_sequence_run",     task_upsell_sequence_run,     86400, 8400),  # daily — upsell enrolled buyers
     # ── TRAFFIC BLITZ — Maximale Frequenz alle Kanäle ────────────────────────
     ("traffic_blitz_full",      task_traffic_blitz_full,       7200, 9000),  # 2h — LinkedIn+Shopify+IndexNow+Telegram
