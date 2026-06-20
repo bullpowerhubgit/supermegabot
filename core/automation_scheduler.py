@@ -4309,6 +4309,24 @@ async def task_fiverr_gig_blast() -> str:
         return f"Fiverr Gig Blast Fehler: {e}"
 
 
+async def task_fiverr_promo_cycle() -> str:
+    try:
+        from modules.fiverr_seo_promoter import run_fiverr_promotion_cycle
+        r = await run_fiverr_promotion_cycle()
+        return f"Fiverr SEO Promo: {r.get('gigs_promoted',0)} Gigs → TG+LI"
+    except Exception as e:
+        return f"Fiverr Promo Fehler: {e}"
+
+
+async def task_upwork_proposal_gen() -> str:
+    try:
+        from modules.upwork_proposal_auto import run_upwork_proposal_generation
+        r = await run_upwork_proposal_generation()
+        return f"Upwork Proposals: {r.get('proposals_generated',0)} generiert + via Telegram gesendet"
+    except Exception as e:
+        return f"Upwork Proposal Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -4641,6 +4659,10 @@ TASKS = [
     ("upwork_job_alert",         task_upwork_job_alert,        10800, 22200), # 3h — Neue Jobs + Proposal
     # ── FIVERR GIG PROMO (kein API-Key) — 8 Gigs via BRUTUS bewerben ─────────
     ("fiverr_gig_blast",         task_fiverr_gig_blast,         7200, 22300), # 2h — Alle Gigs bewerben
+    # ── FIVERR SEO PROMOTER — Telegram + LinkedIn KI-Posts ───────────────────
+    ("fiverr_promo_cycle",       task_fiverr_promo_cycle,      21600, 22400), # 6h — Viral Promo
+    # ── UPWORK PROPOSAL AUTO-GENERATOR — täglich KI-Proposals per Telegram ───
+    ("upwork_proposal_gen",      task_upwork_proposal_gen,     86400, 22500), # täglich
 ]
 
 
