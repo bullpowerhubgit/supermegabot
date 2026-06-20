@@ -3918,6 +3918,16 @@ async def task_product_generator_niche() -> str:
         return f"NicheBlast error: {e}"
 
 
+async def task_ds24_auto_create() -> str:
+    """Erstellt täglich 1-2 neue DS24-Produkte vollautomatisch."""
+    try:
+        from modules.ds24_product_creator import auto_create_products
+        r = await auto_create_products(count=2)
+        return f"DS24 auto-create: {r.get('created',0)} erstellt, {r.get('failed',0)} failed"
+    except Exception as e:
+        return f"DS24 auto-create error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -4200,6 +4210,8 @@ TASKS = [
     # ── PRODUCT GENERATOR — vollautonome Produkt-Erstellung aus Trends ────────
     ("product_generator",        task_product_generator,        7200, 18000), # 2h — 3 neue Produkte aus Trends
     ("product_generator_niche",  task_product_generator_niche, 14400, 18120), # 4h — 5 Nischen-Produkte
+    # ── DS24 PRODUCT CREATOR — täglich neue Digistore24 Produkte anlegen ──────
+    ("ds24_auto_create",         task_ds24_auto_create,        86400, 18300), # täglich — 2 DS24-Produkte erstellen
 ]
 
 
