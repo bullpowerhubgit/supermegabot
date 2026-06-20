@@ -224,6 +224,24 @@ async def run_auto_download(keywords: list = None, count: int = 10, markup: floa
             logger.error(f'Fehler bei Keyword "{kw}": {e}')
 
     ok = sum(1 for i in all_imported if i.get('ok'))
+
+    # BrutusCore: neue AliExpress Produkte auf allen Kanälen promoten
+    if ok > 0:
+        try:
+            from modules.brutus_core import fire as brutus_fire
+            top = [p for p in all_imported if p.get('ok')][:2]
+            for item in top:
+                name = item.get('title', 'Trending Produkt')[:50]
+                await brutus_fire(
+                    title=f"🛒 Neu: {name}",
+                    body=f"Gerade im Shop verfügbar: {name} — direkt aus dem Trend importiert.",
+                    link="https://ineedit.com.co/collections/trending-now",
+                    niche="dropshipping trending gadgets",
+                    tags=["neu", "aliexpress", "trending", "dropshipping"]
+                )
+        except Exception:
+            pass
+
     return {'total_tried': len(all_imported), 'imported': ok, 'products': all_imported}
 
 

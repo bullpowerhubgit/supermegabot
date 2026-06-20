@@ -475,6 +475,20 @@ class DropshippingWorkflow:
         )
         log.info("=== Dropshipping Full Pipeline ENDE — %s ===", summary)
 
+        # BrutusCore: Dropshipping Produkte auf allen Kanälen promoten
+        if success_count > 0:
+            try:
+                from modules.brutus_core import fire as brutus_fire
+                await brutus_fire(
+                    title=f"🛒 {success_count} neue Dropshipping-Produkte live!",
+                    body=f"Frisch importiert in der Nische '{niche or 'Trending'}' — direkt verfügbar im Shop.",
+                    link="https://ineedit.com.co/collections/trending-now",
+                    niche=f"dropshipping {niche}",
+                    tags=["dropshipping", "neu", niche.replace(" ", "-") if niche else "trending"]
+                )
+            except Exception:
+                pass
+
         return {
             "niche": niche or "allgemein",
             "processed": success_count,
@@ -712,6 +726,22 @@ class PrintOnDemandWorkflow:
             f"{success_count}/{len(results)} Designs erfolgreich verarbeitet"
         )
         log.info("=== POD Full Pipeline ENDE — %s ===", summary)
+
+        # BrutusCore: neue POD Produkte überall promoten
+        if success_count > 0:
+            try:
+                from modules.brutus_core import fire as brutus_fire
+                names = [r.get("design_name","Design") for r in results if "error" not in r][:2]
+                for name in names:
+                    await brutus_fire(
+                        title=f"🎨 Neu: {name} — Print on Demand",
+                        body=f"Frisch designt und sofort bestellbar: {name}. Individuell bedruckt, direkt zu dir geliefert.",
+                        link="https://ineedit.com.co",
+                        niche="print on demand geschenke design",
+                        tags=["pod", "neu", "geschenk", "printify"]
+                    )
+            except Exception:
+                pass
 
         return {
             "processed": success_count,
