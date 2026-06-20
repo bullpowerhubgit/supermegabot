@@ -21,7 +21,7 @@ TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT         = os.getenv("TELEGRAM_CHAT_ID", "")
 
 PRODUCT_NAME    = os.getenv("DS24_PRODUCT_NAME", "AI Income Machine")
-PRODUCT_URL     = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+PRODUCT_URL     = os.getenv("DS24_AFFILIATE_LINK", os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))
 PRODUCT_PRICE   = os.getenv("DS24_PRODUCT_PRICE", "€37")
 
 DATA_DIR    = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")) / "content_velocity"
