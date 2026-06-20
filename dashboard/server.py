@@ -5562,7 +5562,10 @@ async def create_app():
 
     # GMC route
     app.router.add_get("/api/gmc",                         handle_gmc)
+    app.router.add_get("/api/gmc/verify",                  handle_gmc_verify_info)
     app.router.add_get("/api/gmc/feed.xml",                handle_gmc_feed)
+    app.router.add_get("/api/reddit/blast",                handle_reddit_blast)
+    app.router.add_get("/api/reddit/status",               handle_reddit_status)
     app.router.add_post("/api/shopify/auto-fill-trending", handle_shopify_auto_fill_trending)
 
     # New routes
