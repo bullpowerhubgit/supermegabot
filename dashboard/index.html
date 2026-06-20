@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>⚡ BullPower MEGA CENTER</title>
+<title>⚡ BullPower MEGA Command Center v6</title>
 <meta name="robots" content="noindex">
 <style>
 :root{
@@ -14,1036 +14,725 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:-apple-system,'SF Pro Display','Segoe UI',sans-serif;font-size:13px;min-height:100vh}
+a{color:inherit;text-decoration:none}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-
-/* HEADER */
-.header{background:linear-gradient(135deg,#08001a 0%,#12003a 50%,#08001a 100%);border-bottom:2px solid var(--accent);padding:12px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;box-shadow:0 4px 40px rgba(124,58,237,0.4)}
+.header{background:linear-gradient(135deg,#08001a 0%,#12003a 50%,#08001a 100%);border-bottom:2px solid var(--accent);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:1000;box-shadow:0 4px 40px rgba(124,58,237,0.4)}
 .logo{display:flex;align-items:center;gap:10px}
-.logo-icon{width:38px;height:38px;background:linear-gradient(135deg,var(--accent),var(--cyan));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 0 20px rgba(124,58,237,0.5)}
-.logo-title{font-size:17px;font-weight:800;background:linear-gradient(90deg,#a855f7,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.logo-sub{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
-.header-stats{display:flex;gap:4px;align-items:center}
-.hstat{text-align:center;padding:6px 14px;border-left:1px solid var(--border)}
-.hstat-v{font-size:18px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}
-.hstat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:1px}
-.pulse{display:inline-block;width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;box-shadow:0 0 6px var(--green)}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
-
-/* NAV */
-.nav{background:var(--bg2);border-bottom:1px solid var(--border);padding:0 20px;display:flex;gap:2px;overflow-x:auto;position:sticky;top:64px;z-index:999}
-.nav-btn{padding:10px 16px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.3px;white-space:nowrap;border-bottom:2px solid transparent;transition:all .2s}
-.nav-btn:hover,.nav-btn.active{color:var(--text);border-bottom-color:var(--accent)}
-.nav-btn.active{color:var(--accent)}
-
-/* LAYOUT */
-.main{padding:20px;max-width:1600px;margin:0 auto}
-.section{display:none}
-.section.active{display:block}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:16px}
-.grid-2{display:grid;grid-template-columns:repeat(auto-fill,minmax(480px,1fr));gap:16px;margin-bottom:16px}
-
-/* CARDS */
-.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;transition:border-color .2s}
-.card:hover{border-color:var(--accent)}
-.card-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-bottom:12px;display:flex;align-items:center;gap:6px}
-.card-value{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums;margin-bottom:4px}
-.card-sub{font-size:11px;color:var(--muted)}
-
-/* STATUS DOTS */
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;flex-shrink:0}
-.dot-green{background:var(--green);box-shadow:0 0 6px var(--green)}
-.dot-red{background:var(--red);box-shadow:0 0 6px var(--red)}
-.dot-yellow{background:var(--yellow);box-shadow:0 0 6px var(--yellow);animation:pulse 1s infinite}
-.dot-grey{background:var(--muted)}
-
-/* BUTTONS */
-.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;border:none;cursor:pointer;font-size:12px;font-weight:600;letter-spacing:.3px;transition:all .2s;white-space:nowrap}
-.btn-primary{background:linear-gradient(135deg,var(--accent),#5b21b6);color:#fff;box-shadow:0 0 16px rgba(124,58,237,0.3)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 24px rgba(124,58,237,0.5)}
-.btn-green{background:linear-gradient(135deg,#065f46,#10b981);color:#fff}
-.btn-green:hover{box-shadow:0 4px 20px rgba(16,185,129,0.4)}
-.btn-blue{background:linear-gradient(135deg,#1e3a8a,#3b82f6);color:#fff}
-.btn-blue:hover{box-shadow:0 4px 20px rgba(59,130,246,0.4)}
-.btn-orange{background:linear-gradient(135deg,#92400e,#f97316);color:#fff}
-.btn-orange:hover{box-shadow:0 4px 20px rgba(249,115,22,0.4)}
-.btn-pink{background:linear-gradient(135deg,#831843,#ec4899);color:#fff}
-.btn-pink:hover{box-shadow:0 4px 20px rgba(236,72,153,0.4)}
-.btn-cyan{background:linear-gradient(135deg,#164e63,#06b6d4);color:#fff}
-.btn-cyan:hover{box-shadow:0 4px 20px rgba(6,182,212,0.4)}
-.btn-sm{padding:6px 12px;font-size:11px}
-.btn-lg{padding:12px 24px;font-size:14px}
-.btn-xl{padding:16px 40px;font-size:16px;font-weight:800;width:100%;justify-content:center;border-radius:12px}
-.btn.loading{opacity:.6;pointer-events:none}
-.btn.loading::after{content:'...'}
-.btn-success{background:linear-gradient(135deg,#065f46,#10b981)!important;box-shadow:0 0 20px rgba(16,185,129,0.6)!important}
-.btn-error{background:linear-gradient(135deg,#7f1d1d,#ef4444)!important;box-shadow:0 0 20px rgba(239,68,68,0.6)!important}
-.btn-group{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
-
-/* MEGA BUTTON */
-.mega-btn{background:linear-gradient(135deg,#7f1d1d,#dc2626,#ef4444);color:#fff;font-size:20px;font-weight:900;padding:24px;border-radius:16px;border:none;cursor:pointer;width:100%;letter-spacing:.5px;box-shadow:0 0 40px rgba(239,68,68,0.4);transition:all .3s;position:relative;overflow:hidden}
-.mega-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.1),transparent);opacity:0;transition:.3s}
-.mega-btn:hover{transform:translateY(-2px);box-shadow:0 8px 60px rgba(239,68,68,0.7)}
-.mega-btn:hover::before{opacity:1}
-.mega-btn.loading{animation:megapulse 1s infinite}
-@keyframes megapulse{0%,100%{box-shadow:0 0 40px rgba(239,68,68,0.4)}50%{box-shadow:0 0 80px rgba(239,68,68,0.8)}}
-
-/* STATS ROW */
-.stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
-.stat-v{font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
-.stat-l{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
-.stat-green{color:var(--green)}
-.stat-blue{color:var(--blue)}
-.stat-purple{color:var(--purple)}
-.stat-yellow{color:var(--yellow)}
-.stat-cyan{color:var(--cyan)}
-
-/* PLATFORM GRID */
-.platform-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
-.platform-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:8px;transition:border-color .2s}
-.platform-card:hover{border-color:var(--accent)}
-.platform-name{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px}
-.platform-status{font-size:10px;color:var(--muted)}
-
-/* PIPELINE */
-.pipeline{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:16px;background:var(--bg2);border-radius:10px;border:1px solid var(--border);margin:12px 0}
-.pipe-step{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:11px;font-weight:600;color:var(--muted)}
-.pipe-step.done{color:var(--green);border-color:var(--green)}
-.pipe-arrow{color:var(--muted);font-size:16px}
-
-/* HEALTH BAR */
-.health-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden;margin:8px 0}
-.health-fill{height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));border-radius:4px;transition:width .5s}
-
-/* ERROR LIST */
-.error-list{max-height:200px;overflow-y:auto;margin-top:8px}
-.error-item{padding:6px 10px;border-radius:6px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);margin-bottom:6px;font-size:11px;color:var(--red)}
-.no-errors{color:var(--green);font-size:12px;padding:10px 0}
-
-/* TOAST */
+.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--accent),var(--cyan));border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.logo-title{font-size:16px;font-weight:800;background:linear-gradient(90deg,#a855f7,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:9px;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase}
+.hstats{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.hstat{text-align:center;padding:0 10px;border-left:1px solid var(--border)}
+.hstat-v{font-size:16px;font-weight:800;color:var(--green);font-variant-numeric:tabular-nums}
+.hstat-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.live-badge{background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);color:var(--green);padding:4px 10px;border-radius:20px;font-size:10px;font-weight:700;display:flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;background:var(--green);border-radius:50%;animation:blink 1.2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.clk{background:var(--bg3);border:1px solid var(--border);padding:4px 10px;border-radius:20px;font-size:11px;color:var(--muted)}
+.main{padding:14px 18px;max-width:1900px;margin:0 auto}
+.g2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px}
+.g5{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px}
+.g6{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:12px}
+@media(max-width:1400px){.g6{grid-template-columns:repeat(3,1fr)}.g5{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:900px){.g6,.g5,.g4,.g3,.g2{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.g6,.g5,.g4,.g3,.g2{grid-template-columns:1fr}}
+.sect{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;display:flex;align-items:center;gap:8px;padding-left:6px;border-left:3px solid var(--accent)}
+.sect::after{content:'';flex:1;height:1px;background:var(--border)}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;background:var(--accent);color:#fff;font-size:9px;font-weight:800;border-radius:9px;padding:0 5px}
+.badge-green{background:rgba(16,185,129,.2);color:var(--green);border:1px solid rgba(16,185,129,.3)}
+.badge-orange{background:rgba(249,115,22,.2);color:var(--orange);border:1px solid rgba(249,115,22,.3)}
+.badge-blue{background:rgba(59,130,246,.2);color:var(--blue);border:1px solid rgba(59,130,246,.3)}
+.badge-red{background:rgba(239,68,68,.2);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;transition:border-color .2s,transform .15s;position:relative;overflow:hidden}
+.card:hover{border-color:rgba(124,58,237,.4);transform:translateY(-1px)}
+.card.g-green{border-color:rgba(16,185,129,.25);box-shadow:0 0 14px rgba(16,185,129,.07)}
+.card.g-blue{border-color:rgba(59,130,246,.25)}
+.card.g-purple{border-color:rgba(168,85,247,.25)}
+.card.g-orange{border-color:rgba(249,115,22,.25)}
+.card.g-cyan{border-color:rgba(6,182,212,.25)}
+.card-h{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.card-t{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:6px}
+.kpi{font-size:28px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.kpi.green{color:var(--green)}.kpi.blue{color:var(--blue)}.kpi.purple{color:var(--purple)}
+.kpi.cyan{color:var(--cyan)}.kpi.orange{color:var(--orange)}.kpi.pink{color:var(--pink)}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:4px}
+.srow{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.srow:last-child{border-bottom:none}
+.slbl{color:var(--muted);font-size:11px}.sval{font-size:11px;font-weight:600}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 12px;border-radius:8px;font-size:11px;font-weight:700;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.btn:active{transform:scale(.96)}
+.btn-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}.btn-green:hover{background:rgba(16,185,129,.28)}
+.btn-blue{background:rgba(59,130,246,.15);color:var(--blue);border:1px solid rgba(59,130,246,.3)}.btn-blue:hover{background:rgba(59,130,246,.28)}
+.btn-purple{background:rgba(168,85,247,.15);color:var(--purple);border:1px solid rgba(168,85,247,.3)}.btn-purple:hover{background:rgba(168,85,247,.28)}
+.btn-orange{background:rgba(249,115,22,.15);color:var(--orange);border:1px solid rgba(249,115,22,.3)}.btn-orange:hover{background:rgba(249,115,22,.28)}
+.btn-cyan{background:rgba(6,182,212,.15);color:var(--cyan);border:1px solid rgba(6,182,212,.3)}.btn-cyan:hover{background:rgba(6,182,212,.28)}
+.btn-pink{background:rgba(236,72,153,.15);color:var(--pink);border:1px solid rgba(236,72,153,.3)}
+.btn-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
+.btn-dark{background:var(--bg3);color:var(--text);border:1px solid var(--border)}.btn-dark:hover{border-color:var(--accent)}
+.btn-fire{background:linear-gradient(135deg,rgba(249,115,22,.25),rgba(239,68,68,.2));color:#fff;border:1px solid rgba(249,115,22,.4);font-size:12px;padding:8px 16px}
+.btn-fire:hover{background:linear-gradient(135deg,rgba(249,115,22,.4),rgba(239,68,68,.35))}
+.q-bar{height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;margin-top:6px}
+.q-fill{height:100%;border-radius:4px;transition:width .8s ease;background:linear-gradient(90deg,var(--green),var(--cyan))}
+.q-fill.warn{background:linear-gradient(90deg,var(--yellow),var(--orange))}
+.q-cat{display:flex;align-items:center;justify-content:space-between;padding:3px 0;font-size:10px}
+.q-cat-name{color:var(--muted);flex:1}
+.q-score{font-size:44px;font-weight:900;background:linear-gradient(135deg,var(--green),var(--cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent;line-height:1}
+.fire-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-bottom:12px}
+.fire-btn{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .15s;text-align:center;user-select:none}
+.fire-btn:hover{border-color:var(--accent);transform:translateY(-2px);box-shadow:0 4px 20px rgba(124,58,237,.2)}
+.fire-btn.running{border-color:var(--yellow);animation:pb 1s infinite}
+.fire-btn.done{border-color:var(--green)}
+.fire-btn.fail{border-color:var(--red)}
+@keyframes pb{0%,100%{border-color:var(--yellow)}50%{border-color:rgba(245,158,11,.3)}}
+.fire-icon{font-size:20px;margin-bottom:4px;pointer-events:none}
+.fire-name{font-size:10px;font-weight:700;color:var(--text);letter-spacing:.5px;pointer-events:none}
+.fire-status{font-size:9px;color:var(--muted);margin-top:2px;min-height:12px;pointer-events:none}
+.plt-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.plt{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:11px;transition:border-color .2s}
+.plt.ok{border-color:rgba(16,185,129,.35)}.plt.warn{border-color:rgba(249,115,22,.35)}.plt.fail{border-color:rgba(239,68,68,.35)}
+.plt-icon{font-size:14px}.plt-name{font-weight:600}.plt-st{font-size:9px;color:var(--muted)}
+.log-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;height:220px;overflow-y:auto;font-family:'SF Mono',monospace;font-size:10px}
+.ll{padding:2px 0;border-bottom:1px solid rgba(255,255,255,.03)}.ll.i{color:var(--cyan)}.ll.e{color:var(--red)}
+.lt{color:var(--muted);margin-right:6px}
 #toast-container{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
-.toast{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 18px;font-size:12px;max-width:320px;animation:slideIn .3s ease;box-shadow:0 4px 20px rgba(0,0,0,0.4)}
-.toast.ok{border-left:3px solid var(--green)}
-.toast.err{border-left:3px solid var(--red)}
-@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
-
-/* RESULT BOX */
-.result-box{margin-top:10px;padding:10px;background:var(--bg2);border-radius:8px;border:1px solid var(--border);font-size:11px;font-family:monospace;color:var(--cyan);max-height:120px;overflow-y:auto;display:none}
-.result-box.show{display:block}
-
-/* SECTION HEADER */
-.section-header{margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-.section-title{font-size:20px;font-weight:800;background:linear-gradient(90deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.section-sub{font-size:12px;color:var(--muted);margin-top:4px}
-
-/* REVENUE TABLE */
-.rev-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
-.rev-row:last-child{border:none}
-.rev-label{font-size:12px;color:var(--muted)}
-.rev-value{font-size:14px;font-weight:700;color:var(--green)}
-
-/* BADGE */
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase}
-.badge-green{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.3)}
-.badge-yellow{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.3)}
-.badge-red{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.3)}
-
-.refresh-time{font-size:10px;color:var(--muted);text-align:right;margin-bottom:12px}
-.spinner{display:inline-block;width:12px;height:12px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:4px}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-.sep{height:1px;background:var(--border);margin:16px 0}
-.label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
-.value{font-size:13px;font-weight:600}
+.toast{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:12px;min-width:200px;max-width:320px;transition:opacity .4s;box-shadow:0 4px 20px rgba(0,0,0,.5)}
+.toast.ok{border-color:rgba(16,185,129,.5);color:var(--green)}.toast.err{border-color:rgba(239,68,68,.5);color:var(--red)}
+.split{display:grid;grid-template-columns:1fr 330px;gap:12px}
+@media(max-width:1200px){.split{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
   <div class="logo">
     <div class="logo-icon">⚡</div>
     <div>
-      <div class="logo-title">BullPower MEGA CENTER</div>
-      <div class="logo-sub">Vollautonomes Revenue System</div>
+      <div class="logo-title">BullPower MEGA Command Center</div>
+      <div class="logo-sub">v6 · Quantum Self-Repair · 240+ Tasks · 17 Revenue Streams</div>
     </div>
   </div>
-  <div class="header-stats">
-    <div class="hstat">
-      <div class="hstat-v" id="h-revenue">€0</div>
-      <div class="hstat-l">Revenue 7d</div>
-    </div>
-    <div class="hstat">
-      <div class="hstat-v" id="h-products">—</div>
-      <div class="hstat-l">DS24 Produkte</div>
-    </div>
-    <div class="hstat">
-      <div class="hstat-v" id="h-health">—</div>
-      <div class="hstat-l">Quantum Health</div>
-    </div>
-    <div class="hstat">
-      <div class="hstat-v" id="h-purchases">0</div>
-      <div class="hstat-l">Käufe</div>
-    </div>
-    <div style="padding-left:14px;display:flex;align-items:center;gap:6px">
-      <span class="pulse"></span>
-      <span style="font-size:10px;color:var(--green)">LIVE</span>
-    </div>
+  <div class="hstats">
+    <div class="hstat"><div class="hstat-v" id="h-total">€—</div><div class="hstat-l">Revenue</div></div>
+    <div class="hstat"><div class="hstat-v" id="h-orders">—</div><div class="hstat-l">Orders</div></div>
+    <div class="hstat"><div class="hstat-v" id="h-health" style="color:var(--green)">—%</div><div class="hstat-l">Quantum</div></div>
+    <div class="hstat"><div class="hstat-v" id="h-tasks" style="color:var(--cyan)">—</div><div class="hstat-l">Tasks</div></div>
+    <div class="live-badge"><div class="live-dot"></div><span id="sys-status">LIVE</span></div>
+    <div class="clk" id="clk"></div>
   </div>
 </div>
 
-<!-- NAV -->
-<div class="nav">
-  <button class="nav-btn active" onclick="showSection('overview')">📊 Übersicht</button>
-  <button class="nav-btn" onclick="showSection('ds24')">💰 DS24</button>
-  <button class="nav-btn" onclick="showSection('shopify')">🛍️ Shopify</button>
-  <button class="nav-btn" onclick="showSection('email')">📧 Email & Marketing</button>
-  <button class="nav-btn" onclick="showSection('traffic')">🚀 Traffic & SEO</button>
-  <button class="nav-btn" onclick="showSection('revenue')">💵 Revenue</button>
-  <button class="nav-btn" onclick="showSection('pipeline')">⚙️ Pipeline</button>
-  <button class="nav-btn" onclick="showSection('quantum')">🔬 Quantum</button>
-  <button class="nav-btn" onclick="showSection('platforms')">🌐 Plattformen</button>
-  <button class="nav-btn" onclick="showSection('start')">🚀 ALLES STARTEN</button>
-</div>
-
-<!-- MAIN -->
 <div class="main">
-<div class="refresh-time" id="refresh-time"></div>
 
-<!-- 1. ÜBERSICHT -->
-<div class="section active" id="s-overview">
-  <div class="section-header">
-    <div class="section-title">📊 Übersicht</div>
-    <div class="section-sub">Live-Status aller Revenue-Streams</div>
+<!-- QUANTUM -->
+<div class="sect">⚛️ QUANTUM SELF-REPAIR ENGINE <span class="badge" id="q-badge">SCAN</span></div>
+<div class="g3">
+  <div class="card g-green">
+    <div class="card-h">
+      <div class="card-t">⚛️ System Health</div>
+      <button class="btn btn-green" style="font-size:10px" onclick="runQuantumScan()">▶ Scan</button>
+    </div>
+    <div class="q-score" id="q-score">—%</div>
+    <div class="kpi-sub" id="q-checks">Lädt...</div>
+    <div class="q-bar" style="margin-top:10px"><div class="q-fill" id="q-fill" style="width:0%"></div></div>
+    <div style="display:flex;gap:6px;margin-top:10px">
+      <button class="btn btn-cyan" style="flex:1;font-size:10px" onclick="runQuantumRepair()">🔧 Repair</button>
+      <button class="btn btn-purple" style="flex:1;font-size:10px" onclick="runQuantumImprove()">🧠 Improve</button>
+    </div>
+    <div style="font-size:9px;color:var(--muted);margin-top:6px" id="q-ts"></div>
   </div>
-
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-v stat-green" id="ov-revenue">€0</div><div class="stat-l">Revenue 7 Tage</div></div>
-    <div class="stat-card"><div class="stat-v stat-blue" id="ov-ds24">—</div><div class="stat-l">DS24 Produkte</div></div>
-    <div class="stat-card"><div class="stat-v stat-purple" id="ov-shopify">—</div><div class="stat-l">Shopify Store</div></div>
-    <div class="stat-card"><div class="stat-v stat-cyan" id="ov-health">—</div><div class="stat-l">Quantum Health</div></div>
-    <div class="stat-card"><div class="stat-v stat-yellow" id="ov-affiliate">22</div><div class="stat-l">Affiliate Produkte</div></div>
-    <div class="stat-card"><div class="stat-v stat-green" id="ov-purchases">0</div><div class="stat-l">Käufe gesamt</div></div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">📊 8 Kategorien</div></div>
+    <div class="q-cat"><span class="q-cat-name">🐍 Python Module</span><span style="color:var(--green);font-size:10px;font-weight:700" id="qc-py">—</span></div>
+    <div class="q-cat"><span class="q-cat-name">🌐 API Endpoints</span><span style="color:var(--green);font-size:10px;font-weight:700" id="qc-api">—</span></div>
+    <div class="q-cat"><span class="q-cat-name">🔑 Env Vars</span><span style="color:var(--green);font-size:10px;font-weight:700" id="qc-env">—</span></div>
+    <div class="q-cat"><span class="q-cat-name">🔌 External Services</span><span style="color:var(--green);font-size:10px;font-weight:700" id="qc-ext">—</span></div>
+    <div class="q-cat"><span class="q-cat-name">⚙️ Scheduler Tasks</span><span style="color:var(--green);font-size:10px;font-weight:700" id="qc-sched">—</span></div>
+    <div class="q-cat"><span class="q-cat-name">💰 Revenue Pipeline</span><span style="color:var(--green);font-size:10px;font-weight:700" id="qc-rev">—</span></div>
+    <div class="q-cat"><span class="q-cat-name">🗄️ Datenbanken</span><span style="color:var(--green);font-size:10px;font-weight:700" id="qc-db">—</span></div>
+    <div class="q-cat"><span class="q-cat-name">📁 Filesystem</span><span style="color:var(--green);font-size:10px;font-weight:700" id="qc-fs">—</span></div>
   </div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="card-title"><span class="dot dot-green"></span>DS24 Konto</div>
-      <div id="ov-ds24-detail" style="font-size:12px;color:var(--muted)">Lade...</div>
-      <div class="btn-group">
-        <button class="btn btn-primary btn-sm" onclick="apiPost('/api/ds24/affiliate/blast-all',this)">Affiliate Blasten</button>
-        <button class="btn btn-green btn-sm" onclick="apiPost('/api/ds24/create-1000',this)">1000 Erstellen</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot dot-green"></span>Letzte Käufe</div>
-      <div id="ov-purchases-list" style="font-size:12px;color:var(--muted)">Lade...</div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span class="dot dot-green"></span>Revenue Streams</div>
-      <div id="ov-revenue-detail">
-        <div class="rev-row"><span class="rev-label">Shopify</span><span class="rev-value" id="r-shopify">€0</span></div>
-        <div class="rev-row"><span class="rev-label">DS24</span><span class="rev-value" id="r-ds24">€0</span></div>
-        <div class="rev-row"><span class="rev-label">Stripe</span><span class="rev-value" id="r-stripe">€0</span></div>
-        <div class="rev-row"><span class="rev-label">Affiliate</span><span class="rev-value" id="r-affiliate">€0</span></div>
-        <div class="rev-row" style="border-top:2px solid var(--accent);margin-top:4px;padding-top:8px"><span class="rev-label" style="font-weight:700;color:var(--text)">TOTAL</span><span class="rev-value" style="font-size:18px" id="r-total">€0</span></div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title"><span id="dot-quantum" class="dot dot-green"></span>Quantum Health</div>
-      <div class="label">Health Score</div>
-      <div class="health-bar"><div class="health-fill" id="health-bar-fill" style="width:100%"></div></div>
-      <div id="health-score-text" style="font-size:11px;color:var(--green);margin-bottom:8px">100/100 — Keine Fehler</div>
-      <div class="btn-group">
-        <button class="btn btn-cyan btn-sm" onclick="apiPost('/api/quantum/self-repair/heal',this)">Quantum Heal</button>
-        <button class="btn btn-blue btn-sm" onclick="apiPost('/api/quantum/token-check',this)">Token Check</button>
-      </div>
+  <div class="card g-blue">
+    <div class="card-h"><div class="card-t">🖥️ System Info</div><span class="badge badge-blue">LIVE</span></div>
+    <div class="srow"><span class="slbl">Version</span><span class="sval" id="si-version">—</span></div>
+    <div class="srow"><span class="slbl">Python</span><span class="sval" id="si-python">—</span></div>
+    <div class="srow"><span class="slbl">Port</span><span class="sval" id="si-port">—</span></div>
+    <div class="srow"><span class="slbl">Tasks</span><span class="sval" style="color:var(--cyan)" id="si-tasks">—</span></div>
+    <div class="srow"><span class="slbl">Uptime</span><span class="sval" id="si-uptime">—</span></div>
+    <div class="srow"><span class="slbl">Circuits Open</span><span class="sval" style="color:var(--green)" id="si-circuits">0</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <a href="/api/system/info" target="_blank" class="btn btn-dark" style="flex:1;font-size:10px">📋 API</a>
+      <a href="/api/quantum/status" target="_blank" class="btn btn-dark" style="flex:1;font-size:10px">⚛️ JSON</a>
     </div>
   </div>
 </div>
 
-<!-- 2. DS24 -->
-<div class="section" id="s-ds24">
-  <div class="section-header">
-    <div class="section-title">💰 Digistore24</div>
-    <div class="section-sub">Produkte · Affiliate · Marktplatz · Käufe</div>
+<!-- REVENUE KPI -->
+<div class="sect">💰 REVENUE LIVE</div>
+<div class="g6">
+  <div class="card g-green"><div class="card-t">💰 DS24</div><div class="kpi green" id="r-ds24">€—</div><div class="kpi-sub" id="r-ds24-o">— Orders</div></div>
+  <div class="card g-purple"><div class="card-t">💳 Stripe MRR</div><div class="kpi purple" id="r-mrr">€—</div><div class="kpi-sub" id="r-subs">— Abos</div></div>
+  <div class="card g-orange"><div class="card-t">🛍️ Shopify</div><div class="kpi orange" id="r-shop">€—</div><div class="kpi-sub" id="r-shop-o">— Orders</div></div>
+  <div class="card g-cyan"><div class="card-t">🎨 Printify</div><div class="kpi cyan" id="r-printify">—</div><div class="kpi-sub" id="r-printify-s">Produkte</div></div>
+  <div class="card g-blue"><div class="card-t">👕 Printful</div><div class="kpi blue" id="r-printful">—</div><div class="kpi-sub" id="r-printful-s">Status</div></div>
+  <div class="card" style="border-color:rgba(236,72,153,.3)">
+    <div class="card-t">📊 GESAMT</div>
+    <div class="kpi pink" id="r-tot">€—</div>
+    <div class="kpi-sub" id="r-pct">— % von €300 Ziel</div>
+    <div style="background:var(--bg3);border-radius:3px;overflow:hidden;height:3px;margin-top:8px"><div id="prog" style="height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));width:0%;transition:width .8s"></div></div>
   </div>
+</div>
 
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-v stat-blue" id="ds-total">—</div><div class="stat-l">Produkte gesamt</div></div>
-    <div class="stat-card"><div class="stat-v stat-green" id="ds-active">—</div><div class="stat-l">Aktiv</div></div>
-    <div class="stat-card"><div class="stat-v stat-yellow" id="ds-affiliate">22</div><div class="stat-l">Affiliate Produkte</div></div>
-    <div class="stat-card"><div class="stat-v stat-purple" id="ds-apps">—</div><div class="stat-l">Bewerbungen</div></div>
-    <div class="stat-card"><div class="stat-v stat-green" id="ds-purchases">—</div><div class="stat-l">Käufe</div></div>
-    <div class="stat-card"><div class="stat-v stat-cyan" id="ds-revenue">€0</div><div class="stat-l">Revenue</div></div>
+<!-- FIRE BUTTONS -->
+<div class="sect">🚀 REVENUE STREAMS — ALLE KANÄLE TRIGGERN <span class="badge badge-orange">ONE-CLICK</span></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+  <button class="btn btn-fire" onclick="fireAll()">🔥 ALLE GLEICHZEITIG STARTEN</button>
+  <button class="btn btn-purple" onclick="launchMarketing()">📧 Marketing Blast</button>
+  <button class="btn btn-blue" onclick="launchSEO()">🔍 SEO + IndexNow</button>
+  <button class="btn btn-cyan" onclick="fire('pipeline','POST','/api/pipeline/run')">⚡ Pipeline Run</button>
+  <button class="btn btn-green" onclick="runQuantumScan()">⚛️ Quantum Scan</button>
+</div>
+<div class="fire-grid">
+  <div class="fire-btn" id="fb-shopify-blog" onclick="fire('shopify-blog','POST','/api/shopify/blog')"><div class="fire-icon">🛍️</div><div class="fire-name">SHOPIFY BLOG</div><div class="fire-status" id="fs-shopify-blog">bereit</div></div>
+  <div class="fire-btn" id="fb-klaviyo" onclick="fire('klaviyo','POST','/api/klaviyo/run')"><div class="fire-icon">📧</div><div class="fire-name">KLAVIYO</div><div class="fire-status" id="fs-klaviyo">bereit</div></div>
+  <div class="fire-btn" id="fb-mailchimp" onclick="fire('mailchimp','POST','/api/mailchimp/run')"><div class="fire-icon">📬</div><div class="fire-name">MAILCHIMP</div><div class="fire-status" id="fs-mailchimp">bereit</div></div>
+  <div class="fire-btn" id="fb-ds24" onclick="fire('ds24','POST','/api/ds24/run')"><div class="fire-icon">💰</div><div class="fire-name">DS24 AFFILIATE</div><div class="fire-status" id="fs-ds24">bereit</div></div>
+  <div class="fire-btn" id="fb-tiktok" onclick="fire('tiktok','POST','/api/tiktok/run')"><div class="fire-icon">🎵</div><div class="fire-name">TIKTOK BLAST</div><div class="fire-status" id="fs-tiktok">bereit</div></div>
+  <div class="fire-btn" id="fb-fiverr" onclick="fire('fiverr','POST','/api/fiverr/run')"><div class="fire-icon">💚</div><div class="fire-name">FIVERR GIGS</div><div class="fire-status" id="fs-fiverr">bereit</div></div>
+  <div class="fire-btn" id="fb-upwork" onclick="fire('upwork','POST','/api/upwork/run')"><div class="fire-icon">🔵</div><div class="fire-name">UPWORK JOBS</div><div class="fire-status" id="fs-upwork">bereit</div></div>
+  <div class="fire-btn" id="fb-ebay" onclick="fire('ebay','POST','/api/ebay/run')"><div class="fire-icon">🛒</div><div class="fire-name">EBAY CYCLE</div><div class="fire-status" id="fs-ebay">bereit</div></div>
+  <div class="fire-btn" id="fb-printify" onclick="fire('printify','POST','/api/printify/autopublish')"><div class="fire-icon">🎨</div><div class="fire-name">PRINTIFY</div><div class="fire-status" id="fs-printify">bereit</div></div>
+  <div class="fire-btn" id="fb-printful" onclick="fire('printful','POST','/api/printful/sync')"><div class="fire-icon">👕</div><div class="fire-name">PRINTFUL</div><div class="fire-status" id="fs-printful">bereit</div></div>
+  <div class="fire-btn" id="fb-rss" onclick="fire('rss','POST','/api/rss/run')"><div class="fire-icon">📡</div><div class="fire-name">RSS PUBLISH</div><div class="fire-status" id="fs-rss">bereit</div></div>
+  <div class="fire-btn" id="fb-indexnow" onclick="fire('indexnow','POST','/api/indexnow/blast')"><div class="fire-icon">🔍</div><div class="fire-name">INDEXNOW</div><div class="fire-status" id="fs-indexnow">bereit</div></div>
+  <div class="fire-btn" id="fb-seo" onclick="fire('seo','POST','/api/shopify/seo')"><div class="fire-icon">📈</div><div class="fire-name">SEO BOOST</div><div class="fire-status" id="fs-seo">bereit</div></div>
+  <div class="fire-btn" id="fb-pipeline" onclick="fire('pipeline','POST','/api/pipeline/run')"><div class="fire-icon">⚡</div><div class="fire-name">PIPELINE</div><div class="fire-status" id="fs-pipeline">bereit</div></div>
+  <div class="fire-btn" id="fb-sms" onclick="fire('sms','POST','/api/sms/run')"><div class="fire-icon">📱</div><div class="fire-name">SMS BLAST</div><div class="fire-status" id="fs-sms">bereit</div></div>
+  <div class="fire-btn" id="fb-shopify-import" onclick="fire('shopify-import','POST','/api/shopify/import')"><div class="fire-icon">📥</div><div class="fire-name">SHOPIFY IMPORT</div><div class="fire-status" id="fs-shopify-import">bereit</div></div>
+  <div class="fire-btn" id="fb-brutus" onclick="fire('brutus','POST','/api/brutus/run',{})"><div class="fire-icon">💥</div><div class="fire-name">BRUTUS TRAFFIC</div><div class="fire-status" id="fs-brutus">bereit</div></div>
+  <div class="fire-btn" id="fb-qscan" onclick="runQuantumScan()"><div class="fire-icon">⚛️</div><div class="fire-name">QUANTUM SCAN</div><div class="fire-status" id="fs-qscan">bereit</div></div>
+</div>
+
+<!-- PLATFORM STATUS -->
+<div class="sect">🌐 PLATTFORM STATUS</div>
+<div class="plt-row">
+  <div class="plt" id="plt-shopify"><div class="plt-icon">🛍️</div><div><div class="plt-name">Shopify</div><div class="plt-st" id="plt-shopify-s">…</div></div></div>
+  <div class="plt" id="plt-ds24"><div class="plt-icon">💰</div><div><div class="plt-name">Digistore24</div><div class="plt-st" id="plt-ds24-s">…</div></div></div>
+  <div class="plt" id="plt-stripe"><div class="plt-icon">💳</div><div><div class="plt-name">Stripe</div><div class="plt-st" id="plt-stripe-s">…</div></div></div>
+  <div class="plt" id="plt-klaviyo"><div class="plt-icon">📧</div><div><div class="plt-name">Klaviyo</div><div class="plt-st" id="plt-klaviyo-s">…</div></div></div>
+  <div class="plt" id="plt-mailchimp"><div class="plt-icon">📬</div><div><div class="plt-name">Mailchimp</div><div class="plt-st" id="plt-mailchimp-s">…</div></div></div>
+  <div class="plt" id="plt-tiktok"><div class="plt-icon">🎵</div><div><div class="plt-name">TikTok</div><div class="plt-st" id="plt-tiktok-s">…</div></div></div>
+  <div class="plt" id="plt-fiverr"><div class="plt-icon">💚</div><div><div class="plt-name">Fiverr</div><div class="plt-st" id="plt-fiverr-s">…</div></div></div>
+  <div class="plt" id="plt-upwork"><div class="plt-icon">🔵</div><div><div class="plt-name">Upwork</div><div class="plt-st" id="plt-upwork-s">…</div></div></div>
+  <div class="plt" id="plt-ebay"><div class="plt-icon">🛒</div><div><div class="plt-name">eBay</div><div class="plt-st" id="plt-ebay-s">…</div></div></div>
+  <div class="plt" id="plt-printify"><div class="plt-icon">🎨</div><div><div class="plt-name">Printify</div><div class="plt-st" id="plt-printify-s">…</div></div></div>
+  <div class="plt" id="plt-printful"><div class="plt-icon">👕</div><div><div class="plt-name">Printful</div><div class="plt-st" id="plt-printful-s">…</div></div></div>
+  <div class="plt" id="plt-telegram"><div class="plt-icon">✈️</div><div><div class="plt-name">Telegram</div><div class="plt-st" id="plt-telegram-s">…</div></div></div>
+  <div class="plt" id="plt-supabase"><div class="plt-icon">🗄️</div><div><div class="plt-name">Supabase</div><div class="plt-st" id="plt-supabase-s">…</div></div></div>
+  <div class="plt" id="plt-anthropic"><div class="plt-icon">🤖</div><div><div class="plt-name">Anthropic</div><div class="plt-st" id="plt-anthropic-s">…</div></div></div>
+</div>
+
+<!-- SPLIT: MAIN + LOG -->
+<div class="split">
+<div>
+
+<!-- SHOPIFY + DS24 + STRIPE + PRINT -->
+<div class="sect">🛍️ SHOPIFY · DS24 · STRIPE · PRINT-ON-DEMAND</div>
+<div class="g4">
+  <div class="card g-orange">
+    <div class="card-h"><div class="card-t">🛍️ Shopify</div><span class="badge badge-orange" id="shop-badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Revenue 7d</span><span class="sval" style="color:var(--orange)" id="shop-revenue">€—</span></div>
+    <div class="srow"><span class="slbl">Produkte</span><span class="sval" id="shop-products">—</span></div>
+    <div class="srow"><span class="slbl">Orders 7d</span><span class="sval" id="shop-orders">—</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="fire('shopify-blog','POST','/api/shopify/blog')">📝 Blog</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="fire('seo','POST','/api/shopify/seo')">📈 SEO</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="fire('shopify-import','POST','/api/shopify/import')">📥 Import</button>
+    </div>
   </div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="card-title">🏭 Produkt-Erstellung</div>
-      <div class="label">Konto: user37405262 · API: 1682000</div>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="apiPost('/api/ds24/create-1000',this)">🔥 1000 Produkte erstellen</button>
-        <button class="btn btn-green" onclick="apiPost('/api/ds24/refill',this)">♻️ Refill auf 1000</button>
-      </div>
-      <div class="result-box" id="res-ds24-create"></div>
+  <div class="card g-green">
+    <div class="card-h"><div class="card-t">💰 Digistore24</div><span class="badge badge-green" id="ds24-badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Produkte</span><span class="sval" id="ds24-products">—</span></div>
+    <div class="srow"><span class="slbl">Bestellungen</span><span class="sval" id="ds24-orders">—</span></div>
+    <div class="srow"><span class="slbl">Revenue</span><span class="sval" style="color:var(--green)" id="ds24-revenue">€—</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <button class="btn btn-green" style="flex:1;font-size:10px" onclick="fire('ds24','POST','/api/ds24/run')">🚀 Affiliate Blast</button>
+      <a href="/api/digistore24/products" target="_blank" class="btn btn-dark" style="flex:1;font-size:10px">📦 369 Produkte</a>
     </div>
+  </div>
+  <div class="card g-purple">
+    <div class="card-h"><div class="card-t">💳 Stripe</div><span class="badge badge-blue">LIVE</span></div>
+    <div class="srow"><span class="slbl">MRR</span><span class="sval" style="color:var(--purple)" id="stripe-mrr">€—</span></div>
+    <div class="srow"><span class="slbl">Aktive Abos</span><span class="sval" id="stripe-subs">—</span></div>
+    <div class="srow"><span class="slbl">Balance</span><span class="sval" id="stripe-balance">€—</span></div>
+    <div style="margin-top:10px"><a href="/api/stripe/billing-stats" target="_blank" class="btn btn-dark" style="width:100%;font-size:10px">📊 Billing Stats</a></div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">🖨️ Print-on-Demand</div></div>
+    <div style="font-size:10px;font-weight:700;color:var(--cyan);margin-bottom:4px">PRINTIFY</div>
+    <div class="srow"><span class="slbl">Produkte</span><span class="sval" id="pf-products">—</span></div>
+    <button class="btn btn-cyan" style="width:100%;font-size:10px;margin-top:6px;margin-bottom:8px" onclick="fire('printify','POST','/api/printify/autopublish')">🎨 Publish</button>
+    <div style="font-size:10px;font-weight:700;color:var(--blue);margin-bottom:4px">PRINTFUL</div>
+    <button class="btn btn-blue" style="width:100%;font-size:10px" onclick="fire('printful','POST','/api/printful/sync')">👕 Sync</button>
+  </div>
+</div>
 
-    <div class="card">
-      <div class="card-title">📢 Affiliate Blast</div>
-      <div class="label">22 genehmigte Produkte · alle Kanäle</div>
-      <div class="btn-group">
-        <button class="btn btn-orange" onclick="apiPost('/api/ds24/affiliate/blast-all',this)">📢 Alle 22 Affiliate blasten</button>
-        <button class="btn btn-pink btn-sm" onclick="apiPost('/api/ds24/seo-blast',this)">🎯 SEO Top-10 Blast</button>
-      </div>
-      <div class="result-box" id="res-ds24-blast"></div>
+<!-- EMAIL + RSS + SMS -->
+<div class="sect">📧 EMAIL MARKETING · RSS · SMS</div>
+<div class="g3">
+  <div class="card g-purple">
+    <div class="card-h"><div class="card-t">📧 Klaviyo</div><span class="badge" id="kl-badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Profile</span><span class="sval" id="kl-profiles">—</span></div>
+    <div class="srow"><span class="slbl">Status</span><span class="sval" style="color:var(--green)" id="kl-status">—</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <button class="btn btn-purple" style="flex:1;font-size:10px" onclick="fire('klaviyo','POST','/api/klaviyo/run')">📧 Campaign</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="ap('/api/klaviyo/daily-campaigns',{})">📅 Daily</button>
     </div>
-
-    <div class="card">
-      <div class="card-title">🏪 Marktplatz Automation</div>
-      <div class="label">Scannen → Bewerben → Blasten</div>
-      <div class="btn-group">
-        <button class="btn btn-cyan" onclick="apiPost('/api/ds24/marketplace/cycle',this)">🔄 Marktplatz Zyklus</button>
-        <button class="btn btn-blue btn-sm" onclick="apiPost('/api/ds24/marketplace/apply',this)">📝 Bewerben</button>
-        <button class="btn btn-green btn-sm" onclick="apiPost('/api/ds24/marketplace/blast',this)">📣 Blasten</button>
-      </div>
-      <div class="result-box" id="res-ds24-market"></div>
+  </div>
+  <div class="card g-blue">
+    <div class="card-h"><div class="card-t">📬 Mailchimp</div><span class="badge badge-blue" id="mc-badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Abonnenten</span><span class="sval" id="mc-subscribers">—</span></div>
+    <div class="srow"><span class="slbl">Status</span><span class="sval" id="mc-status">—</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <button class="btn btn-blue" style="flex:1;font-size:10px" onclick="fire('mailchimp','POST','/api/mailchimp/run')">📬 Campaign</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="ap('/api/mailchimp/daily-campaigns',{})">📅 Daily</button>
     </div>
-
-    <div class="card">
-      <div class="card-title">🎉 Dankeseite & Käufe</div>
-      <div>
-        <div class="label">Dankeseite-URL</div>
-        <div class="value" style="font-size:10px;color:var(--cyan);word-break:break-all;margin-bottom:8px">https://dudirudibot-mega-production.up.railway.app/api/ds24/dankeseite</div>
-        <div class="label">Dankeseite-Schlüssel</div>
-        <div class="value" style="font-size:11px;color:var(--yellow);margin-bottom:12px">O5jqklqAcxTvkKHp0rvn</div>
-      </div>
-      <div class="btn-group">
-        <button class="btn btn-green btn-sm" onclick="testDankeseite(this)">✅ Dankeseite testen</button>
-      </div>
-      <div id="ds24-purchases-list" style="margin-top:10px;font-size:11px;color:var(--muted)">Lade Käufe...</div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">📡 RSS + 📱 SMS</div></div>
+    <div class="srow"><span class="slbl">RSS Artikel</span><span class="sval" style="color:var(--cyan)" id="rss-status">—</span></div>
+    <div class="srow"><span class="slbl">SMS Status</span><span class="sval" id="sms-status">Twilio</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <button class="btn btn-cyan" style="flex:1;font-size:10px" onclick="fire('rss','POST','/api/rss/run')">📡 RSS</button>
+      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="fire('sms','POST','/api/sms/run')">📱 SMS</button>
     </div>
   </div>
 </div>
 
-<!-- 3. SHOPIFY -->
-<div class="section" id="s-shopify">
-  <div class="section-header">
-    <div class="section-title">🛍️ Shopify</div>
-    <div class="section-sub">Produkte · Bundles · Sortierung</div>
-  </div>
-
-  <div class="stats-row">
-    <div class="stat-card"><div class="stat-v stat-green" id="sh-store">—</div><div class="stat-l">Store Status</div></div>
-    <div class="stat-card"><div class="stat-v stat-blue" id="sh-templates">340</div><div class="stat-l">Templates</div></div>
-    <div class="stat-card"><div class="stat-v stat-purple" id="sh-created">—</div><div class="stat-l">Erstellt (DB)</div></div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="card-title">🏭 Produkt-Massenanlage</div>
-      <div class="label">340 Templates · 5 parallele Worker</div>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="apiPost('/api/shopify/create-1000',this)">🔥 1000 Produkte erstellen</button>
-      </div>
-      <div class="result-box" id="res-sh-create"></div>
+<!-- FREELANCE + SOCIAL -->
+<div class="sect">💼 FREELANCE · SOCIAL · MARKTPLÄTZE</div>
+<div class="g4">
+  <div class="card">
+    <div class="card-h"><div class="card-t">🎵 TikTok</div><span class="badge badge-blue" id="tt-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Status</span><span class="sval" id="tt-status">—</span></div>
+    <div class="srow"><span class="slbl">Revenue 30d</span><span class="sval" style="color:var(--green)" id="tt-revenue">€—</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <button class="btn btn-cyan" style="flex:1;font-size:10px" onclick="fire('tiktok','POST','/api/tiktok/run')">🎵 Blast</button>
+      <a href="/api/trends/latest" target="_blank" class="btn btn-dark" style="flex:1;font-size:10px">📊 Trends</a>
     </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">💚 Fiverr</div><span class="badge" id="fvr-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Gigs</span><span class="sval" id="fvr-gigs">—</span></div>
+    <div class="srow"><span class="slbl">Earnings</span><span class="sval" style="color:var(--green)" id="fvr-earnings">$—</span></div>
+    <button class="btn btn-green" style="width:100%;font-size:10px;margin-top:10px" onclick="fire('fiverr','POST','/api/fiverr/run')">💚 Gig Promote</button>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">🔵 Upwork</div><span class="badge badge-blue" id="upw-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Contracts</span><span class="sval" id="upw-contracts">—</span></div>
+    <div class="srow"><span class="slbl">Earnings</span><span class="sval" style="color:var(--green)" id="upw-earnings">$—</span></div>
+    <button class="btn btn-blue" style="width:100%;font-size:10px;margin-top:10px" onclick="fire('upwork','POST','/api/upwork/run')">🔵 Job Alert</button>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">🛒 eBay</div><span class="badge badge-orange" id="ebay-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">App ID</span><span class="sval" id="ebay-status">—</span></div>
+    <div class="srow"><span class="slbl">EPN</span><span class="sval" id="ebay-epn">—</span></div>
+    <button class="btn btn-orange" style="width:100%;font-size:10px;margin-top:10px" onclick="fire('ebay','POST','/api/ebay/run')">🛒 eBay Cycle</button>
+  </div>
+</div>
 
-    <div class="card">
-      <div class="card-title">📦 Bundles & Sortierung</div>
-      <div class="label">Auto-Bundles mit 20% Rabatt</div>
-      <div class="btn-group">
-        <button class="btn btn-orange" onclick="apiPost('/api/bundles/create',this)">📦 Bundles erstellen</button>
-        <button class="btn btn-blue" onclick="apiPost('/api/sort/all',this)">🗂️ Alles sortieren</button>
-        <button class="btn btn-green btn-sm" onclick="apiPost('/api/sort/shopify',this)">📋 Shopify sortieren</button>
-      </div>
-      <div class="result-box" id="res-sh-bundle"></div>
+<!-- TRAFFIC + PIPELINE + SCHEDULER -->
+<div class="sect">💥 TRAFFIC · PIPELINE · SCHEDULER</div>
+<div class="g3">
+  <div class="card">
+    <div class="card-h"><div class="card-t">💥 BRUTUS + SEO</div><span class="badge badge-red">BLAST</span></div>
+    <div class="srow"><span class="slbl">IndexNow Key</span><span class="sval" style="color:var(--green);font-size:9px">bullpower2026indexnow</span></div>
+    <div class="srow"><span class="slbl">Engines</span><span class="sval">Google · Bing</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-red" style="flex:1;font-size:10px" onclick="fire('brutus','POST','/api/brutus/run',{})">💥 BRUTUS</button>
+      <button class="btn btn-blue" style="flex:1;font-size:10px" onclick="fire('indexnow','POST','/api/indexnow/blast')">🔍 IndexNow</button>
     </div>
-
-    <div class="card">
-      <div class="card-title">📊 Shopify Status</div>
-      <div id="sh-status-detail" style="font-size:12px;color:var(--muted)">Lade...</div>
-      <div class="btn-group">
-        <button class="btn btn-cyan btn-sm" onclick="refreshShopify()">🔄 Status refresh</button>
-      </div>
+    <div style="margin-top:5px"><a href="/api/indexnow/status" target="_blank" class="btn btn-dark" style="width:100%;font-size:10px">📊 IndexNow Status</a></div>
+  </div>
+  <div class="card g-cyan">
+    <div class="card-h"><div class="card-t">⚡ Autonomous Pipeline</div><span class="badge badge-green">AUTO TÄGLICH</span></div>
+    <div class="srow"><span class="slbl">Mode</span><span class="sval">Generate → Sort → Bundle → Post → Sell</span></div>
+    <div class="srow"><span class="slbl">Status</span><span class="sval" style="color:var(--green)">Aktiv</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <button class="btn btn-cyan" style="flex:1;font-size:10px" onclick="fire('pipeline','POST','/api/pipeline/run')">⚡ Pipeline Start</button>
+      <a href="/api/pipeline/status" target="_blank" class="btn btn-dark" style="flex:1;font-size:10px">📊 Status</a>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t">⚙️ Scheduler <span class="badge" id="task-count" style="margin-left:4px">—</span></div><button class="btn btn-dark" style="font-size:10px" onclick="loadTasks()">🔄</button></div>
+    <div class="srow"><span class="slbl">Gesamt Tasks</span><span class="sval" style="color:var(--cyan)" id="sched-total">—</span></div>
+    <div class="srow"><span class="slbl">Total Runs</span><span class="sval" id="sched-runs">—</span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:10px">
+      <button class="btn btn-dark" style="font-size:10px" onclick="triggerTask('shopify_product_sync')">🛍️ Shopify</button>
+      <button class="btn btn-dark" style="font-size:10px" onclick="triggerTask('ds24_affiliate_daily')">💰 DS24</button>
+      <button class="btn btn-dark" style="font-size:10px" onclick="triggerTask('klaviyo_mass_daily')">📧 Klaviyo</button>
+      <button class="btn btn-dark" style="font-size:10px" onclick="triggerTask('quantum_self_repair')">⚛️ Quantum</button>
     </div>
   </div>
 </div>
 
-<!-- 4. EMAIL & MARKETING -->
-<div class="section" id="s-email">
-  <div class="section-header">
-    <div class="section-title">📧 Email & Marketing</div>
-    <div class="section-sub">Klaviyo · Mailchimp · SMTP</div>
+</div><!-- /split-left -->
+
+<!-- RIGHT SIDEBAR: LOG + STATS -->
+<div>
+  <div class="sect">📋 LIVE ACTIVITY LOG</div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-h">
+      <div class="card-t">📋 Live Feed</div>
+      <div style="display:flex;gap:4px">
+        <button class="btn btn-dark" style="font-size:10px;padding:4px 8px" onclick="clrLog()">🗑️</button>
+        <button class="btn btn-dark" style="font-size:10px;padding:4px 8px" onclick="refreshAll()">🔄</button>
+      </div>
+    </div>
+    <div class="log-box" id="log"></div>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <div class="card-title"><span class="dot dot-green"></span>Klaviyo</div>
-      <div id="kl-status" style="font-size:12px;color:var(--muted);margin-bottom:10px">Lade...</div>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="apiPost('/api/klaviyo/mass-create',this)">🚀 200 Kampagnen</button>
-        <button class="btn btn-cyan btn-sm" onclick="apiPost('/api/klaviyo/cycle',this)">📧 Newsletter</button>
-      </div>
-      <div class="result-box" id="res-klaviyo"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><span class="dot dot-green"></span>Mailchimp</div>
-      <div id="mc-status" style="font-size:12px;color:var(--muted);margin-bottom:10px">Lade...</div>
-      <div class="btn-group">
-        <button class="btn btn-orange" onclick="apiPost('/api/mailchimp/mass-create',this)">🚀 200 Kampagnen</button>
-        <button class="btn btn-green btn-sm" onclick="apiPost('/api/mailchimp/cycle',this)">📧 Zyklus</button>
-      </div>
-      <div class="result-box" id="res-mailchimp"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title"><span class="dot dot-green"></span>SMTP Email Blast</div>
-      <div id="email-status" style="font-size:12px;color:var(--muted);margin-bottom:10px">Lade...</div>
-      <div class="btn-group">
-        <button class="btn btn-pink" onclick="apiPost('/api/email/daily-blast',this)">📨 Daily Blast senden</button>
-      </div>
-      <div class="result-box" id="res-email"></div>
-    </div>
-  </div>
-</div>
-
-<!-- 5. TRAFFIC & SEO -->
-<div class="section" id="s-traffic">
-  <div class="section-header">
-    <div class="section-title">🚀 Traffic & SEO</div>
-    <div class="section-sub">BrutusCore · SEO Arsenal · Affiliate Blast</div>
+  <div class="card g-green" style="margin-bottom:12px">
+    <div class="card-h"><div class="card-t">💹 Revenue Ziel</div></div>
+    <div class="srow"><span class="slbl">Heute</span><span class="sval" style="color:var(--green)" id="ri-total">€—</span></div>
+    <div class="srow"><span class="slbl">Ziel €300/Tag</span><span class="sval" id="ri-target">—%</span></div>
+    <div class="srow"><span class="slbl">Status</span><span class="sval" id="ri-trend">—</span></div>
+    <div style="background:var(--bg3);border-radius:3px;overflow:hidden;height:4px;margin-top:8px"><div id="ri-prog" style="height:100%;background:linear-gradient(90deg,var(--green),var(--cyan));width:0%;transition:width .8s"></div></div>
+    <button class="btn btn-green" style="width:100%;font-size:10px;margin-top:10px" onclick="ap('/api/revenue/daily-report',{})">📊 Daily Report</button>
   </div>
 
-  <div class="grid">
-    <div class="card">
-      <div class="card-title">🔥 Traffic Mega-Blast</div>
-      <div class="label">12 Content-Pieces · 6 Kanäle gleichzeitig</div>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="apiPost('/api/traffic/mega-blast',this,'res-traffic')">🚀 Traffic Mega-Blast</button>
-      </div>
-      <div class="result-box" id="res-traffic"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🔍 SEO Ultra Arsenal</div>
-      <div class="label">14+ Properties · IndexNow · Parasite Content</div>
-      <div class="btn-group">
-        <button class="btn btn-blue" onclick="apiPost('/api/seo/blast',this,'res-seo')">⚡ SEO Ultra Arsenal</button>
-        <button class="btn btn-cyan btn-sm" onclick="apiPost('/api/seo/ping-sitemaps',this)">🗺️ Sitemap Ping</button>
-      </div>
-      <div class="result-box" id="res-seo"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🤝 Affiliate Mega-Blast</div>
-      <div class="label">Amazon bullpowerhub-21 · DS24 · eBay</div>
-      <div class="btn-group">
-        <button class="btn btn-orange" onclick="apiPost('/api/affiliate/blast-all',this,'res-affiliate')">📢 Affiliate Blast (alle)</button>
-        <button class="btn btn-pink btn-sm" onclick="apiPost('/api/ds24/marketplace/apply',this)">📝 DS24 Bewerben</button>
-      </div>
-      <div class="result-box" id="res-affiliate"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">📊 BrutusCore Status</div>
-      <div id="brutus-status" style="font-size:12px;color:var(--muted);margin-bottom:10px">Lade...</div>
-      <div class="btn-group">
-        <button class="btn btn-green btn-sm" onclick="refreshBrutus()">🔄 Refresh</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 6. REVENUE -->
-<div class="section" id="s-revenue">
-  <div class="section-header">
-    <div class="section-title">💵 Revenue</div>
-    <div class="section-sub">Shopify · Stripe · DS24 · Affiliate</div>
-  </div>
-
-  <div class="grid-2">
-    <div class="card">
-      <div class="card-title">📈 Live Revenue Snapshot</div>
-      <div id="rev-snapshot">
-        <div class="rev-row"><span class="rev-label">Shopify (7 Tage)</span><span class="rev-value" id="rev-shopify">€0</span></div>
-        <div class="rev-row"><span class="rev-label">DS24</span><span class="rev-value" id="rev-ds24">€0</span></div>
-        <div class="rev-row"><span class="rev-label">Stripe</span><span class="rev-value" id="rev-stripe">€0</span></div>
-        <div class="rev-row"><span class="rev-label">Affiliate</span><span class="rev-value" id="rev-affiliate">€0</span></div>
-        <div class="rev-row" style="border-top:2px solid var(--accent);margin-top:6px;padding-top:10px">
-          <span class="rev-label" style="font-weight:800;font-size:14px;color:var(--text)">TOTAL</span>
-          <span class="rev-value" style="font-size:22px" id="rev-total">€0</span>
-        </div>
-      </div>
-      <div class="btn-group" style="margin-top:12px">
-        <button class="btn btn-green btn-sm" onclick="refreshRevenue()">🔄 Aktualisieren</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">⚡ Revenue Actions</div>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="apiPost('/api/revenue/daily-report',this,'res-rev')">📊 Daily Report</button>
-        <button class="btn btn-cyan" onclick="apiPost('/api/revenue/milestone-check',this,'res-rev')">🏆 Meilenstein Check</button>
-        <button class="btn btn-orange" onclick="apiPost('/api/revenue/weekly-summary',this,'res-rev')">📋 Weekly Summary</button>
-        <button class="btn btn-green btn-sm" onclick="apiPost('/api/stripe/billing-check',this,'res-rev')">💳 Stripe Billing</button>
-      </div>
-      <div class="result-box" id="res-rev"></div>
-    </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="card-h"><div class="card-t">📈 Trends + SEO</div><span class="badge badge-blue">AUTO 2h</span></div>
+    <div class="srow"><span class="slbl">Source</span><span class="sval" id="tr-source">TikTok+Google DE</span></div>
+    <div class="srow"><span class="slbl">Interval</span><span class="sval">2h automatisch</span></div>
+    <div class="srow"><span class="slbl">Last Run</span><span class="sval" id="tr-last">—</span></div>
+    <a href="/api/trends/latest" target="_blank" class="btn btn-dark" style="width:100%;font-size:10px;margin-top:8px">📊 Trends API</a>
   </div>
 
   <div class="card">
-    <div class="card-title">🎯 Nächste Meilensteine</div>
-    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
-      <div style="text-align:center;padding:12px 20px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:18px;font-weight:800;color:var(--yellow)">€100</div>
-        <div style="font-size:10px;color:var(--muted)">Nächstes Ziel</div>
-      </div>
-      <div style="text-align:center;padding:12px 20px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:18px;font-weight:800;color:var(--orange)">€250</div>
-        <div style="font-size:10px;color:var(--muted)">Meilenstein 2</div>
-      </div>
-      <div style="text-align:center;padding:12px 20px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:18px;font-weight:800;color:var(--green)">€500</div>
-        <div style="font-size:10px;color:var(--muted)">Meilenstein 3</div>
-      </div>
-      <div style="text-align:center;padding:12px 20px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:18px;font-weight:800;color:var(--blue)">€1.000</div>
-        <div style="font-size:10px;color:var(--muted)">Meilenstein 4</div>
-      </div>
-      <div style="text-align:center;padding:12px 20px;background:var(--bg2);border-radius:8px;border:1px solid var(--border)">
-        <div style="font-size:18px;font-weight:800;color:var(--purple)">€10.000</div>
-        <div style="font-size:10px;color:var(--muted)">Meilenstein 5</div>
-      </div>
+    <div class="card-h"><div class="card-t">🔗 Quick Links</div></div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <a href="/api/quantum/status" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">⚛️ Quantum Status</a>
+      <a href="/api/system/info" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">🖥️ System Info</a>
+      <a href="/api/digistore24/products" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">💰 DS24 Produkte (369)</a>
+      <a href="/api/shopify/inventory" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">📦 Shopify Inventory</a>
+      <a href="/api/revenue/stats" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">📊 Revenue Stats</a>
+      <a href="/api/scheduler/status" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">⚙️ Scheduler Status</a>
+      <a href="/api/indexnow/status" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">🔍 IndexNow Status</a>
+      <a href="/api/trends/latest" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">📈 Trends Latest</a>
+      <a href="/api/pipeline/status" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">⚡ Pipeline Status</a>
     </div>
   </div>
 </div>
 
-<!-- 7. PIPELINE -->
-<div class="section" id="s-pipeline">
-  <div class="section-header">
-    <div class="section-title">⚙️ Vollautonome Pipeline</div>
-    <div class="section-sub">Generieren → Sortieren → Bundeln → Blasten → Stripe → Analysieren</div>
-  </div>
+</div><!-- /split -->
 
-  <div class="pipeline">
-    <div class="pipe-step done">1. Generieren</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step done">2. Sortieren</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step done">3. Bundeln</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step done">4. Blasten</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step done">5. Stripe-Link</div>
-    <div class="pipe-arrow">→</div>
-    <div class="pipe-step done">6. Analysieren</div>
-  </div>
-
-  <div class="card" style="margin-bottom:16px">
-    <div class="card-title">🚀 Pipeline Steuerung</div>
-    <div id="pipeline-status-text" style="font-size:12px;color:var(--muted);margin-bottom:16px">Täglich automatisch ausgeführt · Nächster Lauf: Morgen</div>
-    <button class="btn btn-primary btn-xl" onclick="apiPost('/api/pipeline/run',this,'res-pipeline')">
-      ⚡ VOLLAUTONOME PIPELINE STARTEN
-    </button>
-    <div class="result-box show" id="res-pipeline" style="margin-top:12px">Klicke um die Pipeline zu starten. Sie läuft dann automatisch täglich.</div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="card-title">🏭 DS24 Massenanleger</div>
-      <div class="label">1000 Produkte · 5 Worker · KI-SEO</div>
-      <div class="btn-group">
-        <button class="btn btn-green" onclick="apiPost('/api/ds24/create-1000',this)">Starten</button>
-        <button class="btn btn-cyan btn-sm" onclick="apiPost('/api/ds24/refill',this)">Refill</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">🛍️ Shopify Massenanleger</div>
-      <div class="label">340 Templates · Auto-Bild · Collections</div>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="apiPost('/api/shopify/create-1000',this)">Starten</button>
-      </div>
-    </div>
-    <div class="card">
-      <div class="card-title">📦 Bundle Engine</div>
-      <div class="label">Auto-Bundles · 20% Rabatt-Code</div>
-      <div class="btn-group">
-        <button class="btn btn-orange" onclick="apiPost('/api/bundles/create',this)">Bundles erstellen</button>
-        <button class="btn btn-blue btn-sm" onclick="apiPost('/api/sort/all',this)">Sortieren</button>
-      </div>
-    </div>
-  </div>
+<div style="text-align:center;padding:12px 0;color:var(--muted);font-size:9px;letter-spacing:1.5px;border-top:1px solid var(--border);margin-top:12px">
+  BULLPOWER HUB MEGA v6 · QUANTUM SELF-REPAIR · 289 CHECKS · 240+ TASKS · 17 REVENUE STREAMS · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
 </div>
-
-<!-- 8. QUANTUM -->
-<div class="section" id="s-quantum">
-  <div class="section-header">
-    <div class="section-title">🔬 Quantum Self-Repair</div>
-    <div class="section-sub">KI-Selbstreparatur · Token-Management · Fehler-Analyse</div>
-  </div>
-
-  <div class="grid">
-    <div class="card">
-      <div class="card-title">💚 System Health</div>
-      <div class="health-bar" style="height:12px;margin:12px 0"><div class="health-fill" id="q-health-bar" style="width:100%"></div></div>
-      <div id="q-health-text" style="font-size:13px;font-weight:700;color:var(--green);margin-bottom:8px">100/100</div>
-      <div id="q-errors-count" style="font-size:11px;color:var(--muted)">0 aktive Fehler</div>
-      <div class="btn-group" style="margin-top:12px">
-        <button class="btn btn-cyan" onclick="apiPost('/api/quantum/self-repair/heal',this,'res-quantum')">🔧 Quantum Heal</button>
-        <button class="btn btn-blue btn-sm" onclick="refreshQuantumErrors()">📋 Fehler laden</button>
-      </div>
-      <div class="result-box" id="res-quantum"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🔑 Token Check</div>
-      <div id="token-status" style="font-size:12px;color:var(--muted);margin-bottom:10px">Lade...</div>
-      <div class="btn-group">
-        <button class="btn btn-primary" onclick="apiPost('/api/quantum/token-check',this,'res-token')">🔑 Alle Tokens prüfen</button>
-      </div>
-      <div class="result-box" id="res-token"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🧠 Selbst-Verbesserung</div>
-      <div id="q-improve-status" style="font-size:12px;color:var(--muted);margin-bottom:10px">Täglich automatisch · KI analysiert Fehler-Muster</div>
-      <div class="btn-group">
-        <button class="btn btn-purple" style="background:linear-gradient(135deg,#4c1d95,#7c3aed);color:#fff" onclick="apiPost('/api/quantum/improve',this,'res-improve')">🧠 Selbst-Verbesserung</button>
-        <button class="btn btn-orange btn-sm" onclick="refreshQuantumReport()">📊 Report</button>
-      </div>
-      <div class="result-box" id="res-improve"></div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🚨 Fehler-Liste</div>
-      <div class="error-list" id="q-error-list">
-        <div class="no-errors">✅ Keine aktiven Fehler</div>
-      </div>
-    </div>
-  </div>
 </div>
-
-<!-- 9. PLATTFORMEN -->
-<div class="section" id="s-platforms">
-  <div class="section-header">
-    <div class="section-title">🌐 Plattformen Status</div>
-    <div class="section-sub">Live-Status aller integrierten Plattformen</div>
-  </div>
-
-  <div class="platform-grid" id="platform-grid">
-    <!-- filled by JS -->
-  </div>
-</div>
-
-<!-- 10. ALLES STARTEN -->
-<div class="section" id="s-start">
-  <div class="section-header">
-    <div class="section-title">🚀 ALLES STARTEN</div>
-    <div class="section-sub">Alle 21 Systeme gleichzeitig feuern</div>
-  </div>
-
-  <div style="margin-bottom:20px">
-    <button class="mega-btn" id="mega-fire-btn" onclick="fireAll(this)">
-      🚀 ALLE SYSTEME GLEICHZEITIG STARTEN
-    </button>
-  </div>
-
-  <div class="card">
-    <div class="card-title">📋 Was gestartet wird</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px;margin-top:8px" id="fire-list">
-      <div class="rev-row"><span class="dot dot-grey" id="f1"></span><span class="rev-label">DS24 1000 Produkte</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f2"></span><span class="rev-label">DS24 Refill auf 1000</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f3"></span><span class="rev-label">DS24 Affiliate Blast (22×)</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f4"></span><span class="rev-label">DS24 Marktplatz Zyklus</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f5"></span><span class="rev-label">DS24 SEO Top-10</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f6"></span><span class="rev-label">Shopify 1000 Produkte</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f7"></span><span class="rev-label">Klaviyo 200 Kampagnen</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f8"></span><span class="rev-label">Mailchimp 200 Kampagnen</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f9"></span><span class="rev-label">Email Daily Blast</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f10"></span><span class="rev-label">Traffic Mega-Blast</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f11"></span><span class="rev-label">SEO Ultra Arsenal</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f12"></span><span class="rev-label">Affiliate Blast (Amazon+DS24+eBay)</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f13"></span><span class="rev-label">Bundles erstellen</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f14"></span><span class="rev-label">Sort All</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f15"></span><span class="rev-label">Vollautonome Pipeline</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f16"></span><span class="rev-label">Revenue Daily Report</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f17"></span><span class="rev-label">Revenue Meilenstein</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f18"></span><span class="rev-label">Stripe Billing Check</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f19"></span><span class="rev-label">Quantum Heal</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f20"></span><span class="rev-label">Quantum Self-Repair</span></div>
-      <div class="rev-row"><span class="dot dot-grey" id="f21"></span><span class="rev-label">Token Check</span></div>
-    </div>
-  </div>
-
-  <div class="card" style="margin-top:16px">
-    <div class="card-title">📊 Fire-Log</div>
-    <div id="fire-log" style="font-family:monospace;font-size:11px;color:var(--cyan);max-height:300px;overflow-y:auto;padding:4px 0"></div>
-  </div>
-</div>
-
-</div><!-- /main -->
-
-<!-- TOAST CONTAINER -->
 <div id="toast-container"></div>
 
 <script>
-const BASE = '';
+const B=window.location.origin;let logs=[];
+setInterval(()=>{document.getElementById('clk').textContent='🕐 '+new Date().toLocaleTimeString('de-AT');},1000);
+document.getElementById('clk').textContent='🕐 '+new Date().toLocaleTimeString('de-AT');
 
-// ── NAVIGATION ────────────────────────────────────────────────────────────────
-function showSection(id) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('s-' + id)?.classList.add('active');
-  event.target.classList.add('active');
-  if (id === 'platforms') loadPlatforms();
-  if (id === 'ds24') refreshDS24();
-  if (id === 'shopify') refreshShopify();
-  if (id === 'email') refreshEmail();
-  if (id === 'revenue') refreshRevenue();
-  if (id === 'quantum') refreshQuantum();
-  if (id === 'traffic') refreshBrutus();
+function toast(msg,type='info'){
+  const c=document.getElementById('toast-container'),t=document.createElement('div');
+  t.className='toast '+(type==='ok'||type==='success'?'ok':type==='err'||type==='error'?'err':'');
+  t.textContent=msg;c.appendChild(t);
+  setTimeout(()=>t.style.opacity='0',3500);setTimeout(()=>t.remove(),4000);
+}
+function addLog(msg,cls=''){
+  const now=new Date().toLocaleTimeString('de-AT');
+  logs.unshift({time:now,msg,cls});if(logs.length>200)logs.pop();
+  const el=document.getElementById('log');
+  if(el)el.innerHTML=logs.slice(0,60).map(l=>`<div class="ll ${l.cls}"><span class="lt">${l.time}</span>${esc(l.msg)}</div>`).join('');
+}
+function clrLog(){logs=[];document.getElementById('log').innerHTML=''}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+
+async function get(path){try{return await(await fetch(B+path)).json()}catch(e){return null}}
+async function ap(path,body={}){
+  const method=body===null?'GET':'POST';
+  addLog('→ '+method+' '+path,'i');
+  try{
+    const opts={method,headers:{'Content-Type':'application/json'}};
+    if(method==='POST')opts.body=JSON.stringify(body||{});
+    const r=await fetch(B+path,opts);const d=await r.json().catch(()=>({}));
+    const msg=d.message||d.status||d.result||JSON.stringify(d).slice(0,80);
+    addLog('✓ '+path+': '+msg,'');toast('✓ '+String(msg).slice(0,60),'ok');return d;
+  }catch(e){addLog('✗ '+path+': '+e.message,'e');toast('✗ '+e.message,'err');return null;}
 }
 
-// ── API CALL ──────────────────────────────────────────────────────────────────
-async function apiCall(method, path) {
-  const opts = { method, headers: {'Content-Type':'application/json'} };
-  if (method === 'POST') opts.body = '{}';
-  const r = await fetch(BASE + path, opts);
-  return await r.json();
-}
-
-async function apiPost(path, btn, resultId) {
-  if (btn) btn.classList.add('loading');
-  try {
-    const d = await apiCall('POST', path);
-    const ok = d.ok || d.status === 'ok' || d.status === 'started' || d.action;
-    if (btn) {
-      btn.classList.remove('loading');
-      btn.classList.add(ok ? 'btn-success' : 'btn-error');
-      setTimeout(() => btn.classList.remove('btn-success','btn-error'), 3000);
-    }
-    if (resultId) {
-      const box = document.getElementById(resultId);
-      if (box) { box.textContent = JSON.stringify(d, null, 2); box.classList.add('show'); }
-    }
-    toast(ok, ok ? (d.message || d.action || 'Gestartet ✅') : (d.error || 'Fehler'));
+async function fire(id,method,path,body){
+  const btn=document.getElementById('fb-'+id),st=document.getElementById('fs-'+id);
+  if(btn)btn.className='fire-btn running';if(st)st.textContent='⏳ läuft...';
+  addLog('▶ '+path,'i');
+  try{
+    const opts={method,headers:{'Content-Type':'application/json'}};
+    if(method==='POST')opts.body=JSON.stringify(body||{});
+    const r=await fetch(B+path,opts);const d=await r.json().catch(()=>({}));
+    const msg=d.status||d.result||d.message||(d.ok?'✓ OK':'?');
+    if(btn)btn.className='fire-btn done';if(st)st.textContent=String(msg).slice(0,40);
+    addLog('✓ '+path+': '+String(msg).slice(0,80),'');toast('✓ '+String(msg).slice(0,50),'ok');
+    setTimeout(()=>{if(btn)btn.className='fire-btn';if(st)st.textContent='bereit';},8000);
     return d;
-  } catch(e) {
-    if (btn) { btn.classList.remove('loading'); btn.classList.add('btn-error'); setTimeout(() => btn.classList.remove('btn-error'), 3000); }
-    toast(false, e.message);
-    return null;
+  }catch(e){
+    if(btn)btn.className='fire-btn fail';if(st)st.textContent='✗ '+e.message.slice(0,30);
+    addLog('✗ '+path+': '+e.message,'e');toast('✗ '+e.message,'err');
+    setTimeout(()=>{if(btn)btn.className='fire-btn';if(st)st.textContent='bereit';},5000);return null;
   }
 }
 
-async function apiGet(path) {
-  try { return await apiCall('GET', path); } catch { return null; }
+async function triggerTask(name){
+  addLog('▶ Task: '+name,'i');toast('Starte: '+name,'info');
+  try{
+    const r=await(await fetch(B+'/api/scheduler/trigger',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({task:name})})).json();
+    if(r.error){addLog('✗ '+name+': '+r.error,'e');toast('✗ '+r.error,'err')}
+    else{addLog('✓ '+name+': '+(r.result||'OK'),'');toast('✓ '+name,'ok')}
+  }catch(e){addLog('✗ '+name+': '+e.message,'e');}
 }
 
-// ── TOAST ─────────────────────────────────────────────────────────────────────
-function toast(ok, msg) {
-  const c = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className = 'toast ' + (ok ? 'ok' : 'err');
-  t.textContent = (ok ? '✅ ' : '❌ ') + String(msg).substring(0, 100);
-  c.appendChild(t);
-  setTimeout(() => t.remove(), 4000);
+async function runQuantumScan(){
+  const badge=document.getElementById('q-badge');
+  if(badge){badge.textContent='SCANNING...';badge.style.background='var(--yellow)'}
+  const fb=document.getElementById('fb-qscan'),fs=document.getElementById('fs-qscan');
+  if(fb)fb.className='fire-btn running';if(fs)fs.textContent='⏳ 45s...';
+  addLog('⚛️ Quantum Scan gestartet (45s)','i');
+  await ap('/api/quantum/scan',{});
+  toast('⚛️ Scan läuft im Hintergrund (45s)...','info');
+  setTimeout(async()=>{
+    await loadQuantum();
+    if(fb)fb.className='fire-btn done';if(fs)fs.textContent='✓ done';
+    setTimeout(()=>{if(fb)fb.className='fire-btn';if(fs)fs.textContent='bereit';},5000);
+  },46000);
+}
+async function runQuantumRepair(){await ap('/api/quantum/repair',{});toast('🔧 Repair gestartet','ok');}
+async function runQuantumImprove(){await ap('/api/quantum/improve',{});toast('🧠 Self-Improve gestartet','ok');}
+
+async function loadQuantum(){
+  const d=await get('/api/quantum/status');if(!d||!d.total_checks)return;
+  const pct=d.overall_health_pct||0;
+  fe('q-score',pct+'%');fe('q-checks',(d.total_ok||0)+' / '+(d.total_checks||0)+' Checks OK');
+  fe('h-health',pct+'%');
+  const fill=document.getElementById('q-fill');
+  if(fill){fill.style.width=pct+'%';fill.className='q-fill'+(pct<70?' warn':'');}
+  const badge=document.getElementById('q-badge');
+  if(badge){badge.textContent=pct>=99?'✓ 100%':pct+'%';badge.style.background=pct>=99?'var(--green)':pct>=90?'var(--yellow)':'var(--red)';}
+  if(d.ts)fe('q-ts','Letzter Scan: '+new Date(d.ts).toLocaleTimeString('de-AT'));
+  const cats=d.categories||{};
+  function sc(id,cat){if(!cat)return;fe('qc-'+id,(cat.failed>0?'❌ '+cat.failed+' FAIL':'✅ '+cat.ok+' OK'));document.getElementById('qc-'+id).style.color=cat.failed>0?'var(--red)':'var(--green)';}
+  sc('py',cats.python_modules);sc('api',cats.api_endpoints);sc('env',cats.env_vars);
+  sc('ext',cats.external_services);sc('sched',cats.scheduler_tasks);
+  sc('rev',cats.revenue_pipeline);sc('db',cats.databases);sc('fs',cats.filesystem);
+  // Update platform badges from external_services
+  const ext=cats.external_services||{};
+  (ext.results||[]).forEach(r=>{
+    const n=(r.service||'').toLowerCase();
+    const el=document.getElementById('plt-'+n);
+    if(el){el.className='plt '+(r.ok?'ok':'fail');const s=el.querySelector('.plt-st');if(s)s.textContent=r.ok?'✅ '+(r.detail||'OK'):'❌ '+(r.detail||'Error');}
+  });
 }
 
-// ── HEADER REFRESH ────────────────────────────────────────────────────────────
-async function refreshHeader() {
-  const [rev, ds24, health, purch] = await Promise.all([
-    apiGet('/api/revenue/snapshot'),
-    apiGet('/api/ds24/status'),
-    apiGet('/api/quantum/self-repair/status'),
-    apiGet('/api/ds24/purchases'),
-  ]);
-  if (rev) {
-    const t = rev.last_7_days?.total || 0;
-    document.getElementById('h-revenue').textContent = '€' + t.toFixed(2);
-    document.getElementById('ov-revenue').textContent = '€' + t.toFixed(2);
-    document.getElementById('r-shopify').textContent = '€' + (rev.last_7_days?.shopify||0).toFixed(2);
-    document.getElementById('r-ds24').textContent = '€' + (rev.last_7_days?.ds24||0).toFixed(2);
-    document.getElementById('r-stripe').textContent = '€' + (rev.last_7_days?.stripe||0).toFixed(2);
-    document.getElementById('r-affiliate').textContent = '€' + (rev.last_7_days?.affiliate||0).toFixed(2);
-    document.getElementById('r-total').textContent = '€' + t.toFixed(2);
+async function loadHealth(){
+  const d=await get('/health');if(!d)return;
+  if(d.status==='ok'){
+    const h=Math.floor((d.uptime_seconds||0)/3600),m=Math.floor(((d.uptime_seconds||0)%3600)/60);
+    fe('sys-status','LIVE — '+h+'h '+m+'m');fe('si-uptime',h+'h '+m+'m');
+    const cc=document.getElementById('si-circuits');
+    if(cc){const o=(d.circuits_open||[]).length;cc.textContent=o===0?'0 ✅':o+' ⚠️';cc.style.color=o===0?'var(--green)':'var(--red)';}
   }
-  if (ds24) {
-    document.getElementById('h-products').textContent = ds24.total || '—';
-    document.getElementById('ov-ds24').textContent = ds24.total || '—';
-    document.getElementById('ov-ds24-detail').innerHTML = `<b>${ds24.total||0}</b> Produkte · <b>${ds24.active||0}</b> aktiv<br><span style="color:var(--muted)">Konto: user37405262</span>`;
-  }
-  if (health) {
-    const score = health.health_score || 100;
-    document.getElementById('h-health').textContent = score + '%';
-    document.getElementById('ov-health').textContent = score + '%';
-    document.getElementById('health-bar-fill').style.width = score + '%';
-    document.getElementById('health-score-text').textContent = score + '/100 — ' + (health.total_errors > 0 ? health.total_errors + ' Fehler' : 'Keine Fehler');
-  }
-  if (purch) {
-    document.getElementById('h-purchases').textContent = purch.total_purchases || 0;
-    document.getElementById('ov-purchases').textContent = purch.total_purchases || 0;
-    const recent = purch.recent || [];
-    document.getElementById('ov-purchases-list').innerHTML = recent.length
-      ? recent.slice(0,3).map(p => `<div style="padding:4px 0;border-bottom:1px solid var(--border)">
-          <span style="color:var(--green);font-weight:700">${p.product?.substring(0,30)||'?'}</span><br>
-          <span style="color:var(--muted)">${p.date||''} · ${p.buyer||''}</span>
-        </div>`).join('')
-      : '<span style="color:var(--muted)">Noch keine Käufe — Steuernummer + IBAN eingetragen ✅</span>';
-  }
-  document.getElementById('refresh-time').textContent = 'Zuletzt aktualisiert: ' + new Date().toLocaleTimeString('de-DE');
+  if(d.shopify_domain)fe('shop-domain',d.shopify_domain);
+  addLog('Health OK — uptime '+Math.floor((d.uptime_seconds||0)/60)+'m');
 }
 
-// ── DS24 ──────────────────────────────────────────────────────────────────────
-async function refreshDS24() {
-  const [status, aff, market, purch] = await Promise.all([
-    apiGet('/api/ds24/status'),
-    apiGet('/api/ds24/affiliate/stats'),
-    apiGet('/api/ds24/marketplace/stats'),
-    apiGet('/api/ds24/purchases'),
-  ]);
-  if (status) {
-    document.getElementById('ds-total').textContent = status.total || '—';
-    document.getElementById('ds-active').textContent = status.active || '—';
-  }
-  if (aff) document.getElementById('ds-affiliate').textContent = aff.total_products || 22;
-  if (market) {
-    document.getElementById('ds-apps').textContent = market.total_applications || 0;
-    document.getElementById('ds-revenue').textContent = '€' + (market.total_revenue_eur||0).toFixed(2);
-  }
-  if (purch) {
-    document.getElementById('ds-purchases').textContent = purch.total_purchases || 0;
-    const list = purch.recent || [];
-    document.getElementById('ds24-purchases-list').innerHTML = list.length
-      ? '<div style="font-weight:700;color:var(--text);margin-bottom:6px">Letzte Käufe:</div>' + list.slice(0,5).map(p =>
-          `<div style="padding:4px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between">
-            <span>${p.product?.substring(0,25)||'?'}</span>
-            <span style="color:var(--green)">${p.date||''}</span>
-          </div>`).join('')
-      : '<span style="color:var(--green)">✅ Konto aktiv · Wartet auf DS24-Freigabe</span>';
-  }
+async function loadSystemInfo(){
+  const d=await get('/api/system/info');if(!d)return;
+  fe('si-version',d.version||'—');fe('si-python',d.python||'—');
+  fe('si-port',d.port||'—');fe('si-tasks',d.scheduler_tasks||'—');
+  fe('h-tasks',d.scheduler_tasks||'—');
 }
 
-// ── SHOPIFY ───────────────────────────────────────────────────────────────────
-async function refreshShopify() {
-  const [status, mass] = await Promise.all([
-    apiGet('/api/shopify/status'),
-    apiGet('/api/shopify/mass-status'),
-  ]);
-  if (status) {
-    document.getElementById('sh-store').textContent = status.store ? '✅ Online' : '⚠️';
-    document.getElementById('sh-status-detail').innerHTML =
-      `<b>${status.store||'—'}</b><br><span style="color:var(--muted)">Domain: ${status.domain||'—'}</span>`;
-  }
-  if (mass) {
-    document.getElementById('sh-templates').textContent = mass.templates || 340;
-    document.getElementById('sh-created').textContent = mass.created_in_db || 0;
-  }
+async function loadRevenue(){
+  const[summ,stripeSubs]=await Promise.all([get('/api/revenue/summary'),get('/api/stripe/subscriptions')]);
+  const ds24s=(summ?.ds24||{}).stats||{};
+  const ds24Total=parseFloat(ds24s.total||0),ds24Orders=parseInt(ds24s.orders_total||0);
+  const mrr=parseFloat(stripeSubs?.mrr_eur||summ?.stripe?.available_eur||0);
+  const activeSubs=parseInt(stripeSubs?.active||0);
+  const shopRev=parseFloat(summ?.shopify?.revenue_today_eur||0);
+  const shopOrders=parseInt(summ?.shopify?.orders_today||0);
+  const total=ds24Total+mrr+shopRev;
+  fe('r-ds24','€'+ds24Total.toFixed(0));fe('r-ds24-o',ds24Orders+' Orders');
+  fe('r-mrr','€'+mrr.toFixed(0)+'/mo');fe('r-subs',activeSubs+' Abos');
+  fe('r-shop','€'+shopRev.toFixed(0));fe('r-shop-o',shopOrders+' Orders');
+  fe('r-tot','€'+total.toFixed(0));fe('h-total','€'+total.toFixed(0));
+  fe('h-orders',(ds24Orders+activeSubs+shopOrders)+'');
+  fe('ds24-orders',ds24Orders+'');fe('ds24-revenue','€'+ds24Total.toFixed(0));
+  fe('stripe-mrr','€'+mrr.toFixed(0));fe('stripe-subs',activeSubs+' aktiv');
+  fe('ri-total','€'+total.toFixed(0));
+  const pct=Math.min(100,(total/300)*100);
+  const prog=document.getElementById('prog');if(prog)prog.style.width=pct+'%';
+  const riprog=document.getElementById('ri-prog');if(riprog)riprog.style.width=pct+'%';
+  fe('r-pct',pct.toFixed(1)+'% von €300 Ziel');fe('ri-target',pct.toFixed(1)+'%');
+  fe('ri-trend',total>=300?'🟢 Ziel erreicht!':total>=150?'🟡 Auf Kurs':'🔴 Boost nötig');
+  addLog('Revenue: DS24 €'+ds24Total.toFixed(0)+' | MRR €'+mrr.toFixed(0)+' | Shopify €'+shopRev.toFixed(0)+' | TOTAL €'+total.toFixed(0));
 }
 
-// ── EMAIL ─────────────────────────────────────────────────────────────────────
-async function refreshEmail() {
-  const [kl, mc, em] = await Promise.all([
-    apiGet('/api/klaviyo/status'),
-    apiGet('/api/mailchimp/status'),
-    apiGet('/api/email/stats'),
-  ]);
-  if (kl) document.getElementById('kl-status').innerHTML =
-    `<span class="dot ${kl.ok?'dot-green':'dot-red'}"></span>Account: ${kl.account||'—'} · Listen: ${kl.list_count||'—'}`;
-  if (mc) {
-    const dragon = mc.dragon || {};
-    document.getElementById('mc-status').innerHTML =
-      `<span class="dot ${mc.ok?'dot-green':'dot-red'}"></span>Dragon: ${dragon.account||'—'} <span class="badge ${dragon.connected?'badge-green':'badge-red'}">${dragon.connected?'Connected':'Offline'}</span>`;
-  }
-  if (em) document.getElementById('email-status').innerHTML =
-    `<span class="dot ${em.klaviyo_configured?'dot-green':'dot-red'}"></span>Klaviyo: ${em.klaviyo_configured?'✅':'❌'} · Mailchimp: ${em.mailchimp_configured?'✅':'❌'} · SMTP: ${em.smtp_accounts||0} Konten`;
+async function loadShopify(){
+  const d=await get('/api/shopify/intelligence');if(!d)return;
+  fe('shop-revenue','€'+(d.revenue_7d_eur||0).toFixed(0));
+  fe('shop-products',(d.products_total||d.products||0)+' Produkte');
+  fe('shop-orders',(d.orders_7d||0)+' Orders');
+  const ok=!d.error;
+  const plt=document.getElementById('plt-shopify');
+  if(plt){plt.className='plt '+(ok?'ok':'fail');fe('plt-shopify-s',ok?'✅ Verbunden':'❌ Fehler');}
 }
 
-// ── REVENUE ───────────────────────────────────────────────────────────────────
-async function refreshRevenue() {
-  const d = await apiGet('/api/revenue/snapshot');
-  if (!d) return;
-  const s = d.last_7_days || {};
-  document.getElementById('rev-shopify').textContent = '€' + (s.shopify||0).toFixed(2);
-  document.getElementById('rev-ds24').textContent = '€' + (s.ds24||0).toFixed(2);
-  document.getElementById('rev-stripe').textContent = '€' + (s.stripe||0).toFixed(2);
-  document.getElementById('rev-affiliate').textContent = '€' + (s.affiliate||0).toFixed(2);
-  document.getElementById('rev-total').textContent = '€' + (s.total||0).toFixed(2);
+async function loadDS24(){
+  const d=await get('/api/digistore24/status');if(!d)return;
+  const ok=d.ok||d.configured||d.api_key_set;
+  fe('ds24-products',d.products_count||'369');
+  const badge=document.getElementById('ds24-badge');
+  if(badge){badge.textContent=ok?'API AKTIV':'KEIN KEY';badge.style.background=ok?'rgba(16,185,129,.3)':'rgba(239,68,68,.3)';}
+  const plt=document.getElementById('plt-ds24');
+  if(plt){plt.className='plt '+(ok?'ok':'warn');fe('plt-ds24-s',ok?'✅ Verbunden':'⚠️ Setup');}
 }
 
-// ── QUANTUM ───────────────────────────────────────────────────────────────────
-async function refreshQuantum() {
-  const [status, errors] = await Promise.all([
-    apiGet('/api/quantum/self-repair/status'),
-    apiGet('/api/quantum/self-repair/errors'),
-  ]);
-  if (status) {
-    const score = status.health_score || 100;
-    document.getElementById('q-health-bar').style.width = score + '%';
-    document.getElementById('q-health-text').textContent = score + '/100';
-    document.getElementById('q-errors-count').textContent = (status.total_errors||0) + ' aktive Fehler';
+async function loadKlaviyo(){
+  const d=await get('/api/klaviyo/status');if(!d)return;
+  const ok=d.connected||d.ok;
+  fe('kl-profiles',(d.profiles_total||d.total_profiles||0)+' Profile');
+  fe('kl-status',ok?'✅ Verbunden':'⚠️ Key prüfen');
+  const badge=document.getElementById('kl-badge');if(badge){badge.textContent=ok?'LIVE':'CHECK';}
+  const plt=document.getElementById('plt-klaviyo');
+  if(plt){plt.className='plt '+(ok?'ok':'warn');fe('plt-klaviyo-s',ok?'✅ AKTIV':'⚠️ Setup');}
+}
+
+async function loadMailchimp(){
+  const d=await get('/api/mailchimp/status');if(!d)return;
+  const disabled=d.error&&String(d.error).toLowerCase().includes('disabled');
+  const ok=!disabled&&(d.connected||d.ok);
+  fe('mc-subscribers',(d.member_count||d.subscribers||0)+' Abonnenten');
+  fe('mc-status',disabled?'⚠️ Account disabled':ok?'✅ Verbunden':'⚠️ Key');
+  const badge=document.getElementById('mc-badge');if(badge)badge.textContent=ok?'LIVE':disabled?'DISABLED':'CHECK';
+  const plt=document.getElementById('plt-mailchimp');
+  if(plt){plt.className='plt '+(ok?'ok':'warn');fe('plt-mailchimp-s',ok?'✅ AKTIV':'⚠️');}
+}
+
+async function loadStripe(){
+  const d=await get('/api/stripe/billing-stats');if(!d)return;
+  fe('stripe-balance','€'+(d.balance_eur||0).toFixed(0));
+  const plt=document.getElementById('plt-stripe');
+  if(plt){plt.className='plt ok';fe('plt-stripe-s','✅ Verbunden');}
+}
+
+async function loadPrintify(){
+  const d=await get('/api/printify/status');if(!d)return;
+  fe('r-printify',(d.products||d.count||0)+'');
+  fe('r-printify-s',(d.published||0)+' published');
+  fe('pf-products',(d.products||d.count||0)+' Produkte');
+  const plt=document.getElementById('plt-printify');
+  if(plt){plt.className='plt ok';fe('plt-printify-s','✅ '+(d.products||0)+' Produkte');}
+}
+
+async function loadPrintful(){
+  const d=await get('/api/printful/status');if(!d)return;
+  fe('r-printful',d.ok?'✅':'—');fe('r-printful-s',d.status||'—');
+  const plt=document.getElementById('plt-printful');
+  if(plt){plt.className='plt '+(d.ok?'ok':'warn');fe('plt-printful-s',d.ok?'✅ Sync':'⚠️');}
+}
+
+async function loadTikTok(){
+  const d=await get('/api/tiktok/analytics');
+  if(d&&d.configured){
+    fe('tt-status','✅ Verbunden');fe('tt-revenue','€'+(d.revenue_30d_eur||0).toFixed(0));
+    const badge=document.getElementById('tt-badge');if(badge)badge.textContent='LIVE';
+    const plt=document.getElementById('plt-tiktok');if(plt){plt.className='plt ok';fe('plt-tiktok-s','✅ Live');}
+  }else{
+    fe('tt-status','⚠️ Setup nötig');
+    const plt=document.getElementById('plt-tiktok');if(plt){plt.className='plt warn';fe('plt-tiktok-s','⚠️ Setup');}
   }
-  const tokenEl = document.getElementById('token-status');
-  const tok = await apiGet('/api/quantum/token-check');
-  if (tok && tokenEl) {
-    const platforms = tok.platforms || {};
-    tokenEl.innerHTML = Object.entries(platforms).map(([k,v]) =>
-      `<div style="display:flex;justify-content:space-between;padding:3px 0">
-        <span style="text-transform:capitalize">${k}</span>
-        <span class="${v.ok||v.valid?'':''}"><span class="dot ${v.ok||v.valid?'dot-green':'dot-red'}"></span>${v.ok||v.valid?'OK':'Fehlt'}</span>
-      </div>`
-    ).join('');
+  const tr=await get('/api/trends/latest');
+  if(tr){fe('tr-source',tr.source||'—');fe('tr-last',tr.last_run||'pending');}
+}
+
+async function loadFiverr(){
+  const d=await get('/api/fiverr/status');if(!d)return;
+  if(d.connected){
+    fe('fvr-gigs',(d.gigs_count||0)+' Gigs');fe('fvr-earnings','$'+(d.earnings_month||0).toFixed(0));
+    const badge=document.getElementById('fvr-badge');if(badge)badge.textContent='LIVE';
+    const plt=document.getElementById('plt-fiverr');if(plt){plt.className='plt ok';fe('plt-fiverr-s','✅ Verbunden');}
+  }else{
+    const plt=document.getElementById('plt-fiverr');if(plt){plt.className='plt warn';fe('plt-fiverr-s','⚠️ Setup');}
   }
 }
 
-async function refreshQuantumErrors() {
-  const d = await apiGet('/api/quantum/self-repair/errors');
-  const list = document.getElementById('q-error-list');
-  if (!d || !d.errors || d.errors.length === 0) {
-    list.innerHTML = '<div class="no-errors">✅ Keine aktiven Fehler — System gesund</div>';
-  } else {
-    list.innerHTML = d.errors.slice(0,10).map(e =>
-      `<div class="error-item">[${e.module||'?'}] ${e.error_msg?.substring(0,80)||'?'}</div>`
-    ).join('');
+async function loadUpwork(){
+  const d=await get('/api/upwork/status');if(!d)return;
+  if(d.connected){
+    fe('upw-contracts',(d.active_contracts||0)+' aktiv');fe('upw-earnings','$'+(d.earnings_month||0).toFixed(0));
+    const plt=document.getElementById('plt-upwork');if(plt){plt.className='plt ok';fe('plt-upwork-s','✅ OAuth OK');}
+  }else{
+    const plt=document.getElementById('plt-upwork');if(plt){plt.className='plt warn';fe('plt-upwork-s','⚠️ OAuth');}
   }
 }
 
-async function refreshQuantumReport() {
-  const d = await apiGet('/api/quantum/self-repair/report');
-  const box = document.getElementById('res-improve');
-  if (box && d) { box.textContent = JSON.stringify(d, null, 2); box.classList.add('show'); }
+async function loadEbay(){
+  const d=await get('/api/ebay/status');if(!d)return;
+  fe('ebay-status',d.configured?'✅ App ID gesetzt':'⚠️ EBAY_APP_ID fehlt');
+  fe('ebay-epn',d.epn_active?'✅ EPN aktiv':'⚠️ Campaign ID');
+  const badge=document.getElementById('ebay-badge');if(badge){badge.textContent=d.configured?'AKTIV':'SETUP';}
+  const plt=document.getElementById('plt-ebay');if(plt){plt.className='plt '+(d.configured?'ok':'warn');fe('plt-ebay-s',d.configured?'✅ API':'⚠️ Setup');}
 }
 
-// ── BRUTUS ────────────────────────────────────────────────────────────────────
-async function refreshBrutus() {
-  const d = await apiGet('/api/brutus/status');
-  const el = document.getElementById('brutus-status');
-  if (!d || !el) return;
-  const channels = d.channels || {};
-  el.innerHTML = `<b>Version ${d.version||'2.0'}</b> · <span class="badge badge-green">Aktiv</span><br><br>` +
-    Object.entries(channels).map(([k,v]) =>
-      `<span><span class="dot ${v.active?'dot-green':'dot-grey'}"></span>${v.label||k}</span>&nbsp;&nbsp;`
-    ).join('');
+async function loadRSS(){
+  const d=await get('/api/rss/status');if(!d)return;
+  fe('rss-status',(d.articles||d.count||7)+' Artikel → feed.rss');
 }
 
-// ── PLATFORMS ─────────────────────────────────────────────────────────────────
-const PLATFORMS = [
-  { name:'Stripe', icon:'💳', ep:'/api/stripe/status', action:'/api/stripe/billing-check', label:'Billing Check' },
-  { name:'Gumroad', icon:'🟠', ep:'/api/gumroad/status', action:null },
-  { name:'Printify', icon:'🖨️', ep:'/api/printify/status', action:null },
-  { name:'Amazon', icon:'📦', ep:'/api/amazon/status', action:'/api/affiliate/blast-all', label:'Blast' },
-  { name:'eBay', icon:'🏷️', ep:'/api/ebay/status', action:null },
-  { name:'Pinterest', icon:'📌', ep:'/api/pinterest/status', action:null },
-  { name:'Fiverr', icon:'🟢', ep:'/api/fiverr/status', action:'/api/fiverr/cycle', label:'Zyklus' },
-  { name:'TikTok', icon:'🎵', ep:'/api/tiktok/status', action:'/api/tiktok/cycle', label:'Zyklus' },
-  { name:'YouTube', icon:'▶️', ep:'/api/youtube/status', action:'/api/youtube/trends', label:'Trends' },
-  { name:'DS24', icon:'💰', ep:'/api/ds24/status', action:'/api/ds24/affiliate/blast-all', label:'Blast' },
-  { name:'Shopify', icon:'🛍️', ep:'/api/shopify/status', action:'/api/shopify/create-1000', label:'1000' },
-  { name:'Mailchimp', icon:'🐵', ep:'/api/mailchimp/status', action:'/api/mailchimp/mass-create', label:'200 Kampagnen' },
-  { name:'Klaviyo', icon:'📧', ep:'/api/klaviyo/status', action:'/api/klaviyo/mass-create', label:'200 Kampagnen' },
-];
-
-async function loadPlatforms() {
-  const grid = document.getElementById('platform-grid');
-  grid.innerHTML = PLATFORMS.map((p,i) =>
-    `<div class="platform-card" id="pc-${i}">
-      <div class="platform-name"><span>${p.icon}</span>${p.name}<span class="dot dot-grey" id="pd-${i}"></span></div>
-      <div class="platform-status" id="ps-${i}">Prüfe...</div>
-      ${p.action ? `<button class="btn btn-sm btn-primary" style="margin-top:6px" onclick="apiPost('${p.action}',this)">${p.label||'Starten'}</button>` : ''}
-    </div>`
-  ).join('');
-
-  await Promise.all(PLATFORMS.map(async (p,i) => {
-    const d = await apiGet(p.ep);
-    const dot = document.getElementById('pd-'+i);
-    const status = document.getElementById('ps-'+i);
-    if (!d) { if(dot) dot.className='dot dot-red'; if(status) status.textContent='Fehler'; return; }
-    const ok = d.ok || d.status === 'ok' || d.active || d.connected;
-    if(dot) dot.className = 'dot ' + (ok ? 'dot-green' : 'dot-yellow');
-    if(status) status.textContent = ok ? 'Aktiv ✅' : 'Teilweise';
-  }));
+async function loadTasks(){
+  const d=await get('/api/scheduler/status');if(!d)return;
+  const total=d.total_tasks||d.task_count||0;
+  fe('sched-total',total+' Tasks');fe('task-count',total+'');
+  fe('sched-runs',(d.total_runs||0)+' gesamt');fe('h-tasks',total+'');
 }
 
-// ── DANKESEITE TEST ───────────────────────────────────────────────────────────
-async function testDankeseite(btn) {
-  btn.classList.add('loading');
-  const r = await fetch('/api/ds24/dankeseite?key=O5jqklqAcxTvkKHp0rvn&order_id=TEST001&product_name=Test', {method:'GET'});
-  btn.classList.remove('loading');
-  if (r.ok) { btn.classList.add('btn-success'); toast(true, 'Dankeseite HTTP 200 ✅'); }
-  else { btn.classList.add('btn-error'); toast(false, 'HTTP ' + r.status); }
-  setTimeout(() => btn.classList.remove('btn-success','btn-error'), 3000);
+async function fireAll(){
+  toast('🔥 ALLE KANÄLE STARTEN...','info');
+  addLog('🔥 FIRE ALL — 13 Revenue Streams parallel','i');
+  const streams=[
+    ['shopify-blog','POST','/api/shopify/blog'],['klaviyo','POST','/api/klaviyo/run'],
+    ['mailchimp','POST','/api/mailchimp/run'],['ds24','POST','/api/ds24/run'],
+    ['tiktok','POST','/api/tiktok/run'],['fiverr','POST','/api/fiverr/run'],
+    ['ebay','POST','/api/ebay/run'],['printify','POST','/api/printify/autopublish'],
+    ['printful','POST','/api/printful/sync'],['rss','POST','/api/rss/run'],
+    ['indexnow','POST','/api/indexnow/blast'],['seo','POST','/api/shopify/seo'],
+    ['pipeline','POST','/api/pipeline/run'],
+  ];
+  streams.forEach(([id,method,path],i)=>setTimeout(()=>fire(id,method,path),i*200));
+}
+function launchMarketing(){fire('klaviyo','POST','/api/klaviyo/run');fire('mailchimp','POST','/api/mailchimp/run');fire('rss','POST','/api/rss/run');}
+function launchSEO(){fire('indexnow','POST','/api/indexnow/blast');fire('seo','POST','/api/shopify/seo');}
+
+async function refreshAll(){
+  document.getElementById('last-refresh').textContent=new Date().toLocaleTimeString('de-AT');
+  loadHealth();loadRevenue();loadQuantum();loadSystemInfo();
+  loadDS24();loadShopify();loadKlaviyo();loadMailchimp();
+  loadPrintify();loadPrintful();loadStripe();
+  loadTikTok();loadFiverr();loadUpwork();loadEbay();
+  loadTasks();loadRSS();
 }
 
-// ── FIRE ALL ──────────────────────────────────────────────────────────────────
-const FIRE_ENDPOINTS = [
-  ['/api/ds24/create-1000','f1'],
-  ['/api/ds24/refill','f2'],
-  ['/api/ds24/affiliate/blast-all','f3'],
-  ['/api/ds24/marketplace/cycle','f4'],
-  ['/api/ds24/seo-blast','f5'],
-  ['/api/shopify/create-1000','f6'],
-  ['/api/klaviyo/mass-create','f7'],
-  ['/api/mailchimp/mass-create','f8'],
-  ['/api/email/daily-blast','f9'],
-  ['/api/traffic/mega-blast','f10'],
-  ['/api/seo/blast','f11'],
-  ['/api/affiliate/blast-all','f12'],
-  ['/api/bundles/create','f13'],
-  ['/api/sort/all','f14'],
-  ['/api/pipeline/run','f15'],
-  ['/api/revenue/daily-report','f16'],
-  ['/api/revenue/milestone-check','f17'],
-  ['/api/stripe/billing-check','f18'],
-  ['/api/quantum/self-repair/heal','f19'],
-  ['/api/quantum/self-repair/heal','f20'],
-  ['/api/quantum/token-check','f21'],
-];
-
-async function fireAll(btn) {
-  btn.classList.add('loading');
-  const log = document.getElementById('fire-log');
-  log.textContent = '';
-  let ok = 0, fail = 0;
-
-  await Promise.all(FIRE_ENDPOINTS.map(async ([ep, dotId]) => {
-    const dot = document.getElementById(dotId);
-    if(dot) dot.className = 'dot dot-yellow';
-    try {
-      const d = await apiCall('POST', ep);
-      const success = d.ok || d.status === 'ok' || d.status === 'started' || d.action;
-      if(dot) dot.className = 'dot ' + (success ? 'dot-green' : 'dot-red');
-      const line = document.createElement('div');
-      line.style.color = success ? 'var(--green)' : 'var(--red)';
-      line.textContent = (success ? '✅ ' : '❌ ') + ep + ' — ' + (d.message || d.action || d.error || JSON.stringify(d).substring(0,60));
-      log.appendChild(line);
-      if(success) ok++; else fail++;
-    } catch(e) {
-      if(dot) dot.className = 'dot dot-red';
-      const line = document.createElement('div');
-      line.style.color = 'var(--red)';
-      line.textContent = '❌ ' + ep + ' — ' + e.message;
-      log.appendChild(line);
-      fail++;
-    }
-  }));
-
-  btn.classList.remove('loading');
-  const summary = document.createElement('div');
-  summary.style.cssText = 'margin-top:8px;font-weight:800;font-size:13px;color:var(--green)';
-  summary.textContent = `🚀 FERTIG: ${ok} gestartet · ${fail} Fehler`;
-  log.appendChild(summary);
-  toast(fail === 0, `${ok}/${FIRE_ENDPOINTS.length} Systeme gestartet`);
-}
-
-// ── AUTO REFRESH ──────────────────────────────────────────────────────────────
-async function refreshAll() {
-  await refreshHeader();
-}
-
+// INIT
+addLog('⚡ BullPower MEGA v6 — Quantum Dashboard geladen','i');
 refreshAll();
-setInterval(refreshAll, 30000);
+setInterval(refreshAll,60000);
+setInterval(loadTasks,120000);
 </script>
 </body>
 </html>
