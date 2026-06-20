@@ -2270,6 +2270,33 @@ async def task_multi_platform_post() -> str:
         return f"Multi-platform post error: {e}"
 
 
+# ── DS24 FULL AUTO ───────────────────────────────────────────────────────────
+
+async def task_ds24_traffic() -> str:
+    """DS24 Affiliate Traffic — postet auf Telegram, Blog, Mailchimp, Klaviyo"""
+    try:
+        from modules.ds24_traffic_engine import run_ds24_traffic
+        r = await run_ds24_traffic()
+        return (f"DS24 Traffic: {r.get('products_found',0)} Produkte | "
+                f"TG:{r.get('telegram_sent',0)} Blog:{r.get('blog_posts',0)} "
+                f"Mail:{r.get('emails_sent',0)}")
+    except Exception as e:
+        return f"DS24 Traffic error: {e}"
+
+async def task_ds24_auto_fill() -> str:
+    """DS24 Account prüfen + automatisch befüllen wenn leer"""
+    try:
+        from modules.ds24_auto_fill import run_ds24_auto_fill
+        r = await run_ds24_auto_fill()
+        status = r.get("account_status", {})
+        actions = r.get("actions", [])
+        return (f"DS24 AutoFill: {status.get('approved_products',0)} approved | "
+                f"affiliates:{r.get('affiliate_products',[]) and len(r.get('affiliate_products',[])) or 0} | "
+                f"packages:{r.get('generated_packages',0)} | actions:{','.join(actions)}")
+    except Exception as e:
+        return f"DS24 AutoFill error: {e}"
+
+
 # ── ADS ENGINE ────────────────────────────────────────────────────────────────
 
 async def task_ads_performance_monitor() -> str:
