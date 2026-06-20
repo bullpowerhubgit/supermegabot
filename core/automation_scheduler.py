@@ -4074,6 +4074,44 @@ async def task_ds24_marketplace_cycle() -> str:
         return f"DS24 Marketplace error: {e}"
 
 
+async def task_quantum_heal() -> str:
+    """Stündlich: System analysieren, Circuits heilen, KI-Fixes generieren."""
+    try:
+        from modules.quantum_self_improver import quantum_heal_system
+        r = await quantum_heal_system()
+        healed = len(r.get("circuits_healed", []))
+        fixes  = r.get("fixes_generated", 0)
+        return f"Quantum Heal: {healed} Circuits geheilt, {fixes} Fixes generiert"
+    except Exception as e:
+        return f"Quantum Heal error: {e}"
+
+
+async def task_token_health_check() -> str:
+    """Stündlich: Alle Tokens prüfen + abgelaufene refreshen."""
+    try:
+        from modules.auto_token_refresher import run_token_health_check
+        r = await run_token_health_check()
+        ok_count = r.get("ok_count", 0)
+        failed   = r.get("failed", [])
+        fail_str = ", ".join(failed) if failed else "keine"
+        return f"Token Check: {ok_count} OK, fehlgeschlagen: {fail_str}"
+    except Exception as e:
+        return f"Token Check error: {e}"
+
+
+async def task_quantum_weekly() -> str:
+    """Wöchentlich: Self-Improvement Report generieren + Telegram senden."""
+    try:
+        from modules.quantum_self_improver import self_improvement_report
+        r = await self_improvement_report()
+        return (
+            f"Quantum Report: Woche {r.get('week','?')} — "
+            f"{r.get('resolved',0)} behoben, {r.get('open',0)} offen"
+        )
+    except Exception as e:
+        return f"Quantum Weekly error: {e}"
+
+
 async def task_product_bundles() -> str:
     """Täglich: 3er+5er Shopify-Bundles erstellen + blasten."""
     try:
@@ -4419,6 +4457,20 @@ async def task_bundle_creation_cycle() -> str:
         return f"BundleCycle Fehler: {e}"
 
 
+async def task_autonomous_pipeline() -> str:
+    """Täglich: vollautonome Pipeline — generieren → sortieren → bundeln → blasten → Stripe."""
+    try:
+        from modules.autonomous_pipeline import run_pipeline_cycle
+        r = await run_pipeline_cycle()
+        return (
+            f"Pipeline: {r.get('generated',0)} generiert, "
+            f"{r.get('sorted',0)} sortiert, {r.get('bundled',0)} Bundles, "
+            f"{r.get('blasted',0)} geblastet, {r.get('payment_links',0)} Stripe-Links"
+        )
+    except Exception as e:
+        return f"Pipeline Fehler: {e}"
+
+
 async def task_quantum_self_repair() -> str:
     """Every 30min — scan all API endpoints, detect + log errors, auto-fix via Claude."""
     try:
@@ -4721,6 +4773,10 @@ TASKS = [
     ("ds24_affiliate_hourly",    task_ds24_affiliate_hourly,    3600,   180), # stündlich — 3 Affiliate-Produkte blasten
     ("ds24_affiliate_daily",     task_ds24_affiliate_daily,    86400, 18400), # täglich — alle 22 Produkte blasten
     ("ds24_marketplace_cycle",   task_ds24_marketplace_cycle,  86400, 19800), # täglich — Marktplatz scan+apply+blast
+    # ── QUANTUM SELF-REPAIR ───────────────────────────────────────────────────────
+    ("quantum_heal",             task_quantum_heal,              3600, 19850), # stündlich — Circuits heilen + KI-Fixes
+    ("token_health_check",       task_token_health_check,        3600, 19860), # stündlich — Tokens prüfen + refreshen
+    ("quantum_weekly",           task_quantum_weekly,          604800, 19870), # wöchentlich — Self-Improvement Report
     ("product_bundles",          task_product_bundles,          86400, 20000), # täglich — Bundles erstellen+blasten
     ("stripe_billing_check",     task_stripe_billing_check,     86400, 20200), # täglich — Subscriptions prüfen
     ("auto_sort",                task_auto_sort,                21600, 20400), # 6h — Shopify+DS24+Klaviyo sortieren
@@ -4782,6 +4838,8 @@ TASKS = [
     ("quantum_self_repair",      task_quantum_self_repair,      1800,    60), # 30min — Self-Healing AI
     # ── QUANTUM SELF-IMPROVE — täglich Pattern-Analyse + Modul-Verbesserung ──
     ("quantum_self_improve",     task_quantum_self_improve,    86400, 22600), # täglich — KI-Selbstverbesserung
+    # ── VOLLAUTONOME PIPELINE — täglich generieren/sortieren/bundeln/blasten ──
+    ("autonomous_pipeline",      task_autonomous_pipeline,      86400, 23000), # täglich — volle Pipeline
 ]
 
 

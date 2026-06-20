@@ -6439,6 +6439,56 @@ async def handle_ds24_marketplace_stats(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_quantum_status(request: web.Request) -> web.Response:
+    """GET /api/quantum/status — System-Gesundheit + Fehler-Übersicht."""
+    try:
+        from modules.quantum_self_improver import get_quantum_status
+        return web.json_response(await get_quantum_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_quantum_heal(request: web.Request) -> web.Response:
+    """POST /api/quantum/heal — Quantum-Heilung starten (background)."""
+    asyncio.get_event_loop().create_task(_quantum_heal_bg())
+    return web.json_response({"ok": True, "message": "Quantum Heal gestartet (background)"})
+
+
+async def _quantum_heal_bg() -> None:
+    try:
+        from modules.quantum_self_improver import quantum_heal_system
+        await quantum_heal_system()
+    except Exception as e:
+        log.warning("Quantum heal bg error: %s", e)
+
+
+async def handle_quantum_errors(request: web.Request) -> web.Response:
+    """GET /api/quantum/errors — Alle Fehler + Patterns."""
+    try:
+        from modules.quantum_self_improver import get_all_errors
+        return web.json_response(await get_all_errors())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_quantum_report(request: web.Request) -> web.Response:
+    """GET /api/quantum/report — Verbesserungs-Report."""
+    try:
+        from modules.quantum_self_improver import self_improvement_report
+        return web.json_response(await self_improvement_report())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_quantum_token_check(request: web.Request) -> web.Response:
+    """POST /api/quantum/token-check — Alle Tokens prüfen + refreshen."""
+    try:
+        from modules.auto_token_refresher import run_token_health_check
+        return web.json_response(await run_token_health_check())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_ds24_refill(request: web.Request) -> web.Response:
     """POST /api/ds24/refill — Autonomer Refill auf 1000 aktive Produkte (background)."""
     try:
@@ -6853,10 +6903,10 @@ async def handle_affiliate_run(req: web.Request) -> web.Response:
     return await _trigger_task("affiliate_mega_blast", background=True)
 
 async def handle_klaviyo_run(req: web.Request) -> web.Response:
-    return await _trigger_task("klaviyo_mass_daily")
+    return await _trigger_task("klaviyo_mass_daily", background=True)
 
 async def handle_mailchimp_run(req: web.Request) -> web.Response:
-    return await _trigger_task("mailchimp_mass_daily")
+    return await _trigger_task("mailchimp_mass_daily", background=True)
 
 async def handle_ds24_run(req: web.Request) -> web.Response:
     return await _trigger_task("ds24_affiliate_daily")
@@ -8057,6 +8107,12 @@ async def create_app():
     app.router.add_post("/api/ds24/marketplace/cycle",     handle_ds24_marketplace_cycle)
     app.router.add_post("/api/ds24/marketplace/blast",     handle_ds24_marketplace_blast)
     app.router.add_get( "/api/ds24/marketplace/stats",     handle_ds24_marketplace_stats)
+    # ── Quantum Self-Repair System ────────────────────────────────────────────────
+    app.router.add_get( "/api/quantum/status",             handle_quantum_status)
+    app.router.add_post("/api/quantum/heal",               handle_quantum_heal)
+    app.router.add_get( "/api/quantum/errors",             handle_quantum_errors)
+    app.router.add_get( "/api/quantum/report",             handle_quantum_report)
+    app.router.add_post("/api/quantum/token-check",        handle_quantum_token_check)
 
     # ── Traffic Mega Engine ───────────────────────────────────────────────────
     app.router.add_post("/api/traffic/mega-blast",       handle_traffic_mega_blast)
@@ -8227,6 +8283,8 @@ async def create_app():
     app.router.add_post("/api/product/pipeline/run",      handle_product_pipeline_run)
     app.router.add_get( "/api/product/pipeline/history",  handle_product_pipeline_history)
     app.router.add_post("/api/product/bundle/run",        handle_bundle_cycle_run)
+    app.router.add_post("/api/pipeline/run",              handle_autonomous_pipeline_run)
+    app.router.add_get( "/api/pipeline/status",          handle_autonomous_pipeline_status)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
