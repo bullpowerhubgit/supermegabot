@@ -547,6 +547,30 @@ async def task_gumroad_sync() -> str:
         return f"Fehler: {e}"
 
 
+async def task_fiverr_sync() -> str:
+    """Sync Fiverr stats + BRUTUS traffic for gig keywords."""
+    try:
+        from modules.fiverr_client import get_stats
+        r = await get_stats()
+        if not r.get("connected"):
+            return f"Fiverr: {r.get('error','FIVERR_API_KEY not set')}"
+        return f"Fiverr: {r.get('active_orders',0)} orders, ${r.get('earnings_month',0):.0f}/mo, {r.get('gigs_count',0)} gigs"
+    except Exception as e:
+        return f"Fiverr sync error: {e}"
+
+
+async def task_upwork_sync() -> str:
+    """Sync Upwork contracts + earnings."""
+    try:
+        from modules.upwork_client import get_stats
+        r = await get_stats()
+        if not r.get("connected"):
+            return f"Upwork: {r.get('error','UPWORK_ACCESS_TOKEN not set')} — visit /api/upwork/auth"
+        return f"Upwork: {r.get('active_contracts',0)} contracts, ${r.get('earnings_month',0):.0f}/mo"
+    except Exception as e:
+        return f"Upwork sync error: {e}"
+
+
 async def task_shopify_orders_alert() -> str:
     """Check for new Shopify orders every 10 min and alert via Telegram."""
     try:
@@ -2945,6 +2969,8 @@ TASKS = [
     ("pod_autofulfill",         task_pod_autofulfill,         1800,   50),   # 30 min
     ("etsy_sync",               task_etsy_sync,               1800,   60),   # 30 min
     ("gumroad_sync",            task_gumroad_sync,            1800,   75),   # 30 min
+    ("fiverr_sync",             task_fiverr_sync,             3600,  12700), # 1h — Fiverr orders + earnings
+    ("upwork_sync",             task_upwork_sync,             3600,  12800), # 1h — Upwork contracts + earnings
     ("digistore_products_check",task_digistore_products_check,1800,   85),   # 30 min
     # ── Marketing & Sync (hourly) ─────────────────────────────────────────────
     ("ds24_funnel_sync",         task_ds24_funnel_sync,        900,    35),   # 15 min — neue Käufer sofort
