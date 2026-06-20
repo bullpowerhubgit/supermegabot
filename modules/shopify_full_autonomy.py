@@ -85,22 +85,23 @@ async def _ai(prompt: str, max_tokens: int = 500) -> str:
 
 
 async def _all_products(limit: int = 250) -> list:
-    """Alle Shopify-Produkte laden (paginiert)."""
+    """Alle Shopify-Produkte laden (paginiert via since_id)."""
     products = []
-    page_info = None
+    since_id = None
     while True:
         params = {"limit": limit, "status": "any"}
-        if page_info:
-            params = {"limit": limit, "page_info": page_info}
+        if since_id:
+            params["since_id"] = since_id
         data = await _get("products.json", params)
         batch = data.get("products", [])
+        if not batch:
+            break
         products.extend(batch)
         if len(batch) < limit:
             break
-        # Pagination via Link header würde aiohttp brauchen — vereinfacht: stoppe bei 1000
-        if len(products) >= 1000:
+        since_id = batch[-1]["id"]
+        if len(products) >= 2000:
             break
-        break  # REST API gibt max 250 ohne Link header zurück — GraphQL für mehr
     return products
 
 
@@ -595,7 +596,7 @@ Antworte NUR mit diesem JSON:
                 continue
             data = json.loads(raw[start:end])
 
-            # Bild von Pexels holen
+            # Bild holen: Pexels → Unsplash → LoremFlickr (kein Key nötig)
             image_url = ""
             pexels_key = os.getenv("PEXELS_API_KEY", "")
             img_query = data.get("image_query", keyword)
@@ -615,7 +616,6 @@ Antworte NUR mit diesem JSON:
                 except Exception:
                     pass
 
-            # Fallback: Unsplash
             if not image_url:
                 unsplash_key = os.getenv("UNSPLASH_ACCESS_KEY", "")
                 if unsplash_key:
@@ -633,6 +633,11 @@ Antworte NUR mit diesem JSON:
                             image_url = results[0]["urls"]["small"]
                     except Exception:
                         pass
+
+            # LoremFlickr fallback — kein API Key, keyword-basiert, kostenlos
+            if not image_url:
+                safe_q = img_query.replace(" ", ",")[:60]
+                image_url = f"https://loremflickr.com/640/640/{safe_q}"
 
             # Shopify Produkt erstellen
             product_payload = {
@@ -690,8 +695,7 @@ async def fix_missing_images(limit: int = 30) -> dict:
 
     pexels_key = os.getenv("PEXELS_API_KEY", "")
     unsplash_key = os.getenv("UNSPLASH_ACCESS_KEY", "")
-    if not pexels_key and not unsplash_key:
-        return {"ok": False, "error": "no image API key (PEXELS_API_KEY or UNSPLASH_ACCESS_KEY)"}
+    # LoremFlickr funktioniert immer — kein Key nötig
 
     fixed = 0
     try:
@@ -701,7 +705,6 @@ async def fix_missing_images(limit: int = 30) -> dict:
 
         for p in no_image[:limit]:
             title = p.get("title", "product")
-            # Englischen Suchbegriff ableiten
             search_q = title[:50]
 
             image_url = ""
@@ -737,12 +740,16 @@ async def fix_missing_images(limit: int = 30) -> dict:
                 except Exception:
                     pass
 
-            if image_url:
-                await _post(f"products/{p['id']}/images.json", {
-                    "image": {"src": image_url, "alt": f"{title}[:200]"}
-                })
-                fixed += 1
-                await asyncio.sleep(0.5)
+            # LoremFlickr fallback — immer verfügbar, kein Key
+            if not image_url:
+                safe_q = search_q.replace(" ", ",")[:60]
+                image_url = f"https://loremflickr.com/640/640/{safe_q}"
+
+            await _post(f"products/{p['id']}/images.json", {
+                "image": {"src": image_url, "alt": title[:200]}
+            })
+            fixed += 1
+            await asyncio.sleep(0.5)
 
         return {"ok": True, "fixed": fixed, "no_image_total": len(no_image)}
     except Exception as e:
