@@ -3087,6 +3087,49 @@ async def _twilio_send(to: str, body: str) -> bool:
     return False
 
 
+async def task_reddit_blast() -> str:
+    """Daily: Post DS24 affiliate content to relevant subreddits."""
+    try:
+        from modules.reddit_autoposter import run_reddit_blast
+        r = await run_reddit_blast()
+        return f"Reddit: {r.get('posted',0)}/{r.get('total',0)} posted"
+    except Exception as e:
+        return f"Reddit blast error: {e}"
+
+
+async def task_youtube_script_generator() -> str:
+    """Every 4h: generate YouTube video script, notify Telegram, post if OAuth active."""
+    try:
+        import random
+        from modules.ai_client import ai_complete
+        from modules.notify_hub import async_send_telegram
+        topics = [
+            "KI Income Machine — Wie ich mit KI passives Einkommen aufbaue",
+            "Shopify Automation 2026 — So läuft dein Store von selbst",
+            "5 KI-Tools die wirklich Geld verdienen — Meine Erfahrungen",
+            "Passives Einkommen Blueprint — Von 0 auf 5000€/Monat",
+        ]
+        topic = random.choice(topics)
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        prompt = (
+            f"Erstelle ein YouTube-Video-Skript zum Thema: '{topic}'\n"
+            f"Länge: 3-5 Minuten (500-700 Wörter). Struktur: Hook, Problem, Lösung, CTA.\n"
+            f"CTA: {link}\nSprache: Deutsch, motivierend."
+        )
+        script = await ai_complete(prompt, max_tokens=1000)
+        if script:
+            msg = f"🎬 *YouTube Script bereit:* {topic}\n\n{script[:600]}...\n\n🔗 {link}"
+            await async_send_telegram(msg)
+            try:
+                from modules.brutus_traffic_engine import deploy_to_youtube
+                await deploy_to_youtube(topic, {"youtube_desc": script[:900]})
+            except Exception:
+                pass
+        return f"YouTube script: '{topic[:50]}'"
+    except Exception as e:
+        return f"YouTube script error: {e}"
+
+
 async def task_whatsapp_daily_blast() -> str:
     """Daily WhatsApp promo blast to all configured recipients."""
     try:
@@ -3493,7 +3536,9 @@ TASKS = [
     ("discord_promo",          task_discord_promo,           21600, 12600), # 6h — Discord Promo Post
     ("discord_revenue",        task_discord_revenue_report,  86400, 12700), # daily — Discord Revenue Report
     # ── WHATSAPP AUTOMATION — Daily Promo Blast ──────────────────────────────
-    ("whatsapp_daily_blast",   task_whatsapp_daily_blast,    86400, 14000), # daily — WA Promo Blast
+    ("whatsapp_daily_blast",      task_whatsapp_daily_blast,      86400, 14000), # daily — WA Promo Blast
+    ("reddit_blast",              task_reddit_blast,              86400, 14500), # daily — Reddit affiliate posts
+    ("youtube_script_generator",  task_youtube_script_generator,  14400, 14600), # 4h — YouTube script + Telegram notify
     # ── TWILIO SMS AUTOMATION — Revenue Alerts + Morning Brief + Stripe ───────
     ("twilio_morning_brief",   task_twilio_morning_brief,    86400,    60),  # daily — Morgen-Briefing SMS
     ("twilio_revenue_alert",   task_twilio_revenue_alert,    14400,   130),  # 4h — neue Orders → SMS
