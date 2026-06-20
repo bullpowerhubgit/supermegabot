@@ -521,10 +521,26 @@ async def announce_new_products(products: list) -> dict:
 async def brutus_blast_for_tool(tool_name: str, tool_url: str, keywords: list = None) -> dict:
     """BRUTUS Traffic für ein spezifisches Tool/Modul — postet auf alle Kanäle."""
     try:
-        from modules.brutus_traffic_engine import run_brutus_swarm
-        kws = keywords or [f"{tool_name} automation", f"{tool_name} 2026", f"KI {tool_name}"]
-        result = await run_brutus_swarm(keywords=kws, max_keywords=len(kws))
+        from modules.brutus_traffic_engine import brutus_run
+        niche = f"{tool_name} automation {keywords[0] if keywords else '2026'}"
+        result = await brutus_run(niche=niche, custom_keywords=keywords)
         return result
     except Exception as e:
         log.debug("BRUTUS blast error for %s: %s", tool_name, e)
-        return {}
+        # Fallback: direct Telegram post
+        try:
+            import aiohttp as _ah
+            tg_tok  = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+            if tg_tok and tg_chat and tool_url:
+                msg = f"🚀 {tool_name}\n\n👉 {tool_url}"
+                async with _ah.ClientSession() as s:
+                    async with s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                        json={"chat_id": tg_chat, "text": msg},
+                        timeout=_ah.ClientTimeout(total=8)) as r:
+                        d = await r.json(content_type=None)
+                if d.get("ok"):
+                    return {"channels_hit": 1, "content_pieces": 1}
+        except Exception:
+            pass
+        return {"channels_hit": 0, "content_pieces": 0}
