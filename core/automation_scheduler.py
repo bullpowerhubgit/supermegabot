@@ -2678,7 +2678,7 @@ async def task_brutus_ds24() -> str:
         link = (
             os.getenv("DS24_AFFILIATE_LINK")
             or os.getenv("AIITEC_AFFILIATE_URL")
-            or "https://www.digistore24.com/redir/669750/user37405262/"
+            or "https://ineedit.com.co"
         )
         r = await brutus_blast_for_tool("Digistore24", link,
             ["Digistore24 Affiliate 2026", "digitale Produkte verkaufen", "AI Income Machine"])

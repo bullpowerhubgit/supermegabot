@@ -921,7 +921,7 @@ async def auto_create_affiliate_blog_posts(count: int = 3) -> dict:
     ds24_link = (
         os.getenv("DS24_AFFILIATE_LINK")
         or os.getenv("AIITEC_AFFILIATE_URL")
-        or "https://www.digistore24.com/redir/669750/user37405262/"
+        or "https://ineedit.com.co"
     )
 
     topics = [
