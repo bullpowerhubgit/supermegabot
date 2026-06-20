@@ -728,3 +728,6 @@ if __name__ == "__main__":
             print(f"  [{icon}] {platform:12s}  {status['info']}")
 
     asyncio.run(_main())
+
+# Alias for backward compatibility
+InstagramConnector = MetaConnector
