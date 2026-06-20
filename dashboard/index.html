@@ -324,6 +324,64 @@ a{color:inherit;text-decoration:none}
   <div class="plt" id="plt-tiktok"><div class="plt-icon">🎵</div><div class="plt-name">TikTok Shop</div><div class="plt-status">…</div></div>
   <div class="plt" id="plt-amazon"><div class="plt-icon">📦</div><div class="plt-name">Amazon</div><div class="plt-status">…</div></div>
   <div class="plt" id="plt-ebay"><div class="plt-icon">🛒</div><div class="plt-name">eBay</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-twilio"><div class="plt-icon">📱</div><div class="plt-name">Twilio SMS</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-discord"><div class="plt-icon">🎮</div><div class="plt-name">Discord</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-brutus"><div class="plt-icon">🔥</div><div class="plt-name">BRUTUS Engine</div><div class="plt-status">AKTIV</div></div>
+</div>
+
+<!-- ═══════════════════ ROW: SYSTEM STATUS CARDS ═══════════════════ -->
+<div class="sect">🔌 System Integration Status</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:14px" id="sys-status-grid">
+  <div class="card" id="ssc-shopify" style="border-color:rgba(100,200,100,.2)">
+    <div class="card-t"><span class="i">🛍️</span> Shopify</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-shopify-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-shopify-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-ds24" style="border-color:rgba(100,200,100,.2)">
+    <div class="card-t"><span class="i">💰</span> Digistore24</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-ds24-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-ds24-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-klaviyo" style="border-color:rgba(100,200,100,.2)">
+    <div class="card-t"><span class="i">📧</span> Klaviyo</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-klaviyo-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-klaviyo-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-mailchimp" style="border-color:rgba(249,115,22,.2)">
+    <div class="card-t"><span class="i">🐒</span> Mailchimp</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-mailchimp-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-mailchimp-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-printful" style="border-color:rgba(100,200,100,.2)">
+    <div class="card-t"><span class="i">👕</span> Printful</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-printful-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-printful-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-linkedin" style="border-color:rgba(100,200,100,.2)">
+    <div class="card-t"><span class="i">💼</span> LinkedIn</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-linkedin-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-linkedin-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-twitter" style="border-color:rgba(100,200,100,.2)">
+    <div class="card-t"><span class="i">𝕏</span> Twitter/X</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-twitter-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-twitter-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-discord" style="border-color:rgba(100,200,100,.2)">
+    <div class="card-t"><span class="i">🎮</span> Discord</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-discord-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-discord-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-twilio" style="border-color:rgba(100,200,100,.2)">
+    <div class="card-t"><span class="i">📱</span> Twilio SMS</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700" id="ssc-twilio-st">…</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-twilio-detail">prüfe...</div>
+  </div>
+  <div class="card" id="ssc-brutus" style="border-color:rgba(16,185,129,.35)">
+    <div class="card-t"><span class="i">🔥</span> BRUTUS Traffic Engine</div>
+    <div style="margin-top:8px;font-size:13px;font-weight:700;color:var(--green)" id="ssc-brutus-st">AKTIV</div>
+    <div style="font-size:10px;color:var(--muted)" id="ssc-brutus-detail">Immer aktiv — alle Kanäle</div>
+  </div>
 </div>
 
 <!-- ═══════════════════ ROW: KPI STRIP ═══════════════════ -->
@@ -979,6 +1037,105 @@ async function loadRevenue() {
   addLog('Revenue: DS24 €'+ds24Total.toFixed(0)+' ('+ds24Orders+' Orders) | MRR €'+mrr.toFixed(0)+' | Shopify €'+shopRev.toFixed(0)+' | TOTAL €'+total.toFixed(0));
 }
 
+// ── SYSTEM INTEGRATION STATUS CARDS ──
+async function loadSystemStatusCards() {
+  function ssc(id, ok, label, detail, warnLabel) {
+    const card = document.getElementById('ssc-'+id);
+    const st = document.getElementById('ssc-'+id+'-st');
+    const det = document.getElementById('ssc-'+id+'-detail');
+    if (!card || !st) return;
+    if (ok === null) {
+      // warning/special state
+      st.textContent = warnLabel || 'PRÜFEN';
+      st.style.color = 'var(--yellow)';
+      card.style.borderColor = 'rgba(249,115,22,.4)';
+    } else if (ok) {
+      st.textContent = label || 'VERBUNDEN';
+      st.style.color = 'var(--green)';
+      card.style.borderColor = 'rgba(16,185,129,.35)';
+    } else {
+      st.textContent = label || 'NICHT KONFIGURIERT';
+      st.style.color = 'var(--red)';
+      card.style.borderColor = 'rgba(239,68,68,.25)';
+    }
+    if (det && detail) det.textContent = detail;
+  }
+  try {
+    const [shopify, ds24, klaviyo, mailchimp, printful, linkedin, oauth, twilio, discord] = await Promise.all([
+      get('/api/shopify/intelligence').catch(()=>null),
+      get('/api/digistore24/status').catch(()=>null),
+      get('/api/klaviyo/status').catch(()=>null),
+      get('/api/mailchimp/status').catch(()=>null),
+      get('/api/printful/status').catch(()=>null),
+      get('/api/linkedin/status').catch(()=>null),
+      get('/api/oauth/status').catch(()=>null),
+      get('/api/twilio/status').catch(()=>null),
+      get('/api/discord/status').catch(()=>null),
+    ]);
+
+    // Shopify
+    const shopOk = shopify && !shopify.error;
+    ssc('shopify', shopOk, shopOk ? 'VERBUNDEN' : 'KEIN TOKEN',
+      shopOk ? (shopify.orders_7d||0)+' Orders / 7 Tage' : 'SHOPIFY_ACCESS_TOKEN fehlt');
+
+    // Digistore24
+    const ds24ok = ds24 && (ds24.ok || ds24.configured || ds24.api_key_set);
+    ssc('ds24', ds24ok, ds24ok ? 'API AKTIV' : 'KEIN KEY', ds24ok ? 'AIITEC Konto verbunden' : 'DIGISTORE24_API_KEY fehlt');
+
+    // Klaviyo
+    const klOk = klaviyo && (klaviyo.connected || klaviyo.ok);
+    ssc('klaviyo', klOk, klOk ? 'AKTIV' : 'KEIN KEY',
+      klOk ? (klaviyo.profiles_total||klaviyo.total_profiles||0)+' Profile' : 'KLAVIYO_API_KEY fehlt');
+
+    // Mailchimp — show DISABLED in orange if account disabled
+    if (mailchimp && mailchimp.error && String(mailchimp.error).toLowerCase().includes('disabled')) {
+      ssc('mailchimp', null, 'DISABLED', 'Account deaktiviert — Konto prüfen', 'DISABLED');
+    } else {
+      const mcOk = mailchimp && (mailchimp.connected || mailchimp.ok);
+      ssc('mailchimp', mcOk, mcOk ? 'AKTIV' : 'KEIN KEY',
+        mcOk ? (mailchimp.member_count||mailchimp.subscribers||0)+' Abonnenten' : 'MAILCHIMP_API_KEY fehlt');
+    }
+
+    // Printful
+    const pfOk = printful && (printful.connected || printful.ok);
+    ssc('printful', pfOk, pfOk ? 'VERBUNDEN' : 'KEIN KEY',
+      pfOk ? (printful.sync_products||0)+' Produkte synced' : 'PRINTFUL_API_KEY fehlt');
+
+    // LinkedIn
+    const liOk = linkedin && (linkedin.connected || linkedin.ok);
+    ssc('linkedin', liOk, liOk ? 'TOKEN AKTIV' : 'TOKEN FEHLT',
+      liOk ? 'LinkedIn API verbunden' : 'LINKEDIN_ACCESS_TOKEN fehlt');
+
+    // Twitter/X
+    const twOk = oauth && oauth.twitter && oauth.twitter.configured;
+    ssc('twitter', twOk, twOk ? 'AKTIV' : 'KEIN TOKEN',
+      twOk ? 'X/Twitter API aktiv' : 'TWITTER_API_KEY fehlt');
+
+    // Discord
+    const dcOk = discord && (discord.ok || discord.configured);
+    ssc('discord', dcOk, dcOk ? 'VERBUNDEN' : 'KEIN TOKEN',
+      dcOk ? 'Discord Webhook aktiv' : 'DISCORD_WEBHOOK_URL fehlt');
+
+    // Twilio SMS
+    const twilioOk = twilio && twilio.configured;
+    const twilioDetail = twilio ? (twilio.has_from_number ? 'SID + Token + Nummer OK' : 'SID/Token OK, TWILIO_PHONE_NUMBER fehlt') : 'Nicht konfiguriert';
+    ssc('twilio', twilioOk, twilioOk ? 'AKTIV' : 'KEIN KEY', twilioDetail);
+
+    // Update platform grid badges for the new ones
+    const plt = (id, ok, label) => {
+      const e = document.getElementById(id);
+      if (!e) return;
+      e.className = 'plt ' + (ok === null ? 'warn' : ok ? 'ok' : 'warn');
+      const s = e.querySelector('.plt-status');
+      if (s) s.textContent = label;
+    };
+    plt('plt-twilio', twilioOk, twilioOk ? '✅ Aktiv' : '⚠️ Kein Key');
+    plt('plt-discord', dcOk, dcOk ? '✅ Webhook' : '⚠️ Kein Webhook');
+    plt('plt-brutus', true, '✅ Immer aktiv');
+
+  } catch(e) { console.warn('loadSystemStatusCards error:', e); }
+}
+
 // ── PLATFORM STATUS ──
 async function loadPlatforms() {
   try{
@@ -1505,6 +1662,7 @@ async function refreshAll() {
   loadTikTok();
   loadAmazon();
   loadEbay();
+  loadSystemStatusCards();
 }
 
 async function loadAmazon() {
@@ -1570,6 +1728,7 @@ loadUpwork();
 loadTikTok();
 loadAmazon();
 loadEbay();
+loadSystemStatusCards();
 addLog('Alle Systeme verbunden ✓','');
 
 setInterval(()=>{refreshAll();addLog('Auto-Refresh','')},60000);

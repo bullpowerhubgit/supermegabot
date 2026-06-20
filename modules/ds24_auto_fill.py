@@ -306,3 +306,48 @@ async def run_ds24_auto_fill():
     """Entry point für den Scheduler"""
     filler = DS24AutoFill()
     return await filler.run()
+
+
+async def run_with_brutus_traffic() -> dict:
+    """Run DS24 auto-fill and push generated packages via BrutusCore traffic engine.
+
+    This is the scheduler entry-point used by automation_scheduler.py.
+    Autonomously creates DS24 products/content and distributes via all channels.
+    """
+    result = await run_ds24_auto_fill()
+
+    # Trigger Brutus traffic blast for generated packages
+    packages = result.get("generated_packages", 0)
+    if packages and packages > 0:
+        try:
+            from modules.brutus_core import fire as brutus_fire
+            await brutus_fire(
+                title=f"Neu: {packages} DS24 Produkte automatisch erstellt!",
+                body=(
+                    "DS24-konforme Digitalprodukete — sofort verfuegbar. "
+                    "60-Tage Geld-zurueck-Garantie, kein Einkommensversprechen."
+                ),
+                link="https://www.digistore24.com",
+                niche="digitale produkte ki business software",
+                tags=["ds24", "digitalprodukt", "ki", "business", "automatisierung"]
+            )
+        except Exception as e:
+            logger.warning("Brutus traffic blast failed: %s", e)
+
+    # Also fire brutus for affiliate products found
+    affiliates = result.get("affiliate_products", [])
+    if affiliates:
+        try:
+            from modules.brutus_core import fire as brutus_fire
+            top = affiliates[0]
+            await brutus_fire(
+                title=f"Top Affiliate: {top.get('name', 'DS24 Produkt')}",
+                body=f"Provision: {top.get('commission_pct', 0)}% | Preis: €{top.get('price', '?')}",
+                link=top.get("affiliate_link", "https://www.digistore24.com"),
+                niche="affiliate marketing digitale produkte",
+                tags=["affiliate", "ds24", "provision", "passives-einkommen"]
+            )
+        except Exception as e:
+            logger.warning("Brutus affiliate blast failed: %s", e)
+
+    return result
