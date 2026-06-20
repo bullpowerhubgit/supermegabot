@@ -157,3 +157,6 @@ async def run_with_brutus_traffic() -> dict:
     except Exception as e:
         result["brutus_error"] = str(e)
     return result
+
+
+run_affiliate_blast = run_with_brutus_traffic
