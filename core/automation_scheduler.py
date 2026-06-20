@@ -4336,29 +4336,7 @@ async def task_revenue_mega_weekly() -> str:
         return f"RevenueMegaWeekly error: {e}"
 
 
-# ── Quantum Self-Repair + Self-Improvement Tasks ──────────────────────────────
-
-async def task_quantum_scan() -> str:
-    try:
-        from modules.quantum_self_fixer import run_full_scan
-        r = await run_full_scan()
-        return (f"QuantumScan: {r.get('total',0)} Endpoints | "
-                f"ok={r.get('ok',0)} err={r.get('errors',0)} | "
-                f"{r.get('fixed',0)} auto-fixes")
-    except Exception as e:
-        return f"QuantumScan error: {e}"
-
-
-async def task_quantum_repair() -> str:
-    try:
-        from modules.quantum_self_repair import run_quantum_scan
-        r = await run_quantum_scan()
-        return (f"QuantumRepair: {r.get('fixes_applied',0)} Fixes | "
-                f"patterns={r.get('patterns_found',0)} | "
-                f"improved={r.get('modules_improved',0)}")
-    except Exception as e:
-        return f"QuantumRepair error: {e}"
-
+# ── Quantum Self-Improvement (second module — ergänzt Fixer) ──────────────────
 
 async def task_quantum_self_improve() -> str:
     try:
@@ -4415,6 +4393,30 @@ async def task_upwork_proposal_gen() -> str:
         return f"Upwork Proposals: {r.get('proposals_generated',0)} generiert + via Telegram gesendet"
     except Exception as e:
         return f"Upwork Proposal Fehler: {e}"
+
+
+async def task_auto_product_pipeline() -> str:
+    """Täglich: Trend → Shopify/Gumroad Produkt erstellen → alle Kanäle blasten."""
+    try:
+        from modules.autonomous_product_pipeline import run_product_pipeline
+        r = await run_product_pipeline()
+        return (f"AutoPipeline: '{r.get('product','?')}' "
+                f"€{r.get('price_eur',0)} | Shopify={bool(r.get('shopify_url'))} "
+                f"Gumroad={bool(r.get('gumroad_url'))} | Kanäle: geblastet")
+    except Exception as e:
+        return f"AutoPipeline Fehler: {e}"
+
+
+async def task_bundle_creation_cycle() -> str:
+    """Alle 8h: Bestehende Produkte zu Bundles zusammenfassen + bewerben."""
+    try:
+        from modules.product_bundle_engine import run_bundle_cycle
+        r = await run_bundle_cycle()
+        return (f"BundleCycle: {r.get('bundles_created',0)} Bundles | "
+                f"{r.get('products_bundled',0)} Produkte | "
+                f"Discount: {r.get('discount_pct',0)}%")
+    except Exception as e:
+        return f"BundleCycle Fehler: {e}"
 
 
 async def task_quantum_self_repair() -> str:
@@ -4772,8 +4774,14 @@ TASKS = [
     ("fiverr_promo_cycle",       task_fiverr_promo_cycle,      21600, 22400), # 6h — Viral Promo
     # ── UPWORK PROPOSAL AUTO-GENERATOR — täglich KI-Proposals per Telegram ───
     ("upwork_proposal_gen",      task_upwork_proposal_gen,     86400, 22500), # täglich
+    # ── AUTONOMOUS PRODUCT PIPELINE — Trend→Produkt→Listen→Blasten→Verdienen ─
+    ("auto_product_pipeline",    task_auto_product_pipeline,   86400, 22600), # täglich
+    # ── BUNDLE CREATION CYCLE — Bestehende Produkte zu Bundles bündeln ───────
+    ("bundle_creation_cycle",    task_bundle_creation_cycle,   28800, 22700), # 8h
     # ── QUANTUM SELF-REPAIR — alle 30min alle Endpoints scannen + KI-Fix ─────
     ("quantum_self_repair",      task_quantum_self_repair,      1800,    60), # 30min — Self-Healing AI
+    # ── QUANTUM SELF-IMPROVE — täglich Pattern-Analyse + Modul-Verbesserung ──
+    ("quantum_self_improve",     task_quantum_self_improve,    86400, 22600), # täglich — KI-Selbstverbesserung
 ]
 
 

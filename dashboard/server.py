@@ -6972,6 +6972,39 @@ async def handle_auto_poster_run_alias(req):
     return await _trigger_task("mega_auto_post", background=True)
 
 
+# ── Autonomous Product Pipeline ───────────────────────────────────────────────
+
+async def handle_product_pipeline_run(req):
+    """POST /api/product/pipeline/run — manueller Trigger des Produkt-Pipelines."""
+    try:
+        body = await req.json() if req.content_length else {}
+    except Exception:
+        body = {}
+    niche = body.get("niche")
+    try:
+        from modules.autonomous_product_pipeline import run_product_pipeline
+        result = await run_product_pipeline(niche_override=niche)
+        return web.json_response(result)
+    except Exception as e:
+        log.exception("Product pipeline error")
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_product_pipeline_history(req):
+    """GET /api/product/pipeline/history — letzte Pipeline-Läufe."""
+    try:
+        from modules.autonomous_product_pipeline import get_pipeline_history
+        limit = int(req.rel_url.query.get("limit", 10))
+        return web.json_response({"ok": True, "history": await get_pipeline_history(limit)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_bundle_cycle_run(req):
+    """POST /api/product/bundle/run — Bundles aus bestehenden Produkten erstellen."""
+    return await _trigger_task("bundle_creation_cycle", background=True)
+
+
 # ── Quantum Self-Repair Engine ────────────────────────────────────────────────
 
 async def handle_quantum_status(req):
@@ -8143,6 +8176,10 @@ async def create_app():
     app.router.add_get( "/api/quantum/status",            handle_quantum_status)
     app.router.add_post("/api/quantum/scan",              handle_quantum_scan)
     app.router.add_post("/api/quantum/repair",            handle_quantum_repair)
+    # ── AUTONOMOUS PRODUCT PIPELINE ROUTES ───────────────────────────────────
+    app.router.add_post("/api/product/pipeline/run",      handle_product_pipeline_run)
+    app.router.add_get( "/api/product/pipeline/history",  handle_product_pipeline_history)
+    app.router.add_post("/api/product/bundle/run",        handle_bundle_cycle_run)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
