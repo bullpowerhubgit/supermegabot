@@ -286,7 +286,7 @@ def _build_html(template: dict, custom_body: str = "") -> str:
 
 
 async def create_campaign_from_template(tmpl: dict) -> dict:
-    """Erstellt eine Klaviyo-Kampagne aus Template."""
+    """Erstellt eine Klaviyo-Kampagne aus Template (2-step: create → add message)."""
     name    = tmpl["name"]
     subject = tmpl["subject"]
     theme   = tmpl.get("theme", "general")
@@ -302,7 +302,8 @@ Max 150 Wörter."""
     ai_body = await _ai(prompt, max_tokens=200)
     html = _build_html(tmpl, ai_body or "")
 
-    payload = {
+    # Step 1: Create bare campaign
+    campaign_payload = {
         "data": {
             "type": "campaign",
             "attributes": {
@@ -316,27 +317,40 @@ Max 150 Wörter."""
                     "is_tracking_opens": True,
                     "is_tracking_clicks": True,
                 },
-                "campaign-messages": [{
-                    "channel": "email",
-                    "label": name[:50],
-                    "content": {
-                        "subject": subject[:150],
-                        "preview_text": name[:80],
-                        "from_email": FROM_EMAIL,
-                        "from_label": "BullPowerHub",
-                        "body": html,
-                    },
-                }],
             },
         }
     }
 
-    result = await _kv_post("/campaigns/", payload)
-    cid = result.get("data", {}).get("id")
+    result = await _kv_post("/campaigns/", campaign_payload)
+    cid = (result.get("data") or {}).get("id")
     if not cid:
         return {"ok": False, "error": str(result.get("error", result))[:300]}
 
-    # Send immediately
+    # Step 2: Add campaign message
+    msg_payload = {
+        "data": {
+            "type": "campaign-message",
+            "attributes": {
+                "channel": "email",
+                "label": name[:50],
+                "content": {
+                    "subject": subject[:150],
+                    "preview_text": name[:80],
+                    "from_email": FROM_EMAIL,
+                    "from_label": "BullPowerHub",
+                    "body": html,
+                },
+            },
+            "relationships": {
+                "campaign": {"data": {"type": "campaign", "id": cid}},
+            },
+        }
+    }
+    msg_r = await _kv_post("/campaign-messages/", msg_payload)
+    # Message creation failure is non-fatal — campaign draft still exists
+    msg_ok = not msg_r.get("error")
+
+    # Step 3: Send immediately
     send_r = await _kv_post("/campaign-send-jobs/", {
         "data": {
             "type": "campaign-send-job",
