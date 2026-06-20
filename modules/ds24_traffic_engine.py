@@ -11,7 +11,9 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-DS24_KEY = os.getenv("DIGISTORE24_API_KEY", "")
+DS24_KEY         = os.getenv("DIGISTORE24_API_KEY", "")
+DS24_AFFILIATE_ID = os.getenv("DS24_AFFILIATE_ID", "user37405262")
+DS24_AIITEC_LINK  = lambda pid: f"https://www.digistore24.com/redir/{pid}/{DS24_AFFILIATE_ID}/"
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
@@ -42,7 +44,7 @@ DS24_KNOWN_PRODUCTS = [
         "commission_pct": 50,
         "price": "97",
         "niche": "affiliate",
-        "affiliate_link": "https://www.digistore24.com/redir/392814/bullpowerhubgit/"
+        "affiliate_link": "https://www.digistore24.com/redir/392814/user37405262/"
     },
     {
         "id": "561822",
@@ -50,7 +52,16 @@ DS24_KNOWN_PRODUCTS = [
         "commission_pct": 40,
         "price": "197",
         "niche": "ki",
-        "affiliate_link": "https://www.digistore24.com/redir/561822/bullpowerhubgit/"
+        "affiliate_link": "https://www.digistore24.com/redir/561822/user37405262/"
+    },
+    {
+        "id": "669750",
+        "name": "AI Income Machine",
+        "commission_pct": 50,
+        "price": "37",
+        "niche": "ki",
+        "emoji": "🤖",
+        "affiliate_link": "https://www.digistore24.com/redir/669750/user37405262/"
     },
 ]
 
@@ -101,7 +112,7 @@ class DS24TrafficEngine:
                                 "commission_pct": comm,
                                 "niche": niche["label"],
                                 "emoji": niche["emoji"],
-                                "affiliate_link": f"https://www.digistore24.com/redir/{p.get('id')}/{DS24_KEY.split('-')[0]}/",
+                                "affiliate_link": DS24_AIITEC_LINK(p.get('id')),
                             })
         except Exception as e:
             logger.warning(f"DS24 marketplace search failed: {e}")
@@ -221,35 +232,69 @@ JSON Format:
     async def send_klaviyo_campaign(self, product: dict, content: dict) -> bool:
         if not KLAVIYO_KEY or not KLAVIYO_LIST:
             return False
+        headers = {
+            "Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
+            "revision": "2024-10-15",
+            "Content-Type": "application/json",
+        }
+        link = product.get("affiliate_link", "")
+        subject = content.get("email_subject", f"Empfehlung: {product.get('name','')}")
+        html = (
+            f"<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>"
+            f"<h2>{subject}</h2>"
+            f"<p>{content.get('email_body','').replace(chr(10),'<br>')}</p>"
+            f"<p><a href='{link}' style='background:#7c3aed;color:#fff;padding:12px 24px;"
+            f"text-decoration:none;border-radius:6px'>👉 Jetzt ansehen</a></p>"
+            f"<hr><p><small>Rudolf | AIITEC | <a href='${{unsubscribe_link}}'>Abmelden</a></small></p>"
+            f"</body></html>"
+        )
         try:
-            # Track Event für alle Subscriber
+            # Create campaign
             async with self.session.post(
-                "https://a.klaviyo.com/api/events/",
-                headers={
-                    "Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
-                    "revision": "2024-10-15",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "data": {
-                        "type": "event",
-                        "attributes": {
-                            "metric": {"data": {"type": "metric", "attributes": {"name": "DS24 Promo Sent"}}},
-                            "properties": {
-                                "product_name": product.get("name"),
-                                "affiliate_link": product.get("affiliate_link"),
-                                "commission": product.get("commission_pct"),
-                                "email_subject": content.get("email_subject"),
-                            },
-                            "profile": {"data": {"type": "profile", "attributes": {"email": "bullpowersrtkennels@gmail.com"}}}
-                        }
-                    }
-                },
-                timeout=aiohttp.ClientTimeout(total=10)
+                "https://a.klaviyo.com/api/campaigns/",
+                headers=headers,
+                json={"data": {"type": "campaign", "attributes": {
+                    "name": f"DS24 Auto — {product.get('name','')[:30]} {datetime.utcnow().strftime('%m-%d')}",
+                    "channel": "email",
+                    "audiences": {"included": [KLAVIYO_LIST]},
+                    "send_options": {"use_smart_sending": True},
+                    "tracking_options": {"is_tracking_clicks": True, "is_tracking_opens": True},
+                    "send_strategy": {"method": "immediate"},
+                }}},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+            camp_id = d.get("data", {}).get("id", "")
+            if not camp_id:
+                logger.warning(f"Klaviyo campaign create failed: {d}")
+                return False
+
+            # Set message
+            async with self.session.post(
+                "https://a.klaviyo.com/api/campaign-messages/",
+                headers=headers,
+                json={"data": {"type": "campaign-message", "attributes": {
+                    "channel": "email",
+                    "content": {"subject": subject, "preview_text": subject[:80], "from_email": "bullpowersrtkennels@gmail.com",
+                                "from_label": "Rudolf | AIITEC", "body": html},
+                }, "relationships": {"campaign": {"data": {"type": "campaign", "id": camp_id}}}}},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                md = await r.json(content_type=None)
+            msg_id = md.get("data", {}).get("id", "")
+            if not msg_id:
+                return False
+
+            # Send
+            async with self.session.post(
+                f"https://a.klaviyo.com/api/campaign-send-jobs/",
+                headers=headers,
+                json={"data": {"type": "campaign-send-job", "id": camp_id}},
+                timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 return r.status in (200, 201, 202)
         except Exception as e:
-            logger.warning(f"Klaviyo event failed: {e}")
+            logger.warning(f"Klaviyo campaign failed: {e}")
             return False
 
     async def send_mailchimp_campaign(self, product: dict, content: dict) -> bool:
@@ -318,51 +363,47 @@ JSON Format:
             if not products:
                 return results
 
-            # 2. Pro Produkt Content generieren + posten
-            for i, product in enumerate(products[:3]):  # max 3 pro Lauf
+            # 2. Pro Produkt → BrutusCore auf ALLE Kanäle gleichzeitig
+            from modules.brutus_core import fire as brutus_fire
+            for i, product in enumerate(products[:3]):
                 try:
-                    content = await self.generate_promo_content(product)
+                    link = product.get("affiliate_link", "")
+                    title = f"{product.get('emoji','🔥')} {product.get('name','Produkt')}"
+                    body = (f"Meine Erfahrung mit {product.get('name')} in der "
+                            f"{product.get('niche','Online Business')} Nische. "
+                            f"Provision: {product.get('commission_pct',0)}%. Preis: €{product.get('price','?')}.")
+                    tags = ["ds24", "affiliate", product.get("niche", "business").lower().replace(" ", "-")]
 
-                    # Telegram
-                    tg_text = content.get("telegram", "")
-                    if tg_text:
-                        ok = await self.post_telegram(tg_text)
-                        if ok:
-                            results["telegram_sent"] += 1
-                        await asyncio.sleep(2)
-
-                    # Shopify Blog (nur erstes Produkt)
-                    if i == 0:
-                        blog_ok = await self.post_shopify_blog(
-                            content.get("blog_title", product["name"]),
-                            content.get("blog_intro", ""),
-                            product
-                        )
-                        if blog_ok:
-                            results["blog_posts"] += 1
-
-                    # Klaviyo
-                    await self.send_klaviyo_campaign(product, content)
-
-                    # Mailchimp (nur erstes Produkt)
-                    if i == 0:
-                        mail_ok = await self.send_mailchimp_campaign(product, content)
-                        if mail_ok:
-                            results["emails_sent"] += 1
-
-                    await asyncio.sleep(3)
-
+                    fire_result = await brutus_fire(
+                        title=title, body=body, link=link,
+                        niche=product.get("niche", "online business"),
+                        tags=tags, session=session
+                    )
+                    results["telegram_sent"] += 1 if fire_result.get("telegram") else 0
+                    results["blog_posts"] += 1 if fire_result.get("shopify_blog") else 0
+                    results["emails_sent"] += 1 if fire_result.get("mailchimp") else 0
+                    results["channels_hit"] = results.get("channels_hit", 0) + fire_result.get("channels_hit", 0)
+                    await asyncio.sleep(2)
                 except Exception as e:
-                    logger.error(f"Product {product.get('name')} error: {e}")
+                    logger.error(f"Product {product.get('name')} BrutusCore error: {e}")
                     results["errors"].append(str(e))
 
-            # 3. Summary Telegram
+            # 3. Auch den vollen Brutus feuern (Keywords aus Nischen)
+            try:
+                from modules.brutus_traffic_engine import brutus_run
+                br = await brutus_run(niche="ds24 affiliate ki geld verdienen shopify")
+                results["brutus_channels"] = br.get("channels_hit", 0)
+            except Exception as e:
+                logger.warning(f"Full Brutus run: {e}")
+
+            # 4. Summary
             summary = (
                 f"✅ <b>DS24 Traffic Engine — Lauf abgeschlossen</b>\n\n"
-                f"📦 Produkte gefunden: {results['products_found']}\n"
-                f"📱 Telegram Posts: {results['telegram_sent']}\n"
-                f"📝 Blog Posts: {results['blog_posts']}\n"
-                f"📧 E-Mails gesendet: {results['emails_sent']}\n"
+                f"📦 Produkte: {results['products_found']}\n"
+                f"📱 Telegram: {results['telegram_sent']}\n"
+                f"📝 Blog: {results['blog_posts']}\n"
+                f"📧 Mails: {results['emails_sent']}\n"
+                f"🔥 Brutus Kanäle: {results.get('brutus_channels', 0)}\n"
                 f"⏰ {datetime.utcnow().strftime('%H:%M UTC')}"
             )
             await self.post_telegram(summary)
