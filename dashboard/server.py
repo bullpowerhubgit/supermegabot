@@ -5655,6 +5655,96 @@ async def handle_ebay_auth(req):
     })
 
 
+# ── Shopify Full Autonomy handlers ───────────────────────────────────────────
+
+async def handle_shopify_full_auto(req):
+    """POST /api/shopify/full-auto — Vollständiger Autonomie-Zyklus."""
+    data = {}
+    try:
+        data = await req.json()
+    except Exception:
+        pass
+    quick = data.get("quick", False)
+    asyncio.create_task(_shopify_full_auto_bg(quick))
+    return web.json_response({"ok": True, "message": f"Shopify Full Autonomy gestartet (quick={quick})"})
+
+async def _shopify_full_auto_bg(quick: bool):
+    try:
+        from modules.shopify_full_autonomy import run_full_autonomy_cycle
+        await run_full_autonomy_cycle(quick=quick)
+    except Exception as e:
+        log.error("Shopify FullAuto bg: %s", e)
+
+async def handle_shopify_restock(req):
+    """POST /api/shopify/restock — Trending Produkte sofort nachladen."""
+    data = {}
+    try:
+        data = await req.json()
+    except Exception:
+        pass
+    count = int(data.get("count", 5))
+    try:
+        from modules.shopify_full_autonomy import auto_restock_trending
+        result = await auto_restock_trending(count=count)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_shopify_fix_images(req):
+    """POST /api/shopify/fix-images — Bilder für bildlose Produkte."""
+    try:
+        from modules.shopify_full_autonomy import fix_missing_images
+        result = await fix_missing_images(limit=50)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_shopify_fix_titles(req):
+    """POST /api/shopify/fix-titles — KI korrigiert Titel und Beschreibungen."""
+    try:
+        from modules.shopify_full_autonomy import auto_correct_titles_and_descriptions
+        result = await auto_correct_titles_and_descriptions(limit=20)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_shopify_auto_collections(req):
+    """POST /api/shopify/collections/auto — Kollektionen automatisch aufbauen."""
+    try:
+        from modules.shopify_full_autonomy import run_auto_collections
+        result = await run_auto_collections()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_shopify_mass_seo(req):
+    """POST /api/shopify/mass-seo — SEO-Fix für alle Produkte."""
+    try:
+        from modules.shopify_full_autonomy import run_mass_seo_fix
+        result = await run_mass_seo_fix(batch_size=30)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_shopify_discount_blast(req):
+    """POST /api/shopify/discount-blast — Rabatt-Code erstellen + alle Kanäle."""
+    data = {}
+    try:
+        data = await req.json()
+    except Exception:
+        pass
+    try:
+        from modules.shopify_full_autonomy import create_discount_and_blast
+        result = await create_discount_and_blast(
+            code=data.get("code"),
+            percentage=int(data.get("percentage", 20)),
+            reason=data.get("reason", "Wochenangebot")
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── GCP handlers ─────────────────────────────────────────────────────────────
 
 async def handle_gcp_ping(req):
@@ -6287,6 +6377,15 @@ async def create_app():
     app.router.add_get("/api/ebay/search",    handle_ebay_search)
     app.router.add_get("/api/ebay/blast",     handle_ebay_blast)
     app.router.add_get("/api/ebay/auth",      handle_ebay_auth)
+
+    # Shopify Full Autonomy routes
+    app.router.add_post("/api/shopify/full-auto",         handle_shopify_full_auto)
+    app.router.add_post("/api/shopify/restock",           handle_shopify_restock)
+    app.router.add_post("/api/shopify/fix-images",        handle_shopify_fix_images)
+    app.router.add_post("/api/shopify/fix-titles",        handle_shopify_fix_titles)
+    app.router.add_post("/api/shopify/collections/auto",  handle_shopify_auto_collections)
+    app.router.add_post("/api/shopify/mass-seo",          handle_shopify_mass_seo)
+    app.router.add_post("/api/shopify/discount-blast",    handle_shopify_discount_blast)
 
     # NEXUS-1 routes
     app.router.add_get( "/api/nexus/status",          handle_nexus_status)
