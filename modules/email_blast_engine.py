@@ -99,11 +99,16 @@ Kein DOCTYPE. Nur body-content. Max 300 Wörter."""
 
     html = await _ai(prompt, 500)
     if not html:
-        html = f"""<h2 style="color:#e63946">🔥 Exklusive Angebote für dich!</h2>
-<p>Entdecke unsere neuesten Highlights:</p>
-<ul>{product_list.replace("•", "<li>").replace("\n", "</li>")}</ul>
-<a href="{SHOP_URL}" style="background:#e63946;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;margin:16px 0">Jetzt kaufen →</a>
-<p>Viele Grüße,<br>Dein Shop-Team</p>"""
+        _nl = "\n"
+        _li_list = product_list.replace("•", "<li>").replace(_nl, "</li>")
+        html = (
+            f'<h2 style="color:#e63946">🔥 Exklusive Angebote für dich!</h2>'
+            f"<p>Entdecke unsere neuesten Highlights:</p>"
+            f"<ul>{_li_list}</ul>"
+            f'<a href="{SHOP_URL}" style="background:#e63946;color:#fff;padding:12px 24px;'
+            f'text-decoration:none;border-radius:4px;display:inline-block;margin:16px 0">Jetzt kaufen →</a>'
+            f"<p>Viele Grüße,<br>Dein Shop-Team</p>"
+        )
 
     subject_template = random.choice(EMAIL_SUBJECTS)
     subject = subject_template.format(

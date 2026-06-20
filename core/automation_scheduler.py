@@ -1612,7 +1612,7 @@ async def task_youtube_auto_post() -> str:
             title=title,
             description=(
                 f"{title}\n\n"
-                f"👉 {os.getenv('DS24_AFFILIATE_LINK',os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))}\n\n"
+                f"👉 {os.getenv('DS24_AFFILIATE_LINK', 'https://ineedit.com.co')}\n\n"
                 "#KI #PassivesEinkommen #OnlineBusiness"
             ),
             tags=["KI", "passives einkommen", "online business", "shopify", "automatisierung"],
