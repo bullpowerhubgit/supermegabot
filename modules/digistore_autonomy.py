@@ -15,7 +15,7 @@ import aiohttp
 
 log = logging.getLogger("DigistoreAutonomy")
 
-API_KEY = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
+API_KEY = os.getenv("DIGISTORE24_API_KEY", "1682000-T8KjTRJXCO1IgXOU5I7am6p6a0AZuqV2BGswDECY")
 AFFILIATE_ID = "1581233"
 BASE = "https://www.digistore24.com/api/call"
 
