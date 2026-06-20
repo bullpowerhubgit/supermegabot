@@ -4386,6 +4386,15 @@ async def task_upwork_proposal_gen() -> str:
         return f"Upwork Proposal Fehler: {e}"
 
 
+async def task_mega_agent_orchestrator() -> str:
+    """Alle 4h — koordiniert alle 12 Plattform-Agenten parallel: Klaviyo, Mailchimp, Twilio, AliExpress, eBay, Amazon, Fiverr, Upwork, TikTok, Reddit, Discord, YouTube."""
+    try:
+        from modules.mega_agent_orchestrator import scheduled_orchestrator_run
+        return await scheduled_orchestrator_run()
+    except Exception as e:
+        return f"MegaAgentOrchestrator Fehler: {e}"
+
+
 async def task_credential_activator() -> str:
     """Every hour — detect new API keys and auto-activate platforms without restart."""
     try:
@@ -4842,6 +4851,8 @@ TASKS = [
     ("dev_to_post",              task_dev_to_post,             86400, 23100), # täglich
     # ── HASHNODE PUBLISHER — täglich KI-Artikel wenn HASHNODE_TOKEN gesetzt ─────
     ("hashnode_post",            task_hashnode_post,           86400, 23200), # täglich
+    # ── MEGA AGENT ORCHESTRATOR — alle 12 Plattformen koordiniert (alle 4h) ──────
+    ("mega_agent_orchestrator",  task_mega_agent_orchestrator,  14400, 23300), # 4h
 ]
 
 
