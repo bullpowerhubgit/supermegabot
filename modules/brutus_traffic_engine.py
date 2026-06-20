@@ -486,7 +486,7 @@ async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
     if is_open("facebook"):
         return False
     page_token = os.getenv("FACEBOOK_PAGE_TOKEN", "")
-    page_id    = os.getenv("FACEBOOK_PAGE_ID", "1135864516276500")
+    page_id    = os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")
     if not page_token:
         return False
     social = content.get("social_post", "")
