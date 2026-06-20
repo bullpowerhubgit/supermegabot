@@ -1216,7 +1216,10 @@ mutation CreateArticle($article: ArticleCreateInput!) {
                           "parse_mode": "Markdown"})
         return f"Blog→Telegram (GraphQL Err): {err_msg[:120]}"
     except Exception as e:
-        return f"Shopify Blog Fehler: {e}"
+        import traceback as _tb
+        tb = _tb.format_exc()[-300:]
+        log.error("task_shopify_blog_auto: %s\n%s", e, tb)
+        return f"Shopify Blog Fehler: {type(e).__name__}: {e} | tb={tb[-120:]}"
 
 
 async def task_shopify_seo_auto() -> str:
