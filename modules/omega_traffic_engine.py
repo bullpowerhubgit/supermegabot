@@ -259,9 +259,6 @@ async def generate_seo_article(topic: str, slug: str) -> Optional[dict]:
     Länge: 1500-2500 Wörter (ideal für Google)
     Enthält: H2/H3 Struktur, Keywords, CTA, FAQ
     """
-    if not ANTHROPIC_KEY:
-        return None
-
     today = datetime.now().strftime("%d. %B %Y")
     prompt = f"""Schreibe einen professionellen SEO-Artikel für den deutschen Markt.
 
@@ -283,27 +280,11 @@ Gib NUR den Artikel-Content zurück (kein JSON, kein Markdown-Wrapper).
 Beginne direkt mit dem H1-Titel."""
 
     try:
-        import aiohttp
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 4096,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=60),
-            ) as r:
-                if r.status != 200:
-                    log.error("Anthropic API error: %d", r.status)
-                    return None
-                data = await r.json()
-                content = data["content"][0]["text"]
+        from modules.ai_client import ai_complete
+        content = await ai_complete(prompt, max_tokens=4096)
+        if not content:
+            log.warning("omega_traffic: ai_complete returned empty for %s", topic)
+            return None
 
         lines = content.strip().split("\n")
         title = lines[0].lstrip("#").strip() if lines else topic

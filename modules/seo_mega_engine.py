@@ -56,27 +56,14 @@ COMPETITOR_URLS = [
 # ─────────────────────────────────────────────────────────────
 
 async def _claude(prompt: str, max_tokens: int = 2000) -> str:
-    if not ANTHROPIC_KEY:
-        return ""
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": HAIKU_MODEL, "max_tokens": max_tokens,
-                      "messages": [{"role": "user", "content": prompt}]},
-            ) as r:
-                data = await r.json()
-                return data.get("content", [{}])[0].get("text", "")
+        from modules.ai_client import ai_complete
+        r = await ai_complete(prompt, max_tokens=1200)
+        return r if r else ""
     except Exception as e:
-        log.error(f"Claude call failed: {e}")
+        import logging
+        logging.getLogger(__name__).warning(f"ai_complete fallback: {e}")
         return ""
-
-
-# ─────────────────────────────────────────────────────────────
-# SUPABASE HELPER
-# ─────────────────────────────────────────────────────────────
 
 async def _supa_post(table: str, payload: dict) -> dict:
     if not SUPABASE_URL or not SUPABASE_KEY:

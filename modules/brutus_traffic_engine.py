@@ -290,40 +290,14 @@ Nur JSON, kein anderer Text."""
 
 async def _ai_text(session, prompt: str, max_tokens: int = 600) -> str:
     """Perplexity → Claude → '' fallback."""
-    import aiohttp
-    # 1. Perplexity (primary — cheaper, online)
-    if PERPLEXITY:
-        try:
-            async with session.post(
-                "https://api.perplexity.ai/chat/completions",
-                headers={"Authorization": f"Bearer {PERPLEXITY}", "Content-Type": "application/json"},
-                json={"model": "sonar", "max_tokens": max_tokens,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=25),
-            ) as r:
-                data = await r.json(content_type=None)
-                text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-                if text:
-                    return text
-        except Exception as e:
-            log.warning("Perplexity error: %s", e)
-    # 2. Claude (fallback)
-    if ANTHROPIC:
-        try:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=25),
-            ) as r:
-                data = await r.json(content_type=None)
-                return (data.get("content") or [{"text": ""}])[0].get("text", "")
-        except Exception as e:
-            log.warning("Claude error: %s", e)
-    return ""
-
+    try:
+        from modules.ai_client import ai_complete
+        r = await ai_complete(prompt, max_tokens=1200)
+        return r if r else ""
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).warning(f"ai_complete fallback: {e}")
+        return ""
 
 async def _generate_single(session, keyword: str, format_type: str, angle: str = "") -> str:
     """Ein einzelner Content-Agent."""

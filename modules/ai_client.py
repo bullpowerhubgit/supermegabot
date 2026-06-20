@@ -39,7 +39,7 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
                     if r.status == 200:
                         d = await r.json(content_type=None)
                         return d["content"][0]["text"]
-                    if r.status in (401, 529):
+                    if r.status in (400, 401, 402, 429, 529):
                         log.debug("Anthropic skip (%s) — trying next provider", r.status)
                     else:
                         log.debug("Anthropic %s", r.status)
