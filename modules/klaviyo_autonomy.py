@@ -180,7 +180,7 @@ async def send_product_blast(products: list) -> dict:
     if not products:
         return {"ok": False, "error": "no products"}
     try:
-        shop_url = f"https://{SHOP}" if SHOP else "https://ineedit.com.co"
+        shop_url = f"https://{SHOP}" if SHOP else os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
         product_list = "\n".join(
             f"- {p.get('title', 'Product')}"
             for p in products[:5]

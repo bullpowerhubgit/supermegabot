@@ -351,7 +351,7 @@ Erstelle:
                                 await brutus_fire(
                                     title=f"🛒 Verbessert: {result['title'][:40]}",
                                     body=f"Dieses Produkt wurde frisch aktualisiert — bessere Beschreibung, optimierter Preis, neue Bilder.",
-                                    link=f"https://ineedit.com.co",
+                                    link=fos.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"),
                                     niche="shopify trending produkt",
                                     tags=["shopify", "neu", "deal"],
                                     channels=["telegram", "klaviyo"]  # Nur leise Kanäle für Updates
@@ -386,7 +386,7 @@ Erstelle:
                             fire_result = await brutus_fire(
                                 title=f"🆕 NEU: {created.get('title', niche)[:50]}",
                                 body=f"Frisch im Shop — {created.get('title')}. Jetzt bestellen, solange der Vorrat reicht!",
-                                link=f"https://ineedit.com.co/products/{created.get('handle','')}",
+                                link=f"https://autopilot-store-suite-fmbka.myshopify.com/products/{created.get('handle','')}",
                                 niche=niche,
                                 tags=["neu", "trending", niche.replace(" ", "-")]
                             )
@@ -477,7 +477,7 @@ Antworte NUR als JSON-Array (kein anderer Text):
             from modules.brutus_traffic_engine import brutus_blast_for_tool
             await brutus_blast_for_tool(
                 "Shopify Trending",
-                "https://ineedit.com.co/",
+                "https://autopilot-store-suite-fmbka.myshopify.com/",
                 keywords=[p["title"] for p in created] + ["online shop 2026", "trending produkte"],
             )
         except Exception:

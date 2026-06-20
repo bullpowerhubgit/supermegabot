@@ -39,7 +39,7 @@ SHOPIFY_VER      = lambda: os.getenv("SHOPIFY_API_VERSION", "2024-10")
 GITHUB_TOKEN     = lambda: os.getenv("GITHUB_TOKEN", "")
 GITHUB_PAGES_REPO = "bullpowerhubgit/bullpowerhubgit.github.io"
 DEVTO_KEY        = lambda: os.getenv("DEVTO_API_KEY", "")
-DS24_URL = os.getenv("DS24_AFFILIATE_LINK", os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))
+DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
 INDEXNOW_KEY     = "bullpowerhubgit"
 INDEXNOW_DOMAINS = [
     # Railway backend

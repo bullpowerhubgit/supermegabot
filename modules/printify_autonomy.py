@@ -238,7 +238,7 @@ Antworte mit JSON-Array:
             created += 1
             try:
                 from modules.brutus_core import fire
-                shop_url = f"https://{SHOP}" if SHOP else "https://ineedit.com.co"
+                shop_url = f"https://{SHOP}" if SHOP else os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
                 await fire(
                     f"Neues POD Produkt: {concept.get('title', 'T-Shirt')}",
                     f"{concept.get('description', '')} Jetzt im Shop erhältlich!",
