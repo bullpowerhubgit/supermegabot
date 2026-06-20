@@ -104,23 +104,40 @@ async def track_event(email: str, event_name: str, properties: dict) -> dict:
         return {"ok": False, "error": str(e)}
 
 
-async def create_campaign(name: str, subject: str, html_content: str) -> dict:
-    """Create a Klaviyo email campaign (revision 2024-02-15).
-    campaign-messages must be inside attributes (not relationships).
-    """
-    if not API_KEY:
-        return {"ok": False, "error": "no KLAVIYO_API_KEY"}
-    try:
-        from_email = os.getenv("FROM_EMAIL", "hello@autopilot-store-suite-fmbka.myshopify.com")
+KLAVIYO_TEMPLATE_ID = os.getenv("KLAVIYO_TEMPLATE_ID", "WgiY8i")
 
-        # Step 1: Create campaign WITH inline campaign-messages (JSON:API compound format)
+
+async def create_campaign(name: str, subject: str, html_content: str) -> dict:
+    """Create and send a Klaviyo email campaign (revision 2024-02-15).
+    Klaviyo API requires a pre-existing template — raw HTML goes via Mailchimp fallback.
+    """
+    # Primary path: Mailchimp (supports raw HTML, no template required)
+    try:
+        from modules.mailchimp_client import send_campaign as mc_send
+        mc_result = await mc_send(subject=subject, html_body=html_content, name=name)
+        if mc_result.get("ok"):
+            await track_event(
+                email=os.getenv("FROM_EMAIL", "hello@bullpowerhub.com"),
+                event_name="Email Campaign Sent",
+                properties={"name": name, "subject": subject, "channel": "mailchimp"},
+            )
+            log.info("Email sent via Mailchimp fallback: %s", name[:60])
+            return {"ok": True, "channel": "mailchimp", "name": name, "sent": True}
+    except Exception as mc_err:
+        log.warning("Mailchimp fallback failed: %s", mc_err)
+
+    # Klaviyo path: Create campaign with template (subject/preview only, HTML in template)
+    if not API_KEY:
+        return {"ok": False, "error": "no KLAVIYO_API_KEY and no Mailchimp fallback"}
+    try:
+        from_email = os.getenv("FROM_EMAIL", "hello@bullpowerhub.com")
         campaign_payload = {
             "data": {
                 "type": "campaign",
                 "attributes": {
                     "name": name[:100],
                     "audiences": {
-                        "included": [{"type": "list", "id": LIST_ID}],
+                        "included": [LIST_ID],
                         "excluded": [],
                     },
                     "send_strategy": {"method": "immediate"},
@@ -140,7 +157,6 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                                         "preview_text": name[:80],
                                         "from_email": from_email,
                                         "from_label": "BullPowerHub",
-                                        "body": html_content,
                                     },
                                 },
                             }
@@ -155,20 +171,36 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
             err = campaign.get("error", str(campaign)[:400])
             return {"ok": False, "error": err}
 
-        # Step 2: Send immediately
-        send_result = await _kv_post("/campaign-send-jobs/", {
-            "data": {
-                "type": "campaign-send-job",
-                "attributes": {},
-                "relationships": {
-                    "campaign": {"data": {"type": "campaign", "id": cid}},
-                },
-            }
-        })
-        send_ok = "error" not in send_result
+        # Get auto-created message ID and update content
+        msg_id = None
+        cdata = campaign.get("data", {}).get("relationships", {}).get("campaign-messages", {}).get("data", [])
+        if cdata:
+            msg_id = cdata[0].get("id")
 
-        log.info("Klaviyo campaign sent: %s (id=%s, send_ok=%s)", name[:60], cid, send_ok)
-        return {"ok": True, "campaign_id": cid, "name": name, "sent": send_ok}
+        if msg_id:
+            await _kv_post(f"/campaign-messages/{msg_id}/", {
+                "data": {
+                    "type": "campaign-message",
+                    "id": msg_id,
+                    "attributes": {
+                        "content": {
+                            "subject": subject[:150],
+                            "preview_text": name[:80],
+                            "from_email": from_email,
+                            "from_label": "BullPowerHub",
+                        }
+                    },
+                }
+            })
+
+        log.info("Klaviyo campaign created (draft, no template): %s id=%s", name[:60], cid)
+        # Track event regardless so flows can pick it up
+        await track_event(
+            email=from_email,
+            event_name="Campaign Created",
+            properties={"campaign_id": cid, "name": name, "subject": subject},
+        )
+        return {"ok": True, "channel": "klaviyo", "campaign_id": cid, "name": name, "sent": False, "note": "Draft — assign template in Klaviyo UI to send"}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
