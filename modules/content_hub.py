@@ -121,12 +121,23 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
     import requests as _req
 
     def _openai_compat(url: str, key: str, model: str) -> str:
+        import time as _time
         r = _req.post(url, headers={"Authorization": f"Bearer {key}"},
                       json={"model": model, "max_tokens": max_tokens,
                             "messages": [{"role": "user", "content": prompt}]},
                       timeout=25)
         d = r.json()
         if "error" in d:
+            code = d["error"].get("code") or d["error"].get("type", "")
+            if "429" in str(code) or "rate_limit" in str(code):
+                _time.sleep(8)
+                r2 = _req.post(url, headers={"Authorization": f"Bearer {key}"},
+                               json={"model": model, "max_tokens": max_tokens,
+                                     "messages": [{"role": "user", "content": prompt}]},
+                               timeout=25)
+                d = r2.json()
+                if "error" not in d:
+                    return d["choices"][0]["message"]["content"]
             raise RuntimeError(str(d["error"])[:120])
         return d["choices"][0]["message"]["content"]
 
