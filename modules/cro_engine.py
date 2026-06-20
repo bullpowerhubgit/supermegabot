@@ -154,7 +154,7 @@ async def create_klaviyo_welcome_flow() -> bool:
         if data.get("data", {}).get("id"):
             log.info("CRO: Klaviyo welcome flow created — %s", data["data"]["id"])
             return True
-        log.warning("CRO: Flow creation response: %s", str(data)[:200])
+        log.debug("CRO: Flow creation response (non-critical): %s", str(data)[:200])
         return False
     except Exception as exc:
         log.warning("CRO: create_klaviyo_welcome_flow error: %s", exc)
@@ -198,6 +198,7 @@ async def create_urgency_campaign(product_name: str, discount_pct: int = 20) -> 
             "type": "campaign",
             "attributes": {
                 "name": f"URGENCY — {product_name[:40]} — {today}",
+                "channel": "email",
                 "audiences": {"included": [KLAVIYO_LIST_ID]},
                 "send_strategy": {"method": "immediate"},
                 "campaign-messages": {
