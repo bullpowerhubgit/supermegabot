@@ -129,6 +129,70 @@ async def run_discord_brutus_blast(topic: str = "E-Commerce Automation") -> dict
         return {"brutus_error": str(e), "discord_ok": promo.get("ok")}
 
 
+async def send_message(text: str, channel_id: str = "") -> dict:
+    """Send a message to Discord. Uses DISCORD_WEBHOOK_URL if set, else DISCORD_BOT_TOKEN + channel_id."""
+    channel_id = channel_id or os.getenv("DISCORD_CHANNEL_ID", "")
+
+    # Prefer webhook (simpler, no bot permission needed)
+    if DISCORD_WEBHOOK:
+        ok = await post_webhook(text)
+        return {"ok": ok, "via": "webhook"}
+
+    # Fallback: Bot API + channel_id
+    if not DISCORD_BOT_TOK:
+        return {"ok": False, "error": "DISCORD_BOT_TOKEN not set"}
+    if not channel_id:
+        return {"ok": False, "error": "DISCORD_CHANNEL_ID not set"}
+
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                f"https://discord.com/api/v10/channels/{channel_id}/messages",
+                headers={
+                    "Authorization": f"Bot {DISCORD_BOT_TOK}",
+                    "Content-Type": "application/json",
+                },
+                json={"content": text[:2000]},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                if r.status in (200, 201):
+                    return {"ok": True, "via": "bot_api", "channel_id": channel_id}
+                err = await r.text()
+                log.error("Discord bot API %s: %s", r.status, err)
+                return {"ok": False, "error": f"HTTP {r.status}", "detail": err[:120]}
+    except Exception as e:
+        log.error("Discord send_message error: %s", e)
+        return {"ok": False, "error": str(e)}
+
+
+async def run_with_brutus_traffic(topic: str = "E-Commerce Automation") -> dict:
+    """Post AI promo to Discord then fire BRUTUS traffic swarm."""
+    discord_result = await run_discord_promo()
+
+    brutus_result = {}
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        brutus_result = await run_brutus_swarm(niche=topic, affiliate_url=DS24_LINK)
+    except Exception as e:
+        brutus_result = {"error": str(e)}
+
+    return {"discord": discord_result, "brutus": brutus_result}
+
+
+async def get_discord_status() -> dict:
+    """Return Discord connection status."""
+    webhook_set = bool(DISCORD_WEBHOOK)
+    bot_set = bool(DISCORD_BOT_TOK)
+    channel_set = bool(os.getenv("DISCORD_CHANNEL_ID", ""))
+    return {
+        "webhook_configured": webhook_set,
+        "bot_token_configured": bot_set,
+        "channel_id_configured": channel_set,
+        "ready": webhook_set or (bot_set and channel_set),
+        "note": "Set DISCORD_WEBHOOK_URL or DISCORD_BOT_TOKEN + DISCORD_CHANNEL_ID in Railway",
+    }
+
+
 def get_invite_url() -> str:
     """Generate bot invite URL for Rudolf to add bot to server."""
     client_id = os.getenv("DISCORD_CLIENT_ID", "1515460691664965672")

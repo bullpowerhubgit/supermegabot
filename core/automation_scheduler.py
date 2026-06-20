@@ -3049,6 +3049,32 @@ async def task_discord_revenue_report() -> str:
         return f"Discord revenue error: {e}"
 
 
+async def task_linkedin_post() -> str:
+    """Post AI-generated LinkedIn content then fire BRUTUS traffic (every 4h)."""
+    try:
+        from modules.linkedin_oauth import run_with_brutus_traffic
+        result = await run_with_brutus_traffic()
+        li = result.get("linkedin", {})
+        if li.get("success") or li.get("ok"):
+            return f"LinkedIn post + BRUTUS: ✅ post_id={li.get('post_id','?')}"
+        if li.get("skipped"):
+            return f"LinkedIn: circuit open — skipped"
+        return f"LinkedIn: {li.get('error', 'unknown error')}"
+    except Exception as e:
+        return f"task_linkedin_post error: {e}"
+
+
+async def task_discord_daily() -> str:
+    """Post daily Discord promo + BRUTUS traffic blast."""
+    try:
+        from modules.discord_automation import run_with_brutus_traffic
+        result = await run_with_brutus_traffic()
+        discord = result.get("discord", {})
+        return f"Discord daily: {'✅ sent' if discord.get('ok') else discord.get('error','failed')}"
+    except Exception as e:
+        return f"task_discord_daily error: {e}"
+
+
 # ── Twilio SMS Automation ─────────────────────────────────────────────────────
 
 async def _twilio_send(to: str, body: str) -> bool:
@@ -3990,6 +4016,9 @@ TASKS = [
     # ── DISCORD AUTOMATION — Revenue Reports + Promos ─────────────────────────
     ("discord_promo",          task_discord_promo,           21600, 12600), # 6h — Discord Promo Post
     ("discord_revenue",        task_discord_revenue_report,  86400, 12700), # daily — Discord Revenue Report
+    # ── LINKEDIN + DISCORD AUTONOMOUS POSTING WITH BRUTUS ────────────────────
+    ("linkedin_post",          task_linkedin_post,           14400, 12800), # 4h — LinkedIn AI post + BRUTUS
+    ("discord_daily",          task_discord_daily,           86400, 12900), # daily — Discord daily + BRUTUS
     # ── WHATSAPP AUTOMATION — Daily Promo Blast ──────────────────────────────
     ("whatsapp_daily_blast",      task_whatsapp_daily_blast,      86400, 14000), # daily — WA Promo Blast
     ("reddit_blast",              task_reddit_blast,              86400, 14500), # daily — Reddit affiliate posts
