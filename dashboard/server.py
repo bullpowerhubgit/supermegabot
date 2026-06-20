@@ -8188,6 +8188,7 @@ async def create_app():
     app.router.add_post("/api/lead",                  handle_universal_lead_capture)
     app.router.add_get("/master",                     handle_master_dashboard)
     app.router.add_get("/dashboard",                  handle_mega_dashboard)
+    app.router.add_get("/api/infra/status",           handle_infra_status)
     app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
     app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
     app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
@@ -9250,6 +9251,67 @@ async def handle_seo_ingest(req):
     except Exception as e:
         log.error(f"SEO ingest error: {e}")
         return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_infra_status(req: web.Request) -> web.Response:
+    """GET /api/infra/status — ping all Railway/Vercel/Netlify services in parallel."""
+    SERVICES_LIST = [
+        # Railway backends
+        {"name": "SuperMegaBot", "url": "https://dudirudibot-mega-production.up.railway.app/health", "type": "railway"},
+        {"name": "Shopify Acq.", "url": "https://shopify-acquisition-engine-production.up.railway.app/health", "type": "railway"},
+        {"name": "iComeAuto", "url": "https://icomeauto-saas-production.up.railway.app/health", "type": "railway"},
+        {"name": "SEO Turbo", "url": "https://seo-turbo-tools-production.up.railway.app/health", "type": "railway"},
+        {"name": "Telegram Bot", "url": "https://telegram-automation-bot-production.up.railway.app/health", "type": "railway"},
+        {"name": "CreatorAI Ultra", "url": "https://creatorai-ultra-production.up.railway.app/health", "type": "railway"},
+        {"name": "DS24 Suite", "url": "https://digistore24-automation-production.up.railway.app/health", "type": "railway"},
+        {"name": "Cognitive Symphony", "url": "https://cognitive-symphony-production.up.railway.app/health", "type": "railway"},
+        {"name": "Revenue Hub", "url": "https://revenue-hub-notifications-production.up.railway.app/health", "type": "railway"},
+        {"name": "AdPoster Engine", "url": "https://adposter-engine-production.up.railway.app/health", "type": "railway"},
+        {"name": "Steuercockpit", "url": "https://steuercockpit-production-44c9.up.railway.app/health", "type": "railway"},
+        {"name": "Shopify Automaton", "url": "https://shopify-automaton-suite-production-e405.up.railway.app/health", "type": "railway"},
+        {"name": "Meta Social", "url": "https://meta-social-engine-production.up.railway.app/health", "type": "railway"},
+        {"name": "Freelance Gig", "url": "https://freelance-gig-engine-production.up.railway.app/health", "type": "railway"},
+        {"name": "Visual Content", "url": "https://visual-content-engine-production.up.railway.app/health", "type": "railway"},
+        {"name": "Analytics Pro", "url": "https://analytics-marketing-pro-production.up.railway.app/health", "type": "railway"},
+        {"name": "Shopify KI Suite", "url": "https://shopify-ki-suite-production.up.railway.app/health", "type": "railway"},
+        {"name": "SEO Traffic", "url": "https://seo-traffic-engine-production.up.railway.app/health", "type": "railway"},
+        {"name": "Social Traffic", "url": "https://social-traffic-engine-production.up.railway.app/health", "type": "railway"},
+        # Vercel frontends
+        {"name": "Shopify Brutal", "url": "https://shopify-brutal-tuning.vercel.app", "type": "vercel"},
+        {"name": "CreatorAI Vercel", "url": "https://creatorai-ultra.vercel.app", "type": "vercel"},
+        {"name": "BullPower Hub", "url": "https://bullpower-hub.vercel.app", "type": "vercel"},
+        {"name": "AutoIncome AI", "url": "https://autoincome-ai.vercel.app", "type": "vercel"},
+        {"name": "Shopify Acq. Front", "url": "https://shopify-acquisition-engine.vercel.app", "type": "vercel"},
+        {"name": "Shopify Suite Front", "url": "https://shopify-suite.vercel.app", "type": "vercel"},
+        # Netlify
+        {"name": "Mega Dashboard", "url": "https://cheery-beijinho-b74689.netlify.app", "type": "netlify"},
+        {"name": "Hub Portal", "url": "https://bullpower-hub-portal.netlify.app", "type": "netlify"},
+        {"name": "SteuercockPit", "url": "https://bullpower-steuercockpit.netlify.app", "type": "netlify"},
+        {"name": "iComeAuto Front", "url": "https://bullpower-icomeauto.netlify.app", "type": "netlify"},
+        {"name": "Lead Capture", "url": "https://bullpower-lead.netlify.app", "type": "netlify"},
+    ]
+
+    async def _ping(svc: dict) -> dict:
+        t0 = time.time()
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=6)) as s:
+                async with s.get(svc["url"]) as r:
+                    ms = int((time.time() - t0) * 1000)
+                    return {**svc, "status": "online", "http": r.status, "ms": ms}
+        except Exception as e:
+            ms = int((time.time() - t0) * 1000)
+            return {**svc, "status": "offline", "error": str(e)[:60], "ms": ms}
+
+    results = await asyncio.gather(*[_ping(s) for s in SERVICES_LIST])
+    online = sum(1 for r in results if r["status"] == "online")
+    return web.json_response({
+        "ok": True,
+        "ts": datetime.now(timezone.utc).isoformat(),
+        "total": len(results),
+        "online": online,
+        "offline": len(results) - online,
+        "services": results,
+    })
 
 
 async def handle_master_dashboard(req):
