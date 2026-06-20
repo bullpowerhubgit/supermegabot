@@ -61,7 +61,7 @@ DS24_KNOWN_PRODUCTS = [
         "price": "37",
         "niche": "ki",
         "emoji": "🤖",
-        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
     },
 ]
 

@@ -457,6 +457,6 @@ class BrutusCore:
         return await fire(
             title=title or message[:60],
             body=message,
-            link=link or os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"),
+            link=link or os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx"),
             channels=channels,
         )

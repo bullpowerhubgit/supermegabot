@@ -1090,7 +1090,7 @@ async def task_shopify_blog_auto() -> str:
     shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
     if not shopify_domain or not shopify_token:
         return "Shopify nicht konfiguriert"
-    _dest = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+    _dest = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
     blog_gid = f"gid://shopify/Blog/{os.getenv('SHOPIFY_BLOG_ID', '127011258755')}"
     templates = [
         ("KI-Passiveinkommen 2026: So baust du es auf",
@@ -1308,7 +1308,7 @@ async def task_mailchimp_auto_campaign() -> str:
 <li>✅ Step-by-step Anleitung für Anfänger</li>
 </ul>
 <p style='text-align:center;margin:30px 0'>
-<a href='{os.getenv("DS24_AFFILIATE_LINK",os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"))}' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
+<a href='{os.getenv("DS24_AFFILIATE_LINK",os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx"))}' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
 🛒 Jetzt für nur €37 starten →
 </a>
 </p>
@@ -1549,7 +1549,7 @@ async def task_linkedin_auto_post() -> str:
         anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
         if not linkedin_token:
             return "LINKEDIN_ACCESS_TOKEN fehlt"
-        _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         li_prompt = (f"Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
                      f"Max 1200 Zeichen. Erwähne am Ende: {_ds24} (AI Income Machine €37). Nur Text, kein JSON.")
         try:
@@ -1597,7 +1597,7 @@ async def task_youtube_auto_post() -> str:
             title=title,
             description=(
                 f"{title}\n\n"
-                f"👉 {os.getenv('DS24_AFFILIATE_LINK', 'https://www.digistore24.com/redir/669750/user37405262/')}\n\n"
+                f"👉 {os.getenv('DS24_AFFILIATE_LINK', 'https://tecbuuss.gumroad.com/l/wcqdjx')}\n\n"
                 "#KI #PassivesEinkommen #OnlineBusiness"
             ),
             tags=["KI", "passives einkommen", "online business", "shopify", "automatisierung"],
@@ -2706,7 +2706,7 @@ async def task_brutus_printify() -> str:
 async def task_brutus_dropshipping() -> str:
     try:
         from modules.super_revenue_blitz import brutus_blast_for_tool
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         r = await brutus_blast_for_tool("Dropshipping", link,
             ["Dropshipping 2026", "AliExpress Shopify", "online shop automatisch befüllen"])
         return f"BRUTUS Dropshipping: {r.get('channels_hit', r.get('posts_sent', 0))} posts"
@@ -2720,7 +2720,7 @@ async def task_brutus_ds24() -> str:
         link = (
             os.getenv("DS24_AFFILIATE_LINK")
             or os.getenv("AIITEC_AFFILIATE_URL")
-            or os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+            or os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         )
         r = await brutus_blast_for_tool("Digistore24", link,
             ["Digistore24 Affiliate 2026", "digitale Produkte verkaufen", "AI Income Machine"])
@@ -2748,7 +2748,7 @@ async def task_klaviyo_daily_campaign() -> str:
     try:
         import random
         from modules.super_revenue_blitz import send_klaviyo_campaign
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         subjects = [
             "🔥 Vollautomatisch Geld verdienen — so geht's",
             "💡 KI macht Geld während du schläfst",
@@ -2785,7 +2785,7 @@ async def task_mailing_promo_blitz() -> str:
     try:
         import asyncio, random
         from modules.super_revenue_blitz import send_klaviyo_campaign, send_mailchimp_campaign, _tg_send, _linkedin_post
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         subjects = [
             "💰 Heute: Vollautomatisches Online-Business starten",
             "🤖 KI verdient für dich — ohne tägliche Arbeit",
@@ -3205,7 +3205,7 @@ async def task_youtube_script_generator() -> str:
             "Passives Einkommen Blueprint — Von 0 auf 5000€/Monat",
         ]
         topic = random.choice(topics)
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         prompt = (
             f"Erstelle ein YouTube-Video-Skript zum Thema: '{topic}'\n"
             f"Länge: 3-5 Minuten (500-700 Wörter). Struktur: Hook, Problem, Lösung, CTA.\n"
@@ -3229,7 +3229,7 @@ async def task_whatsapp_daily_blast() -> str:
     """Daily WhatsApp promo blast to all configured recipients."""
     try:
         from modules.whatsapp_automation import send_whatsapp_blast
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         msg = f"🚀 BullPower Hub: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
         r = await send_whatsapp_blast(msg)
         return f"WhatsApp blast: sent={r.get('sent',0)}, failed={r.get('failed',0)}"
@@ -3840,7 +3840,7 @@ async def task_printify_sync() -> str:
 # ── Mega BRUTUS Rotation — alle Plattformen im 1h Zyklus ─────────────────────
 
 _MEGA_BRUTUS_PLATFORMS = [
-    ("Digistore24 Affiliate",    os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"),
+    ("Digistore24 Affiliate",    os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx"),
      ["DS24 Affiliate 2026", "digitale Produkte verdienen", "passives Einkommen"]),
     ("Shopify Automation",        "",
      ["Shopify Dropshipping 2026", "Shopify Automation AI", "eigener Online-Shop"]),
@@ -3882,7 +3882,7 @@ async def task_mega_brutus_rotation() -> str:
         if "Shopify" in platform and shop:
             url = f"https://{shop}"
         else:
-            url = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+            url = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
     try:
         r = await brutus_blast_for_tool(platform, url, keywords)
         ch = r.get("channels_hit", r.get("posts_sent", 0))

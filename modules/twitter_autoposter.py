@@ -410,7 +410,7 @@ async def run_with_brutus_traffic(topic: str = "Shopify Automation 2026") -> dic
         brutus_result = await run_brutus_swarm(
             niche=topic,
             affiliate_url=os.getenv("DS24_AFFILIATE_LINK",
-                                    os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")),
+                                    os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")),
         )
     except Exception as e:
         brutus_result = {"error": str(e)}
