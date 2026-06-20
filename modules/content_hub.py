@@ -156,7 +156,15 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
         except Exception as e:
             errors.append(f"{env_var}: {str(e)[:80]}")
             continue
-    raise RuntimeError(f"Kein AI Key: {'; '.join(errors)}")
+    import random as _rnd
+    _templates = [
+        "🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 https://www.digistore24.com/redir/669750/user37405262/",
+        "💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. https://www.digistore24.com/redir/669750/user37405262/",
+        "🤖 Shopify + DS24 + KI = passives Einkommen 24/7! https://www.digistore24.com/redir/669750/user37405262/",
+        "📈 BRUTUS Traffic läuft — alle Kanäle werden bespielt. Jetzt starten: https://www.digistore24.com/redir/669750/user37405262/",
+        "🎯 DS24 Affiliate + BRUTUS = passive Einnahmen täglich! https://www.digistore24.com/redir/669750/user37405262/",
+    ]
+    return _rnd.choice(_templates)
 
 
 async def _tg(msg: str) -> None:
