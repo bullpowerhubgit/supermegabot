@@ -2289,6 +2289,20 @@ async def task_multi_platform_post() -> str:
         return f"Multi-platform post error: {e}"
 
 
+# ── SHOPIFY AUTO-FILL ────────────────────────────────────────────────────────
+
+async def task_shopify_auto_fill() -> str:
+    """Shopify: bestehende Produkte reparieren + neue Trend-Produkte importieren + BrutusCore"""
+    try:
+        from modules.shopify_auto_fill import run_shopify_auto_fill
+        r = await run_shopify_auto_fill(fix_existing=True, add_new=3)
+        return (f"ShopifyAutoFill: scanned={r.get('products_scanned',0)} "
+                f"fixed={r.get('fixed',0)} new={r.get('new_products_created',0)} "
+                f"brutus={r.get('brutus_fires',0)}")
+    except Exception as e:
+        return f"ShopifyAutoFill error: {e}"
+
+
 # ── DS24 FULL AUTO ───────────────────────────────────────────────────────────
 
 async def task_ds24_traffic() -> str:
@@ -2562,7 +2576,7 @@ async def task_brutus_ds24() -> str:
         link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
         r = await brutus_blast_for_tool("Digistore24", link,
             ["Digistore24 Affiliate 2026", "digitale Produkte verkaufen", "AI Income Machine"])
-        return f"BRUTUS DS24: {r.get('posts_sent',0)} posts"
+        return f"BRUTUS DS24: {r.get('channels_hit', r.get('posts_sent', 0))} Kanäle, {r.get('content_pieces',0)} Posts"
     except Exception as e:
         return f"BRUTUS DS24 error: {e}"
 
@@ -2574,7 +2588,7 @@ async def task_brutus_shopify() -> str:
         url = f"https://{shop}" if shop else os.getenv("DS24_AFFILIATE_LINK", "")
         r = await brutus_blast_for_tool("Shopify", url,
             ["Shopify Shop automatisieren", "Shopify SEO 2026", "Shopify Dropshipping"])
-        return f"BRUTUS Shopify: {r.get('posts_sent',0)} posts"
+        return f"BRUTUS Shopify: {r.get('channels_hit', r.get('posts_sent', 0))} Kanäle, {r.get('content_pieces',0)} Posts"
     except Exception as e:
         return f"BRUTUS Shopify error: {e}"
 
