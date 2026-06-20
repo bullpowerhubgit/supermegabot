@@ -6307,6 +6307,43 @@ async def handle_ds24_affiliate_blast_niche(request: web.Request) -> web.Respons
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_ds24_dankeseite(request: web.Request) -> web.Response:
+    """GET+POST /api/ds24/dankeseite — DS24 Dankeseite-Webhook nach Kauf."""
+    try:
+        params = dict(request.rel_url.query)
+        if request.method == "POST":
+            try:
+                body = await request.json()
+                params.update(body)
+            except Exception:
+                try:
+                    form = await request.post()
+                    params.update(dict(form))
+                except Exception:
+                    pass
+        from modules.ds24_webhook import handle_ds24_purchase, DANKESEITE_HTML, DS24_DANKESEITE_KEY
+        key = params.get("key", params.get("schluessel", ""))
+        if key and key != DS24_DANKESEITE_KEY:
+            return web.Response(status=403, text="Forbidden")
+        result = await handle_ds24_purchase(params)
+        order_id = params.get("order_id", params.get("bestellnummer", ""))
+        product_name = params.get("product_name", params.get("produktname", "Dein Produkt"))
+        html = DANKESEITE_HTML.format(order_id=order_id, product_name=product_name)
+        return web.Response(text=html, content_type="text/html")
+    except Exception as e:
+        return web.Response(text=f"<h1>Danke!</h1><p>{e}</p>", content_type="text/html")
+
+
+async def handle_ds24_purchase_stats(request: web.Request) -> web.Response:
+    """GET /api/ds24/purchases — Alle DS24-Käufe + Revenue."""
+    try:
+        from modules.ds24_webhook import get_ds24_purchase_stats
+        r = await get_ds24_purchase_stats()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_ds24_refill(request: web.Request) -> web.Response:
     """POST /api/ds24/refill — Autonomer Refill auf 1000 aktive Produkte."""
     try:
@@ -7514,6 +7551,9 @@ async def create_app():
     app.router.add_post("/api/ds24/affiliate/blast-all",   handle_ds24_affiliate_blast_all)
     app.router.add_get( "/api/ds24/affiliate/stats",       handle_ds24_affiliate_stats)
     app.router.add_post("/api/ds24/affiliate/blast-niche", handle_ds24_affiliate_blast_niche)
+    app.router.add_get( "/api/ds24/dankeseite",            handle_ds24_dankeseite)
+    app.router.add_post("/api/ds24/dankeseite",            handle_ds24_dankeseite)
+    app.router.add_get( "/api/ds24/purchases",             handle_ds24_purchase_stats)
 
     # ── Traffic Mega Engine ───────────────────────────────────────────────────
     app.router.add_post("/api/traffic/mega-blast",       handle_traffic_mega_blast)
