@@ -157,12 +157,13 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
             errors.append(f"{env_var}: {str(e)[:80]}")
             continue
     import random as _rnd
+    _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
     _templates = [
-        "🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 https://ineedit.com.co",
-        "💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. https://ineedit.com.co",
-        "🤖 Shopify + DS24 + KI = passives Einkommen 24/7! https://ineedit.com.co",
-        "📈 BRUTUS Traffic läuft — alle Kanäle werden bespielt. Jetzt starten: https://ineedit.com.co",
-        "🎯 DS24 Affiliate + BRUTUS = passive Einnahmen täglich! https://ineedit.com.co",
+        f"🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 {_ds24}",
+        f"💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. {_ds24}",
+        f"🤖 Shopify + DS24 + KI = passives Einkommen 24/7! {_ds24}",
+        f"📈 BRUTUS Traffic läuft — alle Kanäle werden bespielt. Jetzt starten: {_ds24}",
+        f"🎯 DS24 Affiliate + BRUTUS = passive Einnahmen täglich! {_ds24}",
     ]
     return _rnd.choice(_templates)
 

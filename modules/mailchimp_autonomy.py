@@ -124,7 +124,7 @@ async def send_product_campaign(products: list) -> dict:
             f"- {p.get('title', p.get('name', 'Product'))}: €{p.get('price', p.get('amount', ''))}"
             for p in products[:5]
         )
-        shop_url = f"https://{SHOP}" if SHOP else "https://ineedit.com.co"
+        shop_url = f"https://{SHOP}" if SHOP else "https://autopilot-store-suite-fmbka.myshopify.com"
         prompt = f"""Schreibe einen HTML-Newsletter (Mailchimp-kompatibel) auf Deutsch für diese Produkte:
 
 {product_list}
@@ -172,7 +172,7 @@ async def send_weekly_digest() -> dict:
     """Shopify stats + DS24 revenue → AI email → send to list."""
     try:
         shopify = await _get_shopify_stats()
-        shop_url = f"https://{SHOP}" if SHOP else "https://ineedit.com.co"
+        shop_url = f"https://{SHOP}" if SHOP else "https://autopilot-store-suite-fmbka.myshopify.com"
 
         prompt = f"""Schreibe einen wöchentlichen HTML-Newsletter-Digest auf Deutsch für BullPowerHub:
 
