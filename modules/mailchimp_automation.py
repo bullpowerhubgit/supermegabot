@@ -13,7 +13,9 @@ except ImportError:
 log = logging.getLogger("Mailchimp")
 
 MC_API_KEY       = os.getenv("MAILCHIMP_API_KEY", "")
-MC_SERVER_PREFIX = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
+# Auto-detect server prefix from key suffix (e.g. "abc123-us7" → "us7")
+_key_suffix = MC_API_KEY.split("-")[-1] if "-" in MC_API_KEY else ""
+MC_SERVER_PREFIX = _key_suffix or os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 MC_BASE          = f"https://{MC_SERVER_PREFIX}.api.mailchimp.com/3.0"
 
 
@@ -250,6 +252,25 @@ async def sync_from_digistore(list_id: str) -> int:
 
     log.info("DS24 -> Mailchimp sync: %d subscribers added to list %s", synced, list_id)
     return synced
+
+
+async def send_campaign(subject: str, html_body: str, list_id: str = "") -> dict:
+    """One-step: create + set content + send Mailchimp campaign. Returns {ok, campaign_id, error}."""
+    _list_id = list_id or os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
+    result = await create_campaign(
+        list_id=_list_id,
+        subject=subject,
+        from_name="Rudolf | AIITEC",
+        body_html=html_body,
+    )
+    if "error" in result:
+        return {"ok": False, "error": result["error"]}
+    return {
+        "ok": result.get("sent", False),
+        "campaign_id": result.get("id", ""),
+        "list_id": _list_id,
+        "subject": subject,
+    }
 
 
 async def run_with_brutus_traffic() -> dict:
