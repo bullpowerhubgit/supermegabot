@@ -129,8 +129,14 @@ async def auto_detect_store() -> str:
 
 async def get_sync_products(limit: int = 100) -> List[Dict]:
     """Get all products synced with Shopify."""
-    data = await _get(f"/sync/products?limit={limit}")
-    return data.get("result", [])
+    stores = await get_stores()
+    if not stores:
+        return []
+    try:
+        data = await _get(f"/sync/products?limit={limit}")
+        return data.get("result", [])
+    except Exception:
+        return []
 
 
 async def get_orders(status: str = "", limit: int = 100) -> List[Dict]:
