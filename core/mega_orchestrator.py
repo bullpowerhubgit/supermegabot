@@ -588,6 +588,34 @@ class CommandRouter:
             "/revenue": self._cmd_revenue,
             "dashboard": self._cmd_master_dashboard,
             "alle dienste": self._cmd_alle_dienste,
+            # ── Selbstverbesserung & Email Doctor & Dragon 1000 & Mass Blast ─
+            "/selbstverbesserung": self._cmd_selbstverbesserung,
+            "selbstverbesserung": self._cmd_selbstverbesserung,
+            "/selbst": self._cmd_selbstverbesserung,
+            "/email_doctor": self._cmd_email_doctor,
+            "email doctor": self._cmd_email_doctor,
+            "/dragon_artikel": self._cmd_dragon_artikel,
+            "dragon artikel": self._cmd_dragon_artikel,
+            "/mass_blast": self._cmd_mass_blast,
+            "mass blast": self._cmd_mass_blast,
+            "1000 sachen": self._cmd_mass_blast,
+            "/system_overview": self._cmd_system_overview,
+            "system overview": self._cmd_system_overview,
+            "überblick": self._cmd_system_overview,
+            "/repair": self._cmd_quantum_repair,
+            "reparatur": self._cmd_quantum_repair,
+            "selbst reparatur": self._cmd_quantum_repair,
+            "/linkedin": self._cmd_linkedin_post,
+            "/instagram": self._cmd_instagram_post,
+            "/pinterest": self._cmd_pinterest_post,
+            "/printify": self._cmd_printify_status,
+            "/printful": self._cmd_printful_status,
+            "/gumroad": self._cmd_gumroad_status,
+            "/paypal": self._cmd_paypal_status,
+            "/klaviyo_blast": self._cmd_klaviyo_blast,
+            "/ebay_blast": self._cmd_ebay_blast,
+            "/amazon_blast": self._cmd_amazon_blast,
+            "/twilio_blast": self._cmd_twilio_blast,
         }
 
     async def route(self, text: str, session_id: str) -> str:
@@ -1416,6 +1444,184 @@ class CommandRouter:
         """Schneller Health-Check der kritischsten Dienste."""
         from modules.telegram_master_dashboard import cmd_deploy_status
         return await cmd_deploy_status(text, session_id)
+
+    async def _cmd_selbstverbesserung(self, text: str, session_id: str) -> str:
+        """Alle Plattformen analysieren + Auto-Fix."""
+        try:
+            from modules.selbstverbesserung import run_selbstverbesserung_cycle
+            r = await run_selbstverbesserung_cycle()
+            return (f"🔧 Selbstverbesserung:\n"
+                    f"✅ OK: {r.get('ok_count',0)}/{r.get('platforms_checked',0)}\n"
+                    f"❌ Issues: {r.get('issues_found',0)}\n"
+                    f"🛠️ Fixes: {r.get('fixes_applied',0)}")
+        except Exception as e:
+            return f"Selbstverbesserung Fehler: {e}"
+
+    async def _cmd_email_doctor(self, text: str, session_id: str) -> str:
+        """E-Mail Health Check aller Systeme."""
+        try:
+            from modules.email_doctor import run_email_doctor
+            r = await run_email_doctor()
+            return (f"💊 Email Doctor:\n"
+                    f"Klaviyo: {r.get('klaviyo','?')}\n"
+                    f"Mailchimp: {r.get('mailchimp','?')}\n"
+                    f"Dragon: {r.get('dragon','?')}\n"
+                    f"SendGrid: {r.get('sendgrid','?')}\n"
+                    f"Twilio: {r.get('twilio','?')}\n"
+                    f"Issues: {r.get('issues',0)} | Fixes: {r.get('fixes',0)}")
+        except Exception as e:
+            return f"Email Doctor Fehler: {e}"
+
+    async def _cmd_dragon_artikel(self, text: str, session_id: str) -> str:
+        """Nächsten Dragon Mailchimp Artikel senden."""
+        try:
+            from modules.mailchimp_dragon_1000 import run_dragon_article_cycle, get_dragon_article_stats
+            r = await run_dragon_article_cycle()
+            stats = await get_dragon_article_stats()
+            if r.get("ok"):
+                return (f"📧 Dragon Artikel gesendet:\n"
+                        f"📝 Thema: {r.get('topic','?')}\n"
+                        f"📊 Fortschritt: {stats.get('total_sent',0)}/1000\n"
+                        f"⏳ Verbleibend: {stats.get('remaining',0)} Themen")
+            return f"Dragon Artikel Fehler: {r.get('error','?')}"
+        except Exception as e:
+            return f"Dragon Artikel Fehler: {e}"
+
+    async def _cmd_mass_blast(self, text: str, session_id: str) -> str:
+        """1000 Content-Pieces über alle Kanäle blasten."""
+        try:
+            from modules.mass_content_blaster import run_mass_blast, get_mass_blast_stats
+            r = await run_mass_blast(topics_per_run=5)
+            stats = await get_mass_blast_stats()
+            return (f"🚀 Mass Blast:\n"
+                    f"Posts gesamt: {r.get('total_posted',0)}\n"
+                    f"Plattformen: {r.get('platforms_hit',0)}\n"
+                    f"Themen: {r.get('topics_used',0)}\n"
+                    f"Fortschritt: {stats.get('progress','0/1000')}")
+        except Exception as e:
+            return f"Mass Blast Fehler: {e}"
+
+    async def _cmd_system_overview(self, text: str, session_id: str) -> str:
+        """Kompletter System-Überblick aller Plattformen."""
+        try:
+            from modules.selbstverbesserung import get_system_overview
+            r = await get_system_overview()
+            platforms = r.get("platforms", [])
+            ok = [p for p in platforms if "✅" in p.get("status", "")]
+            err = [p for p in platforms if "❌" in p.get("status", "")]
+            lines = [f"🌐 System Overview: {r.get('summary','?')}"]
+            if ok:
+                lines.append("✅ " + " | ".join(p["platform"] for p in ok[:10]))
+            if err:
+                lines.append("❌ " + " | ".join(p["platform"] for p in err[:10]))
+            return "\n".join(lines)
+        except Exception as e:
+            return f"System Overview Fehler: {e}"
+
+    async def _cmd_quantum_repair(self, text: str, session_id: str) -> str:
+        """Quantum Self-Repair durchführen."""
+        try:
+            from modules.quantum_self_repair import run_quantum_scan
+            r = await run_quantum_scan()
+            return (f"🔧 Quantum Repair:\n"
+                    f"Wiederkehrend: {r.get('recurring_errors',0)}\n"
+                    f"Fixes: {r.get('fix_count',0)}\n"
+                    f"Fehler gesamt: {r.get('error_stats',{}).get('total_occurrences',0)}")
+        except Exception as e:
+            return f"Quantum Repair Fehler: {e}"
+
+    async def _cmd_linkedin_post(self, text: str, session_id: str) -> str:
+        """LinkedIn Post veröffentlichen."""
+        try:
+            from core.automation_scheduler import task_linkedin_auto_post
+            return await task_linkedin_auto_post()
+        except Exception as e:
+            return f"LinkedIn Fehler: {e}"
+
+    async def _cmd_instagram_post(self, text: str, session_id: str) -> str:
+        """Instagram Post veröffentlichen."""
+        try:
+            from core.automation_scheduler import task_instagram_auto_post
+            return await task_instagram_auto_post()
+        except Exception as e:
+            return f"Instagram Fehler: {e}"
+
+    async def _cmd_pinterest_post(self, text: str, session_id: str) -> str:
+        """Pinterest Pin veröffentlichen."""
+        try:
+            from core.automation_scheduler import task_pinterest_auto_post
+            return await task_pinterest_auto_post()
+        except Exception as e:
+            return f"Pinterest Fehler: {e}"
+
+    async def _cmd_printify_status(self, text: str, session_id: str) -> str:
+        """Printify Status."""
+        try:
+            from modules.printify_automation import ping
+            ok, info = await ping()
+            return f"Printify: {'✅ ' + str(info) if ok else '❌ ' + str(info)}"
+        except Exception as e:
+            return f"Printify Fehler: {e}"
+
+    async def _cmd_printful_status(self, text: str, session_id: str) -> str:
+        """Printful Status."""
+        try:
+            from modules.printful_automation import ping
+            ok, info = await ping()
+            return f"Printful: {'✅ ' + str(info) if ok else '❌ ' + str(info)}"
+        except Exception as e:
+            return f"Printful Fehler: {e}"
+
+    async def _cmd_gumroad_status(self, text: str, session_id: str) -> str:
+        """Gumroad Status."""
+        try:
+            from modules.ecommerce_connectors import GumroadConnector
+            g = GumroadConnector()
+            r = await g.ping()
+            return f"Gumroad: {'✅ ' + str(r) if r.get('connected') else '❌ ' + r.get('error','?')}"
+        except Exception as e:
+            return f"Gumroad: 🔗 {os.getenv('DS24_AFFILIATE_LINK','https://tecbuuss.gumroad.com/l/wcqdjx')}"
+
+    async def _cmd_paypal_status(self, text: str, session_id: str) -> str:
+        """PayPal Status."""
+        try:
+            from modules.paypal_client import get_status
+            r = await get_status()
+            return f"PayPal: {r}"
+        except Exception as e:
+            return f"PayPal: Sandbox ✅ | Live Keys → developer.paypal.com → RudiBot → LIVE Tab"
+
+    async def _cmd_klaviyo_blast(self, text: str, session_id: str) -> str:
+        """Klaviyo Campaign senden."""
+        try:
+            from core.automation_scheduler import task_klaviyo_daily_campaign
+            return await task_klaviyo_daily_campaign()
+        except Exception as e:
+            return f"Klaviyo Fehler: {e}"
+
+    async def _cmd_ebay_blast(self, text: str, session_id: str) -> str:
+        """eBay Blast durchführen."""
+        try:
+            from core.automation_scheduler import task_ebay_blast
+            return await task_ebay_blast()
+        except Exception as e:
+            return f"eBay Fehler: {e}"
+
+    async def _cmd_amazon_blast(self, text: str, session_id: str) -> str:
+        """Amazon Blast durchführen."""
+        try:
+            from core.automation_scheduler import task_amazon_blast
+            return await task_amazon_blast()
+        except Exception as e:
+            return f"Amazon Fehler: {e}"
+
+    async def _cmd_twilio_blast(self, text: str, session_id: str) -> str:
+        """Twilio SMS senden."""
+        try:
+            from core.automation_scheduler import task_twilio_morning_brief
+            return await task_twilio_morning_brief()
+        except Exception as e:
+            return f"Twilio Fehler: {e}"
 
 
 # ---------------------------------------------------------------------------

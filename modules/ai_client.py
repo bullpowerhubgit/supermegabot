@@ -113,8 +113,8 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("Gemini error: %s", e)
 
-    # 5. OpenRouter (free models available — needs valid sk-or-v1-... key)
-    if _OPENROUTER() and _OPENROUTER().startswith("sk-or-"):
+    # 5. OpenRouter (free models available — any valid API key)
+    if _OPENROUTER():
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(
