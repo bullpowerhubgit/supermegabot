@@ -7330,6 +7330,93 @@ async def handle_master_status(req: web.Request) -> web.Response:
     return web.json_response(status)
 
 
+# ── Selbstverbesserung / Email Doctor / Mass Blast / Dragon Handlers ─────────
+
+async def handle_selbstverbesserung_run(req: web.Request) -> web.Response:
+    """POST /api/selbstverbesserung/run — alle Plattformen analysieren + Auto-Fix."""
+    try:
+        from modules.selbstverbesserung import run_selbstverbesserung_cycle
+        r = await run_selbstverbesserung_cycle()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_system_overview(req: web.Request) -> web.Response:
+    """GET /api/system/overview — vollständige System-Übersicht."""
+    try:
+        from modules.selbstverbesserung import get_system_overview
+        r = await get_system_overview()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_email_doctor_run(req: web.Request) -> web.Response:
+    """POST /api/email-doctor/run — alle E-Mail-Systeme prüfen + reparieren."""
+    try:
+        from modules.email_doctor import run_email_doctor
+        r = await run_email_doctor()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_email_doctor_status(req: web.Request) -> web.Response:
+    """GET /api/email-doctor/status — E-Mail-System Status."""
+    try:
+        from modules.email_doctor import run_email_doctor
+        r = await run_email_doctor()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mass_blast_run(req: web.Request) -> web.Response:
+    """POST /api/mass-blast/run — 1000 Content-Pieces blasten."""
+    try:
+        from modules.mass_content_blaster import run_mass_blast
+        r = await run_mass_blast(topics_per_run=10)
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mass_blast_stats(req: web.Request) -> web.Response:
+    """GET /api/mass-blast/stats — Mass Blast Statistiken."""
+    try:
+        from modules.mass_content_blaster import get_mass_blast_stats
+        r = await get_mass_blast_stats()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_dragon_article_send(req: web.Request) -> web.Response:
+    """POST /api/dragon/article/send — nächsten Dragon-Artikel senden."""
+    try:
+        from modules.mailchimp_dragon_1000 import send_dragon_article
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        r = await send_dragon_article(topic=body.get("topic"))
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_dragon_article_stats(req: web.Request) -> web.Response:
+    """GET /api/dragon/article/stats — Dragon 1000 Artikel Statistiken."""
+    try:
+        from modules.mailchimp_dragon_1000 import get_dragon_article_stats
+        r = await get_dragon_article_stats()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── MegaAgentOrchestrator Handlers ───────────────────────────────────────────
 
 async def handle_mega_orchestrate(req: web.Request) -> web.Response:
@@ -8604,6 +8691,16 @@ async def create_app():
     # ── MEGA AGENT ORCHESTRATOR — alle 12 Plattformen koordiniert ────────────
     app.router.add_post("/api/agents/orchestrate",       handle_mega_orchestrate)
     app.router.add_get( "/api/agents/orchestrate/status",handle_mega_orchestrate_status)
+    # ── SELBSTVERBESSERUNG & EMAIL DOCTOR & MASS BLAST ───────────────────────
+    app.router.add_post("/api/selbstverbesserung/run",    handle_selbstverbesserung_run)
+    app.router.add_get( "/api/selbstverbesserung/status", handle_system_overview)
+    app.router.add_post("/api/email-doctor/run",          handle_email_doctor_run)
+    app.router.add_get( "/api/email-doctor/status",       handle_email_doctor_status)
+    app.router.add_post("/api/mass-blast/run",            handle_mass_blast_run)
+    app.router.add_get( "/api/mass-blast/stats",          handle_mass_blast_stats)
+    app.router.add_post("/api/dragon/article/send",       handle_dragon_article_send)
+    app.router.add_get( "/api/dragon/article/stats",      handle_dragon_article_stats)
+    app.router.add_get( "/api/system/overview",           handle_system_overview)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
