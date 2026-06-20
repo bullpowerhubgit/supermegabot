@@ -1131,7 +1131,20 @@ async def task_shopify_blog_auto() -> str:
         art = article.get("article", {})
         if art.get("id"):
             return f"Blog: '{topic_title[:50]}' ID={art['id']}"
-        return f"Blog Fehler: {article.get('errors', str(article)[:100])}"
+        err_msg = str(article.get("errors", article))[:200]
+        if "write_content" in err_msg or "scope" in err_msg.lower() or "approval" in err_msg.lower():
+            tg_tok  = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+            if tg_tok and tg_chat:
+                import re as _re
+                plain = _re.sub(r'<[^>]+>', '', final_body)[:800]
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                    await s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                        json={"chat_id": tg_chat,
+                              "text": f"📝 *{topic_title}*\n\n{plain}\n\n👉 https://ineedit.com.co",
+                              "parse_mode": "Markdown"})
+            return f"Blog→Telegram: '{topic_title[:50]}' (Shopify needs write_content scope)"
+        return f"Blog Fehler: {err_msg}"
     except Exception as e:
         return f"Shopify Blog Fehler: {e}"
 
@@ -3882,6 +3895,24 @@ async def task_klaviyo_autonomy_cycle() -> str:
         return f"Klaviyo cycle error: {e}"
 
 
+async def task_product_generator() -> str:
+    try:
+        from modules.product_generator import run_generator_cycle
+        r = await run_generator_cycle(count=3, from_trends=True)
+        return f"ProductGen: {r.get('created',0)} created, {r.get('failed',0)} failed"
+    except Exception as e:
+        return f"ProductGen error: {e}"
+
+
+async def task_product_generator_niche() -> str:
+    try:
+        from modules.product_generator import run_niche_blast
+        r = await run_niche_blast()
+        return f"NicheBlast: {r.get('created',0)} created"
+    except Exception as e:
+        return f"NicheBlast error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -4161,6 +4192,9 @@ TASKS = [
     ("digistore_autonomy_cycle", task_digistore_autonomy_cycle, 43200, 17600), # 12h — DS24 blast + revenue report
     ("mailchimp_autonomy_cycle", task_mailchimp_autonomy_cycle, 86400, 17720), # daily — Mailchimp weekly digest
     ("klaviyo_autonomy_cycle",   task_klaviyo_autonomy_cycle,  86400, 17840), # daily — Klaviyo newsletter
+    # ── PRODUCT GENERATOR — vollautonome Produkt-Erstellung aus Trends ────────
+    ("product_generator",        task_product_generator,        7200, 18000), # 2h — 3 neue Produkte aus Trends
+    ("product_generator_niche",  task_product_generator_niche, 14400, 18120), # 4h — 5 Nischen-Produkte
 ]
 
 
