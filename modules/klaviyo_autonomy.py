@@ -113,7 +113,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
     try:
         from_email = os.getenv("FROM_EMAIL", "hello@autopilot-store-suite-fmbka.myshopify.com")
 
-        # Step 1: Create campaign WITH inline campaign-messages in attributes
+        # Step 1: Create campaign WITH inline campaign-messages (JSON:API compound format)
         campaign_payload = {
             "data": {
                 "type": "campaign",
@@ -130,15 +130,20 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                     },
                     "campaign-messages": [
                         {
-                            "channel": "email",
-                            "label": name[:50],
-                            "content": {
-                                "subject": subject[:150],
-                                "preview_text": name[:80],
-                                "from_email": from_email,
-                                "from_label": "BullPowerHub",
-                                "body": html_content,
-                            },
+                            "data": {
+                                "type": "campaign-message",
+                                "attributes": {
+                                    "channel": "email",
+                                    "label": name[:50],
+                                    "content": {
+                                        "subject": subject[:150],
+                                        "preview_text": name[:80],
+                                        "from_email": from_email,
+                                        "from_label": "BullPowerHub",
+                                        "body": html_content,
+                                    },
+                                },
+                            }
                         }
                     ],
                 },
