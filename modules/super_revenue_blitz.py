@@ -385,7 +385,6 @@ async def send_klaviyo_campaign(subject: str, html_body: str, campaign_name: str
                 headers=headers,
                 json={"data": {"type": "campaign", "attributes": {
                     "name": name,
-                    "channel": "email",
                     "audiences": {"included": [KLAVIYO_LIST()]},
                     "send_options": {"use_smart_sending": True},
                     "tracking_options": {"is_tracking_clicks": True, "is_tracking_opens": True},

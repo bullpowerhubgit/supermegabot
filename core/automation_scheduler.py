@@ -1282,13 +1282,16 @@ Nur JSON, kein anderer Text."""
                 timeout=aiohttp.ClientTimeout(total=15)) as r:
                 campaign_resp = await r.json(content_type=None)
 
-        campaign_id = campaign_resp.get("data", {}).get("id", "")
+        campaign_data = (campaign_resp.get("data") or {}) if campaign_resp else {}
+        campaign_id = campaign_data.get("id", "")
         if not campaign_id:
             return f"Klaviyo campaign creation failed: {campaign_resp}"
 
         # Set HTML content and send
         async with aiohttp.ClientSession() as s:
-            msg_id = campaign_resp.get("data", {}).get("relationships", {}).get("campaign-messages", {}).get("data", [{}])[0].get("id", "")
+            rels = (campaign_data.get("relationships") or {})
+            cm_data = (rels.get("campaign-messages") or {}).get("data") or [{}]
+            msg_id = (cm_data[0] if cm_data else {}).get("id", "")
             if msg_id:
                 await s.patch(f"https://a.klaviyo.com/api/campaign-messages/{msg_id}/",
                     headers=headers,
