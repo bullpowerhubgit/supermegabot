@@ -358,7 +358,7 @@ _BRUTUS_TEMPLATES = [
 
 def _fallback_content_swarm(keyword: str) -> dict:
     import hashlib
-    _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+    _ds24 = os.getenv("DS24_AFFILIATE_LINK", os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))
     idx = int(hashlib.md5(keyword.encode()).hexdigest(), 16) % len(_BRUTUS_TEMPLATES)
     tmpl = _BRUTUS_TEMPLATES[idx]
     return {k: v.replace("{kw}", keyword).replace("{_DS24}", _ds24).replace("#BullPower", "#AIITEC") for k, v in tmpl.items()}
