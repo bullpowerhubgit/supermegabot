@@ -6798,7 +6798,14 @@ async def handle_ds24_sync_alias(request: web.Request) -> web.Response:
     return await handle_digistore_autonomy_cycle(request)
 
 async def handle_amazon_run_alias(request: web.Request) -> web.Response:
-    return await handle_amazon_cycle(request)
+    async def _bg():
+        try:
+            from modules.amazon_autonomy import run_amazon_cycle
+            await run_amazon_cycle()
+        except Exception as e:
+            log.error("amazon_run bg: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "started", "message": "Amazon cycle gestartet (background)"})
 
 async def handle_ebay_run_alias(request: web.Request) -> web.Response:
     # Run in background to avoid Railway 502 timeout
@@ -6846,7 +6853,7 @@ async def handle_mailchimp_run(req: web.Request) -> web.Response:
     return await _trigger_task("mailchimp_mass_daily")
 
 async def handle_ds24_run(req: web.Request) -> web.Response:
-    return await _trigger_task("ds24_revenue_sync")
+    return await _trigger_task("ds24_affiliate_daily")
 
 async def handle_tiktok_run(req: web.Request) -> web.Response:
     return await _trigger_task("tiktok_trend_blast", background=True)
@@ -8894,6 +8901,7 @@ async def handle_brutus_status(req):
         "youtube":   {"active": bool(os.getenv("YOUTUBE_API_KEY", "")), "label": "YouTube"},
     }
     return web.json_response({
+        "ok":      True,
         "version": version,
         "active":  active,
         "channels": channel_status,
