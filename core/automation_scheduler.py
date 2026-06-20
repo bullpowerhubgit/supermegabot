@@ -4336,6 +4336,40 @@ async def task_revenue_mega_weekly() -> str:
         return f"RevenueMegaWeekly error: {e}"
 
 
+# ── Quantum Self-Repair + Self-Improvement Tasks ──────────────────────────────
+
+async def task_quantum_scan() -> str:
+    try:
+        from modules.quantum_self_fixer import run_full_scan
+        r = await run_full_scan()
+        return (f"QuantumScan: {r.get('total',0)} Endpoints | "
+                f"ok={r.get('ok',0)} err={r.get('errors',0)} | "
+                f"{r.get('fixed',0)} auto-fixes")
+    except Exception as e:
+        return f"QuantumScan error: {e}"
+
+
+async def task_quantum_repair() -> str:
+    try:
+        from modules.quantum_self_repair import run_quantum_scan
+        r = await run_quantum_scan()
+        return (f"QuantumRepair: {r.get('fixes_applied',0)} Fixes | "
+                f"patterns={r.get('patterns_found',0)} | "
+                f"improved={r.get('modules_improved',0)}")
+    except Exception as e:
+        return f"QuantumRepair error: {e}"
+
+
+async def task_quantum_self_improve() -> str:
+    try:
+        from modules.quantum_self_repair import run_self_improvement
+        r = await run_self_improvement()
+        return (f"SelfImprove: {r.get('improvements',0)} upgrades | "
+                f"success_rate={r.get('success_rate',0):.1%}")
+    except Exception as e:
+        return f"SelfImprove error: {e}"
+
+
 # ── Task-Funktionen für neue Module (kein API-Key nötig) ─────────────────────
 
 async def task_tiktok_trend_blast() -> str:
@@ -4381,6 +4415,20 @@ async def task_upwork_proposal_gen() -> str:
         return f"Upwork Proposals: {r.get('proposals_generated',0)} generiert + via Telegram gesendet"
     except Exception as e:
         return f"Upwork Proposal Fehler: {e}"
+
+
+async def task_quantum_self_repair() -> str:
+    """Every 30min — scan all API endpoints, detect + log errors, auto-fix via Claude."""
+    try:
+        from modules.quantum_self_fixer import scan_and_repair
+        result = await scan_and_repair()
+        ok  = result.get("ok", 0)
+        bad = result.get("failed", 0)
+        pct = result.get("health_pct", 0)
+        new = result.get("new_errors", 0)
+        return f"Quantum: {ok}/{ok+bad} OK ({pct}%) | Neue Fehler: {new}"
+    except Exception as e:
+        return f"Quantum Fehler: {e}"
 
 
 # ── Task registry ────────────────────────────────────────────────────────────
@@ -4724,6 +4772,8 @@ TASKS = [
     ("fiverr_promo_cycle",       task_fiverr_promo_cycle,      21600, 22400), # 6h — Viral Promo
     # ── UPWORK PROPOSAL AUTO-GENERATOR — täglich KI-Proposals per Telegram ───
     ("upwork_proposal_gen",      task_upwork_proposal_gen,     86400, 22500), # täglich
+    # ── QUANTUM SELF-REPAIR — alle 30min alle Endpoints scannen + KI-Fix ─────
+    ("quantum_self_repair",      task_quantum_self_repair,      1800,    60), # 30min — Self-Healing AI
 ]
 
 
