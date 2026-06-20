@@ -3552,6 +3552,17 @@ async def task_shopify_title_fix() -> str:
         return f"Shopify TitleFix error: {e}"
 
 
+async def task_shopify_affiliate_blog() -> str:
+    """Shopify Blog-Posts mit DS24 Affiliate Link — alle 4h automatisch."""
+    try:
+        from modules.shopify_full_autonomy import auto_create_affiliate_blog_posts
+        r = await auto_create_affiliate_blog_posts(count=2)
+        return (f"Affiliate Blog: {r.get('created',0)} Posts erstellt | "
+                f"DS24={r.get('ds24_link','?')[:40]}")
+    except Exception as e:
+        return f"Affiliate Blog error: {e}"
+
+
 async def task_nexus_cycle() -> str:
     """NEXUS-1: Autonomer Revenue-Superintelligenz Zyklus — alle 10 Minuten."""
     try:
@@ -4053,6 +4064,7 @@ TASKS = [
     ("shopify_restock",        task_shopify_restock,           7200,  9840), # 2h — Trending Produkte nachladen
     ("shopify_image_fix",      task_shopify_image_fix,        14400,  9845), # 4h — Bilder auto-hinzufügen
     ("shopify_title_fix",      task_shopify_title_fix,        14400,  9847), # 4h — Titel+Texte KI-Korrektur
+    ("shopify_affiliate_blog", task_shopify_affiliate_blog,  14400,  9848), # 4h — DS24 Affiliate Blog Posts
     # ── SHOPIFY AUTO-FILL — Produkte + Bilder + Text autonom ─────────────────
     ("shopify_auto_fill",      task_shopify_auto_fill,        14400, 9850),  # 4h — Shopify: reparieren + neue Produkte + BrutusCore
     # ── DS24 FULL AUTO — Affiliate + Mailing + Traffic ───────────────────────
