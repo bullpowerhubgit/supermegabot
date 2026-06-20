@@ -409,8 +409,9 @@ async def post_github_pages(title: str, body_md: str, tags: list[str] | None = N
 
     now   = datetime.now(timezone.utc)
     date  = now.strftime("%Y-%m-%d")
-    slug  = re.sub(r"[^a-z0-9]+", "-", title.lower())[:60].strip("-")
-    path  = f"blog/{date}-{slug}.html"
+    ts    = now.strftime("%H%M%S")
+    slug  = re.sub(r"[^a-z0-9]+", "-", title.lower())[:50].strip("-")
+    path  = f"blog/{date}-{ts}-{slug}.html"
     tag_str = ", ".join(tags or ["KI", "E-Commerce", "Automatisierung"])
     # Convert markdown-ish to HTML
     body_html = body_md.replace("\n## ", "\n<h2>").replace("\n### ", "\n<h3>")
@@ -442,11 +443,23 @@ async def post_github_pages(title: str, body_md: str, tags: list[str] | None = N
 </html>"""
     encoded = base64.b64encode(content.encode()).decode()
     try:
+        gh_headers = {"Authorization": f"token {token}", "Accept": "application/vnd.github+json"}
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            # Check if file already exists (get SHA for update)
+            sha = None
+            async with s.get(
+                f"https://api.github.com/repos/{GITHUB_PAGES_REPO}/contents/{path}",
+                headers=gh_headers,
+            ) as chk:
+                if chk.status == 200:
+                    sha = (await chk.json()).get("sha")
+            payload = {"message": f"blog: {title[:72]}", "content": encoded}
+            if sha:
+                payload["sha"] = sha
             async with s.put(
                 f"https://api.github.com/repos/{GITHUB_PAGES_REPO}/contents/{path}",
-                headers={"Authorization": f"token {token}", "Accept": "application/vnd.github+json"},
-                json={"message": f"blog: {title[:72]}", "content": encoded},
+                headers=gh_headers,
+                json=payload,
             ) as r:
                 if r.status in (200, 201):
                     url = f"https://bullpowerhubgit.github.io/{path}"
