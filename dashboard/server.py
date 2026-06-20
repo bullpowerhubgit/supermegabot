@@ -7002,14 +7002,14 @@ async def handle_twitter_run(req: web.Request) -> web.Response:
 
 
 async def handle_quantum_scan(req: web.Request) -> web.Response:
-    try:
-        from modules.quantum_self_fixer import run_full_scan
-        r = await asyncio.wait_for(run_full_scan(), timeout=25)
-        return web.json_response({"ok": True, **r})
-    except asyncio.TimeoutError:
-        return web.json_response({"ok": True, "status": "scanning (background)"})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+    async def _bg():
+        try:
+            from modules.quantum_self_fixer import run_full_scan
+            await run_full_scan()
+        except Exception as e:
+            log.error("quantum_scan bg: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "scan started (background) — poll GET /api/quantum/status"})
 
 async def handle_quantum_repair(req: web.Request) -> web.Response:
     try:
@@ -7215,20 +7215,24 @@ async def handle_quantum_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 async def handle_quantum_scan(req):
-    try:
-        from modules.quantum_self_fixer import run_full_scan
-        result = await run_full_scan()
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+    async def _bg():
+        try:
+            from modules.quantum_self_fixer import run_full_scan
+            await run_full_scan()
+        except Exception as e:
+            log.error("quantum_scan bg: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "scan started (background) — poll GET /api/quantum/status"})
 
 async def handle_quantum_repair(req):
-    try:
-        from modules.quantum_self_fixer import scan_and_repair
-        result = await scan_and_repair()
-        return web.json_response(result)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+    async def _bg():
+        try:
+            from modules.quantum_self_fixer import scan_and_repair
+            await scan_and_repair()
+        except Exception as e:
+            log.error("quantum_repair bg: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "repair started (background)"})
 
 
 # ── Mega SEO Engine ───────────────────────────────────────────────────────────
