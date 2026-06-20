@@ -3870,20 +3870,36 @@ async def task_printify_sync() -> str:
 # ── Mega BRUTUS Rotation — alle Plattformen im 1h Zyklus ─────────────────────
 
 _MEGA_BRUTUS_PLATFORMS = [
-    ("Digistore24 Affiliate",   os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"),
+    ("Digistore24 Affiliate",    os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"),
      ["DS24 Affiliate 2026", "digitale Produkte verdienen", "passives Einkommen"]),
-    ("Shopify Automation",       "",
+    ("Shopify Automation",        "",
      ["Shopify Dropshipping 2026", "Shopify Automation AI", "eigener Online-Shop"]),
-    ("AliExpress Dropshipping",  "https://www.aliexpress.com",
+    ("AliExpress Dropshipping",   "https://www.aliexpress.com",
      ["AliExpress Bestseller", "Dropshipping Produkte", "günstiger Einkauf"]),
-    ("Amazon Affiliate",         "https://www.amazon.de/?tag=bullpowerhub-21",
+    ("Amazon Affiliate",          "https://www.amazon.de/?tag=bullpowerhub-21",
      ["Amazon Bestseller 2026", "Amazon Affiliate verdienen", "passive Einnahmen Amazon"]),
-    ("Printify Print on Demand", "https://www.printify.com",
+    ("Printify Print on Demand",  "https://www.printify.com",
      ["Print on Demand 2026", "eigene T-Shirts verkaufen", "Merch Automation"]),
-    ("eBay Deals",               "https://www.ebay.de",
+    ("eBay Deals",                "https://www.ebay.de",
      ["eBay Schnäppchen 2026", "eBay Dropshipping", "eBay Affiliate verdienen"]),
-    ("Klaviyo Email Marketing",  "",
+    ("Klaviyo Email Marketing",   "",
      ["Email Marketing Automation", "Klaviyo E-Commerce", "Newsletter Geld verdienen"]),
+    ("TikTok Viral Produkte",     "https://ineedit.com.co",
+     ["TikTok viral Produkte 2026", "TikTok Shop Bestseller", "TikTok Dropshipping"]),
+    ("Side Hustle Deutschland",   "https://ineedit.com.co",
+     ["Side Hustle Deutschland 2026", "Nebenverdienst online", "zweites Einkommen"]),
+    ("Passives Einkommen KI",     "https://ineedit.com.co",
+     ["Passives Einkommen KI 2026", "Geld verdienen im Schlaf", "KI Business starten"]),
+    ("Geld verdienen Österreich", "https://ineedit.com.co",
+     ["Geld verdienen Österreich", "Online Business Wien", "E-Commerce Austria"]),
+    ("Schweiz Online Business",   "https://ineedit.com.co",
+     ["Online Business Schweiz", "Geld verdienen Zürich", "Dropshipping Schweiz"]),
+    ("Shopify Anfänger Guide",    "https://ineedit.com.co",
+     ["Shopify Anfänger 2026", "Online Shop erstellen", "ersten Shop starten"]),
+    ("Amazon FBA Alternative",    "https://ineedit.com.co",
+     ["Amazon FBA Alternative 2026", "ohne FBA verkaufen", "eigener Shop statt Amazon"]),
+    ("Print on Demand Gewinn",    "https://ineedit.com.co",
+     ["Print on Demand Gewinn", "POD Marge optimieren", "Printful Printify Vergleich"]),
 ]
 
 async def task_mega_brutus_rotation() -> str:
@@ -4026,6 +4042,83 @@ async def task_ds24_seo_blast() -> str:
         return f"DS24 SEO Blast: {r.get('blasted',0)} Produkte geblasten"
     except Exception as e:
         return f"DS24 SEO Blast error: {e}"
+
+
+# ── SEO Traffic Blitz Tasks ──────────────────────────────────────────────────
+
+async def task_seo_sitemap_ping() -> str:
+    try:
+        from modules.seo_traffic_blitz import run_sitemap_submit
+        r = await run_sitemap_submit()
+        return f"Sitemap gepingt: {r.get('pings_ok',0)}/{r.get('pings_total',0)} Suchmaschinen"
+    except Exception as e:
+        return f"Sitemap ping error: {e}"
+
+
+async def task_seo_keyword_blast() -> str:
+    try:
+        from modules.seo_traffic_blitz import run_keyword_content_blast
+        r = await run_keyword_content_blast(count=5)
+        return f"KeywordBlast: {r.get('keywords_posted',0)} Keywords | {r.get('channels_hit',0)} Kanäle"
+    except Exception as e:
+        return f"Keyword blast error: {e}"
+
+
+async def task_shopify_schema_seo() -> str:
+    try:
+        from modules.seo_traffic_blitz import run_schema_markup_inject
+        r = await run_schema_markup_inject(limit=15)
+        return f"Schema SEO: {r.get('products_updated',0)} Produkte optimiert"
+    except Exception as e:
+        return f"Schema SEO error: {e}"
+
+
+async def task_sms_morning_brief() -> str:
+    try:
+        from modules.twilio_sms_blast import run_sms_morning_brief
+        r = await run_sms_morning_brief()
+        return f"SMS: {'gesendet ✅' if r.get('ok') else r.get('error','failed')}"
+    except Exception as e:
+        return f"SMS brief error: {e}"
+
+
+async def task_internal_link_builder() -> str:
+    try:
+        from modules.seo_traffic_blitz import run_internal_link_builder
+        r = await run_internal_link_builder()
+        return f"InternalLinks: {r.get('articles_linked',0)} Artikel verlinkt"
+    except Exception as e:
+        return f"Internal link error: {e}"
+
+
+async def task_full_seo_blast() -> str:
+    try:
+        from modules.seo_traffic_blitz import run_full_seo_blast
+        r = await run_full_seo_blast()
+        return (f"SEOBlast: sitemap={r.get('sitemap_pings',0)} "
+                f"keywords={r.get('keywords_posted',0)} "
+                f"schema={r.get('schema_updated',0)} "
+                f"kanäle={r.get('channels_hit',0)}")
+    except Exception as e:
+        return f"Full SEO blast error: {e}"
+
+
+async def task_rss_feed_update() -> str:
+    try:
+        from modules.rss_feed_publisher import generate_rss_feed
+        r = await generate_rss_feed(limit=20)
+        return f"RSS: {r.get('articles',0)} Artikel → feed.rss" if r.get("ok") else f"RSS error: {r.get('error')}"
+    except Exception as e:
+        return f"RSS feed error: {e}"
+
+
+async def task_reddit_style_blast() -> str:
+    try:
+        from modules.reddit_autoposter import run_reddit_blast
+        r = await run_reddit_blast()
+        return f"Reddit: {r.get('posted',0)} Posts | {r.get('channels',0)} Kanäle"
+    except Exception as e:
+        return f"Reddit blast error: {e}"
 
 
 # ── Task registry ────────────────────────────────────────────────────────────
@@ -4315,6 +4408,18 @@ TASKS = [
     # ── DS24 MASSENANLEGER — 1000 Produkte Wartung + SEO-Blast ────────────────
     ("ds24_refill",              task_ds24_refill,             86400, 18500), # täglich — 1000 Produkte halten
     ("ds24_seo_blast",           task_ds24_seo_blast,         604800, 18700), # wöchentlich — Top-Produkte blasten
+    # ── SEO TRAFFIC BLITZ — Sitemap, Keywords, Schema, Internal Links ──────────
+    ("seo_sitemap_ping",         task_seo_sitemap_ping,        14400, 18800), # 4h — Google/Bing Sitemap Ping
+    ("seo_keyword_blast",        task_seo_keyword_blast,       10800, 18900), # 3h — Keyword Content Blast
+    ("shopify_schema_seo",       task_shopify_schema_seo,      43200, 19000), # 12h — Schema Markup Inject
+    ("full_seo_blast",           task_full_seo_blast,          21600, 19100), # 6h — Full SEO Blast
+    ("internal_link_builder",    task_internal_link_builder,  172800, 19200), # 48h — Mega Guide + Internal Links
+    # ── SMS MARKETING — Twilio ────────────────────────────────────────────────
+    ("sms_morning_brief",        task_sms_morning_brief,       86400, 19300), # täglich — Morning SMS
+    # ── RSS FEED — automatisch aktuell ───────────────────────────────────────
+    ("rss_feed_update",          task_rss_feed_update,         21600, 19400), # 6h — RSS Feed aktualisieren
+    # ── REDDIT STYLE BLAST ───────────────────────────────────────────────────
+    ("reddit_style_blast",       task_reddit_style_blast,      14400, 19500), # 4h — Reddit-Style Content
 ]
 
 
