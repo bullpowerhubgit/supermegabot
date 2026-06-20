@@ -21,12 +21,115 @@ import json
 import logging
 import os
 import hashlib
+import sqlite3
 import aiohttp
 from datetime import datetime, timezone, timedelta
 from pathlib import Path
 from typing import Optional
 
 from modules.circuit_breaker import is_open, success as cb_success, failure as cb_failure, protected
+
+# ── Activity Log (SQLite) ─────────────────────────────────────────────────────
+_DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
+_BRUTUS_DB = _DATA_DIR / "scheduler.db"   # reuse existing scheduler DB
+
+
+def _init_brutus_log():
+    conn = sqlite3.connect(_BRUTUS_DB)
+    conn.executescript("""
+        CREATE TABLE IF NOT EXISTS brutus_runs (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            ran_at      TEXT NOT NULL,
+            niche       TEXT,
+            keywords    INTEGER DEFAULT 0,
+            content     INTEGER DEFAULT 0,
+            channels    INTEGER DEFAULT 0,
+            details     TEXT,
+            duration_ms INTEGER
+        );
+        CREATE TABLE IF NOT EXISTS brutus_channel_log (
+            id       INTEGER PRIMARY KEY AUTOINCREMENT,
+            run_id   INTEGER,
+            keyword  TEXT,
+            channel  TEXT,
+            status   TEXT,
+            detail   TEXT,
+            posted_at TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_brutus_runs_at ON brutus_runs(ran_at);
+        CREATE INDEX IF NOT EXISTS idx_bcl_run ON brutus_channel_log(run_id, posted_at);
+    """)
+    conn.commit()
+    conn.close()
+
+
+try:
+    _init_brutus_log()
+except Exception:
+    pass
+
+
+def _log_brutus_run(niche: str, results: dict, duration_ms: int) -> int:
+    """Save a BRUTUS run summary, return run_id."""
+    try:
+        conn = sqlite3.connect(_BRUTUS_DB)
+        cur = conn.execute(
+            "INSERT INTO brutus_runs (ran_at,niche,keywords,content,channels,details,duration_ms) VALUES (?,?,?,?,?,?,?)",
+            (datetime.now(timezone.utc).isoformat(), niche,
+             results.get("keywords_processed", 0), results.get("content_pieces", 0),
+             results.get("channels_hit", 0), json.dumps(results)[:1000], duration_ms)
+        )
+        run_id = cur.lastrowid
+        conn.commit()
+        conn.close()
+        return run_id
+    except Exception:
+        return 0
+
+
+def _log_channel(run_id: int, keyword: str, channel: str, status: str, detail: str = ""):
+    """Save per-channel result for a BRUTUS run."""
+    try:
+        conn = sqlite3.connect(_BRUTUS_DB)
+        conn.execute(
+            "INSERT INTO brutus_channel_log (run_id,keyword,channel,status,detail,posted_at) VALUES (?,?,?,?,?,?)",
+            (run_id, keyword, channel, status, detail[:200], datetime.now(timezone.utc).isoformat())
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+
+
+def get_brutus_history(limit: int = 50) -> list:
+    """Return last N BRUTUS runs for dashboard."""
+    try:
+        _init_brutus_log()
+        conn = sqlite3.connect(_BRUTUS_DB)
+        rows = conn.execute(
+            "SELECT id,ran_at,niche,keywords,content,channels,duration_ms FROM brutus_runs ORDER BY id DESC LIMIT ?",
+            (limit,)
+        ).fetchall()
+        conn.close()
+        return [{"id": r[0], "ran_at": r[1], "niche": r[2], "keywords": r[3],
+                 "content": r[4], "channels": r[5], "duration_ms": r[6]} for r in rows]
+    except Exception:
+        return []
+
+
+def get_brutus_run_detail(run_id: int) -> list:
+    """Return per-channel log for a specific run."""
+    try:
+        conn = sqlite3.connect(_BRUTUS_DB)
+        rows = conn.execute(
+            "SELECT keyword,channel,status,detail,posted_at FROM brutus_channel_log WHERE run_id=? ORDER BY id",
+            (run_id,)
+        ).fetchall()
+        conn.close()
+        return [{"keyword": r[0], "channel": r[1], "status": r[2],
+                 "detail": r[3], "posted_at": r[4]} for r in rows]
+    except Exception:
+        return []
 
 log = logging.getLogger("BRUTUS")
 
@@ -845,7 +948,9 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
     log.info("BRUTUS START — Nische: %s", niche)
     log.info("=" * 60)
 
+    _t_start = datetime.now(timezone.utc).timestamp()
     results = {"keywords_processed": 0, "content_pieces": 0, "channels_hit": 0, "errors": []}
+    _run_id = 0   # will be set after first DB write
 
     # Phase 1: Scan
     log.info("Phase 1: Scanning trends...")
@@ -910,6 +1015,7 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
         log.info("Phase 4: Deploying '%s' to all channels...", keyword)
         channels_hit = 0
 
+        _CHANNEL_NAMES = ["telegram", "shopify", "klaviyo", "facebook", "instagram", "youtube"]
         deploy_tasks = [
             deploy_to_telegram(keyword, content_pack),
             deploy_to_shopify_blog(keyword, content_pack),
@@ -920,12 +1026,16 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
         ]
         deploy_results = await asyncio.gather(*deploy_tasks, return_exceptions=True)
 
-        for r in deploy_results:
-            if not isinstance(r, Exception) and r is not False:
+        for ch_name, r in zip(_CHANNEL_NAMES, deploy_results):
+            ok = not isinstance(r, Exception) and r is not False
+            if ok:
                 channels_hit += 1
+            _log_channel(_run_id, keyword, ch_name, "ok" if ok else "skip",
+                         str(r)[:100] if isinstance(r, Exception) else "")
 
         # Phase 4b: Neue Kanäle — Reddit, LinkedIn, Pinterest, VideoScript
         pixel_url = utm_links.get("pixel_url", "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png")
+        _NEW_NAMES = ["reddit", "linkedin", "pinterest", "video_script"]
         new_channel_tasks = [
             post_to_reddit(keyword, content_pack),
             post_to_linkedin_brutus(keyword, content_pack),
@@ -933,9 +1043,12 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
             generate_video_script(keyword, content_pack),
         ]
         new_results = await asyncio.gather(*new_channel_tasks, return_exceptions=True)
-        for r in new_results:
-            if isinstance(r, dict) and not r.get("skipped") and not isinstance(r, Exception):
+        for ch_name, r in zip(_NEW_NAMES, new_results):
+            ok = isinstance(r, dict) and not r.get("skipped") and not isinstance(r, Exception)
+            if ok:
                 channels_hit += 1
+            detail = r.get("reason", r.get("error", "")) if isinstance(r, dict) else str(r)[:80]
+            _log_channel(_run_id, keyword, ch_name, "ok" if ok else "skip", detail)
 
         results["keywords_processed"] += 1
         results["content_pieces"] += len(content_pack)
@@ -948,6 +1061,8 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
     results["amplified"] = amplified
 
     results["timestamp"] = datetime.now(timezone.utc).isoformat()
+    _duration_ms = int((datetime.now(timezone.utc).timestamp() - _t_start) * 1000)
+    _run_id = _log_brutus_run(niche, results, _duration_ms)
 
     # Report
     try:
