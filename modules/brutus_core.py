@@ -25,8 +25,19 @@ MAILCHIMP_LIST  = os.getenv("MAILCHIMP_LIST_ID", "")
 MAILCHIMP_SRV   = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 LINKEDIN_TOKEN  = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
 LINKEDIN_URN    = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
-INDEXNOW_KEY    = os.getenv("INDEXNOW_KEY", "bullpower2026indexnow")
-DS24_BLOG_ID    = "gid://shopify/Blog/127011258755"
+INDEXNOW_KEY      = os.getenv("INDEXNOW_KEY", "bullpower2026indexnow")
+DS24_BLOG_ID      = "gid://shopify/Blog/127011258755"
+TWITTER_API_KEY   = os.getenv("TWITTER_API_KEY", "")
+TWITTER_SECRET    = os.getenv("TWITTER_API_SECRET", "")
+TWITTER_TOKEN     = os.getenv("TWITTER_ACCESS_TOKEN", "")
+TWITTER_TSECRET   = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "")
+DISCORD_TOKEN     = os.getenv("DISCORD_BOT_TOKEN", "")
+DISCORD_CHANNEL   = os.getenv("DISCORD_CHANNEL_ID", "")
+DISCORD_WEBHOOK   = os.getenv("DISCORD_WEBHOOK_URL", "")
+WA_PHONE_ID       = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+WA_ACCESS_TOKEN   = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+AMAZON_TAG        = os.getenv("AMAZON_TRACKING_ID", os.getenv("AMAZON_ASSOCIATES_TAG", "bullpowerhub-21"))
+EBAY_CAMPAIGN_ID  = os.getenv("EBAY_CAMPAIGN_ID", "5339107261")
 
 
 async def _ai_generate(title: str, body: str, link: str, niche: str, session: aiohttp.ClientSession) -> dict:
@@ -46,6 +57,7 @@ JSON:
   "email_body": "120 Wörter, persönlich, CTA mit Link",
   "blog_title": "SEO-optimiert max 60 Zeichen",
   "blog_body": "300 Wörter, H2-Struktur, CTA am Ende",
+  "twitter": "max 250 Zeichen, Emoji, Link am Ende, 1-2 Hashtags",
   "seo_keywords": ["keyword1", "keyword2", "keyword3"]
 }}"""
 
@@ -197,6 +209,98 @@ async def _klaviyo_event(title: str, link: str, session: aiohttp.ClientSession) 
         return False
 
 
+async def _twitter(text: str, session: aiohttp.ClientSession) -> bool:
+    """Tweet via Twitter API v2 + OAuth 1.0a"""
+    if not all([TWITTER_API_KEY, TWITTER_SECRET, TWITTER_TOKEN, TWITTER_TSECRET]):
+        return False
+    try:
+        from modules.twitter_auto_poster import post_tweet
+        result = await post_tweet(text[:280])
+        return bool(result.get("ok") or result.get("data", {}).get("id"))
+    except Exception as e:
+        logger.warning(f"BrutusCore Twitter: {e}")
+        return False
+
+
+async def _discord(text: str, session: aiohttp.ClientSession) -> bool:
+    """Discord Nachricht via Bot oder Webhook"""
+    if DISCORD_WEBHOOK:
+        try:
+            async with session.post(
+                DISCORD_WEBHOOK,
+                json={"content": text[:2000]},
+                timeout=aiohttp.ClientTimeout(total=8)
+            ) as r:
+                return r.status in (200, 204)
+        except Exception as e:
+            logger.warning(f"BrutusCore Discord webhook: {e}")
+            return False
+    if DISCORD_TOKEN and DISCORD_CHANNEL:
+        try:
+            async with session.post(
+                f"https://discord.com/api/v10/channels/{DISCORD_CHANNEL}/messages",
+                headers={"Authorization": f"Bot {DISCORD_TOKEN}", "Content-Type": "application/json"},
+                json={"content": text[:2000]},
+                timeout=aiohttp.ClientTimeout(total=8)
+            ) as r:
+                return r.status == 200
+        except Exception as e:
+            logger.warning(f"BrutusCore Discord bot: {e}")
+    return False
+
+
+async def _whatsapp(text: str, session: aiohttp.ClientSession) -> bool:
+    """WhatsApp Business Cloud API Broadcast"""
+    if not WA_PHONE_ID or not WA_ACCESS_TOKEN:
+        return False
+    wa_to = os.getenv("WHATSAPP_BROADCAST_TO", os.getenv("WHATSAPP_VERIFIED_TO", ""))
+    if not wa_to:
+        return False
+    try:
+        async with session.post(
+            f"https://graph.facebook.com/v18.0/{WA_PHONE_ID}/messages",
+            headers={"Authorization": f"Bearer {WA_ACCESS_TOKEN}", "Content-Type": "application/json"},
+            json={"messaging_product": "whatsapp", "to": wa_to,
+                  "type": "text", "text": {"body": text[:4096]}},
+            timeout=aiohttp.ClientTimeout(total=10)
+        ) as r:
+            d = await r.json()
+            return bool(d.get("messages"))
+    except Exception as e:
+        logger.warning(f"BrutusCore WhatsApp: {e}")
+        return False
+
+
+async def _amazon_affiliate(title: str, link: str, session: aiohttp.ClientSession) -> bool:
+    """Amazon Affiliate Link in Telegram + Blog einbauen"""
+    if not AMAZON_TAG:
+        return False
+    try:
+        from urllib.parse import quote
+        kw = quote(title[:50])
+        aff_link = f"https://www.amazon.de/s?k={kw}&tag={AMAZON_TAG}"
+        msg = f"🛒 Amazon: {title[:80]}\n👉 {aff_link}"
+        return await _telegram(msg, session)
+    except Exception as e:
+        logger.warning(f"BrutusCore Amazon: {e}")
+        return False
+
+
+async def _ebay_affiliate(title: str, link: str, session: aiohttp.ClientSession) -> bool:
+    """eBay Affiliate Link generieren + in Telegram posten"""
+    try:
+        from urllib.parse import quote
+        ebay_search = f"https://www.ebay.de/sch/i.html?_nkw={quote(title[:50])}"
+        aff_link = (f"https://rover.ebay.com/rover/1/707-53477-19255-0/1"
+                    f"?campid={EBAY_CAMPAIGN_ID}&toolid=10001&customid=supermegabot"
+                    f"&mpre={quote(ebay_search)}")
+        msg = f"🏷️ eBay Deal: {title[:80]}\n👉 {aff_link}"
+        return await _telegram(msg, session)
+    except Exception as e:
+        logger.warning(f"BrutusCore eBay: {e}")
+        return False
+
+
 async def _indexnow(url_to_index: str, session: aiohttp.ClientSession) -> bool:
     """Meldet URL sofort bei Bing/IndexNow an"""
     if not url_to_index:
@@ -240,7 +344,8 @@ async def fire(
     if tags is None:
         tags = ["brutus", niche.replace(" ", "-")]
     if channels is None:
-        channels = ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo", "indexnow"]
+        channels = ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo",
+                    "indexnow", "twitter", "discord", "whatsapp", "amazon", "ebay"]
 
     results = {c: False for c in channels}
     results["timestamp"] = datetime.utcnow().isoformat()
@@ -271,6 +376,19 @@ async def fire(
             tasks["klaviyo"] = _klaviyo_event(title, link, sess)
         if "indexnow" in channels and link:
             tasks["indexnow"] = _indexnow(link, sess)
+        if "twitter" in channels:
+            tw_text = content.get("twitter") or f"{title[:200]}\n{link}"
+            tasks["twitter"] = _twitter(tw_text, sess)
+        if "discord" in channels:
+            dc_text = content.get("telegram") or f"🔥 **{title}**\n\n{body[:300]}\n\n👉 {link}"
+            tasks["discord"] = _discord(dc_text, sess)
+        if "whatsapp" in channels:
+            wa_text = content.get("telegram") or f"🔥 {title}\n\n{body[:300]}\n\n👉 {link}"
+            tasks["whatsapp"] = _whatsapp(wa_text, sess)
+        if "amazon" in channels:
+            tasks["amazon"] = _amazon_affiliate(title, link, sess)
+        if "ebay" in channels:
+            tasks["ebay"] = _ebay_affiliate(title, link, sess)
 
         done = await asyncio.gather(*tasks.values(), return_exceptions=True)
         for key, result in zip(tasks.keys(), done):
