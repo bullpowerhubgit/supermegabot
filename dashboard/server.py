@@ -6616,8 +6616,8 @@ async def handle_affiliate_blast_all(request: web.Request) -> web.Response:
         except Exception as e:
             results["amazon"] = {"ok": False, "error": str(e)}
         try:
-            from modules.digistore_autonomy import run_ds24_autonomy_cycle
-            results["ds24"] = await run_ds24_autonomy_cycle()
+            from modules.digistore_autonomy import run_digistore_cycle
+            results["ds24"] = await run_digistore_cycle()
         except Exception as e:
             results["ds24"] = {"ok": False, "error": str(e)}
         return web.json_response({"ok": True, "results": results})
@@ -6633,8 +6633,8 @@ async def handle_affiliate_amazon(request: web.Request) -> web.Response:
 
 async def handle_affiliate_ds24(request: web.Request) -> web.Response:
     try:
-        from modules.digistore_autonomy import run_ds24_autonomy_cycle
-        return web.json_response(await run_ds24_autonomy_cycle())
+        from modules.digistore_autonomy import run_digistore_cycle
+        return web.json_response(await run_digistore_cycle())
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
@@ -6749,6 +6749,193 @@ async def handle_revenue_ds24_blast(request: web.Request) -> web.Response:
         from modules.revenue_fast_track import ds24_mega_blast
         result = await ds24_mega_blast(count=count)
         return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ─── Shopify Mass Creator Handlers ───────────────────────────────────────────
+
+async def handle_shopify_create_1000(request: web.Request) -> web.Response:
+    try:
+        asyncio.create_task(_bg_shopify_1000())
+        return web.json_response({"ok": True, "message": "Shopify 1000-Produkte-Erstellung gestartet (background)"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def _bg_shopify_1000():
+    from modules.shopify_mass_creator import create_1000_shopify_products
+    await create_1000_shopify_products()
+
+async def handle_shopify_mass_cycle(request: web.Request) -> web.Response:
+    try:
+        asyncio.create_task(_bg_shopify_cycle())
+        return web.json_response({"ok": True, "message": "Shopify Mass-Cycle gestartet"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def _bg_shopify_cycle():
+    from modules.shopify_mass_creator import run_shopify_mass_cycle
+    await run_shopify_mass_cycle()
+
+async def handle_shopify_mass_blast(request: web.Request) -> web.Response:
+    try:
+        body  = await request.json() if request.can_read_body else {}
+        limit = int(body.get("limit", 10))
+        from modules.shopify_mass_creator import blast_shopify_products
+        r = await blast_shopify_products(limit=limit)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_shopify_mass_status(request: web.Request) -> web.Response:
+    try:
+        from modules.shopify_mass_creator import get_shopify_mass_stats
+        r = await get_shopify_mass_stats()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ─── Klaviyo Mass Campaigns Handlers ─────────────────────────────────────────
+
+async def handle_klaviyo_mass_create(request: web.Request) -> web.Response:
+    try:
+        body  = await request.json() if request.can_read_body else {}
+        count = int(body.get("count", 200))
+        asyncio.create_task(_bg_klaviyo_mass(count))
+        return web.json_response({"ok": True, "message": f"Klaviyo {count} Kampagnen gestartet (background)"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def _bg_klaviyo_mass(count: int):
+    from modules.klaviyo_mass_campaigns import mass_create_klaviyo_campaigns
+    await mass_create_klaviyo_campaigns(count=count)
+
+async def handle_klaviyo_daily_campaigns(request: web.Request) -> web.Response:
+    try:
+        from modules.klaviyo_mass_campaigns import run_daily_klaviyo_campaigns
+        r = await run_daily_klaviyo_campaigns()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_klaviyo_mass_status(request: web.Request) -> web.Response:
+    try:
+        from modules.klaviyo_mass_campaigns import get_klaviyo_mass_stats
+        r = await get_klaviyo_mass_stats()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ─── Mailchimp Mass Campaigns Handlers ───────────────────────────────────────
+
+async def handle_mailchimp_mass_create(request: web.Request) -> web.Response:
+    try:
+        body  = await request.json() if request.can_read_body else {}
+        count = int(body.get("count", 200))
+        asyncio.create_task(_bg_mailchimp_mass(count))
+        return web.json_response({"ok": True, "message": f"Mailchimp {count} Kampagnen gestartet (background)"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def _bg_mailchimp_mass(count: int):
+    from modules.mailchimp_mass_campaigns import mass_create_mailchimp_campaigns
+    await mass_create_mailchimp_campaigns(count=count)
+
+async def handle_mailchimp_daily_campaigns(request: web.Request) -> web.Response:
+    try:
+        from modules.mailchimp_mass_campaigns import run_daily_mailchimp_campaigns
+        r = await run_daily_mailchimp_campaigns()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_mailchimp_mass_status(request: web.Request) -> web.Response:
+    try:
+        from modules.mailchimp_mass_campaigns import get_mailchimp_mass_stats
+        r = await get_mailchimp_mass_stats()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ─── BrutusClone Integrator Handlers ─────────────────────────────────────────
+
+async def handle_brutus_blast_product(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.can_read_body else {}
+        from modules.brutus_clone_integrator import blast_new_product
+        r = await blast_new_product(body, channels=body.get("channels"))
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_brutus_blast_summary(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.can_read_body else {}
+        from modules.brutus_clone_integrator import blast_daily_summary
+        r = await blast_daily_summary(body)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_brutus_system_status(request: web.Request) -> web.Response:
+    try:
+        from modules.brutus_clone_integrator import blast_system_status
+        r = await blast_system_status()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_brutus_stats(request: web.Request) -> web.Response:
+    try:
+        from modules.brutus_clone_integrator import get_integrator_stats
+        r = await get_integrator_stats()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ─── Revenue Mega Tracker Handlers ───────────────────────────────────────────
+
+async def handle_revenue_daily_report(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.can_read_body else {}
+        days = int(body.get("days", 1))
+        asyncio.create_task(_bg_revenue_report(days))
+        return web.json_response({"ok": True, "message": f"Revenue-Report für {days} Tag(e) gestartet (background)"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def _bg_revenue_report(days: int):
+    from modules.revenue_mega_tracker import generate_daily_revenue_report
+    await generate_daily_revenue_report(days=days)
+
+async def handle_revenue_weekly_report(request: web.Request) -> web.Response:
+    try:
+        asyncio.create_task(_bg_revenue_weekly())
+        return web.json_response({"ok": True, "message": "7-Tage Revenue-Report gestartet (background)"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def _bg_revenue_weekly():
+    from modules.revenue_mega_tracker import run_revenue_weekly
+    await run_revenue_weekly()
+
+async def handle_revenue_snapshot(request: web.Request) -> web.Response:
+    try:
+        from modules.revenue_mega_tracker import get_current_revenue_snapshot
+        r = await get_current_revenue_snapshot()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_revenue_stats(request: web.Request) -> web.Response:
+    try:
+        from modules.revenue_mega_tracker import get_revenue_stats
+        r = await get_revenue_stats()
+        return web.json_response(r)
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
@@ -7388,6 +7575,34 @@ async def create_app():
     app.router.add_post("/api/amazon/run",               handle_amazon_run_alias)
     app.router.add_post("/api/ebay/run",                 handle_ebay_run_alias)
     app.router.add_post("/api/printify/sync",            handle_printify_sync_alias)
+
+    # ── Shopify Mass Creator ──────────────────────────────────────────────────
+    app.router.add_post("/api/shopify/create-1000",      handle_shopify_create_1000)
+    app.router.add_post("/api/shopify/mass-cycle",       handle_shopify_mass_cycle)
+    app.router.add_post("/api/shopify/mass-blast",       handle_shopify_mass_blast)
+    app.router.add_get( "/api/shopify/mass-status",      handle_shopify_mass_status)
+
+    # ── Klaviyo Mass Campaigns ────────────────────────────────────────────────
+    app.router.add_post("/api/klaviyo/mass-create",      handle_klaviyo_mass_create)
+    app.router.add_post("/api/klaviyo/daily-campaigns",  handle_klaviyo_daily_campaigns)
+    app.router.add_get( "/api/klaviyo/mass-status",      handle_klaviyo_mass_status)
+
+    # ── Mailchimp Mass Campaigns ──────────────────────────────────────────────
+    app.router.add_post("/api/mailchimp/mass-create",    handle_mailchimp_mass_create)
+    app.router.add_post("/api/mailchimp/daily-campaigns",handle_mailchimp_daily_campaigns)
+    app.router.add_get( "/api/mailchimp/mass-status",    handle_mailchimp_mass_status)
+
+    # ── BrutusClone Integrator ────────────────────────────────────────────────
+    app.router.add_post("/api/brutus/blast-product",     handle_brutus_blast_product)
+    app.router.add_post("/api/brutus/blast-summary",     handle_brutus_blast_summary)
+    app.router.add_post("/api/brutus/system-status",     handle_brutus_system_status)
+    app.router.add_get( "/api/brutus/stats",             handle_brutus_stats)
+
+    # ── Revenue Mega Tracker ──────────────────────────────────────────────────
+    app.router.add_post("/api/revenue/daily-report",     handle_revenue_daily_report)
+    app.router.add_post("/api/revenue/weekly-report",    handle_revenue_weekly_report)
+    app.router.add_get( "/api/revenue/snapshot",         handle_revenue_snapshot)
+    app.router.add_get( "/api/revenue/stats",            handle_revenue_stats)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
