@@ -205,9 +205,12 @@ async def create_and_send_campaign(
         async with _session(total=60) as s:
             # 1. Create campaign
             async with s.post(f"{_BASE}/campaigns/", headers=_headers(), json=camp_body) as r:
+                resp_body = await r.json(content_type=None)
                 if r.status not in (200, 201):
-                    return {"ok": False, "error": f"Campaign-Erstellung: HTTP {r.status}"}
-                camp_id = (await r.json())["data"]["id"]
+                    err_detail = str(resp_body)[:300]
+                    log.error("Klaviyo campaign 400: %s", err_detail)
+                    return {"ok": False, "error": f"Campaign-Erstellung: HTTP {r.status}", "detail": err_detail}
+                camp_id = resp_body["data"]["id"]
 
             # 2. Create message
             msg_body = {
