@@ -294,10 +294,6 @@ async def generate_ai_descriptions_bulk(
         products = [p for p in products if str(p.get("id")) in [str(x) for x in product_ids]]
     products = products[:limit]
 
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        return {"ok": False, "error": "ANTHROPIC_API_KEY not set", "updated": 0}
-
     import aiohttp
     updated = 0
     domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
@@ -305,31 +301,60 @@ async def generate_ai_descriptions_bulk(
     version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
     lang_hint = "Deutsch" if language == "de" else "English"
 
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    openai_key = os.getenv("OPENAI_API_KEY", "")
+    perplexity_key = os.getenv("PERPLEXITY_API_KEY", "")
+    if not anthropic_key and not openai_key and not perplexity_key:
+        return {"ok": False, "error": "Kein AI Key verfügbar", "updated": 0}
+
+    async def _ai_describe(title: str) -> str:
+        prompt = (f"Schreibe eine kurze, SEO-optimierte Produktbeschreibung auf {lang_hint} "
+                  f"für dieses Shopify-Produkt: '{title}'. Max 150 Wörter, ansprechend und kaufmotivierend.")
+        if anthropic_key:
+            try:
+                async with aiohttp.ClientSession() as s:
+                    async with s.post("https://api.anthropic.com/v1/messages",
+                        headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+                        json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
+                              "messages": [{"role": "user", "content": prompt}]},
+                        timeout=aiohttp.ClientTimeout(total=20)) as r:
+                        if r.status == 200:
+                            d = await r.json()
+                            return d["content"][0]["text"]
+            except Exception:
+                pass
+        for key, url, model in [
+            (openai_key, "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
+            (perplexity_key, "https://api.perplexity.ai/chat/completions", "sonar"),
+        ]:
+            if not key:
+                continue
+            try:
+                async with aiohttp.ClientSession() as s:
+                    async with s.post(url, headers={"Authorization": f"Bearer {key}"},
+                        json={"model": model, "max_tokens": 300,
+                              "messages": [{"role": "user", "content": prompt}]},
+                        timeout=aiohttp.ClientTimeout(total=25)) as r:
+                        d = await r.json(content_type=None)
+                text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+                if text:
+                    return text
+            except Exception:
+                continue
+        return ""
+
     for p in products:
         title = p.get("title", "")
         try:
-            async with aiohttp.ClientSession() as s:
-                payload = {
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 300,
-                    "messages": [{"role": "user", "content":
-                        f"Schreibe eine kurze, SEO-optimierte Produktbeschreibung auf {lang_hint} "
-                        f"für dieses Shopify-Produkt: '{title}'. Max 150 Wörter, ansprechend und kaufmotivierend."}]
-                }
-                headers = {"x-api-key": api_key, "anthropic-version": "2023-06-01",
-                           "Content-Type": "application/json"}
-                async with s.post("https://api.anthropic.com/v1/messages", json=payload, headers=headers) as r:
-                    if r.status == 200:
-                        resp = await r.json()
-                        description = resp["content"][0]["text"]
-                        # Update Shopify product description
-                        if domain and token:
-                            url = f"https://{domain}/admin/api/{version}/products/{p['id']}.json"
-                            sh_headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
-                            async with s.put(url, json={"product": {"id": p["id"], "body_html": description}},
-                                             headers=sh_headers) as r2:
-                                if r2.status in (200, 201):
-                                    updated += 1
+            description = await _ai_describe(title)
+            if description and domain and token:
+                url = f"https://{domain}/admin/api/{version}/products/{p['id']}.json"
+                sh_headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
+                async with aiohttp.ClientSession() as s:
+                    async with s.put(url, json={"product": {"id": p["id"], "body_html": description}},
+                                     headers=sh_headers) as r2:
+                        if r2.status in (200, 201):
+                            updated += 1
         except Exception as e:
             log.warning("AI description for %s failed: %s", title, e)
 
