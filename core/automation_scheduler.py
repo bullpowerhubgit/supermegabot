@@ -2872,6 +2872,51 @@ async def task_amazon_affiliate_blast() -> str:
         return f"Amazon Affiliate error: {e}"
 
 
+async def task_klaviyo_brutus() -> str:
+    try:
+        from modules.klaviyo_automation import run_with_brutus_traffic
+        r = await run_with_brutus_traffic()
+        return f"Klaviyo+BRUTUS: {r}"
+    except Exception as e:
+        return f"Klaviyo BRUTUS error: {e}"
+
+
+async def task_mailchimp_brutus() -> str:
+    try:
+        from modules.mailchimp_automation import run_with_brutus_traffic
+        r = await run_with_brutus_traffic()
+        return f"Mailchimp+BRUTUS: {r}"
+    except Exception as e:
+        return f"Mailchimp BRUTUS error: {e}"
+
+
+async def task_shopify_autonomy_brutus() -> str:
+    try:
+        from modules.shopify_autonomy_master import run_with_brutus_traffic
+        r = await run_with_brutus_traffic()
+        return f"ShopifyAutonomy+BRUTUS: {r}"
+    except Exception as e:
+        return f"ShopifyAutonomy BRUTUS error: {e}"
+
+
+async def task_email_seq_brutus() -> str:
+    try:
+        from modules.email_sequence_engine import run_with_brutus_traffic
+        r = await run_with_brutus_traffic()
+        return f"EmailSeq+BRUTUS: {r}"
+    except Exception as e:
+        return f"EmailSeq BRUTUS error: {e}"
+
+
+async def task_ds24_digistore_brutus() -> str:
+    try:
+        from modules.digistore24_automation import run_with_brutus_traffic
+        r = await run_with_brutus_traffic()
+        return f"DS24+BRUTUS: {r}"
+    except Exception as e:
+        return f"DS24 BRUTUS error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -3066,6 +3111,12 @@ TASKS = [
     ("growth_winback",         task_growth_winback,           86400, 11600), # daily — Winback Emails
     # ── AMAZON AFFILIATE — Product Links + BRUTUS Traffic ─────────────────────
     ("amazon_affiliate_blast", task_amazon_affiliate_blast,   14400, 11800), # 4h — Amazon Links + BRUTUS
+    # ── BRUTUS IN JEDEM MODUL — Alle Kanäle aus jedem Tool ───────────────────
+    ("klaviyo_brutus",         task_klaviyo_brutus,           21600, 12000), # 6h — Klaviyo + BRUTUS
+    ("mailchimp_brutus",       task_mailchimp_brutus,         21600, 12100), # 6h — Mailchimp + BRUTUS
+    ("shopify_autonomy_brutus", task_shopify_autonomy_brutus, 21600, 12200), # 6h — ShopifyAutonomy + BRUTUS
+    ("email_seq_brutus",       task_email_seq_brutus,         14400, 12300), # 4h — Email Sequence + BRUTUS
+    ("ds24_digistore_brutus",  task_ds24_digistore_brutus,   14400, 12400), # 4h — DS24 Stats + BRUTUS
 ]
 
 
