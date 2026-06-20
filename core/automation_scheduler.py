@@ -1207,7 +1207,7 @@ async def task_mailchimp_auto_campaign() -> str:
 <li>✅ Step-by-step Anleitung für Anfänger</li>
 </ul>
 <p style='text-align:center;margin:30px 0'>
-<a href='https://www.digistore24.com/product/669750' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
+<a href='{os.getenv("DS24_AFFILIATE_LINK","https://www.digistore24.com/redir/669750/user37405262/")}' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
 🛒 Jetzt für nur €37 starten →
 </a>
 </p>
@@ -1455,8 +1455,9 @@ async def task_linkedin_auto_post() -> str:
         anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
         if not linkedin_token:
             return "LINKEDIN_ACCESS_TOKEN fehlt"
-        li_prompt = ("Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
-                     "Max 1200 Zeichen. Erwähne am Ende: https://www.digistore24.com/product/669750 (AI Income Machine €37). Nur Text, kein JSON.")
+        _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        li_prompt = (f"Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
+                     f"Max 1200 Zeichen. Erwähne am Ende: {_ds24} (AI Income Machine €37). Nur Text, kein JSON.")
         try:
             text = await _ai(li_prompt, max_tokens=400)
         except Exception:
@@ -1502,7 +1503,7 @@ async def task_youtube_auto_post() -> str:
             title=title,
             description=(
                 f"{title}\n\n"
-                "👉 https://www.digistore24.com/product/669750\n\n"
+                f"👉 {os.getenv('DS24_AFFILIATE_LINK','https://www.digistore24.com/redir/669750/user37405262/')}\n\n"
                 "#KI #PassivesEinkommen #OnlineBusiness"
             ),
             tags=["KI", "passives einkommen", "online business", "shopify", "automatisierung"],
@@ -2655,6 +2656,9 @@ TASKS = [
     ("aliexpress_import",       task_aliexpress_import,       21600,  9600),  # 6h — AliExpress trending → Shopify
     ("printify_seo",            task_printify_seo,            43200,  9700),  # 12h — AI SEO alle Printify Produkte
     ("multi_platform_hourly",   task_multi_platform_post,      7200,  9800),  # 2h — Topic-Post alle Kanäle
+    # ── DS24 FULL AUTO — Affiliate + Mailing + Traffic ───────────────────────
+    ("ds24_traffic",           task_ds24_traffic,             10800, 9900),  # 3h — DS24 Affiliate Posts alle Kanäle
+    ("ds24_auto_fill",         task_ds24_auto_fill,           21600, 9950),  # 6h — DS24 Account prüfen + befüllen
 ]
 
 
