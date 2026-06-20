@@ -3941,6 +3941,26 @@ async def task_ds24_auto_create() -> str:
         return f"DS24 auto-create error: {e}"
 
 
+async def task_ds24_refill() -> str:
+    """Täglich: Hält 1000 aktive DS24-Produkte — füllt fehlende automatisch auf."""
+    try:
+        from modules.ds24_mass_creator import autonomous_refill
+        r = await autonomous_refill(target=1000)
+        return f"DS24 Refill: {r.get('created',0)} neue erstellt, {r.get('total_active',0)}/1000 aktiv"
+    except Exception as e:
+        return f"DS24 Refill error: {e}"
+
+
+async def task_ds24_seo_blast() -> str:
+    """Wöchentlich: Top-10 DS24-Produkte auf allen Kanälen blasten."""
+    try:
+        from modules.ds24_mass_creator import blast_top_products
+        r = await blast_top_products(count=10)
+        return f"DS24 SEO Blast: {r.get('blasted',0)} Produkte geblasten"
+    except Exception as e:
+        return f"DS24 SEO Blast error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
