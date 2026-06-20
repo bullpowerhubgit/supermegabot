@@ -3463,6 +3463,33 @@ async def handle_printful_autofulfill(req):
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
+
+async def handle_printful_auth(req):
+    """Redirect to Printful OAuth authorization page."""
+    from modules.printful_automation import get_oauth_url
+    url = get_oauth_url()
+    raise web.HTTPFound(url)
+
+
+async def handle_printful_callback(req):
+    """Handle Printful OAuth callback — exchange code for token."""
+    code = req.rel_url.query.get("code", "")
+    error = req.rel_url.query.get("error", "")
+    if error or not code:
+        return web.Response(text=f"Printful OAuth error: {error or 'no code'}", status=400)
+    try:
+        from modules.printful_automation import exchange_oauth_code
+        result = await exchange_oauth_code(code)
+        if result.get("ok"):
+            return web.Response(
+                text="✅ Printful erfolgreich verbunden! Token gespeichert. Du kannst dieses Fenster schließen.",
+                content_type="text/html",
+            )
+        return web.json_response(result, status=400)
+    except Exception as e:
+        log.error("Printful callback error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
 async def handle_shopify_order_webhook_v2(req):
     """Alias /api/webhooks/shopify-order → gleiche Logik."""
     return await handle_shopify_order_webhook_route(req)
@@ -5158,6 +5185,8 @@ async def create_app():
     app.router.add_post("/api/printify/webhook",      handle_printify_webhook)
     app.router.add_get("/api/printful/status",        handle_printful_status)
     app.router.add_post("/api/printful/autofulfill",  handle_printful_autofulfill)
+    app.router.add_get("/api/printful/auth",          handle_printful_auth)
+    app.router.add_get("/api/printful/callback",      handle_printful_callback)
 
     # ── Etsy + Gumroad ────────────────────────────────────────────────────────
     app.router.add_get("/api/etsy/status",            handle_etsy_status)
