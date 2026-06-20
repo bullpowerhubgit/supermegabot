@@ -74,19 +74,29 @@ def _save_posted(posted: set):
     POSTED_FILE.write_text(json.dumps(sorted(posted)))
 
 
+_TWEET_TEMPLATES = [
+    "🚀 KI-Automatisierung 2026 — dein Business läuft auf Autopilot! Shopify + DS24 + BRUTUS = passives Einkommen. #KI #PassivesEinkommen #Shopify",
+    "💰 Online Geld verdienen 2026 geht einfacher denn je mit KI-Tools! AliExpress Dropshipping + Affiliate vollautomatisch. #Dropshipping #Ecommerce",
+    "🤖 BRUTUS postet täglich auf 6+ Kanälen automatisch für dich. E-Commerce auf Autopilot — kein manueller Aufwand! #AIAutomation #Business",
+    "📈 Shopify + AI = perfekte Kombination 2026. Produkte importieren, Texte erstellen, Traffic generieren — alles autonom! #Shopify #KI",
+    "🔥 Passives Einkommen mit KI: DS24 Affiliate + automatischer Content + BRUTUS Traffic. So geht's 2026! #PassivIncome #Automatisierung",
+    "💡 Digitale Produkte verkaufen war nie einfacher: KI schreibt, BRUTUS postet, du verdienst. #DigitaleProdukte #OnlineBusiness",
+]
+
 async def generate_tweet(topic: str, product: str = "AI Income Machine") -> str | None:
-    """Generate a tweet via AI fallback chain."""
+    """Generate a tweet via AI fallback chain — always returns content."""
+    import random
     try:
         from modules.ai_client import ai_complete
-        prompt = f"""Schreibe einen viralen Tweet auf Deutsch über "{topic}".
-Erwähne "{product}" (€37 bei Digistore24).
-Max 260 Zeichen. 2-3 relevante Hashtags. Kein Link nötig — nur der Tweet-Text.
-Nur den Tweet-Text zurückgeben, kein anderer Text."""
+        prompt = (f'Schreibe einen viralen Tweet auf Deutsch über "{topic}". '
+                  f'Max 260 Zeichen. 2-3 Hashtags. Nur den Tweet-Text.')
         result = await ai_complete(prompt, max_tokens=150)
-        return result.strip()[:280] if result else None
+        if result and len(result.strip()) > 20:
+            return result.strip()[:280]
     except Exception as e:
         log.warning("Tweet gen error: %s", e)
-        return None
+    # Template fallback — never returns None
+    return random.choice(_TWEET_TEMPLATES)
 
 
 async def post_tweet(text: str) -> dict:
