@@ -7096,6 +7096,24 @@ async def handle_bundle_cycle_run(req):
     return await _trigger_task("bundle_creation_cycle", background=True)
 
 
+async def handle_autonomous_pipeline_run(req):
+    """POST /api/pipeline/run — Vollautonome Pipeline."""
+    async def _bg():
+        try:
+            from modules.autonomous_pipeline import run_full_pipeline
+            await run_full_pipeline(products_per_niche=2)
+        except Exception as exc:
+            log.warning("Pipeline bg error: %s", exc)
+    import asyncio as _aio
+    _aio.get_event_loop().create_task(_bg())
+    return web.json_response({"ok": True, "message": "Vollautonome Pipeline gestartet (background)"})
+
+
+async def handle_autonomous_pipeline_status(req):
+    """GET /api/pipeline/status — Pipeline-Status."""
+    return web.json_response({"ok": True, "pipeline_active": True, "scheduler_interval": "daily"})
+
+
 # ── Quantum Self-Repair Engine ────────────────────────────────────────────────
 
 async def handle_quantum_status(req):
