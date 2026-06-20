@@ -990,21 +990,36 @@ NUR HTML zurückgeben. Länge: 400-500 Wörter."""
                 }
             }
 
-            # Blog-ID ermitteln (oder "news" nutzen)
-            blog_data = await _get("blogs.json")
-            blogs = blog_data.get("blogs", [])
-            blog_id = blogs[0]["id"] if blogs else None
-
-            if blog_id:
-                result = await _post(f"blogs/{blog_id}/articles.json", payload)
-                article = result.get("article", {})
-                if article.get("id"):
-                    created += 1
-                    handle = article.get("handle", "")
-                    shop_url = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-                    post_url = f"https://{shop_url}/blogs/news/{handle}" if shop_url else ""
-                    posts.append({"title": title, "url": post_url, "ds24_link": ds24_link})
-                    log.info("Affiliate blog post created: %s", title[:50])
+            # Blog-ID via GraphQL (avoids write_content REST scope issues)
+            blog_id_raw = os.getenv("SHOPIFY_BLOG_ID", "127011258755")
+            blog_gid = f"gid://shopify/Blog/{blog_id_raw}"
+            tags_list = [t.strip() for t in f"{tags_hint},affiliate,ki,automatisierung,2026".split(",") if t.strip()]
+            gql = """
+mutation CreateArticle($article: ArticleCreateInput!) {
+  articleCreate(article: $article) {
+    article { id title handle }
+    userErrors { field message }
+  }
+}"""
+            gql_vars = {
+                "article": {
+                    "blogId": blog_gid,
+                    "title": title,
+                    "body": content_html,
+                    "isPublished": True,
+                    "tags": tags_list,
+                    "author": {"name": "BullPower Hub"},
+                }
+            }
+            result = await _graphql(gql, gql_vars)
+            art = result.get("data", {}).get("articleCreate", {}).get("article", {})
+            if art and art.get("id"):
+                created += 1
+                handle = art.get("handle", "")
+                shop_url = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+                post_url = f"https://{shop_url}/blogs/must-have-trends-tipps/{handle}" if shop_url else ""
+                posts.append({"title": title, "url": post_url, "ds24_link": ds24_link})
+                log.info("Affiliate blog post created: %s", title[:50])
 
             await asyncio.sleep(1)
         except Exception as e:
