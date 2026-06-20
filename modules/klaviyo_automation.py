@@ -357,17 +357,30 @@ async def get_stats() -> Dict:
     }
 
 
-async def send_campaign(subject: str, html_body: str, list_id: str = "") -> dict:
+def _default_html(subject: str) -> str:
+    return f"""<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+<h1 style="color:#2c3e50">{subject}</h1>
+<p>Hallo,</p>
+<p>entdecke jetzt die neueste KI-Einkommens-Strategie von AIITEC — vollautomatisiert, skalierbar und bewährt.</p>
+<p style="margin:24px 0"><a href="https://www.digistore24.com/redir/669750/user37405262/" style="background:#e74c3c;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold">👉 Jetzt starten</a></p>
+<p>Bis bald,<br><strong>Rudolf | AIITEC</strong></p>
+<hr style="border:none;border-top:1px solid #eee;margin:30px 0">
+<p style="font-size:11px;color:#999">AIITEC — KI-Automatisierung für dein Business | <a href="{{{{ unsubscribe_url }}}}">Abmelden</a></p>
+</body></html>"""
+
+
+async def send_campaign(subject: str, html_body: str = "", list_id: str = "") -> dict:
     """One-step: create + send Klaviyo campaign. Returns {ok, campaign_id, error}."""
     _list_id = list_id or os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
     from_email = os.getenv("KLAVIYO_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
     from_name  = os.getenv("KLAVIYO_FROM_NAME", "Rudolf | AIITEC")
+    _html = html_body or _default_html(subject)
     result = await create_and_send_campaign(
         list_id=_list_id,
         subject=subject,
         from_email=from_email,
         from_name=from_name,
-        html_body=html_body,
+        html_body=_html,
     )
     return result
 
