@@ -6409,7 +6409,143 @@ async def handle_klaviyo_blast(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── TikTok / Fiverr / Upwork Handlers ─────────────────────────────────────────
+
+async def handle_tiktok_status(request: web.Request) -> web.Response:
+    try:
+        from modules.tiktok_sync import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_tiktok_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.tiktok_sync import run_tiktok_cycle
+        return web.json_response(await run_tiktok_cycle())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_fiverr_status(request: web.Request) -> web.Response:
+    try:
+        from modules.fiverr_sync import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_fiverr_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.fiverr_sync import run_fiverr_cycle
+        return web.json_response(await run_fiverr_cycle())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_upwork_status(request: web.Request) -> web.Response:
+    try:
+        from modules.upwork_sync import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_upwork_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.upwork_sync import run_upwork_cycle
+        return web.json_response(await run_upwork_cycle())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+# Route aliases for frontend compatibility
+async def handle_shopify_sync_alias(request: web.Request) -> web.Response:
+    return await handle_shopify_full_auto(request)
+
+async def handle_email_check_alias(request: web.Request) -> web.Response:
+    return await handle_email_brain_check(request)
+
+async def handle_ds24_sync_alias(request: web.Request) -> web.Response:
+    return await handle_digistore_autonomy_cycle(request)
+
+async def handle_amazon_run_alias(request: web.Request) -> web.Response:
+    return await handle_amazon_cycle(request)
+
+async def handle_ebay_run_alias(request: web.Request) -> web.Response:
+    return await handle_ebay_autonomy_cycle(request)
+
+async def handle_printify_sync_alias(request: web.Request) -> web.Response:
+    return await handle_printify_autonomy_cycle(request)
+
 # ── End Platform Autonomy Handlers ─────────────────────────────────────────────
+
+# ── Mega SEO Engine ───────────────────────────────────────────────────────────
+
+async def handle_mega_seo_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.mega_seo_engine import run_mega_seo_cycle
+        result = await run_mega_seo_cycle()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_mega_seo_status(request: web.Request) -> web.Response:
+    try:
+        from modules.mega_seo_engine import get_trending_keywords
+        keywords = await get_trending_keywords()
+        return web.json_response({"ok": True, "keywords": keywords[:10], "status": "active"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── Traffic Mega V2 ───────────────────────────────────────────────────────────
+
+async def handle_traffic_mega_v2_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.traffic_mega_v2 import run_traffic_mega_cycle
+        result = await run_traffic_mega_cycle()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_traffic_rss_ping(request: web.Request) -> web.Response:
+    try:
+        from modules.traffic_mega_v2 import ping_rss_directories
+        result = await ping_rss_directories()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── Revenue Fast Track ────────────────────────────────────────────────────────
+
+async def handle_revenue_fast_track(request: web.Request) -> web.Response:
+    try:
+        from modules.revenue_fast_track import run_revenue_fast_track
+        result = await run_revenue_fast_track()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_revenue_flash_sale(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.can_read_body else {}
+        discount = int(body.get("discount_pct", 15))
+        from modules.revenue_fast_track import shopify_flash_sale
+        result = await shopify_flash_sale(discount_pct=discount)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_revenue_ds24_blast(request: web.Request) -> web.Response:
+    try:
+        body = await request.json() if request.can_read_body else {}
+        count = int(body.get("count", 20))
+        from modules.revenue_fast_track import ds24_mega_blast
+        result = await ds24_mega_blast(count=count)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
 
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
@@ -7028,6 +7164,16 @@ async def create_app():
     # ── MEGA START — alles auf einmal ─────────────────────────────────────────
     app.router.add_post("/api/mega/start",               handle_mega_autonomy_start)
     app.router.add_get( "/api/mega/status",              handle_mega_status)
+    # ── Mega SEO Engine ────────────────────────────────────────────────────────
+    app.router.add_post("/api/seo/mega-cycle",           handle_mega_seo_cycle)
+    app.router.add_get( "/api/seo/mega-status",          handle_mega_seo_status)
+    # ── Traffic Mega V2 ────────────────────────────────────────────────────────
+    app.router.add_post("/api/traffic/mega-v2",          handle_traffic_mega_v2_cycle)
+    app.router.add_post("/api/traffic/rss-ping",         handle_traffic_rss_ping)
+    # ── Revenue Fast Track ─────────────────────────────────────────────────────
+    app.router.add_post("/api/revenue/fast-track",       handle_revenue_fast_track)
+    app.router.add_post("/api/revenue/flash-sale",       handle_revenue_flash_sale)
+    app.router.add_post("/api/revenue/ds24-blast",       handle_revenue_ds24_blast)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())

@@ -4141,6 +4141,33 @@ async def task_reddit_style_blast() -> str:
         return f"Reddit blast error: {e}"
 
 
+async def task_mega_seo_cycle() -> str:
+    try:
+        from modules.mega_seo_engine import run_mega_seo_cycle
+        r = await run_mega_seo_cycle()
+        return f"MegaSEO: {r.get('articles',0)} Artikel | IndexNow: {sum(1 for v in r.get('indexnow',{}).values() if isinstance(v,int) and v in (200,202))}/3 | RSS: {r.get('elapsed',0)}s"
+    except Exception as e:
+        return f"MegaSEO error: {e}"
+
+
+async def task_traffic_mega_cycle() -> str:
+    try:
+        from modules.traffic_mega_v2 import run_traffic_mega_cycle
+        r = await run_traffic_mega_cycle()
+        return f"TrafficMegaV2: {r.get('channels_ok',0)}/6 Kanäle | {r.get('topic','')[:60]}"
+    except Exception as e:
+        return f"TrafficMegaV2 error: {e}"
+
+
+async def task_revenue_fast_track_run() -> str:
+    try:
+        from modules.revenue_fast_track import run_revenue_fast_track
+        r = await run_revenue_fast_track()
+        return f"RevenueFastTrack: {r.get('channels_ok',0)}/5 Systeme | {r.get('elapsed',0)}s"
+    except Exception as e:
+        return f"RevenueFastTrack error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -4442,6 +4469,12 @@ TASKS = [
     ("rss_feed_update",          task_rss_feed_update,         21600, 19400), # 6h — RSS Feed aktualisieren
     # ── REDDIT STYLE BLAST ───────────────────────────────────────────────────
     ("reddit_style_blast",       task_reddit_style_blast,      14400, 19500), # 4h — Reddit-Style Content
+    # ── MEGA SEO ENGINE — Trending Keywords + 10 Artikel + IndexNow + 30+ Pings ──
+    ("mega_seo_cycle",           task_mega_seo_cycle,           3600, 19600), # 1h — SEO Artikel + IndexNow + Pings
+    # ── TRAFFIC MEGA V2 — RSS + Dev.to + Hashnode + Reddit + Tumblr + Amazon ────
+    ("traffic_mega_cycle",       task_traffic_mega_cycle,       1800, 19700), # 30min — Multi-Platform Traffic Blast
+    # ── REVENUE FAST TRACK — Flash Sale + Gumroad + DS24×20 + Amazon + Stripe ──
+    ("revenue_fast_track",       task_revenue_fast_track_run,   3600, 19800), # 1h — Revenue Spike alle Kanäle
 ]
 
 
