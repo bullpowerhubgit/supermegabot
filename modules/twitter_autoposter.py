@@ -44,20 +44,20 @@ TWITTER_API_V2 = "https://api.twitter.com/2"
 # ── Content-Kategorien (rotierend) ───────────────────────────────────────────
 TWEET_TEMPLATES = [
     # Conversion/Offer
-    "🔥 Shopify auf Autopilot: KI findet Bestseller, optimiert Preise, postet überall.\n\nKein manueller Aufwand mehr. Ab €49/Monat:\n👉 https://bullpower-hub-portal.netlify.app\n\n#ShopifyAutomation #KI #Ecommerce",
-    "💰 +187% Umsatz in 90 Tagen — vollautomatisch.\n\nKeine Werbung. KI-Automatisierung macht's möglich:\n✅ Produkte finden\n✅ Emails senden\n✅ Social Media posten\n\nhttps://bullpower-hub-portal.netlify.app #BullPowerHub",
+    "🔥 Shopify auf Autopilot: KI findet Bestseller, optimiert Preise, postet überall.\n\nKein manueller Aufwand mehr. Ab €49/Monat:\n👉 https://autopilot-store-suite-fmbka.myshopify.com\n\n#ShopifyAutomation #KI #Ecommerce",
+    "💰 +187% Umsatz in 90 Tagen — vollautomatisch.\n\nKeine Werbung. KI-Automatisierung macht's möglich:\n✅ Produkte finden\n✅ Emails senden\n✅ Social Media posten\n\nhttps://autopilot-store-suite-fmbka.myshopify.com #AIITEC",
     "⚡ Shopify Brutal Tuning: +47% Conversion Rate garantiert.\n\nA/B-Tests, Page Speed & CRO — alles automatisch.\n👉 https://shopify-brutal-tuning.vercel.app\n\n#Shopify #CRO #Ecommerce",
     # Educational
-    "📊 Warum 90% der Shopify-Stores nie profitabel werden:\n\n❌ Manuell Produkte suchen\n❌ Keine Email-Automation\n❌ Kein A/B-Testing\n\n✅ Lösung: https://bullpower-hub-portal.netlify.app\n\n#Shopify #OnlineShop",
-    "🤖 KI im E-Commerce 2026:\n\n→ Produktrecherche: 2h → 2min\n→ Produktbeschreibungen: 20min → sofort\n→ Social Media: täglich → automatisch\n→ Umsatz: +187%\n\nhttps://bullpower-hub-portal.netlify.app #AI #KI",
+    "📊 Warum 90% der Shopify-Stores nie profitabel werden:\n\n❌ Manuell Produkte suchen\n❌ Keine Email-Automation\n❌ Kein A/B-Testing\n\n✅ Lösung: https://autopilot-store-suite-fmbka.myshopify.com\n\n#Shopify #OnlineShop",
+    "🤖 KI im E-Commerce 2026:\n\n→ Produktrecherche: 2h → 2min\n→ Produktbeschreibungen: 20min → sofort\n→ Social Media: täglich → automatisch\n→ Umsatz: +187%\n\nhttps://autopilot-store-suite-fmbka.myshopify.com #AI #KI",
     # Social Proof
-    "⭐⭐⭐⭐⭐ Kundenstimme:\n\n\"In 6 Wochen meinen Shopify-Umsatz verdoppelt. Die KI findet Produkte die ich nie gefunden hätte.\"\n— Markus K., München\n\n🔗 https://bullpower-hub-portal.netlify.app",
-    "📈 Zahlen die für sich sprechen:\n\n• 187% mehr Umsatz (Ø 90 Tage)\n• +47% Conversion Rate\n• 40h/Woche gespart\n• 9 Social-Kanäle gleichzeitig\n\nhttps://bullpower-hub-portal.netlify.app\n#ShopifyAutomation",
+    "⭐⭐⭐⭐⭐ Kundenstimme:\n\n\"In 6 Wochen meinen Shopify-Umsatz verdoppelt. Die KI findet Produkte die ich nie gefunden hätte.\"\n— Markus K., München\n\n🔗 https://autopilot-store-suite-fmbka.myshopify.com",
+    "📈 Zahlen die für sich sprechen:\n\n• 187% mehr Umsatz (Ø 90 Tage)\n• +47% Conversion Rate\n• 40h/Woche gespart\n• 9 Social-Kanäle gleichzeitig\n\nhttps://autopilot-store-suite-fmbka.myshopify.com\n#ShopifyAutomation",
     # FOMO/Urgency
-    "⏰ Während du manuell Produkte suchst, laufen automatisierte Stores auf Hochtouren.\n\nDer Unterschied: Ein Tool. Ab €49/Monat.\n\nhttps://bullpower-hub-portal.netlify.app\n#Shopify #Automation",
+    "⏰ Während du manuell Produkte suchst, laufen automatisierte Stores auf Hochtouren.\n\nDer Unterschied: Ein Tool. Ab €49/Monat.\n\nhttps://autopilot-store-suite-fmbka.myshopify.com\n#Shopify #Automation",
     # Tips
-    "💡 Shopify Tipp: Abandoned Cart Emails generieren 15-20% des Umsatzes zurück.\n\nAber 78% der Shops haben keine automatischen Cart-Recovery-Emails.\n\nFix in 5 Min: https://bullpower-hub-portal.netlify.app\n#Shopify #EmailMarketing",
-    "🎯 3 Dinge die sofort deinen Shopify-Umsatz erhöhen:\n\n1. Abandoned Cart Email (automatisch)\n2. Post-Purchase Upsell (KI-gesteuert)\n3. Social Proof auf Produktseiten\n\nAlles automatisch: https://bullpower-hub-portal.netlify.app",
+    "💡 Shopify Tipp: Abandoned Cart Emails generieren 15-20% des Umsatzes zurück.\n\nAber 78% der Shops haben keine automatischen Cart-Recovery-Emails.\n\nFix in 5 Min: https://autopilot-store-suite-fmbka.myshopify.com\n#Shopify #EmailMarketing",
+    "🎯 3 Dinge die sofort deinen Shopify-Umsatz erhöhen:\n\n1. Abandoned Cart Email (automatisch)\n2. Post-Purchase Upsell (KI-gesteuert)\n3. Social Proof auf Produktseiten\n\nAlles automatisch: https://autopilot-store-suite-fmbka.myshopify.com",
 ]
 
 HASHTAG_SETS = [
@@ -248,7 +248,7 @@ Regeln:
 - Max 250 Zeichen (Platz für URL)
 - Starte mit starkem Hook (Emoji + Zahl oder Frage)
 - Konkreter Mehrwert oder Statistik
-- Endet mit Link: https://bullpower-hub-portal.netlify.app
+- Endet mit Link: https://autopilot-store-suite-fmbka.myshopify.com
 - Füge diese Hashtags hinzu: {hashtags}
 - Ton: direkt, professionell, Mehrwert-orientiert
 - NUR den Tweet-Text ausgeben, keine Erklärungen"""
@@ -285,7 +285,7 @@ async def generate_shopify_product_tweet() -> Optional[str]:
                          f"💰 Preis: €{price}\n"
                          f"🤖 KI-kuratiert & automatisch importiert\n\n"
                          f"Shop: https://{SHOPIFY_DOMAIN}\n"
-                         f"Automation: https://bullpower-hub-portal.netlify.app\n\n"
+                         f"Automation: https://autopilot-store-suite-fmbka.myshopify.com\n\n"
                          f"#Shopify #Dropshipping #OnlineShop")
                 return tweet[:280]
     except Exception as e:
@@ -374,7 +374,7 @@ async def post_seo_thread() -> dict:
 Format:
 TWEET 1: Hook (max 250 Zeichen)
 TWEET 2: Details/Tipps (max 250 Zeichen)
-TWEET 3: CTA + Link zu https://bullpower-hub-portal.netlify.app (max 250 Zeichen)
+TWEET 3: CTA + Link zu https://autopilot-store-suite-fmbka.myshopify.com (max 250 Zeichen)
 
 Verwende Emojis. Schreibe NUR die 3 Tweets, getrennt durch "---"."""
 
