@@ -2655,7 +2655,11 @@ async def task_brutus_dropshipping() -> str:
 async def task_brutus_ds24() -> str:
     try:
         from modules.super_revenue_blitz import brutus_blast_for_tool
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
+        link = (
+            os.getenv("DS24_AFFILIATE_LINK")
+            or os.getenv("AIITEC_AFFILIATE_URL")
+            or "https://www.digistore24.com/redir/669750/user37405262/"
+        )
         r = await brutus_blast_for_tool("Digistore24", link,
             ["Digistore24 Affiliate 2026", "digitale Produkte verkaufen", "AI Income Machine"])
         return f"BRUTUS DS24: {r.get('channels_hit', r.get('posts_sent', 0))} Kanäle, {r.get('content_pieces',0)} Posts"
@@ -3790,6 +3794,80 @@ async def task_mega_brutus_rotation() -> str:
         return f"Mega BRUTUS error [{platform}]: {e}"
 
 
+# ── Platform Autonomy Tasks ──────────────────────────────────────────────────
+
+async def task_amazon_autonomy_cycle() -> str:
+    try:
+        from modules.amazon_autonomy import run_amazon_cycle
+        r = await run_amazon_cycle()
+        return f"Amazon cycle: blasted={r.get('blasted',0)}"
+    except Exception as e:
+        return f"Amazon cycle error: {e}"
+
+
+async def task_ebay_autonomy_cycle() -> str:
+    try:
+        from modules.ebay_autonomy import run_ebay_cycle
+        r = await run_ebay_cycle()
+        return f"eBay cycle: blast={r.get('blast',{}).get('blasted',0)}"
+    except Exception as e:
+        return f"eBay cycle error: {e}"
+
+
+async def task_aliexpress_autonomy_cycle() -> str:
+    try:
+        from modules.aliexpress_autonomy import run_aliexpress_cycle
+        r = await run_aliexpress_cycle()
+        return f"AliExpress cycle: imported={r.get('imported',0)}"
+    except Exception as e:
+        return f"AliExpress cycle error: {e}"
+
+
+async def task_printify_autonomy_cycle() -> str:
+    try:
+        from modules.printify_autonomy import run_printify_cycle
+        r = await run_printify_cycle()
+        return f"Printify cycle: created={r.get('created',0)}"
+    except Exception as e:
+        return f"Printify cycle error: {e}"
+
+
+async def task_printful_autonomy_cycle() -> str:
+    try:
+        from modules.printful_autonomy import run_printful_cycle
+        r = await run_printful_cycle()
+        return f"Printful cycle: blasted={r.get('blast',{}).get('blasted',0)}"
+    except Exception as e:
+        return f"Printful cycle error: {e}"
+
+
+async def task_digistore_autonomy_cycle() -> str:
+    try:
+        from modules.digistore_autonomy import run_digistore_cycle
+        r = await run_digistore_cycle()
+        return f"DS24 cycle: blasted={r.get('blast',{}).get('blasted',0)}, revenue=€{r.get('report',{}).get('total',0):.2f}"
+    except Exception as e:
+        return f"DS24 cycle error: {e}"
+
+
+async def task_mailchimp_autonomy_cycle() -> str:
+    try:
+        from modules.mailchimp_autonomy import run_mailchimp_cycle
+        r = await run_mailchimp_cycle()
+        return f"Mailchimp cycle: ok={r.get('ok')}"
+    except Exception as e:
+        return f"Mailchimp cycle error: {e}"
+
+
+async def task_klaviyo_autonomy_cycle() -> str:
+    try:
+        from modules.klaviyo_autonomy import run_klaviyo_cycle
+        r = await run_klaviyo_cycle()
+        return f"Klaviyo cycle: ok={r.get('ok')}"
+    except Exception as e:
+        return f"Klaviyo cycle error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -4059,6 +4137,15 @@ TASKS = [
     ("printify_sync",            task_printify_sync,           14400, 16860), # 4h — Printify stats sync
     # ── ALL-PLATFORM MEGA BRUTUS — Rotiert durch alle Kanäle ──────────────────
     ("mega_brutus_rotation",     task_mega_brutus_rotation,     3600, 16900), # 1h — Platform BRUTUS Rotation
+    # ── PLATFORM AUTONOMY — Amazon/eBay/AliExpress/Printify/Printful/DS24/Mailchimp/Klaviyo ──
+    ("amazon_autonomy_cycle",    task_amazon_autonomy_cycle,   21600, 17000), # 6h — Amazon affiliate blast
+    ("ebay_autonomy_cycle",      task_ebay_autonomy_cycle,     21600, 17120), # 6h — eBay deals blast
+    ("aliexpress_autonomy_cycle", task_aliexpress_autonomy_cycle, 21600, 17240), # 6h — AliExpress → Shopify import
+    ("printify_autonomy_cycle",  task_printify_autonomy_cycle, 43200, 17360), # 12h — Printify POD creation
+    ("printful_autonomy_cycle",  task_printful_autonomy_cycle, 43200, 17480), # 12h — Printful catalog blast
+    ("digistore_autonomy_cycle", task_digistore_autonomy_cycle, 43200, 17600), # 12h — DS24 blast + revenue report
+    ("mailchimp_autonomy_cycle", task_mailchimp_autonomy_cycle, 86400, 17720), # daily — Mailchimp weekly digest
+    ("klaviyo_autonomy_cycle",   task_klaviyo_autonomy_cycle,  86400, 17840), # daily — Klaviyo newsletter
 ]
 
 

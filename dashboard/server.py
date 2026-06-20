@@ -5927,6 +5927,153 @@ async def handle_upwork_callback(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── Platform Autonomy Handlers ─────────────────────────────────────────────────
+
+async def handle_amazon_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.amazon_autonomy import run_amazon_cycle
+        r = await run_amazon_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_amazon_autonomy_blast(request: web.Request) -> web.Response:
+    try:
+        from modules.amazon_autonomy import blast_affiliate_products
+        body = await request.json() if request.content_length else {}
+        count = body.get("count", 5)
+        r = await blast_affiliate_products(count=count)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ebay_autonomy_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.ebay_autonomy import run_ebay_cycle
+        r = await run_ebay_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ebay_autonomy_blast(request: web.Request) -> web.Response:
+    try:
+        from modules.ebay_autonomy import blast_ebay_deals
+        body = await request.json() if request.content_length else {}
+        count = body.get("count", 5)
+        r = await blast_ebay_deals(count=count)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_aliexpress_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.aliexpress_autonomy import run_aliexpress_cycle
+        r = await run_aliexpress_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_aliexpress_import(request: web.Request) -> web.Response:
+    try:
+        from modules.aliexpress_autonomy import auto_import_trending
+        body = await request.json() if request.content_length else {}
+        count = body.get("count", 5)
+        r = await auto_import_trending(count=count)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_printify_autonomy_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.printify_autonomy import run_printify_cycle
+        r = await run_printify_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_printify_create_pod(request: web.Request) -> web.Response:
+    try:
+        from modules.printify_autonomy import auto_create_trending_pod
+        body = await request.json() if request.content_length else {}
+        count = body.get("count", 3)
+        r = await auto_create_trending_pod(count=count)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_printful_autonomy_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.printful_autonomy import run_printful_cycle
+        r = await run_printful_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_digistore_autonomy_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.digistore_autonomy import run_digistore_cycle
+        r = await run_digistore_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_digistore_autonomy_revenue(request: web.Request) -> web.Response:
+    try:
+        from modules.digistore_autonomy import send_revenue_report
+        r = await send_revenue_report()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_mailchimp_autonomy_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.mailchimp_autonomy import run_mailchimp_cycle
+        r = await run_mailchimp_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_mailchimp_digest(request: web.Request) -> web.Response:
+    try:
+        from modules.mailchimp_autonomy import send_weekly_digest
+        r = await send_weekly_digest()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_klaviyo_autonomy_cycle(request: web.Request) -> web.Response:
+    try:
+        from modules.klaviyo_autonomy import run_klaviyo_cycle
+        r = await run_klaviyo_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_klaviyo_blast(request: web.Request) -> web.Response:
+    try:
+        from modules.klaviyo_autonomy import send_weekly_newsletter
+        r = await send_weekly_newsletter()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── End Platform Autonomy Handlers ─────────────────────────────────────────────
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -6226,6 +6373,8 @@ async def create_app():
     app.router.add_get("/api/auto-poster/status",     handle_auto_poster_status)
     app.router.add_post("/api/shopify/seo/run",       handle_shopify_seo_run)
     app.router.add_post("/api/twitter/post",          handle_twitter_post)
+    app.router.add_get( "/api/twitter/status",        handle_twitter_status)
+    app.router.add_post("/api/circuit-breaker/reset-all", handle_circuit_breaker_reset_all)
     app.router.add_post("/api/seo/ultra",              handle_ultra_seo)
     app.router.add_post("/api/seo/indexnow",          handle_ultra_indexnow)
     app.router.add_get( "/bullpower2026indexnow.txt", handle_indexnow_key)
@@ -6457,6 +6606,23 @@ async def create_app():
     # SMTP email fallback
     app.router.add_get( "/api/smtp/status",                handle_smtp_status)
     app.router.add_post("/api/smtp/send",                  handle_smtp_send)
+
+    # Platform Autonomy routes
+    app.router.add_post("/api/amazon/cycle",               handle_amazon_cycle)
+    app.router.add_post("/api/amazon/autonomy-blast",      handle_amazon_autonomy_blast)
+    app.router.add_post("/api/ebay/autonomy-cycle",        handle_ebay_autonomy_cycle)
+    app.router.add_post("/api/ebay/autonomy-blast",        handle_ebay_autonomy_blast)
+    app.router.add_post("/api/aliexpress/cycle",           handle_aliexpress_cycle)
+    app.router.add_post("/api/aliexpress/import",          handle_aliexpress_import)
+    app.router.add_post("/api/printify/autonomy-cycle",    handle_printify_autonomy_cycle)
+    app.router.add_post("/api/printify/create-pod",        handle_printify_create_pod)
+    app.router.add_post("/api/printful/autonomy-cycle",    handle_printful_autonomy_cycle)
+    app.router.add_post("/api/digistore/autonomy-cycle",   handle_digistore_autonomy_cycle)
+    app.router.add_post("/api/digistore/revenue-report",   handle_digistore_autonomy_revenue)
+    app.router.add_post("/api/mailchimp/autonomy-cycle",   handle_mailchimp_autonomy_cycle)
+    app.router.add_post("/api/mailchimp/digest",           handle_mailchimp_digest)
+    app.router.add_post("/api/klaviyo/autonomy-cycle",     handle_klaviyo_autonomy_cycle)
+    app.router.add_post("/api/klaviyo/blast",              handle_klaviyo_blast)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
@@ -8086,6 +8252,64 @@ async def handle_circuit_breaker_reset(req):
         return web.json_response({"ok": True, "service": service, "status": get_status().get(service, {})})
     except Exception as e:
         log.error("handle_circuit_breaker_reset: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_circuit_breaker_reset_all(req):
+    """POST /api/circuit-breaker/reset-all — reset ALL circuit breakers to closed.
+
+    Resets Facebook, Instagram, LinkedIn, Twitter, Pinterest and any other open
+    circuits so BRUTUS can immediately resume posting to all channels.
+    """
+    try:
+        from modules.circuit_breaker import reset_all, get_status
+        reset_names = reset_all()
+        return web.json_response({
+            "ok": True,
+            "reset_count": len(reset_names),
+            "reset_services": reset_names,
+            "circuits": get_status(),
+        })
+    except Exception as e:
+        log.error("handle_circuit_breaker_reset_all: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_twitter_status(req):
+    """GET /api/twitter/status — show Twitter/X configuration and circuit state."""
+    try:
+        from modules.circuit_breaker import get_status as cb_status
+        api_key       = os.getenv("TWITTER_API_KEY", "")
+        api_secret    = os.getenv("TWITTER_API_SECRET", "")
+        access_token  = os.getenv("TWITTER_ACCESS_TOKEN", "")
+        access_secret = os.getenv("TWITTER_ACCESS_TOKEN_SECRET", os.getenv("TWITTER_ACCESS_SECRET", ""))
+        bearer_token  = os.getenv("TWITTER_BEARER_TOKEN", "")
+        password      = os.getenv("TWITTER_PASSWORD", "")
+        make_webhook  = os.getenv("TWITTER_MAKE_WEBHOOK", "")
+        circuit = cb_status().get("twitter", {})
+
+        configured = bool(api_key and api_secret and access_token and access_secret)
+        twikit_ready = bool(password)
+        webhook_ready = bool(make_webhook)
+
+        return web.json_response({
+            "ok": True,
+            "configured": configured or twikit_ready or webhook_ready,
+            "oauth1": {
+                "api_key": bool(api_key),
+                "api_secret": bool(api_secret),
+                "access_token": bool(access_token),
+                "access_token_secret": bool(access_secret),
+                "ready": configured,
+            },
+            "bearer_token": bool(bearer_token),
+            "twikit": {"ready": twikit_ready},
+            "make_webhook": {"ready": webhook_ready},
+            "circuit_breaker": circuit,
+            "note": "TWITTER_ACCESS_TOKEN_SECRET also checked via alias TWITTER_ACCESS_SECRET",
+        })
+    except Exception as e:
+        log.error("handle_twitter_status: %s", e)
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
