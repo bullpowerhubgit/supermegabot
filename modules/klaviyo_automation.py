@@ -345,3 +345,21 @@ async def get_stats() -> Dict:
         "lists":          lists[:5],
         "recent_campaigns": campaigns[:5],
     }
+
+
+async def run_with_brutus_traffic() -> dict:
+    """Run Klaviyo stats then fire BRUTUS traffic for email marketing."""
+    result = {}
+    try:
+        result["stats"] = await get_stats()
+    except Exception as e:
+        result["stats_error"] = str(e)
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        result["brutus"] = await run_brutus_swarm(
+            keywords=["Email Marketing Automation 2026", "Klaviyo E-Commerce Automation", "automatische Email Sequenz"],
+            max_keywords=3,
+        )
+    except Exception as e:
+        result["brutus_error"] = str(e)
+    return result

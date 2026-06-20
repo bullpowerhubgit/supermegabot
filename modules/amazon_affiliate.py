@@ -139,3 +139,21 @@ if __name__ == '__main__':
         print(f'\nSuche: {json.dumps(result, indent=2, ensure_ascii=False)[:300]}')
 
     asyncio.run(main())
+
+
+async def run_with_brutus_traffic() -> dict:
+    """Run Amazon product search then fire BRUTUS traffic for affiliate."""
+    result = {}
+    try:
+        result["products"] = await generate_product_links(["Online Business Tools", "KI Automatisierung"])
+    except Exception as e:
+        result["products_error"] = str(e)
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        result["brutus"] = await run_brutus_swarm(
+            keywords=["Amazon Affiliate Marketing 2026", "passives Einkommen Amazon", "beste Online Business Tools"],
+            max_keywords=3,
+        )
+    except Exception as e:
+        result["brutus_error"] = str(e)
+    return result
