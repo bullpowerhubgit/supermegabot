@@ -6219,6 +6219,65 @@ async def handle_ds24_create_100(request: web.Request) -> web.Response:
     })
 
 
+async def handle_ds24_create_1000(request: web.Request) -> web.Response:
+    """POST /api/ds24/create-1000 — 1000 Produkte mit SEO vollautomatisch im Hintergrund."""
+    async def _bg():
+        try:
+            from modules.ds24_mass_creator import create_1000_products
+            await create_1000_products()
+        except Exception as e:
+            log.error("DS24 create-1000 error: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({
+        "ok": True,
+        "message": "1000 DS24-Produkte mit SEO werden erstellt. Telegram-Updates alle 100 Produkte.",
+        "workers": 5,
+        "templates": 300,
+        "ki_generated": 700,
+        "estimated_minutes": 75,
+    })
+
+
+async def handle_ds24_refill(request: web.Request) -> web.Response:
+    """POST /api/ds24/refill — Autonomer Refill auf 1000 aktive Produkte."""
+    try:
+        data = await request.json() if request.content_length else {}
+    except Exception:
+        data = {}
+    target = int(data.get("target", 1000))
+    try:
+        from modules.ds24_mass_creator import autonomous_refill
+        r = await autonomous_refill(target=target)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ds24_mass_status(request: web.Request) -> web.Response:
+    """GET /api/ds24/status — Anzahl aktiver DS24-Produkte + Stats."""
+    try:
+        from modules.ds24_mass_creator import get_ds24_stats
+        r = await get_ds24_stats()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ds24_seo_blast(request: web.Request) -> web.Response:
+    """POST /api/ds24/seo-blast — Top DS24-Produkte auf allen Kanälen blasten."""
+    try:
+        data = await request.json() if request.content_length else {}
+    except Exception:
+        data = {}
+    count = int(data.get("count", 10))
+    try:
+        from modules.ds24_mass_creator import blast_top_products
+        r = await blast_top_products(count=count)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_mailchimp_autonomy_cycle(request: web.Request) -> web.Response:
     try:
         from modules.mailchimp_autonomy import run_mailchimp_cycle
@@ -6850,6 +6909,10 @@ async def create_app():
     app.router.add_get( "/api/ds24/products",              handle_ds24_product_list)
     app.router.add_post("/api/ds24/fix/669750",            handle_ds24_fix_669750)
     app.router.add_post("/api/ds24/create-100",            handle_ds24_create_100)
+    app.router.add_post("/api/ds24/create-1000",           handle_ds24_create_1000)
+    app.router.add_post("/api/ds24/refill",                handle_ds24_refill)
+    app.router.add_get( "/api/ds24/status",                handle_ds24_mass_status)
+    app.router.add_post("/api/ds24/seo-blast",             handle_ds24_seo_blast)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
