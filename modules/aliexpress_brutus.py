@@ -17,7 +17,7 @@ log = logging.getLogger("AliBrutus")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
-DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
+DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
 
 ALI_TRACKING_ID = os.getenv("ALIEXPRESS_TRACKING_ID", "")
 ALI_APP_KEY     = os.getenv("ALIEXPRESS_APP_KEY", "537346")

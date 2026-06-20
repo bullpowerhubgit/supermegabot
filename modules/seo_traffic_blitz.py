@@ -19,7 +19,7 @@ SHOP_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS
 SHOP_VER     = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 TG_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT      = os.getenv("TELEGRAM_CHAT_ID", "")
-STORE_URL    = "https://ineedit.com.co"
+STORE_URL    = "https://autopilot-store-suite-fmbka.myshopify.com"
 BLOG_GID     = f"gid://shopify/Blog/{os.getenv('SHOPIFY_BLOG_ID', '127011258755')}"
 
 SEO_KEYWORDS = [
@@ -102,7 +102,7 @@ async def run_sitemap_submit() -> dict:
         "https://yandex.com/indexnow",
     ]
     payload = {
-        "host": "ineedit.com.co",
+        "host": "autopilot-store-suite-fmbka.myshopify.com",
         "key": indexnow_key,
         "keyLocation": f"{STORE_URL}/{indexnow_key}.txt",
         "urlList": store_pages,
@@ -204,8 +204,8 @@ mutation UpdateSEO($id: ID!, $seo: SEOInput!) {
         # Only update if SEO description is missing/short
         if seo.get("description") and len(seo["description"]) > 50:
             continue
-        seo_title = f"{title} | ineedit.com.co — Best Deals 2026"[:255]
-        seo_desc  = (f"Entdecke {title} bei ineedit.com.co — "
+        seo_title = f"{title} | autopilot-store-suite-fmbka.myshopify.com — Best Deals 2026"[:255]
+        seo_desc  = (f"Entdecke {title} bei autopilot-store-suite-fmbka.myshopify.com — "
                      f"Top-Preise, schnelle Lieferung, vollautomatischer Shop. "
                      f"Shopify Dropshipping 2026.")[:320]
         r = await _shopify_graphql(mutation, {
@@ -254,7 +254,7 @@ async def run_internal_link_builder() -> dict:
 </ul>
 <h2>Warum automatisieren?</h2>
 <p>Mit modernen KI-Tools läuft dein Online-Business 24/7 — Shopify, AliExpress, Amazon, Print on Demand alles vollautomatisch.</p>
-<p><strong><a href="{STORE_URL}">👉 Jetzt bei ineedit.com.co stöbern →</a></strong></p>"""
+<p><strong><a href="{STORE_URL}">👉 Jetzt bei autopilot-store-suite-fmbka.myshopify.com stöbern →</a></strong></p>"""
 
     mutation = """
 mutation CreateArticle($article: ArticleCreateInput!) {
