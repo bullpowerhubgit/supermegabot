@@ -18,24 +18,37 @@ BASE_URL            = os.getenv("BASE_URL", "https://dudirudibot-mega-production
 # ── Internal helpers ──────────────────────────────────────────────────────────
 
 async def _claude(prompt: str, max_tokens: int = 1000) -> str:
-    if not ANTHROPIC_API_KEY:
-        return ""
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-    }
-    body = {
-        "model": "claude-haiku-4-5-20251001",
-        "max_tokens": max_tokens,
-        "messages": [{"role": "user", "content": prompt}],
-    }
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
-        async with s.post("https://api.anthropic.com/v1/messages", json=body, headers=headers) as r:
-            if r.status == 200:
-                data = await r.json()
-                return data["content"][0]["text"].strip()
-            return ""
+    if ANTHROPIC_API_KEY:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
+                async with s.post("https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
+                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
+                          "messages": [{"role": "user", "content": prompt}]}) as r:
+                    if r.status == 200:
+                        data = await r.json()
+                        return data["content"][0]["text"].strip()
+        except Exception:
+            pass
+    for env_var, url, model in [
+        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
+        ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
+    ]:
+        key = os.getenv(env_var, "")
+        if not key:
+            continue
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                async with s.post(url, headers={"Authorization": f"Bearer {key}"},
+                    json={"model": model, "max_tokens": max_tokens,
+                          "messages": [{"role": "user", "content": prompt}]}) as r:
+                    d = await r.json(content_type=None)
+            text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+            if text:
+                return text.strip()
+        except Exception:
+            continue
+    return ""
 
 
 async def _telegram(msg: str) -> None:
