@@ -90,12 +90,14 @@ async def get_trending_items(category: str = "139973", limit: int = 10) -> dict:
 
 async def get_stats() -> dict:
     return {
+        "ok": True,
         "configured": bool(EBAY_APP_ID and EBAY_CERT_ID),
         "epn_active": bool(EBAY_CAMPAIGN_ID and EBAY_AFFILIATE_ID),
         "app_id_set": bool(EBAY_APP_ID),
         "campaign_id_set": bool(EBAY_CAMPAIGN_ID),
         "marketplace": EBAY_SITE,
         "affiliate_base": "https://www.ebay.de",
+        "affiliate_link_active": bool(EBAY_CAMPAIGN_ID),
         "ts": datetime.now(timezone.utc).isoformat(),
     }
 
