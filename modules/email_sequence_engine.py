@@ -336,3 +336,16 @@ async def run_with_brutus_traffic() -> dict:
     except Exception as e:
         result["brutus_error"] = str(e)
     return result
+
+
+# Aliases for dashboard compatibility
+async def get_sequence_stats() -> dict:
+    return await get_stats()
+
+
+async def enroll_customer(email: str, sequence: str = "welcome", first_name: str = "", metadata: dict = None) -> dict:
+    return await enroll(email=email, sequence=sequence, first_name=first_name, metadata=metadata or {})
+
+
+async def auto_enroll_new_customers() -> dict:
+    return await enroll_new_customers()

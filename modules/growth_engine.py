@@ -217,3 +217,18 @@ async def get_dashboard() -> dict:
 run_winback_automation = run_winback_campaign
 get_growth_dashboard = get_dashboard
 run_vip_automation = run_vip_promotion
+
+
+async def create_referral_code(email: str, name: str = "") -> dict:
+    """Create a referral code for a customer."""
+    import random, string
+    code = ''.join(random.choices(string.ascii_uppercase + string.digits, k=8))
+    result = await create_referral(referrer_email=email, referred_email="", code=code)
+    return {"ok": True, "code": code, "email": email, "result": result}
+
+
+async def get_top_referrers(limit: int = 10) -> list:
+    """Get top referrers from referral stats."""
+    stats = await get_referral_stats()
+    referrers = stats.get("referrers", [])
+    return sorted(referrers, key=lambda x: x.get("count", 0), reverse=True)[:limit]
