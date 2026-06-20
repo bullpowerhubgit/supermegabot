@@ -4487,14 +4487,15 @@ async def handle_linkedin_burst(req):
 
 
 async def handle_indexnow_blast(req):
-    """POST /api/traffic/indexnow — ping Google+Bing IndexNow for all domains."""
-    try:
-        from modules.traffic_blitz import indexnow_blast
-        result = await indexnow_blast()
-        return web.json_response({"ok": True, **result})
-    except Exception as e:
-        log.error("handle_indexnow_blast: %s", e)
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+    """POST /api/traffic/indexnow — ping Google+Bing IndexNow for all domains (background)."""
+    async def _bg():
+        try:
+            from modules.traffic_blitz import indexnow_blast
+            await indexnow_blast()
+        except Exception as e:
+            log.error("indexnow_blast bg: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "IndexNow blast started (background)"})
 
 
 async def handle_circuit_status(req):
@@ -6968,7 +6969,7 @@ async def handle_mailchimp_run(req: web.Request) -> web.Response:
     return await _trigger_task("mailchimp_mass_daily", background=True)
 
 async def handle_ds24_run(req: web.Request) -> web.Response:
-    return await _trigger_task("ds24_affiliate_daily")
+    return await _trigger_task("ds24_affiliate_daily", background=True)
 
 async def handle_tiktok_run(req: web.Request) -> web.Response:
     return await _trigger_task("tiktok_trend_blast", background=True)
