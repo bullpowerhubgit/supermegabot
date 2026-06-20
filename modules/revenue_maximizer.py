@@ -20,7 +20,7 @@ KLAVIYO_KEY    = os.getenv("KLAVIYO_API_KEY", "")
 KLAVIYO_LIST   = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")
-DS24_KEY       = os.getenv("DS24_API_KEY", "") or os.getenv("DIGISTORE24_API_KEY", "")
+DS24_KEY       = os.getenv("DS24_API_KEY", "1682000-T8KjTRJXCO1IgXOU5I7am6p6a0AZuqV2BGswDECY") or os.getenv("DIGISTORE24_API_KEY", "1682000-T8KjTRJXCO1IgXOU5I7am6p6a0AZuqV2BGswDECY")
 
 DATA_DIR = Path(__file__).parent.parent / "data" / "revenue_maximizer"
 
