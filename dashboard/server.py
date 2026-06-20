@@ -3464,6 +3464,24 @@ async def handle_printful_autofulfill(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_revenue_blitz(req):
+    try:
+        from modules.super_revenue_blitz import revenue_blast_now
+        r = await revenue_blast_now()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_aliexpress_import(req):
+    try:
+        from modules.super_revenue_blitz import aliexpress_import_trending
+        r = await aliexpress_import_trending()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_printful_auth(req):
     """Redirect to Printful OAuth authorization page."""
     from modules.printful_automation import get_oauth_url
@@ -5178,6 +5196,10 @@ async def create_app():
     app.router.add_post("/api/mailchimp/send",        handle_mailchimp_send)
     app.router.add_post("/api/memory/save",           handle_memory_save)
     app.router.add_post("/api/notes/save",            handle_notes_save_alias)
+
+    # ── Revenue Blitz + AliExpress ────────────────────────────────────────────
+    app.router.add_post("/api/revenue/blitz",         handle_revenue_blitz)
+    app.router.add_post("/api/aliexpress/import",     handle_aliexpress_import)
 
     # ── Printify ──────────────────────────────────────────────────────────────
     app.router.add_get("/api/printify/status",        handle_printify_status)
