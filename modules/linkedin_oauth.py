@@ -169,16 +169,17 @@ async def get_linkedin_status() -> dict:
             "auth_url": get_linkedin_auth_url() if LINKEDIN_CLIENT_ID else None,
             "message": "Set LINKEDIN_ACCESS_TOKEN in Railway",
         }
-    # Test with a lightweight endpoint
+    # Test with /v2/userinfo (lightweight, works with any valid token)
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
         async with s.get(
-            "https://api.linkedin.com/v2/ugcPosts?q=authors&authors=List(urn%3Ali%3Aperson%3AYcxbqVN0ZR)&count=1",
-            headers={"Authorization": f"Bearer {token}",
-                     "X-Restli-Protocol-Version": "2.0.0"},
+            "https://api.linkedin.com/v2/userinfo",
+            headers={"Authorization": f"Bearer {token}"},
         ) as r:
-            if r.status in (200, 403):
+            if r.status == 200:
+                d = await r.json(content_type=None)
                 return {"connected": True, "token_present": True,
-                        "note": "w_member_social scope active"}
+                        "name": d.get("name", ""), "email": d.get("email", ""),
+                        "note": "Token valid (userinfo OK)"}
             if r.status == 401:
                 new_token = await refresh_access_token()
                 return {"connected": bool(new_token), "refreshed": bool(new_token)}
