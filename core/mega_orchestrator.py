@@ -435,6 +435,15 @@ class CommandRouter:
             "/nexus_evolve": self._cmd_nexus,
             "/nexus_report": self._cmd_nexus,
             "/nexus_dna": self._cmd_nexus,
+            # Product Generator
+            "/generate": self._cmd_generate,
+            "generate": self._cmd_generate,
+            "/generiere": self._cmd_generate,
+            "generiere": self._cmd_generate,
+            "/niche": self._cmd_generate_niche,
+            "niche": self._cmd_generate_niche,
+            "/produkt": self._cmd_generate,
+            "produkt erstellen": self._cmd_generate,
             # Help
             "hilfe": self._cmd_help,
             "help": self._cmd_help,
@@ -1159,6 +1168,50 @@ class CommandRouter:
                     f"Slack: {'✅' if data.get('slack_ok') else '❌'}")
         except Exception as e:
             return f"Broadcast Fehler: {e}"
+
+    async def _cmd_generate(self, text: str, session_id: str) -> str:
+        """Startet den Product Generator via Telegram."""
+        import aiohttp, re as _re
+        # Optionale Anzahl aus Text extrahieren
+        nums = _re.findall(r'\d+', text)
+        count = min(int(nums[0]), 10) if nums else 3
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/products/generate",
+                                  json={"count": count},
+                                  timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    data = await r.json()
+            return (f"🏭 Product Generator gestartet!\n"
+                    f"Erstelle {count} neue Produkte aus aktuellen Trends.\n"
+                    f"Ergebnis + Benachrichtigung kommt in ~2 Min.\n\n"
+                    f"Parallel wird auf Telegram + Slack + Mailchimp + Klaviyo gepostet.")
+        except Exception as e:
+            return f"Generator Fehler: {e}"
+
+    async def _cmd_generate_niche(self, text: str, session_id: str) -> str:
+        """Generiert 5 Produkte aus einer Nische via Telegram."""
+        import aiohttp
+        # Nische aus Text extrahieren
+        known = ["smart_home","fitness","kitchen","office","beauty","outdoor","pet","gaming"]
+        niche = None
+        for n in known:
+            if n in text.lower().replace(" ", "_"):
+                niche = n
+                break
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/products/generate-niche",
+                                  json={"niche": niche},
+                                  timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    data = await r.json()
+            niche_name = niche or "zufällig"
+            return (f"🎯 Nichen-Generator gestartet: {niche_name}\n"
+                    f"Erstelle 5 Produkte aus dieser Nische.\n"
+                    f"Verfügbare Nischen: {', '.join(known)}")
+        except Exception as e:
+            return f"Niche Generator Fehler: {e}"
 
     async def _cmd_start(self, text: str, session_id: str) -> str:
         """Send the welcome message listing all active modules."""
