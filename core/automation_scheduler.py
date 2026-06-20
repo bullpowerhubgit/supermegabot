@@ -567,7 +567,6 @@ async def task_gumroad_sync() -> str:
 
 async def task_fiverr_sync() -> str:
     """Fiverr stats OR autonomous BRUTUS promo when no API key."""
-    import aiohttp, random
     try:
         from modules.fiverr_client import get_stats
         r = await get_stats()
@@ -575,34 +574,16 @@ async def task_fiverr_sync() -> str:
             return f"Fiverr: {r.get('active_orders',0)} orders, ${r.get('earnings_month',0):.0f}/mo"
     except Exception:
         pass
-    # No API key — run BRUTUS promo for Fiverr gigs instead
-    _dest = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
-    gig_promos = [
-        f"🎯 Shopify Store KOMPLETT automatisieren — KI übernimmt alles! Gig auf Fiverr: Shopify AI Automation Setup. Mehr unter {_dest}",
-        f"💼 Brauchst du einen Shopify Experten? Rudolf Sarkany — E-Commerce Automation Spezialist. Dropshipping, SEO, KI-Tools. {_dest}",
-        f"🚀 Fiverr Gig: 'AI-Powered Shopify Store Setup' — Vollautomatischer Store in 48h. Jetzt buchen: {_dest}",
-        f"⚡ Shopify Automation Service: Produktimport, SEO, Email-Marketing, ALLES automatisch. Anfragen: {_dest}",
-    ]
-    promo = random.choice(gig_promos)
-    tg_tok = os.getenv("TELEGRAM_BOT_TOKEN",""); tg_chat = os.getenv("TELEGRAM_CHAT_ID","")
-    tg_ok = False
-    if tg_tok and tg_chat:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-            resp = await s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
-                json={"chat_id": tg_chat, "text": promo})
-            tg_ok = (await resp.json(content_type=None)).get("ok", False)
     try:
-        from modules.brutus_traffic_engine import brutus_run
-        br = await brutus_run(niche="fiverr shopify automation freelance service")
-        ch = br.get("channels_hit", 0)
-    except Exception:
-        ch = 1 if tg_ok else 0
-    return f"Fiverr Promo: {ch} Kanäle (kein API-Key → BRUTUS Promotion aktiv)"
+        from modules.fiverr_autonomy import run_fiverr_autonomy
+        r = await run_fiverr_autonomy(count=3)
+        return f"Fiverr Autonomy: {r.get('blasted',0)} Kanal-Hits | {len(r.get('gigs',[]))} Gigs promotet"
+    except Exception as e:
+        return f"Fiverr Promo Fehler: {e}"
 
 
 async def task_upwork_sync() -> str:
-    """Upwork stats OR autonomous BRUTUS promo when no token."""
-    import aiohttp, random
+    """Upwork RSS jobs + proposals + BRUTUS promo when no token."""
     try:
         from modules.upwork_client import get_stats
         r = await get_stats()
@@ -610,26 +591,13 @@ async def task_upwork_sync() -> str:
             return f"Upwork: {r.get('active_contracts',0)} contracts, ${r.get('earnings_month',0):.0f}/mo"
     except Exception:
         pass
-    # No token — promote Upwork freelance services via BRUTUS
-    _dest = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
-    promos = [
-        f"💻 Upwork Freelancer: Rudolf Sarkany — Shopify KI-Automatisierung, E-Commerce Setup, Python/AI Dev. Top Rated. {_dest}",
-        f"🤝 Suche Shopify-Projekte auf Upwork: Vollautomatisierung, Dropshipping, Printify/Printful Integration. {_dest}",
-        f"⭐ Upwork Top Rated: 'Shopify AI Automation Specialist' — Dein Store auf Autopilot in 48h. {_dest}",
-    ]
-    promo = random.choice(promos)
-    tg_tok = os.getenv("TELEGRAM_BOT_TOKEN",""); tg_chat = os.getenv("TELEGRAM_CHAT_ID","")
-    if tg_tok and tg_chat:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-            await s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
-                json={"chat_id": tg_chat, "text": promo})
     try:
-        from modules.brutus_traffic_engine import brutus_run
-        br = await brutus_run(niche="upwork freelance shopify ecommerce automation")
-        ch = br.get("channels_hit", 0)
-    except Exception:
-        ch = 0
-    return f"Upwork Promo: {ch} Kanäle (kein Token → BRUTUS Promotion aktiv)"
+        from modules.upwork_autonomy import run_upwork_autonomy
+        r = await run_upwork_autonomy(max_jobs=5)
+        return (f"Upwork Autonomy: {r.get('jobs_found',0)} Jobs ({r.get('source','rss')}) | "
+                f"{r.get('proposals_sent',0)} Proposals via Telegram")
+    except Exception as e:
+        return f"Upwork Autonomy Fehler: {e}"
 
 
 async def task_shopify_orders_alert() -> str:
@@ -3401,7 +3369,6 @@ async def task_twilio_stripe_alert() -> str:
 
 async def task_tiktok_brutus() -> str:
     """TikTok Shop sync + BRUTUS OR content promo without token."""
-    import aiohttp, random
     try:
         from modules.tiktok_shop_sync import run_with_brutus_traffic
         r = await run_with_brutus_traffic()
@@ -3410,27 +3377,13 @@ async def task_tiktok_brutus() -> str:
             return f"TikTok BRUTUS: synced={synced} blast={r.get('brutus',{}).get('ok','?')}"
     except Exception:
         pass
-    # No TikTok token — generate TikTok-style viral content + post via other channels
-    _dest = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
-    scripts = [
-        f"🎵 TikTok viral 2026: «Ich habe meinen Shopify Store mit KI komplett automatisiert — hier ist wie» 🤖 #Shopify #KI #Automatisierung #PassivesEinkommen Link in Bio: {_dest}",
-        f"🔥 POV: Dein Shopify Store verdient Geld während du schläfst. KI + Automation = Freiheit! #Dropshipping #OnlineBusiness #2026 {_dest}",
-        f"💰 Stitch this: So verdiene ich mit AliExpress Dropshipping auf Autopilot. Kein Lager nötig! #AliExpress #Shopify #Geldverdienen {_dest}",
-        f"✨ Get rich in 2026: KI schreibt Texte, BRUTUS postet, du verdienst. Das ist Automation! #Passiveinkommen #KITools {_dest}",
-    ]
-    script = random.choice(scripts)
-    tg_tok = os.getenv("TELEGRAM_BOT_TOKEN",""); tg_chat = os.getenv("TELEGRAM_CHAT_ID","")
-    if tg_tok and tg_chat:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-            await s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
-                json={"chat_id": tg_chat, "text": f"🎵 *TikTok Content*\n\n{script}", "parse_mode": "Markdown"})
     try:
-        from modules.brutus_traffic_engine import brutus_run
-        br = await brutus_run(niche="tiktok viral shopify dropshipping 2026 passives einkommen")
-        ch = br.get("channels_hit", 0)
-    except Exception:
-        ch = 0
-    return f"TikTok Content: {ch} Kanäle bespielt (kein Token → BRUTUS + Telegram aktiv)"
+        from modules.tiktok_autonomy import run_tiktok_autonomy
+        r = await run_tiktok_autonomy(count=3)
+        return (f"TikTok Autonomy: {r.get('videos_scripted',0)} Scripts | "
+                f"{r.get('channels_hit',0)} Kanal-Hits | Niches: {', '.join(r.get('niches',[])[:2])}")
+    except Exception as e:
+        return f"TikTok Autonomy Fehler: {e}"
 
 
 async def task_tiktok_analytics_report() -> str:

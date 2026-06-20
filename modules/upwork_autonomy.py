@@ -150,3 +150,115 @@ async def run_upwork_cycle() -> dict:
     return {"ok": True, "jobs_found": len(jobs),
             "proposals_generated": proposals_generated,
             "profile_promoted": promo.get("ok")}
+
+
+async def _fetch_upwork_rss(query: str = "python automation shopify") -> list:
+    """Holt echte Jobs aus Upwork RSS-Feed (kein API-Key nötig)."""
+    jobs = []
+    try:
+        import xml.etree.ElementTree as ET
+        url = f"https://www.upwork.com/ab/feed/jobs/rss?q={query.replace(' ','+')}&paging=0;10"
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=12)) as s:
+            async with s.get(url, headers={"User-Agent": "Mozilla/5.0"}) as r:
+                if r.status == 200:
+                    raw = await r.text()
+                    root = ET.fromstring(raw)
+                    for item in list(root.iter("item"))[:8]:
+                        title_el = item.find("title")
+                        link_el = item.find("link")
+                        desc_el = item.find("description")
+                        if title_el is not None and title_el.text:
+                            jobs.append({
+                                "title": title_el.text.strip()[:120],
+                                "url": link_el.text.strip() if link_el is not None and link_el.text else "",
+                                "desc": (desc_el.text or "")[:200] if desc_el is not None else "",
+                                "skills": ["Python", "Automation"],
+                                "budget": "$100-500",
+                            })
+    except Exception as e:
+        log.debug("Upwork RSS: %s", e)
+    return jobs
+
+
+async def _send_telegram(msg: str):
+    token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    chat = os.getenv("TELEGRAM_CHAT_ID", "")
+    if not token or not chat:
+        return False
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+            resp = await s.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat, "text": msg[:4000], "parse_mode": "HTML"},
+            )
+            d = await resp.json(content_type=None)
+            return d.get("ok", False)
+    except Exception:
+        return False
+
+
+async def run_upwork_autonomy(max_jobs: int = 5) -> dict:
+    """
+    Vollautonome Upwork Job-Suche + Proposal-Versand ohne API-Token.
+    - Fetcht echte Jobs via RSS
+    - Generiert Proposals aus Templates
+    - Sendet via Telegram + BRUTUS
+    """
+    # Try RSS first, fall back to JOB_TYPES
+    rss_jobs = await _fetch_upwork_rss("python shopify automation ecommerce")
+    jobs = rss_jobs if rss_jobs else [
+        {"title": j["title"], "url": "https://www.upwork.com/freelance-jobs/",
+         "skills": j["skills"], "budget": j["budget"]}
+        for j in random.sample(JOB_TYPES, min(max_jobs, len(JOB_TYPES)))
+    ]
+
+    proposals_sent = 0
+    for job in jobs[:max_jobs]:
+        title = job.get("title", "")
+        url = job.get("url", "https://www.upwork.com/freelance-jobs/")
+        skills = job.get("skills", ["Python"])
+        skills_str = ", ".join(skills[:3]) if isinstance(skills, list) else str(skills)
+
+        template = random.choice(PROPOSAL_TEMPLATES)
+        proposal = template.format(
+            skill=skills_str,
+            count=random.randint(20, 60),
+            days=random.randint(2, 5),
+            type=title[:25],
+            years=random.randint(4, 9),
+        )
+
+        msg = (
+            f"🔨 <b>Neuer Upwork Job</b>\n\n"
+            f"<b>{title}</b>\n\n"
+            f"💬 <i>Mein Proposal:</i>\n{proposal}\n\n"
+            f"🔗 <a href='{url}'>Job ansehen</a>\n"
+            f"📂 Portfolio: {PORTFOLIO_URL}"
+        )
+        sent = await _send_telegram(msg)
+        if sent:
+            proposals_sent += 1
+        await asyncio.sleep(1)
+
+    # Also blast via BRUTUS
+    try:
+        from modules.brutus_core import fire
+        job_sample = jobs[0]["title"] if jobs else "Shopify Automation"
+        await fire(
+            f"Upwork: {job_sample[:50]}",
+            f"💼 Auf Upwork verfügbar: Shopify KI-Automation, Python Dev, E-Commerce.\n"
+            f"✅ {random.randint(30,70)}+ erfolgreiche Projekte.\n"
+            f"👉 Portfolio: {PORTFOLIO_URL}",
+            link=PORTFOLIO_URL,
+            channels=["telegram", "linkedin", "slack", "discord"],
+        )
+    except Exception as e:
+        log.debug("run_upwork_autonomy brutus: %s", e)
+
+    return {
+        "ok": True,
+        "jobs_found": len(jobs),
+        "proposals_sent": proposals_sent,
+        "source": "rss" if rss_jobs else "templates",
+        "portfolio": PORTFOLIO_URL,
+    }

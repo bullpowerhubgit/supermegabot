@@ -181,3 +181,71 @@ async def run_tiktok_cycle() -> dict:
     sync = await sync_products_to_tiktok()
     scripts = await generate_video_scripts(count=2)
     return {"ok": True, "sync": sync, "scripts": scripts.get("scripts_generated", 0)}
+
+
+async def run_tiktok_autonomy(count: int = 3) -> dict:
+    """
+    Vollautonome TikTok-Promotion ohne Access-Token.
+    Erstellt Video-Scripts aus Templates + blasted auf 6 Kanäle via BRUTUS.
+    """
+    niches = random.sample(TIKTOK_NICHES, min(count, len(TIKTOK_NICHES)))
+    videos_scripted = 0
+    channels_hit = 0
+
+    _SCRIPT_TEMPLATES = [
+        lambda n, ht: (
+            f"🎵 Hook: Wusstest du das? {n} kann dir €{random.randint(200,1500)}/Monat bringen!\n\n"
+            f"📖 Content: Mit dem richtigen System läuft alles automatisch. Kein Lager, kein Stress.\n\n"
+            f"🎯 CTA: Folge mir für mehr Business-Tipps! Link in Bio: {SHOP_URL}\n\n"
+            f"{ht}"
+        ),
+        lambda n, ht: (
+            f"🔥 POV: Du entdeckst gerade die beste Business-Idee 2026 — {n}!\n\n"
+            f"Schritt 1: System aufsetzen (einmalig 2h)\n"
+            f"Schritt 2: KI übernimmt alles\n"
+            f"Schritt 3: Geld verdienen während du schläfst\n\n"
+            f"✅ Mein komplettes System: {SHOP_URL}\n{ht}"
+        ),
+        lambda n, ht: (
+            f"💰 {random.randint(3,7)} {n} Hacks die wirklich funktionieren:\n\n"
+            f"#1 Automatisierung — spare 20h/Woche\n"
+            f"#2 KI-Content — 100 Posts/Tag ohne Arbeit\n"
+            f"#3 Passives Einkommen — 24/7 aktiv\n\n"
+            f"🔗 Alles erklärt: {SHOP_URL}\n{ht}"
+        ),
+    ]
+
+    for niche in niches:
+        hashtags = random.sample(TRENDING_HASHTAGS_DE, 5)
+        niche_ht = {
+            "smart home gadgets": ["#SmartHome", "#Gadgets2026"],
+            "fitness equipment": ["#Fitness", "#FitTok"],
+            "passive income": ["#PassiveIncome", "#FinancialFreedom"],
+            "dropshipping tips": ["#Dropshipping", "#Shopify"],
+        }.get(niche, [])
+        all_ht = " ".join(hashtags + niche_ht)
+
+        script_fn = random.choice(_SCRIPT_TEMPLATES)
+        script = script_fn(niche, all_ht)
+
+        try:
+            from modules.brutus_core import fire
+            result = await fire(
+                f"TikTok: {niche[:40]}",
+                script,
+                link=SHOP_URL,
+                channels=["telegram", "mailchimp", "klaviyo", "twitter", "linkedin", "discord"],
+            )
+            channels_hit += result.get("channels_hit", 1)
+            videos_scripted += 1
+        except Exception as e:
+            log.warning("run_tiktok_autonomy blast: %s", e)
+        await asyncio.sleep(1)
+
+    return {
+        "ok": True,
+        "videos_scripted": videos_scripted,
+        "channels_hit": channels_hit,
+        "niches": niches,
+        "mode": "brutus_promotion",
+    }
