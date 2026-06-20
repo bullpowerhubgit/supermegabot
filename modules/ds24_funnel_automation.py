@@ -138,6 +138,11 @@ async def _klaviyo_add_to_list(session, headers: dict, profile_id: str):
         log.warning("Klaviyo list add failed: %s", exc)
 
 
+async def run_funnel() -> dict:
+    """Alias for run_sync — used by scheduler test commands and direct invocation."""
+    return await run_sync()
+
+
 async def run_sync() -> dict:
     """
     Main sync: fetch new DS24 buyers, push to all platforms.
