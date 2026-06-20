@@ -474,6 +474,135 @@ async def handle_gmc(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_gmc_verify_info(req):
+    """GET /api/gmc/verify — instructions for completing GMC identity verification."""
+    return web.json_response({
+        "ok": True,
+        "status": "identity_verification_pending",
+        "merchant_id": "5734366162",
+        "action_required": "Complete Google Merchant Center identity verification",
+        "steps": [
+            "1. Go to https://merchants.google.com — select merchant 5734366162",
+            "2. Click 'Complete verification' in the banner at the top",
+            "3. Upload a government ID or use automated phone/postcard verification",
+            "4. Once verified: 624 active products appear in Google Shopping (free traffic!)",
+        ],
+        "impact": "WITHOUT verification: 0 products shown in Google Shopping — massive traffic loss!",
+        "gmc_url": "https://merchants.google.com",
+        "products_waiting": 624,
+    })
+
+
+async def handle_reddit_blast(req):
+    """GET /api/reddit/blast — post to relevant subreddits immediately."""
+    try:
+        from modules.reddit_autoposter import run_reddit_blast
+        topic = req.rel_url.query.get("topic", "passives Einkommen KI 2026")
+        result = await run_reddit_blast(topic)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_reddit_status(req):
+    """GET /api/reddit/status — Reddit API configuration status."""
+    configured = all([
+        os.getenv("REDDIT_CLIENT_ID"),
+        os.getenv("REDDIT_CLIENT_SECRET"),
+        os.getenv("REDDIT_USERNAME"),
+        os.getenv("REDDIT_PASSWORD"),
+    ])
+    return web.json_response({
+        "configured": configured,
+        "setup": "Set REDDIT_CLIENT_ID + REDDIT_CLIENT_SECRET + REDDIT_USERNAME + REDDIT_PASSWORD in Railway" if not configured else "Ready",
+        "target_subreddits": ["passive_income", "entrepreneur", "ecommerce", "dropshipping", "affiliatemarketing", "shopify"],
+    })
+
+
+async def handle_gmc_feed(req):
+    """GET /api/gmc/feed.xml — Google Shopping RSS product feed for all 630 Shopify products."""
+    try:
+        import html as _html
+        shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+        shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+        shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        store_url      = os.getenv("SHOPIFY_STORE_URL", "https://ineedit.com.co")
+
+        products = []
+        if shopify_token:
+            import aiohttp as _aio
+            async with _aio.ClientSession() as s:
+                page_info = None
+                while True:
+                    params = {"limit": 250, "fields": "id,title,body_html,handle,images,variants,status"}
+                    if page_info:
+                        params = {"limit": 250, "page_info": page_info, "fields": "id,title,body_html,handle,images,variants,status"}
+                    async with s.get(
+                        f"https://{shopify_domain}/admin/api/{shopify_ver}/products.json",
+                        headers={"X-Shopify-Access-Token": shopify_token},
+                        params=params,
+                        timeout=_aio.ClientTimeout(total=30),
+                    ) as r:
+                        data = await r.json(content_type=None)
+                        batch = [p for p in data.get("products", []) if p.get("status") == "active"]
+                        products.extend(batch)
+                        link_header = r.headers.get("Link", "")
+                        if 'rel="next"' in link_header:
+                            import re as _re
+                            m = _re.search(r'page_info=([^&>]+).*?rel="next"', link_header)
+                            page_info = m.group(1) if m else None
+                        else:
+                            break
+                        if len(products) >= 500:
+                            break
+
+        items = []
+        for p in products[:500]:
+            variant = (p.get("variants") or [{}])[0]
+            price   = variant.get("price", "0")
+            image   = (p.get("images") or [{}])[0].get("src", "") if p.get("images") else ""
+            handle  = p.get("handle", "")
+            title   = _html.escape(p.get("title", "")[:150])
+            desc    = _html.escape((p.get("body_html") or p.get("title", "")).replace("<", " ").replace(">", " ")[:500])
+            img_tag = f"<g:image_link>{image}</g:image_link>" if image else ""
+            items.append(f"""  <item>
+    <title><![CDATA[{p.get('title','')[:150]}]]></title>
+    <description><![CDATA[{(p.get('body_html') or p.get('title',''))[:500]}]]></description>
+    <link>{store_url}/products/{handle}</link>
+    <g:id>shopify_{p.get('id','')}</g:id>
+    <g:price>{price} EUR</g:price>
+    <g:availability>in stock</g:availability>
+    <g:condition>new</g:condition>
+    <g:brand>BullPower Hub</g:brand>
+    {img_tag}
+  </item>""")
+
+        xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
+<channel>
+  <title>I Want That! I Need It! — Google Shopping Feed</title>
+  <link>{store_url}</link>
+  <description>Alle Produkte aus dem Online-Shop</description>
+  <language>de</language>
+{chr(10).join(items)}
+</channel>
+</rss>"""
+        return web.Response(text=xml, content_type="application/xml",
+                            headers={"Content-Disposition": "inline; filename=feed.xml"})
+    except Exception as e:
+        return web.Response(text=f"<!-- feed error: {e} -->", content_type="application/xml", status=500)
+
+
+async def handle_shopify_auto_fill_trending(req):
+    """POST /api/shopify/auto-fill-trending — AI trending product auto-fill + BRUTUS blast."""
+    try:
+        from modules.shopify_auto_fill import auto_fill_trending_products
+        result = await auto_fill_trending_products()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_backup_status(req):
     backups = []
     extra_dirs = [d.strip() for d in os.getenv("BACKUP_EXTRA_DIRS", "").split(",") if d.strip()]
@@ -5432,7 +5561,9 @@ async def create_app():
     app.router.add_post("/api/backup", handle_backup_run)
 
     # GMC route
-    app.router.add_get("/api/gmc", handle_gmc)
+    app.router.add_get("/api/gmc",                         handle_gmc)
+    app.router.add_get("/api/gmc/feed.xml",                handle_gmc_feed)
+    app.router.add_post("/api/shopify/auto-fill-trending", handle_shopify_auto_fill_trending)
 
     # New routes
     app.router.add_post("/api/mac/action", handle_mac_action)

@@ -62,7 +62,7 @@ async def get_products_batch(page: int = 1, limit: int = 20) -> list:
             async with s.get(
                 f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VERSION}/products.json",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
-                params={"limit": limit, "page": page, "fields": "id,title,body_html,vendor,product_type,tags,status"},
+                params={"limit": limit, "fields": "id,title,body_html,vendor,product_type,tags,status"},
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:
                 data = await r.json(content_type=None)
