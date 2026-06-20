@@ -201,3 +201,58 @@ async def reset_seo_state():
     """Reset state so all products get re-optimized."""
     SEO_STATE_FILE.unlink(missing_ok=True)
     return {"ok": True, "message": "SEO state reset — all products will be re-optimized"}
+
+
+async def auto_publish_blog_post(keyword: str, shop_domain: str = "") -> dict:
+    """Auto-generate and publish an SEO blog post for a keyword to Shopify."""
+    import os
+    from modules.ai_client import ai_complete
+    
+    domain = shop_domain or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    affiliate = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+    
+    if not domain or not token:
+        return {"ok": False, "reason": "SHOPIFY_SHOP_DOMAIN or SHOPIFY_ADMIN_API_TOKEN not set"}
+    
+    # Generate blog content via AI (or use template fallback)
+    title = await ai_complete(f"Write a catchy SEO blog post title for keyword: '{keyword}'. Max 70 chars.", max_tokens=80)
+    if not title:
+        title = f"Top Produkte für {keyword} — AIITEC Shop 2026"
+    
+    body_prompt = f"Write a 400-word SEO blog post about '{keyword}' for an e-commerce store. Include product recommendations, tips, and a CTA. Mention AIITEC brand."
+    body_html = await ai_complete(body_prompt, max_tokens=600)
+    if not body_html:
+        body_html = f"<h2>{title}</h2><p>Entdecke die besten Produkte für {keyword} in unserem AIITEC Shop. Qualität, Innovation und hervorragender Service warten auf dich.</p><p><a href='{affiliate}'>Jetzt entdecken →</a></p>"
+    else:
+        body_html = f"<h2>{title}</h2>{body_html}<p><a href='{affiliate}'>Jetzt einkaufen →</a></p>"
+    
+    import aiohttp
+    version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+    url = f"https://{domain}/admin/api/{version}/blogs/{{blog_id}}/articles.json"
+    
+    # Get first blog ID
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://{domain}/admin/api/{version}/blogs.json",
+                headers={"X-Shopify-Access-Token": token},
+                timeout=aiohttp.ClientTimeout(total=15)
+            ) as r:
+                blogs = (await r.json()).get("blogs", [])
+                if not blogs:
+                    return {"ok": False, "reason": "No Shopify blogs found"}
+                blog_id = blogs[0]["id"]
+            
+            async with s.post(
+                f"https://{domain}/admin/api/{version}/blogs/{blog_id}/articles.json",
+                headers={"X-Shopify-Access-Token": token, "Content-Type": "application/json"},
+                json={"article": {"title": title.strip('"').strip(), "body_html": body_html, "tags": keyword}},
+                timeout=aiohttp.ClientTimeout(total=15)
+            ) as r:
+                if r.status == 201:
+                    art = (await r.json()).get("article", {})
+                    return {"ok": True, "article_id": art.get("id"), "title": art.get("title"), "keyword": keyword}
+                return {"ok": False, "status": r.status, "error": await r.text()}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
