@@ -20,7 +20,7 @@ import aiohttp
 
 log = logging.getLogger("DS24MarketplaceAuto")
 
-DS24_KEY      = os.getenv("DS24_API_KEY", "1682000-T8KjTRJXCO1IgXOU5I7am6p6a0AZuqV2BGswDECY")
+DS24_KEY      = os.getenv("DS24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
 AFFILIATE_ID  = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 ACCOUNT_ID    = DS24_KEY.split("-")[0] if "-" in DS24_KEY else "1682000"
 DS24_BASE     = "https://www.digistore24.com/api/call"

@@ -15,7 +15,7 @@ except ImportError:
 log = logging.getLogger("Digistore24")
 
 DS24_BASE = "https://www.digistore24.com/api/call"
-DS24_KEY  = os.getenv("DIGISTORE24_API_KEY", "1682000-T8KjTRJXCO1IgXOU5I7am6p6a0AZuqV2BGswDECY")
+DS24_KEY  = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
 DS24_FORMAT = "JSON"
 
 # DS24 API v1.2: use X-DS-API-KEY header (URL-based key auth deprecated)
