@@ -21,6 +21,19 @@ except ImportError:
 # Core Ollama helper
 # ---------------------------------------------------------------------------
 
+
+
+async def _brutus_fire(message: str, channels: list = None):
+    """BrutusCore: verteilt Revenue-Events auf alle Kanäle."""
+    try:
+        from modules.brutus_core import BrutusCore
+        b = BrutusCore()
+        await b.fire(message, channels=channels or ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo"])
+    except Exception as _be:
+        import logging
+        logging.getLogger(__name__).debug("Brutus fire skip: %s", _be)
+
+
 async def _ollama(prompt: str, model: Optional[str] = None) -> str:
     """POST to Ollama /api/generate. Returns response text or a fallback string."""
     if model is None:
