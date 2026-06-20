@@ -128,9 +128,9 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                         "is_tracking_opens": True,
                         "is_tracking_clicks": True,
                     },
-                    "campaign-messages": [
-                        {
-                            "data": {
+                    "campaign-messages": {
+                        "data": [
+                            {
                                 "type": "campaign-message",
                                 "attributes": {
                                     "channel": "email",
@@ -144,8 +144,8 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                                     },
                                 },
                             }
-                        }
-                    ],
+                        ]
+                    },
                 },
             }
         }
