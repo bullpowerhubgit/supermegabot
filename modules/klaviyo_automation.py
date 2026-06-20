@@ -194,8 +194,10 @@ async def create_and_send_campaign(
             "attributes": {
                 "name": name,
                 "channel": "email",
-                "audiences": {"included": [list_id]},
-                "send_strategy": {"method": "immediate"},
+                "audiences": {
+                    "included": [list_id],
+                    "excluded": [],
+                },
             }
         }
     }
@@ -242,14 +244,19 @@ async def create_and_send_campaign(
                 if r.status not in (200, 204):
                     return {"ok": False, "error": f"Template-Upload: HTTP {r.status}"}
 
-            # 4. Send
+            # 4. Send immediately
             async with s.post(
                 f"{_BASE}/campaign-send-jobs/",
                 headers=_headers(),
-                json={"data": {"type": "campaign-send-job", "attributes": {"campaign_id": camp_id}}}
+                json={"data": {"type": "campaign-send-job", "attributes": {
+                    "campaign_id": camp_id,
+                    "send_strategy": {"method": "immediate"},
+                }}}
             ) as r:
+                await r.read()
                 if r.status not in (200, 201, 202):
-                    return {"ok": False, "error": f"Senden: HTTP {r.status}"}
+                    err_text = await r.text() if hasattr(r, '_body') else ""
+                    return {"ok": False, "error": f"Senden: HTTP {r.status} {err_text[:200]}"}
 
         return {"ok": True, "campaign_id": camp_id, "message_id": msg_id, "name": name}
     except Exception as e:
