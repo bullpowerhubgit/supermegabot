@@ -90,12 +90,21 @@ async def get_list_stats() -> dict:
     }
 
 
+_mc_campaign_dates: list = []
+
 async def create_campaign(subject: str, html_body: str, from_name: str = FROM_NAME) -> dict:
     """Create + fill + send a Mailchimp campaign."""
     if not API_KEY:
         return {"ok": False, "error": "no MAILCHIMP_API_KEY"}
     if os.getenv("MAILCHIMP_AUTOMATION_ENABLED", "true").lower() in ("false", "0", "off"):
-        return {"ok": False, "error": "Mailchimp automation disabled — TOS violation fix pending"}
+        return {"ok": False, "error": "Mailchimp automation disabled"}
+    # Rate limit: max 1 campaign per day
+    max_per_day = int(os.getenv("MAILCHIMP_MAX_CAMPAIGNS_PER_DAY", "1"))
+    today = datetime.now(timezone.utc).date().isoformat()
+    today_count = sum(1 for d in _mc_campaign_dates if d == today)
+    if today_count >= max_per_day:
+        return {"ok": False, "error": f"Daily limit reached ({max_per_day}/day) — skipped"}
+    _mc_campaign_dates.append(today)
     try:
         # 1. Create campaign
         campaign_data = {
