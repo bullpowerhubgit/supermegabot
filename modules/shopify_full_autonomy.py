@@ -37,6 +37,123 @@ HEADERS = {"X-Shopify-Access-Token": TOKEN, "Content-Type": "application/json"}
 
 BATCH = 50  # Produkte pro API-Call
 
+import random as _rnd
+
+# ── Template Helpers (work WITHOUT AI) ───────────────────────────────────────
+
+_TAG_RULES: list = [
+    (["smart home", "wifi", "alexa", "smarthome", "smart plug"],
+     "smart home,gadget 2026,bestseller,smart plug,alexa,weihnachtsgeschenk,top seller,haus automation"),
+    (["gadget", "usb", "adapter", "kabel", "bluetooth", "wireless"],
+     "gadget,tech gadget,usb zubehör,adapter,bestseller 2026,elektronik,online kaufen"),
+    (["fitness", "sport", "training", "gym", "yoga", "laufen", "tracker"],
+     "fitness,sport,training 2026,gym,gesundheit,aktiv leben,bestseller,fitness tracker"),
+    (["küche", "kitchen", "kochen", "haushalt", "reinigung"],
+     "küche,haushalt,küchenhelfer,kochen,haushalt gadget 2026,bestseller,geschenk"),
+    (["beauty", "pflege", "kosmetik", "skin", "haar", "make"],
+     "beauty,pflege,kosmetik,skin care,bestseller 2026,schönheit,geschenk frauen"),
+    (["reise", "travel", "outdoor", "camping", "rucksack"],
+     "reise,travel,outdoor,camping,reise gadget 2026,abenteuer,bestseller"),
+    (["büro", "desk", "office", "laptop", "schreibtisch"],
+     "büro,home office,schreibtisch,laptop zubehör,desk setup,bestseller 2026,produktivität"),
+    (["pet", "hund", "katze", "tier", "haustier", "dog", "cat"],
+     "haustier,hund,katze,pet gadget,tier zubehör,bestseller 2026,haustier geschenk"),
+    (["3d", "drucker", "print", "filament"],
+     "3d drucker,3d druck,filament,maker,tech 2026,bestseller,3d printing"),
+    (["led", "licht", "lamp", "lampe", "beleuchtung"],
+     "led,beleuchtung,lampe,smart light,bestseller 2026,deko,wohnzimmer"),
+    (["bluetooth", "earbuds", "kopfhörer", "audio"],
+     "bluetooth,kopfhörer,earbuds,wireless audio,bestseller 2026,musik,sound"),
+    (["massage", "relax", "wellness"],
+     "massage,entspannung,wellness,relax,gesundheit 2026,bestseller,massage gun"),
+    (["kinder", "baby", "spielzeug"],
+     "kinder,baby,spielzeug,kind geschenk,bestseller 2026,toy,family"),
+    (["auto", "car", "kfz", "fahrzeug"],
+     "auto zubehör,kfz,car gadget,fahrzeug,bestseller 2026,autofahrer"),
+    (["beamer", "projektor"],
+     "beamer,projektor,heimkino,4k,bestseller 2026,film,entertainment"),
+    (["powerbank", "charger", "ladegerät"],
+     "powerbank,ladegerät,charger,schnellladen,bestseller 2026,mobile"),
+]
+
+def _template_tags(title: str, product_type: str = "") -> str:
+    text = (title + " " + product_type).lower()
+    for keywords, tags in _TAG_RULES:
+        if any(kw in text for kw in keywords):
+            return tags
+    words = [w for w in re.sub(r'[^a-z0-9äöüß ]', '', title.lower()).split() if len(w) > 3]
+    base = ",".join(words[:3]) if words else "produkt"
+    return f"{base},bestseller,gadget 2026,online shop,schnelle lieferung,top produkt,trending 2026"
+
+
+_DESC_FNS = [
+    lambda t: f"""<p><strong>{t}</strong> ist ein hochwertiges Produkt für anspruchsvolle Kunden, die Qualität schätzen.</p>
+<ul>
+<li>✅ <strong>Premium Qualität</strong> — sorgfältig ausgewählt und geprüft</li>
+<li>✅ <strong>Schnelle Lieferung</strong> — direkt zu Ihnen nach Hause</li>
+<li>✅ <strong>30 Tage Rückgaberecht</strong> — ohne Risiko kaufen</li>
+<li>✅ <strong>Kundenzufriedenheit</strong> — über 500 zufriedene Kunden</li>
+</ul>
+<p>Perfekt als Geschenk oder für den Eigengebrauch. Bestellen Sie jetzt und profitieren Sie von unserem exzellenten Kundenservice.</p>
+<p><em>💡 Tipp: Mit Code <strong>NEXUS10</strong> sparen Sie 10% auf Ihre Bestellung!</em></p>""",
+    lambda t: f"""<h2>{t}</h2>
+<p>Entdecken Sie <strong>{t}</strong> — ein Produkt, das Ihren Alltag einfacher und angenehmer macht.</p>
+<h3>Warum dieses Produkt?</h3>
+<ul>
+<li>🎯 Perfekte Qualität zum fairen Preis</li>
+<li>📦 Schneller Versand, sicher verpackt</li>
+<li>💰 Preis-Leistungs-Sieger 2026</li>
+<li>⭐ Vielfach bewährt und empfohlen</li>
+</ul>
+<p>Jetzt bestellen — <strong>Kostenloser Versand ab €29!</strong></p>""",
+    lambda t: f"""<p>Mit <strong>{t}</strong> machen Sie keine falsche Wahl. Dieses Produkt verbindet Qualität, Design und Funktionalität auf höchstem Niveau.</p>
+<p><strong>Vorteile auf einen Blick:</strong></p>
+<ul>
+<li>✅ Langlebige Verarbeitung</li>
+<li>✅ Einfache Handhabung</li>
+<li>✅ Modernes Design</li>
+<li>✅ Vielseitig einsetzbar</li>
+</ul>
+<p>🛒 <strong>Jetzt bestellen</strong> und in wenigen Tagen liefern lassen! Kostenloser Versand ab €29. 30 Tage Rückgaberecht.</p>""",
+]
+
+def _product_desc(title: str) -> str:
+    return _rnd.choice(_DESC_FNS)(title)
+
+
+_PRODUCT_PRESETS: list[dict] = [
+    {"title": "Smart LED Strip WiFi — Alexa & Google Home kompatibel", "price": "24.99", "type": "Smart Home",
+     "tags": "led,smart home,wifi,alexa,deko,bestseller 2026", "q": "smart led strip wifi"},
+    {"title": "USB-C Hub 7-in-1 — Laptop Adapter für MacBook & Windows", "price": "34.99", "type": "Elektronik",
+     "tags": "usb-c,hub,adapter,laptop,macbook,bestseller 2026", "q": "usb c hub laptop adapter"},
+    {"title": "Fitness Tracker Smartwatch — Herzfrequenz & Schlafanalyse", "price": "49.99", "type": "Fitness",
+     "tags": "fitness,smartwatch,tracker,gesundheit,sport,bestseller 2026", "q": "fitness smartwatch tracker"},
+    {"title": "Portable Power Bank 20000mAh — Schnellladen USB-C", "price": "29.99", "type": "Elektronik",
+     "tags": "powerbank,ladegerät,schnellladen,usb-c,reise,bestseller 2026", "q": "power bank portable charger"},
+    {"title": "Bluetooth Kopfhörer kabellos — 30h Akku ANC", "price": "59.99", "type": "Audio",
+     "tags": "bluetooth,kopfhörer,anc,kabellos,musik,bestseller 2026", "q": "bluetooth headphones wireless"},
+    {"title": "Desk Organizer Bambus — Schreibtisch Organizer Set", "price": "22.99", "type": "Büro",
+     "tags": "büro,schreibtisch,organizer,bambus,home office,bestseller 2026", "q": "desk organizer bamboo office"},
+    {"title": "Mini Beamer Full HD — Heimkino Projektor 200 Zoll", "price": "89.99", "type": "Entertainment",
+     "tags": "beamer,projektor,heimkino,full hd,film,bestseller 2026", "q": "mini projector home cinema"},
+    {"title": "Massage Gun Tiefengewebe — 6 Köpfe variable Geschwindigkeit", "price": "69.99", "type": "Fitness",
+     "tags": "massage,gun,muskel,fitness,erholung,bestseller 2026", "q": "massage gun muscle recovery"},
+    {"title": "Ring Light Selfie LED — 3 Farbtöne Stativ Halterung", "price": "27.99", "type": "Fotografie",
+     "tags": "ring light,selfie,led,foto,tiktok,bestseller 2026", "q": "ring light selfie led photo"},
+    {"title": "Luftreiniger HEPA H13 — für Allergie & Feinstaub", "price": "79.99", "type": "Haushalt",
+     "tags": "luftreiniger,hepa,allergie,feinstaub,haushalt,bestseller 2026", "q": "air purifier hepa filter"},
+    {"title": "Kabelloser Lautsprecher wasserdicht — Bluetooth 5.3", "price": "44.99", "type": "Audio",
+     "tags": "lautsprecher,bluetooth,wasserdicht,outdoor,musik,bestseller 2026", "q": "wireless speaker bluetooth waterproof"},
+    {"title": "Laptop Ständer höhenverstellbar Aluminium ergonomisch", "price": "32.99", "type": "Büro",
+     "tags": "laptop ständer,ergonomisch,aluminium,home office,büro,bestseller 2026", "q": "laptop stand adjustable aluminum"},
+    {"title": "Pflanzenlampe LED Vollspektrum — Timer & Dimmer", "price": "26.99", "type": "Garten",
+     "tags": "pflanzenlampe,led,vollspektrum,garten,pflanze,bestseller 2026", "q": "plant grow light led full spectrum"},
+    {"title": "Yoga Mat rutschfest 6mm — Tragegurt inklusive", "price": "28.99", "type": "Sport",
+     "tags": "yoga,matte,sport,fitness,rutschfest,bestseller 2026", "q": "yoga mat non slip exercise"},
+    {"title": "Elektrische Zahnbürste Ultraschall — 5 Modi Timer", "price": "39.99", "type": "Beauty",
+     "tags": "zahnbürste,ultraschall,beauty,pflege,bestseller 2026", "q": "electric toothbrush ultrasonic"},
+]
+
 
 def _ok() -> bool:
     return bool(SHOP and TOKEN)
@@ -218,7 +335,7 @@ Nur die Tags, kommagetrennt, kein JSON, kein anderer Text.
 Beispiel: smart home, gadget 2026, weihnachtsgeschenk, bestseller"""
     ai_tags = await _ai(prompt, max_tokens=100)
     if not ai_tags or len(ai_tags) < 10:
-        return False
+        ai_tags = _template_tags(title, product.get("product_type", ""))
 
     clean_tags = ",".join([t.strip()[:50] for t in ai_tags.split(",") if t.strip()][:10])
     try:
@@ -282,6 +399,8 @@ async def _get_or_create_collection(title: str, body_html: str = "") -> Optional
             return str(existing[0]["id"])
         # Erstellen
         seo_desc = await _ai(f"Schreibe eine kurze SEO-Kollektion-Beschreibung auf Deutsch für: {title}. Max 1 Satz.", 80)
+        if not seo_desc:
+            seo_desc = f"<p>Entdecke unsere {title} Kollektion — kuratierte Produkte für höchste Ansprüche.</p>"
         result = await _post("custom_collections.json", {
             "custom_collection": {
                 "title": title,
@@ -444,7 +563,9 @@ Inkludiere: Hauptvorteil, 3-4 Features, klaren Kaufgrund.
 NUR HTML zurückgeben, kein JSON, kein Kommentar."""
 
             new_desc = await _ai(prompt, max_tokens=400)
-            if new_desc and len(new_desc) > 80:
+            if not (new_desc and len(new_desc) > 80):
+                new_desc = _product_desc(title)
+            if new_desc and len(new_desc) > 50:
                 await _put(f"products/{p['id']}.json", {
                     "product": {"id": p["id"], "body_html": new_desc}
                 })
@@ -572,6 +693,7 @@ async def auto_restock_trending(count: int = 5) -> dict:
     random.shuffle(pool)
     to_create = pool[:count]
 
+    used_presets: set = set()
     for keyword in to_create:
         try:
             # KI: Produktdaten generieren
@@ -589,12 +711,31 @@ Antworte NUR mit diesem JSON:
 }}"""
 
             raw = await _ai(prompt, max_tokens=600)
-            if not raw:
-                continue
-            start, end = raw.find("{"), raw.rfind("}") + 1
-            if start == -1:
-                continue
-            data = json.loads(raw[start:end])
+            data: dict = {}
+            if raw:
+                try:
+                    start, end = raw.find("{"), raw.rfind("}") + 1
+                    if start != -1:
+                        data = json.loads(raw[start:end])
+                except Exception:
+                    pass
+            # Template fallback when AI offline — pick unused preset
+            if not data:
+                avail = [p for p in _PRODUCT_PRESETS if p["title"] not in used_presets]
+                if not avail:
+                    used_presets.clear()
+                    avail = _PRODUCT_PRESETS
+                preset = _rnd.choice(avail)
+                used_presets.add(preset["title"])
+                data = {
+                    "title": preset["title"],
+                    "body_html": _product_desc(preset["title"]),
+                    "price": preset["price"],
+                    "tags": preset["tags"] + ",trending,2026",
+                    "product_type": preset["type"],
+                    "image_query": preset["q"],
+                }
+                log.debug("auto_restock: AI offline, using preset '%s'", preset["title"][:40])
 
             # Bild holen: Pexels → Unsplash → LoremFlickr (kein Key nötig)
             image_url = ""
@@ -789,25 +930,33 @@ Gib zurück als JSON:
   "body_html": "<p>Neue Beschreibung 150 Wörter</p><ul><li>3 Features</li></ul>"}}"""
 
             raw = await _ai(prompt, max_tokens=500)
-            if not raw:
-                continue
-            try:
-                start, end = raw.find("{"), raw.rfind("}") + 1
-                data = json.loads(raw[start:end])
-                new_title = data.get("title", "")
-                new_desc = data.get("body_html", "")
+            new_title = ""
+            new_desc = ""
+            if raw:
+                try:
+                    start, end = raw.find("{"), raw.rfind("}") + 1
+                    data = json.loads(raw[start:end])
+                    new_title = data.get("title", "")
+                    new_desc = data.get("body_html", "")
+                except Exception:
+                    pass
+            # Template fallback when AI offline
+            if not new_title:
+                if title.isupper():
+                    new_title = title.title()
+                elif re.search(r'[A-Z]{3,}', title):
+                    new_title = re.sub(r'([A-Z]{3,})', lambda m: m.group(0).title(), title)
+            if not new_desc and len(desc) < 50:
+                new_desc = _product_desc(title)
+            if new_title or (new_desc and len(new_desc) > 50):
+                update = {"id": p["id"]}
                 if new_title and len(new_title) >= 10:
-                    await _put(f"products/{p['id']}.json", {
-                        "product": {
-                            "id": p["id"],
-                            "title": new_title[:255],
-                            "body_html": new_desc or desc,
-                        }
-                    })
-                    fixed += 1
-                    await asyncio.sleep(0.5)
-            except Exception:
-                pass
+                    update["title"] = new_title[:255]
+                if new_desc:
+                    update["body_html"] = new_desc
+                await _put(f"products/{p['id']}.json", {"product": update})
+                fixed += 1
+                await asyncio.sleep(0.5)
 
         return {"ok": True, "fixed": fixed, "weak_found": len(weak)}
     except Exception as e:

@@ -4380,8 +4380,8 @@ async def task_quantum_self_improve() -> str:
     try:
         from modules.quantum_self_repair import run_self_improvement
         r = await run_self_improvement()
-        return (f"SelfImprove: {r.get('improvements',0)} upgrades | "
-                f"success_rate={r.get('success_rate',0):.1%}")
+        return (f"SelfImprove: {r.get('improvements_analyzed',0)} analysiert | "
+                f"{len(r.get('improvements',[]))} Verbesserungen")
     except Exception as e:
         return f"SelfImprove error: {e}"
 
@@ -4472,17 +4472,23 @@ async def task_autonomous_pipeline() -> str:
 
 
 async def task_quantum_self_repair() -> str:
-    """Every 30min — scan all API endpoints, detect + log errors, auto-fix via Claude."""
+    """Every 30min — scan recurring errors, apply auto-fixes, reset circuits."""
     try:
-        from modules.quantum_self_fixer import scan_and_repair
-        result = await scan_and_repair()
-        ok  = result.get("ok", 0)
-        bad = result.get("failed", 0)
-        pct = result.get("health_pct", 0)
-        new = result.get("new_errors", 0)
-        return f"Quantum: {ok}/{ok+bad} OK ({pct}%) | Neue Fehler: {new}"
+        from modules.quantum_self_repair import run_quantum_scan
+        result = await run_quantum_scan()
+        recurring = result.get("recurring_errors", 0)
+        fixes = result.get("fix_count", 0)
+        stats = result.get("error_stats", {})
+        total = stats.get("total_occurrences", 0)
+        return f"QuantumScan: {recurring} wiederkehrend | {fixes} Fixes | {total} Fehler gesamt"
     except Exception as e:
-        return f"Quantum Fehler: {e}"
+        # fallback to old fixer if new module not available
+        try:
+            from modules.quantum_self_fixer import scan_and_repair
+            result = await scan_and_repair()
+            return f"Quantum: {result.get('ok',0)}/{result.get('ok',0)+result.get('failed',0)} OK"
+        except Exception:
+            return f"Quantum Fehler: {e}"
 
 
 # ── Task registry ────────────────────────────────────────────────────────────
