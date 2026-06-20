@@ -195,6 +195,74 @@ def handle_stripe_payment_event(event: dict) -> None:
 
 # ── Slack Integration (via slack_notify module) ───────────────────────────────
 
+async def send_daily_revenue_report(
+    shopify_eur: float = 0.0,
+    shopify_orders: int = 0,
+    ds24_eur: float = 0.0,
+    ds24_sales: int = 0,
+    stripe_eur: float = 0.0,
+    gumroad_eur: float = 0.0,
+    date_str: str | None = None,
+) -> bool:
+    """
+    Build and send the daily revenue report to Telegram.
+    Fetches real data from revenue_aggregator if no values provided.
+    Format matches the canonical report template.
+    """
+    if date_str is None:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+
+    # If no data provided, try to fetch from revenue_aggregator
+    if shopify_eur == 0 and ds24_eur == 0 and stripe_eur == 0:
+        try:
+            from modules.revenue_aggregator import get_platform_revenue
+            data = await get_platform_revenue()
+            platforms = data.get("platforms", {})
+
+            sh = platforms.get("shopify", {})
+            shopify_eur = sh.get("revenue", 0.0)
+            shopify_orders = sh.get("orders", 0)
+
+            ds = platforms.get("digistore", {})
+            ds24_eur = ds.get("revenue", 0.0)
+            ds24_sales = ds.get("orders", 0)
+
+            # Stripe via stripe_client
+            try:
+                from modules.stripe_client import get_revenue_stats
+                st = await get_revenue_stats()
+                stripe_eur = st.get("today_revenue", 0.0)
+            except Exception:
+                try:
+                    from modules.stripe_client import get_revenue_summary
+                    import asyncio as _asyncio
+                    loop = _asyncio.get_event_loop()
+                    st = await loop.run_in_executor(None, get_revenue_summary)
+                    stripe_eur = st.get("today_revenue", 0.0)
+                except Exception:
+                    pass
+
+            gm = platforms.get("gumroad", {})
+            from modules.revenue_aggregator import _to_eur as _rev_to_eur
+            gumroad_eur = _rev_to_eur(gm.get("revenue", 0.0), gm.get("currency", "USD")) if gm.get("ok") else 0.0
+        except Exception as exc:
+            log.warning("Revenue fetch for daily report failed: %s", exc)
+
+    total_eur = shopify_eur + ds24_eur + stripe_eur + gumroad_eur
+
+    msg = (
+        f"📊 <b>Revenue Report {date_str}</b>\n"
+        "\n"
+        f"🛒 <b>Shopify</b>: €{shopify_eur:.2f} ({shopify_orders} Bestellungen)\n"
+        f"💾 <b>DS24</b>: €{ds24_eur:.2f} ({ds24_sales} Verkäufe)\n"
+        f"💳 <b>Stripe</b>: €{stripe_eur:.2f}\n"
+        f"📦 <b>Gesamt</b>: €{total_eur:.2f}\n"
+        "\n"
+        "🤖 System aktiv | BRUTUS läuft"
+    )
+    return await async_send_telegram(msg)
+
+
 async def send_slack_alert(message: str, level: str = "info") -> bool:
     """
     Send a Slack notification using the central slack_notify module.

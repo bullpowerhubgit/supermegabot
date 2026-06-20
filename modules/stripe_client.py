@@ -124,6 +124,28 @@ def write_to_supabase(summary: dict) -> bool:
         return False
 
 
+async def get_revenue_stats() -> dict:
+    """
+    Async wrapper for get_revenue_summary().
+    Returns: {today_revenue, order_count, currency, source, charges}
+    Compatible with revenue_aggregator and notify_hub expectations.
+    """
+    import asyncio as _asyncio
+    loop = _asyncio.get_event_loop()
+    try:
+        return await loop.run_in_executor(None, get_revenue_summary)
+    except Exception as exc:
+        log.warning("get_revenue_stats failed: %s", exc)
+        return {
+            "source": "stripe",
+            "today_revenue": 0.0,
+            "order_count": 0,
+            "currency": "EUR",
+            "charges": [],
+            "error": str(exc),
+        }
+
+
 def is_configured() -> bool:
     return bool(os.getenv("STRIPE_SECRET_KEY") or os.getenv("STRIPE_API_KEY"))
 

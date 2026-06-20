@@ -62,14 +62,27 @@ def _cfg(service: str) -> dict:
     return _CONFIGS.get(service, _CONFIGS["default"])
 
 
+_AUTO_RESET_AFTER = 1800  # 30 minutes — hard ceiling before auto-reset
+
+
 def is_open(service: str) -> bool:
-    """Returns True if circuit is OPEN (calls should be skipped)."""
+    """Returns True if circuit is OPEN (calls should be skipped).
+
+    Auto-resets to closed after _AUTO_RESET_AFTER seconds (30 min) regardless
+    of the per-service cooldown, so a stale open circuit never blocks forever.
+    """
     s = _STATE[service]
     if s["state"] == "closed":
         return False
     if s["state"] == "open":
         cfg = _cfg(service)
         elapsed = time.time() - s["opened_at"]
+        # Hard 30-min ceiling: auto-reset to closed so BRUTUS can retry
+        if elapsed >= _AUTO_RESET_AFTER:
+            s["state"] = "closed"
+            s["failures"] = 0
+            log.info("Circuit %s → closed (30-min auto-reset after %.0fs)", service, elapsed)
+            return False
         if elapsed >= cfg["half_open_after"]:
             s["state"] = "half_open"
             log.info("Circuit %s → half_open after %.0fs", service, elapsed)
@@ -159,6 +172,23 @@ def reset(service: str) -> None:
     _STATE[service]["state"] = "closed"
     _STATE[service]["failures"] = 0
     log.info("Circuit %s manually reset → closed", service)
+
+
+def reset_all() -> list:
+    """Reset ALL open/half_open circuits to closed. Returns list of reset service names."""
+    reset_names = []
+    for name in list(_STATE.keys()):
+        if _STATE[name]["state"] != "closed":
+            reset(name)
+            reset_names.append(name)
+    # Also force-reset known social channels that may not have state entries yet
+    for svc in ("facebook", "instagram", "linkedin", "twitter", "pinterest"):
+        if svc not in _STATE or _STATE[svc]["state"] != "closed":
+            reset(svc)
+            if svc not in reset_names:
+                reset_names.append(svc)
+    log.info("reset_all: %d circuits reset → closed: %s", len(reset_names), reset_names)
+    return reset_names
 
 
 # ── Decorator for automatic circuit breaking ──────────────────────────────────

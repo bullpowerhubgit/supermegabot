@@ -183,6 +183,23 @@ async def _fetch_printify() -> Dict:
         return {"revenue": 0.0, "orders": 0, "currency": "USD", "ok": False, "error": str(exc)}
 
 
+async def _fetch_stripe() -> Dict:
+    """Fetch today's revenue from Stripe Charges via stripe_client."""
+    try:
+        from modules.stripe_client import get_revenue_stats
+        stats = await get_revenue_stats()
+        return {
+            "revenue": stats.get("today_revenue", 0.0),
+            "orders": stats.get("order_count", 0),
+            "currency": stats.get("currency", "EUR"),
+            "ok": "error" not in stats,
+            "error": stats.get("error", ""),
+        }
+    except Exception as exc:
+        log.warning("Stripe revenue fetch failed: %s", exc)
+        return {"revenue": 0.0, "orders": 0, "currency": "EUR", "ok": False, "error": str(exc)}
+
+
 # ---------------------------------------------------------------------------
 # Public API
 # ---------------------------------------------------------------------------
@@ -212,6 +229,7 @@ async def get_platform_revenue() -> Dict:
         _fetch_digistore(),
         _fetch_printify(),
         _fetch_paypal(),
+        _fetch_stripe(),
         return_exceptions=False,
     )
     platforms = {
@@ -221,6 +239,7 @@ async def get_platform_revenue() -> Dict:
         "digistore": results[3],
         "printify":  results[4],
         "paypal":    results[5],
+        "stripe":    results[6],
     }
     total_eur = sum(
         _to_eur(v["revenue"], v["currency"])
@@ -238,61 +257,47 @@ async def get_platform_revenue() -> Dict:
 async def get_daily_report() -> str:
     """
     Build and return a Telegram-ready text report with revenue from all platforms.
+    Uses the canonical format: Shopify / DS24 / Stripe / Gesamt.
     """
     report = await get_platform_revenue()
     platforms = report["platforms"]
-    total_eur  = report["total_eur"]
     timestamp  = report["timestamp"][:10]  # YYYY-MM-DD
 
+    sh  = platforms.get("shopify",   {})
+    ds  = platforms.get("digistore", {})
+    st  = platforms.get("stripe",    {})
+    gm  = platforms.get("gumroad",   {})
+
+    shopify_eur    = _to_eur(sh.get("revenue", 0.0), sh.get("currency", "EUR")) if sh.get("ok") else 0.0
+    shopify_orders = sh.get("orders", 0)
+    ds24_eur       = _to_eur(ds.get("revenue", 0.0), ds.get("currency", "EUR")) if ds.get("ok") else 0.0
+    ds24_sales     = ds.get("orders", 0)
+    stripe_eur     = _to_eur(st.get("revenue", 0.0), st.get("currency", "EUR")) if st.get("ok") else 0.0
+    gumroad_eur    = _to_eur(gm.get("revenue", 0.0), gm.get("currency", "USD")) if gm.get("ok") else 0.0
+    total_eur      = round(shopify_eur + ds24_eur + stripe_eur + gumroad_eur, 2)
+
     lines: List[str] = [
-        f"📊 <b>Tages-Report {timestamp}</b>",
+        f"📊 <b>Revenue Report {timestamp}</b>",
         "",
+        f"🛒 <b>Shopify</b>: €{shopify_eur:.2f} ({shopify_orders} Bestellungen)",
+        f"💾 <b>DS24</b>: €{ds24_eur:.2f} ({ds24_sales} Verkäufe)",
+        f"💳 <b>Stripe</b>: €{stripe_eur:.2f}",
+        f"📦 <b>Gesamt</b>: €{total_eur:.2f}",
+        "",
+        "🤖 System aktiv | BRUTUS läuft",
     ]
 
-    platform_emojis = {
-        "shopify":   "🛒",
-        "gumroad":   "💾",
-        "etsy":      "🎨",
-        "digistore": "🎓",
-        "printify":  "👕",
-        "paypal":    "💳",
-    }
-
-    best_platform = ""
-    best_revenue  = -1.0
-
-    for name, data in platforms.items():
-        emoji    = platform_emojis.get(name, "💼")
-        currency = data.get("currency", "EUR")
-        revenue  = data.get("revenue", 0.0)
-        orders   = data.get("orders", 0)
-        ok       = data.get("ok", False)
-
-        if ok:
-            eur_equiv = _to_eur(revenue, currency)
-            lines.append(
-                f"{emoji} <b>{name.capitalize()}</b>: "
-                f"{revenue:.2f} {currency} ({orders} Bestellungen)"
-            )
-            if eur_equiv > best_revenue:
-                best_revenue  = eur_equiv
-                best_platform = name
-        else:
-            if data.get("status") == "not_configured":
-                lines.append(f"{emoji} <b>{name.capitalize()}</b>: ⚙️ nicht konfiguriert")
-            else:
-                error = data.get("error", "Nicht verfügbar")
-                lines.append(f"{emoji} <b>{name.capitalize()}</b>: ⚠️ {error}")
-
-    lines += [
-        "",
-        f"💶 <b>Gesamt: {total_eur:.2f} EUR</b>",
-    ]
-    if best_platform:
-        lines.append(f"🏆 Beste Plattform: <b>{best_platform.capitalize()}</b>")
-
-    total_orders = sum(v.get("orders", 0) for v in platforms.values() if v.get("ok"))
-    lines.append(f"📦 Bestellungen gesamt: {total_orders}")
+    # Append secondary platforms if they have revenue
+    extras = []
+    if gumroad_eur > 0:
+        extras.append(f"💾 Gumroad: €{gumroad_eur:.2f}")
+    etsy = platforms.get("etsy", {})
+    if etsy.get("ok") and etsy.get("revenue", 0) > 0:
+        etsy_eur = _to_eur(etsy["revenue"], etsy.get("currency", "USD"))
+        extras.append(f"🎨 Etsy: €{etsy_eur:.2f}")
+    if extras:
+        lines.insert(-1, "")
+        lines[-1:-1] = extras
 
     return "\n".join(lines)
 

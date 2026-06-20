@@ -491,13 +491,16 @@ async def task_seo_optimizer() -> str:
 
 
 async def task_revenue_report() -> str:
-    """Collect revenue from all platforms and send daily summary."""
+    """Collect revenue from all platforms and send daily summary via Telegram."""
     try:
+        from modules.notify_hub import send_daily_revenue_report
         from modules.revenue_aggregator import get_daily_report, save_daily_snapshot
-        report = await get_daily_report()
+        # Canonical report with real API data, sent via notify_hub
+        ok = await send_daily_revenue_report()
         await save_daily_snapshot()
-        await _tg(f"💰 <b>Tages-Report</b>\n{report}")
-        return report[:120]
+        report = await get_daily_report()
+        status = "gesendet" if ok else "Telegram-Send fehlgeschlagen"
+        return f"Revenue Report {status}: {report[:80]}"
     except Exception as e:
         return f"Fehler: {e}"
 
@@ -3941,7 +3944,7 @@ TASKS = [
     # ── Lead Automation ──────────────────────────────────────────────────
     ("lead_nurture",            task_lead_nurture,           3600,    70),   # 1h — process new leads → Klaviyo + sequence
     # ── Platform Posting (extra coverage) ────────────────────────────────
-    ("pinterest_auto_post",     task_pinterest_auto_post,    7200,    80),   # 2h — Pinterest pins
+    ("pinterest_auto_post",     task_pinterest_auto_post,    21600,   80),  # 6h — Pinterest pins
     ("telegram_broadcast",      task_telegram_broadcast,     21600,   91),   # 6h — Telegram channel post
     ("instagram_auto_post",     task_instagram_auto_post,    14400,  100),   # 4h — Instagram post
     ("linkedin_auto_post",      task_linkedin_auto_post,     21600,  110),   # 6h — LinkedIn AI post

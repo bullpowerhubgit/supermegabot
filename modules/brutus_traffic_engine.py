@@ -324,7 +324,7 @@ async def _generate_single(session, keyword: str, format_type: str, angle: str =
 
 _BRUTUS_TEMPLATES = [
     {
-        "social_post": "🔥 {kw} — Der smarteste Weg zu passivem Einkommen 2026!\n\n✅ Vollautomatisch\n✅ KI-gestützt\n✅ Bereits hunderte zufriedene Kunden\n\n👉 Jetzt starten: {_DS24}\n\n#PassivesEinkommen #KI #OnlineGeldVerdienen #BullPower #Digistore24",
+        "social_post": "🔥 {kw} — Der smarteste Weg zu passivem Einkommen 2026!\n\n✅ Vollautomatisch\n✅ KI-gestützt\n✅ Bereits hunderte zufriedene Kunden\n\n👉 Jetzt starten: {_DS24}\n\n#PassivesEinkommen #KI #OnlineGeldVerdienen #AIITEC #Digistore24",
         "blog_post": "<h1>{kw} — Dein Weg zu passivem Einkommen 2026</h1><p>Mit modernster KI-Technologie generierst du vollautomatisch Einnahmen. Unser System läuft 24/7 für dich. <a href='{_DS24}'>Jetzt starten →</a></p>",
         "email_subject_lines": "5 Wege zu passivem Einkommen mit {kw}\nWarum {kw} 2026 funktioniert\nDein vollautomatisches Einkommen mit KI\nSo verdienst du mit {kw} im Schlaf\nNeu: {kw} — Jetzt kostenlos testen",
         "ad_copy": "HEADLINE: {kw} — Jetzt €497 sparen!\nBODY: Vollautomatisches Einkommen mit KI. 24/7 für dich. Bereits 500+ zufriedene Kunden.\nCTA: Jetzt starten →\nURL: {_DS24}",
@@ -358,7 +358,11 @@ _BRUTUS_TEMPLATES = [
 
 def _fallback_content_swarm(keyword: str) -> dict:
     import hashlib
-    _ds24 = os.getenv("DS24_AFFILIATE_LINK", os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))
+    _ds24 = (
+        os.getenv("DS24_AFFILIATE_LINK")
+        or os.getenv("AIITEC_AFFILIATE_URL")
+        or "https://www.digistore24.com/redir/669750/user37405262/"
+    )
     idx = int(hashlib.md5(keyword.encode()).hexdigest(), 16) % len(_BRUTUS_TEMPLATES)
     tmpl = _BRUTUS_TEMPLATES[idx]
     return {k: v.replace("{kw}", keyword).replace("{_DS24}", _ds24).replace("#BullPower", "#AIITEC") for k, v in tmpl.items()}
@@ -659,9 +663,9 @@ async def deploy_to_klaviyo_campaign(keyword: str, content: dict):
                                 "type": "email",
                                 "subject": first_subject,
                                 "preview_text": f"Hot Trend: {keyword[:80]}",
-                                "from_email": "hello@bullpowerhub.com",
-                                "from_label": "BullPower Hub",
-                                "reply_to_email": "hello@bullpowerhub.com",
+                                "from_email": "bullpowersrtkennels@gmail.com",
+                                "from_label": "AIITEC | Rudolf",
+                                "reply_to_email": "bullpowersrtkennels@gmail.com",
                             }
                         }
                     }]}
