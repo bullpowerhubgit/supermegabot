@@ -8502,6 +8502,8 @@ async def create_app():
     app.router.add_post("/api/printify/autopublish",      handle_printify_autofulfill)
     app.router.add_post("/api/printful/sync",             handle_printful_autofulfill)
     app.router.add_post("/api/klaviyo/daily-campaign",    handle_klaviyo_daily_campaigns)
+    app.router.add_post("/api/klaviyo/cycle",             handle_klaviyo_autonomy_cycle)
+    app.router.add_post("/api/mailchimp/cycle",           handle_mailchimp_autonomy_cycle)
     app.router.add_post("/api/gumroad/promote",           handle_gumroad_blast)
     app.router.add_post("/api/indexnow/blast",            handle_indexnow_blast)
     app.router.add_post("/api/digistore/affiliate-blast", handle_ds24_affiliate_blast_all)
