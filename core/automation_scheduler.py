@@ -4245,6 +4245,9 @@ TASKS = [
     ("product_generator_niche",  task_product_generator_niche, 14400, 18120), # 4h — 5 Nischen-Produkte
     # ── DS24 PRODUCT CREATOR — täglich neue Digistore24 Produkte anlegen ──────
     ("ds24_auto_create",         task_ds24_auto_create,        86400, 18300), # täglich — 2 DS24-Produkte erstellen
+    # ── DS24 MASSENANLEGER — 1000 Produkte Wartung + SEO-Blast ────────────────
+    ("ds24_refill",              task_ds24_refill,             86400, 18500), # täglich — 1000 Produkte halten
+    ("ds24_seo_blast",           task_ds24_seo_blast,         604800, 18700), # wöchentlich — Top-Produkte blasten
 ]
 
 

@@ -453,6 +453,15 @@ class CommandRouter:
             "ds24 auto": self._cmd_ds24_auto,
             "/ds24_fix": self._cmd_ds24_fix,
             "ds24 fix 669750": self._cmd_ds24_fix,
+            "/ds24_1000": self._cmd_ds24_1000,
+            "ds24 1000": self._cmd_ds24_1000,
+            "1000 produkte": self._cmd_ds24_1000,
+            "/ds24_status": self._cmd_ds24_status,
+            "ds24 status": self._cmd_ds24_status,
+            "/ds24_refill": self._cmd_ds24_refill,
+            "ds24 refill": self._cmd_ds24_refill,
+            "/ds24_blast": self._cmd_ds24_seo_blast,
+            "ds24 blast": self._cmd_ds24_seo_blast,
             # Help
             "hilfe": self._cmd_help,
             "help": self._cmd_help,
@@ -1285,6 +1294,79 @@ class CommandRouter:
             return f"Fix 669750 Fehler: {data}"
         except Exception as e:
             return f"DS24 Fix Fehler: {e}"
+
+    async def _cmd_ds24_1000(self, text: str, session_id: str) -> str:
+        """Startet die Massenanlage von 1000 DS24-Produkten mit SEO."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/ds24/create-1000",
+                                  timeout=aiohttp.ClientTimeout(total=15)) as r:
+                    data = await r.json()
+            if data.get("ok"):
+                return ("🚀 DS24 Massenanleger gestartet!\n\n"
+                        "📦 Ziel: 1000 Produkte mit SEO\n"
+                        "👷 5 parallele Worker\n"
+                        "⏱️ ca. 60-90 Minuten\n\n"
+                        "Telegram-Updates alle 100 Produkte.")
+            return f"DS24 1000 Fehler: {data.get('error','?')}"
+        except Exception as e:
+            return f"DS24 1000 Fehler: {e}"
+
+    async def _cmd_ds24_status(self, text: str, session_id: str) -> str:
+        """Zeigt DS24 Produkt-Statistiken."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(f"{smb_url}/api/ds24/status",
+                                 timeout=aiohttp.ClientTimeout(total=15)) as r:
+                    data = await r.json()
+            if data.get("ok"):
+                cats = data.get("by_category", {})
+                cat_str = "\n".join(f"  • {k}: {v}" for k, v in list(cats.items())[:5])
+                return (f"📊 DS24 Status:\n\n"
+                        f"📦 Gesamt: {data.get('total', 0)} Produkte\n"
+                        f"✅ Aktiv: {data.get('active', 0)}\n\n"
+                        f"Top Kategorien:\n{cat_str}")
+            return f"DS24 Status Fehler: {data.get('error','?')}"
+        except Exception as e:
+            return f"DS24 Status Fehler: {e}"
+
+    async def _cmd_ds24_refill(self, text: str, session_id: str) -> str:
+        """Füllt DS24-Produkte auf 1000 auf."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/ds24/refill",
+                                  json={"target": 1000},
+                                  timeout=aiohttp.ClientTimeout(total=30)) as r:
+                    data = await r.json()
+            if data.get("ok"):
+                return (f"🔄 DS24 Refill läuft!\n\n"
+                        f"✅ Erstellt: {data.get('created', 0)}\n"
+                        f"📦 Aktiv: {data.get('total_active', 0)}/1000")
+            return f"DS24 Refill Fehler: {data.get('error','?')}"
+        except Exception as e:
+            return f"DS24 Refill Fehler: {e}"
+
+    async def _cmd_ds24_seo_blast(self, text: str, session_id: str) -> str:
+        """Blastet Top-DS24-Produkte auf allen Kanälen."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/ds24/seo-blast",
+                                  json={"count": 10},
+                                  timeout=aiohttp.ClientTimeout(total=60)) as r:
+                    data = await r.json()
+            if data.get("ok"):
+                return f"🔥 DS24 SEO Blast: {data.get('blasted', 0)} Produkte geblasten!"
+            return f"DS24 Blast Fehler: {data.get('error','?')}"
+        except Exception as e:
+            return f"DS24 Blast Fehler: {e}"
 
     async def _cmd_start(self, text: str, session_id: str) -> str:
         """Send the welcome message listing all active modules."""
