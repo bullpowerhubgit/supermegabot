@@ -6344,6 +6344,75 @@ async def handle_ds24_purchase_stats(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_ds24_marketplace_scan(request: web.Request) -> web.Response:
+    """POST /api/ds24/marketplace/scan — Marktplatz scannen."""
+    try:
+        data = await request.json() if request.content_length else {}
+    except Exception:
+        data = {}
+    niche = data.get("niche", "")
+    limit = int(data.get("limit", 20))
+    try:
+        from modules.ds24_marketplace_auto import scan_marketplace
+        products = await scan_marketplace(niche=niche, limit=limit)
+        return web.json_response({"ok": True, "count": len(products), "products": products})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ds24_marketplace_apply(request: web.Request) -> web.Response:
+    """POST /api/ds24/marketplace/apply — Auf Top-Produkte bewerben."""
+    asyncio.get_event_loop().create_task(_ds24_marketplace_apply_bg())
+    return web.json_response({"ok": True, "message": "Marktplatz-Bewerbung gestartet (background)"})
+
+
+async def _ds24_marketplace_apply_bg() -> None:
+    try:
+        from modules.ds24_marketplace_auto import scan_marketplace, auto_apply_batch
+        products = await scan_marketplace(limit=30)
+        await auto_apply_batch(products)
+    except Exception as e:
+        log.warning("Marketplace apply bg error: %s", e)
+
+
+async def handle_ds24_marketplace_cycle(request: web.Request) -> web.Response:
+    """POST /api/ds24/marketplace/cycle — Vollständiger Zyklus (scan→apply→blast)."""
+    asyncio.get_event_loop().create_task(_ds24_marketplace_cycle_bg())
+    return web.json_response({"ok": True, "message": "DS24 Marktplatz-Zyklus gestartet (background)"})
+
+
+async def _ds24_marketplace_cycle_bg() -> None:
+    try:
+        from modules.ds24_marketplace_auto import run_full_marketplace_cycle
+        await run_full_marketplace_cycle()
+    except Exception as e:
+        log.warning("Marketplace cycle bg error: %s", e)
+
+
+async def handle_ds24_marketplace_blast(request: web.Request) -> web.Response:
+    """POST /api/ds24/marketplace/blast — Alle genehmigten Produkte blasten."""
+    asyncio.get_event_loop().create_task(_ds24_marketplace_blast_bg())
+    return web.json_response({"ok": True, "message": "Marketplace-Blast gestartet (background)"})
+
+
+async def _ds24_marketplace_blast_bg() -> None:
+    try:
+        from modules.ds24_marketplace_auto import blast_approved_marketplace_products
+        await blast_approved_marketplace_products()
+    except Exception as e:
+        log.warning("Marketplace blast bg error: %s", e)
+
+
+async def handle_ds24_marketplace_stats(request: web.Request) -> web.Response:
+    """GET /api/ds24/marketplace/stats — Bewerbungs-Stats + Revenue."""
+    try:
+        from modules.ds24_marketplace_auto import get_marketplace_stats
+        r = await get_marketplace_stats()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_ds24_refill(request: web.Request) -> web.Response:
     """POST /api/ds24/refill — Autonomer Refill auf 1000 aktive Produkte."""
     try:
@@ -7554,6 +7623,11 @@ async def create_app():
     app.router.add_get( "/api/ds24/dankeseite",            handle_ds24_dankeseite)
     app.router.add_post("/api/ds24/dankeseite",            handle_ds24_dankeseite)
     app.router.add_get( "/api/ds24/purchases",             handle_ds24_purchase_stats)
+    app.router.add_post("/api/ds24/marketplace/scan",      handle_ds24_marketplace_scan)
+    app.router.add_post("/api/ds24/marketplace/apply",     handle_ds24_marketplace_apply)
+    app.router.add_post("/api/ds24/marketplace/cycle",     handle_ds24_marketplace_cycle)
+    app.router.add_post("/api/ds24/marketplace/blast",     handle_ds24_marketplace_blast)
+    app.router.add_get( "/api/ds24/marketplace/stats",     handle_ds24_marketplace_stats)
 
     # ── Traffic Mega Engine ───────────────────────────────────────────────────
     app.router.add_post("/api/traffic/mega-blast",       handle_traffic_mega_blast)
