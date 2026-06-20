@@ -55,6 +55,8 @@ async def _mc_post(path: str, data: dict) -> dict:
     async with aiohttp.ClientSession() as s:
         async with s.post(f"{BASE}{path}", headers=_auth(), json=data,
                           timeout=aiohttp.ClientTimeout(total=20)) as r:
+            if r.status == 204:
+                return {"ok": True, "status": 204}
             return await r.json() if r.status < 400 else {"error": await r.text()}
 
 
@@ -253,6 +255,8 @@ async def _dragon_post(path: str, data: dict) -> dict:
     async with aiohttp.ClientSession() as s:
         async with s.post(f"{DRAGON_BASE}{path}", headers=_dragon_auth(), json=data,
                           timeout=aiohttp.ClientTimeout(total=20)) as r:
+            if r.status == 204:
+                return {"ok": True, "status": 204}
             return await r.json() if r.status < 400 else {"error": await r.text()}
 
 
