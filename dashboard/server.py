@@ -8396,6 +8396,7 @@ async def create_app():
     app.router.add_get( "/api/pipeline/status",          handle_autonomous_pipeline_status)
     app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
     app.router.add_get( "/api/trends/latest",            handle_trends_latest)
+    app.router.add_post("/api/seo/blast",                handle_ultra_seo)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
