@@ -239,13 +239,23 @@ async def create_and_send_campaign(
                     "data": {
                         "type": "campaign-message",
                         "id": msg_id,
-                        "attributes": {"content": {"html": html_body}},
+                        "attributes": {
+                            "content": {
+                                "subject": subject,
+                                "from_email": from_email,
+                                "from_label": from_name,
+                                "reply_to_email": from_email,
+                                "body": {"html": html_body},
+                            }
+                        },
                     }
                 }
                 async with s.patch(f"{_BASE}/campaign-messages/{msg_id}/", headers=_headers(), json=tmpl_body) as r:
-                    await r.read()
+                    patch_body = await r.json(content_type=None)
                     if r.status not in (200, 204):
-                        log.warning("Klaviyo template upload HTTP %s", r.status)
+                        log.error("Klaviyo template upload HTTP %s: %s", r.status, str(patch_body)[:300])
+                        return {"ok": False, "error": f"Template-Upload: HTTP {r.status}",
+                                "camp_id": camp_id, "detail": str(patch_body)[:300]}
 
             # 3. Send — id=campaign_id per Klaviyo API 2024-10-15 (send-job uses id as campaign ref)
             log.info("Klaviyo send-job: camp_id=%s msg_id=%s", camp_id, msg_id)
