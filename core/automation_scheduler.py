@@ -4196,6 +4196,60 @@ async def task_revenue_fast_track_run() -> str:
         return f"RevenueFastTrack error: {e}"
 
 
+async def task_shopify_mass_cycle() -> str:
+    try:
+        from modules.shopify_mass_creator import run_shopify_mass_cycle
+        r = await run_shopify_mass_cycle()
+        return f"ShopifyMass: created={r.get('created',0)} blasted={r.get('blasted',0)}"
+    except Exception as e:
+        return f"ShopifyMass error: {e}"
+
+
+async def task_klaviyo_mass_daily() -> str:
+    try:
+        from modules.klaviyo_mass_campaigns import run_daily_klaviyo_campaigns
+        r = await run_daily_klaviyo_campaigns(count=3)
+        return f"KlaviyoMass: created={r.get('created',0)} failed={r.get('failed',0)}"
+    except Exception as e:
+        return f"KlaviyoMass error: {e}"
+
+
+async def task_mailchimp_mass_daily() -> str:
+    try:
+        from modules.mailchimp_mass_campaigns import run_daily_mailchimp_campaigns
+        r = await run_daily_mailchimp_campaigns(count=2)
+        return f"MailchimpMass: created={r.get('created',0)} failed={r.get('failed',0)}"
+    except Exception as e:
+        return f"MailchimpMass error: {e}"
+
+
+async def task_brutus_clone_status() -> str:
+    try:
+        from modules.brutus_clone_integrator import run_brutus_clone_cycle
+        r = await run_brutus_clone_cycle()
+        return f"BrutusClone: status_blast={r.get('status_blast',{}).get('ok', False)}"
+    except Exception as e:
+        return f"BrutusClone error: {e}"
+
+
+async def task_revenue_mega_daily() -> str:
+    try:
+        from modules.revenue_mega_tracker import run_revenue_tracker_cycle
+        r = await run_revenue_tracker_cycle()
+        return f"RevenueMega: total=€{r.get('grand_total',0):.2f} date={r.get('report_date','')}"
+    except Exception as e:
+        return f"RevenueMega error: {e}"
+
+
+async def task_revenue_mega_weekly() -> str:
+    try:
+        from modules.revenue_mega_tracker import run_revenue_weekly
+        r = await run_revenue_weekly()
+        return f"RevenueMegaWeekly: total_7d=€{r.get('grand_total_7d',0):.2f}"
+    except Exception as e:
+        return f"RevenueMegaWeekly error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -4509,6 +4563,17 @@ TASKS = [
     ("email_blast_daily",        task_email_blast_daily,       86400, 20100), # daily — KI-Email → blast all
     # ── TRAFFIC ENGINE — Reddit+Medium+GitHub+Syndication ────────────────────
     ("traffic_engine_cycle",     task_traffic_engine_cycle,     3600, 20200), # 1h — Multi-Platform Traffic
+    # ── SHOPIFY MASS CREATOR — täglich neue Produkte + Blast ─────────────────
+    ("shopify_mass_cycle",       task_shopify_mass_cycle,      86400, 21000), # täglich — 50 Shopify-Produkte
+    # ── KLAVIYO MASS CAMPAIGNS — täglich 3 neue Kampagnen ────────────────────
+    ("klaviyo_mass_daily",       task_klaviyo_mass_daily,      86400, 21200), # täglich — 3 Klaviyo-Kampagnen
+    # ── MAILCHIMP MASS CAMPAIGNS — täglich 2 neue Kampagnen ──────────────────
+    ("mailchimp_mass_daily",     task_mailchimp_mass_daily,    86400, 21400), # täglich — 2 Mailchimp-Kampagnen
+    # ── BRUTUSCLONE INTEGRATOR — stündlich System-Status Blast ───────────────
+    ("brutus_clone_status",      task_brutus_clone_status,      7200, 21600), # 2h — System-Status + Blast
+    # ── REVENUE MEGA TRACKER — täglich Umsatz-Report ────────────────────────
+    ("revenue_mega_daily",       task_revenue_mega_daily,      86400, 21800), # täglich — Revenue-Report
+    ("revenue_mega_weekly",      task_revenue_mega_weekly,    604800, 22000), # wöchentlich — 7-Tage Report
 ]
 
 
