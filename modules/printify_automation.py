@@ -184,17 +184,13 @@ async def sync_all_products_to_shopify() -> Dict:
             f"Already live: {already} | Fehler: {len(failed)}\n"
             f"Neu: {', '.join(published[:5])}"
         )
-        # BrutusCore: neue Printify Produkte auf allen Kanälen promoten
+        # BRUTUS: neue Printify Produkte auf allen Kanälen promoten
         try:
-            from modules.brutus_core import fire as brutus_fire
-            for name in published[:2]:
-                await brutus_fire(
-                    title=f"🖨️ Neu im Shop: {name}",
-                    body=f"Frisch verfügbar: {name} — personalisiert, auf Bestellung gedruckt, direkt an dich geliefert.",
-                    link=f"https://ineedit.com.co",
-                    niche="print on demand geschenke",
-                    tags=["printify", "neu", "print-on-demand"]
-                )
+            from modules.brutus_traffic_engine import run_brutus_swarm
+            await run_brutus_swarm(
+                keywords=[f"Print on Demand {published[0]}", "Custom Merchandise 2026"],
+                max_keywords=2
+            )
         except Exception:
             pass
     return {"published": len(published), "already_live": already, "failed": len(failed)}
@@ -210,6 +206,20 @@ async def get_stats() -> Dict:
         "fulfilled":      len([o for o in orders if o.get("status") == "fulfilled"]),
         "products":       len(await get_products()),
     }
+
+
+async def run_with_brutus_traffic() -> Dict:
+    """Get Printify stats then fire BRUTUS for POD keywords."""
+    stats = await get_stats()
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        brutus = await run_brutus_swarm(
+            keywords=["Print on Demand Shop 2026", "Custom Mug Design", "Personalisierte Geschenke"],
+            max_keywords=3
+        )
+        return {"stats": stats, "brutus": brutus, "ok": True}
+    except Exception as e:
+        return {"stats": stats, "brutus_error": str(e), "ok": False}
 
 
 async def handle_shopify_order(shopify_order: Dict) -> Dict:
