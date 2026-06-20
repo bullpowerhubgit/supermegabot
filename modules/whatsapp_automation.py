@@ -132,3 +132,15 @@ async def get_whatsapp_stats() -> dict:
         "messages_failed": stats.get("failed", 0),
         "verify_token_set": bool(WA_VERIFY_TOKEN),
     }
+
+
+async def send_whatsapp_blast(message: str) -> dict:
+    """Broadcast a message to all configured WhatsApp recipients (WHATSAPP_TO_NUMBERS env, comma-separated)."""
+    numbers_raw = os.getenv("WHATSAPP_TO_NUMBERS", os.getenv("WHATSAPP_DEFAULT_TO", ""))
+    numbers = [n.strip() for n in numbers_raw.split(",") if n.strip()]
+    if not numbers:
+        log.warning("send_whatsapp_blast: no WHATSAPP_TO_NUMBERS configured")
+        return {"ok": False, "error": "WHATSAPP_TO_NUMBERS not set", "sent": 0}
+    result = await broadcast_to_subscribers(message, numbers)
+    result["ok"] = result.get("sent", 0) > 0
+    return result

@@ -3089,6 +3089,18 @@ async def _twilio_send(to: str, body: str) -> bool:
     return False
 
 
+async def task_whatsapp_daily_blast() -> str:
+    """Daily WhatsApp promo blast to all configured recipients."""
+    try:
+        from modules.whatsapp_automation import send_whatsapp_blast
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        msg = f"🚀 BullPower Hub: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
+        r = await send_whatsapp_blast(msg)
+        return f"WhatsApp blast: sent={r.get('sent',0)}, failed={r.get('failed',0)}"
+    except Exception as e:
+        return f"WhatsApp blast error: {e}"
+
+
 async def task_twilio_morning_brief() -> str:
     """Daily morning SMS briefing — Revenue + Tasks for the day."""
     to = os.getenv("TWILIO_VERIFIED_TO", os.getenv("TWILIO_FROM_NUMBER", ""))
@@ -3482,6 +3494,8 @@ TASKS = [
     # ── DISCORD AUTOMATION — Revenue Reports + Promos ─────────────────────────
     ("discord_promo",          task_discord_promo,           21600, 12600), # 6h — Discord Promo Post
     ("discord_revenue",        task_discord_revenue_report,  86400, 12700), # daily — Discord Revenue Report
+    # ── WHATSAPP AUTOMATION — Daily Promo Blast ──────────────────────────────
+    ("whatsapp_daily_blast",   task_whatsapp_daily_blast,    86400, 14000), # daily — WA Promo Blast
     # ── TWILIO SMS AUTOMATION — Revenue Alerts + Morning Brief + Stripe ───────
     ("twilio_morning_brief",   task_twilio_morning_brief,    86400,    60),  # daily — Morgen-Briefing SMS
     ("twilio_revenue_alert",   task_twilio_revenue_alert,    14400,   130),  # 4h — neue Orders → SMS
