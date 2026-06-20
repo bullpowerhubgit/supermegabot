@@ -16,7 +16,7 @@ import aiohttp
 log = logging.getLogger("DigistoreAutonomy")
 
 API_KEY = os.getenv("DIGISTORE24_API_KEY", "1682000-T8KjTRJXCO1IgXOU5I7am6p6a0AZuqV2BGswDECY")
-AFFILIATE_ID = "1581233"
+AFFILIATE_ID = "user37405262"  # AIITEC account
 BASE = "https://www.digistore24.com/api/call"
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -32,13 +32,14 @@ async def _ai(prompt: str, max_tokens: int = 400) -> str:
 
 
 async def _ds24_get(method: str, extra_params: dict = None) -> dict:
-    """Call Digistore24 API."""
-    params = {"api_key": API_KEY, **(extra_params or {})}
+    """Call Digistore24 API with correct auth (X-DS-API-KEY header, /JSON/ suffix)."""
+    url = f"{BASE}/{method}/JSON/"
+    headers = {"X-DS-API-KEY": API_KEY}
     try:
         async with aiohttp.ClientSession() as s:
-            async with s.get(f"{BASE}/{method}", params=params,
+            async with s.get(url, params=extra_params or {}, headers=headers,
                              timeout=aiohttp.ClientTimeout(total=20)) as r:
-                return await r.json()
+                return await r.json(content_type=None)
     except Exception as e:
         log.warning("DS24 API %s error: %s", method, e)
         return {"result": "error", "message": str(e)}
