@@ -96,6 +96,32 @@ def notify(title: str, body: str = "", event_type: str = "info") -> bool:
     if DISCORD_WH:
         color = {"error": 0xff0000, "revenue": 0x00ff88, "warn": 0xffaa00}.get(event_type, 0x5865f2)
         results.append(_discord_send(f"{icon} {title}", body, color))
+    # Slack — immer versuchen (Webhook oder Bot Token)
+    slack_wh = os.getenv("SLACK_WEBHOOK_URL", "")
+    slack_tok = os.getenv("SLACK_BOT_TOKEN", SLACK_BOT)
+    slack_ch  = os.getenv("SLACK_DEFAULT_CHANNEL", "#ops")
+    if slack_wh or slack_tok:
+        try:
+            slack_text = f"{icon} *{title}*"
+            if body:
+                slack_text += f"\n{body}"
+            import urllib.request as _ur
+            req_data = json.dumps({"text": slack_text[:4000]}).encode()
+            if slack_wh:
+                req = _ur.Request(slack_wh, data=req_data, headers={"Content-Type": "application/json"})
+                with _ur.urlopen(req, timeout=6) as r:
+                    results.append(r.status == 200)
+            elif slack_tok:
+                req = _ur.Request(
+                    "https://slack.com/api/chat.postMessage",
+                    data=json.dumps({"channel": slack_ch, "text": slack_text}).encode(),
+                    headers={"Content-Type": "application/json", "Authorization": f"Bearer {slack_tok}"}
+                )
+                with _ur.urlopen(req, timeout=6) as r:
+                    d = json.loads(r.read())
+                    results.append(d.get("ok", False))
+        except Exception as _se:
+            log.debug("Slack notify failed: %s", _se)
 
     success = any(results)
     if not success:

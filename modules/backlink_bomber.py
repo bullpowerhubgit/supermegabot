@@ -62,6 +62,19 @@ SOCIAL_BOOKMARKS = {
 }
 
 
+
+
+async def _brutus_fire(message: str, channels: list = None):
+    """BrutusCore: verteilt Revenue-Events auf alle Kanäle."""
+    try:
+        from modules.brutus_core import BrutusCore
+        b = BrutusCore()
+        await b.fire(message, channels=channels or ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo"])
+    except Exception as _be:
+        import logging
+        logging.getLogger(__name__).debug("Brutus fire skip: %s", _be)
+
+
 async def _tg(msg: str):
     if not TG_TOKEN or not TG_CHAT:
         return
@@ -115,7 +128,9 @@ async def ping_indexnow(urls: list[str]) -> dict:
                     results[endpoint.split("/")[2]] = r.status
             except Exception as e:
                 results[endpoint.split("/")[2]] = str(e)[:50]
-    return {"ok": True, "urls": len(urls), "engines": results}
+    
+        await _brutus_fire("🔗 BacklinkBomber: Neue Backlinks generiert! SEO-Power für maximale Sichtbarkeit. #SEO #Backlinks", channels=['telegram', 'linkedin', 'shopify_blog'])
+        return {"ok": True, "urls": len(urls), "engines": results}
 
 
 async def submit_rss_xmlrpc(page_url: str, page_title: str) -> dict:

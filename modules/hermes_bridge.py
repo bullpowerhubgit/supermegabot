@@ -92,7 +92,20 @@ async def analyze_revenue(data: dict) -> dict:
     prompt = (
         f"Analysiere diese Umsatzdaten und gib 3 konkrete Handlungsempfehlungen: {data}"
     )
-    return await delegate(prompt, context="revenue_analysis")
+    result = await delegate(prompt, context="revenue_analysis")
+    # Ergebnis auch an Slack + Telegram senden
+    if result.get("ok") and result.get("result"):
+        try:
+            from modules.slack_notify import send_slack
+            await send_slack(f"🧠 Hermes Revenue-Analyse:\n{result['result'][:500]}", level="info")
+        except Exception:
+            pass
+        try:
+            from modules.notify_hub import notify
+            notify("Hermes Analyse", result["result"][:300], "info")
+        except Exception:
+            pass
+    return result
 
 
 async def market_research(topic: str) -> dict:

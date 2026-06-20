@@ -38,6 +38,9 @@ WA_PHONE_ID       = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
 WA_ACCESS_TOKEN   = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
 AMAZON_TAG        = os.getenv("AMAZON_TRACKING_ID", os.getenv("AMAZON_ASSOCIATES_TAG", "bullpowerhub-21"))
 EBAY_CAMPAIGN_ID  = os.getenv("EBAY_CAMPAIGN_ID", "5339107261")
+SLACK_WEBHOOK     = os.getenv("SLACK_WEBHOOK_URL", "")
+SLACK_BOT_TOKEN   = os.getenv("SLACK_BOT_TOKEN", "")
+SLACK_CHANNEL     = os.getenv("SLACK_DEFAULT_CHANNEL", "#revenue")
 
 
 async def _ai_generate(title: str, body: str, link: str, niche: str, session: aiohttp.ClientSession) -> dict:
@@ -271,6 +274,31 @@ async def _whatsapp(text: str, session: aiohttp.ClientSession) -> bool:
         return False
 
 
+async def _slack(text: str, session: aiohttp.ClientSession) -> bool:
+    """Slack Webhook oder Bot API — Revenue/Marketing Alerts"""
+    try:
+        if SLACK_WEBHOOK:
+            async with session.post(
+                SLACK_WEBHOOK,
+                json={"text": text[:4000]},
+                timeout=aiohttp.ClientTimeout(total=8)
+            ) as r:
+                return r.status == 200
+        if SLACK_BOT_TOKEN:
+            async with session.post(
+                "https://slack.com/api/chat.postMessage",
+                headers={"Authorization": f"Bearer {SLACK_BOT_TOKEN}"},
+                json={"channel": SLACK_CHANNEL, "text": text[:4000]},
+                timeout=aiohttp.ClientTimeout(total=8)
+            ) as r:
+                d = await r.json(content_type=None)
+                return d.get("ok", False)
+        return False
+    except Exception as e:
+        logger.warning(f"BrutusCore Slack: {e}")
+        return False
+
+
 async def _amazon_affiliate(title: str, link: str, session: aiohttp.ClientSession) -> bool:
     """Amazon Affiliate Link in Telegram + Blog einbauen"""
     if not AMAZON_TAG:
@@ -345,7 +373,7 @@ async def fire(
         tags = ["brutus", niche.replace(" ", "-")]
     if channels is None:
         channels = ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo",
-                    "indexnow", "twitter", "discord", "whatsapp", "amazon", "ebay"]
+                    "indexnow", "twitter", "discord", "whatsapp", "amazon", "ebay", "slack"]
 
     results = {c: False for c in channels}
     results["timestamp"] = datetime.utcnow().isoformat()
@@ -389,6 +417,9 @@ async def fire(
             tasks["amazon"] = _amazon_affiliate(title, link, sess)
         if "ebay" in channels:
             tasks["ebay"] = _ebay_affiliate(title, link, sess)
+        if "slack" in channels:
+            sl_text = content.get("telegram") or f"🔥 {title}\n\n{body[:300]}\n\n👉 {link}"
+            tasks["slack"] = _slack(sl_text, sess)
 
         done = await asyncio.gather(*tasks.values(), return_exceptions=True)
         for key, result in zip(tasks.keys(), done):

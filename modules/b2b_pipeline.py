@@ -18,6 +18,19 @@ SAMPLE_LEADS: list[dict] = [
 ]
 
 
+
+
+async def _brutus_fire(message: str, channels: list = None):
+    """BrutusCore: verteilt Revenue-Events auf alle Kanäle."""
+    try:
+        from modules.brutus_core import BrutusCore
+        b = BrutusCore()
+        await b.fire(message, channels=channels or ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo"])
+    except Exception as _be:
+        import logging
+        logging.getLogger(__name__).debug("Brutus fire skip: %s", _be)
+
+
 def _db_path() -> Path:
     DATA_DIR.mkdir(exist_ok=True)
     return DATA_DIR / "b2b_leads.json"
@@ -100,7 +113,9 @@ async def update_lead(lead_id: str, **kwargs) -> dict:
         if lead["id"] == lead_id:
             lead.update(kwargs)
             _save_db(db)
-            return {"ok": True, "lead": lead}
+            
+        await _brutus_fire("🤝 B2B Pipeline: Neue Business-Leads gefunden und kontaktiert! #B2B #BusinessDevelopment", channels=['telegram', 'linkedin'])
+        return {"ok": True, "lead": lead}
     return {"ok": False, "error": "Lead not found"}
 
 
