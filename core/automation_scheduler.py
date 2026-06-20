@@ -4555,6 +4555,18 @@ async def task_mass_content_blaster() -> str:
         return f"MassBlast Fehler: {e}"
 
 
+async def task_customer_export() -> str:
+    """Täglich: Shopify-Kunden → Klaviyo aiitec + Mailchimp exportieren."""
+    try:
+        from modules.customer_exporter import run_full_export
+        r = await run_full_export()
+        return (f"CustomerExport: {r.get('total_customers',0)} Kunden | "
+                f"Klaviyo:{r.get('klaviyo',{}).get('synced',0)} | "
+                f"Mailchimp:{r.get('mailchimp',{}).get('subscribed',0)}")
+    except Exception as e:
+        return f"CustomerExport Fehler: {e}"
+
+
 async def task_quantum_self_repair() -> str:
     """Every 30min — scan recurring errors, apply auto-fixes, reset circuits."""
     try:
@@ -4939,6 +4951,7 @@ TASKS = [
     # ── MEGA AGENT ORCHESTRATOR — alle 12 Plattformen koordiniert (alle 4h) ──────
     ("mega_agent_orchestrator",  task_mega_agent_orchestrator,  14400, 23300), # 4h
     # ── MAILCHIMP DRAGON 1000 ARTIKEL — täglich 1 neuer Artikel (dragonadnp) ──
+    ("customer_export",          task_customer_export,          86400, 23350), # täglich
     ("mailchimp_dragon_article", task_mailchimp_dragon_article, 86400, 23400), # täglich
     # ── SELBSTVERBESSERUNG — stündlich KI-Analyse aller Plattformen + Auto-Fix
     ("selbstverbesserung",       task_selbstverbesserung,        3600, 23500), # 1h

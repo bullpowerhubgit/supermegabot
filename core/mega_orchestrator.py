@@ -589,6 +589,9 @@ class CommandRouter:
             "dashboard": self._cmd_master_dashboard,
             "alle dienste": self._cmd_alle_dienste,
             # ── Selbstverbesserung & Email Doctor & Dragon 1000 & Mass Blast ─
+            "/export_kunden": self._cmd_export_kunden,
+            "kunden exportieren": self._cmd_export_kunden,
+            "export kunden": self._cmd_export_kunden,
             "/selbstverbesserung": self._cmd_selbstverbesserung,
             "selbstverbesserung": self._cmd_selbstverbesserung,
             "/selbst": self._cmd_selbstverbesserung,
@@ -1444,6 +1447,25 @@ class CommandRouter:
         """Schneller Health-Check der kritischsten Dienste."""
         from modules.telegram_master_dashboard import cmd_deploy_status
         return await cmd_deploy_status(text, session_id)
+
+    async def _cmd_export_kunden(self, text: str, session_id: str) -> str:
+        """Shopify-Kunden → Klaviyo aiitec + Mailchimp exportieren."""
+        try:
+            from modules.customer_exporter import run_full_export
+            r = await run_full_export()
+            kl = r.get("klaviyo", {})
+            mc = r.get("mailchimp", {})
+            return (
+                f"🔄 <b>Kunden Export abgeschlossen!</b>\n\n"
+                f"👥 Shopify: {r.get('total_customers',0)} Kunden\n"
+                f"📧 Mit Email: {r.get('emails_found',0)}\n"
+                f"🛒 Käufer: {r.get('buyers',0)}\n\n"
+                f"📊 Klaviyo: {kl.get('synced',0)} importiert\n"
+                f"📮 Mailchimp: {mc.get('subscribed',0)} abonniert\n"
+                f"📋 Details per Telegram gesendet"
+            )
+        except Exception as e:
+            return f"Export Fehler: {e}"
 
     async def _cmd_selbstverbesserung(self, text: str, session_id: str) -> str:
         """Alle Plattformen analysieren + Auto-Fix."""

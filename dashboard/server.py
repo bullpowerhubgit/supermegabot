@@ -8189,6 +8189,8 @@ async def create_app():
     app.router.add_get("/master",                     handle_master_dashboard)
     app.router.add_get("/dashboard",                  handle_mega_dashboard)
     app.router.add_get("/api/infra/status",           handle_infra_status)
+    app.router.add_post("/api/export/customers",      handle_export_customers)
+    app.router.add_get("/api/export/customers/stats", handle_export_customers_stats)
     app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
     app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
     app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
@@ -9251,6 +9253,26 @@ async def handle_seo_ingest(req):
     except Exception as e:
         log.error(f"SEO ingest error: {e}")
         return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_export_customers(req: web.Request) -> web.Response:
+    """POST /api/export/customers — Shopify Kunden → Klaviyo + Mailchimp aiitec exportieren."""
+    try:
+        from modules.customer_exporter import run_full_export
+        result = await run_full_export()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_export_customers_stats(req: web.Request) -> web.Response:
+    """GET /api/export/customers/stats — letzter Export-Status."""
+    try:
+        from modules.customer_exporter import get_export_stats
+        stats = await get_export_stats()
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_infra_status(req: web.Request) -> web.Response:
