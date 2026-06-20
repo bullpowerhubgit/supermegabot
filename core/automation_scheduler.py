@@ -4433,6 +4433,43 @@ async def task_upwork_proposal_gen() -> str:
         return f"Upwork Proposal Fehler: {e}"
 
 
+async def task_credential_activator() -> str:
+    """Every hour — detect new API keys and auto-activate platforms without restart."""
+    try:
+        from modules.credential_activator import run_credential_scan
+        result = await run_credential_scan()
+        new    = len(result.get("newly_activated", []))
+        active = result.get("active_count", 0)
+        total  = result.get("total_platforms", 0)
+        return f"Credential Activator: {active}/{total} aktiv | neu aktiviert: {new}"
+    except Exception as e:
+        return f"Credential Activator Fehler: {e}"
+
+
+async def task_dev_to_post() -> str:
+    """Daily — post AI article to dev.to (auto-skips if DEVTO_API_KEY missing)."""
+    try:
+        from modules.dev_to_publisher import run_dev_to_post
+        result = await run_dev_to_post()
+        if result.get("skipped"):
+            return "dev.to: DEVTO_API_KEY fehlt — übersprungen"
+        return f"dev.to: {'OK — ' + str(result.get('url','')) if result.get('ok') else 'Fehler — ' + str(result.get('error',''))}"
+    except Exception as e:
+        return f"dev.to Fehler: {e}"
+
+
+async def task_hashnode_post() -> str:
+    """Daily — post AI article to Hashnode (auto-skips if token missing)."""
+    try:
+        from modules.hashnode_publisher import run_hashnode_post
+        result = await run_hashnode_post()
+        if result.get("skipped"):
+            return "Hashnode: Token fehlt — übersprungen"
+        return f"Hashnode: {'OK — ' + str(result.get('url','')) if result.get('ok') else 'Fehler — ' + str(result.get('error',''))}"
+    except Exception as e:
+        return f"Hashnode Fehler: {e}"
+
+
 async def task_auto_product_pipeline() -> str:
     """Täglich: Trend → Shopify/Gumroad Produkt erstellen → alle Kanäle blasten."""
     try:
@@ -4846,6 +4883,12 @@ TASKS = [
     ("quantum_self_improve",     task_quantum_self_improve,    86400, 22600), # täglich — KI-Selbstverbesserung
     # ── VOLLAUTONOME PIPELINE — täglich generieren/sortieren/bundeln/blasten ──
     ("autonomous_pipeline",      task_autonomous_pipeline,      86400, 23000), # täglich — volle Pipeline
+    # ── CREDENTIAL ACTIVATOR — stündlich neue Keys erkennen, Plattformen aktivieren
+    ("credential_activator",     task_credential_activator,     3600,    120), # 1h — Auto-Aktivierung
+    # ── DEV.TO PUBLISHER — täglich KI-Artikel wenn DEVTO_API_KEY gesetzt ────────
+    ("dev_to_post",              task_dev_to_post,             86400, 23100), # täglich
+    # ── HASHNODE PUBLISHER — täglich KI-Artikel wenn HASHNODE_TOKEN gesetzt ─────
+    ("hashnode_post",            task_hashnode_post,           86400, 23200), # täglich
 ]
 
 
