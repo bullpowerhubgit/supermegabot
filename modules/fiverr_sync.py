@@ -16,7 +16,7 @@ log = logging.getLogger("FiverrSync")
 
 API_KEY = os.getenv("FIVERR_API_KEY", "")
 SELLER_NAME = os.getenv("FIVERR_SELLER_NAME", "bullpowerhub")
-DS24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+DS24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 
 

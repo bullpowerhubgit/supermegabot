@@ -19,7 +19,7 @@ API_SECRET = os.getenv("UPWORK_API_SECRET", "")
 ACCESS_TOKEN = os.getenv("UPWORK_ACCESS_TOKEN", "")
 ACCESS_SECRET = os.getenv("UPWORK_ACCESS_SECRET", "")
 BASE = "https://www.upwork.com/api"
-DS24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+DS24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 
 _configured = bool(API_KEY and ACCESS_TOKEN)

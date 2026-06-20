@@ -6890,7 +6890,7 @@ async def handle_affiliate_stats_new(request: web.Request) -> web.Response:
             stats["amazon"] = await get_amazon_stats()
         except Exception:
             stats["amazon"] = {"tag": "bullpowerhub-21", "configured": True}
-        ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         stats["ds24"] = {"configured": True, "affiliate_url": ds24_link, "user": "user37405262"}
         return web.json_response({"ok": True, "stats": stats})
     except Exception as e:

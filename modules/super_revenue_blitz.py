@@ -22,7 +22,7 @@ SHOPIFY_TOKEN  = lambda: os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER    = lambda: os.getenv("SHOPIFY_API_VERSION", "2024-01")
 PRINTIFY_KEY   = lambda: os.getenv("PRINTIFY_API_KEY", "")
 PRINTIFY_SHOP  = lambda: os.getenv("PRINTIFY_SHOP_ID", "27975583")
-DS24_LINK      = lambda: os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+DS24_LINK      = lambda: os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
 
 
 # ── Telegram ──────────────────────────────────────────────────────────────────

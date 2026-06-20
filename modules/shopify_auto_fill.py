@@ -351,7 +351,7 @@ Erstelle:
                                 await brutus_fire(
                                     title=f"🛒 Verbessert: {result['title'][:40]}",
                                     body=f"Dieses Produkt wurde frisch aktualisiert — bessere Beschreibung, optimierter Preis, neue Bilder.",
-                                    link=fos.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"),
+                                    link=fos.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx"),
                                     niche="shopify trending produkt",
                                     tags=["shopify", "neu", "deal"],
                                     channels=["telegram", "klaviyo"]  # Nur leise Kanäle für Updates
