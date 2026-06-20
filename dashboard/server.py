@@ -7222,6 +7222,102 @@ async def handle_trends_latest(req):
         return web.json_response({"ok": True, "source": "google_trends_DE", "status": "scheduled", "error": str(e)})
 
 
+# ── Master Control Panel ─────────────────────────────────────────────────────
+
+_MASTER_TASKS = [
+    "brutus_run", "shopify_full_auto", "revenue_autopilot", "revenue_fast_track",
+    "mega_seo_cycle", "traffic_mega_cycle", "ds24_affiliate_hourly", "klaviyo_daily_campaign",
+    "amazon_blast", "ebay_blast", "tiktok_trend_blast", "fiverr_gig_blast",
+    "upwork_job_alert", "brutus_shopify", "quantum_self_repair", "viral_trend",
+    "indexnow_mega_blast", "mailchimp_brutus", "amazon_affiliate_blast", "brutus_ds24_affiliate",
+]
+
+
+async def handle_master_start_all(req: web.Request) -> web.Response:
+    """POST /api/master/start-all — fires all key tasks in the background immediately."""
+    try:
+        from core.automation_scheduler import get_scheduler
+        sched = get_scheduler()
+        for task_name in _MASTER_TASKS:
+            asyncio.create_task(sched.run_now(task_name))
+        log.info("Master start-all: %d tasks fired", len(_MASTER_TASKS))
+        return web.json_response({
+            "ok": True,
+            "tasks_started": len(_MASTER_TASKS),
+            "tasks": _MASTER_TASKS,
+            "message": "Alle Systeme gestartet! Maschine laeuft.",
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_master_status(req: web.Request) -> web.Response:
+    """GET /api/master/status — live overview of all key systems."""
+    status: dict = {"ok": True, "ts": __import__("datetime").datetime.utcnow().isoformat()}
+
+    # Shopify product count
+    try:
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if shop and token:
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"https://{shop}/admin/api/{ver}/products/count.json",
+                    headers={"X-Shopify-Access-Token": token},
+                    timeout=aiohttp.ClientTimeout(total=8),
+                ) as r:
+                    d = await r.json()
+            status["shopify_products"] = d.get("count", 0)
+        else:
+            status["shopify_products"] = "no credentials"
+    except Exception as e:
+        status["shopify_products"] = f"error: {e}"
+
+    # Scheduler
+    try:
+        from core.automation_scheduler import get_scheduler_status
+        sched_st = get_scheduler_status()
+        status["scheduler"] = {
+            "running": sched_st.get("running", False),
+            "task_count": sched_st.get("task_count", 0),
+        }
+    except Exception:
+        status["scheduler"] = {"running": False}
+
+    # Circuit breakers
+    try:
+        from modules.circuit_breaker import get_status as cb_status
+        circuits = cb_status()
+        open_circuits = [k for k, v in circuits.items() if v.get("state") == "open"]
+        status["circuits_open"] = open_circuits
+    except Exception:
+        status["circuits_open"] = []
+
+    # Revenue snapshot
+    try:
+        rev_file = __import__("pathlib").Path(__file__).parent.parent / "revenue_history.json"
+        if rev_file.exists():
+            import json as _json
+            data = _json.loads(rev_file.read_text())
+            entries = data if isinstance(data, list) else data.get("entries", [])
+            status["revenue_entries"] = len(entries)
+        else:
+            status["revenue_entries"] = 0
+    except Exception:
+        status["revenue_entries"] = 0
+
+    # Quantum Self-Repair stats
+    try:
+        from modules.quantum_self_repair import get_error_stats
+        status["quantum"] = get_error_stats()
+    except Exception:
+        status["quantum"] = {}
+
+    status["master_tasks"] = _MASTER_TASKS
+    return web.json_response(status)
+
+
 # ── Credential Activator ─────────────────────────────────────────────────────
 
 async def handle_credential_status(req):
@@ -8442,6 +8538,9 @@ async def create_app():
     # ── CREDENTIAL ACTIVATOR ROUTES ──────────────────────────────────────────
     app.router.add_get( "/api/credentials/status",       handle_credential_status)
     app.router.add_post("/api/credentials/scan",         handle_credential_scan)
+    # ── MASTER CONTROL PANEL ─────────────────────────────────────────────────
+    app.router.add_post("/api/master/start-all",         handle_master_start_all)
+    app.router.add_get( "/api/master/status",            handle_master_status)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
