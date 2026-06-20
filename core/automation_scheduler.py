@@ -3052,24 +3052,41 @@ async def task_discord_revenue_report() -> str:
 # ── Twilio SMS Automation ─────────────────────────────────────────────────────
 
 async def _twilio_send(to: str, body: str) -> bool:
-    """Send SMS via Twilio. Returns True on success."""
+    """Send SMS via Twilio; falls back to Telegram on any failure."""
     sid  = os.getenv("TWILIO_ACCOUNT_SID", "")
     tok  = os.getenv("TWILIO_AUTH_TOKEN", "")
     frm  = os.getenv("TWILIO_FROM_NUMBER", "")
-    if not (sid and tok and frm):
-        return False
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
-                auth=aiohttp.BasicAuth(sid, tok),
-                data={"To": to, "From": frm, "Body": body[:1600]},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                d = await r.json(content_type=None)
-        return r.status == 201
-    except Exception:
-        return False
+    if sid and tok and frm:
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+                    auth=aiohttp.BasicAuth(sid, tok),
+                    data={"To": to, "From": frm, "Body": body[:1600]},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    d = await r.json(content_type=None)
+            if r.status == 201:
+                return True
+        except Exception:
+            pass
+    # Telegram fallback (works always)
+    tg_tok  = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+    if tg_tok and tg_chat:
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                    json={"chat_id": tg_chat, "text": f"📱 Alert:\n{body[:4000]}",
+                          "parse_mode": "Markdown"},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    d = await r.json(content_type=None)
+            return d.get("ok", False)
+        except Exception:
+            pass
+    return False
 
 
 async def task_twilio_morning_brief() -> str:
