@@ -453,6 +453,7 @@ a{color:inherit;text-decoration:none}
       <button class="btn btn-dark" style="font-size:10px" onclick="triggerTask('shopify_inventory')">📦 Inventar</button>
       <button class="btn btn-green" style="font-size:10px" onclick="ap('/api/shopify/auto-fill-trending',{})">🔥 Trending Produkte</button>
       <button class="btn btn-teal" style="font-size:10px" onclick="window.open('/api/gmc/feed.xml','_blank')">🛍️ GMC Feed</button>
+      <button class="btn btn-red" style="font-size:10px;font-weight:bold" onclick="window.open('https://merchants.google.com','_blank')">⚠️ GMC Verifizierung JETZT!</button>
     </div>
   </div>
 
@@ -835,6 +836,9 @@ a{color:inherit;text-decoration:none}
       <button class="btn btn-blue"  style="font-size:11px" onclick="boostWhatsApp()">📱 WhatsApp Blast</button>
       <button class="btn btn-purple" style="font-size:11px" onclick="triggerTask('klaviyo_daily_campaign')">📧 Klaviyo Kampagne</button>
       <button class="btn btn-dark"  style="font-size:11px" onclick="triggerTask('mailing_promo_blitz')">📩 Mailing Blitz</button>
+      <button class="btn btn-orange" style="font-size:11px" onclick="boostReddit()">🤖 Reddit Blast</button>
+      <button class="btn btn-blue"  style="font-size:11px" onclick="triggerTask('youtube_script_generator')">🎬 YouTube Script</button>
+      <button class="btn btn-green" style="font-size:11px" onclick="fixIndexNow()">🔍 IndexNow Fix</button>
     </div>
     <div id="boost-result" style="font-size:10px;color:var(--muted);min-height:20px;padding:4px 0"></div>
   </div>
@@ -1463,6 +1467,20 @@ async function boostWhatsApp() {
   const r = await get('/api/whatsapp/blast');
   if(br) br.textContent = r.ok ? '✅ WhatsApp: sent='+r.result?.sent : '⚠️ WhatsApp: '+r.error;
   toast(r.ok ? '📱 WhatsApp Blast gesendet!' : '⚠️ '+r.error, r.ok?'success':'error');
+}
+async function boostReddit() {
+  const br = document.getElementById('boost-result');
+  if(br) br.textContent = '⏳ Reddit Blast...';
+  const r = await get('/api/reddit/blast');
+  if(br) br.textContent = r ? (r.ok ? '✅ Reddit: '+r.posted+' posts' : '⚠️ Reddit: '+r.error) : '⚠️ Fehler';
+  toast(r?.ok ? '🤖 Reddit: '+r.posted+' Posts!' : '⚠️ Reddit: '+(r?.error||'not configured'), r?.ok?'success':'error');
+}
+async function fixIndexNow() {
+  const br = document.getElementById('boost-result');
+  if(br) br.textContent = '⏳ IndexNow läuft...';
+  const r = await ap('/api/seo/indexnow', {});
+  if(br) br.textContent = r ? '✅ IndexNow: submitted='+r.submitted+', urls='+r.total_urls : '⚠️ Fehler';
+  toast(r?.submitted>0 ? '🔍 IndexNow: '+r.submitted+' submitted!' : '⚠️ IndexNow: check config', r?.submitted>0?'success':'error');
 }
 
 // ── REFRESH ALL ──
