@@ -5288,6 +5288,7 @@ async def create_app():
     app.router.add_get("/api/facebook/status",        handle_facebook_status)
     app.router.add_post("/api/brutus/run",            handle_brutus_run)
     app.router.add_get("/api/brutus/status",          handle_brutus_status)
+    app.router.add_get("/api/brutus/history",         handle_brutus_history)
     app.router.add_get("/api/offers",                 handle_offers)
     # Autonomy Max-Upgrades
     app.router.add_get("/api/ab/{test_name}",         handle_ab_variant)
@@ -6320,6 +6321,41 @@ async def handle_brutus_run(req):
         })
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_brutus_history(req):
+    """GET /api/brutus/history — last 50 BRUTUS runs with channel breakdown."""
+    try:
+        from modules.brutus_traffic_engine import get_brutus_history, get_brutus_run_detail
+        runs = get_brutus_history(limit=50)
+
+        # Attach channel detail to each run
+        for run in runs:
+            run["channels_detail"] = get_brutus_run_detail(run["id"])
+
+        # Aggregate stats
+        total_posts = sum(
+            1 for run in runs
+            for ch in run["channels_detail"]
+            if ch["status"] == "ok"
+        )
+        channel_totals: dict = {}
+        for run in runs:
+            for ch in run["channels_detail"]:
+                name = ch["channel"]
+                channel_totals.setdefault(name, {"ok": 0, "skip": 0})
+                channel_totals[name][ch["status"]] = channel_totals[name].get(ch["status"], 0) + 1
+
+        return web.json_response({
+            "ok": True,
+            "total_runs": len(runs),
+            "total_posts": total_posts,
+            "channel_totals": channel_totals,
+            "runs": runs,
+        })
+    except Exception as e:
+        log.error("handle_brutus_history: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 async def handle_brutus_status(req):
