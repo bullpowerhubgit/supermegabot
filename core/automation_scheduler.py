@@ -161,7 +161,16 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
                 return text
         except Exception:
             continue
-    raise RuntimeError("Kein AI Key mit Credits verfügbar (Anthropic/OpenAI/Perplexity)")
+    # Template-Fallback wenn alle AI-APIs leer sind
+    templates = [
+        "🚀 E-Commerce Automation auf Autopilot! Shopify + DS24 + KI = passives Einkommen. 👉 https://www.digistore24.com/redir/669750/user37405262/",
+        "💰 Online Geld verdienen 2026: Mit KI-Tools dein Business automatisieren. Mehr erfahren: https://www.digistore24.com/redir/669750/user37405262/",
+        "🤖 Vollautomatisches E-Commerce Business: Produkte importieren, Texte schreiben, Traffic generieren — alles automatisch! https://www.digistore24.com/redir/669750/user37405262/",
+        "📈 Shopify Automation macht deinen Shop 24/7 profitabel. AI Income Machine auf DS24: https://www.digistore24.com/redir/669750/user37405262/",
+        "🎯 Digitale Produkte verkaufen leicht gemacht: DS24 Affiliate + BRUTUS Traffic = passive Einnahmen! https://www.digistore24.com/redir/669750/user37405262/",
+    ]
+    import random as _rnd
+    return _rnd.choice(templates)
 
 
 # ── Individual task implementations ─────────────────────────────────────────
@@ -1043,92 +1052,78 @@ async def task_twitter_auto_post() -> str:
 
 
 async def task_shopify_blog_auto() -> str:
-    """Alle 2h einen AI-generierten Blog-Post auf Shopify veröffentlichen."""
+    """Alle 2h einen Blog-Post auf Shopify (AI oder Template-Fallback)."""
     try:
-        import os, aiohttp, json
-        from datetime import datetime
+        import random
         shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-        shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-01")
-        anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
-        if not shopify_domain or not shopify_token or not anthropic_key:
-            return "Shopify/Anthropic nicht konfiguriert"
-
-        import random
-        topics = [
-            "Wie du mit KI 2026 passives Einkommen aufbaust",
-            "5 Shopify Automatisierungen die deinen Umsatz verdoppeln",
-            "AI Income Machine: Der komplette Blueprint",
-            "Dropshipping mit KI: So geht es richtig",
-            "Online Business Ideen die wirklich funktionieren",
-            "Wie KI das Online Marketing revolutioniert",
-            "Digistore24 vs Shopify: Was ist besser?",
-            "Automatisches Marketing: So funktioniert es",
+        shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not shopify_domain or not shopify_token:
+            return "Shopify nicht konfiguriert"
+        templates = [
+            ("KI-Passiveinkommen 2026: So baust du es auf",
+             "<h2>KI-Passiveinkommen 2026</h2><p>Mit KI-Tools baust du heute ein vollautomatisches Business.</p><ul><li><strong>Shopify Auto-Import:</strong> Trending-Produkte täglich importiert</li><li><strong>Affiliate:</strong> DS24 Provisionen automatisch</li><li><strong>Content:</strong> BRUTUS bespielt 6+ Kanäle täglich</li></ul><p><a href='https://www.digistore24.com/redir/669750/user37405262/'>AI Income Machine für €37 starten →</a></p>"),
+            ("5 Shopify-Automatisierungen 2026 die Umsatz verdoppeln",
+             "<h2>5 Automationen für mehr Umsatz</h2><ol><li>Auto-Produktimport aus 50+ Quellen</li><li>KI-SEO-Beschreibungen für jedes Produkt</li><li>Email-Sequenzen für neue Käufer</li><li>Psychologisches Pricing (.99) automatisch</li><li>BRUTUS Traffic-Engine auf allen Kanälen</li></ol><p><a href='https://www.digistore24.com/redir/669750/user37405262/'>Jetzt starten →</a></p>"),
+            ("Dropshipping mit KI 2026: Der komplette Guide",
+             "<h2>KI-Dropshipping 2026</h2><p>Trends automatisch erkennen, Produkte importieren, Marketing auf Autopilot.</p><ul><li>AliExpress + Amazon Trending täglich</li><li>Shopify Auto-Import + Beschreibung</li><li>10+ Kanäle vollautomatisch bespielt</li></ul><p><a href='https://www.digistore24.com/redir/669750/user37405262/'>AI Income Machine →</a></p>"),
+            ("Digistore24 Affiliate 2026: Passiv verdienen",
+             "<h2>DS24 Affiliate — Passives Einkommen</h2><p>30-70% Provision auf tausende digitale Produkte.</p><ul><li>Sofortige Auszahlung</li><li>Keine eigenen Produkte nötig</li><li>BRUTUS postet automatisch für dich</li></ul><p><a href='https://www.digistore24.com/redir/669750/user37405262/'>Jetzt starten →</a></p>"),
         ]
-        topic = random.choice(topics)
-
-        # Generate blog post with Claude
-        prompt = f"""Schreibe einen SEO-Blog-Post auf Deutsch für Shopify.
-Thema: {topic}
-Länge: 400-500 Wörter. HTML-Format. Erwähne am Ende die "AI Income Machine" (€37 auf Digistore24).
-Gib NUR JSON zurück: {{"title": "...", "author": "BullPower Hub", "body_html": "<html...>", "tags": "ki,automatisierung,ecommerce,shopify"}}"""
-
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1500,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                data = await r.json(content_type=None)
-        if "content" not in data:
-            openai_key = os.getenv("OPENAI_API_KEY", "")
-            if not openai_key:
-                return "Kein AI Key verfügbar"
-            async with aiohttp.ClientSession() as s:
-                async with s.post("https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openai_key}"},
-                    json={"model": "gpt-4o-mini", "max_tokens": 1500,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=30)) as r:
-                    oai = await r.json(content_type=None)
-            raw = oai.get("choices", [{}])[0].get("message", {}).get("content", "{}")
-        else:
-            raw = data["content"][0]["text"]
-        post_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1])
-
-        # Get blog ID
-        async with aiohttp.ClientSession() as s:
-            async with s.get(
-                f"https://{shopify_domain}/admin/api/{shopify_ver}/blogs.json",
-                headers={"X-Shopify-Access-Token": shopify_token},
-                timeout=aiohttp.ClientTimeout(total=10),
-            ) as r:
-                blogs = await r.json(content_type=None)
-        blog_id = blogs.get("blogs", [{}])[0].get("id")
-        if not blog_id:
-            return "Keine Shopify Blog gefunden"
-
-        # Publish article
-        async with aiohttp.ClientSession() as s:
+        topic_title, template_body = random.choice(templates)
+        final_body = template_body
+        for env_var, url, model, is_ant in [
+            ("ANTHROPIC_API_KEY", "https://api.anthropic.com/v1/messages", "claude-haiku-4-5-20251001", True),
+            ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini", False),
+        ]:
+            key = os.getenv(env_var, "")
+            if not key:
+                continue
+            try:
+                prompt = (f"300 Wörter HTML-Blog auf Deutsch: '{topic_title}'. "
+                         f"Link am Ende: https://www.digistore24.com/redir/669750/user37405262/. Nur HTML.")
+                if is_ant:
+                    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                        async with s.post(url, headers={"x-api-key": key, "anthropic-version": "2023-06-01"},
+                            json={"model": model, "max_tokens": 900, "messages": [{"role": "user", "content": prompt}]}) as r:
+                            d = await r.json(content_type=None)
+                    text = d.get("content", [{}])[0].get("text", "")
+                else:
+                    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                        async with s.post(url, headers={"Authorization": f"Bearer {key}"},
+                            json={"model": model, "max_tokens": 900, "messages": [{"role": "user", "content": prompt}]}) as r:
+                            d = await r.json(content_type=None)
+                    text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+                if text and len(text) > 100:
+                    final_body = text
+                    break
+            except Exception:
+                continue
+        blog_id = os.getenv("SHOPIFY_BLOG_ID", "127011258755")
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+                async with s.get(f"https://{shopify_domain}/admin/api/{shopify_ver}/blogs.json",
+                    headers={"X-Shopify-Access-Token": shopify_token}) as r:
+                    bd = await r.json(content_type=None)
+            fetched = bd.get("blogs", [{}])[0].get("id")
+            if fetched:
+                blog_id = str(fetched)
+        except Exception:
+            pass
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
             async with s.post(
                 f"https://{shopify_domain}/admin/api/{shopify_ver}/blogs/{blog_id}/articles.json",
                 headers={"X-Shopify-Access-Token": shopify_token, "Content-Type": "application/json"},
-                json={"article": {
-                    "title": post_data.get("title", topic),
-                    "author": post_data.get("author", "BullPower Hub"),
-                    "body_html": post_data.get("body_html", ""),
-                    "tags": post_data.get("tags", "ki,automatisierung"),
-                    "published": True,
-                }},
-                timeout=aiohttp.ClientTimeout(total=15),
+                json={"article": {"title": topic_title, "author": "BullPower Hub",
+                                  "body_html": final_body,
+                                  "tags": "ki,automatisierung,ecommerce,shopify,ds24",
+                                  "published": True}},
             ) as r:
                 article = await r.json(content_type=None)
-
-        article_id = article.get("article", {}).get("id")
-        title = post_data.get("title", topic)
-        return f"Shopify Blog: '{title[:50]}' veröffentlicht (ID: {article_id})"
+        art = article.get("article", {})
+        if art.get("id"):
+            return f"Blog: '{topic_title[:50]}' ID={art['id']}"
+        return f"Blog Fehler: {article.get('errors', str(article)[:100])}"
     except Exception as e:
         return f"Shopify Blog Fehler: {e}"
 

@@ -1078,3 +1078,14 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
 
     log.info("BRUTUS DONE: %s", json.dumps(results))
     return results
+
+
+async def run_brutus_swarm(keywords: list = None, max_keywords: int = 3,
+                           niche: str = "shopify ecommerce automation",
+                           affiliate_url: str = "") -> dict:
+    """Alias for brutus_run — backward-compatible with all callers."""
+    kw_niche = niche
+    if keywords:
+        kw_niche = " ".join(keywords[:2]) if len(keywords) >= 2 else keywords[0]
+    result = await brutus_run(niche=kw_niche, custom_keywords=keywords)
+    return result
