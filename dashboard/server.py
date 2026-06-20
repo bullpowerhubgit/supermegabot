@@ -1809,15 +1809,15 @@ async def handle_mailchimp_campaign(req):
         body = {}
 
     mc_key = os.getenv("MAILCHIMP_API_KEY", "")
-    mc_server = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
     if not mc_key:
         return web.json_response({"ok": False, "error": "MAILCHIMP_API_KEY not set"})
-    # auto-detect server prefix from key suffix (e.g. key ending in -us17)
-    if "-" in mc_key:
-        mc_server = mc_key.split("-")[-1]
+    # auto-detect server prefix from key suffix (e.g. key ending in -us7)
+    mc_server = mc_key.split("-")[-1] if "-" in mc_key else os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 
     base_url = f"https://{mc_server}.api.mailchimp.com/3.0"
-    headers = {"Authorization": f"Bearer {mc_key}", "Content-Type": "application/json"}
+    import base64 as _b64
+    _tok = _b64.b64encode(f"any:{mc_key}".encode()).decode()
+    headers = {"Authorization": f"Basic {_tok}", "Content-Type": "application/json"}
 
     try:
         async with aiohttp.ClientSession() as s:
@@ -1896,19 +1896,65 @@ async def handle_mailchimp_campaign(req):
             async with s.put(f"{base_url}/campaigns/{campaign_id}/content", headers=headers, json=content_payload, timeout=aiohttp.ClientTimeout(total=10)) as r:
                 await r.json()
 
-        log.info("Mailchimp campaign created: %s subject=%s list=%s", campaign_id, subject, list_id)
+            # Auto-send immediately
+            async with s.post(f"{base_url}/campaigns/{campaign_id}/actions/send", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                sent = r.status == 204
+                if not sent:
+                    send_err = await r.text()
+                    log.warning("Mailchimp send failed: %s", send_err[:100])
+
+        log.info("Mailchimp campaign %s: subject=%s list=%s sent=%s", campaign_id, subject, list_id, sent)
         return web.json_response({
-            "ok": True,
+            "ok": sent,
             "campaign_id": campaign_id,
             "list_id": list_id,
             "list_name": list_name,
             "subject": subject,
-            "status": campaign.get("status"),
-            "note": "Campaign created. POST to /api/mailchimp/send with campaign_id to send.",
+            "sent": sent,
         })
     except Exception as e:
         log.error("Mailchimp campaign error: %s", e)
         return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_mailchimp_send_campaign(req):
+    """POST /api/mailchimp/send-campaign — one-shot: create + send Mailchimp campaign."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    subject  = body.get("subject", "🚀 KI Income Machine — Jetzt passiv verdienen")
+    html_body = body.get("html", """<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+<h1 style="color:#1a1a2e">Passives Einkommen mit KI — so geht's</h1>
+<p>Hallo,</p>
+<p>die AI Income Machine ist das vollautomatische System für Online-Einkommen mit KI. Einmal einrichten — dauerhaft verdienen.</p>
+<p><a href="https://www.digistore24.com/redir/669750/user37405262/" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
+<p style="color:#888;font-size:12px">Rudolf Sarkany · BullPower Hub · Wien<br><a href="*|UNSUB|*" style="color:#888">Abmelden</a></p>
+</body></html>""")
+    list_id = body.get("list_id", os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0"))
+    from modules.mailchimp_automation import send_campaign as mc_send
+    result = await mc_send(subject, html_body, list_id)
+    return web.json_response(result)
+
+
+async def handle_klaviyo_send_campaign(req):
+    """POST /api/klaviyo/send-campaign — one-shot: create + send Klaviyo campaign."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    subject  = body.get("subject", "🚀 Exklusives Angebot — KI Income Machine")
+    html_body = body.get("html", """<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
+<h1 style="color:#1a1a2e">Mach passives Einkommen mit KI</h1>
+<p>Hallo,</p>
+<p>Entdecke die AI Income Machine — das vollautomatische System für passives Online-Einkommen.</p>
+<p><a href="https://www.digistore24.com/redir/669750/user37405262/" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
+<p style="color:#888;font-size:12px">Rudolf | AIITEC · BullPower Hub</p>
+</body></html>""")
+    list_id = body.get("list_id", os.getenv("KLAVIYO_LIST_ID", "Xwxq6V"))
+    from modules.klaviyo_automation import send_campaign as kl_send
+    result = await kl_send(subject, html_body, list_id)
+    return web.json_response(result)
 
 
 async def handle_mailchimp_send(req):
@@ -1920,14 +1966,14 @@ async def handle_mailchimp_send(req):
             return web.json_response({"ok": False, "error": "campaign_id required"})
 
         mc_key = os.getenv("MAILCHIMP_API_KEY", "")
-        mc_server = os.getenv("MAILCHIMP_SERVER_PREFIX", "us1")
         if not mc_key:
             return web.json_response({"ok": False, "error": "MAILCHIMP_API_KEY not set"})
-        if "-" in mc_key:
-            mc_server = mc_key.split("-")[-1]
+        mc_server = mc_key.split("-")[-1] if "-" in mc_key else os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 
         base_url = f"https://{mc_server}.api.mailchimp.com/3.0"
-        headers = {"Authorization": f"Bearer {mc_key}", "Content-Type": "application/json"}
+        import base64 as _b64mc
+        _tok2 = _b64mc.b64encode(f"any:{mc_key}".encode()).decode()
+        headers = {"Authorization": f"Basic {_tok2}", "Content-Type": "application/json"}
 
         async with aiohttp.ClientSession() as s:
             async with s.post(f"{base_url}/campaigns/{campaign_id}/actions/send", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
@@ -4388,6 +4434,18 @@ async def handle_whatsapp_stats(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_whatsapp_blast(req):
+    """GET /api/whatsapp/blast — promo blast to all configured WA recipients."""
+    try:
+        from modules.whatsapp_automation import send_whatsapp_blast
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        msg = f"🚀 BullPower Hub: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
+        result = await send_whatsapp_blast(msg)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ── TikTok Shop handlers ──────────────────────────────────────────────────────
 
 async def handle_tiktok_sync_products(req):
@@ -5164,6 +5222,84 @@ async def handle_gumroad_create(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ── Amazon handlers ───────────────────────────────────────────────────────────
+
+async def handle_amazon_status(req):
+    try:
+        from modules.amazon_affiliate import TRACKING_ID, PAAPI_KEY
+        return web.json_response({
+            "ok": True,
+            "tracking_id": TRACKING_ID,
+            "paapi_configured": bool(PAAPI_KEY),
+            "marketplace": "amazon.de",
+            "affiliate_link_example": f"https://www.amazon.de/s?k=bestseller&tag={TRACKING_ID}",
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_amazon_blast(req):
+    try:
+        from modules.amazon_affiliate import run_affiliate_blast
+        result = await run_affiliate_blast()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_amazon_search(req):
+    try:
+        keywords = req.rel_url.query.get("q", "bestseller")
+        from modules.amazon_affiliate import search_products
+        result = await search_products(keywords)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── eBay handlers ─────────────────────────────────────────────────────────────
+
+async def handle_ebay_status(req):
+    try:
+        from modules.ebay_client import get_stats
+        return web.json_response(await get_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_ebay_search(req):
+    try:
+        keywords = req.rel_url.query.get("q", "trending")
+        from modules.ebay_client import search_items
+        return web.json_response(await search_items(keywords, limit=10))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_ebay_blast(req):
+    try:
+        keywords = req.rel_url.query.get("q", "online shopping deals")
+        from modules.ebay_client import run_with_brutus_traffic
+        return web.json_response(await run_with_brutus_traffic(keywords))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_ebay_auth(req):
+    app_id = os.getenv("EBAY_APP_ID", "")
+    if not app_id:
+        return web.json_response({
+            "ok": False,
+            "error": "EBAY_APP_ID not set in Railway",
+            "setup": "Go to https://developer.ebay.com → Create App → Get App ID + Cert ID → Set EBAY_APP_ID + EBAY_CERT_ID in Railway",
+        })
+    return web.json_response({
+        "ok": True,
+        "message": "eBay uses client_credentials OAuth — no user login needed. Just set EBAY_APP_ID + EBAY_CERT_ID in Railway.",
+        "app_id": app_id[:8] + "...",
+    })
+
+
 # ── Fiverr handlers ───────────────────────────────────────────────────────────
 
 async def handle_fiverr_status(req):
@@ -5361,10 +5497,11 @@ async def create_app():
     }))
 
     # ── Mailchimp ─────────────────────────────────────────────────────────────
-    app.router.add_get("/api/mailchimp/status",       handle_mailchimp_status)
-    app.router.add_post("/api/mailchimp/sync",        handle_mailchimp_sync)
-    app.router.add_post("/api/mailchimp/campaign",    handle_mailchimp_campaign)
-    app.router.add_post("/api/mailchimp/send",        handle_mailchimp_send)
+    app.router.add_get("/api/mailchimp/status",            handle_mailchimp_status)
+    app.router.add_post("/api/mailchimp/sync",             handle_mailchimp_sync)
+    app.router.add_post("/api/mailchimp/campaign",         handle_mailchimp_campaign)
+    app.router.add_post("/api/mailchimp/send",             handle_mailchimp_send)
+    app.router.add_post("/api/mailchimp/send-campaign",    handle_mailchimp_send_campaign)
     app.router.add_post("/api/memory/save",           handle_memory_save)
     app.router.add_post("/api/notes/save",            handle_notes_save_alias)
 
@@ -5420,10 +5557,11 @@ async def create_app():
     app.router.add_get("/api/pod/status",             handle_pod_status)
 
     # ── Klaviyo ───────────────────────────────────────────────────────────────
-    app.router.add_get("/api/klaviyo/status",         handle_klaviyo_status)
-    app.router.add_get("/api/klaviyo/lists",          handle_klaviyo_lists)
-    app.router.add_post("/api/klaviyo/sync",          handle_klaviyo_sync)
-    app.router.add_post("/api/klaviyo/campaign",      handle_klaviyo_campaign)
+    app.router.add_get("/api/klaviyo/status",              handle_klaviyo_status)
+    app.router.add_get("/api/klaviyo/lists",               handle_klaviyo_lists)
+    app.router.add_post("/api/klaviyo/sync",               handle_klaviyo_sync)
+    app.router.add_post("/api/klaviyo/campaign",           handle_klaviyo_campaign)
+    app.router.add_post("/api/klaviyo/send-campaign",      handle_klaviyo_send_campaign)
 
     # ── Bot Clones ────────────────────────────────────────────────────────────
     app.router.add_get("/api/bots/status",            handle_bot_clones_status)
@@ -5639,6 +5777,7 @@ async def create_app():
     app.router.add_post("/api/whatsapp/send",            handle_whatsapp_send)
     app.router.add_post("/api/whatsapp/broadcast",       handle_whatsapp_broadcast)
     app.router.add_get( "/api/whatsapp/stats",           handle_whatsapp_stats)
+    app.router.add_get( "/api/whatsapp/blast",           handle_whatsapp_blast)
 
     # ── TikTok Shop ──────────────────────────────────────────────────────────
     app.router.add_post("/api/tiktok/sync-products",     handle_tiktok_sync_products)
@@ -5710,6 +5849,17 @@ async def create_app():
     # Circuit Breaker routes
     app.router.add_get( "/api/circuit/status",           handle_circuit_status)
     app.router.add_post("/api/circuit/reset",            handle_circuit_reset)
+
+    # Amazon routes
+    app.router.add_get("/api/amazon/status",  handle_amazon_status)
+    app.router.add_get("/api/amazon/blast",   handle_amazon_blast)
+    app.router.add_get("/api/amazon/search",  handle_amazon_search)
+
+    # eBay routes
+    app.router.add_get("/api/ebay/status",    handle_ebay_status)
+    app.router.add_get("/api/ebay/search",    handle_ebay_search)
+    app.router.add_get("/api/ebay/blast",     handle_ebay_blast)
+    app.router.add_get("/api/ebay/auth",      handle_ebay_auth)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
