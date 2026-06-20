@@ -755,6 +755,16 @@ async def task_gmc_refresh() -> str:
         return f"Fehler: {e}"
 
 
+async def task_gmc_product_fix() -> str:
+    """Daily: set identifier_exists:false + condition:new + generate SKUs for all Shopify products."""
+    try:
+        from modules.gmc_product_fixer import run_gmc_fixer_cycle
+        r = await run_gmc_fixer_cycle()
+        return f"GMC Fix: {r.get('fixed', 0)} Produkte gefixt, {r.get('errors', 0)} Fehler von {r.get('total', 0)}"
+    except Exception as e:
+        return f"GMC Fix error: {e}"
+
+
 async def task_youtube_stats() -> str:
     """Fetch YouTube channel stats."""
     try:
@@ -4295,6 +4305,7 @@ TASKS = [
     ("content_calendar",        task_content_calendar,        86400,  290),  # daily
     ("github_backup",           task_github_backup,           86400,  300),  # daily
     ("gmc_refresh",             task_gmc_refresh,             86400,  310),  # daily
+    ("gmc_product_fix",         task_gmc_product_fix,         86400,  311),  # daily — GMC compliance metafields
     ("youtube_stats",           task_youtube_stats,           86400,  320),  # daily
     ("log_cleanup",             task_log_cleanup,             86400,  330),  # daily
     ("daily_summary",           task_daily_summary,           86400,  340),  # daily
@@ -4574,7 +4585,42 @@ TASKS = [
     # ── REVENUE MEGA TRACKER — täglich Umsatz-Report ────────────────────────
     ("revenue_mega_daily",       task_revenue_mega_daily,      86400, 21800), # täglich — Revenue-Report
     ("revenue_mega_weekly",      task_revenue_mega_weekly,    604800, 22000), # wöchentlich — 7-Tage Report
+    # ── TIKTOK TRENDS (kein API-Key) — Google Trends DE + 60 Niches ──────────
+    ("tiktok_trend_blast",       task_tiktok_trend_blast,       7200, 22100), # 2h — TikTok Niche BRUTUS Blast
+    # ── UPWORK JOB SCRAPER (kein API-Key) — RSS Feed + Proposal via Telegram ─
+    ("upwork_job_alert",         task_upwork_job_alert,        10800, 22200), # 3h — Neue Jobs + Proposal
+    # ── FIVERR GIG PROMO (kein API-Key) — 8 Gigs via BRUTUS bewerben ─────────
+    ("fiverr_gig_blast",         task_fiverr_gig_blast,         7200, 22300), # 2h — Alle Gigs bewerben
 ]
+
+
+# ── Task-Funktionen für neue Module (kein API-Key nötig) ─────────────────────
+
+async def task_tiktok_trend_blast() -> str:
+    try:
+        from modules.tiktok_trends_scraper import run_tiktok_trend_blast
+        r = await run_tiktok_trend_blast(count=5)
+        return f"TikTok Trends: {r.get('niches_blasted',0)} Niches | {r.get('channels_hit',0)} Kanäle | Quelle: Google Trends DE"
+    except Exception as e:
+        return f"TikTok Trend Blast Fehler: {e}"
+
+
+async def task_upwork_job_alert() -> str:
+    try:
+        from modules.upwork_job_scraper import run_upwork_job_alert
+        r = await run_upwork_job_alert(max_jobs=3)
+        return f"Upwork Jobs: {r.get('jobs_found',0)} gefunden | {r.get('alerted',0)} Alerts gesendet"
+    except Exception as e:
+        return f"Upwork Job Alert Fehler: {e}"
+
+
+async def task_fiverr_gig_blast() -> str:
+    try:
+        from modules.fiverr_scraper import run_fiverr_gig_promotion
+        r = await run_fiverr_gig_promotion(count=3)
+        return f"Fiverr Gig Promo: {r.get('gigs_promoted',0)} Gigs | {r.get('channels_hit',0)} Kanäle"
+    except Exception as e:
+        return f"Fiverr Gig Blast Fehler: {e}"
 
 
 # ── Scheduler loop ───────────────────────────────────────────────────────────

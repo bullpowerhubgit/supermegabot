@@ -6987,6 +6987,7 @@ async def create_app():
 
     # GMC route
     app.router.add_get("/api/gmc",                         handle_gmc)
+    app.router.add_get("/api/gmc/status",                  handle_gmc)   # alias
     app.router.add_get("/api/gmc/verify",                  handle_gmc_verify_info)
     app.router.add_get("/api/gmc/feed.xml",                handle_gmc_feed)
     app.router.add_get("/api/reddit/blast",                handle_reddit_blast)
@@ -7128,6 +7129,7 @@ async def create_app():
 
     # ── Bot Clones ────────────────────────────────────────────────────────────
     app.router.add_get("/api/bots/status",            handle_bot_clones_status)
+    app.router.add_get("/api/bot/status",             handle_bot_clones_status)   # alias
     app.router.add_post("/api/bots/run",              handle_bot_clone_run)
 
     # ── Watchdog + Agenten Hub ────────────────────────────────────────────────
@@ -8229,12 +8231,19 @@ async def handle_email_brain_stats(req):
         return web.json_response({"error": str(e)}, status=500)
 
 
-async def handle_email_brain_check(req):
-    """POST /api/email/brain/check — trigger immediate email check."""
+async def _email_brain_check_bg():
     try:
         from modules.email_brain import run_email_check
-        result = await run_email_check()
-        return web.json_response({"status": "ok", "result": result})
+        await run_email_check()
+    except Exception as e:
+        log.error("Background email check error: %s", e)
+
+
+async def handle_email_brain_check(req):
+    """POST /api/email/brain/check — runs in background to avoid 502 timeout."""
+    try:
+        asyncio.create_task(_email_brain_check_bg())
+        return web.json_response({"status": "ok", "result": "email check started in background"})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
@@ -8403,11 +8412,25 @@ async def handle_scheduler_trigger(req):
         except Exception:
             available = []
         return web.json_response({"error": "task name required", "available": available}, status=400)
+    # Tasks that are known to run longer than HTTP timeout — fire and return immediately
+    _long_tasks = {
+        "indexnow_mega_blast", "email_check", "email_brain_check", "mega_seo_cycle",
+        "brutus_ds24_affiliate", "traffic_swarm_full", "traffic_mega_cycle",
+        "gmc_product_fix", "shopify_full_auto", "amazon_autonomy_cycle",
+        "ebay_auto_fill", "backlink_outreach", "seo_mega_factory", "ultra_indexnow_all",
+    }
     try:
         from core.automation_scheduler import get_scheduler
         sched = get_scheduler()
-        result = await sched.run_now(task_name)
+        if task_name in _long_tasks:
+            asyncio.create_task(sched.run_now(task_name))
+            return web.json_response({"status": "ok", "task": task_name,
+                                      "result": f"{task_name} started in background"})
+        result = await asyncio.wait_for(sched.run_now(task_name), timeout=25)
         return web.json_response({"status": "ok", "task": task_name, "result": result})
+    except asyncio.TimeoutError:
+        return web.json_response({"status": "ok", "task": task_name,
+                                  "result": f"{task_name} running (timeout — still executing)"})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
