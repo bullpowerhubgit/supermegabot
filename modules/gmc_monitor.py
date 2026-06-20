@@ -1,7 +1,7 @@
 """
 Google Merchant Center Status Monitor
 Uses Shopify data (live) + GMC placeholder data (TODO: add GMC OAuth).
-Merchant ID: 5734366162
+Merchant ID: 5813214419 (shopify.com / Google Shopping)
 """
 
 import os
@@ -14,7 +14,7 @@ from typing import Optional, Dict, Any
 logger = logging.getLogger(__name__)
 
 # Config aus .env — read lazily inside functions so dotenv changes are always picked up
-GMC_MERCHANT_ID = os.getenv("GMC_MERCHANT_ID", "5734366162")
+GMC_MERCHANT_ID = os.getenv("GMC_MERCHANT_ID", "5813214419")
 SHOPIFY_SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 
 def _shopify_token() -> str:

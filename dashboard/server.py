@@ -476,19 +476,21 @@ async def handle_gmc(req):
 
 async def handle_gmc_verify_info(req):
     """GET /api/gmc/verify — instructions for completing GMC identity verification."""
+    gmc_id = os.getenv("GMC_MERCHANT_ID", "5813214419")
     return web.json_response({
         "ok": True,
         "status": "identity_verification_pending",
-        "merchant_id": "5734366162",
+        "merchant_id": gmc_id,
+        "platform": "Google Shopping (shopify.com / google.com/shopping)",
         "action_required": "Complete Google Merchant Center identity verification",
         "steps": [
-            "1. Go to https://merchants.google.com — select merchant 5734366162",
+            f"1. Go to https://merchants.google.com — select merchant {gmc_id}",
             "2. Click 'Complete verification' in the banner at the top",
             "3. Upload a government ID or use automated phone/postcard verification",
             "4. Once verified: 624 active products appear in Google Shopping (free traffic!)",
         ],
         "impact": "WITHOUT verification: 0 products shown in Google Shopping — massive traffic loss!",
-        "gmc_url": "https://merchants.google.com",
+        "gmc_url": f"https://merchants.google.com/u/0/mc/overview?a={gmc_id}",
         "products_waiting": 624,
     })
 
