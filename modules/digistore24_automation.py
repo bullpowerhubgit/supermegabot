@@ -172,3 +172,21 @@ async def setup_ipn(product_id: str = "669750") -> dict:
             f"Integration → IPN URL setzen auf: {ipn_url}"
         ),
     }
+
+
+async def run_with_brutus_traffic() -> dict:
+    """Run DS24 stats then fire BRUTUS traffic for Digistore24."""
+    result = {}
+    try:
+        result["stats"] = await get_sales_stats()
+    except Exception as e:
+        result["stats_error"] = str(e)
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        result["brutus"] = await run_brutus_swarm(
+            keywords=["Digistore24 Affiliate 2026", "digitale Produkte verkaufen online", "AI Income Machine AIITEC"],
+            max_keywords=3,
+        )
+    except Exception as e:
+        result["brutus_error"] = str(e)
+    return result
