@@ -248,6 +248,7 @@ async def create_and_send_campaign(
                         log.warning("Klaviyo template upload HTTP %s", r.status)
 
             # 3. Send — id=campaign_id per Klaviyo API 2024-10-15 (send-job uses id as campaign ref)
+            log.info("Klaviyo send-job: camp_id=%s msg_id=%s", camp_id, msg_id)
             async with s.post(
                 f"{_BASE}/campaign-send-jobs/",
                 headers=_headers(),
@@ -255,7 +256,9 @@ async def create_and_send_campaign(
             ) as r:
                 send_body = await r.json(content_type=None)
                 if r.status not in (200, 201, 202):
-                    return {"ok": False, "error": f"Senden: HTTP {r.status}", "detail": str(send_body)[:200]}
+                    return {"ok": False, "error": f"Senden: HTTP {r.status}",
+                            "camp_id": camp_id, "msg_id": msg_id,
+                            "detail": str(send_body)[:400]}
 
         return {"ok": True, "campaign_id": camp_id, "message_id": msg_id, "name": name}
     except Exception as e:
