@@ -94,11 +94,9 @@ async def get_trending_topics() -> list[str]:
 
 async def generate_viral_content(topic: str, product_name: str = PRODUCT_NAME,
                                   product_url: str = PRODUCT_URL) -> dict | None:
-    """Generate viral multi-platform content via Claude Haiku."""
-    if not ANTHROPIC_KEY:
-        return None
+    """Generate viral multi-platform content via AI fallback chain."""
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         prompt = f"""Du bist ein viraler Content-Spezialist. Erstelle Content für das Thema: "{topic}"
 Produkt: {product_name} (Link: {product_url}, Preis: €37)
 
@@ -110,19 +108,13 @@ Gib NUR valides JSON zurück:
   "linkedin_post": "Professioneller LinkedIn-Post (max 200 Zeichen) auf Deutsch, mit 2-3 relevanten Hashtags.",
   "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
 }}"""
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1500,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=25),
-            ) as r:
-                data = await r.json(content_type=None)
-        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
+        raw = await ai_complete(prompt, max_tokens=1500)
+        if not raw:
+            return None
         start = raw.find("{")
         end = raw.rfind("}") + 1
+        if start == -1:
+            return None
         return json.loads(raw[start:end])
     except Exception as e:
         log.warning("Content gen error: %s", e)
