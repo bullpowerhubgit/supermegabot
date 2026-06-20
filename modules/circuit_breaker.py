@@ -205,3 +205,30 @@ breaker_failure  = failure
 breaker_is_open  = is_open
 breaker_reset    = reset
 breaker_status   = get_status
+
+
+def get_breaker(service: str) -> "CircuitBreakerProxy":
+    """Return a proxy object for a named service — supports .is_open, .success(), .failure(), .reset()."""
+    return CircuitBreakerProxy(service)
+
+
+class CircuitBreakerProxy:
+    """Thin proxy so callers can do: cb = get_breaker('linkedin'); cb.is_open; cb.reset()."""
+    def __init__(self, service: str):
+        self._service = service
+
+    @property
+    def is_open(self) -> bool:
+        return is_open(self._service)
+
+    def success(self) -> None:
+        success(self._service)
+
+    def failure(self, error: str = "", http_status: int = 0) -> None:
+        failure(self._service, error, http_status)
+
+    def reset(self) -> None:
+        reset(self._service)
+
+    def status(self) -> dict:
+        return get_status().get(self._service, {})

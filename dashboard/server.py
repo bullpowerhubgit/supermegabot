@@ -5418,6 +5418,17 @@ async def handle_gumroad_create(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_gumroad_blast(req):
+    """POST /api/gumroad/blast — Gumroad stats + BRUTUS traffic swarm for digital products."""
+    try:
+        from modules.gumroad_client import run_with_brutus_traffic
+        result = await run_with_brutus_traffic()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        log.error("handle_gumroad_blast: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── Amazon handlers ───────────────────────────────────────────────────────────
 
 async def handle_amazon_status(req):
@@ -6058,6 +6069,7 @@ async def create_app():
     app.router.add_get("/api/gumroad/products",       handle_gumroad_products)
     app.router.add_get("/api/gumroad/sales",          handle_gumroad_sales)
     app.router.add_post("/api/gumroad/product/create", handle_gumroad_create)
+    app.router.add_post("/api/gumroad/blast",         handle_gumroad_blast)
     # ── Fiverr ────────────────────────────────────────────────────────────────
     app.router.add_get("/api/fiverr/status",          handle_fiverr_status)
     app.router.add_get("/api/fiverr/gigs",            handle_fiverr_gigs)
@@ -6231,6 +6243,12 @@ async def create_app():
     app.router.add_get( "/api/linkedin/callback",     handle_linkedin_callback)
     app.router.add_get( "/api/linkedin/status",       handle_linkedin_status)
     app.router.add_post("/api/linkedin/refresh",      handle_linkedin_refresh)
+    app.router.add_post("/api/linkedin/post",         handle_linkedin_post)
+    # Discord
+    app.router.add_post("/api/discord/send",          handle_discord_send)
+    app.router.add_get( "/api/discord/status",        handle_discord_status)
+    # Circuit Breaker management
+    app.router.add_post("/api/circuit-breaker/reset", handle_circuit_breaker_reset)
     # CONVERSION MAXIMIZER
     app.router.add_get( "/api/conversion/stats",      handle_conversion_stats)
     app.router.add_post("/api/conversion/ab-test",    handle_conversion_ab_test)

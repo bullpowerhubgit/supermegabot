@@ -393,6 +393,31 @@ Verwende Emojis. Schreibe NUR die 3 Tweets, getrennt durch "---"."""
 # Helper
 # ─────────────────────────────────────────────────────────────────────────────
 
+async def run_with_brutus_traffic(topic: str = "Shopify Automation 2026") -> dict:
+    """Post AI-generated Tweet then fire BRUTUS traffic swarm. Skips gracefully if no credentials."""
+    if not ACCESS_SECRET:
+        log.info("TWITTER_ACCESS_TOKEN_SECRET not set — Twitter skipped gracefully")
+        return {"ok": False, "skipped": True, "reason": "TWITTER_ACCESS_SECRET not set"}
+
+    tweet_text = await generate_ai_tweet(topic)
+    tweet_result = {}
+    if tweet_text:
+        tweet_result = await post_tweet(tweet_text)
+
+    brutus_result = {}
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        brutus_result = await run_brutus_swarm(
+            niche=topic,
+            affiliate_url=os.getenv("DS24_AFFILIATE_LINK",
+                                    "https://www.digistore24.com/redir/669750/user37405262/"),
+        )
+    except Exception as e:
+        brutus_result = {"error": str(e)}
+
+    return {"twitter": tweet_result, "brutus": brutus_result}
+
+
 async def _telegram(msg: str) -> None:
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
         return

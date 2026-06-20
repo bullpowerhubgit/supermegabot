@@ -108,6 +108,58 @@ async def post_to_linkedin(text: str) -> dict:
             return {"success": False, "status": r.status, "error": data}
 
 
+async def post_article(text: str, title: str = "") -> dict:
+    """Alias for post_to_linkedin with circuit breaker protection."""
+    from modules.circuit_breaker import get_breaker
+    cb = get_breaker("linkedin")
+    if cb.is_open:
+        return {"ok": False, "skipped": True, "reason": "circuit_open:linkedin"}
+    result = await post_to_linkedin(text)
+    if result.get("success"):
+        cb.success()
+    else:
+        status_code = result.get("status", 0) or 0
+        cb.failure(str(result.get("error", "")), int(status_code))
+    return result
+
+
+async def run_with_brutus_traffic(topic: str = "E-Commerce Automatisierung mit KI") -> dict:
+    """Post AI-generated LinkedIn content then fire BRUTUS traffic swarm."""
+    try:
+        from modules.ai_client import ai_complete
+        ds24 = os.getenv("DS24_AFFILIATE_LINK",
+                         "https://www.digistore24.com/redir/669750/user37405262/")
+        prompt = (
+            f"Schreibe einen professionellen LinkedIn-Post auf Deutsch über: {topic}. "
+            f"Max 1200 Zeichen. Erwähne am Ende: {ds24} (AI Income Machine). Nur Text."
+        )
+        text = await ai_complete(prompt, max_tokens=400)
+        if not text:
+            text = (f"🚀 {topic} — vollautomatisch mit SuperMegaBot!\n\n"
+                    f"Mehr unter: {ds24}\n\n#KI #Ecommerce #Automation")
+    except Exception as e:
+        logger.warning("LinkedIn AI content fallback: %s", e)
+        ds24 = os.getenv("DS24_AFFILIATE_LINK",
+                         "https://www.digistore24.com/redir/669750/user37405262/")
+        text = (f"🚀 E-Commerce Automatisierung mit KI — SuperMegaBot!\n\n"
+                f"Mehr unter: {ds24}\n\n#KI #Ecommerce #Automation")
+
+    linkedin_result = await post_article(text)
+
+    brutus_result = {}
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        brutus_result = await run_brutus_swarm(
+            niche=topic,
+            affiliate_url=os.getenv("DS24_AFFILIATE_LINK",
+                                    "https://www.digistore24.com/redir/669750/user37405262/"),
+        )
+    except Exception as e:
+        brutus_result = {"error": str(e)}
+
+    return {"linkedin": linkedin_result, "brutus": brutus_result}
+
+
 async def get_linkedin_status() -> dict:
     token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
     if not token:
