@@ -2323,10 +2323,9 @@ async def task_ebay_auto_fill() -> str:
 
 async def task_ebay_blast() -> str:
     try:
-        from modules.ebay_automation import post_affiliate_blast
-        niches = ["smart home gadget", "fitness tracker", "phone accessories"]
-        results = [f"{n[:15]}:{(await post_affiliate_blast(n)).get('items',0)}" for n in niches]
-        return f"eBay Blast: {' | '.join(results)}"
+        from modules.ebay_brutus import run_ebay_multi_blast
+        r = await run_ebay_multi_blast(count=3)
+        return f"eBay Blast: {r.get('cycles',0)} Niches | {r.get('channels_hit',0)} Kanäle"
     except Exception as e:
         return f"eBay Blast error: {e}"
 
@@ -2637,7 +2636,7 @@ async def task_brutus_printify() -> str:
         from modules.super_revenue_blitz import brutus_blast_for_tool
         r = await brutus_blast_for_tool("Printify", "https://www.printify.com",
             ["Print on Demand 2026", "Printify Shopify Automation", "eigene Produkte verkaufen"])
-        return f"BRUTUS Printify: {r.get('posts_sent',0)} posts"
+        return f"BRUTUS Printify: {r.get('channels_hit', r.get('posts_sent', 0))} posts"
     except Exception as e:
         return f"BRUTUS Printify error: {e}"
 
@@ -2648,7 +2647,7 @@ async def task_brutus_dropshipping() -> str:
         link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
         r = await brutus_blast_for_tool("Dropshipping", link,
             ["Dropshipping 2026", "AliExpress Shopify", "online shop automatisch befüllen"])
-        return f"BRUTUS Dropshipping: {r.get('posts_sent',0)} posts"
+        return f"BRUTUS Dropshipping: {r.get('channels_hit', r.get('posts_sent', 0))} posts"
     except Exception as e:
         return f"BRUTUS Dropshipping error: {e}"
 
@@ -2964,7 +2963,11 @@ async def task_amazon_affiliate_blast() -> str:
     try:
         from modules.amazon_affiliate import run_with_brutus_traffic
         r = await run_with_brutus_traffic()
-        return f"Amazon Affiliate: {r.get('links_generated',0)} links, brutus={r.get('brutus_posts',0)}"
+        prods = r.get('products', [])
+        brutus_r = r.get('brutus', {})
+        ch = brutus_r.get('channels_hit', 0)
+        posts = brutus_r.get('content_pieces', 0)
+        return f"Amazon Affiliate: {len(prods)} links gebuildet, brutus={ch} Kanäle {posts} Posts"
     except Exception as e:
         return f"Amazon Affiliate error: {e}"
 
@@ -3659,6 +3662,80 @@ async def task_pipedrive_shopify_sync() -> str:
         return f"Pipedrive-Shopify-Sync error: {e}"
 
 
+# ── AliExpress BRUTUS Tasks ───────────────────────────────────────────────────
+
+async def task_aliexpress_brutus() -> str:
+    """Every 2h: AliExpress affiliate content blast via BRUTUS — no OAuth needed."""
+    try:
+        from modules.aliexpress_brutus import run_aliexpress_multi_blast
+        r = await run_aliexpress_multi_blast(count=3)
+        return f"AliExpress BRUTUS: {r.get('cycles',0)} Niches | {r.get('channels_hit',0)} Kanäle"
+    except Exception as e:
+        return f"AliExpress BRUTUS error: {e}"
+
+
+async def task_aliexpress_dropship_brutus() -> str:
+    """Every 4h: AliExpress Dropshipping + DS24 Affiliate combo blast."""
+    try:
+        from modules.aliexpress_brutus import run_aliexpress_dropshipping_blast
+        r = await run_aliexpress_dropshipping_blast()
+        return f"AliExpress Dropship: tg={r.get('ok',False)} | {r.get('channels_hit',0)} Kanäle"
+    except Exception as e:
+        return f"AliExpress Dropship BRUTUS error: {e}"
+
+
+# ── Printful BRUTUS Task ──────────────────────────────────────────────────────
+
+async def task_brutus_printful() -> str:
+    """Every 4h: Printful Print-on-Demand promotion via BRUTUS traffic."""
+    try:
+        from modules.super_revenue_blitz import brutus_blast_for_tool
+        r = await brutus_blast_for_tool("Printful", "https://www.printful.com",
+            ["Print on Demand Verdienen", "eigene Merch Produkte 2026", "Printful Shopify"])
+        return f"BRUTUS Printful: {r.get('channels_hit', r.get('posts_sent', 0))} Kanäle, {r.get('content_pieces',0)} Posts"
+    except Exception as e:
+        return f"BRUTUS Printful error: {e}"
+
+
+# ── Mega BRUTUS Rotation — alle Plattformen im 1h Zyklus ─────────────────────
+
+_MEGA_BRUTUS_PLATFORMS = [
+    ("Digistore24 Affiliate",   "https://www.digistore24.com/redir/669750/user37405262/",
+     ["DS24 Affiliate 2026", "digitale Produkte verdienen", "passives Einkommen"]),
+    ("Shopify Automation",       "",
+     ["Shopify Dropshipping 2026", "Shopify Automation AI", "eigener Online-Shop"]),
+    ("AliExpress Dropshipping",  "https://www.aliexpress.com",
+     ["AliExpress Bestseller", "Dropshipping Produkte", "günstiger Einkauf"]),
+    ("Amazon Affiliate",         "https://www.amazon.de/?tag=bullpowerhub-21",
+     ["Amazon Bestseller 2026", "Amazon Affiliate verdienen", "passive Einnahmen Amazon"]),
+    ("Printify Print on Demand", "https://www.printify.com",
+     ["Print on Demand 2026", "eigene T-Shirts verkaufen", "Merch Automation"]),
+    ("eBay Deals",               "https://www.ebay.de",
+     ["eBay Schnäppchen 2026", "eBay Dropshipping", "eBay Affiliate verdienen"]),
+    ("Klaviyo Email Marketing",  "",
+     ["Email Marketing Automation", "Klaviyo E-Commerce", "Newsletter Geld verdienen"]),
+]
+
+async def task_mega_brutus_rotation() -> str:
+    """Every 1h: rotate through all platforms, blast one per hour via BRUTUS."""
+    import random
+    from modules.super_revenue_blitz import brutus_blast_for_tool
+    platform, url, keywords = random.choice(_MEGA_BRUTUS_PLATFORMS)
+    if not url:
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        if "Shopify" in platform and shop:
+            url = f"https://{shop}"
+        else:
+            url = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+    try:
+        r = await brutus_blast_for_tool(platform, url, keywords)
+        ch = r.get("channels_hit", r.get("posts_sent", 0))
+        posts = r.get("content_pieces", 0)
+        return f"Mega BRUTUS [{platform}]: {ch} Kanäle, {posts} Posts"
+    except Exception as e:
+        return f"Mega BRUTUS error [{platform}]: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -3915,6 +3992,13 @@ TASKS = [
     # ── PIPEDRIVE CRM — Lead + Deal Automation ────────────────────────────────
     ("pipedrive_sync",           task_pipedrive_sync,          21600, 16400), # 6h — CRM Status + offene Deals
     ("pipedrive_shopify_sync",   task_pipedrive_shopify_sync,  86400, 16500), # täglich — Shopify → CRM Deals
+    # ── ALIEXPRESS BRUTUS — Affiliate Traffic ohne OAuth ──────────────────────
+    ("aliexpress_brutus",        task_aliexpress_brutus,        7200, 16600), # 2h — AliExpress BRUTUS Blast
+    ("aliexpress_dropship_brutus", task_aliexpress_dropship_brutus, 14400, 16700), # 4h — AliExpress+DS24+BRUTUS
+    # ── PRINTFUL BRUTUS — Print on Demand Traffic ─────────────────────────────
+    ("brutus_printful",          task_brutus_printful,         14400, 16800), # 4h — Printful BRUTUS Blast
+    # ── ALL-PLATFORM MEGA BRUTUS — Rotiert durch alle Kanäle ──────────────────
+    ("mega_brutus_rotation",     task_mega_brutus_rotation,     3600, 16900), # 1h — Platform BRUTUS Rotation
 ]
 
 
