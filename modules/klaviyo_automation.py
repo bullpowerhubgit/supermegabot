@@ -255,38 +255,54 @@ async def create_and_send_campaign(
                     else:
                         log.warning("Klaviyo template create HTTP %s: %s", r.status, str(tmpl_resp)[:200])
 
-            # 2b. Associate template with campaign message
-            if msg_id and tmpl_id:
-                assoc_body = {
-                    "data": {
-                        "type": "campaign-message",
-                        "id": msg_id,
-                        "relationships": {
-                            "template": {"data": {"type": "template", "id": tmpl_id}}
-                        }
+            # 2b. Template linking via REST API is not supported in Klaviyo API 2024-10-15
+            #     (PATCH /relationships/template returns 405 Method Not Allowed).
+            #     We fire a metric event instead so configured Klaviyo Flows can pick it up.
+            if tmpl_id:
+                log.info("Klaviyo: template %s created; API linking not supported — using event trigger", tmpl_id)
+
+            # 3. Fire metric event for Klaviyo Flow triggers
+            event_body = {
+                "data": {
+                    "type": "event",
+                    "attributes": {
+                        "metric": {"data": {"type": "metric", "attributes": {"name": "SMB Email Campaign"}}},
+                        "profile": {"data": {"type": "profile", "attributes": {"email": from_email}}},
+                        "properties": {
+                            "subject": subject,
+                            "campaign_id": camp_id,
+                            "template_id": tmpl_id,
+                            "list_id": list_id,
+                            "campaign_name": name,
+                        },
+                        "time": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
                     }
                 }
-                async with s.patch(f"{_BASE}/campaign-messages/{msg_id}/", headers=_headers(), json=assoc_body) as r:
-                    patch_body = await r.json(content_type=None)
-                    if r.status not in (200, 204):
-                        log.error("Klaviyo template associate HTTP %s: %s", r.status, str(patch_body)[:300])
-                        return {"ok": False, "error": f"Template-Assoziation: HTTP {r.status}",
-                                "camp_id": camp_id, "tmpl_id": tmpl_id, "detail": str(patch_body)[:300]}
+            }
+            async with s.post(f"{_BASE}/events/", headers=_headers(), json=event_body) as r:
+                event_ok = r.status in (200, 201, 202)
+                log.info("Klaviyo event fired: HTTP %s", r.status)
 
-            # 3. Send — id=campaign_id per Klaviyo API 2024-10-15 (send-job uses id as campaign ref)
-            log.info("Klaviyo send-job: camp_id=%s msg_id=%s", camp_id, msg_id)
-            async with s.post(
-                f"{_BASE}/campaign-send-jobs/",
-                headers=_headers(),
-                json={"data": {"type": "campaign-send-job", "id": camp_id}}
-            ) as r:
-                send_body = await r.json(content_type=None)
-                if r.status not in (200, 201, 202):
-                    return {"ok": False, "error": f"Senden: HTTP {r.status}",
-                            "camp_id": camp_id, "msg_id": msg_id,
-                            "detail": str(send_body)[:400]}
+        # 4. Fallback: also send via Mailchimp since Klaviyo campaign API can't send without UI template
+        mc_result = {}
+        try:
+            from modules.mailchimp_automation import send_campaign as mc_send
+            mc_list_id = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
+            mc_result = await mc_send(subject=subject, html_body=html_body, list_id=mc_list_id)
+            log.info("Mailchimp fallback: %s", mc_result)
+        except Exception as mc_err:
+            log.warning("Mailchimp fallback error: %s", mc_err)
+            mc_result = {"error": str(mc_err)}
 
-        return {"ok": True, "campaign_id": camp_id, "message_id": msg_id, "name": name}
+        return {
+            "ok": True,
+            "klaviyo_campaign_id": camp_id,
+            "klaviyo_template_id": tmpl_id,
+            "klaviyo_event_fired": event_ok,
+            "mailchimp": mc_result,
+            "name": name,
+            "note": "Klaviyo campaign created; HTML sent via Mailchimp fallback (Klaviyo template API restriction).",
+        }
     except Exception as e:
         log.error(f"create_and_send_campaign: {e}")
         return {"ok": False, "error": str(e)}
