@@ -3697,6 +3697,34 @@ async def task_brutus_printful() -> str:
         return f"BRUTUS Printful error: {e}"
 
 
+# ── Printful BRUTUS + Printify Stats Sync ────────────────────────────────────
+
+async def task_printful_brutus() -> str:
+    """Every 4h: Printful stats + BRUTUS traffic for print-on-demand keywords."""
+    try:
+        from modules.printful_automation import run_with_brutus_traffic
+        result = await run_with_brutus_traffic()
+        stats = result.get("stats", {})
+        brutus = result.get("brutus") or {}
+        channels = brutus.get("channels_hit", brutus.get("posts_sent", 0)) if isinstance(brutus, dict) else 0
+        return (f"Printful BRUTUS: {stats.get('sync_products', 0)} Produkte, "
+                f"{stats.get('total_orders', 0)} Bestellungen, {channels} Kanäle bespielt")
+    except Exception as e:
+        return f"Printful BRUTUS error: {e}"
+
+
+async def task_printify_sync() -> str:
+    """Every 4h: Sync Printify stats (products, orders, pending)."""
+    try:
+        from modules.printify_automation import get_stats
+        stats = await get_stats()
+        return (f"Printify sync: {stats.get('products', 0)} Produkte, "
+                f"{stats.get('total_orders', 0)} Bestellungen, "
+                f"{stats.get('pending', 0)} pending")
+    except Exception as e:
+        return f"Printify sync error: {e}"
+
+
 # ── Mega BRUTUS Rotation — alle Plattformen im 1h Zyklus ─────────────────────
 
 _MEGA_BRUTUS_PLATFORMS = [
@@ -3997,6 +4025,9 @@ TASKS = [
     ("aliexpress_dropship_brutus", task_aliexpress_dropship_brutus, 14400, 16700), # 4h — AliExpress+DS24+BRUTUS
     # ── PRINTFUL BRUTUS — Print on Demand Traffic ─────────────────────────────
     ("brutus_printful",          task_brutus_printful,         14400, 16800), # 4h — Printful BRUTUS Blast
+    # ── PRINTFUL/PRINTIFY AUTONOMOUS POD ──────────────────────────────────────
+    ("printful_brutus",          task_printful_brutus,         14400, 16850), # 4h — Printful stats + BRUTUS keywords
+    ("printify_sync",            task_printify_sync,           14400, 16860), # 4h — Printify stats sync
     # ── ALL-PLATFORM MEGA BRUTUS — Rotiert durch alle Kanäle ──────────────────
     ("mega_brutus_rotation",     task_mega_brutus_rotation,     3600, 16900), # 1h — Platform BRUTUS Rotation
 ]

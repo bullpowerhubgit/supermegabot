@@ -3655,6 +3655,26 @@ async def handle_aliexpress_import(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_printful_products(req):
+    """GET /api/printful/products — list all Printful sync products."""
+    try:
+        from modules.printful_automation import get_products
+        products = await get_products()
+        return web.json_response({"ok": True, "products": products, "count": len(products)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_printful_blast(req):
+    """POST /api/printful/blast — get Printful stats + fire BRUTUS for PoD keywords."""
+    try:
+        from modules.printful_automation import run_with_brutus_traffic
+        result = await run_with_brutus_traffic()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_printful_auth(req):
     """Redirect to Printful OAuth authorization page."""
     from modules.printful_automation import get_oauth_url
@@ -6025,6 +6045,8 @@ async def create_app():
     app.router.add_post("/api/printify/autofulfill",  handle_printify_autofulfill)
     app.router.add_post("/api/printify/webhook",      handle_printify_webhook)
     app.router.add_get("/api/printful/status",        handle_printful_status)
+    app.router.add_get("/api/printful/products",      handle_printful_products)
+    app.router.add_post("/api/printful/blast",        handle_printful_blast)
     app.router.add_post("/api/printful/autofulfill",  handle_printful_autofulfill)
     app.router.add_get("/api/printful/auth",          handle_printful_auth)
     app.router.add_get("/api/printful/callback",      handle_printful_callback)
@@ -7981,6 +8003,59 @@ async def handle_linkedin_refresh(req):
     if new_token:
         return web.json_response({"ok": True, "message": "LinkedIn token refreshed"})
     return web.json_response({"ok": False, "message": "Refresh failed — LINKEDIN_REFRESH_TOKEN missing or expired. Re-do OAuth flow via /api/linkedin/auth"}, status=400)
+
+
+async def handle_linkedin_post(req):
+    """POST /api/linkedin/post — post text to LinkedIn via access token."""
+    try:
+        data = await req.json()
+        text = data.get("text", "").strip()
+        title = data.get("title", "")
+        if not text:
+            return web.json_response({"ok": False, "error": "text required"}, status=400)
+        from modules.linkedin_oauth import post_article
+        result = await post_article(text, title=title)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_linkedin_post: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_discord_send(req):
+    """POST /api/discord/send — send message to Discord."""
+    try:
+        data = await req.json()
+        text = data.get("text", "").strip() or data.get("content", "").strip()
+        channel_id = data.get("channel_id", "")
+        if not text:
+            return web.json_response({"ok": False, "error": "text required"}, status=400)
+        from modules.discord_automation import send_message
+        result = await send_message(text, channel_id=channel_id)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_discord_send: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_discord_status(req):
+    """GET /api/discord/status — Discord connection status."""
+    from modules.discord_automation import get_discord_status
+    return web.json_response(await get_discord_status())
+
+
+async def handle_circuit_breaker_reset(req):
+    """POST /api/circuit-breaker/reset — manually reset a named circuit breaker."""
+    try:
+        data = await req.json()
+        service = data.get("service", "").strip()
+        if not service:
+            return web.json_response({"ok": False, "error": "service required"}, status=400)
+        from modules.circuit_breaker import reset, get_status
+        reset(service)
+        return web.json_response({"ok": True, "service": service, "status": get_status().get(service, {})})
+    except Exception as e:
+        log.error("handle_circuit_breaker_reset: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ── CONVERSION MAXIMIZER handlers ────────────────────────────────────────────
