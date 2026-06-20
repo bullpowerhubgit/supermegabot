@@ -6612,21 +6612,15 @@ async def handle_traffic_stats(request: web.Request) -> web.Response:
     })
 
 async def handle_affiliate_blast_all(request: web.Request) -> web.Response:
-    try:
-        results = {}
+    async def _run():
         try:
-            from modules.amazon_autonomy import run_amazon_cycle
-            results["amazon"] = await run_amazon_cycle()
+            from modules.affiliate_mega_engine import run_affiliate_blast
+            await run_affiliate_blast()
         except Exception as e:
-            results["amazon"] = {"ok": False, "error": str(e)}
-        try:
-            from modules.digistore_autonomy import run_digistore_cycle
-            results["ds24"] = await run_digistore_cycle()
-        except Exception as e:
-            results["ds24"] = {"ok": False, "error": str(e)}
-        return web.json_response({"ok": True, "results": results})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+            log.error("affiliate_blast_all background error: %s", e)
+    asyncio.create_task(_run())
+    return web.json_response({"ok": True, "started": True,
+                               "message": "Affiliate blast gestartet (Amazon + DS24 + eBay)"})
 
 async def handle_affiliate_amazon(request: web.Request) -> web.Response:
     try:
