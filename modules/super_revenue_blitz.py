@@ -367,64 +367,13 @@ async def multi_platform_post(topic: str, offer_url: str = "") -> dict:
 # ── Klaviyo Campaign Sender ───────────────────────────────────────────────────
 
 async def send_klaviyo_campaign(subject: str, html_body: str, campaign_name: str = "") -> bool:
-    """Sendet eine echte Klaviyo Email-Kampagne an die gesamte Liste."""
-    if not KLAVIYO() or not KLAVIYO_LIST():
-        return False
+    """Sendet eine Klaviyo Email-Kampagne. Nutzt klaviyo_autonomy.create_campaign (mit Mailchimp-Fallback)."""
     try:
-        import aiohttp
-        headers = {
-            "Authorization": f"Klaviyo-API-Key {KLAVIYO()}",
-            "revision": "2024-10-15",
-            "Content-Type": "application/json",
-        }
         name = campaign_name or f"AutoBlitz {datetime.now().strftime('%Y-%m-%d %H:%M')}"
-
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://a.klaviyo.com/api/campaigns/",
-                headers=headers,
-                json={"data": {"type": "campaign", "attributes": {
-                    "name": name,
-                    "audiences": {"included": [KLAVIYO_LIST()]},
-                    "send_options": {"use_smart_sending": True},
-                    "tracking_options": {"is_tracking_clicks": True, "is_tracking_opens": True},
-                    "send_strategy": {"method": "immediate"},
-                }}},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                d = await r.json(content_type=None)
-            camp_id = d.get("data", {}).get("id", "")
-            if not camp_id:
-                return False
-
-            async with s.post(
-                "https://a.klaviyo.com/api/campaign-messages/",
-                headers=headers,
-                json={"data": {"type": "campaign-message", "attributes": {
-                    "channel": "email",
-                    "content": {
-                        "subject": subject,
-                        "preview_text": subject[:80],
-                        "from_email": "bullpowersrtkennels@gmail.com",
-                        "from_label": "Rudolf | AIITEC",
-                        "body": html_body,
-                    },
-                }, "relationships": {"campaign": {"data": {"type": "campaign", "id": camp_id}}}}},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                md = await r.json(content_type=None)
-            msg_id = md.get("data", {}).get("id", "")
-            if not msg_id:
-                return False
-
-            async with s.post(
-                "https://a.klaviyo.com/api/campaign-send-jobs/",
-                headers=headers,
-                json={"data": {"type": "campaign-send-job", "id": camp_id}},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                ok = r.status in (200, 201, 202)
-        log.info("Klaviyo campaign '%s': %s", subject[:50], "sent" if ok else "failed")
+        from modules.klaviyo_autonomy import create_campaign
+        result = await create_campaign(name, subject, html_body)
+        ok = result.get("ok", False)
+        log.info("Klaviyo campaign '%s': %s via %s", subject[:50], "sent" if ok else "draft", result.get("channel", "?"))
         return ok
     except Exception as e:
         log.debug("Klaviyo campaign error: %s", e)
