@@ -1,0 +1,364 @@
+#!/usr/bin/env python3
+"""
+SuperRevenueBlitz — Maximaler simultaner Revenue-Push.
+Alle Kanäle gleichzeitig: Telegram + LinkedIn + IndexNow + Klaviyo + GitHub SEO + AliExpress + Printify.
+"""
+from __future__ import annotations
+import asyncio
+import json
+import logging
+import os
+from datetime import datetime
+from typing import Dict, List, Optional
+
+log = logging.getLogger("RevenueBlitz")
+
+TG_TOKEN   = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")
+TG_CHAT    = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
+KLAVIYO    = lambda: os.getenv("KLAVIYO_API_KEY", "")
+KLAVIYO_LIST = lambda: os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+SHOPIFY_DOMAIN = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+SHOPIFY_TOKEN  = lambda: os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_VER    = lambda: os.getenv("SHOPIFY_API_VERSION", "2024-01")
+PRINTIFY_KEY   = lambda: os.getenv("PRINTIFY_API_KEY", "")
+PRINTIFY_SHOP  = lambda: os.getenv("PRINTIFY_SHOP_ID", "27975583")
+DS24_LINK      = lambda: os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/product/669750")
+
+
+# ── Telegram ──────────────────────────────────────────────────────────────────
+
+async def _tg_send(text: str) -> bool:
+    if not TG_TOKEN() or not TG_CHAT():
+        return False
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                f"https://api.telegram.org/bot{TG_TOKEN()}/sendMessage",
+                json={"chat_id": TG_CHAT(), "text": text[:4096], "parse_mode": "HTML",
+                      "disable_web_page_preview": False},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                d = await r.json(content_type=None)
+                return d.get("ok", False)
+    except Exception as e:
+        log.debug("TG send error: %s", e)
+        return False
+
+
+# ── Klaviyo ──────────────────────────────────────────────────────────────────
+
+async def _klaviyo_event(event_name: str, properties: dict) -> bool:
+    if not KLAVIYO():
+        return False
+    try:
+        import aiohttp
+        payload = {
+            "data": {
+                "type": "event",
+                "attributes": {
+                    "metric": {"data": {"type": "metric", "attributes": {"name": event_name}}},
+                    "properties": properties,
+                    "profile": {"data": {"type": "profile", "attributes": {"email": "broadcast@bullpowerhub.com"}}},
+                }
+            }
+        }
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://a.klaviyo.com/api/events/",
+                headers={"Authorization": f"Klaviyo-API-Key {KLAVIYO()}",
+                         "revision": "2024-02-15", "Content-Type": "application/json"},
+                json=payload,
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                return r.status in (200, 201, 202)
+    except Exception as e:
+        log.debug("Klaviyo event error: %s", e)
+        return False
+
+
+# ── LinkedIn ──────────────────────────────────────────────────────────────────
+
+async def _linkedin_post(text: str) -> bool:
+    try:
+        from modules.traffic_blitz import post_linkedin
+        r = await post_linkedin(text)
+        return r.get("ok", False)
+    except Exception as e:
+        log.debug("LinkedIn post error: %s", e)
+        return False
+
+
+# ── IndexNow ─────────────────────────────────────────────────────────────────
+
+async def _indexnow() -> int:
+    try:
+        from modules.traffic_blitz import indexnow_blast
+        r = await indexnow_blast()
+        return r.get("submitted", 0)
+    except Exception as e:
+        log.debug("IndexNow error: %s", e)
+        return 0
+
+
+# ── GitHub SEO Blog ──────────────────────────────────────────────────────────
+
+async def _github_seo_post(topic: str) -> Optional[str]:
+    try:
+        from modules.traffic_blitz import create_github_seo_post
+        r = await create_github_seo_post(topic)
+        return r.get("url") if r.get("ok") else None
+    except Exception as e:
+        log.debug("GitHub SEO post error: %s", e)
+        return None
+
+
+# ── Main Functions ────────────────────────────────────────────────────────────
+
+async def revenue_blast_now() -> dict:
+    """Triggert SOFORT alle Revenue-Kanäle gleichzeitig."""
+    link = DS24_LINK()
+    offer_text = (
+        f"🔥 <b>SuperMegaBot — Vollautomatisches Online-Business</b>\n\n"
+        f"💰 Während du schläfst verdient das System für dich:\n"
+        f"• BRUTUS postet auf 10 Kanälen gleichzeitig\n"
+        f"• KI generiert täglich neuen SEO-Content\n"
+        f"• DS24 + Shopify vollautomatisch\n"
+        f"• Klaviyo + Mailchimp Funnels\n\n"
+        f"👉 <a href='{link}'>Jetzt starten — {datetime.now().strftime('%d.%m.%Y')}</a>"
+    )
+
+    tg_task     = _tg_send(offer_text)
+    klaviyo_task = _klaviyo_event("revenue_blast", {"link": link, "ts": datetime.now().isoformat()})
+    linkedin_text = (
+        f"🚀 Vollautomatisches Online-Business 2026\n\n"
+        f"BRUTUS postet gleichzeitig auf 10 Kanälen während du schläfst.\n"
+        f"KI-Content, Shopify-Automation, DS24-Funnel — alles vollautomatisch.\n\n"
+        f"👉 {link}\n\n"
+        f"#PassivesEinkommen #Ecommerce #KI #OnlineBusiness #Shopify"
+    )
+    linkedin_task = _linkedin_post(linkedin_text)
+    indexnow_task = _indexnow()
+
+    tg, kl, li, idx = await asyncio.gather(
+        tg_task, klaviyo_task, linkedin_task, indexnow_task,
+        return_exceptions=True,
+    )
+
+    result = {
+        "telegram":  bool(tg) if not isinstance(tg, Exception) else False,
+        "klaviyo":   bool(kl) if not isinstance(kl, Exception) else False,
+        "linkedin":  bool(li) if not isinstance(li, Exception) else False,
+        "indexnow":  int(idx) if not isinstance(idx, Exception) else 0,
+        "ts":        datetime.now().isoformat(),
+    }
+    log.info("Revenue Blitz: tg=%s kl=%s li=%s idx=%s",
+             result["telegram"], result["klaviyo"], result["linkedin"], result["indexnow"])
+    return result
+
+
+async def aliexpress_import_trending(keywords: List[str] = None, max_products: int = 5) -> dict:
+    """AliExpress trending Produkte → Shopify importieren mit AI-Beschreibungen."""
+    if not SHOPIFY_DOMAIN() or not SHOPIFY_TOKEN():
+        log.debug("aliexpress_import: Shopify not configured")
+        return {"imported": 0, "skipped": 0, "error": "shopify_not_configured"}
+
+    if keywords is None:
+        keywords = ["trending ecommerce", "passive income tools", "dropshipping 2026"]
+
+    imported = 0
+    skipped = 0
+
+    try:
+        from modules.aliexpress_downloader import search_products
+        from modules.ai_client import ai_complete
+        import aiohttp
+
+        base = f"https://{SHOPIFY_DOMAIN()}"
+        headers = {"X-Shopify-Access-Token": SHOPIFY_TOKEN(), "Content-Type": "application/json"}
+
+        for kw in keywords[:2]:  # max 2 keyword batches per run
+            try:
+                products = await search_products(kw, page_size=max_products)
+            except Exception as e:
+                log.debug("AliExpress search '%s' error: %s", kw, e)
+                continue
+
+            for p in products[:max_products]:
+                try:
+                    title = p.get("product_title", "")[:255] or "Trending Product"
+                    price = float(p.get("sale_price", "9.99") or "9.99")
+                    img   = p.get("product_main_image_url", "")
+                    ali_url = p.get("product_detail_url", "")
+
+                    ai_prompt = (
+                        f"Erstelle eine überzeugende Shopify-Produktbeschreibung auf Deutsch für:\n"
+                        f"Produkt: {title}\nPreis: €{price:.2f}\n"
+                        f"Schreibe 3 Bullet-Points + 1 kurzen Überzeugungstext (max 150 Wörter). Kein HTML."
+                    )
+                    description = await ai_complete(ai_prompt, max_tokens=300)
+                    if not description:
+                        description = f"{title} — Jetzt zum Sonderpreis verfügbar."
+
+                    shopify_product = {
+                        "product": {
+                            "title": title,
+                            "body_html": f"<p>{description}</p>",
+                            "vendor": "AliExpress Import",
+                            "product_type": "Import",
+                            "status": "draft",
+                            "variants": [{"price": f"{price:.2f}", "inventory_management": None}],
+                        }
+                    }
+                    if img:
+                        shopify_product["product"]["images"] = [{"src": img}]
+
+                    async with aiohttp.ClientSession() as s:
+                        async with s.post(
+                            f"{base}/admin/api/{SHOPIFY_VER()}/products.json",
+                            headers=headers,
+                            json=shopify_product,
+                            timeout=aiohttp.ClientTimeout(total=15),
+                        ) as r:
+                            if r.status in (200, 201):
+                                imported += 1
+                                log.info("AliExpress→Shopify: imported '%s'", title[:50])
+                            else:
+                                skipped += 1
+                                log.debug("AliExpress→Shopify skip (%s): %s", r.status, title[:40])
+
+                except Exception as e:
+                    log.debug("AliExpress product import error: %s", e)
+                    skipped += 1
+
+    except Exception as e:
+        log.debug("aliexpress_import_trending error: %s", e)
+
+    return {"imported": imported, "skipped": skipped}
+
+
+async def printify_seo_blast() -> dict:
+    """Alle Printify Produkte → AI-SEO Beschreibungen → Update via Printify API."""
+    if not PRINTIFY_KEY():
+        log.debug("printify_seo_blast: PRINTIFY_API_KEY not set")
+        return {"updated": 0, "skipped": 0}
+
+    shop_id = PRINTIFY_SHOP()
+    updated = 0
+    skipped = 0
+
+    try:
+        import aiohttp
+        from modules.ai_client import ai_complete
+
+        pf_headers = {"Authorization": f"Bearer {PRINTIFY_KEY()}", "Content-Type": "application/json"}
+
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://api.printify.com/v1/shops/{shop_id}/products.json?limit=20&page=1",
+                headers=pf_headers,
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                if r.status == 403:
+                    log.debug("Printify products: 403 — scope issue, skip")
+                    return {"updated": 0, "skipped": 0, "notice": "403_scope"}
+                if r.status != 200:
+                    log.debug("Printify products: %s", r.status)
+                    return {"updated": 0, "skipped": 0}
+                data = await r.json(content_type=None)
+
+        products = data.get("data", [])
+        log.info("Printify SEO blast: %d products found", len(products))
+
+        for product in products[:10]:  # max 10 per run
+            pid   = product.get("id", "")
+            title = product.get("title", "")
+            if not pid or not title:
+                skipped += 1
+                continue
+
+            try:
+                seo_prompt = (
+                    f"Erstelle eine SEO-optimierte Produktbeschreibung auf Deutsch für:\n"
+                    f"Produkt: {title}\n"
+                    f"- H1-Titel (max 60 Zeichen, keyword-reich)\n"
+                    f"- Beschreibung (150-200 Wörter, überzeugend, mit Keywords)\n"
+                    f"- 5 Bullet-Points (Vorteile)\n"
+                    f"Antworte als JSON: {{\"seo_title\": \"...\", \"description\": \"...\", \"bullets\": [...]}}"
+                )
+                raw = await ai_complete(seo_prompt, max_tokens=500)
+                if not raw:
+                    skipped += 1
+                    continue
+
+                s_idx = raw.find("{")
+                e_idx = raw.rfind("}") + 1
+                seo = json.loads(raw[s_idx:e_idx]) if s_idx >= 0 else {}
+                desc = seo.get("description", "")
+                bullets = seo.get("bullets", [])
+                if not desc:
+                    skipped += 1
+                    continue
+
+                bullets_html = "".join(f"<li>{b}</li>" for b in bullets[:5])
+                body_html = f"<p>{desc}</p><ul>{bullets_html}</ul>"
+
+                async with aiohttp.ClientSession() as s:
+                    async with s.put(
+                        f"https://api.printify.com/v1/shops/{shop_id}/products/{pid}.json",
+                        headers=pf_headers,
+                        json={"description": body_html},
+                        timeout=aiohttp.ClientTimeout(total=15),
+                    ) as r:
+                        if r.status in (200, 201):
+                            updated += 1
+                            log.info("Printify SEO updated: %s", title[:50])
+                        else:
+                            skipped += 1
+                            log.debug("Printify SEO skip (%s): %s", r.status, title[:40])
+
+            except Exception as e:
+                log.debug("Printify product SEO error: %s", e)
+                skipped += 1
+
+    except Exception as e:
+        log.debug("printify_seo_blast error: %s", e)
+
+    return {"updated": updated, "skipped": skipped}
+
+
+async def multi_platform_post(topic: str, offer_url: str = "") -> dict:
+    """Postet auf Telegram + LinkedIn + GitHub Pages Blog + IndexNow blast."""
+    link = offer_url or DS24_LINK()
+
+    tg_text = (
+        f"📢 <b>{topic}</b>\n\n"
+        f"Vollautomatisch und 24/7 aktiv — SuperMegaBot macht es möglich.\n\n"
+        f"👉 <a href='{link}'>Mehr erfahren</a>"
+    )
+    li_text = (
+        f"{topic}\n\n"
+        f"SuperMegaBot automatisiert dein Online-Business komplett — "
+        f"Shopify, DS24, Klaviyo, Social Media, SEO.\n\n"
+        f"👉 {link}\n\n"
+        f"#PassivesEinkommen #OnlineBusiness #Automatisierung #KI #Shopify"
+    )
+
+    tg_task     = _tg_send(tg_text)
+    li_task     = _linkedin_post(li_text)
+    blog_task   = _github_seo_post(topic)
+    idx_task    = _indexnow()
+
+    tg, li, blog_url, idx = await asyncio.gather(
+        tg_task, li_task, blog_task, idx_task,
+        return_exceptions=True,
+    )
+
+    result = {
+        "telegram":  bool(tg) if not isinstance(tg, Exception) else False,
+        "linkedin":  bool(li) if not isinstance(li, Exception) else False,
+        "blog_url":  blog_url if isinstance(blog_url, str) else None,
+        "indexnow":  int(idx) if not isinstance(idx, Exception) else 0,
+    }
+    log.info("MultiPlatform post '%s': %s", topic[:40], result)
+    return result
