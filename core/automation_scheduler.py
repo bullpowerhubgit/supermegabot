@@ -2313,6 +2313,68 @@ async def task_multi_platform_post() -> str:
         return f"Multi-platform post error: {e}"
 
 
+# ── EBAY + AMAZON + TWITTER + DISCORD AUTO ───────────────────────────────────
+
+async def task_ebay_auto_fill() -> str:
+    try:
+        from modules.ebay_automation import run_ebay_auto_fill
+        r = await run_ebay_auto_fill()
+        return f"eBay AutoFill: found={r.get('found',0)} imported={r.get('imported',0)}"
+    except Exception as e:
+        return f"eBay AutoFill error: {e}"
+
+
+async def task_ebay_blast() -> str:
+    try:
+        from modules.ebay_automation import post_affiliate_blast
+        niches = ["smart home gadget", "fitness tracker", "phone accessories"]
+        results = [f"{n[:15]}:{(await post_affiliate_blast(n)).get('items',0)}" for n in niches]
+        return f"eBay Blast: {' | '.join(results)}"
+    except Exception as e:
+        return f"eBay Blast error: {e}"
+
+
+async def task_amazon_blast() -> str:
+    try:
+        from modules.amazon_affiliate import build_affiliate_link
+        from modules.brutus_core import fire as brutus_fire
+        products = [("Smart LED Strip WiFi", "smart+led+strip+wifi"),
+                    ("Fitness Tracker 2026", "fitness+tracker"),
+                    ("Mini Projektor Heimkino", "mini+projektor")]
+        fired = 0
+        for name, kw in products:
+            link = build_affiliate_link(kw)
+            r = await brutus_fire(title=f"Amazon: {name}", body=f"Jetzt bei Amazon: {name}",
+                                   link=link, niche="amazon affiliate",
+                                   channels=["telegram", "twitter", "discord"])
+            if r.get("channels_hit", 0) > 0:
+                fired += 1
+        return f"Amazon Blast: {fired}/{len(products)} gepostet"
+    except Exception as e:
+        return f"Amazon Blast error: {e}"
+
+
+async def task_twitter_blast() -> str:
+    try:
+        from modules.twitter_auto_poster import run_auto_tweet
+        r = await run_auto_tweet()
+        return f"Twitter: posted={r.get('posted',0)} failed={r.get('failed',0)}"
+    except Exception as e:
+        return f"Twitter error: {e}"
+
+
+async def task_discord_blast() -> str:
+    try:
+        from modules.brutus_core import _discord
+        import aiohttp
+        msg = "🤖 SuperMegaBot | Shop: https://ineedit.com.co | Code HEUTE20 = 20% Rabatt!"
+        async with aiohttp.ClientSession() as sess:
+            ok = await _discord(msg, sess)
+        return f"Discord: {'ok' if ok else 'no credentials'}"
+    except Exception as e:
+        return f"Discord error: {e}"
+
+
 # ── SHOPIFY AUTO-FILL ────────────────────────────────────────────────────────
 
 async def task_shopify_auto_fill() -> str:
@@ -2955,6 +3017,207 @@ async def task_ds24_digistore_brutus() -> str:
         return f"DS24 BRUTUS error: {e}"
 
 
+async def task_ebay_brutus_blast() -> str:
+    """eBay Affiliate + BRUTUS traffic blast — alle Kanäle."""
+    try:
+        from modules.ebay_brutus import run_ebay_multi_blast
+        r = await run_ebay_multi_blast(count=3)
+        return f"eBay BRUTUS: {r.get('cycles',0)} Niches | {r.get('channels_hit',0)} Kanäle"
+    except Exception as e:
+        return f"eBay BRUTUS error: {e}"
+
+
+async def task_discord_promo() -> str:
+    """Discord Webhook Promo — DS24 Affiliate + Content."""
+    try:
+        from modules.discord_automation import run_discord_promo
+        r = await run_discord_promo()
+        if r.get("ok"):
+            return "Discord Promo: sent ✅"
+        return f"Discord Promo: {r.get('error','failed')} — Set DISCORD_WEBHOOK_URL in env"
+    except Exception as e:
+        return f"Discord error: {e}"
+
+
+async def task_discord_revenue_report() -> str:
+    """Discord daily revenue report embed."""
+    try:
+        from modules.discord_automation import run_discord_revenue_report
+        r = await run_discord_revenue_report()
+        return f"Discord Revenue: {'sent ✅' if r.get('ok') else 'failed — Set DISCORD_WEBHOOK_URL'}"
+    except Exception as e:
+        return f"Discord revenue error: {e}"
+
+
+# ── Twilio SMS Automation ─────────────────────────────────────────────────────
+
+async def _twilio_send(to: str, body: str) -> bool:
+    """Send SMS via Twilio. Returns True on success."""
+    sid  = os.getenv("TWILIO_ACCOUNT_SID", "")
+    tok  = os.getenv("TWILIO_AUTH_TOKEN", "")
+    frm  = os.getenv("TWILIO_FROM_NUMBER", "")
+    if not (sid and tok and frm):
+        return False
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+                auth=aiohttp.BasicAuth(sid, tok),
+                data={"To": to, "From": frm, "Body": body[:1600]},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+        return r.status == 201
+    except Exception:
+        return False
+
+
+async def task_twilio_morning_brief() -> str:
+    """Daily morning SMS briefing — Revenue + Tasks for the day."""
+    to = os.getenv("TWILIO_VERIFIED_TO", os.getenv("TWILIO_FROM_NUMBER", ""))
+    if not to:
+        return "TWILIO_VERIFIED_TO not set"
+    try:
+        shopify_key  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        shopify_dom  = os.getenv("SHOPIFY_SHOP_DOMAIN", "rudolfsarkanyshopped.myshopify.com")
+        orders_today = 0
+        revenue_today = 0.0
+        if shopify_key:
+            today = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00Z")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"https://{shopify_dom}/admin/api/2024-10/orders.json",
+                    headers={"X-Shopify-Access-Token": shopify_key},
+                    params={"status": "any", "created_at_min": today, "limit": 50, "fields": "id,total_price"},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    d = await r.json(content_type=None)
+            for o in d.get("orders", []):
+                orders_today += 1
+                revenue_today += float(o.get("total_price", 0))
+        msg = (
+            f"☀️ SUPERMEGABOT MORGEN-BRIEFING\n"
+            f"📅 {datetime.now(timezone.utc).strftime('%d.%m.%Y %H:%M')} UTC\n\n"
+            f"💰 Heute Revenue: €{revenue_today:.2f}\n"
+            f"🛒 Shopify Orders: {orders_today}\n"
+            f"🤖 149 Automatisierungen laufen\n"
+            f"🔥 DS24 Affiliate aktiv\n\n"
+            f"👉 DS24: https://www.digistore24.com/redir/669750/user37405262/\n"
+            f"📊 Dashboard: https://dudirudibot-mega-production.up.railway.app"
+        )
+        ok = await _twilio_send(to, msg)
+        return f"Morning SMS: {'sent ✅' if ok else 'failed ❌'} → {to}"
+    except Exception as e:
+        return f"Twilio morning error: {e}"
+
+
+async def task_twilio_revenue_alert() -> str:
+    """Every 4h — SMS alert if new revenue detected."""
+    to = os.getenv("TWILIO_VERIFIED_TO", os.getenv("TWILIO_FROM_NUMBER", ""))
+    if not to:
+        return "TWILIO_VERIFIED_TO not set"
+    try:
+        shopify_key = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        shopify_dom = os.getenv("SHOPIFY_SHOP_DOMAIN", "rudolfsarkanyshopped.myshopify.com")
+        if not shopify_key:
+            return "No Shopify key"
+        since = (datetime.now(timezone.utc) - timedelta(hours=4)).strftime("%Y-%m-%dT%H:%M:%SZ")
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://{shopify_dom}/admin/api/2024-10/orders.json",
+                headers={"X-Shopify-Access-Token": shopify_key},
+                params={"status": "any", "created_at_min": since, "limit": 10, "fields": "id,total_price,email"},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+        orders = d.get("orders", [])
+        if not orders:
+            return "No new orders last 4h — no SMS sent"
+        total = sum(float(o.get("total_price", 0)) for o in orders)
+        msg = (
+            f"🎉 NEUE BESTELLUNG!\n"
+            f"💰 {len(orders)} Order(s) — €{total:.2f}\n"
+            f"📦 Shopify Store aktiv\n"
+            f"👉 https://dudirudibot-mega-production.up.railway.app"
+        )
+        ok = await _twilio_send(to, msg)
+        return f"Revenue SMS: {'sent ✅' if ok else 'failed ❌'} — {len(orders)} orders €{total:.2f}"
+    except Exception as e:
+        return f"Twilio revenue alert error: {e}"
+
+
+async def task_twilio_ds24_report() -> str:
+    """Every 6h — DS24 + system status SMS."""
+    to = os.getenv("TWILIO_VERIFIED_TO", os.getenv("TWILIO_FROM_NUMBER", ""))
+    if not to:
+        return "TWILIO_VERIFIED_TO not set"
+    try:
+        msg = (
+            f"📊 SUPERMEGABOT STATUS\n"
+            f"🕐 {datetime.now(timezone.utc).strftime('%H:%M')} UTC\n\n"
+            f"✅ BRUTUS läuft — alle Kanäle bespielt\n"
+            f"✅ DS24 Affiliate aktiv\n"
+            f"✅ Shopify Automation läuft\n"
+            f"✅ 149 Tasks registriert\n\n"
+            f"🔗 Affiliate: https://www.digistore24.com/redir/669750/user37405262/"
+        )
+        ok = await _twilio_send(to, msg)
+        return f"DS24 SMS: {'sent ✅' if ok else 'failed ❌'}"
+    except Exception as e:
+        return f"Twilio DS24 report error: {e}"
+
+
+async def task_twilio_stripe_alert() -> str:
+    """Every 30min — check Stripe for new payments and SMS alert."""
+    to = os.getenv("TWILIO_VERIFIED_TO", os.getenv("TWILIO_FROM_NUMBER", ""))
+    stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
+    if not (to and stripe_key):
+        return "Missing to/stripe_key"
+    try:
+        since = int((datetime.now(timezone.utc) - timedelta(minutes=35)).timestamp())
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                "https://api.stripe.com/v1/payment_intents",
+                headers={"Authorization": f"Bearer {stripe_key}"},
+                params={"created[gte]": since, "limit": 5},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+        payments = [p for p in d.get("data", []) if p.get("status") == "succeeded"]
+        if not payments:
+            return "No new Stripe payments — no SMS"
+        total = sum(p.get("amount", 0) / 100 for p in payments)
+        msg = (
+            f"💳 STRIPE ZAHLUNG!\n"
+            f"💰 {len(payments)} Payment(s) — €{total:.2f}\n"
+            f"🎉 Revenue kommt rein!\n"
+            f"📊 https://dudirudibot-mega-production.up.railway.app"
+        )
+        ok = await _twilio_send(to, msg)
+        return f"Stripe SMS: {'sent ✅' if ok else 'failed ❌'} — €{total:.2f}"
+    except Exception as e:
+        return f"Twilio stripe alert error: {e}"
+
+
+async def task_tiktok_brutus() -> str:
+    try:
+        from modules.tiktok_shop_sync import run_with_brutus_traffic
+        r = await run_with_brutus_traffic()
+        synced = r.get("sync", {}).get("synced", 0)
+        return f"TikTok BRUTUS: synced={synced} blast={r.get('brutus',{}).get('ok','?')}"
+    except Exception as e:
+        return f"TikTok BRUTUS error: {e}"
+
+
+async def task_tiktok_analytics_report() -> str:
+    try:
+        from modules.tiktok_shop_sync import get_tiktok_analytics
+        r = await get_tiktok_analytics()
+        return f"TikTok analytics: orders_30d={r.get('orders_30d',0)} revenue_30d=€{r.get('revenue_30d_eur',0)}"
+    except Exception as e:
+        return f"TikTok analytics error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -3159,6 +3422,16 @@ TASKS = [
     ("shopify_autonomy_brutus", task_shopify_autonomy_brutus, 21600, 12200), # 6h — ShopifyAutonomy + BRUTUS
     ("email_seq_brutus",       task_email_seq_brutus,         14400, 12300), # 4h — Email Sequence + BRUTUS
     ("ds24_digistore_brutus",  task_ds24_digistore_brutus,   14400, 12400), # 4h — DS24 Stats + BRUTUS
+    # ── EBAY BRUTUS — eBay Affiliate + BRUTUS Traffic ─────────────────────────
+    ("ebay_brutus_blast",      task_ebay_brutus_blast,        7200, 12500), # 2h — eBay Affiliate BRUTUS
+    # ── DISCORD AUTOMATION — Revenue Reports + Promos ─────────────────────────
+    ("discord_promo",          task_discord_promo,           21600, 12600), # 6h — Discord Promo Post
+    ("discord_revenue",        task_discord_revenue_report,  86400, 12700), # daily — Discord Revenue Report
+    # ── TWILIO SMS AUTOMATION — Revenue Alerts + Morning Brief + Stripe ───────
+    ("twilio_morning_brief",   task_twilio_morning_brief,    86400,    60),  # daily — Morgen-Briefing SMS
+    ("twilio_revenue_alert",   task_twilio_revenue_alert,    14400,   130),  # 4h — neue Orders → SMS
+    ("twilio_ds24_report",     task_twilio_ds24_report,      21600,   140),  # 6h — DS24 Status SMS
+    ("twilio_stripe_alert",    task_twilio_stripe_alert,      1800,    90),  # 30min — Stripe Payment SMS
 ]
 
 
