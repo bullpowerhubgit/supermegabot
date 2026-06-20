@@ -2641,8 +2641,10 @@ async def task_tiktok_sync() -> str:
 async def task_upsell_sequence_run() -> str:
     try:
         from modules.conversion_engine import generate_upsell_sequence
-        r = await generate_upsell_sequence()
-        return f"Upsell Sequence: {r.get('enrolled',0)} enrolled"
+        sample = {"product": "AI Income Machine", "price": 37, "customer_email": ""}
+        r = await generate_upsell_sequence(sample)
+        count = len(r) if isinstance(r, list) else r.get("enrolled", 0)
+        return f"Upsell Sequence: {count} steps generated"
     except Exception as e:
         return f"Upsell Sequence error: {e}"
 
