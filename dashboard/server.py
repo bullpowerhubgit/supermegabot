@@ -7427,6 +7427,7 @@ async def create_app():
 
     # Circuit Breaker routes
     app.router.add_get( "/api/circuit/status",           handle_circuit_status)
+    app.router.add_get( "/api/circuits/status",          handle_circuit_status)  # alias
     app.router.add_post("/api/circuit/reset",            handle_circuit_reset)
 
     # Amazon routes
@@ -7549,6 +7550,7 @@ async def create_app():
     app.router.add_post("/api/email/blast",              handle_email_blast)
     app.router.add_post("/api/email/daily-blast",        handle_email_daily_blast)
     app.router.add_get( "/api/email/stats",              handle_email_stats)
+    app.router.add_get( "/api/email/status",             handle_email_stats)  # alias
     # ── Affiliate Mega Engine ─────────────────────────────────────────────────
     app.router.add_post("/api/affiliate/blast-all",      handle_affiliate_blast_all)
     app.router.add_post("/api/affiliate/amazon",         handle_affiliate_amazon)
