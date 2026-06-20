@@ -247,11 +247,11 @@ async def create_and_send_campaign(
                     if r.status not in (200, 204):
                         log.warning("Klaviyo template upload HTTP %s", r.status)
 
-            # 3. Send — campaign_id in attributes per Klaviyo API 2024-10-15
+            # 3. Send — id=campaign_id per Klaviyo API 2024-10-15 (send-job uses id as campaign ref)
             async with s.post(
                 f"{_BASE}/campaign-send-jobs/",
                 headers=_headers(),
-                json={"data": {"type": "campaign-send-job", "attributes": {"campaign_id": camp_id}}}
+                json={"data": {"type": "campaign-send-job", "id": camp_id}}
             ) as r:
                 send_body = await r.json(content_type=None)
                 if r.status not in (200, 201, 202):
