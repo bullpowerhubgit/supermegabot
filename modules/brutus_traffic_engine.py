@@ -218,26 +218,32 @@ async def scan_reddit_hot(subreddits: list[str] = None) -> list[dict]:
     results = []
     try:
         import aiohttp
-        async with aiohttp.ClientSession() as s:
+        headers = {"User-Agent": "Mozilla/5.0 SuperMegaBot/2.0 (by /u/bullpowersrtkennels)"}
+        async with aiohttp.ClientSession(headers=headers) as s:
             for sub in subreddits[:3]:
-                async with s.get(
-                    f"https://www.reddit.com/r/{sub}/hot.json?limit=5",
-                    headers={"User-Agent": "BRUTUS/1.0"},
-                    timeout=aiohttp.ClientTimeout(total=10),
-                ) as r:
-                    data = await r.json(content_type=None)
-                for post in data.get("data", {}).get("children", []):
-                    p = post.get("data", {})
-                    if p.get("score", 0) > 100:
-                        results.append({
-                            "title": p.get("title", ""),
-                            "score": p.get("score", 0),
-                            "comments": p.get("num_comments", 0),
-                            "url": p.get("url", ""),
-                            "subreddit": sub,
-                        })
+                try:
+                    async with s.get(
+                        f"https://www.reddit.com/r/{sub}/hot.json?limit=5",
+                        timeout=aiohttp.ClientTimeout(total=12),
+                    ) as r:
+                        if r.content_type and "json" not in r.content_type:
+                            log.debug("Reddit r/%s rate-limited (HTML response) — skip", sub)
+                            continue
+                        data = await r.json(content_type=None)
+                    for post in data.get("data", {}).get("children", []):
+                        p = post.get("data", {})
+                        if p.get("score", 0) > 100:
+                            results.append({
+                                "title": p.get("title", ""),
+                                "score": p.get("score", 0),
+                                "comments": p.get("num_comments", 0),
+                                "url": p.get("url", ""),
+                                "subreddit": sub,
+                            })
+                except Exception as sub_exc:
+                    log.debug("Reddit r/%s scan skip: %s", sub, sub_exc)
     except Exception as exc:
-        log.warning("Reddit scan error: %s", exc)
+        log.debug("Reddit scan error: %s", exc)
     return sorted(results, key=lambda x: x["score"], reverse=True)
 
 
