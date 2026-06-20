@@ -1983,6 +1983,7 @@ async def task_social_batch_gen() -> str:
 
 async def task_trending_topic_scan() -> str:
     """Every 12h: scan for trending topics and log top opportunities."""
+    import aiohttp
     try:
         from modules.content_factory import find_trending_topics
         topics = await find_trending_topics()
@@ -3159,6 +3160,7 @@ async def task_whatsapp_daily_blast() -> str:
 
 async def task_twilio_morning_brief() -> str:
     """Daily morning SMS briefing — Revenue + Tasks for the day."""
+    import aiohttp
     to = os.getenv("TWILIO_VERIFIED_TO", os.getenv("TWILIO_FROM_NUMBER", ""))
     if not to:
         return "TWILIO_VERIFIED_TO not set"
@@ -3198,6 +3200,7 @@ async def task_twilio_morning_brief() -> str:
 
 async def task_twilio_revenue_alert() -> str:
     """Every 4h — SMS alert if new revenue detected."""
+    import aiohttp
     to = os.getenv("TWILIO_VERIFIED_TO", os.getenv("TWILIO_FROM_NUMBER", ""))
     if not to:
         return "TWILIO_VERIFIED_TO not set"
@@ -3254,6 +3257,7 @@ async def task_twilio_ds24_report() -> str:
 
 async def task_twilio_stripe_alert() -> str:
     """Every 30min — check Stripe for new payments and SMS alert."""
+    import aiohttp
     to = os.getenv("TWILIO_VERIFIED_TO", os.getenv("TWILIO_FROM_NUMBER", ""))
     stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
     if not (to and stripe_key):
