@@ -5780,6 +5780,72 @@ async def handle_shopify_discount_blast(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ── Product Generator handlers ───────────────────────────────────────────────
+
+async def handle_product_generate(req):
+    """POST /api/products/generate — generiert count neue Produkte aus Trends."""
+    data = {}
+    try:
+        data = await req.json()
+    except Exception:
+        pass
+    count = int(data.get("count", 3))
+    asyncio.create_task(_product_gen_bg(count, True))
+    return web.json_response({"ok": True, "message": f"Product Generator gestartet ({count} Produkte)"})
+
+
+async def _product_gen_bg(count: int, from_trends: bool):
+    try:
+        from modules.product_generator import run_generator_cycle
+        await run_generator_cycle(count=count, from_trends=from_trends)
+    except Exception as e:
+        log.error("Product gen bg: %s", e)
+
+
+async def handle_product_generate_niche(req):
+    """POST /api/products/generate-niche — generiert 5 Produkte aus einer Nische."""
+    data = {}
+    try:
+        data = await req.json()
+    except Exception:
+        pass
+    niche = data.get("niche")
+    try:
+        from modules.product_generator import run_niche_blast
+        asyncio.create_task(run_niche_blast(niche=niche))
+        return web.json_response({"ok": True, "message": f"Niche blast gestartet: {niche or 'random'}"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_product_generate_keywords(req):
+    """POST /api/products/generate-keywords — generiert Produkte für gegebene Keywords."""
+    data = {}
+    try:
+        data = await req.json()
+    except Exception:
+        pass
+    keywords = data.get("keywords", [])
+    if not keywords:
+        return web.json_response({"ok": False, "error": "keywords list required"})
+    try:
+        from modules.product_generator import generate_from_keywords
+        asyncio.create_task(generate_from_keywords(keywords))
+        return web.json_response({"ok": True, "message": f"{len(keywords)} Keywords in Warteschlange"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_product_trends(req):
+    """GET /api/products/trends — gibt aktuelle Trending Keywords zurück."""
+    try:
+        from modules.product_generator import scan_trends
+        keywords = await scan_trends(max_keywords=20)
+        return web.json_response({"ok": True, "keywords": keywords, "count": len(keywords)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── GCP handlers ─────────────────────────────────────────────────────────────
 
 async def handle_gcp_ping(req):
@@ -6579,6 +6645,12 @@ async def create_app():
     app.router.add_post("/api/shopify/collections/auto",  handle_shopify_auto_collections)
     app.router.add_post("/api/shopify/mass-seo",          handle_shopify_mass_seo)
     app.router.add_post("/api/shopify/discount-blast",    handle_shopify_discount_blast)
+
+    # Product Generator routes
+    app.router.add_post("/api/products/generate",         handle_product_generate)
+    app.router.add_post("/api/products/generate-niche",   handle_product_generate_niche)
+    app.router.add_post("/api/products/generate-keywords",handle_product_generate_keywords)
+    app.router.add_get( "/api/products/trends",           handle_product_trends)
 
     # NEXUS-1 routes
     app.router.add_get( "/api/nexus/status",          handle_nexus_status)
