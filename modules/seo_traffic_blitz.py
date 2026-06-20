@@ -84,26 +84,44 @@ async def _shopify_graphql(query: str, variables: dict = None) -> dict:
 # ── 1. Sitemap Ping ───────────────────────────────────────────────────────────
 
 async def run_sitemap_submit() -> dict:
-    """Ping Google, Bing, Yandex with sitemap URL — free, no API key needed."""
+    """Submit URLs via IndexNow (Bing/Yandex) — modern replacement for deprecated ping endpoints."""
     sitemap = f"{STORE_URL}/sitemap.xml"
-    engines = [
-        ("Google", f"https://www.google.com/ping?sitemap={sitemap}"),
-        ("Bing",   f"https://www.bing.com/ping?sitemap={sitemap}"),
-        ("Yandex", f"https://webmaster.yandex.com/ping?sitemap={sitemap}"),
+    store_pages = [
+        STORE_URL,
+        f"{STORE_URL}/collections/all",
+        f"{STORE_URL}/blogs/must-have-trends-tipps",
     ]
     ok = 0
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
-        for name, url in engines:
+    total = 0
+
+    # IndexNow: Bing + Yandex + IndexNow hub all accept this protocol
+    indexnow_key = os.getenv("INDEXNOW_KEY", "supermegabot2026")
+    indexnow_endpoints = [
+        "https://api.indexnow.org/indexnow",
+        "https://www.bing.com/indexnow",
+        "https://yandex.com/indexnow",
+    ]
+    payload = {
+        "host": "ineedit.com.co",
+        "key": indexnow_key,
+        "keyLocation": f"{STORE_URL}/{indexnow_key}.txt",
+        "urlList": store_pages,
+    }
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+        for endpoint in indexnow_endpoints:
+            total += 1
             try:
-                async with s.get(url) as r:
-                    if r.status < 400:
+                async with s.post(endpoint, json=payload,
+                                  headers={"Content-Type": "application/json; charset=utf-8"}) as r:
+                    if r.status in (200, 202):
                         ok += 1
-                        log.info("Sitemap ping OK: %s (%d)", name, r.status)
+                        log.info("IndexNow OK: %s", endpoint)
                     else:
-                        log.warning("Sitemap ping %s: %d", name, r.status)
+                        log.warning("IndexNow %s: HTTP %d", endpoint, r.status)
             except Exception as e:
-                log.warning("Sitemap ping %s error: %s", name, e)
-    return {"pings_ok": ok, "pings_total": len(engines), "sitemap": sitemap}
+                log.warning("IndexNow %s error: %s", endpoint, e)
+
+    return {"pings_ok": ok, "pings_total": total, "sitemap": sitemap, "protocol": "IndexNow"}
 
 
 # ── 2. Keyword Content Blast ──────────────────────────────────────────────────
