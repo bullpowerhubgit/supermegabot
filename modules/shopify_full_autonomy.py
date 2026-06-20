@@ -897,3 +897,131 @@ async def run_full_autonomy_cycle(quick: bool = False, restock: bool = True) -> 
         pass
 
     return {"ok": True, "mode": "full", "steps_ok": ok_count, **results}
+
+
+# ── Public aliases ────────────────────────────────────────────────────────────
+
+async def run_full_autonomy(quick: bool = False, restock: bool = True) -> dict:
+    """Alias for run_full_autonomy_cycle — used by external callers and tests."""
+    return await run_full_autonomy_cycle(quick=quick, restock=restock)
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 13. AFFILIATE BLOG AUTO-CREATOR — DS24 Affiliate Blog Posts in Shopify
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def auto_create_affiliate_blog_posts(count: int = 3) -> dict:
+    """
+    Erstellt Shopify Blog-Posts die auf den DS24 Affiliate Link verlinken.
+    Nutzt KI um SEO-optimierten Content zu generieren.
+    """
+    if not _ok():
+        return {"ok": False, "error": "no shopify credentials"}
+
+    ds24_link = (
+        os.getenv("DS24_AFFILIATE_LINK")
+        or os.getenv("AIITEC_AFFILIATE_URL")
+        or "https://www.digistore24.com/redir/669750/user37405262/"
+    )
+
+    topics = [
+        ("KI Tools für Selbstständige 2026", "ki tools selbststaendige automatisierung"),
+        ("Passives Einkommen mit Digitalprodukten", "passives einkommen digitale produkte"),
+        ("Shopify Automatisierung: Mehr Umsatz ohne Arbeit", "shopify automatisierung umsatz"),
+        ("Digistore24 Affiliate Marketing Guide 2026", "digistore24 affiliate marketing"),
+        ("KI Business Blueprint: So automatisierst du alles", "ki business automatisierung"),
+    ]
+
+    import random
+    selected = random.sample(topics, min(count, len(topics)))
+
+    created = 0
+    posts = []
+    for title, tags_hint in selected:
+        try:
+            prompt = f"""Schreibe einen SEO-optimierten Blog-Post auf Deutsch für Shopify:
+Thema: "{title}"
+Ziel: Leser zu digitalem Produkt führen
+
+Struktur:
+- H1: ansprechender Titel
+- Einleitung (Problem/Lösung)
+- 3-4 Abschnitte mit H2
+- Konkrete Tipps und Mehrwert
+- Call-to-Action am Ende mit Link
+
+Der CTA-Link lautet: {ds24_link}
+Text für CTA: "Jetzt starten und automatisch Einkommen generieren →"
+
+NUR HTML zurückgeben. Länge: 400-500 Wörter."""
+
+            content_html = await _ai(prompt, max_tokens=800)
+            if not content_html or len(content_html) < 100:
+                # Fallback template
+                content_html = f"""<h1>{title}</h1>
+<p>Im heutigen digitalen Zeitalter bieten KI-Tools und Automatisierung unglaubliche Möglichkeiten für Selbstständige und Online-Unternehmer.</p>
+<h2>Warum jetzt der richtige Zeitpunkt ist</h2>
+<p>Die Technologie ist ausgereift, die Einstiegshürde niedrig, und die Ergebnisse kommen schneller als je zuvor.</p>
+<h2>Schritt-für-Schritt zur Automatisierung</h2>
+<ul>
+<li>✅ System aufsetzen (einmalig 2-3 Stunden)</li>
+<li>✅ KI übernimmt Content-Erstellung</li>
+<li>✅ Automatische Verteilung auf alle Kanäle</li>
+<li>✅ Passives Einkommen läuft 24/7</li>
+</ul>
+<h2>Das Ergebnis</h2>
+<p>Vollautomatisches Einkommen ohne tägliche Arbeit. Das System arbeitet für dich — auch wenn du schläfst.</p>
+<p><strong><a href="{ds24_link}">👉 Jetzt starten und automatisch Einkommen generieren →</a></strong></p>
+<hr>
+<p><em>60-Tage Geld-zurück-Garantie. Kein Risiko.</em></p>"""
+
+            # Blog-Post in Shopify erstellen
+            payload = {
+                "article": {
+                    "title": title,
+                    "body_html": content_html,
+                    "tags": f"{tags_hint},affiliate,ds24,ki,automatisierung,digistore24",
+                    "published": True,
+                    "metafields": [
+                        {"namespace": "seo", "key": "description",
+                         "value": f"{title} — Vollautomatisches KI-Business mit DS24. Jetzt starten.",
+                         "type": "single_line_text_field"}
+                    ]
+                }
+            }
+
+            # Blog-ID ermitteln (oder "news" nutzen)
+            blog_data = await _get("blogs.json")
+            blogs = blog_data.get("blogs", [])
+            blog_id = blogs[0]["id"] if blogs else None
+
+            if blog_id:
+                result = await _post(f"blogs/{blog_id}/articles.json", payload)
+                article = result.get("article", {})
+                if article.get("id"):
+                    created += 1
+                    handle = article.get("handle", "")
+                    shop_url = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+                    post_url = f"https://{shop_url}/blogs/news/{handle}" if shop_url else ""
+                    posts.append({"title": title, "url": post_url, "ds24_link": ds24_link})
+                    log.info("Affiliate blog post created: %s", title[:50])
+
+            await asyncio.sleep(1)
+        except Exception as e:
+            log.warning("Affiliate blog post error for '%s': %s", title, e)
+
+    # BRUTUS: neue Blog-Posts auf allen Kanälen bewerben
+    if posts:
+        try:
+            from modules.brutus_core import fire
+            for post in posts[:2]:  # Max 2 BRUTUS blasts
+                await fire(
+                    post["title"],
+                    f"Neuer Blog-Post: {post['title']}\n\nJetzt lesen und umsetzen!\n{post.get('url', ds24_link)}",
+                    link=post.get("url") or ds24_link,
+                    channels=["telegram", "linkedin", "mailchimp", "klaviyo"]
+                )
+        except Exception as e:
+            log.debug("BRUTUS affiliate blast: %s", e)
+
+    return {"ok": True, "created": created, "posts": posts, "ds24_link": ds24_link}
