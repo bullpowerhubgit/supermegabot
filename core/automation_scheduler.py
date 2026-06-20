@@ -4074,6 +4074,62 @@ async def task_ds24_marketplace_cycle() -> str:
         return f"DS24 Marketplace error: {e}"
 
 
+async def task_product_bundles() -> str:
+    """Täglich: 3er+5er Shopify-Bundles erstellen + blasten."""
+    try:
+        from modules.product_bundle_engine import run_daily_bundle_cycle
+        r = await run_daily_bundle_cycle()
+        return f"Bundles: {r.get('bundles_created',0)} erstellt"
+    except Exception as e:
+        return f"Bundle error: {e}"
+
+
+async def task_stripe_billing_check() -> str:
+    """Täglich: Stripe-Subscriptions prüfen — failed payments + neue Subs."""
+    try:
+        from modules.stripe_auto_billing import check_subscriptions
+        r = await check_subscriptions()
+        return (
+            f"Stripe: {r.get('active',0)} aktiv, "
+            f"{r.get('failed',0)} failed, {r.get('new',0)} neu"
+        )
+    except Exception as e:
+        return f"Stripe billing error: {e}"
+
+
+async def task_auto_sort() -> str:
+    """Alle 6h: Shopify+DS24+Klaviyo sortieren."""
+    try:
+        from modules.auto_sorter import sort_all
+        r = await sort_all()
+        shopify_sorted = r.get("shopify", {}).get("sorted", 0)
+        ds24_sorted    = r.get("ds24",    {}).get("sorted", 0)
+        return f"Sort: {shopify_sorted} Shopify-Produkte, {ds24_sorted} DS24-Produkte"
+    except Exception as e:
+        return f"AutoSort error: {e}"
+
+
+async def task_revenue_daily() -> str:
+    """Täglich: Revenue aggregieren + Meilenstein-Check + Telegram-Report."""
+    try:
+        from modules.revenue_auto_payout import run_daily_revenue_report
+        r = await run_daily_revenue_report()
+        total = r.get("snapshot", {}).get("total", 0)
+        return f"Revenue daily: €{total:.2f} gesamt"
+    except Exception as e:
+        return f"Revenue daily error: {e}"
+
+
+async def task_revenue_weekly() -> str:
+    """Wöchentlich: 7-Tage Revenue-Report."""
+    try:
+        from modules.revenue_auto_payout import run_weekly_report
+        r = await run_weekly_report()
+        return f"Revenue weekly: {r.get('days',0)} Tage, ok={r.get('ok')}"
+    except Exception as e:
+        return f"Revenue weekly error: {e}"
+
+
 async def task_ds24_refill() -> str:
     """Täglich: Hält 1000 aktive DS24-Produkte — füllt fehlende automatisch auf."""
     try:
@@ -4615,6 +4671,11 @@ TASKS = [
     ("ds24_affiliate_hourly",    task_ds24_affiliate_hourly,    3600,   180), # stündlich — 3 Affiliate-Produkte blasten
     ("ds24_affiliate_daily",     task_ds24_affiliate_daily,    86400, 18400), # täglich — alle 22 Produkte blasten
     ("ds24_marketplace_cycle",   task_ds24_marketplace_cycle,  86400, 19800), # täglich — Marktplatz scan+apply+blast
+    ("product_bundles",          task_product_bundles,          86400, 20000), # täglich — Bundles erstellen+blasten
+    ("stripe_billing_check",     task_stripe_billing_check,     86400, 20200), # täglich — Subscriptions prüfen
+    ("auto_sort",                task_auto_sort,                21600, 20400), # 6h — Shopify+DS24+Klaviyo sortieren
+    ("revenue_daily",            task_revenue_daily,            86400, 20600), # täglich — Revenue-Report
+    ("revenue_weekly",           task_revenue_weekly,          604800, 20800), # wöchentlich — 7-Tage Report
     # ── DS24 MASSENANLEGER — 1000 Produkte Wartung + SEO-Blast ────────────────
     ("ds24_refill",              task_ds24_refill,             86400, 18500), # täglich — 1000 Produkte halten
     ("ds24_seo_blast",           task_ds24_seo_blast,         604800, 18700), # wöchentlich — Top-Produkte blasten
