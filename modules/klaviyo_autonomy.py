@@ -111,7 +111,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
     try:
         from_email = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
         # Step 1: Create campaign + message in one call
-        # Step 1: Create campaign (without messages — add them after)
+        # Step 1: Create campaign only (no relationships)
         campaign_payload = {
             "data": {
                 "type": "campaign",
@@ -126,9 +126,6 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                         "is_tracking_opens": True,
                         "is_tracking_clicks": True,
                     },
-                },
-                "relationships": {
-                    "campaign-messages": {"data": []},
                 },
             }
         }
