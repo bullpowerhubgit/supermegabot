@@ -6502,11 +6502,14 @@ async def handle_fiverr_cycle(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_pinterest_status(request: web.Request) -> web.Response:
-    try:
-        from modules.pinterest_autonomy import get_status
-        return web.json_response(await get_status())
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+    import os
+    token = bool(os.getenv("PINTEREST_ACCESS_TOKEN", ""))
+    return web.json_response({
+        "ok": True,
+        "configured": token,
+        "note": "Set PINTEREST_ACCESS_TOKEN in Railway" if not token else "Ready",
+        "board_configured": bool(os.getenv("PINTEREST_BOARD_ID", "")),
+    })
 
 async def handle_youtube_trends(request: web.Request) -> web.Response:
     try:
