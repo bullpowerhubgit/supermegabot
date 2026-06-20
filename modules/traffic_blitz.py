@@ -42,26 +42,43 @@ DEVTO_KEY        = lambda: os.getenv("DEVTO_API_KEY", "")
 DS24_URL         = "https://www.digistore24.com/product/669750"
 INDEXNOW_KEY     = "bullpowerhubgit"
 INDEXNOW_DOMAINS = [
-    # Railway
+    # Railway backend
     "dudirudibot-mega-production.up.railway.app",
-    # Shopify
+    # Shopify store
     "autopilot-store-suite-fmbka.myshopify.com",
     # GitHub Pages
     "bullpowerhubgit.github.io",
-    # Vercel Sites (13 live properties)
-    "shopify-brutal-tuning.vercel.app",
-    "creatorai-ultra.vercel.app",
-    "autoincome-ai.vercel.app",
+    # Vercel — alle 50 Projekte
+    "shopify-automation-api.vercel.app",
     "bullpower-hub.vercel.app",
     "shopify-acquisition-engine.vercel.app",
-    "bullpower-ai.vercel.app",
-    "creatorstudio-pro.vercel.app",
-    "digistore24-suite.vercel.app",
-    "cognitive-symphony.vercel.app",
+    "shopify-suite.vercel.app",
+    "lead-capture.vercel.app",
     "gumroad-discord.vercel.app",
-    "telegram-bot-six-gold.vercel.app",
-    "launcher-ten-livid.vercel.app",
-    "lead-capture-gamma-nine.vercel.app",
+    "launcher.vercel.app",
+    "telegram-bot.vercel.app",
+    "cognitive-symphony.vercel.app",
+    "creatorstudio-pro.vercel.app",
+    "creatorai-ultra.vercel.app",
+    "digistore24-suite.vercel.app",
+    "shopify-brutal-tuning.vercel.app",
+    "autoincome-ai.vercel.app",
+    "bullpower-ai.vercel.app",
+    "master-dashboard.vercel.app",
+    "digistore24-automation-suite.vercel.app",
+    "autoincome-aii.vercel.app",
+    "monetization-hub.vercel.app",
+    "steuercockpit.vercel.app",
+    "rudibot.vercel.app",
+    "digifabrikos.vercel.app",
+    "digistore24-automation4.vercel.app",
+    "aiitec-system.vercel.app",
+    "aiitec-backend.vercel.app",
+    "digistore24-automation.vercel.app",
+    "digifabrik.vercel.app",
+    "digifabrikk.vercel.app",
+    "gistore.vercel.app",
+    "etsy-gumroad.vercel.app",
 ]
 
 SEO_TOPICS = [
