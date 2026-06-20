@@ -7,3 +7,5 @@ psutil>=5.9.0
 twikit>=2.0.0
 cryptography>=41.0.0
 apscheduler>=3.10.0
+
+filelock>=3.12.0
