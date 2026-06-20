@@ -3649,11 +3649,51 @@ async def handle_revenue_blitz(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_aliexpress_status(req):
+    try:
+        from modules.aliexpress_autonomy import run_aliexpress_cycle
+        r = await run_aliexpress_cycle()
+        return web.json_response({"ok": True, **r, "configured": bool(os.getenv("ALIEXPRESS_APP_KEY"))})
+    except Exception as e:
+        return web.json_response({"ok": False, "configured": bool(os.getenv("ALIEXPRESS_APP_KEY")), "error": str(e)})
+
+
 async def handle_aliexpress_import(req):
     try:
         from modules.super_revenue_blitz import aliexpress_import_trending
         r = await aliexpress_import_trending()
         return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_tiktok_status(req):
+    try:
+        configured = bool(os.getenv("TIKTOK_APP_KEY") and os.getenv("TIKTOK_APP_SECRET"))
+        token_set = bool(os.getenv("TIKTOK_ACCESS_TOKEN"))
+        return web.json_response({
+            "ok": token_set,
+            "configured": configured,
+            "token_set": token_set,
+            "shop_id": os.getenv("TIKTOK_SHOP_ID", ""),
+            "note": "Set TIKTOK_APP_KEY, TIKTOK_APP_SECRET, TIKTOK_ACCESS_TOKEN, TIKTOK_SHOP_ID in Railway" if not configured else ""
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_whatsapp_status(req):
+    try:
+        phone_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
+        wa_token = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+        configured = bool(phone_id and wa_token)
+        return web.json_response({
+            "ok": configured,
+            "configured": configured,
+            "phone_id_set": bool(phone_id),
+            "token_set": bool(wa_token),
+            "note": "Set WHATSAPP_PHONE_NUMBER_ID + WHATSAPP_ACCESS_TOKEN in Railway (Meta Business Portal)" if not configured else ""
+        })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -4637,8 +4677,8 @@ async def handle_whatsapp_blast(req):
     """GET /api/whatsapp/blast — promo blast to all configured WA recipients."""
     try:
         from modules.whatsapp_automation import send_whatsapp_blast
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
-        msg = f"🚀 BullPower Hub: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        msg = f"🚀 AIITEC: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
         result = await send_whatsapp_blast(msg)
         return web.json_response({"ok": True, "result": result})
     except Exception as e:
@@ -6265,7 +6305,10 @@ async def create_app():
 
     # ── Revenue Blitz + AliExpress ────────────────────────────────────────────
     app.router.add_post("/api/revenue/blitz",         handle_revenue_blitz)
+    app.router.add_get( "/api/aliexpress/status",     handle_aliexpress_status)
     app.router.add_post("/api/aliexpress/import",     handle_aliexpress_import)
+    app.router.add_get( "/api/tiktok/status",         handle_tiktok_status)
+    app.router.add_get( "/api/whatsapp/status",       handle_whatsapp_status)
 
     # ── Printify ──────────────────────────────────────────────────────────────
     app.router.add_get("/api/printify/status",        handle_printify_status)
