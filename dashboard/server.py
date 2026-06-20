@@ -6891,6 +6891,47 @@ async def handle_shopify_blog_run(req: web.Request) -> web.Response:
 async def handle_twitter_run(req: web.Request) -> web.Response:
     return await _trigger_task("twitter_auto_post", background=True)
 
+
+async def handle_quantum_scan(req: web.Request) -> web.Response:
+    try:
+        from modules.quantum_self_fixer import run_full_scan
+        r = await asyncio.wait_for(run_full_scan(), timeout=25)
+        return web.json_response({"ok": True, **r})
+    except asyncio.TimeoutError:
+        return web.json_response({"ok": True, "status": "scanning (background)"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_quantum_repair(req: web.Request) -> web.Response:
+    try:
+        from modules.quantum_self_repair import run_quantum_scan
+        asyncio.create_task(run_quantum_scan())
+        return web.json_response({"ok": True, "status": "repair started (background)"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_quantum_improve(req: web.Request) -> web.Response:
+    try:
+        from modules.quantum_self_repair import run_self_improvement
+        asyncio.create_task(run_self_improvement())
+        return web.json_response({"ok": True, "status": "self-improvement started (background)"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+async def handle_quantum_status(req: web.Request) -> web.Response:
+    try:
+        from modules.quantum_self_fixer import run_full_scan
+        # Return cached status if available, else quick probe
+        data_dir = os.path.join(os.getenv("DATA_DIR", "/tmp"), "quantum_fixer")
+        last_file = os.path.join(data_dir, "last_scan.json")
+        if os.path.exists(last_file):
+            import json as _json
+            with open(last_file) as f:
+                return web.json_response({"ok": True, "cached": True, **_json.load(f)})
+        return web.json_response({"ok": True, "status": "no scan yet — POST /api/quantum/scan to start"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
 async def handle_sms_run(req: web.Request) -> web.Response:
     return await _trigger_task("sms_morning_brief")
 
@@ -8097,6 +8138,12 @@ async def create_app():
     app.router.add_post("/api/twitter/run",              handle_twitter_run)
     app.router.add_post("/api/sms/run",                  handle_sms_run)
     app.router.add_post("/api/rss/run",                  handle_rss_run)
+
+    # ── Quantum Self-Repair / Self-Improvement ────────────────────────────────
+    app.router.add_post("/api/quantum/scan",             handle_quantum_scan)
+    app.router.add_post("/api/quantum/repair",           handle_quantum_repair)
+    app.router.add_post("/api/quantum/improve",          handle_quantum_improve)
+    app.router.add_get( "/api/quantum/status",           handle_quantum_status)
 
     # ── Shopify Mass Creator ──────────────────────────────────────────────────
     app.router.add_post("/api/shopify/create-1000",      handle_shopify_create_1000)
