@@ -185,3 +185,25 @@ async def handle_shopify_order_webhook(order_data: dict) -> None:
         notify_new_order(order_data)
     except Exception as e:
         log.error("Order webhook error: %s", e)
+
+
+async def get_customers(limit: int = 50) -> list:
+    """Get Shopify customers list."""
+    import os, aiohttp
+    domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+    if not domain or not token:
+        return []
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://{domain}/admin/api/{version}/customers.json?limit={limit}",
+                headers={"X-Shopify-Access-Token": token},
+                timeout=aiohttp.ClientTimeout(total=15)
+            ) as r:
+                if r.status == 200:
+                    return (await r.json()).get("customers", [])
+    except Exception:
+        pass
+    return []
