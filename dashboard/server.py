@@ -6561,10 +6561,10 @@ async def handle_email_daily_blast(request: web.Request) -> web.Response:
 
 async def handle_email_stats(request: web.Request) -> web.Response:
     try:
-        from modules.email_brain import get_email_stats
+        from modules.email_blast_engine import get_email_stats
         return web.json_response(await get_email_stats())
     except Exception as e:
-        return web.json_response({"ok": True, "note": "email_brain.get_email_stats not available", "error": str(e)})
+        return web.json_response({"ok": False, "error": str(e)})
 
 async def handle_traffic_mega_blast(request: web.Request) -> web.Response:
     try:
