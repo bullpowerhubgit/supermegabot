@@ -107,13 +107,29 @@ def _save_article(slug: str, title: str, content: str, keyword: str, excerpt: st
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 def _haiku(prompt: str, max_tokens: int = 500) -> str:
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    resp = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=max_tokens,
-        messages=[{"role": "user", "content": prompt}],
+    if ANTHROPIC_API_KEY:
+        try:
+            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+            resp = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=max_tokens,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            return resp.content[0].text
+        except Exception:
+            pass
+    openai_key = os.getenv("OPENAI_API_KEY", "")
+    if not openai_key:
+        raise RuntimeError("Kein AI API-Key verfügbar (Anthropic + OpenAI)")
+    import requests as _req
+    r = _req.post(
+        "https://api.openai.com/v1/chat/completions",
+        headers={"Authorization": f"Bearer {openai_key}"},
+        json={"model": "gpt-4o-mini", "max_tokens": max_tokens,
+              "messages": [{"role": "user", "content": prompt}]},
+        timeout=25,
     )
-    return resp.content[0].text
+    return r.json()["choices"][0]["message"]["content"]
 
 
 async def _tg(msg: str) -> None:
