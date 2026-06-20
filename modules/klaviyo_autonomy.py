@@ -121,7 +121,6 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                     "send_strategy": {
                         "method": "immediate",
                     },
-                    "channel": "email",
                 },
             }
         }

@@ -14,7 +14,8 @@ import aiohttp
 
 log = logging.getLogger("eBayAutonomy")
 
-EBAY_APP_ID = os.getenv("EBAY_CLIENT_ID", "IRV7wFsqtKC76676391G2237LhVpgNCRZ1")
+EBAY_APP_ID   = os.getenv("EBAY_CLIENT_ID", "IRV7wFsqtKC76676391G2237LhVpgNCRZ1")
+ASSOCIATE_TAG = os.getenv("AMAZON_ASSOCIATE_TAG", "bullpowerhub-21")
 FINDING_URL = "https://svcs.ebay.com/services/search/FindingService/v1"
 
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
