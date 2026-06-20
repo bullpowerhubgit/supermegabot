@@ -7222,6 +7222,26 @@ async def handle_trends_latest(req):
         return web.json_response({"ok": True, "source": "google_trends_DE", "status": "scheduled", "error": str(e)})
 
 
+# ── Credential Activator ─────────────────────────────────────────────────────
+
+async def handle_credential_status(req):
+    try:
+        from modules.credential_activator import get_activation_status
+        return web.json_response(get_activation_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_credential_scan(req):
+    async def _bg():
+        try:
+            from modules.credential_activator import run_credential_scan
+            await run_credential_scan()
+        except Exception as exc:
+            log.error("credential_scan bg: %s", exc)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "scan gestartet — poll GET /api/credentials/status"})
+
+
 # ── Quantum Self-Repair Engine ────────────────────────────────────────────────
 
 async def handle_quantum_status(req):
@@ -8419,6 +8439,9 @@ async def create_app():
     app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
     app.router.add_get( "/api/trends/latest",            handle_trends_latest)
     app.router.add_post("/api/seo/blast",                handle_ultra_seo)
+    # ── CREDENTIAL ACTIVATOR ROUTES ──────────────────────────────────────────
+    app.router.add_get( "/api/credentials/status",       handle_credential_status)
+    app.router.add_post("/api/credentials/scan",         handle_credential_scan)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
