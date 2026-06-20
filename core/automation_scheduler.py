@@ -3375,7 +3375,7 @@ async def task_hermes_strategy() -> str:
         # Revenue-Snapshot holen
         try:
             import aiohttp
-            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            smb_url = os.getenv("SUPERMEGABOT_URL", "https://dudirudibot-mega-production.up.railway.app")
             async with aiohttp.ClientSession() as s:
                 async with s.get(f"{smb_url}/api/revenue/summary",
                                  timeout=aiohttp.ClientTimeout(total=15)) as r:
@@ -3406,7 +3406,7 @@ async def task_slack_revenue_report() -> str:
     try:
         from modules.slack_notify import send_slack
         import aiohttp
-        smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+        smb_url = os.getenv("SUPERMEGABOT_URL", "https://dudirudibot-mega-production.up.railway.app")
         async with aiohttp.ClientSession() as s:
             async with s.get(f"{smb_url}/api/revenue/summary",
                              timeout=aiohttp.ClientTimeout(total=15)) as r:
@@ -3427,7 +3427,7 @@ async def task_slack_error_monitor() -> str:
     try:
         from modules.slack_notify import send_slack
         import aiohttp
-        smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+        smb_url = os.getenv("SUPERMEGABOT_URL", "https://dudirudibot-mega-production.up.railway.app")
         async with aiohttp.ClientSession() as s:
             async with s.get(f"{smb_url}/health", timeout=aiohttp.ClientTimeout(total=10)) as r:
                 health = await r.json() if r.status == 200 else {"status": f"HTTP {r.status}"}
