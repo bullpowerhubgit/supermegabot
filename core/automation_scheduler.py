@@ -112,26 +112,17 @@ async def _tg(msg: str):
 
 
 async def _ai(prompt: str, max_tokens: int = 600) -> str:
-    """AI completion: Anthropic → OpenAI → Perplexity fallback chain."""
+    """AI completion via central fallback chain."""
+    try:
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=max_tokens)
+    except Exception:
+        pass
+    # legacy fallback providers (kept for scheduler tasks that don't import modules)
     import aiohttp
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if anthropic_key:
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-                async with s.post("https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                          "messages": [{"role": "user", "content": prompt}]}) as r:
-                    d = await r.json(content_type=None)
-            text = d.get("content", [{}])[0].get("text", "")
-            if text:
-                return text
-        except Exception:
-            pass
     for env_var, url, model in [
         ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
         ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
-        ("GEMINI_API_KEY", "__gemini__", "gemini-1.5-flash"),
     ]:
         key = os.getenv(env_var, "")
         if not key:
@@ -1410,25 +1401,18 @@ async def task_telegram_broadcast() -> str:
     try:
         channel = os.getenv("TELEGRAM_CHANNEL_ID", os.getenv("TELEGRAM_CHAT_ID", ""))
         token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-        anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-        if not channel or not token or not anthropic_key:
-            return "Telegram/Anthropic Key fehlt"
+        if not channel or not token:
+            return "Telegram Key fehlt"
         import aiohttp
         today = datetime.now().strftime("%d.%m.%Y")
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
-                         "Content-Type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
-                      "messages": [{"role": "user", "content":
-                        f"Schreibe einen Telegram-Channel-Post auf Deutsch für {today}. "
-                        "Thema: KI-Business, Online Income, Shopify Automatisierung. "
-                        "Ton: inspirierend, direkt, mit 2-3 Emojis. Max 250 Wörter. "
-                        "Ende mit: 👉 bullpower-hub-portal.netlify.app"}]}
-            ) as r:
-                d = await r.json(content_type=None)
-        msg = d.get("content", [{}])[0].get("text", "")
+        from modules.ai_client import ai_complete
+        msg = await ai_complete(
+            f"Schreibe einen Telegram-Channel-Post auf Deutsch für {today}. "
+            "Thema: KI-Business, Online Income, Shopify Automatisierung. "
+            "Ton: inspirierend, direkt, mit 2-3 Emojis. Max 250 Wörter. "
+            "Ende mit: 👉 bullpower-hub-portal.netlify.app",
+            max_tokens=400
+        )
         if not msg:
             return "Content Generation fehlgeschlagen"
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:

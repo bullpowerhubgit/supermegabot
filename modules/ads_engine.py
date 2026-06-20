@@ -43,19 +43,9 @@ async def _tg(msg: str) -> None:
 
 
 async def _claude(prompt: str, max_tokens: int = 800) -> str:
-    if not ANTHROPIC_API_KEY:
-        return ""
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": _HAIKU, "max_tokens": max_tokens,
-                      "messages": [{"role": "user", "content": prompt}]},
-            ) as r:
-                data = await r.json()
-                return data.get("content", [{}])[0].get("text", "")
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=max_tokens)
     except Exception as e:
         log.error("_claude: %s", e)
         return ""

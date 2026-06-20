@@ -129,27 +129,16 @@ async def search_items(keyword: str, count: int = 10, session: aiohttp.ClientSes
 
 
 async def _ai_improve(title: str, price: float, session: aiohttp.ClientSession) -> dict:
-    """Claude Haiku verbessert Titel + erstellt deutsche Beschreibung"""
-    if not ANTHROPIC_KEY:
-        return {"title": title[:70], "description": f"<p>{title}</p>"}
+    """AI verbessert Titel + erstellt deutsche Beschreibung via Fallback-Chain."""
     try:
-        async with session.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                     "Content-Type": "application/json"},
-            json={
-                "model": "claude-haiku-4-5-20251001", "max_tokens": 400,
-                "messages": [{"role": "user", "content":
-                    f'Erstelle für dieses eBay-Produkt einen deutschen Shopify-Eintrag:\n"{title[:120]}"\n'
-                    f'Preis: €{price:.2f}\n'
-                    f'JSON: {{"title":"DE-Titel max 60 Zeichen","description":"HTML <p>+<ul>, 80-150 Wörter, kein eBay-Branding"}}'
-                }]
-            },
-            timeout=aiohttp.ClientTimeout(total=20)
-        ) as r:
-            if r.status == 200:
-                d = await r.json()
-                txt = d.get("content", [{}])[0].get("text", "{}")
+        from modules.ai_client import ai_complete
+        prompt = (
+            f'Erstelle für dieses eBay-Produkt einen deutschen Shopify-Eintrag:\n"{title[:120]}"\n'
+            f'Preis: €{price:.2f}\n'
+            f'JSON: {{"title":"DE-Titel max 60 Zeichen","description":"HTML <p>+<ul>, 80-150 Wörter, kein eBay-Branding"}}'
+        )
+        txt = await ai_complete(prompt, max_tokens=400)
+        if txt:
                 m = re.search(r'\{[\s\S]+\}', txt)
                 if m:
                     p = json.loads(m.group())

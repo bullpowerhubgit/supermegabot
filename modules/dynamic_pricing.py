@@ -40,19 +40,10 @@ async def _shopify_put(path: str, data: dict) -> dict:
         return {"error": str(e)}
 
 async def _claude(prompt: str) -> str:
-    if not ANTHROPIC_KEY:
-        return ""
     try:
-        import aiohttp
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-            async with s.post("https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 500,
-                      "messages": [{"role": "user", "content": prompt}]}) as r:
-                d = await r.json()
-                return d.get("content", [{}])[0].get("text", "")
-    except Exception as e:
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=500)
+    except Exception:
         return ""
 
 

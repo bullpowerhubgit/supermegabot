@@ -29,15 +29,11 @@ CHANNELS = ["telegram", "instagram", "facebook", "linkedin", "shopify_blog"]
 
 async def generate_daily_calendar(days: int = 7) -> dict:
     """Erstellt KI-generierten Content-Plan für die nächsten `days` Tage."""
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        return {"error": "ANTHROPIC_API_KEY not set", "days": 0}
-
+    from modules.ai_client import ai_complete
     today = datetime.now()
     calendar = []
 
-    async with aiohttp.ClientSession() as session:
-        for offset in range(days):
+    for offset in range(days):
             day = today + timedelta(days=offset)
             ctype = CONTENT_TYPES[offset % len(CONTENT_TYPES)]
             prompt = (
@@ -50,22 +46,7 @@ async def generate_daily_calendar(days: int = 7) -> dict:
                 '"hashtags":["tag1",...20 tags], "cta":"...", "image_prompt":"..."}'
             )
             try:
-                resp = await session.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": api_key,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json",
-                    },
-                    json={
-                        "model": "claude-haiku-4-5-20251001",
-                        "max_tokens": 700,
-                        "messages": [{"role": "user", "content": prompt}],
-                    },
-                    timeout=aiohttp.ClientTimeout(total=30),
-                )
-                data = await resp.json()
-                raw = data.get("content", [{}])[0].get("text", "{}")
+                raw = await ai_complete(prompt, max_tokens=700)
                 # Strip markdown fences if present
                 raw = raw.strip().lstrip("```json").lstrip("```").rstrip("```").strip()
                 content = json.loads(raw)

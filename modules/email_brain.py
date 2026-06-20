@@ -207,47 +207,7 @@ Kontext über Rudolf:
 
 
 async def _classify_email(subject: str, sender: str, body: str) -> dict:
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        return {"category": "unknown", "priority": "normal", "reply_needed": False,
-                "label": "Priority", "archive": False, "telegram_alert": False,
-                "summary": subject[:80]}
-
     prompt = f"Von: {sender}\nBetreff: {subject}\n\nNachricht:\n{body[:1500]}"
-
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": api_key,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 600,
-                    "system": SYSTEM_CLASSIFY,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as resp:
-                data = await resp.json()
-                # Handle API errors (rate limit, overload, etc.)
-                if "error" in data or "content" not in data:
-                    log.debug("Claude classify skipped (API rate limit/error)")
-                    raise KeyError("content")
-                text = data["content"][0]["text"].strip()
-                # Strip markdown code fences if present
-                if text.startswith("```"):
-                    text = text.split("```")[1]
-                    if text.startswith("json"):
-                        text = text[4:]
-                return json.loads(text)
-    except KeyError:
-        pass  # Rate limited or API error — fall through to fallback
-    except Exception as e:
-        log.debug(f"Claude classify failed: {e}")
 
     # Use ai_complete fallback chain (OpenAI/Groq) before giving up
     try:

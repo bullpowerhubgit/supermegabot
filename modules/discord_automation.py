@@ -26,43 +26,14 @@ OPENAI_KEY       = os.getenv("OPENAI_API_KEY", "")
 
 
 async def _ai(prompt: str) -> str:
-    """AI with full fallback chain."""
-    for key, url, model in [
-        (ANTHROPIC_KEY, None, "claude-haiku-4-5-20251001"),
-        (OPENAI_KEY, "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
-        (PERPLEXITY_KEY, "https://api.perplexity.ai/chat/completions", "sonar"),
-    ]:
-        if not key:
-            continue
-        try:
-            if url is None:
-                async with aiohttp.ClientSession() as s:
-                    async with s.post(
-                        "https://api.anthropic.com/v1/messages",
-                        headers={"x-api-key": key, "anthropic-version": "2023-06-01"},
-                        json={"model": model, "max_tokens": 350,
-                              "messages": [{"role": "user", "content": prompt}]},
-                        timeout=aiohttp.ClientTimeout(total=20),
-                    ) as r:
-                        d = await r.json(content_type=None)
-                text = d.get("content", [{}])[0].get("text", "")
-                if text:
-                    return text
-            else:
-                async with aiohttp.ClientSession() as s:
-                    async with s.post(
-                        url,
-                        headers={"Authorization": f"Bearer {key}"},
-                        json={"model": model, "max_tokens": 350,
-                              "messages": [{"role": "user", "content": prompt}]},
-                        timeout=aiohttp.ClientTimeout(total=25),
-                    ) as r:
-                        d = await r.json(content_type=None)
-                text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
-                if text:
-                    return text
-        except Exception:
-            continue
+    """AI with full fallback chain via central ai_complete."""
+    try:
+        from modules.ai_client import ai_complete
+        result = await ai_complete(prompt, max_tokens=350)
+        if result:
+            return result
+    except Exception:
+        pass
     return "🚀 E-Commerce Automation auf Autopilot — DS24 Affiliate + Shopify + AI!"
 
 

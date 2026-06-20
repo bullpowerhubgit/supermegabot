@@ -39,20 +39,11 @@ BASE_URL           = os.getenv("RAILWAY_PUBLIC_DOMAIN",
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 async def _claude(prompt: str, max_tokens: int = 400) -> str:
-    if not ANTHROPIC_KEY:
+    try:
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=max_tokens)
+    except Exception:
         return ""
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-        async with s.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                     "content-type": "application/json"},
-            json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                  "messages": [{"role": "user", "content": prompt}]},
-        ) as r:
-            if r.status == 200:
-                d = await r.json()
-                return d["content"][0]["text"]
-    return ""
 
 
 async def _tg(msg: str) -> None:

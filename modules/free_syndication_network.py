@@ -39,11 +39,9 @@ DS24_AFFILIATE = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/r
 # ── Content Generator ─────────────────────────────────────────────────────────
 
 async def _generate_article(topic: str, platform: str = "devto") -> dict:
-    """Generate platform-specific article via Claude Haiku."""
-    if not ANTHROPIC:
-        return _fallback_article(topic, platform)
+    """Generate platform-specific article via AI fallback chain."""
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         style_hints = {
             "devto": "Schreibe einen informativen Tech-Artikel für Entwickler und Unternehmer. Nutze Markdown-Formatierung mit ##-Überschriften, Code-Beispielen und Listen. 600-800 Wörter.",
             "hashnode": "Schreibe einen detaillierten Tutorial-Artikel für Developer. Markdown mit Code-Snippets. 700-900 Wörter.",
@@ -64,17 +62,9 @@ Antworte NUR mit JSON:
   "description": "Meta-Beschreibung (max 160 Zeichen)",
   "cover_image": ""
 }}"""
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1500,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                data = await r.json(content_type=None)
-        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
+        raw = await ai_complete(prompt, max_tokens=1500)
+        if not raw:
+            return _fallback_article(topic, platform)
         s, e = raw.find("{"), raw.rfind("}") + 1
         result = json.loads(raw[s:e]) if s >= 0 else {}
         if not result.get("title") or not result.get("content"):

@@ -75,26 +75,15 @@ def _save_posted(posted: set):
 
 
 async def generate_tweet(topic: str, product: str = "AI Income Machine") -> str | None:
-    """Generate a tweet with Claude Haiku."""
-    if not ANTHROPIC:
-        return None
+    """Generate a tweet via AI fallback chain."""
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         prompt = f"""Schreibe einen viralen Tweet auf Deutsch über "{topic}".
 Erwähne "{product}" (€37 bei Digistore24).
 Max 260 Zeichen. 2-3 relevante Hashtags. Kein Link nötig — nur der Tweet-Text.
 Nur den Tweet-Text zurückgeben, kein anderer Text."""
-
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 150,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                data = await r.json(content_type=None)
-        return (data.get("content") or [{"text": ""}])[0].get("text", "").strip()[:280]
+        result = await ai_complete(prompt, max_tokens=150)
+        return result.strip()[:280] if result else None
     except Exception as e:
         log.warning("Tweet gen error: %s", e)
         return None

@@ -107,12 +107,9 @@ async def _fetch_trending() -> list[str]:
 async def generate_master_content(topic: str, product_name: str = PRODUCT_NAME,
                                    product_url: str = PRODUCT_URL,
                                    price: str = PRODUCT_PRICE) -> dict | None:
-    """Generate all 10 content formats in a single Claude Haiku call."""
-    if not ANTHROPIC_KEY:
-        log.warning("No ANTHROPIC_API_KEY — skipping content generation")
-        return None
+    """Generate all 10 content formats via AI fallback chain."""
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         prompt = f"""Du bist ein professioneller Multi-Channel Content Creator.
 Thema: "{topic}"
 Produkt: {product_name} | Preis: {price} | Link: {product_url}
@@ -134,21 +131,10 @@ Gib NUR valides JSON zurück (kein anderer Text außerhalb):
   "seo_keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5", "keyword6"]
 }}"""
 
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 2500,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=35),
-            ) as r:
-                data = await r.json(content_type=None)
-
-        if "error" in data or not data.get("content"):
-            log.warning("Content generation: API error/rate limit — using fallback")
+        raw = await ai_complete(prompt, max_tokens=2500)
+        if not raw:
+            log.warning("Content generation: all AI providers failed")
             return None
-        raw = data["content"][0]["text"]
         start = raw.find("{")
         end = raw.rfind("}") + 1
         return json.loads(raw[start:end])

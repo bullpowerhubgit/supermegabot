@@ -239,11 +239,7 @@ async def post_thread(tweets: list[str]) -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def generate_ai_tweet(topic: str = "shopify automation") -> Optional[str]:
-    """Generiert KI-Tweet für das gegebene Thema."""
-    if not ANTHROPIC_KEY:
-        import random
-        return random.choice(TWEET_TEMPLATES)
-
+    """Generiert KI-Tweet für das gegebene Thema via Fallback-Chain."""
     import random
     hashtags = random.choice(HASHTAG_SETS)
     prompt = f"""Schreibe einen Tweet auf DEUTSCH für das Thema: "{topic}"
@@ -258,20 +254,11 @@ Regeln:
 - NUR den Tweet-Text ausgeben, keine Erklärungen"""
 
     try:
-        import aiohttp
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                data = await r.json()
-                return data["content"][0]["text"].strip()
+        from modules.ai_client import ai_complete
+        result = await ai_complete(prompt, max_tokens=300)
+        return result.strip() if result else random.choice(TWEET_TEMPLATES)
     except Exception as e:
         log.error("AI tweet generation failed: %s", e)
-        import random
         return random.choice(TWEET_TEMPLATES)
 
 
@@ -380,10 +367,7 @@ async def post_daily_tweets(count: int = 3) -> dict:
 
 
 async def post_seo_thread() -> dict:
-    """Postet einen SEO-optimierten Thread (3-5 Tweets)."""
-    if not ANTHROPIC_KEY:
-        return {"skipped": "no API key"}
-
+    """Postet einen SEO-optimierten Thread (3-5 Tweets) via AI Fallback-Chain."""
     prompt = """Erstelle einen Twitter-Thread auf DEUTSCH (3 Tweets) zum Thema:
 "Wie man Shopify 2026 vollautomatisiert mit KI"
 
@@ -395,19 +379,12 @@ TWEET 3: CTA + Link zu https://bullpower-hub-portal.netlify.app (max 250 Zeichen
 Verwende Emojis. Schreibe NUR die 3 Tweets, getrennt durch "---"."""
 
     try:
-        import aiohttp
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 600,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=25),
-            ) as r:
-                data = await r.json()
-                content = data["content"][0]["text"]
-                tweets = [t.strip() for t in content.split("---") if t.strip()]
-                return await post_thread(tweets[:3])
+        from modules.ai_client import ai_complete
+        content = await ai_complete(prompt, max_tokens=600)
+        if not content:
+            return {"error": "no AI response"}
+        tweets = [t.strip() for t in content.split("---") if t.strip()]
+        return await post_thread(tweets[:3])
     except Exception as e:
         return {"error": str(e)}
 

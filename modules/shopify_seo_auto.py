@@ -73,11 +73,9 @@ async def get_products_batch(page: int = 1, limit: int = 20) -> list:
 
 
 async def generate_seo_content(product: dict) -> dict | None:
-    """Use Claude Haiku to generate SEO-optimized content for a product."""
-    if not ANTHROPIC:
-        return None
+    """Use AI to generate SEO-optimized content for a product."""
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         title = product.get("title", "")
         product_type = product.get("product_type", "")
         vendor = product.get("vendor", "")
@@ -97,17 +95,9 @@ Gib NUR valides JSON zurück (kein anderer Text):
   "tags": "keyword1, keyword2, keyword3, keyword4, keyword5"
 }}"""
 
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 600,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                data = await r.json(content_type=None)
-
-        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
+        raw = await ai_complete(prompt, max_tokens=600)
+        if not raw:
+            return None
         start = raw.find("{")
         end = raw.rfind("}") + 1
         return json.loads(raw[start:end])

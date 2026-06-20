@@ -139,26 +139,19 @@ async def recover_abandoned_carts() -> dict:
 
 async def ai_upsell_recommendation(order_items: list[str], budget: float = 100.0) -> list[str]:
     """AI-generated upsell recommendations based on cart contents."""
-    if not ANTHROPIC or not order_items:
+    if not order_items:
         return []
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         prompt = f"""Basierend auf diesen gekauften Produkten: {', '.join(order_items[:5])}
 Budget des Kunden: ca. €{budget:.0f}
 
 Empfehle 3 Upsell/Cross-Sell Produkte die perfekt passen (max. 20% über Budget).
 Fokus: E-Commerce, KI-Tools, Shopify, Digital Products.
 Gib NUR JSON zurück: [{{"name": "...", "reason": "...", "price_eur": 0}}]"""
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                data = await r.json(content_type=None)
-        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
+        raw = await ai_complete(prompt, max_tokens=300)
+        if not raw:
+            return []
         start = raw.find("[")
         end = raw.rfind("]") + 1
         recs = json.loads(raw[start:end])
@@ -214,34 +207,25 @@ async def generate_urgency_offer(product_name: str, original_price: float) -> di
     """AI-generates a time-limited urgency offer to boost conversions."""
     discount_pct = 20
     sale_price = round(original_price * (1 - discount_pct / 100), 2)
-    if ANTHROPIC:
-        try:
-            import aiohttp
-            prompt = f"""Erstelle einen ultraüberzeugenden Urgency-Verkaufstext für:
+    try:
+        from modules.ai_client import ai_complete
+        prompt = f"""Erstelle einen ultraüberzeugenden Urgency-Verkaufstext für:
 Produkt: {product_name}
 Originalpreis: €{original_price:.2f}
 Aktionspreis: €{sale_price:.2f} (nur 24h)
 
 Gib NUR JSON zurück:
 {{"headline": "...", "subtext": "...", "cta": "...", "telegram_msg": "..."}}"""
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=15),
-                ) as r:
-                    data = await r.json(content_type=None)
-            raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
+        raw = await ai_complete(prompt, max_tokens=300)
+        if raw:
             start = raw.find("{")
             end = raw.rfind("}") + 1
             result = json.loads(raw[start:end])
             result["sale_price"] = sale_price
             result["discount_pct"] = discount_pct
             return result
-        except Exception as e:
-            log.warning("Urgency offer AI error: %s", e)
+    except Exception as e:
+        log.warning("Urgency offer AI error: %s", e)
 
     return {
         "headline": f"🔥 NUR 24h: {product_name} für nur €{sale_price}!",

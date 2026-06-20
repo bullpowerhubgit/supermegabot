@@ -425,10 +425,9 @@ async def run_shopify_auto_fill(fix_existing: bool = True, add_new: int = 3) -> 
 
 
 async def auto_fill_trending_products(count: int = 3) -> dict:
-    """Use Claude Haiku to identify trending products and create them in Shopify."""
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not anthropic_key or not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
-        return {"ok": False, "error": "ANTHROPIC_API_KEY + Shopify credentials required"}
+    """AI identifies trending products and creates them in Shopify."""
+    if not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
+        return {"ok": False, "error": "Shopify credentials required"}
 
     prompt = """Nenne 3 aktuell sehr trendige Produkte für einen deutschen Online-Shop 2026.
 Antworte NUR als JSON-Array (kein anderer Text):
@@ -439,17 +438,10 @@ Antworte NUR als JSON-Array (kein anderer Text):
 ]"""
 
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1000,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                data = await r.json(content_type=None)
-        raw = (data.get("content") or [{"text": "[]"}])[0].get("text", "[]")
+        from modules.ai_client import ai_complete
+        raw = await ai_complete(prompt, max_tokens=1000)
+        if not raw:
+            return {"ok": False, "error": "AI error: no response"}
         s_idx, e_idx = raw.find("["), raw.rfind("]") + 1
         products = json.loads(raw[s_idx:e_idx]) if s_idx >= 0 else []
     except Exception as e:

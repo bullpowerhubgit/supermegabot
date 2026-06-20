@@ -60,10 +60,8 @@ def _save_published(published: set):
 # ── Content Generation ────────────────────────────────────────────────────────
 
 async def _generate_article(topic: str) -> dict:
-    if not ANTHROPIC:
-        return _fallback(topic)
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         prompt = f"""Erstelle einen vollständigen SEO-optimierten Blog-Artikel auf Deutsch.
 Thema: "{topic}"
 Produkt: {PRODUCT_NAME} — Link: {DS24_URL}
@@ -83,17 +81,9 @@ Antworte NUR mit JSON:
   "tags": ["seo-keyword-1", "seo-keyword-2", "seo-keyword-3"],
   "reading_time": 5
 }}"""
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 2000,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                data = await r.json(content_type=None)
-        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
+        raw = await ai_complete(prompt, max_tokens=2000)
+        if not raw:
+            return _fallback(topic)
         s_pos, e_pos = raw.find("{"), raw.rfind("}") + 1
         return json.loads(raw[s_pos:e_pos])
     except Exception as exc:
