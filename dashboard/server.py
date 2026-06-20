@@ -2060,11 +2060,30 @@ async def handle_mailchimp_campaign(req):
                 await r.json()
 
             # Auto-send immediately
+            send_err = ""
             async with s.post(f"{base_url}/campaigns/{campaign_id}/actions/send", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
                 sent = r.status == 204
                 if not sent:
                     send_err = await r.text()
-                    log.warning("Mailchimp send failed: %s", send_err[:100])
+                    log.warning("Mailchimp send failed: %s", send_err[:200])
+
+        if not sent and "disabled" in send_err.lower():
+            # aiitec account disabled — fall back to dragon account
+            try:
+                from modules.mailchimp_autonomy import run_dragon_campaign
+                dragon_result = await run_dragon_campaign(topic=subject)
+                log.info("Mailchimp fallback dragon: %s", dragon_result)
+                return web.json_response({
+                    "ok": dragon_result.get("ok", False),
+                    "campaign_id": dragon_result.get("campaign_id", campaign_id),
+                    "list_id": list_id,
+                    "list_name": list_name,
+                    "subject": subject,
+                    "sent": dragon_result.get("ok", False),
+                    "account": "dragon_fallback",
+                })
+            except Exception as fe:
+                log.warning("Dragon fallback failed: %s", fe)
 
         log.info("Mailchimp campaign %s: subject=%s list=%s sent=%s", campaign_id, subject, list_id, sent)
         return web.json_response({
@@ -2074,6 +2093,7 @@ async def handle_mailchimp_campaign(req):
             "list_name": list_name,
             "subject": subject,
             "sent": sent,
+            "send_error": send_err[:200] if send_err else None,
         })
     except Exception as e:
         log.error("Mailchimp campaign error: %s", e)
@@ -7438,6 +7458,7 @@ async def create_app():
 
     # ── Email Sequences ──────────────────────────────────────────────────────
     app.router.add_get( "/api/email-sequence/stats",     handle_email_sequence_stats)
+    app.router.add_get( "/api/email/sequences",          handle_email_sequence_stats)  # alias
     app.router.add_post("/api/email-sequence/enroll",    handle_email_sequence_enroll)
     app.router.add_post("/api/email-sequence/process",   handle_email_sequence_process)
     app.router.add_post("/api/email-sequence/enroll-new",handle_email_sequence_enroll_new)
