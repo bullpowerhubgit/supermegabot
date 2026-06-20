@@ -105,13 +105,15 @@ async def track_event(email: str, event_name: str, properties: dict) -> dict:
 
 
 async def create_campaign(name: str, subject: str, html_content: str) -> dict:
-    """Create a Klaviyo email campaign (revision 2024-02-15)."""
+    """Create a Klaviyo email campaign (revision 2024-02-15).
+    campaign-messages must be inside attributes (not relationships).
+    """
     if not API_KEY:
         return {"ok": False, "error": "no KLAVIYO_API_KEY"}
     try:
         from_email = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
-        # Step 1: Create campaign + message in one call
-        # Step 1: Create campaign only (no relationships)
+
+        # Step 1: Create campaign WITH inline campaign-messages in attributes
         campaign_payload = {
             "data": {
                 "type": "campaign",
@@ -126,40 +128,30 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                         "is_tracking_opens": True,
                         "is_tracking_clicks": True,
                     },
+                    "campaign-messages": [
+                        {
+                            "channel": "email",
+                            "label": name[:50],
+                            "content": {
+                                "subject": subject[:150],
+                                "preview_text": name[:80],
+                                "from_email": from_email,
+                                "from_label": "BullPowerHub",
+                                "body": html_content,
+                            },
+                        }
+                    ],
                 },
             }
         }
         campaign = await _kv_post("/campaigns/", campaign_payload)
         cid = campaign.get("data", {}).get("id")
         if not cid:
-            err = campaign.get("error", str(campaign)[:300])
+            err = campaign.get("error", str(campaign)[:400])
             return {"ok": False, "error": err}
 
-        # Step 2: Create message and associate with campaign
-        msg_result = await _kv_post("/campaign-messages/", {
-            "data": {
-                "type": "campaign-message",
-                "attributes": {
-                    "channel": "email",
-                    "label": name[:50],
-                    "content": {
-                        "subject": subject[:150],
-                        "preview_text": name[:100],
-                        "from_email": from_email,
-                        "from_label": "BullPowerHub",
-                        "body": html_content,
-                    },
-                },
-                "relationships": {
-                    "campaign": {"data": {"type": "campaign", "id": cid}},
-                },
-            }
-        })
-        if msg_result.get("error"):
-            log.warning("Klaviyo message error: %s", str(msg_result)[:200])
-
-        # Step 3: Send immediately
-        await _kv_post("/campaign-send-jobs/", {
+        # Step 2: Send immediately
+        send_result = await _kv_post("/campaign-send-jobs/", {
             "data": {
                 "type": "campaign-send-job",
                 "attributes": {},
@@ -168,9 +160,10 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                 },
             }
         })
+        send_ok = "error" not in send_result
 
-        log.info("Klaviyo campaign sent: %s (id=%s)", name[:60], cid)
-        return {"ok": True, "campaign_id": cid, "name": name}
+        log.info("Klaviyo campaign sent: %s (id=%s, send_ok=%s)", name[:60], cid, send_ok)
+        return {"ok": True, "campaign_id": cid, "name": name, "sent": send_ok}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
