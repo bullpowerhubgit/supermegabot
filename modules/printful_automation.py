@@ -20,8 +20,19 @@ TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 
+REDIRECT_URL = "https://dudirudibot-mega-production.up.railway.app/api/printful/callback"
+
+
 def _token() -> str:
     return os.getenv("PRINTFUL_API_KEY", "")
+
+
+def _client_id() -> str:
+    return os.getenv("PRINTFUL_CLIENT_ID", "")
+
+
+def _client_secret() -> str:
+    return os.getenv("PRINTFUL_CLIENT_SECRET", "")
 
 
 def _store_id() -> str:
@@ -245,3 +256,43 @@ async def sync_catalog_to_shopify() -> Dict:
             + "\nprintful.com → Stores → Sync needed"
         )
     return {"synced": len(synced), "unsynced": len(unsynced), "total": len(products)}
+
+
+# ── OAuth2 Flow ───────────────────────────────────────────────────────────────
+
+def get_oauth_url(state: str = "supermegabot") -> str:
+    """Build Printful OAuth authorization URL."""
+    from urllib.parse import urlencode
+    params = urlencode({
+        "client_id": _client_id(),
+        "redirect_url": REDIRECT_URL,
+        "state": state,
+    })
+    return f"https://www.printful.com/oauth/authorize?{params}"
+
+
+async def exchange_oauth_code(code: str) -> Dict:
+    """Exchange authorization code for access token, save to Railway."""
+    import aiohttp
+    async with aiohttp.ClientSession() as s:
+        async with s.post(
+            "https://www.printful.com/oauth/token",
+            json={
+                "client_id": _client_id(),
+                "client_secret": _client_secret(),
+                "code": code,
+                "redirect_url": REDIRECT_URL,
+            },
+            timeout=aiohttp.ClientTimeout(total=20),
+        ) as r:
+            data = await r.json(content_type=None)
+
+    token = data.get("access_token", "")
+    if not token:
+        log.error("Printful OAuth token exchange failed: %s", data)
+        return {"ok": False, "error": str(data)}
+
+    _set_railway("PRINTFUL_API_KEY", token)
+    log.info("Printful OAuth token saved — store connection active")
+    await _tg("🖨️ <b>Printful verbunden!</b> OAuth Token gespeichert. Store-Sync startet automatisch.")
+    return {"ok": True, "token_saved": True}
