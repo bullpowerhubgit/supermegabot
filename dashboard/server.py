@@ -1915,10 +1915,15 @@ async def handle_digistore_ipn(req):
 
 async def handle_mailchimp_status(req):
     try:
-        from modules.mailchimp_automation import ping, get_lists
-        ok, account = await ping()
-        lists = await get_lists() if ok else []
-        return web.json_response({"ok": ok, "account": account, "lists": lists})
+        from modules.mailchimp_autonomy import get_dragon_status, get_list_stats
+        dragon = await get_dragon_status()
+        aiitec = await get_list_stats()
+        return web.json_response({
+            "ok": dragon.get("ok") or aiitec.get("ok"),
+            "dragon": dragon,
+            "aiitec": aiitec,
+            "accounts": 2 if (dragon.get("ok") and aiitec.get("ok")) else 1,
+        })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -6215,6 +6220,32 @@ async def handle_mailchimp_digest(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_dragon_campaign(request: web.Request) -> web.Response:
+    """POST /api/mailchimp/dragon/campaign — run DragonApp Mailchimp campaign."""
+    try:
+        body = await request.json() if request.body_exists else {}
+        topic = body.get("topic", "")
+        from modules.mailchimp_autonomy import run_dragon_campaign
+        r = await run_dragon_campaign(topic=topic)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_dragon_subscribe(request: web.Request) -> web.Response:
+    """POST /api/mailchimp/dragon/subscribe — subscribe email to DragonApp list."""
+    try:
+        body = await request.json()
+        email = body.get("email", "")
+        if not email:
+            return web.json_response({"ok": False, "error": "email required"}, status=400)
+        from modules.mailchimp_autonomy import dragon_subscribe
+        r = await dragon_subscribe(email, body.get("first_name", ""), body.get("last_name", ""))
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_klaviyo_autonomy_cycle(request: web.Request) -> web.Response:
     try:
         from modules.klaviyo_autonomy import run_klaviyo_cycle
@@ -6791,6 +6822,8 @@ async def create_app():
     app.router.add_post("/api/digistore/revenue-report",   handle_digistore_autonomy_revenue)
     app.router.add_post("/api/mailchimp/autonomy-cycle",   handle_mailchimp_autonomy_cycle)
     app.router.add_post("/api/mailchimp/digest",           handle_mailchimp_digest)
+    app.router.add_post("/api/mailchimp/dragon/campaign",  handle_dragon_campaign)
+    app.router.add_post("/api/mailchimp/dragon/subscribe", handle_dragon_subscribe)
     app.router.add_post("/api/klaviyo/autonomy-cycle",     handle_klaviyo_autonomy_cycle)
     app.router.add_post("/api/klaviyo/blast",              handle_klaviyo_blast)
 
