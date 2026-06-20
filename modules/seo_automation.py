@@ -25,6 +25,19 @@ _MIN_META_DESC_LEN    = 50
 # Internal helpers
 # ---------------------------------------------------------------------------
 
+
+
+async def _brutus_fire(message: str, channels: list = None):
+    """BrutusCore: verteilt Revenue-Events auf alle Kanäle."""
+    try:
+        from modules.brutus_core import BrutusCore
+        b = BrutusCore()
+        await b.fire(message, channels=channels or ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo"])
+    except Exception as _be:
+        import logging
+        logging.getLogger(__name__).debug("Brutus fire skip: %s", _be)
+
+
 async def _shopify_rest_patch(endpoint: str, payload: Dict) -> Dict:
     """
     PATCH a Shopify Admin REST endpoint.

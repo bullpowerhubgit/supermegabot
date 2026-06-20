@@ -20,6 +20,19 @@ TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT = os.getenv("TELEGRAM_CHAT_ID", "")
 
 
+
+
+async def _brutus_fire(message: str, channels: list = None):
+    """BrutusCore: verteilt Revenue-Events auf alle Kanäle."""
+    try:
+        from modules.brutus_core import BrutusCore
+        b = BrutusCore()
+        await b.fire(message, channels=channels or ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo"])
+    except Exception as _be:
+        import logging
+        logging.getLogger(__name__).debug("Brutus fire skip: %s", _be)
+
+
 class DS24AutoFill:
     def __init__(self):
         self.api_key = DS24_API_KEY

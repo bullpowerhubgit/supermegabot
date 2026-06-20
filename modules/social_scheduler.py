@@ -26,6 +26,23 @@ DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "s
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 STATE_FILE = DATA_DIR / "schedule_state.json"
 
+
+async def _brutus_fire(message: str, channels: list = None):
+    try:
+        from modules.brutus_core import BrutusCore
+        b = BrutusCore()
+        await b.fire(message, channels=channels or ["telegram", "slack", "linkedin", "twitter"])
+    except Exception as _be:
+        log.debug("Brutus fire skip: %s", _be)
+
+
+async def _slack_notify(message: str):
+    try:
+        from modules.slack_notify import send_slack
+        await send_slack(message, level="info")
+    except Exception as _se:
+        log.debug("Slack skip: %s", _se)
+
 CONTENT_TEMPLATES = [
     {
         "text": "🔥 Shopify auf Autopilot: KI findet Bestseller, optimiert Preise, postet überall.\n\nKein manueller Aufwand mehr. Ab €49/Monat:\n👉 https://bullpower-hub-portal.netlify.app\n\n#ShopifyAutomation #KI #Ecommerce",
@@ -166,6 +183,8 @@ async def post_daily_content(force_template_index: int = None) -> dict:
         results["channel_used"] = "twitter"
 
     _save_state(idx, results)
+    await _brutus_fire(text[:300])
+    await _slack_notify(f"SocialScheduler posted: channel={results.get('channel_used')} idx={idx}")
     return results
 
 

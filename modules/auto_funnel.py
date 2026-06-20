@@ -29,6 +29,23 @@ SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 DS24_KEY       = os.getenv("DIGISTORE24_API_KEY", "")
 
 
+async def _brutus_fire(message: str, channels: list = None):
+    try:
+        from modules.brutus_core import BrutusCore
+        b = BrutusCore()
+        await b.fire(message, channels=channels or ["telegram", "slack", "mailchimp", "klaviyo"])
+    except Exception as _be:
+        log.debug("Brutus fire skip: %s", _be)
+
+
+async def _slack_notify(message: str, level: str = "info"):
+    try:
+        from modules.slack_notify import send_slack
+        await send_slack(message, level=level)
+    except Exception as _se:
+        log.debug("Slack notify skip: %s", _se)
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def _tg(msg: str):
@@ -432,4 +449,6 @@ async def run_auto_funnel() -> dict:
             results["discount_skipped"] = str(e)
 
     log.info("AutoFunnel run complete: %s", results)
+    await _brutus_fire("🎯 Auto-Funnel: Lead → Sale Pipeline aktiv! Neue Leads werden automatisch konvertiert.")
+    await _slack_notify("AutoFunnel run complete: " + str({k: v for k, v in results.items() if "error" not in str(k)})[:300], level="info")
     return results

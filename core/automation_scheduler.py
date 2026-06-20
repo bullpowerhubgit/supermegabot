@@ -131,11 +131,25 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
     for env_var, url, model in [
         ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
         ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
+        ("GEMINI_API_KEY", "__gemini__", "gemini-1.5-flash"),
     ]:
         key = os.getenv(env_var, "")
         if not key:
             continue
         try:
+            if url == "__gemini__":
+                gemini_url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={key}"
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                    async with s.post(gemini_url,
+                        headers={"Content-Type": "application/json"},
+                        json={"contents": [{"parts": [{"text": prompt}]}],
+                              "generationConfig": {"maxOutputTokens": max_tokens}}) as r:
+                        d = await r.json(content_type=None)
+                if "candidates" in d:
+                    text = d["candidates"][0]["content"]["parts"][0]["text"]
+                    if text:
+                        return text
+                continue
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(url,
                     headers={"Authorization": f"Bearer {key}"},
@@ -3316,6 +3330,80 @@ async def task_amazon_status_report() -> str:
         return f"Amazon blast error: {e}"
 
 
+async def task_hermes_strategy() -> str:
+    """Hermes Agent: tägliche Strategie-Analyse + Umsatz-Empfehlungen → Slack + Telegram."""
+    try:
+        from modules.hermes_bridge import analyze_revenue, delegate
+        from modules.slack_notify import send_slack
+        # Revenue-Snapshot holen
+        try:
+            import aiohttp
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(f"{smb_url}/api/revenue/summary",
+                                 timeout=aiohttp.ClientTimeout(total=15)) as r:
+                    revenue_data = await r.json() if r.status == 200 else {}
+        except Exception:
+            revenue_data = {}
+        # Hermes analysiert
+        if revenue_data:
+            result = await analyze_revenue(revenue_data)
+        else:
+            result = await delegate("Gib 3 konkrete Maßnahmen für mehr E-Commerce Umsatz heute. Fokus: Shopify + Digistore24 + Affiliate-Marketing.", context="daily_strategy")
+        recommendation = result.get("result", "Hermes nicht erreichbar")[:500]
+        # Slack + Telegram
+        msg = f"🧠 Hermes Tages-Strategie:\n{recommendation}"
+        await send_slack(msg, level="info")
+        try:
+            from modules.notify_hub import notify
+            notify("Hermes Strategie", recommendation[:300], "info")
+        except Exception:
+            pass
+        return f"Hermes strategy: {recommendation[:100]}"
+    except Exception as e:
+        return f"Hermes strategy error: {e}"
+
+
+async def task_slack_revenue_report() -> str:
+    """Stündlicher Slack Revenue Report — zeigt aktuellen Umsatz-Status."""
+    try:
+        from modules.slack_notify import send_slack
+        import aiohttp
+        smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+        async with aiohttp.ClientSession() as s:
+            async with s.get(f"{smb_url}/api/revenue/summary",
+                             timeout=aiohttp.ClientTimeout(total=15)) as r:
+                data = await r.json() if r.status == 200 else {}
+        total = data.get("total_revenue_eur", data.get("revenue", "?"))
+        orders = data.get("total_orders", data.get("orders", "?"))
+        stripe = data.get("stripe", {}).get("total", "?")
+        ds24 = data.get("digistore24", {}).get("total", "?")
+        msg = f"📊 Revenue Update\n💶 Total: {total} EUR\n🛒 Orders: {orders}\n💳 Stripe: {stripe} | DS24: {ds24}"
+        await send_slack(msg, level="info")
+        return f"Slack revenue report sent: {total} EUR"
+    except Exception as e:
+        return f"Slack revenue report error: {e}"
+
+
+async def task_slack_error_monitor() -> str:
+    """Überwacht System-Fehler und sendet Slack-Alert wenn Fehler gefunden."""
+    try:
+        from modules.slack_notify import send_slack
+        import aiohttp
+        smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+        async with aiohttp.ClientSession() as s:
+            async with s.get(f"{smb_url}/health", timeout=aiohttp.ClientTimeout(total=10)) as r:
+                health = await r.json() if r.status == 200 else {"status": f"HTTP {r.status}"}
+        status = health.get("status", "unknown")
+        if status != "ok":
+            await send_slack(f"🔴 SuperMegaBot Health: {status}\n{str(health)[:200]}", level="error")
+            return f"Health alert sent: {status}"
+        return f"Health OK: {status}"
+    except Exception as e:
+        await send_slack(f"🔴 Health check failed: {e}", level="error")
+        return f"Health monitor error: {e}"
+
+
 async def task_gcp_enhance_products() -> str:
     """GCP Vision + Translation: Verbessert Shopify-Produkte mit Auto-Tags, Alt-Text, EN-Übersetzung."""
     try:
@@ -3628,6 +3716,11 @@ TASKS = [
     ("gcp_ping",               task_gcp_ping,                86400, 15000), # daily — GCP Health Check
     ("gcp_enhance_products",   task_gcp_enhance_products,    21600, 15100), # 6h — Vision Auto-Tags
     ("gcp_translate_products", task_gcp_translate_products,  43200, 15200), # 12h — Translation EN/FR
+    # ── HERMES AGENT — Autonome Strategie-Beratung ────────────────────────────
+    ("hermes_strategy",        task_hermes_strategy,         86400, 15500), # daily — Hermes Tages-Strategie
+    # ── SLACK MONITORING — Revenue Reports + Error Alerts ─────────────────────
+    ("slack_revenue_report",   task_slack_revenue_report,     3600, 15600), # 1h — Slack Revenue Update
+    ("slack_error_monitor",    task_slack_error_monitor,       900, 15700), # 15min — Slack Error Alert
 ]
 
 

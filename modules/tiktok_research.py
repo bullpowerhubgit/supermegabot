@@ -15,6 +15,19 @@ _cached_token: Optional[str] = None
 _token_expires_at: float = 0.0
 
 
+
+
+async def _brutus_fire(message: str, channels: list = None):
+    """BrutusCore: verteilt Revenue-Events auf alle Kanäle."""
+    try:
+        from modules.brutus_core import BrutusCore
+        b = BrutusCore()
+        await b.fire(message, channels=channels or ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo"])
+    except Exception as _be:
+        import logging
+        logging.getLogger(__name__).debug("Brutus fire skip: %s", _be)
+
+
 def _app_key() -> str:
     return os.getenv("TIKTOK_RESEARCH_APP_KEY", os.getenv("TIKTOK_APP_KEY", ""))
 
