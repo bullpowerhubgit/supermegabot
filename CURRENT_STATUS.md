@@ -1,11 +1,18 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-20 v17
+# SuperMegaBot CURRENT STATUS — 2026-06-20 v18
 
 ## System Health
 - Railway: ✅ ONLINE (dudirudibot-mega-production.up.railway.app)
 - Health: /health → {"status": "ok"}
-- Scheduler: **218+ Tasks**, 0 Import-Fehler
+- Circuits: ✅ ALLE CLOSED (0 offene Circuits)
+- Scheduler: **234 Tasks**, 0 Import-Fehler
 - Shopify: **684 Produkte** aktiv
-- Circuits: instagram + linkedin aktuell OPEN (Rate Limit — auto-reset 30 min)
+- Letzter Deploy: 2026-06-20 ~13:23 UTC (frisch)
+
+## SESSION v18 ZUSÄTZLICHE FIXES (2026-06-20)
+- ✅ `growth_hacker.py`: viral_trend Template-Fallback (7 Templates, kein AI nötig) + Reddit-Score 100→10
+- ✅ `revenue_intelligence.py`: revenue_autopilot proaktiv DS24+Gumroad Promo-Blasts stündlich
+- ✅ `content_factory.py`: 10 statische Trending-Topics wenn AI+RSS offline
+- ✅ 234 Scheduler-Tasks bestätigt — mega_seo_cycle, traffic_mega_cycle, revenue_fast_track aktiv
 
 ## DEEPSCAN ERGEBNISSE (ehrlich!)
 
