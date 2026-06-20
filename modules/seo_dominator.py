@@ -180,31 +180,21 @@ async def get_shopify_products_for_seo(limit: int = 100) -> list:
 
 
 async def ai_keyword_cluster(niche: str, count: int = 20) -> list[str]:
-    """Use Claude to generate keyword clusters for maximum SEO coverage."""
-    if not ANTHROPIC:
-        return ["shopify automation", "dropshipping 2026", "passives einkommen", "ki business"]
+    """Use AI to generate keyword clusters for maximum SEO coverage."""
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         prompt = f"""Generiere {count} hochwertige Long-Tail-Keywords für die Nische: "{niche}"
 Fokus: Kaufintention, Deutsch + Englisch gemischt, Google-optimiert.
 Gib NUR ein JSON-Array zurück: ["keyword1", "keyword2", ...]
 Kein anderer Text."""
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC, "anthropic-version": "2023-06-01"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                data = await r.json(content_type=None)
-        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
-        start = raw.find("[")
-        end = raw.rfind("]") + 1
-        return json.loads(raw[start:end])[:count]
+        raw = await ai_complete(prompt, max_tokens=400)
+        if raw:
+            start = raw.find("[")
+            end = raw.rfind("]") + 1
+            return json.loads(raw[start:end])[:count]
     except Exception as e:
         log.warning("Keyword cluster error: %s", e)
-        return ["shopify automation", "dropshipping automatisierung", "ki ecommerce 2026"]
+    return ["shopify automation", "dropshipping automatisierung", "ki ecommerce 2026"]
 
 
 async def ping_all_rss_services(blog_url: str, blog_title: str = "BullPower Hub Blog") -> dict:

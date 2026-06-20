@@ -138,34 +138,24 @@ async def import_to_shopify(products: list, markup: float = 2.5,
             title = p.get('product_title', 'AliExpress Produkt')[:200]
             description = f'<p>{title}</p>'
 
-            if anthropic_key:
-                try:
-                    payload = {
-                        'model': 'claude-haiku-4-5-20251001', 'max_tokens': 400,
-                        'messages': [{'role': 'user', 'content':
-                            f'Shopify-Produkt auf Deutsch:\n"{title[:150]}"\n'
-                            f'JSON: {{"title":"...(DE, max 70 Zeichen)","description":"...(HTML <p>+<ul>, 100-200 Wörter, keine AliExpress-Begriffe)"}}'
-                        }],
-                    }
-                    async with session.post(
-                        'https://api.anthropic.com/v1/messages',
-                        json=payload,
-                        headers={'x-api-key': anthropic_key, 'anthropic-version': '2023-06-01'},
-                        timeout=aiohttp.ClientTimeout(total=20)
-                    ) as ai_resp:
-                        if ai_resp.status == 200:
-                            ai_data = await ai_resp.json()
-                            txt = ai_data.get('content', [{}])[0].get('text', '{}')
-                            import re
-                            m = re.search(r'\{[\s\S]+\}', txt)
-                            if m:
-                                parsed = json.loads(m.group())
-                                if parsed.get('title'):
-                                    title = parsed['title']
-                                if parsed.get('description'):
-                                    description = parsed['description']
-                except Exception as e:
-                    logger.warning(f'Claude Haiku Fehler: {e}')
+            try:
+                    from modules.ai_client import ai_complete
+                    import re
+                    ai_prompt = (
+                        f'Shopify-Produkt auf Deutsch:\n"{title[:150]}"\n'
+                        f'JSON: {{"title":"...(DE, max 70 Zeichen)","description":"...(HTML <p>+<ul>, 100-200 Wörter, keine AliExpress-Begriffe)"}}'
+                    )
+                    txt = await ai_complete(ai_prompt, max_tokens=400)
+                    if txt:
+                        m = re.search(r'\{[\s\S]+\}', txt)
+                        if m:
+                            parsed = json.loads(m.group())
+                            if parsed.get('title'):
+                                title = parsed['title']
+                            if parsed.get('description'):
+                                description = parsed['description']
+            except Exception as e:
+                    logger.warning(f'AI Fehler: {e}')
 
             sell_price = round(raw_price * markup, 2)
             product_data = {

@@ -68,11 +68,9 @@ def _save_hash(h: str) -> None:
 # ── Content Generator ─────────────────────────────────────────────────────────
 
 async def generate_product_post(product_name: str, price: float, url: str) -> dict:
-    """Claude Haiku generiert Post-Content für ein Produkt."""
-    if not ANTHROPIC_KEY:
-        return _fallback_content(product_name, price, url)
+    """AI generiert Post-Content für ein Produkt via Fallback-Chain."""
     try:
-        import aiohttp
+        from modules.ai_client import ai_complete
         prompt = f"""Erstelle einen viralen Social-Media-Post auf Deutsch für dieses Produkt:
 Produkt: {product_name}
 Preis: €{price:.2f}
@@ -89,20 +87,12 @@ Antworte NUR mit JSON:
   "blog_title": "SEO-optimierter Blog-Artikel-Titel",
   "blog_content": "Blog-Artikel-Intro (200-300 Wörter, SEO-optimiert, mit Keywords)"
 }}"""
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 800,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                data = await r.json(content_type=None)
-        raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
+        raw = await ai_complete(prompt, max_tokens=800)
+        if not raw:
+            return _fallback_content(product_name, price, url)
         start, end = raw.find("{"), raw.rfind("}") + 1
         result = json.loads(raw[start:end]) if start >= 0 else {}
         if not result.get("title") or not result.get("body"):
-            log.debug("AI returned incomplete content, using fallback")
             return _fallback_content(product_name, price, url)
         result.setdefault("image_url", IG_PIXEL)
         result.setdefault("url", url)

@@ -310,38 +310,11 @@ async def generate_ai_descriptions_bulk(
     async def _ai_describe(title: str) -> str:
         prompt = (f"Schreibe eine kurze, SEO-optimierte Produktbeschreibung auf {lang_hint} "
                   f"für dieses Shopify-Produkt: '{title}'. Max 150 Wörter, ansprechend und kaufmotivierend.")
-        if anthropic_key:
-            try:
-                async with aiohttp.ClientSession() as s:
-                    async with s.post("https://api.anthropic.com/v1/messages",
-                        headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-                        json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
-                              "messages": [{"role": "user", "content": prompt}]},
-                        timeout=aiohttp.ClientTimeout(total=20)) as r:
-                        if r.status == 200:
-                            d = await r.json()
-                            return d["content"][0]["text"]
-            except Exception:
-                pass
-        for key, url, model in [
-            (openai_key, "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
-            (perplexity_key, "https://api.perplexity.ai/chat/completions", "sonar"),
-        ]:
-            if not key:
-                continue
-            try:
-                async with aiohttp.ClientSession() as s:
-                    async with s.post(url, headers={"Authorization": f"Bearer {key}"},
-                        json={"model": model, "max_tokens": 300,
-                              "messages": [{"role": "user", "content": prompt}]},
-                        timeout=aiohttp.ClientTimeout(total=25)) as r:
-                        d = await r.json(content_type=None)
-                text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
-                if text:
-                    return text
-            except Exception:
-                continue
-        return ""
+        try:
+            from modules.ai_client import ai_complete
+            return await ai_complete(prompt, max_tokens=300)
+        except Exception:
+            return ""
 
     for p in products:
         title = p.get("title", "")
