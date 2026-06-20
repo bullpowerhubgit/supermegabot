@@ -225,7 +225,7 @@ async def run_auto_download(keywords: list = None, count: int = 10, markup: floa
                 await brutus_fire(
                     title=f"🛒 Neu: {name}",
                     body=f"Gerade im Shop verfügbar: {name} — direkt aus dem Trend importiert.",
-                    link="https://ineedit.com.co/collections/trending-now",
+                    link="https://autopilot-store-suite-fmbka.myshopify.com/collections/trending-now",
                     niche="dropshipping trending gadgets",
                     tags=["neu", "aliexpress", "trending", "dropshipping"]
                 )

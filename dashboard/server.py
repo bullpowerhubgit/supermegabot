@@ -528,7 +528,7 @@ async def handle_gmc_feed(req):
         shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
         shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
         shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-        store_url      = os.getenv("SHOPIFY_STORE_URL", "https://ineedit.com.co")
+        store_url      = os.getenv("SHOPIFY_STORE_URL", os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"))
 
         products = []
         if shopify_token:
@@ -2063,7 +2063,7 @@ async def handle_mailchimp_send_campaign(req):
 <h1 style="color:#1a1a2e">Passives Einkommen mit KI — so geht's</h1>
 <p>Hallo,</p>
 <p>die AI Income Machine ist das vollautomatische System für Online-Einkommen mit KI. Einmal einrichten — dauerhaft verdienen.</p>
-<p><a href="https://ineedit.com.co" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
+<p><a href=os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/") style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
 <p style="color:#888;font-size:12px">Rudolf Sarkany · BullPower Hub · Wien<br><a href="*|UNSUB|*" style="color:#888">Abmelden</a></p>
 </body></html>""")
     list_id = body.get("list_id", os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0"))
@@ -2083,7 +2083,7 @@ async def handle_klaviyo_send_campaign(req):
 <h1 style="color:#1a1a2e">Mach passives Einkommen mit KI</h1>
 <p>Hallo,</p>
 <p>Entdecke die AI Income Machine — das vollautomatische System für passives Online-Einkommen.</p>
-<p><a href="https://ineedit.com.co" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
+<p><a href=os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/") style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
 <p style="color:#888;font-size:12px">Rudolf | AIITEC · BullPower Hub</p>
 </body></html>""")
     list_id = body.get("list_id", os.getenv("KLAVIYO_LIST_ID", "Xwxq6V"))
@@ -2315,7 +2315,7 @@ async def handle_seo_run(req):
 _SHOPIFY_DOMAIN = os.getenv("SHOPIFY_CUSTOM_DOMAIN", os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com"))
 _SITEMAPS = [
     f"https://{_SHOPIFY_DOMAIN}/sitemap.xml",
-    "https://ineedit.com.co/sitemap.xml",
+    "https://autopilot-store-suite-fmbka.myshopify.com/sitemap.xml",
     "https://bullpowerhubgit.github.io/bullpower-legal/sitemap.xml",
 ]
 
@@ -6143,6 +6143,60 @@ async def handle_digistore_autonomy_revenue(request: web.Request) -> web.Respons
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_ds24_product_create(request: web.Request) -> web.Response:
+    """POST /api/ds24/product/create — KI erstellt vollautomatisch ein DS24-Produkt."""
+    try:
+        data = await request.json() if request.content_length else {}
+    except Exception:
+        data = {}
+    concept = data.get("concept", "")
+    price = str(data.get("price", "97.00"))
+    niche = data.get("niche", "software")
+    commission = str(data.get("commission", "40"))
+    try:
+        from modules.ds24_product_creator import create_full_product
+        r = await create_full_product(concept=concept, price=price,
+                                       niche=niche, affiliate_commission=commission)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ds24_product_auto(request: web.Request) -> web.Response:
+    """POST /api/ds24/product/auto — Batch: 2 Produkte autonome Erstellung aus Templates."""
+    try:
+        data = await request.json() if request.content_length else {}
+    except Exception:
+        data = {}
+    count = int(data.get("count", 2))
+    try:
+        from modules.ds24_product_creator import auto_create_products
+        r = await auto_create_products(count=count)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ds24_product_list(request: web.Request) -> web.Response:
+    """GET /api/ds24/products — Liste alle DS24-Produkte mit Affiliate-Links."""
+    try:
+        from modules.ds24_product_creator import list_ds24_products
+        r = await list_ds24_products()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ds24_fix_669750(request: web.Request) -> web.Response:
+    """POST /api/ds24/fix/669750 — Repariert das nicht-verkaufbare Produkt 669750."""
+    try:
+        from modules.ds24_product_creator import fix_product_669750
+        r = await fix_product_669750()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_mailchimp_autonomy_cycle(request: web.Request) -> web.Response:
     try:
         from modules.mailchimp_autonomy import run_mailchimp_cycle
@@ -6739,6 +6793,12 @@ async def create_app():
     app.router.add_post("/api/mailchimp/digest",           handle_mailchimp_digest)
     app.router.add_post("/api/klaviyo/autonomy-cycle",     handle_klaviyo_autonomy_cycle)
     app.router.add_post("/api/klaviyo/blast",              handle_klaviyo_blast)
+
+    # DS24 Product Creator
+    app.router.add_post("/api/ds24/product/create",        handle_ds24_product_create)
+    app.router.add_post("/api/ds24/product/auto",          handle_ds24_product_auto)
+    app.router.add_get( "/api/ds24/products",              handle_ds24_product_list)
+    app.router.add_post("/api/ds24/fix/669750",            handle_ds24_fix_669750)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())

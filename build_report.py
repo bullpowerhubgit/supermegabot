@@ -46,7 +46,7 @@ plt.rcParams.update({
 # ── ALL DATA ──────────────────────────────────────────────────────────────────
 STORE_NAME = "I Want That! I Need It!"
 DOMAIN     = "autopilot-store-suite-fmbka.myshopify.com"
-CUSTOM_DOMAIN = "www.ineedit.com.co"
+CUSTOM_DOMAIN = "autopilot-store-suite-fmbka.myshopify.com"
 REPORT_DATE = "24. Mai 2026"
 PLAN = "Basic"
 
@@ -703,7 +703,7 @@ def page_gmc(pdf):
         ("Identitätsprüfung",   "AUSSTEHEND",         AMBER),
         ("Shopping-Ads",        "GESPERRT",           RED),
         ("Produkte genehmigt",  "Ausstehend",         AMBER),
-        ("Merchant Domain",     "ineedit.com.co",     BLUE),
+        ("Merchant Domain",     "autopilot-store-suite-fmbka.myshopify.com",     BLUE),
         ("Letzter Check",       "24. Mai 2026",       MUTED),
     ]
     for i,(lbl,val,col) in enumerate(gmc_rows):
