@@ -2178,13 +2178,11 @@ async def handle_seo_run(req):
 # SEO: Sitemap ping — Google + Bing indexing for all BullPower Hub Netlify sites
 # ---------------------------------------------------------------------------
 
+_SHOPIFY_DOMAIN = os.getenv("SHOPIFY_CUSTOM_DOMAIN", os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com"))
 _SITEMAPS = [
-    "https://bullpowerhubgit.github.io/bullpower-lead/sitemap.xml",
-    "https://bullpowerhubgit.github.io/shopify-suite-landing/sitemap.xml",
-    "https://cognitive-symphony-ds24.netlify.app/sitemap.xml",
-    "https://creatorstudio-pro.netlify.app/sitemap.xml",
-    "https://digistore24-automation-suite.netlify.app/sitemap.xml",
-    "https://bullpowerhubgit.github.io/bullpower-lead/sitemap.xml",
+    f"https://{_SHOPIFY_DOMAIN}/sitemap.xml",
+    "https://ineedit.com.co/sitemap.xml",
+    "https://bullpowerhubgit.github.io/bullpower-legal/sitemap.xml",
 ]
 
 _PING_ENGINES = [
