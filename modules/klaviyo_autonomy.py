@@ -105,11 +105,12 @@ async def track_event(email: str, event_name: str, properties: dict) -> dict:
 
 
 async def create_campaign(name: str, subject: str, html_content: str) -> dict:
-    """Create a Klaviyo email campaign."""
+    """Create a Klaviyo email campaign (revision 2024-02-15)."""
     if not API_KEY:
         return {"ok": False, "error": "no KLAVIYO_API_KEY"}
     try:
-        # Step 1: Create campaign
+        from_email = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
+        # Step 1: Create campaign + message in one call
         campaign_payload = {
             "data": {
                 "type": "campaign",
@@ -117,41 +118,42 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                     "name": name[:100],
                     "audiences": {
                         "included": [{"type": "list", "id": LIST_ID}],
+                        "excluded": [],
                     },
-                    "send_strategy": {
-                        "method": "immediate",
+                    "send_strategy": {"method": "immediate"},
+                    "tracking_options": {
+                        "is_tracking_opens": True,
+                        "is_tracking_clicks": True,
                     },
+                },
+                "relationships": {
+                    "campaign-messages": {
+                        "data": [{
+                            "type": "campaign-message",
+                            "attributes": {
+                                "channel": "email",
+                                "label": name[:50],
+                                "content": {
+                                    "subject": subject[:150],
+                                    "preview_text": name[:100],
+                                    "from_email": from_email,
+                                    "from_label": "BullPowerHub",
+                                    "body": html_content,
+                                },
+                            },
+                        }]
+                    }
                 },
             }
         }
         campaign = await _kv_post("/campaigns/", campaign_payload)
         cid = campaign.get("data", {}).get("id")
         if not cid:
-            return {"ok": False, "error": campaign.get("error", "campaign creation failed")}
+            err = campaign.get("error", str(campaign)[:300])
+            return {"ok": False, "error": err}
 
-        # Step 2: Create message (template)
-        msg_payload = {
-            "data": {
-                "type": "campaign-message",
-                "attributes": {
-                    "channel": "email",
-                    "content": {
-                        "subject": subject[:150],
-                        "preview_text": name[:100],
-                        "from_email": os.getenv("FROM_EMAIL", "hello@ineedit.com.co"),
-                        "from_label": "BullPowerHub",
-                        "body": html_content,
-                    },
-                },
-                "relationships": {
-                    "campaign": {"data": {"type": "campaign", "id": cid}},
-                },
-            }
-        }
-        await _kv_post("/campaign-messages/", msg_payload)
-
-        # Step 3: Schedule/send
-        send_payload = {
+        # Step 2: Send immediately
+        await _kv_post("/campaign-send-jobs/", {
             "data": {
                 "type": "campaign-send-job",
                 "attributes": {},
@@ -159,8 +161,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                     "campaign": {"data": {"type": "campaign", "id": cid}},
                 },
             }
-        }
-        await _kv_post("/campaign-send-jobs/", send_payload)
+        })
 
         log.info("Klaviyo campaign sent: %s (id=%s)", name[:60], cid)
         return {"ok": True, "campaign_id": cid, "name": name}
