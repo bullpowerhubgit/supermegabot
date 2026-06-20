@@ -248,6 +248,74 @@ async def get_stats() -> Dict:
         return {"error": str(e)}
 
 
+async def get_products(limit: int = 100) -> List[Dict]:
+    """List all synced Printful products."""
+    try:
+        return await get_sync_products(limit=limit)
+    except Exception as e:
+        log.warning("get_products error: %s", e)
+        return []
+
+
+async def create_product(name: str, description: str = "", product_type: str = "T-Shirt") -> Dict:
+    """Auto-create a Printful product using Claude Haiku to generate description if not provided."""
+    # Auto-generate description via Claude Haiku if missing
+    if not description:
+        try:
+            import aiohttp
+            anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+            if anthropic_key:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    async with s.post(
+                        "https://api.anthropic.com/v1/messages",
+                        headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
+                                 "Content-Type": "application/json"},
+                        json={"model": "claude-haiku-4-5-20251001", "max_tokens": 200,
+                              "messages": [{"role": "user",
+                                            "content": f"Write a short 2-sentence product description for a print-on-demand {product_type} called '{name}'. Keep it catchy and e-commerce ready."}]}
+                    ) as r:
+                        d = await r.json(content_type=None)
+                description = d.get("content", [{}])[0].get("text", f"Premium quality {product_type} — {name}.")
+        except Exception:
+            description = f"Premium quality {product_type} — {name}. Perfect for print-on-demand."
+
+    payload = {
+        "sync_product": {"name": name, "description": description},
+        "sync_variants": [],
+    }
+    try:
+        result = await _post("/sync/products", payload)
+        product_id = result.get("result", {}).get("id")
+        log.info("Printful product created: %s (ID: %s)", name, product_id)
+        await _tg(f"🖨️ <b>Printful Produkt erstellt:</b> {name} (ID: {product_id})")
+        return {"ok": True, "product_id": product_id, "name": name, "description": description}
+    except Exception as e:
+        log.warning("create_product error: %s", e)
+        return {"ok": False, "error": str(e)}
+
+
+async def run_with_brutus_traffic() -> Dict:
+    """Get Printful stats then fire BRUTUS for print-on-demand keywords."""
+    stats = await get_stats()
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        brutus_result = await run_brutus_swarm(
+            keywords=["Print on Demand 2026", "Custom T-Shirt Shop", "Printful Shopify"],
+            max_keywords=3
+        )
+        return {
+            "stats": stats,
+            "brutus": brutus_result,
+            "ok": True,
+        }
+    except ImportError:
+        log.warning("brutus_traffic_engine not available")
+        return {"stats": stats, "brutus": None, "ok": True, "note": "BRUTUS not available"}
+    except Exception as e:
+        log.warning("run_with_brutus_traffic error: %s", e)
+        return {"stats": stats, "brutus_error": str(e), "ok": False}
+
+
 async def sync_catalog_to_shopify() -> Dict:
     """Ensure all Printful products are properly synced to Shopify."""
     products = await get_sync_products()
