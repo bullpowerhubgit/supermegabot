@@ -130,17 +130,21 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
             raise RuntimeError(str(d["error"])[:120])
         return d["choices"][0]["message"]["content"]
 
+    errors = []
     for env_var, url, model in [
         ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
         ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
     ]:
         key = os.getenv(env_var, "")
-        if key:
-            try:
-                return _openai_compat(url, key, model)
-            except Exception:
-                continue
-    raise RuntimeError("Kein AI API-Key verfügbar (Anthropic/OpenAI/Perplexity)")
+        if not key:
+            errors.append(f"{env_var}=leer")
+            continue
+        try:
+            return _openai_compat(url, key, model)
+        except Exception as e:
+            errors.append(f"{env_var}: {str(e)[:80]}")
+            continue
+    raise RuntimeError(f"Kein AI Key: {'; '.join(errors)}")
 
 
 async def _tg(msg: str) -> None:
