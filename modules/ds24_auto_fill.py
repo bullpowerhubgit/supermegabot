@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 
 logger = logging.getLogger(__name__)
 
-DS24_API_KEY = os.getenv("DIGISTORE24_API_KEY", "1682000-T8KjTRJXCO1IgXOU5I7am6p6a0AZuqV2BGswDECY")
+DS24_API_KEY = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
 DS24_BASE = "https://www.digistore24.com/api/call"
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT = os.getenv("TELEGRAM_CHAT_ID", "")
