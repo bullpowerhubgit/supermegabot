@@ -1799,20 +1799,24 @@ async def handle_social_status(req):
 
 async def handle_digistore_status(req):
     try:
-        from modules.digistore24_automation import ping, get_sales_stats, get_products, setup_ipn
-        ok = await ping()
+        from modules.digistore24_automation import ping, get_sales_stats, get_products, setup_ipn, is_configured
+        configured = is_configured()
+        ok = await ping() if configured else False
         stats = await get_sales_stats() if ok else {}
         products = await get_products() if ok else []
         ipn_info = await setup_ipn()
         return web.json_response({
             "ok": ok,
+            "connected": ok,
+            "configured": configured,
             "stats": stats,
             "product_count": len(products),
+            "revenue_note": "€0 = Keine Transaktionen im Konto (API verbunden, Daten korrekt)" if ok and stats.get("total", 0) == 0 else None,
             "ipn_url": ipn_info["ipn_url"],
             "ipn_setup_needed": True,
         })
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": False, "connected": False, "error": str(e)})
 
 
 async def handle_digistore_orders(req):
@@ -6445,6 +6449,15 @@ async def create_app():
     app.router.add_post("/api/gcp/sentiment",          handle_gcp_sentiment)
     app.router.add_post("/api/gcp/enhance-products",   handle_gcp_enhance_products)
 
+    # Twilio SMS
+    app.router.add_get( "/api/twilio/status",              handle_twilio_status)
+    app.router.add_post("/api/twilio/sms",                 handle_twilio_send_sms)
+    app.router.add_post("/api/twilio/daily-revenue-sms",   handle_twilio_daily_sms)
+
+    # SMTP email fallback
+    app.router.add_get( "/api/smtp/status",                handle_smtp_status)
+    app.router.add_post("/api/smtp/send",                  handle_smtp_send)
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
@@ -8131,6 +8144,82 @@ async def handle_conversion_personalize(req):
     visitor_id = data.pop("visitor_id", "anonymous")
     result     = await personalize_experience(visitor_id, data)
     return web.json_response(result)
+
+
+# ── TWILIO SMS handlers ───────────────────────────────────────────────────────
+
+async def handle_twilio_status(req):
+    """GET /api/twilio/status — return Twilio configuration status."""
+    try:
+        from modules.twilio_sms import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_twilio_send_sms(req):
+    """POST /api/twilio/sms — send SMS via Twilio.
+    Body: {"to": "+49...", "message": "..."}
+    """
+    try:
+        data = await req.json()
+    except Exception:
+        data = {}
+    to = data.get("to", "")
+    message = data.get("message", "")
+    if not to or not message:
+        return web.json_response({"ok": False, "error": "to and message required"}, status=400)
+    try:
+        from modules.twilio_sms import send_sms
+        result = await send_sms(to_number=to, message=message)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_twilio_send_sms: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_twilio_daily_sms(req):
+    """POST /api/twilio/daily-revenue-sms — send daily revenue SMS."""
+    try:
+        from modules.twilio_sms import run_daily_revenue_sms
+        result = await run_daily_revenue_sms()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_twilio_daily_sms: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── SMTP EMAIL handlers ───────────────────────────────────────────────────────
+
+async def handle_smtp_status(req):
+    """GET /api/smtp/status — return SMTP configuration status."""
+    try:
+        from modules.smtp_email import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_smtp_send(req):
+    """POST /api/smtp/send — send email via SMTP.
+    Body: {"to": "...", "subject": "...", "html": "..."}
+    """
+    try:
+        data = await req.json()
+    except Exception:
+        data = {}
+    to = data.get("to", "")
+    subject = data.get("subject", "")
+    html_body = data.get("html", data.get("body", ""))
+    if not to or not subject or not html_body:
+        return web.json_response({"ok": False, "error": "to, subject and html required"}, status=400)
+    try:
+        from modules.smtp_email import send_email
+        result = await send_email(to_email=to, subject=subject, html_body=html_body)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_smtp_send: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ── TURBO ENGINES panel ───────────────────────────────────────────────────────
