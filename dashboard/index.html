@@ -322,6 +322,8 @@ a{color:inherit;text-decoration:none}
   <div class="plt" id="plt-printful"><div class="plt-icon">👕</div><div class="plt-name">Printful</div><div class="plt-status">…</div></div>
   <div class="plt" id="plt-ds24"><div class="plt-icon">💰</div><div class="plt-name">DS24 AIITEC</div><div class="plt-status">…</div></div>
   <div class="plt" id="plt-tiktok"><div class="plt-icon">🎵</div><div class="plt-name">TikTok Shop</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-amazon"><div class="plt-icon">📦</div><div class="plt-name">Amazon</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-ebay"><div class="plt-icon">🛒</div><div class="plt-name">eBay</div><div class="plt-status">…</div></div>
 </div>
 
 <!-- ═══════════════════ ROW: KPI STRIP ═══════════════════ -->
@@ -673,9 +675,9 @@ a{color:inherit;text-decoration:none}
     <div class="srow"><span class="slbl">Listen</span><span class="sval" id="kl-lists">—</span></div>
     <div class="srow"><span class="slbl">Campaign Interval</span><span class="sval" style="color:var(--green)">12h Auto</span></div>
     <div class="srow"><span class="slbl">Mailing Blitz</span><span class="sval" style="color:var(--green)">6h Auto</span></div>
-    <div style="margin-top:10px;display:flex;gap:7px">
-      <button class="btn btn-purple" style="flex:1;font-size:10px" onclick="triggerTask('klaviyo_daily_campaign')">📧 Campaign Now</button>
-      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="triggerTask('mailing_promo_blitz')">🚀 Blitz</button>
+    <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn btn-purple" style="flex:1;font-size:10px;min-width:90px" id="kl-send-btn" onclick="sendKlaviyoCampaign(this)">📧 Jetzt senden</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px;min-width:90px" onclick="triggerTask('mailing_promo_blitz')">🚀 Blitz</button>
     </div>
   </div>
   <!-- Mailchimp -->
@@ -685,9 +687,9 @@ a{color:inherit;text-decoration:none}
     <div class="srow"><span class="slbl">Status</span><span class="sval" id="mc-status">—</span></div>
     <div class="srow"><span class="slbl">Campaign</span><span class="sval" style="color:var(--green)">Auto täglich</span></div>
     <div class="srow"><span class="slbl">DS24 Mailing</span><span class="sval" style="color:var(--green)">3h Auto</span></div>
-    <div style="margin-top:10px;display:flex;gap:7px">
-      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="ap('/api/mailchimp/campaign',{})">📨 Campaign</button>
-      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="ap('/api/mailchimp/sync',{})">🔄 Sync</button>
+    <div style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
+      <button class="btn btn-orange" style="flex:1;font-size:10px;min-width:90px" id="mc-send-btn" onclick="sendMailchimpCampaign(this)">📨 Jetzt senden</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px;min-width:90px" onclick="ap('/api/mailchimp/sync',{})">🔄 Sync</button>
     </div>
   </div>
   <!-- DS24 AIITEC -->
@@ -783,8 +785,44 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<div class="sect">🛍️ Marktplätze — Amazon · eBay Affiliate</div>
+<div class="g3" style="margin-bottom:14px">
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">📦</span> Amazon Affiliate</div><span class="badge" id="amz-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Tracking ID</span><span class="sval" id="amz-tracking">bullpowerhub-21</span></div>
+    <div class="srow"><span class="slbl">PAAPI</span><span class="sval" id="amz-paapi">—</span></div>
+    <div class="srow"><span class="slbl">Marktplatz</span><span class="sval">amazon.de</span></div>
+    <div class="srow"><span class="slbl">Auto-Blast</span><span class="sval" style="color:var(--green)">6h Auto</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="triggerAmazonBlast()">🚀 Blast Now</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="loadAmazon()">🔄 Status</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">🛒</span> eBay Affiliate</div><span class="badge" id="ebay-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Status</span><span class="sval" id="ebay-status">—</span></div>
+    <div class="srow"><span class="slbl">EPN Kampagne</span><span class="sval" id="ebay-epn">—</span></div>
+    <div class="srow"><span class="slbl">Marktplatz</span><span class="sval">ebay.de</span></div>
+    <div class="srow"><span class="slbl">Auto-Blast</span><span class="sval" style="color:var(--green)">4h Auto</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="triggerEbayBlast()">🔥 BRUTUS Blast</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="loadEbay()">🔄 Status</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">⚙️</span> eBay Setup</div><span class="badge badge-blue">SETUP</span></div>
+    <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Benötigt in Railway:</div>
+    <div style="font-size:10px;color:var(--text);line-height:1.8">
+      EBAY_APP_ID<br>EBAY_CERT_ID<br>EBAY_CAMPAIGN_ID<br>EBAY_AFFILIATE_ID
+    </div>
+    <div style="margin-top:10px">
+      <button class="btn btn-blue" style="width:100%;font-size:10px" onclick="fetch('/api/ebay/auth').then(r=>r.json()).then(d=>alert(JSON.stringify(d,null,2)))">ℹ️ Setup Info</button>
+    </div>
+  </div>
+</div>
+
 <div style="text-align:center;padding:14px 0;color:var(--muted);font-size:9px;letter-spacing:1.5px;border-top:1px solid var(--border);margin-top:4px">
-  BULLPOWER HUB MEGA v5 · 157 TASKS · 11 KANÄLE · 17 SERVICES · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
+  BULLPOWER HUB MEGA v5 · 162 TASKS · 11 KANÄLE · 19 SERVICES · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
 </div>
 
 </div><!-- /main -->
@@ -1386,6 +1424,48 @@ async function refreshAll() {
   loadFiverr();
   loadUpwork();
   loadTikTok();
+  loadAmazon();
+  loadEbay();
+}
+
+async function loadAmazon() {
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  const d = await get('/api/amazon/status');
+  if(d&&d.ok){
+    fe('amz-tracking',d.tracking_id||'bullpowerhub-21');
+    fe('amz-paapi',d.paapi_configured?'✅ Konfiguriert':'⚠️ Nicht gesetzt');
+    const badge=document.getElementById('amz-badge');if(badge){badge.textContent='LIVE';badge.style.background='#ff9900'}
+    const plt=document.getElementById('plt-amazon');
+    if(plt){plt.className='plt ok';plt.querySelector('.plt-status').textContent='✅ Affiliate'}
+  }else{
+    const plt=document.getElementById('plt-amazon');
+    if(plt){plt.className='plt warn';plt.querySelector('.plt-status').textContent='⚠️'}
+  }
+}
+
+async function triggerAmazonBlast(){
+  addLog('Amazon Blast gestartet...','i');
+  const d=await get('/api/amazon/blast');
+  addLog('Amazon Blast: '+JSON.stringify(d).substring(0,80),'');
+}
+
+async function loadEbay(){
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  const d=await get('/api/ebay/status');
+  if(d){
+    fe('ebay-status',d.configured?'✅ App ID gesetzt':'⚠️ EBAY_APP_ID fehlt');
+    fe('ebay-epn',d.epn_active?'✅ EPN aktiv':'⚠️ Campaign ID fehlt');
+    const badge=document.getElementById('ebay-badge');
+    if(badge){badge.textContent=d.configured?'AKTIV':'SETUP';badge.style.background=d.configured?'#e53238':'#ff9f43'}
+    const plt=document.getElementById('plt-ebay');
+    if(plt){plt.className=d.configured?'plt ok':'plt warn';plt.querySelector('.plt-status').textContent=d.configured?'✅ API':'⚠️ Setup'}
+  }
+}
+
+async function triggerEbayBlast(){
+  addLog('eBay BRUTUS Blast gestartet...','i');
+  const d=await get('/api/ebay/blast?q=online+shopping+deals');
+  addLog('eBay Blast: items='+((d&&d.items_found)||0)+' ok='+((d&&d.ok)||false),'');
 }
 
 // ── INIT ──
@@ -1409,6 +1489,8 @@ loadGumroad();
 loadFiverr();
 loadUpwork();
 loadTikTok();
+loadAmazon();
+loadEbay();
 addLog('Alle Systeme verbunden ✓','');
 
 setInterval(()=>{refreshAll();addLog('Auto-Refresh','')},60000);

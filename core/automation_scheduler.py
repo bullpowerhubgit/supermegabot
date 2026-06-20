@@ -11,7 +11,7 @@ import logging
 import os
 import sqlite3
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Dict, List, Optional
 
@@ -3235,6 +3235,33 @@ async def task_tiktok_analytics_report() -> str:
         return f"TikTok analytics error: {e}"
 
 
+async def task_ebay_client_brutus() -> str:
+    try:
+        from modules.ebay_client import run_with_brutus_traffic
+        r = await run_with_brutus_traffic("online shopping deals günstig")
+        return f"eBay Browse+BRUTUS: items={r.get('items_found',0)} ok={r.get('ok',False)}"
+    except Exception as e:
+        return f"eBay Browse BRUTUS error: {e}"
+
+
+async def task_ebay_client_search() -> str:
+    try:
+        from modules.ebay_client import search_items
+        r = await search_items("trending produkte 2026", limit=10)
+        return f"eBay Browse search: {len(r.get('items',[]))} items found"
+    except Exception as e:
+        return f"eBay Browse search error: {e}"
+
+
+async def task_amazon_status_report() -> str:
+    try:
+        from modules.amazon_affiliate import TRACKING_ID, run_affiliate_blast
+        r = await run_affiliate_blast()
+        return f"Amazon blast done: tracking={TRACKING_ID}, result={str(r)[:80]}"
+    except Exception as e:
+        return f"Amazon blast error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -3397,6 +3424,9 @@ TASKS = [
     ("tiktok_product_sync",     task_tiktok_sync,             21600, 8100),  # 6h — Shopify→TikTok Shop sync
     ("tiktok_brutus",           task_tiktok_brutus,           14400, 13000), # 4h — TikTok BRUTUS traffic blast
     ("tiktok_analytics_report", task_tiktok_analytics_report, 43200, 13100), # 12h — TikTok analytics log
+    ("ebay_browse_brutus",      task_ebay_client_brutus,      14400, 13500), # 4h — eBay Browse API + BRUTUS
+    ("ebay_browse_search",      task_ebay_client_search,       7200, 13600), # 2h — eBay Browse trending search
+    ("amazon_blast_report",     task_amazon_status_report,    21600, 13700), # 6h — Amazon affiliate blast
     ("upsell_sequence_run",     task_upsell_sequence_run,     86400, 8400),  # daily — upsell enrolled buyers
     # ── TRAFFIC BLITZ — Maximale Frequenz alle Kanäle ────────────────────────
     ("traffic_blitz_full",      task_traffic_blitz_full,       7200, 9000),  # 2h — LinkedIn+Shopify+IndexNow+Telegram
