@@ -3316,6 +3316,85 @@ async def task_amazon_status_report() -> str:
         return f"Amazon blast error: {e}"
 
 
+async def task_gcp_enhance_products() -> str:
+    """GCP Vision + Translation: Verbessert Shopify-Produkte mit Auto-Tags, Alt-Text, EN-Übersetzung."""
+    try:
+        import aiohttp
+        from modules.gcp_services import enhance_shopify_product, GCP_API_KEY
+        if not GCP_API_KEY:
+            return "GCP_API_KEY nicht gesetzt — skip"
+        shop   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not shop or not token:
+            return "Shopify credentials fehlen"
+        url = f"https://{shop}/admin/api/{ver}/products.json?limit=10&status=active"
+        async with aiohttp.ClientSession() as s:
+            async with s.get(url, headers={"X-Shopify-Access-Token": token},
+                             timeout=aiohttp.ClientTimeout(total=20)) as r:
+                products = (await r.json()).get("products", [])
+        enhanced = 0
+        for p in products:
+            img_url = (p.get("images") or [{}])[0].get("src", "")
+            product_data = {"title": p["title"], "body_html": p.get("body_html",""), "tags": p.get("tags",""), "image_url": img_url}
+            result = await enhance_shopify_product(product_data)
+            if result.get("tags") != p.get("tags",""):
+                patch_url = f"https://{shop}/admin/api/{ver}/products/{p['id']}.json"
+                async with aiohttp.ClientSession() as s:
+                    await s.put(patch_url, headers={"X-Shopify-Access-Token": token, "Content-Type": "application/json"},
+                                json={"product": {"id": p["id"], "tags": result.get("tags","")}},
+                                timeout=aiohttp.ClientTimeout(total=10))
+                enhanced += 1
+        return f"GCP enhance: {len(products)} geprüft, {enhanced} mit Auto-Tags aktualisiert"
+    except Exception as e:
+        return f"GCP enhance error: {e}"
+
+
+async def task_gcp_translate_products() -> str:
+    """GCP Translation: Übersetzt Produkt-Titel und Beschreibungen EN/FR für internationale Märkte."""
+    try:
+        import aiohttp
+        from modules.gcp_services import translate_text, GCP_API_KEY
+        if not GCP_API_KEY:
+            return "GCP_API_KEY nicht gesetzt — skip"
+        shop  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        ver   = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not shop or not token:
+            return "Shopify credentials fehlen"
+        async with aiohttp.ClientSession() as s:
+            async with s.get(f"https://{shop}/admin/api/{ver}/products.json?limit=5&status=active",
+                             headers={"X-Shopify-Access-Token": token},
+                             timeout=aiohttp.ClientTimeout(total=20)) as r:
+                products = (await r.json()).get("products", [])
+        translated = 0
+        for p in products:
+            title_de = p.get("title","")
+            title_en = await translate_text(title_de, "en", "de")
+            if title_en and title_en != title_de:
+                meta_title = f"{title_en} | {title_de}"
+                patch_url = f"https://{shop}/admin/api/{ver}/products/{p['id']}.json"
+                async with aiohttp.ClientSession() as s:
+                    await s.put(patch_url,
+                                headers={"X-Shopify-Access-Token": token, "Content-Type": "application/json"},
+                                json={"product": {"id": p["id"], "metafields": [{"namespace": "translations", "key": "title_en", "value": title_en, "type": "single_line_text_field"}]}},
+                                timeout=aiohttp.ClientTimeout(total=10))
+                translated += 1
+        return f"GCP translate: {len(products)} Produkte, {translated} mit EN-Metafeld"
+    except Exception as e:
+        return f"GCP translate error: {e}"
+
+
+async def task_gcp_ping() -> str:
+    """GCP API Health-Check — stellt sicher dass alle GCP-Services erreichbar sind."""
+    try:
+        from modules.gcp_services import ping
+        result = await ping()
+        return f"GCP ping: ok={result['ok']}, result='{result['result']}', project={result['project']}"
+    except Exception as e:
+        return f"GCP ping error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -3545,6 +3624,10 @@ TASKS = [
     ("twilio_revenue_alert",   task_twilio_revenue_alert,    14400,   130),  # 4h — neue Orders → SMS
     ("twilio_ds24_report",     task_twilio_ds24_report,      21600,   140),  # 6h — DS24 Status SMS
     ("twilio_stripe_alert",    task_twilio_stripe_alert,      1800,    90),  # 30min — Stripe Payment SMS
+    # ── GCP AUTOMATION — Vision, Translation, NLP ─────────────────────────────
+    ("gcp_ping",               task_gcp_ping,                86400, 15000), # daily — GCP Health Check
+    ("gcp_enhance_products",   task_gcp_enhance_products,    21600, 15100), # 6h — Vision Auto-Tags
+    ("gcp_translate_products", task_gcp_translate_products,  43200, 15200), # 12h — Translation EN/FR
 ]
 
 
