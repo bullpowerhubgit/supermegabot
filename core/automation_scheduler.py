@@ -136,12 +136,26 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
         if not key:
             continue
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(url,
                     headers={"Authorization": f"Bearer {key}"},
                     json={"model": model, "max_tokens": max_tokens,
                           "messages": [{"role": "user", "content": prompt}]}) as r:
                     d = await r.json(content_type=None)
+            err = d.get("error", {})
+            if err:
+                if "429" in str(err.get("code", "")) or "rate_limit" in str(err.get("type", "")):
+                    await asyncio.sleep(10)
+                    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                        async with s.post(url,
+                            headers={"Authorization": f"Bearer {key}"},
+                            json={"model": model, "max_tokens": max_tokens,
+                                  "messages": [{"role": "user", "content": prompt}]}) as r:
+                            d = await r.json(content_type=None)
+                    if d.get("error"):
+                        continue
+                else:
+                    continue
             text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
             if text:
                 return text
@@ -2235,9 +2249,14 @@ async def task_revenue_blitz() -> str:
 
 async def task_aliexpress_import() -> str:
     try:
-        from modules.super_revenue_blitz import aliexpress_import_trending
+        from modules.super_revenue_blitz import aliexpress_import_trending, announce_new_products
         r = await aliexpress_import_trending()
-        return f"AliExpress: {r.get('imported',0)} importiert, {r.get('skipped',0)} skip"
+        imported = r.get("imported", 0)
+        if imported > 0:
+            # Auto-Mailing nach erfolgreichem Import
+            products = [{"title": f"AliExpress Produkt {i+1}"} for i in range(imported)]
+            await announce_new_products(products)
+        return f"AliExpress: {imported} importiert, {r.get('skipped',0)} skip"
     except Exception as e:
         return f"AliExpress import error: {e}"
 
@@ -2514,6 +2533,140 @@ async def task_upsell_sequence_run() -> str:
         return f"Upsell Sequence error: {e}"
 
 
+# ── BRUTUS für jedes Tool ────────────────────────────────────────────────────
+
+async def task_brutus_printify() -> str:
+    try:
+        from modules.super_revenue_blitz import brutus_blast_for_tool
+        r = await brutus_blast_for_tool("Printify", "https://www.printify.com",
+            ["Print on Demand 2026", "Printify Shopify Automation", "eigene Produkte verkaufen"])
+        return f"BRUTUS Printify: {r.get('posts_sent',0)} posts"
+    except Exception as e:
+        return f"BRUTUS Printify error: {e}"
+
+
+async def task_brutus_dropshipping() -> str:
+    try:
+        from modules.super_revenue_blitz import brutus_blast_for_tool
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        r = await brutus_blast_for_tool("Dropshipping", link,
+            ["Dropshipping 2026", "AliExpress Shopify", "online shop automatisch befüllen"])
+        return f"BRUTUS Dropshipping: {r.get('posts_sent',0)} posts"
+    except Exception as e:
+        return f"BRUTUS Dropshipping error: {e}"
+
+
+async def task_brutus_ds24() -> str:
+    try:
+        from modules.super_revenue_blitz import brutus_blast_for_tool
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        r = await brutus_blast_for_tool("Digistore24", link,
+            ["Digistore24 Affiliate 2026", "digitale Produkte verkaufen", "AI Income Machine"])
+        return f"BRUTUS DS24: {r.get('posts_sent',0)} posts"
+    except Exception as e:
+        return f"BRUTUS DS24 error: {e}"
+
+
+async def task_brutus_shopify() -> str:
+    try:
+        from modules.super_revenue_blitz import brutus_blast_for_tool
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        url = f"https://{shop}" if shop else os.getenv("DS24_AFFILIATE_LINK", "")
+        r = await brutus_blast_for_tool("Shopify", url,
+            ["Shopify Shop automatisieren", "Shopify SEO 2026", "Shopify Dropshipping"])
+        return f"BRUTUS Shopify: {r.get('posts_sent',0)} posts"
+    except Exception as e:
+        return f"BRUTUS Shopify error: {e}"
+
+
+# ── Auto Mailing Tasks ────────────────────────────────────────────────────────
+
+async def task_klaviyo_daily_campaign() -> str:
+    """Vollautomatische Klaviyo Kampagne — DS24 Affiliate Promo."""
+    try:
+        import random
+        from modules.super_revenue_blitz import send_klaviyo_campaign
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        subjects = [
+            "🔥 Vollautomatisch Geld verdienen — so geht's",
+            "💡 KI macht Geld während du schläfst",
+            "🚀 Passives Einkommen 2026 — der komplette Blueprint",
+            "💰 Digistore24 + KI = automatische Einnahmen",
+            "🤖 AI Income Machine — jetzt starten",
+        ]
+        subject = random.choice(subjects)
+        html = (
+            f"<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>"
+            f"<h2>{subject}</h2>"
+            f"<p>Hey,</p>"
+            f"<p>während du das hier liest, verdient das System automatisch Geld für dich. "
+            f"KI-Tools, Shopify, Digistore24 — vollständig automatisiert.</p>"
+            f"<p><b>Was du bekommst:</b></p>"
+            f"<ul><li>✅ KI generiert Content 24/7</li>"
+            f"<li>✅ Automatische Postings auf 10+ Kanälen</li>"
+            f"<li>✅ Shopify + DS24 vollautomatisch</li>"
+            f"<li>✅ Passives Einkommen ohne tägliche Arbeit</li></ul>"
+            f"<p style='text-align:center;margin:30px 0'>"
+            f"<a href='{link}' style='background:#7c3aed;color:#fff;padding:14px 28px;"
+            f"text-decoration:none;border-radius:8px;font-weight:bold'>🚀 Jetzt starten</a></p>"
+            f"<hr><p><small>Rudolf | AIITEC | <a href='${{unsubscribe_link}}'>Abmelden</a></small></p>"
+            f"</body></html>"
+        )
+        ok = await send_klaviyo_campaign(subject, html, f"AutoPromo {datetime.now().strftime('%Y-%m-%d')}")
+        return f"Klaviyo Daily: {'sent' if ok else 'failed'} — {subject[:40]}"
+    except Exception as e:
+        return f"Klaviyo daily error: {e}"
+
+
+async def task_mailing_promo_blitz() -> str:
+    """Gleichzeitig Klaviyo + Mailchimp + Telegram + LinkedIn — alle Mailing-Kanäle."""
+    try:
+        import asyncio, random
+        from modules.super_revenue_blitz import send_klaviyo_campaign, send_mailchimp_campaign, _tg_send, _linkedin_post
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        subjects = [
+            "💰 Heute: Vollautomatisches Online-Business starten",
+            "🤖 KI verdient für dich — ohne tägliche Arbeit",
+            "🚀 AI Income Machine — limitiertes Angebot",
+        ]
+        subject = random.choice(subjects)
+        html = (
+            f"<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>"
+            f"<h2>{subject}</h2><p>Vollautomatisch. 24/7. Passives Einkommen.</p>"
+            f"<p><a href='{link}' style='background:#e74c3c;color:#fff;padding:12px 24px;"
+            f"text-decoration:none;border-radius:4px'>👉 Jetzt ansehen</a></p>"
+            f"<hr><p><small>Rudolf | AIITEC | <a href='${{unsubscribe_link}}'>Abmelden</a></small></p>"
+            f"</body></html>"
+        )
+        kl, mc, tg, li = await asyncio.gather(
+            send_klaviyo_campaign(subject, html, f"PromoBlitz {datetime.now().strftime('%m-%d')}"),
+            send_mailchimp_campaign(subject, html),
+            _tg_send(f"📧 <b>{subject}</b>\n\n{link}"),
+            _linkedin_post(f"{subject}\n\n{link}\n\n#PassivesEinkommen #AIITEC #OnlineBusiness"),
+            return_exceptions=True,
+        )
+        return f"MailingBlitz: kl={bool(kl) if not isinstance(kl,Exception) else False} mc={bool(mc) if not isinstance(mc,Exception) else False} tg={bool(tg) if not isinstance(tg,Exception) else False}"
+    except Exception as e:
+        return f"MailingBlitz error: {e}"
+
+
+async def task_printify_auto_publish() -> str:
+    """Alle Printify Produkte die noch nicht in Shopify sind → sofort publishen."""
+    try:
+        from modules.printify_automation import ping, sync_all_products_to_shopify
+        if not await ping():
+            return "Printify: API key fehlt oder Shop nicht verbunden"
+        r = await sync_all_products_to_shopify()
+        published = r.get("published", 0)
+        if published > 0:
+            from modules.super_revenue_blitz import announce_new_products
+            products = [{"title": f"Printify Produkt {i+1}"} for i in range(published)]
+            await announce_new_products(products)
+        return f"Printify AutoPublish: {published} neu, {r.get('already_live',0)} bereits live"
+    except Exception as e:
+        return f"Printify AutoPublish error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -2686,6 +2839,16 @@ TASKS = [
     # ── DS24 FULL AUTO — Affiliate + Mailing + Traffic ───────────────────────
     ("ds24_traffic",           task_ds24_traffic,             10800, 9900),  # 3h — DS24 Affiliate Posts alle Kanäle
     ("ds24_auto_fill",         task_ds24_auto_fill,           21600, 9950),  # 6h — DS24 Account prüfen + befüllen
+    # ── BRUTUS FÜR JEDES TOOL — Traffic + SEO überall ────────────────────────
+    ("brutus_printify",        task_brutus_printify,          14400, 10000), # 4h — BRUTUS für Printify POD
+    ("brutus_dropshipping",    task_brutus_dropshipping,      14400, 10100), # 4h — BRUTUS für Dropshipping/AliExpress
+    ("brutus_ds24_affiliate",  task_brutus_ds24,               7200, 10200), # 2h — BRUTUS für DS24 Affiliate
+    ("brutus_shopify",         task_brutus_shopify,            7200, 10300), # 2h — BRUTUS für Shopify Shop
+    # ── AUTO MAILING — Vollautonomes Mailing System ───────────────────────────
+    ("klaviyo_daily_campaign", task_klaviyo_daily_campaign,   43200, 10400), # 12h — Klaviyo Kampagne
+    ("mailing_promo_blitz",    task_mailing_promo_blitz,      21600, 10500), # 6h — Alle Mailing-Kanäle gleichzeitig
+    # ── PRINTIFY AUTO-PUBLISH — Neue Produkte sofort pushen ──────────────────
+    ("printify_auto_publish",  task_printify_auto_publish,     3600, 10600), # 1h — Publish alle unveröffentlichten
 ]
 
 

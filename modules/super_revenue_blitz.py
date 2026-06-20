@@ -362,3 +362,169 @@ async def multi_platform_post(topic: str, offer_url: str = "") -> dict:
     }
     log.info("MultiPlatform post '%s': %s", topic[:40], result)
     return result
+
+
+# ── Klaviyo Campaign Sender ───────────────────────────────────────────────────
+
+async def send_klaviyo_campaign(subject: str, html_body: str, campaign_name: str = "") -> bool:
+    """Sendet eine echte Klaviyo Email-Kampagne an die gesamte Liste."""
+    if not KLAVIYO() or not KLAVIYO_LIST():
+        return False
+    try:
+        import aiohttp
+        headers = {
+            "Authorization": f"Klaviyo-API-Key {KLAVIYO()}",
+            "revision": "2024-10-15",
+            "Content-Type": "application/json",
+        }
+        name = campaign_name or f"AutoBlitz {datetime.now().strftime('%Y-%m-%d %H:%M')}"
+
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://a.klaviyo.com/api/campaigns/",
+                headers=headers,
+                json={"data": {"type": "campaign", "attributes": {
+                    "name": name,
+                    "channel": "email",
+                    "audiences": {"included": [KLAVIYO_LIST()]},
+                    "send_options": {"use_smart_sending": True},
+                    "tracking_options": {"is_tracking_clicks": True, "is_tracking_opens": True},
+                    "send_strategy": {"method": "immediate"},
+                }}},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+            camp_id = d.get("data", {}).get("id", "")
+            if not camp_id:
+                return False
+
+            async with s.post(
+                "https://a.klaviyo.com/api/campaign-messages/",
+                headers=headers,
+                json={"data": {"type": "campaign-message", "attributes": {
+                    "channel": "email",
+                    "content": {
+                        "subject": subject,
+                        "preview_text": subject[:80],
+                        "from_email": "bullpowersrtkennels@gmail.com",
+                        "from_label": "Rudolf | AIITEC",
+                        "body": html_body,
+                    },
+                }, "relationships": {"campaign": {"data": {"type": "campaign", "id": camp_id}}}}},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                md = await r.json(content_type=None)
+            msg_id = md.get("data", {}).get("id", "")
+            if not msg_id:
+                return False
+
+            async with s.post(
+                "https://a.klaviyo.com/api/campaign-send-jobs/",
+                headers=headers,
+                json={"data": {"type": "campaign-send-job", "id": camp_id}},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                ok = r.status in (200, 201, 202)
+        log.info("Klaviyo campaign '%s': %s", subject[:50], "sent" if ok else "failed")
+        return ok
+    except Exception as e:
+        log.debug("Klaviyo campaign error: %s", e)
+        return False
+
+
+async def send_mailchimp_campaign(subject: str, html_body: str) -> bool:
+    """Sendet eine Mailchimp-Kampagne an die gesamte Liste."""
+    mc_key = os.getenv("MAILCHIMP_API_KEY", "")
+    mc_list = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
+    mc_server = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
+    if not mc_key:
+        return False
+    try:
+        import aiohttp, base64
+        auth = base64.b64encode(f"any:{mc_key}".encode()).decode()
+        headers = {"Authorization": f"Basic {auth}", "Content-Type": "application/json"}
+        base_url = f"https://{mc_server}.api.mailchimp.com/3.0"
+
+        async with aiohttp.ClientSession() as s:
+            async with s.post(f"{base_url}/campaigns", headers=headers,
+                json={"type": "regular",
+                      "recipients": {"list_id": mc_list},
+                      "settings": {"subject_line": subject, "from_name": "Rudolf | AIITEC",
+                                   "reply_to": "bullpowersrtkennels@gmail.com",
+                                   "title": f"AutoBlitz {datetime.now().strftime('%Y-%m-%d')}"}},
+                timeout=aiohttp.ClientTimeout(total=10)) as r:
+                d = await r.json(content_type=None)
+            cid = d.get("id", "")
+            if not cid:
+                return False
+
+            async with s.put(f"{base_url}/campaigns/{cid}/content", headers=headers,
+                json={"html": html_body}, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                pass
+
+            async with s.post(f"{base_url}/campaigns/{cid}/actions/send", headers=headers,
+                timeout=aiohttp.ClientTimeout(total=10)) as r:
+                ok = r.status == 204
+        log.info("Mailchimp campaign '%s': %s", subject[:50], "sent" if ok else "failed")
+        return ok
+    except Exception as e:
+        log.debug("Mailchimp campaign error: %s", e)
+        return False
+
+
+async def announce_new_products(products: list) -> dict:
+    """Nach AliExpress/Printify Import: Telegram + Klaviyo + Mailchimp + IndexNow."""
+    if not products:
+        return {"ok": False}
+
+    link = DS24_LINK()
+    names = ", ".join(p.get("title", p.get("name", "Produkt"))[:30] for p in products[:3])
+
+    tg_text = (
+        f"🛒 <b>Neue Produkte im Shop!</b>\n\n"
+        f"Gerade importiert: {names}\n\n"
+        f"👉 Jetzt ansehen + KI-Income starten: <a href='{link}'>{link}</a>"
+    )
+
+    items_html = "".join(
+        f"<li>{p.get('title', p.get('name', 'Produkt'))[:60]}</li>"
+        for p in products[:5]
+    )
+    html = (
+        f"<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>"
+        f"<h2>🛒 Neue Produkte jetzt verfügbar!</h2>"
+        f"<p>Wir haben gerade <b>{len(products)} neue Produkte</b> in den Shop geladen:</p>"
+        f"<ul>{items_html}</ul>"
+        f"<p><a href='{link}' style='background:#7c3aed;color:#fff;padding:12px 24px;"
+        f"text-decoration:none;border-radius:6px'>👉 Jetzt entdecken</a></p>"
+        f"<hr><p><small>Rudolf | AIITEC | <a href='${{unsubscribe_link}}'>Abmelden</a></small></p>"
+        f"</body></html>"
+    )
+    subject = f"🛒 {len(products)} neue Produkte — jetzt im Shop!"
+
+    tg, kl, mc, idx = await asyncio.gather(
+        _tg_send(tg_text),
+        send_klaviyo_campaign(subject, html, f"NewProducts {datetime.now().strftime('%m-%d')}"),
+        send_mailchimp_campaign(subject, html),
+        _indexnow(),
+        return_exceptions=True,
+    )
+
+    return {
+        "telegram": bool(tg) if not isinstance(tg, Exception) else False,
+        "klaviyo":  bool(kl) if not isinstance(kl, Exception) else False,
+        "mailchimp": bool(mc) if not isinstance(mc, Exception) else False,
+        "indexnow": int(idx) if not isinstance(idx, Exception) else 0,
+    }
+
+
+async def brutus_blast_for_tool(tool_name: str, tool_url: str, keywords: list = None) -> dict:
+    """BRUTUS Traffic für ein spezifisches Tool/Modul — postet auf alle Kanäle."""
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        kws = keywords or [f"{tool_name} automation", f"{tool_name} 2026", f"KI {tool_name}"]
+        result = await run_brutus_swarm(keywords=kws, max_keywords=len(kws))
+        return result
+    except Exception as e:
+        log.debug("BRUTUS blast error for %s: %s", tool_name, e)
+        return {}
