@@ -83,6 +83,17 @@ async def search_trending_ebay(keywords: list = None, count: int = 5) -> list:
             })
     except Exception as e:
         log.warning("eBay Finding API error: %s", e)
+
+    # Fallback: manuell kuratierte eBay-Deals (immer verfügbar)
+    if not items:
+        fallback = [
+            {"title": "Smart Home Steckdose WiFi", "url": f"https://www.ebay.de/sch/i.html?_nkw=smart+home+steckdose&tag={ASSOCIATE_TAG}", "price": "ca. €15-25 EUR", "image": "", "keyword": kw},
+            {"title": "Bluetooth Kopfhörer In-Ear", "url": f"https://www.ebay.de/sch/i.html?_nkw=bluetooth+kopfhörer&tag={ASSOCIATE_TAG}", "price": "ca. €20-50 EUR", "image": "", "keyword": kw},
+            {"title": "USB-C Hub Multiport Adapter", "url": f"https://www.ebay.de/sch/i.html?_nkw=usb+c+hub&tag={ASSOCIATE_TAG}", "price": "ca. €25-45 EUR", "image": "", "keyword": kw},
+            {"title": "LED Strip WiFi Alexa", "url": f"https://www.ebay.de/sch/i.html?_nkw=led+strip+wifi&tag={ASSOCIATE_TAG}", "price": "ca. €10-20 EUR", "image": "", "keyword": kw},
+            {"title": "Fitness Tracker Smartwatch 2026", "url": f"https://www.ebay.de/sch/i.html?_nkw=fitness+tracker&tag={ASSOCIATE_TAG}", "price": "ca. €30-80 EUR", "image": "", "keyword": kw},
+        ]
+        items = random.sample(fallback, min(count, len(fallback)))
     return items
 
 

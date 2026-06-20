@@ -120,8 +120,6 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                     },
                     "send_strategy": {
                         "method": "immediate",
-                        "datetime": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
-                        "is_local": False,
                     },
                     "channel": "email",
                 },
