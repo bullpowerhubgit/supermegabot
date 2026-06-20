@@ -961,7 +961,8 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
 
     _t_start = datetime.now(timezone.utc).timestamp()
     results = {"keywords_processed": 0, "content_pieces": 0, "channels_hit": 0, "errors": []}
-    _run_id = 0   # will be set after first DB write
+    # Create run record first so _log_channel gets the real run_id
+    _run_id = _log_brutus_run(niche, results, 0)
 
     # Phase 1: Scan
     log.info("Phase 1: Scanning trends...")
@@ -1073,7 +1074,18 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
 
     results["timestamp"] = datetime.now(timezone.utc).isoformat()
     _duration_ms = int((datetime.now(timezone.utc).timestamp() - _t_start) * 1000)
-    _run_id = _log_brutus_run(niche, results, _duration_ms)
+    # Update the pre-created run record with final stats
+    try:
+        conn = sqlite3.connect(_BRUTUS_DB)
+        conn.execute(
+            "UPDATE brutus_runs SET keywords=?,content=?,channels=?,details=?,duration_ms=? WHERE id=?",
+            (results.get("keywords_processed", 0), results.get("content_pieces", 0),
+             results.get("channels_hit", 0), json.dumps(results)[:1000], _duration_ms, _run_id)
+        )
+        conn.commit()
+        conn.close()
+    except Exception:
+        _run_id = _log_brutus_run(niche, results, _duration_ms)
 
     # Report
     try:
