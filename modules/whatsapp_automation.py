@@ -122,10 +122,39 @@ async def broadcast_to_subscribers(message: str, numbers: list[str]) -> dict:
     }
 
 
+async def send_via_twilio_whatsapp(to: str, message: str) -> bool:
+    """Fallback: send WhatsApp message via Twilio (Sandbox or approved number)."""
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID", "")
+    auth_token  = os.getenv("TWILIO_AUTH_TOKEN", "")
+    from_wa     = os.getenv("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")  # Twilio sandbox default
+    if not account_sid or not auth_token:
+        return False
+    to_wa = f"whatsapp:{to}" if not to.startswith("whatsapp:") else to
+    try:
+        import aiohttp
+        import base64
+        creds = base64.b64encode(f"{account_sid}:{auth_token}".encode()).decode()
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                f"https://api.twilio.com/2010-04-01/Accounts/{account_sid}/Messages.json",
+                headers={"Authorization": f"Basic {creds}"},
+                data={"From": from_wa, "To": to_wa, "Body": message[:1600]},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+        ok = d.get("status") not in ("failed", "undelivered") and "sid" in d
+        log.info("Twilio WA → %s: %s", to, d.get("status", "?"))
+        return ok
+    except Exception as e:
+        log.warning("Twilio WhatsApp error: %s", e)
+        return False
+
+
 async def get_whatsapp_stats() -> dict:
     stats = _load_stats()
     return {
         "configured": bool(WA_PHONE_ID and WA_TOKEN),
+        "twilio_fallback": bool(os.getenv("TWILIO_ACCOUNT_SID")),
         "phone_number_id": WA_PHONE_ID or "not set",
         "messages_sent": stats.get("sent", 0),
         "messages_received": stats.get("received", 0),
@@ -135,12 +164,24 @@ async def get_whatsapp_stats() -> dict:
 
 
 async def send_whatsapp_blast(message: str) -> dict:
-    """Broadcast a message to all configured WhatsApp recipients (WHATSAPP_TO_NUMBERS env, comma-separated)."""
-    numbers_raw = os.getenv("WHATSAPP_TO_NUMBERS", os.getenv("WHATSAPP_DEFAULT_TO", ""))
+    """Broadcast via Meta WhatsApp Cloud API; Twilio fallback if unconfigured."""
+    numbers_raw = os.getenv("WHATSAPP_TO_NUMBERS", os.getenv("WHATSAPP_DEFAULT_TO",
+                             os.getenv("TWILIO_VERIFIED_TO", "")))
     numbers = [n.strip() for n in numbers_raw.split(",") if n.strip()]
     if not numbers:
-        log.warning("send_whatsapp_blast: no WHATSAPP_TO_NUMBERS configured")
-        return {"ok": False, "error": "WHATSAPP_TO_NUMBERS not set", "sent": 0}
-    result = await broadcast_to_subscribers(message, numbers)
+        log.warning("send_whatsapp_blast: no recipients configured")
+        return {"ok": False, "error": "no recipients in WHATSAPP_TO_NUMBERS or TWILIO_VERIFIED_TO", "sent": 0}
+
+    if WA_PHONE_ID and WA_TOKEN:
+        result = await broadcast_to_subscribers(message, numbers)
+    else:
+        # Twilio WhatsApp fallback
+        sent = 0
+        for num in numbers:
+            if await send_via_twilio_whatsapp(num, message):
+                sent += 1
+        result = {"total": len(numbers), "sent": sent, "failed": len(numbers) - sent,
+                  "via": "twilio", "ts": datetime.now(timezone.utc).isoformat()}
+
     result["ok"] = result.get("sent", 0) > 0
     return result

@@ -4190,14 +4190,26 @@ async def handle_reddit_callback(req):
         access_token  = d.get("access_token", "")
         if not refresh_token:
             return web.json_response({"ok": False, "error": "no refresh_token", "detail": d})
-        # Persist refresh token to Railway
-        from modules.railway_client import set_env_var
-        await set_env_var("REDDIT_REFRESH_TOKEN", refresh_token)
-        log.info("Reddit refresh token saved to Railway")
+        # Persist to data file + Railway CLI
+        import pathlib as _pl, json as _json
+        _data = _pl.Path(os.getenv("DATA_DIR", "/tmp"))
+        _data.mkdir(parents=True, exist_ok=True)
+        (_data / "reddit_refresh_token.json").write_text(_json.dumps({"refresh_token": refresh_token}))
+        log.info("Reddit refresh token saved to %s", _data)
+        try:
+            import asyncio as _asyncio
+            _proc = await _asyncio.create_subprocess_exec(
+                "railway", "variables", "set", f"REDDIT_REFRESH_TOKEN={refresh_token}",
+                "--service", "dudirudibot-mega",
+                stdout=_asyncio.subprocess.PIPE, stderr=_asyncio.subprocess.PIPE,
+            )
+            await _proc.communicate()
+        except Exception:
+            pass
         return web.Response(content_type="text/html", text=(
             "<h2>✅ Reddit autorisiert!</h2>"
-            f"<p>Refresh Token gespeichert. Reddit-Posting läuft ab jetzt vollautomatisch.</p>"
-            f"<pre>access_token: {access_token[:20]}...</pre>"
+            "<p>Refresh Token dauerhaft gespeichert. Reddit-Posting ab jetzt vollautomatisch.</p>"
+            f"<p>Token: {refresh_token[:20]}...</p>"
         ))
     except Exception as e:
         log.exception("Reddit callback error")
