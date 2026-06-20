@@ -361,7 +361,7 @@ def _fallback_content_swarm(keyword: str) -> dict:
     _ds24 = (
         os.getenv("DS24_AFFILIATE_LINK")
         or os.getenv("AIITEC_AFFILIATE_URL")
-        or os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        or os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
     )
     idx = int(hashlib.md5(keyword.encode()).hexdigest(), 16) % len(_BRUTUS_TEMPLATES)
     tmpl = _BRUTUS_TEMPLATES[idx]
@@ -786,7 +786,7 @@ async def post_to_reddit(keyword: str, content_pack: dict) -> dict:
             api_headers = {**headers, "Authorization": f"bearer {tok}"}
             title = content_pack.get("headline", keyword)[:300]
             body  = content_pack.get("caption", content_pack.get("blog_intro", ""))[:2000]
-            _affiliate = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+            _affiliate = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
             body += f"\n\n🔗 Mehr: {_affiliate}"
             posted = 0
             for sub in ["shopify", "ecommerce", "entrepreneur"]:
@@ -864,7 +864,7 @@ async def post_to_pinterest(keyword: str, content_pack: dict, image_url: str = "
             image_url = "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png"
         title       = content_pack.get("headline", keyword)[:100]
         description = content_pack.get("caption", "")[:500]
-        _aff_base = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        _aff_base = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         link = f"{_aff_base}?utm_source=pinterest&utm_medium=pin&utm_campaign={keyword.replace(' ','_')}"
         payload = {"board_id": board_id, "title": title, "description": description,
                    "link": link, "media_source": {"source_type": "image_url", "url": image_url}}

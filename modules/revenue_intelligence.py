@@ -329,7 +329,7 @@ async def revenue_autopilot() -> dict:
     # Proaktiv: DS24 Affiliate Blast wenn keine neuen Subs (immer Umsatz pushen)
     if not new_subs:
         try:
-            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
             shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
             promos = [
                 f"💰 Passives Einkommen mit KI-Automation? Starte jetzt → {ds24_link}",
