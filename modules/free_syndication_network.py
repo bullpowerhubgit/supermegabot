@@ -77,7 +77,10 @@ Antworte NUR mit JSON:
                 data = await r.json(content_type=None)
         raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
         s, e = raw.find("{"), raw.rfind("}") + 1
-        return json.loads(raw[s:e])
+        result = json.loads(raw[s:e]) if s >= 0 else {}
+        if not result.get("title") or not result.get("content"):
+            return _fallback_article(topic, platform)
+        return result
     except Exception as exc:
         log.warning("Article generation failed: %s", exc)
         return _fallback_article(topic, platform)
@@ -126,8 +129,8 @@ async def post_to_devto(article: dict) -> dict:
         import aiohttp
         payload = {
             "article": {
-                "title": article["title"],
-                "body_markdown": article["content"],
+                "title": article.get("title", ""),
+                "body_markdown": article.get("content", ""),
                 "published": True,
                 "tags": article.get("tags", [])[:4],
                 "description": article.get("description", ""),
@@ -169,8 +172,8 @@ async def post_to_hashnode(article: dict) -> dict:
         """
         variables = {
             "input": {
-                "title": article["title"],
-                "contentMarkdown": article["content"],
+                "title": article.get("title", ""),
+                "contentMarkdown": article.get("content", ""),
                 "tags": [{"name": t, "slug": t.lower().replace(" ", "-")}
                          for t in article.get("tags", [])[:4]],
                 "publicationId": pub_id,
@@ -220,9 +223,9 @@ async def post_to_medium(article: dict) -> dict:
                 f"https://api.medium.com/v1/users/{user_id}/posts",
                 headers={"Authorization": f"Bearer {MEDIUM_KEY}", "Content-Type": "application/json"},
                 json={
-                    "title": article["title"],
+                    "title": article.get("title", ""),
                     "contentFormat": "markdown",
-                    "content": article["content"],
+                    "content": article.get("content", ""),
                     "tags": article.get("tags", [])[:5],
                     "publishStatus": "public",
                 },
@@ -248,9 +251,9 @@ async def post_to_discord(article: dict, blog_url: str = "") -> dict:
         return {"ok": False, "error": "DISCORD_WEBHOOK_URL not set"}
     try:
         import aiohttp
-        description = (article.get("description") or article["content"][:300]).strip() + "..."
+        description = (article.get("description") or article.get("content", "")[:300]).strip() + "..."
         embed = {
-            "title": article["title"],
+            "title": article.get("title", ""),
             "description": description,
             "color": 0x00ff88,
             "url": blog_url or DS24_AFFILIATE,
@@ -280,8 +283,8 @@ async def post_to_telegram(article: dict, blog_url: str = "") -> dict:
     try:
         import aiohttp
         link = blog_url or DS24_AFFILIATE
-        teaser = (article.get("description") or article["content"][:200]).strip()
-        text = f"📝 <b>{article['title']}</b>\n\n{teaser}\n\n🔗 <a href='{link}'>Artikel lesen</a>"
+        teaser = (article.get("description") or article.get("content", "")[:200]).strip()
+        text = f"📝 <b>{article.get('title', '')}</b>\n\n{teaser}\n\n🔗 <a href='{link}'>Artikel lesen</a>"
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",

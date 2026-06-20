@@ -5491,7 +5491,7 @@ async def create_app():
         await asyncio.sleep(5)  # wait for server to be ready
         try:
             async with aiohttp.ClientSession() as session:
-                async with session.get("http://localhost:8888/api/telegram/setup") as r:
+                async with session.get(f"http://localhost:{PORT}/api/telegram/setup") as r:
                     result = await r.json()
                     log.info("Telegram setup: %s", result)
         except Exception as e:
