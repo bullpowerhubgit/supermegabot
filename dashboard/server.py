@@ -5427,6 +5427,67 @@ async def handle_ebay_auth(req):
     })
 
 
+# ── GCP handlers ─────────────────────────────────────────────────────────────
+
+async def handle_gcp_ping(req):
+    try:
+        from modules.gcp_services import ping
+        result = await ping()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_gcp_translate(req):
+    data = await req.json()
+    text = data.get("text", "")
+    target = data.get("target", "en")
+    source = data.get("source", "de")
+    if not text:
+        return web.json_response({"ok": False, "error": "text required"})
+    try:
+        from modules.gcp_services import translate_text
+        translated = await translate_text(text, target, source)
+        return web.json_response({"ok": True, "original": text, "translated": translated, "target": target})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_gcp_vision(req):
+    data = await req.json()
+    image_url = data.get("url", "")
+    if not image_url:
+        return web.json_response({"ok": False, "error": "url required"})
+    try:
+        from modules.gcp_services import analyze_image
+        result = await analyze_image(image_url)
+        return web.json_response({"ok": bool(result), "analysis": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_gcp_enhance_products(req):
+    try:
+        from core.automation_scheduler import task_gcp_enhance_products
+        result = await task_gcp_enhance_products()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_gcp_sentiment(req):
+    data = await req.json()
+    text = data.get("text", "")
+    if not text:
+        return web.json_response({"ok": False, "error": "text required"})
+    try:
+        from modules.gcp_services import detect_sentiment
+        result = await detect_sentiment(text)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── Fiverr handlers ───────────────────────────────────────────────────────────
 
 async def handle_fiverr_status(req):
@@ -5992,6 +6053,13 @@ async def create_app():
     app.router.add_get("/api/ebay/search",    handle_ebay_search)
     app.router.add_get("/api/ebay/blast",     handle_ebay_blast)
     app.router.add_get("/api/ebay/auth",      handle_ebay_auth)
+
+    # GCP routes
+    app.router.add_get( "/api/gcp/ping",              handle_gcp_ping)
+    app.router.add_post("/api/gcp/translate",          handle_gcp_translate)
+    app.router.add_post("/api/gcp/vision",             handle_gcp_vision)
+    app.router.add_post("/api/gcp/sentiment",          handle_gcp_sentiment)
+    app.router.add_post("/api/gcp/enhance-products",   handle_gcp_enhance_products)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
