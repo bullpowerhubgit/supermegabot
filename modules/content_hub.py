@@ -129,7 +129,10 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
               "messages": [{"role": "user", "content": prompt}]},
         timeout=25,
     )
-    return r.json()["choices"][0]["message"]["content"]
+    d = r.json()
+    if "error" in d:
+        raise RuntimeError(f"OpenAI error: {d['error'].get('message','?')[:100]}")
+    return d["choices"][0]["message"]["content"]
 
 
 async def _tg(msg: str) -> None:
