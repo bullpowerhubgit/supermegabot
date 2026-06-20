@@ -9359,6 +9359,10 @@ async def handle_scheduler_trigger(req):
         "brutus_ds24_affiliate", "traffic_swarm_full", "traffic_mega_cycle",
         "gmc_product_fix", "shopify_full_auto", "amazon_autonomy_cycle",
         "ebay_auto_fill", "backlink_outreach", "seo_mega_factory", "ultra_indexnow_all",
+        "fiverr_sync", "upwork_sync", "fiverr_gig_blast", "tiktok_trend_blast",
+        "tiktok_brutus", "upwork_proposal_gen", "product_generator", "revenue_blitz",
+        "traffic_blitz_full", "ds24_traffic", "shopify_seo_blast", "shopify_mass_cycle",
+        "autonomous_pipeline", "auto_product_pipeline", "bundle_creation_cycle",
     }
     try:
         from core.automation_scheduler import get_scheduler
