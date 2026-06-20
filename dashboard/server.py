@@ -625,9 +625,19 @@ async def handle_backup_run(req):
         ts = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_dir = BASE_DIR / "data" / "backups" / ts
         backup_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(BASE_DIR / ".env", backup_dir / "supermegabot.env")
-        shutil.copy2(DATA_DIR / "memory.db", backup_dir / "memory.db")
-        return web.json_response({"ok": True, "path": str(backup_dir)})
+        backed = []
+        # .env may not exist on Railway (env vars injected at runtime)
+        env_path = BASE_DIR / ".env"
+        if env_path.exists():
+            shutil.copy2(env_path, backup_dir / "supermegabot.env")
+            backed.append(".env")
+        # Back up SQLite databases
+        for db_name in ["memory.db", "scheduler.db", "email_stats.json"]:
+            src = DATA_DIR / db_name
+            if src.exists():
+                shutil.copy2(src, backup_dir / db_name)
+                backed.append(db_name)
+        return web.json_response({"ok": True, "path": str(backup_dir), "backed_up": backed})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
@@ -1752,14 +1762,27 @@ async def handle_automation_status(req):
 
 
 async def handle_automation_run(req):
-    """Manually trigger a specific automation task."""
+    """Manually trigger one or multiple automation tasks."""
     try:
         data = await req.json()
-        task_name = data.get("task", "")
+    except Exception:
+        data = {}
+    task_name = data.get("task", "")
+    try:
         from core.automation_scheduler import get_scheduler
         sched = get_scheduler()
-        result = await sched.run_now(task_name)
-        return web.json_response({"ok": True, "result": result})
+        if task_name:
+            result = await sched.run_now(task_name)
+            return web.json_response({"ok": True, "task": task_name, "result": result})
+        # No task specified — run a quick multi-task burst
+        default_tasks = ["brutus_run", "shopify_sync", "digistore_sync", "mailchimp_sync"]
+        results = {}
+        for t in default_tasks:
+            try:
+                results[t] = await sched.run_now(t)
+            except Exception as e:
+                results[t] = f"error: {e}"
+        return web.json_response({"ok": True, "tasks_run": default_tasks, "results": results})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
