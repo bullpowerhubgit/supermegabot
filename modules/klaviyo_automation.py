@@ -193,6 +193,7 @@ async def create_and_send_campaign(
             "type": "campaign",
             "attributes": {
                 "name": name,
+                "channel": "email",
                 "audiences": {"included": [list_id]},
                 "send_strategy": {"method": "immediate"},
             }
