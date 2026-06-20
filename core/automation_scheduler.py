@@ -3100,6 +3100,8 @@ TASKS = [
     ("aliexpress_import",       task_aliexpress_import,       21600,  9600),  # 6h — AliExpress trending → Shopify
     ("printify_seo",            task_printify_seo,            43200,  9700),  # 12h — AI SEO alle Printify Produkte
     ("multi_platform_hourly",   task_multi_platform_post,      7200,  9800),  # 2h — Topic-Post alle Kanäle
+    # ── SHOPIFY AUTO-FILL — Produkte + Bilder + Text autonom ─────────────────
+    ("shopify_auto_fill",      task_shopify_auto_fill,        14400, 9850),  # 4h — Shopify: reparieren + neue Produkte + BrutusCore
     # ── DS24 FULL AUTO — Affiliate + Mailing + Traffic ───────────────────────
     ("ds24_traffic",           task_ds24_traffic,             10800, 9900),  # 3h — DS24 Affiliate Posts alle Kanäle
     ("ds24_auto_fill",         task_ds24_auto_fill,           21600, 9950),  # 6h — DS24 Account prüfen + befüllen
