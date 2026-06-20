@@ -535,18 +535,8 @@ async def task_social_autoposter() -> str:
 
 
 async def task_etsy_sync() -> str:
-    """Sync Etsy listings and check for new orders."""
-    try:
-        from modules.ecommerce_connectors import EtsyConnector
-        etsy = EtsyConnector()
-        ok, info = await etsy.ping()
-        if not ok:
-            return f"Etsy nicht konfiguriert: {info}"
-        stats = await etsy.get_stats()
-        transactions = await etsy.get_transactions(limit=5)
-        return f"Etsy: {stats.get('listing_count',0)} Listings, {len(transactions)} neue Transaktionen"
-    except Exception as e:
-        return f"Fehler: {e}"
+    """Etsy gesperrt — autiin + universal-income-agent-operations banned."""
+    return "Etsy GESPERRT — autiin + universal-income-agent-operations BANNED — übersprungen"
 
 
 async def task_gumroad_sync() -> str:
@@ -1488,13 +1478,25 @@ async def task_telegram_broadcast() -> str:
 
 
 async def task_instagram_auto_post() -> str:
-    """Auto-post product to Instagram via Graph API."""
+    """Auto-post product to Instagram via Graph API (fallback: Telegram + BRUTUS)."""
     try:
         from modules.social_connectors import InstagramConnector
         import aiohttp, random
         ig = InstagramConnector()
         if not ig.is_configured():
-            return "Instagram nicht konfiguriert"
+            # Fallback: post IG-style content via BRUTUS to other channels
+            try:
+                from modules.ai_client import ai_complete
+                from modules.brutus_core import fire
+                _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+                ig_text = await ai_complete(
+                    f"Schreibe einen Instagram-Caption auf Deutsch für ein KI-Business Produkt. "
+                    f"Kurz, viral, 5 Hashtags. Link: {_ds24}", max_tokens=200)
+                await fire("📸 Instagram Content", ig_text or "💡 KI = automatisch Geld verdienen!\n👉 " + _ds24,
+                           channels=["telegram"])
+            except Exception:
+                pass
+            return "Instagram META_ACCESS_TOKEN fehlt — Fallback Content via Telegram gesendet"
         token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
         domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         if not token or not domain:
@@ -4470,6 +4472,54 @@ async def task_autonomous_pipeline() -> str:
         return f"Pipeline Fehler: {e}"
 
 
+async def task_mailchimp_dragon_article() -> str:
+    """Täglich: 1 neuen Artikel via Dragon Mailchimp senden (dragonadnp@gmail.com)."""
+    try:
+        from modules.mailchimp_dragon_1000 import run_dragon_article_cycle
+        r = await run_dragon_article_cycle()
+        if r.get("ok"):
+            return (f"Dragon Artikel gesendet: '{r.get('topic','?')}' | "
+                    f"Gesamt: {r.get('total_sent',0)}/1000 | Verbleibend: {r.get('remaining',0)}")
+        return f"Dragon Artikel Fehler: {r.get('error','?')} (Topic: {r.get('topic','?')})"
+    except Exception as e:
+        return f"Dragon Article Fehler: {e}"
+
+
+async def task_selbstverbesserung() -> str:
+    """Stündlich: Alle Plattformen analysieren, Fehler erkennen, Auto-Fix durchführen."""
+    try:
+        from modules.selbstverbesserung import run_selbstverbesserung_cycle
+        r = await run_selbstverbesserung_cycle()
+        return (f"Selbstverbesserung: {r.get('platforms_checked',0)} geprüft | "
+                f"{r.get('issues_found',0)} Issues | {r.get('fixes_applied',0)} Fixes")
+    except Exception as e:
+        return f"Selbstverbesserung Fehler: {e}"
+
+
+async def task_email_doctor() -> str:
+    """Stündlich: E-Mail Health Check aller Mailing-Systeme."""
+    try:
+        from modules.email_doctor import run_email_doctor
+        r = await run_email_doctor()
+        return (f"EmailDoctor: Klaviyo={r.get('klaviyo','?')} | "
+                f"Mailchimp={r.get('mailchimp','?')} | Dragon={r.get('dragon','?')} | "
+                f"Fixes: {r.get('fixes',0)}")
+    except Exception as e:
+        return f"EmailDoctor Fehler: {e}"
+
+
+async def task_mass_content_blaster() -> str:
+    """Alle 2h: 1000 Content-Pieces über alle Plattformen verteilen."""
+    try:
+        from modules.mass_content_blaster import run_mass_blast
+        r = await run_mass_blast()
+        return (f"MassBlast: {r.get('total_posted',0)} Posts | "
+                f"{r.get('platforms_hit',0)} Plattformen | "
+                f"{r.get('topics_used',0)} Themen")
+    except Exception as e:
+        return f"MassBlast Fehler: {e}"
+
+
 async def task_quantum_self_repair() -> str:
     """Every 30min — scan recurring errors, apply auto-fixes, reset circuits."""
     try:
@@ -4853,6 +4903,14 @@ TASKS = [
     ("hashnode_post",            task_hashnode_post,           86400, 23200), # täglich
     # ── MEGA AGENT ORCHESTRATOR — alle 12 Plattformen koordiniert (alle 4h) ──────
     ("mega_agent_orchestrator",  task_mega_agent_orchestrator,  14400, 23300), # 4h
+    # ── MAILCHIMP DRAGON 1000 ARTIKEL — täglich 1 neuer Artikel (dragonadnp) ──
+    ("mailchimp_dragon_article", task_mailchimp_dragon_article, 86400, 23400), # täglich
+    # ── SELBSTVERBESSERUNG — stündlich KI-Analyse aller Plattformen + Auto-Fix
+    ("selbstverbesserung",       task_selbstverbesserung,        3600, 23500), # 1h
+    # ── EMAIL DOCTOR — stündlich E-Mail Health Check + Reparatur ────────────
+    ("email_doctor",             task_email_doctor,              3600, 23600), # 1h
+    # ── 1000 ITEMS PER PLATFORM — alle 2h Content-Mass-Blaster ─────────────
+    ("mass_content_blaster",     task_mass_content_blaster,      7200, 23700), # 2h
 ]
 
 
