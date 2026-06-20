@@ -4341,14 +4341,19 @@ async def handle_pipedrive_sync_shopify(req):
 # TRAFFIC BLITZ API
 # ---------------------------------------------------------------------------
 async def handle_traffic_blitz(req):
-    """POST /api/traffic/blitz — run full traffic blitz (LinkedIn + GitHub Pages + IndexNow + Telegram)."""
+    """POST /api/traffic/blitz — run full traffic blitz in background."""
     try:
-        from modules.traffic_blitz import run_traffic_blitz
-        result = await run_traffic_blitz()
-        return web.json_response(result)
-    except Exception as e:
-        log.error("handle_traffic_blitz: %s", e)
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        body = await req.json() if req.content_length else {}
+    except Exception:
+        body = {}
+    async def _bg():
+        try:
+            from modules.traffic_blitz import run_traffic_blitz
+            await run_traffic_blitz()
+        except Exception as e:
+            log.error("traffic_blitz bg: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "message": "Traffic Blitz gestartet (background)", "keywords": body.get("keywords", [])})
 
 
 async def handle_github_seo_post(req):
@@ -6082,12 +6087,14 @@ async def handle_ebay_autonomy_blast(request: web.Request) -> web.Response:
 
 
 async def handle_aliexpress_cycle(request: web.Request) -> web.Response:
-    try:
-        from modules.aliexpress_autonomy import run_aliexpress_cycle
-        r = await run_aliexpress_cycle()
-        return web.json_response(r)
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+    async def _bg():
+        try:
+            from modules.aliexpress_autonomy import run_aliexpress_cycle
+            await run_aliexpress_cycle()
+        except Exception as e:
+            log.error("aliexpress_cycle bg: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "message": "AliExpress cycle gestartet (background)"})
 
 
 async def handle_aliexpress_import(request: web.Request) -> web.Response:
@@ -6890,7 +6897,6 @@ async def create_app():
     app.router.add_post("/api/ebay/autonomy-cycle",        handle_ebay_autonomy_cycle)
     app.router.add_post("/api/ebay/autonomy-blast",        handle_ebay_autonomy_blast)
     app.router.add_post("/api/aliexpress/cycle",           handle_aliexpress_cycle)
-    app.router.add_post("/api/aliexpress/import",          handle_aliexpress_import)
     app.router.add_post("/api/printify/autonomy-cycle",    handle_printify_autonomy_cycle)
     app.router.add_post("/api/printify/create-pod",        handle_printify_create_pod)
     app.router.add_post("/api/printful/autonomy-cycle",    handle_printful_autonomy_cycle)
