@@ -50,6 +50,8 @@ DS24_KEY       = os.getenv("DIGISTORE24_API_KEY", "1682000-T8KjTRJXCO1IgXOU5I7am
 SMB_URL        = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
 
 # ── Datenbank ────────────────────────────────────────────────────────────────
+# Note: _init_db() also called at module-level (line after definition) so tables
+# exist on first import, even if run_forever() is never called.
 
 def _init_db():
     conn = sqlite3.connect(NEXUS_DB)
@@ -94,6 +96,12 @@ def _init_db():
     """)
     conn.commit()
     conn.close()
+
+
+try:
+    _init_db()
+except Exception:
+    pass
 
 
 def _log_action(action_type: str, keyword: str, channels: list, result: dict, revenue: float = 0):
