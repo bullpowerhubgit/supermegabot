@@ -4055,6 +4055,19 @@ async def task_ds24_affiliate_daily() -> str:
         return f"DS24 affiliate daily error: {e}"
 
 
+async def task_ds24_marketplace_cycle() -> str:
+    """Täglich: DS24 Marktplatz scan → bewerben → genehmigte Produkte blasten."""
+    try:
+        from modules.ds24_marketplace_auto import run_full_marketplace_cycle
+        r = await run_full_marketplace_cycle()
+        return (
+            f"DS24 Marktplatz: {r.get('scanned',0)} gescannt, "
+            f"{r.get('applied',0)} beworben, {r.get('blasted',0)} geblastet"
+        )
+    except Exception as e:
+        return f"DS24 Marketplace error: {e}"
+
+
 async def task_ds24_refill() -> str:
     """Täglich: Hält 1000 aktive DS24-Produkte — füllt fehlende automatisch auf."""
     try:
@@ -4577,6 +4590,7 @@ TASKS = [
     ("ds24_auto_create",         task_ds24_auto_create,        86400, 18300), # täglich — 2 DS24-Produkte erstellen
     ("ds24_affiliate_hourly",    task_ds24_affiliate_hourly,    3600,   180), # stündlich — 3 Affiliate-Produkte blasten
     ("ds24_affiliate_daily",     task_ds24_affiliate_daily,    86400, 18400), # täglich — alle 22 Produkte blasten
+    ("ds24_marketplace_cycle",   task_ds24_marketplace_cycle,  86400, 19800), # täglich — Marktplatz scan+apply+blast
     # ── DS24 MASSENANLEGER — 1000 Produkte Wartung + SEO-Blast ────────────────
     ("ds24_refill",              task_ds24_refill,             86400, 18500), # täglich — 1000 Produkte halten
     ("ds24_seo_blast",           task_ds24_seo_blast,         604800, 18700), # wöchentlich — Top-Produkte blasten
