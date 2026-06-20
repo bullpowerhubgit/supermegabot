@@ -295,6 +295,7 @@ async def track_competitors_daily() -> dict:
 
 async def revenue_autopilot() -> dict:
     """Hourly: scan all revenue signals, auto-act on each."""
+    import random
     actions_taken = []
 
     # Check for new Stripe subscriptions in last hour
@@ -324,6 +325,38 @@ async def revenue_autopilot() -> dict:
             + "\n".join(f"• {c['email']} (Score: {c['churn_score']})" for c in high_risk[:3])
         )
         actions_taken.append(f"churn_alerts:{len(high_risk)}")
+
+    # Proaktiv: DS24 Affiliate Blast wenn keine neuen Subs (immer Umsatz pushen)
+    if not new_subs:
+        try:
+            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+            shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+            promos = [
+                f"💰 Passives Einkommen mit KI-Automation? Starte jetzt → {ds24_link}",
+                f"🚀 Shopify-Shop vollautomatisch betreiben — so geht's: {ds24_link}",
+                f"📈 Affiliate-Marketing + Shopify = monatliche Einnahmen. Infos: {ds24_link}",
+                f"🤖 KI-Business in 2026: Shopify, DS24, Klaviyo — alles automatisch. Start: {ds24_link}",
+            ]
+            promo = random.choice(promos)
+            from modules.brutus_core import fire
+            await fire("💰 Revenue Push", promo, channels=["telegram"])
+            actions_taken.append("ds24_promo_blast")
+        except Exception:
+            pass
+
+    # Proaktiv: Gumroad Digital Products bewerben
+    try:
+        gumroad_url = "https://tecbuuss.gumroad.com/l/wcqdjx"
+        gumroad_promos = [
+            f"📦 Digitale Produkte — sofort downloadbar: {gumroad_url}",
+            f"💡 Shopify Automation Masterpack — 50+ Templates: {gumroad_url}",
+        ]
+        gumroad_promo = random.choice(gumroad_promos)
+        from modules.brutus_core import fire
+        await fire("Gumroad Promo", gumroad_promo, channels=["telegram"])
+        actions_taken.append("gumroad_promo_blast")
+    except Exception:
+        pass
 
     return {"actions": actions_taken, "timestamp": datetime.now(timezone.utc).isoformat()}
 
