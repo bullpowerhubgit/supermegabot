@@ -111,6 +111,45 @@ async def _tg(msg: str):
         pass
 
 
+async def _ai(prompt: str, max_tokens: int = 600) -> str:
+    """AI completion: Anthropic → OpenAI → Perplexity fallback chain."""
+    import aiohttp
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if anthropic_key:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                async with s.post("https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
+                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
+                          "messages": [{"role": "user", "content": prompt}]}) as r:
+                    d = await r.json(content_type=None)
+            text = d.get("content", [{}])[0].get("text", "")
+            if text:
+                return text
+        except Exception:
+            pass
+    for env_var, url, model in [
+        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
+        ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
+    ]:
+        key = os.getenv(env_var, "")
+        if not key:
+            continue
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                async with s.post(url,
+                    headers={"Authorization": f"Bearer {key}"},
+                    json={"model": model, "max_tokens": max_tokens,
+                          "messages": [{"role": "user", "content": prompt}]}) as r:
+                    d = await r.json(content_type=None)
+            text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+            if text:
+                return text
+        except Exception:
+            continue
+    raise RuntimeError("Kein AI Key mit Credits verfügbar (Anthropic/OpenAI/Perplexity)")
+
+
 # ── Individual task implementations ─────────────────────────────────────────
 
 async def task_digistore_sync() -> str:
@@ -1073,12 +1112,9 @@ async def task_klaviyo_auto_campaign() -> str:
         from datetime import datetime
         klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
         list_id = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
-        anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-        openai_key = os.getenv("OPENAI_API_KEY", "")
-        if not klaviyo_key or (not anthropic_key and not openai_key):
-            return "Klaviyo Key oder AI Key fehlt"
+        if not klaviyo_key:
+            return "KLAVIYO_API_KEY fehlt"
 
-        # Generate email content via Claude
         today = datetime.now().strftime("%d.%m.%Y")
         prompt = f"""Schreibe eine Marketing-Email auf Deutsch für heute ({today}).
 Produkt: AI Income Machine (€37) auf Digistore24.
@@ -1086,29 +1122,7 @@ Ton: motivierend, persönlich, mit klarem CTA.
 Format JSON: {{"subject": "...", "preview": "...", "html_body": "<html>...</html>"}}
 Nur JSON, kein anderer Text."""
 
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 800,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                data = await r.json(content_type=None)
-        if "content" not in data:
-            openai_key = os.getenv("OPENAI_API_KEY", "")
-            if not openai_key:
-                return "Kein AI Key verfügbar"
-            async with aiohttp.ClientSession() as s:
-                async with s.post("https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openai_key}"},
-                    json={"model": "gpt-4o-mini", "max_tokens": 800,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=25)) as r:
-                    oai = await r.json(content_type=None)
-            raw = oai.get("choices", [{}])[0].get("message", {}).get("content", "{}")
-        else:
-            raw = data["content"][0]["text"]
+        raw = await _ai(prompt, max_tokens=800)
         email_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1])
 
         # Create Klaviyo campaign
@@ -1439,33 +1453,14 @@ async def task_linkedin_auto_post() -> str:
         linkedin_token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
         linkedin_urn   = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
         anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
-        openai_key = os.getenv("OPENAI_API_KEY", "")
         if not linkedin_token:
             return "LINKEDIN_ACCESS_TOKEN fehlt"
         li_prompt = ("Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
                      "Max 1200 Zeichen. Erwähne am Ende: https://www.digistore24.com/product/669750 (AI Income Machine €37). Nur Text, kein JSON.")
-        text = ""
-        if anthropic_key:
-            try:
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-                    async with s.post("https://api.anthropic.com/v1/messages",
-                        headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
-                        json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
-                              "messages": [{"role": "user", "content": li_prompt}]}) as r:
-                        data = await r.json(content_type=None)
-                text = data.get("content", [{}])[0].get("text", "").strip()
-            except Exception:
-                pass
-        if not text and openai_key:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                async with s.post("https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openai_key}"},
-                    json={"model": "gpt-4o-mini", "max_tokens": 400,
-                          "messages": [{"role": "user", "content": li_prompt}]}) as r:
-                    oai = await r.json(content_type=None)
-            text = oai.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
-        if not text:
-            return "Kein LinkedIn-Content generiert (kein AI Key)"
+        try:
+            text = await _ai(li_prompt, max_tokens=400)
+        except Exception:
+            return "Kein LinkedIn-Content generiert (kein AI Key mit Credits)"
         headers = {
             "Authorization": f"Bearer {linkedin_token}",
             "Content-Type": "application/json",
@@ -1597,10 +1592,6 @@ async def task_ai_content_calendar() -> str:
 async def task_revenue_optimize() -> str:
     """Alle 12h: KI analysiert Revenue und sendet Optimierungs-Empfehlungen per Telegram."""
     import aiohttp, json as _json
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-    openai_key = os.getenv("OPENAI_API_KEY", "")
-    if not anthropic_key and not openai_key:
-        return "Revenue optimize: kein AI Key"
     try:
         from modules.digistore24_automation import get_sales_stats
         ds24_stats = await get_sales_stats()
@@ -1612,36 +1603,12 @@ async def task_revenue_optimize() -> str:
         "Gib 3 konkrete sofort umsetzbare Maßnahmen zur Umsatzsteigerung. "
         "Format: nummerierte Liste, je 1 Satz."
     )
-    recommendations = "Keine Empfehlung"
     try:
-        if anthropic_key:
-            async with aiohttp.ClientSession() as session:
-                resp = await session.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=30),
-                )
-                data = await resp.json()
-            rec = data.get("content", [{}])[0].get("text", "")
-            if rec:
-                recommendations = rec
-        if recommendations == "Keine Empfehlung" and openai_key:
-            async with aiohttp.ClientSession() as session:
-                resp = await session.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {openai_key}"},
-                    json={"model": "gpt-4o-mini", "max_tokens": 400,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=30),
-                )
-                data = await resp.json()
-            recommendations = data.get("choices", [{}])[0].get("message", {}).get("content", "Keine Empfehlung")
+        recommendations = await _ai(prompt, max_tokens=400)
         token = os.getenv("TELEGRAM_BOT_TOKEN", "")
         chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
         if token and chat_id:
+            import aiohttp
             async with aiohttp.ClientSession() as s:
                 await s.post(
                     f"https://api.telegram.org/bot{token}/sendMessage",
@@ -1651,7 +1618,7 @@ async def task_revenue_optimize() -> str:
                 )
         return f"Revenue optimize: {recommendations[:100]}"
     except Exception as e:
-        return f"Revenue optimize Fehler: {e}"
+        return f"Revenue optimize: {e}"
 
 
 async def task_google_index_submit() -> str:
