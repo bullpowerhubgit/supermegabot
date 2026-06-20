@@ -208,8 +208,8 @@ async def task_shopify_sync() -> str:
     """Fetch Shopify product + order counts and cache them."""
     try:
         import aiohttp
-        token  = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        token  = os.getenv("SHOPIFY_ACCESS_TOKEN", "") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "") or os.getenv("SHOPIFY_STORE_DOMAIN", "")
         if not token or not domain:
             return "Shopify nicht konfiguriert"
         base = f"https://{domain}" if not domain.startswith("http") else domain
@@ -498,8 +498,8 @@ async def task_shopify_orders_alert() -> str:
     """Check for new Shopify orders every 10 min and alert via Telegram."""
     try:
         import aiohttp
-        token  = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        token  = os.getenv("SHOPIFY_ACCESS_TOKEN", "") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "") or os.getenv("SHOPIFY_STORE_DOMAIN", "")
         if not token or not domain:
             return "Shopify nicht konfiguriert"
         base = f"https://{domain}" if not domain.startswith("http") else domain
@@ -1005,7 +1005,20 @@ Gib NUR JSON zurück: {{"title": "...", "author": "BullPower Hub", "body_html": 
                 timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
                 data = await r.json(content_type=None)
-        raw = data["content"][0]["text"]
+        if "content" not in data:
+            openai_key = os.getenv("OPENAI_API_KEY", "")
+            if not openai_key:
+                return "Kein AI Key verfügbar"
+            async with aiohttp.ClientSession() as s:
+                async with s.post("https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}"},
+                    json={"model": "gpt-4o-mini", "max_tokens": 1500,
+                          "messages": [{"role": "user", "content": prompt}]},
+                    timeout=aiohttp.ClientTimeout(total=30)) as r:
+                    oai = await r.json(content_type=None)
+            raw = oai.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+        else:
+            raw = data["content"][0]["text"]
         post_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1])
 
         # Get blog ID
@@ -1081,11 +1094,24 @@ Nur JSON, kein anderer Text."""
                 timeout=aiohttp.ClientTimeout(total=20),
             ) as r:
                 data = await r.json(content_type=None)
-        raw = data["content"][0]["text"]
+        if "content" not in data:
+            openai_key = os.getenv("OPENAI_API_KEY", "")
+            if not openai_key:
+                return "Kein AI Key verfügbar"
+            async with aiohttp.ClientSession() as s:
+                async with s.post("https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}"},
+                    json={"model": "gpt-4o-mini", "max_tokens": 800,
+                          "messages": [{"role": "user", "content": prompt}]},
+                    timeout=aiohttp.ClientTimeout(total=25)) as r:
+                    oai = await r.json(content_type=None)
+            raw = oai.get("choices", [{}])[0].get("message", {}).get("content", "{}")
+        else:
+            raw = data["content"][0]["text"]
         email_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1])
 
         # Create Klaviyo campaign
-        headers = {"Authorization": f"Klaviyo-API-Key {klaviyo_key}", "revision": "2024-06-15", "Content-Type": "application/json"}
+        headers = {"Authorization": f"Klaviyo-API-Key {klaviyo_key}", "revision": "2024-10-15", "Content-Type": "application/json"}
         async with aiohttp.ClientSession() as s:
             # Create campaign
             async with s.post("https://a.klaviyo.com/api/campaigns/",
@@ -1717,7 +1743,7 @@ async def task_viral_referral_trigger() -> str:
                     await s.post(
                         "https://a.klaviyo.com/api/profile-import/",
                         headers={"Authorization": f"Klaviyo-API-Key {klaviyo_key}",
-                                 "revision": "2024-06-15", "Content-Type": "application/json"},
+                                 "revision": "2024-10-15", "Content-Type": "application/json"},
                         json={"data": {"type": "profile", "attributes": {
                             "email": email,
                             "properties": {"referral_url": f"https://dudirudibot-mega-production.up.railway.app/api/referral/{ref}",
@@ -1760,7 +1786,7 @@ async def task_onboarding_sequence_trigger() -> str:
                     await s.post(
                         "https://a.klaviyo.com/api/profile-import/",
                         headers={"Authorization": f"Klaviyo-API-Key {klaviyo_key}",
-                                 "revision": "2024-06-15", "Content-Type": "application/json"},
+                                 "revision": "2024-10-15", "Content-Type": "application/json"},
                         json={"data": {"type": "profile", "attributes": {
                             "email": email, "first_name": fname,
                             "properties": {"onboarding_day": 1, "onboarding_started": True,
