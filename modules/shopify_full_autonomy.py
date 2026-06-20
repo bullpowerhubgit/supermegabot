@@ -784,7 +784,7 @@ Antworte NUR mit diesem JSON:
             product_payload = {
                 "title": data.get("title", keyword)[:255],
                 "body_html": data.get("body_html", ""),
-                "vendor": "BullPowerHub",
+                "vendor": "AIITEC",
                 "product_type": data.get("product_type", "Gadget"),
                 "tags": data.get("tags", "trending,2026"),
                 "status": "active",
@@ -1157,7 +1157,7 @@ mutation CreateArticle($article: ArticleCreateInput!) {
                     "body": content_html,
                     "isPublished": True,
                     "tags": tags_list,
-                    "author": {"name": "BullPower Hub"},
+                    "author": {"name": "AIITEC"},
                 }
             }
             result = await _graphql(gql, gql_vars)
