@@ -4219,6 +4219,55 @@ async def handle_trello_create_card(req):
 
 
 # ---------------------------------------------------------------------------
+# PIPEDRIVE CRM
+# ---------------------------------------------------------------------------
+async def handle_pipedrive_status(req):
+    """GET /api/pipedrive/status — CRM connection status + deal count."""
+    try:
+        from modules.pipedrive_client import check_status
+        result = await check_status()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_pipedrive_deals(req):
+    """GET /api/pipedrive/deals — list open deals."""
+    try:
+        from modules.pipedrive_client import list_deals
+        deals = await list_deals(limit=20)
+        return web.json_response({"ok": True, "deals": deals, "count": len(deals)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_pipedrive_persons(req):
+    """GET /api/pipedrive/persons — list persons/leads."""
+    try:
+        from modules.pipedrive_client import list_persons
+        persons = await list_persons(limit=20)
+        return web.json_response({"ok": True, "persons": persons, "count": len(persons)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_pipedrive_sync_shopify(req):
+    """POST /api/pipedrive/sync-shopify — sync Shopify customers to Pipedrive."""
+    try:
+        from modules.pipedrive_client import sync_shopify_customer
+        from modules.shopify_automation import get_customers
+        customers = await get_customers(limit=50)
+        synced = 0
+        for c in customers:
+            email = c.get("email", "")
+            name = f"{c.get('first_name','')} {c.get('last_name','')}".strip()
+            order_value = float(c.get("total_spent", 0) or 0)
+            if email:
+                await sync_shopify_customer(email=email, name=name, order_value=order_value,
+                                            orders_count=c.get("orders_count", 0))
+                synced += 1
+        return web.json_response({"ok": True, "synced": synced})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+# ---------------------------------------------------------------------------
 # TRAFFIC BLITZ API
 # ---------------------------------------------------------------------------
 async def handle_traffic_blitz(req):
@@ -5384,6 +5433,185 @@ async def handle_amazon_search(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+# ── NEXUS-1 handlers ─────────────────────────────────────────────────────────
+
+async def handle_nexus_status(req):
+    """GET /api/nexus/status — NEXUS Health + Strategy Scores."""
+    try:
+        from modules.nexus import _get_strategy_scores, get_best_channel_now, NEXUS_DB
+        import sqlite3
+        scores = _get_strategy_scores()
+        conn = sqlite3.connect(NEXUS_DB)
+        today_count = conn.execute(
+            "SELECT COUNT(*) FROM actions WHERE date(ts) = date('now')"
+        ).fetchone()[0]
+        total_count = conn.execute("SELECT COUNT(*) FROM actions").fetchone()[0]
+        last_signal = conn.execute(
+            "SELECT keyword, source, score FROM signals ORDER BY id DESC LIMIT 1"
+        ).fetchone()
+        conn.close()
+        return web.json_response({
+            "ok": True,
+            "status": "NEXUS-1 ONLINE",
+            "today_actions": today_count,
+            "total_actions": total_count,
+            "best_channel_now": get_best_channel_now(),
+            "strategy_scores": scores,
+            "last_signal": {"keyword": last_signal[0], "source": last_signal[1],
+                            "score": last_signal[2]} if last_signal else None,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_nexus_run(req):
+    """POST /api/nexus/run — Startet sofort einen NEXUS-Zyklus."""
+    asyncio.create_task(_nexus_run_bg())
+    return web.json_response({"ok": True, "message": "NEXUS cycle gestartet (async)"})
+
+
+async def _nexus_run_bg():
+    try:
+        from modules.nexus import run_nexus_cycle
+        result = await run_nexus_cycle()
+        log.info("NEXUS manual run: %s", result)
+    except Exception as e:
+        log.error("NEXUS manual run error: %s", e)
+
+
+async def handle_nexus_signals(req):
+    """GET /api/nexus/signals — Letzte 50 gescannte Signale."""
+    try:
+        from modules.nexus import NEXUS_DB
+        import sqlite3
+        conn = sqlite3.connect(NEXUS_DB)
+        rows = conn.execute(
+            "SELECT ts, source, keyword, score FROM signals ORDER BY id DESC LIMIT 50"
+        ).fetchall()
+        conn.close()
+        return web.json_response({
+            "ok": True,
+            "signals": [{"ts": r[0], "source": r[1], "keyword": r[2], "score": r[3]}
+                        for r in rows]
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_nexus_actions(req):
+    """GET /api/nexus/actions — Letzte 50 ausgeführte Aktionen + Performance."""
+    try:
+        from modules.nexus import NEXUS_DB
+        import sqlite3
+        conn = sqlite3.connect(NEXUS_DB)
+        rows = conn.execute("""
+            SELECT ts, action_type, keyword, success, revenue_eur, result
+            FROM actions ORDER BY id DESC LIMIT 50
+        """).fetchall()
+        strategy = conn.execute(
+            "SELECT action_type, score, runs, wins FROM strategy ORDER BY score DESC"
+        ).fetchall()
+        conn.close()
+        return web.json_response({
+            "ok": True,
+            "actions": [{"ts": r[0], "type": r[1], "keyword": r[2],
+                         "success": bool(r[3]), "revenue": r[4]} for r in rows],
+            "strategy": [{"action": r[0], "score": r[1],
+                          "runs": r[2], "wins": r[3]} for r in strategy]
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_nexus_action_fire(req):
+    """POST /api/nexus/action — Führt eine spezifische NEXUS-Aktion sofort aus."""
+    data = await req.json()
+    action_type = data.get("action_type", "CONTENT_SURGE")
+    keyword = data.get("keyword", "online business")
+    try:
+        from modules.nexus import execute_action
+        result = await execute_action(action_type, keyword)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_nexus_evolve(req):
+    """POST /api/nexus/evolve — Startet Self-Evolution sofort."""
+    try:
+        from modules.nexus import evolve_strategy
+        result = await evolve_strategy()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_nexus_report(req):
+    """GET /api/nexus/report — Tages-Report generieren + senden."""
+    try:
+        from modules.nexus import send_daily_report
+        result = await send_daily_report()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_nexus_dna(req):
+    """GET /api/nexus/dna — Revenue-DNA: beste Kanal/Zeitkombinationen."""
+    try:
+        from modules.nexus import NEXUS_DB
+        import sqlite3
+        conn = sqlite3.connect(NEXUS_DB)
+        rows = conn.execute("""
+            SELECT hour, weekday, channel, AVG(conversion_rate) as cr, SUM(sample_size) as samples
+            FROM revenue_dna GROUP BY hour, weekday, channel
+            ORDER BY cr DESC LIMIT 20
+        """).fetchall()
+        conn.close()
+        days = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"]
+        return web.json_response({
+            "ok": True,
+            "dna": [{"hour": r[0], "weekday": days[r[1] % 7], "channel": r[2],
+                     "conversion_rate": round(r[3], 3), "samples": r[4]}
+                    for r in rows]
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_nexus_broadcast(req):
+    """POST /api/nexus/broadcast — Sofort-Broadcast an ALLE Agenten + Kanäle."""
+    data = await req.json()
+    message = data.get("message", "")
+    if not message:
+        return web.json_response({"ok": False, "error": "message required"})
+    try:
+        from modules.brutus_core import fire
+        from modules.notify_hub import notify
+        from modules.hermes_bridge import delegate
+        from modules.slack_notify import send_slack
+
+        # BrutusCore: alle 12 Kanäle
+        brutus_task = asyncio.create_task(fire(message, message))
+        # Hermes: Strategie-Delegation
+        hermes_task = asyncio.create_task(delegate(f"Handle diesen Event: {message}", "broadcast"))
+        # Slack + Telegram direct
+        slack_task = asyncio.create_task(send_slack(f"📢 NEXUS Broadcast: {message}", level="info"))
+
+        b_result, h_result, s_result = await asyncio.gather(
+            brutus_task, hermes_task, slack_task, return_exceptions=True
+        )
+        notify("NEXUS Broadcast", message[:200], "info")
+        return web.json_response({
+            "ok": True,
+            "brutus_channels": b_result.get("channels_hit", 0) if isinstance(b_result, dict) else 0,
+            "hermes_ok": h_result.get("ok", False) if isinstance(h_result, dict) else False,
+            "slack_ok": bool(s_result) if not isinstance(s_result, Exception) else False,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── eBay handlers ─────────────────────────────────────────────────────────────
 
 async def handle_ebay_status(req):
@@ -6026,6 +6254,12 @@ async def create_app():
     app.router.add_post("/api/review/run",               handle_review_automation_run)
     app.router.add_post("/api/winback/run",              handle_winback_run)
 
+    # ── Pipedrive ─────────────────────────────────────────────────────────────
+    app.router.add_get( "/api/pipedrive/status",         handle_pipedrive_status)
+    app.router.add_get( "/api/pipedrive/deals",          handle_pipedrive_deals)
+    app.router.add_get( "/api/pipedrive/persons",        handle_pipedrive_persons)
+    app.router.add_post("/api/pipedrive/sync-shopify",   handle_pipedrive_sync_shopify)
+
     # ── Trello ────────────────────────────────────────────────────────────────
     app.router.add_get( "/api/trello/status",            handle_trello_status)
     app.router.add_post("/api/trello/token",             handle_trello_set_token)
@@ -6053,6 +6287,17 @@ async def create_app():
     app.router.add_get("/api/ebay/search",    handle_ebay_search)
     app.router.add_get("/api/ebay/blast",     handle_ebay_blast)
     app.router.add_get("/api/ebay/auth",      handle_ebay_auth)
+
+    # NEXUS-1 routes
+    app.router.add_get( "/api/nexus/status",          handle_nexus_status)
+    app.router.add_post("/api/nexus/run",              handle_nexus_run)
+    app.router.add_get( "/api/nexus/signals",         handle_nexus_signals)
+    app.router.add_get( "/api/nexus/actions",         handle_nexus_actions)
+    app.router.add_post("/api/nexus/action",          handle_nexus_action_fire)
+    app.router.add_post("/api/nexus/evolve",          handle_nexus_evolve)
+    app.router.add_get( "/api/nexus/report",          handle_nexus_report)
+    app.router.add_get( "/api/nexus/dna",             handle_nexus_dna)
+    app.router.add_post("/api/nexus/broadcast",       handle_nexus_broadcast)
 
     # GCP routes
     app.router.add_get( "/api/gcp/ping",              handle_gcp_ping)

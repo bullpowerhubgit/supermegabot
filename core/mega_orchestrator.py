@@ -423,6 +423,18 @@ class CommandRouter:
             # Finance
             "finanzen": self._cmd_finances,
             "abos": self._cmd_subscriptions,
+            # NEXUS-1 Autonomous Revenue Superintelligence
+            "/nexus": self._cmd_nexus,
+            "nexus": self._cmd_nexus,
+            "/nexus_run": self._cmd_nexus_run,
+            "nexus run": self._cmd_nexus_run,
+            "/nexus_blast": self._cmd_nexus_blast,
+            "nexus blast": self._cmd_nexus_blast,
+            "/nexus_signals": self._cmd_nexus,
+            "/nexus_actions": self._cmd_nexus,
+            "/nexus_evolve": self._cmd_nexus,
+            "/nexus_report": self._cmd_nexus,
+            "/nexus_dna": self._cmd_nexus,
             # Help
             "hilfe": self._cmd_help,
             "help": self._cmd_help,
@@ -1078,7 +1090,75 @@ class CommandRouter:
     /agent_status       - Alle autonomen Agenten
     /deploy_status      - Kritische Dienste prüfen
 
-  Kosten: 95% lokal (Ollama), 5% externe APIs"""
+  Kosten: 95% lokal (Ollama), 5% externe APIs
+
+  🤖 NEXUS-1 (Autonome Revenue-Superintelligenz):
+    /nexus              - NEXUS Status + Strategie-Scores
+    /nexus_run          - Sofort-Zyklus starten
+    /nexus_signals      - Letzte erkannte Trends
+    /nexus_actions      - Letzte Aktionen + Performance
+    /nexus_evolve       - Self-Evolution jetzt
+    /nexus_report       - Tages-Report senden
+    /nexus_dna          - Revenue-DNA anzeigen
+    /nexus_blast <msg>  - Broadcast an alle Kanäle + Agenten"""
+
+    async def _cmd_nexus(self, text: str, session_id: str) -> str:
+        """NEXUS-1 Status via Telegram."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(f"{smb_url}/api/nexus/status",
+                                 timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    data = await r.json()
+            scores = data.get("strategy_scores", {})
+            top3 = sorted(scores.items(), key=lambda x: x[1].get("score", 0), reverse=True)[:3]
+            top3_str = "\n".join([f"  • {a}: {v.get('score',0):.0f}% ({v.get('wins',0)}/{v.get('runs',0)} wins)"
+                                  for a, v in top3])
+            last = data.get("last_signal") or {}
+            return (
+                f"🤖 NEXUS-1 ONLINE\n"
+                f"{'━'*30}\n"
+                f"⚡ Heute: {data.get('today_actions', 0)} Aktionen\n"
+                f"📊 Gesamt: {data.get('total_actions', 0)} Aktionen\n"
+                f"📡 Bester Kanal jetzt: {data.get('best_channel_now', '?')}\n"
+                f"🔍 Letztes Signal: {last.get('keyword', '?')[:40]}\n"
+                f"   (Quelle: {last.get('source', '?')}, Score: {last.get('score', 0):.0f})\n\n"
+                f"🏆 Top-Strategien:\n{top3_str}"
+            )
+        except Exception as e:
+            return f"NEXUS Status Fehler: {e}"
+
+    async def _cmd_nexus_run(self, text: str, session_id: str) -> str:
+        """Startet sofort einen NEXUS-Zyklus."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/nexus/run",
+                                  timeout=aiohttp.ClientTimeout(total=5)) as r:
+                    await r.json()
+            return "⚡ NEXUS-Zyklus gestartet!\nScan → Score → Decide → Create → Deploy → Track → Learn\nErgebnis kommt in ~30 Sekunden."
+        except Exception as e:
+            return f"NEXUS run Fehler: {e}"
+
+    async def _cmd_nexus_blast(self, text: str, session_id: str) -> str:
+        """Broadcast an alle Kanäle + Agenten."""
+        import aiohttp
+        msg = text.replace("/nexus_blast", "").strip() or "NEXUS: Alle Systeme aktiv!"
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/nexus/broadcast",
+                                  json={"message": msg},
+                                  timeout=aiohttp.ClientTimeout(total=30)) as r:
+                    data = await r.json()
+            return (f"📢 Broadcast gesendet!\n"
+                    f"BrutusCore: {data.get('brutus_channels', 0)} Kanäle\n"
+                    f"Hermes: {'✅' if data.get('hermes_ok') else '❌'}\n"
+                    f"Slack: {'✅' if data.get('slack_ok') else '❌'}")
+        except Exception as e:
+            return f"Broadcast Fehler: {e}"
 
     async def _cmd_start(self, text: str, session_id: str) -> str:
         """Send the welcome message listing all active modules."""
