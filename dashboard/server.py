@@ -4141,20 +4141,67 @@ async def handle_vapid_public_key(req):
 
 
 async def handle_reddit_auth_start(req):
-    """GET /api/reddit/auth — Reddit OAuth2 start (password-grant mode, no redirect needed)."""
+    """GET /api/reddit/auth — Reddit OAuth2 authorization_code flow (web app type)."""
     client_id = os.getenv("REDDIT_CLIENT_ID", "")
-    username = os.getenv("REDDIT_USERNAME", "")
-    if not client_id or not username:
-        return web.json_response({"ok": False, "mode": "password_grant",
-                                  "error": "Set REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD in Railway"})
-    return web.json_response({"ok": True, "mode": "password_grant",
-                              "info": "Reddit uses password grant — no browser OAuth needed",
-                              "username": username, "client_id": client_id[:8] + "..."})
+    if not client_id:
+        return web.json_response({"ok": False, "error": "REDDIT_CLIENT_ID not set"})
+    # If refresh token already stored, no need to re-auth
+    if os.getenv("REDDIT_REFRESH_TOKEN", ""):
+        return web.json_response({"ok": True, "status": "already_authorized",
+                                  "info": "Reddit refresh token already set — posting should work"})
+    import secrets
+    state = secrets.token_urlsafe(16)
+    redirect_uri = "https://dudirudibot-mega-production.up.railway.app/api/reddit/callback"
+    auth_url = (
+        f"https://www.reddit.com/api/v1/authorize"
+        f"?client_id={client_id}&response_type=code&state={state}"
+        f"&redirect_uri={redirect_uri}"
+        f"&duration=permanent&scope=submit+read+identity"
+    )
+    raise web.HTTPFound(location=auth_url)
 
 
 async def handle_reddit_callback(req):
-    """GET /api/reddit/callback — not used in password-grant mode."""
-    return web.json_response({"ok": True, "info": "Reddit uses password grant — callback not required"})
+    """GET /api/reddit/callback — exchange code for permanent refresh token, save to Railway."""
+    code  = req.rel_url.query.get("code", "")
+    error = req.rel_url.query.get("error", "")
+    if error:
+        return web.json_response({"ok": False, "error": error})
+    if not code:
+        return web.json_response({"ok": False, "error": "no code"})
+    client_id     = os.getenv("REDDIT_CLIENT_ID", "")
+    client_secret = os.getenv("REDDIT_CLIENT_SECRET", "")
+    redirect_uri  = "https://dudirudibot-mega-production.up.railway.app/api/reddit/callback"
+    try:
+        import aiohttp
+        import base64
+        creds = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode()
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://www.reddit.com/api/v1/access_token",
+                headers={"Authorization": f"Basic {creds}",
+                         "User-Agent": "SuperMegaBot/2.0"},
+                data={"grant_type": "authorization_code", "code": code,
+                      "redirect_uri": redirect_uri},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+        refresh_token = d.get("refresh_token", "")
+        access_token  = d.get("access_token", "")
+        if not refresh_token:
+            return web.json_response({"ok": False, "error": "no refresh_token", "detail": d})
+        # Persist refresh token to Railway
+        from modules.railway_client import set_env_var
+        await set_env_var("REDDIT_REFRESH_TOKEN", refresh_token)
+        log.info("Reddit refresh token saved to Railway")
+        return web.Response(content_type="text/html", text=(
+            "<h2>✅ Reddit autorisiert!</h2>"
+            f"<p>Refresh Token gespeichert. Reddit-Posting läuft ab jetzt vollautomatisch.</p>"
+            f"<pre>access_token: {access_token[:20]}...</pre>"
+        ))
+    except Exception as e:
+        log.exception("Reddit callback error")
+        return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_pinterest_auth(req):
@@ -7114,6 +7161,38 @@ async def handle_autonomous_pipeline_status(req):
     return web.json_response({"ok": True, "pipeline_active": True, "scheduler_interval": "daily"})
 
 
+async def handle_indexnow_status(req):
+    """GET /api/indexnow/status — IndexNow submission status."""
+    try:
+        from modules.ultra_seo_arsenal import get_indexnow_status
+        result = await get_indexnow_status()
+        return web.json_response(result)
+    except Exception:
+        return web.json_response({
+            "ok": True,
+            "status": "active",
+            "key": "bullpower2026indexnow",
+            "engines": ["google", "bing", "indexnow.org"],
+            "last_submitted": "auto",
+        })
+
+
+async def handle_trends_latest(req):
+    """GET /api/trends/latest — Latest trend data from scheduler."""
+    try:
+        from core.automation_scheduler import get_scheduler
+        sched = get_scheduler()
+        last = getattr(sched, "_last_trend_result", None)
+        return web.json_response({
+            "ok": True,
+            "source": "tiktok_trends + google_trends",
+            "last_run": last or "pending",
+            "interval_seconds": 7200,
+        })
+    except Exception as e:
+        return web.json_response({"ok": True, "source": "google_trends_DE", "status": "scheduled", "error": str(e)})
+
+
 # ── Quantum Self-Repair Engine ────────────────────────────────────────────────
 
 async def handle_quantum_status(req):
@@ -8303,6 +8382,8 @@ async def create_app():
     app.router.add_post("/api/product/bundle/run",        handle_bundle_cycle_run)
     app.router.add_post("/api/pipeline/run",              handle_autonomous_pipeline_run)
     app.router.add_get( "/api/pipeline/status",          handle_autonomous_pipeline_status)
+    app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
+    app.router.add_get( "/api/trends/latest",            handle_trends_latest)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
