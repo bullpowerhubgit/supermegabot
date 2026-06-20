@@ -7275,55 +7275,83 @@ async def handle_revenue_summary(req):
     """GET /api/revenue/summary — combined revenue from Stripe + Shopify + DS24."""
     import aiohttp as _aiohttp
     try:
-        results = {"stripe": {}, "shopify": {}, "ds24": {}, "total_today_eur": 0.0}
         today = datetime.utcnow().date().isoformat()
+        shopify_eur = 0.0
+        shopify_orders = 0
+        ds24_eur = 0.0
+        stripe_eur = 0.0
+        stripe_detail = {}
+        shopify_detail = {}
+        ds24_detail = {}
 
         async with _aiohttp.ClientSession() as session:
-            # Stripe balance
+            # Stripe — today's charges (real revenue, not balance)
             stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
             if stripe_key:
                 try:
-                    async with session.get(
-                        "https://api.stripe.com/v1/balance",
-                        headers={"Authorization": f"Bearer {stripe_key}"},
-                        timeout=_aiohttp.ClientTimeout(total=8)
-                    ) as r:
-                        d = await r.json()
-                    avail = sum(b["amount"] for b in d.get("available", [])) / 100
-                    pend  = sum(b["amount"] for b in d.get("pending", []))   / 100
-                    results["stripe"] = {"available_eur": avail, "pending_eur": pend, "ok": True}
-                    results["total_today_eur"] += avail
+                    from modules.stripe_client import get_revenue_stats
+                    st = await get_revenue_stats()
+                    stripe_eur = st.get("today_revenue", 0.0)
+                    stripe_detail = {
+                        "today_revenue": stripe_eur,
+                        "order_count": st.get("order_count", 0),
+                        "currency": st.get("currency", "EUR"),
+                        "ok": True,
+                    }
                 except Exception as e:
-                    results["stripe"] = {"ok": False, "error": str(e)}
+                    stripe_detail = {"ok": False, "error": str(e)}
 
             # Shopify orders today
             shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
             shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-            shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+            shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
             if shopify_domain and shopify_token:
                 try:
-                    url = f"https://{shopify_domain}/admin/api/{shopify_ver}/orders.json?status=any&created_at_min={today}T00:00:00Z&limit=50"
+                    url = (
+                        f"https://{shopify_domain}/admin/api/{shopify_ver}/orders.json"
+                        f"?status=any&created_at_min={today}T00:00:00Z&limit=100"
+                    )
                     async with session.get(url, headers={"X-Shopify-Access-Token": shopify_token},
-                                           timeout=_aiohttp.ClientTimeout(total=8)) as r:
+                                           timeout=_aiohttp.ClientTimeout(total=10)) as r:
                         d = await r.json()
                     orders = d.get("orders", [])
-                    revenue = sum(float(o.get("total_price", 0)) for o in orders)
-                    results["shopify"] = {"orders_today": len(orders), "revenue_today_eur": revenue, "ok": True}
-                    results["total_today_eur"] += revenue
+                    shopify_eur = round(sum(float(o.get("total_price", 0)) for o in orders), 2)
+                    shopify_orders = len(orders)
+                    shopify_detail = {
+                        "orders_today": shopify_orders,
+                        "revenue_today_eur": shopify_eur,
+                        "ok": True,
+                    }
                 except Exception as e:
-                    results["shopify"] = {"ok": False, "error": str(e)}
+                    shopify_detail = {"ok": False, "error": str(e)}
 
             # DS24 stats
             try:
                 from modules.digistore24_automation import get_sales_stats
                 stats = await get_sales_stats()
-                results["ds24"] = {"ok": True, "stats": stats}
-                results["total_today_eur"] += float(stats.get("today", 0))
+                ds24_eur = round(float(stats.get("today", 0)), 2)
+                ds24_detail = {"ok": True, "today_eur": ds24_eur, "stats": stats}
             except Exception as e:
-                results["ds24"] = {"ok": False, "error": str(e)}
+                ds24_detail = {"ok": False, "error": str(e)}
 
-        results["timestamp"] = datetime.utcnow().isoformat() + "Z"
-        return web.json_response(results)
+        total_eur = round(shopify_eur + ds24_eur + stripe_eur, 2)
+
+        return web.json_response({
+            # Canonical flat fields for dashboard widgets
+            "total_eur":    total_eur,
+            "shopify_eur":  shopify_eur,
+            "ds24_eur":     ds24_eur,
+            "stripe_eur":   stripe_eur,
+            "today":        today,
+            "this_week":    None,  # populated on next iteration
+            # Detailed per-platform breakdown
+            "stripe":       stripe_detail,
+            "shopify":      shopify_detail,
+            "ds24":         ds24_detail,
+            # Legacy alias
+            "total_today_eur": total_eur,
+            "timestamp":    datetime.utcnow().isoformat() + "Z",
+        })
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
