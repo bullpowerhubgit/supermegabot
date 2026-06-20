@@ -344,7 +344,8 @@ async def _indexnow_ping(url: str) -> bool:
                    "urlList": [url], "keyLocation": f"https://{url.split('/')[2]}/{INDEXNOW_KEY}.txt"}
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             for endpoint in ["https://api.indexnow.org/indexnow", "https://www.bing.com/indexnow"]:
-                await s.post(endpoint, json=payload)
+                async with s.post(endpoint, json=payload) as r:
+                    await r.read()
         log.debug("IndexNow pinged: %s", url)
         return True
     except Exception:
@@ -367,7 +368,8 @@ async def indexnow_blast() -> dict:
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
                 for ep in ["https://api.indexnow.org/indexnow", "https://www.bing.com/indexnow"]:
-                    await s.post(ep, json=payload)
+                    async with s.post(ep, json=payload) as r:
+                        await r.read()
             submitted += len(url_list)
         except Exception:
             pass

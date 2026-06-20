@@ -245,12 +245,29 @@ async def _classify_email(subject: str, sender: str, body: str) -> dict:
                         text = text[4:]
                 return json.loads(text)
     except KeyError:
-        pass  # Rate limited or API error — use fallback silently
+        pass  # Rate limited or API error — fall through to fallback
     except Exception as e:
         log.debug(f"Claude classify failed: {e}")
-        return {"category": "unknown", "priority": "normal", "reply_needed": False,
-                "label": "Priority", "archive": False, "telegram_alert": False,
-                "summary": subject[:80]}
+
+    # Use ai_complete fallback chain (OpenAI/Groq) before giving up
+    try:
+        from modules.ai_client import ai_complete
+        raw = await ai_complete(
+            f"Von: {sender}\nBetreff: {subject}\n\n{body[:800]}",
+            system=SYSTEM_CLASSIFY, max_tokens=400
+        )
+        if raw:
+            if raw.startswith("```"):
+                raw = raw.split("```")[1]
+                if raw.startswith("json"):
+                    raw = raw[4:]
+            return json.loads(raw)
+    except Exception:
+        pass
+
+    return {"category": "unknown", "priority": "normal", "reply_needed": False,
+            "label": "Priority", "archive": False, "telegram_alert": False,
+            "summary": subject[:80]}
 
 
 # ── Telegram ──────────────────────────────────────────────────────────────────
