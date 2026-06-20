@@ -1054,7 +1054,7 @@ async def task_twitter_auto_post() -> str:
 async def task_shopify_blog_auto() -> str:
     """Alle 2h einen Blog-Post auf Shopify (AI oder Template-Fallback)."""
     try:
-        import random
+        import aiohttp, random
         shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
         shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
@@ -3051,6 +3051,7 @@ async def task_discord_revenue_report() -> str:
 
 async def _twilio_send(to: str, body: str) -> bool:
     """Send SMS via Twilio; falls back to Telegram on any failure."""
+    import aiohttp
     sid  = os.getenv("TWILIO_ACCOUNT_SID", "")
     tok  = os.getenv("TWILIO_AUTH_TOKEN", "")
     frm  = os.getenv("TWILIO_FROM_NUMBER", "")
