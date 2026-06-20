@@ -1118,7 +1118,6 @@ Nur JSON, kein anderer Text."""
                 headers=headers,
                 json={"data": {"type": "campaign", "attributes": {
                     "name": f"AutoCampaign {today}",
-                    "channel": "email",
                     "audiences": {"included": [list_id]},
                     "send_strategy": {"method": "immediate"},
                 }}},
