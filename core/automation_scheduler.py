@@ -168,11 +168,11 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
             continue
     # Template-Fallback wenn alle AI-APIs leer sind
     templates = [
-        "🚀 E-Commerce Automation auf Autopilot! Shopify + DS24 + KI = passives Einkommen. 👉 https://www.digistore24.com/redir/669750/user37405262/",
-        "💰 Online Geld verdienen 2026: Mit KI-Tools dein Business automatisieren. Mehr erfahren: https://www.digistore24.com/redir/669750/user37405262/",
-        "🤖 Vollautomatisches E-Commerce Business: Produkte importieren, Texte schreiben, Traffic generieren — alles automatisch! https://www.digistore24.com/redir/669750/user37405262/",
-        "📈 Shopify Automation macht deinen Shop 24/7 profitabel. AI Income Machine auf DS24: https://www.digistore24.com/redir/669750/user37405262/",
-        "🎯 Digitale Produkte verkaufen leicht gemacht: DS24 Affiliate + BRUTUS Traffic = passive Einnahmen! https://www.digistore24.com/redir/669750/user37405262/",
+        "🚀 E-Commerce Automation auf Autopilot! Shopify + DS24 + KI = passives Einkommen. 👉 https://ineedit.com.co",
+        "💰 Online Geld verdienen 2026: Mit KI-Tools dein Business automatisieren. Mehr erfahren: https://ineedit.com.co",
+        "🤖 Vollautomatisches E-Commerce Business: Produkte importieren, Texte schreiben, Traffic generieren — alles automatisch! https://ineedit.com.co",
+        "📈 Shopify Automation macht deinen Shop 24/7 profitabel. AI Income Machine auf DS24: https://ineedit.com.co",
+        "🎯 Digitale Produkte verkaufen leicht gemacht: DS24 Affiliate + BRUTUS Traffic = passive Einnahmen! https://ineedit.com.co",
     ]
     import random as _rnd
     return _rnd.choice(templates)
@@ -1062,92 +1062,105 @@ async def task_twitter_auto_post() -> str:
 
 
 async def task_shopify_blog_auto() -> str:
-    """Alle 2h einen Blog-Post auf Shopify (AI oder Template-Fallback)."""
-    try:
-        import aiohttp, random
-        shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-        shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-        shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-        if not shopify_domain or not shopify_token:
-            return "Shopify nicht konfiguriert"
-        _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
-        templates = [
-            ("KI-Passiveinkommen 2026: So baust du es auf",
-             f"<h2>KI-Passiveinkommen 2026</h2><p>Mit KI-Tools baust du heute ein vollautomatisches Business.</p><ul><li><strong>Shopify Auto-Import:</strong> Trending-Produkte täglich importiert</li><li><strong>Affiliate:</strong> DS24 Provisionen automatisch</li><li><strong>Content:</strong> BRUTUS bespielt 6+ Kanäle täglich</li></ul><p><a href='{_ds24}'>AI Income Machine für €37 starten →</a></p>"),
-            ("5 Shopify-Automatisierungen 2026 die Umsatz verdoppeln",
-             f"<h2>5 Automationen für mehr Umsatz</h2><ol><li>Auto-Produktimport aus 50+ Quellen</li><li>KI-SEO-Beschreibungen für jedes Produkt</li><li>Email-Sequenzen für neue Käufer</li><li>Psychologisches Pricing (.99) automatisch</li><li>BRUTUS Traffic-Engine auf allen Kanälen</li></ol><p><a href='{_ds24}'>Jetzt starten →</a></p>"),
-            ("Dropshipping mit KI 2026: Der komplette Guide",
-             f"<h2>KI-Dropshipping 2026</h2><p>Trends automatisch erkennen, Produkte importieren, Marketing auf Autopilot.</p><ul><li>AliExpress + Amazon Trending täglich</li><li>Shopify Auto-Import + Beschreibung</li><li>10+ Kanäle vollautomatisch bespielt</li></ul><p><a href='{_ds24}'>AI Income Machine →</a></p>"),
-            ("Digistore24 Affiliate 2026: Passiv verdienen",
-             f"<h2>DS24 Affiliate — Passives Einkommen</h2><p>30-70% Provision auf tausende digitale Produkte.</p><ul><li>Sofortige Auszahlung</li><li>Keine eigenen Produkte nötig</li><li>BRUTUS postet automatisch für dich</li></ul><p><a href='{_ds24}'>Jetzt starten →</a></p>"),
-        ]
-        topic_title, template_body = random.choice(templates)
-        final_body = template_body
-        for env_var, url, model, is_ant in [
-            ("ANTHROPIC_API_KEY", "https://api.anthropic.com/v1/messages", "claude-haiku-4-5-20251001", True),
-            ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini", False),
-        ]:
-            key = os.getenv(env_var, "")
-            if not key:
-                continue
-            try:
-                prompt = (f"300 Wörter HTML-Blog auf Deutsch: '{topic_title}'. "
-                         f"Link am Ende: https://www.digistore24.com/redir/669750/user37405262/. Nur HTML.")
-                if is_ant:
-                    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                        async with s.post(url, headers={"x-api-key": key, "anthropic-version": "2023-06-01"},
-                            json={"model": model, "max_tokens": 900, "messages": [{"role": "user", "content": prompt}]}) as r:
-                            d = await r.json(content_type=None)
-                    text = d.get("content", [{}])[0].get("text", "")
-                else:
-                    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
-                        async with s.post(url, headers={"Authorization": f"Bearer {key}"},
-                            json={"model": model, "max_tokens": 900, "messages": [{"role": "user", "content": prompt}]}) as r:
-                            d = await r.json(content_type=None)
-                    text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
-                if text and len(text) > 100:
-                    final_body = text
-                    break
-            except Exception:
-                continue
-        blog_id = os.getenv("SHOPIFY_BLOG_ID", "127011258755")
+    """Alle 2h einen Blog-Post auf Shopify via GraphQL Admin API."""
+    import aiohttp, random
+    shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    if not shopify_domain or not shopify_token:
+        return "Shopify nicht konfiguriert"
+    _dest = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
+    blog_gid = f"gid://shopify/Blog/{os.getenv('SHOPIFY_BLOG_ID', '127011258755')}"
+    templates = [
+        ("KI-Passiveinkommen 2026: So baust du es auf",
+         f"<h2>KI-Passiveinkommen 2026</h2><p>Mit KI-Tools baust du heute ein vollautomatisches Business auf.</p><ul><li><strong>Shopify Auto-Import:</strong> Trending-Produkte täglich importiert</li><li><strong>Affiliate:</strong> Provisionen automatisch ausgezahlt</li><li><strong>Content:</strong> BRUTUS bespielt 6+ Kanäle täglich</li></ul><p><a href='{_dest}'>Jetzt bei ineedit.com.co shoppen →</a></p>"),
+        ("5 Shopify-Automatisierungen 2026 die Umsatz verdoppeln",
+         f"<h2>5 Automationen für mehr Umsatz</h2><ol><li>Auto-Produktimport aus 50+ Quellen</li><li>KI-SEO-Beschreibungen für jedes Produkt</li><li>Email-Sequenzen für neue Käufer</li><li>Psychologisches Pricing (.99) automatisch</li><li>BRUTUS Traffic-Engine auf allen Kanälen</li></ol><p><a href='{_dest}'>Zu ineedit.com.co →</a></p>"),
+        ("Dropshipping mit KI 2026: Der komplette Guide",
+         f"<h2>KI-Dropshipping 2026</h2><p>Trends automatisch erkennen, Produkte importieren, Marketing auf Autopilot.</p><ul><li>AliExpress + Amazon Trending täglich</li><li>Shopify Auto-Import + Beschreibung</li><li>10+ Kanäle vollautomatisch bespielt</li></ul><p><a href='{_dest}'>Bestseller bei ineedit.com.co →</a></p>"),
+        ("Smart Home Gadgets 2026: Die besten Deals",
+         f"<h2>Smart Home 2026</h2><p>Die beliebtesten Smart Home Gadgets für dein Zuhause — Bestpreise garantiert.</p><ul><li>Smart Beleuchtung</li><li>Sprachassistenten & Hubs</li><li>Sicherheitskameras</li><li>Automatische Steckdosen</li></ul><p><a href='{_dest}'>Alle Smart Home Deals →</a></p>"),
+        ("Top 10 Fitness Gadgets für zuhause 2026",
+         f"<h2>Fitness Gadgets 2026</h2><p>Diese 10 Gadgets transformieren dein Home-Workout und bringen echte Ergebnisse.</p><ul><li>Resistance Bands Set</li><li>Smart Waagen</li><li>Massage-Pistolen</li><li>LED Sprungseile</li></ul><p><a href='{_dest}'>Alle Fitness-Deals bei ineedit.com.co →</a></p>"),
+    ]
+    topic_title, template_body = random.choice(templates)
+    final_body = template_body
+    for env_var, api_url, model, is_ant in [
+        ("ANTHROPIC_API_KEY", "https://api.anthropic.com/v1/messages", "claude-haiku-4-5-20251001", True),
+        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini", False),
+    ]:
+        key = os.getenv(env_var, "")
+        if not key:
+            continue
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
-                async with s.get(f"https://{shopify_domain}/admin/api/{shopify_ver}/blogs.json",
-                    headers={"X-Shopify-Access-Token": shopify_token}) as r:
-                    bd = await r.json(content_type=None)
-            fetched = bd.get("blogs", [{}])[0].get("id")
-            if fetched:
-                blog_id = str(fetched)
+            prompt = (f"300 Wörter HTML-Blog auf Deutsch: '{topic_title}'. "
+                      f"Link am Ende: {_dest}. Nur HTML, keine Markdown-Backticks.")
+            if is_ant:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                    async with s.post(api_url,
+                        headers={"x-api-key": key, "anthropic-version": "2023-06-01"},
+                        json={"model": model, "max_tokens": 900,
+                              "messages": [{"role": "user", "content": prompt}]}) as r:
+                        d = await r.json(content_type=None)
+                text = d.get("content", [{}])[0].get("text", "")
+            else:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                    async with s.post(api_url,
+                        headers={"Authorization": f"Bearer {key}"},
+                        json={"model": model, "max_tokens": 900,
+                              "messages": [{"role": "user", "content": prompt}]}) as r:
+                        d = await r.json(content_type=None)
+                text = d.get("choices", [{}])[0].get("message", {}).get("content", "")
+            if text and len(text) > 100:
+                final_body = text
+                break
         except Exception:
-            pass
+            continue
+    # Use GraphQL Admin API — works with write_content scope (same token)
+    gql = """
+mutation CreateArticle($article: ArticleCreateInput!) {
+  articleCreate(article: $article) {
+    article { id title handle }
+    userErrors { field message }
+  }
+}"""
+    variables = {
+        "article": {
+            "blogId": blog_gid,
+            "title": topic_title,
+            "body": final_body,
+            "isPublished": True,
+            "tags": ["ki", "automatisierung", "ecommerce", "shopify", "2026"],
+            "author": {"name": "BullPower Hub"},
+        }
+    }
+    try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
             async with s.post(
-                f"https://{shopify_domain}/admin/api/{shopify_ver}/blogs/{blog_id}/articles.json",
-                headers={"X-Shopify-Access-Token": shopify_token, "Content-Type": "application/json"},
-                json={"article": {"title": topic_title, "author": "BullPower Hub",
-                                  "body_html": final_body,
-                                  "tags": "ki,automatisierung,ecommerce,shopify,ds24",
-                                  "published": True}},
+                f"https://{shopify_domain}/admin/api/{shopify_ver}/graphql.json",
+                headers={"X-Shopify-Access-Token": shopify_token,
+                         "Content-Type": "application/json"},
+                json={"query": gql, "variables": variables},
             ) as r:
-                article = await r.json(content_type=None)
-        art = article.get("article", {})
-        if art.get("id"):
-            return f"Blog: '{topic_title[:50]}' ID={art['id']}"
-        err_msg = str(article.get("errors", article))[:200]
-        if "write_content" in err_msg or "scope" in err_msg.lower() or "approval" in err_msg.lower():
-            tg_tok  = os.getenv("TELEGRAM_BOT_TOKEN", "")
-            tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
-            if tg_tok and tg_chat:
-                import re as _re
-                plain = _re.sub(r'<[^>]+>', '', final_body)[:800]
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-                    await s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
-                        json={"chat_id": tg_chat,
-                              "text": f"📝 *{topic_title}*\n\n{plain}\n\n👉 https://www.digistore24.com/redir/669750/user37405262/",
-                              "parse_mode": "Markdown"})
-            return f"Blog→Telegram: '{topic_title[:50]}' (Shopify needs write_content scope)"
-        return f"Blog Fehler: {err_msg}"
+                resp = await r.json(content_type=None)
+        errors = resp.get("errors", [])
+        user_errors = resp.get("data", {}).get("articleCreate", {}).get("userErrors", [])
+        art = resp.get("data", {}).get("articleCreate", {}).get("article", {})
+        if art and art.get("id"):
+            return f"Blog✅: '{topic_title[:55]}' handle={art['handle']}"
+        err_msg = str(errors or user_errors)[:200]
+        # Telegram fallback so content is never lost
+        tg_tok  = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+        if tg_tok and tg_chat:
+            import re as _re
+            plain = _re.sub(r'<[^>]+>', '', final_body)[:800]
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                await s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                    json={"chat_id": tg_chat,
+                          "text": f"📝 *{topic_title}*\n\n{plain}\n\n👉 {_dest}",
+                          "parse_mode": "Markdown"})
+        return f"Blog→Telegram (GraphQL Err): {err_msg[:120]}"
     except Exception as e:
         return f"Shopify Blog Fehler: {e}"
 
@@ -1267,7 +1280,7 @@ async def task_mailchimp_auto_campaign() -> str:
 <li>✅ Step-by-step Anleitung für Anfänger</li>
 </ul>
 <p style='text-align:center;margin:30px 0'>
-<a href='{os.getenv("DS24_AFFILIATE_LINK",os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"))}' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
+<a href='{os.getenv("DS24_AFFILIATE_LINK",os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))}' style='background:#7c3aed;color:#fff;padding:14px 28px;text-decoration:none;border-radius:8px;font-weight:bold'>
 🛒 Jetzt für nur €37 starten →
 </a>
 </p>
@@ -1508,7 +1521,7 @@ async def task_linkedin_auto_post() -> str:
         anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
         if not linkedin_token:
             return "LINKEDIN_ACCESS_TOKEN fehlt"
-        _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
         li_prompt = (f"Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
                      f"Max 1200 Zeichen. Erwähne am Ende: {_ds24} (AI Income Machine €37). Nur Text, kein JSON.")
         try:
@@ -1556,7 +1569,7 @@ async def task_youtube_auto_post() -> str:
             title=title,
             description=(
                 f"{title}\n\n"
-                f"👉 {os.getenv('DS24_AFFILIATE_LINK',os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"))}\n\n"
+                f"👉 {os.getenv('DS24_AFFILIATE_LINK',os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))}\n\n"
                 "#KI #PassivesEinkommen #OnlineBusiness"
             ),
             tags=["KI", "passives einkommen", "online business", "shopify", "automatisierung"],
@@ -2382,7 +2395,7 @@ async def task_discord_blast() -> str:
     try:
         from modules.brutus_core import _discord
         import aiohttp
-        msg = "🤖 SuperMegaBot | Shop: https://www.digistore24.com/redir/669750/user37405262/ | Code HEUTE20 = 20% Rabatt!"
+        msg = "🤖 SuperMegaBot | Shop: https://ineedit.com.co | Code HEUTE20 = 20% Rabatt!"
         async with aiohttp.ClientSession() as sess:
             ok = await _discord(msg, sess)
         return f"Discord: {'ok' if ok else 'no credentials'}"
@@ -2665,7 +2678,7 @@ async def task_brutus_printify() -> str:
 async def task_brutus_dropshipping() -> str:
     try:
         from modules.super_revenue_blitz import brutus_blast_for_tool
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
         r = await brutus_blast_for_tool("Dropshipping", link,
             ["Dropshipping 2026", "AliExpress Shopify", "online shop automatisch befüllen"])
         return f"BRUTUS Dropshipping: {r.get('channels_hit', r.get('posts_sent', 0))} posts"
@@ -2679,7 +2692,7 @@ async def task_brutus_ds24() -> str:
         link = (
             os.getenv("DS24_AFFILIATE_LINK")
             or os.getenv("AIITEC_AFFILIATE_URL")
-            or os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+            or os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
         )
         r = await brutus_blast_for_tool("Digistore24", link,
             ["Digistore24 Affiliate 2026", "digitale Produkte verkaufen", "AI Income Machine"])
@@ -2707,7 +2720,7 @@ async def task_klaviyo_daily_campaign() -> str:
     try:
         import random
         from modules.super_revenue_blitz import send_klaviyo_campaign
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
         subjects = [
             "🔥 Vollautomatisch Geld verdienen — so geht's",
             "💡 KI macht Geld während du schläfst",
@@ -2744,7 +2757,7 @@ async def task_mailing_promo_blitz() -> str:
     try:
         import asyncio, random
         from modules.super_revenue_blitz import send_klaviyo_campaign, send_mailchimp_campaign, _tg_send, _linkedin_post
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
         subjects = [
             "💰 Heute: Vollautomatisches Online-Business starten",
             "🤖 KI verdient für dich — ohne tägliche Arbeit",
@@ -3164,7 +3177,7 @@ async def task_youtube_script_generator() -> str:
             "Passives Einkommen Blueprint — Von 0 auf 5000€/Monat",
         ]
         topic = random.choice(topics)
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
         prompt = (
             f"Erstelle ein YouTube-Video-Skript zum Thema: '{topic}'\n"
             f"Länge: 3-5 Minuten (500-700 Wörter). Struktur: Hook, Problem, Lösung, CTA.\n"
@@ -3188,7 +3201,7 @@ async def task_whatsapp_daily_blast() -> str:
     """Daily WhatsApp promo blast to all configured recipients."""
     try:
         from modules.whatsapp_automation import send_whatsapp_blast
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
         msg = f"🚀 BullPower Hub: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
         r = await send_whatsapp_blast(msg)
         return f"WhatsApp blast: sent={r.get('sent',0)}, failed={r.get('failed',0)}"
@@ -3227,7 +3240,7 @@ async def task_twilio_morning_brief() -> str:
             f"🛒 Shopify Orders: {orders_today}\n"
             f"🤖 149 Automatisierungen laufen\n"
             f"🔥 DS24 Affiliate aktiv\n\n"
-            f"👉 DS24: https://www.digistore24.com/redir/669750/user37405262/\n"
+            f"👉 DS24: https://ineedit.com.co\n"
             f"📊 Dashboard: https://dudirudibot-mega-production.up.railway.app"
         )
         ok = await _twilio_send(to, msg)
@@ -3285,7 +3298,7 @@ async def task_twilio_ds24_report() -> str:
             f"✅ DS24 Affiliate aktiv\n"
             f"✅ Shopify Automation läuft\n"
             f"✅ 149 Tasks registriert\n\n"
-            f"🔗 Affiliate: https://www.digistore24.com/redir/669750/user37405262/"
+            f"🔗 Affiliate: https://ineedit.com.co"
         )
         ok = await _twilio_send(to, msg)
         return f"DS24 SMS: {'sent ✅' if ok else 'failed ❌'}"
@@ -3790,7 +3803,7 @@ async def task_printify_sync() -> str:
 # ── Mega BRUTUS Rotation — alle Plattformen im 1h Zyklus ─────────────────────
 
 _MEGA_BRUTUS_PLATFORMS = [
-    ("Digistore24 Affiliate",   os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"),
+    ("Digistore24 Affiliate",   os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"),
      ["DS24 Affiliate 2026", "digitale Produkte verdienen", "passives Einkommen"]),
     ("Shopify Automation",       "",
      ["Shopify Dropshipping 2026", "Shopify Automation AI", "eigener Online-Shop"]),
@@ -3816,7 +3829,7 @@ async def task_mega_brutus_rotation() -> str:
         if "Shopify" in platform and shop:
             url = f"https://{shop}"
         else:
-            url = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+            url = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
     try:
         r = await brutus_blast_for_tool(platform, url, keywords)
         ch = r.get("channels_hit", r.get("posts_sent", 0))

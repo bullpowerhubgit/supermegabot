@@ -655,7 +655,7 @@ async def action_upsell_push(keyword: str) -> dict:
     try:
         from modules.brutus_core import fire
         ds24_link = os.getenv("DS24_AFFILIATE_LINK",
-                               os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"))
+                               os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))
         msg = (f"🎯 Exklusiv für unsere Kunden: {keyword}\n\n"
                f"Upgrade auf Premium — automatisierter Umsatz ohne Aufwand.\n"
                f"Begrenzte Plätze: {ds24_link}")
