@@ -118,21 +118,29 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
             return resp.content[0].text
         except Exception:
             pass
-    openai_key = os.getenv("OPENAI_API_KEY", "")
-    if not openai_key:
-        raise RuntimeError("Kein AI API-Key verfügbar (Anthropic + OpenAI)")
     import requests as _req
-    r = _req.post(
-        "https://api.openai.com/v1/chat/completions",
-        headers={"Authorization": f"Bearer {openai_key}"},
-        json={"model": "gpt-4o-mini", "max_tokens": max_tokens,
-              "messages": [{"role": "user", "content": prompt}]},
-        timeout=25,
-    )
-    d = r.json()
-    if "error" in d:
-        raise RuntimeError(f"OpenAI error: {d['error'].get('message','?')[:100]}")
-    return d["choices"][0]["message"]["content"]
+
+    def _openai_compat(url: str, key: str, model: str) -> str:
+        r = _req.post(url, headers={"Authorization": f"Bearer {key}"},
+                      json={"model": model, "max_tokens": max_tokens,
+                            "messages": [{"role": "user", "content": prompt}]},
+                      timeout=25)
+        d = r.json()
+        if "error" in d:
+            raise RuntimeError(str(d["error"])[:120])
+        return d["choices"][0]["message"]["content"]
+
+    for env_var, url, model in [
+        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
+        ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
+    ]:
+        key = os.getenv(env_var, "")
+        if key:
+            try:
+                return _openai_compat(url, key, model)
+            except Exception:
+                continue
+    raise RuntimeError("Kein AI API-Key verfügbar (Anthropic/OpenAI/Perplexity)")
 
 
 async def _tg(msg: str) -> None:
