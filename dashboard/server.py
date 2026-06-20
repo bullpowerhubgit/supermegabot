@@ -6971,6 +6971,33 @@ async def handle_ds24_stats_live(req):
 async def handle_auto_poster_run_alias(req):
     return await _trigger_task("mega_auto_post", background=True)
 
+
+# ── Quantum Self-Repair Engine ────────────────────────────────────────────────
+
+async def handle_quantum_status(req):
+    try:
+        from modules.quantum_self_fixer import get_quantum_status
+        return web.json_response(get_quantum_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_quantum_scan(req):
+    try:
+        from modules.quantum_self_fixer import run_full_scan
+        result = await run_full_scan()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+async def handle_quantum_repair(req):
+    try:
+        from modules.quantum_self_fixer import scan_and_repair
+        result = await scan_and_repair()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── Mega SEO Engine ───────────────────────────────────────────────────────────
 
 async def handle_mega_seo_cycle(request: web.Request) -> web.Response:
@@ -8112,6 +8139,10 @@ async def create_app():
     app.router.add_get( "/api/digistore24/products",      handle_ds24_product_list)
     app.router.add_get( "/api/digistore24/orders",        handle_digistore_orders)
     app.router.add_post("/api/reddit/blast",              handle_reddit_blast)  # also POST
+    # ── QUANTUM SELF-REPAIR ROUTES ───────────────────────────────────────────
+    app.router.add_get( "/api/quantum/status",            handle_quantum_status)
+    app.router.add_post("/api/quantum/scan",              handle_quantum_scan)
+    app.router.add_post("/api/quantum/repair",            handle_quantum_repair)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task

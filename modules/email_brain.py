@@ -485,6 +485,28 @@ def _update_stats(user: str, result: dict):
 
 # ── Public entry points ───────────────────────────────────────────────────────
 
+def get_email_stats() -> dict:
+    """Return aggregated email stats for today and last 7 days (used by dashboard/IndexNow)."""
+    try:
+        raw = json.loads(STATS_FILE.read_text()) if STATS_FILE.exists() else {}
+    except Exception:
+        raw = {}
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_stats = raw.get(today, {})
+    totals: dict = {"processed": 0, "replied": 0, "labeled": 0, "archived": 0, "alerts": 0}
+    for _user, day in raw.items():
+        if isinstance(day, dict):
+            for k in totals:
+                totals[k] += day.get(k, 0)
+    return {
+        "today": today_stats,
+        "all_time": totals,
+        "days_tracked": len(raw),
+        "accounts": len(_accounts()),
+        "status": "ok",
+    }
+
+
 async def run_email_check() -> str:
     """Check all Gmail accounts, classify, reply, label. Called by scheduler."""
     accounts = _accounts()
