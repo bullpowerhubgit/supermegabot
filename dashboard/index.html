@@ -313,6 +313,14 @@ a{color:inherit;text-decoration:none}
   <div class="plt" id="plt-medium"><div class="plt-icon" style="font-size:16px;font-weight:900">M</div><div class="plt-name">Medium</div><div class="plt-status">…</div></div>
   <div class="plt" id="plt-pinterest"><div class="plt-icon">📌</div><div class="plt-name">Pinterest</div><div class="plt-status">…</div></div>
   <div class="plt" id="plt-github"><div class="plt-icon">🐙</div><div class="plt-name">GitHub Blog</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-gumroad"><div class="plt-icon">🛒</div><div class="plt-name">Gumroad</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-fiverr"><div class="plt-icon">💚</div><div class="plt-name">Fiverr</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-upwork"><div class="plt-icon">🔵</div><div class="plt-name">Upwork</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-klaviyo"><div class="plt-icon">📧</div><div class="plt-name">Klaviyo</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-mailchimp"><div class="plt-icon">🐒</div><div class="plt-name">Mailchimp</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-printify"><div class="plt-icon">🖨️</div><div class="plt-name">Printify</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-printful"><div class="plt-icon">👕</div><div class="plt-name">Printful</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-ds24"><div class="plt-icon">💰</div><div class="plt-name">DS24 AIITEC</div><div class="plt-status">…</div></div>
 </div>
 
 <!-- ═══════════════════ ROW: KPI STRIP ═══════════════════ -->
@@ -612,8 +620,134 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- ═══════════════════ PRINT-ON-DEMAND ═══════════════════ -->
+<div class="sect">🖨️ Print-on-Demand — Printify &amp; Printful</div>
+<div class="g3" style="margin-bottom:14px">
+  <!-- Printify -->
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">🖨️</span> Printify</div><span class="badge" id="printify-badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Produkte</span><span class="sval" id="pfy-products">—</span></div>
+    <div class="srow"><span class="slbl">Sync Produkte</span><span class="sval" id="pfy-synced">—</span></div>
+    <div class="srow"><span class="slbl">Pending Orders</span><span class="sval" id="pfy-pending">—</span></div>
+    <div class="srow"><span class="slbl">Fulfilled</span><span class="sval" id="pfy-fulfilled" style="color:var(--green)">—</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-blue" style="flex:1;font-size:10px" onclick="triggerTask('printify_auto_publish')">📤 Publish</button>
+      <button class="btn btn-green" style="flex:1;font-size:10px" onclick="triggerTask('printify_seo')">🔍 SEO</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="triggerTask('printify_autofulfill')">✅ Fulfill</button>
+    </div>
+  </div>
+  <!-- Printful -->
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">👕</span> Printful</div><span class="badge" id="printful-badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Store Status</span><span class="sval" id="pfl-status">—</span></div>
+    <div class="srow"><span class="slbl">Produkte</span><span class="sval" id="pfl-products">—</span></div>
+    <div class="srow"><span class="slbl">Pending Orders</span><span class="sval" id="pfl-pending">—</span></div>
+    <div class="srow"><span class="slbl">OAuth</span><span class="sval" id="pfl-oauth">—</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="window.open('/api/printful/auth','_blank')">🔗 OAuth</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="triggerTask('printful_autofulfill')">✅ Fulfill</button>
+    </div>
+  </div>
+  <!-- AliExpress/Dropshipping -->
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">📦</span> Dropshipping</div><span class="badge">AUTO</span></div>
+    <div class="srow"><span class="slbl">Auto-Import</span><span class="sval" style="color:var(--green)">6h Interval</span></div>
+    <div class="srow"><span class="slbl">Trend-Fill</span><span class="sval" style="color:var(--green)">4h Interval</span></div>
+    <div class="srow"><span class="slbl">Publish Drafts</span><span class="sval" style="color:var(--green)">1h Interval</span></div>
+    <div class="srow"><span class="slbl">AI-SEO</span><span class="sval" style="color:var(--green)">Auto</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-purple" style="flex:1;font-size:10px" onclick="triggerTask('aliexpress_import')">📦 AliExpress</button>
+      <button class="btn btn-teal" style="flex:1;font-size:10px" onclick="triggerTask('shopify_auto_fill_trending')">🛒 Trend-Fill</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ MAILING SYSTEM ═══════════════════ -->
+<div class="sect">📧 Mailing — Klaviyo &amp; Mailchimp</div>
+<div class="g3" style="margin-bottom:14px">
+  <!-- Klaviyo -->
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">📧</span> Klaviyo</div><span class="badge" id="kl-badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Subscribers</span><span class="sval" id="kl-subs">—</span></div>
+    <div class="srow"><span class="slbl">Listen</span><span class="sval" id="kl-lists">—</span></div>
+    <div class="srow"><span class="slbl">Campaign Interval</span><span class="sval" style="color:var(--green)">12h Auto</span></div>
+    <div class="srow"><span class="slbl">Mailing Blitz</span><span class="sval" style="color:var(--green)">6h Auto</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-purple" style="flex:1;font-size:10px" onclick="triggerTask('klaviyo_daily_campaign')">📧 Campaign Now</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="triggerTask('mailing_promo_blitz')">🚀 Blitz</button>
+    </div>
+  </div>
+  <!-- Mailchimp -->
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">🐒</span> Mailchimp</div><span class="badge" id="mc-badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Subscribers</span><span class="sval" id="mc-subs">—</span></div>
+    <div class="srow"><span class="slbl">Status</span><span class="sval" id="mc-status">—</span></div>
+    <div class="srow"><span class="slbl">Campaign</span><span class="sval" style="color:var(--green)">Auto täglich</span></div>
+    <div class="srow"><span class="slbl">DS24 Mailing</span><span class="sval" style="color:var(--green)">3h Auto</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="ap('/api/mailchimp/campaign',{})">📨 Campaign</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="ap('/api/mailchimp/sync',{})">🔄 Sync</button>
+    </div>
+  </div>
+  <!-- DS24 AIITEC -->
+  <div class="card g-green">
+    <div class="card-h"><div class="card-t"><span class="i">💰</span> DS24 AIITEC Traffic</div><span class="badge">LIVE</span></div>
+    <div class="srow"><span class="slbl">Affiliate ID</span><span class="sval" style="color:var(--green)">user37405262</span></div>
+    <div class="srow"><span class="slbl">Traffic Engine</span><span class="sval" style="color:var(--green)">3h Auto</span></div>
+    <div class="srow"><span class="slbl">Telegram+Blog+Mail</span><span class="sval" style="color:var(--green)">✅ Auto</span></div>
+    <div class="srow"><span class="slbl">AIITEC Produkt</span><span class="sval">AI Income Machine</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-green" style="flex:1;font-size:10px" onclick="triggerTask('ds24_traffic')">🚀 DS24 Traffic</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="triggerTask('mailing_promo_blitz')">📧 Mail Blitz</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ FREELANCE PLATFORMS ═══════════════════ -->
+<div class="sect">💼 Freelance Platforms — Gumroad · Fiverr · Upwork</div>
+<div class="g3" style="margin-bottom:14px">
+  <!-- Gumroad -->
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">🛒</span> Gumroad</div><span class="badge" id="gum-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Revenue</span><span class="sval" id="gum-revenue" style="color:var(--green)">€—</span></div>
+    <div class="srow"><span class="slbl">Produkte</span><span class="sval" id="gum-products">—</span></div>
+    <div class="srow"><span class="slbl">Sales</span><span class="sval" id="gum-sales">—</span></div>
+    <div class="srow"><span class="slbl">Auto-Sync</span><span class="sval" style="color:var(--green)">1h Auto</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="loadGumroad()">🔄 Sync</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="triggerTask('brutus_dropshipping')">🔥 BRUTUS</button>
+    </div>
+  </div>
+  <!-- Fiverr -->
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">💚</span> Fiverr</div><span class="badge" id="fvr-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Earnings/Month</span><span class="sval" id="fvr-earnings" style="color:var(--green)">$—</span></div>
+    <div class="srow"><span class="slbl">Active Orders</span><span class="sval" id="fvr-orders">—</span></div>
+    <div class="srow"><span class="slbl">Gigs</span><span class="sval" id="fvr-gigs">—</span></div>
+    <div class="srow"><span class="slbl">API Key</span><span class="sval" id="fvr-key">—</span></div>
+    <div style="margin-top:10px">
+      <div id="fvr-setup-hint" style="font-size:10px;color:var(--yellow);display:none">
+        ⚠️ FIVERR_API_KEY in Railway setzen → Settings → Account → API Key
+      </div>
+      <button class="btn btn-green" style="width:100%;font-size:10px;margin-top:6px" onclick="loadFiverr()">🔄 Status laden</button>
+    </div>
+  </div>
+  <!-- Upwork -->
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">🔵</span> Upwork</div><span class="badge" id="upw-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Earnings/Month</span><span class="sval" id="upw-earnings" style="color:var(--green)">$—</span></div>
+    <div class="srow"><span class="slbl">Active Contracts</span><span class="sval" id="upw-contracts">—</span></div>
+    <div class="srow"><span class="slbl">Profile</span><span class="sval" id="upw-profile">—</span></div>
+    <div class="srow"><span class="slbl">OAuth</span><span class="sval" id="upw-oauth">—</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-blue" style="flex:1;font-size:10px" onclick="window.open('/api/upwork/auth','_blank')">🔗 OAuth</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="loadUpwork()">🔄 Status</button>
+    </div>
+  </div>
+</div>
+
 <div style="text-align:center;padding:14px 0;color:var(--muted);font-size:9px;letter-spacing:1.5px;border-top:1px solid var(--border);margin-top:4px">
-  BULLPOWER HUB MEGA v5 · 120 TASKS · 10 KANÄLE · 17 SERVICES · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
+  BULLPOWER HUB MEGA v5 · 154 TASKS · 10 KANÄLE · 17 SERVICES · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
 </div>
 
 </div><!-- /main -->
@@ -1056,6 +1190,124 @@ async function chat(){
   }
 }
 
+// ── PRINT-ON-DEMAND ──
+async function loadPrintify() {
+  const d = await get('/api/printify/status');
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  if(d&&!d.error){
+    const hasStore = !d.notice;
+    fe('pfy-products', d.sync_products??'—');
+    fe('pfy-synced', (d.sync_products||0)+' synced');
+    fe('pfy-pending', d.pending??'—');
+    fe('pfy-fulfilled', d.fulfilled??'—');
+    const badge=document.getElementById('printify-badge');
+    if(badge){badge.textContent=hasStore?'LIVE':'NO STORE';badge.style.background=hasStore?'':'#ff4757'}
+    const plt=document.getElementById('plt-printify');
+    if(plt){plt.className='plt '+(hasStore?'ok':'warn');plt.querySelector('.plt-status').textContent=hasStore?'✅ Verbunden':'⚠️ Store fehlt'}
+  }else{
+    const plt=document.getElementById('plt-printify');
+    if(plt){plt.className='plt warn';plt.querySelector('.plt-status').textContent='⚠️ Kein Key'}
+  }
+}
+
+async function loadPrintful() {
+  const d = await get('/api/printful/status');
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  if(d&&!d.error){
+    fe('pfl-status', d.connected?'✅ Verbunden':'⚠️ Kein Store');
+    fe('pfl-products', d.sync_products??'—');
+    fe('pfl-pending', d.pending??'—');
+    fe('pfl-oauth', d.oauth_available?'✅ Ready':'→ /api/printful/auth');
+    const plt=document.getElementById('plt-printful');
+    if(plt){plt.className='plt '+(d.connected?'ok':'warn');plt.querySelector('.plt-status').textContent=d.connected?'✅ Verbunden':'⚠️ OAuth'}
+  }else{
+    const plt=document.getElementById('plt-printful');
+    if(plt){plt.className='plt warn';plt.querySelector('.plt-status').textContent='⚠️ Kein Key'}
+  }
+}
+
+// ── MAILING ──
+async function loadMailingStats() {
+  const [kl, mc] = await Promise.all([get('/api/klaviyo/status'), get('/api/mailchimp/status')]);
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  // Klaviyo
+  if(kl&&!kl.error){
+    const total = kl.profiles_total||kl.total_profiles||0;
+    fe('kl-subs', total+(total?' Abonnenten':'—'));
+    fe('kl-lists', (kl.lists_count||kl.lists||1)+' Listen');
+    const plt=document.getElementById('plt-klaviyo');
+    if(plt){plt.className='plt '+(kl.connected||kl.ok?'ok':'warn');plt.querySelector('.plt-status').textContent=kl.connected?'✅ Aktiv':'⚠️ Check'}
+    const badge=document.getElementById('kl-badge');
+    if(badge)badge.textContent=kl.connected?'LIVE':'CHECK';
+  }
+  // Mailchimp
+  if(mc&&!mc.error){
+    const subs = mc.member_count||mc.subscribers||0;
+    fe('mc-subs', subs+' Abonnenten');
+    fe('mc-status', mc.list_name||mc.name||'Verbunden');
+    const plt=document.getElementById('plt-mailchimp');
+    if(plt){plt.className='plt '+(mc.connected?'ok':'warn');plt.querySelector('.plt-status').textContent=mc.connected?'✅ Aktiv':'⚠️ Check'}
+    const badge=document.getElementById('mc-badge');
+    if(badge)badge.textContent=mc.connected?'LIVE':'CHECK';
+  }
+  // DS24 platform badge
+  const ds24plt=document.getElementById('plt-ds24');
+  if(ds24plt){ds24plt.className='plt ok';ds24plt.querySelector('.plt-status').textContent='✅ AIITEC'}
+}
+
+// ── FREELANCE PLATFORMS ──
+async function loadGumroad() {
+  const [status, products] = await Promise.all([get('/api/gumroad/status'), get('/api/gumroad/products').catch(()=>null)]);
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  const d = status||{};
+  const connected = d.connected;
+  fe('gum-revenue', '€'+(d.revenue_eur||0).toFixed(2));
+  fe('gum-products', (products?.total||0)+' Produkte');
+  fe('gum-sales', (d.sales_count||0)+' Sales');
+  const badge=document.getElementById('gum-badge');
+  if(badge){badge.textContent=connected?'LIVE':'NO TOKEN';badge.style.background=connected?'':'#ff4757'}
+  const plt=document.getElementById('plt-gumroad');
+  if(plt){plt.className='plt '+(connected?'ok':'warn');plt.querySelector('.plt-status').textContent=connected?'✅ Verbunden':'⚠️ Token fehlt'}
+}
+
+async function loadFiverr() {
+  const d = await get('/api/fiverr/status');
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  if(d&&d.connected){
+    fe('fvr-earnings', '$'+(d.earnings_month||0).toFixed(0));
+    fe('fvr-orders', (d.active_orders||0)+' aktiv');
+    fe('fvr-gigs', (d.gigs_count||0)+' Gigs');
+    fe('fvr-key', '✅ Key aktiv');
+    const badge=document.getElementById('fvr-badge');if(badge)badge.textContent='LIVE';
+    const plt=document.getElementById('plt-fiverr');
+    if(plt){plt.className='plt ok';plt.querySelector('.plt-status').textContent='✅ Verbunden'}
+  }else{
+    fe('fvr-key', '⚠️ FIVERR_API_KEY fehlt');
+    const hint=document.getElementById('fvr-setup-hint');if(hint)hint.style.display='block';
+    const plt=document.getElementById('plt-fiverr');
+    if(plt){plt.className='plt warn';plt.querySelector('.plt-status').textContent='⚠️ Setup'}
+  }
+}
+
+async function loadUpwork() {
+  const d = await get('/api/upwork/status');
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  if(d&&d.connected){
+    fe('upw-earnings', '$'+(d.earnings_month||0).toFixed(0));
+    fe('upw-contracts', (d.active_contracts||0)+' aktiv');
+    fe('upw-profile', d.name||d.display_name||'Verbunden');
+    fe('upw-oauth', '✅ Token aktiv');
+    const badge=document.getElementById('upw-badge');if(badge)badge.textContent='LIVE';
+    const plt=document.getElementById('plt-upwork');
+    if(plt){plt.className='plt ok';plt.querySelector('.plt-status').textContent='✅ Verbunden'}
+  }else{
+    fe('upw-oauth', '→ /api/upwork/auth klicken');
+    const badge=document.getElementById('upw-badge');if(badge){badge.textContent='OAUTH';badge.style.background='#ff9f43'}
+    const plt=document.getElementById('plt-upwork');
+    if(plt){plt.className='plt warn';plt.querySelector('.plt-status').textContent='⚠️ OAuth nötig'}
+  }
+}
+
 // ── REFRESH ALL ──
 async function refreshAll() {
   document.getElementById('last-refresh').textContent=new Date().toLocaleTimeString('de-AT');
@@ -1069,6 +1321,12 @@ async function refreshAll() {
   loadTraffic();
   loadShopify();
   loadRevenueIntel();
+  loadPrintify();
+  loadPrintful();
+  loadMailingStats();
+  loadGumroad();
+  loadFiverr();
+  loadUpwork();
 }
 
 // ── INIT ──
@@ -1084,6 +1342,13 @@ loadTraffic();
 loadShopify();
 loadServicesHealth();
 loadRevenueIntel();
+// New platforms
+loadPrintify();
+loadPrintful();
+loadMailingStats();
+loadGumroad();
+loadFiverr();
+loadUpwork();
 addLog('Alle Systeme verbunden ✓','');
 
 setInterval(()=>{refreshAll();addLog('Auto-Refresh','')},60000);
