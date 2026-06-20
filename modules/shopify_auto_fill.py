@@ -422,3 +422,73 @@ async def run_shopify_auto_fill(fix_existing: bool = True, add_new: int = 3) -> 
     """Entry point für den Scheduler"""
     engine = ShopifyAutoFill()
     return await engine.run(fix_existing=fix_existing, add_new=add_new)
+
+
+async def auto_fill_trending_products(count: int = 3) -> dict:
+    """Use Claude Haiku to identify trending products and create them in Shopify."""
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not anthropic_key or not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
+        return {"ok": False, "error": "ANTHROPIC_API_KEY + Shopify credentials required"}
+
+    prompt = """Nenne 3 aktuell sehr trendige Produkte für einen deutschen Online-Shop 2026.
+Antworte NUR als JSON-Array (kein anderer Text):
+[
+  {"title": "Produktname auf Deutsch", "description": "SEO-Beschreibung auf Deutsch 100-150 Wörter mit Keywords", "price": "29.99", "handle": "produktname-slug"},
+  {"title": "Produktname 2", "description": "Beschreibung 2", "price": "39.99", "handle": "produktname-2"},
+  {"title": "Produktname 3", "description": "Beschreibung 3", "price": "49.99", "handle": "produktname-3"}
+]"""
+
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.anthropic.com/v1/messages",
+                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
+                         "content-type": "application/json"},
+                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1000,
+                      "messages": [{"role": "user", "content": prompt}]},
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as r:
+                data = await r.json(content_type=None)
+        raw = (data.get("content") or [{"text": "[]"}])[0].get("text", "[]")
+        s_idx, e_idx = raw.find("["), raw.rfind("]") + 1
+        products = json.loads(raw[s_idx:e_idx]) if s_idx >= 0 else []
+    except Exception as e:
+        return {"ok": False, "error": f"AI error: {e}"}
+
+    created = []
+    async with aiohttp.ClientSession() as sess:
+        for p in products[:count]:
+            payload = {"product": {
+                "title": p.get("title", ""),
+                "body_html": f"<p>{p.get('description', '')}</p>",
+                "vendor": "BullPower Hub",
+                "status": "active",
+                "variants": [{"price": p.get("price", "29.99"), "inventory_management": None}],
+            }}
+            try:
+                async with sess.post(
+                    f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VERSION}/products.json",
+                    headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"},
+                    json=payload,
+                    timeout=aiohttp.ClientTimeout(total=20),
+                ) as r:
+                    result = await r.json(content_type=None)
+                    prod = result.get("product", {})
+                    if prod.get("id"):
+                        created.append({"id": prod["id"], "title": prod.get("title", "")})
+                        logger.info("Created trending product: %s", prod.get("title", ""))
+            except Exception as e:
+                logger.warning("Create product error: %s", e)
+
+    if created:
+        try:
+            from modules.brutus_traffic_engine import brutus_blast_for_tool
+            await brutus_blast_for_tool(
+                "Shopify Trending",
+                "https://ineedit.com.co/",
+                keywords=[p["title"] for p in created] + ["online shop 2026", "trending produkte"],
+            )
+        except Exception:
+            pass
+
+    return {"ok": len(created) > 0, "created": len(created), "products": created}
