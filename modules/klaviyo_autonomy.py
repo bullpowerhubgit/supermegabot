@@ -52,6 +52,15 @@ async def _kv_post(path: str, data: dict) -> dict:
             return await r.json() if r.status < 400 else {"error": await r.text()}
 
 
+async def _kv_patch(path: str, data: dict) -> dict:
+    if not API_KEY:
+        return {"error": "no KLAVIYO_API_KEY"}
+    async with aiohttp.ClientSession() as s:
+        async with s.patch(f"{BASE}{path}", headers=_headers(), json=data,
+                           timeout=aiohttp.ClientTimeout(total=20)) as r:
+            return await r.json() if r.status < 400 else {"error": await r.text()}
+
+
 async def _ai(prompt: str, max_tokens: int = 600) -> str:
     try:
         from modules.ai_client import ai_complete
@@ -113,8 +122,8 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
     """
     # Primary path: Mailchimp (supports raw HTML, no template required)
     try:
-        from modules.mailchimp_client import send_campaign as mc_send
-        mc_result = await mc_send(subject=subject, html_body=html_content, name=name)
+        from modules.mailchimp_automation import send_campaign as mc_send
+        mc_result = await mc_send(subject=subject, html_body=html_content)
         if mc_result.get("ok"):
             await track_event(
                 email=os.getenv("FROM_EMAIL", "hello@bullpowerhub.com"),
@@ -178,7 +187,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
             msg_id = cdata[0].get("id")
 
         if msg_id:
-            await _kv_post(f"/campaign-messages/{msg_id}/", {
+            await _kv_patch(f"/campaign-messages/{msg_id}/", {
                 "data": {
                     "type": "campaign-message",
                     "id": msg_id,
