@@ -338,6 +338,21 @@ async def create_shopify_discount_for_leads() -> str:
     import aiohttp
     base    = f"https://{SHOPIFY_DOMAIN}" if not SHOPIFY_DOMAIN.startswith("http") else SHOPIFY_DOMAIN
     headers = {"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"}
+
+    # Pre-check: test if write_price_rules scope is available
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"{base}/admin/api/{SHOPIFY_VER}/price_rules.json?limit=1",
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                if r.status == 403:
+                    log.debug("Shopify write_price_rules scope not granted — discount creation skipped")
+                    return "skip: write_price_rules scope not granted"
+    except Exception:
+        pass
+
     expires = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
 
     try:
@@ -408,9 +423,13 @@ async def run_auto_funnel() -> dict:
         try:
             url = await create_shopify_discount_for_leads()
             discount_file.write_text(json.dumps({"url": url, "created_at": datetime.now().isoformat()}))
-            results["discount_created"] = url
+            if url.startswith("skip:"):
+                results["discount_skipped"] = url
+            else:
+                results["discount_created"] = url
         except Exception as e:
-            results["discount_error"] = str(e)
+            log.debug("Discount creation skipped: %s", e)
+            results["discount_skipped"] = str(e)
 
     log.info("AutoFunnel run complete: %s", results)
     return results
