@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zentraler AI-Client — Anthropic → OpenAI → DeepSeek → Groq → Fallback.
+Zentraler AI-Client — Anthropic → OpenAI → OpenRouter → DeepSeek → Perplexity → Fallback.
 Einheitlicher Zugang für alle Module: from modules.ai_client import ai_complete
 """
 from __future__ import annotations
@@ -11,20 +11,21 @@ log = logging.getLogger("AIClient")
 
 _ANTHROPIC  = lambda: os.getenv("ANTHROPIC_API_KEY", "")
 _OPENAI     = lambda: os.getenv("OPENAI_API_KEY", "")
-_DEEPSEEK   = lambda: os.getenv("DEEPSEEK_API_KEY", "") or os.getenv("OPENAI_API_KEY", "")
-_GROQ       = lambda: os.getenv("GROQ_API_KEY", "")
+_OPENROUTER = lambda: os.getenv("OPENROUTER_API_KEY", "")
+_DEEPSEEK   = lambda: os.getenv("DEEPSEEK_API_KEY", "")
 _PERPLEXITY = lambda: os.getenv("PERPLEXITY_API_KEY", "")
 
-_GROQ_MODELS = {"fast": "llama-3.1-8b-instant", "smart": "llama-3.3-70b-versatile", "default": "llama-3.1-8b-instant"}
+_OPENROUTER_MODEL = "mistralai/mistral-7b-instruct:free"
+_OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
 
 
 async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", max_tokens: int = 1200) -> str:
-    """Full fallback chain: Anthropic → OpenAI → DeepSeek → Groq → Perplexity → empty."""
+    """Full fallback chain: Anthropic → OpenAI → OpenRouter → DeepSeek → Perplexity → empty."""
     import aiohttp
 
     messages = [{"role": "user", "content": f"{system}\n\n{prompt}" if system else prompt}]
 
-    # 1. Anthropic
+    # 1. Anthropic (skip on 529 = no credits, 401 = invalid)
     if _ANTHROPIC():
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
@@ -38,7 +39,10 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
                     if r.status == 200:
                         d = await r.json(content_type=None)
                         return d["content"][0]["text"]
-                    log.debug("Anthropic %s", r.status)
+                    if r.status in (401, 529):
+                        log.debug("Anthropic skip (%s) — trying next provider", r.status)
+                    else:
+                        log.debug("Anthropic %s", r.status)
         except Exception as e:
             log.debug("Anthropic error: %s", e)
 
@@ -50,23 +54,45 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
                     "https://api.openai.com/v1/chat/completions",
                     headers={"Authorization": f"Bearer {_OPENAI()}", "Content-Type": "application/json"},
                     json={"model": "gpt-4o-mini", "max_tokens": max_tokens,
-                          "messages": [{"role": "system", "content": system}] + [{"role": "user", "content": prompt}] if system else messages},
+                          "messages": ([{"role": "system", "content": system}] + [{"role": "user", "content": prompt}]) if system else messages},
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)
                         return d["choices"][0]["message"]["content"]
-                    log.debug("OpenAI %s", r.status)
+                    if r.status in (401, 403):
+                        log.debug("OpenAI skip (%s) — invalid key", r.status)
+                    else:
+                        log.debug("OpenAI %s", r.status)
         except Exception as e:
             log.debug("OpenAI error: %s", e)
 
-    # 3. DeepSeek
-    ds_key = os.getenv("DEEPSEEK_API_KEY", "")
-    if ds_key:
+    # 3. OpenRouter (free models available)
+    if _OPENROUTER():
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                async with s.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_OPENROUTER()}",
+                             "HTTP-Referer": _OPENROUTER_REFERER,
+                             "Content-Type": "application/json"},
+                    json={"model": _OPENROUTER_MODEL, "max_tokens": max_tokens, "messages": messages},
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json(content_type=None)
+                        text = d["choices"][0]["message"]["content"]
+                        if text:
+                            return text
+                    log.debug("OpenRouter %s", r.status)
+        except Exception as e:
+            log.debug("OpenRouter error: %s", e)
+
+    # 4. DeepSeek
+    if _DEEPSEEK():
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(
                     "https://api.deepseek.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {ds_key}", "Content-Type": "application/json"},
+                    headers={"Authorization": f"Bearer {_DEEPSEEK()}", "Content-Type": "application/json"},
                     json={"model": "deepseek-chat", "max_tokens": max_tokens, "messages": messages},
                 ) as r:
                     if r.status == 200:
@@ -76,31 +102,14 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("DeepSeek error: %s", e)
 
-    # 4. Groq (free)
-    if _GROQ():
-        try:
-            model = _GROQ_MODELS.get(model_hint, _GROQ_MODELS["default"])
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-                async with s.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_GROQ()}", "Content-Type": "application/json"},
-                    json={"model": model, "max_tokens": max_tokens, "messages": messages},
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        return d["choices"][0]["message"]["content"]
-                    log.debug("Groq %s", r.status)
-        except Exception as e:
-            log.debug("Groq error: %s", e)
-
-    # 5. Perplexity
+    # 5. Perplexity (min 16 tokens required by API)
     if _PERPLEXITY():
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
                 async with s.post(
                     "https://api.perplexity.ai/chat/completions",
                     headers={"Authorization": f"Bearer {_PERPLEXITY()}", "Content-Type": "application/json"},
-                    json={"model": "sonar", "max_tokens": max_tokens, "messages": messages},
+                    json={"model": "sonar", "max_tokens": max(max_tokens, 16), "messages": messages},
                 ) as r:
                     if r.status == 200:
                         d = await r.json(content_type=None)

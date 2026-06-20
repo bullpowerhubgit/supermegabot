@@ -365,6 +365,10 @@ async def create_shopify_discount_for_leads() -> str:
 
             rule_id = rule_data.get("price_rule", {}).get("id")
             if not rule_id:
+                errors = rule_data.get("errors", {})
+                if "permission" in str(errors).lower() or rule_data.get("status") == 403:
+                    log.debug("Shopify price_rules: write_price_rules scope missing — skip")
+                    return "skip: write_price_rules scope not granted"
                 return f"Price rule creation failed: {rule_data}"
 
             # Create discount code
