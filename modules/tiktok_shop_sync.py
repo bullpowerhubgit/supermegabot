@@ -279,3 +279,48 @@ async def create_tiktok_promotion(product_id: str, discount_pct: int = 10, hours
     except Exception as e:
         log.warning("TikTok promotion error: %s", e)
         return {"success": False, "error": str(e)}
+
+
+async def exchange_oauth_code(code: str, shop_id: str = "") -> dict:
+    """Exchange TikTok Shop OAuth auth_code for access token."""
+    app_key    = TIKTOK_APP_KEY
+    app_secret = TIKTOK_APP_SECRET
+    if not app_key or not app_secret:
+        return {"ok": False, "error": "TIKTOK_APP_KEY and TIKTOK_APP_SECRET required"}
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                "https://auth.tiktok-shops.com/api/v2/token/get",
+                params={
+                    "app_key":    app_key,
+                    "app_secret": app_secret,
+                    "auth_code":  code,
+                    "grant_type": "authorized_code",
+                },
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                data = await r.json(content_type=None)
+        if data.get("code") == 0:
+            token = data.get("data", {}).get("access_token", "")
+            log.info("TikTok OAuth success, token: %s...", token[:8])
+            return {"ok": True, "access_token": token, "raw": data.get("data", {})}
+        return {"ok": False, "error": str(data.get("message", data))}
+    except Exception as e:
+        log.warning("TikTok OAuth exchange error: %s", e)
+        return {"ok": False, "error": str(e)}
+
+
+async def run_with_brutus_traffic() -> dict:
+    """Sync products to TikTok Shop and launch BRUTUS traffic blast."""
+    sync_result = await sync_products_to_tiktok()
+    try:
+        from modules.brutus_traffic_engine import brutus_blast_for_tool
+        keywords = [
+            "TikTok Shop Produkte", "Online Shop TikTok", "TikTok eCommerce",
+            "Produkte TikTok kaufen", "TikTok Dropshipping", "TikTok viral Produkte",
+        ]
+        blast_result = await brutus_blast_for_tool("TikTok Shop", "https://www.tiktok.com/", keywords)
+    except Exception as e:
+        blast_result = {"error": str(e)}
+    return {"sync": sync_result, "brutus": blast_result}
