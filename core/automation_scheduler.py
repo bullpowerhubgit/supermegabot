@@ -2667,6 +2667,211 @@ async def task_printify_auto_publish() -> str:
         return f"Printify AutoPublish error: {e}"
 
 
+async def task_shopify_auto_fill_trending() -> str:
+    """Shopify vollautomatisch mit trendigen Produkten befüllen: AliExpress + AI-Bilder + SEO-Texte."""
+    try:
+        import aiohttp
+        from modules.ai_client import ai_complete
+        from modules.super_revenue_blitz import announce_new_products, _tg_send
+
+        shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        shopify_token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        shopify_ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not shopify_domain or not shopify_token:
+            return "Shopify not configured"
+
+        # 1. AI ermittelt Trending-Produkte 2026
+        trend_prompt = """Welche 5 Produkte sind gerade (2026) im deutschsprachigen E-Commerce am angesagtesten?
+Fokus: Dropshipping/Print-on-Demand geeignet, hohe Nachfrage, günstiger Einkauf.
+Antworte NUR als JSON-Array:
+[{"name":"...", "niche":"...", "price_eur": 29.99, "keywords": ["kw1","kw2"], "emoji":"🔥"}]"""
+        raw = await ai_complete(trend_prompt, max_tokens=500)
+        products_info = []
+        if raw:
+            try:
+                s = raw.find("["); e = raw.rfind("]") + 1
+                products_info = json.loads(raw[s:e]) if s >= 0 else []
+            except Exception:
+                pass
+        if not products_info:
+            products_info = [
+                {"name": "LED-Beleuchtungsset Smart Home", "niche": "Smart Home", "price_eur": 34.99, "keywords": ["LED", "Smart Home", "Licht"], "emoji": "💡"},
+                {"name": "Fitness Widerstandsbänder Set", "niche": "Fitness", "price_eur": 24.99, "keywords": ["Fitness", "Training", "Widerstandsband"], "emoji": "💪"},
+                {"name": "Nachhaltiger Bambus-Organizer", "niche": "Büro", "price_eur": 29.99, "keywords": ["Bambus", "Organizer", "Nachhaltigkeit"], "emoji": "🌿"},
+                {"name": "KI-Produktivitäts-Planer 2026", "niche": "Produktivität", "price_eur": 19.99, "keywords": ["Planer", "Produktivität", "KI"], "emoji": "📋"},
+                {"name": "Personalisierte Tasse Geschenk", "niche": "Geschenke", "price_eur": 22.99, "keywords": ["Tasse", "Personalisiert", "Geschenk"], "emoji": "☕"},
+            ]
+
+        base = f"https://{shopify_domain}"
+        headers = {"X-Shopify-Access-Token": shopify_token, "Content-Type": "application/json"}
+        imported = 0
+        new_products = []
+
+        for p in products_info[:5]:
+            name = p.get("name", "Trending Produkt")
+            price = float(p.get("price_eur", 29.99))
+            niche = p.get("niche", "")
+            keywords = p.get("keywords", [])
+            emoji = p.get("emoji", "🔥")
+
+            # 2. AI generiert SEO-Beschreibung
+            seo_prompt = (
+                f"Erstelle eine SEO-optimierte Shopify Produktbeschreibung auf Deutsch für:\n"
+                f"Produkt: {name}\nNische: {niche}\nPreis: €{price:.2f}\n"
+                f"Zielgruppe: Deutsche E-Commerce Kunden\n\n"
+                f"Erstelle:\n- Kurze überzeugende Beschreibung (120 Wörter)\n- 5 Bullet-Points (Vorteile)\n- SEO Meta-Beschreibung (155 Zeichen)\n\n"
+                f"Antworte als JSON: {{\"description\":\"...\",\"bullets\":[...],\"meta\":\"...\"}}"
+            )
+            try:
+                raw_seo = await ai_complete(seo_prompt, max_tokens=400)
+                si = raw_seo.find("{") if raw_seo else -1
+                ei = raw_seo.rfind("}") + 1 if raw_seo else 0
+                seo = json.loads(raw_seo[si:ei]) if si >= 0 and raw_seo else {}
+            except Exception:
+                seo = {}
+
+            desc = seo.get("description", f"{name} — Jetzt im Angebot!")
+            bullets = seo.get("bullets", ["✅ Hohe Qualität", "✅ Schnelle Lieferung", "✅ Zufriedenheitsgarantie"])
+            bullets_html = "".join(f"<li>{b}</li>" for b in bullets[:5])
+            body_html = (
+                f"<h2>{emoji} {name}</h2>"
+                f"<p>{desc}</p>"
+                f"<ul>{bullets_html}</ul>"
+                f"<p><em>Nische: {niche} | Keywords: {', '.join(keywords[:3])}</em></p>"
+            )
+
+            # 3. Shopify Produkt erstellen
+            try:
+                async with aiohttp.ClientSession() as s:
+                    async with s.post(
+                        f"{base}/admin/api/{shopify_ver}/products.json",
+                        headers=headers,
+                        json={"product": {
+                            "title": f"{emoji} {name}",
+                            "body_html": body_html,
+                            "vendor": "TrendShop 2026",
+                            "product_type": niche,
+                            "status": "active",
+                            "tags": ",".join(keywords[:5]),
+                            "variants": [{"price": f"{price:.2f}", "inventory_management": None}],
+                        }},
+                        timeout=aiohttp.ClientTimeout(total=15),
+                    ) as r:
+                        if r.status in (200, 201):
+                            imported += 1
+                            new_products.append({"title": f"{emoji} {name}", "price": price})
+                            log.info("Shopify TrendFill: created '%s'", name)
+                        else:
+                            log.debug("Shopify TrendFill skip (%s): %s", r.status, name[:40])
+            except Exception as e:
+                log.debug("Shopify TrendFill product error: %s", e)
+
+        if imported > 0:
+            await _tg_send(
+                f"🛒 <b>Shopify Auto-Fill: {imported} neue Trend-Produkte!</b>\n\n"
+                + "\n".join(f"• {p['title']}" for p in new_products[:5])
+                + f"\n\nShop: https://{shopify_domain}"
+            )
+            # BRUTUS Traffic für neue Produkte
+            try:
+                from modules.brutus_traffic_engine import run_brutus_swarm
+                kws = [p.get("name", "") for p in products_info[:3]]
+                await run_brutus_swarm(keywords=kws, max_keywords=3)
+            except Exception:
+                pass
+
+        return f"Shopify TrendFill: {imported} Produkte erstellt"
+    except Exception as e:
+        return f"Shopify TrendFill error: {e}"
+
+
+async def task_shopify_publish_drafts() -> str:
+    """Alle Shopify Draft-Produkte → active (sofort live stellen)."""
+    try:
+        import aiohttp
+        shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        shopify_token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        shopify_ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not shopify_domain or not shopify_token:
+            return "Shopify not configured"
+
+        base = f"https://{shopify_domain}"
+        headers = {"X-Shopify-Access-Token": shopify_token, "Content-Type": "application/json"}
+        published = 0
+
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"{base}/admin/api/{shopify_ver}/products.json?status=draft&limit=50",
+                headers=headers, timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                data = await r.json(content_type=None)
+            drafts = data.get("products", [])
+
+            for p in drafts[:20]:  # max 20 per run
+                try:
+                    async with s.put(
+                        f"{base}/admin/api/{shopify_ver}/products/{p['id']}.json",
+                        headers=headers,
+                        json={"product": {"id": p["id"], "status": "active"}},
+                        timeout=aiohttp.ClientTimeout(total=10),
+                    ) as r:
+                        if r.status == 200:
+                            published += 1
+                except Exception:
+                    pass
+
+        if published > 0:
+            log.info("Shopify PublishDrafts: %d products published", published)
+        return f"Shopify PublishDrafts: {published}/{len(drafts)} live gestellt"
+    except Exception as e:
+        return f"Shopify PublishDrafts error: {e}"
+
+
+async def task_geheimwaffe_daily() -> str:
+    try:
+        from modules.geheimwaffe import run_full_automation
+        r = await run_full_automation()
+        return f"Geheimwaffe: {r.get('products_analyzed',0)} analyzed, {r.get('posts_created',0)} posts"
+    except Exception as e:
+        return f"Geheimwaffe error: {e}"
+
+
+async def task_b2b_prospecting() -> str:
+    try:
+        from modules.b2b_pipeline import run_prospecting
+        r = await run_prospecting()
+        return f"B2B: {r.get('leads_found',0)} leads, {r.get('outreach_sent',0)} outreach"
+    except Exception as e:
+        return f"B2B Prospecting error: {e}"
+
+
+async def task_growth_reviews() -> str:
+    try:
+        from modules.growth_engine import run_review_automation
+        r = await run_review_automation()
+        return f"Growth Reviews: {r.get('requests_sent',0)} sent"
+    except Exception as e:
+        return f"Growth Reviews error: {e}"
+
+
+async def task_growth_winback() -> str:
+    try:
+        from modules.growth_engine import run_winback_campaign
+        r = await run_winback_campaign()
+        return f"Growth Winback: {r.get('emails_sent',0)} emails"
+    except Exception as e:
+        return f"Growth Winback error: {e}"
+
+
+async def task_amazon_affiliate_blast() -> str:
+    try:
+        from modules.amazon_affiliate import run_with_brutus_traffic
+        r = await run_with_brutus_traffic()
+        return f"Amazon Affiliate: {r.get('links_generated',0)} links, brutus={r.get('brutus_posts',0)}"
+    except Exception as e:
+        return f"Amazon Affiliate error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -2849,6 +3054,18 @@ TASKS = [
     ("mailing_promo_blitz",    task_mailing_promo_blitz,      21600, 10500), # 6h — Alle Mailing-Kanäle gleichzeitig
     # ── PRINTIFY AUTO-PUBLISH — Neue Produkte sofort pushen ──────────────────
     ("printify_auto_publish",  task_printify_auto_publish,     3600, 10600), # 1h — Publish alle unveröffentlichten
+    # ── SHOPIFY AUTO-FILL — Trending Produkte auto-importieren + publizieren ──
+    ("shopify_auto_fill_trending", task_shopify_auto_fill_trending, 14400, 10700), # 4h — trending → Shopify
+    ("shopify_publish_drafts", task_shopify_publish_drafts,    3600, 10800), # 1h — alle Drafts → live
+    # ── GEHEIMWAFFE — Competitive Intelligence + Winning Products ─────────────
+    ("geheimwaffe_daily",      task_geheimwaffe_daily,        43200, 11000), # 12h — Competitor + Winning Products
+    # ── B2B PIPELINE — Automatische Lead-Generierung ──────────────────────────
+    ("b2b_prospecting",        task_b2b_prospecting,          86400, 11200), # daily — neue B2B Leads
+    # ── GROWTH ENGINE — Review + Winback ──────────────────────────────────────
+    ("growth_reviews",         task_growth_reviews,           86400, 11400), # daily — Review Requests
+    ("growth_winback",         task_growth_winback,           86400, 11600), # daily — Winback Emails
+    # ── AMAZON AFFILIATE — Product Links + BRUTUS Traffic ─────────────────────
+    ("amazon_affiliate_blast", task_amazon_affiliate_blast,   14400, 11800), # 4h — Amazon Links + BRUTUS
 ]
 
 
