@@ -347,6 +347,21 @@ async def get_stats() -> Dict:
     }
 
 
+async def send_campaign(subject: str, html_body: str, list_id: str = "") -> dict:
+    """One-step: create + send Klaviyo campaign. Returns {ok, campaign_id, error}."""
+    _list_id = list_id or os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+    from_email = os.getenv("KLAVIYO_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
+    from_name  = os.getenv("KLAVIYO_FROM_NAME", "Rudolf | AIITEC")
+    result = await create_and_send_campaign(
+        list_id=_list_id,
+        subject=subject,
+        from_email=from_email,
+        from_name=from_name,
+        html_body=html_body,
+    )
+    return result
+
+
 async def run_with_brutus_traffic() -> dict:
     """Run Klaviyo stats then fire BRUTUS traffic for email marketing."""
     result = {}
