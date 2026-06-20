@@ -5079,6 +5079,133 @@ async def handle_growth_status(request: web.Request) -> web.Response:
         return web.json_response({"error": str(e)}, status=500)
 
 
+# ── Gumroad extended handlers ─────────────────────────────────────────────────
+
+async def handle_gumroad_products(req):
+    try:
+        from modules.ecommerce_connectors import GumroadConnector
+        gum = GumroadConnector()
+        products = await gum.get_products()
+        return web.json_response({"ok": True, "products": products[:20], "total": len(products)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_gumroad_sales(req):
+    try:
+        from modules.ecommerce_connectors import GumroadConnector
+        gum = GumroadConnector()
+        sales = await gum.get_sales()
+        total = sum(float(s.get("price", 0) or 0) / 100 for s in sales)
+        return web.json_response({"ok": True, "sales": sales[:20], "total_eur": round(total, 2), "count": len(sales)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_gumroad_create(req):
+    try:
+        data = await req.json()
+    except Exception:
+        return web.json_response({"ok": False, "error": "invalid JSON"}, status=400)
+    try:
+        from modules.ecommerce_connectors import GumroadConnector
+        gum = GumroadConnector()
+        r = await gum.create_product(
+            name=data.get("name", "New Product"),
+            price_cents=int(float(data.get("price", 9.99)) * 100),
+            description=data.get("description", ""),
+        )
+        return web.json_response({"ok": r.get("success", False), "product": r.get("product", {})})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Fiverr handlers ───────────────────────────────────────────────────────────
+
+async def handle_fiverr_status(req):
+    try:
+        from modules.fiverr_client import get_stats
+        return web.json_response(await get_stats())
+    except Exception as e:
+        return web.json_response({"connected": False, "error": str(e)})
+
+
+async def handle_fiverr_gigs(req):
+    try:
+        from modules.fiverr_client import get_gigs
+        gigs = await get_gigs()
+        return web.json_response({"ok": True, "gigs": gigs, "total": len(gigs)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_fiverr_orders(req):
+    try:
+        from modules.fiverr_client import get_orders
+        status = req.rel_url.query.get("status", "active")
+        orders = await get_orders(status)
+        return web.json_response({"ok": True, "orders": orders, "total": len(orders)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+# ── Upwork handlers ───────────────────────────────────────────────────────────
+
+async def handle_upwork_status(req):
+    try:
+        from modules.upwork_client import get_stats
+        return web.json_response(await get_stats())
+    except Exception as e:
+        return web.json_response({"connected": False, "error": str(e)})
+
+
+async def handle_upwork_contracts(req):
+    try:
+        from modules.upwork_client import get_active_contracts
+        contracts = await get_active_contracts()
+        return web.json_response({"ok": True, "contracts": contracts, "total": len(contracts)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_upwork_earnings(req):
+    try:
+        from modules.upwork_client import get_earnings
+        r = await get_earnings()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_upwork_auth(req):
+    try:
+        from modules.upwork_client import get_oauth_url
+        url = get_oauth_url()
+        raise web.HTTPFound(url)
+    except web.HTTPFound:
+        raise
+    except Exception as e:
+        return web.Response(text=f"UPWORK_CLIENT_ID nicht gesetzt — {e}", status=400)
+
+
+async def handle_upwork_callback(req):
+    code = req.rel_url.query.get("code", "")
+    error = req.rel_url.query.get("error", "")
+    if error or not code:
+        return web.Response(text=f"Upwork OAuth Fehler: {error or 'kein code'}", status=400)
+    try:
+        from modules.upwork_client import exchange_oauth_code
+        r = await exchange_oauth_code(code)
+        if r.get("ok"):
+            return web.Response(
+                text="<html><body><h2>✅ Upwork verbunden!</h2><p>Token gespeichert. <a href='/'>Dashboard →</a></p></body></html>",
+                content_type="text/html",
+            )
+        return web.json_response(r, status=400)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -5214,6 +5341,19 @@ async def create_app():
     app.router.add_get("/api/etsy/status",            handle_etsy_status)
     app.router.add_get("/api/gumroad/status",         handle_gumroad_status)
     app.router.add_post("/api/gumroad/webhook",       handle_gumroad_webhook)
+    app.router.add_get("/api/gumroad/products",       handle_gumroad_products)
+    app.router.add_get("/api/gumroad/sales",          handle_gumroad_sales)
+    app.router.add_post("/api/gumroad/product/create", handle_gumroad_create)
+    # ── Fiverr ────────────────────────────────────────────────────────────────
+    app.router.add_get("/api/fiverr/status",          handle_fiverr_status)
+    app.router.add_get("/api/fiverr/gigs",            handle_fiverr_gigs)
+    app.router.add_get("/api/fiverr/orders",          handle_fiverr_orders)
+    # ── Upwork ────────────────────────────────────────────────────────────────
+    app.router.add_get("/api/upwork/status",          handle_upwork_status)
+    app.router.add_get("/api/upwork/contracts",       handle_upwork_contracts)
+    app.router.add_get("/api/upwork/earnings",        handle_upwork_earnings)
+    app.router.add_get("/api/upwork/auth",            handle_upwork_auth)
+    app.router.add_get("/api/upwork/callback",        handle_upwork_callback)
 
     # ── Revenue Aggregator ────────────────────────────────────────────────────
     app.router.add_get("/api/revenue",                handle_revenue_legacy)
