@@ -20,7 +20,13 @@ log = logging.getLogger("gcp_integration")
 
 GCP_PROJECT_ID = os.getenv("GCP_PROJECT_ID", "rudibot-gcp-project")
 GCP_REGION = os.getenv("GCP_REGION", "europe-west1")
-GCP_CONFIG_PATH = Path(__file__).parent.parent / "CascadeProjects" / "windsurf-project" / "RudiBot-Secure-API" / "gcp-config.json"
+# Config path: env var → known local path → fallback
+_CONFIG_CANDIDATES = [
+    os.getenv("GCP_CONFIG_PATH", ""),
+    str(Path.home() / "CascadeProjects" / "rudibot" / "RudiBot-Secure-API" / "gcp-config.json"),
+    str(Path(__file__).parent.parent / "RudiBot-Secure-API" / "gcp-config.json"),
+]
+GCP_CONFIG_PATH = Path(next((p for p in _CONFIG_CANDIDATES if p and Path(p).exists()), _CONFIG_CANDIDATES[1]))
 
 ENABLED_APIS = [
     "aiplatform.googleapis.com",
