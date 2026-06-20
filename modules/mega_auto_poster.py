@@ -518,7 +518,7 @@ async def auto_post_ds24_product() -> dict:
             p = products[0]
             name  = p.get("name", p.get("title", "AI Income Machine"))
             price = float(p.get("price", p.get("net_price", 37.0)) or 37.0)
-            url   = p.get("checkout_url") or f"https://www.digistore24.com/product/{p.get('id','669750')}"
+            url   = p.get("checkout_url") or f"https://ineedit.com.co"
             content = await generate_product_post(name, price, url)
         return await post_to_all_channels(content)
     except Exception as exc:
