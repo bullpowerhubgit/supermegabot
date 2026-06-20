@@ -15,7 +15,7 @@ _OPENROUTER = lambda: os.getenv("OPENROUTER_API_KEY", "")
 _PERPLEXITY = lambda: os.getenv("PERPLEXITY_API_KEY", "")
 _GEMINI     = lambda: os.getenv("GCP_API_KEY", "")
 
-_OPENROUTER_MODEL   = "mistralai/mistral-7b-instruct:free"
+_OPENROUTER_MODEL   = "liquid/lfm-2.5-1.2b-instruct:free"  # confirmed working free model 2026-06
 _OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
 _GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 

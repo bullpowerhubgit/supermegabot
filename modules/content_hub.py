@@ -158,11 +158,11 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
             continue
     import random as _rnd
     _templates = [
-        "🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 https://www.digistore24.com/redir/669750/user37405262/",
-        "💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. https://www.digistore24.com/redir/669750/user37405262/",
-        "🤖 Shopify + DS24 + KI = passives Einkommen 24/7! https://www.digistore24.com/redir/669750/user37405262/",
-        "📈 BRUTUS Traffic läuft — alle Kanäle werden bespielt. Jetzt starten: https://www.digistore24.com/redir/669750/user37405262/",
-        "🎯 DS24 Affiliate + BRUTUS = passive Einnahmen täglich! https://www.digistore24.com/redir/669750/user37405262/",
+        "🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 https://ineedit.com.co",
+        "💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. https://ineedit.com.co",
+        "🤖 Shopify + DS24 + KI = passives Einkommen 24/7! https://ineedit.com.co",
+        "📈 BRUTUS Traffic läuft — alle Kanäle werden bespielt. Jetzt starten: https://ineedit.com.co",
+        "🎯 DS24 Affiliate + BRUTUS = passive Einnahmen täglich! https://ineedit.com.co",
     ]
     return _rnd.choice(_templates)
 
