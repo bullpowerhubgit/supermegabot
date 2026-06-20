@@ -281,22 +281,32 @@ async def task_shopify_sync() -> str:
             return "Shopify nicht konfiguriert"
         base = f"https://{domain}" if not domain.startswith("http") else domain
         headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
-        query = """{ shop { name } products(first:1){pageInfo{total}} orders(first:1){pageInfo{total}} }"""
+        # Use REST API instead of GraphQL (pageInfo.total deprecated in Shopify)
+        ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
-            async with s.post(
-                f"{base}/api/2024-10/graphql.json",
-                headers=headers,
-                json={"query": query}
+            async with s.get(
+                f"{base}/admin/api/{ver}/products/count.json",
+                headers={"X-Shopify-Access-Token": token},
             ) as r:
-                data = await r.json()
-        errs = data.get("errors")
-        if errs:
-            return f"GraphQL-Fehler: {errs[0].get('message','?')[:80]}"
-        shop = data["data"]["shop"]
-        prods = data["data"]["products"]["pageInfo"]["total"]
-        ords  = data["data"]["orders"]["pageInfo"]["total"]
-        result = {"shop": shop["name"], "products": prods, "orders": ords, "ts": datetime.now().isoformat()}
-        (DATA_DIR / "shopify_cache.json").write_text(json.dumps(result))
+                pc = await r.json(content_type=None)
+            async with s.get(
+                f"{base}/admin/api/{ver}/orders/count.json?status=any",
+                headers={"X-Shopify-Access-Token": token},
+            ) as r:
+                oc = await r.json(content_type=None)
+            async with s.get(
+                f"{base}/admin/api/{ver}/shop.json",
+                headers={"X-Shopify-Access-Token": token},
+            ) as r:
+                sd = await r.json(content_type=None)
+        prods = pc.get("count", 0)
+        ords  = oc.get("count", 0)
+        shop_name = sd.get("shop", {}).get("name", domain)
+        result = {"shop": shop_name, "products": prods, "orders": ords, "ts": datetime.now().isoformat()}
+        try:
+            (DATA_DIR / "shopify_cache.json").write_text(json.dumps(result))
+        except Exception:
+            pass
         return f"Shopify: {prods} Produkte, {ords} Bestellungen gecacht"
     except Exception as e:
         return f"Fehler: {e}"
@@ -553,9 +563,9 @@ async def task_gumroad_sync() -> str:
     try:
         from modules.ecommerce_connectors import GumroadConnector
         gum = GumroadConnector()
-        ok, info = await gum.ping()
-        if not ok:
-            return f"Gumroad nicht konfiguriert: {info}"
+        ping_r = await gum.ping()
+        if not ping_r.get("connected", False):
+            return f"Gumroad nicht konfiguriert: {ping_r.get('error','no token')}"
         stats = await gum.get_stats()
         if stats.get("new_sales", 0):
             await _tg(f"💰 Gumroad: {stats['new_sales']} neue Verkäufe! Umsatz: {stats.get('revenue','?')}")
