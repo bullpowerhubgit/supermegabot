@@ -124,3 +124,48 @@ async def run_fiverr_cycle() -> dict:
     content = await generate_gig_content()
     return {"ok": True, "promoted": promo.get("promoted", 0),
             "gig_content_generated": content.get("ok")}
+
+
+async def run_fiverr_autonomy(count: int = 3) -> dict:
+    """
+    Vollautonome Fiverr-Promotion ohne API-Key.
+    Wählt {count} Gigs, erstellt Template-Content, blasted auf 6 Kanäle.
+    """
+    gigs_to_promote = random.sample(GIG_CATEGORIES, min(count, len(GIG_CATEGORIES)))
+    blasted = 0
+    gig_titles = []
+
+    for gig in gigs_to_promote:
+        title = gig["title"]
+        price = gig["price"]
+        delivery = gig["delivery"]
+        tags_str = " ".join(f"#{t.replace(' ','')}" for t in gig["tags"][:4])
+
+        post_templates = [
+            f"💼 Neu: {title}\n⏰ Lieferzeit: {delivery} Tage | Ab ${price}\n{tags_str}\n👉 {FIVERR_PROFILE}",
+            f"🚀 Ich biete auf Fiverr: {title}\n✅ ${price} | {delivery} Tage Lieferzeit\n✅ 100% Zufriedenheitsgarantie\n{FIVERR_PROFILE}",
+            f"⚡ Fiverr Service: {title}\nPreis ab ${price} | Schnelle Lieferung in {delivery} Tagen\n🔗 Jetzt anfragen: {FIVERR_PROFILE}\n{tags_str}",
+        ]
+        post = random.choice(post_templates)
+
+        try:
+            from modules.brutus_core import fire
+            result = await fire(
+                f"Fiverr: {title[:50]}",
+                post,
+                link=FIVERR_PROFILE,
+                channels=["telegram", "mailchimp", "klaviyo", "twitter", "linkedin", "discord"],
+            )
+            blasted += result.get("channels_hit", 1)
+            gig_titles.append(title)
+        except Exception as e:
+            log.warning("run_fiverr_autonomy blast error: %s", e)
+        await asyncio.sleep(1)
+
+    return {
+        "ok": True,
+        "blasted": blasted,
+        "gigs": gig_titles,
+        "channel": "brutus_fallback",
+        "profile": FIVERR_PROFILE,
+    }
