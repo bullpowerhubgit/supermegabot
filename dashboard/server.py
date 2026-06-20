@@ -6498,8 +6498,8 @@ async def handle_ds24_marketplace_stats(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
-async def handle_quantum_status(request: web.Request) -> web.Response:
-    """GET /api/quantum/status — System-Gesundheit + Fehler-Übersicht."""
+async def handle_qsi_status(request: web.Request) -> web.Response:
+    """GET /api/quantum/self-repair/status — Error-Tracker + Health-Score."""
     try:
         from modules.quantum_self_improver import get_quantum_status
         return web.json_response(await get_quantum_status())
@@ -6507,22 +6507,22 @@ async def handle_quantum_status(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
-async def handle_quantum_heal(request: web.Request) -> web.Response:
-    """POST /api/quantum/heal — Quantum-Heilung starten (background)."""
-    asyncio.get_event_loop().create_task(_quantum_heal_bg())
-    return web.json_response({"ok": True, "message": "Quantum Heal gestartet (background)"})
+async def handle_qsi_heal(request: web.Request) -> web.Response:
+    """POST /api/quantum/self-repair/heal — Quantum-Heilung (background)."""
+    asyncio.get_event_loop().create_task(_qsi_heal_bg())
+    return web.json_response({"ok": True, "message": "Quantum Self-Repair Heal gestartet (background)"})
 
 
-async def _quantum_heal_bg() -> None:
+async def _qsi_heal_bg() -> None:
     try:
         from modules.quantum_self_improver import quantum_heal_system
         await quantum_heal_system()
     except Exception as e:
-        log.warning("Quantum heal bg error: %s", e)
+        log.warning("QSI heal bg error: %s", e)
 
 
-async def handle_quantum_errors(request: web.Request) -> web.Response:
-    """GET /api/quantum/errors — Alle Fehler + Patterns."""
+async def handle_qsi_errors(request: web.Request) -> web.Response:
+    """GET /api/quantum/self-repair/errors — Alle Fehler + KI-Patterns."""
     try:
         from modules.quantum_self_improver import get_all_errors
         return web.json_response(await get_all_errors())
@@ -6530,8 +6530,8 @@ async def handle_quantum_errors(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
-async def handle_quantum_report(request: web.Request) -> web.Response:
-    """GET /api/quantum/report — Verbesserungs-Report."""
+async def handle_qsi_report(request: web.Request) -> web.Response:
+    """GET /api/quantum/self-repair/report — Wöchentlicher Verbesserungs-Report."""
     try:
         from modules.quantum_self_improver import self_improvement_report
         return web.json_response(await self_improvement_report())
@@ -8236,11 +8236,11 @@ async def create_app():
     app.router.add_post("/api/ds24/marketplace/cycle",     handle_ds24_marketplace_cycle)
     app.router.add_post("/api/ds24/marketplace/blast",     handle_ds24_marketplace_blast)
     app.router.add_get( "/api/ds24/marketplace/stats",     handle_ds24_marketplace_stats)
-    # ── Quantum Self-Repair System ────────────────────────────────────────────────
-    app.router.add_get( "/api/quantum/status",             handle_quantum_status)
-    app.router.add_post("/api/quantum/heal",               handle_quantum_heal)
-    app.router.add_get( "/api/quantum/errors",             handle_quantum_errors)
-    app.router.add_get( "/api/quantum/report",             handle_quantum_report)
+    # ── Quantum Self-Repair System (error-tracker, heal, token-check) ────────────
+    app.router.add_get( "/api/quantum/self-repair/status", handle_qsi_status)
+    app.router.add_post("/api/quantum/self-repair/heal",   handle_qsi_heal)
+    app.router.add_get( "/api/quantum/self-repair/errors", handle_qsi_errors)
+    app.router.add_get( "/api/quantum/self-repair/report", handle_qsi_report)
     app.router.add_post("/api/quantum/token-check",        handle_quantum_token_check)
 
     # ── Traffic Mega Engine ───────────────────────────────────────────────────
