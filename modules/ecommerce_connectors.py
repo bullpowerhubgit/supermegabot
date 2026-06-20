@@ -56,10 +56,7 @@ class EtsyConnector:
         self.access_token = os.getenv("ETSY_ACCESS_TOKEN", "")
         self.shop_id = os.getenv("ETSY_SHOP_ID", "")
         if not self.api_key:
-            log.warning(
-                "ETSY_API_KEY fehlt — Etsy-Funktionen nicht verfügbar. "
-                "Registrieren: https://www.etsy.com/developers/register"
-            )
+            log.debug("ETSY_API_KEY not set — Etsy disabled (banned app)")
 
     def _headers(self) -> Dict[str, str]:
         h = {"x-api-key": self.api_key}
@@ -110,7 +107,7 @@ class EtsyConnector:
             limit: max results (1–100)
         """
         if not self.shop_id:
-            log.warning("ETSY_SHOP_ID fehlt")
+            log.debug("ETSY_SHOP_ID not set — Etsy disabled")
             return []
         data = await self._get(
             f"/application/shops/{self.shop_id}/listings",
@@ -167,7 +164,7 @@ class EtsyConnector:
     async def get_transactions(self, limit: int = 10) -> List[Dict]:
         """Return recent shop transactions (sales)."""
         if not self.shop_id:
-            log.warning("ETSY_SHOP_ID fehlt")
+            log.debug("ETSY_SHOP_ID not set — Etsy disabled")
             return []
         data = await self._get(
             f"/application/shops/{self.shop_id}/transactions",

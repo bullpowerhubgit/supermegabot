@@ -311,7 +311,7 @@ class DeployBot:
             )
             results["uncommitted"] = len(r.stdout.strip().splitlines())
         except Exception:
-            log.exception("DeployBot: failed to check git status")
+            log.debug("DeployBot: git not available (Railway container)")
 
         # PM2 status
         try:

@@ -265,12 +265,16 @@ Nur JSON, kein anderer Text."""
 
         async with aiohttp.ClientSession() as s:
             raw = await _ai_text(s, prompt, max_tokens=800)
+        if not raw:
+            return trends[:3]
         start = raw.find("[")
         end = raw.rfind("]") + 1
+        if start < 0 or end <= 0:
+            return trends[:3]
         result = json.loads(raw[start:end])
         return [t for t in result if t.get("pre_peak") and t.get("score", 0) >= 7]
     except Exception as exc:
-        log.warning("Predict error: %s", exc)
+        log.debug("Predict error: %s", exc)
         return trends[:3]
 
 

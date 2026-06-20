@@ -100,7 +100,10 @@ Antworte NUR mit JSON:
                 data = await r.json(content_type=None)
         raw = (data.get("content") or [{"text": "{}"}])[0].get("text", "{}")
         start, end = raw.find("{"), raw.rfind("}") + 1
-        result = json.loads(raw[start:end])
+        result = json.loads(raw[start:end]) if start >= 0 else {}
+        if not result.get("title") or not result.get("body"):
+            log.debug("AI returned incomplete content, using fallback")
+            return _fallback_content(product_name, price, url)
         result.setdefault("image_url", IG_PIXEL)
         result.setdefault("url", url)
         return result

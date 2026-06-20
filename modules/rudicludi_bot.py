@@ -173,7 +173,7 @@ async def handle_update(update: dict) -> None:
 
 async def run():
     if not BOT_TOKEN:
-        log.error("TELEGRAM_BOT_TOKEN_2 nicht gesetzt — RudiCludiBot inaktiv")
+        log.debug("TELEGRAM_BOT_TOKEN_2 not set — RudiCludiBot inactive")
         return
 
     log.info("RudiCludiBot (@RudiCludiBot) gestartet")
@@ -187,7 +187,7 @@ async def run():
                     timeout=aiohttp.ClientTimeout(total=35),
                 ) as r:
                     if r.status == 401:
-                        log.error("RudiCludiBot: Ungültiger Token (TELEGRAM_BOT_TOKEN_2)")
+                        log.warning("RudiCludiBot: invalid TELEGRAM_BOT_TOKEN_2 — stopping")
                         return
                     data = await r.json()
                     for update in data.get("result", []):
