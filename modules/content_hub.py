@@ -9,6 +9,7 @@ Vereint alle 5 ehemaligen Content-Engine-Services:
 Läuft direkt im supermegabot Scheduler — kein separater Railway-Service nötig.
 """
 import asyncio
+import json
 import logging
 import os
 import random
@@ -280,17 +281,28 @@ SLUG: [url-slug-ohne-umlaute]
 # ── Social content generation ──────────────────────────────────────────────
 
 def _generate_social(article: dict, product: dict) -> dict:
-    results = {}
-    for platform, max_tok, prompt in [
-        ("facebook", 400, f"Facebook Post DE für: {article['title']}\nLink: {article['url']}\n2-3 Absätze + CTA + 5 Hashtags"),
-        ("instagram", 300, f"Instagram Caption DE: {article['title']}\nLink: {product['url']}\n10 Hashtags DE+EN"),
-        ("tiktok",   400, f"TikTok Script 45 Sek DE: {article['title']}\nHook→Problem→Lösung→CTA zu {product['url']}"),
-        ("reddit",   300, f"Reddit Post r/shopify EN: '{article['title']}'\nHilfreich, natürlicher Link zu {product['url']}"),
-        ("linkedin", 300, f"LinkedIn Post DE: {article['title']}\n3 Business Insights + Link: {product['url']}"),
-        ("pinterest", 150, f"Pinterest Pin DE/EN:\nTITEL:[max 100]\nBESCHREIBUNG:[150]\nFür: {article['title']} → {product['url']}"),
-    ]:
-        results[platform] = _haiku(prompt, max_tok)
-    return results
+    prompt = f"""Erstelle Social-Media-Inhalte auf Deutsch für:
+Artikel: {article['title']}
+Produkt: {product['name']} — {product['url']}
+
+Antworte NUR mit JSON:
+{{
+  "facebook": "2-3 Absätze + CTA + 5 Hashtags",
+  "instagram": "Caption + 10 Hashtags DE+EN",
+  "tiktok": "45-Sek-Script: Hook→Problem→Lösung→CTA",
+  "reddit": "helpful post in English with natural link",
+  "linkedin": "3 business insights + link",
+  "pinterest": "TITEL:[max 100 chars] BESCHREIBUNG:[150 chars]"
+}}"""
+    try:
+        raw = _haiku(prompt, max_tokens=1200)
+        start, end = raw.find("{"), raw.rfind("}") + 1
+        if start >= 0:
+            return json.loads(raw[start:end])
+    except Exception:
+        pass
+    return {p: f"{article['title']} — {product['url']}" for p in
+            ["facebook", "instagram", "tiktok", "reddit", "linkedin", "pinterest"]}
 
 
 # ── Main cycles ────────────────────────────────────────────────────────────
