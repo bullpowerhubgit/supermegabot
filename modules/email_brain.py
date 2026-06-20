@@ -63,14 +63,18 @@ _DEFAULT_NAMES = {
 
 
 def _accounts() -> list[dict]:
-    """Return all configured email accounts from GMAIL_USER_1..7 env vars."""
+    """Return configured email accounts from GMAIL_USER_1..8, deduplicated by address."""
+    seen: set = set()
     accounts = []
     for i in range(1, 9):
-        user = os.getenv(f"GMAIL_USER_{i}", "")
-        pw   = os.getenv(f"GMAIL_APP_PASSWORD_{i}", "")
+        user = os.getenv(f"GMAIL_USER_{i}", "").strip().lower()
+        pw   = os.getenv(f"GMAIL_APP_PASSWORD_{i}", "").strip()
         if not user or not pw:
             continue
-        name      = os.getenv(f"GMAIL_DISPLAY_NAME_{i}", _DEFAULT_NAMES.get(user.lower(), "Rudolf Sarkany"))
+        if user in seen:
+            continue  # skip duplicate accounts
+        seen.add(user)
+        name      = os.getenv(f"GMAIL_DISPLAY_NAME_{i}", _DEFAULT_NAMES.get(user, "Rudolf Sarkany"))
         imap_host = os.getenv(f"IMAP_HOST_{i}", "imap.gmail.com")
         smtp_host = os.getenv(f"SMTP_HOST_{i}", "smtp.gmail.com")
         accounts.append({
@@ -206,10 +210,75 @@ Kontext über Rudolf:
 - Antwort-Ton: freundlich-professionell, lösungsorientiert"""
 
 
-async def _classify_email(subject: str, sender: str, body: str) -> dict:
-    prompt = f"Von: {sender}\nBetreff: {subject}\n\nNachricht:\n{body[:1500]}"
+def _rule_classify(subject: str, sender: str, body: str) -> dict:
+    """Rule-based fallback classifier — works without AI credits."""
+    s = (subject + " " + body).lower()
+    frm = sender.lower()
 
-    # Use ai_complete fallback chain (OpenAI/Groq) before giving up
+    # Definite NO-reply
+    no_reply_signals = ["noreply", "no-reply", "donotreply", "newsletter", "unsubscribe",
+                        "notification", "automated", "autoresponder", "bounce", "mailer-daemon",
+                        "postmaster", "billing@", "invoice@", "receipt@", "order@",
+                        "notification@", "alert@"]
+    if any(sig in frm for sig in no_reply_signals):
+        return {"category": "newsletter", "priority": "low", "reply_needed": False,
+                "reply_draft": "", "label": "Newsletter", "archive": True,
+                "telegram_alert": False, "summary": subject[:80]}
+
+    spam_words = ["unsubscribe", "opt out", "click here to unsubscribe", "newsletter",
+                  "special offer", "act now", "limited time", "congratulations you won",
+                  "free money", "100% guaranteed", "make money fast"]
+    if sum(1 for w in spam_words if w in s) >= 2:
+        return {"category": "spam", "priority": "low", "reply_needed": False,
+                "reply_draft": "", "label": "Spam", "archive": True,
+                "telegram_alert": False, "summary": subject[:80]}
+
+    # Payment / order — high priority, alert
+    if any(w in s for w in ["zahlung", "payment", "invoice", "rechnung", "bestellung",
+                              "order confirmed", "purchase", "stripe", "paypal"]):
+        return {"category": "payment", "priority": "urgent", "reply_needed": False,
+                "reply_draft": "", "label": "Order", "archive": False,
+                "telegram_alert": True, "summary": f"Zahlung/Bestellung: {subject[:60]}"}
+
+    # Customer inquiry — needs reply
+    inquiry_words = ["frage", "anfrage", "hilfe", "problem", "support", "question",
+                     "help", "issue", "kann ich", "how do i", "wie kann", "kooperation",
+                     "zusammenarbeit", "angebot", "partnership", "interested", "interessiert"]
+    if any(w in s for w in inquiry_words):
+        draft = (
+            f"Hallo,\n\nvielen Dank für deine Nachricht!\n\n"
+            f"Ich habe deine Anfrage erhalten und melde mich so schnell wie möglich bei dir.\n\n"
+            f"Kurze Antwort auf deine Frage: Ja, wir können dir dabei helfen. "
+            f"Schreib mir gerne mehr Details und wir finden die beste Lösung.\n\n"
+            f"Beste Grüße,\nRudolf Sarkany | BullPower Hub | aiitec.online"
+        )
+        return {"category": "customer_inquiry", "priority": "normal", "reply_needed": True,
+                "reply_draft": draft, "label": "Customer", "archive": False,
+                "telegram_alert": False, "summary": f"Kundenanfrage: {subject[:60]}"}
+
+    # Business / cooperation
+    biz_words = ["business", "kooperation", "partnership", "collaboration", "proposal",
+                 "offer", "deal", "angebot", "zusammenarbeit", "investor", "funding"]
+    if any(w in s for w in biz_words):
+        draft = (
+            f"Hallo,\n\nvielen Dank für deine Nachricht und das Interesse an einer Zusammenarbeit!\n\n"
+            f"Gerne möchte ich mehr Details erfahren. "
+            f"Könntest du mir dein Angebot/deine Idee kurz näher beschreiben?\n\n"
+            f"Ich freue mich auf deine Antwort.\n\n"
+            f"Beste Grüße,\nRudolf Sarkany | BullPower Hub | aiitec.online"
+        )
+        return {"category": "business", "priority": "normal", "reply_needed": True,
+                "reply_draft": draft, "label": "Business", "archive": False,
+                "telegram_alert": True, "summary": f"Business: {subject[:60]}"}
+
+    # Default — unknown, don't reply, don't archive
+    return {"category": "unknown", "priority": "normal", "reply_needed": False,
+            "reply_draft": "", "label": "Priority", "archive": False,
+            "telegram_alert": False, "summary": subject[:80]}
+
+
+async def _classify_email(subject: str, sender: str, body: str) -> dict:
+    # Try AI first
     try:
         from modules.ai_client import ai_complete
         raw = await ai_complete(
@@ -221,13 +290,14 @@ async def _classify_email(subject: str, sender: str, body: str) -> dict:
                 raw = raw.split("```")[1]
                 if raw.startswith("json"):
                     raw = raw[4:]
-            return json.loads(raw)
+            result = json.loads(raw)
+            if isinstance(result, dict) and "category" in result:
+                return result
     except Exception:
         pass
 
-    return {"category": "unknown", "priority": "normal", "reply_needed": False,
-            "label": "Priority", "archive": False, "telegram_alert": False,
-            "summary": subject[:80]}
+    # Rule-based fallback — always works even without AI credits
+    return _rule_classify(subject, sender, body)
 
 
 # ── Telegram ──────────────────────────────────────────────────────────────────
@@ -351,15 +421,23 @@ async def _process_account(account: dict, replied: set) -> dict:
 # ── Daily summary ─────────────────────────────────────────────────────────────
 
 async def send_email_daily_summary():
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+
+    # Once-per-day guard — prevents duplicates on scheduler restart
+    lock_file = DATA_DIR / f"email_summary_{today}.lock"
+    if lock_file.exists():
+        log.info("Email daily summary already sent today (%s) — skipping duplicate", today)
+        return
+    lock_file.touch()
+
     try:
         stats = json.loads(STATS_FILE.read_text()) if STATS_FILE.exists() else {}
     except Exception:
         stats = {}
 
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     day_stats = stats.get(today, {})
-
     accounts = _accounts()
+
     lines = [f"📧 *Email Daily Report — {today}*\n"]
     for acc in accounts:
         user = acc["user"]
@@ -371,7 +449,18 @@ async def send_email_daily_summary():
             f"  Archiviert: {s.get('archived', 0)}\n"
             f"  Alerts gesendet: {s.get('alerts', 0)}"
         )
-    await _tg("\n\n".join(lines))
+
+    # Chunk at 3500 chars to stay under Telegram's 4096 limit
+    full = "\n\n".join(lines)
+    while full:
+        if len(full) <= 3500:
+            await _tg(full)
+            break
+        split_at = full.rfind("\n\n", 0, 3500)
+        if split_at == -1:
+            split_at = 3500
+        await _tg(full[:split_at])
+        full = full[split_at:].lstrip()
 
 
 def _update_stats(user: str, result: dict):
