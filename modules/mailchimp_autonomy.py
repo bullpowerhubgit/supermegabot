@@ -94,6 +94,8 @@ async def create_campaign(subject: str, html_body: str, from_name: str = FROM_NA
     """Create + fill + send a Mailchimp campaign."""
     if not API_KEY:
         return {"ok": False, "error": "no MAILCHIMP_API_KEY"}
+    if os.getenv("MAILCHIMP_AUTOMATION_ENABLED", "true").lower() in ("false", "0", "off"):
+        return {"ok": False, "error": "Mailchimp automation disabled — TOS violation fix pending"}
     try:
         # 1. Create campaign
         campaign_data = {
@@ -308,6 +310,8 @@ async def run_dragon_campaign(topic: str = "") -> dict:
     """Create + send campaign via DragonApp Mailchimp."""
     if not DRAGON_API_KEY:
         return {"ok": False, "error": "MAILCHIMP_DRAGON_API_KEY not set"}
+    if os.getenv("MAILCHIMP_AUTOMATION_ENABLED", "true").lower() in ("false", "0", "off"):
+        return {"ok": False, "error": "Mailchimp automation disabled — TOS violation fix pending"}
     try:
         ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
         shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
