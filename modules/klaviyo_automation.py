@@ -233,29 +233,45 @@ async def create_and_send_campaign(
                 msgs = camp_data.get("relationships", {}).get("campaign-messages", {}).get("data", [])
                 msg_id = msgs[0]["id"] if msgs else ""
 
-            # 2. Set HTML content on message (if msg_id found)
-            if msg_id and html_body:
-                tmpl_body = {
+            # 2a. Create Klaviyo template with HTML
+            tmpl_id = ""
+            if html_body:
+                tmpl_create = {
+                    "data": {
+                        "type": "template",
+                        "attributes": {
+                            "name": f"SMB Auto {datetime.now().strftime('%d%m%Y%H%M')}",
+                            "html": html_body,
+                            "text": "",
+                            "editor_type": "CODE",
+                        }
+                    }
+                }
+                async with s.post(f"{_BASE}/templates/", headers=_headers(), json=tmpl_create) as r:
+                    tmpl_resp = await r.json(content_type=None)
+                    if r.status in (200, 201):
+                        tmpl_id = tmpl_resp.get("data", {}).get("id", "")
+                        log.info("Klaviyo template created: %s", tmpl_id)
+                    else:
+                        log.warning("Klaviyo template create HTTP %s: %s", r.status, str(tmpl_resp)[:200])
+
+            # 2b. Associate template with campaign message
+            if msg_id and tmpl_id:
+                assoc_body = {
                     "data": {
                         "type": "campaign-message",
                         "id": msg_id,
-                        "attributes": {
-                            "content": {
-                                "subject": subject,
-                                "from_email": from_email,
-                                "from_label": from_name,
-                                "reply_to_email": from_email,
-                                "body": {"html": html_body},
-                            }
-                        },
+                        "relationships": {
+                            "template": {"data": {"type": "template", "id": tmpl_id}}
+                        }
                     }
                 }
-                async with s.patch(f"{_BASE}/campaign-messages/{msg_id}/", headers=_headers(), json=tmpl_body) as r:
+                async with s.patch(f"{_BASE}/campaign-messages/{msg_id}/", headers=_headers(), json=assoc_body) as r:
                     patch_body = await r.json(content_type=None)
                     if r.status not in (200, 204):
-                        log.error("Klaviyo template upload HTTP %s: %s", r.status, str(patch_body)[:300])
-                        return {"ok": False, "error": f"Template-Upload: HTTP {r.status}",
-                                "camp_id": camp_id, "detail": str(patch_body)[:300]}
+                        log.error("Klaviyo template associate HTTP %s: %s", r.status, str(patch_body)[:300])
+                        return {"ok": False, "error": f"Template-Assoziation: HTTP {r.status}",
+                                "camp_id": camp_id, "tmpl_id": tmpl_id, "detail": str(patch_body)[:300]}
 
             # 3. Send — id=campaign_id per Klaviyo API 2024-10-15 (send-job uses id as campaign ref)
             log.info("Klaviyo send-job: camp_id=%s msg_id=%s", camp_id, msg_id)
