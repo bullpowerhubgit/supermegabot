@@ -6271,6 +6271,42 @@ async def handle_ds24_create_1000(request: web.Request) -> web.Response:
     })
 
 
+async def handle_ds24_affiliate_blast_all(request: web.Request) -> web.Response:
+    """POST /api/ds24/affiliate/blast-all — Alle 22 genehmigten DS24-Affiliate-Produkte blasten."""
+    async def _bg():
+        try:
+            from modules.ds24_affiliate_blaster import blast_all_approved
+            await blast_all_approved(delay=2.0)
+        except Exception as e:
+            log.error("DS24 affiliate blast error: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "message": "22 DS24-Affiliate-Produkte werden auf allen Kanälen geblastet.", "total": 22})
+
+
+async def handle_ds24_affiliate_stats(request: web.Request) -> web.Response:
+    """GET /api/ds24/affiliate/stats — Alle genehmigten Produkte + Statistiken."""
+    try:
+        from modules.ds24_affiliate_blaster import get_affiliate_stats
+        return web.json_response(await get_affiliate_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ds24_affiliate_blast_niche(request: web.Request) -> web.Response:
+    """POST /api/ds24/affiliate/blast-niche — Nur eine Nische blasten."""
+    try:
+        data = await request.json()
+        niche = data.get("niche", "business")
+    except Exception:
+        niche = "business"
+    try:
+        from modules.ds24_affiliate_blaster import blast_niche
+        r = await blast_niche(niche)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_ds24_refill(request: web.Request) -> web.Response:
     """POST /api/ds24/refill — Autonomer Refill auf 1000 aktive Produkte."""
     try:
@@ -6945,6 +6981,53 @@ async def create_app():
     app.router.add_post("/api/ds24/refill",                handle_ds24_refill)
     app.router.add_get( "/api/ds24/status",                handle_ds24_mass_status)
     app.router.add_post("/api/ds24/seo-blast",             handle_ds24_seo_blast)
+    app.router.add_post("/api/ds24/affiliate/blast-all",   handle_ds24_affiliate_blast_all)
+    app.router.add_get( "/api/ds24/affiliate/stats",       handle_ds24_affiliate_stats)
+    app.router.add_post("/api/ds24/affiliate/blast-niche", handle_ds24_affiliate_blast_niche)
+
+    # ── Traffic Mega Engine ───────────────────────────────────────────────────
+    app.router.add_post("/api/traffic/mega-blast",       handle_traffic_mega_blast)
+    app.router.add_post("/api/traffic/viral-campaign",   handle_traffic_viral_campaign)
+    app.router.add_post("/api/traffic/syndicate",        handle_traffic_syndicate)
+    app.router.add_post("/api/traffic/backlinks",        handle_traffic_backlinks)
+    app.router.add_get( "/api/traffic/stats",            handle_traffic_stats)
+    # ── Fiverr ────────────────────────────────────────────────────────────────
+    app.router.add_post("/api/fiverr/promote",           handle_fiverr_promote)
+    app.router.add_post("/api/fiverr/cycle",             handle_fiverr_cycle)
+    app.router.add_get( "/api/fiverr/status",            handle_fiverr_status)
+    # ── Upwork ────────────────────────────────────────────────────────────────
+    app.router.add_post("/api/upwork/search",            handle_upwork_search)
+    app.router.add_post("/api/upwork/promote",           handle_upwork_promote)
+    app.router.add_get( "/api/upwork/status",            handle_upwork_status)
+    # ── TikTok Autonomy ───────────────────────────────────────────────────────
+    app.router.add_post("/api/tiktok/sync-products",     handle_tiktok_sync)
+    app.router.add_post("/api/tiktok/scripts",           handle_tiktok_scripts)
+    app.router.add_get( "/api/tiktok/trends",            handle_tiktok_trends_hashtags)
+    app.router.add_post("/api/tiktok/cycle",             handle_tiktok_autonomy_cycle)
+    # ── Gumroad ───────────────────────────────────────────────────────────────
+    app.router.add_post("/api/gumroad/create-all",       handle_gumroad_create_all)
+    app.router.add_post("/api/gumroad/blast",            handle_gumroad_blast)
+    app.router.add_get( "/api/gumroad/list",             handle_gumroad_list)
+    # ── Pinterest ─────────────────────────────────────────────────────────────
+    app.router.add_post("/api/pinterest/pin-products",   handle_pinterest_pin_products)
+    app.router.add_post("/api/pinterest/cycle",          handle_pinterest_cycle)
+    app.router.add_get( "/api/pinterest/status",         handle_pinterest_status)
+    # ── YouTube ───────────────────────────────────────────────────────────────
+    app.router.add_post("/api/youtube/trends",           handle_youtube_trends)
+    app.router.add_post("/api/youtube/scripts",          handle_youtube_scripts)
+    app.router.add_get( "/api/youtube/status",           handle_youtube_status_new)
+    # ── Email Blast Engine ────────────────────────────────────────────────────
+    app.router.add_post("/api/email/blast",              handle_email_blast)
+    app.router.add_post("/api/email/daily-blast",        handle_email_daily_blast)
+    app.router.add_get( "/api/email/stats",              handle_email_stats)
+    # ── Affiliate Mega Engine ─────────────────────────────────────────────────
+    app.router.add_post("/api/affiliate/blast-all",      handle_affiliate_blast_all)
+    app.router.add_post("/api/affiliate/amazon",         handle_affiliate_amazon)
+    app.router.add_post("/api/affiliate/ds24",           handle_affiliate_ds24)
+    app.router.add_get( "/api/affiliate/stats",          handle_affiliate_stats_new)
+    # ── MEGA START — alles auf einmal ─────────────────────────────────────────
+    app.router.add_post("/api/mega/start",               handle_mega_autonomy_start)
+    app.router.add_get( "/api/mega/status",              handle_mega_status)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
