@@ -22,68 +22,12 @@ GROQ_KEY      = os.getenv("GROQ_API_KEY", "")
 
 
 async def _ai_generate(prompt: str, max_tokens: int = 800) -> str:
-    """Generate content via Claude. Falls back to OpenAI if needed."""
-    if ANTHROPIC_KEY:
-        try:
-            import aiohttp
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={
-                        "x-api-key": ANTHROPIC_KEY,
-                        "anthropic-version": "2023-06-01",
-                        "content-type": "application/json",
-                    },
-                    json={
-                        "model": "claude-haiku-4-5-20251001",
-                        "max_tokens": max_tokens,
-                        "messages": [{"role": "user", "content": prompt}],
-                    },
-                    timeout=aiohttp.ClientTimeout(total=30),
-                ) as resp:
-                    data = await resp.json(content_type=None)
-                    return data["content"][0]["text"]
-        except Exception as exc:
-            log.warning("Claude generation failed: %s — falling back to DeepSeek", exc)
-
-    if DEEPSEEK_KEY:
-        try:
-            import aiohttp
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "https://api.deepseek.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {DEEPSEEK_KEY}", "Content-Type": "application/json"},
-                    json={
-                        "model": "deepseek-chat",
-                        "max_tokens": max_tokens,
-                        "messages": [{"role": "user", "content": prompt}],
-                    },
-                    timeout=aiohttp.ClientTimeout(total=30),
-                ) as resp:
-                    data = await resp.json(content_type=None)
-                    return data["choices"][0]["message"]["content"]
-        except Exception as exc:
-            log.warning("DeepSeek generation failed: %s", exc)
-
-    if GROQ_KEY:
-        try:
-            import aiohttp
-            async with aiohttp.ClientSession() as session:
-                async with session.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {GROQ_KEY}", "Content-Type": "application/json"},
-                    json={
-                        "model": "llama-3.1-8b-instant",
-                        "max_tokens": max_tokens,
-                        "messages": [{"role": "user", "content": prompt}],
-                    },
-                    timeout=aiohttp.ClientTimeout(total=20),
-                ) as resp:
-                    data = await resp.json(content_type=None)
-                    return data["choices"][0]["message"]["content"]
-        except Exception as exc:
-            log.warning("Groq generation failed: %s", exc)
-
+    """Generate content via central AI fallback chain."""
+    try:
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=max_tokens)
+    except Exception as exc:
+        log.warning("AI generation failed: %s", exc)
     return ""
 
 

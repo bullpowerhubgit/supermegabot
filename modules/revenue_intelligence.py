@@ -27,18 +27,11 @@ _TIMEOUT = aiohttp.ClientTimeout(total=30)
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
 async def _ai(prompt: str, max_tokens: int = 1024) -> str:
-    if not ANTHROPIC_API_KEY:
+    try:
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=max_tokens)
+    except Exception:
         return ""
-    async with aiohttp.ClientSession(timeout=_TIMEOUT) as s:
-        async with s.post(
-            "https://api.anthropic.com/v1/messages",
-            headers={"x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01",
-                     "content-type": "application/json"},
-            json={"model": _AI_MODEL, "max_tokens": max_tokens,
-                  "messages": [{"role": "user", "content": prompt}]},
-        ) as r:
-            d = await r.json()
-            return d.get("content", [{}])[0].get("text", "") if r.status == 200 else ""
 
 
 async def _telegram(msg: str) -> None:

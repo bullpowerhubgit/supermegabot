@@ -553,19 +553,12 @@ Format: Eine Zeile pro Post, kein Nummerierung, direkt den Post-Text.
 Nutze Emojis. Zielgruppe: Deutsche Shop-Betreiber."""
 
     try:
-        import aiohttp
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1000,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                data = await r.json()
-                posts = data["content"][0]["text"].strip().split("\n")
-                posts = [p.strip() for p in posts if p.strip()]
-                return {"keyword": keyword, "posts": posts[:5]}
+        from modules.ai_client import ai_complete
+        raw = await ai_complete(prompt, max_tokens=1000)
+        if raw:
+            posts = [p.strip() for p in raw.strip().split("\n") if p.strip()]
+            return {"keyword": keyword, "posts": posts[:5]}
+        return {"error": "no AI response"}
     except Exception as e:
         return {"error": str(e)}
 
@@ -641,9 +634,6 @@ async def post_testimonial_social() -> dict:
 
 async def generate_press_release() -> Optional[str]:
     """Generiert wöchentliche Pressemitteilung über BullPower Hub."""
-    if not ANTHROPIC_KEY:
-        return None
-
     today = datetime.now().strftime("%d. %B %Y")
     prompt = f"""Schreibe eine professionelle Pressemitteilung auf Deutsch (400-600 Wörter).
 
@@ -661,17 +651,8 @@ Inhalt:
 Format: Klassische Pressemitteilung mit Datum, Headline, Ansprechpartner."""
 
     try:
-        import aiohttp
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1200,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=40),
-            ) as r:
-                data = await r.json()
-                return data["content"][0]["text"]
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=1200)
     except Exception as e:
         log.error("Press release generation failed: %s", e)
         return None
@@ -694,9 +675,6 @@ YOUTUBE_VIDEO_IDEAS = [
 async def generate_youtube_package() -> dict:
     """Generiert komplettes YouTube-Paket für ein Video."""
     import random
-    if not ANTHROPIC_KEY:
-        return {"idea": random.choice(YOUTUBE_VIDEO_IDEAS)}
-
     idea = random.choice(YOUTUBE_VIDEO_IDEAS)
     prompt = f"""Erstelle ein komplettes YouTube-SEO-Paket für dieses Video (auf Deutsch):
 Titel: "{idea}"
@@ -711,19 +689,12 @@ Liefere:
 Format: Exakt diese Sections mit diesen Labels."""
 
     try:
-        import aiohttp
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1500,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=40),
-            ) as r:
-                data = await r.json()
-                pkg = data["content"][0]["text"]
-                await _telegram(f"🎬 YouTube SEO-Paket generiert!\n\n**Idee:** {idea}\n\n{pkg[:500]}...")
-                return {"idea": idea, "package": pkg}
+        from modules.ai_client import ai_complete
+        pkg = await ai_complete(prompt, max_tokens=1500)
+        if pkg:
+            await _telegram(f"🎬 YouTube SEO-Paket generiert!\n\n**Idee:** {idea}\n\n{pkg[:500]}...")
+            return {"idea": idea, "package": pkg}
+        return {"error": "no AI response", "idea": idea}
     except Exception as e:
         return {"error": str(e), "idea": idea}
 
