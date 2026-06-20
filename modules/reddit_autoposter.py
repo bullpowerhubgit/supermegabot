@@ -27,8 +27,48 @@ TARGET_SUBREDDITS = [
 _USER_AGENT = "SuperMegaBot/2.0 by /u/bullpowersrtkennels"
 
 
+def _load_refresh_token() -> str:
+    """Load refresh token from env var or persistent file."""
+    rt = os.getenv("REDDIT_REFRESH_TOKEN", "")
+    if rt:
+        return rt
+    try:
+        import json as _json
+        from pathlib import Path
+        data_dir = Path(os.getenv("DATA_DIR", "/tmp"))
+        rt_file = data_dir / "reddit_refresh_token.json"
+        if rt_file.exists():
+            return _json.loads(rt_file.read_text()).get("refresh_token", "")
+    except Exception:
+        pass
+    return ""
+
+
 async def _get_token() -> str:
+    """Get Reddit access token via refresh_token (OAuth2) or password grant (script apps)."""
+    refresh_token = _load_refresh_token()
+    if refresh_token and REDDIT_CLIENT_ID and REDDIT_CLIENT_SECRET:
+        try:
+            import base64
+            creds = base64.b64encode(f"{REDDIT_CLIENT_ID}:{REDDIT_CLIENT_SECRET}".encode()).decode()
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    "https://www.reddit.com/api/v1/access_token",
+                    headers={"Authorization": f"Basic {creds}", "User-Agent": _USER_AGENT},
+                    data={"grant_type": "refresh_token", "refresh_token": refresh_token},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    d = await r.json(content_type=None)
+            token = d.get("access_token", "")
+            if token:
+                log.info("Reddit token via refresh_token OK")
+                return token
+        except Exception as e:
+            log.warning("Reddit refresh_token error: %s", e)
+
+    # Fallback: password grant (only works for "script" app type)
     if not all([REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD]):
+        log.warning("Reddit: no refresh token and no password credentials — visit /api/reddit/auth to authorize")
         return ""
     try:
         auth = aiohttp.BasicAuth(REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET)
@@ -43,7 +83,9 @@ async def _get_token() -> str:
                 d = await r.json(content_type=None)
         token = d.get("access_token", "")
         if token:
-            log.info("Reddit token obtained")
+            log.info("Reddit token via password grant OK")
+        else:
+            log.warning("Reddit password grant failed (app type may be 'web app' — visit /api/reddit/auth)")
         return token
     except Exception as e:
         log.warning("Reddit token error: %s", e)
