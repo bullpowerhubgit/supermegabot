@@ -1012,7 +1012,7 @@ mutation CreateArticle($article: ArticleCreateInput!) {
                 }
             }
             result = await _graphql(gql, gql_vars)
-            art = result.get("data", {}).get("articleCreate", {}).get("article", {})
+            art = ((result.get("data") or {}).get("articleCreate") or {}).get("article", {})
             if art and art.get("id"):
                 created += 1
                 handle = art.get("handle", "")

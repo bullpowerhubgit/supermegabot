@@ -1196,9 +1196,10 @@ mutation CreateArticle($article: ArticleCreateInput!) {
                 json={"query": gql, "variables": variables},
             ) as r:
                 resp = await r.json(content_type=None)
-        errors = resp.get("errors", [])
-        user_errors = resp.get("data", {}).get("articleCreate", {}).get("userErrors", [])
-        art = resp.get("data", {}).get("articleCreate", {}).get("article", {})
+        errors = resp.get("errors", []) if resp else []
+        data = (resp.get("data") or {}) if resp else {}
+        user_errors = (data.get("articleCreate") or {}).get("userErrors", [])
+        art = (data.get("articleCreate") or {}).get("article", {})
         if art and art.get("id"):
             return f"Blog✅: '{topic_title[:55]}' handle={art['handle']}"
         err_msg = str(errors or user_errors)[:200]
