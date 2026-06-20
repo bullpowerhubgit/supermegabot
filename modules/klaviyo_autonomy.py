@@ -111,6 +111,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
     try:
         from_email = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
         # Step 1: Create campaign + message in one call
+        # Step 1: Create campaign (without messages — add them after)
         campaign_payload = {
             "data": {
                 "type": "campaign",
@@ -127,22 +128,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
                     },
                 },
                 "relationships": {
-                    "campaign-messages": {
-                        "data": [{
-                            "type": "campaign-message",
-                            "attributes": {
-                                "channel": "email",
-                                "label": name[:50],
-                                "content": {
-                                    "subject": subject[:150],
-                                    "preview_text": name[:100],
-                                    "from_email": from_email,
-                                    "from_label": "BullPowerHub",
-                                    "body": html_content,
-                                },
-                            },
-                        }]
-                    }
+                    "campaign-messages": {"data": []},
                 },
             }
         }
@@ -152,7 +138,30 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
             err = campaign.get("error", str(campaign)[:300])
             return {"ok": False, "error": err}
 
-        # Step 2: Send immediately
+        # Step 2: Create message and associate with campaign
+        msg_result = await _kv_post("/campaign-messages/", {
+            "data": {
+                "type": "campaign-message",
+                "attributes": {
+                    "channel": "email",
+                    "label": name[:50],
+                    "content": {
+                        "subject": subject[:150],
+                        "preview_text": name[:100],
+                        "from_email": from_email,
+                        "from_label": "BullPowerHub",
+                        "body": html_content,
+                    },
+                },
+                "relationships": {
+                    "campaign": {"data": {"type": "campaign", "id": cid}},
+                },
+            }
+        })
+        if msg_result.get("error"):
+            log.warning("Klaviyo message error: %s", str(msg_result)[:200])
+
+        # Step 3: Send immediately
         await _kv_post("/campaign-send-jobs/", {
             "data": {
                 "type": "campaign-send-job",
