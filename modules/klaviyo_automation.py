@@ -188,78 +188,74 @@ async def create_and_send_campaign(
 ) -> Dict:
     """Create a Klaviyo campaign, set content, and send it."""
     name = campaign_name or f"SMB Campaign {datetime.now().strftime('%d.%m.%Y %H:%M')}"
+    # Klaviyo API 2024-10-15: campaign-messages must be included inline at creation
     camp_body = {
         "data": {
             "type": "campaign",
             "attributes": {
                 "name": name,
-                "channel": "email",
                 "audiences": {
                     "included": [list_id],
                     "excluded": [],
+                },
+                "send_strategy": {"method": "immediate"},
+                "campaign-messages": {
+                    "data": [{
+                        "type": "campaign-message",
+                        "attributes": {
+                            "channel": "email",
+                            "label": "Email",
+                            "content": {
+                                "subject": subject,
+                                "preview_text": subject[:90],
+                                "from_email": from_email,
+                                "from_label": from_name,
+                                "reply_to_email": from_email,
+                            },
+                        }
+                    }]
                 },
             }
         }
     }
     try:
         async with _session(total=60) as s:
-            # 1. Create campaign
+            # 1. Create campaign (with inline messages)
             async with s.post(f"{_BASE}/campaigns/", headers=_headers(), json=camp_body) as r:
                 resp_body = await r.json(content_type=None)
                 if r.status not in (200, 201):
-                    err_detail = str(resp_body)[:300]
-                    log.error("Klaviyo campaign 400: %s", err_detail)
+                    err_detail = str(resp_body)[:400]
+                    log.error("Klaviyo campaign error: %s", err_detail)
                     return {"ok": False, "error": f"Campaign-Erstellung: HTTP {r.status}", "detail": err_detail}
-                camp_id = resp_body["data"]["id"]
+                camp_data = resp_body["data"]
+                camp_id = camp_data["id"]
+                # Extract message id from inline response
+                msgs = camp_data.get("relationships", {}).get("campaign-messages", {}).get("data", [])
+                msg_id = msgs[0]["id"] if msgs else ""
 
-            # 2. Create message
-            msg_body = {
-                "data": {
-                    "type": "campaign-message",
-                    "attributes": {
-                        "channel": "email",
-                        "label":   "Email",
-                        "content": {
-                            "subject":    subject,
-                            "preview_text": subject[:90],
-                            "from_email": from_email,
-                            "from_label": from_name,
-                            "reply_to_email": from_email,
-                        },
-                    },
-                    "relationships": {"campaign": {"data": {"type": "campaign", "id": camp_id}}}
+            # 2. Set HTML content on message (if msg_id found)
+            if msg_id and html_body:
+                tmpl_body = {
+                    "data": {
+                        "type": "campaign-message",
+                        "id": msg_id,
+                        "attributes": {"content": {"html": html_body}},
+                    }
                 }
-            }
-            async with s.post(f"{_BASE}/campaign-messages/", headers=_headers(), json=msg_body) as r:
-                if r.status not in (200, 201):
-                    return {"ok": False, "error": f"Message-Erstellung: HTTP {r.status}"}
-                msg_id = (await r.json())["data"]["id"]
+                async with s.patch(f"{_BASE}/campaign-messages/{msg_id}/", headers=_headers(), json=tmpl_body) as r:
+                    await r.read()
+                    if r.status not in (200, 204):
+                        log.warning("Klaviyo template upload HTTP %s", r.status)
 
-            # 3. Assign HTML template
-            tmpl_body = {
-                "data": {
-                    "type": "campaign-message",
-                    "id":   msg_id,
-                    "attributes": {"content": {"html": html_body}},
-                }
-            }
-            async with s.patch(f"{_BASE}/campaign-messages/{msg_id}/", headers=_headers(), json=tmpl_body) as r:
-                if r.status not in (200, 204):
-                    return {"ok": False, "error": f"Template-Upload: HTTP {r.status}"}
-
-            # 4. Send immediately
+            # 3. Send
             async with s.post(
                 f"{_BASE}/campaign-send-jobs/",
                 headers=_headers(),
-                json={"data": {"type": "campaign-send-job", "attributes": {
-                    "campaign_id": camp_id,
-                    "send_strategy": {"method": "immediate"},
-                }}}
+                json={"data": {"type": "campaign-send-job", "attributes": {"campaign_id": camp_id}}}
             ) as r:
-                await r.read()
+                send_body = await r.json(content_type=None)
                 if r.status not in (200, 201, 202):
-                    err_text = await r.text() if hasattr(r, '_body') else ""
-                    return {"ok": False, "error": f"Senden: HTTP {r.status} {err_text[:200]}"}
+                    return {"ok": False, "error": f"Senden: HTTP {r.status}", "detail": str(send_body)[:200]}
 
         return {"ok": True, "campaign_id": camp_id, "message_id": msg_id, "name": name}
     except Exception as e:
