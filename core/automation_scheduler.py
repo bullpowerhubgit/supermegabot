@@ -1156,12 +1156,15 @@ Format JSON: {{"subject": "...", "preview": "...", "html_body": "<html>...</html
 Nur JSON, kein anderer Text."""
 
         raw = await _ai(prompt, max_tokens=800)
-        email_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1])
+        try:
+            email_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1]) if "{" in raw else {}
+        except Exception:
+            email_data = {}
 
         # Create Klaviyo campaign
         from_email = os.getenv("KLAVIYO_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
         from_label = os.getenv("KLAVIYO_FROM_NAME", "BullPower Hub")
-        subject = email_data.get("subject", f"KI Business Blueprint — {today}")
+        subject = email_data.get("subject", f"🚀 KI Business Blueprint — {today}")
         preview = email_data.get("preview", "Dein vollautomatisches Einkommenssystem wartet")
         headers = {"Authorization": f"Klaviyo-API-Key {klaviyo_key}", "revision": "2024-10-15", "Content-Type": "application/json"}
         async with aiohttp.ClientSession() as s:
