@@ -210,6 +210,13 @@ async def create_order_from_shopify(shopify_order: Dict) -> Dict:
 
 async def get_stats() -> Dict:
     try:
+        stores = await get_stores()
+        if not stores:
+            return {
+                "total_orders": 0, "today_orders": 0,
+                "pending": 0, "fulfilled": 0, "sync_products": 0,
+                "notice": "No store connected — link Shopify at printful.com/dashboard/stores",
+            }
         orders = await get_orders(limit=100)
         today = datetime.now().strftime("%Y-%m-%d")
         products = await get_sync_products()
