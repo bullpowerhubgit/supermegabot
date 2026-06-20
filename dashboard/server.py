@@ -4497,6 +4497,50 @@ async def handle_tiktok_research_ads(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_tiktok_auth(req):
+    """GET /api/tiktok/auth — redirect to TikTok Shop OAuth."""
+    app_key = os.getenv("TIKTOK_APP_KEY", "")
+    if not app_key:
+        return web.json_response({"ok": False, "error": "TIKTOK_APP_KEY not set in Railway"})
+    redirect_uri = os.getenv(
+        "TIKTOK_REDIRECT_URI",
+        "https://dudirudibot-mega-production.up.railway.app/api/tiktok/callback",
+    )
+    auth_url = (
+        f"https://auth.tiktok-shops.com/api/v2/oauth/login/"
+        f"?app_key={app_key}&redirect_uri={redirect_uri}&state=smb_tiktok"
+    )
+    raise web.HTTPFound(auth_url)
+
+
+async def handle_tiktok_callback(req):
+    """GET /api/tiktok/callback — exchange code for access token."""
+    code    = req.rel_url.query.get("code", "")
+    shop_id = req.rel_url.query.get("shop_id", "") or req.rel_url.query.get("shop", "")
+    if not code:
+        return web.json_response({"ok": False, "error": "No code received"})
+    try:
+        from modules.tiktok_shop_sync import exchange_oauth_code
+        result = await exchange_oauth_code(code, shop_id)
+        if result.get("ok"):
+            token = result.get("access_token", "")
+            return web.Response(
+                content_type="text/html",
+                text=(
+                    "<html><body style='font-family:sans-serif;padding:40px'>"
+                    "<h2>&#x2705; TikTok Shop verbunden!</h2>"
+                    "<p>Setze folgende Variablen in Railway:</p>"
+                    f"<pre>TIKTOK_ACCESS_TOKEN={token}\nTIKTOK_SHOP_ID={shop_id}</pre>"
+                    "<p><a href='/'>&#x2190; Dashboard</a></p></body></html>"
+                ),
+            )
+        return web.json_response(
+            {"ok": False, "error": result.get("error", "Token exchange failed")}, status=500
+        )
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ── SEMrush handlers ──────────────────────────────────────────────────────────
 
 async def handle_semrush_keyword(req):
@@ -5604,6 +5648,8 @@ async def create_app():
     app.router.add_post("/api/tiktok/promotion",         handle_tiktok_promotion)
     app.router.add_get( "/api/tiktok/research/status",   handle_tiktok_research_status)
     app.router.add_get( "/api/tiktok/research/ads",      handle_tiktok_research_ads)
+    app.router.add_get( "/api/tiktok/auth",              handle_tiktok_auth)
+    app.router.add_get( "/api/tiktok/callback",          handle_tiktok_callback)
 
     # ── SEMRush / SEO Research ───────────────────────────────────────────────
     app.router.add_get( "/api/semrush/keyword",          handle_semrush_keyword)

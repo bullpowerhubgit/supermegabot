@@ -321,6 +321,7 @@ a{color:inherit;text-decoration:none}
   <div class="plt" id="plt-printify"><div class="plt-icon">🖨️</div><div class="plt-name">Printify</div><div class="plt-status">…</div></div>
   <div class="plt" id="plt-printful"><div class="plt-icon">👕</div><div class="plt-name">Printful</div><div class="plt-status">…</div></div>
   <div class="plt" id="plt-ds24"><div class="plt-icon">💰</div><div class="plt-name">DS24 AIITEC</div><div class="plt-status">…</div></div>
+  <div class="plt" id="plt-tiktok"><div class="plt-icon">🎵</div><div class="plt-name">TikTok Shop</div><div class="plt-status">…</div></div>
 </div>
 
 <!-- ═══════════════════ ROW: KPI STRIP ═══════════════════ -->
@@ -746,8 +747,44 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<div class="sect">🎵 TikTok Shop — Autonomous Sync &amp; BRUTUS Traffic</div>
+<div class="g3" style="margin-bottom:14px">
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">🎵</span> TikTok Shop</div><span class="badge" id="tt-badge">CHECK</span></div>
+    <div class="srow"><span class="slbl">Status</span><span class="sval" id="tt-status">—</span></div>
+    <div class="srow"><span class="slbl">Orders (30d)</span><span class="sval" id="tt-orders">—</span></div>
+    <div class="srow"><span class="slbl">Revenue (30d)</span><span class="sval" id="tt-revenue" style="color:var(--green)">€—</span></div>
+    <div class="srow"><span class="slbl">Shop ID</span><span class="sval" id="tt-shop">—</span></div>
+    <div class="srow"><span class="slbl">Auto-Sync</span><span class="sval" style="color:var(--green)">6h Auto</span></div>
+    <div style="margin-top:10px;display:flex;gap:7px">
+      <button class="btn btn-blue" style="flex:1;font-size:10px" onclick="window.open('/api/tiktok/auth','_blank')">🔗 OAuth Setup</button>
+      <button class="btn btn-dark" style="flex:1;font-size:10px" onclick="loadTikTok()">🔄 Sync</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">🔥</span> TikTok BRUTUS</div><span class="badge badge-green">AUTO 4h</span></div>
+    <div class="srow"><span class="slbl">Traffic Blast</span><span class="sval" style="color:var(--green)">Alle 4h</span></div>
+    <div class="srow"><span class="slbl">Keywords</span><span class="sval">TikTok Shop DE</span></div>
+    <div class="srow"><span class="slbl">Kanäle</span><span class="sval">10+ Platforms</span></div>
+    <div style="margin-top:10px">
+      <button class="btn btn-orange" style="width:100%;font-size:10px" onclick="triggerTask('tiktok_brutus')">🔥 BRUTUS NOW</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">📦</span> Produkt-Sync</div><span class="badge badge-green">AUTO</span></div>
+    <div class="srow"><span class="slbl">Shopify → TikTok</span><span class="sval" style="color:var(--green)">Auto 6h</span></div>
+    <div class="srow"><span class="slbl">App Key</span><span class="sval" id="tt-appkey">—</span></div>
+    <div style="margin-top:10px;font-size:10px;color:var(--muted)">
+      Benötigt: TIKTOK_APP_KEY · TIKTOK_APP_SECRET · TIKTOK_ACCESS_TOKEN · TIKTOK_SHOP_ID in Railway
+    </div>
+    <div style="margin-top:8px">
+      <button class="btn btn-green" style="width:100%;font-size:10px" onclick="triggerTask('tiktok_product_sync')">📦 Sync Starten</button>
+    </div>
+  </div>
+</div>
+
 <div style="text-align:center;padding:14px 0;color:var(--muted);font-size:9px;letter-spacing:1.5px;border-top:1px solid var(--border);margin-top:4px">
-  BULLPOWER HUB MEGA v5 · 154 TASKS · 10 KANÄLE · 17 SERVICES · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
+  BULLPOWER HUB MEGA v5 · 157 TASKS · 11 KANÄLE · 17 SERVICES · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
 </div>
 
 </div><!-- /main -->
@@ -1308,6 +1345,27 @@ async function loadUpwork() {
   }
 }
 
+async function loadTikTok() {
+  function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
+  const d = await get('/api/tiktok/analytics');
+  if(d&&d.configured){
+    fe('tt-status','✅ Verbunden');
+    fe('tt-orders',(d.orders_30d||0)+' Bestellungen');
+    fe('tt-revenue','€'+(d.revenue_30d_eur||0).toFixed(2));
+    fe('tt-shop',d.shop_id||'—');
+    fe('tt-appkey','✅ gesetzt');
+    const badge=document.getElementById('tt-badge');if(badge){badge.textContent='LIVE';badge.style.background='#00f2ea'}
+    const plt=document.getElementById('plt-tiktok');
+    if(plt){plt.className='plt ok';plt.querySelector('.plt-status').textContent='✅ Live'}
+  }else{
+    fe('tt-status','⚠️ OAuth nötig');
+    fe('tt-appkey','→ Railway setzen');
+    const badge=document.getElementById('tt-badge');if(badge){badge.textContent='SETUP';badge.style.background='#ff9f43'}
+    const plt=document.getElementById('plt-tiktok');
+    if(plt){plt.className='plt warn';plt.querySelector('.plt-status').textContent='⚠️ Setup'}
+  }
+}
+
 // ── REFRESH ALL ──
 async function refreshAll() {
   document.getElementById('last-refresh').textContent=new Date().toLocaleTimeString('de-AT');
@@ -1327,6 +1385,7 @@ async function refreshAll() {
   loadGumroad();
   loadFiverr();
   loadUpwork();
+  loadTikTok();
 }
 
 // ── INIT ──
@@ -1349,6 +1408,7 @@ loadMailingStats();
 loadGumroad();
 loadFiverr();
 loadUpwork();
+loadTikTok();
 addLog('Alle Systeme verbunden ✓','');
 
 setInterval(()=>{refreshAll();addLog('Auto-Refresh','')},60000);
