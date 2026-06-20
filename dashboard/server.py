@@ -6849,6 +6849,7 @@ async def create_app():
     app.router.add_post("/api/ds24/product/auto",          handle_ds24_product_auto)
     app.router.add_get( "/api/ds24/products",              handle_ds24_product_list)
     app.router.add_post("/api/ds24/fix/669750",            handle_ds24_fix_669750)
+    app.router.add_post("/api/ds24/create-100",            handle_ds24_create_100)
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
