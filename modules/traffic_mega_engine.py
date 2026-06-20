@@ -18,7 +18,7 @@ import aiohttp
 log = logging.getLogger("TrafficMegaEngine")
 
 SHOP     = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", f"https://{SHOP}" if SHOP else "https://ineedit.com.co")
+SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", f"https://{SHOP}" if SHOP else "https://autopilot-store-suite-fmbka.myshopify.com")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GITHUB_USER  = os.getenv("GITHUB_USER", "bullpowerhubgit")
 INDEXNOW_KEY = os.getenv("INDEXNOW_KEY", "supermegabot2026")

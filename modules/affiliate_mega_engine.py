@@ -17,11 +17,11 @@ import aiohttp
 log = logging.getLogger("AffiliateMegaEngine")
 
 AMAZON_TAG    = os.getenv("AMAZON_ASSOCIATE_TAG", "bullpowerhub-21")
-DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
+DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
 AFFILIATE_ID  = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 EBAY_CAMPAIGN = os.getenv("EBAY_CAMPAIGN_ID", "")
 EBAY_AFFILIATE = os.getenv("EBAY_AFFILIATE_ID", "")
-SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
+SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
 
 AMAZON_KEYWORDS = [
     "smart home starter kit", "wireless earbuds 2026", "usb c hub laptop",

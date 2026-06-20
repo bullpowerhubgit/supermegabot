@@ -15,7 +15,7 @@ import aiohttp
 log = logging.getLogger("YouTubeAutonomy")
 
 YOUTUBE_KEY  = os.getenv("YOUTUBE_API_KEY", os.getenv("GOOGLE_API_KEY", ""))
-SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
+SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
 DS24_LINK    = os.getenv("DS24_AFFILIATE_LINK", f"{SHOP_URL}")
 AMAZON_TAG   = os.getenv("AMAZON_ASSOCIATE_TAG", "bullpowerhub-21")
 

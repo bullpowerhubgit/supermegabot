@@ -16,7 +16,7 @@ log = logging.getLogger("RSSPublisher")
 SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 SHOP_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOP_VER    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-STORE_URL   = "https://ineedit.com.co"
+STORE_URL   = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
 DATA_DIR    = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 RSS_FILE    = DATA_DIR / "feed.rss"
@@ -102,7 +102,7 @@ async def generate_rss_feed(limit: int = 20) -> dict:
     rss_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>ineedit.com.co — Must-Have Trends &amp; Tipps</title>
+    <title>AiiteC — Must-Have Trends &amp; Tipps</title>
     <link>{STORE_URL}</link>
     <description>E-Commerce Tipps, Dropshipping Guides, KI-Automatisierung — BullPower Hub</description>
     <language>de</language>
