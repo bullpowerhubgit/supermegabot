@@ -250,3 +250,22 @@ async def sync_from_digistore(list_id: str) -> int:
 
     log.info("DS24 -> Mailchimp sync: %d subscribers added to list %s", synced, list_id)
     return synced
+
+
+async def run_with_brutus_traffic() -> dict:
+    """Run Mailchimp sync then fire BRUTUS traffic for email marketing."""
+    result = {}
+    try:
+        list_id = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
+        result["list_stats"] = await get_list_stats(list_id)
+    except Exception as e:
+        result["stats_error"] = str(e)
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        result["brutus"] = await run_brutus_swarm(
+            keywords=["Mailchimp Newsletter Automation", "E-Mail Marketing automatisieren 2026", "passives Einkommen E-Mail Liste"],
+            max_keywords=3,
+        )
+    except Exception as e:
+        result["brutus_error"] = str(e)
+    return result

@@ -318,3 +318,21 @@ async def get_stats() -> dict:
         "sequences_available": list(SEQUENCES.keys()),
         "last_run": sent_list[-1].get("sent_at") if sent_list else None,
     }
+
+
+async def run_with_brutus_traffic() -> dict:
+    """Process due emails then fire BRUTUS traffic for email funnel."""
+    result = {}
+    try:
+        result["emails"] = await process_due_emails()
+    except Exception as e:
+        result["emails_error"] = str(e)
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        result["brutus"] = await run_brutus_swarm(
+            keywords=["Email Funnel Automation 2026", "automatische Email Sequenz Geld verdienen", "Online Verkaufstrichter automatisieren"],
+            max_keywords=3,
+        )
+    except Exception as e:
+        result["brutus_error"] = str(e)
+    return result

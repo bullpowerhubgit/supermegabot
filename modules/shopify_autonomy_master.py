@@ -622,3 +622,23 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+async def run_with_brutus_traffic() -> dict:
+    """Run Shopify autonomy check then fire BRUTUS traffic for the shop."""
+    result = {}
+    try:
+        svc = get_service()
+        result["catalog"] = catalog_watchdog(svc)
+    except Exception as e:
+        result["shopify_error"] = str(e)
+    try:
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        result["brutus"] = await run_brutus_swarm(
+            keywords=["Shopify Shop automatisieren 2026", "Shopify SEO Produkte", "Online Shop passives Einkommen"],
+            max_keywords=3,
+        )
+    except Exception as e:
+        result["brutus_error"] = str(e)
+    return result
