@@ -149,6 +149,8 @@ async def _supabase_insert(table: str, row: dict):
                 "apikey": SUPA_KEY,
                 "Content-Type": "application/json",
                 "Prefer": "return=minimal",
+                "Accept-Profile": "public",
+                "Content-Profile": "public",
             },
             json=row,
             timeout=aiohttp.ClientTimeout(total=15),

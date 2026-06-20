@@ -82,7 +82,7 @@ async def _supa_select(table: str, params: str = "") -> list:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             async with s.get(
                 f"{SUPABASE_URL}/rest/v1/{table}?{params}",
-                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}", "Accept-Profile": "public"},
             ) as r:
                 if r.status == 200:
                     return await r.json()

@@ -47,6 +47,8 @@ async def _supabase_insert(table: str, row: dict) -> dict:
                 "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
                 "Content-Type": "application/json",
                 "Prefer": "return=representation",
+                "Accept-Profile": "public",
+                "Content-Profile": "public",
             },
         ) as r:
             return await r.json() if r.status in (200, 201) else {}
@@ -62,6 +64,7 @@ async def _supabase_select(table: str, query: str = "") -> list:
             headers={
                 "apikey": SUPABASE_SERVICE_KEY,
                 "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
+                "Accept-Profile": "public",
             },
         ) as r:
             return await r.json() if r.status == 200 else []
