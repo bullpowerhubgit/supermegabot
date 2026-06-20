@@ -753,6 +753,38 @@ class PrintOnDemandWorkflow:
 
 
 # ---------------------------------------------------------------------------
+# Brutus Traffic integration helper
+# ---------------------------------------------------------------------------
+
+async def run_with_brutus_traffic(niche: str = "trending", count: int = 3) -> dict:
+    """Run the full dropshipping pipeline and push results via BrutusCore traffic engine.
+
+    This is the scheduler entry-point used by automation_scheduler.py.
+    """
+    ds = DropshippingWorkflow()
+    result = await ds.full_pipeline(niche=niche, count=count)
+
+    # Trigger Brutus traffic blast for each successful product
+    if result.get("processed", 0) > 0:
+        try:
+            from modules.brutus_core import fire as brutus_fire
+            products = [p for p in result.get("products", []) if "error" not in p]
+            for p in products[:2]:
+                title = p.get("title", "Neues Produkt")
+                await brutus_fire(
+                    title=f"Neu: {title}",
+                    body=f"Frisch importiert — direkt verfuegbar im Shop.",
+                    link="https://ineedit.com.co/collections/trending-now",
+                    niche=f"dropshipping {niche}",
+                    tags=["dropshipping", "neu", niche.replace(" ", "-")]
+                )
+        except Exception as e:
+            log.warning("Brutus traffic blast failed: %s", e)
+
+    return result
+
+
+# ---------------------------------------------------------------------------
 # Quick demo runner
 # ---------------------------------------------------------------------------
 
