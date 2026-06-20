@@ -4260,6 +4260,35 @@ async def task_revenue_mega_weekly() -> str:
         return f"RevenueMegaWeekly error: {e}"
 
 
+# ── Task-Funktionen für neue Module (kein API-Key nötig) ─────────────────────
+
+async def task_tiktok_trend_blast() -> str:
+    try:
+        from modules.tiktok_trends_scraper import run_tiktok_trend_blast
+        r = await run_tiktok_trend_blast(count=5)
+        return f"TikTok Trends: {r.get('niches_blasted',0)} Niches | {r.get('channels_hit',0)} Kanäle | Quelle: Google Trends DE"
+    except Exception as e:
+        return f"TikTok Trend Blast Fehler: {e}"
+
+
+async def task_upwork_job_alert() -> str:
+    try:
+        from modules.upwork_job_scraper import run_upwork_job_alert
+        r = await run_upwork_job_alert(max_jobs=3)
+        return f"Upwork Jobs: {r.get('jobs_found',0)} gefunden | {r.get('alerted',0)} Alerts gesendet"
+    except Exception as e:
+        return f"Upwork Job Alert Fehler: {e}"
+
+
+async def task_fiverr_gig_blast() -> str:
+    try:
+        from modules.fiverr_scraper import run_fiverr_gig_promotion
+        r = await run_fiverr_gig_promotion(count=3)
+        return f"Fiverr Gig Promo: {r.get('gigs_promoted',0)} Gigs | {r.get('channels_hit',0)} Kanäle"
+    except Exception as e:
+        return f"Fiverr Gig Blast Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -4592,35 +4621,6 @@ TASKS = [
     # ── FIVERR GIG PROMO (kein API-Key) — 8 Gigs via BRUTUS bewerben ─────────
     ("fiverr_gig_blast",         task_fiverr_gig_blast,         7200, 22300), # 2h — Alle Gigs bewerben
 ]
-
-
-# ── Task-Funktionen für neue Module (kein API-Key nötig) ─────────────────────
-
-async def task_tiktok_trend_blast() -> str:
-    try:
-        from modules.tiktok_trends_scraper import run_tiktok_trend_blast
-        r = await run_tiktok_trend_blast(count=5)
-        return f"TikTok Trends: {r.get('niches_blasted',0)} Niches | {r.get('channels_hit',0)} Kanäle | Quelle: Google Trends DE"
-    except Exception as e:
-        return f"TikTok Trend Blast Fehler: {e}"
-
-
-async def task_upwork_job_alert() -> str:
-    try:
-        from modules.upwork_job_scraper import run_upwork_job_alert
-        r = await run_upwork_job_alert(max_jobs=3)
-        return f"Upwork Jobs: {r.get('jobs_found',0)} gefunden | {r.get('alerted',0)} Alerts gesendet"
-    except Exception as e:
-        return f"Upwork Job Alert Fehler: {e}"
-
-
-async def task_fiverr_gig_blast() -> str:
-    try:
-        from modules.fiverr_scraper import run_fiverr_gig_promotion
-        r = await run_fiverr_gig_promotion(count=3)
-        return f"Fiverr Gig Promo: {r.get('gigs_promoted',0)} Gigs | {r.get('channels_hit',0)} Kanäle"
-    except Exception as e:
-        return f"Fiverr Gig Blast Fehler: {e}"
 
 
 # ── Scheduler loop ───────────────────────────────────────────────────────────
