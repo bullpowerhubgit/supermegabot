@@ -85,30 +85,14 @@ async def _tg(msg: str):
 
 
 async def _claude(prompt: str, max_tokens: int = 800) -> str:
-    if not ANTHROPIC_KEY:
-        return ""
     try:
-        async with aiohttp.ClientSession() as s:
-            r = await s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": max_tokens,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=30),
-            )
-            d = await r.json()
-            return d.get("content", [{}])[0].get("text", "")
+        from modules.ai_client import ai_complete
+        r = await ai_complete(prompt, max_tokens=1200)
+        return r if r else ""
     except Exception as e:
-        log.warning(f"Claude error: {e}")
+        import logging
+        logging.getLogger(__name__).warning(f"ai_complete fallback: {e}")
         return ""
-
 
 def generate_master_sitemap() -> str:
     """Generate XML sitemap covering all BullPower properties."""

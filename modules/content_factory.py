@@ -17,50 +17,24 @@ import aiohttp
 
 log = logging.getLogger(__name__)
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-CLAUDE_MODEL = "claude-haiku-4-5-20251001"
 BRAND_URL = os.getenv("BRAND_URL", "https://bullpower-hub-portal.netlify.app")
 BRAND_NAME = os.getenv("BRAND_NAME", "BullPower Hub")
 DATA_DIR = Path(os.getenv("DATA_DIR", "/tmp/content_factory"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 
-# ── Core AI helper ────────────────────────────────────────────────────────────
+# ── Core AI helper — vollständige Fallback-Chain via ai_client ────────────────
 
 async def _claude(prompt: str, system: str = "", max_tokens: int = 2000) -> str:
-    """Call Claude Haiku with retry."""
-    if not ANTHROPIC_API_KEY:
-        return f"[MOCK: {prompt[:80]}]"
-    payload = {
-        "model": CLAUDE_MODEL,
-        "max_tokens": max_tokens,
-        "messages": [{"role": "user", "content": prompt}],
-    }
-    if system:
-        payload["system"] = system
-    headers = {
-        "x-api-key": ANTHROPIC_API_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-    }
-    for attempt in range(3):
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
-                async with s.post("https://api.anthropic.com/v1/messages",
-                                  json=payload, headers=headers) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        return data["content"][0]["text"].strip()
-                    if r.status == 529:
-                        await asyncio.sleep(5 * (attempt + 1))
-                        continue
-                    text = await r.text()
-                    log.error(f"Claude {r.status}: {text[:200]}")
-                    return f"[ERROR {r.status}]"
-        except Exception as e:
-            log.error(f"Claude attempt {attempt}: {e}")
-            await asyncio.sleep(3)
-    return "[TIMEOUT]"
+    """AI mit Fallback: Anthropic → OpenAI → OpenRouter → Perplexity"""
+    try:
+        from modules.ai_client import ai_complete
+        result = await ai_complete(prompt, system=system, max_tokens=max_tokens)
+        if result:
+            return result
+    except Exception as e:
+        log.warning(f"ai_complete failed: {e}")
+    return f"[FALLBACK: {prompt[:80]}]"
 
 
 # ── 1. BLOG POST GENERATOR ────────────────────────────────────────────────────

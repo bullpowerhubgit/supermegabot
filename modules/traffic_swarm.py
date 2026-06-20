@@ -67,35 +67,14 @@ async def _tg(msg: str) -> None:
 
 # ── Claude Haiku helper ────────────────────────────────────────────────────────
 async def _claude(prompt: str, system: str = "You are an expert marketing copywriter.") -> str:
-    if not ANTHROPIC_KEY:
-        return ""
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": HAIKU_MODEL,
-                    "max_tokens": 1500,
-                    "system": system,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                data = await r.json()
-                return data.get("content", [{}])[0].get("text", "")
+        from modules.ai_client import ai_complete
+        r = await ai_complete(prompt, max_tokens=1200)
+        return r if r else ""
     except Exception as e:
-        log.error("Claude call failed: %s", e)
+        import logging
+        logging.getLogger(__name__).warning(f"ai_complete fallback: {e}")
         return ""
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-# 1. UTM AUTO-TAGGER
-# ─────────────────────────────────────────────────────────────────────────────
 
 def build_utm_url(
     url: str,
