@@ -68,9 +68,10 @@ async def _fetch_gumroad() -> Dict:
         async with aiohttp.ClientSession(timeout=timeout) as session:
             async with session.get(url, params=params) as resp:
                 data = await resp.json(content_type=None)
-        if not data.get("success"):
+        if not data or not data.get("success"):
+            msg = data.get("message", "Unknown error") if data else "Empty response"
             return {"revenue": 0.0, "orders": 0, "currency": "USD", "ok": False,
-                    "error": data.get("message", "Unknown error")}
+                    "error": msg}
         sales = data.get("sales", [])
         total   = sum(float(s.get("price", 0)) / 100 for s in sales)  # Gumroad: cents
         return {"revenue": round(total, 2), "orders": len(sales), "currency": "USD", "ok": True}
@@ -254,6 +255,7 @@ async def get_daily_report() -> str:
         "etsy":      "🎨",
         "digistore": "🎓",
         "printify":  "👕",
+        "paypal":    "💳",
     }
 
     best_platform = ""
