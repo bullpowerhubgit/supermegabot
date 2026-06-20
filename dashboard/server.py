@@ -6510,17 +6510,27 @@ async def handle_pinterest_status(request: web.Request) -> web.Response:
 
 async def handle_youtube_trends(request: web.Request) -> web.Response:
     try:
-        from modules.youtube_autonomy import get_trends
-        return web.json_response(await get_trends())
+        from modules.youtube_autonomy import find_trending_videos
+        d = {}
+        try:
+            d = await request.json()
+        except Exception:
+            pass
+        videos = await find_trending_videos(d.get("niche", ""))
+        return web.json_response({"ok": True, "videos": videos, "count": len(videos)})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_youtube_scripts(request: web.Request) -> web.Response:
     try:
-        from modules.youtube_autonomy import generate_script
-        body = await request.json() if request.can_read_body else {}
-        result = await generate_script(body.get("topic", ""))
-        return web.json_response({"ok": True, "script": result})
+        from modules.youtube_autonomy import generate_video_content
+        body = {}
+        try:
+            body = await request.json()
+        except Exception:
+            pass
+        result = await generate_video_content(body.get("topic", ""))
+        return web.json_response({"ok": True, "content": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
