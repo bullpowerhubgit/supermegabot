@@ -6797,10 +6797,89 @@ async def handle_amazon_run_alias(request: web.Request) -> web.Response:
     return await handle_amazon_cycle(request)
 
 async def handle_ebay_run_alias(request: web.Request) -> web.Response:
-    return await handle_ebay_autonomy_cycle(request)
+    # Run in background to avoid Railway 502 timeout
+    async def _bg():
+        try:
+            from modules.ebay_autonomy import run_ebay_cycle
+            await run_ebay_cycle()
+        except Exception as e:
+            log.error("ebay_run bg: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "started", "message": "eBay cycle gestartet (background)"})
 
 async def handle_printify_sync_alias(request: web.Request) -> web.Response:
     return await handle_printify_autonomy_cycle(request)
+
+
+# ── Missing Platform Routes — auto-trigger via scheduler ─────────────────────
+
+async def _trigger_task(task_name: str, background: bool = False) -> web.Response:
+    """Generic task trigger helper."""
+    try:
+        from core.automation_scheduler import get_scheduler
+        sched = get_scheduler()
+        if background:
+            asyncio.create_task(sched.run_now(task_name))
+            return web.json_response({"ok": True, "task": task_name, "status": "started (background)"})
+        result = await asyncio.wait_for(sched.run_now(task_name), timeout=20)
+        return web.json_response({"ok": True, "task": task_name, "result": result})
+    except asyncio.TimeoutError:
+        return web.json_response({"ok": True, "task": task_name, "result": f"{task_name} running"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_traffic_run(req: web.Request) -> web.Response:
+    return await _trigger_task("traffic_mega_cycle", background=True)
+
+async def handle_affiliate_run(req: web.Request) -> web.Response:
+    return await _trigger_task("affiliate_mega_blast", background=True)
+
+async def handle_klaviyo_run(req: web.Request) -> web.Response:
+    return await _trigger_task("klaviyo_mass_daily")
+
+async def handle_mailchimp_run(req: web.Request) -> web.Response:
+    return await _trigger_task("mailchimp_mass_daily")
+
+async def handle_ds24_run(req: web.Request) -> web.Response:
+    return await _trigger_task("ds24_revenue_sync")
+
+async def handle_tiktok_run(req: web.Request) -> web.Response:
+    return await _trigger_task("tiktok_trend_blast", background=True)
+
+async def handle_fiverr_run(req: web.Request) -> web.Response:
+    return await _trigger_task("fiverr_gig_blast", background=True)
+
+async def handle_upwork_run(req: web.Request) -> web.Response:
+    return await _trigger_task("upwork_job_alert")
+
+async def handle_linkedin_run(req: web.Request) -> web.Response:
+    return await _trigger_task("linkedin_auto_post")
+
+async def handle_instagram_run(req: web.Request) -> web.Response:
+    return await _trigger_task("instagram_auto_post", background=True)
+
+async def handle_pinterest_run(req: web.Request) -> web.Response:
+    return await _trigger_task("pinterest_auto_post", background=True)
+
+async def handle_email_run(req: web.Request) -> web.Response:
+    return await _trigger_task("email_check", background=True)
+
+async def handle_email_daily_summary_run(req: web.Request) -> web.Response:
+    return await _trigger_task("email_daily_summary")
+
+async def handle_shopify_blog_run(req: web.Request) -> web.Response:
+    return await _trigger_task("shopify_blog_auto")
+
+async def handle_twitter_run(req: web.Request) -> web.Response:
+    return await _trigger_task("twitter_auto_post", background=True)
+
+async def handle_sms_run(req: web.Request) -> web.Response:
+    return await _trigger_task("sms_morning_brief")
+
+async def handle_rss_run(req: web.Request) -> web.Response:
+    return await _trigger_task("rss_feed_update")
+
 
 # ── End Platform Autonomy Handlers ─────────────────────────────────────────────
 
@@ -7713,6 +7792,25 @@ async def create_app():
     app.router.add_post("/api/ebay/run",                 handle_ebay_run_alias)
     app.router.add_post("/api/printify/sync",            handle_printify_sync_alias)
 
+    # ── Missing Platform Routes — alle Revenue-Streams ─────────────────────────
+    app.router.add_post("/api/traffic/run",              handle_traffic_run)
+    app.router.add_post("/api/affiliate/run",            handle_affiliate_run)
+    app.router.add_post("/api/klaviyo/run",              handle_klaviyo_run)
+    app.router.add_post("/api/mailchimp/run",            handle_mailchimp_run)
+    app.router.add_post("/api/ds24/run",                 handle_ds24_run)
+    app.router.add_post("/api/tiktok/run",               handle_tiktok_run)
+    app.router.add_post("/api/fiverr/run",               handle_fiverr_run)
+    app.router.add_post("/api/upwork/run",               handle_upwork_run)
+    app.router.add_post("/api/linkedin/run",             handle_linkedin_run)
+    app.router.add_post("/api/instagram/run",            handle_instagram_run)
+    app.router.add_post("/api/pinterest/run",            handle_pinterest_run)
+    app.router.add_post("/api/email/run",                handle_email_run)
+    app.router.add_post("/api/email/daily-summary",      handle_email_daily_summary_run)
+    app.router.add_post("/api/shopify/blog",             handle_shopify_blog_run)
+    app.router.add_post("/api/twitter/run",              handle_twitter_run)
+    app.router.add_post("/api/sms/run",                  handle_sms_run)
+    app.router.add_post("/api/rss/run",                  handle_rss_run)
+
     # ── Shopify Mass Creator ──────────────────────────────────────────────────
     app.router.add_post("/api/shopify/create-1000",      handle_shopify_create_1000)
     app.router.add_post("/api/shopify/mass-cycle",       handle_shopify_mass_cycle)
@@ -7740,6 +7838,34 @@ async def create_app():
     app.router.add_post("/api/revenue/weekly-report",    handle_revenue_weekly_report)
     app.router.add_get( "/api/revenue/snapshot",         handle_revenue_snapshot)
     app.router.add_get( "/api/revenue/stats",            handle_revenue_stats)
+
+    # ── MISSING ROUTE ALIASES (added by DeepScan fix) ───────────────────────
+    app.router.add_get( "/api/digistore24/status",       handle_ds24_mass_status)
+    app.router.add_post("/api/shopify/import",            handle_shopify_full_auto)
+    app.router.add_post("/api/shopify/seo",               handle_shopify_seo_run)
+    app.router.add_post("/api/printify/autopublish",      handle_printify_autofulfill)
+    app.router.add_post("/api/printful/sync",             handle_printful_autofulfill)
+    app.router.add_post("/api/klaviyo/daily-campaign",    handle_klaviyo_daily_campaigns)
+    app.router.add_post("/api/gumroad/promote",           handle_gumroad_blast)
+    app.router.add_post("/api/indexnow/blast",            handle_indexnow_blast)
+    app.router.add_post("/api/digistore/affiliate-blast", handle_ds24_affiliate_blast_all)
+    app.router.add_post("/api/pinterest/post",            handle_pinterest_run)
+    app.router.add_post("/api/discord/blast",             handle_discord_send)
+    app.router.add_post("/api/tiktok/post",               handle_tiktok_promotion)
+    app.router.add_post("/api/fiverr/sync",               handle_fiverr_run)
+    app.router.add_post("/api/upwork/sync",               handle_upwork_run)
+    app.router.add_post("/api/shopify/blog/post",         handle_shopify_blog_run)
+    app.router.add_post("/api/auto-poster/post",          handle_auto_poster_run)
+    app.router.add_get( "/api/stripe/plans",              handle_stripe_plans_info)
+    app.router.add_get( "/api/shopify/inventory",         handle_shopify_inventory_live)
+    app.router.add_get( "/api/agents/status",             handle_agents_overview)
+    app.router.add_get( "/api/rudiclone/status",          handle_rudiclone_overview)
+    app.router.add_get( "/api/ai/models",                 handle_ai_models_list)
+    app.router.add_get( "/api/digistore24/stats",         handle_ds24_stats_live)
+    app.router.add_get( "/api/digistore24/products",      handle_ds24_product_list)
+    app.router.add_get( "/api/digistore24/orders",        handle_digistore_orders)
+    app.router.add_post("/api/reddit/blast",              handle_reddit_blast)  # also POST
+    # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
