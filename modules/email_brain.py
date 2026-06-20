@@ -271,10 +271,10 @@ def _rule_classify(subject: str, sender: str, body: str) -> dict:
                 "reply_draft": draft, "label": "Business", "archive": False,
                 "telegram_alert": True, "summary": f"Business: {subject[:60]}"}
 
-    # Default — unknown, don't reply, don't archive
+    # Default — unknown but potentially important: alert via Telegram, don't auto-reply
     return {"category": "unknown", "priority": "normal", "reply_needed": False,
             "reply_draft": "", "label": "Priority", "archive": False,
-            "telegram_alert": False, "summary": subject[:80]}
+            "telegram_alert": True, "summary": f"Unbekannte Email: {subject[:70]}"}
 
 
 async def _classify_email(subject: str, sender: str, body: str) -> dict:
