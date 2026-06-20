@@ -821,8 +821,25 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- ═══════════════════ REVENUE BOOSTER ═══════════════════ -->
+<div class="sect">💰 Revenue Booster — Jetzt Einnahmen aktivieren</div>
+<div style="margin-bottom:14px">
+  <div class="card">
+    <div class="card-h"><div class="card-t"><span class="i">🚀</span> Revenue Boost — Alle Kanäle feuern</div><span class="badge badge-green">SOFORT</span></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">
+      <button class="btn btn-green" style="font-size:11px" onclick="boostShopify()">🛒 Shopify Trending Fill</button>
+      <button class="btn btn-red"   style="font-size:11px" onclick="ap('/api/brutus/run',{}).then(r=>{ document.getElementById('boost-result').textContent='BRUTUS: '+JSON.stringify(r); toast('BRUTUS fired!','success'); })">🔥 DS24 BRUTUS Blast</button>
+      <button class="btn btn-orange" style="font-size:11px" onclick="boostAmazon()">📦 Amazon Affiliate Blast</button>
+      <button class="btn btn-blue"  style="font-size:11px" onclick="boostWhatsApp()">📱 WhatsApp Blast</button>
+      <button class="btn btn-purple" style="font-size:11px" onclick="triggerTask('klaviyo_daily_campaign')">📧 Klaviyo Kampagne</button>
+      <button class="btn btn-dark"  style="font-size:11px" onclick="triggerTask('mailing_promo_blitz')">📩 Mailing Blitz</button>
+    </div>
+    <div id="boost-result" style="font-size:10px;color:var(--muted);min-height:20px;padding:4px 0"></div>
+  </div>
+</div>
+
 <div style="text-align:center;padding:14px 0;color:var(--muted);font-size:9px;letter-spacing:1.5px;border-top:1px solid var(--border);margin-top:4px">
-  BULLPOWER HUB MEGA v5 · 162 TASKS · 11 KANÄLE · 19 SERVICES · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
+  BULLPOWER HUB MEGA v5 · 163 TASKS · 11 KANÄLE · 19 SERVICES · AUTO-REFRESH 60s · <span id="last-refresh">—</span>
 </div>
 
 </div><!-- /main -->
@@ -1330,6 +1347,25 @@ async function loadMailingStats() {
   if(ds24plt){ds24plt.className='plt ok';ds24plt.querySelector('.plt-status').textContent='✅ AIITEC'}
 }
 
+async function sendKlaviyoCampaign(btn) {
+  btn.disabled=true; btn.textContent='Sende...';
+  try{
+    const r=await fetch('/api/klaviyo/send-campaign',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+    const d=await r.json();
+    btn.textContent=d.ok?'✅ Gesendet!':'❌ '+(d.error||'Fehler');
+  }catch(e){btn.textContent='❌ Netzwerk-Fehler';}
+  setTimeout(()=>{btn.disabled=false;btn.textContent='📧 Jetzt senden';},5000);
+}
+async function sendMailchimpCampaign(btn) {
+  btn.disabled=true; btn.textContent='Sende...';
+  try{
+    const r=await fetch('/api/mailchimp/send-campaign',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({})});
+    const d=await r.json();
+    btn.textContent=d.ok?'✅ Gesendet!':'❌ '+(d.error||'Fehler');
+  }catch(e){btn.textContent='❌ Netzwerk-Fehler';}
+  setTimeout(()=>{btn.disabled=false;btn.textContent='📨 Jetzt senden';},5000);
+}
+
 // ── FREELANCE PLATFORMS ──
 async function loadGumroad() {
   const [status, products] = await Promise.all([get('/api/gumroad/status'), get('/api/gumroad/products').catch(()=>null)]);
@@ -1402,6 +1438,29 @@ async function loadTikTok() {
     const plt=document.getElementById('plt-tiktok');
     if(plt){plt.className='plt warn';plt.querySelector('.plt-status').textContent='⚠️ Setup'}
   }
+}
+
+// ── REVENUE BOOSTER ──
+async function boostShopify() {
+  const br = document.getElementById('boost-result');
+  if(br) br.textContent = '⏳ Shopify Trending Fill läuft...';
+  const r = await ap('/api/shopify/auto-fill-trending', {}).catch(()=>({ok:false,error:'route not found'}));
+  if(br) br.textContent = r.ok ? '✅ Shopify: '+JSON.stringify(r) : '⚠️ Fallback: Shopify hat bereits '+r.product_count+' Produkte. BRUTUS blast gestartet.';
+  ap('/api/brutus/run', {});
+  toast('Shopify boost gestartet!', 'success');
+}
+async function boostAmazon() {
+  const br = document.getElementById('boost-result');
+  if(br) br.textContent = '⏳ Amazon Affiliate Blast...';
+  await triggerTask('amazon_affiliate_blast');
+  if(br) br.textContent = '✅ Amazon Affiliate BRUTUS Task getriggert!';
+}
+async function boostWhatsApp() {
+  const br = document.getElementById('boost-result');
+  if(br) br.textContent = '⏳ WhatsApp Blast...';
+  const r = await get('/api/whatsapp/blast');
+  if(br) br.textContent = r.ok ? '✅ WhatsApp: sent='+r.result?.sent : '⚠️ WhatsApp: '+r.error;
+  toast(r.ok ? '📱 WhatsApp Blast gesendet!' : '⚠️ '+r.error, r.ok?'success':'error');
 }
 
 // ── REFRESH ALL ──
