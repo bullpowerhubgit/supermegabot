@@ -522,7 +522,7 @@ async def auto_post_ds24_product() -> dict:
         if not products:
             content = await generate_product_post(
                 "AI Income Machine – 90-Day Blueprint", 37.0,
-                "https://www.digistore24.com/product/669750"
+                os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
             )
         else:
             p = products[0]

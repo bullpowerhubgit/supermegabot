@@ -350,43 +350,44 @@ async def _generate_single(session, keyword: str, format_type: str, angle: str =
 
 _BRUTUS_TEMPLATES = [
     {
-        "social_post": "🔥 {kw} — Der smarteste Weg zu passivem Einkommen 2026!\n\n✅ Vollautomatisch\n✅ KI-gestützt\n✅ Bereits hunderte zufriedene Kunden\n\n👉 Jetzt starten: https://www.digistore24.com/product/669750\n\n#PassivesEinkommen #KI #OnlineGeldVerdienen #BullPower #Digistore24",
-        "blog_post": "<h1>{kw} — Dein Weg zu passivem Einkommen 2026</h1><p>Mit modernster KI-Technologie generierst du vollautomatisch Einnahmen. Unser System läuft 24/7 für dich. <a href='https://www.digistore24.com/product/669750'>Jetzt starten →</a></p>",
+        "social_post": "🔥 {kw} — Der smarteste Weg zu passivem Einkommen 2026!\n\n✅ Vollautomatisch\n✅ KI-gestützt\n✅ Bereits hunderte zufriedene Kunden\n\n👉 Jetzt starten: {_DS24}\n\n#PassivesEinkommen #KI #OnlineGeldVerdienen #BullPower #Digistore24",
+        "blog_post": "<h1>{kw} — Dein Weg zu passivem Einkommen 2026</h1><p>Mit modernster KI-Technologie generierst du vollautomatisch Einnahmen. Unser System läuft 24/7 für dich. <a href='{_DS24}'>Jetzt starten →</a></p>",
         "email_subject_lines": "5 Wege zu passivem Einkommen mit {kw}\nWarum {kw} 2026 funktioniert\nDein vollautomatisches Einkommen mit KI\nSo verdienst du mit {kw} im Schlaf\nNeu: {kw} — Jetzt kostenlos testen",
-        "ad_copy": "HEADLINE: {kw} — Jetzt €497 sparen!\nBODY: Vollautomatisches Einkommen mit KI. 24/7 für dich. Bereits 500+ zufriedene Kunden.\nCTA: Jetzt starten →\nURL: https://www.digistore24.com/product/669750",
+        "ad_copy": "HEADLINE: {kw} — Jetzt €497 sparen!\nBODY: Vollautomatisches Einkommen mit KI. 24/7 für dich. Bereits 500+ zufriedene Kunden.\nCTA: Jetzt starten →\nURL: {_DS24}",
     },
     {
-        "social_post": "💡 Kennst du das? Arbeitest du hart, aber das Geld reicht nicht?\n\n{kw} hat bei mir alles verändert:\n→ Vollautomatisch €500–2000/Monat\n→ KI übernimmt alles\n→ Starte heute noch\n\n🔗 https://www.digistore24.com/product/669750\n\n#Freiheit #PassivesEinkommen #KIBusiness",
-        "blog_post": "<h1>Wie {kw} dein Leben verändern kann</h1><p>Stell dir vor: Dein Einkommen läuft automatisch. KI arbeitet für dich. Du hast Zeit für das Wichtige. Das ist kein Traum — das ist <a href='https://www.digistore24.com/product/669750'>{kw}</a>.</p>",
+        "social_post": "💡 Kennst du das? Arbeitest du hart, aber das Geld reicht nicht?\n\n{kw} hat bei mir alles verändert:\n→ Vollautomatisch €500–2000/Monat\n→ KI übernimmt alles\n→ Starte heute noch\n\n🔗 {_DS24}\n\n#Freiheit #PassivesEinkommen #KIBusiness",
+        "blog_post": "<h1>Wie {kw} dein Leben verändern kann</h1><p>Stell dir vor: Dein Einkommen läuft automatisch. KI arbeitet für dich. Du hast Zeit für das Wichtige. Das ist kein Traum — das ist <a href='{_DS24}'>{kw}</a>.</p>",
         "email_subject_lines": "Achtung: {kw} verändert alles\n[Neu] Passives Einkommen mit {kw}\nLetzter Platz: {kw} Masterkurs\nKostenlose Demo: {kw}\nWie Max €2.400/Monat mit {kw} verdient",
-        "ad_copy": "HEADLINE: {kw} — Passives Einkommen mit KI\nBODY: Vollautomatisch Geld verdienen. Kein Vorwissen nötig. Sofort starten.\nCTA: Kostenlos testen →\nURL: https://www.digistore24.com/product/669750",
+        "ad_copy": "HEADLINE: {kw} — Passives Einkommen mit KI\nBODY: Vollautomatisch Geld verdienen. Kein Vorwissen nötig. Sofort starten.\nCTA: Kostenlos testen →\nURL: {_DS24}",
     },
     {
-        "social_post": "📊 ERGEBNIS nach 30 Tagen mit {kw}:\n\nWoche 1: System aufgesetzt (2h)\nWoche 2: Erste €89 Einnahmen\nWoche 3: €312 passives Einkommen\nWoche 4: €847 ohne aktive Arbeit\n\nAlles automatisch. KI macht alles.\n👉 https://www.digistore24.com/product/669750\n\n#Ergebnis #KIBusiness #DigitalNomad",
-        "blog_post": "<h1>{kw}: Meine Erfahrung nach 30 Tagen</h1><p>Ich war skeptisch. Aber nach einem Monat mit <a href='https://www.digistore24.com/product/669750'>{kw}</a> bin ich überzeugt: Das System funktioniert. Vollautomatisch, KI-gestützt, und wirklich passiv.</p>",
+        "social_post": "📊 ERGEBNIS nach 30 Tagen mit {kw}:\n\nWoche 1: System aufgesetzt (2h)\nWoche 2: Erste €89 Einnahmen\nWoche 3: €312 passives Einkommen\nWoche 4: €847 ohne aktive Arbeit\n\nAlles automatisch. KI macht alles.\n👉 {_DS24}\n\n#Ergebnis #KIBusiness #DigitalNomad",
+        "blog_post": "<h1>{kw}: Meine Erfahrung nach 30 Tagen</h1><p>Ich war skeptisch. Aber nach einem Monat mit <a href='{_DS24}'>{kw}</a> bin ich überzeugt: Das System funktioniert. Vollautomatisch, KI-gestützt, und wirklich passiv.</p>",
         "email_subject_lines": "Mein 30-Tage-Ergebnis mit {kw}\n€847 passiv — so geht's mit {kw}\n{kw}: Vorher/Nachher Vergleich\nWarum ich {kw} jedem empfehle\n{kw} — jetzt 50% Rabatt sichern",
-        "ad_copy": "HEADLINE: €847 in 30 Tagen — mit {kw}\nBODY: Echte Ergebnisse. KI-Automatisierung. Sofort startklar.\nCTA: Mein Ergebnis ansehen →\nURL: https://www.digistore24.com/product/669750",
+        "ad_copy": "HEADLINE: €847 in 30 Tagen — mit {kw}\nBODY: Echte Ergebnisse. KI-Automatisierung. Sofort startklar.\nCTA: Mein Ergebnis ansehen →\nURL: {_DS24}",
     },
     {
-        "social_post": "🚀 BREAKING: {kw} jetzt verfügbar!\n\nWas du bekommst:\n✅ Vollautomatisches KI-System\n✅ Fertige Templates & Strategien\n✅ 24/7 Support\n✅ 30 Tage Geld-zurück-Garantie\n\nNur für kurze Zeit: Jetzt starten!\n🔗 https://www.digistore24.com/product/669750",
-        "blog_post": "<h1>{kw} 2026 — Alles was du wissen musst</h1><p>Das KI Business Blueprint revolutioniert passive Einnahmen. Mit <a href='https://www.digistore24.com/product/669750'>{kw}</a> startest du heute noch durch.</p>",
+        "social_post": "🚀 BREAKING: {kw} jetzt verfügbar!\n\nWas du bekommst:\n✅ Vollautomatisches KI-System\n✅ Fertige Templates & Strategien\n✅ 24/7 Support\n✅ 30 Tage Geld-zurück-Garantie\n\nNur für kurze Zeit: Jetzt starten!\n🔗 {_DS24}",
+        "blog_post": "<h1>{kw} 2026 — Alles was du wissen musst</h1><p>Das KI Business Blueprint revolutioniert passive Einnahmen. Mit <a href='{_DS24}'>{kw}</a> startest du heute noch durch.</p>",
         "email_subject_lines": "🚀 {kw} ist jetzt live!\nNeu: {kw} mit 30-Tage-Garantie\n{kw} — dein digitales Einkommen startet jetzt\nHast du {kw} schon gesehen?\n[Wichtig] {kw} Sonderangebot endet bald",
-        "ad_copy": "HEADLINE: {kw} — 30 Tage Geld-zurück!\nBODY: Risikolos starten. Vollautomatisch. KI macht alles für dich.\nCTA: Risikolos starten →\nURL: https://www.digistore24.com/product/669750",
+        "ad_copy": "HEADLINE: {kw} — 30 Tage Geld-zurück!\nBODY: Risikolos starten. Vollautomatisch. KI macht alles für dich.\nCTA: Risikolos starten →\nURL: {_DS24}",
     },
     {
-        "social_post": "💰 Frage: Wieviel verdienst du im Schlaf?\n\nMit {kw}:\n→ KI arbeitet 24h für dich\n→ Vollautomatische Leads\n→ Passives Einkommen Monat für Monat\n\nAntwort: So viel wie du willst.\n\n👉 Starte heute: https://www.digistore24.com/product/669750\n\n#PassivesEinkommen #KI2026 #FinanzielleFreiheit",
-        "blog_post": "<h1>Passives Einkommen mit {kw}: Der ultimative Guide</h1><p>Finanzielle Freiheit ist möglich. Mit <a href='https://www.digistore24.com/product/669750'>{kw}</a> automatisierst du dein Einkommen — KI übernimmt alles.</p>",
+        "social_post": "💰 Frage: Wieviel verdienst du im Schlaf?\n\nMit {kw}:\n→ KI arbeitet 24h für dich\n→ Vollautomatische Leads\n→ Passives Einkommen Monat für Monat\n\nAntwort: So viel wie du willst.\n\n👉 Starte heute: {_DS24}\n\n#PassivesEinkommen #KI2026 #FinanzielleFreiheit",
+        "blog_post": "<h1>Passives Einkommen mit {kw}: Der ultimative Guide</h1><p>Finanzielle Freiheit ist möglich. Mit <a href='{_DS24}'>{kw}</a> automatisierst du dein Einkommen — KI übernimmt alles.</p>",
         "email_subject_lines": "Passives Einkommen mit {kw}: So geht's\n{kw} — dein Einkommen läuft jetzt automatisch\nFinanzielle Freiheit mit {kw}\nNoch heute starten: {kw}\n{kw} — limitiertes Angebot sichern",
-        "ad_copy": "HEADLINE: Passives Einkommen mit {kw} — KI macht alles!\nBODY: Vollautomatisch. 24/7. Sofort startklar. Keine Vorkenntnisse nötig.\nCTA: Gratis Demo ansehen →\nURL: https://www.digistore24.com/product/669750",
+        "ad_copy": "HEADLINE: Passives Einkommen mit {kw} — KI macht alles!\nBODY: Vollautomatisch. 24/7. Sofort startklar. Keine Vorkenntnisse nötig.\nCTA: Gratis Demo ansehen →\nURL: {_DS24}",
     },
 ]
 
 
 def _fallback_content_swarm(keyword: str) -> dict:
     import hashlib
+    _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
     idx = int(hashlib.md5(keyword.encode()).hexdigest(), 16) % len(_BRUTUS_TEMPLATES)
     tmpl = _BRUTUS_TEMPLATES[idx]
-    return {k: v.replace("{kw}", keyword) for k, v in tmpl.items()}
+    return {k: v.replace("{kw}", keyword).replace("{_DS24}", _ds24).replace("#BullPower", "#AIITEC") for k, v in tmpl.items()}
 
 
 async def content_swarm(keyword: str, angle: str = "") -> dict:

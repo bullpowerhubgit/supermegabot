@@ -33,8 +33,7 @@ HASHNODE_PUB = os.getenv("HASHNODE_PUBLICATION_ID", "")
 MEDIUM_KEY  = os.getenv("MEDIUM_API_KEY", "")
 DISCORD_WH  = os.getenv("DISCORD_WEBHOOK_URL", "")
 GUMROAD_TOKEN = os.getenv("GUMROAD_ACCESS_TOKEN", "")
-DS24_PRODUCT_URL = "https://www.digistore24.com/product/669750"
-DS24_AFFILIATE = os.getenv("DS24_AFFILIATE_LINK", DS24_PRODUCT_URL)
+DS24_AFFILIATE = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
 
 
 # ── Content Generator ─────────────────────────────────────────────────────────
