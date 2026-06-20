@@ -3461,6 +3461,41 @@ async def task_gcp_translate_products() -> str:
         return f"GCP translate error: {e}"
 
 
+async def task_nexus_cycle() -> str:
+    """NEXUS-1: Autonomer Revenue-Superintelligenz Zyklus — alle 10 Minuten."""
+    try:
+        from modules.nexus import run_nexus_cycle
+        result = await run_nexus_cycle()
+        signals = result.get("signals_found", 0)
+        succeeded = result.get("actions_succeeded", 0)
+        planned = result.get("actions_planned", 0)
+        top = result.get("top_signal", "?")
+        best = result.get("best_action", "?")
+        return f"NEXUS: {signals} signals, {succeeded}/{planned} actions OK | top='{top[:40]}' action={best}"
+    except Exception as e:
+        return f"NEXUS cycle error: {e}"
+
+
+async def task_nexus_evolve() -> str:
+    """NEXUS-1: Tägliche Selbst-Evolution — lernt aus Ergebnissen."""
+    try:
+        from modules.nexus import evolve_strategy
+        result = await evolve_strategy()
+        return f"NEXUS evolve: ok={result.get('ok')}, analysis={str(result.get('analysis',''))[:80]}"
+    except Exception as e:
+        return f"NEXUS evolve error: {e}"
+
+
+async def task_nexus_report() -> str:
+    """NEXUS-1: Tages-Report an Rudolf via Telegram + Slack."""
+    try:
+        from modules.nexus import send_daily_report
+        result = await send_daily_report()
+        return f"NEXUS report: {result.get('total_actions', 0)} actions today"
+    except Exception as e:
+        return f"NEXUS report error: {e}"
+
+
 async def task_gcp_ping() -> str:
     """GCP API Health-Check — stellt sicher dass alle GCP-Services erreichbar sind."""
     try:
@@ -3469,6 +3504,104 @@ async def task_gcp_ping() -> str:
         return f"GCP ping: ok={result['ok']}, result='{result['result']}', project={result['project']}"
     except Exception as e:
         return f"GCP ping error: {e}"
+
+
+async def task_semrush_keyword_research() -> str:
+    """SemRush: keyword research für Haupt-Nischen + BRUTUS Traffic."""
+    try:
+        from modules.semrush_client import research_niche
+        niches = ["KI passives Einkommen", "Shopify Automation", "Digistore24 Affiliate"]
+        results = []
+        for niche in niches:
+            data = await research_niche(niche)
+            top_kw = data.get("top_keywords", [{}])[0].get("phrase", niche) if data.get("top_keywords") else niche
+            vol = data.get("top_keywords", [{}])[0].get("volume", 0) if data.get("top_keywords") else 0
+            results.append(f"{top_kw} ({vol} Suchen/Mo)")
+        from modules.brutus_traffic_engine import run_brutus_swarm
+        kws = [niche for niche in niches]
+        await run_brutus_swarm(keywords=kws, max_keywords=3)
+        return f"SemRush research: {'; '.join(results)}"
+    except Exception as e:
+        return f"SemRush research error: {e}"
+
+
+async def task_semrush_competitor_spy() -> str:
+    """SemRush: Konkurrenz-Keywords stehlen + BRUTUS traffic."""
+    try:
+        from modules.semrush_client import domain_competitors, domain_organic_keywords
+        import os
+        own = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+        competitors = await domain_competitors(own, limit=3)
+        all_kws = []
+        for comp in competitors[:2]:
+            dom = comp.get("domain", "")
+            if dom:
+                kws = await domain_organic_keywords(dom, limit=5)
+                all_kws.extend(k.get("phrase", "") for k in kws if k.get("phrase"))
+        if all_kws:
+            from modules.brutus_traffic_engine import run_brutus_swarm
+            await run_brutus_swarm(keywords=all_kws[:5], max_keywords=5)
+        return f"SemRush competitor spy: {len(competitors)} Konkurrenten, {len(all_kws)} Keywords gestohlen"
+    except Exception as e:
+        return f"SemRush competitor spy error: {e}"
+
+
+async def task_paypal_status_check() -> str:
+    """PayPal: Status + Balance Check."""
+    try:
+        from modules.paypal_client import get_paypal_status
+        status = await get_paypal_status()
+        connected = status.get("connected", False)
+        email = status.get("email", "n/a")
+        env = status.get("env", "n/a")
+        return f"PayPal: connected={connected}, email={email}, env={env}"
+    except Exception as e:
+        return f"PayPal status error: {e}"
+
+
+async def task_pipedrive_sync() -> str:
+    """Pipedrive: CRM Status + offene Deals als Telegram-Report."""
+    try:
+        from modules.pipedrive_client import check_status, list_deals
+        status = await check_status()
+        if not status.get("ok"):
+            return f"Pipedrive: nicht konfiguriert ({status.get('error', '')})"
+        deals = await list_deals(limit=20, status="open")
+        total_val = sum(float(d.get("value", 0)) for d in deals)
+        return f"Pipedrive CRM: {len(deals)} offene Deals, Wert: {total_val:.0f} EUR"
+    except Exception as e:
+        return f"Pipedrive sync error: {e}"
+
+
+async def task_pipedrive_shopify_sync() -> str:
+    """Pipedrive: Shopify-Kunden → CRM Deals automatisch anlegen."""
+    try:
+        import os
+        import aiohttp
+        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        api_ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not token or not domain:
+            return "Pipedrive-Shopify-Sync: Shopify nicht konfiguriert"
+        headers = {"X-Shopify-Access-Token": token}
+        base = f"https://{domain}" if not domain.startswith("http") else domain
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+            async with s.get(f"{base}/admin/api/{api_ver}/customers.json?limit=10", headers=headers) as r:
+                if r.status != 200:
+                    return f"Shopify customers error: HTTP {r.status}"
+                customers = (await r.json()).get("customers", [])
+        from modules.pipedrive_client import sync_shopify_customer
+        synced = 0
+        for c in customers:
+            email = c.get("email", "")
+            name = f"{c.get('first_name', '')} {c.get('last_name', '')}".strip()
+            val = float(c.get("total_spent", 0))
+            if email:
+                await sync_shopify_customer(email=email, name=name, order_value=val)
+                synced += 1
+        return f"Pipedrive-Shopify-Sync: {synced} Kunden → CRM"
+    except Exception as e:
+        return f"Pipedrive-Shopify-Sync error: {e}"
 
 
 # ── Task registry ────────────────────────────────────────────────────────────
@@ -3700,6 +3833,10 @@ TASKS = [
     ("twilio_revenue_alert",   task_twilio_revenue_alert,    14400,   130),  # 4h — neue Orders → SMS
     ("twilio_ds24_report",     task_twilio_ds24_report,      21600,   140),  # 6h — DS24 Status SMS
     ("twilio_stripe_alert",    task_twilio_stripe_alert,      1800,    90),  # 30min — Stripe Payment SMS
+    # ── NEXUS-1 — Autonome Revenue-Superintelligenz ───────────────────────────
+    ("nexus_cycle",            task_nexus_cycle,               600, 16000), # 10min — NEXUS Haupt-Loop
+    ("nexus_evolve",           task_nexus_evolve,            86400, 16100), # daily — NEXUS Self-Evolution
+    ("nexus_report",           task_nexus_report,            86400, 16200), # daily — NEXUS Tages-Report
     # ── GCP AUTOMATION — Vision, Translation, NLP ─────────────────────────────
     ("gcp_ping",               task_gcp_ping,                86400, 15000), # daily — GCP Health Check
     ("gcp_enhance_products",   task_gcp_enhance_products,    21600, 15100), # 6h — Vision Auto-Tags
@@ -3709,6 +3846,14 @@ TASKS = [
     # ── SLACK MONITORING — Revenue Reports + Error Alerts ─────────────────────
     ("slack_revenue_report",   task_slack_revenue_report,     3600, 15600), # 1h — Slack Revenue Update
     ("slack_error_monitor",    task_slack_error_monitor,       900, 15700), # 15min — Slack Error Alert
+    # ── SEMRUSH — SEO Research + Competitor Spy ───────────────────────────────
+    ("semrush_keyword_research", task_semrush_keyword_research, 21600, 15800), # 6h — Keywords + BRUTUS
+    ("semrush_competitor_spy",   task_semrush_competitor_spy,  43200, 15900), # 12h — Konkurrenz-Keywords klauen
+    # ── PAYPAL — Balance + Status ─────────────────────────────────────────────
+    ("paypal_status_check",      task_paypal_status_check,     21600, 16300), # 6h — PayPal Status
+    # ── PIPEDRIVE CRM — Lead + Deal Automation ────────────────────────────────
+    ("pipedrive_sync",           task_pipedrive_sync,          21600, 16400), # 6h — CRM Status + offene Deals
+    ("pipedrive_shopify_sync",   task_pipedrive_shopify_sync,  86400, 16500), # täglich — Shopify → CRM Deals
 ]
 
 
