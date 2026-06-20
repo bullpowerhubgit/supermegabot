@@ -448,3 +448,15 @@ async def fire_from_brutus(niche: str = "ki business shopify") -> dict:
         logger.error(f"Brutus run failed: {e}")
         results["brutus"] = {"error": str(e)}
     return results
+
+
+class BrutusCore:
+    """Convenience class wrapper around the module-level fire() function."""
+
+    async def fire(self, message: str, channels: list = None, link: str = "", title: str = "") -> dict:
+        return await fire(
+            title=title or message[:60],
+            body=message,
+            link=link or os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"),
+            channels=channels,
+        )
