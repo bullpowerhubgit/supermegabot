@@ -61,7 +61,9 @@ async def _sb_insert(table: str, row: dict) -> dict:
                 headers={"apikey": SUPABASE_SERVICE_KEY,
                          "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}",
                          "Content-Type": "application/json",
-                         "Prefer": "return=representation"},
+                         "Prefer": "return=representation",
+                         "Accept-Profile": "public",
+                         "Content-Profile": "public"},
                 json=row,
             ) as r:
                 return (await r.json())[0] if r.status in (200, 201) else {}

@@ -119,6 +119,8 @@ async def _log_utm_to_supabase(url: str, source: str, medium: str, campaign: str
                     "Authorization": f"Bearer {SUPABASE_KEY}",
                     "Content-Type": "application/json",
                     "Prefer": "return=minimal",
+                    "Accept-Profile": "public",
+                    "Content-Profile": "public",
                 },
                 json={
                     "url": url, "source": source, "medium": medium,
