@@ -12,7 +12,6 @@ log = logging.getLogger("AIClient")
 _ANTHROPIC  = lambda: os.getenv("ANTHROPIC_API_KEY", "")
 _OPENAI     = lambda: os.getenv("OPENAI_API_KEY", "")
 _OPENROUTER = lambda: os.getenv("OPENROUTER_API_KEY", "")
-_DEEPSEEK   = lambda: os.getenv("DEEPSEEK_API_KEY", "")
 _PERPLEXITY = lambda: os.getenv("PERPLEXITY_API_KEY", "")
 
 _OPENROUTER_MODEL = "mistralai/mistral-7b-instruct:free"
@@ -86,23 +85,7 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("OpenRouter error: %s", e)
 
-    # 4. DeepSeek
-    if _DEEPSEEK():
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-                async with s.post(
-                    "https://api.deepseek.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_DEEPSEEK()}", "Content-Type": "application/json"},
-                    json={"model": "deepseek-chat", "max_tokens": max_tokens, "messages": messages},
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        return d["choices"][0]["message"]["content"]
-                    log.debug("DeepSeek %s", r.status)
-        except Exception as e:
-            log.debug("DeepSeek error: %s", e)
-
-    # 5. Perplexity (min 16 tokens required by API)
+    # 4. Perplexity (min 16 tokens required by API)
     if _PERPLEXITY():
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
