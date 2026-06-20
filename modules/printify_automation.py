@@ -184,6 +184,19 @@ async def sync_all_products_to_shopify() -> Dict:
             f"Already live: {already} | Fehler: {len(failed)}\n"
             f"Neu: {', '.join(published[:5])}"
         )
+        # BrutusCore: neue Printify Produkte auf allen Kanälen promoten
+        try:
+            from modules.brutus_core import fire as brutus_fire
+            for name in published[:2]:
+                await brutus_fire(
+                    title=f"🖨️ Neu im Shop: {name}",
+                    body=f"Frisch verfügbar: {name} — personalisiert, auf Bestellung gedruckt, direkt an dich geliefert.",
+                    link=f"https://ineedit.com.co",
+                    niche="print on demand geschenke",
+                    tags=["printify", "neu", "print-on-demand"]
+                )
+        except Exception:
+            pass
     return {"published": len(published), "already_live": already, "failed": len(failed)}
 
 

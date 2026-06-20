@@ -1,0 +1,301 @@
+"""
+BrutusCore — Universal Traffic Engine
+Importierbar in JEDEM Modul. Ein Aufruf → alle Kanäle werden bespielt.
+
+Usage:
+    from modules.brutus_core import fire
+    await fire("Mein Produkt", "Mein Inhalt", link="https://...", niche="ki")
+"""
+import os
+import asyncio
+import logging
+import aiohttp
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+TELEGRAM_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
+SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+KLAVIYO_KEY     = os.getenv("KLAVIYO_API_KEY", "")
+MAILCHIMP_KEY   = os.getenv("MAILCHIMP_API_KEY", "")
+MAILCHIMP_LIST  = os.getenv("MAILCHIMP_LIST_ID", "")
+MAILCHIMP_SRV   = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
+LINKEDIN_TOKEN  = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
+LINKEDIN_URN    = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
+INDEXNOW_KEY    = os.getenv("INDEXNOW_KEY", "bullpower2026indexnow")
+DS24_BLOG_ID    = "gid://shopify/Blog/127011258755"
+
+
+async def _ai_generate(title: str, body: str, link: str, niche: str, session: aiohttp.ClientSession) -> dict:
+    """AI generiert alle Content-Formate aus einem Titel+Body"""
+    prompt = f"""Du bist ein viral-Marketing-Experte. Erstelle für diesen Content:
+Titel: {title}
+Thema: {niche}
+Link: {link}
+
+Alle Formate auf Deutsch, überzeugend, kein Spam-Feeling:
+
+JSON:
+{{
+  "telegram": "2-3 Zeilen mit Emoji, persönlich, Link am Ende",
+  "linkedin": "200 Wörter, professionell, Story, 3 Hashtags",
+  "email_subject": "max 50 Zeichen, neugierig",
+  "email_body": "120 Wörter, persönlich, CTA mit Link",
+  "blog_title": "SEO-optimiert max 60 Zeichen",
+  "blog_body": "300 Wörter, H2-Struktur, CTA am Ende",
+  "seo_keywords": ["keyword1", "keyword2", "keyword3"]
+}}"""
+
+    for key_env, url, model in [
+        ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
+        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
+        ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1/chat/completions", "mistralai/mistral-7b-instruct"),
+    ]:
+        key = os.getenv(key_env, "")
+        if not key:
+            continue
+        try:
+            async with session.post(
+                url,
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json={"model": model, "messages": [{"role": "user", "content": prompt}], "max_tokens": 1500},
+                timeout=aiohttp.ClientTimeout(total=25)
+            ) as r:
+                d = await r.json()
+                text = d["choices"][0]["message"]["content"]
+                import re, json as _json
+                m = re.search(r'\{.*\}', text, re.DOTALL)
+                if m:
+                    return _json.loads(m.group())
+        except Exception as e:
+            logger.warning(f"BrutusCore AI {key_env}: {e}")
+    return {}
+
+
+async def _telegram(text: str, session: aiohttp.ClientSession) -> bool:
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
+        return False
+    try:
+        async with session.post(
+            f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
+            json={"chat_id": TELEGRAM_CHAT, "text": text, "parse_mode": "HTML"},
+            timeout=aiohttp.ClientTimeout(total=10)
+        ) as r:
+            return (await r.json()).get("ok", False)
+    except Exception as e:
+        logger.warning(f"BrutusCore Telegram: {e}")
+        return False
+
+
+async def _shopify_blog(title: str, body: str, tags: list, session: aiohttp.ClientSession) -> bool:
+    if not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
+        return False
+    safe_body = body.replace('"', "'").replace('\n', ' ')
+    safe_title = title.replace('"', "'")
+    tags_str = ", ".join(tags)
+    mutation = f'''mutation {{
+  articleCreate(article: {{
+    blogId: "{DS24_BLOG_ID}",
+    title: "{safe_title}",
+    author: {{name: "Rudolf S."}},
+    body: "{safe_body}",
+    tags: {str(tags).replace("'", '"')},
+    isPublished: true
+  }}) {{
+    article {{ id handle }}
+    userErrors {{ field message }}
+  }}
+}}'''
+    try:
+        async with session.post(
+            f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VERSION}/graphql.json",
+            headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"},
+            json={"query": mutation},
+            timeout=aiohttp.ClientTimeout(total=15)
+        ) as r:
+            d = await r.json()
+            errs = d.get("data", {}).get("articleCreate", {}).get("userErrors", [])
+            return len(errs) == 0
+    except Exception as e:
+        logger.warning(f"BrutusCore Shopify Blog: {e}")
+        return False
+
+
+async def _linkedin(text: str, session: aiohttp.ClientSession) -> bool:
+    if not LINKEDIN_TOKEN:
+        return False
+    try:
+        async with session.post(
+            "https://api.linkedin.com/v2/ugcPosts",
+            headers={"Authorization": f"Bearer {LINKEDIN_TOKEN}", "Content-Type": "application/json",
+                     "X-Restli-Protocol-Version": "2.0.0"},
+            json={
+                "author": LINKEDIN_URN,
+                "lifecycleState": "PUBLISHED",
+                "specificContent": {"com.linkedin.ugc.ShareContent": {
+                    "shareCommentary": {"text": text},
+                    "shareMediaCategory": "NONE"
+                }},
+                "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"}
+            },
+            timeout=aiohttp.ClientTimeout(total=15)
+        ) as r:
+            return r.status in (200, 201)
+    except Exception as e:
+        logger.warning(f"BrutusCore LinkedIn: {e}")
+        return False
+
+
+async def _mailchimp(subject: str, body_html: str, session: aiohttp.ClientSession) -> bool:
+    if not MAILCHIMP_KEY or not MAILCHIMP_LIST:
+        return False
+    try:
+        auth = aiohttp.BasicAuth("anystring", MAILCHIMP_KEY)
+        base = f"https://{MAILCHIMP_SRV}.api.mailchimp.com/3.0"
+        async with session.post(f"{base}/campaigns", auth=auth, json={
+            "type": "regular",
+            "recipients": {"list_id": MAILCHIMP_LIST},
+            "settings": {"subject_line": subject, "from_name": "Rudolf Sarkany",
+                         "reply_to": "bullpowersrtkennels@gmail.com",
+                         "title": f"BrutusCore {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}"}
+        }, timeout=aiohttp.ClientTimeout(total=10)) as r:
+            cid = (await r.json()).get("id")
+        if not cid:
+            return False
+        async with session.put(f"{base}/campaigns/{cid}/content", auth=auth,
+            json={"html": body_html}, timeout=aiohttp.ClientTimeout(total=10)) as r:
+            pass
+        async with session.post(f"{base}/campaigns/{cid}/actions/send", auth=auth,
+            timeout=aiohttp.ClientTimeout(total=10)) as r:
+            return r.status == 204
+    except Exception as e:
+        logger.warning(f"BrutusCore Mailchimp: {e}")
+        return False
+
+
+async def _klaviyo_event(title: str, link: str, session: aiohttp.ClientSession) -> bool:
+    if not KLAVIYO_KEY:
+        return False
+    try:
+        async with session.post(
+            "https://a.klaviyo.com/api/events/",
+            headers={"Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
+                     "revision": "2024-10-15", "Content-Type": "application/json"},
+            json={"data": {"type": "event", "attributes": {
+                "metric": {"data": {"type": "metric", "attributes": {"name": "BrutusCore Fire"}}},
+                "properties": {"title": title, "link": link, "ts": datetime.utcnow().isoformat()},
+                "profile": {"data": {"type": "profile", "attributes": {"email": "bullpowersrtkennels@gmail.com"}}}
+            }}},
+            timeout=aiohttp.ClientTimeout(total=10)
+        ) as r:
+            return r.status in (200, 201, 202)
+    except Exception as e:
+        logger.warning(f"BrutusCore Klaviyo: {e}")
+        return False
+
+
+async def _indexnow(url_to_index: str, session: aiohttp.ClientSession) -> bool:
+    """Meldet URL sofort bei Bing/IndexNow an"""
+    if not url_to_index:
+        return False
+    try:
+        async with session.post(
+            "https://api.indexnow.org/indexnow",
+            json={"host": "bullpowerhubgit.github.io", "key": INDEXNOW_KEY, "urlList": [url_to_index]},
+            timeout=aiohttp.ClientTimeout(total=8)
+        ) as r:
+            return r.status in (200, 202)
+    except Exception as e:
+        logger.warning(f"BrutusCore IndexNow: {e}")
+        return False
+
+
+async def fire(
+    title: str,
+    body: str = "",
+    link: str = "",
+    niche: str = "online business",
+    tags: list = None,
+    channels: list = None,  # None = alle Kanäle
+    session: aiohttp.ClientSession = None,
+) -> dict:
+    """
+    Haupt-Entry-Point — ein Aufruf bespielet ALLE Kanäle.
+
+    Args:
+        title: Titel/Überschrift des Contents
+        body: Hauptinhalt (wird in Blog + Email verwendet)
+        link: Produkt/Affiliate/Landingpage Link
+        niche: Themen-Nische für AI-Content-Generierung
+        tags: Blog-Tags (optional)
+        channels: Liste der Kanäle, None = alle
+        session: aiohttp Session (wird erstellt wenn None)
+
+    Returns:
+        dict mit Ergebnissen pro Kanal
+    """
+    if tags is None:
+        tags = ["brutus", niche.replace(" ", "-")]
+    if channels is None:
+        channels = ["telegram", "shopify_blog", "linkedin", "mailchimp", "klaviyo", "indexnow"]
+
+    results = {c: False for c in channels}
+    results["timestamp"] = datetime.utcnow().isoformat()
+    results["title"] = title
+
+    async def _run(sess: aiohttp.ClientSession):
+        # AI Content generieren
+        content = await _ai_generate(title, body, link, niche, sess)
+
+        tg_text = content.get("telegram") or f"🔥 <b>{title}</b>\n\n{body[:200]}\n\n👉 {link}"
+        li_text = content.get("linkedin") or f"{title}\n\n{body[:300]}\n\n{link}"
+        blog_title = content.get("blog_title") or title
+        blog_body = content.get("blog_body") or f"{body}\n\n<a href='{link}'>{link}</a>"
+        email_subj = content.get("email_subject") or title[:50]
+        email_html = f"<html><body><h2>{title}</h2><p>{content.get('email_body', body)}</p><p><a href='{link}'>Hier klicken</a></p></body></html>"
+
+        # Alle aktiven Kanäle parallel
+        tasks = {}
+        if "telegram" in channels:
+            tasks["telegram"] = _telegram(tg_text, sess)
+        if "shopify_blog" in channels:
+            tasks["shopify_blog"] = _shopify_blog(blog_title, blog_body, tags, sess)
+        if "linkedin" in channels:
+            tasks["linkedin"] = _linkedin(li_text, sess)
+        if "mailchimp" in channels:
+            tasks["mailchimp"] = _mailchimp(email_subj, email_html, sess)
+        if "klaviyo" in channels:
+            tasks["klaviyo"] = _klaviyo_event(title, link, sess)
+        if "indexnow" in channels and link:
+            tasks["indexnow"] = _indexnow(link, sess)
+
+        done = await asyncio.gather(*tasks.values(), return_exceptions=True)
+        for key, result in zip(tasks.keys(), done):
+            results[key] = result if not isinstance(result, Exception) else False
+
+        channels_hit = sum(1 for v in results.values() if v is True)
+        results["channels_hit"] = channels_hit
+        logger.info(f"BrutusCore.fire '{title[:40]}': {channels_hit}/{len(channels)} Kanäle ✅")
+
+    if session:
+        await _run(session)
+    else:
+        async with aiohttp.ClientSession() as sess:
+            await _run(sess)
+
+    return results
+
+
+async def fire_from_brutus(niche: str = "ki business shopify") -> dict:
+    """Startet den vollen Brutus + BrutusCore Doppel-Angriff"""
+    results = {"brutus": {}, "brutus_core": {}}
+    try:
+        from modules.brutus_traffic_engine import brutus_run
+        results["brutus"] = await brutus_run(niche=niche)
+    except Exception as e:
+        logger.error(f"Brutus run failed: {e}")
+        results["brutus"] = {"error": str(e)}
+    return results
