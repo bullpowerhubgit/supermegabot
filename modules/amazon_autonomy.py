@@ -79,15 +79,21 @@ async def get_trending_products(keywords: list = None) -> list:
     except Exception as e:
         log.warning("Amazon RSS fetch error: %s", e)
 
-    # Fallback: use keyword-based affiliate links
-    if not products and keywords:
-        for kw in keywords[:5]:
+    # Fallback: seed keywords als Affiliate-Suchanfragen (RSS oft geblockt)
+    if not products:
+        fallback_keywords = keywords or [
+            "Smart Home Gadget 2026", "Wireless Earbuds Bluetooth", "USB-C Hub Multiport",
+            "LED Strip WiFi App", "Fitness Tracker Smartwatch", "Power Bank 20000mAh",
+            "Ring Light Selfie", "Mini Beamer Portable", "Laptop Ständer Ergonomisch",
+            "Massage Gun Tiefengewebe",
+        ]
+        for kw in random.sample(fallback_keywords, min(5, len(fallback_keywords))):
             products.append({
                 "asin": "",
                 "title": kw,
                 "url": f"https://www.amazon.de/s?k={kw.replace(' ', '+')}&tag={ASSOCIATE_TAG}",
                 "image": "",
-                "price": "",
+                "price": "Top-Angebot",
             })
     return products
 

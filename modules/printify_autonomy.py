@@ -99,6 +99,22 @@ async def _get_variants(blueprint_id: int, provider_id: int) -> list:
         return []
 
 
+async def _upload_image_url(url: str, filename: str = "design.jpg") -> str:
+    """Upload image by URL to Printify media library, returns image ID."""
+    try:
+        result = await _post("/uploads/images.json", {
+            "file_name": filename,
+            "url": url,
+        })
+        img_id = result.get("id", "")
+        if img_id:
+            log.debug("Printify image uploaded: %s", img_id)
+        return img_id
+    except Exception as e:
+        log.debug("Printify image upload error: %s", e)
+        return ""
+
+
 async def create_pod_product(title: str, description: str,
                               blueprint_id: int = DEFAULT_BLUEPRINT,
                               provider_id: int = DEFAULT_PROVIDER) -> dict:
@@ -108,13 +124,23 @@ async def create_pod_product(title: str, description: str,
     if not SHOP_ID:
         return {"ok": False, "error": "no PRINTIFY_SHOP_ID"}
 
-    # Try to get real provider
+    # Get real provider
     provider_id = await _get_first_provider(blueprint_id)
     variants = await _get_variants(blueprint_id, provider_id)
-
     if not variants:
-        # Fallback minimal variant
         variants = [{"id": 18110, "price": 2999, "is_enabled": True}]
+
+    # Upload design image (LoremFlickr — kein Key nötig)
+    safe_title = title.replace(" ", ",")[:40]
+    img_url = f"https://loremflickr.com/800/800/{safe_title}"
+    image_id = await _upload_image_url(img_url, f"{title[:30].replace(' ','_')}.jpg")
+
+    print_areas_images = []
+    if image_id:
+        print_areas_images = [{"id": image_id, "x": 0.5, "y": 0.5, "scale": 1, "angle": 0}]
+    else:
+        # Printify public test image ID (always valid)
+        print_areas_images = [{"id": "5e16b7b78b3abd4e490a45c6", "x": 0.5, "y": 0.5, "scale": 1, "angle": 0}]
 
     payload = {
         "title": title[:100],
@@ -126,15 +152,7 @@ async def create_pod_product(title: str, description: str,
             {
                 "variant_ids": [v["id"] for v in variants],
                 "placeholders": [
-                    {
-                        "position": "front",
-                        "images": [
-                            {
-                                "id": "5e16b7b78b3abd4e490a45c6",
-                                "x": 0.5, "y": 0.5, "scale": 1, "angle": 0,
-                            }
-                        ],
-                    }
+                    {"position": "front", "images": print_areas_images}
                 ],
             }
         ],
@@ -146,7 +164,9 @@ async def create_pod_product(title: str, description: str,
         if pid:
             log.info("Printify product created: %s (id=%s)", title[:60], pid)
             return {"ok": True, "product_id": pid, "title": title}
-        return {"ok": False, "error": result.get("error", "unknown")}
+        err = result.get("error", str(result)[:200])
+        log.warning("Printify create failed: %s", err)
+        return {"ok": False, "error": err}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
