@@ -1074,8 +1074,9 @@ async def task_klaviyo_auto_campaign() -> str:
         klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
         list_id = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
         anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-        if not klaviyo_key or not anthropic_key:
-            return "Klaviyo/Anthropic Key fehlt"
+        openai_key = os.getenv("OPENAI_API_KEY", "")
+        if not klaviyo_key or (not anthropic_key and not openai_key):
+            return "Klaviyo Key oder AI Key fehlt"
 
         # Generate email content via Claude
         today = datetime.now().strftime("%d.%m.%Y")
@@ -1111,15 +1112,28 @@ Nur JSON, kein anderer Text."""
         email_data = json.loads(raw[raw.find("{"):raw.rfind("}")+1])
 
         # Create Klaviyo campaign
+        from_email = os.getenv("KLAVIYO_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
+        from_label = os.getenv("KLAVIYO_FROM_NAME", "BullPower Hub")
+        subject = email_data.get("subject", f"KI Business Blueprint — {today}")
+        preview = email_data.get("preview", "Dein vollautomatisches Einkommenssystem wartet")
         headers = {"Authorization": f"Klaviyo-API-Key {klaviyo_key}", "revision": "2024-10-15", "Content-Type": "application/json"}
         async with aiohttp.ClientSession() as s:
-            # Create campaign
             async with s.post("https://a.klaviyo.com/api/campaigns/",
                 headers=headers,
                 json={"data": {"type": "campaign", "attributes": {
                     "name": f"AutoCampaign {today}",
-                    "audiences": {"included": [list_id]},
+                    "audiences": {"included": [list_id], "excluded": []},
                     "send_strategy": {"method": "immediate"},
+                    "campaign-messages": {"data": [{"type": "campaign-message", "attributes": {
+                        "channel": "email",
+                        "label": "email",
+                        "content": {
+                            "subject": subject,
+                            "preview_text": preview,
+                            "from_email": from_email,
+                            "from_label": from_label,
+                        }
+                    }}]},
                 }}},
                 timeout=aiohttp.ClientTimeout(total=15)) as r:
                 campaign_resp = await r.json(content_type=None)
@@ -1128,7 +1142,22 @@ Nur JSON, kein anderer Text."""
         if not campaign_id:
             return f"Klaviyo campaign creation failed: {campaign_resp}"
 
-        return f"Klaviyo AutoCampaign gesendet: '{email_data.get('subject','?')[:50]}'"
+        # Set HTML content and send
+        async with aiohttp.ClientSession() as s:
+            msg_id = campaign_resp.get("data", {}).get("relationships", {}).get("campaign-messages", {}).get("data", [{}])[0].get("id", "")
+            if msg_id:
+                await s.patch(f"https://a.klaviyo.com/api/campaign-messages/{msg_id}/",
+                    headers=headers,
+                    json={"data": {"type": "campaign-message", "id": msg_id, "attributes": {
+                        "content": {"body": email_data.get("html_body", f"<p>{subject}</p>")}
+                    }}},
+                    timeout=aiohttp.ClientTimeout(total=15))
+            await s.post(f"https://a.klaviyo.com/api/campaigns/{campaign_id}/campaign-send-job/",
+                headers=headers,
+                json={"data": {"type": "campaign-send-job", "attributes": {}}},
+                timeout=aiohttp.ClientTimeout(total=15))
+
+        return f"Klaviyo AutoCampaign gesendet: '{subject[:50]}'"
     except Exception as e:
         return f"Klaviyo AutoCampaign Fehler: {e}"
 
@@ -1410,23 +1439,33 @@ async def task_linkedin_auto_post() -> str:
         linkedin_token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
         linkedin_urn   = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
         anthropic_key  = os.getenv("ANTHROPIC_API_KEY", "")
+        openai_key = os.getenv("OPENAI_API_KEY", "")
         if not linkedin_token:
             return "LINKEDIN_ACCESS_TOKEN fehlt"
-        if not anthropic_key:
-            return "ANTHROPIC_API_KEY fehlt"
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
-                      "messages": [{"role": "user", "content":
-                          "Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
-                          "Max 1200 Zeichen. Erwähne am Ende die AI Income Machine auf Digistore24. Nur Text, kein JSON."}]},
-            ) as r:
-                data = await r.json(content_type=None)
-        text = data.get("content", [{}])[0].get("text", "").strip()
+        li_prompt = ("Schreibe einen professionellen LinkedIn-Post auf Deutsch über KI-Automatisierung im E-Commerce. "
+                     "Max 1200 Zeichen. Erwähne am Ende: https://www.digistore24.com/product/669750 (AI Income Machine €37). Nur Text, kein JSON.")
+        text = ""
+        if anthropic_key:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    async with s.post("https://api.anthropic.com/v1/messages",
+                        headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01"},
+                        json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
+                              "messages": [{"role": "user", "content": li_prompt}]}) as r:
+                        data = await r.json(content_type=None)
+                text = data.get("content", [{}])[0].get("text", "").strip()
+            except Exception:
+                pass
+        if not text and openai_key:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                async with s.post("https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}"},
+                    json={"model": "gpt-4o-mini", "max_tokens": 400,
+                          "messages": [{"role": "user", "content": li_prompt}]}) as r:
+                    oai = await r.json(content_type=None)
+            text = oai.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
         if not text:
-            return "Kein LinkedIn-Content generiert"
+            return "Kein LinkedIn-Content generiert (kein AI Key)"
         headers = {
             "Authorization": f"Bearer {linkedin_token}",
             "Content-Type": "application/json",
@@ -1490,9 +1529,6 @@ async def task_competitor_monitor() -> str:
         {"name": "AutoDS", "url": "https://www.autods.com"},
         {"name": "Zendrop", "url": "https://www.zendrop.com"},
     ]
-    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not anthropic_key:
-        return "Competitor monitor: ANTHROPIC_API_KEY fehlt"
     findings = []
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
         for comp in competitors:
@@ -1562,8 +1598,9 @@ async def task_revenue_optimize() -> str:
     """Alle 12h: KI analysiert Revenue und sendet Optimierungs-Empfehlungen per Telegram."""
     import aiohttp, json as _json
     anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not anthropic_key:
-        return "Revenue optimize: ANTHROPIC_API_KEY fehlt"
+    openai_key = os.getenv("OPENAI_API_KEY", "")
+    if not anthropic_key and not openai_key:
+        return "Revenue optimize: kein AI Key"
     try:
         from modules.digistore24_automation import get_sales_stats
         ds24_stats = await get_sales_stats()
@@ -1575,18 +1612,33 @@ async def task_revenue_optimize() -> str:
         "Gib 3 konkrete sofort umsetzbare Maßnahmen zur Umsatzsteigerung. "
         "Format: nummerierte Liste, je 1 Satz."
     )
+    recommendations = "Keine Empfehlung"
     try:
-        async with aiohttp.ClientSession() as session:
-            resp = await session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=30),
-            )
-            data = await resp.json()
-            recommendations = data.get("content", [{}])[0].get("text", "Keine Empfehlung")
+        if anthropic_key:
+            async with aiohttp.ClientSession() as session:
+                resp = await session.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
+                             "content-type": "application/json"},
+                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
+                          "messages": [{"role": "user", "content": prompt}]},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                )
+                data = await resp.json()
+            rec = data.get("content", [{}])[0].get("text", "")
+            if rec:
+                recommendations = rec
+        if recommendations == "Keine Empfehlung" and openai_key:
+            async with aiohttp.ClientSession() as session:
+                resp = await session.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {openai_key}"},
+                    json={"model": "gpt-4o-mini", "max_tokens": 400,
+                          "messages": [{"role": "user", "content": prompt}]},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                )
+                data = await resp.json()
+            recommendations = data.get("choices", [{}])[0].get("message", {}).get("content", "Keine Empfehlung")
         token = os.getenv("TELEGRAM_BOT_TOKEN", "")
         chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
         if token and chat_id:
@@ -2202,6 +2254,54 @@ async def task_indexnow_mega_blast() -> str:
         return f"IndexNow blast error: {e}"
 
 
+# ── SUPER REVENUE BLITZ ───────────────────────────────────────────────────────
+
+async def task_revenue_blitz() -> str:
+    try:
+        from modules.super_revenue_blitz import revenue_blast_now
+        r = await revenue_blast_now()
+        return f"Revenue Blitz: tg={r.get('telegram')} kl={r.get('klaviyo')} li={r.get('linkedin')} idx={r.get('indexnow',0)}"
+    except Exception as e:
+        return f"Revenue Blitz error: {e}"
+
+
+async def task_aliexpress_import() -> str:
+    try:
+        from modules.super_revenue_blitz import aliexpress_import_trending
+        r = await aliexpress_import_trending()
+        return f"AliExpress: {r.get('imported',0)} importiert, {r.get('skipped',0)} skip"
+    except Exception as e:
+        return f"AliExpress import error: {e}"
+
+
+async def task_printify_seo() -> str:
+    try:
+        from modules.super_revenue_blitz import printify_seo_blast
+        r = await printify_seo_blast()
+        return f"Printify SEO: {r.get('updated',0)} Produkte upgedated, {r.get('skipped',0)} skip"
+    except Exception as e:
+        return f"Printify SEO error: {e}"
+
+
+async def task_multi_platform_post() -> str:
+    import random
+    topics = [
+        "Passives Einkommen 2026 — So verdienst du im Schlaf",
+        "Shopify Automatisierung — Der komplette Guide",
+        "KI Tools die 2026 wirklich Geld machen",
+        "Dropshipping vs Print-on-Demand — Was ist besser?",
+        "Online Business aufbauen — Schritt für Schritt",
+        "BRUTUS Traffic Engine — 10 Kanäle gleichzeitig",
+        "Digistore24 Automatisierung — Mehr Verkäufe ohne Arbeit",
+    ]
+    try:
+        from modules.super_revenue_blitz import multi_platform_post
+        r = await multi_platform_post(random.choice(topics))
+        return f"Multi-Platform: tg={r.get('telegram')} li={r.get('linkedin')} blog={bool(r.get('blog_url'))} idx={r.get('indexnow',0)}"
+    except Exception as e:
+        return f"Multi-platform post error: {e}"
+
+
 # ── ADS ENGINE ────────────────────────────────────────────────────────────────
 
 async def task_ads_performance_monitor() -> str:
@@ -2583,6 +2683,11 @@ TASKS = [
     ("linkedin_burst",          task_linkedin_burst,           8*3600, 9100), # 3x täglich LinkedIn Posts
     ("shopify_seo_blast",       task_shopify_seo_blast,        14400, 9200), # 4h — 3 neue Shopify Blog-Posts
     ("indexnow_mega_blast",     task_indexnow_mega_blast,      3600,  9300), # stündlich — alle URLs bei Google+Bing
+    # ── SUPER REVENUE BLITZ — Alle Kanäle parallel ───────────────────────────
+    ("revenue_blitz",           task_revenue_blitz,            3600,  9500),  # stündlich — Telegram+LinkedIn+Klaviyo+IndexNow
+    ("aliexpress_import",       task_aliexpress_import,       21600,  9600),  # 6h — AliExpress trending → Shopify
+    ("printify_seo",            task_printify_seo,            43200,  9700),  # 12h — AI SEO alle Printify Produkte
+    ("multi_platform_hourly",   task_multi_platform_post,      7200,  9800),  # 2h — Topic-Post alle Kanäle
 ]
 
 
