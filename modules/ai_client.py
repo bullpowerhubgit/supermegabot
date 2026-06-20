@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zentraler AI-Client — Anthropic → OpenAI → OpenRouter → DeepSeek → Perplexity → Fallback.
+Zentraler AI-Client — Anthropic → OpenAI → Groq → OpenRouter → Gemini → DeepSeek → Perplexity → Fallback.
 Einheitlicher Zugang für alle Module: from modules.ai_client import ai_complete
 """
 from __future__ import annotations
@@ -11,11 +11,13 @@ log = logging.getLogger("AIClient")
 
 _ANTHROPIC  = lambda: os.getenv("ANTHROPIC_API_KEY", "")
 _OPENAI     = lambda: os.getenv("OPENAI_API_KEY", "")
+_GROQ       = lambda: os.getenv("GROQ_API_KEY", "")
 _OPENROUTER = lambda: os.getenv("OPENROUTER_API_KEY", "")
 _PERPLEXITY = lambda: os.getenv("PERPLEXITY_API_KEY", "")
-_GEMINI     = lambda: os.getenv("GCP_API_KEY", "")
+_GEMINI     = lambda: os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY", "")
 
-_OPENROUTER_MODEL   = "liquid/lfm-2.5-1.2b-instruct:free"  # confirmed working free model 2026-06
+_OPENROUTER_MODEL   = "liquid/lfm-2.5-1.2b-instruct:free"
+_GROQ_MODEL         = "llama-3.1-8b-instant"  # free tier, very fast
 _OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
 _GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
@@ -67,7 +69,28 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("OpenAI error: %s", e)
 
-    # 3. Gemini 1.5 Flash (GCP API Key — kostenlos bis 1500 req/Tag)
+    # 3. Groq (free tier: llama-3.1-8b-instant — set GROQ_API_KEY from console.groq.com)
+    if _GROQ():
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                async with s.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_GROQ()}", "Content-Type": "application/json"},
+                    json={"model": _GROQ_MODEL, "max_tokens": max_tokens, "messages": messages},
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json(content_type=None)
+                        text = d["choices"][0]["message"]["content"]
+                        if text:
+                            return text
+                    if r.status in (401, 403):
+                        log.debug("Groq skip (%s) — invalid key", r.status)
+                    else:
+                        log.debug("Groq %s", r.status)
+        except Exception as e:
+            log.debug("Groq error: %s", e)
+
+    # 4. Gemini 1.5 Flash (GEMINI_API_KEY — kostenlos bis 1500 req/Tag)
     if _GEMINI():
         try:
             full_prompt = f"{system}\n\n{prompt}" if system else prompt
@@ -90,8 +113,8 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("Gemini error: %s", e)
 
-    # 4. OpenRouter (free models available)
-    if _OPENROUTER():
+    # 5. OpenRouter (free models available — needs valid sk-or-v1-... key)
+    if _OPENROUTER() and _OPENROUTER().startswith("sk-or-"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(
@@ -110,7 +133,7 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("OpenRouter error: %s", e)
 
-    # 4. Perplexity (min 16 tokens required by API)
+    # 6. Perplexity (min 16 tokens required by API)
     if _PERPLEXITY():
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
