@@ -1,5 +1,5 @@
 # SuperMegaBot — Aktueller Status (Auto-Update)
-> Zuletzt aktualisiert: 2026-06-19 03:15 UTC | Wenn Claude neu startet → Diese Datei zuerst lesen!
+> Zuletzt aktualisiert: 2026-06-19 07:35 UTC | Wenn Claude neu startet → Diese Datei zuerst lesen!
 
 ## System-Status (geprüft 2026-06-19)
 | Service | URL | Status |
@@ -75,14 +75,30 @@ steuercockpit lifetime: POST https://steuercockpit-production-44c9.up.railway.ap
 shopify-acquisition starter: POST https://shopify-acquisition-engine-production.up.railway.app/billing/checkout {"plan":"starter","email":"xxx","store_domain":"xxx.myshopify.com"}
 ```
 
+## Session v5 Fixes (2026-06-19 07:35 UTC)
+- ✅ **GUMROAD_ACCESS_TOKEN** — Echter Token (HwvjTDplCcpMwn-…) gesetzt; verifiziert via /v2/user → Rudolf Sarkany ✅
+- ✅ **YOUTUBE_API_KEY** — Echter Schlüssel AIzaSyC6obw… (nicht mehr Dummy) in Railway ✅
+- ✅ **LinkedIn Traffic** — 2 Posts gesendet: Steuercockpit + iComeAuto beide live auf LinkedIn ✅
+- ✅ **Twitter Keys korrigiert** — rodbotttt (AKTIV) statt AIITEC (GESPERRT) in Railway ✅
+- ✅ **DEVTO/HASHNODE** — Waren versehentlich auf Twitter-Keys gesetzt → MISSING_PLEASE_ADD ✅
+- ✅ **DS24 €111** — Revenue-Dashboard zeigt korrekt: total=111.0, 3 Bestellungen ✅
+- ❌ **OpenAI Key** — sk-proj-V9uGQ… → INVALID; OpenRouter 454d05c2… → 401 bei Chat-Calls
+- ❌ **Gumroad Sales** — Token nur mit User-Scope; /v2/sales → 403 (braucht write-Scope)
+
 ## Offene Punkte
 | Prio | Task | Was Rudolf tun muss |
 |------|------|---------------------|
-| 🔴 HIGH | Twitter Read+Write | developer.twitter.com → App → User Auth Settings → Edit → Read and Write → Save |
-| 🔴 HIGH | Shopify Blog `write_content` | Shopify Admin → Eigene Apps → API-Berechtigungen → write_content aktivieren → neuen Token setzen |
+| 🔴 HIGH | Facebook pages_manage_posts | developers.facebook.com/tools/explorer → Token mit pages_manage_posts+pages_read_engagement → FACEBOOK_PAGE_TOKEN in Railway |
+| 🔴 HIGH | Twitter Access Token (rodbotttt) | developer.twitter.com → App rodbotttt → Keys and tokens → Generate Access Token → TWITTER_ACCESS_TOKEN + TWITTER_ACCESS_TOKEN_SECRET in Railway |
+| 🔴 HIGH | Reddit Password | REDDIT_PASSWORD=? → railway variables set REDDIT_PASSWORD=<dein-reddit-passwort> |
+| 🔴 HIGH | OpenAI Key | platform.openai.com → API Keys → Neuer Key → OPENAI_API_KEY in Railway (aktuell ungültig) |
+| 🟡 MED | Twitter Read+Write | developer.twitter.com → App → User Auth Settings → Edit → Read and Write → Save |
+| 🟡 MED | Shopify Blog `write_content` | Shopify Admin → Eigene Apps → API-Berechtigungen → write_content aktivieren → neuen Token setzen |
 | 🟡 MED | Dev.to API Key | https://dev.to/settings/extensions → Generate API Key → DEVTO_API_KEY in Railway |
 | 🟡 MED | Hashnode API Key | https://hashnode.com/settings/developer → HASHNODE_API_KEY in Railway |
 | 🟡 MED | Medium API Key | https://medium.com/me/settings → Integration tokens → MEDIUM_API_KEY in Railway |
+| 🟡 MED | Gumroad Sales-Scope | app.gumroad.com/api → neuer Access Token mit edit_products+view_sales Scope |
+| 🟡 MED | PayPal LIVE Keys | developer.paypal.com → RudiBot → LIVE Tab → Client ID+Secret → Railway |
 | 🟢 LOW | Twilio FROM-Nummer | +49 Nummer kaufen für SMS/WhatsApp Marketing |
 | 🟢 LOW | Pinterest App Review | Wartet auf Support-Antwort |
 
