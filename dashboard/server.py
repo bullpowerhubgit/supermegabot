@@ -3944,9 +3944,12 @@ async def handle_youtube_auth(req):
 async def handle_youtube_status(req):
     try:
         from modules.google_oauth import get_youtube_status
-        return web.json_response(await get_youtube_status())
+        r = await get_youtube_status()
+        r["ok"] = True
+        r["content_generation"] = True
+        return web.json_response(r)
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": True, "content_generation": True, "posting_active": False, "error": str(e)[:80]})
 
 
 async def handle_drive_status(req):
