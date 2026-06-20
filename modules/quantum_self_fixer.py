@@ -298,7 +298,11 @@ async def scan_external_services() -> dict:
         async with aiohttp.ClientSession() as s:
             async with s.get(
                 f"{SUPABASE_URL}/rest/v1/agent_memory?limit=1",
-                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                headers={
+                    "apikey": SUPABASE_KEY,
+                    "Authorization": f"Bearer {SUPABASE_KEY}",
+                    "Accept-Profile": "public",
+                },
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as r:
                 return r.status in (200, 206), f"HTTP {r.status}"
@@ -490,7 +494,11 @@ async def scan_databases() -> dict:
             async with aiohttp.ClientSession() as s:
                 async with s.get(
                     f"{SUPABASE_URL}/rest/v1/agent_execution_log?limit=1",
-                    headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                    headers={
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": f"Bearer {SUPABASE_KEY}",
+                        "Accept-Profile": "public",
+                    },
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as r:
                     results.append({"db": "supabase", "ok": r.status in (200, 206),

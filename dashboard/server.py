@@ -7173,6 +7173,22 @@ async def handle_autonomous_pipeline_status(req):
     return web.json_response({"ok": True, "pipeline_active": True, "scheduler_interval": "daily"})
 
 
+async def handle_system_info(req):
+    """GET /api/system/info — System info and versions."""
+    import platform
+    return web.json_response({
+        "ok": True,
+        "service": "supermegabot-dashboard",
+        "version": "2.0-quantum",
+        "python": platform.python_version(),
+        "platform": platform.system(),
+        "port": int(os.getenv("PORT", 8888)),
+        "scheduler_tasks": "240+",
+        "modules": "quantum_self_repair, autonomous_pipeline, klaviyo, mailchimp, shopify, ds24, tiktok, fiverr, upwork, ebay",
+        "revenue_streams": ["shopify", "digistore24", "stripe", "printify", "printful", "klaviyo", "mailchimp", "ebay", "tiktok", "fiverr", "upwork"],
+    })
+
+
 async def handle_indexnow_status(req):
     """GET /api/indexnow/status — IndexNow submission status."""
     try:
@@ -8398,6 +8414,7 @@ async def create_app():
     app.router.add_post("/api/product/bundle/run",        handle_bundle_cycle_run)
     app.router.add_post("/api/pipeline/run",              handle_autonomous_pipeline_run)
     app.router.add_get( "/api/pipeline/status",          handle_autonomous_pipeline_status)
+    app.router.add_get( "/api/system/info",              handle_system_info)
     app.router.add_get( "/api/indexnow/status",          handle_indexnow_status)
     app.router.add_get( "/api/trends/latest",            handle_trends_latest)
     app.router.add_post("/api/seo/blast",                handle_ultra_seo)
