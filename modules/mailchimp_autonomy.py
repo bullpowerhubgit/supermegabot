@@ -20,8 +20,15 @@ API_KEY = os.getenv("MAILCHIMP_API_KEY", "1d35dd606aad1a9f1bbd10d2dd2e2ea7-us7")
 LIST_ID = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
 SERVER = os.getenv("MAILCHIMP_SERVER_PREFIX", os.getenv("MAILCHIMP_SERVER", "us7"))
 BASE = f"https://{SERVER}.api.mailchimp.com/3.0"
-FROM_EMAIL = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
-FROM_NAME = "BullPowerHub"
+FROM_EMAIL = os.getenv("FROM_EMAIL", "aiitecbuuss@gmail.com")
+FROM_NAME = os.getenv("MAILCHIMP_FROM_NAME", "DragonApp")
+
+# DragonApp Mailchimp (dragonadnp@gmail.com) — separate account us18
+DRAGON_API_KEY = os.getenv("MAILCHIMP_DRAGON_API_KEY", "4206e572541883eb39eb2c52d9a3a116-us18")
+DRAGON_LIST_ID = os.getenv("MAILCHIMP_DRAGON_LIST_ID", "0e84a22a44")
+DRAGON_SERVER  = os.getenv("MAILCHIMP_DRAGON_SERVER", "us18")
+DRAGON_BASE    = f"https://{DRAGON_SERVER}.api.mailchimp.com/3.0"
+DRAGON_FROM    = os.getenv("MAILCHIMP_DRAGON_EMAIL", "dragonadnp@gmail.com")
 
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
@@ -220,4 +227,122 @@ async def auto_welcome_sequence() -> dict:
 async def run_mailchimp_cycle() -> dict:
     """Scheduler entry point: weekly digest."""
     digest = await send_weekly_digest()
-    return {"ok": True, "digest": digest}
+    dragon = await run_dragon_campaign()
+    return {"ok": True, "digest": digest, "dragon": dragon}
+
+
+# ─── DragonApp Mailchimp (dragonadnp@gmail.com / us18) ───────────────────────
+
+def _dragon_auth() -> dict:
+    creds = base64.b64encode(f"anystring:{DRAGON_API_KEY}".encode()).decode()
+    return {"Authorization": f"Basic {creds}", "Content-Type": "application/json"}
+
+
+async def _dragon_get(path: str) -> dict:
+    if not DRAGON_API_KEY:
+        return {}
+    async with aiohttp.ClientSession() as s:
+        async with s.get(f"{DRAGON_BASE}{path}", headers=_dragon_auth(),
+                         timeout=aiohttp.ClientTimeout(total=15)) as r:
+            return await r.json() if r.status < 400 else {"error": await r.text()}
+
+
+async def _dragon_post(path: str, data: dict) -> dict:
+    if not DRAGON_API_KEY:
+        return {"error": "no MAILCHIMP_DRAGON_API_KEY"}
+    async with aiohttp.ClientSession() as s:
+        async with s.post(f"{DRAGON_BASE}{path}", headers=_dragon_auth(), json=data,
+                          timeout=aiohttp.ClientTimeout(total=20)) as r:
+            return await r.json() if r.status < 400 else {"error": await r.text()}
+
+
+async def _dragon_put(path: str, data: dict) -> dict:
+    if not DRAGON_API_KEY:
+        return {}
+    async with aiohttp.ClientSession() as s:
+        async with s.put(f"{DRAGON_BASE}{path}", headers=_dragon_auth(), json=data,
+                         timeout=aiohttp.ClientTimeout(total=20)) as r:
+            return await r.json()
+
+
+async def get_dragon_status() -> dict:
+    """Status of DragonApp Mailchimp account."""
+    try:
+        data = await _dragon_get(f"/lists/{DRAGON_LIST_ID}")
+        if "id" not in data:
+            return {"ok": False, "connected": False, "error": data.get("error", "no list")}
+        stats = data.get("stats", {})
+        return {
+            "ok": True,
+            "connected": True,
+            "account": "dragonadnp@gmail.com",
+            "list_id": DRAGON_LIST_ID,
+            "list_name": data.get("name"),
+            "member_count": stats.get("member_count", 0),
+            "open_rate": stats.get("open_rate", 0),
+            "campaign_count": stats.get("campaign_count", 0),
+        }
+    except Exception as e:
+        return {"ok": False, "connected": False, "error": str(e)}
+
+
+async def dragon_subscribe(email: str, first_name: str = "", last_name: str = "") -> dict:
+    """Subscribe email to DragonApp Mailchimp list."""
+    try:
+        data = {
+            "email_address": email,
+            "status": "subscribed",
+            "merge_fields": {"FNAME": first_name, "LNAME": last_name},
+        }
+        result = await _dragon_put(f"/lists/{DRAGON_LIST_ID}/members/{email}", data)
+        return {"ok": bool(result.get("id")), "email": email, "account": "dragon"}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+async def run_dragon_campaign(topic: str = "") -> dict:
+    """Create + send campaign via DragonApp Mailchimp."""
+    if not DRAGON_API_KEY:
+        return {"ok": False, "error": "MAILCHIMP_DRAGON_API_KEY not set"}
+    try:
+        ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+        shop_url = f"https://{shop}"
+        subject_topic = topic or "KI-Business Automatisierung 2026"
+
+        html = await _ai(
+            f"Schreibe einen professionellen HTML-Newsletter auf Deutsch über: {subject_topic}. "
+            f"Shop: {shop_url}. Affiliate: {ds24}. Responsives HTML, kein DOCTYPE.",
+            max_tokens=600,
+        )
+        if not html:
+            html = (
+                f"<h1>{subject_topic}</h1>"
+                f"<p>Entdecke die neuesten KI-Tools für dein Business.</p>"
+                f"<p><a href='{ds24}'>Jetzt starten →</a></p>"
+                f"<p>Shop: <a href='{shop_url}'>{shop_url}</a></p>"
+            )
+
+        subject = f"{subject_topic} — {datetime.now().strftime('%d.%m.%Y')}"
+        campaign_data = {
+            "type": "regular",
+            "recipients": {"list_id": DRAGON_LIST_ID},
+            "settings": {
+                "subject_line": subject[:150],
+                "title": f"Dragon Campaign {datetime.now().strftime('%Y-%m-%d')}",
+                "from_name": "DragonApp",
+                "reply_to": DRAGON_FROM,
+            },
+        }
+        camp = await _dragon_post("/campaigns", campaign_data)
+        cid = camp.get("id")
+        if not cid:
+            return {"ok": False, "error": camp.get("error", "campaign creation failed"), "account": "dragon"}
+
+        await _dragon_put(f"/campaigns/{cid}/content", {"html": html})
+        send_result = await _dragon_post(f"/campaigns/{cid}/actions/send", {})
+        success = "status" not in send_result or send_result.get("status") != 400
+        log.info("Dragon Mailchimp campaign sent: %s (id=%s)", subject[:60], cid)
+        return {"ok": success, "campaign_id": cid, "subject": subject, "account": "dragon"}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "account": "dragon"}
