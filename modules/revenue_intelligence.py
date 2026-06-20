@@ -65,7 +65,7 @@ async def _supabase_query(table: str, select: str = "*", filters: str = "") -> l
     url = f"{SUPABASE_URL}/rest/v1/{table}?select={select}"
     if filters:
         url += f"&{filters}"
-    headers = {"apikey": SUPABASE_SERVICE_KEY, "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}"}
+    headers = {"apikey": SUPABASE_SERVICE_KEY, "Authorization": f"Bearer {SUPABASE_SERVICE_KEY}", "Accept-Profile": "public"}
     async with aiohttp.ClientSession(timeout=_TIMEOUT) as s:
         async with s.get(url, headers=headers) as r:
             return await r.json() if r.status == 200 else []

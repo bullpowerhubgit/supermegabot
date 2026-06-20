@@ -54,7 +54,7 @@ async def _supabase_select(table: str, params: str = "") -> list:
         import aiohttp
         url = os.getenv("SUPABASE_URL", "").rstrip("/") + f"/rest/v1/{table}?{params}"
         key = os.getenv("SUPABASE_SERVICE_KEY", "") or os.getenv("SUPABASE_ANON_KEY", "")
-        headers = {"apikey": key, "Authorization": f"Bearer {key}"}
+        headers = {"apikey": key, "Authorization": f"Bearer {key}", "Accept-Profile": "public"}
         async with aiohttp.ClientSession() as s:
             async with s.get(url, headers=headers) as r:
                 return await r.json() if r.status == 200 else []

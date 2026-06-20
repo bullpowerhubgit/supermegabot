@@ -912,7 +912,8 @@ async def generate_video_script(keyword: str, content_pack: dict) -> dict:
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
                     async with s.post(f"{supa_url}/rest/v1/video_scripts",
                                       headers={"apikey": supa_key, "Authorization": f"Bearer {supa_key}",
-                                               "Content-Type": "application/json", "Prefer": "return=minimal"},
+                                               "Content-Type": "application/json", "Prefer": "return=minimal",
+                                               "Accept-Profile": "public", "Content-Profile": "public"},
                                       json={"keyword": keyword, "script": script,
                                             "created_at": datetime.now(timezone.utc).isoformat()}) as r:
                         await r.read()

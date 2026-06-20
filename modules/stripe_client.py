@@ -111,6 +111,8 @@ def write_to_supabase(summary: dict) -> bool:
     req.add_header("Authorization", f"Bearer {key}")
     req.add_header("Content-Type", "application/json")
     req.add_header("Prefer", "return=minimal")
+    req.add_header("Accept-Profile", "public")
+    req.add_header("Content-Profile", "public")
 
     try:
         with urllib.request.urlopen(req, timeout=10):
