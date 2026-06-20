@@ -13,9 +13,11 @@ _ANTHROPIC  = lambda: os.getenv("ANTHROPIC_API_KEY", "")
 _OPENAI     = lambda: os.getenv("OPENAI_API_KEY", "")
 _OPENROUTER = lambda: os.getenv("OPENROUTER_API_KEY", "")
 _PERPLEXITY = lambda: os.getenv("PERPLEXITY_API_KEY", "")
+_GEMINI     = lambda: os.getenv("GCP_API_KEY", "")
 
-_OPENROUTER_MODEL = "mistralai/mistral-7b-instruct:free"
+_OPENROUTER_MODEL   = "mistralai/mistral-7b-instruct:free"
 _OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
+_GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
 
 async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", max_tokens: int = 1200) -> str:
@@ -65,7 +67,30 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("OpenAI error: %s", e)
 
-    # 3. OpenRouter (free models available)
+    # 3. Gemini 1.5 Flash (GCP API Key — kostenlos bis 1500 req/Tag)
+    if _GEMINI():
+        try:
+            full_prompt = f"{system}\n\n{prompt}" if system else prompt
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                async with s.post(
+                    f"{_GEMINI_URL}?key={_GEMINI()}",
+                    headers={"Content-Type": "application/json"},
+                    json={"contents": [{"parts": [{"text": full_prompt}]}],
+                          "generationConfig": {"maxOutputTokens": max_tokens}},
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json(content_type=None)
+                        text = d.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                        if text:
+                            return text
+                    if r.status in (400, 401, 403):
+                        log.debug("Gemini skip (%s)", r.status)
+                    else:
+                        log.debug("Gemini %s", r.status)
+        except Exception as e:
+            log.debug("Gemini error: %s", e)
+
+    # 4. OpenRouter (free models available)
     if _OPENROUTER():
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
