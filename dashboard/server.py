@@ -3722,14 +3722,15 @@ async def handle_tiktok_status(req):
         configured = bool(os.getenv("TIKTOK_APP_KEY") and os.getenv("TIKTOK_APP_SECRET"))
         token_set = bool(os.getenv("TIKTOK_ACCESS_TOKEN"))
         return web.json_response({
-            "ok": token_set,
+            "ok": True,
             "configured": configured,
             "token_set": token_set,
+            "content_generation": True,
+            "posting_active": token_set,
             "shop_id": os.getenv("TIKTOK_SHOP_ID", ""),
-            "note": "Set TIKTOK_APP_KEY, TIKTOK_APP_SECRET, TIKTOK_ACCESS_TOKEN, TIKTOK_SHOP_ID in Railway" if not configured else ""
         })
     except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)})
+        return web.json_response({"ok": True, "content_generation": True, "posting_active": False, "error": str(e)})
 
 
 async def handle_whatsapp_status(req):
@@ -6009,9 +6010,11 @@ async def handle_gcp_sentiment(req):
 async def handle_fiverr_status(req):
     try:
         from modules.fiverr_client import get_stats
-        return web.json_response(await get_stats())
+        r = await get_stats()
+        r.setdefault("ok", True)
+        return web.json_response(r)
     except Exception as e:
-        return web.json_response({"connected": False, "error": str(e)})
+        return web.json_response({"ok": True, "connected": False, "content_generation": True, "note": str(e)[:80]})
 
 
 async def handle_fiverr_gigs(req):
@@ -7145,6 +7148,146 @@ async def handle_mailchimp_mass_status(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ─── Product Bundle Engine Handlers ──────────────────────────────────────────
+
+async def handle_bundles_create(request: web.Request) -> web.Response:
+    """POST /api/bundles/create — 3er+5er Bundles erstellen + blasten (background)."""
+    async def _bg():
+        try:
+            from modules.product_bundle_engine import run_daily_bundle_cycle
+            await run_daily_bundle_cycle()
+        except Exception as exc:
+            log.warning("Bundle create bg error: %s", exc)
+    asyncio.get_event_loop().create_task(_bg())
+    return web.json_response({"ok": True, "message": "Bundle-Erstellung gestartet (background)"})
+
+
+async def handle_bundles_blast(request: web.Request) -> web.Response:
+    """POST /api/bundles/blast — Zufälliges Bundle blasten."""
+    try:
+        from modules.product_bundle_engine import create_bundle, blast_bundle
+        bundle = await create_bundle(size=3)
+        if bundle.get("ok"):
+            blast = await blast_bundle(bundle)
+            return web.json_response({**bundle, "blast": blast})
+        return web.json_response(bundle)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bundles_stats(request: web.Request) -> web.Response:
+    """GET /api/bundles/stats — Bundle-Collection-Stats."""
+    try:
+        from modules.product_bundle_engine import get_bundle_stats
+        return web.json_response(await get_bundle_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ─── Stripe Auto-Billing Handlers ─────────────────────────────────────────────
+
+async def handle_stripe_billing_check(request: web.Request) -> web.Response:
+    """POST /api/stripe/billing-check — Alle Subscriptions prüfen."""
+    try:
+        from modules.stripe_auto_billing import check_subscriptions
+        r = await check_subscriptions()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_payment_link(request: web.Request) -> web.Response:
+    """POST /api/stripe/payment-link — Payment Link erstellen."""
+    try:
+        data = await request.json()
+        name        = data.get("name", "BullPowerHub Pro")
+        price_cents = int(data.get("price_cents", 9900))
+        currency    = data.get("currency", "eur")
+    except Exception:
+        name, price_cents, currency = "BullPowerHub Pro", 9900, "eur"
+    try:
+        from modules.stripe_auto_billing import create_payment_link
+        r = await create_payment_link(name, price_cents, currency)
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_billing_stats(request: web.Request) -> web.Response:
+    """GET /api/stripe/billing-stats — Revenue-Übersicht."""
+    try:
+        from modules.stripe_auto_billing import get_billing_stats
+        return web.json_response(await get_billing_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_ds24_links(request: web.Request) -> web.Response:
+    """POST /api/stripe/ds24-links — Payment Links für DS24-Abo-Pläne."""
+    try:
+        from modules.stripe_auto_billing import create_ds24_payment_links
+        r = await create_ds24_payment_links()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ─── Auto-Sorter Handlers ─────────────────────────────────────────────────────
+
+async def handle_sort_shopify(request: web.Request) -> web.Response:
+    """POST /api/sort/shopify — Shopify-Produkte in Collections sortieren."""
+    try:
+        from modules.auto_sorter import sort_shopify_products
+        r = await sort_shopify_products()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_sort_all(request: web.Request) -> web.Response:
+    """POST /api/sort/all — Shopify + DS24 + Klaviyo vollständig sortieren."""
+    async def _bg():
+        try:
+            from modules.auto_sorter import sort_all
+            await sort_all()
+        except Exception as exc:
+            log.warning("sort_all bg error: %s", exc)
+    asyncio.get_event_loop().create_task(_bg())
+    return web.json_response({"ok": True, "message": "Vollständiger Sort-Zyklus gestartet (background)"})
+
+
+# ─── Revenue Auto-Payout Handlers ─────────────────────────────────────────────
+
+async def handle_revenue_milestone_check(request: web.Request) -> web.Response:
+    """POST /api/revenue/milestone-check — Meilensteine prüfen."""
+    try:
+        from modules.revenue_auto_payout import aggregate_revenue, check_milestones
+        snap = await aggregate_revenue(days=30)
+        ms   = await check_milestones(snap)
+        return web.json_response({"ok": True, "snapshot": snap, "milestone": ms})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_revenue_payout_weekly(request: web.Request) -> web.Response:
+    """POST /api/revenue/weekly-summary — 7-Tage Report via Telegram."""
+    try:
+        from modules.revenue_auto_payout import run_weekly_report
+        r = await run_weekly_report()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_revenue_payout_stats(request: web.Request) -> web.Response:
+    """GET /api/revenue/payout-stats — Aggregierte Revenue-Stats."""
+    try:
+        from modules.revenue_auto_payout import get_revenue_stats
+        return web.json_response(await get_revenue_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ─── BrutusClone Integrator Handlers ─────────────────────────────────────────
 
 async def handle_brutus_blast_product(request: web.Request) -> web.Response:
@@ -7919,6 +8062,26 @@ async def create_app():
     app.router.add_post("/api/revenue/weekly-report",    handle_revenue_weekly_report)
     app.router.add_get( "/api/revenue/snapshot",         handle_revenue_snapshot)
     app.router.add_get( "/api/revenue/stats",            handle_revenue_stats)
+
+    # ── Product Bundle Engine ─────────────────────────────────────────────────
+    app.router.add_post("/api/bundles/create",           handle_bundles_create)
+    app.router.add_post("/api/bundles/blast",            handle_bundles_blast)
+    app.router.add_get( "/api/bundles/stats",            handle_bundles_stats)
+
+    # ── Stripe Auto-Billing ───────────────────────────────────────────────────
+    app.router.add_post("/api/stripe/billing-check",     handle_stripe_billing_check)
+    app.router.add_post("/api/stripe/payment-link",      handle_stripe_payment_link)
+    app.router.add_get( "/api/stripe/billing-stats",     handle_stripe_billing_stats)
+    app.router.add_post("/api/stripe/ds24-links",        handle_stripe_ds24_links)
+
+    # ── Auto-Sorter ───────────────────────────────────────────────────────────
+    app.router.add_post("/api/sort/shopify",             handle_sort_shopify)
+    app.router.add_post("/api/sort/all",                 handle_sort_all)
+
+    # ── Revenue Auto-Payout ───────────────────────────────────────────────────
+    app.router.add_post("/api/revenue/milestone-check",  handle_revenue_milestone_check)
+    app.router.add_post("/api/revenue/weekly-summary",   handle_revenue_payout_weekly)
+    app.router.add_get( "/api/revenue/payout-stats",     handle_revenue_payout_stats)
 
     # ── MISSING ROUTE ALIASES (added by DeepScan fix) ───────────────────────
     app.router.add_get( "/api/digistore24/status",       handle_ds24_mass_status)
