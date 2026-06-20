@@ -255,14 +255,37 @@ async def task_traffic_seo_run() -> str:
 async def task_brutus_run() -> str:
     """BRUTUS — Brutal Traffic Engine: Scan→Predict→Swarm→Deploy alle Kanäle."""
     try:
+        import random
         from modules.brutus_traffic_engine import brutus_run
-        result = await brutus_run(
-            niche="AI income online business automatisierung",
-            custom_keywords=[
-                "AI Income Machine", "Passives Einkommen Online", "Shopify Automatisierung",
-                "Online Geld verdienen 2026", "KI Business Blueprint", "Dropshipping KI",
-            ]
-        )
+        BRUTUS_NICHES = [
+            "AI income online business automatisierung",
+            "KI passives Einkommen Deutschland",
+            "Shopify Automatisierung 2026",
+            "Digistore24 Affiliate Strategie",
+            "Online Geld verdienen Anfänger",
+            "Dropshipping KI Tools",
+            "Print on Demand Shopify",
+            "Amazon Affiliate Deutschland",
+            "eBay Dropshipping profitabel",
+            "Email Marketing Klaviyo",
+            "Fiverr KI Services",
+            "TikTok E-Commerce viral",
+            "Pinterest Traffic Shopify",
+            "YouTube Monetarisierung 2026",
+            "Instagram Shop Produkte",
+            "LinkedIn B2B Online Business",
+            "SEO Ranking Shopify Blog",
+            "Digitale Produkte Gumroad",
+            "Printify Bestseller Designs",
+            "Passives Einkommen Blueprint",
+        ]
+        niche = random.choice(BRUTUS_NICHES)
+        keywords = [
+            "AI Income Machine", "Passives Einkommen Online", "Shopify Automatisierung",
+            "Online Geld verdienen 2026", "KI Business Blueprint", "Dropshipping KI",
+            "Digistore24 Affiliate", "Print on Demand", "Amazon Affiliate",
+        ]
+        result = await brutus_run(niche=niche, custom_keywords=random.sample(keywords, 6))
         kw = result.get("keywords_processed", 0)
         pieces = result.get("content_pieces", 0)
         channels = result.get("channels_hit", 0)
@@ -3682,7 +3705,19 @@ async def task_semrush_keyword_research() -> str:
     """SemRush: keyword research für Haupt-Nischen + BRUTUS Traffic."""
     try:
         from modules.semrush_client import research_niche
-        niches = ["KI passives Einkommen", "Shopify Automation", "Digistore24 Affiliate"]
+        niches = [
+            "KI passives Einkommen", "Shopify Automation", "Digistore24 Affiliate",
+            "Online Business Deutschland", "Dropshipping 2026",
+            "Print on Demand verdienen", "Affiliate Marketing Anfänger",
+            "Amazon FBA Deutschland", "eBay Verkaufen profitabel",
+            "Fiverr Freelancer Geld verdienen", "TikTok Shop Produkte",
+            "Pinterest Traffic E-Commerce", "YouTube Monetarisierung",
+            "Instagram Shop Verkaufen", "LinkedIn B2B Leads",
+            "Email Marketing Automatisierung", "SEO Ranking 2026",
+            "Passives Einkommen Ideen", "KI Tools Business",
+            "Digitale Produkte verkaufen", "Gumroad Kurs erstellen",
+            "Klaviyo E-Mail Kampagne", "Printify Shopify Produkte",
+        ]
         results = []
         for niche in niches:
             data = await research_niche(niche)
