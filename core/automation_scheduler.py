@@ -4159,6 +4159,34 @@ async def task_traffic_mega_cycle() -> str:
         return f"TrafficMegaV2 error: {e}"
 
 
+async def task_affiliate_mega_blast() -> str:
+    try:
+        from modules.affiliate_mega_engine import run_affiliate_blast
+        r = await run_affiliate_blast()
+        return f"AffiliateMega: {r.get('total_blasted',0)} Posts | amazon+ds24+ebay"
+    except Exception as e:
+        return f"AffiliateMega error: {e}"
+
+
+async def task_email_blast_daily() -> str:
+    try:
+        from modules.email_blast_engine import run_daily_blast
+        r = await run_daily_blast()
+        sub = r.get("subject","")[:50]
+        return f"EmailBlast: {sub} | klaviyo={r.get('blast',{}).get('klaviyo',{}).get('ok')} mc={r.get('blast',{}).get('mailchimp',{}).get('ok')}"
+    except Exception as e:
+        return f"EmailBlast error: {e}"
+
+
+async def task_traffic_engine_cycle() -> str:
+    try:
+        from modules.traffic_mega_engine import run_traffic_cycle
+        r = await run_traffic_cycle()
+        return f"TrafficEngine: {r.get('channels',0)} Kanäle | {r.get('keyword','')[:40]}"
+    except Exception as e:
+        return f"TrafficEngine error: {e}"
+
+
 async def task_revenue_fast_track_run() -> str:
     try:
         from modules.revenue_fast_track import run_revenue_fast_track
@@ -4475,6 +4503,12 @@ TASKS = [
     ("traffic_mega_cycle",       task_traffic_mega_cycle,       1800, 19700), # 30min — Multi-Platform Traffic Blast
     # ── REVENUE FAST TRACK — Flash Sale + Gumroad + DS24×20 + Amazon + Stripe ──
     ("revenue_fast_track",       task_revenue_fast_track_run,   3600, 19800), # 1h — Revenue Spike alle Kanäle
+    # ── AFFILIATE MEGA — Amazon+DS24+eBay gleichzeitig blasten ───────────────
+    ("affiliate_mega_blast",     task_affiliate_mega_blast,     7200, 20000), # 2h — Alle Affiliate-Netzwerke
+    # ── EMAIL BLAST — Klaviyo+Mailchimp täglich ───────────────────────────────
+    ("email_blast_daily",        task_email_blast_daily,       86400, 20100), # daily — KI-Email → blast all
+    # ── TRAFFIC ENGINE — Reddit+Medium+GitHub+Syndication ────────────────────
+    ("traffic_engine_cycle",     task_traffic_engine_cycle,     3600, 20200), # 1h — Multi-Platform Traffic
 ]
 
 
