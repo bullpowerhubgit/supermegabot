@@ -111,17 +111,28 @@ def generate_master_sitemap() -> str:
     return '<?xml version="1.0" encoding="UTF-8"?>\n' + ET.tostring(root, encoding="unicode")
 
 
-async def submit_indexnow(urls: list[str]) -> dict:
-    """Submit URLs to IndexNow — instant indexing on Bing, Yandex, Seznam, Naver."""
+async def submit_indexnow(urls: list[str], host: str = "") -> dict:
+    """Submit URLs to IndexNow — instant indexing on Bing, Yandex, Seznam, Naver.
+
+    IMPORTANT: All urls must belong to the same host as the key file.
+    The key file is served at https://{host}/{INDEXNOW_KEY}.txt
+    """
     if not urls:
         return {"submitted": 0}
 
-    host = "dudirudibot-mega-production.up.railway.app"
+    # Default host = main Railway app which serves the key file
+    _host = host or "dudirudibot-mega-production.up.railway.app"
+    # Filter to only URLs that belong to this host
+    filtered = [u for u in urls if _host in u]
+    if not filtered:
+        log.warning("IndexNow: no URLs matched host %s — skipping", _host)
+        return {"submitted": 0, "urls": 0, "results": {}, "skipped": len(urls)}
+
     payload = {
-        "host": host,
+        "host": _host,
         "key": INDEXNOW_KEY,
-        "keyLocation": f"https://{host}/{INDEXNOW_KEY}.txt",
-        "urlList": urls[:100],  # IndexNow limit
+        "keyLocation": f"https://{_host}/{INDEXNOW_KEY}.txt",
+        "urlList": filtered[:100],  # IndexNow limit
     }
 
     results = {}
@@ -134,26 +145,67 @@ async def submit_indexnow(urls: list[str]) -> dict:
                     headers={"Content-Type": "application/json; charset=utf-8"},
                     timeout=aiohttp.ClientTimeout(total=15),
                 )
+                await r.read()
                 results[ep] = r.status
             except Exception as e:
                 results[ep] = str(e)
 
     submitted = sum(1 for v in results.values() if v in (200, 202))
-    log.info(f"IndexNow: {submitted}/{len(INDEXNOW_ENDPOINTS)} endpoints accepted {len(urls)} URLs")
-    return {"submitted": submitted, "urls": len(urls), "results": results}
+    log.info(f"IndexNow: {submitted}/{len(INDEXNOW_ENDPOINTS)} endpoints accepted {len(filtered)} URLs")
+    return {"submitted": submitted, "urls": len(filtered), "results": results}
 
 
 async def submit_all_properties_to_indexnow() -> dict:
-    """Submit every BullPower property page to IndexNow."""
-    all_urls = []
+    """Submit BullPower URLs to IndexNow, grouped by host (422 if host mismatch)."""
+    from urllib.parse import urlparse
+    from collections import defaultdict
+
+    # Group URLs by host
+    by_host: dict = defaultdict(list)
     for prop_key, base_url in ALL_PROPERTIES.items():
         paths = PROPERTY_PATHS.get(prop_key, ["/"])
+        host = urlparse(base_url).netloc
         for path in paths:
-            all_urls.append(base_url.rstrip("/") + path)
+            by_host[host].append(base_url.rstrip("/") + path)
 
-    result = await submit_indexnow(all_urls)
-    log.info(f"Submitted {len(all_urls)} BullPower URLs to IndexNow")
-    return {**result, "total_urls": len(all_urls)}
+    # Also include Shopify store
+    if SHOPIFY_DOMAIN:
+        shopify_host = SHOPIFY_DOMAIN
+        by_host[shopify_host].extend([
+            f"https://{SHOPIFY_DOMAIN}/",
+            f"https://{SHOPIFY_DOMAIN}/collections/all",
+            f"https://{SHOPIFY_DOMAIN}/sitemap.xml",
+        ])
+
+    total_submitted = 0
+    total_urls = 0
+    all_results = {}
+
+    async with aiohttp.ClientSession() as s:
+        for host, urls in by_host.items():
+            total_urls += len(urls)
+            payload = {
+                "host": host,
+                "key": INDEXNOW_KEY,
+                "keyLocation": f"https://dudirudibot-mega-production.up.railway.app/{INDEXNOW_KEY}.txt",
+                "urlList": urls[:100],
+            }
+            for ep in INDEXNOW_ENDPOINTS:
+                try:
+                    r = await s.post(
+                        ep, json=payload,
+                        headers={"Content-Type": "application/json; charset=utf-8"},
+                        timeout=aiohttp.ClientTimeout(total=15),
+                    )
+                    status = r.status
+                    if status in (200, 202):
+                        total_submitted += len(urls)
+                    all_results[f"{host}→{ep.split('/')[2]}"] = status
+                except Exception as e:
+                    all_results[f"{host}→{ep.split('/')[2]}"] = str(e)
+
+    log.info(f"IndexNow multi-host: {total_submitted} URL-slots submitted across {len(by_host)} hosts")
+    return {"submitted": total_submitted, "total_urls": total_urls, "results": all_results}
 
 
 async def ping_search_engines_sitemap(sitemap_url: str = "") -> dict:
