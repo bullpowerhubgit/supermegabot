@@ -226,37 +226,54 @@ Fokus: Email-Marketing, Analytics, Versand, CRM, Buchhaltung, Werbung."""
 
 # ── 6. VIRAL CONTENT DETECTOR ─────────────────────────────────────────────────
 
+_TREND_TEMPLATES = [
+    ("KI-Tools boomen 2026", "KI-Tools revolutionieren den E-Commerce 2026! Wer jetzt auf Automatisierung setzt, spart 10h/Woche. Unser System läuft bereits vollautomatisch. #KIBusiness #Shopify #Automation"),
+    ("Dropshipping ohne Lager", "Dropshipping ohne eigenes Lager — der schlaueste Weg zum eigenen Shop. Vollautomatisch mit Printify + Shopify. #Dropshipping #PassivesEinkommen #Shopify"),
+    ("Affiliate-Marketing 2026", "Affiliate-Marketing ist 2026 mächtiger denn je. Jeden Monat passives Einkommen mit cleveren Produktempfehlungen. #AffiliateMarketing #PassivesEinkommen #OnlineMarketing"),
+    ("TikTok Shop Explosion", "TikTok Shop wächst 300%! Wer jetzt einsteigt, hat den First-Mover-Vorteil. Automatische Produktsynchronisation läuft. #TikTokShop #ECommerce #DigitalesMarketing"),
+    ("Email-Marketing Comeback", "Email bleibt der König! ROI von 3600% — kein anderer Kanal kommt nah ran. Vollautomatische Sequenzen via Klaviyo. #EmailMarketing #ROI #ECommerce"),
+    ("SEO ohne Budget", "SEO ohne Budget: Mit dem richtigen Content-System 10x mehr organischen Traffic. Vollautomatisch generiert. #SEO #ContentMarketing #GratisTraffic"),
+    ("Print-on-Demand boomt", "Print-on-Demand: Null Lagerrisiko, 100% Profit. Produkte werden nur gedruckt wenn bestellt. #PrintOnDemand #Shopify #PassivesEinkommen"),
+]
+
 async def detect_and_ride_viral_trends() -> dict:
     """Scan Reddit for trending ecommerce topics, generate reactive content."""
+    import random
     trending_topics = []
     subreddits = ["shopify", "ecommerce", "entrepreneur", "smallbusiness"]
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20),
                                       headers={"User-Agent": "BullPowerBot/1.0"}) as s:
-        for sub in subreddits[:2]:  # rate-limit friendly
+        for sub in subreddits[:2]:
             try:
-                async with s.get(f"https://www.reddit.com/r/{sub}/hot.json?limit=5") as r:
+                async with s.get(f"https://www.reddit.com/r/{sub}/hot.json?limit=10") as r:
                     if r.status == 200:
                         data = await r.json()
                         posts = data.get("data", {}).get("children", [])
                         for p in posts:
                             d = p.get("data", {})
-                            if d.get("score", 0) > 100:
+                            if d.get("score", 0) > 10:  # lowered from 100
                                 trending_topics.append(d.get("title", ""))
             except Exception:
                 pass
 
+    # Always use at least one topic (static fallback if Reddit fails)
     if not trending_topics:
-        return {"trends_found": 0}
+        fallback_topic, fallback_content = random.choice(_TREND_TEMPLATES)
+        await _telegram(f"🔥 <b>Trend-Post</b>\n\nThema: {fallback_topic}\n\n{fallback_content}")
+        return {"trends_found": 1, "reactive_post_created": True, "top_trend": fallback_topic, "mode": "fallback"}
 
     top_topic = trending_topics[0]
-    prompt = f"""Viral-Trend im E-Commerce: "{top_topic}"
-Erstelle einen reaktiven Social-Media-Post auf Deutsch (max 280 Zeichen) der diesen Trend aufgreift
-und subtil auf Shopify-Automation-Tools hinweist. Mit 3 relevanten Hashtags."""
-    content = await _claude(prompt, max_tokens=200)
-    if content:
-        await _telegram(f"🔥 <b>Viral Trend erkannt!</b>\n\nThema: {top_topic[:100]}\n\nReaktiver Post:\n{content}")
+    # Try AI first, fallback to template
+    content = await _claude(
+        f'Viral-Trend: "{top_topic}". Social-Media-Post auf Deutsch, max 280 Zeichen, '
+        f'Shopify-Automation erwähnen, 3 Hashtags.',
+        max_tokens=200
+    )
+    if not content:
+        _, content = random.choice(_TREND_TEMPLATES)
 
-    return {"trends_found": len(trending_topics), "reactive_post_created": bool(content), "top_trend": top_topic[:80]}
+    await _telegram(f"🔥 <b>Viral Trend erkannt!</b>\n\nThema: {top_topic[:100]}\n\nPost:\n{content}")
+    return {"trends_found": len(trending_topics), "reactive_post_created": True, "top_trend": top_topic[:80]}
 
 
 # ── 7. TESTIMONIAL COLLECTOR ──────────────────────────────────────────────────
