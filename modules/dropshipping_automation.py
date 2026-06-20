@@ -736,7 +736,7 @@ class PrintOnDemandWorkflow:
                     await brutus_fire(
                         title=f"🎨 Neu: {name} — Print on Demand",
                         body=f"Frisch designt und sofort bestellbar: {name}. Individuell bedruckt, direkt zu dir geliefert.",
-                        link=os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"),
+                        link=os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/"),
                         niche="print on demand geschenke design",
                         tags=["pod", "neu", "geschenk", "printify"]
                     )

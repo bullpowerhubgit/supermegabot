@@ -528,7 +528,7 @@ async def handle_gmc_feed(req):
         shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
         shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
         shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-        store_url      = os.getenv("SHOPIFY_STORE_URL", os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co"))
+        store_url      = os.getenv("SHOPIFY_STORE_URL", os.getenv("DS24_AFFILIATE_LINK", "https://autopilot-store-suite-fmbka.myshopify.com"))
 
         products = []
         if shopify_token:
@@ -2091,7 +2091,7 @@ async def handle_mailchimp_send_campaign(req):
 <h1 style="color:#1a1a2e">Passives Einkommen mit KI — so geht's</h1>
 <p>Hallo,</p>
 <p>die AI Income Machine ist das vollautomatische System für Online-Einkommen mit KI. Einmal einrichten — dauerhaft verdienen.</p>
-<p><a href=os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co") style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
+<p><a href=os.getenv("DS24_AFFILIATE_LINK", "https://autopilot-store-suite-fmbka.myshopify.com") style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
 <p style="color:#888;font-size:12px">Rudolf Sarkany · BullPower Hub · Wien<br><a href="*|UNSUB|*" style="color:#888">Abmelden</a></p>
 </body></html>""")
     list_id = body.get("list_id", os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0"))
@@ -2111,7 +2111,7 @@ async def handle_klaviyo_send_campaign(req):
 <h1 style="color:#1a1a2e">Mach passives Einkommen mit KI</h1>
 <p>Hallo,</p>
 <p>Entdecke die AI Income Machine — das vollautomatische System für passives Online-Einkommen.</p>
-<p><a href=os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co") style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
+<p><a href=os.getenv("DS24_AFFILIATE_LINK", "https://autopilot-store-suite-fmbka.myshopify.com") style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
 <p style="color:#888;font-size:12px">Rudolf | AIITEC · BullPower Hub</p>
 </body></html>""")
     list_id = body.get("list_id", os.getenv("KLAVIYO_LIST_ID", "Xwxq6V"))
@@ -4712,7 +4712,7 @@ async def handle_whatsapp_blast(req):
     """GET /api/whatsapp/blast — promo blast to all configured WA recipients."""
     try:
         from modules.whatsapp_automation import send_whatsapp_blast
-        link = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
+        link = os.getenv("DS24_AFFILIATE_LINK", "https://autopilot-store-suite-fmbka.myshopify.com")
         msg = f"🚀 AIITEC: KI-Einkommen automatisieren — passives Einkommen 2026! Jetzt starten: {link}"
         result = await send_whatsapp_blast(msg)
         return web.json_response({"ok": True, "result": result})
@@ -6555,24 +6555,29 @@ async def handle_email_stats(request: web.Request) -> web.Response:
 
 async def handle_traffic_mega_blast(request: web.Request) -> web.Response:
     try:
-        from modules.brutus_core import run_brutus_cycle
-        result = await run_brutus_cycle()
+        from modules.brutus_core import fire_from_brutus
+        result = await fire_from_brutus()
         return web.json_response({"ok": True, "action": "traffic_mega_blast", "brutus": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_traffic_viral_campaign(request: web.Request) -> web.Response:
     try:
-        from modules.brutus_core import run_brutus_cycle
-        result = await run_brutus_cycle()
-        return web.json_response({"ok": True, "action": "viral_campaign", "brutus": result})
+        from modules.traffic_mega_engine import run_viral_campaign
+        d = {}
+        try:
+            d = await request.json()
+        except Exception:
+            pass
+        result = await run_viral_campaign(d.get("keyword", ""))
+        return web.json_response({"ok": True, "action": "viral_campaign", "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_traffic_syndicate(request: web.Request) -> web.Response:
     try:
-        from modules.brutus_core import run_brutus_cycle
-        result = await run_brutus_cycle()
+        from modules.brutus_core import fire_from_brutus
+        result = await fire_from_brutus()
         return web.json_response({"ok": True, "action": "traffic_syndicate", "brutus": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)

@@ -111,7 +111,7 @@ async def create_campaign(name: str, subject: str, html_content: str) -> dict:
     if not API_KEY:
         return {"ok": False, "error": "no KLAVIYO_API_KEY"}
     try:
-        from_email = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
+        from_email = os.getenv("FROM_EMAIL", "hello@autopilot-store-suite-fmbka.myshopify.com")
 
         # Step 1: Create campaign WITH inline campaign-messages in attributes
         campaign_payload = {
@@ -199,7 +199,7 @@ Kein DOCTYPE, nur body content."""
 async def trigger_flow_event(event: str, properties: dict = None) -> dict:
     """Fire a Klaviyo metric event to trigger flows."""
     return await track_event(
-        email=os.getenv("FROM_EMAIL", "hello@ineedit.com.co"),
+        email=os.getenv("FROM_EMAIL", "hello@autopilot-store-suite-fmbka.myshopify.com"),
         event_name=event,
         properties=properties or {"source": "supermegabot"},
     )

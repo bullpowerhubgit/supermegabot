@@ -135,7 +135,7 @@ Qualitäts-POD aus unserem Shop. Personalisierbar. Schnelle Lieferung DE/AT/CH."
                 content = f"Premium {brand} {model} — individuell bedruckt, schnelle Lieferung!"
 
             from modules.brutus_core import fire
-            shop_url = f"https://{SHOP}" if SHOP else os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
+            shop_url = f"https://{SHOP}" if SHOP else os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/669750/user37405262/")
             await fire(
                 f"POD Highlight: {brand} {model}",
                 content,

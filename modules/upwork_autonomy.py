@@ -17,7 +17,7 @@ log = logging.getLogger("UpworkAutonomy")
 UPWORK_CLIENT_ID     = os.getenv("UPWORK_CLIENT_ID", "")
 UPWORK_CLIENT_SECRET = os.getenv("UPWORK_CLIENT_SECRET", "")
 UPWORK_ACCESS_TOKEN  = os.getenv("UPWORK_ACCESS_TOKEN", "")
-SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
+SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
 GITHUB_USER = os.getenv("GITHUB_USER", "bullpowerhubgit")
 
 PORTFOLIO_URL = f"https://github.com/{GITHUB_USER}"
