@@ -5547,8 +5547,9 @@ async def handle_amazon_search(req):
 async def handle_nexus_status(req):
     """GET /api/nexus/status — NEXUS Health + Strategy Scores."""
     try:
-        from modules.nexus import _get_strategy_scores, get_best_channel_now, NEXUS_DB
+        from modules.nexus import _get_strategy_scores, get_best_channel_now, NEXUS_DB, _init_db
         import sqlite3
+        _init_db()
         scores = _get_strategy_scores()
         conn = sqlite3.connect(NEXUS_DB)
         today_count = conn.execute(
@@ -5591,8 +5592,9 @@ async def _nexus_run_bg():
 async def handle_nexus_signals(req):
     """GET /api/nexus/signals — Letzte 50 gescannte Signale."""
     try:
-        from modules.nexus import NEXUS_DB
+        from modules.nexus import NEXUS_DB, _init_db
         import sqlite3
+        _init_db()
         conn = sqlite3.connect(NEXUS_DB)
         rows = conn.execute(
             "SELECT ts, source, keyword, score FROM signals ORDER BY id DESC LIMIT 50"
@@ -5610,8 +5612,9 @@ async def handle_nexus_signals(req):
 async def handle_nexus_actions(req):
     """GET /api/nexus/actions — Letzte 50 ausgeführte Aktionen + Performance."""
     try:
-        from modules.nexus import NEXUS_DB
+        from modules.nexus import NEXUS_DB, _init_db
         import sqlite3
+        _init_db()
         conn = sqlite3.connect(NEXUS_DB)
         rows = conn.execute("""
             SELECT ts, action_type, keyword, success, revenue_eur, result
