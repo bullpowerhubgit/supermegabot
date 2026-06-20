@@ -414,15 +414,19 @@ Return JSON array:
                               "platforms": ["instagram", "linkedin"], "content_type": "post"}
                              for t in topics_found[:10]]
     else:
-        # Fallback: AI-generated trending topics for niche
-        prompt = f"""Generate 10 trending content topics for {niche} in June 2024.
-Return JSON array: [{{"topic": "...", "angle": "...", "urgency": "high", "platforms": [...], "content_type": "..."}}]"""
-        raw = await _claude(prompt, max_tokens=1000)
-        try:
-            match = re.search(r'\[.*\]', raw, re.DOTALL)
-            opportunities = json.loads(match.group()) if match else []
-        except Exception:
-            opportunities = []
+        # Static fallback — no AI needed, always returns content opportunities
+        opportunities = [
+            {"topic": "KI-Automatisierung für Shopify 2026", "angle": "10 Tools die deinen Shop automatisieren", "urgency": "high", "platforms": ["linkedin", "instagram", "telegram"], "content_type": "carousel"},
+            {"topic": "Passives Einkommen mit Dropshipping", "angle": "So startest du ohne Lager und Investition", "urgency": "high", "platforms": ["tiktok", "instagram", "youtube"], "content_type": "video"},
+            {"topic": "Email-Marketing ROI 3600%", "angle": "Warum Email noch immer der beste Kanal ist", "urgency": "medium", "platforms": ["linkedin", "blog"], "content_type": "blog"},
+            {"topic": "TikTok Shop Strategie 2026", "angle": "Wie DACH-Händler TikTok Shop nutzen", "urgency": "high", "platforms": ["tiktok", "instagram"], "content_type": "video"},
+            {"topic": "Affiliate Marketing mit Digistore24", "angle": "Schritt-für-Schritt zum ersten Affiliate-Verkauf", "urgency": "high", "platforms": ["blog", "youtube", "telegram"], "content_type": "blog"},
+            {"topic": "Print-on-Demand Produkte verkaufen", "angle": "Null Risiko, maximaler Profit mit POD", "urgency": "medium", "platforms": ["instagram", "pinterest"], "content_type": "carousel"},
+            {"topic": "Shopify SEO Checkliste 2026", "angle": "87 Punkte für mehr organischen Traffic", "urgency": "medium", "platforms": ["blog", "linkedin"], "content_type": "blog"},
+            {"topic": "Klaviyo vs Mailchimp — welches ist besser?", "angle": "Ehrlicher Vergleich für E-Commerce", "urgency": "medium", "platforms": ["blog", "linkedin"], "content_type": "blog"},
+            {"topic": "Fiverr Gigs für Shopify-Experten", "angle": "So verdienst du €50-500 pro Gig", "urgency": "low", "platforms": ["linkedin", "twitter"], "content_type": "thread"},
+            {"topic": "Upwork Profil optimieren — E-Commerce", "angle": "Wie ich meinen Stundensatz auf €75 erhöht habe", "urgency": "low", "platforms": ["linkedin", "reddit"], "content_type": "thread"},
+        ]
 
     # Cache
     cache = {"niche": niche, "topics": opportunities,
