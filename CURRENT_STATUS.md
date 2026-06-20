@@ -21,7 +21,7 @@
 - Anthropic: ❌ Kein Guthaben → anthropic.com/dashboard → Top-up
 - **Groq (NEU)**: ⏳ Key fehlt → console.groq.com → Free → `railway variables set GROQ_API_KEY=gsk_...`
 - OpenRouter: ❌ Ungültiger Key (braucht sk-or-v1-... Format)
-- Gemini: ❌ Braucht eigenen GEMINI_API_KEY (nicht YouTube-Key)
+- **Gemini**: ✅ GEMINI_API_KEY gesetzt (aiitecbuuss@gmail.com, 2026-06-20) — testet beim nächsten AI-Call
 - OpenAI/DeepSeek/Perplexity: ❌ Quota/Credits leer
 
 ## Revenue (aktuell: €0.00)
@@ -69,7 +69,7 @@
 | 🟡 | Printful | printful.com → Stores → Shopify verbinden |
 | 🟡 | Mailchimp | DragonApp-Konto reaktivieren |
 | 🟡 | Gumroad | gumroad.com → Settings → Advanced → API Token |
-| ⚪ | Reddit | reddit.com/prefs/apps → App erstellen |
+| ⚪ | Reddit | REDDIT_USERNAME=Upper-Competition505 ✅ — noch: CLIENT_ID + CLIENT_SECRET + PASSWORD |
 | ⚪ | TikTok | TikTok for Business → App erstellen |
 | ⚪ | WhatsApp | Meta Business Portal → WhatsApp |
 
@@ -78,7 +78,7 @@
 - User ID: user37405262
 - Affiliate URL: https://www.digistore24.com/redir/669750/user37405262/
 
-## Session v13 Fixes (2026-06-20)
+## Session v14 Fixes (2026-06-20)
 - DS24 API auth fix (X-DS-API-KEY header)
 - Printify neuer API Key + Shop 27975583 aktiv
 - BrutusCore class hinzugefügt
@@ -88,3 +88,6 @@
 - Gumroad/Etsy Tuple-Bug fix
 - 3 neue Status-Routen (aliexpress, tiktok, whatsapp)
 - 100+ Railway Environment-Variables synchronisiert
+- **50+ ineedit.com.co Fallbacks** → DS24 AIITEC URL / Shopify-Domain ersetzt
+- **GEMINI_API_KEY** gesetzt (aiitecbuuss@gmail.com, AQ.Ab8... Key)
+- **REDDIT_USERNAME** = Upper-Competition505 gesetzt
