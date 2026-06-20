@@ -2220,20 +2220,19 @@ async def handle_etsy_status(req):
     try:
         from modules.ecommerce_connectors import EtsyConnector
         etsy = EtsyConnector()
-        ok, info = await etsy.ping()
+        ping = await etsy.ping()
+        ok = ping.get("connected", False)
         stats = await etsy.get_stats() if ok else {}
-        return web.json_response({"ok": ok, "info": info, **stats})
+        return web.json_response({"ok": ok, **ping, **stats})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_gumroad_status(req):
     try:
-        from modules.ecommerce_connectors import GumroadConnector
-        gum = GumroadConnector()
-        ok, info = await gum.ping()
-        stats = await gum.get_stats() if ok else {}
-        return web.json_response({"ok": ok, "info": info, **stats})
+        from modules.gumroad_client import get_stats
+        stats = await get_stats()
+        return web.json_response(stats)
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
