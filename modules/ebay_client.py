@@ -102,13 +102,10 @@ async def get_stats() -> dict:
 
 async def run_with_brutus_traffic(keywords: str = "trending bestseller online shop") -> dict:
     try:
-        from modules.brutus_traffic_engine import brutus_blast_for_tool
+        from modules.brutus_traffic_engine import run_brutus_swarm
         items = await search_items(keywords, limit=5)
-        brutus_result = await brutus_blast_for_tool(
-            "eBay Affiliate",
-            build_affiliate_link(""),
-            keywords=["ebay angebote", "günstig kaufen", "online shopping", "deals", keywords],
-        )
+        kws = ["eBay Angebote Deutschland", "günstig kaufen online", "eBay Affiliate Deals", keywords]
+        brutus_result = await run_brutus_swarm(keywords=kws, max_keywords=4)
         return {"ok": True, "items_found": len(items.get("items", [])), "brutus": brutus_result}
     except Exception as e:
         log.warning("eBay BRUTUS error: %s", e)
