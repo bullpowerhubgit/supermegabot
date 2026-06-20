@@ -4024,6 +4024,26 @@ async def task_ds24_auto_create() -> str:
         return f"DS24 auto-create error: {e}"
 
 
+async def task_ds24_affiliate_hourly() -> str:
+    """Stündlich: 3 zufällige genehmigte DS24-Affiliate-Produkte blasten."""
+    try:
+        from modules.ds24_affiliate_blaster import blast_random
+        r = await blast_random(count=3)
+        return f"DS24 Affiliate: {r.get('blasted',0)} Produkte geblasten"
+    except Exception as e:
+        return f"DS24 affiliate error: {e}"
+
+
+async def task_ds24_affiliate_daily() -> str:
+    """Täglich: alle 22 genehmigten DS24-Affiliate-Produkte auf allen Kanälen."""
+    try:
+        from modules.ds24_affiliate_blaster import run_daily_affiliate_blast
+        r = await run_daily_affiliate_blast()
+        return f"DS24 Affiliate Daily: {r.get('blasted',0)}/{r.get('total',0)} geblasten"
+    except Exception as e:
+        return f"DS24 affiliate daily error: {e}"
+
+
 async def task_ds24_refill() -> str:
     """Täglich: Hält 1000 aktive DS24-Produkte — füllt fehlende automatisch auf."""
     try:
@@ -4405,6 +4425,8 @@ TASKS = [
     ("product_generator_niche",  task_product_generator_niche, 14400, 18120), # 4h — 5 Nischen-Produkte
     # ── DS24 PRODUCT CREATOR — täglich neue Digistore24 Produkte anlegen ──────
     ("ds24_auto_create",         task_ds24_auto_create,        86400, 18300), # täglich — 2 DS24-Produkte erstellen
+    ("ds24_affiliate_hourly",    task_ds24_affiliate_hourly,    3600,   180), # stündlich — 3 Affiliate-Produkte blasten
+    ("ds24_affiliate_daily",     task_ds24_affiliate_daily,    86400, 18400), # täglich — alle 22 Produkte blasten
     # ── DS24 MASSENANLEGER — 1000 Produkte Wartung + SEO-Blast ────────────────
     ("ds24_refill",              task_ds24_refill,             86400, 18500), # täglich — 1000 Produkte halten
     ("ds24_seo_blast",           task_ds24_seo_blast,         604800, 18700), # wöchentlich — Top-Produkte blasten
