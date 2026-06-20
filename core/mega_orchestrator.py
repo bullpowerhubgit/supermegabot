@@ -444,6 +444,15 @@ class CommandRouter:
             "niche": self._cmd_generate_niche,
             "/produkt": self._cmd_generate,
             "produkt erstellen": self._cmd_generate,
+            # DS24 Product Creator
+            "/ds24": self._cmd_ds24_create,
+            "/ds24_create": self._cmd_ds24_create,
+            "ds24 produkt": self._cmd_ds24_create,
+            "digistore produkt anlegen": self._cmd_ds24_create,
+            "/ds24_auto": self._cmd_ds24_auto,
+            "ds24 auto": self._cmd_ds24_auto,
+            "/ds24_fix": self._cmd_ds24_fix,
+            "ds24 fix 669750": self._cmd_ds24_fix,
             # Help
             "hilfe": self._cmd_help,
             "help": self._cmd_help,
@@ -1212,6 +1221,70 @@ class CommandRouter:
                     f"Verfügbare Nischen: {', '.join(known)}")
         except Exception as e:
             return f"Niche Generator Fehler: {e}"
+
+    async def _cmd_ds24_create(self, text: str, session_id: str) -> str:
+        """Legt ein neues DS24-Produkt an. Usage: /ds24 Konzept €97."""
+        import aiohttp, re
+        # Preis aus Text extrahieren
+        m = re.search(r"€?\s*(\d+(?:[.,]\d+)?)", text)
+        price = m.group(1).replace(",", ".") if m else "97.00"
+        # Konzept = Text ohne Preis/Befehlswörter
+        concept = re.sub(r"(/ds24[_\w]*|ds24|digistore|produkt|anlegen|€?\s*\d+[.,]?\d*)", "", text, flags=re.I).strip()
+        if not concept or len(concept) < 5:
+            concept = "KI-gestütztes E-Commerce Automatisierungs-System 2026"
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/ds24/product/create",
+                                  json={"concept": concept, "price": price},
+                                  timeout=aiohttp.ClientTimeout(total=60)) as r:
+                    data = await r.json()
+            if data.get("ok"):
+                return (f"✅ DS24-Produkt erstellt!\n"
+                        f"📦 {data.get('name','')}\n"
+                        f"💶 €{data.get('price','')}\n"
+                        f"🆔 ID: {data.get('product_id','')}\n"
+                        f"🛒 Checkout: {data.get('checkout_link','')}\n"
+                        f"🔗 Affiliate: {data.get('affiliate_link','')}")
+            return f"DS24 Fehler: {data.get('error','unbekannt')}"
+        except Exception as e:
+            return f"DS24 Create Fehler: {e}"
+
+    async def _cmd_ds24_auto(self, text: str, session_id: str) -> str:
+        """Erstellt 2 DS24-Produkte vollautomatisch aus Templates."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/ds24/product/auto",
+                                  json={"count": 2},
+                                  timeout=aiohttp.ClientTimeout(total=120)) as r:
+                    data = await r.json()
+            created = data.get("created", 0)
+            products = data.get("products", [])
+            lines = [f"🎯 DS24 Auto-Create: {created} Produkte erstellt!\n"]
+            for p in products[:3]:
+                lines.append(f"• {p.get('name','')[:45]} (€{p.get('price','')}, {p.get('commission','')})")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"DS24 Auto Fehler: {e}"
+
+    async def _cmd_ds24_fix(self, text: str, session_id: str) -> str:
+        """Repariert DS24-Produkt 669750 (Zahlungsplan + Aktivierung)."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.post(f"{smb_url}/api/ds24/fix/669750",
+                                  timeout=aiohttp.ClientTimeout(total=30)) as r:
+                    data = await r.json()
+            if data.get("ok"):
+                return (f"✅ DS24 Produkt 669750 repariert!\n"
+                        f"Plan-ID: {data.get('payment_plan_added','')}\n"
+                        f"🛒 {data.get('checkout_link','')}")
+            return f"Fix 669750 Fehler: {data}"
+        except Exception as e:
+            return f"DS24 Fix Fehler: {e}"
 
     async def _cmd_start(self, text: str, session_id: str) -> str:
         """Send the welcome message listing all active modules."""
