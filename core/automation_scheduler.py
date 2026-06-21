@@ -96,8 +96,12 @@ def get_task_stats() -> Dict:
 
 
 # ── Telegram helper ──────────────────────────────────────────────────────────
+# TELEGRAM_CHAT_ID     = Rudolf's private chat — nur für SYSTEM-ALERTS
+# TELEGRAM_CHANNEL_ID  = öffentlicher Marketing-Kanal — für alle Promo-Posts
+# Wenn TELEGRAM_CHANNEL_ID nicht gesetzt → Marketing-Posts still (kein Chat-Spam)
 
 async def _tg(msg: str):
+    """System-Alerts → immer an Rudolf's privaten Chat."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "")
     chat  = os.getenv("TELEGRAM_CHAT_ID", "")
     if not token or not chat:
@@ -106,9 +110,30 @@ async def _tg(msg: str):
         import aiohttp
         url = f"https://api.telegram.org/bot{token}/sendMessage"
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
-            await s.post(url, json={"chat_id": chat, "text": msg, "parse_mode": "HTML"})
+            await s.post(url, json={"chat_id": chat, "text": msg, "parse_mode": "HTML",
+                                    "disable_web_page_preview": True})
     except Exception:
         pass
+
+
+async def _tg_marketing(msg: str) -> bool:
+    """Marketing-Posts → NUR an öffentlichen Kanal (TELEGRAM_CHANNEL_ID).
+    Sendet NIE an Rudolf's privaten Chat. Gibt True zurück wenn gesendet."""
+    token   = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    channel = os.getenv("TELEGRAM_CHANNEL_ID", "")
+    if not token or not channel:
+        return False
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+            r = await s.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": channel, "text": msg, "parse_mode": "HTML",
+                      "disable_web_page_preview": True}
+            )
+            return (await r.json(content_type=None)).get("ok", False)
+    except Exception:
+        return False
 
 
 async def _ai(prompt: str, max_tokens: int = 600) -> str:
@@ -1184,18 +1209,11 @@ mutation CreateArticle($article: ArticleCreateInput!) {
         if art and art.get("id"):
             return f"Blog✅: '{topic_title[:55]}' handle={art['handle']}"
         err_msg = str(errors or user_errors)[:200]
-        # Telegram fallback so content is never lost
-        tg_tok  = os.getenv("TELEGRAM_BOT_TOKEN", "")
-        tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
-        if tg_tok and tg_chat:
-            import re as _re
-            plain = _re.sub(r'<[^>]+>', '', final_body)[:800]
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-                await s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
-                    json={"chat_id": tg_chat,
-                          "text": f"📝 *{topic_title}*\n\n{plain}\n\n👉 {_dest}",
-                          "parse_mode": "HTML"})
-        return f"Blog→Telegram (GraphQL Err): {err_msg[:120]}"
+        # Telegram-Fallback → öffentlichen Kanal, NICHT Rudolf's privaten Chat
+        import re as _re
+        plain = _re.sub(r'<[^>]+>', '', final_body)[:800]
+        await _tg_marketing(f"📝 <b>{topic_title}</b>\n\n{plain}\n\n👉 {_dest}")
+        return f"Blog→Kanal-Fallback (GraphQL Err): {err_msg[:120]}"
     except Exception as e:
         import traceback as _tb
         tb = _tb.format_exc()[-300:]
@@ -4556,10 +4574,9 @@ async def task_mass_content_blaster() -> str:
 
 
 async def task_openclaw_blast() -> str:
-    """Alle 2h: OpenClaw (lokales Ollama) generiert Content + blastet auf Telegram + Shopify Blog."""
+    """Alle 2h: OpenClaw generiert Content → öffentlichen Kanal (nicht Rudolf's privaten Chat)."""
     try:
-        import aiohttp, os
-        from modules.open_claw import claw_generate_content, claw_complete
+        from modules.open_claw import claw_generate_content
         topics = [
             "KI Automation System 2026 — Vollautomatisch Geld verdienen",
             "Shopify Dropshipping mit AI — €0 Start",
@@ -4569,23 +4586,15 @@ async def task_openclaw_blast() -> str:
         import random
         topic = random.choice(topics)
 
-        # Content generieren
         tg_post = await claw_generate_content(topic, "telegram")
         text = tg_post.get("text", "")
 
-        sent = 0
+        sent = False
         if text:
-            token = os.getenv("TELEGRAM_BOT_TOKEN", "")
-            chat = os.getenv("TELEGRAM_CHAT_ID", "")
-            if token and chat:
-                msg = f"{text[:600]}\n\n💳 https://buy.stripe.com/dRm6oJ67ofqq6Aw8gK4F21y"
-                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-                    r = await s.post(f"https://api.telegram.org/bot{token}/sendMessage",
-                        json={"chat_id": chat, "text": msg[:4000], "disable_web_page_preview": True})
-                    if r.status == 200:
-                        sent = 1
+            msg = f"{text[:600]}\n\n💳 https://buy.stripe.com/dRm6oJ67ofqq6Aw8gK4F21y"
+            sent = await _tg_marketing(msg[:4000])
 
-        return f"OpenClaw Blast: topic='{topic[:40]}' telegram={'ok' if sent else 'skip'} chars={len(text)}"
+        return f"OpenClaw Blast: topic='{topic[:40]}' kanal={'gesendet' if sent else 'kein TELEGRAM_CHANNEL_ID'} chars={len(text)}"
     except Exception as e:
         return f"OpenClaw Blast Fehler: {e}"
 
