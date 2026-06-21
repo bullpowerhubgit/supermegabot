@@ -60,25 +60,12 @@ class ShopifyAutoFill:
     # ─── AI ───────────────────────────────────────────────────────────────────
 
     async def _ai(self, prompt: str, max_tokens: int = 1000) -> str:
-        for key_env, url, model in [
-            ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
-            ("OPENAI_API_KEY",     "https://api.openai.com/v1/chat/completions",  "gpt-4o-mini"),
-            ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1/chat/completions", "mistralai/mistral-7b-instruct"),
-        ]:
-            key = os.getenv(key_env, "")
-            if not key:
-                continue
-            try:
-                async with self.session.post(
-                    url, headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                    json={"model": model, "messages": [{"role": "user", "content": prompt}], "max_tokens": max_tokens},
-                    timeout=aiohttp.ClientTimeout(total=25)
-                ) as r:
-                    d = await r.json()
-                    return d["choices"][0]["message"]["content"]
-            except Exception as e:
-                logger.warning(f"AI {key_env}: {e}")
-        return ""
+        try:
+            from modules.ai_client import ai_complete
+            return await ai_complete(prompt, max_tokens=max_tokens)
+        except Exception as e:
+            logger.warning(f"AI failed: {e}")
+            return ""
 
     # ─── Shopify API ──────────────────────────────────────────────────────────
 
