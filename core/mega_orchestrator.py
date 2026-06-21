@@ -632,13 +632,16 @@ class CommandRouter:
     async def route(self, text: str, session_id: str) -> str:
         """Dispatch the input text to the matching command handler or AI chat fallback."""
         text_lower = text.lower().strip()
+        # Normalize: strip leading slash so "/status" matches route "status"
+        text_norm = text_lower.lstrip("/")
 
-        # Direct route match
-        for key, handler in self.routes.items():
-            if text_lower.startswith(key):
+        # Match longest routes first so "/ds24_revenue" isn't hijacked by "/ds24"
+        for key, handler in sorted(self.routes.items(), key=lambda x: len(x[0]), reverse=True):
+            key_norm = key.lstrip("/")
+            if text_norm.startswith(key_norm) or text_lower.startswith(key):
                 return await handler(text, session_id)
 
-        # AI chat fallback (local Ollama)
+        # AI chat fallback (cloud AI chain when Ollama offline)
         return await self._cmd_ai_chat(text, session_id)
 
     async def _cmd_screenshot(self, text: str, session_id: str) -> str:
@@ -652,21 +655,25 @@ class CommandRouter:
             return f"Screenshot fehlgeschlagen: {e}"
 
     async def _cmd_status(self, text: str, session_id: str) -> str:
-        """Report current CPU, RAM, disk usage, and Ollama availability."""
+        """Report current CPU, RAM, disk usage, and AI availability."""
         try:
             import psutil
-            cpu = psutil.cpu_percent(interval=1)
+            cpu = psutil.cpu_percent(interval=0.5)
             mem = psutil.virtual_memory()
             disk = psutil.disk_usage("/")
+            ollama_ok = await self.bot.ai.check_health()
+            ai_status = "Ollama ✅" if ollama_ok else "Cloud-AI ✅"
             return (
-                f"System Status:\n"
+                f"🖥 System Status:\n"
                 f"CPU: {cpu}%\n"
-                f"RAM: {mem.percent}% ({mem.used//1024//1024//1024}GB/{mem.total//1024//1024//1024}GB)\n"
+                f"RAM: {mem.percent:.0f}% ({mem.used//1024//1024}MB/{mem.total//1024//1024}MB)\n"
                 f"Disk: {disk.percent}% ({disk.free//1024//1024//1024}GB frei)\n"
-                f"Ollama: {'Online' if await self.bot.ai.check_health() else 'Offline'}"
+                f"KI: {ai_status}"
             )
         except ImportError:
-            return "psutil nicht installiert. Führe: pip install psutil"
+            return "psutil nicht installiert"
+        except Exception as e:
+            return f"Status Fehler: {e}"
 
     async def _cmd_processes(self, text: str, session_id: str) -> str:
         """List the top 10 processes sorted by CPU usage."""
@@ -1587,9 +1594,12 @@ class CommandRouter:
     async def _cmd_printify_status(self, text: str, session_id: str) -> str:
         """Printify Status."""
         try:
-            from modules.printify_automation import ping
-            ok, info = await ping()
-            return f"Printify: {'✅ ' + str(info) if ok else '❌ ' + str(info)}"
+            from modules.printify_automation import ping, get_shops
+            ok = await ping()
+            if ok:
+                shops = await get_shops()
+                return f"Printify: ✅ Verbunden | {len(shops)} Shop(s)"
+            return "Printify: ❌ Nicht verbunden (PRINTIFY_API_TOKEN fehlt oder ungültig)"
         except Exception as e:
             return f"Printify Fehler: {e}"
 
@@ -1597,7 +1607,11 @@ class CommandRouter:
         """Printful Status."""
         try:
             from modules.printful_automation import ping
-            ok, info = await ping()
+            result = await ping()
+            if isinstance(result, tuple):
+                ok, info = result
+            else:
+                ok, info = bool(result), str(result)
             return f"Printful: {'✅ ' + str(info) if ok else '❌ ' + str(info)}"
         except Exception as e:
             return f"Printful Fehler: {e}"
