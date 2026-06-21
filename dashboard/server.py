@@ -7726,6 +7726,64 @@ async def handle_shopify_mass_status(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ─── Shopify OAuth Callback — neuer Token mit ALLEN Scopes ───────────────────
+
+async def handle_shopify_oauth_callback(req: web.Request) -> web.Response:
+    """GET /api/shopify/callback — tauscht OAuth-Code gegen Token mit allen Scopes."""
+    try:
+        code  = req.rel_url.query.get("code","")
+        shop  = req.rel_url.query.get("shop","autopilot-store-suite-fmbka.myshopify.com")
+        if not code:
+            return web.Response(text="Missing code", status=400)
+        client_id     = "65d04d461e18f4661429ab02ce3418a0"
+        client_secret = os.getenv("SHOPIFY_CLIENT_SECRET","")
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            r = await s.post(f"https://{shop}/admin/oauth/access_token",
+                json={"client_id": client_id, "client_secret": client_secret, "code": code})
+            d = await r.json()
+        new_token = d.get("access_token","")
+        new_scope = d.get("scope","")
+        if not new_token:
+            return web.Response(text=f"Fehler: {d}", status=400)
+        import subprocess
+        subprocess.run(["railway","variables","set",
+                        f"SHOPIFY_ADMIN_API_TOKEN={new_token}","--service","dudirudibot-mega"],
+                       capture_output=True, timeout=30)
+        tg_tok = os.getenv("TELEGRAM_BOT_TOKEN","")
+        tg_ch  = os.getenv("TELEGRAM_CHAT_ID","")
+        if tg_tok and tg_ch:
+            msg = (f"✅ <b>SHOPIFY TOKEN ERNEUERT!</b>\n\nScopes: {new_scope}\n"
+                   f"Blog: {'✅' if 'write_content' in new_scope else '❌'} | "
+                   f"Discounts: {'✅' if 'write_price_rules' in new_scope else '❌'}")
+            async with aiohttp.ClientSession() as s2:
+                await s2.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                              json={"chat_id": tg_ch, "text": msg, "parse_mode": "HTML"})
+        html = (f"<html><body style=\'background:#0a0a1a;color:#fff;font-family:Arial;"
+                f"text-align:center;padding:60px\'>"
+                f"<h1 style=\'color:#4ade80\'>✅ Shopify vollständig freigeschaltet!</h1>"
+                f"<p style=\'color:#aaa\'>Scopes: {new_scope}</p>"
+                f"<p style=\'color:#FFD700\'>Blog, Discounts, Inventory — alles aktiv.</p>"
+                f"<p>Fenster schließen — fertig!</p></body></html>")
+        return web.Response(text=html, content_type="text/html")
+    except Exception as e:
+        return web.Response(text=f"Error: {e}", status=500)
+
+
+async def handle_shopify_oauth_start(req: web.Request) -> web.Response:
+    """GET /api/shopify/oauth — leitet zu Shopify OAuth weiter (alle Scopes)."""
+    import urllib.parse
+    scopes = ("read_products,write_products,read_customers,write_customers,"
+              "read_orders,write_orders,read_content,write_content,"
+              "read_price_rules,write_price_rules,read_inventory,write_inventory,"
+              "read_locations,write_script_tags,read_analytics")
+    url = ("https://autopilot-store-suite-fmbka.myshopify.com/admin/oauth/authorize"
+           "?client_id=65d04d461e18f4661429ab02ce3418a0"
+           f"&scope={urllib.parse.quote(scopes)}"
+           "&redirect_uri=https%3A//dudirudibot-mega-production.up.railway.app/api/shopify/callback"
+           "&state=aiitec2026")
+    raise web.HTTPFound(url)
+
+
 # ─── Klaviyo Mass Campaigns Handlers ─────────────────────────────────────────
 
 async def handle_klaviyo_mass_create(request: web.Request) -> web.Response:
@@ -8767,6 +8825,8 @@ async def create_app():
     app.router.add_post("/api/auto-poster/post",          handle_auto_poster_run_alias)
     app.router.add_get( "/api/stripe/plans",              handle_stripe_plans_info)
     app.router.add_get( "/api/shopify/inventory",         handle_shopify_inventory_live)
+    app.router.add_get( "/api/shopify/oauth",             handle_shopify_oauth_start)
+    app.router.add_get( "/api/shopify/callback",          handle_shopify_oauth_callback)
     app.router.add_get( "/api/agents/status",             handle_agents_overview)
     app.router.add_get( "/api/rudiclone/status",          handle_rudiclone_overview)
     app.router.add_get( "/api/ai/models",                 handle_ai_models_list)
