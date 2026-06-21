@@ -57,7 +57,7 @@ def _guess_category(title: str) -> str:
 
 async def fetch_all_products() -> list:
     products = []
-    url = f"https://{DOMAIN}/admin/api/{VER}/products.json?limit={BATCH}&status=active&fields=id,title,body_html,images,variants,vendor,product_type,handle,tags"
+    url = f"https://{DOMAIN}/admin/api/{VER}/products.json?limit={BATCH}&status=active"
     headers = {"X-Shopify-Access-Token": TOKEN}
     page = 1
     async with aiohttp.ClientSession() as s:

@@ -226,16 +226,20 @@ async def task_digistore_sync() -> str:
         old_ids: set = set()
         if out.exists():
             try:
-                old_ids = {o.get("order_id") for o in json.loads(out.read_text())}
+                old_ids = {o.get("transaction_id") or o.get("id") or o.get("order_id")
+                           for o in json.loads(out.read_text())}
             except Exception:
                 pass
         out.write_text(json.dumps(orders, indent=2, ensure_ascii=False))
 
-        new_orders = [o for o in orders if o.get("order_id") not in old_ids]
+        new_orders = [o for o in orders if o.get("transaction_id") not in old_ids]
         if new_orders:
             lines = [f"🏪 <b>Digistore24 — {len(new_orders)} neue Bestellung(en)!</b>"]
             for o in new_orders[:5]:
-                lines.append(f"  • {o.get('product_name','?')} — {o.get('amount','?')} {o.get('currency','EUR')}")
+                name   = o.get("main_product_name") or o.get("product_name","?")
+                amount = o.get("earned_amount") or o.get("merchant_amount") or o.get("amount","?")
+                date   = o.get("transaction_pay_date") or o.get("created_at","")[:10]
+                lines.append(f"  • {name} — {amount} EUR | {date}")
             await _tg("\n".join(lines))
             return f"{len(new_orders)} neue Bestellungen, Telegram-Alert gesendet"
         return f"{len(orders)} Bestellungen gecacht, keine neuen"
