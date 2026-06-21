@@ -137,8 +137,8 @@ async def _perplexity(query: str, system: str = "") -> str:
                               headers=headers, json=payload) as r:
                 if r.status == 200:
                     d = await r.json()
-                    content = d["choices"][0]["message"]["content"]
-                    # Quellen anhängen wenn vorhanden
+                    choices = d.get("choices", [])
+                    content = choices[0].get("message", {}).get("content", "") if choices else ""
                     citations = d.get("citations", [])
                     if citations:
                         content += "\n\n📎 Quellen: " + ", ".join(citations[:3])

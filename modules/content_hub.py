@@ -108,56 +108,26 @@ def _save_article(slug: str, title: str, content: str, keyword: str, excerpt: st
 # ── Helpers ────────────────────────────────────────────────────────────────
 
 def _haiku(prompt: str, max_tokens: int = 500) -> str:
-    if ANTHROPIC_API_KEY:
+    """Sync AI wrapper — versucht OpenRouter direkt, dann Fallback-Templates."""
+    import requests as _req, random as _rnd
+    key = os.getenv("OPENROUTER_API_KEY", "")
+    if key:
         try:
-            client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-            resp = client.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=max_tokens,
-                messages=[{"role": "user", "content": prompt}],
+            r = _req.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json={"model": "liquid/lfm-2.5-1.2b-instruct:free",
+                      "messages": [{"role": "user", "content": prompt}],
+                      "max_tokens": max_tokens},
+                timeout=25,
             )
-            return resp.content[0].text
+            d = r.json()
+            choices = d.get("choices", [])
+            if choices:
+                return choices[0].get("message", {}).get("content", "")
         except Exception:
             pass
-    import requests as _req
-
-    def _openai_compat(url: str, key: str, model: str) -> str:
-        import time as _time
-        r = _req.post(url, headers={"Authorization": f"Bearer {key}"},
-                      json={"model": model, "max_tokens": max_tokens,
-                            "messages": [{"role": "user", "content": prompt}]},
-                      timeout=25)
-        d = r.json()
-        if "error" in d:
-            code = d["error"].get("code") or d["error"].get("type", "")
-            if "429" in str(code) or "rate_limit" in str(code):
-                _time.sleep(8)
-                r2 = _req.post(url, headers={"Authorization": f"Bearer {key}"},
-                               json={"model": model, "max_tokens": max_tokens,
-                                     "messages": [{"role": "user", "content": prompt}]},
-                               timeout=25)
-                d = r2.json()
-                if "error" not in d:
-                    return d["choices"][0]["message"]["content"]
-            raise RuntimeError(str(d["error"])[:120])
-        return d["choices"][0]["message"]["content"]
-
-    errors = []
-    for env_var, url, model in [
-        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
-        ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
-    ]:
-        key = os.getenv(env_var, "")
-        if not key:
-            errors.append(f"{env_var}=leer")
-            continue
-        try:
-            return _openai_compat(url, key, model)
-        except Exception as e:
-            errors.append(f"{env_var}: {str(e)[:80]}")
-            continue
-    import random as _rnd
-    _ds24 = os.getenv("DS24_AFFILIATE_LINK", os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx"))
+    _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
     _templates = [
         f"🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 {_ds24}",
         f"💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. {_ds24}",
