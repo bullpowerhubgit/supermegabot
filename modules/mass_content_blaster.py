@@ -207,8 +207,34 @@ async def run_mass_blast(topics_per_run: int = 5) -> dict:
             total_posted += 1
             _mark_blasted(topic, "telegram")
 
+        # Dev.to (if key set)
+        devto_key = os.getenv("DEVTO_API_KEY", "")
+        if devto_key and devto_key not in ("MISSING_PLEASE_ADD", ""):
+            try:
+                from modules.dev_to_publisher import publish_article
+                r = await publish_article(title=topic, body_markdown=content, tags=["ki","business","automatisierung"])
+                if r.get("ok"):
+                    platforms_hit.add("devto")
+                    total_posted += 1
+                    _mark_blasted(topic, "devto")
+            except Exception:
+                pass
+
+        # Hashnode (if key set)
+        hn_key = os.getenv("HASHNODE_API_KEY", "") or os.getenv("HASHNODE_TOKEN", "")
+        if hn_key and hn_key not in ("MISSING_PLEASE_ADD", ""):
+            try:
+                from modules.free_syndication_network import post_to_hashnode
+                r = await post_to_hashnode({"title": topic, "content": content, "tags": ["ki","business"]})
+                if r.get("ok"):
+                    platforms_hit.add("hashnode")
+                    total_posted += 1
+                    _mark_blasted(topic, "hashnode")
+            except Exception:
+                pass
+
         topics_used += 1
-        await asyncio.sleep(1)
+        await asyncio.sleep(0.5)
 
     conn = _init_db()
     total_in_db = conn.execute("SELECT COUNT(*) FROM blasted_content").fetchone()[0]
