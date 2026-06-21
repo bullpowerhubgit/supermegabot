@@ -7129,7 +7129,7 @@ async def handle_ds24_stats_live(req):
         from modules.digistore24_automation import get_revenue_stats
         return web.json_response(await get_revenue_stats())
     except Exception as e:
-        return web.json_response({"ok": True, "total_eur": 111.0, "orders": 3, "detail": str(e)})
+        return web.json_response({"ok": False, "total_eur": 0.0, "orders": 0, "detail": str(e)})
 
 async def handle_auto_poster_run_alias(req):
     return await _trigger_task("mega_auto_post", background=True)
