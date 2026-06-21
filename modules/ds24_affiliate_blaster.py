@@ -289,7 +289,18 @@ async def blast_own_products(limit: int = 10) -> dict:
         if r.get("ok"):
             blasted += 1
         await asyncio.sleep(1.5)
-    return {"ok": True, "blasted": blasted, "total": len(products), "type": "own_products"}
+    result = {"ok": True, "blasted": blasted, "total": len(products), "type": "own_products"}
+    try:
+        from modules.brutus_clone import BrutusClone
+        bc = BrutusClone("ds24_affiliate_blaster")
+        asyncio.create_task(bc.fire(
+            "DS24 Affiliate Blast abgeschlossen",
+            f"{blasted} Produkte geblastet — Affiliate-Links aktiv",
+            "https://www.digistore24.com"
+        ))
+    except Exception:
+        pass
+    return result
 
 
 async def update_links_in_env() -> dict:

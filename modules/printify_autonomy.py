@@ -249,7 +249,18 @@ Antworte mit JSON-Array:
                 log.debug("Brutus fire: %s", be)
         await asyncio.sleep(3)
 
-    return {"ok": True, "created": created, "total": len(concepts)}
+    result = {"ok": True, "created": created, "total": len(concepts)}
+    try:
+        from modules.brutus_clone import BrutusClone
+        bc = BrutusClone("printify_autonomy")
+        asyncio.create_task(bc.fire(
+            "Printify Produkte erstellt",
+            f"{created} neue POD-Produkte erstellt und zu Shopify publiziert",
+            f"https://autopilot-store-suite-fmbka.myshopify.com"
+        ))
+    except Exception:
+        pass
+    return result
 
 
 async def run_printify_cycle() -> dict:
