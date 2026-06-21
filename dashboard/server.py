@@ -6381,6 +6381,23 @@ async def handle_ds24_affiliate_blast_all(request: web.Request) -> web.Response:
     return web.json_response({"ok": True, "message": "22 DS24-Affiliate-Produkte werden auf allen Kanälen geblastet.", "total": 22})
 
 
+async def handle_ds24_affiliate_blast_own(request: web.Request) -> web.Response:
+    """POST /api/ds24/affiliate/blast-own — Eigene aiitec-Produkte (704xxx) blasten."""
+    try:
+        data = await request.json()
+        limit = int(data.get("limit", 20))
+    except Exception:
+        limit = 20
+    async def _bg():
+        try:
+            from modules.ds24_affiliate_blaster import blast_own_products
+            await blast_own_products(limit=limit)
+        except Exception as e:
+            log.error("DS24 own-product blast error: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "message": f"Eigene aiitec-Produkte werden geblastet (max {limit}).", "limit": limit})
+
+
 async def handle_ds24_affiliate_stats(request: web.Request) -> web.Response:
     """GET /api/ds24/affiliate/stats — Alle genehmigten Produkte + Statistiken."""
     try:
@@ -8491,6 +8508,7 @@ async def create_app():
     app.router.add_get( "/api/ds24/status",                handle_ds24_mass_status)
     app.router.add_post("/api/ds24/seo-blast",             handle_ds24_seo_blast)
     app.router.add_post("/api/ds24/affiliate/blast-all",   handle_ds24_affiliate_blast_all)
+    app.router.add_post("/api/ds24/affiliate/blast-own",   handle_ds24_affiliate_blast_own)
     app.router.add_get( "/api/ds24/affiliate/stats",       handle_ds24_affiliate_stats)
     app.router.add_post("/api/ds24/affiliate/blast-niche", handle_ds24_affiliate_blast_niche)
     app.router.add_get( "/api/ds24/dankeseite",            handle_ds24_dankeseite)
