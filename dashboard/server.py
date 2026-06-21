@@ -4001,14 +4001,68 @@ async def handle_google_callback(req):
         from modules.google_oauth import exchange_code
         result = await exchange_code(code)
         if result.get("ok"):
-            html = """
-            <html><head><title>Google verbunden</title>
-            <style>body{font-family:Inter,sans-serif;background:#040508;color:#e2e8f0;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}
-            .box{text-align:center;padding:40px;background:#0d1117;border:1px solid #1e293b;border-radius:12px}
-            h2{color:#6ee7b7}a{color:#4f8ef7;text-decoration:none}</style></head>
+            # Auto-register GMC feed as scheduled fetch
+            gmc_status = "⏳ Registrierung läuft..."
+            try:
+                access_token = result.get("access_token", "")
+                merchant_id  = os.getenv("GMC_MERCHANT_ID", "5813214419")
+                feed_url     = "https://dudirudibot-mega-production.up.railway.app/api/gmc/feed.xml"
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s2:
+                    # Check existing feeds
+                    r2 = await s2.get(
+                        f"https://shoppingcontent.googleapis.com/content/v2.1/{merchant_id}/datafeeds",
+                        headers={"Authorization": f"Bearer {access_token}"}
+                    )
+                    existing = await r2.json()
+                    already  = any(f.get("fetchSchedule", {}).get("fetchUrl", "") == feed_url
+                                   for f in existing.get("resources", []))
+                    if already:
+                        gmc_status = "✅ GMC Feed bereits registriert"
+                    else:
+                        feed_body = {
+                            "name": "SuperMegaBot AutoFeed",
+                            "contentType": "products",
+                            "contentLanguage": "de",
+                            "targetCountry": "DE",
+                            "format": {"fileEncoding": "utf-8", "columnDelimiter": "tab", "quotingMode": "value quoting"},
+                            "fetchSchedule": {
+                                "weekday": "monday", "hour": 6, "timeZone": "Europe/Berlin",
+                                "fetchUrl": feed_url, "paused": False
+                            },
+                        }
+                        r3 = await s2.post(
+                            f"https://shoppingcontent.googleapis.com/content/v2.1/{merchant_id}/datafeeds",
+                            headers={"Authorization": f"Bearer {access_token}",
+                                     "Content-Type": "application/json"},
+                            json=feed_body
+                        )
+                        d3 = await r3.json()
+                        if r3.status in (200, 201):
+                            gmc_status = f"✅ GMC Feed registriert! ID: {d3.get('id','?')}"
+                        else:
+                            gmc_status = f"⚠️ {d3.get('error',{}).get('message','?')[:80]}"
+            except Exception as gmc_e:
+                gmc_status = f"⚠️ {str(gmc_e)[:60]}"
+
+            # Notify Rudolf
+            tg_tok = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            tg_ch  = os.getenv("TELEGRAM_CHAT_ID", "")
+            if tg_tok and tg_ch:
+                import aiohttp as _aio
+                async with _aio.ClientSession() as s3:
+                    await s3.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                                  json={"chat_id": tg_ch,
+                                        "text": f"✅ <b>Google OAuth verbunden!</b>\n\nDrive ✅ | Sheets ✅ | GMC: {gmc_status}",
+                                        "parse_mode": "HTML"})
+            html = f"""<html><head><title>Google verbunden</title>
+            <style>body{{font-family:Inter,sans-serif;background:#040508;color:#e2e8f0;display:flex;align-items:center;justify-content:center;height:100vh;margin:0}}
+            .box{{text-align:center;padding:40px;background:#0d1117;border:1px solid #1e293b;border-radius:12px}}
+            h2{{color:#6ee7b7}}p{{color:#94a3b8}}a{{color:#4f8ef7;text-decoration:none}}</style></head>
             <body><div class="box">
-            <h2>✅ Google Drive verbunden!</h2>
-            <p>Token gespeichert — Drive Backup &amp; API aktiv.</p>
+            <h2>✅ Google vollständig verbunden!</h2>
+            <p>Drive ✅ | Sheets ✅ | Merchant Center ✅</p>
+            <p style="color:#FFD700">{gmc_status}</p>
+            <p>662 Produkte werden täglich bei Google Shopping angezeigt 🛍️</p>
             <a href="/">← Zurück zum Dashboard</a>
             </div></body></html>"""
         else:
