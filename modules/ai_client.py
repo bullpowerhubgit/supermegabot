@@ -149,5 +149,23 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("Perplexity error: %s", e)
 
+    # Local Ollama fallback (works when running locally or when OLLAMA_BASE is set)
+    _ollama_base = os.getenv("OLLAMA_BASE", "http://localhost:11434")
+    _ollama_model = os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:latest")
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
+            async with s.post(
+                f"{_ollama_base}/api/chat",
+                json={"model": _ollama_model, "messages": messages, "stream": False},
+            ) as r:
+                if r.status == 200:
+                    d = await r.json(content_type=None)
+                    text = d.get("message", {}).get("content", "")
+                    if text:
+                        log.debug("Ollama OK: %d chars", len(text))
+                        return text
+    except Exception as e:
+        log.debug("Ollama skip: %s", e)
+
     log.warning("ai_complete: all providers failed")
     return ""
