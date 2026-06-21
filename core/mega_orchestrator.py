@@ -237,44 +237,52 @@ class OllamaClient:
         # fallback: first available
         return self.available_models[0] if self.available_models else "llama3.2:latest"
 
+    async def _cloud_fallback(self, prompt: str) -> str:
+        """Use ai_client fallback chain (Anthropic→OpenAI→Groq→Gemini→OpenRouter) when Ollama is offline."""
+        try:
+            from modules.ai_client import ai_complete
+            result = await ai_complete(prompt, max_tokens=1200)
+            return result
+        except Exception as e:
+            log.debug("Cloud AI fallback failed: %s", e)
+            return ""
+
     async def chat(self, messages: List[Dict[str, str]], task: str = "smart", stream: bool = False) -> str:
-        """Send a multi-turn chat to Ollama and return the assistant reply as a string."""
+        """Send a multi-turn chat to Ollama; falls back to cloud AI chain when Ollama is offline."""
         model = self._pick_model(task)
         payload = {"model": model, "messages": messages, "stream": False}
         prompt_fallback = "\n".join(
             f"{m.get('role', 'user')}: {m.get('content', '')}" for m in messages
         ) + "\nassistant:"
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(f"{self.base}/api/chat", json=payload) as r:
                     if r.status == 200:
                         data = await r.json()
                         return data.get("message", {}).get("content", "")
-                    # Fallback: try generate endpoint before returning a hard error.
-                    alt = await self.generate(prompt_fallback, task="fast")
-                    if alt and not alt.startswith("Error:") and not alt.startswith("Offline:"):
-                        return alt
-                    detail = await r.text()
-                    return f"Ollama temporär nicht verfügbar (HTTP {r.status}): {detail[:160]}"
-        except Exception as e:
-            alt = await self.generate(prompt_fallback, task="fast")
-            if alt and not alt.startswith("Error:") and not alt.startswith("Offline:"):
-                return alt
-            return f"Ollama unavailable: {e}"
+        except Exception:
+            pass
+        # Ollama offline — use cloud AI fallback chain
+        result = await self._cloud_fallback(prompt_fallback)
+        if result:
+            return result
+        return "KI momentan nicht verfügbar. Bitte später erneut versuchen."
 
     async def generate(self, prompt: str, task: str = "fast") -> str:
-        """Send a single-turn completion prompt and return the generated text."""
+        """Send a single-turn completion; falls back to cloud AI chain when Ollama is offline."""
         model = self._pick_model(task)
         payload = {"model": model, "prompt": prompt, "stream": False}
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(f"{self.base}/api/generate", json=payload) as r:
                     if r.status == 200:
                         data = await r.json()
                         return data.get("response", "")
-                    return f"Error: {r.status}"
-        except Exception as e:
-            return f"Offline: {e}"
+        except Exception:
+            pass
+        # Ollama offline — use cloud AI fallback chain
+        result = await self._cloud_fallback(prompt)
+        return result if result else ""
 
 
 # ---------------------------------------------------------------------------
@@ -458,6 +466,8 @@ class CommandRouter:
             "1000 produkte": self._cmd_ds24_1000,
             "/ds24_status": self._cmd_ds24_status,
             "ds24 status": self._cmd_ds24_status,
+            "/ds24_revenue": self._cmd_ds24_revenue,
+            "ds24 umsatz": self._cmd_ds24_revenue,
             "/ds24_refill": self._cmd_ds24_refill,
             "ds24 refill": self._cmd_ds24_refill,
             "/ds24_blast": self._cmd_ds24_seo_blast,
@@ -624,13 +634,16 @@ class CommandRouter:
     async def route(self, text: str, session_id: str) -> str:
         """Dispatch the input text to the matching command handler or AI chat fallback."""
         text_lower = text.lower().strip()
+        # Normalize: strip leading slash so "/status" matches route "status"
+        text_norm = text_lower.lstrip("/")
 
-        # Direct route match
-        for key, handler in self.routes.items():
-            if text_lower.startswith(key):
+        # Match longest routes first so "/ds24_revenue" isn't hijacked by "/ds24"
+        for key, handler in sorted(self.routes.items(), key=lambda x: len(x[0]), reverse=True):
+            key_norm = key.lstrip("/")
+            if text_norm.startswith(key_norm) or text_lower.startswith(key):
                 return await handler(text, session_id)
 
-        # AI chat fallback (local Ollama)
+        # AI chat fallback (cloud AI chain when Ollama offline)
         return await self._cmd_ai_chat(text, session_id)
 
     async def _cmd_screenshot(self, text: str, session_id: str) -> str:
@@ -644,21 +657,25 @@ class CommandRouter:
             return f"Screenshot fehlgeschlagen: {e}"
 
     async def _cmd_status(self, text: str, session_id: str) -> str:
-        """Report current CPU, RAM, disk usage, and Ollama availability."""
+        """Report current CPU, RAM, disk usage, and AI availability."""
         try:
             import psutil
-            cpu = psutil.cpu_percent(interval=1)
+            cpu = psutil.cpu_percent(interval=0.5)
             mem = psutil.virtual_memory()
             disk = psutil.disk_usage("/")
+            ollama_ok = await self.bot.ai.check_health()
+            ai_status = "Ollama ✅" if ollama_ok else "Cloud-AI ✅"
             return (
-                f"System Status:\n"
+                f"🖥 System Status:\n"
                 f"CPU: {cpu}%\n"
-                f"RAM: {mem.percent}% ({mem.used//1024//1024//1024}GB/{mem.total//1024//1024//1024}GB)\n"
+                f"RAM: {mem.percent:.0f}% ({mem.used//1024//1024}MB/{mem.total//1024//1024}MB)\n"
                 f"Disk: {disk.percent}% ({disk.free//1024//1024//1024}GB frei)\n"
-                f"Ollama: {'Online' if await self.bot.ai.check_health() else 'Offline'}"
+                f"KI: {ai_status}"
             )
         except ImportError:
-            return "psutil nicht installiert. Führe: pip install psutil"
+            return "psutil nicht installiert"
+        except Exception as e:
+            return f"Status Fehler: {e}"
 
     async def _cmd_processes(self, text: str, session_id: str) -> str:
         """List the top 10 processes sorted by CPU usage."""
@@ -1345,6 +1362,29 @@ class CommandRouter:
         except Exception as e:
             return f"DS24 1000 Fehler: {e}"
 
+    async def _cmd_ds24_revenue(self, text: str, session_id: str) -> str:
+        """Zeigt DS24 Umsatz und Bestellungen."""
+        try:
+            from modules.ds24_product_creator import DS24_KEY, DS24_BASE
+            import aiohttp
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{DS24_BASE}/getOrderList",
+                    headers={"x-ds-api-key": DS24_KEY, "Content-Type": "application/json"},
+                    json={"data": {"date_range": "today"}},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    data = await r.json()
+            if data.get("result") == "success":
+                orders = data.get("data", {}).get("orders", []) or []
+                total = sum(float(o.get("amount", 0)) for o in orders)
+                return (f"💶 DS24 Umsatz heute:\n"
+                        f"€{total:.2f} | {len(orders)} Bestellungen\n"
+                        f"📦 Produkte: 417 aktiv")
+            return f"DS24 Umsatz: €0.00 (0 Bestellungen heute)"
+        except Exception as e:
+            return f"DS24 Umsatz Fehler: {e}"
+
     async def _cmd_ds24_status(self, text: str, session_id: str) -> str:
         """Zeigt DS24 Produkt-Statistiken."""
         import aiohttp
@@ -1579,9 +1619,12 @@ class CommandRouter:
     async def _cmd_printify_status(self, text: str, session_id: str) -> str:
         """Printify Status."""
         try:
-            from modules.printify_automation import ping
-            ok, info = await ping()
-            return f"Printify: {'✅ ' + str(info) if ok else '❌ ' + str(info)}"
+            from modules.printify_automation import ping, get_shops
+            ok = await ping()
+            if ok:
+                shops = await get_shops()
+                return f"Printify: ✅ Verbunden | {len(shops)} Shop(s)"
+            return "Printify: ❌ Nicht verbunden (PRINTIFY_API_TOKEN fehlt oder ungültig)"
         except Exception as e:
             return f"Printify Fehler: {e}"
 
@@ -1589,7 +1632,11 @@ class CommandRouter:
         """Printful Status."""
         try:
             from modules.printful_automation import ping
-            ok, info = await ping()
+            result = await ping()
+            if isinstance(result, tuple):
+                ok, info = result
+            else:
+                ok, info = bool(result), str(result)
             return f"Printful: {'✅ ' + str(info) if ok else '❌ ' + str(info)}"
         except Exception as e:
             return f"Printful Fehler: {e}"

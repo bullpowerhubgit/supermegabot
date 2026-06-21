@@ -229,19 +229,25 @@ async def create_product(
     affiliate_commission: str = "40",
 ) -> Optional[str]:
     """Legt ein neues Produkt auf Digistore24 an. Gibt product_id zurück."""
+    data_payload: dict = {
+        "name_de": name_de[:100],
+        "name_intern": (name_intern or name_de[:40].lower().replace(" ", "-").replace("ä", "ae").replace("ö", "oe").replace("ü", "ue"))[:40],
+        "description_de": description_de[:2000],
+        "access_instructions_de": access_instructions_de or "Zugang wird nach Zahlungseingang per E-Mail zugeschickt.",
+        "language": "de",
+        "currency": "EUR",
+        "affiliate_commission": str(affiliate_commission),
+        "is_active": "0",  # start inactive, activate after payment plan added
+        "is_affiliation_auto_accepted": "1",
+    }
+    # Only add URLs if provided — DS24 blocks domains registered to other accounts
+    if salespage_url:
+        data_payload["salespage_url"] = salespage_url
+    if thankyou_url:
+        data_payload["thankyou_url"] = thankyou_url
     payload = {
         "data": {
-            "name_de": name_de[:100],
-            "name_intern": (name_intern or name_de[:40].lower().replace(" ", "-").replace("ä", "ae").replace("ö", "oe").replace("ü", "ue"))[:40],
-            "description_de": description_de[:2000],
-            "salespage_url": salespage_url or SHOP_URL,
-            "thankyou_url": thankyou_url or f"{SHOP_URL}/pages/danke",
-            "access_instructions_de": access_instructions_de or "Zugang wird nach Zahlungseingang per E-Mail zugeschickt.",
-            "language": "de",
-            "currency": "EUR",
-            "affiliate_commission": str(affiliate_commission),
-            "is_active": "1",
-            "is_affiliation_auto_accepted": "1",
+            **data_payload,
         }
     }
     result = await _ds24_post("createProduct", payload)
