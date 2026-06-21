@@ -5136,3 +5136,31 @@ def get_scheduler_status() -> dict:
     """Return all scheduler tasks with stats."""
     s = get_scheduler()
     return s.status()
+
+
+# ── Standalone entrypoint ─────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    import signal
+
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(name)s %(levelname)s %(message)s",
+    )
+
+    async def _standalone():
+        sched = get_scheduler()
+        await sched.start()
+        log.info("SuperMegaBot Scheduler gestartet — Ctrl+C zum Beenden")
+        stop_event = asyncio.Event()
+
+        def _shutdown(sig, frame):  # noqa: ARG001
+            log.info("Signal %s — beende Scheduler...", sig)
+            stop_event.set()
+
+        signal.signal(signal.SIGTERM, _shutdown)
+        signal.signal(signal.SIGINT, _shutdown)
+        await stop_event.wait()
+        await sched.stop()
+
+    asyncio.run(_standalone())
