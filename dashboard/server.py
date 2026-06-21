@@ -382,6 +382,85 @@ async def handle_ollama_models(req):
         return web.json_response({"ok": False, "models": [], "error": str(e)})
 
 
+async def handle_open_claw_status(req):
+    """OpenClaw = lokales Ollama AI System."""
+    try:
+        from modules.open_claw import get_models, is_online, OLLAMA_BASE, CLAW_MODEL
+        online = await is_online()
+        models = await get_models() if online else []
+        return web.json_response({
+            "ok": online, "name": "OpenClaw", "base": OLLAMA_BASE,
+            "default_model": CLAW_MODEL, "models": models,
+            "status": "online" if online else "offline"
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_open_claw_generate(req):
+    """Generiere Content mit lokalem Ollama."""
+    try:
+        data = await req.json()
+        topic = data.get("topic", "KI Automation")
+        content_type = data.get("type", "post")
+        from modules.open_claw import claw_generate_content
+        result = await claw_generate_content(topic, content_type)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_open_claw_chat(req):
+    """Direktes Chat-Interface mit OpenClaw."""
+    try:
+        data = await req.json()
+        prompt = data.get("prompt", "")
+        system = data.get("system", "Du bist AIITEC SuperBot, ein autonomes KI-System.")
+        fast = data.get("fast", False)
+        if not prompt:
+            return web.json_response({"ok": False, "error": "prompt required"}, status=400)
+        from modules.open_claw import claw_complete
+        text = await claw_complete(prompt, system=system, fast=fast)
+        return web.json_response({"ok": bool(text), "response": text, "source": "OpenClaw"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_open_claw_revenue(req):
+    """Tages-Revenue-Strategie via OpenClaw."""
+    try:
+        from modules.open_claw import claw_revenue_strategy
+        strategy = await claw_revenue_strategy()
+        return web.json_response({"ok": bool(strategy), "strategy": strategy, "source": "OpenClaw-Local"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_open_claw_blast(req):
+    """Generiere + blast Content via OpenClaw → Telegram + BrutusClone."""
+    try:
+        data = await req.json() if req.content_length else {}
+        topic = data.get("topic", "KI Automation Shopify Digistore24")
+        from modules.open_claw import claw_generate_content
+        from modules.brutus_clone import BrutusClone
+        brutus = BrutusClone("OpenClaw")
+        post = await claw_generate_content(topic, "telegram")
+        email_content = await claw_generate_content(topic, "email")
+        fired = await brutus.fire(
+            title=f"OpenClaw: {topic[:40]}",
+            content=post.get("text", ""),
+            link="https://buy.stripe.com/dRm6oJ67ofqq6Aw8gK4F21y"
+        )
+        return web.json_response({
+            "ok": True, "topic": topic,
+            "post_generated": bool(post.get("text")),
+            "telegram_sent": fired.get("telegram", False),
+            "email_content": email_content.get("text", "")[:200],
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_autopilot_agents(req):
     try:
         from modules.autopilot import AutoPilot
@@ -7964,6 +8043,11 @@ async def create_app():
     app.router.add_get("/api/shopify", handle_shopify_legacy)
     app.router.add_get("/api/shopify/status", handle_shopify_status)
     app.router.add_get("/api/ollama/models", handle_ollama_models)
+    app.router.add_get("/api/open-claw/status", handle_open_claw_status)
+    app.router.add_post("/api/open-claw/generate", handle_open_claw_generate)
+    app.router.add_post("/api/open-claw/chat", handle_open_claw_chat)
+    app.router.add_post("/api/open-claw/revenue", handle_open_claw_revenue)
+    app.router.add_post("/api/open-claw/blast", handle_open_claw_blast)
     app.router.add_get("/api/autopilot/agents", handle_autopilot_agents)
     app.router.add_post("/api/autopilot/run", handle_autopilot_run)
     app.router.add_get("/api/autopilot/logs", handle_autopilot_logs)

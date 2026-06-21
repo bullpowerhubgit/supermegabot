@@ -50,7 +50,16 @@ class BrutusClone:
                 results["telegram"] = f"error:{e}"
                 self._errors.append(str(e))
 
-        # 2. AI-Content generieren und in Shopify Blog posten (wenn verfügbar)
+        # 2. OpenClaw AI-Content generieren wenn kein eigener Content
+        if not content:
+            try:
+                from modules.open_claw import claw_generate_content
+                result = await claw_generate_content(title, "post")
+                content = result.get("text", content)
+            except Exception:
+                pass
+
+        # 3. AI-Content generieren und in Shopify Blog posten (wenn verfügbar)
         shopify_token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
         shopify_shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         if shopify_token and shopify_shop and content:
@@ -89,13 +98,20 @@ class BrutusClone:
         else:
             checks["fixed"].append("telegram_token_present")
 
-        # Checke AI
-        ai_available = bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY") or
-                           os.getenv("OPENROUTER_API_KEY") or os.getenv("GROQ_API_KEY"))
-        if not ai_available:
-            checks["errors"].append("no_ai_provider")
+        # Checke AI (OpenClaw = Ollama als primärer kostenloser Provider)
+        try:
+            from modules.open_claw import is_online
+            ollama_ok = await is_online()
+        except Exception:
+            ollama_ok = False
+        cloud_ai = bool(os.getenv("ANTHROPIC_API_KEY") or os.getenv("OPENAI_API_KEY") or
+                        os.getenv("OPENROUTER_API_KEY") or os.getenv("GROQ_API_KEY"))
+        if ollama_ok:
+            checks["fixed"].append("openclaw_ollama_online")
+        elif cloud_ai:
+            checks["fixed"].append("cloud_ai_provider_present")
         else:
-            checks["fixed"].append("ai_provider_present")
+            checks["errors"].append("no_ai_provider_available")
 
         self._errors = []  # Reset nach Check
         return checks

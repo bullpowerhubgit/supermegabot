@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Zentraler AI-Client — Anthropic → OpenAI → Groq → OpenRouter → Gemini → DeepSeek → Perplexity → Fallback.
+Zentraler AI-Client — OpenClaw(Ollama) → Anthropic → OpenAI → Groq → OpenRouter → Gemini → Perplexity → Fallback.
 Einheitlicher Zugang für alle Module: from modules.ai_client import ai_complete
+OpenClaw (lokales Ollama) ist IMMER der erste Provider — kostenlos, kein Rate-Limit!
 """
 from __future__ import annotations
 import logging
@@ -17,16 +18,44 @@ _PERPLEXITY = lambda: os.getenv("PERPLEXITY_API_KEY", "")
 _GEMINI     = lambda: os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY", "")
 
 _OPENROUTER_MODEL   = "liquid/lfm-2.5-1.2b-instruct:free"
-_GROQ_MODEL         = "llama-3.1-8b-instant"  # free tier, very fast
+_GROQ_MODEL         = "llama-3.1-8b-instant"
 _OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
 _GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+_OLLAMA_BASE        = lambda: os.getenv("OLLAMA_BASE", "http://localhost:11434")
+_OLLAMA_MODEL       = lambda: os.getenv("OLLAMA_CLAW_MODEL", "qwen3.6:latest")
+_OLLAMA_FAST        = lambda: os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")
+_OLLAMA_FIRST       = os.getenv("OLLAMA_FIRST", "true").lower() != "false"
 
 
 async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", max_tokens: int = 1200) -> str:
-    """Full fallback chain: Anthropic → OpenAI → OpenRouter → DeepSeek → Perplexity → empty."""
+    """Full fallback chain: OpenClaw(Ollama) → Anthropic → OpenAI → OpenRouter → Groq → Gemini → Perplexity → empty."""
     import aiohttp
 
     messages = [{"role": "user", "content": f"{system}\n\n{prompt}" if system else prompt}]
+
+    # 0. OpenClaw — lokales Ollama, kostenlos, immer zuerst versuchen
+    if _OLLAMA_FIRST:
+        chosen = _OLLAMA_FAST() if model_hint == "fast" else _OLLAMA_MODEL()
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
+                msg_list = []
+                if system:
+                    msg_list.append({"role": "system", "content": system})
+                msg_list.append({"role": "user", "content": prompt})
+                async with s.post(
+                    f"{_OLLAMA_BASE()}/api/chat",
+                    json={"model": chosen, "messages": msg_list,
+                          "stream": False, "options": {"num_predict": max_tokens}},
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json(content_type=None)
+                        text = d.get("message", {}).get("content", "")
+                        if text:
+                            log.info("OpenClaw OK model=%s", chosen)
+                            return text
+                    log.debug("OpenClaw %s — falling to cloud", r.status)
+        except Exception as e:
+            log.debug("OpenClaw offline: %s — using cloud fallback", e)
 
     # 1. Anthropic (skip on 529 = no credits, 401 = invalid)
     if _ANTHROPIC():
