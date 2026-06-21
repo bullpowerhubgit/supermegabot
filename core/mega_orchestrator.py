@@ -237,44 +237,52 @@ class OllamaClient:
         # fallback: first available
         return self.available_models[0] if self.available_models else "llama3.2:latest"
 
+    async def _cloud_fallback(self, prompt: str) -> str:
+        """Use ai_client fallback chain (Anthropic→OpenAI→Groq→Gemini→OpenRouter) when Ollama is offline."""
+        try:
+            from modules.ai_client import ai_complete
+            result = await ai_complete(prompt, max_tokens=1200)
+            return result
+        except Exception as e:
+            log.debug("Cloud AI fallback failed: %s", e)
+            return ""
+
     async def chat(self, messages: List[Dict[str, str]], task: str = "smart", stream: bool = False) -> str:
-        """Send a multi-turn chat to Ollama and return the assistant reply as a string."""
+        """Send a multi-turn chat to Ollama; falls back to cloud AI chain when Ollama is offline."""
         model = self._pick_model(task)
         payload = {"model": model, "messages": messages, "stream": False}
         prompt_fallback = "\n".join(
             f"{m.get('role', 'user')}: {m.get('content', '')}" for m in messages
         ) + "\nassistant:"
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(f"{self.base}/api/chat", json=payload) as r:
                     if r.status == 200:
                         data = await r.json()
                         return data.get("message", {}).get("content", "")
-                    # Fallback: try generate endpoint before returning a hard error.
-                    alt = await self.generate(prompt_fallback, task="fast")
-                    if alt and not alt.startswith("Error:") and not alt.startswith("Offline:"):
-                        return alt
-                    detail = await r.text()
-                    return f"Ollama temporär nicht verfügbar (HTTP {r.status}): {detail[:160]}"
-        except Exception as e:
-            alt = await self.generate(prompt_fallback, task="fast")
-            if alt and not alt.startswith("Error:") and not alt.startswith("Offline:"):
-                return alt
-            return f"Ollama unavailable: {e}"
+        except Exception:
+            pass
+        # Ollama offline — use cloud AI fallback chain
+        result = await self._cloud_fallback(prompt_fallback)
+        if result:
+            return result
+        return "KI momentan nicht verfügbar. Bitte später erneut versuchen."
 
     async def generate(self, prompt: str, task: str = "fast") -> str:
-        """Send a single-turn completion prompt and return the generated text."""
+        """Send a single-turn completion; falls back to cloud AI chain when Ollama is offline."""
         model = self._pick_model(task)
         payload = {"model": model, "prompt": prompt, "stream": False}
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(f"{self.base}/api/generate", json=payload) as r:
                     if r.status == 200:
                         data = await r.json()
                         return data.get("response", "")
-                    return f"Error: {r.status}"
-        except Exception as e:
-            return f"Offline: {e}"
+        except Exception:
+            pass
+        # Ollama offline — use cloud AI fallback chain
+        result = await self._cloud_fallback(prompt)
+        return result if result else ""
 
 
 # ---------------------------------------------------------------------------

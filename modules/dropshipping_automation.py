@@ -48,24 +48,27 @@ def _session(total: int = 120):
 # ---------------------------------------------------------------------------
 
 async def _ollama_generate(prompt: str) -> str:
-    """Call local Ollama /api/generate and return the response string."""
+    """Generate text via Ollama (local) with cloud AI fallback chain."""
     if not HAS_AIOHTTP:
         return ""
-    payload = {
-        "model": OLLAMA_MODEL,
-        "prompt": prompt,
-        "stream": False,
-    }
+    # Try local Ollama first
+    payload = {"model": OLLAMA_MODEL, "prompt": prompt, "stream": False}
     try:
-        async with _session(120) as s:
+        async with _session(15) as s:
             async with s.post(f"{OLLAMA_BASE}/api/generate", json=payload) as r:
                 if r.status == 200:
                     data = await r.json()
-                    return data.get("response", "")
-                log.warning("Ollama HTTP %d", r.status)
-                return ""
+                    text = data.get("response", "")
+                    if text:
+                        return text
+    except Exception:
+        pass
+    # Ollama unavailable — fall back to cloud AI chain
+    try:
+        from modules.ai_client import ai_complete
+        return await ai_complete(prompt, max_tokens=800)
     except Exception as e:
-        log.warning("Ollama nicht erreichbar: %s", e)
+        log.warning("AI fallback failed: %s", e)
         return ""
 
 
