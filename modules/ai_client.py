@@ -19,7 +19,8 @@ _GEMINI     = lambda: os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY"
 _OPENROUTER_MODEL   = "liquid/lfm-2.5-1.2b-instruct:free"
 _GROQ_MODEL         = "llama-3.1-8b-instant"  # free tier, very fast
 _OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
-_GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+_GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent"
+_GEMINI_URL2        = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 
 
 async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", max_tokens: int = 1200) -> str:
@@ -90,28 +91,32 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("Groq error: %s", e)
 
-    # 4. Gemini 1.5 Flash (GEMINI_API_KEY — kostenlos bis 1500 req/Tag)
+    # 4. Gemini 2.0 Flash Lite → 1.5 Flash Fallback (KOSTENLOS bis 1500 req/Tag)
     if _GEMINI():
-        try:
-            full_prompt = f"{system}\n\n{prompt}" if system else prompt
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-                async with s.post(
-                    f"{_GEMINI_URL}?key={_GEMINI()}",
-                    headers={"Content-Type": "application/json"},
-                    json={"contents": [{"parts": [{"text": full_prompt}]}],
-                          "generationConfig": {"maxOutputTokens": max_tokens}},
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        text = d.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                        if text:
-                            return text
-                    if r.status in (400, 401, 403):
-                        log.debug("Gemini skip (%s)", r.status)
-                    else:
-                        log.debug("Gemini %s", r.status)
-        except Exception as e:
-            log.debug("Gemini error: %s", e)
+        for gemini_url in [_GEMINI_URL, _GEMINI_URL2]:
+            try:
+                full_prompt = f"{system}\n\n{prompt}" if system else prompt
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                    async with s.post(
+                        f"{gemini_url}?key={_GEMINI()}",
+                        headers={"Content-Type": "application/json"},
+                        json={"contents": [{"parts": [{"text": full_prompt}]}],
+                              "generationConfig": {"maxOutputTokens": max_tokens}},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = d.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                            if text:
+                                log.debug("Gemini OK via %s", gemini_url.split('models/')[1].split(':')[0])
+                                return text
+                        if r.status in (400, 401, 403):
+                            log.debug("Gemini skip (%s)", r.status)
+                            break
+                        else:
+                            log.debug("Gemini %s — try fallback model", r.status)
+            except Exception as e:
+                log.debug("Gemini error: %s", e)
+                break
 
     # 5. OpenRouter (free models available — any valid API key)
     if _OPENROUTER():
