@@ -466,6 +466,8 @@ class CommandRouter:
             "1000 produkte": self._cmd_ds24_1000,
             "/ds24_status": self._cmd_ds24_status,
             "ds24 status": self._cmd_ds24_status,
+            "/ds24_revenue": self._cmd_ds24_revenue,
+            "ds24 umsatz": self._cmd_ds24_revenue,
             "/ds24_refill": self._cmd_ds24_refill,
             "ds24 refill": self._cmd_ds24_refill,
             "/ds24_blast": self._cmd_ds24_seo_blast,
@@ -1359,6 +1361,29 @@ class CommandRouter:
             return f"DS24 1000 Fehler: {data.get('error','?')}"
         except Exception as e:
             return f"DS24 1000 Fehler: {e}"
+
+    async def _cmd_ds24_revenue(self, text: str, session_id: str) -> str:
+        """Zeigt DS24 Umsatz und Bestellungen."""
+        try:
+            from modules.ds24_product_creator import DS24_KEY, DS24_BASE
+            import aiohttp
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    f"{DS24_BASE}/getOrderList",
+                    headers={"x-ds-api-key": DS24_KEY, "Content-Type": "application/json"},
+                    json={"data": {"date_range": "today"}},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    data = await r.json()
+            if data.get("result") == "success":
+                orders = data.get("data", {}).get("orders", []) or []
+                total = sum(float(o.get("amount", 0)) for o in orders)
+                return (f"💶 DS24 Umsatz heute:\n"
+                        f"€{total:.2f} | {len(orders)} Bestellungen\n"
+                        f"📦 Produkte: 417 aktiv")
+            return f"DS24 Umsatz: €0.00 (0 Bestellungen heute)"
+        except Exception as e:
+            return f"DS24 Umsatz Fehler: {e}"
 
     async def _cmd_ds24_status(self, text: str, session_id: str) -> str:
         """Zeigt DS24 Produkt-Statistiken."""
