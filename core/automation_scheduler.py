@@ -1194,7 +1194,7 @@ mutation CreateArticle($article: ArticleCreateInput!) {
                 await s.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
                     json={"chat_id": tg_chat,
                           "text": f"📝 *{topic_title}*\n\n{plain}\n\n👉 {_dest}",
-                          "parse_mode": "Markdown"})
+                          "parse_mode": "HTML"})
         return f"Blog→Telegram (GraphQL Err): {err_msg[:120]}"
     except Exception as e:
         import traceback as _tb
@@ -1491,7 +1491,7 @@ async def task_telegram_broadcast() -> str:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             async with s.post(
                 f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": channel, "text": msg, "parse_mode": "Markdown"}
+                json={"chat_id": channel, "text": msg, "parse_mode": "HTML"}
             ) as r:
                 result = await r.json()
         ok = result.get("ok", False)
@@ -3197,7 +3197,7 @@ async def _twilio_send(to: str, body: str) -> bool:
                 async with s.post(
                     f"https://api.telegram.org/bot{tg_tok}/sendMessage",
                     json={"chat_id": tg_chat, "text": f"📱 Alert:\n{body[:4000]}",
-                          "parse_mode": "Markdown"},
+                          "parse_mode": "HTML"},
                     timeout=aiohttp.ClientTimeout(total=10),
                 ) as r:
                     d = await r.json(content_type=None)

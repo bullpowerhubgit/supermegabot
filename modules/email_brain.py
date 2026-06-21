@@ -311,7 +311,7 @@ async def _tg(text: str):
         async with aiohttp.ClientSession() as s:
             await s.post(
                 f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat, "text": text, "parse_mode": "Markdown"},
+                json={"chat_id": chat, "text": text, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=8),
             )
     except Exception:

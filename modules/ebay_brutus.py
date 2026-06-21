@@ -64,7 +64,7 @@ async def _telegram(text: str) -> bool:
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                json={"chat_id": TELEGRAM_CHAT, "text": text, "parse_mode": "Markdown",
+                json={"chat_id": TELEGRAM_CHAT, "text": text, "parse_mode": "HTML",
                       "disable_web_page_preview": False},
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as r:

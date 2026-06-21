@@ -257,7 +257,7 @@ async def _blast_all_channels(idea: dict, urls: dict) -> dict:
             async with aiohttp.ClientSession() as s:
                 await s.post(
                     f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                    json={"chat_id": TELEGRAM_CHAT, "text": tg_msg, "parse_mode": "Markdown"},
+                    json={"chat_id": TELEGRAM_CHAT, "text": tg_msg, "parse_mode": "HTML"},
                     timeout=aiohttp.ClientTimeout(total=10),
                 )
         except Exception:
