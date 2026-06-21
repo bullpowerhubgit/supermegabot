@@ -13,9 +13,9 @@ import aiohttp
 log = logging.getLogger("OpenClaw")
 
 OLLAMA_BASE  = os.getenv("OLLAMA_BASE", "http://localhost:11434")
-CLAW_MODEL   = os.getenv("OLLAMA_CLAW_MODEL", "qwen3.6:latest")
-FAST_MODEL   = os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")
-SMART_MODEL  = os.getenv("OLLAMA_SMART_MODEL", "qwen3.6:latest")
+CLAW_MODEL   = os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest")   # Default: fast
+FAST_MODEL   = os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")   # 2GB, sehr schnell
+SMART_MODEL  = os.getenv("OLLAMA_SMART_MODEL", "gemma4:latest")    # 9.6GB, für tiefe Analyse
 
 
 async def claw_complete(prompt: str, system: str = "", fast: bool = False,
