@@ -574,6 +574,29 @@ async def handle_gmc_verify_info(req):
     })
 
 
+async def handle_gmc_setup(req):
+    """GET /api/gmc/setup — registriert Shopping Feed als Scheduled Fetch via SA."""
+    try:
+        from modules.gmc_feed_uploader import register_scheduled_fetch, list_feeds
+        result = await register_scheduled_fetch()
+        if result.get("ok"):
+            tg_tok = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            tg_ch  = os.getenv("TELEGRAM_CHAT_ID", "")
+            if tg_tok and tg_ch:
+                status = result.get("status", "")
+                msg = (f"🛍️ <b>Google Shopping Feed</b>\n\n"
+                       f"{'✅ Bereits registriert' if status == 'already_registered' else '🎉 JETZT REGISTRIERT!'}\n"
+                       f"Feed ID: {result.get('feed_id','?')}\n"
+                       f"URL: {result.get('feed_url', 'https://dudirudibot-mega-production.up.railway.app/api/gmc/feed.xml')}\n"
+                       f"662 Produkte gehen live bei Google Shopping!")
+                async with aiohttp.ClientSession() as s2:
+                    await s2.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                                  json={"chat_id": tg_ch, "text": msg, "parse_mode": "HTML"})
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_reddit_blast(req):
     """GET /api/reddit/blast — post to relevant subreddits immediately."""
     try:
@@ -8211,6 +8234,8 @@ async def create_app():
     app.router.add_get("/api/gmc/status",                  handle_gmc)   # alias
     app.router.add_get("/api/gmc/verify",                  handle_gmc_verify_info)
     app.router.add_get("/api/gmc/feed.xml",                handle_gmc_feed)
+    app.router.add_get("/api/gmc/setup",                   handle_gmc_setup)
+    app.router.add_post("/api/gmc/setup",                  handle_gmc_setup)
     app.router.add_get("/api/reddit/blast",                handle_reddit_blast)
     app.router.add_get("/api/reddit/status",               handle_reddit_status)
     app.router.add_post("/api/shopify/auto-fill-trending", handle_shopify_auto_fill_trending)
