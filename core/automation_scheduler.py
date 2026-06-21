@@ -10,6 +10,7 @@ import json
 import logging
 import os
 import sqlite3
+import sys
 import time
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -20,6 +21,11 @@ log = logging.getLogger("AutoScheduler")
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
+
+# Ensure project root is in sys.path so `from modules.xxx import` always works
+_BASE_STR = str(BASE_DIR)
+if _BASE_STR not in sys.path:
+    sys.path.insert(0, _BASE_STR)
 
 _SCHED_DB = DATA_DIR / "scheduler.db"
 
