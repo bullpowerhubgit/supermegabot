@@ -621,6 +621,15 @@ class CommandRouter:
             "/linkedin": self._cmd_linkedin_post,
             "/instagram": self._cmd_instagram_post,
             "/pinterest": self._cmd_pinterest_post,
+            "/shopify_stats": self._cmd_shopify_stats,
+            "/shopify_products": self._cmd_shopify_products,
+            "shopify stats": self._cmd_shopify_stats,
+            "/scheduler_status": self._cmd_scheduler_status_info,
+            "/scheduler": self._cmd_scheduler_status_info,
+            "scheduler status": self._cmd_scheduler_status_info,
+            "/health_check": self._cmd_status,
+            "/trend_analyse": self._cmd_trend_analyse,
+            "trend analyse": self._cmd_trend_analyse,
             "/printify": self._cmd_printify_status,
             "/printful": self._cmd_printful_status,
             "/gumroad": self._cmd_gumroad_status,
@@ -1361,6 +1370,86 @@ class CommandRouter:
             return f"DS24 1000 Fehler: {data.get('error','?')}"
         except Exception as e:
             return f"DS24 1000 Fehler: {e}"
+
+    async def _cmd_shopify_stats(self, text: str, session_id: str) -> str:
+        """Shopify Store Statistiken ohne AI."""
+        import aiohttp
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not shop or not token:
+            return "Shopify nicht konfiguriert (SHOPIFY_SHOP_DOMAIN fehlt)"
+        headers = {"X-Shopify-Access-Token": token}
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.get(f"https://{shop}/admin/api/{ver}/products/count.json", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    prod_count = (await r.json()).get("count", 0)
+                async with s.get(f"https://{shop}/admin/api/{ver}/orders/count.json?status=any", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    order_count = (await r.json()).get("count", 0)
+                async with s.get(f"https://{shop}/admin/api/{ver}/customers/count.json", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    cust_count = (await r.json()).get("count", 0)
+            return (f"🛒 <b>Shopify Stats</b>\n"
+                    f"📦 Produkte: {prod_count}\n"
+                    f"📋 Bestellungen: {order_count}\n"
+                    f"👥 Kunden: {cust_count}\n"
+                    f"🌐 Shop: {shop}")
+        except Exception as e:
+            return f"Shopify Stats Fehler: {e}"
+
+    async def _cmd_shopify_products(self, text: str, session_id: str) -> str:
+        """Zeigt letzte 5 Shopify-Produkte."""
+        import aiohttp
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+        token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not shop or not token:
+            return "Shopify nicht konfiguriert"
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"https://{shop}/admin/api/{ver}/products.json?limit=5&fields=title,status,variants",
+                    headers={"X-Shopify-Access-Token": token},
+                    timeout=aiohttp.ClientTimeout(total=10)
+                ) as r:
+                    products = (await r.json()).get("products", [])
+            lines = [f"🛍 <b>Letzte Shopify-Produkte</b>"]
+            for p in products:
+                price = p.get("variants", [{}])[0].get("price", "?")
+                lines.append(f"• {p['title'][:50]} — €{price}")
+            return "\n".join(lines)
+        except Exception as e:
+            return f"Shopify Produkte Fehler: {e}"
+
+    async def _cmd_scheduler_status_info(self, text: str, session_id: str) -> str:
+        """Zeigt Scheduler-Status ohne AI."""
+        import aiohttp
+        try:
+            smb_url = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(f"{smb_url}/api/automation/status", timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    data = await r.json()
+            st = data.get("status", {})
+            tasks = st.get("tasks", [])
+            running = st.get("running", False)
+            total_tasks = st.get("task_count", len(tasks))
+            ok_tasks = sum(1 for t in tasks if isinstance(t, dict) and t.get("ok", 0) == t.get("total", 0) and t.get("total", 0) > 0)
+            last_runs = []
+            for t in sorted(tasks, key=lambda x: x.get("last_run","") if isinstance(x,dict) else "", reverse=True)[:3]:
+                if isinstance(t, dict):
+                    last_runs.append(f"• {t.get('name','?')}: {t.get('last_run','')[:16]}")
+            return (f"⚙️ <b>Scheduler Status</b>\n"
+                    f"{'✅ Läuft' if running else '❌ Gestoppt'}\n"
+                    f"📊 {total_tasks} Tasks total\n"
+                    f"✅ {ok_tasks} fehlerfrei\n"
+                    f"\n<b>Zuletzt ausgeführt:</b>\n" + "\n".join(last_runs))
+        except Exception as e:
+            return f"Scheduler Fehler: {e}"
+
+    async def _cmd_trend_analyse(self, text: str, session_id: str) -> str:
+        """Trend-Analyse via AI."""
+        prompt = "Analysiere 3 aktuelle E-Commerce Trends für den deutschen Markt 2026. Kurz und konkret."
+        result = await self.bot.ai.chat([{"role": "user", "content": prompt}], task="fast")
+        return f"📈 <b>Trend-Analyse</b>\n{result}" if result and not result.startswith("KI momentan") else "📈 Trend-Analyse: KI momentan nicht verfügbar"
 
     async def _cmd_ds24_revenue(self, text: str, session_id: str) -> str:
         """Zeigt DS24 Umsatz und Bestellungen."""
