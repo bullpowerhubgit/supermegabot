@@ -4555,6 +4555,41 @@ async def task_mass_content_blaster() -> str:
         return f"MassBlast Fehler: {e}"
 
 
+async def task_openclaw_blast() -> str:
+    """Alle 2h: OpenClaw (lokales Ollama) generiert Content + blastet auf Telegram + Shopify Blog."""
+    try:
+        import aiohttp, os
+        from modules.open_claw import claw_generate_content, claw_complete
+        topics = [
+            "KI Automation System 2026 — Vollautomatisch Geld verdienen",
+            "Shopify Dropshipping mit AI — €0 Start",
+            "Digistore24 Affiliate 417 Produkte — Sofortprovision",
+            "Passives Einkommen 2026 — KI macht alles für dich",
+        ]
+        import random
+        topic = random.choice(topics)
+
+        # Content generieren
+        tg_post = await claw_generate_content(topic, "telegram")
+        text = tg_post.get("text", "")
+
+        sent = 0
+        if text:
+            token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            chat = os.getenv("TELEGRAM_CHAT_ID", "")
+            if token and chat:
+                msg = f"{text[:600]}\n\n💳 https://buy.stripe.com/dRm6oJ67ofqq6Aw8gK4F21y"
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                    r = await s.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                        json={"chat_id": chat, "text": msg[:4000], "disable_web_page_preview": True})
+                    if r.status == 200:
+                        sent = 1
+
+        return f"OpenClaw Blast: topic='{topic[:40]}' telegram={'ok' if sent else 'skip'} chars={len(text)}"
+    except Exception as e:
+        return f"OpenClaw Blast Fehler: {e}"
+
+
 async def task_customer_export() -> str:
     """Täglich: Shopify-Kunden → Klaviyo aiitec + Mailchimp exportieren."""
     try:
@@ -4959,6 +4994,8 @@ TASKS = [
     ("email_doctor",             task_email_doctor,              3600, 23600), # 1h
     # ── 1000 ITEMS PER PLATFORM — alle 2h Content-Mass-Blaster ─────────────
     ("mass_content_blaster",     task_mass_content_blaster,      7200, 23700), # 2h
+    # ── OPENCLAW — Lokales Ollama AI Content + Telegram Blast ────────────────
+    ("openclaw_blast",           task_openclaw_blast,            7200, 23800), # 2h — lokale KI Blast
 ]
 
 
