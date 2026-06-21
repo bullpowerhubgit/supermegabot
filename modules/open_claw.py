@@ -14,8 +14,10 @@ log = logging.getLogger("OpenClaw")
 
 OLLAMA_BASE  = os.getenv("OLLAMA_BASE", "http://localhost:11434")
 CLAW_MODEL   = os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest")   # Default: fast
-FAST_MODEL   = os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")   # 2GB, sehr schnell
-SMART_MODEL  = os.getenv("OLLAMA_SMART_MODEL", "gemma4:latest")    # 9.6GB, für tiefe Analyse
+FAST_MODEL   = os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")   # fast posts
+SMART_MODEL  = os.getenv("OLLAMA_SMART_MODEL", "qwen3.6:latest")   # best German content
+
+_THINKING_MODELS = {"qwen3", "qwen3.6", "qwen3:"}  # models with internal reasoning
 
 
 async def claw_complete(prompt: str, system: str = "", fast: bool = False,
@@ -27,16 +29,25 @@ async def claw_complete(prompt: str, system: str = "", fast: bool = False,
         messages.append({"role": "system", "content": system})
     messages.append({"role": "user", "content": prompt})
 
+    # qwen3.6 needs more tokens because it uses internal chain-of-thought
+    is_thinking = any(t in chosen_model for t in _THINKING_MODELS)
+    actual_tokens = (max_tokens + 2000) if is_thinking else max_tokens
+    actual_timeout = 180 if is_thinking else 120
+
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=actual_timeout)) as s:
             async with s.post(
                 f"{OLLAMA_BASE}/api/chat",
                 json={"model": chosen_model, "messages": messages,
-                      "stream": False, "options": {"num_predict": max_tokens}},
+                      "stream": False, "options": {"num_predict": actual_tokens}},
             ) as r:
                 if r.status == 200:
                     d = await r.json(content_type=None)
-                    text = d.get("message", {}).get("content", "")
+                    msg = d.get("message", {})
+                    text = msg.get("content", "")
+                    # For thinking models, content is the actual answer (thinking is separate)
+                    if not text and msg.get("thinking"):
+                        text = msg.get("thinking", "")[:500]  # fallback: use reasoning
                     log.info("OpenClaw OK model=%s chars=%d", chosen_model, len(text))
                     return text
                 body = await r.text()
