@@ -22,7 +22,7 @@ _GROQ_MODEL         = "llama-3.1-8b-instant"
 _OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
 _GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
 _OLLAMA_BASE        = lambda: os.getenv("OLLAMA_BASE", "http://localhost:11434")
-_OLLAMA_MODEL       = lambda: os.getenv("OLLAMA_CLAW_MODEL", "qwen3.6:latest")
+_OLLAMA_MODEL       = lambda: os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest")
 _OLLAMA_FAST        = lambda: os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")
 _OLLAMA_FIRST       = os.getenv("OLLAMA_FIRST", "true").lower() != "false"
 
