@@ -1045,7 +1045,19 @@ async def run_full_autonomy_cycle(quick: bool = False, restock: bool = True) -> 
     except Exception:
         pass
 
-    return {"ok": True, "mode": "full", "steps_ok": ok_count, **results}
+    cycle_result = {"ok": True, "mode": "full", "steps_ok": ok_count, **results}
+    try:
+        from modules.brutus_clone import BrutusClone
+        import asyncio as _asyncio
+        bc = BrutusClone("shopify_full_autonomy")
+        _asyncio.create_task(bc.fire(
+            "Shopify Autonomy-Zyklus abgeschlossen",
+            f"{ok_count} Schritte erfolgreich — Store vollautomatisch aktualisiert",
+            "https://autopilot-store-suite-fmbka.myshopify.com"
+        ))
+    except Exception:
+        pass
+    return cycle_result
 
 
 # ── Public aliases ────────────────────────────────────────────────────────────
