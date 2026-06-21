@@ -6821,8 +6821,9 @@ async def handle_youtube_status_new(request: web.Request) -> web.Response:
 
 async def handle_email_blast(request: web.Request) -> web.Response:
     try:
-        from modules.mailchimp_autonomy import send_weekly_digest
-        return web.json_response(await send_weekly_digest())
+        from modules.email_client import send_payment_blast
+        result = await send_payment_blast()
+        return web.json_response({"ok": True, "action": "payment_blast", **result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
