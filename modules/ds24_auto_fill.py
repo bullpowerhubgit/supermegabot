@@ -176,59 +176,13 @@ Rudolf Sarkany | bullpowersrtkennels@gmail.com
 </body></html>"""
 
     async def _ai_complete(self, prompt: str) -> str:
-        """AI Completion mit Fallback-Kette"""
-        providers = [
-            self._perplexity_complete,
-            self._openai_complete,
-            self._openrouter_complete,
-        ]
-        for provider in providers:
-            try:
-                result = await provider(prompt)
-                if result:
-                    return result
-            except Exception as e:
-                logger.warning(f"AI provider failed: {e}")
-        return ""
-
-    async def _perplexity_complete(self, prompt: str) -> str:
-        key = os.getenv("PERPLEXITY_API_KEY", "")
-        if not key:
+        """AI Completion via zentraler ai_client Fallback-Kette."""
+        try:
+            from modules.ai_client import ai_complete
+            return await ai_complete(prompt, max_tokens=2000)
+        except Exception as e:
+            logger.warning(f"AI provider failed: {e}")
             return ""
-        async with self.session.post(
-            "https://api.perplexity.ai/chat/completions",
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": "sonar", "messages": [{"role": "user", "content": prompt}], "max_tokens": 2000},
-            timeout=aiohttp.ClientTimeout(total=30)
-        ) as r:
-            d = await r.json()
-            return d["choices"][0]["message"]["content"]
-
-    async def _openai_complete(self, prompt: str) -> str:
-        key = os.getenv("OPENAI_API_KEY", "")
-        if not key:
-            return ""
-        async with self.session.post(
-            "https://api.openai.com/v1/chat/completions",
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": "gpt-4o-mini", "messages": [{"role": "user", "content": prompt}], "max_tokens": 2000},
-            timeout=aiohttp.ClientTimeout(total=30)
-        ) as r:
-            d = await r.json()
-            return d["choices"][0]["message"]["content"]
-
-    async def _openrouter_complete(self, prompt: str) -> str:
-        key = os.getenv("OPENROUTER_API_KEY", "")
-        if not key:
-            return ""
-        async with self.session.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-            json={"model": "mistralai/mistral-7b-instruct", "messages": [{"role": "user", "content": prompt}], "max_tokens": 2000},
-            timeout=aiohttp.ClientTimeout(total=30)
-        ) as r:
-            d = await r.json()
-            return d["choices"][0]["message"]["content"]
 
     async def send_telegram(self, text: str):
         if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
