@@ -20,11 +20,16 @@ _GEMINI     = lambda: os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY"
 _OPENROUTER_MODEL   = "liquid/lfm-2.5-1.2b-instruct:free"
 _GROQ_MODEL         = "llama-3.1-8b-instant"
 _OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
-_GEMINI_URL         = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent"
+_GEMINI_URLS        = [
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent",
+]
 _OLLAMA_BASE        = lambda: os.getenv("OLLAMA_BASE", "http://localhost:11434")
 _OLLAMA_MODEL       = lambda: os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest")
 _OLLAMA_FAST        = lambda: os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")
 _OLLAMA_FIRST       = os.getenv("OLLAMA_FIRST", "true").lower() != "false"
+_OLLAMA_TIMEOUT     = int(os.getenv("OLLAMA_TIMEOUT", "5"))  # short timeout so cloud fallback is fast
 
 
 async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", max_tokens: int = 1200) -> str:
@@ -33,11 +38,11 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
 
     messages = [{"role": "user", "content": f"{system}\n\n{prompt}" if system else prompt}]
 
-    # 0. OpenClaw — lokales Ollama, kostenlos, immer zuerst versuchen
+    # 0. OpenClaw — lokales Ollama, kostenlos (kurzer Timeout damit Cloud-Fallback schnell greift)
     if _OLLAMA_FIRST:
         chosen = _OLLAMA_FAST() if model_hint == "fast" else _OLLAMA_MODEL()
         try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=120)) as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=_OLLAMA_TIMEOUT)) as s:
                 msg_list = []
                 if system:
                     msg_list.append({"role": "system", "content": system})
@@ -119,28 +124,32 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("Groq error: %s", e)
 
-    # 4. Gemini 1.5 Flash (GEMINI_API_KEY — kostenlos bis 1500 req/Tag)
+    # 4. Gemini (try 3 free models — 2.0-flash-lite → 1.5-flash → 1.5-flash-8b)
     if _GEMINI():
-        try:
-            full_prompt = f"{system}\n\n{prompt}" if system else prompt
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-                async with s.post(
-                    f"{_GEMINI_URL}?key={_GEMINI()}",
-                    headers={"Content-Type": "application/json"},
-                    json={"contents": [{"parts": [{"text": full_prompt}]}],
-                          "generationConfig": {"maxOutputTokens": max_tokens}},
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json(content_type=None)
-                        text = d.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-                        if text:
-                            return text
-                    if r.status in (400, 401, 403):
-                        log.debug("Gemini skip (%s)", r.status)
-                    else:
-                        log.debug("Gemini %s", r.status)
-        except Exception as e:
-            log.debug("Gemini error: %s", e)
+        full_prompt = f"{system}\n\n{prompt}" if system else prompt
+        for gemini_url in _GEMINI_URLS:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+                    async with s.post(
+                        f"{gemini_url}?key={_GEMINI()}",
+                        headers={"Content-Type": "application/json"},
+                        json={"contents": [{"parts": [{"text": full_prompt}]}],
+                              "generationConfig": {"maxOutputTokens": max_tokens}},
+                    ) as r:
+                        if r.status == 200:
+                            d = await r.json(content_type=None)
+                            text = d.get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+                            if text:
+                                model_name = gemini_url.split("models/")[1].split(":")[0]
+                                log.debug("Gemini OK via %s", model_name)
+                                return text
+                        if r.status in (400, 401, 403):
+                            log.debug("Gemini skip (%s) — invalid key", r.status)
+                            break  # key invalid, don't try other models
+                        log.debug("Gemini %s on %s — try next model", r.status, gemini_url.split("models/")[1].split(":")[0])
+            except Exception as e:
+                log.debug("Gemini error: %s", e)
+                break
 
     # 5. OpenRouter (free models available — any valid API key)
     if _OPENROUTER():
