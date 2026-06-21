@@ -4469,6 +4469,18 @@ async def task_alibaba_import() -> str:
         return f"Alibaba Import Fehler: {e}"
 
 
+async def task_viral_distributor() -> str:
+    """30min — Echtzeit-Trends (Google+Reddit) → 8-Kanal Content → BrutusClone blast."""
+    try:
+        from modules.viral_traffic_distributor import run_viral_cycle
+        r = await run_viral_cycle(max_trends=3)
+        hits = r.get("total_hits", 0)
+        dist = r.get("distributed", 0)
+        return f"ViralDistributor: {dist} Trends | {hits} Channel-Hits | Cycle #{r.get('cycle',0)}"
+    except Exception as e:
+        return f"ViralDistributor Fehler: {e}"
+
+
 async def task_mega_agent_orchestrator() -> str:
     """Alle 4h — koordiniert alle 12 Plattform-Agenten parallel: Klaviyo, Mailchimp, Twilio, AliExpress, eBay, Amazon, Fiverr, Upwork, TikTok, Reddit, Discord, YouTube."""
     try:
@@ -5012,6 +5024,8 @@ TASKS = [
     ("youtube_autonomy_cycle",   task_youtube_autonomy_cycle,   14400, 24300), # 4h — YouTube vollautonomer Cycle
     # ── ALIBABA — Trending Products → Shopify ────────────────────────────
     ("alibaba_import",           task_alibaba_import,           21600, 24400), # 6h — Alibaba/1688 → Shopify
+    # ── VIRAL TRAFFIC DISTRIBUTOR — Echtzeit-Trends → 8 Kanäle simultan ─
+    ("viral_distributor",        task_viral_distributor,         1800, 24500), # 30min — Trends → alle Kanäle
 ]
 
 
