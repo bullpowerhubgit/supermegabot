@@ -3298,6 +3298,38 @@ async def handle_telegram_webhook(req):
     try:
         data = await req.json()
 
+        # ── Channel post detector — auto-set TELEGRAM_CHANNEL_ID ──────────────
+        ch_post = data.get("channel_post")
+        if ch_post:
+            ch = ch_post.get("chat", {})
+            ch_id  = ch.get("id")
+            ch_title = ch.get("title", "?")
+            ch_username = ch.get("username", "")
+            if ch_id and str(ch_id) != os.getenv("TELEGRAM_CHANNEL_ID", ""):
+                os.environ["TELEGRAM_CHANNEL_ID"] = str(ch_id)
+                log.info("Kanal erkannt: %s id=%s @%s", ch_title, ch_id, ch_username)
+                # Telegram-Bestätigung an Rudolf
+                token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                chat  = os.getenv("TELEGRAM_CHAT_ID", "")
+                if token and chat:
+                    try:
+                        async with aiohttp.ClientSession() as _cs:
+                            await _cs.post(
+                                f"https://api.telegram.org/bot{token}/sendMessage",
+                                json={"chat_id": chat,
+                                      "text": f"✅ <b>Kanal erkannt!</b>\n\n"
+                                              f"Name: <b>{ch_title}</b>\n"
+                                              f"ID: <code>{ch_id}</code>\n"
+                                              f"@{ch_username}\n\n"
+                                              f"Ab sofort gehen alle Marketing-Posts dorthin!\n"
+                                              f"TELEGRAM_CHANNEL_ID={ch_id} gesetzt.",
+                                      "parse_mode": "HTML"},
+                                timeout=aiohttp.ClientTimeout(total=8),
+                            )
+                    except Exception:
+                        pass
+            return web.Response(status=200)
+
         # Handle inline button presses (callback_query) first
         cb = data.get("callback_query")
         if cb:
@@ -3508,7 +3540,7 @@ async def handle_telegram_setup(req):
         webhook_url = f"{base_url}/api/telegram/webhook"
         async with session.post(
             f"https://api.telegram.org/bot{token}/setWebhook",
-            json={"url": webhook_url, "allowed_updates": ["message", "callback_query", "edited_message"]}
+            json={"url": webhook_url, "allowed_updates": ["message", "callback_query", "edited_message", "channel_post"]}
         ) as r:
             results["setWebhook"] = await r.json()
 
