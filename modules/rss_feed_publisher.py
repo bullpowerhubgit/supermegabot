@@ -123,7 +123,7 @@ async def generate_rss_feed(limit: int = 20) -> dict:
                     f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
                     json={"chat_id": TG_CHAT,
                           "text": f"📡 *RSS Feed aktualisiert*\n{len(articles)} Artikel\nFeed: {STORE_URL}/feed.rss",
-                          "parse_mode": "Markdown"},
+                          "parse_mode": "HTML"},
                 )
         except Exception:
             pass

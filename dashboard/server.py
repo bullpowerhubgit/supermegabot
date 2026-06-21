@@ -3286,7 +3286,7 @@ Oder einfach schreib mir — ich antworte sofort! 💬"""
 
 
 async def _tg_send(bot_token: str, chat_id: int, text: str, reply_markup: dict = None):
-    payload = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
+    payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML"}
     if reply_markup:
         payload["reply_markup"] = reply_markup
     async with aiohttp.ClientSession() as s:
@@ -8857,7 +8857,7 @@ async def _tg_notify(text: str) -> None:
         async with _aio.ClientSession() as s:
             await s.post(
                 f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+                json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
                 timeout=_aio.ClientTimeout(total=5)
             )
     except Exception:
@@ -9257,7 +9257,7 @@ async def _hermes_push_event(service: str, event_type: str, message: str,
                 await s.post(
                     f"https://api.telegram.org/bot{tg_token}/sendMessage",
                     json={"chat_id": tg_chat, "text": f"[{service}/{channel}] {message}",
-                          "parse_mode": "Markdown"},
+                          "parse_mode": "HTML"},
                     timeout=_aio.ClientTimeout(total=5)
                 )
             except Exception:

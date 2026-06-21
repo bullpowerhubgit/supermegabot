@@ -59,7 +59,7 @@ def _tg_send_sync(text: str, chat_id: str = None) -> None:
     cid = chat_id or TELEGRAM_CHAT_ID()
     if not token or not cid:
         return
-    data = json.dumps({"chat_id": cid, "text": text, "parse_mode": "Markdown"}).encode()
+    data = json.dumps({"chat_id": cid, "text": text, "parse_mode": "HTML"}).encode()
     req = urllib.request.Request(
         f"https://api.telegram.org/bot{token}/sendMessage",
         data=data, method="POST",

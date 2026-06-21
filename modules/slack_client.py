@@ -85,7 +85,7 @@ async def _tg_fallback(text: str) -> bool:
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat_id, "text": text, "parse_mode": "Markdown"},
+                json={"chat_id": chat_id, "text": text, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=5),
             ) as r:
                 return r.status == 200

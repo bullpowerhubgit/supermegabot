@@ -142,7 +142,7 @@ async def _post_telegram(content: dict) -> bool:
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
-                json={"chat_id": TG_CHAT, "text": text[:4096], "parse_mode": "Markdown",
+                json={"chat_id": TG_CHAT, "text": text[:4096], "parse_mode": "HTML",
                       "disable_web_page_preview": False},
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as r:

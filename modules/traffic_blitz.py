@@ -556,7 +556,7 @@ async def post_telegram_seo(topic: str | None = None) -> bool:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             await s.post(
                 f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat, "text": text, "parse_mode": "Markdown"},
+                json={"chat_id": chat, "text": text, "parse_mode": "HTML"},
             )
         return True
     except Exception:

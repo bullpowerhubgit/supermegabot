@@ -35,13 +35,13 @@ class BrutusClone:
         if _TELEGRAM_TOKEN():
             try:
                 import aiohttp
-                msg = f"{'🔥' if urgent else '📢'} *{title}*\n\n{content}"
+                msg = f"{'🔥' if urgent else '📢'} <b>{title}</b>\n\n{content}"
                 if link:
                     msg += f"\n\n🔗 {link}"
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
                     async with s.post(
                         f"https://api.telegram.org/bot{_TELEGRAM_TOKEN()}/sendMessage",
-                        json={"chat_id": _TELEGRAM_CHAT(), "text": msg, "parse_mode": "Markdown",
+                        json={"chat_id": _TELEGRAM_CHAT(), "text": msg, "parse_mode": "HTML",
                               "disable_web_page_preview": True}
                     ) as r:
                         results["telegram"] = "ok" if r.status == 200 else f"error:{r.status}"
