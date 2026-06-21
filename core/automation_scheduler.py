@@ -4423,6 +4423,52 @@ async def task_upwork_proposal_gen() -> str:
         return f"Upwork Proposal Fehler: {e}"
 
 
+async def task_fiverr_autonomy_cycle() -> str:
+    try:
+        from modules.fiverr_autonomy import run_fiverr_cycle
+        r = await run_fiverr_cycle()
+        return f"Fiverr Autonomy: {r.get('gigs',0)} Gigs | {r.get('channels',0)} Kanäle | {r.get('revenue',0)} Revenue"
+    except Exception as e:
+        return f"Fiverr Autonomy Fehler: {e}"
+
+
+async def task_upwork_autonomy_cycle() -> str:
+    try:
+        from modules.upwork_autonomy import run_upwork_cycle
+        r = await run_upwork_cycle()
+        return f"Upwork Autonomy: {r.get('jobs',0)} Jobs | {r.get('proposals',0)} Proposals"
+    except Exception as e:
+        return f"Upwork Autonomy Fehler: {e}"
+
+
+async def task_gumroad_autonomy_cycle() -> str:
+    try:
+        from modules.gumroad_autonomy import run_gumroad_cycle
+        r = await run_gumroad_cycle()
+        return f"Gumroad Autonomy: {r.get('products',0)} Produkte | {r.get('blasted',0)} Geblastet"
+    except Exception as e:
+        return f"Gumroad Autonomy Fehler: {e}"
+
+
+async def task_youtube_autonomy_cycle() -> str:
+    try:
+        from modules.youtube_autonomy import run_youtube_cycle
+        r = await run_youtube_cycle()
+        return f"YouTube Autonomy: {r.get('videos',0)} Ideen | {r.get('posted',0)} Gepostet"
+    except Exception as e:
+        return f"YouTube Autonomy Fehler: {e}"
+
+
+async def task_alibaba_import() -> str:
+    """6h — Alibaba/1688 trending products → Shopify via AliExpress API bridge."""
+    try:
+        from modules.alibaba_autonomy import run_alibaba_cycle
+        r = await run_alibaba_cycle()
+        return f"Alibaba: {r.get('imported',0)} importiert | {r.get('published',0)} publiziert"
+    except Exception as e:
+        return f"Alibaba Import Fehler: {e}"
+
+
 async def task_mega_agent_orchestrator() -> str:
     """Alle 4h — koordiniert alle 12 Plattform-Agenten parallel: Klaviyo, Mailchimp, Twilio, AliExpress, eBay, Amazon, Fiverr, Upwork, TikTok, Reddit, Discord, YouTube."""
     try:
@@ -4959,6 +5005,13 @@ TASKS = [
     ("email_doctor",             task_email_doctor,              3600, 23600), # 1h
     # ── 1000 ITEMS PER PLATFORM — alle 2h Content-Mass-Blaster ─────────────
     ("mass_content_blaster",     task_mass_content_blaster,      7200, 23700), # 2h
+    # ── FULL PLATFORM AUTONOMY CYCLES — alle run_xxx_cycle() Funktionen ────
+    ("fiverr_autonomy_cycle",    task_fiverr_autonomy_cycle,    21600, 24000), # 6h — Fiverr vollautonomer Cycle
+    ("upwork_autonomy_cycle",    task_upwork_autonomy_cycle,    21600, 24100), # 6h — Upwork vollautonomer Cycle
+    ("gumroad_autonomy_cycle",   task_gumroad_autonomy_cycle,   21600, 24200), # 6h — Gumroad vollautonomer Cycle
+    ("youtube_autonomy_cycle",   task_youtube_autonomy_cycle,   14400, 24300), # 4h — YouTube vollautonomer Cycle
+    # ── ALIBABA — Trending Products → Shopify ────────────────────────────
+    ("alibaba_import",           task_alibaba_import,           21600, 24400), # 6h — Alibaba/1688 → Shopify
 ]
 
 
