@@ -8391,6 +8391,7 @@ async def create_app():
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
     app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
     app.router.add_get("/api/facebook/auth",          handle_facebook_auth)
+    app.router.add_get("/api/facebook/oauth",         handle_facebook_auth)   # alias
     app.router.add_get("/api/facebook/refresh",       handle_facebook_refresh)
     app.router.add_get("/api/facebook/callback",      handle_facebook_callback)
     app.router.add_get("/api/facebook/status",        handle_facebook_status)
