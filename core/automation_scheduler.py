@@ -649,7 +649,7 @@ async def task_upwork_sync() -> str:
 
 
 async def task_shopify_orders_alert() -> str:
-    """Check for new Shopify orders every 10 min and alert via Telegram."""
+    """Check for new Shopify orders every 10 min, alert abandoned carts, warn if no payment gateway."""
     try:
         import aiohttp
         token  = os.getenv("SHOPIFY_ACCESS_TOKEN", "") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
@@ -658,41 +658,98 @@ async def task_shopify_orders_alert() -> str:
             return "Shopify nicht konfiguriert"
         base = f"https://{domain}" if not domain.startswith("http") else domain
         headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
+        ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        results = []
 
-        state_file = DATA_DIR / "shopify_last_order.json"
-        last_id = 0
-        if state_file.exists():
-            try:
-                last_id = json.loads(state_file.read_text()).get("last_id", 0)
-            except Exception:
-                pass
-
-        url = f"{base}/admin/api/{os.getenv('SHOPIFY_API_VERSION','2024-10')}/orders.json?status=any&limit=10&order=created_at+desc"
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
-            async with s.get(url, headers=headers) as r:
-                if r.status != 200:
-                    return f"Shopify HTTP {r.status}"
-                data = await r.json()
+            # ── New Orders ────────────────────────────────────────────────────
+            state_file = DATA_DIR / "shopify_last_order.json"
+            last_id = 0
+            if state_file.exists():
+                try:
+                    last_id = json.loads(state_file.read_text()).get("last_id", 0)
+                except Exception:
+                    pass
 
-        orders = data.get("orders", [])
-        if not orders:
-            return "Keine Bestellungen"
+            async with s.get(f"{base}/admin/api/{ver}/orders.json?status=any&limit=10&order=created_at+desc",
+                             headers=headers) as r:
+                data = await r.json(content_type=None) if r.status == 200 else {}
 
-        new_orders = [o for o in orders if o.get("id", 0) > last_id]
-        if new_orders:
-            state_file.write_text(json.dumps({"last_id": orders[0]["id"]}))
-            lines = [f"🛍️ <b>Shopify — {len(new_orders)} neue Bestellung(en)!</b>"]
-            for o in new_orders[:5]:
-                total = o.get("total_price", "?")
-                currency = o.get("currency", "EUR")
-                name = o.get("billing_address", {}).get("first_name", "Kunde")
-                lines.append(f"  • #{o.get('order_number','?')} — {name} — {total} {currency}")
-            await _tg("\n".join(lines))
-            return f"{len(new_orders)} neue Shopify-Bestellungen, Alert gesendet"
-        elif last_id == 0 and orders:
-            state_file.write_text(json.dumps({"last_id": orders[0]["id"]}))
-            return f"Initialisiert: letzte Order-ID = {orders[0]['id']}"
-        return "Keine neuen Bestellungen"
+            orders = data.get("orders", [])
+            if orders:
+                new_orders = [o for o in orders if o.get("id", 0) > last_id]
+                if new_orders:
+                    state_file.write_text(json.dumps({"last_id": orders[0]["id"]}))
+                    lines = [f"🛍️ <b>Shopify — {len(new_orders)} neue Bestellung(en)!</b>"]
+                    for o in new_orders[:5]:
+                        total = o.get("total_price", "?")
+                        currency = o.get("currency", "EUR")
+                        name = (o.get("billing_address") or {}).get("first_name", "Kunde")
+                        email = o.get("email", "?")
+                        fulfill = o.get("fulfillment_status") or "unfulfilled"
+                        lines.append(f"  • #{o.get('order_number','?')} — {name} ({email}) — {total} {currency} | {fulfill}")
+                    await _tg("\n".join(lines))
+                    results.append(f"{len(new_orders)} neue Bestellungen")
+                elif last_id == 0:
+                    state_file.write_text(json.dumps({"last_id": orders[0]["id"]}))
+                    results.append(f"Initialisiert: Order-ID={orders[0]['id']}")
+                else:
+                    results.append("0 neue Bestellungen")
+            else:
+                results.append("0 Bestellungen gesamt")
+
+            # ── Abandoned Carts ───────────────────────────────────────────────
+            cart_state = DATA_DIR / "shopify_abandoned_carts.json"
+            seen_tokens: set = set()
+            if cart_state.exists():
+                try:
+                    seen_tokens = set(json.loads(cart_state.read_text()).get("seen", []))
+                except Exception:
+                    pass
+
+            async with s.get(f"{base}/admin/api/{ver}/checkouts.json?limit=50", headers=headers) as r:
+                cdata = await r.json(content_type=None) if r.status == 200 else {}
+
+            checkouts = cdata.get("checkouts", [])
+            new_carts = [c for c in checkouts if c.get("token") not in seen_tokens
+                         and c.get("email") and not c.get("completed_at")]
+            if new_carts:
+                seen_tokens.update(c.get("token") for c in checkouts)
+                cart_state.write_text(json.dumps({"seen": list(seen_tokens)}))
+                lines = [f"🛒 <b>Shopify — {len(new_carts)} abgebrochene(r) Checkout(s)!</b>"]
+                for c in new_carts[:3]:
+                    email = c.get("email", "?")
+                    total = c.get("total_price", "?")
+                    items = [li.get("title", "?") for li in c.get("line_items", [])[:2]]
+                    recover_url = c.get("abandoned_checkout_url", "")
+                    lines.append(f"  • {email} — €{total} — {', '.join(items)}")
+                    if recover_url:
+                        lines.append(f"    👉 Recovery: {recover_url}")
+                # Check if gateway is missing — common cause of abandonments
+                no_gateway = any(c.get("gateway") is None for c in new_carts)
+                if no_gateway:
+                    lines.append("\n⚠️ <b>ACHTUNG: Kein Zahlungsanbieter konfiguriert!</b>")
+                    lines.append("→ Shopify Admin → Einstellungen → Zahlungen → Anbieter hinzufügen")
+                    lines.append("→ <a href='https://admin.shopify.com/store/autopilot-store-suite-fmbka/settings/payments'>Jetzt öffnen</a>")
+                await _tg("\n".join(lines))
+                results.append(f"{len(new_carts)} abgebrochene Checkouts")
+            elif not seen_tokens and checkouts:
+                seen_tokens.update(c.get("token") for c in checkouts)
+                cart_state.write_text(json.dumps({"seen": list(seen_tokens)}))
+                # First run — check if existing carts have no gateway
+                no_gw = [c for c in checkouts if not c.get("gateway") and not c.get("completed_at")]
+                if no_gw:
+                    msg = (
+                        f"⚠️ <b>Shopify: Zahlungsanbieter fehlt!</b>\n"
+                        f"{len(no_gw)} abgebrochene(r) Checkout(s) ohne Zahlungsmethode gefunden.\n\n"
+                        f"Bitte jetzt einrichten:\n"
+                        f"→ <a href='https://admin.shopify.com/store/autopilot-store-suite-fmbka/settings/payments'>Shopify Einstellungen → Zahlungen</a>\n"
+                        f"Optionen: Shopify Payments, PayPal, oder Stripe"
+                    )
+                    await _tg(msg)
+                    results.append(f"Warnung: {len(no_gw)} Checkouts ohne Zahlungsanbieter")
+
+        return " | ".join(results) if results else "OK"
     except Exception as e:
         return f"Fehler: {e}"
 
