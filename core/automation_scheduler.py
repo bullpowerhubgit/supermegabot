@@ -4622,6 +4622,21 @@ async def task_quantum_self_repair() -> str:
             return f"Quantum Fehler: {e}"
 
 
+async def task_instagram_pipeline() -> str:
+    """Alle 3h: KI-Content generieren + auf Facebook AIITEC + Instagram @aaiitecc posten."""
+    try:
+        from modules.instagram_pipeline import run_pipeline
+        result = await run_pipeline()
+        fb_ok = result.get("facebook", {}).get("ok", False)
+        ig_ok = result.get("instagram", {}).get("ok", False)
+        err   = result.get("error", "")
+        if err:
+            return f"InstagramPipeline: {err[:80]}"
+        return f"InstagramPipeline: FB={'✅' if fb_ok else '❌'} IG={'✅' if ig_ok else '❌'} | {result.get('title','')[:40]}"
+    except Exception as e:
+        return f"InstagramPipeline Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 TASKS = [
@@ -4996,6 +5011,8 @@ TASKS = [
     ("mass_content_blaster",     task_mass_content_blaster,      7200, 23700), # 2h
     # ── OPENCLAW — Lokales Ollama AI Content + Telegram Blast ────────────────
     ("openclaw_blast",           task_openclaw_blast,            7200, 23800), # 2h — lokale KI Blast
+    # ── INSTAGRAM + FACEBOOK PIPELINE — Alle 3h auf FB AIITEC + IG @aaiitecc posten ──
+    ("instagram_pipeline",       task_instagram_pipeline,        10800, 24000), # 3h — Social Pipeline
 ]
 
 
