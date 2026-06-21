@@ -2,8 +2,8 @@
 """
 DS24 Affiliate Blaster — Alle genehmigten Affiliate-Produkte blasten
 ======================================================================
-22 genehmigte DS24-Affiliate-Produkte mit aktualisierten Links (2026-06-20).
-Blasted alle auf Telegram, Slack, Discord, LinkedIn, Shopify Blog, Mailchimp, Klaviyo.
+Blasted externe Affiliate-Produkte UND eigene aiitec-Produkte (704xxx)
+auf Telegram, Slack, Discord, LinkedIn, Shopify Blog, Mailchimp, Klaviyo.
 """
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ from datetime import datetime, timezone
 log = logging.getLogger("DS24AffiliateBlaster")
 
 AFFILIATE_ID = os.getenv("DS24_AFFILIATE_ID", "user37405262")
+DS24_API_KEY = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
 
 # ─── Alle 22 genehmigten Affiliate-Produkte (Links von DS24, 2026-06-20) ─────
 
@@ -247,6 +248,50 @@ async def blast_random(count: int = 3) -> dict:
     return {"ok": True, "blasted": blasted, "selected": len(selection)}
 
 
+async def get_own_aiitec_products(limit: int = 30) -> list:
+    """Eigene aiitec-Produkte (704xxx) dynamisch von DS24 API holen."""
+    try:
+        import aiohttp
+        url = "https://www.digistore24.com/api/call/listProducts/JSON/"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers={"X-DS-API-KEY": DS24_API_KEY},
+                                   timeout=aiohttp.ClientTimeout(total=30)) as resp:
+                data = await resp.json()
+        products = data.get("data", {}).get("products", [])
+        result = []
+        for p in products[:limit]:
+            pid = str(p.get("id", ""))
+            name = p.get("name", f"Produkt {pid}")
+            result.append({
+                "id": pid,
+                "seller": "aiitec",
+                "title": name,
+                "link": f"https://www.checkout-ds24.com/redir/{pid}/{AFFILIATE_ID}/",
+                "niche": "business",
+                "category": "Digital",
+                "own_product": True,
+            })
+        log.info("Eigene aiitec-Produkte geladen: %d", len(result))
+        return result
+    except Exception as e:
+        log.warning("Konnte aiitec-Produkte nicht laden: %s", e)
+        return []
+
+
+async def blast_own_products(limit: int = 10) -> dict:
+    """Top-N eigene aiitec-Produkte blasten (Direktverkauf — 100% Erlös)."""
+    products = await get_own_aiitec_products(limit=limit)
+    if not products:
+        return {"ok": False, "error": "Keine eigenen Produkte gefunden"}
+    blasted = 0
+    for p in products:
+        r = await blast_single_product(p, channels=["telegram", "slack", "discord"])
+        if r.get("ok"):
+            blasted += 1
+        await asyncio.sleep(1.5)
+    return {"ok": True, "blasted": blasted, "total": len(products), "type": "own_products"}
+
+
 async def update_links_in_env() -> dict:
     """Speichert alle Affiliate-Links als DS24_AFFILIATE_LINKS_JSON in Supabase."""
     try:
@@ -290,5 +335,12 @@ async def run_affiliate_cycle() -> dict:
 
 
 async def run_daily_affiliate_blast() -> dict:
-    """Täglich: alle 22 Produkte auf allen Kanälen."""
-    return await blast_all_approved(delay=2.0)
+    """Täglich: alle externen Affiliate-Produkte + Top-20 eigene aiitec-Produkte."""
+    external = await blast_all_approved(delay=2.0)
+    own = await blast_own_products(limit=20)
+    return {
+        "ok": True,
+        "external_blasted": external.get("blasted", 0),
+        "own_blasted": own.get("blasted", 0),
+        "total_blasted": external.get("blasted", 0) + own.get("blasted", 0),
+    }
