@@ -154,6 +154,19 @@ async def exchange_code(code: str) -> Dict:
                 }
                 _save_tokens(tokens)
                 _update_env_token(tokens["access_token"])
+                # Persist refresh_token to Railway so it survives restarts
+                if tokens.get("refresh_token"):
+                    try:
+                        import subprocess
+                        subprocess.run(
+                            ["railway", "variables", "set",
+                             f"GOOGLE_REFRESH_TOKEN={tokens['refresh_token']}",
+                             f"GOOGLE_ACCESS_TOKEN={tokens['access_token']}",
+                             "--service", "dudirudibot-mega"],
+                            capture_output=True, timeout=30
+                        )
+                    except Exception:
+                        pass
                 log.info("Google OAuth2 Token erhalten und gespeichert")
                 return {"ok": True, **tokens}
     except Exception as e:
