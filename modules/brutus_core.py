@@ -64,29 +64,16 @@ JSON:
   "seo_keywords": ["keyword1", "keyword2", "keyword3"]
 }}"""
 
-    for key_env, url, model in [
-        ("PERPLEXITY_API_KEY", "https://api.perplexity.ai/chat/completions", "sonar"),
-        ("OPENAI_API_KEY", "https://api.openai.com/v1/chat/completions", "gpt-4o-mini"),
-        ("OPENROUTER_API_KEY", "https://openrouter.ai/api/v1/chat/completions", "mistralai/mistral-7b-instruct"),
-    ]:
-        key = os.getenv(key_env, "")
-        if not key:
-            continue
-        try:
-            async with session.post(
-                url,
-                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                json={"model": model, "messages": [{"role": "user", "content": prompt}], "max_tokens": 1500},
-                timeout=aiohttp.ClientTimeout(total=25)
-            ) as r:
-                d = await r.json()
-                text = d["choices"][0]["message"]["content"]
-                import re, json as _json
-                m = re.search(r'\{.*\}', text, re.DOTALL)
-                if m:
-                    return _json.loads(m.group())
-        except Exception as e:
-            logger.warning(f"BrutusCore AI {key_env}: {e}")
+    try:
+        from modules.ai_client import ai_complete
+        import re, json as _json
+        text = await ai_complete(prompt, max_tokens=1500)
+        if text:
+            m = re.search(r'\{.*\}', text, re.DOTALL)
+            if m:
+                return _json.loads(m.group())
+    except Exception as e:
+        logger.warning(f"BrutusCore AI: {e}")
     return {}
 
 
