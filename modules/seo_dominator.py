@@ -20,7 +20,8 @@ SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT         = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TG_CHAT         = _TG_CHANNEL or ""
 SITE_URL        = os.getenv("SITE_URL", "https://dudirudibot-mega-production.up.railway.app")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "seo_dominator"))

@@ -18,7 +18,8 @@ SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER     = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT         = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TG_CHAT         = _TG_CHANNEL or ""
 
 PRODUCT_NAME    = os.getenv("DS24_PRODUCT_NAME", "AI Income Machine")
 PRODUCT_URL     = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")

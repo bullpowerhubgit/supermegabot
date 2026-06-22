@@ -38,7 +38,8 @@ log = logging.getLogger("OMEGA")
 # ── Credentials ──────────────────────────────────────────────────────────────
 ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TELEGRAM_CHAT  = _TG_CHANNEL or ""
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 KLAVIYO_KEY    = os.getenv("KLAVIYO_API_KEY", "")

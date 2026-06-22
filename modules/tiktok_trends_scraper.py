@@ -17,7 +17,8 @@ import aiohttp
 log = logging.getLogger("TikTokTrends")
 
 TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TG_CHAT  = _TG_CHANNEL or ""
 STORE    = os.getenv("DS24_AFFILIATE_LINK", "https://ineedit.com.co")
 
 # 60 bewährte TikTok-Trend-Niches (keine API nötig — kuratiert)
