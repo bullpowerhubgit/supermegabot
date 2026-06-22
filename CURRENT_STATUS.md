@@ -1,104 +1,77 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-22 v26
+# SuperMegaBot CURRENT STATUS — 2026-06-22 v27
 
 ## SYSTEM STATUS
-- Railway Server: **LÄUFT** (deployed 2026-06-20 23:39 — alter Stand!)
-- Railway Trial: **ABGELAUFEN** → neue Features nicht deployed
-- Shopify Store: **LIVE** — ineedit.com.co — 2030 Produkte (985 Duplikate werden archiviert!)
-- Bestellungen: **0** (noch 1 Blocker: Versandkosten fehlen!)
-- PayPal Express: **✅ AKTIV** (seit 2026-06-22)
+- Railway Server: **LÄUFT** ✅ (uptime ~20h, gestartet 2026-06-21 14:00 UTC)
+- Neueste Commits: **DEPLOYED** (879926e Telegram-fix, e11a974 Dashboard-fix)
+- Shopify Store: **LIVE** — autopilot-store-suite-fmbka.myshopify.com
+- Bestellungen: 1 (Bestellung #0011001 — NICHT geliefert! Refund nötig!)
+- Telegram Spam: **GESTOPPT** ✅ (kein Marketing mehr im Privat-Chat)
 
-## ~~KRITISCHER BLOCKER #1~~ ✅ ERLEDIGT — PayPal Express aktiviert
-PayPal Express Checkout ist jetzt aktiv im Shopify Store.
+## LAUFENDER HINTERGRUNDPROZESS
+| PID | Script | Status | Was es tut |
+|-----|--------|--------|-----------|
+| 81661 | /tmp/draft_fake_products.py | **LÄUFT** | Setzt alle nicht-Printify Produkte auf Draft |
 
-## KRITISCHER BLOCKER #2 — Keine Versandkosten für Deutschland + EU
-**Deutsche Kunden können NICHT zur Kasse!** Shipping Zone "Deutschland" hat 0 Rates.
-(Zone "Germany" hat 12 Carrier-Rates aber zu teuer: €10,88+ für Standard)
+**Fortschritt:** ~199 auf Draft gesetzt, ~1875 noch aktiv. ETA: ~90 Minuten.
+→ Am Ende: NUR 3 echte Printify-Produkte bleiben aktiv (können auto-geliefert werden!)
 
-**Exakt so fixen:**
-1. Shopify Admin → Einstellungen → Versand & Lieferung
-2. Zone "Deutschland" → "Rate hinzufügen"
-   - Name: Standardversand | Preis: €4,99 | (keine Gewichtsbeschränkung)
-3. Nochmal "Rate hinzufügen":  
-   - Name: Kostenloser Versand | Preis: €0 | Mindestbestellwert: €50
-4. Für Zone "EU (Europäische Union)": Rate €7,99 Standard
+## KRITISCH: OFFENE REFUND — TIMEA SARKANY €40,94
+**Bestellung #0011001:**
+- Käufer: Timea Sarkany (Rudolfs Frau)
+- Produkt: BioGlow Starlight Forest Starter Kit (existiert nicht als echtes Produkt)
+- Betrag: €40,94
+- Bezahlt via: PayPal Transaktion **I6V20YF7R**
+- Status: Bezahlt + als "Ausgeführt" markiert, aber NIE geliefert
 
-## KRITISCHER BLOCKER #3 — Railway Trial abgelaufen
-Letzter erfolgreicher Deploy: 2026-06-20 23:39
-Ausstehende Commits (NICHT auf Server): Telegram-Spam fix, Store-URLs fix, Twitter OAuth, GMC Feed, Instagram Pipeline
+**PayPal Refund — Rudolf muss das selbst tun:**
+1. Öffne: https://www.paypal.com → Aktivitäten
+2. Transaktion I6V20YF7R suchen
+3. "Erstattung" klicken → €40,94 zurückerstatten
+(Oder direkt an Timea überweisen falls einfacher)
 
-**→ Rudolf muss Payment-Methode bei railway.app hinterlegen ($0 Kosten bis $5 Limit)**
+## WAS WURDE GEBAUT (diese Session)
+- ✅ Telegram Spam Fix: 17 Marketing-Module senden NICHT mehr an Rudolf's private Chat
+  → Code nutzt TELEGRAM_CHANNEL_ID (wenn leer: kein Spam, kein Marketing)
+- ✅ Shopify Dashboard Login: https://autosuiterudibot.netlify.app
+  → Email: bullpowersrtkennels@gmail.com / BullPower2026!
+  → Supabase Auth funktioniert (getestet + bestätigt)
+- ✅ Supabase Client fix: alle 6 client.ts Files haben korrekte URL (qyrjeckzacjaazkpvnjk)
+- ✅ Draft-Script: nicht-Printify Produkte werden auf Draft gesetzt (läuft noch)
 
-## HEUTE ERLEDIGT (2026-06-22)
-- ✅ SEO Meta für alle 2005 Produkte - KOMPLETT
-- ✅ Google Shopping Feed: 1198 Produkte — `data/google_shopping_feed.xml` (1,3MB) — Upload zu GMC nötig!
-- ✅ Tag Optimizer: alle 2030 Produkte erhalten Kategorie-Tags (fitness, smart-home, küche, etc.)
-- ✅ Dedup Script: 985 Duplikate identifiziert + werden archiviert → Store von 2030 → ~1045 unique Produkte
-- ✅ Twitter OAuth fix + alle Templates auf ineedit.com.co aktualisiert
-- ✅ SHOPIFY_SHOP_URL in .env → alle 20+ Module korrekte Domain
-- ✅ Telegram Marketing-Routing fix (noch nicht deployed)
+## WARUM DER STORE 0 UMSATZ HAT
+**Ursache klar identifiziert:**
+- 2073 Produkte haben KEINE echten Lieferanten (vendor = "SuperMegaBot", "AutoPilot Store", "Auto-Import")
+- Nur 3 Printify-Produkte können auto-geliefert werden
+- Draft-Script behebt das: Store wird auf 3 echte Produkte reduziert
 
-## LAUFENDE PROZESSE (im Hintergrund)
-| PID | Script | Status | ETA |
-|-----|--------|--------|-----|
-| 40358 | optimize_products.py --all (Batch 6) | Läuft | ~18min |
-| 46813 | optimize_products.py --all (Batch 7) | Läuft | ~18min |
-| 43616 | shopify_image_batch.py | Läuft | ~25min |
-| 49305 | shopify_tag_optimizer.py | Läuft | ~18min |
-| 50396 | shopify_dedup.py | Läuft | ~9min |
+**Lösung für Umsatz:**
+1. Mehr Printify-Produkte hinzufügen (kostenlos, auto-fulfillment)
+2. AliExpress Dropshipping via DSers App in Shopify einrichten
+3. DS24 Affiliate (läuft bereits — ID: user37405262)
+
+## FÜR TELEGRAM MARKETING — EINMALIGE AKTION NÖTIG
+**TELEGRAM_CHANNEL_ID fehlt** → Marketing geht nirgendwo hin (kein Spam, aber auch kein Marketing).
+Rudolf muss:
+1. Telegram Channel erstellen (z.B. @AiiteC_Shop oder @BullPowerHub)
+2. Bot hinzufügen als Admin: @[bot-username]
+3. Channel-ID in Railway Env var eintragen: TELEGRAM_CHANNEL_ID = -100xxxxxxxxx
+
+## SHOPIFY APP URL — BRAUCHT UPDATE
+Die "autosuiterudibot" App in Shopify zeigt noch auf die alte Railway URL.
+Fix: https://partners.shopify.com → Apps → autosuiterudibot → URLs
+App URL ändern auf: https://autosuiterudibot.netlify.app
+
+## DS24 AFFILIATE — LÄUFT
+- API Key: 1581233-eOOUB4qRJJyb... (aiitec ✅)
+- Affiliate ID: user37405262
+- Links funktionieren: https://www.digistore24.com/redir/{PRODUKT_ID}/user37405262/
+- Revenue Sync: alle 1h automatisch
 
 ## OFFENE PUNKTE FÜR RUDOLF
-| Aktion | Wo | Priorität |
-|--------|-----|-----------|
-| **Versandkosten hinzufügen** | Shopify Admin → Einstellungen → Versand | 🔴 SOFORT |
-| **Google Shopping Feed hochladen** | merchants.google.com/mc (ID: 5813214419) | 🔴 HEUTE |
-| ~~PayPal aktivieren~~ | ✅ ERLEDIGT | — |
-| Railway Payment hinterlegen | railway.app → Billing | 🔴 JETZT |
-| PayPal LIVE-Keys prüfen | developer.paypal.com → Apps → Live-Tab | 🟡 BALD |
-| Facebook Token (neue Scopes) | developers.facebook.com/tools/explorer | 🟡 BALD |
-| Google Merchant Center SA | merchants.google.com/mc/settings/users?a=5813214419 | 🟡 BALD |
-| Reddit App-Typ ändern | reddit.com/prefs/apps → "script" | 🟡 BALD |
-| Shopify Blog-Scopes | Admin → Apps → Private Apps → read/write_content | 🟡 BALD |
-
-## STORE-OPTIMIERUNG FORTSCHRITT
-- 2030 Produkte gesamt → nach Dedup: ~1045 unique Produkte
-- 885/2030 (44%): gute Beschreibungen ≥200 Zeichen (steigt gerade)
-- 1054/2030 (52%): Produkte mit Bild (steigt gerade)
-- 100%: SEO Meta-Title + Meta-Description ✅
-- 100%: Kategorie-Tags (läuft gerade) → Smart Collections werden befüllt
-- 1198 Produkte im Google Shopping Feed (bereit zum GMC-Upload)
-
-## GOOGLE SHOPPING FEED — UPLOAD ANLEITUNG
-Feed ist ready: `data/google_shopping_feed.xml` (1,3MB, 1198 Produkte)
-1. Öffne: https://merchants.google.com (Merchant ID: 5813214419)
-2. Produkte → Feeds → + Neuen Feed erstellen
-3. Sprache: Deutsch, Land: Deutschland
-4. Datei hochladen: google_shopping_feed.xml
-5. Produkte erscheinen in 1-3 Tagen bei Google Shopping
-
-## LIVE REVENUE ENGINES
-| System | Status | Details |
-|--------|--------|---------|
-| DS24 | ✅ LIVE | Key: 1581233-eOOUB4... (IMMER aiitec!) |
-| Shopify | ✅ LIVE | ~1045 unique Produkte aktiv, 0 Bestellungen (letzter Blocker: Versand!) |
-| PayPal Express | ✅ AKTIV | Im Shopify Store aktiviert seit 2026-06-22 |
-| Klaviyo | ✅ LIVE | E-Mail-Sequenzen aktiv |
-| Mailchimp | ✅ LIVE | AIITEC Konto |
-| Stripe | ✅ LIVE | Billing-Check alle 30min |
-| Meta/FB | ✅ VERBUNDEN | Aiitec Page (1341 Follower) — Token-Scopes einschränkt |
-| Discord | ✅ VERBUNDEN | Gateway aktiv |
-| Twitter | ✅ KONFIGURIERT | OAuth1.0a + twikit @rudibot84 (twikit auth bug offen) |
-| PayPal | 🔴 SETUP | Credentials in .env, Shopify-Link fehlt |
-| Instagram | 🟡 TOKEN | Scopes fehlen (Circuit open) |
-| GMC | 🔴 SETUP | SA muss zu Merchant Center hinzugefügt werden |
-
-## SHOPIFY ENV VARS
-```
-SHOPIFY_SHOP_DOMAIN=autopilot-store-suite-fmbka.myshopify.com  # Intern (API)
-SHOPIFY_SHOP_URL=https://ineedit.com.co                        # Öffentlich — für alle Module
-```
-
-## NÄCHSTE SCHRITTE (nach laufenden Prozessen)
-1. Dedup fertig → active product count prüfen (sollte ~1045 sein)
-2. Dedup fertig → Shopping Feed neu generieren mit bereinigtem Katalog
-3. Bei PayPal+Versand Aktivierung → erste Bestellung möglich!
-4. Google Shopping Feed hochladen → organic product traffic in 1-3 Tagen
+| Priorität | Aktion | Wo |
+|-----------|--------|-----|
+| 🔴 SOFORT | Timea Refund: €40,94 zurückzahlen | paypal.com → Transaktion I6V20YF7R |
+| 🟡 BALD | Telegram Channel erstellen + Bot als Admin | Telegram App |
+| 🟡 BALD | Shopify App URL → Netlify umstellen | partners.shopify.com |
+| 🟡 BALD | Google Shopping Feed hochladen | merchants.google.com (ID: 5813214419) |
+| 🟢 OPTIONAL | Mehr Printify Produkte = mehr echte Umsätze | printify.com |
