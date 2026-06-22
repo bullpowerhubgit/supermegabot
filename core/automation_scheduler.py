@@ -2383,13 +2383,8 @@ async def task_content_freshness() -> str:
         return f"ContentFreshness error: {e}"
 
 async def task_backlink_outreach_gen() -> str:
-    try:
-        from modules.traffic_swarm import generate_outreach_emails
-        emails = await generate_outreach_emails(count=5)
-        sent = sum(1 for e in emails if e.get("sent"))
-        return f"Outreach: {len(emails)} drafts, {sent} sent"
-    except Exception as e:
-        return f"Outreach error: {e}"
+    # Disabled — caused bounce emails to invalid domains
+    return "Outreach: disabled (bounce prevention)"
 
 
 # ── TRAFFIC BLITZ ─────────────────────────────────────────────────────────────
