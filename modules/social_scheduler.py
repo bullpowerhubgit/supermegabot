@@ -47,11 +47,11 @@ async def _slack_notify(message: str):
 
 CONTENT_TEMPLATES = [
     {
-        "text": "🔥 Shopify auf Autopilot: KI findet Bestseller, optimiert Preise, postet überall.\n\nKein manueller Aufwand mehr. Ab €49/Monat:\n👉 https://autopilot-store-suite-fmbka.myshopify.com\n\n#ShopifyAutomation #KI #Ecommerce",
-        "telegram_extra": "\n\n<b>Jetzt testen →</b> https://autopilot-store-suite-fmbka.myshopify.com",
+        "text": "🔥 Shopify auf Autopilot: KI findet Bestseller, optimiert Preise, postet überall.\n\nKein manueller Aufwand mehr. Ab €49/Monat:\n👉 https://ineedit.com.co\n\n#ShopifyAutomation #KI #Ecommerce",
+        "telegram_extra": "\n\n<b>Jetzt testen →</b> https://ineedit.com.co",
     },
     {
-        "text": "💰 +187% Umsatz in 90 Tagen — vollautomatisch.\n\nKI-Automatisierung macht's möglich:\n✅ Produkte finden\n✅ Emails senden\n✅ Social Media posten\n\nhttps://autopilot-store-suite-fmbka.myshopify.com #AIITEC",
+        "text": "💰 +187% Umsatz in 90 Tagen — vollautomatisch.\n\nKI-Automatisierung macht's möglich:\n✅ Produkte finden\n✅ Emails senden\n✅ Social Media posten\n\nhttps://ineedit.com.co #AIITEC",
         "telegram_extra": "",
     },
     {
@@ -59,31 +59,31 @@ CONTENT_TEMPLATES = [
         "telegram_extra": "",
     },
     {
-        "text": "📊 Warum 90% der Shopify-Stores nie profitabel werden:\n\n❌ Manuell Produkte suchen\n❌ Keine Email-Automation\n❌ Kein A/B-Testing\n\n✅ Lösung: https://autopilot-store-suite-fmbka.myshopify.com\n\n#Shopify #OnlineShop",
+        "text": "📊 Warum 90% der Shopify-Stores nie profitabel werden:\n\n❌ Manuell Produkte suchen\n❌ Keine Email-Automation\n❌ Kein A/B-Testing\n\n✅ Lösung: https://ineedit.com.co\n\n#Shopify #OnlineShop",
         "telegram_extra": "",
     },
     {
-        "text": "🤖 KI im E-Commerce 2026:\n\n→ Produktrecherche: 2h → 2min\n→ Produktbeschreibungen: 20min → sofort\n→ Social Media: täglich → automatisch\n→ Umsatz: +187%\n\nhttps://autopilot-store-suite-fmbka.myshopify.com #AI #KI",
+        "text": "🤖 KI im E-Commerce 2026:\n\n→ Produktrecherche: 2h → 2min\n→ Produktbeschreibungen: 20min → sofort\n→ Social Media: täglich → automatisch\n→ Umsatz: +187%\n\nhttps://ineedit.com.co #AI #KI",
         "telegram_extra": "",
     },
     {
-        "text": "⭐⭐⭐⭐⭐ Kundenstimme:\n\n\"In 6 Wochen meinen Shopify-Umsatz verdoppelt. Die KI findet Produkte die ich nie gefunden hätte.\"\n— Markus K., München\n\n🔗 https://autopilot-store-suite-fmbka.myshopify.com",
+        "text": "⭐⭐⭐⭐⭐ Kundenstimme:\n\n\"In 6 Wochen meinen Shopify-Umsatz verdoppelt. Die KI findet Produkte die ich nie gefunden hätte.\"\n— Markus K., München\n\n🔗 https://ineedit.com.co",
         "telegram_extra": "\n\n<i>Starte auch du heute.</i>",
     },
     {
-        "text": "📈 Zahlen die für sich sprechen:\n\n• 187% mehr Umsatz (Ø 90 Tage)\n• +47% Conversion Rate\n• 40h/Woche gespart\n• 9 Social-Kanäle gleichzeitig\n\nhttps://autopilot-store-suite-fmbka.myshopify.com\n#ShopifyAutomation",
+        "text": "📈 Zahlen die für sich sprechen:\n\n• 187% mehr Umsatz (Ø 90 Tage)\n• +47% Conversion Rate\n• 40h/Woche gespart\n• 9 Social-Kanäle gleichzeitig\n\nhttps://ineedit.com.co\n#ShopifyAutomation",
         "telegram_extra": "",
     },
     {
-        "text": "⏰ Während du manuell Produkte suchst, laufen automatisierte Stores auf Hochtouren.\n\nDer Unterschied: Ein Tool. Ab €49/Monat.\n\nhttps://autopilot-store-suite-fmbka.myshopify.com\n#Shopify #Automation",
+        "text": "⏰ Während du manuell Produkte suchst, laufen automatisierte Stores auf Hochtouren.\n\nDer Unterschied: Ein Tool. Ab €49/Monat.\n\nhttps://ineedit.com.co\n#Shopify #Automation",
         "telegram_extra": "",
     },
     {
-        "text": "💡 Shopify Tipp: Abandoned Cart Emails generieren 15-20% des Umsatzes zurück.\n\nAber 78% der Shops haben keine automatischen Cart-Recovery-Emails.\n\nFix in 5 Min: https://autopilot-store-suite-fmbka.myshopify.com\n#Shopify #EmailMarketing",
+        "text": "💡 Shopify Tipp: Abandoned Cart Emails generieren 15-20% des Umsatzes zurück.\n\nAber 78% der Shops haben keine automatischen Cart-Recovery-Emails.\n\nFix in 5 Min: https://ineedit.com.co\n#Shopify #EmailMarketing",
         "telegram_extra": "",
     },
     {
-        "text": "🎯 3 Dinge die sofort deinen Shopify-Umsatz erhöhen:\n\n1. Abandoned Cart Email (automatisch)\n2. Post-Purchase Upsell (KI-gesteuert)\n3. Social Proof auf Produktseiten\n\nAlles automatisch: https://autopilot-store-suite-fmbka.myshopify.com",
+        "text": "🎯 3 Dinge die sofort deinen Shopify-Umsatz erhöhen:\n\n1. Abandoned Cart Email (automatisch)\n2. Post-Purchase Upsell (KI-gesteuert)\n3. Social Proof auf Produktseiten\n\nAlles automatisch: https://ineedit.com.co",
         "telegram_extra": "",
     },
 ]
