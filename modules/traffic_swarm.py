@@ -35,7 +35,8 @@ log = logging.getLogger("TrafficSwarm")
 # ── Config ─────────────────────────────────────────────────────────────────────
 ANTHROPIC_KEY   = os.getenv("ANTHROPIC_API_KEY", "")
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT         = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL    = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel
+TG_CHAT         = _TG_CHANNEL or ""                        # no private spam
 SUPABASE_URL    = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY    = os.getenv("SUPABASE_SERVICE_KEY", "") or os.getenv("SUPABASE_ANON_KEY", "")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
