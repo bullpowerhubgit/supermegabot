@@ -45,7 +45,7 @@ INDEXNOW_DOMAINS = [
     # Railway backend
     "dudirudibot-mega-production.up.railway.app",
     # Shopify store
-    "autopilot-store-suite-fmbka.myshopify.com",
+    "ineedit.com.co",
     # GitHub Pages
     "bullpowerhubgit.github.io",
     # Vercel — alle 50 Projekte

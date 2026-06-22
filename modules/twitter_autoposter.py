@@ -44,20 +44,20 @@ TWITTER_API_V2 = "https://api.twitter.com/2"
 # ── Content-Kategorien (rotierend) ───────────────────────────────────────────
 TWEET_TEMPLATES = [
     # Conversion/Offer
-    "🔥 Shopify auf Autopilot: KI findet Bestseller, optimiert Preise, postet überall.\n\nKein manueller Aufwand mehr. Ab €49/Monat:\n👉 https://autopilot-store-suite-fmbka.myshopify.com\n\n#ShopifyAutomation #KI #Ecommerce",
-    "💰 +187% Umsatz in 90 Tagen — vollautomatisch.\n\nKeine Werbung. KI-Automatisierung macht's möglich:\n✅ Produkte finden\n✅ Emails senden\n✅ Social Media posten\n\nhttps://autopilot-store-suite-fmbka.myshopify.com #AIITEC",
-    "⚡ Shopify Brutal Tuning: +47% Conversion Rate garantiert.\n\nA/B-Tests, Page Speed & CRO — alles automatisch.\n👉 https://shopify-brutal-tuning.vercel.app\n\n#Shopify #CRO #Ecommerce",
+    "🔥 2003 Top-Produkte. Günstige Preise. Schnelle Lieferung.\n\nDein Online-Shop für Smarthome, Fitness, Outdoor & mehr:\n👉 https://ineedit.com.co\n\n#OnlineShop #Smarthome #Gadgets",
+    "💰 Technik-Gadgets, Fitness-Tools, Outdoor-Equipment — alles auf einen Blick!\n\n✅ Riesige Auswahl\n✅ Top Preise\n✅ Direkte Lieferung\n\nhttps://ineedit.com.co #Ecommerce #Deutschland",
+    "⚡ Smarte Produkte für ein smarteres Leben.\n\nVon Smart Home bis Outdoor-Abenteuer — alles bei uns:\n👉 https://ineedit.com.co\n\n#SmartHome #Fitness #Outdoor #Gadgets",
     # Educational
-    "📊 Warum 90% der Shopify-Stores nie profitabel werden:\n\n❌ Manuell Produkte suchen\n❌ Keine Email-Automation\n❌ Kein A/B-Testing\n\n✅ Lösung: https://autopilot-store-suite-fmbka.myshopify.com\n\n#Shopify #OnlineShop",
-    "🤖 KI im E-Commerce 2026:\n\n→ Produktrecherche: 2h → 2min\n→ Produktbeschreibungen: 20min → sofort\n→ Social Media: täglich → automatisch\n→ Umsatz: +187%\n\nhttps://autopilot-store-suite-fmbka.myshopify.com #AI #KI",
-    # Social Proof
-    "⭐⭐⭐⭐⭐ Kundenstimme:\n\n\"In 6 Wochen meinen Shopify-Umsatz verdoppelt. Die KI findet Produkte die ich nie gefunden hätte.\"\n— Markus K., München\n\n🔗 https://autopilot-store-suite-fmbka.myshopify.com",
-    "📈 Zahlen die für sich sprechen:\n\n• 187% mehr Umsatz (Ø 90 Tage)\n• +47% Conversion Rate\n• 40h/Woche gespart\n• 9 Social-Kanäle gleichzeitig\n\nhttps://autopilot-store-suite-fmbka.myshopify.com\n#ShopifyAutomation",
+    "📊 Warum smarte Gadgets deinen Alltag revolutionieren:\n\n✅ Mehr Effizienz\n✅ Weniger Aufwand\n✅ Mehr Lebensqualität\n\n🛒 Jetzt entdecken: https://ineedit.com.co\n\n#Smarthome #LifeHacks",
+    "🤖 Smart Home 2026: Diese Geräte sind ein Muss!\n\n→ Intelligente Steckdosen\n→ Smart Lampen & Beamer\n→ Fitness Tracker & Wearables\n→ Outdoor Gadgets\n\nAlle bei: https://ineedit.com.co #SmartHome",
+    # Product spotlights
+    "⭐ Top-Seller: Smarte WLAN-Steckdose mit Energiemessung!\n\nSteuere alles per App — spar Strom, spare Kosten.\n\n🔗 https://ineedit.com.co\n\n#SmartHome #Energie #Gadgets",
+    "📈 Outdoor-Saison ist da!\n\n🏕️ Camping-Sets\n🎒 Trekking-Rucksäcke\n☀️ Solar-Gadgets\n🌿 Garten-Tools\n\nAlles in einem Shop: https://ineedit.com.co\n#Outdoor #Camping #Sommer",
     # FOMO/Urgency
-    "⏰ Während du manuell Produkte suchst, laufen automatisierte Stores auf Hochtouren.\n\nDer Unterschied: Ein Tool. Ab €49/Monat.\n\nhttps://autopilot-store-suite-fmbka.myshopify.com\n#Shopify #Automation",
+    "⏰ Die beliebtesten Produkte fliegen raus!\n\nJetzt zuschlagen — top Preise auf:\n• Smarthome-Geräte\n• Fitness Equipment\n• Outdoor-Zubehör\n\nhttps://ineedit.com.co\n#Sale #Angebot",
     # Tips
-    "💡 Shopify Tipp: Abandoned Cart Emails generieren 15-20% des Umsatzes zurück.\n\nAber 78% der Shops haben keine automatischen Cart-Recovery-Emails.\n\nFix in 5 Min: https://autopilot-store-suite-fmbka.myshopify.com\n#Shopify #EmailMarketing",
-    "🎯 3 Dinge die sofort deinen Shopify-Umsatz erhöhen:\n\n1. Abandoned Cart Email (automatisch)\n2. Post-Purchase Upsell (KI-gesteuert)\n3. Social Proof auf Produktseiten\n\nAlles automatisch: https://autopilot-store-suite-fmbka.myshopify.com",
+    "💡 Fitness-Tipp: Ein guter Tracker macht den Unterschied!\n\nSleep-Analyse, Herzrate, Kalorientracking — alles in einer Uhr.\n\n🛒 Jetzt kaufen: https://ineedit.com.co\n#Fitness #Smartwatch #Gesundheit",
+    "🎯 3 Must-Have Gadgets für 2026:\n\n1. Smart Home Hub für zentrale Steuerung\n2. Fitness Tracker mit Schlafanalyse\n3. Solar-Powerbank für unterwegs\n\nAlle verfügbar bei: https://ineedit.com.co",
 ]
 
 HASHTAG_SETS = [
@@ -248,7 +248,7 @@ Regeln:
 - Max 250 Zeichen (Platz für URL)
 - Starte mit starkem Hook (Emoji + Zahl oder Frage)
 - Konkreter Mehrwert oder Statistik
-- Endet mit Link: https://autopilot-store-suite-fmbka.myshopify.com
+- Endet mit Link: https://ineedit.com.co
 - Füge diese Hashtags hinzu: {hashtags}
 - Ton: direkt, professionell, Mehrwert-orientiert
 - NUR den Tweet-Text ausgeben, keine Erklärungen"""
@@ -281,12 +281,12 @@ async def generate_shopify_product_tweet() -> Optional[str]:
                 product = random.choice(products)
                 title = product.get("title", "Produkt")
                 price = product.get("variants", [{}])[0].get("price", "?")
+                store_url = os.getenv("SHOPIFY_SHOP_URL", f"https://{SHOPIFY_DOMAIN}")
                 tweet = (f"🛍️ NEU im Store: {title[:60]}\n\n"
                          f"💰 Preis: €{price}\n"
-                         f"🤖 KI-kuratiert & automatisch importiert\n\n"
-                         f"Shop: https://{SHOPIFY_DOMAIN}\n"
-                         f"Automation: https://autopilot-store-suite-fmbka.myshopify.com\n\n"
-                         f"#Shopify #Dropshipping #OnlineShop")
+                         f"✅ Günstige Preise · Schnelle Lieferung\n\n"
+                         f"👉 {store_url}\n\n"
+                         f"#OnlineShop #Gadgets #Smarthome")
                 return tweet[:280]
     except Exception as e:
         log.debug("Product tweet failed: %s", e)
@@ -374,7 +374,7 @@ async def post_seo_thread() -> dict:
 Format:
 TWEET 1: Hook (max 250 Zeichen)
 TWEET 2: Details/Tipps (max 250 Zeichen)
-TWEET 3: CTA + Link zu https://autopilot-store-suite-fmbka.myshopify.com (max 250 Zeichen)
+TWEET 3: CTA + Link zu https://ineedit.com.co (max 250 Zeichen)
 
 Verwende Emojis. Schreibe NUR die 3 Tweets, getrennt durch "---"."""
 
