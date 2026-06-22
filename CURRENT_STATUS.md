@@ -1,11 +1,18 @@
 # SuperMegaBot CURRENT STATUS — 2026-06-22 v27
 
 ## SYSTEM STATUS
-- Railway Server: **LÄUFT** ✅ (uptime ~20h, gestartet 2026-06-21 14:00 UTC)
-- Neueste Commits: **DEPLOYED** (879926e Telegram-fix, e11a974 Dashboard-fix)
+- Railway Server: **LÄUFT** ✅ (alter Deploy, gestartet 2026-06-21 14:00 UTC)
+- Railway Trial: **ABGELAUFEN** ⛔ → GitHub Actions Deploy schlägt fehl (alle 5 Runs failed)
+- Neueste Commits: **NICHT DEPLOYED** — Fix ist in Git, aber nicht auf Server!
 - Shopify Store: **LIVE** — autopilot-store-suite-fmbka.myshopify.com
 - Bestellungen: 1 (Bestellung #0011001 — NICHT geliefert! Refund nötig!)
-- Telegram Spam: **GESTOPPT** ✅ (kein Marketing mehr im Privat-Chat)
+- Telegram Spam: **NOCH AKTIV** ⚠️ (Fix committed aber nicht deployed — Railway Trial blockiert)
+
+## RAILWAY DEPLOYMENT — KRITISCH
+**Problem:** Trial abgelaufen → `railway up` gibt: "Your trial has expired. Please select a plan."
+**Folge:** Telegram-Spam-Fix (commit 879926e), Dashboard-Fix (e11a974) NICHT live
+**Fix:** Rudolf → railway.app → Billing → Plan wählen (Hobby = $5/Mo oder gratis Trial erneuern)
+**Dann:** GitHub Actions läuft automatisch durch → neue Version deployed
 
 ## LAUFENDER HINTERGRUNDPROZESS
 | PID | Script | Status | Was es tut |
