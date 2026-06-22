@@ -627,61 +627,99 @@ async def handle_reddit_status(req):
 
 
 async def handle_gmc_feed(req):
-    """GET /api/gmc/feed.xml — Google Shopping RSS product feed for all 630 Shopify products."""
-    try:
-        import html as _html
-        shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
-        shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-        shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-        store_url      = os.getenv("SHOPIFY_STORE_URL", os.getenv("DS24_AFFILIATE_LINK", "https://autopilot-store-suite-fmbka.myshopify.com"))
+    """GET /api/gmc/feed.xml — Google Shopping RSS product feed for all Shopify products."""
+    import re as _re, html as _html
+    shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+    shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    custom_domain  = os.getenv("SHOPIFY_CUSTOM_DOMAIN", "")
+    store_url      = f"https://{custom_domain}" if custom_domain else os.getenv("SHOPIFY_STORE_URL", f"https://{shopify_domain}")
 
+    # Google product category map (keyword → Google taxonomy ID)
+    _CAT_MAP = [
+        (["drucker", "3d-druck"], "632"),           # Electronics > 3D Printers
+        (["beamer", "projektor"], "289"),             # Electronics > Projectors
+        (["kopfhörer", "earbuds", "headset"], "239"),# Electronics > Headphones
+        (["smartwatch", "fitnessuhr", "tracker"], "1712"),  # Smartwatches
+        (["yoga", "fitness", "sport", "dehnband"], "990"),   # Sporting Goods
+        (["küche", "kochen", "mixer", "blender", "kaffeemasch"], "672"),  # Kitchen
+        (["garten", "pflanzen", "bewässerung"], "739"),   # Garden
+        (["lampe", "licht", "led"], "2702"),          # Lighting
+        (["shirt", "kleidung", "sneaker"], "1604"),   # Apparel
+        (["baby", "kinder"], "537"),                  # Baby & Toddler
+        (["hund", "katze", "haustier"], "1"),        # Pet Supplies
+        (["buch", "guide", "lernkarten", "kurs"], "784"),  # Books
+    ]
+
+    def _guess_category(title: str, prod_type: str = "") -> str:
+        text = (title + " " + prod_type).lower()
+        for keywords, cat_id in _CAT_MAP:
+            if any(k in text for k in keywords):
+                return cat_id
+        return "632"  # default: Electronics
+
+    def _clean_desc(html_body: str, title: str) -> str:
+        if not html_body:
+            return title
+        # Remove script/style blocks and JSON-LD
+        text = _re.sub(r'<script[^>]*>.*?</script>', '', html_body, flags=_re.DOTALL | _re.IGNORECASE)
+        text = _re.sub(r'<style[^>]*>.*?</style>', '', text, flags=_re.DOTALL | _re.IGNORECASE)
+        # Strip remaining HTML tags
+        text = _re.sub(r'<[^>]+>', ' ', text)
+        # Clean whitespace and markdown artifacts
+        text = _re.sub(r'[*#`]+', '', text)
+        text = _re.sub(r'\s+', ' ', text).strip()
+        return text[:500] or title
+
+    try:
         products = []
         if shopify_token:
             import aiohttp as _aio
             async with _aio.ClientSession() as s:
-                page_info = None
-                while True:
-                    params = {"limit": 250, "fields": "id,title,body_html,handle,images,variants,status"}
-                    if page_info:
-                        params = {"limit": 250, "page_info": page_info, "fields": "id,title,body_html,handle,images,variants,status"}
+                last_id = 0
+                while len(products) < 2000:
                     async with s.get(
                         f"https://{shopify_domain}/admin/api/{shopify_ver}/products.json",
                         headers={"X-Shopify-Access-Token": shopify_token},
-                        params=params,
+                        params={"limit": 250, "since_id": last_id,
+                                "fields": "id,title,body_html,handle,images,variants,product_type,status"},
                         timeout=_aio.ClientTimeout(total=30),
                     ) as r:
-                        data = await r.json(content_type=None)
-                        batch = [p for p in data.get("products", []) if p.get("status") == "active"]
-                        products.extend(batch)
-                        link_header = r.headers.get("Link", "")
-                        if 'rel="next"' in link_header:
-                            import re as _re
-                            m = _re.search(r'page_info=([^&>]+).*?rel="next"', link_header)
-                            page_info = m.group(1) if m else None
-                        else:
+                        batch = [p for p in (await r.json(content_type=None)).get("products", []) if p.get("status") == "active"]
+                        if not batch:
                             break
-                        if len(products) >= 500:
+                        products.extend(batch)
+                        last_id = batch[-1]["id"]
+                        if len(batch) < 250:
                             break
 
         items = []
-        for p in products[:500]:
-            variant = (p.get("variants") or [{}])[0]
-            price   = variant.get("price", "0")
-            image   = (p.get("images") or [{}])[0].get("src", "") if p.get("images") else ""
-            handle  = p.get("handle", "")
-            title   = _html.escape(p.get("title", "")[:150])
-            desc    = _html.escape((p.get("body_html") or p.get("title", "")).replace("<", " ").replace(">", " ")[:500])
-            img_tag = f"<g:image_link>{image}</g:image_link>" if image else ""
+        for p in products:
+            variant  = (p.get("variants") or [{}])[0]
+            price    = variant.get("price", "0")
+            sku      = variant.get("sku", "") or f"SMB-{p.get('id','')}"
+            image    = (p.get("images") or [{}])[0].get("src", "") if p.get("images") else ""
+            handle   = p.get("handle", "")
+            title    = p.get("title", "")[:150]
+            desc     = _clean_desc(p.get("body_html", ""), title)
+            cat_id   = _guess_category(title, p.get("product_type", ""))
+            img_tag  = f"\n    <g:image_link>{_html.escape(image)}</g:image_link>" if image else ""
             items.append(f"""  <item>
-    <title><![CDATA[{p.get('title','')[:150]}]]></title>
-    <description><![CDATA[{(p.get('body_html') or p.get('title',''))[:500]}]]></description>
+    <title><![CDATA[{title}]]></title>
+    <description><![CDATA[{desc}]]></description>
     <link>{store_url}/products/{handle}</link>
     <g:id>shopify_{p.get('id','')}</g:id>
     <g:price>{price} EUR</g:price>
     <g:availability>in stock</g:availability>
     <g:condition>new</g:condition>
-    <g:brand>BullPower Hub</g:brand>
-    {img_tag}
+    <g:brand>I Want That! I Need It!</g:brand>
+    <g:google_product_category>{cat_id}</g:google_product_category>
+    <g:identifier_exists>no</g:identifier_exists>
+    <g:shipping>
+      <g:country>DE</g:country>
+      <g:service>Standard</g:service>
+      <g:price>4.99 EUR</g:price>
+    </g:shipping>{img_tag}
   </item>""")
 
         xml = f"""<?xml version="1.0" encoding="UTF-8"?>
@@ -689,7 +727,7 @@ async def handle_gmc_feed(req):
 <channel>
   <title>I Want That! I Need It! — Google Shopping Feed</title>
   <link>{store_url}</link>
-  <description>Alle Produkte aus dem Online-Shop</description>
+  <description>Alle Produkte aus dem Online-Shop von I Want That! I Need It!</description>
   <language>de</language>
 {chr(10).join(items)}
 </channel>
