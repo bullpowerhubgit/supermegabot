@@ -22,8 +22,22 @@ DB_PATH = Path(os.getenv("DATA_DIR", "/tmp/supermegabot")) / "mass_content.db"
 DS24_LINK = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
 SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'autopilot-store-suite-fmbka.myshopify.com')}")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-_TG_CHANNEL    = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel
-TELEGRAM_CHAT  = _TG_CHANNEL or ""                        # no private spam if channel not set
+_TG_CHANNEL    = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → must be public channel
+# SAFETY: never send to private chat - only to explicitly set public channel
+TELEGRAM_CHAT  = _TG_CHANNEL if _TG_CHANNEL and _TG_CHANNEL.startswith("-100") else ""
+
+# APPROVED affiliate links only - 669750 is not approved, use safe alternatives
+APPROVED_LINKS = [
+    "https://www.checkout-ds24.com/redir/576000/user37405262/",
+    "https://www.checkout-ds24.com/redir/578000/user37405262/",
+    "https://www.checkout-ds24.com/redir/546000/user37405262/",
+    "https://tecbuuss.gumroad.com/l/wcqdjx",
+]
+if "669750" in DS24_LINK:
+    DS24_LINK = APPROVED_LINKS[0]  # override unapproved product
+
+# Daily send limit - prevent flooding
+_MAX_SENDS_PER_DAY = 20
 
 TOPICS_1000 = [
     # 100 KI & Automatisierung
@@ -177,6 +191,21 @@ async def _tg_send(text: str) -> bool:
 
 async def run_mass_blast(topics_per_run: int = 5) -> dict:
     """Blast N Topics über alle verfügbaren Kanäle."""
+    # Daily limit check - prevent flooding owner's inbox
+    conn = _init_db()
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    sent_today = conn.execute(
+        "SELECT COUNT(*) FROM blasted_content WHERE blasted_at LIKE ?", (f"{today}%",)
+    ).fetchone()[0]
+    conn.close()
+    if sent_today >= _MAX_SENDS_PER_DAY:
+        log.info("Daily send limit (%d) reached, skipping blast", _MAX_SENDS_PER_DAY)
+        return {"total_posted": 0, "skipped": "daily_limit_reached", "sent_today": sent_today}
+
+    # Only blast if channel is set (never send to private chat)
+    if not TELEGRAM_CHAT:
+        log.info("TELEGRAM_CHANNEL_ID not set → skipping Telegram blast (safety)")
+
     total_posted = 0
     platforms_hit = set()
     topics_used = 0
