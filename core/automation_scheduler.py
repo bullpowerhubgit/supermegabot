@@ -4710,15 +4710,23 @@ async def task_instagram_pipeline() -> str:
 
 # ── Task registry ────────────────────────────────────────────────────────────
 
-## COST REDUCTION MODE — AI tasks disabled (no revenue = no spend)
+## LEAN MODE — essential monitoring + free traffic channels only
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
-    ("system_health",        task_system_health,       300,   10),  # 5 min — health check
-    ("shopify_orders_alert", task_shopify_orders_alert, 600,  15),  # 10 min — new order alert
-    ("digistore_sync",       task_digistore_sync,       900,  30),  # 15 min — DS24 revenue
-    ("printify_autofulfill", task_printify_autofulfill, 1800, 45),  # 30 min — POD orders
-    ("stripe_monitor",       task_stripe_monitor,       1800, 25),  # 30 min — payments
-    ("github_backup",        task_github_backup,       86400, 300), # daily — backup
+    # ── Monitoring (kostenlos) ────────────────────────────────────────────────
+    ("system_health",        task_system_health,        300,   10),  # 5 min
+    ("shopify_orders_alert", task_shopify_orders_alert,  600,  15),  # 10 min — Bestellung → Telegram
+    ("digistore_sync",       task_digistore_sync,        900,  30),  # 15 min — DS24 Einnahmen
+    ("printify_autofulfill", task_printify_autofulfill, 1800,  45),  # 30 min — POD Fulfillment
+    ("stripe_monitor",       task_stripe_monitor,       1800,  25),  # 30 min — Zahlungen
+    # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
+    ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
+    ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
+    ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram
+    ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
+    ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
+    # ── Backup ───────────────────────────────────────────────────────────────
+    ("github_backup",        task_github_backup,       86400, 300),  # daily
 ]
 
 
