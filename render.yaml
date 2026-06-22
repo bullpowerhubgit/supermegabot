@@ -1,0 +1,19 @@
+# Render.com configuration — Free alternative to Railway
+# Free tier: 750 compute hours/month, 512MB RAM
+# Note: Free tier spins down after 15 min inactivity (use UptimeRobot to keep alive)
+# Deploy: Connect GitHub repo at dashboard.render.com → New Web Service
+
+services:
+  - type: web
+    name: supermegabot
+    env: python
+    region: frankfurt
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 dashboard/server.py
+    healthCheckPath: /health
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
