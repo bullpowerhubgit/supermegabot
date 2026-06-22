@@ -17,8 +17,10 @@ import aiohttp
 
 log = logging.getLogger("SocialScheduler")
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
-TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "5088771245")
+TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
+TELEGRAM_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel only
+TELEGRAM_ALERT   = os.getenv("TELEGRAM_CHAT_ID", "")       # system alerts → private chat
+TELEGRAM_CHAT    = TELEGRAM_CHANNEL or ""                   # backwards compat (no spam if no channel)
 TWITTER_WEBHOOK = os.getenv("TWITTER_WEBHOOK_URL", "http://localhost:8888/api/twitter/post")
 TWITTER_SECRET  = os.getenv("TWITTER_WEBHOOK_SECRET", "bullpower2026")
 

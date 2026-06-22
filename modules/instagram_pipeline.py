@@ -23,7 +23,8 @@ SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
-TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "5088771245")
+TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")     # system alerts only
+TG_CHANNEL     = os.getenv("TELEGRAM_CHANNEL_ID", "")  # marketing posts → public channel
 
 STORE_URL      = "https://ineedit.com.co"
 DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/500000/user37405262/")
@@ -157,13 +158,15 @@ async def post_to_instagram(caption: str, image_url: str, page_token: str) -> di
 
 
 async def _tg(msg: str) -> None:
-    if not TG_TOKEN or not TG_CHAT:
+    # Marketing pipeline status → public channel only (not private chat)
+    chat_id = TG_CHANNEL or TG_CHAT
+    if not TG_TOKEN or not chat_id:
         return
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
             await s.post(
                 f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
-                json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML",
+                json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML",
                       "disable_web_page_preview": True},
             )
     except Exception:
