@@ -3,24 +3,24 @@ import os, aiohttp, logging, urllib.parse, base64
 
 logger = logging.getLogger(__name__)
 
-# ── NVP/SOAP (Classic) ────────────────────────────────────────────────────────
-PAYPAL_API_USERNAME  = os.getenv("PAYPAL_API_USERNAME",  "bullpowersrtkennels_api1.gmail.com")
-PAYPAL_API_PASSWORD  = os.getenv("PAYPAL_API_PASSWORD",  "MLAF7RKV5UMM7FVN")
-PAYPAL_API_SIGNATURE = os.getenv("PAYPAL_API_SIGNATURE", "03B68D60785B4CED9B2F6DDF544B8C78")
-PAYPAL_ENV           = os.getenv("PAYPAL_ENVIRONMENT",   "sandbox")
+# Support both PAYPAL_MODE and PAYPAL_ENVIRONMENT env var names
+_mode = os.getenv("PAYPAL_MODE") or os.getenv("PAYPAL_ENVIRONMENT", "sandbox")
+_is_sandbox = _mode.lower() in ("sandbox", "test")
+
+# ── NVP/SOAP (Classic) — auto-selects sandbox vs live ─────────────────────────
+if _is_sandbox:
+    PAYPAL_API_USERNAME  = os.getenv("PAYPAL_SANDBOX_USERNAME",  "")
+    PAYPAL_API_PASSWORD  = os.getenv("PAYPAL_SANDBOX_PASSWORD",  "")
+    PAYPAL_API_SIGNATURE = os.getenv("PAYPAL_SANDBOX_SIGNATURE", "")
+else:
+    PAYPAL_API_USERNAME  = os.getenv("PAYPAL_API_USERNAME",  "")
+    PAYPAL_API_PASSWORD  = os.getenv("PAYPAL_API_PASSWORD",  "")
+    PAYPAL_API_SIGNATURE = os.getenv("PAYPAL_API_SIGNATURE", "")
 
 # ── REST API ──────────────────────────────────────────────────────────────────
-# Sandbox (current):
-PAYPAL_REST_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID",
-    "AUVWqlbyslaRHTzOzGPnMNfjklLxKpW_lzfEBSrhfLAeq5ajThVxz2kPd3zYo9CRcF1qa-x7ChV-8PJW")
-PAYPAL_REST_SECRET    = os.getenv("PAYPAL_SECRET",
-    "EPvkTEt3Zx150Q-ieKddS6oO5DLJKRm9WeYaH1M8n8Tk7PPPQHLMotSMW89rNMTFL6dV6Jk4P_TjrIhL")
-# Sandbox NVP:
-PAYPAL_SANDBOX_USERNAME  = os.getenv("PAYPAL_SANDBOX_USERNAME",  "sb-djwi429709999_api1.business.example.com")
-PAYPAL_SANDBOX_PASSWORD  = os.getenv("PAYPAL_SANDBOX_PASSWORD",  "RS6NN82GXTMVVJJV")
-PAYPAL_SANDBOX_SIGNATURE = os.getenv("PAYPAL_SANDBOX_SIGNATURE", "A0rKbf8Gz8Qq0V5PLImPC.Hn.k6lATO4IJ6aYYaXhqWd0h.AUmqmR1Jv")
+PAYPAL_REST_CLIENT_ID = os.getenv("PAYPAL_CLIENT_ID", "")
+PAYPAL_REST_SECRET    = os.getenv("PAYPAL_CLIENT_SECRET") or os.getenv("PAYPAL_SECRET", "")
 
-_is_sandbox = PAYPAL_ENV in ("sandbox", "test")
 PAYPAL_REST_BASE = "https://api-m.sandbox.paypal.com" if _is_sandbox else "https://api-m.paypal.com"
 PAYPAL_NVP_URL   = "https://api-3t.sandbox.paypal.com/nvp" if _is_sandbox else "https://api-3t.paypal.com/nvp"
 PAYPAL_WEB_URL   = "https://www.sandbox.paypal.com/cgi-bin/webscr" if _is_sandbox else "https://www.paypal.com/cgi-bin/webscr"
