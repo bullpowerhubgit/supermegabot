@@ -1,15 +1,14 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-22 v25
+# SuperMegaBot CURRENT STATUS — 2026-06-22 v26
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** (deployed 2026-06-20 23:39 — alter Stand!)
 - Railway Trial: **ABGELAUFEN** → neue Features nicht deployed
 - Shopify Store: **LIVE** — ineedit.com.co — 2030 Produkte (985 Duplikate werden archiviert!)
-- Bestellungen: **0** (2 kritische Blocker: Zahlung + Versand!)
+- Bestellungen: **0** (noch 1 Blocker: Versandkosten fehlen!)
+- PayPal Express: **✅ AKTIV** (seit 2026-06-22)
 
-## KRITISCHER BLOCKER #1 — Keine Zahlungsmethode im Shopify-Store
-**Kunden können NICHT bezahlen!** Rudolf muss aktivieren:
-- Shopify Admin → Einstellungen → Zahlungen → Third-Party-Anbieter → PayPal Express
-- ODER: Shopify Payments aktivieren
+## ~~KRITISCHER BLOCKER #1~~ ✅ ERLEDIGT — PayPal Express aktiviert
+PayPal Express Checkout ist jetzt aktiv im Shopify Store.
 
 ## KRITISCHER BLOCKER #2 — Keine Versandkosten für Deutschland + EU
 **Deutsche Kunden können NICHT zur Kasse!** Shipping Zone "Deutschland" hat 0 Rates.
@@ -51,8 +50,8 @@ Ausstehende Commits (NICHT auf Server): Telegram-Spam fix, Store-URLs fix, Twitt
 | Aktion | Wo | Priorität |
 |--------|-----|-----------|
 | **Versandkosten hinzufügen** | Shopify Admin → Einstellungen → Versand | 🔴 SOFORT |
-| **PayPal aktivieren** | Shopify Admin → Zahlungen → Third-Party-Provider | 🔴 SOFORT |
 | **Google Shopping Feed hochladen** | merchants.google.com/mc (ID: 5813214419) | 🔴 HEUTE |
+| ~~PayPal aktivieren~~ | ✅ ERLEDIGT | — |
 | Railway Payment hinterlegen | railway.app → Billing | 🔴 JETZT |
 | PayPal LIVE-Keys prüfen | developer.paypal.com → Apps → Live-Tab | 🟡 BALD |
 | Facebook Token (neue Scopes) | developers.facebook.com/tools/explorer | 🟡 BALD |
@@ -80,7 +79,8 @@ Feed ist ready: `data/google_shopping_feed.xml` (1,3MB, 1198 Produkte)
 | System | Status | Details |
 |--------|--------|---------|
 | DS24 | ✅ LIVE | Key: 1581233-eOOUB4... (IMMER aiitec!) |
-| Shopify | ✅ LIVE | ~1045 unique Produkte aktiv, 0 Bestellungen (Blocker: Zahlung+Versand) |
+| Shopify | ✅ LIVE | ~1045 unique Produkte aktiv, 0 Bestellungen (letzter Blocker: Versand!) |
+| PayPal Express | ✅ AKTIV | Im Shopify Store aktiviert seit 2026-06-22 |
 | Klaviyo | ✅ LIVE | E-Mail-Sequenzen aktiv |
 | Mailchimp | ✅ LIVE | AIITEC Konto |
 | Stripe | ✅ LIVE | Billing-Check alle 30min |
