@@ -1,75 +1,93 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-22 v22
+# SuperMegaBot CURRENT STATUS — 2026-06-22 v23
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** (deployed 2026-06-20 23:39 — alter Stand!)
 - Railway Trial: **ABGELAUFEN** → neue Features nicht deployed
-- Shopify Store: **LIVE** — ineedit.com.co — 2003 Produkte
-- Bestellungen: **0** (Payment noch nicht aktiviert!)
+- Shopify Store: **LIVE** — ineedit.com.co — 2024 Produkte
+- Bestellungen: **0** (2 kritische Blocker: Zahlung + Versand!)
 
-## KRITISCHER BLOCKER — Railway Trial
+## KRITISCHER BLOCKER #1 — Keine Zahlungsmethode im Shopify-Store
+**Kunden können NICHT bezahlen!** Rudolf muss aktivieren:
+- Shopify Admin → Einstellungen → Zahlungen → Third-Party-Anbieter → PayPal Express
+- ODER: Shopify Payments aktivieren
+
+## KRITISCHER BLOCKER #2 — Keine Versandkosten für Deutschland + EU
+**Deutsche Kunden können NICHT zur Kasse!** Shipping Zones haben 0 Rates:
+- Shopify Admin → Einstellungen → Versand → "Deutschland" Zone → Rate hinzufügen: €4,99
+- Dasselbe für "EU (Europäische Union)" Zone → €7,99 Standard
+
+## KRITISCHER BLOCKER #3 — Railway Trial abgelaufen
 Letzter erfolgreicher Deploy: 2026-06-20 23:39
 Ausstehende Commits (NICHT auf Server):
 - `9ab60f1` — Telegram-Spam fix (kein Marketing in privaten Chat)
 - `bd7b20d` — Store-URLs fix (ineedit.com.co)
+- `7e9a74b` — Twitter OAuth fix + domain updates (alle Module)
 - `056bb3b` — Google OAuth Refresh Token speichern
 - `6e0cbae` — Ollama qwen3.6 thinking-mode fix
 - `995fd79` — GMC Feed Uploader
 - `59052cf` — Instagram Pipeline
 
-**→ Rudolf muss Railway upgraden: railway.app → Hobby Plan ($5/mo)**
+**→ Rudolf muss Payment-Methode bei railway.app hinterlegen ($0 Kosten bis $5 Limit)**
 
 ## HEUTE ERLEDIGT (2026-06-22)
-- ✅ 103+ Shopify Produkte mit Ollama SEO-optimiert (läuft weiter)
-- ✅ Telegram Routing fix — Marketing → TELEGRAM_CHANNEL_ID (nicht private chat)
-- ✅ Social Scheduler URLs → ineedit.com.co
+- ✅ 2005 Produkte SEO-Meta (title + description) - KOMPLETT via Batch
+- ✅ 753/2024 Produkte mit Ollama-Beschreibungen optimiert (37%), Batch 6 läuft
+- ✅ Twitter OAuth fix: social_connectors.py ping() → OAuth1-aware
+- ✅ Alle 10 Tweet-Templates auf ineedit.com.co aktualisiert
+- ✅ SHOPIFY_SHOP_URL in .env hinzugefügt → alle 20+ Module erhalten korrekte Domain
+- ✅ FROM_EMAIL Fallbacks auf hello@ineedit.com.co
+- ✅ Telegram Routing fix (noch nicht deployed auf Railway)
 - ✅ PayPal REST API Keys gespeichert in .env
-- ✅ Google Auth Link an Rudolf gesendet (aiitecbuuss@gmail.com)
 
 ## OFFENE PUNKTE FÜR RUDOLF
 | Aktion | Wo | Priorität |
 |--------|-----|-----------|
-| Railway Hobby Plan | railway.app → Plan | 🔴 JETZT |
-| PayPal aktivieren | Shopify Admin → Zahlungen → PayPal | 🔴 JETZT |
-| Facebook Token (korrekte Scopes) | developers.facebook.com/tools/explorer | 🟡 BALD |
-| Shopify Blog-Scopes | Admin → Apps → Private Apps | 🟡 BALD |
+| **Versandkosten hinzufügen** | Shopify Admin → Einstellungen → Versand | 🔴 SOFORT |
+| **PayPal aktivieren** | Shopify Admin → Zahlungen → Third-Party-Provider | 🔴 SOFORT |
+| Railway Payment hinterlegen | railway.app → Billing | 🔴 JETZT |
+| PayPal LIVE-Keys holen | developer.paypal.com → Apps → Live-Tab | 🟡 BALD |
+| Facebook Token (neue Scopes) | developers.facebook.com/tools/explorer | 🟡 BALD |
+| Shopify Blog-Scopes | Admin → Apps → Private Apps → read_content + write_content | 🟡 BALD |
 | Google Merchant Center SA | merchants.google.com/mc/settings/users?a=5813214419 | 🟡 BALD |
-| Google OAuth klicken | dudirudibot-mega-production.up.railway.app/api/google/auth | 🟡 BALD |
+| Reddit App-Typ ändern | reddit.com/prefs/apps → "script" | 🟡 BALD |
 
 ## LIVE REVENUE ENGINES
 | System | Status | Details |
 |--------|--------|---------|
 | DS24 | ✅ LIVE | Key: 1581233-eOOUB4... (IMMER aiitec!) |
-| Shopify | ✅ LIVE | 2003 Produkte aktiv, 0 Bestellungen |
+| Shopify | ✅ LIVE | 2024 Produkte aktiv, 0 Bestellungen (Blocker: Zahlung+Versand) |
+| Twitter | ✅ KONFIGURIERT | OAuth1.0a + twikit @rudibot84 |
 | Klaviyo | ✅ LIVE | E-Mail-Sequenzen aktiv |
 | Mailchimp | ✅ LIVE | AIITEC Konto |
 | Stripe | ✅ LIVE | Billing-Check alle 30min |
-| PayPal | 🔴 SETUP | Credentials gespeichert, Shopify-Link fehlt |
-| Facebook | 🟡 TOKEN | Falscher Token (Scopes fehlen) |
-| Instagram | 🟡 TOKEN | Wie Facebook |
+| Meta/FB | ✅ VERBUNDEN | Aiitec Page (1341 Follower) — Token-Scopes einschränkt |
+| Discord | ✅ VERBUNDEN | Gateway aktiv |
+| PayPal | 🔴 SETUP | Credentials in .env, Shopify-Link fehlt |
+| Instagram | 🟡 TOKEN | Scopes fehlen (Circuit open) |
 | GMC | 🔴 SETUP | SA muss zu Merchant Center hinzugefügt werden |
 
 ## PRODUKT-OPTIMIERUNG (Ollama laufend)
-- 2003 Produkte gesamt, 1410 ohne SEO-Beschreibung
-- 103+ bereits optimiert (heute)
-- Nächste Batch: script/optimize_products.py ausführen
+- 2024 Produkte gesamt
+- 2005 Produkte: SEO Meta-Title + Meta-Description ✅ KOMPLETT
+- 753 Produkte: Ollama-Beschreibung ≥200 Zeichen (37%)
+- 1271 noch ohne gute Beschreibung → Batch 6 läuft im Hintergrund
+- Nach Batch 6 fertig: sofort nächsten Batch starten
 
-## PAYPAL CREDENTIALS
+## SHOPIFY ENV VARS (korrekt konfiguriert)
+```
+SHOPIFY_SHOP_DOMAIN=autopilot-store-suite-fmbka.myshopify.com  # Intern (API)
+SHOPIFY_CUSTOM_DOMAIN=ineedit.com.co                           # Öffentlich
+SHOPIFY_STORE_URL=https://ineedit.com.co                       # Öffentlich URL
+SHOPIFY_SHOP_URL=https://ineedit.com.co                        # NEU — für alle Module
+```
+
+## PAYPAL CREDENTIALS (in .env)
 - Client ID: AUVWqlbyslaRH... (in .env gespeichert)
 - Secret: EPvkTEt3Zx150Q... (in .env gespeichert)
-- Mode: live
-- NVP Classic: bullpowersrtkennels_api1.gmail.com (auch in .env)
+- Mode: live (ACHTUNG: prüfen ob LIVE oder SANDBOX Keys!)
+- NVP Classic: bullpowersrtkennels_api1.gmail.com
 
-## FACEBOOK / INSTAGRAM
-- Page: AIITEC (1016738738178786) — IMMER!
-- IG: @aaiitecc (17841478315197796)
-- Token FACEBOOK_PAGE_TOKEN_AIITEC braucht Scopes: pages_manage_posts + instagram_content_publish
-
-## GOOGLE MERCHANT CENTER
-- Merchant ID: 5813214419
-- SA: rudibot-ai@gen-lang-client-0895465231.iam.gserviceaccount.com
-- Feed URL: dudirudibot-mega-production.up.railway.app/api/gmc/feed.xml (LIVE, 200 OK)
-- → SA als Admin in GMC hinzufügen → /api/gmc/setup aufrufen
-
-## DS24 WICHTIG
-IMMER Key 1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N verwenden!
-NIEMALS 1682000-... (falsches Konto!)
+## NÄCHSTE SCHRITTE (autonome Ausführung)
+1. Batch 6 fertig → Batch 7 starten (python3 scripts/optimize_products.py --all)
+2. Bei Railway-Deploy: Telegram-Spam endet sofort
+3. Bei PayPal+Versand: erste Bestellung möglich!
