@@ -215,11 +215,12 @@ def _rule_classify(subject: str, sender: str, body: str) -> dict:
     s = (subject + " " + body).lower()
     frm = sender.lower()
 
-    # Definite NO-reply
+    # Definite NO-reply — includes newsletter subdomains like news.docmorris.de
     no_reply_signals = ["noreply", "no-reply", "donotreply", "newsletter", "unsubscribe",
                         "notification", "automated", "autoresponder", "bounce", "mailer-daemon",
                         "postmaster", "billing@", "invoice@", "receipt@", "order@",
-                        "notification@", "alert@"]
+                        "notification@", "alert@", "@news.", "@mail.", "@mailings.", "@email.",
+                        "@lists.", "@em.", "@sg.", "@em2.", "@reply."]
     if any(sig in frm for sig in no_reply_signals):
         return {"category": "newsletter", "priority": "low", "reply_needed": False,
                 "reply_draft": "", "label": "Newsletter", "archive": True,
@@ -383,9 +384,15 @@ async def _process_account(account: dict, replied: set) -> dict:
                 _gmail_archive(mail, m["uid"])
                 stats["archived"] += 1
 
-            # Auto-reply
+            # Auto-reply — never reply to newsletter/mailing subdomains
             _, from_addr = parseaddr(m["from"])
-            if do_reply and draft and from_addr and from_addr != user:
+            _frm_lower = from_addr.lower()
+            _newsletter_domain = any(sig in _frm_lower for sig in [
+                "noreply", "no-reply", "donotreply", "@news.", "@mail.", "@mailings.",
+                "@email.", "@lists.", "@em.", "@sg.", "@em2.", "@reply.", "newsletter",
+                "mailer-daemon", "postmaster", "bounce", "unsubscribe"
+            ])
+            if do_reply and draft and from_addr and from_addr != user and not _newsletter_domain:
                 sent = _send_reply(user, pw, name, from_addr,
                                    m["subject"], draft, m["msg_id"], smtp_host)
                 if sent:
@@ -531,11 +538,10 @@ async def run_email_check() -> str:
 
 
 async def send_outreach_batch(leads: list) -> dict:
-    """Send proactive outreach emails to a list of leads via the primary Gmail account.
+    """Outreach disabled — caused bounce emails from invalid addresses."""
+    log.info("send_outreach_batch: disabled to prevent bounce emails")
+    return {"sent": 0, "failed": 0, "disabled": True}
 
-    leads: list of dicts with at least {"email": "..."}, optionally {"first_name": "..."}
-    Returns: {"sent": N, "failed": N}
-    """
     accounts = _accounts()
     if not accounts:
         log.warning("send_outreach_batch: no email accounts configured")
