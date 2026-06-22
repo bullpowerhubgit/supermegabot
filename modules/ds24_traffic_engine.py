@@ -40,12 +40,12 @@ DS24_NICHES = [
 # Bekannte gut-konvertierende DS24 Produkte (Fallback wenn API leer)
 DS24_KNOWN_PRODUCTS = [
     {
-        "id": "392814",
-        "name": "Affiliate Marketing Masterclass",
-        "commission_pct": 50,
-        "price": "97",
-        "niche": "affiliate",
-        "affiliate_link": "https://www.digistore24.com/redir/392814/user37405262/"
+        "id": "561822",
+        "name": "ChatGPT & KI Masterclass",
+        "commission_pct": 40,
+        "price": "197",
+        "niche": "ki",
+        "affiliate_link": "https://www.digistore24.com/redir/561822/user37405262/"
     },
     {
         "id": "561822",
