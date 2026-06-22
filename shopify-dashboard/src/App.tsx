@@ -33,6 +33,14 @@ function App() {
     return { error };
   };
 
+  const handleRegister = async (email: string, password: string) => {
+    const { data, error } = await import('./middleware/auth').then(m => m.signUp(email, password));
+    if (!error && data.user) {
+      await checkAuth();
+    }
+    return { error };
+  };
+
   const handleLogout = async () => {
     await signOut();
     setUser(null);
@@ -51,7 +59,7 @@ function App() {
       {user ? (
         <Dashboard user={user} onLogout={handleLogout} />
       ) : (
-        <Login onLogin={handleLogin} />
+        <Login onLogin={handleLogin} onRegister={handleRegister} />
       )}
     </div>
   );
