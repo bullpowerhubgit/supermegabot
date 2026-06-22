@@ -16,7 +16,8 @@ import aiohttp
 log = logging.getLogger("AliBrutus")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL   = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel
+TELEGRAM_CHAT  = _TG_CHANNEL or ""                        # no private spam
 DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
 
 ALI_TRACKING_ID = os.getenv("ALIEXPRESS_TRACKING_ID", "")

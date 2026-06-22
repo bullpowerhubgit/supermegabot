@@ -22,7 +22,8 @@ DATA_DIR.mkdir(parents=True, exist_ok=True)
 RSS_FILE    = DATA_DIR / "feed.rss"
 BLOG_ID     = os.getenv("SHOPIFY_BLOG_ID", "127011258755")
 TG_TOKEN    = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT     = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel
+TG_CHAT     = _TG_CHANNEL or ""                        # no private spam
 
 
 async def generate_rss_feed(limit: int = 20) -> dict:
