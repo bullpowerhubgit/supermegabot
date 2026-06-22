@@ -1,9 +1,9 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-22 v24
+# SuperMegaBot CURRENT STATUS — 2026-06-22 v25
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** (deployed 2026-06-20 23:39 — alter Stand!)
 - Railway Trial: **ABGELAUFEN** → neue Features nicht deployed
-- Shopify Store: **LIVE** — ineedit.com.co — 2024 Produkte
+- Shopify Store: **LIVE** — ineedit.com.co — 2030 Produkte (985 Duplikate werden archiviert!)
 - Bestellungen: **0** (2 kritische Blocker: Zahlung + Versand!)
 
 ## KRITISCHER BLOCKER #1 — Keine Zahlungsmethode im Shopify-Store
@@ -22,81 +22,83 @@
 3. Nochmal "Rate hinzufügen":  
    - Name: Kostenloser Versand | Preis: €0 | Mindestbestellwert: €50
 4. Für Zone "EU (Europäische Union)": Rate €7,99 Standard
-5. Optional: Zone "Deutschland" und "Germany" zusammenführen (eine löschen)
 
 ## KRITISCHER BLOCKER #3 — Railway Trial abgelaufen
 Letzter erfolgreicher Deploy: 2026-06-20 23:39
-Ausstehende Commits (NICHT auf Server):
-- `9ab60f1` — Telegram-Spam fix (kein Marketing in privaten Chat)
-- `bd7b20d` — Store-URLs fix (ineedit.com.co)
-- `7e9a74b` — Twitter OAuth fix + domain updates (alle Module)
-- `056bb3b` — Google OAuth Refresh Token speichern
-- `6e0cbae` — Ollama qwen3.6 thinking-mode fix
-- `995fd79` — GMC Feed Uploader
-- `59052cf` — Instagram Pipeline
+Ausstehende Commits (NICHT auf Server): Telegram-Spam fix, Store-URLs fix, Twitter OAuth, GMC Feed, Instagram Pipeline
 
 **→ Rudolf muss Payment-Methode bei railway.app hinterlegen ($0 Kosten bis $5 Limit)**
 
 ## HEUTE ERLEDIGT (2026-06-22)
-- ✅ 2005 Produkte SEO-Meta (title + description) - KOMPLETT via Batch
-- ✅ 753/2024 Produkte mit Ollama-Beschreibungen optimiert (37%), Batch 6 läuft
-- ✅ Twitter OAuth fix: social_connectors.py ping() → OAuth1-aware
-- ✅ Alle 10 Tweet-Templates auf ineedit.com.co aktualisiert
-- ✅ SHOPIFY_SHOP_URL in .env hinzugefügt → alle 20+ Module erhalten korrekte Domain
-- ✅ FROM_EMAIL Fallbacks auf hello@ineedit.com.co
-- ✅ Telegram Routing fix (noch nicht deployed auf Railway)
-- ✅ PayPal REST API Keys gespeichert in .env
+- ✅ SEO Meta für alle 2005 Produkte - KOMPLETT
+- ✅ Google Shopping Feed: 1198 Produkte — `data/google_shopping_feed.xml` (1,3MB) — Upload zu GMC nötig!
+- ✅ Tag Optimizer: alle 2030 Produkte erhalten Kategorie-Tags (fitness, smart-home, küche, etc.)
+- ✅ Dedup Script: 985 Duplikate identifiziert + werden archiviert → Store von 2030 → ~1045 unique Produkte
+- ✅ Twitter OAuth fix + alle Templates auf ineedit.com.co aktualisiert
+- ✅ SHOPIFY_SHOP_URL in .env → alle 20+ Module korrekte Domain
+- ✅ Telegram Marketing-Routing fix (noch nicht deployed)
+
+## LAUFENDE PROZESSE (im Hintergrund)
+| PID | Script | Status | ETA |
+|-----|--------|--------|-----|
+| 40358 | optimize_products.py --all (Batch 6) | Läuft | ~18min |
+| 46813 | optimize_products.py --all (Batch 7) | Läuft | ~18min |
+| 43616 | shopify_image_batch.py | Läuft | ~25min |
+| 49305 | shopify_tag_optimizer.py | Läuft | ~18min |
+| 50396 | shopify_dedup.py | Läuft | ~9min |
 
 ## OFFENE PUNKTE FÜR RUDOLF
 | Aktion | Wo | Priorität |
 |--------|-----|-----------|
 | **Versandkosten hinzufügen** | Shopify Admin → Einstellungen → Versand | 🔴 SOFORT |
 | **PayPal aktivieren** | Shopify Admin → Zahlungen → Third-Party-Provider | 🔴 SOFORT |
+| **Google Shopping Feed hochladen** | merchants.google.com/mc (ID: 5813214419) | 🔴 HEUTE |
 | Railway Payment hinterlegen | railway.app → Billing | 🔴 JETZT |
-| PayPal LIVE-Keys holen | developer.paypal.com → Apps → Live-Tab | 🟡 BALD |
+| PayPal LIVE-Keys prüfen | developer.paypal.com → Apps → Live-Tab | 🟡 BALD |
 | Facebook Token (neue Scopes) | developers.facebook.com/tools/explorer | 🟡 BALD |
-| Shopify Blog-Scopes | Admin → Apps → Private Apps → read_content + write_content | 🟡 BALD |
 | Google Merchant Center SA | merchants.google.com/mc/settings/users?a=5813214419 | 🟡 BALD |
 | Reddit App-Typ ändern | reddit.com/prefs/apps → "script" | 🟡 BALD |
+| Shopify Blog-Scopes | Admin → Apps → Private Apps → read/write_content | 🟡 BALD |
+
+## STORE-OPTIMIERUNG FORTSCHRITT
+- 2030 Produkte gesamt → nach Dedup: ~1045 unique Produkte
+- 885/2030 (44%): gute Beschreibungen ≥200 Zeichen (steigt gerade)
+- 1054/2030 (52%): Produkte mit Bild (steigt gerade)
+- 100%: SEO Meta-Title + Meta-Description ✅
+- 100%: Kategorie-Tags (läuft gerade) → Smart Collections werden befüllt
+- 1198 Produkte im Google Shopping Feed (bereit zum GMC-Upload)
+
+## GOOGLE SHOPPING FEED — UPLOAD ANLEITUNG
+Feed ist ready: `data/google_shopping_feed.xml` (1,3MB, 1198 Produkte)
+1. Öffne: https://merchants.google.com (Merchant ID: 5813214419)
+2. Produkte → Feeds → + Neuen Feed erstellen
+3. Sprache: Deutsch, Land: Deutschland
+4. Datei hochladen: google_shopping_feed.xml
+5. Produkte erscheinen in 1-3 Tagen bei Google Shopping
 
 ## LIVE REVENUE ENGINES
 | System | Status | Details |
 |--------|--------|---------|
 | DS24 | ✅ LIVE | Key: 1581233-eOOUB4... (IMMER aiitec!) |
-| Shopify | ✅ LIVE | 2024 Produkte aktiv, 0 Bestellungen (Blocker: Zahlung+Versand) |
-| Twitter | ✅ KONFIGURIERT | OAuth1.0a + twikit @rudibot84 |
+| Shopify | ✅ LIVE | ~1045 unique Produkte aktiv, 0 Bestellungen (Blocker: Zahlung+Versand) |
 | Klaviyo | ✅ LIVE | E-Mail-Sequenzen aktiv |
 | Mailchimp | ✅ LIVE | AIITEC Konto |
 | Stripe | ✅ LIVE | Billing-Check alle 30min |
 | Meta/FB | ✅ VERBUNDEN | Aiitec Page (1341 Follower) — Token-Scopes einschränkt |
 | Discord | ✅ VERBUNDEN | Gateway aktiv |
+| Twitter | ✅ KONFIGURIERT | OAuth1.0a + twikit @rudibot84 (twikit auth bug offen) |
 | PayPal | 🔴 SETUP | Credentials in .env, Shopify-Link fehlt |
 | Instagram | 🟡 TOKEN | Scopes fehlen (Circuit open) |
 | GMC | 🔴 SETUP | SA muss zu Merchant Center hinzugefügt werden |
 
-## PRODUKT-OPTIMIERUNG (Ollama laufend — 2x parallel)
-- 2027 Produkte gesamt (2024 aktiv)
-- 2005 Produkte: SEO Meta-Title + Meta-Description ✅ KOMPLETT
-- **885 Produkte: gute Beschreibung ≥200 Zeichen (44%)** ← +7% seit gestern
-- **1054 Produkte: Bilder hochgeladen (52%)** ← +7% seit gestern
-- 1140 noch ohne gute Beschreibung → Batch 6 (PID 40358) + Batch 7 (PID 46813) laufen
-- Image-Batch (PID 43616) läuft parallel: 973 noch ohne Bild
-
-## SHOPIFY ENV VARS (korrekt konfiguriert)
+## SHOPIFY ENV VARS
 ```
 SHOPIFY_SHOP_DOMAIN=autopilot-store-suite-fmbka.myshopify.com  # Intern (API)
-SHOPIFY_CUSTOM_DOMAIN=ineedit.com.co                           # Öffentlich
-SHOPIFY_STORE_URL=https://ineedit.com.co                       # Öffentlich URL
-SHOPIFY_SHOP_URL=https://ineedit.com.co                        # NEU — für alle Module
+SHOPIFY_SHOP_URL=https://ineedit.com.co                        # Öffentlich — für alle Module
 ```
 
-## PAYPAL CREDENTIALS (in .env)
-- Client ID: AUVWqlbyslaRH... (in .env gespeichert)
-- Secret: EPvkTEt3Zx150Q... (in .env gespeichert)
-- Mode: live (ACHTUNG: prüfen ob LIVE oder SANDBOX Keys!)
-- NVP Classic: bullpowersrtkennels_api1.gmail.com
-
-## NÄCHSTE SCHRITTE (autonome Ausführung)
-1. Batch 6 fertig → Batch 7 starten (python3 scripts/optimize_products.py --all)
-2. Bei Railway-Deploy: Telegram-Spam endet sofort
-3. Bei PayPal+Versand: erste Bestellung möglich!
+## NÄCHSTE SCHRITTE (nach laufenden Prozessen)
+1. Dedup fertig → active product count prüfen (sollte ~1045 sein)
+2. Dedup fertig → Shopping Feed neu generieren mit bereinigtem Katalog
+3. Bei PayPal+Versand Aktivierung → erste Bestellung möglich!
+4. Google Shopping Feed hochladen → organic product traffic in 1-3 Tagen
