@@ -162,7 +162,8 @@ async def main():
     tree = build_feed(products)
     OUT_FILE.parent.mkdir(exist_ok=True)
 
-    # Pretty print
+    # Register namespace prefix so output uses g: not ns0:
+    ET.register_namespace("g", "http://base.google.com/ns/1.0")
     ET.indent(tree)
     xml_str = ET.tostring(tree, encoding="unicode", xml_declaration=False)
     with open(OUT_FILE, "w", encoding="utf-8") as f:
