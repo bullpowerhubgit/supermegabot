@@ -14,7 +14,8 @@ log = logging.getLogger("UpworkProposal")
 
 ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TELEGRAM_CHAT  = _TG_CHANNEL or ""
 
 DATA_DIR      = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 PROPOSALS_FILE = DATA_DIR / "upwork_proposals.json"
