@@ -245,7 +245,7 @@ Kein DOCTYPE, nur body content."""
 async def trigger_flow_event(event: str, properties: dict = None) -> dict:
     """Fire a Klaviyo metric event to trigger flows."""
     return await track_event(
-        email=os.getenv("FROM_EMAIL", "hello@autopilot-store-suite-fmbka.myshopify.com"),
+        email=os.getenv("FROM_EMAIL", "hello@ineedit.com.co"),
         event_name=event,
         properties=properties or {"source": "supermegabot"},
     )
