@@ -25,7 +25,7 @@ TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 HEADERS = {"X-Shopify-Access-Token": TOKEN, "Content-Type": "application/json"}
 BASE    = f"https://{SHOP}/admin/api/{VERSION}"
-DELAY   = 0.55
+DELAY   = 0.7   # slightly slower to avoid rate limits alongside other parallel scripts
 
 
 def fetch_all_active() -> list[dict]:
@@ -54,14 +54,23 @@ def score(p: dict) -> tuple:
     return (img_count, desc_len, pid)
 
 
-def set_draft(pid: int) -> bool:
-    r = requests.put(
-        f"{BASE}/products/{pid}.json",
-        headers=HEADERS,
-        json={"product": {"id": pid, "status": "draft"}},
-        timeout=30,
-    )
-    return r.status_code == 200
+def set_draft(pid: int, retries: int = 3) -> bool:
+    for attempt in range(retries):
+        try:
+            r = requests.put(
+                f"{BASE}/products/{pid}.json",
+                headers=HEADERS,
+                json={"product": {"id": pid, "status": "draft"}},
+                timeout=60,
+            )
+            return r.status_code == 200
+        except requests.exceptions.Timeout:
+            if attempt < retries - 1:
+                time.sleep(5 * (attempt + 1))
+        except Exception:
+            if attempt < retries - 1:
+                time.sleep(2)
+    return False
 
 
 def main():
