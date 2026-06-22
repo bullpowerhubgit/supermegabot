@@ -539,7 +539,7 @@ async def auto_post_shopify_products(limit: int = 3) -> dict:
             async with s.get(
                 f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VER}/products.json",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
-                params={"limit": limit, "status": "active"},
+                params={"limit": limit * 3, "status": "active", "vendor": "Printify"},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 d = await r.json(content_type=None)
