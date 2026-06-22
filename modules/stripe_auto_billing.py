@@ -18,7 +18,7 @@ import aiohttp
 log = logging.getLogger("StripeAutoBilling")
 
 STRIPE_KEY      = os.getenv("STRIPE_SECRET_KEY", "")
-FROM_EMAIL      = os.getenv("FROM_EMAIL", "hello@autopilot-store-suite-fmbka.myshopify.com")
+FROM_EMAIL      = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
 TELEGRAM_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
 STRIPE_BASE     = "https://api.stripe.com/v1"
