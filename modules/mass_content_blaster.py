@@ -20,9 +20,10 @@ log = logging.getLogger("MassContentBlaster")
 
 DB_PATH = Path(os.getenv("DATA_DIR", "/tmp/supermegabot")) / "mass_content.db"
 DS24_LINK = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
-SHOP_URL  = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'autopilot-store-suite-fmbka.myshopify.com')}"
+SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'autopilot-store-suite-fmbka.myshopify.com')}")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL    = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel
+TELEGRAM_CHAT  = _TG_CHANNEL or ""                        # no private spam if channel not set
 
 TOPICS_1000 = [
     # 100 KI & Automatisierung
