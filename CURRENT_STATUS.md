@@ -1,4 +1,4 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-22 v23
+# SuperMegaBot CURRENT STATUS — 2026-06-22 v24
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** (deployed 2026-06-20 23:39 — alter Stand!)
@@ -12,9 +12,17 @@
 - ODER: Shopify Payments aktivieren
 
 ## KRITISCHER BLOCKER #2 — Keine Versandkosten für Deutschland + EU
-**Deutsche Kunden können NICHT zur Kasse!** Shipping Zones haben 0 Rates:
-- Shopify Admin → Einstellungen → Versand → "Deutschland" Zone → Rate hinzufügen: €4,99
-- Dasselbe für "EU (Europäische Union)" Zone → €7,99 Standard
+**Deutsche Kunden können NICHT zur Kasse!** Shipping Zone "Deutschland" hat 0 Rates.
+(Zone "Germany" hat 12 Carrier-Rates aber zu teuer: €10,88+ für Standard)
+
+**Exakt so fixen:**
+1. Shopify Admin → Einstellungen → Versand & Lieferung
+2. Zone "Deutschland" → "Rate hinzufügen"
+   - Name: Standardversand | Preis: €4,99 | (keine Gewichtsbeschränkung)
+3. Nochmal "Rate hinzufügen":  
+   - Name: Kostenloser Versand | Preis: €0 | Mindestbestellwert: €50
+4. Für Zone "EU (Europäische Union)": Rate €7,99 Standard
+5. Optional: Zone "Deutschland" und "Germany" zusammenführen (eine löschen)
 
 ## KRITISCHER BLOCKER #3 — Railway Trial abgelaufen
 Letzter erfolgreicher Deploy: 2026-06-20 23:39
@@ -66,12 +74,13 @@ Ausstehende Commits (NICHT auf Server):
 | Instagram | 🟡 TOKEN | Scopes fehlen (Circuit open) |
 | GMC | 🔴 SETUP | SA muss zu Merchant Center hinzugefügt werden |
 
-## PRODUKT-OPTIMIERUNG (Ollama laufend)
-- 2024 Produkte gesamt
+## PRODUKT-OPTIMIERUNG (Ollama laufend — 2x parallel)
+- 2027 Produkte gesamt (2024 aktiv)
 - 2005 Produkte: SEO Meta-Title + Meta-Description ✅ KOMPLETT
-- 753 Produkte: Ollama-Beschreibung ≥200 Zeichen (37%)
-- 1271 noch ohne gute Beschreibung → Batch 6 läuft im Hintergrund
-- Nach Batch 6 fertig: sofort nächsten Batch starten
+- **885 Produkte: gute Beschreibung ≥200 Zeichen (44%)** ← +7% seit gestern
+- **1054 Produkte: Bilder hochgeladen (52%)** ← +7% seit gestern
+- 1140 noch ohne gute Beschreibung → Batch 6 (PID 40358) + Batch 7 (PID 46813) laufen
+- Image-Batch (PID 43616) läuft parallel: 973 noch ohne Bild
 
 ## SHOPIFY ENV VARS (korrekt konfiguriert)
 ```
