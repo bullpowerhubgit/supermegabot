@@ -17,7 +17,8 @@ SITE_URL    = os.getenv("SITE_URL", "https://dudirudibot-mega-production.up.rail
 SITE_TITLE  = os.getenv("SITE_TITLE", "BullPower Hub — KI Automatisierung & Shopify")
 SITE_DESC   = os.getenv("SITE_DESC", "Vollautomatisches E-Commerce System mit KI. Shopify, DS24, Telegram.")
 TG_TOKEN    = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT     = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TG_CHAT     = _TG_CHANNEL or ""   # marketing → public channel only, never private chat
 
 DATA_DIR = Path(__file__).parent.parent / "data" / "backlink_bomber"
 

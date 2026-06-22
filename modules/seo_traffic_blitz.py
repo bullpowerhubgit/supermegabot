@@ -18,7 +18,8 @@ SHOP_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.mys
 SHOP_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOP_VER     = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 TG_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT      = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TG_CHAT      = _TG_CHANNEL or ""
 STORE_URL    = "https://autopilot-store-suite-fmbka.myshopify.com"
 BLOG_GID     = f"gid://shopify/Blog/{os.getenv('SHOPIFY_BLOG_ID', '127011258755')}"
 

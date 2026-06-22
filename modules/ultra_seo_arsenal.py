@@ -20,7 +20,8 @@ log = logging.getLogger("UltraSEOArsenal")
 
 ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "")
-TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")
+_TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TG_CHAT        = _TG_CHANNEL or ""
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
