@@ -1,84 +1,64 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-23 v35
+# SuperMegaBot CURRENT STATUS — 2026-06-23 v36
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** ✅ (Code vom 2026-06-21 — Railway Upgrade nötig!)
 - Shopify Store: **LIVE** — ineedit.com.co ✅
-- Shopify Produkte: **~6244 aktiv** (926 ohne Bilder auf Draft gesetzt) ✅
-- Shop Collections: **5 Collections befüllt** ✅
-- Telegram Spam: **GEFIXT** ✅
-- DS24 Links: **GEFIXT** ✅ (669750 aus allen Railway Env-Vars entfernt)
-- Marathon: **LÄUFT** 🔄 — Design ~173/500 (Marathon 1037)
+- Shopify Produkte: **~6244 aktiv** + 2 digitale Produkte (AI Income Machine + SuperMegaBot) ✅
+- Shop Collections: **5 Collections** + KI & Automation befüllt ✅
+- Klaviyo: **4 Kampagnen GESENDET** ✅ (20 Subscriber)
+- Telegram: **2 Promo-Posts gesendet** ✅
+- DS24 Links: **GEFIXT** ✅
+- Marathon: **LÄUFT** 🔄
 
 ## 🚨 KRITISCH: RAILWAY UPGRADE NÖTIG
 **Railway Trial abgelaufen** → `railway up` schlägt fehl → alle Code-Änderungen seit 21. Juni NICHT deployed!
 
 ### Was NICHT deployed ist (lokaler Code, wartet auf Railway):
-- DS24 Timeout-Fix (10s→30s) — Dashboard zeigt "not connected" aber Verkäufe funktionieren
+- DS24 Timeout-Fix (10s→30s)
 - Brutus Fake-Claim Templates entfernt
 - GMC Feed Filter (imageless + preislose Produkte ausfiltern)
+- **Shopify→Klaviyo Customer Webhook** (server.py) ← neu in v36!
+- **Social Scheduler DS24 Promos + Telegram Fallback** (social_scheduler.py) ← neu!
 
 ### Sofort-Fix (Rudolf muss tun):
 1. railway.app → Login → Plan wählen (Hobby $5/Monat reicht)
 2. Nach Upgrade: `railway up --detach --service dudirudibot-mega` ODER einfach einen Commit pushen
 
 ## REVENUE STATUS (LIVE)
-- **DS24**: €111.00 (3 Verkäufe) ✅
+- **DS24**: €111.00 (3 Verkäufe, Produkt 668035) ✅
 - **Shopify**: €0 (0 Bestellungen) — Traffic fehlt
 - **Stripe**: €0
-- **Klaviyo**: 20 Subscriber, 4 Kampagnen erstellt
-- **Mailchimp**: 3 Subscriber, 1436 Kampagnen
-- **GMC**: ~6244 Produkte (mit Bildern) — ⚠️ "Falsche Darstellung" Violation ausstehend
+- **Klaviyo**: 20 Subscriber, **4 Kampagnen GESENDET** ✅ (heute, 19:47-20:05 UTC)
+- **Mailchimp**: 17 Subscriber — Account disabled (freie Plan-Limits)
+- **GMC**: ~6244 Produkte — ⚠️ "Falsche Darstellung" Violation ausstehend
 
-## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v35)
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v36)
 
-### DS24 Produkt-IDs endgültig gefixt ✅ (v35)
-1. **KRITISCHE ENTDECKUNG**: 576000/578000 sind NICHT unsere Produkte! (576000=wildghosts, 578000=Annag-v)
-2. **668035** = "AI Income Machine – 90-Day Blueprint" = UNSER echtes Produkt — hat €111 Umsatz gemacht!
-3. **704677** = "SuperMegaBot KI-Automation System" = weiteres eigenes Produkt (€97)
-4. **Alle Railway Env-Vars** auf 668035/704677 korrigiert (DS24_PRODUCT_ID_1/2, alle URLs)
-5. **Code-Fix**: ds24_traffic_engine.py, digistore_autonomy.py, mass_content_blaster.py, ds24_affiliate_blaster.py — alle auf 668035 als Primary
+### Klaviyo — 4 Kampagnen gesendet ✅
+1. **AI Income Machine — Einführung 2026** (ID: 01KVTZXQBH0NWVNXVFZR9SE554) → Sent 19:47
+2. **AI Income Machine — Die 3 Strategien** (ID: 01KVTZXWWQK89FFY5PR0R2KSXF) → Sent 19:47
+3. **AI Income Machine — Letzte Chance €37** (ID: 01KVTZY30ECHYCAH09JD70N9B9) → Sent 19:47
+4. **SuperMegaBot — KI-Automation System €97** (ID: 01KVV11VMFHKFHCVM42QBAN3NP) → Sending ~20:05
+- Alle an 20 Subscriber (Liste Xwxq6V) mit korrekten DS24 Checkout-Links
 
-### Collection Tags + SEO Update ✅
-- 5 Collections: SEO-Beschreibungen und Meta-Tags aktualisiert
-- Produkt-Tags werden aktualisiert (läuft noch für Streetwear mit 1834 Produkten)
+### Telegram Promos ✅
+- Msg 76030: AI Income Machine €37 promo
+- Msg 76048: SuperMegaBot €97 promo
 
-### Klaviyo-Cleanup + neue Kampagnen ✅
-- 1157 Draft-Kampagnen gelöscht (war Spam)
-- 3 neue professionelle Kampagnen erstellt (mit HTML-Templates):
-  1. "AI Income Machine — Einführung 2026"
-  2. "AI Income Machine — Die 3 Strategien"
-  3. "AI Income Machine — Letzte Chance €37"
-- Alle 3 Kampagnen: Draft-Status, 20 Subscriber, bereit zum Senden
-- **Rudolf muss Kampagnen manuell absenden**: Klaviyo → Campaigns → Send
+### Shopify Updates ✅
+- **AI Income Machine** (16047516057987): Vollständige Conversion-optimierte Beschreibung + €37 Preis
+- **SuperMegaBot KI-Automation** (16047547482499): Neues €97 Produkt erstellt
+- Beide in KI & Automation Collection + Digitale Produkte Collection
+- Shopify customer creation webhook → Klaviyo list sync (Webhook ID: 2325908357507)
 
-### Shopify Digitale Produkte ✅
-- AI Income Machine als Shopify-Produkt angelegt: `ineedit.com.co/products/ai-income-machine-90-day-blueprint`
-- Zur "Digitale Produkte" Collection hinzugefügt
-
-### DS24 Korrekturen ✅
-- 576000/578000 sind Fremdprodukte (wildghosts/Annag-v) — NICHT unsere Produkte!
-- Alle References auf 668035 (unser Produkt, €37, proven converter) korrigiert
-- Code gefixt: ds24_traffic_engine, digistore_autonomy, mass_content_blaster, ds24_affiliate_blaster
-
-### Railway Env-Vars gefixt (SOFORT AKTIV nach nächstem Restart)
-1. **669750 und 576000/578000 aus ALLEN Railway Env-Vars entfernt** → jetzt 668035/704677
-2. **SHOPIFY_CUSTOM_DOMAIN=ineedit.com.co** gesetzt (GMC Feed wird nach Restart korrekte Domain haben)
-
-### Shopify Store bereinigt
-4. **926 Produkte ohne Bilder auf Draft** — GMC Feed-Qualität massiv verbessert
-5. **GMC Feed Filter** (lokaler Code): imageless + preislose Produkte aus Feed entfernt
-
-### Code-Fixes (lokal, warten auf Railway-Deployment)
-6. DS24 Ping Timeout: 10s → 30s
-7. Brutus Fake Income Claims entfernt
-8. GMC Feed: imageless/preislose Produkte gefiltert
-9. dashboard/server.py: SHOPIFY_CUSTOM_DOMAIN Default = ineedit.com.co
+### Code ✅ (committed, warten auf Railway-Deployment)
+- `dashboard/server.py`: POST /api/shopify/customer-webhook → sync new customers to Klaviyo
+- `modules/social_scheduler.py`: DS24 Promos + TELEGRAM_CHAT fallback (kein Channel nötig)
 
 ## OFFENE PUNKTE — RUDOLF MANUELL
 
-### 🔥 0. Klaviyo Kampagnen absenden!
-`app.klaviyo.com` → Campaigns → "AI Income Machine" → für jede Kampagne: Review & Send
-→ 20 Subscriber erhalten sofort die Emails → potenzielle €37 Verkäufe!
+### 🔥 0. Klaviyo Kampagnen PRÜFEN
+`app.klaviyo.com` → Campaigns → alle 4 "AI Income Machine/SuperMegaBot" Kampagnen sollten "Sent" sein
 
 ### 🔥 1. Railway JETZT upgraden ($5/Monat!)
 `railway.app` → Hobby Plan wählen → alle Code-Fixes gehen live!
@@ -100,49 +80,48 @@
 | Fitness & Gesundheit | `/collections/fitness-gesundheit-3` |
 | Büro & Ergonomie | `/collections/buro-ergonomie-3` |
 | Camping & Outdoor | `/collections/camping-outdoor-1` |
-| **Streetwear** | `/collections/streetwear` |
-| **Amazon** | `https://www.amazon.de/s?k=smart+home+gadgets&tag=bullpowerhub-21` |
-| **eBay** | `https://www.ebay.de/sch/i.html?_nkw=smart+home` |
-| **AliExpress** | `https://www.aliexpress.com/wholesale?SearchText=smart+home` |
+| Streetwear | `/collections/streetwear` |
+| Amazon | `https://www.amazon.de/s?k=smart+home+gadgets&tag=bullpowerhub-21` |
+| eBay | `https://www.ebay.de/sch/i.html?_nkw=smart+home` |
+| AliExpress | `https://www.aliexpress.com/wholesale?SearchText=smart+home` |
+
+### Shopify API Scopes fehlen (blockiert vieles)
+Fehlende Scopes: `write_script_tags`, `write_themes`, `read_themes`, `write_content`
+Fix: Shopify Partner Dashboard → App → Permissions → Scopes erweitern
+
+### Facebook (Token fehlt `pages_manage_posts` Permission)
+- Token ist aktiv, aber kann nicht zur AIITEC Page posten
+- Fix: Facebook Developer App → Permissions → `pages_manage_posts` hinzufügen
 
 ### Instagram @aaiitecc (gesperrt)
 - Fix: developers.facebook.com → App 1225412136200609 → Add Product → Instagram Graph API
 
-### Facebook Token (abgelaufen seit 14. Juni)
-- Skript bereit: `refresh_fb_token.sh`
+### DS24 IPN Setup
+- IPN URL manuell in DS24 Dashboard: `https://dudirudibot-mega-production.up.railway.app/api/digistore24/ipn`
 
-## MARATHON STATUS
-- Marathon 1037 läuft (Design ~173/500, trifft Rate Limits — normal)
-- Ziel: 3000 Designs gesamt
+## RAILWAY ENV VARS (SOFORT AKTIV nach Restart)
+- DS24_PRODUCT_ID_1 = 668035 ✅
+- DS24_PRODUCT_ID_2 = 704677 ✅
+- DS24_AFFILIATE_LINK = https://www.checkout-ds24.com/product/668035 ✅
+- DS24_AFFILIATE_LINK_2 = https://www.checkout-ds24.com/product/704677 ✅
+- SHOPIFY_CUSTOM_DOMAIN = ineedit.com.co ✅
 
-## COLLECTIONS IDs (für API-Nutzung)
+## DS24 AKTIVE PRODUKTE (user37405262 = AIITEC)
+- **668035** — AI Income Machine – 90-Day Blueprint €37 ✅ (3 Verkäufe = €111)
+- **704677** — SuperMegaBot KI-Automation System €97 ✅ (neu)
+- **669750** — GESPERRT, NIE VERWENDEN!
+
+## SHOPIFY DIGITALE PRODUKTE
+- AI Income Machine (16047516057987): https://ineedit.com.co/products/ai-income-machine-90-day-blueprint
+- SuperMegaBot KI-Automation (16047547482499): https://ineedit.com.co/products/supermegabot-ki-automation-system
+
+## COLLECTIONS IDs
 ```
 Smart Home:           ID 707160998275  handle: smart-home-2
 Fitness & Gesundheit: ID 707135308163  handle: fitness-gesundheit-3
 Büro & Ergonomie:     ID 707161031043  handle: buro-ergonomie-3
 Camping & Outdoor:    ID 707161063811  handle: camping-outdoor-1
 Streetwear:           ID 707161096579  handle: streetwear
+KI & Automation:      ID 707117810051  handle: ki-automation
+Digitale Produkte:    ID 707115254147  handle: digitale-produkte
 ```
-
-## DS24 AKTIVE PRODUKTE (user37405262 = AIITEC)
-- **668035** — AI Income Machine – 90-Day Blueprint €37 ✅ UNSER PRODUKT! (3 Verkäufe = €111)
-- **704677** — SuperMegaBot KI-Automation System €97 ✅ UNSER PRODUKT (neu)
-- **704375-704498** — 7x Gumroad-Produkte (Business Autopilot, ChatGPT-Kurse etc.) ✅
-- **576000** — Fremdprodukt (Verkäufer: "wildghosts") — nur Affiliate
-- **578000** — Fremdprodukt (Verkäufer: "Annag-v") — nur Affiliate
-- **669750** — GESPERRT, NIE VERWENDEN!
-
-## RAILWAY ENV VARS AKTUALISIERT (2026-06-23 v35)
-- DS24_PRODUCT_ID_1 = 668035 ✅ (UNSER Produkt! €37, bereits €111 Umsatz)
-- DS24_PRODUCT_ID_2 = 704677 ✅ (SuperMegaBot KI-Automation, €97)
-- DS24_PRODUCT_NAME = AI Income Machine – 90-Day Blueprint ✅
-- DS24_AFFILIATE_LINK = https://www.checkout-ds24.com/product/668035 ✅
-- DS24_AFFILIATE_LINK_2 = https://www.checkout-ds24.com/product/704677 ✅
-- AIITEC_AFFILIATE_URL = https://www.checkout-ds24.com/product/668035 ✅
-- DS24_PRODUCT_URL = https://www.checkout-ds24.com/product/668035 ✅
-- MAILCHIMP_DS24_URL = https://www.checkout-ds24.com/product/668035 ✅
-- DS24_PRODUCT_1_PRICE = 37.00 ✅
-- DS24_PRODUCT_2_PRICE = 97.00 ✅
-- SHOPIFY_CUSTOM_DOMAIN = ineedit.com.co ✅
-
-⚠️ Alle Env-Vars aktiv nach Railway Upgrade + Service-Restart!
