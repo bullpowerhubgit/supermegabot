@@ -155,13 +155,33 @@ async def send_telegram(msg: str):
         logger.error(f"Telegram send error: {e}")
 
 
-async def generate_meta_post(product: dict, post_type: str = "facebook") -> dict:
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    trends = await fetch_google_trends()
-    trend_hint = f"\nAktuelle Trends (einbauen wenn relevant): {', '.join(trends[:5])}" if trends else ""
-
+def _fallback_meta_post(product: dict, post_type: str) -> dict:
+    name = product["name"]
+    price = product["price"]
+    url = product["url"]
+    tagline = product.get("tagline", "")
     if post_type == "instagram":
-        prompt = f"""Erstelle einen Instagram-Post auf Deutsch für: {product['name']}
+        content = (
+            f"🚀 {name}\n\n{tagline}\n\n"
+            f"💶 Nur {price} — Jetzt sichern!\n👉 Link in Bio\n\n"
+            f"#OnlineBusiness #Shopify #Automatisierung #KI #Ecommerce #PassivEinkommen #Dropshipping"
+        )
+    else:
+        content = (
+            f"🔥 {name}\n\n{tagline}\n\n✅ Nur {price} — Sofort verfügbar!\n👉 {url}\n\n"
+            f"#OnlineBusiness #Shopify #Automatisierung #KI"
+        )
+    return {"content": content, "product": name, "url": url, "platform": post_type}
+
+
+async def generate_meta_post(product: dict, post_type: str = "facebook") -> dict:
+    try:
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        trends = await fetch_google_trends()
+        trend_hint = f"\nAktuelle Trends (einbauen wenn relevant): {', '.join(trends[:5])}" if trends else ""
+
+        if post_type == "instagram":
+            prompt = f"""Erstelle einen Instagram-Post auf Deutsch für: {product['name']}
 Preis: {product['price']}
 Tagline: {product['tagline']}{trend_hint}
 
@@ -172,8 +192,8 @@ FORMAT:
 - 15-20 relevante Hashtags auf Deutsch und Englisch
 
 Beispiel-Hashtags: #Shopify #Automatisierung #OnlineBusiness #KI #Dropshipping #Ecommerce #PassivEinkommen"""
-    else:
-        prompt = f"""Erstelle einen Facebook-Post auf Deutsch für: {product['name']}
+        else:
+            prompt = f"""Erstelle einen Facebook-Post auf Deutsch für: {product['name']}
 Preis: {product['price']}
 Tagline: {product['tagline']}
 URL: {product['url']}{trend_hint}
@@ -187,13 +207,16 @@ FORMAT:
 
 Ton: Professionell aber persönlich, wie ein Freund der einen tollen Tipp teilt."""
 
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=800,
-        messages=[{"role": "user", "content": prompt}]
-    )
-    content = response.content[0].text
-    return {"content": content, "product": product["name"], "url": product["url"], "platform": post_type}
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=800,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        content = response.content[0].text
+        return {"content": content, "product": product["name"], "url": product["url"], "platform": post_type}
+    except Exception as e:
+        logger.warning("generate_meta_post fallback (%s): %s", post_type, e)
+        return _fallback_meta_post(product, post_type)
 
 
 async def post_to_facebook(content: str, page_id: str, access_token: str) -> bool:
@@ -276,22 +299,27 @@ async def post_to_pinterest(title: str, description: str, link: str, image_url: 
 
 
 async def generate_pinterest_pin(product: dict) -> dict:
-    client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
-    resp = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=300,
-        messages=[{"role": "user", "content": (
-            f"Erstelle einen Pinterest Pin für: {product['name']}\n"
-            f"Preis: {product['price']}\nTagline: {product['tagline']}\n\n"
-            "FORMAT (JSON, kein Markdown):\n"
-            "{\"title\": \"max 100 Zeichen\", \"description\": \"max 500 Zeichen mit Keywords für SEO\"}"
-        )}]
-    )
     try:
-        pin = json.loads(resp.content[0].text)
-    except Exception:
-        pin = {"title": product["name"], "description": product["tagline"]}
-    pin["link"] = product["url"]
+        client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+        resp = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=300,
+            messages=[{"role": "user", "content": (
+                f"Erstelle einen Pinterest Pin für: {product['name']}\n"
+                f"Preis: {product['price']}\nTagline: {product['tagline']}\n\n"
+                "FORMAT (JSON, kein Markdown):\n"
+                "{\"title\": \"max 100 Zeichen\", \"description\": \"max 500 Zeichen mit Keywords für SEO\"}"
+            )}]
+        )
+        try:
+            pin = json.loads(resp.content[0].text)
+        except Exception:
+            pin = {"title": product["name"], "description": product["tagline"]}
+        pin["link"] = product["url"]
+        return pin
+    except Exception as e:
+        logger.warning("generate_pinterest_pin fallback: %s", e)
+        return {"title": product["name"], "description": product.get("tagline", ""), "link": product["url"]}
     return pin
 
 
@@ -372,8 +400,12 @@ async def scheduler():
         try:
             await content_cycle()
         except Exception as e:
+            err_str = str(e)
             logger.error(f"Content cycle error: {e}")
-            await send_telegram(f"⚠️ Meta Engine Fehler: {e}")
+            if "credit balance" in err_str or "billing" in err_str.lower() or "402" in err_str:
+                logger.warning("Anthropic credits low — skipping, retry in %ds", SCHEDULE_INTERVAL)
+            else:
+                await send_telegram(f"⚠️ Meta Engine Fehler: {e}")
         await asyncio.sleep(SCHEDULE_INTERVAL)
 
 
