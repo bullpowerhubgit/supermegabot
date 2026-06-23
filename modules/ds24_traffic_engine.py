@@ -38,8 +38,28 @@ DS24_NICHES = [
 ]
 
 # Bekannte gut-konvertierende DS24 Produkte (Fallback wenn API leer)
-# WICHTIG: 669750 ist nicht genehmigt — NIEMALS verwenden!
+# WICHTIG: 669750 ist GESPERRT — NIEMALS verwenden!
+# 576000/578000 sind Fremdprodukte (wildghosts/Annag-v), kein eigenes Produkt
+# 668035 = AI Income Machine 90-Day Blueprint — UNSER PRODUKT, bereits €111 Umsatz!
 DS24_KNOWN_PRODUCTS = [
+    {
+        "id": "668035",
+        "name": "AI Income Machine – 90-Day Blueprint",
+        "commission_pct": 100,
+        "price": "37",
+        "niche": "ki",
+        "emoji": "🤖",
+        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+    },
+    {
+        "id": "704677",
+        "name": "SuperMegaBot KI-Automation System",
+        "commission_pct": 100,
+        "price": "97",
+        "niche": "shopify",
+        "emoji": "🚀",
+        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/704677")
+    },
     {
         "id": "561822",
         "name": "ChatGPT & KI Masterclass",
@@ -48,24 +68,6 @@ DS24_KNOWN_PRODUCTS = [
         "niche": "ki",
         "emoji": "🤖",
         "affiliate_link": "https://www.digistore24.com/redir/561822/user37405262/"
-    },
-    {
-        "id": "576000",
-        "name": "SuperMegaBot Pro",
-        "commission_pct": 50,
-        "price": "97",
-        "niche": "shopify",
-        "emoji": "🚀",
-        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/redir/576000/user37405262/")
-    },
-    {
-        "id": "578000",
-        "name": "E-Commerce Autopilot",
-        "commission_pct": 50,
-        "price": "47",
-        "niche": "shopify",
-        "emoji": "🛒",
-        "affiliate_link": "https://www.checkout-ds24.com/redir/578000/user37405262/"
     },
 ]
 

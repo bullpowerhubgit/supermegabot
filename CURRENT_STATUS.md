@@ -1,4 +1,4 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-23 v34
+# SuperMegaBot CURRENT STATUS — 2026-06-23 v35
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** ✅ (Code vom 2026-06-21 — Railway Upgrade nötig!)
@@ -29,12 +29,22 @@
 - **Mailchimp**: 3 Subscriber, 1436 Kampagnen
 - **GMC**: ~6244 Produkte (mit Bildern) — ⚠️ "Falsche Darstellung" Violation ausstehend
 
-## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v34)
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v35 — Neue Erkenntnisse!)
+
+### DS24 Produkt-IDs endgültig gefixt ✅ (v35)
+1. **KRITISCHE ENTDECKUNG**: 576000/578000 sind NICHT unsere Produkte! (576000=wildghosts, 578000=Annag-v)
+2. **668035** = "AI Income Machine – 90-Day Blueprint" = UNSER echtes Produkt — hat €111 Umsatz gemacht!
+3. **704677** = "SuperMegaBot KI-Automation System" = weiteres eigenes Produkt (€97)
+4. **Alle Railway Env-Vars** auf 668035/704677 korrigiert (DS24_PRODUCT_ID_1/2, alle URLs)
+5. **Code-Fix**: ds24_traffic_engine.py, digistore_autonomy.py, mass_content_blaster.py, ds24_affiliate_blaster.py — alle auf 668035 als Primary
+
+### Collection Tags Update läuft 🔄
+- 5 Collections werden mit SEO-Tags aktualisiert (Hintergrund-Job)
+- Smart Home, Fitness, Büro, Camping, Streetwear
 
 ### Railway Env-Vars gefixt (SOFORT AKTIV nach nächstem Restart)
-1. **669750 aus ALLEN Railway Env-Vars entfernt** — AIITEC_AFFILIATE_URL, DS24_AFFILIATE_LINK, DS24_AFFILIATE_LINK_2, DS24_PRODUCT_URL, MAILCHIMP_DS24_URL → alle jetzt 576000/578000
+1. **669750 und 576000/578000 aus ALLEN Railway Env-Vars entfernt** → jetzt 668035/704677
 2. **SHOPIFY_CUSTOM_DOMAIN=ineedit.com.co** gesetzt (GMC Feed wird nach Restart korrekte Domain haben)
-3. **DS24_PRODUCT_ID_1=576000, DS24_PRODUCT_ID_2=578000** gesetzt
 
 ### Shopify Store bereinigt
 4. **926 Produkte ohne Bilder auf Draft** — GMC Feed-Qualität massiv verbessert
@@ -88,18 +98,25 @@ Camping & Outdoor:    ID 707161063811  handle: camping-outdoor-1
 Streetwear:           ID 707161096579  handle: streetwear
 ```
 
-## DS24 AKTIVE PRODUKTE (user37405262)
-- **576000** — SuperMegaBot Pro €97 (primary, in .env + Railway)
-- **578000** — E-Commerce Autopilot €47
-- **561822** — ChatGPT & KI Masterclass €197
-- **669750** — GESPERRT, nie mehr verwenden!
+## DS24 AKTIVE PRODUKTE (user37405262 = AIITEC)
+- **668035** — AI Income Machine – 90-Day Blueprint €37 ✅ UNSER PRODUKT! (3 Verkäufe = €111)
+- **704677** — SuperMegaBot KI-Automation System €97 ✅ UNSER PRODUKT (neu)
+- **704375-704498** — 7x Gumroad-Produkte (Business Autopilot, ChatGPT-Kurse etc.) ✅
+- **576000** — Fremdprodukt (Verkäufer: "wildghosts") — nur Affiliate
+- **578000** — Fremdprodukt (Verkäufer: "Annag-v") — nur Affiliate
+- **669750** — GESPERRT, NIE VERWENDEN!
 
-## RAILWAY ENV VARS AKTUALISIERT (2026-06-23)
-- AIITEC_AFFILIATE_URL = 576000 ✅
-- DS24_AFFILIATE_LINK = 576000 ✅
-- DS24_AFFILIATE_LINK_2 = 578000 ✅
-- DS24_PRODUCT_URL = 576000 ✅
-- DS24_PRODUCT_ID_1 = 576000 ✅
-- DS24_PRODUCT_ID_2 = 578000 ✅
-- MAILCHIMP_DS24_URL = 576000 ✅
+## RAILWAY ENV VARS AKTUALISIERT (2026-06-23 v35)
+- DS24_PRODUCT_ID_1 = 668035 ✅ (UNSER Produkt! €37, bereits €111 Umsatz)
+- DS24_PRODUCT_ID_2 = 704677 ✅ (SuperMegaBot KI-Automation, €97)
+- DS24_PRODUCT_NAME = AI Income Machine – 90-Day Blueprint ✅
+- DS24_AFFILIATE_LINK = https://www.checkout-ds24.com/product/668035 ✅
+- DS24_AFFILIATE_LINK_2 = https://www.checkout-ds24.com/product/704677 ✅
+- AIITEC_AFFILIATE_URL = https://www.checkout-ds24.com/product/668035 ✅
+- DS24_PRODUCT_URL = https://www.checkout-ds24.com/product/668035 ✅
+- MAILCHIMP_DS24_URL = https://www.checkout-ds24.com/product/668035 ✅
+- DS24_PRODUCT_1_PRICE = 37.00 ✅
+- DS24_PRODUCT_2_PRICE = 97.00 ✅
 - SHOPIFY_CUSTOM_DOMAIN = ineedit.com.co ✅
+
+⚠️ Alle Env-Vars aktiv nach Railway Upgrade + Service-Restart!
