@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Marketplace Auto Poster — eBay + Amazon + AliExpress Streetwear Automation
-Fetches latest Printify products → posts with marketplace cross-links to Telegram/social
-Also runs autonomous eBay/Amazon affiliate deal blasts for streetwear
+Marketplace Auto Poster — eBay + Amazon + AliExpress Smart Home/Gadgets Automation
+Zwei getrennte Kanäle:
+  1. Eigener Shop: Printify Streetwear Produkte → Telegram
+  2. Marktplätze: Smart Home / Smart Garden / AI Gadgets → Telegram Deal-Posts
 """
 import asyncio
 import logging
@@ -20,14 +21,16 @@ TG_TOKEN      = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT       = os.getenv("TELEGRAM_CHAT_ID", "")
 EBAY_APP_ID   = os.getenv("EBAY_CLIENT_ID", "IRV7wFsqtKC76676391G2237LhVpgNCRZ1")
 AMZN_TAG      = os.getenv("AMAZON_ASSOCIATE_TAG", "bullpowerhub-21")
-DS24_AFFIL    = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 STORE_URL     = f"https://{SHOP_DOMAIN}" if SHOP_DOMAIN else ""
 
-STREETWEAR_KW = [
-    "streetwear t-shirt", "urban hoodie", "graphic tee men streetwear",
-    "cyberpunk shirt", "hip hop tee", "skate t-shirt", "grunge hoodie",
-    "neon streetwear", "wolf graphic shirt", "dragon urban tee",
-    "oversized streetwear hoodie", "eagle street shirt",
+# Smart Home / Smart Garden / AI Gadgets — NUR für eBay/Amazon/AliExpress
+SMART_HOME_KW = [
+    "smart home steckdose wlan", "wifi smart plug energiemessen",
+    "smart garden bewässerung", "zigbee gateway smart home",
+    "led streifen wifi alexa", "tuya smart schalter",
+    "smart thermostat heizung", "wlan zeitschaltuhr",
+    "ki smart speaker", "home assistant hub",
+    "smart home starter set", "smart home sensor bewegungsmelder",
 ]
 
 
@@ -51,7 +54,7 @@ async def _tg(text: str) -> bool:
         return False
 
 
-# ── Shopify: get latest Printify products ─────────────────────────────────────
+# ── Shopify: get latest Printify products (streetwear) ────────────────────────
 
 async def _get_printify_products(limit: int = 5) -> List[Dict]:
     if not SHOP_DOMAIN or not SHOPIFY_TOKEN:
@@ -74,7 +77,36 @@ async def _get_printify_products(limit: int = 5) -> List[Dict]:
         return []
 
 
-# ── eBay affiliate search links ───────────────────────────────────────────────
+# ── Own shop: post Printify streetwear to Telegram ────────────────────────────
+
+async def post_own_shop_streetwear(count: int = 3) -> Dict:
+    """Neueste Printify Streetwear Designs → Telegram (nur eigener Shop, keine Fremd-Links)."""
+    products = await _get_printify_products(limit=count)
+    if not products:
+        return {"ok": False, "error": "no Printify products", "posted": 0}
+
+    posted = 0
+    for p in products:
+        title    = p.get("title", "New Design")[:60]
+        handle   = p.get("handle", "")
+        variants = p.get("variants", [{}])
+        price    = variants[0].get("price", "29.99") if variants else "29.99"
+        shop_url = f"{STORE_URL}/products/{handle}"
+
+        msg = (
+            f"🔥 <b>{title}</b>\n"
+            f"💶 Nur €{price} — Premium Print-on-Demand\n\n"
+            f"👕 <a href='{shop_url}'>Jetzt kaufen → AIITEC Store</a>"
+        )
+        ok = await _tg(msg)
+        if ok:
+            posted += 1
+        await asyncio.sleep(3)
+
+    return {"ok": posted > 0, "posted": posted, "total": len(products)}
+
+
+# ── eBay affiliate link builder ───────────────────────────────────────────────
 
 def _ebay_link(keyword: str) -> str:
     import urllib.parse
@@ -83,7 +115,7 @@ def _ebay_link(keyword: str) -> str:
 
 
 async def _ebay_search(keyword: str, count: int = 3) -> List[Dict]:
-    """eBay Finding API for streetwear keyword."""
+    """eBay Finding API für Smart Home Keywords."""
     items = []
     try:
         params = {
@@ -119,7 +151,7 @@ async def _ebay_search(keyword: str, count: int = 3) -> List[Dict]:
     return items
 
 
-# ── Amazon affiliate links ────────────────────────────────────────────────────
+# ── Amazon affiliate link builder ─────────────────────────────────────────────
 
 def _amazon_link(keyword: str) -> str:
     import urllib.parse
@@ -127,7 +159,7 @@ def _amazon_link(keyword: str) -> str:
     return f"https://www.amazon.de/s?k={kw}&tag={AMZN_TAG}"
 
 
-# ── AliExpress affiliate links ────────────────────────────────────────────────
+# ── AliExpress link builder ───────────────────────────────────────────────────
 
 def _ali_link(keyword: str) -> str:
     import urllib.parse
@@ -135,76 +167,31 @@ def _ali_link(keyword: str) -> str:
     return f"https://www.aliexpress.com/wholesale?SearchText={kw}&sortType=total_tranQty_desc"
 
 
-# ── Main: post Printify products with marketplace cross-links ─────────────────
+# ── eBay Smart Home deal blast ────────────────────────────────────────────────
 
-async def post_printify_with_marketplace_links(count: int = 3) -> Dict:
-    """Fetch newest Printify shirts → Telegram post mit eBay+Amazon+AliExpress Links."""
-    products = await _get_printify_products(limit=count)
-    if not products:
-        return {"ok": False, "error": "no Printify products", "posted": 0}
-
-    posted = 0
-    for p in products:
-        title   = p.get("title", "New Design")[:60]
-        handle  = p.get("handle", "")
-        img     = p.get("images", [{}])[0].get("src", "")
-        variants = p.get("variants", [{}])
-        price   = variants[0].get("price", "29.99") if variants else "29.99"
-        shop_url = f"{STORE_URL}/products/{handle}"
-
-        kw = random.choice(STREETWEAR_KW)
-        ebay_url  = _ebay_link(kw)
-        amzn_url  = _amazon_link(kw)
-        ali_url   = _ali_link(kw)
-
-        msg = (
-            f"🔥 <b>{title}</b>\n"
-            f"💶 Nur €{price} — Premium Print-on-Demand\n\n"
-            f"👕 <a href='{shop_url}'>Jetzt kaufen (Shop)</a>\n\n"
-            f"🔍 Ähnliche Styles:\n"
-            f"  • <a href='{ebay_url}'>eBay Streetwear</a>\n"
-            f"  • <a href='{amzn_url}'>Amazon Mode</a>\n"
-            f"  • <a href='{ali_url}'>AliExpress Urban</a>"
-        )
-
-        ok = await _tg(msg)
-        if ok:
-            posted += 1
-        await asyncio.sleep(3)
-
-    return {"ok": posted > 0, "posted": posted, "total": len(products)}
-
-
-# ── eBay deal blast (streetwear only) ─────────────────────────────────────────
-
-async def run_ebay_streetwear_blast(count: int = 3) -> Dict:
-    """Suche eBay nach Streetwear → Telegram Deal-Posts."""
-    kw = random.choice(STREETWEAR_KW)
+async def run_ebay_smarthome_blast(count: int = 3) -> Dict:
+    """eBay Smart Home Deals → Telegram."""
+    kw    = random.choice(SMART_HOME_KW)
     items = await _ebay_search(kw, count=count)
 
     if not items:
-        # Fallback mit Affiliate-Suchlink
         url = _ebay_link(kw)
         msg = (
-            f"👕 <b>eBay Streetwear Deal</b>\n"
+            f"🏠 <b>eBay Smart Home Deal</b>\n"
             f"Trending: <b>{kw.title()}</b>\n\n"
-            f"🔗 <a href='{url}'>Jetzt auf eBay suchen</a>\n"
-            f"🏪 <a href='{STORE_URL}'>Unser Shop: AIITEC Streetwear</a>"
+            f"🔗 <a href='{url}'>Jetzt auf eBay suchen</a>"
         )
         ok = await _tg(msg)
         return {"ok": ok, "blasted": 1 if ok else 0, "source": "fallback"}
 
     blasted = 0
     for item in items[:2]:
-        url  = item["url"]
-        name = item["title"]
         price_str = f"€{item['price']}" if item.get("price") else ""
         msg = (
-            f"🛒 <b>eBay Streetwear</b>\n"
-            f"{name}\n"
+            f"🛒 <b>eBay Smart Home</b>\n"
+            f"{item['title']}\n"
             f"{price_str}\n\n"
-            f"🔗 <a href='{url}'>eBay Deal ansehen</a>\n"
-            f"🏪 Eigene Designs: <a href='{STORE_URL}'>AIITEC Store</a>"
+            f"🔗 <a href='{item['url']}'>eBay Deal ansehen</a>"
         )
         ok = await _tg(msg)
         if ok:
@@ -214,36 +201,33 @@ async def run_ebay_streetwear_blast(count: int = 3) -> Dict:
     return {"ok": blasted > 0, "blasted": blasted, "keyword": kw}
 
 
-# ── Amazon affiliate blast (streetwear only) ──────────────────────────────────
+# ── Amazon Smart Home affiliate blast ────────────────────────────────────────
 
-async def run_amazon_streetwear_blast() -> Dict:
-    """Amazon Affiliate Streetwear Post → Telegram."""
-    kw  = random.choice(STREETWEAR_KW)
+async def run_amazon_smarthome_blast() -> Dict:
+    """Amazon Smart Home Affiliate Post → Telegram."""
+    kw  = random.choice(SMART_HOME_KW)
     url = _amazon_link(kw)
 
     MSGS = [
-        f"🛍️ <b>Amazon Streetwear Finds</b>\nTrending jetzt: <b>{kw.title()}</b>\n\n🔗 <a href='{url}'>Amazon Fashion entdecken →</a>\n🏪 Premium Print: <a href='{STORE_URL}'>AIITEC Store</a>",
-        f"📦 <b>Amazon Mode Deals</b>\n{kw.title()} — Prime-Lieferung!\n\n👉 <a href='{url}'>Jetzt auf Amazon</a>\n✨ Exklusiv bei uns: <a href='{STORE_URL}'>AIITEC Streetwear</a>",
-        f"⚡ <b>Amazon Streetwear</b>\n{kw.title()} — Bestseller 2026\n\n🔗 <a href='{url}'>Amazon Deal</a> | 🏪 <a href='{STORE_URL}'>Unser Shop</a>",
+        f"🛍️ <b>Amazon Smart Home</b>\nTrending: <b>{kw.title()}</b>\n\n🔗 <a href='{url}'>Amazon Deals entdecken →</a>",
+        f"📦 <b>Amazon Smart Home Deals</b>\n{kw.title()} — Prime-Lieferung!\n\n👉 <a href='{url}'>Jetzt auf Amazon</a>",
+        f"⚡ <b>Amazon Smart Home 2026</b>\n{kw.title()} — Bestseller\n\n🔗 <a href='{url}'>Amazon Deal ansehen</a>",
     ]
-    msg = random.choice(MSGS)
-    ok  = await _tg(msg)
+    ok = await _tg(random.choice(MSGS))
     return {"ok": ok, "keyword": kw}
 
 
-# ── AliExpress streetwear import + announce ───────────────────────────────────
+# ── AliExpress Smart Home announce ───────────────────────────────────────────
 
-async def run_aliexpress_streetwear_announce() -> Dict:
-    """Post AliExpress streetwear search + link to own shop."""
-    kw  = random.choice(STREETWEAR_KW)
+async def run_aliexpress_smarthome_announce() -> Dict:
+    """AliExpress Smart Home Deals → Telegram."""
+    kw  = random.choice(SMART_HOME_KW)
     url = _ali_link(kw)
 
     msg = (
-        f"🌏 <b>AliExpress Streetwear</b>\n"
+        f"🌏 <b>AliExpress Smart Home</b>\n"
         f"Trending: <b>{kw.title()}</b>\n\n"
-        f"🔗 <a href='{url}'>AliExpress entdecken</a>\n"
-        f"✅ Premium Alternative: <a href='{STORE_URL}'>AIITEC Streetwear Store</a>\n"
-        f"(Print-on-Demand — Bella+Canvas Qualität)"
+        f"🔗 <a href='{url}'>AliExpress Deals entdecken</a>"
     )
     ok = await _tg(msg)
     return {"ok": ok, "keyword": kw}
@@ -252,12 +236,12 @@ async def run_aliexpress_streetwear_announce() -> Dict:
 # ── Full marketplace cycle ─────────────────────────────────────────────────────
 
 async def run_full_marketplace_cycle() -> Dict:
-    """Scheduler entry: rotiert durch alle Marketplace-Posts."""
+    """Scheduler entry: rotiert zwischen eigenem Shop (Streetwear) und Marktplatz-Deals (Smart Home)."""
     ACTIONS = [
-        ("printify_cross", post_printify_with_marketplace_links),
-        ("ebay_blast",     run_ebay_streetwear_blast),
-        ("amazon_blast",   run_amazon_streetwear_blast),
-        ("ali_announce",   run_aliexpress_streetwear_announce),
+        ("own_shop_streetwear", post_own_shop_streetwear),
+        ("ebay_smarthome",      run_ebay_smarthome_blast),
+        ("amazon_smarthome",    run_amazon_smarthome_blast),
+        ("ali_smarthome",       run_aliexpress_smarthome_announce),
     ]
     name, fn = random.choice(ACTIONS)
     try:
