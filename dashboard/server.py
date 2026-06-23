@@ -3981,6 +3981,62 @@ async def handle_shopify_order_webhook_v2(req):
     return await handle_shopify_order_webhook_route(req)
 
 
+async def handle_shopify_customer_webhook(req):
+    """POST /api/shopify/customer-webhook — sync new Shopify customers to Klaviyo."""
+    try:
+        data = await req.json()
+        email = data.get("email", "")
+        first_name = data.get("first_name", "")
+        last_name = data.get("last_name", "")
+        if not email:
+            return web.json_response({"ok": False, "error": "no email"})
+
+        klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
+        klaviyo_list = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+        if not klaviyo_key:
+            return web.json_response({"ok": False, "error": "no klaviyo key"})
+
+        async with aiohttp.ClientSession() as session:
+            headers = {
+                "Authorization": f"Klaviyo-API-Key {klaviyo_key}",
+                "revision": "2024-10-15",
+                "Content-Type": "application/json",
+            }
+            payload = {
+                "data": {
+                    "type": "profile-subscription-bulk-create-job",
+                    "attributes": {
+                        "list_id": klaviyo_list,
+                        "subscriptions": [{
+                            "email": email,
+                            "channels": {"email": ["MARKETING"]},
+                        }],
+                        "profiles": {
+                            "data": [{
+                                "type": "profile",
+                                "attributes": {
+                                    "email": email,
+                                    "first_name": first_name,
+                                    "last_name": last_name,
+                                    "properties": {"source": "shopify_signup"},
+                                },
+                            }]
+                        },
+                    },
+                }
+            }
+            async with session.post(
+                "https://a.klaviyo.com/api/profile-subscription-bulk-create-jobs/",
+                headers=headers, json=payload, timeout=aiohttp.ClientTimeout(total=10)
+            ) as r:
+                ok = r.status in (200, 201, 202)
+                log.info("Shopify→Klaviyo sync %s: %s", email, r.status)
+                return web.json_response({"ok": ok, "email": email, "status": r.status})
+    except Exception as e:
+        log.error("Customer webhook error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_shopify_orders(req):
     try:
         from modules.shopify_automation import get_recent_orders, format_orders_message
@@ -8445,6 +8501,7 @@ async def create_app():
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
     app.router.add_post("/api/shopify/order-webhook",     handle_shopify_order_webhook_route)
     app.router.add_post("/api/webhooks/shopify-order",    handle_shopify_order_webhook_v2)
+    app.router.add_post("/api/shopify/customer-webhook",  handle_shopify_customer_webhook)
     app.router.add_post("/api/discord/interactions",      handle_discord_interactions)
     app.router.add_get("/api/discord/oauth/callback",     handle_discord_oauth_callback)
     app.router.add_get("/api/shopify/orders",         handle_shopify_orders)
