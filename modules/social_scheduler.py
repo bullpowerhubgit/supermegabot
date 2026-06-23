@@ -20,7 +20,7 @@ log = logging.getLogger("SocialScheduler")
 TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
 TELEGRAM_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel only
 TELEGRAM_ALERT   = os.getenv("TELEGRAM_CHAT_ID", "")       # system alerts → private chat
-TELEGRAM_CHAT    = TELEGRAM_CHANNEL or ""                   # backwards compat (no spam if no channel)
+TELEGRAM_CHAT    = TELEGRAM_CHANNEL or TELEGRAM_ALERT or "" # fall back to private chat if no channel
 TWITTER_WEBHOOK = os.getenv("TWITTER_WEBHOOK_URL", "http://localhost:8888/api/twitter/post")
 TWITTER_SECRET  = os.getenv("TWITTER_WEBHOOK_SECRET", "bullpower2026")
 
@@ -84,6 +84,23 @@ CONTENT_TEMPLATES = [
     },
     {
         "text": "🎯 3 Dinge die sofort deinen Shopify-Umsatz erhöhen:\n\n1. Abandoned Cart Email (automatisch)\n2. Post-Purchase Upsell (KI-gesteuert)\n3. Social Proof auf Produktseiten\n\nAlles automatisch: https://ineedit.com.co",
+        "telegram_extra": "",
+    },
+    # DS24 Product 668035 promotions
+    {
+        "text": "🤖 AI Income Machine – 90-Day Blueprint\n\nIn 90 Tagen mit KI passives Einkommen aufbauen:\n✅ Schritt-für-Schritt System auf Deutsch\n✅ Top 5 KI-Tools die wirklich Geld bringen\n✅ Vollautomatisch — ohne Programmierkenntnisse\n\n€37 einmalig: https://www.checkout-ds24.com/product/668035\n\n#KI #PassivesEinkommen #AIMoney",
+        "telegram_extra": "",
+    },
+    {
+        "text": "💰 Wie funktioniert KI-Einkommen 2026?\n\nSchritt 1: Richtige KI-Tools auswählen\nSchritt 2: System einrichten (einmalig)\nSchritt 3: Automatisch Geld verdienen\n\n→ Das komplette System für €37:\nhttps://www.checkout-ds24.com/product/668035\n\n#KIGeldVerdienen #AIIncome",
+        "telegram_extra": "",
+    },
+    {
+        "text": "⚡ Bereits 3 Menschen haben gestartet — du auch?\n\nAI Income Machine 90-Day Blueprint:\n→ €37 einmalig\n→ Sofortzugang\n→ 14 Tage Geld-zurück-Garantie\n\n🔗 https://www.checkout-ds24.com/product/668035",
+        "telegram_extra": "",
+    },
+    {
+        "text": "🚀 SuperMegaBot KI-Automation System\n\nVollständige E-Commerce Automatisierung:\n🤖 Shopify Store auf Autopilot\n📊 Revenue-Tracking in Echtzeit\n📱 Social Media auf allen Kanälen\n📧 Email-Marketing vollautomatisch\n\nFür €97 (einmalig):\nhttps://www.checkout-ds24.com/product/704677\n\n#Automation #KI #Shopify",
         "telegram_extra": "",
     },
 ]
