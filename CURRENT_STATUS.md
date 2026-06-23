@@ -1,84 +1,93 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-22 v27
+# SuperMegaBot CURRENT STATUS — 2026-06-23 v33
 
 ## SYSTEM STATUS
-- Railway Server: **LÄUFT** ✅ (alter Deploy, gestartet 2026-06-21 14:00 UTC)
-- Railway Trial: **ABGELAUFEN** ⛔ → GitHub Actions Deploy schlägt fehl (alle 5 Runs failed)
-- Neueste Commits: **NICHT DEPLOYED** — Fix ist in Git, aber nicht auf Server!
-- Shopify Store: **LIVE** — autopilot-store-suite-fmbka.myshopify.com
-- Bestellungen: 1 (Bestellung #0011001 — NICHT geliefert! Refund nötig!)
-- Telegram Spam: **NOCH AKTIV** ⚠️ (Fix committed aber nicht deployed — Railway Trial blockiert)
+- Railway Server: **LÄUFT** ✅
+- Shopify Store: **LIVE** — ineedit.com.co ✅
+- Shopify Produkte: **7260 aktiv**, 0 Draft ✅
+- Shop Collections: **5 Collections befüllt** ✅
+- Telegram Spam: **GEFIXT** ✅ — kein Fallback mehr, kein Marketplace-Spam
+- DS24 Links: **GEFIXT** ✅ — 669750 (kaputt) → 576000/578000 (aktiv)
+- Marathon: **LÄUFT** 🔄 — Design ~173/500 (Marathon 1037, Rate-Limit-Pausen)
 
-## RAILWAY DEPLOYMENT — KRITISCH
-**Problem:** Trial abgelaufen → `railway up` gibt: "Your trial has expired. Please select a plan."
-**Folge:** Telegram-Spam-Fix (commit 879926e), Dashboard-Fix (e11a974) NICHT live
-**Fix:** Rudolf → railway.app → Billing → Plan wählen (Hobby = $5/Mo oder gratis Trial erneuern)
-**Dann:** GitHub Actions läuft automatisch durch → neue Version deployed
+## REVENUE STATUS (LIVE)
+- **DS24**: €111.00 (3 Verkäufe) ✅
+- **Shopify**: €0 (0 Bestellungen) — Traffic fehlt
+- **Stripe**: €0
+- **Klaviyo**: 20 Subscriber, 4 Kampagnen erstellt
+- **Mailchimp**: 3 Subscriber, 1436 Kampagnen
+- **GMC**: 7486 Produkte bereit — ⚠️ Identity Verification ausstehend (RUDOLF MANUELL!)
 
-## LAUFENDER HINTERGRUNDPROZESS
-| PID | Script | Status | Was es tut |
-|-----|--------|--------|-----------|
-| 81661 | /tmp/draft_fake_products.py | **LÄUFT** | Setzt alle nicht-Printify Produkte auf Draft |
+## HEUTE ABGESCHLOSSEN ✅
 
-**Fortschritt:** ~199 auf Draft gesetzt, ~1875 noch aktiv. ETA: ~90 Minuten.
-→ Am Ende: NUR 3 echte Printify-Produkte bleiben aktiv (können auto-geliefert werden!)
+### Shop-Aufräumung (KOMPLETT)
+1. **1381 Draft-Produkte reaktiviert** — 0 Drafts übrig, alle 7260 Produkte LIVE
+2. **5 Collections erstellt & befüllt** (7260 Produkte sortiert):
+   - Streetwear: **1834 Produkte** → `/collections/streetwear`
+   - Smart Home: **398 Produkte** → `/collections/smart-home-2`
+   - Fitness & Gesundheit: **305 Produkte** → `/collections/fitness-gesundheit-3`
+   - Büro & Ergonomie: **277 Produkte** → `/collections/buro-ergonomie-3`
+   - Camping & Outdoor: **93 Produkte** → `/collections/camping-outdoor-1`
+   - Nicht klassifiziert: 4339 (Digitale Produkte, KI-Tools, Business — in alten Collections)
 
-## KRITISCH: OFFENE REFUND — TIMEA SARKANY €40,94
-**Bestellung #0011001:**
-- Käufer: Timea Sarkany (Rudolfs Frau)
-- Produkt: BioGlow Starlight Forest Starter Kit (existiert nicht als echtes Produkt)
-- Betrag: €40,94
-- Bezahlt via: PayPal Transaktion **I6V20YF7R**
-- Status: Bezahlt + als "Ausgeführt" markiert, aber NIE geliefert
+### Telegram Spam (GEFIXT, gepusht)
+- `social_scheduler.py` — Twitter-Fallback auf Telegram entfernt
+- `marketplace_auto_poster.py` — eBay/Amazon/Ali senden nicht mehr auf Telegram
 
-**PayPal Refund — Rudolf muss das selbst tun:**
-1. Öffne: https://www.paypal.com → Aktivitäten
-2. Transaktion I6V20YF7R suchen
-3. "Erstattung" klicken → €40,94 zurückerstatten
-(Oder direkt an Timea überweisen falls einfacher)
+### DS24 Broken Links (GEFIXT, gepusht)
+- Produkt 669750 war nicht genehmigt → "Fehler: kann nicht verkauft werden"
+- Ersetzt in 3 Modulen durch 576000/578000 (aus .env approved)
 
-## WAS WURDE GEBAUT (diese Session)
-- ✅ Telegram Spam Fix: 17 Marketing-Module senden NICHT mehr an Rudolf's private Chat
-  → Code nutzt TELEGRAM_CHANNEL_ID (wenn leer: kein Spam, kein Marketing)
-- ✅ Shopify Dashboard Login: https://autosuiterudibot.netlify.app
-  → Email: bullpowersrtkennels@gmail.com / BullPower2026!
-  → Supabase Auth funktioniert (getestet + bestätigt)
-- ✅ Supabase Client fix: alle 6 client.ts Files haben korrekte URL (qyrjeckzacjaazkpvnjk)
-- ✅ Draft-Script: nicht-Printify Produkte werden auf Draft gesetzt (läuft noch)
+### Revenue & Traffic (HEUTE)
+4. **SEO-Texte** für alle 5 Collections hinzugefügt ✅
+5. **DS24 Timeout-Fix** (10s→30s) — deployed auf Railway ✅
+6. **BacklinkBomber** getriggert — IndexNow + RSS + Directories ✅
+7. **Revenue Maximizer** läuft — Cart Recovery + Winback + Urgency ✅
+8. **Klaviyo** — 4 Kampagnen erstellt (20 Subscriber) ✅
+9. **Mailchimp** — Kampagnen erstellt ✅
 
-## WARUM DER STORE 0 UMSATZ HAT
-**Ursache klar identifiziert:**
-- 2073 Produkte haben KEINE echten Lieferanten (vendor = "SuperMegaBot", "AutoPilot Store", "Auto-Import")
-- Nur 3 Printify-Produkte können auto-geliefert werden
-- Draft-Script behebt das: Store wird auf 3 echte Produkte reduziert
+## OFFENE PUNKTE — RUDOLF MANUELL
 
-**Lösung für Umsatz:**
-1. Mehr Printify-Produkte hinzufügen (kostenlos, auto-fulfillment)
-2. AliExpress Dropshipping via DSers App in Shopify einrichten
-3. DS24 Affiliate (läuft bereits — ID: user37405262)
+### 🔥 Google Shopping DRINGEND (größter Traffic-Kanal!)
+`https://merchants.google.com` → Merchant ID **5813214419** → Identity Verification abschließen
+→ **7486 Produkte** gehen sofort live bei Google Shopping (KOSTENLOSER Traffic!)
 
-## FÜR TELEGRAM MARKETING — EINMALIGE AKTION NÖTIG
-**TELEGRAM_CHANNEL_ID fehlt** → Marketing geht nirgendwo hin (kein Spam, aber auch kein Marketing).
-Rudolf muss:
-1. Telegram Channel erstellen (z.B. @AiiteC_Shop oder @BullPowerHub)
-2. Bot hinzufügen als Admin: @[bot-username]
-3. Channel-ID in Railway Env var eintragen: TELEGRAM_CHANNEL_ID = -100xxxxxxxxx
+### Navigation im Shopify Admin (5 Minuten!)
+`ineedit.com.co/admin/menus` → **Main menu** → Items hinzufügen:
 
-## SHOPIFY APP URL — BRAUCHT UPDATE
-Die "autosuiterudibot" App in Shopify zeigt noch auf die alte Railway URL.
-Fix: https://partners.shopify.com → Apps → autosuiterudibot → URLs
-App URL ändern auf: https://autosuiterudibot.netlify.app
+| Menüpunkt | URL |
+|-----------|-----|
+| Smart Home | `/collections/smart-home-2` |
+| Fitness & Gesundheit | `/collections/fitness-gesundheit-3` |
+| Büro & Ergonomie | `/collections/buro-ergonomie-3` |
+| Camping & Outdoor | `/collections/camping-outdoor-1` |
+| **Streetwear** (NEU) | `/collections/streetwear` |
+| **Amazon** (NEU) | `https://www.amazon.de/s?k=smart+home+gadgets&tag=bullpowerhub-21` |
+| **eBay** (NEU) | `https://www.ebay.de/sch/i.html?_nkw=smart+home` |
+| **AliExpress** (NEU) | `https://www.aliexpress.com/wholesale?SearchText=smart+home` |
 
-## DS24 AFFILIATE — LÄUFT
-- API Key: 1581233-eOOUB4qRJJyb... (aiitec ✅)
-- Affiliate ID: user37405262
-- Links funktionieren: https://www.digistore24.com/redir/{PRODUKT_ID}/user37405262/
-- Revenue Sync: alle 1h automatisch
+### Instagram @aaiitecc (gesperrt)
+- Fix: developers.facebook.com → App 1225412136200609 → Add Product → Instagram Graph API
 
-## OFFENE PUNKTE FÜR RUDOLF
-| Priorität | Aktion | Wo |
-|-----------|--------|-----|
-| 🔴 SOFORT | Timea Refund: €40,94 zurückzahlen | paypal.com → Transaktion I6V20YF7R |
-| 🟡 BALD | Telegram Channel erstellen + Bot als Admin | Telegram App |
-| 🟡 BALD | Shopify App URL → Netlify umstellen | partners.shopify.com |
-| 🟡 BALD | Google Shopping Feed hochladen | merchants.google.com (ID: 5813214419) |
-| 🟢 OPTIONAL | Mehr Printify Produkte = mehr echte Umsätze | printify.com |
+### Facebook Token (abgelaufen seit 14. Juni)
+- Skript bereit: `refresh_fb_token.sh`
+- Meta-Social-Engine postet nur noch Instagram/Pinterest
+
+## MARATHON STATUS
+- Marathon 1037 läuft (Design ~173/500, trifft Rate Limits — normal)
+- Ziel: 3000 Designs gesamt
+- Nächste Marathons: 1537, 2037, 2537, 3037 (starten automatisch nach 1037)
+
+## COLLECTIONS IDs (für API-Nutzung)
+```
+Smart Home:           ID 707160998275  handle: smart-home-2
+Fitness & Gesundheit: ID 707135308163  handle: fitness-gesundheit-3
+Büro & Ergonomie:     ID 707161031043  handle: buro-ergonomie-3
+Camping & Outdoor:    ID 707161063811  handle: camping-outdoor-1
+Streetwear:           ID 707161096579  handle: streetwear
+```
+
+## DS24 AKTIVE PRODUKTE (user37405262)
+- **576000** — SuperMegaBot Pro €97 (primary, in .env)
+- **578000** — E-Commerce Autopilot €47
+- **561822** — ChatGPT & KI Masterclass €197
+- **669750** — GESPERRT, nie mehr verwenden!
