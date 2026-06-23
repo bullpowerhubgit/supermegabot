@@ -23,14 +23,14 @@ ALI_TRACKING_ID = os.getenv("ALIEXPRESS_TRACKING_ID", "")
 ALI_APP_KEY     = os.getenv("ALIEXPRESS_APP_KEY", "537346")
 
 TRENDING_NICHES = [
-    ("Streetwear T-Shirts", "streetwear t-shirt men"),
-    ("Urban Hoodie", "urban hoodie oversized"),
-    ("Graphic Tee", "graphic tee streetwear"),
-    ("Cyberpunk Style", "cyberpunk clothing tshirt"),
-    ("Hip Hop Tee", "hip hop fashion tee"),
-    ("Skate Shirt", "skate t-shirt streetwear"),
-    ("Grunge Hoodie", "grunge hoodie street"),
-    ("Print on Demand Blanks", "blank t-shirt wholesale"),
+    ("Smart Home Steckdose", "smart home steckdose wlan"),
+    ("WiFi Smart Plug", "wifi smart plug energy monitor"),
+    ("Smart Garden", "smart garden bewässerung automatisch"),
+    ("Zigbee Smart Home", "zigbee gateway smart home"),
+    ("LED Strip WiFi", "led streifen wifi alexa"),
+    ("Tuya Smart Schalter", "tuya smart schalter"),
+    ("Smart Thermostat", "smart thermostat wifi heizung"),
+    ("KI Smart Speaker", "ai smart speaker home assistant"),
 ]
 
 
