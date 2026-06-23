@@ -29,7 +29,7 @@
 - **Mailchimp**: 3 Subscriber, 1436 Kampagnen
 - **GMC**: ~6244 Produkte (mit Bildern) — ⚠️ "Falsche Darstellung" Violation ausstehend
 
-## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v35 — Neue Erkenntnisse!)
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v35)
 
 ### DS24 Produkt-IDs endgültig gefixt ✅ (v35)
 1. **KRITISCHE ENTDECKUNG**: 576000/578000 sind NICHT unsere Produkte! (576000=wildghosts, 578000=Annag-v)
@@ -38,9 +38,27 @@
 4. **Alle Railway Env-Vars** auf 668035/704677 korrigiert (DS24_PRODUCT_ID_1/2, alle URLs)
 5. **Code-Fix**: ds24_traffic_engine.py, digistore_autonomy.py, mass_content_blaster.py, ds24_affiliate_blaster.py — alle auf 668035 als Primary
 
-### Collection Tags Update läuft 🔄
-- 5 Collections werden mit SEO-Tags aktualisiert (Hintergrund-Job)
-- Smart Home, Fitness, Büro, Camping, Streetwear
+### Collection Tags + SEO Update ✅
+- 5 Collections: SEO-Beschreibungen und Meta-Tags aktualisiert
+- Produkt-Tags werden aktualisiert (läuft noch für Streetwear mit 1834 Produkten)
+
+### Klaviyo-Cleanup + neue Kampagnen ✅
+- 1157 Draft-Kampagnen gelöscht (war Spam)
+- 3 neue professionelle Kampagnen erstellt (mit HTML-Templates):
+  1. "AI Income Machine — Einführung 2026"
+  2. "AI Income Machine — Die 3 Strategien"
+  3. "AI Income Machine — Letzte Chance €37"
+- Alle 3 Kampagnen: Draft-Status, 20 Subscriber, bereit zum Senden
+- **Rudolf muss Kampagnen manuell absenden**: Klaviyo → Campaigns → Send
+
+### Shopify Digitale Produkte ✅
+- AI Income Machine als Shopify-Produkt angelegt: `ineedit.com.co/products/ai-income-machine-90-day-blueprint`
+- Zur "Digitale Produkte" Collection hinzugefügt
+
+### DS24 Korrekturen ✅
+- 576000/578000 sind Fremdprodukte (wildghosts/Annag-v) — NICHT unsere Produkte!
+- Alle References auf 668035 (unser Produkt, €37, proven converter) korrigiert
+- Code gefixt: ds24_traffic_engine, digistore_autonomy, mass_content_blaster, ds24_affiliate_blaster
 
 ### Railway Env-Vars gefixt (SOFORT AKTIV nach nächstem Restart)
 1. **669750 und 576000/578000 aus ALLEN Railway Env-Vars entfernt** → jetzt 668035/704677
@@ -58,10 +76,18 @@
 
 ## OFFENE PUNKTE — RUDOLF MANUELL
 
+### 🔥 0. Klaviyo Kampagnen absenden!
+`app.klaviyo.com` → Campaigns → "AI Income Machine" → für jede Kampagne: Review & Send
+→ 20 Subscriber erhalten sofort die Emails → potenzielle €37 Verkäufe!
+
 ### 🔥 1. Railway JETZT upgraden ($5/Monat!)
 `railway.app` → Hobby Plan wählen → alle Code-Fixes gehen live!
 
-### 🔥 2. Google Shopping DRINGEND (größter Traffic-Kanal!)
+### 🔥 2. DS24 668035 — 60-Tage-Garantie hinzufügen (5 Minuten!)
+`digistore24.com` → Meine Produkte → 668035 → Bearbeiten → Rückgaberecht → 60 Tage
+→ Produkt erscheint in DS24 Marktplatz → KOSTENLOSER organischer Traffic!
+
+### 🔥 3. Google Shopping DRINGEND (größter Traffic-Kanal!)
 `https://merchants.google.com` → Merchant ID **5813214419** → Identity Verification abschließen
 → Dann: "Request Review" für Falsche-Darstellung-Violation klicken
 
