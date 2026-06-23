@@ -833,12 +833,55 @@ function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpo
   </div>
 </section>
 
+<!-- DS24 PRODUCT PROMO -->
+<section style="background:linear-gradient(135deg,#0a1628,#071830);border:1px solid rgba(6,182,212,0.3);border-radius:12px;padding:3rem 2rem;max-width:1100px;margin:3rem auto;text-align:center;">
+  <div style="display:inline-block;background:#FF6B00;color:white;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;padding:4px 12px;border-radius:20px;margin-bottom:1rem;">Empfehlung</div>
+  <h2 style="font-size:2rem;font-weight:800;color:#fff;margin-bottom:1rem;">AI Income Machine – 90-Day Blueprint</h2>
+  <p style="color:#94a3b8;font-size:1.1rem;max-width:600px;margin:0 auto 1.5rem;">In 90 Tagen mit KI passives Einkommen aufbauen — auf Deutsch, ohne Vorkenntnisse. Das bewährteste System für den deutschsprachigen Markt.</p>
+  <div style="display:flex;justify-content:center;gap:2rem;flex-wrap:wrap;margin-bottom:2rem;font-weight:600;color:#10b981;">
+    <span>Schritt-für-Schritt auf Deutsch</span>
+    <span>Top 5 KI-Tools erklärt</span>
+    <span>14 Tage Geld-zurück</span>
+    <span>Einmalig €37 — kein Abo</span>
+  </div>
+  <a href="https://www.checkout-ds24.com/product/668035" style="display:inline-block;background:#FF6B00;color:white;padding:18px 48px;text-decoration:none;border-radius:8px;font-size:1.2rem;font-weight:700;box-shadow:0 4px 20px rgba(255,107,0,0.4);">Jetzt für €37 kaufen →</a>
+  <p style="color:#475569;font-size:0.85rem;margin-top:1rem;">Sofortzugang nach Zahlung · Digistore24 sichere Zahlung</p>
+</section>
+
+<!-- KLAVIYO EMAIL CAPTURE -->
+<section style="background:#040f1f;border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:3rem 2rem;max-width:700px;margin:3rem auto;text-align:center;">
+  <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:0.5rem;">GRATIS: KI-Einsteiger Checkliste</h3>
+  <p style="color:#94a3b8;margin-bottom:1.5rem;">10 sofort einsetzbare KI-Tools die jeden Monat Geld sparen. Kostenlos per Email.</p>
+  <form onsubmit="submitKlaviyo(event)" style="display:flex;gap:1rem;max-width:500px;margin:0 auto;flex-wrap:wrap;">
+    <input type="email" id="klaviyoEmail" placeholder="deine@email.de" required
+      style="flex:1;min-width:200px;padding:14px 18px;border-radius:8px;border:1px solid rgba(6,182,212,0.3);background:#020d1e;color:#e2e8f0;font-size:1rem;outline:none;" />
+    <button type="submit" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);color:white;padding:14px 28px;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;white-space:nowrap;">Gratis erhalten</button>
+  </form>
+  <p id="klaviyoMsg" style="color:#10b981;margin-top:1rem;display:none;">Danke! Checke deine Email.</p>
+</section>
+
+<script>
+async function submitKlaviyo(e) {
+  e.preventDefault();
+  const email = document.getElementById('klaviyoEmail').value;
+  try {
+    await fetch('https://a.klaviyo.com/client/subscriptions/?company_id=VaCYq3', {
+      method: 'POST',
+      headers: {'content-type': 'application/json', 'revision': '2024-10-15'},
+      body: JSON.stringify({data:{type:'subscription',attributes:{list_id:'Xwxq6V',email:email,custom_source:'autoincome-ai',channels:{email:['MARKETING']}}}})
+    });
+  } catch(err) {}
+  document.getElementById('klaviyoEmail').value = '';
+  document.getElementById('klaviyoMsg').style.display = 'block';
+}
+</script>
+
 <!-- CTA -->
 <div class="cta-section">
   <div style="position:relative;">
     <h2>Bereit für <span style="background:linear-gradient(135deg,var(--cyan),var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">passives Einkommen?</span></h2>
     <p>Mehr als 1.200 Unternehmer nutzen bereits AutoIncome AI.</p>
-    <a href="https://autoincome-ai.netlify.app" class="cta-btn">📊 Jetzt Dashboard öffnen</a>
+    <a href="https://www.checkout-ds24.com/product/668035" class="cta-btn">Jetzt AI Income Machine starten — €37</a>
   </div>
 </div>
 
@@ -850,7 +893,7 @@ function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpo
       <a href="#">Datenschutz</a>
       <a href="#">Impressum</a>
       <a href="#">AGB</a>
-      <a href="https://autoincome-ai.netlify.app">Dashboard</a>
+      <a href="https://autoincome-ai.vercel.app">AutoIncome AI</a>
       <a href="https://bullpower-hub-portal.netlify.app">BullPower Hub</a>
     </div>
   </div>

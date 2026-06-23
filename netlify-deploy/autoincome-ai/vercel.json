@@ -1,8 +1,20 @@
 {
   "version": 2,
-  "builds": [
-    {"src": "*.html", "use": "@vercel/static"},
-    {"src": "*.xml", "use": "@vercel/static"},
-    {"src": "*.txt", "use": "@vercel/static"}
+  "framework": null,
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "crons": [
+    {
+      "path": "/api/campaign-trigger",
+      "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/campaign-trigger",
+      "schedule": "0 8 * * 4"
+    },
+    {
+      "path": "/api/ds24-report",
+      "schedule": "0 7 * * *"
+    }
   ]
 }
