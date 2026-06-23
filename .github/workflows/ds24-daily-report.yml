@@ -1,0 +1,27 @@
+name: DS24 Daily Revenue Report
+
+on:
+  schedule:
+    - cron: '0 7 * * *'   # täglich 07:00 UTC
+  workflow_dispatch:
+
+jobs:
+  revenue-report:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: DS24 Revenue Report
+        env:
+          DIGISTORE24_API_KEY: ${{ secrets.DIGISTORE24_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 .github/scripts/ds24_check.py
