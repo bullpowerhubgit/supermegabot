@@ -632,7 +632,7 @@ async def handle_gmc_feed(req):
     shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
     shopify_token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
     shopify_ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-    custom_domain  = os.getenv("SHOPIFY_CUSTOM_DOMAIN", "")
+    custom_domain  = os.getenv("SHOPIFY_CUSTOM_DOMAIN", "ineedit.com.co")
     store_url      = f"https://{custom_domain}" if custom_domain else os.getenv("SHOPIFY_STORE_URL", f"https://{shopify_domain}")
 
     # Google product category map (keyword → Google taxonomy ID)
