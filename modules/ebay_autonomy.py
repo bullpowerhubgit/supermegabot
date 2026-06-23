@@ -24,8 +24,9 @@ SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 SHOPIFY_HEADERS = {"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"}
 
 DEFAULT_KEYWORDS = [
-    "smart home", "fitness tracker", "wireless earbuds", "usb c hub",
-    "led strip", "power bank", "ring light", "laptop stand",
+    "streetwear t-shirt", "urban hoodie", "graphic tee men", "oversized shirt streetwear",
+    "cyberpunk t-shirt", "hip hop tee", "skate shirt", "grunge hoodie",
+    "neon streetwear", "urban fashion tee", "wolf shirt design", "dragon graphic tee",
 ]
 
 

@@ -4708,6 +4708,18 @@ async def task_instagram_pipeline() -> str:
         return f"InstagramPipeline Fehler: {e}"
 
 
+async def task_marketplace_poster() -> str:
+    """Alle 3h: eBay+Amazon+AliExpress+Shop Cross-Posting (rotierend, nur Streetwear)."""
+    try:
+        from modules.marketplace_auto_poster import run_full_marketplace_cycle
+        r = await run_full_marketplace_cycle()
+        action = r.get("action", "?")
+        ok = "✅" if r.get("ok") else "❌"
+        return f"MarketplacePoster: {ok} {action}"
+    except Exception as e:
+        return f"MarketplacePoster Fehler: {e}"
+
+
 async def task_streetwear_email() -> str:
     """Alle 3 Tage: Mailchimp + Klaviyo mit neuesten Printify-Produkten bespielen."""
     try:
@@ -4739,6 +4751,8 @@ TASKS = [
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
     ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
+    # ── Marketplace Auto-Poster ───────────────────────────────────────────────
+    ("marketplace_poster",   task_marketplace_poster,    10800, 200),  # 3h — eBay+Amazon+AliExpress+Shop
     # ── Email Marketing ───────────────────────────────────────────────────────
     ("streetwear_email",     task_streetwear_email,    259200, 600),  # 3 Tage — Mailchimp+Klaviyo neue Produkte
     ("customer_export",      task_customer_export,      86400, 400),  # täglich — Shopify-Kunden → Klaviyo+MC
