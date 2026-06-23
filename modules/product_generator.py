@@ -44,16 +44,14 @@ def _ok() -> bool:
 # ─── Trend Sources ────────────────────────────────────────────────────────────
 
 SEED_KEYWORDS = [
-    "Smart Home Gadget", "Wireless Earbuds", "LED Strip WiFi", "Fitness Tracker",
-    "USB-C Hub", "Power Bank", "Ring Light", "Desk Organizer", "Pet Camera",
-    "Mini Beamer", "Luftreiniger", "Elektrische Zahnbürste", "Küchenhelfer",
-    "Gaming Headset RGB", "Stehlampe dimmbar", "Massage Gun", "Yoga Matte",
-    "Laptop Ständer", "Kabelloser Lautsprecher", "Schlafmaske", "Pflanzenlampe",
-    "Cocktail Set", "Duschkopf Hochdruck", "Wandhalterung TV", "3D Drucker Filament",
-    "Smartwatch 2026", "Bluetooth Kopfhörer", "Webcam HD", "Steckdose USB",
-    "Kabelmanagement", "Schreibtisch Organizer", "Mini Projektor", "VR Brille",
-    "Smart Plug", "Türklingel Kamera", "Balkonkraftwerk", "Solar Panel",
-    "Elektrische Pumpe", "Gewürzmühle elektrisch", "Salatschleuder", "Weinöffner",
+    "Streetwear T-Shirt Wolf", "Urban Hoodie Oversized", "Graphic Tee Cyberpunk",
+    "Hip Hop Shirt Street", "Skate T-Shirt Grunge", "Neon Streetwear",
+    "Dragon Graphic Tee", "Eagle Street Shirt", "Tiger Urban Hoodie",
+    "Panther Streetwear", "Phoenix Graphic Tee", "Bear Street Force",
+    "Hawk Urban Shadow", "Raven Cyber Shirt", "Jaguar Street Power",
+    "Iron Wolf Street", "Ghost Neon Tee", "Cyber Street Dragon",
+    "Dark Urban Panther", "Volt Neon Hoodie", "Circuit Cyber Tee",
+    "Flame Street Wolf", "Grid Urban Eagle", "Sharp Cyber Tiger",
 ]
 
 TREND_RSS_SOURCES = [

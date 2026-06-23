@@ -30,9 +30,9 @@ SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 SHOPIFY_HEADERS = {"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"}
 
 TRENDING_KEYWORDS = [
-    "smart home gadget", "wireless earbuds", "portable charger",
-    "fitness tracker", "led strip light", "usb c hub",
-    "ring light", "laptop stand", "mini projector", "pet camera",
+    "streetwear t-shirt", "urban hoodie", "graphic tee streetwear",
+    "oversized hoodie", "street fashion shirt", "hip hop tee",
+    "urban style hoodie", "grunge tshirt", "skate t-shirt", "cyberpunk hoodie",
 ]
 
 
@@ -180,17 +180,7 @@ async def auto_import_trending(count: int = 5) -> dict:
         result = await import_to_shopify(p)
         if result.get("ok"):
             imported += 1
-            try:
-                shop_url = f"https://{SHOP}" if SHOP else p["url"]
-                from modules.brutus_core import fire
-                await fire(
-                    f"Neu im Shop: {p['title'][:60]}",
-                    f"Frisch importiert von AliExpress — jetzt verfügbar!\n{p['title']}",
-                    link=shop_url,
-                    channels=["telegram", "slack", "shopify_blog", "klaviyo"],
-                )
-            except Exception as be:
-                log.debug("Brutus fire error: %s", be)
+            log.info("Importiert: %s", p.get("title", "?")[:60])
         await asyncio.sleep(2)
 
     return {"ok": True, "imported": imported, "total": len(products)}
