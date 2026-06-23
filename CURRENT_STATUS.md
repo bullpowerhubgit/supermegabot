@@ -28,9 +28,10 @@
 - **DS24**: €111.00 (3 Verkäufe, Produkt 668035) ✅
 - **Shopify**: €0 (0 Bestellungen) — Traffic fehlt
 - **Stripe**: €0
-- **Klaviyo**: 20 Subscriber, **4 Kampagnen GESENDET** ✅ (heute, 19:47-20:05 UTC)
+- **Klaviyo**: 20 Subscriber, **7 Kampagnen GESENDET** ✅ (heute) — 1 confirmed open
 - **Mailchimp**: 17 Subscriber — Account disabled (freie Plan-Limits)
 - **GMC**: ~6244 Produkte — ⚠️ "Falsche Darstellung" Violation ausstehend
+- **autoincome-ai.vercel.app**: LIVE mit DS24 CTA + Klaviyo Email-Capture ✅
 
 ## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v37)
 
@@ -119,6 +120,16 @@ Fix: Shopify Partner Dashboard → App → Permissions → Scopes erweitern
 - **668035** — AI Income Machine – 90-Day Blueprint €37 ✅ (3 Verkäufe = €111)
 - **704677** — SuperMegaBot KI-Automation System €97 ✅ (neu)
 - **669750** — GESPERRT, NIE VERWENDEN!
+
+## VERCEL LANDING PAGES (mit DS24 CTAs)
+- autoincome-ai.vercel.app: DS24 668035 + Klaviyo Form ✅ DEPLOYED heute
+- Klaviyo Signup Direct URL: https://manage.kmail-lists.com/subscriptions/subscribe?a=VaCYq3&g=Xwxq6V
+
+## TRAFFIC ENGINES (LIVE — Separate Railway)
+- social-traffic-engine: 281 Posts, Last run 19:08 UTC — DS24 artikel ingested ✅
+- meta-social-engine: LIVE — DS24 artikel ingested ✅
+- freelance-gig-engine: LIVE — KI artikel ingested ✅
+- visual-content-engine: LIVE — KI artikel ingested ✅
 
 ## SHOPIFY DIGITALE PRODUKTE (6 total)
 - AI Income Machine (16047516057987): https://ineedit.com.co/products/ai-income-machine-90-day-blueprint
