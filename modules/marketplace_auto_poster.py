@@ -79,28 +79,39 @@ async def _get_printify_products(limit: int = 5) -> List[Dict]:
 
 # ── Own shop: post Printify streetwear to Telegram ────────────────────────────
 
+_SW_ADJ = {"dark","neon","iron","ghost","cyber","urban","street","hyper","turbo","ultra","mega","raw","pure","bold","stark","savage","brutal","nuclear","plasma","venom","shadow","stealth","rogue","silent","chrome","carbon","obsidian","titanium","void","phantom","astral","crimson","infernal","frost","azure","golden","black","white","silver","jade","cobalt","amber","onyx","ruby","sapphire"}
+_SW_NOUNS = {"wolf","tiger","eagle","dragon","panther","phoenix","bear","hawk","cobra","raven","falcon","viper","jaguar","lynx","puma","bison","kraken","hydra","wyvern","chimera","leviathan","behemoth","titan","colossus","goliath","hercules","atlas","spartan","gladiator","knight","samurai","ronin","shogun","ninja","warrior","hunter","ranger","specter","wraith","shade","phantom","revenant","banshee","oracle","forge","blade","edge","storm","blaze","surge","flux"}
+
+def _is_valid_streetwear(title: str) -> bool:
+    w = title.lower().strip().split()
+    return len(w) >= 2 and w[0] in _SW_ADJ and w[1] in _SW_NOUNS
+
 async def post_own_shop_streetwear(count: int = 3) -> Dict:
-    """Neueste Printify Streetwear Designs → Telegram (nur eigener Shop, keine Fremd-Links)."""
-    products = await _get_printify_products(limit=count)
+    """Neueste Printify Streetwear Designs → Telegram (nur validierte Streetwear-Namen)."""
+    products = await _get_printify_products(limit=count * 3)
     if not products:
         return {"ok": False, "error": "no Printify products", "posted": 0}
 
     posted = 0
     for p in products:
-        title    = p.get("title", "New Design")[:60]
+        title = p.get("title", "")[:60]
+        if not _is_valid_streetwear(title):
+            log.info("Streetwear post SKIP (kein SW-Pattern): '%s'", title)
+            continue
         handle   = p.get("handle", "")
         variants = p.get("variants", [{}])
         price    = variants[0].get("price", "29.99") if variants else "29.99"
         shop_url = f"{STORE_URL}/products/{handle}"
-
         msg = (
             f"🔥 <b>{title}</b>\n"
-            f"💶 Nur €{price} — Premium Print-on-Demand\n\n"
+            f"💶 Nur €{price} — Premium Streetwear\n\n"
             f"👕 <a href='{shop_url}'>Jetzt kaufen → AIITEC Store</a>"
         )
         ok = await _tg(msg)
         if ok:
             posted += 1
+        if posted >= count:
+            break
         await asyncio.sleep(3)
 
     return {"ok": posted > 0, "posted": posted, "total": len(products)}
@@ -176,61 +187,31 @@ async def run_ebay_smarthome_blast(count: int = 3) -> Dict:
 
     if not items:
         url = _ebay_link(kw)
-        msg = (
-            f"🏠 <b>eBay Smart Home Deal</b>\n"
-            f"Trending: <b>{kw.title()}</b>\n\n"
-            f"🔗 <a href='{url}'>Jetzt auf eBay suchen</a>"
-        )
-        ok = await _tg(msg)
-        return {"ok": ok, "blasted": 1 if ok else 0, "source": "fallback"}
+        log.info("eBay Smart Home fallback: %s (kein Telegram)", kw)
+        return {"ok": True, "blasted": 0, "source": "fallback", "link": url}
 
-    blasted = 0
-    for item in items[:2]:
-        price_str = f"€{item['price']}" if item.get("price") else ""
-        msg = (
-            f"🛒 <b>eBay Smart Home</b>\n"
-            f"{item['title']}\n"
-            f"{price_str}\n\n"
-            f"🔗 <a href='{item['url']}'>eBay Deal ansehen</a>"
-        )
-        ok = await _tg(msg)
-        if ok:
-            blasted += 1
-        await asyncio.sleep(3)
-
-    return {"ok": blasted > 0, "blasted": blasted, "keyword": kw}
+    log.info("eBay Smart Home: %d items für '%s' (kein Telegram)", len(items), kw)
+    return {"ok": True, "blasted": len(items[:2]), "keyword": kw}
 
 
 # ── Amazon Smart Home affiliate blast ────────────────────────────────────────
 
 async def run_amazon_smarthome_blast() -> Dict:
-    """Amazon Smart Home Affiliate Post → Telegram."""
+    """Amazon Smart Home Affiliate — kein Telegram, nur intern."""
     kw  = random.choice(SMART_HOME_KW)
     url = _amazon_link(kw)
-
-    MSGS = [
-        f"🛍️ <b>Amazon Smart Home</b>\nTrending: <b>{kw.title()}</b>\n\n🔗 <a href='{url}'>Amazon Deals entdecken →</a>",
-        f"📦 <b>Amazon Smart Home Deals</b>\n{kw.title()} — Prime-Lieferung!\n\n👉 <a href='{url}'>Jetzt auf Amazon</a>",
-        f"⚡ <b>Amazon Smart Home 2026</b>\n{kw.title()} — Bestseller\n\n🔗 <a href='{url}'>Amazon Deal ansehen</a>",
-    ]
-    ok = await _tg(random.choice(MSGS))
-    return {"ok": ok, "keyword": kw}
+    log.info("Amazon Smart Home: '%s' — %s (kein Telegram)", kw, url)
+    return {"ok": True, "keyword": kw, "url": url}
 
 
 # ── AliExpress Smart Home announce ───────────────────────────────────────────
 
 async def run_aliexpress_smarthome_announce() -> Dict:
-    """AliExpress Smart Home Deals → Telegram."""
+    """AliExpress Smart Home — kein Telegram, nur intern."""
     kw  = random.choice(SMART_HOME_KW)
     url = _ali_link(kw)
-
-    msg = (
-        f"🌏 <b>AliExpress Smart Home</b>\n"
-        f"Trending: <b>{kw.title()}</b>\n\n"
-        f"🔗 <a href='{url}'>AliExpress Deals entdecken</a>"
-    )
-    ok = await _tg(msg)
-    return {"ok": ok, "keyword": kw}
+    log.info("AliExpress Smart Home: '%s' — %s (kein Telegram)", kw, url)
+    return {"ok": True, "keyword": kw, "url": url}
 
 
 # ── Full marketplace cycle ─────────────────────────────────────────────────────
