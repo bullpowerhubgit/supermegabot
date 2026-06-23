@@ -194,9 +194,10 @@ async def post_daily_content(force_template_index: int = None) -> dict:
     results["twitter"] = twitter_result
 
     if not twitter_result["ok"]:
-        log.info("Twitter nicht verfügbar — kein Telegram Fallback (Marketing-Content nur Twitter)")
-        results["telegram"] = {"ok": False, "skipped": True}
-        results["channel_used"] = "none"
+        log.info("Twitter nicht verfügbar — Fallback auf Telegram")
+        telegram_result = await post_to_telegram(text, extra)
+        results["telegram"] = telegram_result
+        results["channel_used"] = "telegram" if telegram_result["ok"] else "none"
     else:
         results["channel_used"] = "twitter"
 
