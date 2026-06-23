@@ -334,6 +334,23 @@ async def _indexnow(url_to_index: str, session: aiohttp.ClientSession) -> bool:
         return False
 
 
+def _validate_post(title: str, body: str, link: str) -> tuple:
+    """Quality gate — returns (is_valid, reason). Blocks junk before posting."""
+    if not title or len(title.strip()) < 3:
+        return False, "title too short"
+    if link and not link.startswith("http"):
+        return False, "invalid link"
+    combined = (title + " " + body).lower()
+    BLOCKED_CONTENT = [
+        "portable charger", "wireless earbuds", "smart home gadget",
+        "error code", "traceback", "exception:", "credit balance is too low",
+    ]
+    for blocked in BLOCKED_CONTENT:
+        if blocked in combined:
+            return False, f"blocked content: {blocked}"
+    return True, "ok"
+
+
 async def fire(
     title: str,
     body: str = "",
@@ -358,6 +375,12 @@ async def fire(
     Returns:
         dict mit Ergebnissen pro Kanal
     """
+    # Quality gate: validate before posting
+    valid, reason = _validate_post(title, body, link)
+    if not valid:
+        logger.warning("BrutusCore: post BLOCKED (%s): '%s'", reason, title[:60])
+        return {"ok": False, "blocked": True, "reason": reason}
+
     if tags is None:
         tags = ["brutus", niche.replace(" ", "-")]
     if channels is None:
