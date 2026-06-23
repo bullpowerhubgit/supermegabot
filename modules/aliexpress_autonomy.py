@@ -30,9 +30,10 @@ SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 SHOPIFY_HEADERS = {"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"}
 
 TRENDING_KEYWORDS = [
-    "streetwear t-shirt", "urban hoodie", "graphic tee streetwear",
-    "oversized hoodie", "street fashion shirt", "hip hop tee",
-    "urban style hoodie", "grunge tshirt", "skate t-shirt", "cyberpunk hoodie",
+    "smart home steckdose", "wifi smart plug", "smart garden bewässerung",
+    "zigbee smart home", "led strip wifi", "tuya smart schalter",
+    "smart thermostat", "wlan steckdose", "home automation hub",
+    "smart home sensor", "alexa kompatibel smart home", "ki smart speaker",
 ]
 
 
