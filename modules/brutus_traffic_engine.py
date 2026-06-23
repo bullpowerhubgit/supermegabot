@@ -331,16 +331,16 @@ _BRUTUS_TEMPLATES = [
         "ad_copy": "HEADLINE: {kw} — Jetzt €497 sparen!\nBODY: Vollautomatisches Einkommen mit KI. 24/7 für dich. Bereits 500+ zufriedene Kunden.\nCTA: Jetzt starten →\nURL: {_DS24}",
     },
     {
-        "social_post": "💡 Kennst du das? Arbeitest du hart, aber das Geld reicht nicht?\n\n{kw} hat bei mir alles verändert:\n→ Vollautomatisch €500–2000/Monat\n→ KI übernimmt alles\n→ Starte heute noch\n\n🔗 {_DS24}\n\n#Freiheit #PassivesEinkommen #KIBusiness",
+        "social_post": "💡 Kennst du das? Arbeitest du hart, aber das Geld reicht nicht?\n\n{kw} hat bei mir alles verändert:\n→ KI-gestützte Automatisierung für dein Business\n→ KI übernimmt alles\n→ Starte heute noch\n\n🔗 {_DS24}\n\n#Freiheit #PassivesEinkommen #KIBusiness",
         "blog_post": "<h1>Wie {kw} dein Leben verändern kann</h1><p>Stell dir vor: Dein Einkommen läuft automatisch. KI arbeitet für dich. Du hast Zeit für das Wichtige. Das ist kein Traum — das ist <a href='{_DS24}'>{kw}</a>.</p>",
-        "email_subject_lines": "Achtung: {kw} verändert alles\n[Neu] Passives Einkommen mit {kw}\nLetzter Platz: {kw} Masterkurs\nKostenlose Demo: {kw}\nWie Max €2.400/Monat mit {kw} verdient",
+        "email_subject_lines": "Achtung: {kw} verändert alles\n[Neu] Passives Einkommen mit {kw}\nLetzter Platz: {kw} Masterkurs\nKostenlose Demo: {kw}\nKI-Tools für dein Business: {kw} erklärt",
         "ad_copy": "HEADLINE: {kw} — Passives Einkommen mit KI\nBODY: Vollautomatisch Geld verdienen. Kein Vorwissen nötig. Sofort starten.\nCTA: Kostenlos testen →\nURL: {_DS24}",
     },
     {
-        "social_post": "📊 ERGEBNIS nach 30 Tagen mit {kw}:\n\nWoche 1: System aufgesetzt (2h)\nWoche 2: Erste €89 Einnahmen\nWoche 3: €312 passives Einkommen\nWoche 4: €847 ohne aktive Arbeit\n\nAlles automatisch. KI macht alles.\n👉 {_DS24}\n\n#Ergebnis #KIBusiness #DigitalNomad",
+        "social_post": "📊 {kw} — was steckt dahinter?\n\n✅ KI-gestützte Tools\n✅ Schritt-für-Schritt Anleitung\n✅ Für Online-Business geeignet\n✅ 30 Tage Geld-zurück-Garantie\n\nJetzt entdecken:\n👉 {_DS24}\n\n#KIBusiness #DigitalMarketing #OnlineBusiness",
         "blog_post": "<h1>{kw}: Meine Erfahrung nach 30 Tagen</h1><p>Ich war skeptisch. Aber nach einem Monat mit <a href='{_DS24}'>{kw}</a> bin ich überzeugt: Das System funktioniert. Vollautomatisch, KI-gestützt, und wirklich passiv.</p>",
-        "email_subject_lines": "Mein 30-Tage-Ergebnis mit {kw}\n€847 passiv — so geht's mit {kw}\n{kw}: Vorher/Nachher Vergleich\nWarum ich {kw} jedem empfehle\n{kw} — jetzt 50% Rabatt sichern",
-        "ad_copy": "HEADLINE: €847 in 30 Tagen — mit {kw}\nBODY: Echte Ergebnisse. KI-Automatisierung. Sofort startklar.\nCTA: Mein Ergebnis ansehen →\nURL: {_DS24}",
+        "email_subject_lines": "{kw} — mein Erfahrungsbericht\n{kw}: ehrlicher Test\n{kw} Funktionen im Überblick\nWarum {kw} für Online-Business geeignet ist\n{kw} — jetzt entdecken",
+        "ad_copy": "HEADLINE: {kw} — KI-Tools für Online-Business\nBODY: Lerne KI-Automatisierung. Schritt-für-Schritt. 30 Tage Garantie.\nCTA: Jetzt entdecken →\nURL: {_DS24}",
     },
     {
         "social_post": "🚀 BREAKING: {kw} jetzt verfügbar!\n\nWas du bekommst:\n✅ Vollautomatisches KI-System\n✅ Fertige Templates & Strategien\n✅ 24/7 Support\n✅ 30 Tage Geld-zurück-Garantie\n\nNur für kurze Zeit: Jetzt starten!\n🔗 {_DS24}",
@@ -349,9 +349,9 @@ _BRUTUS_TEMPLATES = [
         "ad_copy": "HEADLINE: {kw} — 30 Tage Geld-zurück!\nBODY: Risikolos starten. Vollautomatisch. KI macht alles für dich.\nCTA: Risikolos starten →\nURL: {_DS24}",
     },
     {
-        "social_post": "💰 Frage: Wieviel verdienst du im Schlaf?\n\nMit {kw}:\n→ KI arbeitet 24h für dich\n→ Vollautomatische Leads\n→ Passives Einkommen Monat für Monat\n\nAntwort: So viel wie du willst.\n\n👉 Starte heute: {_DS24}\n\n#PassivesEinkommen #KI2026 #FinanzielleFreiheit",
+        "social_post": "💰 Online-Business mit KI aufbauen — wie geht das?\n\nMit {kw} lernst du:\n→ KI-Tools gezielt einsetzen\n→ Marketing automatisieren\n→ Effizienter arbeiten\n\n👉 Mehr Infos: {_DS24}\n\n#KIMarketing #DigitalBusiness #OnlineBusiness",
         "blog_post": "<h1>Passives Einkommen mit {kw}: Der ultimative Guide</h1><p>Finanzielle Freiheit ist möglich. Mit <a href='{_DS24}'>{kw}</a> automatisierst du dein Einkommen — KI übernimmt alles.</p>",
-        "email_subject_lines": "Passives Einkommen mit {kw}: So geht's\n{kw} — dein Einkommen läuft jetzt automatisch\nFinanzielle Freiheit mit {kw}\nNoch heute starten: {kw}\n{kw} — limitiertes Angebot sichern",
+        "email_subject_lines": "Online-Business mit KI: {kw}\n{kw} — deine KI-Marketing-Tools\nDigitales Business mit {kw}\nKI für Einsteiger: {kw} erklärt\n{kw} — jetzt mehr erfahren",
         "ad_copy": "HEADLINE: Passives Einkommen mit {kw} — KI macht alles!\nBODY: Vollautomatisch. 24/7. Sofort startklar. Keine Vorkenntnisse nötig.\nCTA: Gratis Demo ansehen →\nURL: {_DS24}",
     },
 ]
