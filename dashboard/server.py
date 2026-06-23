@@ -699,11 +699,17 @@ async def handle_gmc_feed(req):
             price    = variant.get("price", "0")
             sku      = variant.get("sku", "") or f"SMB-{p.get('id','')}"
             image    = (p.get("images") or [{}])[0].get("src", "") if p.get("images") else ""
+            if not image:
+                continue  # Google requires image — skip imageless products
+            if not price or float(price or 0) <= 0:
+                continue  # Skip free/no-price products
             handle   = p.get("handle", "")
             title    = p.get("title", "")[:150]
+            if not title or len(title) < 3:
+                continue
             desc     = _clean_desc(p.get("body_html", ""), title)
             cat_id   = _guess_category(title, p.get("product_type", ""))
-            img_tag  = f"\n    <g:image_link>{_html.escape(image)}</g:image_link>" if image else ""
+            img_tag  = f"\n    <g:image_link>{_html.escape(image)}</g:image_link>"
             items.append(f"""  <item>
     <title><![CDATA[{title}]]></title>
     <description><![CDATA[{desc}]]></description>
