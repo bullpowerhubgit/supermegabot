@@ -23,13 +23,13 @@ ALI_TRACKING_ID = os.getenv("ALIEXPRESS_TRACKING_ID", "")
 ALI_APP_KEY     = os.getenv("ALIEXPRESS_APP_KEY", "537346")
 
 TRENDING_NICHES = [
-    ("Smart Home Gadgets", "smart home gadgets"),
-    ("Fitness Equipment", "fitness equipment"),
-    ("Phone Accessories", "phone accessories 2026"),
-    ("LED Lights", "led strip lights"),
-    ("Kitchen Gadgets", "kitchen gadgets"),
-    ("Car Accessories", "car accessories"),
-    ("Dropshipping Bestseller", "dropshipping products"),
+    ("Streetwear T-Shirts", "streetwear t-shirt men"),
+    ("Urban Hoodie", "urban hoodie oversized"),
+    ("Graphic Tee", "graphic tee streetwear"),
+    ("Cyberpunk Style", "cyberpunk clothing tshirt"),
+    ("Hip Hop Tee", "hip hop fashion tee"),
+    ("Skate Shirt", "skate t-shirt streetwear"),
+    ("Grunge Hoodie", "grunge hoodie street"),
     ("Print on Demand Blanks", "blank t-shirt wholesale"),
 ]
 
