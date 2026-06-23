@@ -26,15 +26,16 @@ _TG_CHANNEL    = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → must be 
 # SAFETY: never send to private chat - only to explicitly set public channel
 TELEGRAM_CHAT  = _TG_CHANNEL if _TG_CHANNEL and _TG_CHANNEL.startswith("-100") else ""
 
-# APPROVED affiliate links only - 669750 is not approved, use safe alternatives
+# APPROVED product links only - 669750 is GESPERRT, 576000/578000 are foreign products
+# 668035 = AI Income Machine 90-Day Blueprint (OUR product, €37, proven converter!)
 APPROVED_LINKS = [
-    "https://www.checkout-ds24.com/redir/576000/user37405262/",
-    "https://www.checkout-ds24.com/redir/578000/user37405262/",
-    "https://www.checkout-ds24.com/redir/546000/user37405262/",
+    "https://www.checkout-ds24.com/product/668035",
+    "https://www.checkout-ds24.com/product/704677",
+    "https://tecbuuss.gumroad.com/l/tnyyvb",
     "https://tecbuuss.gumroad.com/l/wcqdjx",
 ]
-if "669750" in DS24_LINK:
-    DS24_LINK = APPROVED_LINKS[0]  # override unapproved product
+if "669750" in DS24_LINK or "576000" in DS24_LINK or "578000" in DS24_LINK:
+    DS24_LINK = APPROVED_LINKS[0]  # override unapproved/wrong product
 
 # Daily send limit - prevent flooding
 _MAX_SENDS_PER_DAY = 20

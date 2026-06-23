@@ -18,9 +18,18 @@ log = logging.getLogger("DS24AffiliateBlaster")
 AFFILIATE_ID = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 DS24_API_KEY = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
 
-# ─── Alle 22 genehmigten Affiliate-Produkte (Links von DS24, 2026-06-20) ─────
+# ─── Eigene Produkte (AIITEC) + Affiliate-Produkte (DS24, 2026-06-23) ──────────
+# WICHTIG: 668035 und 704677 sind UNSERE eigenen Produkte (100% Umsatz)!
 
 DS24_APPROVED_PRODUCTS = [
+    {"id": "668035", "seller": "aiitec",
+     "link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"),
+     "niche": "ai", "category": "Digital", "title": "AI Income Machine – 90-Day Blueprint",
+     "own_product": True, "price": "37"},
+    {"id": "704677", "seller": "aiitec",
+     "link": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/704677"),
+     "niche": "ai", "category": "Digital", "title": "SuperMegaBot KI-Automation System",
+     "own_product": True, "price": "97"},
     {"id": "576000", "seller": "wildghosts",
      "link": "https://www.checkout-ds24.com/redir/576000/user37405262/",
      "niche": "lifestyle", "category": "Digital"},
