@@ -82,10 +82,10 @@ async def get_trending_products(keywords: list = None) -> list:
     # Fallback: seed keywords als Affiliate-Suchanfragen (RSS oft geblockt)
     if not products:
         fallback_keywords = keywords or [
-            "Smart Home Gadget 2026", "Wireless Earbuds Bluetooth", "USB-C Hub Multiport",
-            "LED Strip WiFi App", "Fitness Tracker Smartwatch", "Power Bank 20000mAh",
-            "Ring Light Selfie", "Mini Beamer Portable", "Laptop Ständer Ergonomisch",
-            "Massage Gun Tiefengewebe",
+            "Streetwear T-Shirt Wolf Design", "Urban Hoodie Oversized Streetwear",
+            "Graphic Tee Cyberpunk Men", "Hip Hop Fashion Tee", "Skate T-Shirt Streetwear",
+            "Grunge Hoodie Urban", "Dragon Graphic Shirt", "Eagle Street Fashion Tee",
+            "Tiger Urban Streetwear", "Neon Cyberpunk Hoodie",
         ]
         for kw in random.sample(fallback_keywords, min(5, len(fallback_keywords))):
             products.append({
