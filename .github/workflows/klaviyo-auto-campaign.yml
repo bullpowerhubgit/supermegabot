@@ -1,0 +1,35 @@
+name: Klaviyo Auto-Campaign
+
+on:
+  schedule:
+    - cron: '0 8 * * 1'   # Montag 08:00 UTC
+    - cron: '0 8 * * 4'   # Donnerstag 08:00 UTC
+  workflow_dispatch:       # manuell auslösbar
+
+jobs:
+  send-campaign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Send Klaviyo Campaign
+        env:
+          KLAVIYO_API_KEY: ${{ secrets.KLAVIYO_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 .github/scripts/klaviyo_campaign.py
+
+      - name: DS24 Revenue Check
+        env:
+          DIGISTORE24_API_KEY: ${{ secrets.DIGISTORE24_API_KEY }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python3 .github/scripts/ds24_check.py
