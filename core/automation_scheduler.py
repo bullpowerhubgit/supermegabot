@@ -4708,6 +4708,20 @@ async def task_instagram_pipeline() -> str:
         return f"InstagramPipeline Fehler: {e}"
 
 
+async def task_streetwear_email() -> str:
+    """Alle 3 Tage: Mailchimp + Klaviyo mit neuesten Printify-Produkten bespielen."""
+    try:
+        from modules.streetwear_email_engine import run_streetwear_email_blast
+        r = await run_streetwear_email_blast()
+        mc = "✅" if r.get("mailchimp", {}).get("ok") else "❌"
+        kl = "✅" if r.get("klaviyo", {}).get("ok") else "❌"
+        n  = r.get("products_sent", 0)
+        t  = r.get("campaign_type", "?")
+        return f"StreetEmail: MC={mc} KL={kl} | {n} Produkte | {t}"
+    except Exception as e:
+        return f"StreetEmail Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -4725,6 +4739,11 @@ TASKS = [
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
     ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
+    # ── Email Marketing ───────────────────────────────────────────────────────
+    ("streetwear_email",     task_streetwear_email,    259200, 600),  # 3 Tage — Mailchimp+Klaviyo neue Produkte
+    ("customer_export",      task_customer_export,      86400, 400),  # täglich — Shopify-Kunden → Klaviyo+MC
+    ("klaviyo_mass",         task_klaviyo_mass_daily,   86400, 500),  # täglich — Klaviyo Mass Campaigns
+    ("mailchimp_mass",       task_mailchimp_mass_daily, 86400, 550),  # täglich — Mailchimp Mass Campaigns
     # ── Backup ───────────────────────────────────────────────────────────────
     ("github_backup",        task_github_backup,       86400, 300),  # daily
 ]
