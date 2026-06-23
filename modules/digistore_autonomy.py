@@ -81,7 +81,8 @@ async def blast_best_products(count: int = 3) -> dict:
     if not products:
         # Use known product IDs as fallback
         products = [
-            {"product_id": "669750", "name": "SuperMegaBot", "price": "97"},
+            {"product_id": "576000", "name": "SuperMegaBot Pro", "price": "97",
+             "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/redir/576000/user37405262/")},
         ]
 
     # Sort by EPC if available, else random

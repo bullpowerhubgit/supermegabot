@@ -38,6 +38,7 @@ DS24_NICHES = [
 ]
 
 # Bekannte gut-konvertierende DS24 Produkte (Fallback wenn API leer)
+# WICHTIG: 669750 ist nicht genehmigt — NIEMALS verwenden!
 DS24_KNOWN_PRODUCTS = [
     {
         "id": "561822",
@@ -45,24 +46,26 @@ DS24_KNOWN_PRODUCTS = [
         "commission_pct": 40,
         "price": "197",
         "niche": "ki",
-        "affiliate_link": "https://www.digistore24.com/redir/561822/user37405262/"
-    },
-    {
-        "id": "561822",
-        "name": "ChatGPT & KI Masterclass",
-        "commission_pct": 40,
-        "price": "197",
-        "niche": "ki",
-        "affiliate_link": "https://www.digistore24.com/redir/561822/user37405262/"
-    },
-    {
-        "id": "669750",
-        "name": "AI Income Machine",
-        "commission_pct": 50,
-        "price": "37",
-        "niche": "ki",
         "emoji": "🤖",
-        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+        "affiliate_link": "https://www.digistore24.com/redir/561822/user37405262/"
+    },
+    {
+        "id": "576000",
+        "name": "SuperMegaBot Pro",
+        "commission_pct": 50,
+        "price": "97",
+        "niche": "shopify",
+        "emoji": "🚀",
+        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/redir/576000/user37405262/")
+    },
+    {
+        "id": "578000",
+        "name": "E-Commerce Autopilot",
+        "commission_pct": 50,
+        "price": "47",
+        "niche": "shopify",
+        "emoji": "🛒",
+        "affiliate_link": "https://www.checkout-ds24.com/redir/578000/user37405262/"
     },
 ]
 
