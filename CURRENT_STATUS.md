@@ -1,4 +1,4 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-23 v36
+# SuperMegaBot CURRENT STATUS — 2026-06-23 v37
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** ✅ (Code vom 2026-06-21 — Railway Upgrade nötig!)
@@ -32,28 +32,37 @@
 - **Mailchimp**: 17 Subscriber — Account disabled (freie Plan-Limits)
 - **GMC**: ~6244 Produkte — ⚠️ "Falsche Darstellung" Violation ausstehend
 
-## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v36)
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v37)
 
-### Klaviyo — 4 Kampagnen gesendet ✅
-1. **AI Income Machine — Einführung 2026** (ID: 01KVTZXQBH0NWVNXVFZR9SE554) → Sent 19:47
-2. **AI Income Machine — Die 3 Strategien** (ID: 01KVTZXWWQK89FFY5PR0R2KSXF) → Sent 19:47
-3. **AI Income Machine — Letzte Chance €37** (ID: 01KVTZY30ECHYCAH09JD70N9B9) → Sent 19:47
-4. **SuperMegaBot — KI-Automation System €97** (ID: 01KVV11VMFHKFHCVM42QBAN3NP) → Sending ~20:05
-- Alle an 20 Subscriber (Liste Xwxq6V) mit korrekten DS24 Checkout-Links
+### Klaviyo — 7 Kampagnen gesendet ✅
+1. **AI Income Machine — Einführung 2026** (01KVTZXQBH0NWVNXVFZR9SE554) → Sent 19:47 ← 1 confirmed open!
+2. **AI Income Machine — Die 3 Strategien** (01KVTZXWWQK89FFY5PR0R2KSXF) → Sent 19:47
+3. **AI Income Machine — Letzte Chance €37** (01KVTZY30ECHYCAH09JD70N9B9) → Sent 19:47
+4. **SuperMegaBot — KI-Automation System €97** (01KVV11VMFHKFHCVM42QBAN3NP) → Sent 20:05
+5. **AI Income Machine — Erfolgsgeschichten** (01KVV3KSY3Y3JRS901J23X221N) → Sent 20:50
+6. **AI Income Machine — FAQ & Einwände** (01KVV3KVE0NC259C9RAZ49NDNG) → Sent 20:50
+7. **Affiliate Recruitment — 40% Provision** (01KVV3YQWRNEF98KVFE38KVV70) → Sent 21:05
+- Alle an 20 Subscriber (Liste Xwxq6V)
+- Klaviyo assign-template Prozess dokumentiert: POST /api/campaign-message-assign-template/ mit type=campaign-message + relationships.template
 
-### Telegram Promos ✅
-- Msg 76030: AI Income Machine €37 promo
-- Msg 76048: SuperMegaBot €97 promo
+### Telegram Promos ✅ (Msgs 76030-76333)
+- Msg 76291-76293: 3x DS24 Promo-Posts (AI Income Machine)
+- Msg 76333: Tages-Zusammenfassung
 
-### Shopify Updates ✅
-- **AI Income Machine** (16047516057987): Vollständige Conversion-optimierte Beschreibung + €37 Preis
-- **SuperMegaBot KI-Automation** (16047547482499): Neues €97 Produkt erstellt
-- Beide in KI & Automation Collection + Digitale Produkte Collection
-- Shopify customer creation webhook → Klaviyo list sync (Webhook ID: 2325908357507)
+### Shopify — 4 neue Digitale Produkte ✅
+- **ChatGPT Prompts Mega-Pack** (16047620260227) €27 → https://ineedit.com.co/products/chatgpt-prompts-mega-pack-500-profi-prompts-auf-deutsch
+- **KI-Freelancer Starterpaket** (16047620292995) €47 → https://ineedit.com.co/products/ki-freelancer-starterpaket-von-0-auf-2000-euro-im-monat
+- **Email Marketing Autopilot** (16047620325763) €27 → https://ineedit.com.co/products/email-marketing-autopilot-ki-newsletter-vollautomatisch
+- **Shopify KI Anleitung** (16047620391299) €47 → https://ineedit.com.co/products/shopify-store-aufbauen-mit-ki-schritt-fur-schritt-anleitung
+- Alle in KI & Automation + Digitale Produkte Collections + GMC identifier_exists=false
 
-### Code ✅ (committed, warten auf Railway-Deployment)
-- `dashboard/server.py`: POST /api/shopify/customer-webhook → sync new customers to Klaviyo
-- `modules/social_scheduler.py`: DS24 Promos + TELEGRAM_CHAT fallback (kein Channel nötig)
+### Code ✅ (committed & pushed)
+- `modules/social_scheduler.py`: BUG FIXED — Telegram Fallback läuft jetzt wirklich wenn Twitter fehlschlägt (war vorher gecancelt!)
+- `dashboard/server.py`: POST /api/shopify/customer-webhook → wartet noch auf Railway-Deploy
+
+### DS24 Transaktionen ✅
+- Alle 3 Transaktionen bestätigt für Produkt 668035 (receipt URLs verifiziert)
+- Email geöffnet: nikolestimi@gmail.com, 2026-06-23 19:48 UTC (Chrome on Windows)
 
 ## OFFENE PUNKTE — RUDOLF MANUELL
 
@@ -111,9 +120,13 @@ Fix: Shopify Partner Dashboard → App → Permissions → Scopes erweitern
 - **704677** — SuperMegaBot KI-Automation System €97 ✅ (neu)
 - **669750** — GESPERRT, NIE VERWENDEN!
 
-## SHOPIFY DIGITALE PRODUKTE
+## SHOPIFY DIGITALE PRODUKTE (6 total)
 - AI Income Machine (16047516057987): https://ineedit.com.co/products/ai-income-machine-90-day-blueprint
 - SuperMegaBot KI-Automation (16047547482499): https://ineedit.com.co/products/supermegabot-ki-automation-system
+- ChatGPT Prompts Mega-Pack (16047620260227): https://ineedit.com.co/products/chatgpt-prompts-mega-pack-500-profi-prompts-auf-deutsch
+- KI-Freelancer Starterpaket (16047620292995): https://ineedit.com.co/products/ki-freelancer-starterpaket-von-0-auf-2000-euro-im-monat
+- Email Marketing Autopilot (16047620325763): https://ineedit.com.co/products/email-marketing-autopilot-ki-newsletter-vollautomatisch
+- Shopify KI Anleitung (16047620391299): https://ineedit.com.co/products/shopify-store-aufbauen-mit-ki-schritt-fur-schritt-anleitung
 
 ## COLLECTIONS IDs
 ```
