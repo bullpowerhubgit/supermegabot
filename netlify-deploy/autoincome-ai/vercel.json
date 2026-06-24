@@ -15,6 +15,18 @@
     {
       "path": "/api/ds24-report",
       "schedule": "0 7 * * *"
+    },
+    {
+      "path": "/api/linkedin-poster",
+      "schedule": "0 9 * * 1"
+    },
+    {
+      "path": "/api/linkedin-poster",
+      "schedule": "0 9 * * 3"
+    },
+    {
+      "path": "/api/linkedin-poster",
+      "schedule": "0 9 * * 5"
     }
   ]
 }
