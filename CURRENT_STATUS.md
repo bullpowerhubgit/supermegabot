@@ -88,15 +88,36 @@
 
 ## OFFENE PUNKTE — RUDOLF MANUELL
 
-### 🔥 0. Klaviyo Kampagnen PRÜFEN
-`app.klaviyo.com` → Campaigns → alle 4 "AI Income Machine/SuperMegaBot" Kampagnen sollten "Sent" sein
+### 🔥 0. NEW: Klaviyo Webhook einrichten (2 Minuten — jeder neue Lead bekommt sofort Welcome-Email!)
+1. app.klaviyo.com → Integrations → Webhooks → + Add Webhook
+2. Name: "New Subscriber Welcome"
+3. Endpoint URL: `https://autoincome-ai.vercel.app/api/klaviyo-webhook`
+4. Topic: **Subscribed to List** → List: "AI Income Machine Leads" (Xwxq6V)
+5. Save → Done!
+→ Ab sofort bekommt jeder neue Subscriber Email #1 (Template WLRWGt) automatisch zugeschickt!
 
-### 🔥 1. Railway JETZT upgraden ($5/Monat!)
+### 🔥 1. NEW: Klaviyo Welcome Flow — Trigger setzen (5 Minuten!)
+Bereits fertige 5 E-Mail Templates erstellt (WLRWGt, W9QU5Q, TJpXWJ, T7nVk7, WGeGm5)
+1. app.klaviyo.com → Flows → VBdJUa ("Essential Flow Recommendation_")
+2. Edit → Set Trigger: "Added to List" → Xwxq6V
+3. E-Mails in den Templates mit unseren 5 Templates ersetzen (Delays: 0h, 48h, 96h, 144h, 192h)
+4. Activate!
+
+### 🔥 2. NEW: Reddit App zu "script" ändern (2 Minuten — schaltet kostenlose Reddit Posts frei!)
+1. reddit.com → Entwickler → Meine Apps → `hqgJAQe6Qiu5s5r1Vqc0Og`
+2. App-Typ auf **"script"** ändern
+3. Speichern → Reddit posting kann aktiviert werden!
+
+### 🔥 3. Railway JETZT upgraden ($5/Monat!)
 `railway.app` → Hobby Plan wählen → alle Code-Fixes gehen live!
 
-### 🔥 2. DS24 668035 — 60-Tage-Garantie hinzufügen (5 Minuten!)
+### 🔥 4. DS24 668035 — 60-Tage-Garantie hinzufügen (5 Minuten!)
 `digistore24.com` → Meine Produkte → 668035 → Bearbeiten → Rückgaberecht → 60 Tage
 → Produkt erscheint in DS24 Marktplatz → KOSTENLOSER organischer Traffic!
+
+### 🔥 5. Google Shopping DRINGEND (größter Traffic-Kanal!)
+`https://merchants.google.com` → Merchant ID **5813214419** → Identity Verification abschließen
+→ Dann: "Request Review" für Falsche-Darstellung-Violation klicken
 
 ### 🔥 3. Google Shopping DRINGEND (größter Traffic-Kanal!)
 `https://merchants.google.com` → Merchant ID **5813214419** → Identity Verification abschließen
