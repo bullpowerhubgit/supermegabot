@@ -32,7 +32,15 @@ async function fetchAllSlugs() {
   return r.json();
 }
 
-function buildArticlePage(article) {
+async function fetchRelated(currentSlug) {
+  const url = `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&slug=neq.${encodeURIComponent(currentSlug)}&select=slug,title,meta_description&order=created_at.desc&limit=3`;
+  try {
+    const r = await fetch(url, { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } });
+    return r.ok ? r.json() : [];
+  } catch { return []; }
+}
+
+function buildArticlePage(article, related = []) {
   const dateStr = article.created_at
     ? new Date(article.created_at).toISOString().split('T')[0]
     : '2026-06-24';
@@ -75,6 +83,19 @@ function buildArticlePage(article) {
     .cta-box h3{font-size:1.3rem;color:white;margin-bottom:8px}
     .cta-box p{color:#94a3b8;margin-bottom:20px;font-size:.95rem}
     .cta-box a{display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:14px 32px;border-radius:50px;font-size:1rem;font-weight:700;text-decoration:none}
+    .email-box{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:28px;text-align:center;margin:32px 0}
+    .email-box h3{font-size:1.1rem;color:#10b981;margin-bottom:6px}
+    .email-box p{color:#94a3b8;margin-bottom:16px;font-size:.9rem}
+    .email-box form{display:flex;gap:8px;max-width:400px;margin:0 auto;flex-wrap:wrap;justify-content:center}
+    .email-box input{flex:1;min-width:200px;padding:12px 16px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.05);color:#e2e8f0;font-size:.95rem}
+    .email-box button{background:#10b981;color:white;border:none;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.95rem}
+    .related{max-width:800px;margin:40px auto;padding:0 20px}
+    .related h3{font-size:1.1rem;font-weight:700;color:#94a3b8;margin-bottom:16px;text-transform:uppercase;letter-spacing:.05em;font-size:.8rem}
+    .related-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+    .related-card{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:16px;text-decoration:none;display:block}
+    .related-card:hover{border-color:#7c3aed}
+    .related-card h4{font-size:.9rem;font-weight:700;color:#e2e8f0;margin-bottom:6px;line-height:1.4}
+    .related-card p{font-size:.8rem;color:#64748b}
     footer{background:rgba(0,0,0,.3);padding:30px 20px;text-align:center;color:#475569;font-size:.85rem;border-top:1px solid rgba(255,255,255,.05);margin-top:50px}
     footer a{color:#64748b;text-decoration:none;margin:0 8px}
   </style>
@@ -93,6 +114,18 @@ function buildArticlePage(article) {
 </div>
 <article>
 ${article.content_html || '<p>Artikel wird geladen...</p>'}
+<div class="email-box">
+  <h3>Gratis: KI-Einkommen Checkliste</h3>
+  <p>7 Schritte zum ersten automatischen Einkommen — sofort als PDF.</p>
+  <form action="https://manage.kmail-lists.com/subscriptions/subscribe" method="POST" target="_blank">
+    <input type="hidden" name="g" value="Xwxq6V" />
+    <input type="hidden" name="a" value="VaCYq3" />
+    <input type="hidden" name="$fields" value="$source" />
+    <input type="hidden" name="$source" value="blog-${article.slug}" />
+    <input type="email" name="email" placeholder="deine@email.de" required />
+    <button type="submit">Kostenlos holen</button>
+  </form>
+</div>
 <div class="cta-box">
   <h3>Bereit mit KI Einkommen aufzubauen?</h3>
   <p>Der AI Income Machine 90-Day Blueprint — auf Deutsch, €37 Einmalzahlung.</p>
@@ -100,6 +133,13 @@ ${article.content_html || '<p>Artikel wird geladen...</p>'}
 </div>
 ${article.faq_html ? `<section class="faq">${article.faq_html}</section>` : ''}
 </article>
+${related.length > 0 ? `
+<div class="related">
+  <h3>Weitere Artikel</h3>
+  <div class="related-grid">
+    ${related.map((r) => `<a href="/blog/${r.slug}" class="related-card"><h4>${r.title}</h4><p>${(r.meta_description || '').substring(0, 80)}…</p></a>`).join('')}
+  </div>
+</div>` : ''}
 <footer>
   <a href="/">Startseite</a>
   <a href="/blog">Alle Artikel</a>
@@ -193,12 +233,12 @@ export default async function handler(req, res) {
 
   // Article page
   try {
-    const article = await fetchArticle(slug);
+    const [article, related] = await Promise.all([fetchArticle(slug), fetchRelated(slug)]);
     if (!article) {
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
       return res.status(404).send(`<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0f0f1a;color:#e2e8f0;padding:40px;text-align:center"><h1>Artikel nicht gefunden</h1><p><a href="/blog" style="color:#a78bfa">← Alle Artikel</a></p></body></html>`);
     }
-    const html = buildArticlePage(article);
+    const html = buildArticlePage(article, related);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     return res.status(200).send(html);
