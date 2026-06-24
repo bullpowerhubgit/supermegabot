@@ -1,14 +1,11 @@
 // Reddit auto-poster — DS24 product 668035 promotion
 // Runs Tue + Sat 10:00 UTC via Vercel Cron
-// REQUIRES: Reddit app type must be "script" (not "web app")
-// Fix: reddit.com/prefs/apps → rodbot → Edit → Type: script → Update app
-//
-// OAuth2 flow: password grant (script apps only)
+// OAuth2 flow: password grant (script app type required)
 // Posts to: r/passiveincome, r/Entrepreneur, r/beermoney (rotating)
 
-const REDDIT_CLIENT_ID = process.env.REDDIT_CLIENT_ID || 'hqgJAQe6Qiu5s5r1Vqc0Og';
-const REDDIT_CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET || 'xsH99P7iCQAPeknbAXe5F9Nd9fV7aA';
-const REDDIT_USERNAME = process.env.REDDIT_USERNAME || 'bullpowersrtkennels';
+const REDDIT_CLIENT_ID = process.env.REDDIT_CLIENT_ID;
+const REDDIT_CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET;
+const REDDIT_USERNAME = process.env.REDDIT_USERNAME || 'Upper-Competition505';
 const REDDIT_PASSWORD = process.env.REDDIT_PASSWORD;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
 const AFFILIATE_URL = 'https://autoincome-ai.vercel.app/affiliate.html';
@@ -175,6 +172,7 @@ async function sendTelegram(msg) {
 }
 
 async function getRedditToken() {
+  if (!REDDIT_CLIENT_ID || !REDDIT_CLIENT_SECRET) throw new Error('REDDIT_CLIENT_ID/SECRET not set in Vercel env vars');
   if (!REDDIT_PASSWORD) throw new Error('REDDIT_PASSWORD not set');
   const credentials = Buffer.from(`${REDDIT_CLIENT_ID}:${REDDIT_CLIENT_SECRET}`).toString('base64');
   const params = new URLSearchParams({
