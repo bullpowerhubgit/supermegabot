@@ -1,3 +1,5 @@
 User-agent: *
 Allow: /
-Sitemap: https://autoincome-ai.netlify.app/sitemap.xml
+Disallow: /danke.html
+
+Sitemap: https://autoincome-ai.vercel.app/sitemap.xml

@@ -1,16 +1,17 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-24 v38
+# SuperMegaBot CURRENT STATUS — 2026-06-24 v39
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** ✅ (Code vom 2026-06-21 — Railway Upgrade nötig!)
 - Shopify Store: **LIVE** — ineedit.com.co ✅
-- Shopify Produkte: **~6244 aktiv** + 2 digitale Produkte (AI Income Machine + SuperMegaBot) ✅
+- Shopify Produkte: **~6244 aktiv** + 6 digitale Produkte ✅
 - Shop Collections: **5 Collections** + KI & Automation befüllt ✅
 - Klaviyo: **7 Kampagnen GESENDET** ✅ (20 Subscriber)
 - Telegram: **Promo-Posts gesendet** ✅
 - DS24 Links: **GEFIXT** ✅
-- LinkedIn: **2 Posts live** ✅ (Auto-Cron Mo/Mi/Fr 09:00 UTC)
-- Vercel Crons: **5 aktiv** (Klaviyo 2x/wk, DS24 daily, LinkedIn 3x/wk)
-- Lead Magnet: **LIVE** — autoincome-ai.vercel.app/checkliste.html ✅
+- LinkedIn: **Auto-Cron aktiv** ✅ (Mo/Mi/Fr 09:00 UTC)
+- Reddit: **BEREIT** ⏳ (wartet auf App-Typ "script" Fix — 1 Minute!)
+- Vercel Crons: **8 aktiv** (Klaviyo 2x/wk, DS24 daily, LinkedIn 3x/wk, Reddit 2x/wk)
+- Landing Pages: **6 Seiten LIVE** ✅ (index, checkliste, download, affiliate, danke, SEO-blog)
 - Marathon: **LÄUFT** 🔄
 
 ## 🚨 KRITISCH: RAILWAY UPGRADE NÖTIG
@@ -36,7 +37,28 @@
 - **GMC**: ~6244 Produkte — ⚠️ "Falsche Darstellung" Violation ausstehend
 - **autoincome-ai.vercel.app**: LIVE mit DS24 CTA + Klaviyo Email-Capture + Lead Magnet ✅
 
-## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-24 v38)
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-24 v39)
+
+### Reddit Auto-Poster — DEPLOYED, wartet auf 1-Minuten-Fix ✅
+- **api/reddit-poster.js** deployed auf autoincome-ai.vercel.app
+- 5 Post-Templates: r/passiveincome, r/Entrepreneur, r/beermoney, r/digitalnomad, r/passive_income
+- Cron: Di + Sa 10:00 UTC (2x/Woche)
+- OAuth2 Password-Flow (Script App Auth)
+- ⚠️ **NUR 1 MINUTE:** reddit.com → Profil → Prefs → Apps → rodbot → Edit → **Typ: script** → Update
+- REDDIT_PASSWORD env var bereits in Vercel gesetzt ✅
+
+### Thank-You Seite — LIVE ✅
+- **danke.html**: Post-Purchase Seite für DS24 Käufer
+- Upsell zu SuperMegaBot €97 (DS24 Produkt 704677)
+- Email-Capture nach Kauf (Klaviyo)
+- URL: https://autoincome-ai.vercel.app/danke.html
+- **DS24 Setup:** digistore24.com → 668035 → Thank-You URL → https://autoincome-ai.vercel.app/danke.html
+
+### SEO Blog Artikel — LIVE ✅
+- **ki-geld-verdienen.html**: 1500+ Wörter, Structured Data, 7-Methoden Vergleich
+- Keyword: "KI Geld verdienen 2026" (low competition, high volume)
+- URL: https://autoincome-ai.vercel.app/ki-geld-verdienen.html
+- Sitemap updated: 6 Seiten indexiert
 
 ### LinkedIn — Auto-Cron Live ✅
 - linkedin-poster.js deployed auf autoincome-ai.vercel.app
