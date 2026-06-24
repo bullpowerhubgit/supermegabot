@@ -8,6 +8,7 @@ const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const LIST_ID = 'Xwxq6V';
 const CRON_SECRET = process.env.CRON_SECRET || 'bullpower2026';
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
+const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
 
 const WELCOME_EMAIL = {
   subject: '👋 Willkommen — hier ist dein kostenloser KI-Einkommens-Leitfaden',
@@ -187,8 +188,8 @@ const FOLLOWUP_EMAILS = {
     text: `Tag 2 Follow-up: Blueprint für €37 → ${PRODUCT_URL}`,
   },
   day5: {
-    subject: '⏰ Noch 25 Plätze — KI-Einkommens System',
-    preview: 'Der deutschsprachige Markt ist weniger gesättigt als du denkst.',
+    subject: '⏰ Noch 25 Plätze — oder gleich das VOLLE System',
+    preview: 'Zwei Optionen: Blueprint €37 oder das komplette KI-Automation System €97.',
     html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
 <h2 style="color:#7c3aed;">Warum gerade JETZT der richtige Zeitpunkt ist</h2>
 <p style="color:#475569;">Du bist seit 5 Tagen dabei. Hier ist ein ehrlicher Einblick:</p>
@@ -200,34 +201,55 @@ const FOLLOWUP_EMAILS = {
   🏆 Erste Mover haben massive Vorteile</p>
 </div>
 <p style="color:#475569;">Mein System hat in 4 Monaten €111 generiert — vollautomatisch, ohne Ads, ohne Follow-ups per Hand.</p>
-<div style="text-align:center;margin:24px 0;">
-  <a href="${PRODUCT_URL}" style="background:#7c3aed;color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;display:inline-block;">Jetzt System kaufen — €37 →</a>
-</div>
-<p style="color:#94a3b8;font-size:0.85rem;">60-Tage Geld-zurück-Garantie · Einmalzahlung</p>
+<table width="100%" cellpadding="0" cellspacing="12" style="margin:24px 0;">
+  <tr>
+    <td width="48%" style="background:#f8f9fa;border:2px solid #e2e8f0;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+      <p style="color:#7c3aed;font-weight:700;font-size:1rem;margin:0 0 8px;">Blueprint</p>
+      <p style="font-size:1.8rem;font-weight:900;color:#1e293b;margin:8px 0;">€37</p>
+      <p style="color:#475569;font-size:0.85rem;margin:8px 0;">90-Day Plan · PDF + Checklisten</p>
+      <a href="${PRODUCT_URL}" style="display:inline-block;background:#7c3aed;color:white;padding:10px 20px;border-radius:25px;font-weight:700;text-decoration:none;font-size:0.9rem;margin-top:12px;">Kaufen →</a>
+    </td>
+    <td width="48%" style="background:linear-gradient(135deg,#1e293b,#0f172a);border:2px solid #7c3aed;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+      <p style="color:#a78bfa;font-weight:700;font-size:1rem;margin:0 0 4px;">⭐ SuperMegaBot</p>
+      <p style="color:#64748b;font-size:0.75rem;margin:0 0 8px;text-decoration:line-through;">€297</p>
+      <p style="font-size:1.8rem;font-weight:900;color:white;margin:4px 0;">€97</p>
+      <p style="color:#94a3b8;font-size:0.82rem;margin:8px 0;">KI-Automation System · Code + Deploy</p>
+      <a href="${UPSELL_URL}" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:10px 20px;border-radius:25px;font-weight:700;text-decoration:none;font-size:0.9rem;margin-top:12px;">Vollsystem →</a>
+    </td>
+  </tr>
+</table>
+<p style="color:#94a3b8;font-size:0.85rem;text-align:center;">60-Tage Geld-zurück-Garantie · Einmalzahlung · Rudolf — AiiteC</p>
 </body></html>`,
-    text: `Tag 5: System für €37 → ${PRODUCT_URL}`,
+    text: `Tag 5: Blueprint €37 → ${PRODUCT_URL} | SuperMegaBot Vollsystem €97 → ${UPSELL_URL}`,
   },
   day10: {
-    subject: '💰 Verdien 50% Provision — werde Affiliate',
-    preview: 'Du musst kein Käufer sein um zu verdienen.',
+    subject: '🚀 Letzte Chance — 3 Wege zu passivem Einkommen',
+    preview: 'Blueprint €37, Vollsystem €97, oder 50% Affiliate-Provision.',
     html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-<h2 style="color:#7c3aed;">Andere Option: Verdiene ohne selbst zu kaufen</h2>
-<p style="color:#475569;">Du bist seit 10 Tagen dabei. Vielleicht ist das Affiliate-Modell besser für dich:</p>
-<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:20px;margin:20px 0;">
-  <p style="color:#166534;font-weight:600;">💰 Affiliate-Programm — 50% Provision:</p>
-  <p style="color:#166534;">→ Pro Verkauf: €18,50 Provision<br>
-  → 10 Verkäufe/Monat = €185 passiv<br>
-  → Digistore24 zahlt automatisch wöchentlich aus<br>
-  → Keine eigene Website nötig</p>
+<h2 style="color:#7c3aed;">10 Tage sind vergangen — hier sind deine 3 Optionen</h2>
+<p style="color:#475569;">Du bist seit 10 Tagen in meiner Liste. Diese E-Mail ist die letzte meiner Sequenz. Danke für dein Vertrauen.</p>
+
+<div style="background:#fefce8;border:1px solid #fbbf24;border-radius:12px;padding:20px;margin:16px 0;">
+  <p style="color:#92400e;font-weight:700;">Option A — Starter: Blueprint €37</p>
+  <p style="color:#78350f;font-size:0.9rem;">90-Day Plan · Checklisten · Vorlagen · Auf Deutsch<br>Für: Einsteiger die systematisch starten wollen</p>
+  <a href="${PRODUCT_URL}" style="display:inline-block;margin-top:10px;background:#d97706;color:white;padding:10px 24px;border-radius:25px;font-weight:700;text-decoration:none;font-size:0.9rem;">Blueprint kaufen →</a>
 </div>
-<p style="color:#475569;">Oder: Kaufe das Blueprint für €37 und nutze es als Grundlage für deinen eigenen Funnel.</p>
-<div style="text-align:center;margin:24px 0;">
-  <a href="https://autoincome-ai.vercel.app/affiliate.html" style="background:#059669;color:white;padding:12px 28px;border-radius:50px;font-weight:700;text-decoration:none;display:inline-block;margin-right:12px;">Affiliate werden →</a>
-  <a href="${PRODUCT_URL}" style="background:#7c3aed;color:white;padding:12px 28px;border-radius:50px;font-weight:700;text-decoration:none;display:inline-block;">Blueprint €37 →</a>
+
+<div style="background:linear-gradient(135deg,#1e293b,#0f172a);border:2px solid #7c3aed;border-radius:12px;padding:20px;margin:16px 0;">
+  <p style="color:#a78bfa;font-weight:700;">⭐ Option B — Vollsystem: SuperMegaBot €97</p>
+  <p style="color:#94a3b8;font-size:0.9rem;">Komplettes KI-Automation System · Code + Deploy<br>LinkedIn-Bot · Email-Automation · Shopify-Integration<br>Für: Wer das komplette automatische Setup will</p>
+  <a href="${UPSELL_URL}" style="display:inline-block;margin-top:10px;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:10px 24px;border-radius:25px;font-weight:700;text-decoration:none;font-size:0.9rem;">Vollsystem kaufen →</a>
 </div>
-<p style="color:#94a3b8;font-size:0.85rem;">Rudolf — AiiteC · Diese Sequenz endet hier.</p>
+
+<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:20px;margin:16px 0;">
+  <p style="color:#166534;font-weight:700;">💰 Option C — Affiliate: 50% Provision kostenlos</p>
+  <p style="color:#166534;font-size:0.9rem;">Pro Verkauf: €18,50 (Blueprint) oder €48,50 (Vollsystem)<br>Digistore24 zahlt wöchentlich aus · Keine Website nötig</p>
+  <a href="https://autoincome-ai.vercel.app/affiliate.html" style="display:inline-block;margin-top:10px;background:#059669;color:white;padding:10px 24px;border-radius:25px;font-weight:700;text-decoration:none;font-size:0.9rem;">Jetzt Affiliate werden →</a>
+</div>
+
+<p style="color:#94a3b8;font-size:0.82rem;text-align:center;margin-top:20px;">60-Tage Geld-zurück-Garantie · Rudolf Sarkany — AiiteC</p>
 </body></html>`,
-    text: `Tag 10: Affiliate werden oder Blueprint kaufen → ${PRODUCT_URL}`,
+    text: `Tag 10: Blueprint €37 → ${PRODUCT_URL} | Vollsystem €97 → ${UPSELL_URL} | Affiliate 50% → https://autoincome-ai.vercel.app/affiliate.html`,
   },
 };
 
