@@ -8,7 +8,7 @@
 
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
-const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const PERPLEXITY_KEY = process.env.PERPLEXITY_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
@@ -58,17 +58,17 @@ Anforderungen:
 
 Beginne direkt mit dem ersten Absatz (kein Titel, keine Einleitung).`;
 
-  const r = await fetch('https://api.openai.com/v1/chat/completions', {
+  const r = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
-    headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+    headers: { Authorization: `Bearer ${PERPLEXITY_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'gpt-4o-mini',
+      model: 'sonar',
       messages: [{ role: 'user', content: prompt }],
       max_tokens: 2200,
       temperature: 0.7,
     }),
   });
-  if (!r.ok) throw new Error(`OpenAI ${r.status}: ${await r.text().then((t) => t.substring(0, 200))}`);
+  if (!r.ok) throw new Error(`Perplexity ${r.status}: ${await r.text().then((t) => t.substring(0, 200))}`);
   const data = await r.json();
   const content = data.choices[0].message.content;
   const wordCount = content.split(/\s+/).length;
@@ -153,9 +153,9 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
-  if (!OPENAI_KEY) {
-    await sendTelegram('❌ SEO Writer: OPENAI_API_KEY fehlt!');
-    return res.status(500).json({ error: 'OPENAI_API_KEY missing' });
+  if (!PERPLEXITY_KEY) {
+    await sendTelegram('❌ SEO Writer: PERPLEXITY_API_KEY fehlt! Neuen Key holen: perplexity.ai/settings/api');
+    return res.status(500).json({ error: 'PERPLEXITY_API_KEY missing' });
   }
   if (!SUPABASE_SERVICE_KEY) {
     await sendTelegram('❌ SEO Writer: SUPABASE_SERVICE_KEY fehlt!');
@@ -173,7 +173,7 @@ export default async function handler(req, res) {
   try {
     ({ content, wordCount } = await generateArticle(topic));
   } catch (err) {
-    await sendTelegram(`❌ SEO Writer OpenAI Fehler: ${err.message.substring(0, 200)}`);
+    await sendTelegram(`❌ SEO Writer Perplexity Fehler: ${err.message.substring(0, 200)}`);
     return res.status(500).json({ ok: false, error: err.message });
   }
 
