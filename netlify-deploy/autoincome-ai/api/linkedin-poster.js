@@ -164,7 +164,7 @@ ${PRODUCT_URL}
   {
     text: `🤝 Ich suche 10 Affiliates für mein KI-Produkt
 
-Provision: 40% = €14,80 pro Verkauf
+Provision: 50% = €18,50 pro Verkauf
 Conversion Rate: ~3-5% (getestet)
 Produktpreis: €37
 
@@ -184,7 +184,7 @@ Produkt testen: ${PRODUCT_URL}
 
 #Affiliate #KI #JointVenture #OnlineBusiness`,
     mediaTitle: 'AI Income Machine — Affiliate Program',
-    mediaDesc: '40% Provision — werde Affiliate für meinen KI-Blueprint',
+    mediaDesc: '50% Provision — werde Affiliate für meinen KI-Blueprint',
   },
 ];
 
