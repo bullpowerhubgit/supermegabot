@@ -3,6 +3,10 @@
   "framework": null,
   "buildCommand": null,
   "outputDirectory": ".",
+  "rewrites": [
+    { "source": "/blog", "destination": "/api/blog?slug=index" },
+    { "source": "/blog/:slug", "destination": "/api/blog?slug=:slug" }
+  ],
   "crons": [
     {
       "path": "/api/campaign-trigger",
@@ -35,6 +39,10 @@
     {
       "path": "/api/reddit-poster",
       "schedule": "0 10 * * 6"
+    },
+    {
+      "path": "/api/seo-writer",
+      "schedule": "0 6 * * 0"
     }
   ]
 }
