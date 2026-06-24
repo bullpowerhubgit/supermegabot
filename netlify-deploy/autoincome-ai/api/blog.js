@@ -103,7 +103,10 @@ function buildArticlePage(article, related = []) {
 <body>
 <nav>
   <a href="/" class="logo">AI<span>Income</span></a>
-  <a href="/checkliste.html" class="nav-cta">Gratis Checkliste</a>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <a href="/checkliste.html" style="color:#94a3b8;font-size:.85rem;text-decoration:none;">Gratis Checkliste</a>
+    <a href="https://www.checkout-ds24.com/product/668035" class="nav-cta">Blueprint €37 →</a>
+  </div>
 </nav>
 <div class="hero">
   <div class="hero-inner">
@@ -191,7 +194,10 @@ function buildIndexPage(articles) {
 <body>
 <nav>
   <a href="/" class="logo">AI<span>Income</span></a>
-  <a href="/checkliste.html" class="nav-cta">Gratis Checkliste</a>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <a href="/checkliste.html" style="color:#94a3b8;font-size:.85rem;text-decoration:none;">Gratis Checkliste</a>
+    <a href="https://www.checkout-ds24.com/product/668035" class="nav-cta">Blueprint €37 →</a>
+  </div>
 </nav>
 <div class="hero">
   <h1>KI Einkommen Blog</h1>
