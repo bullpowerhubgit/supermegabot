@@ -154,8 +154,11 @@ export default async function handler(req, res) {
   }
 
   if (!PERPLEXITY_KEY) {
-    await sendTelegram('❌ SEO Writer: PERPLEXITY_API_KEY fehlt! Neuen Key holen: perplexity.ai/settings/api');
-    return res.status(500).json({ error: 'PERPLEXITY_API_KEY missing' });
+    // No API key — re-ping IndexNow for existing articles to keep Google crawling
+    const existingUrls = ARTICLE_TOPICS.map((t) => `https://${SITE_HOST}/blog/${t.slug}`);
+    await submitToIndexNow(existingUrls[weekNum % existingUrls.length].split('/blog/')[1]);
+    await sendTelegram('ℹ️ SEO Writer: kein API-Key — IndexNow-Ping für bestehende Artikel gesendet.');
+    return res.status(200).json({ ok: true, note: 'no api key, indexnow ping sent' });
   }
   if (!SUPABASE_SERVICE_KEY) {
     await sendTelegram('❌ SEO Writer: SUPABASE_SERVICE_KEY fehlt!');
