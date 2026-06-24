@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Danke für deinen Kauf! — AI Income Machine</title>
+  <meta name="description" content="Dein Download ist bereit. Hier findest du deinen Zugang zum AI Income Machine 90-Day Blueprint." />
+  <meta name="robots" content="noindex" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f1a; color: #e2e8f0; min-height: 100vh; }
+
+    .hero { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); padding: 60px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .hero-badge { display: inline-block; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 8px 20px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 20px; }
+    .hero h1 { font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 900; line-height: 1.1; margin-bottom: 16px; }
+    .hero h1 span { color: #22c55e; }
+    .hero p { font-size: 1.2rem; color: #94a3b8; max-width: 600px; margin: 0 auto 30px; }
+
+    .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+
+    /* Download box */
+    .download-box { background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(21,128,61,0.05)); border: 2px solid #22c55e; border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 40px; }
+    .download-box h2 { font-size: 1.5rem; color: #22c55e; margin-bottom: 12px; }
+    .download-box p { color: #94a3b8; margin-bottom: 24px; }
+    .download-btn { display: inline-block; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; padding: 16px 40px; border-radius: 50px; font-size: 1.1rem; font-weight: 700; text-decoration: none; transition: transform 0.2s; }
+    .download-btn:hover { transform: translateY(-2px); }
+    .download-note { margin-top: 16px; font-size: 0.85rem; color: #64748b; }
+
+    /* Steps */
+    .steps-section h2 { font-size: 1.8rem; font-weight: 800; text-align: center; margin-bottom: 32px; }
+    .steps { display: grid; gap: 20px; margin-bottom: 50px; }
+    .step { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 24px; display: flex; gap: 20px; align-items: flex-start; }
+    .step-num { width: 44px; height: 44px; background: linear-gradient(135deg, #7c3aed, #5b21b6); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 1.2rem; flex-shrink: 0; }
+    .step-content h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .step-content p { color: #94a3b8; font-size: 0.95rem; line-height: 1.6; }
+    .step-content a { color: #a78bfa; text-decoration: none; }
+    .step-content a:hover { text-decoration: underline; }
+
+    /* Email signup */
+    .email-box { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 40px; }
+    .email-box h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; }
+    .email-box p { color: #94a3b8; margin-bottom: 24px; }
+    .email-form { display: flex; gap: 12px; max-width: 500px; margin: 0 auto; }
+    .email-form input { flex: 1; padding: 14px 18px; border-radius: 50px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: white; font-size: 0.95rem; }
+    .email-form input::placeholder { color: #64748b; }
+    .email-form button { padding: 14px 28px; background: linear-gradient(135deg, #7c3aed, #5b21b6); color: white; border: none; border-radius: 50px; font-size: 0.95rem; font-weight: 700; cursor: pointer; white-space: nowrap; transition: transform 0.2s; }
+    .email-form button:hover { transform: translateY(-1px); }
+    .email-success { display: none; color: #22c55e; font-weight: 600; padding: 12px; }
+    @media (max-width: 480px) { .email-form { flex-direction: column; } }
+
+    /* Upsell */
+    .upsell { background: linear-gradient(135deg, rgba(251,146,60,0.1), rgba(234,88,12,0.05)); border: 2px solid #f97316; border-radius: 16px; padding: 32px; text-align: center; margin-bottom: 40px; }
+    .upsell-badge { display: inline-block; background: #f97316; color: white; padding: 6px 16px; border-radius: 50px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+    .upsell h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 10px; }
+    .upsell p { color: #94a3b8; margin-bottom: 8px; }
+    .upsell-price { font-size: 2rem; font-weight: 900; color: #f97316; margin: 16px 0; }
+    .upsell-price span { font-size: 1rem; color: #94a3b8; text-decoration: line-through; margin-left: 8px; }
+    .upsell-features { text-align: left; max-width: 400px; margin: 0 auto 24px; }
+    .upsell-features li { list-style: none; padding: 6px 0; color: #94a3b8; font-size: 0.95rem; }
+    .upsell-features li::before { content: "✅ "; }
+    .upsell-btn { display: inline-block; background: linear-gradient(135deg, #f97316, #ea580c); color: white; padding: 16px 40px; border-radius: 50px; font-size: 1.1rem; font-weight: 700; text-decoration: none; }
+    .upsell-skip { display: block; margin-top: 12px; font-size: 0.85rem; color: #64748b; }
+
+    /* Social share */
+    .share-section { text-align: center; margin-bottom: 40px; }
+    .share-section h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 16px; }
+    .share-buttons { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .share-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; font-weight: 600; text-decoration: none; color: white; }
+    .share-linkedin { background: #0077b5; }
+    .share-telegram { background: #0088cc; }
+
+    footer { text-align: center; padding: 30px 20px; color: #475569; font-size: 0.85rem; border-top: 1px solid rgba(255,255,255,0.05); }
+    footer a { color: #64748b; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-badge">✅ Kauf bestätigt</div>
+  <h1>Danke, <span>Rudolf</span>!<br/>Dein Blueprint wartet auf dich.</h1>
+  <p>Du hast den richtigen Schritt gemacht. Hier ist alles was du brauchst, um sofort loszulegen.</p>
+</div>
+
+<div class="container">
+
+  <!-- Download -->
+  <div class="download-box">
+    <h2>📥 Dein Download ist bereit</h2>
+    <p>Der AI Income Machine 90-Day Blueprint wartet auf dich. Starte jetzt mit Woche 1.</p>
+    <a href="/checkliste-download.html" class="download-btn">Blueprint jetzt öffnen →</a>
+    <div class="download-note">Du erhältst außerdem eine E-Mail von Digistore24 mit deinem Downloadlink.</div>
+  </div>
+
+  <!-- Steps -->
+  <div class="steps-section">
+    <h2>🚀 Deine nächsten Schritte</h2>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Blueprint öffnen & Phase 1 starten</h3>
+          <p>Lies zunächst die Grundlagen (Woche 1-2). Alles andere kommt danach. Überspringe nichts — die Reihenfolge ist wichtig.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Kostenloses Tool-Setup (30 Minuten)</h3>
+          <p>Erstelle deinen Digistore24-Account und Klaviyo-Account. Beide sind kostenlos. Links und Anleitung sind im Blueprint enthalten.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Checkliste abhaken</h3>
+          <p>Die interaktive <a href="/checkliste-download.html">21-Punkte Checkliste</a> führt dich Schritt für Schritt durch den 90-Day Plan. Jeder Haken bringt dich näher zum Ziel.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h3>Updates & Community</h3>
+          <p>Trage dich unten in die E-Mail-Liste ein, um monatliche Updates, neue Templates und Bonusmaterial zu erhalten.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email signup for updates -->
+  <div class="email-box">
+    <h2>📧 Bleib auf dem Laufenden</h2>
+    <p>Trage dich ein für monatliche Updates, neue Templates und Bonusmaterial — kostenlos.</p>
+    <div class="email-form">
+      <input type="email" id="emailInput" placeholder="Deine E-Mail-Adresse" />
+      <button onclick="subscribeEmail()">Eintragen</button>
+    </div>
+    <div class="email-success" id="emailSuccess">✅ Erfolgreich eingetragen!</div>
+  </div>
+
+  <!-- Upsell — SuperMegaBot -->
+  <div class="upsell">
+    <div class="upsell-badge">⚡ Exklusives Angebot für Kunden</div>
+    <h2>Willst du das komplette System?</h2>
+    <p>Der AI Income Machine Blueprint zeigt dir WAS zu tun ist.</p>
+    <p><strong>SuperMegaBot zeigt dir WIE man es automatisiert.</strong></p>
+    <div class="upsell-price">€97 <span>€297</span></div>
+    <ul class="upsell-features">
+      <li>Vollautomatische Shopify + Digistore24 Integration</li>
+      <li>110 Bot-Befehle für Business-Automation</li>
+      <li>Klaviyo + LinkedIn + Reddit Auto-Poster</li>
+      <li>Railway Deployment (24/7 laufend)</li>
+      <li>Quellcode + komplette Setup-Anleitung</li>
+      <li>60-Tage Geld-zurück-Garantie</li>
+    </ul>
+    <a href="https://www.checkout-ds24.com/product/704677" class="upsell-btn">Ja, ich will das komplette System →</a>
+    <a href="#" class="upsell-skip">Nein danke, der Blueprint reicht mir</a>
+  </div>
+
+  <!-- Share -->
+  <div class="share-section">
+    <h2>Teile deine Entscheidung</h2>
+    <div class="share-buttons">
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fautoincome-ai.vercel.app" class="share-btn share-linkedin" target="_blank">
+        💼 LinkedIn teilen
+      </a>
+      <a href="https://t.me/share/url?url=https%3A%2F%2Fautoincome-ai.vercel.app&text=Ich%20baue%20gerade%20passives%20Einkommen%20mit%20KI%20auf" class="share-btn share-telegram" target="_blank">
+        ✈️ Telegram teilen
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <p>AiiteC — Rudolf Sarkany | <a href="/">Startseite</a> | <a href="/affiliate.html">Affiliate Programm</a></p>
+  <p style="margin-top: 8px;">Du hast Fragen? Schreib uns: <a href="mailto:support@aiitec.de">support@aiitec.de</a></p>
+</footer>
+
+<script>
+  const KLAVIYO_COMPANY = 'VaCYq3';
+  const KLAVIYO_LIST = 'Xwxq6V';
+
+  async function subscribeEmail() {
+    const email = document.getElementById('emailInput').value.trim();
+    if (!email || !email.includes('@')) {
+      alert('Bitte gib eine gültige E-Mail-Adresse ein.');
+      return;
+    }
+    try {
+      await fetch(`https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_COMPANY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', revision: '2023-02-22' },
+        body: JSON.stringify({
+          data: {
+            type: 'subscription',
+            attributes: {
+              profile: {
+                data: {
+                  type: 'profile',
+                  attributes: {
+                    email,
+                    properties: { source: 'danke-page-post-purchase' }
+                  }
+                }
+              }
+            },
+            relationships: { list: { data: { type: 'list', id: KLAVIYO_LIST } } }
+          }
+        })
+      });
+    } catch {}
+    document.getElementById('emailSuccess').style.display = 'block';
+    document.querySelector('.email-form').style.display = 'none';
+  }
+</script>
+</body>
+</html>
