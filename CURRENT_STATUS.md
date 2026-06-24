@@ -111,9 +111,21 @@ Bereits fertige 5 E-Mail Templates erstellt (WLRWGt, W9QU5Q, TJpXWJ, T7nVk7, WGe
 ### 🔥 3. Railway JETZT upgraden ($5/Monat!)
 `railway.app` → Hobby Plan wählen → alle Code-Fixes gehen live!
 
-### 🔥 4. DS24 668035 — 60-Tage-Garantie hinzufügen (5 Minuten!)
-`digistore24.com` → Meine Produkte → 668035 → Bearbeiten → Rückgaberecht → 60 Tage
-→ Produkt erscheint in DS24 Marktplatz → KOSTENLOSER organischer Traffic!
+### 🔥 4. DS24 668035 — Produkt DRINGEND fixen! (10 Minuten, HOHER Impact!)
+Gefunden via DS24 API:
+
+| Feld | Aktuell (FALSCH) | Soll |
+|------|------|------|
+| `description_de` | Englischer Text ("Lean AI stack...") | Deutsche Beschreibung |
+| `salespage_url` | https://tecbuuss.gumroad.com/l/tnyyvb (FALSCH!) | https://autoincome-ai.vercel.app |
+| `refund_days` | 14 Tage | **60 Tage** (für DS24 Marketplace!) |
+
+✅ Was korrekt ist: commission=50%, auto_accept=Y
+
+Fix: `digistore24.com` → Meine Produkte → 668035 → Bearbeiten:
+1. Beschreibung → Auf Deutsch umschreiben (verwende Beschreibung aus checkliste-download.html)
+2. Sales-Page URL → `https://autoincome-ai.vercel.app`
+3. Rückgaberecht → **60 Tage** → Speichern → DS24 Marketplace listing wird aktiviert!
 
 ### 🔥 5. Google Shopping DRINGEND (größter Traffic-Kanal!)
 `https://merchants.google.com` → Merchant ID **5813214419** → Identity Verification abschließen
