@@ -131,7 +131,359 @@
       "started_at": "2026-06-15T22:13:10.177594+00:00",
       "status": "success",
       "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-21T22:13:27.767655+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "8b4d9669f2d94d62a696ba973a1edb7c",
+      "started_at": "2026-06-21T22:13:27.766885+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-22T00:13:03.416965+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "c68fbeb7faef45b0a4d0ecd74f1f1011",
+      "started_at": "2026-06-22T00:13:03.415817+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-22T02:13:06.314810+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "41f4cf52f5d24ffeb7e40633c47895d6",
+      "started_at": "2026-06-22T02:13:06.312865+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-22T04:13:05.863657+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "5079b1d0993f4581b7b9699079d471f4",
+      "started_at": "2026-06-22T04:13:05.862865+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-22T06:13:05.752767+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "8d97faa02d6e4f4caed42c7a78c64b8d",
+      "started_at": "2026-06-22T06:13:05.752170+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-22T08:13:15.599546+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "d51a41119e4647c69a8d52c22a6b9e25",
+      "started_at": "2026-06-22T08:13:15.599043+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 0,
+      "error": null,
+      "finished_at": "2026-06-22T10:13:19.728128+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "76ad300db9a24e58bbb06237be06eecb",
+      "started_at": "2026-06-22T10:13:19.727591+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-22T12:13:00.757831+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "fcbff2944650449b9208cf05c85605c3",
+      "started_at": "2026-06-22T12:13:00.756085+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-22T14:13:10.687865+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "faf07b539ff947da92cce4c61dc7f1ef",
+      "started_at": "2026-06-22T14:13:10.686598+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2,
+      "error": null,
+      "finished_at": "2026-06-22T18:13:18.380061+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "3a08cd74d1c642d9bf45b19e7225f5a7",
+      "started_at": "2026-06-22T18:13:18.377169+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 3,
+      "error": null,
+      "finished_at": "2026-06-22T20:13:10.507940+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "529471e9b40540558294c591e1973bf6",
+      "started_at": "2026-06-22T20:13:10.504765+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-22T22:13:25.414364+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "35488bc8aebb463b848a600b3ef18b0e",
+      "started_at": "2026-06-22T22:13:25.412442+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2,
+      "error": null,
+      "finished_at": "2026-06-23T00:13:25.070854+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "ac0b5f3915ad49a38804a55288668125",
+      "started_at": "2026-06-23T00:13:25.068498+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 6,
+      "error": null,
+      "finished_at": "2026-06-23T02:13:20.890737+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "c8689185ed5642099a8acf0bae4118d4",
+      "started_at": "2026-06-23T02:13:20.884422+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1,
+      "error": null,
+      "finished_at": "2026-06-23T04:13:02.889106+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "1719fdf5e9304196b62dbd07787f11da",
+      "started_at": "2026-06-23T04:13:02.888068+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2,
+      "error": null,
+      "finished_at": "2026-06-23T06:13:22.516502+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "recovery_reconciliation",
+      "metadata": {
+        "priority": "critical",
+        "result": {
+          "inventory_state": true,
+          "order_state": true,
+          "pricing_state": true,
+          "reconciled": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "191d19f61f324089a1380144113e95bd",
+      "started_at": "2026-06-23T06:13:22.514217+00:00",
+      "status": "success",
+      "traceback": null
     }
   ],
-  "updated_at": "2026-06-15T22:13:10.179135+00:00"
+  "updated_at": "2026-06-23T06:13:22.517495+00:00"
 }

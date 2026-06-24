@@ -9,6 +9,7 @@
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const PERPLEXITY_KEY = process.env.PERPLEXITY_API_KEY;
+const GEMINI_KEY = process.env.GOOGLE_API_KEY || process.env.GCP_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
@@ -58,6 +59,30 @@ Anforderungen:
 
 Beginne direkt mit dem ersten Absatz (kein Titel, keine Einleitung).`;
 
+  // Gemini (Google AI — kostenlos) bevorzugt, Perplexity als Fallback
+  if (GEMINI_KEY) {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: 2200, temperature: 0.7 },
+        }),
+      }
+    );
+    if (r.ok) {
+      const data = await r.json();
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (content) {
+        return { content, wordCount: content.split(/\s+/).length };
+      }
+    }
+  }
+
+  if (!PERPLEXITY_KEY) throw new Error('Kein API Key (Gemini + Perplexity beide nicht verfügbar)');
+
   const r = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: { Authorization: `Bearer ${PERPLEXITY_KEY}`, 'Content-Type': 'application/json' },
@@ -71,8 +96,7 @@ Beginne direkt mit dem ersten Absatz (kein Titel, keine Einleitung).`;
   if (!r.ok) throw new Error(`Perplexity ${r.status}: ${await r.text().then((t) => t.substring(0, 200))}`);
   const data = await r.json();
   const content = data.choices[0].message.content;
-  const wordCount = content.split(/\s+/).length;
-  return { content, wordCount };
+  return { content, wordCount: content.split(/\s+/).length };
 }
 
 function markdownToHtml(md) {
@@ -153,6 +177,9 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
+  // Rotate by week number
+  const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
+
   if (!PERPLEXITY_KEY) {
     // No API key — re-ping IndexNow for existing articles to keep Google crawling
     const existingUrls = ARTICLE_TOPICS.map((t) => `https://${SITE_HOST}/blog/${t.slug}`);
@@ -164,9 +191,6 @@ export default async function handler(req, res) {
     await sendTelegram('❌ SEO Writer: SUPABASE_SERVICE_KEY fehlt!');
     return res.status(500).json({ error: 'SUPABASE_SERVICE_KEY missing' });
   }
-
-  // Rotate by week number
-  const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
   const topic = ARTICLE_TOPICS[weekNum % ARTICLE_TOPICS.length];
   const dateStr = new Date().toISOString().split('T')[0];
   const pageUrl = `https://${SITE_HOST}/blog/${topic.slug}`;

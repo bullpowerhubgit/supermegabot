@@ -1,25 +1,27 @@
 {
   "attempt": 1,
-  "duration_ms": 231,
+  "duration_ms": 235,
   "error": null,
-  "finished_at": "2026-06-15T22:17:10.208423+00:00",
-  "hostname": "MacBook-Pro-von-Rudolf.local",
+  "finished_at": "2026-06-23T06:17:06.235175+00:00",
+  "hostname": "MBP-von-Rudolf.fritz.box",
   "job_id": "catalog_watchdog",
   "metadata": {
     "priority": "normal",
     "result": {
-      "non_active": 3,
+      "non_active": 10,
       "sample": [
-        "Profi Nacken & R\u00fccken Massager Kit | Tiefenentspannung f\u00fcr Zuhause",
-        "AI Lernkarten Set: Digitale Lernhilfen f\u00fcr Studenten",
-        "Smart Energy Monitoring: Stromverbrauch Messen & Energie Sparen"
+        "Automation-Guide \u2014 KI & Automation Guide 2026",
+        "Automation-Guide \u2014 KI & Automation Guide 2026",
+        "Automatischer Katzenfutterautomat WiFi",
+        "Automatischer Katzenfutterautomat WiFi",
+        "Automatische Tropfbew\u00e4sserung f\u00fcr Balkonk\u00e4sten (Solar)"
       ],
       "scanned": 50
     }
   },
-  "pid": 60382,
-  "run_id": "ba1f5d72015a4e46a6e824020cbcb8ae",
-  "started_at": "2026-06-15T22:17:09.976677+00:00",
+  "pid": 47579,
+  "run_id": "08a70466e50242a1aecf8956a1adc1cc",
+  "started_at": "2026-06-23T06:17:05.999295+00:00",
   "status": "success",
   "traceback": null
 }

@@ -1,6 +1,6 @@
-// Klaviyo Email-Sequenz für neue Subscriber
-// Läuft täglich 10:00 UTC — sendet 4-stufige Sequenz:
-// Tag 0: Welcome + Angebot | Tag 2: Follow-up | Tag 5: Urgency | Tag 10: Affiliate-Pitch
+// Klaviyo: Email-Sequenz (täglich 10:00 UTC) + Webhook-Handler (Sofort-Welcome bei Subscriber)
+// Cron: 4-stufige Sequenz: Tag 0 Welcome | Tag 2 Follow-up | Tag 5 Urgency | Tag 10 Affiliate
+// Webhook: POST ohne CRON_SECRET → Sofort-Welcome für neuen Subscriber
 
 const KLAVIYO_KEY = process.env.KLAVIYO_API_KEY;
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -286,8 +286,26 @@ async function sendFollowupCampaign(emailDef, subCount, tag) {
   return campId;
 }
 
+async function handleWebhook(req, res) {
+  let body;
+  try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
+  const email = body?.data?.attributes?.profile?.email || body?.data?.attributes?.email || body?.customer_properties?.['$email'] || body?.profile?.email || body?.email;
+  const firstName = body?.data?.attributes?.profile?.first_name || body?.customer_properties?.['$first_name'] || body?.profile?.first_name || 'du';
+  if (!email) return res.status(200).json({ ok: true, skipped: 'no email' });
+  try {
+    const campId = await sendWelcomeCampaign(1);
+    await sendTelegram(`✅ Sofort-Welcome gesendet!\n📧 ${email} (${firstName})\nCampaign: ${campId}`);
+    return res.status(200).json({ ok: true, email, campId });
+  } catch (err) {
+    await sendTelegram(`❌ Welcome-Webhook Fehler für ${email}: ${err.message.substring(0, 150)}`);
+    return res.status(200).json({ ok: false, error: err.message });
+  }
+}
+
 export default async function handler(req, res) {
   const secret = req.headers['x-cron-secret'] || req.query?.secret;
+  // Webhook-Mode: POST ohne CRON_SECRET = incoming Klaviyo event
+  if (req.method === 'POST' && secret !== CRON_SECRET) return handleWebhook(req, res);
   if (secret !== CRON_SECRET) return res.status(401).json({ error: 'unauthorized' });
   if (!KLAVIYO_KEY) return res.status(200).json({ ok: true, note: 'no klaviyo key' });
 

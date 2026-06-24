@@ -2,8 +2,8 @@
   "attempt": 1,
   "duration_ms": 0,
   "error": null,
-  "finished_at": "2026-06-15T22:45:50.704907+00:00",
-  "hostname": "MacBook-Pro-von-Rudolf.local",
+  "finished_at": "2026-06-23T06:51:24.733868+00:00",
+  "hostname": "MBP-von-Rudolf.fritz.box",
   "job_id": "inventory_sync",
   "metadata": {
     "priority": "high",
@@ -12,9 +12,9 @@
       "mode": "guarded"
     }
   },
-  "pid": 60382,
-  "run_id": "0c9cedfb78db41acb9d65c31bf1b063a",
-  "started_at": "2026-06-15T22:45:50.704793+00:00",
+  "pid": 47579,
+  "run_id": "e17516724c76465cb6b1ca758a284801",
+  "started_at": "2026-06-23T06:51:24.733731+00:00",
   "status": "success",
   "traceback": null
 }

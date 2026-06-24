@@ -42,3 +42,4 @@ rudibot-army/shared/army_state.json
 
 # Local Netlify folder
 .netlify
+.vercel
