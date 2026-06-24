@@ -4,6 +4,7 @@
 
 const PERSON_URN = process.env.LINKEDIN_PERSON_URN || 'urn:li:person:YcxbqVN0ZR';
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
+const BLOG_URL = 'https://autoincome-ai.vercel.app/blog';
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 
@@ -185,6 +186,118 @@ Produkt testen: ${PRODUCT_URL}
 #Affiliate #KI #JointVenture #OnlineBusiness`,
     mediaTitle: 'AI Income Machine — Affiliate Program',
     mediaDesc: '50% Provision — werde Affiliate für meinen KI-Blueprint',
+  },
+  {
+    text: `📝 Ich habe getestet: Mit welchen kostenlosen KI-Tools kann man 2026 wirklich Geld verdienen?
+
+Ergebnis nach 3 Monaten Testing:
+
+ChatGPT Free → E-Books schreiben ✅
+Canva KI → Cover und Grafiken ✅
+Perplexity → Recherche ✅
+Google Gemini → Marktanalyse ✅
+
+Die Tools die NICHT funktioniert haben: ❌ (im Artikel erklärt)
+
+Vollständige Übersicht mit konkreten Methoden:
+👇 ${BLOG_URL}/ki-tools-kostenlos-geld-verdienen
+
+#KI #GeldVerdienen #KostenlosTools #OnlineBusiness`,
+    mediaTitle: 'Kostenlose KI-Tools 2026',
+    mediaDesc: 'Diese 7 gratis KI-Tools reichen für erste Einnahmen',
+  },
+  {
+    text: `📖 ChatGPT E-Book erstellen — meine ehrliche Erfahrung
+
+Zeitaufwand: 6 Stunden
+Investition: €0
+Ergebnis: verkaufsfähiges 40-Seiten-Produkt
+
+Was niemand sagt:
+→ Das Schreiben ist einfach
+→ Das Marketing ist die Arbeit
+→ ChatGPT liefert 70%, du lieferst 30%
+
+Den kompletten Schritt-für-Schritt-Prozess habe ich dokumentiert:
+${BLOG_URL}/chatgpt-ebook-erstellen
+
+#ChatGPT #EBook #DigitaleProdukte #OnlineBusiness`,
+    mediaTitle: 'ChatGPT E-Book erstellen 2026',
+    mediaDesc: 'Schritt-für-Schritt Anleitung mit echten Zahlen',
+  },
+  {
+    text: `🏗️ Online Business in Deutschland starten 2026 — was du wirklich brauchst
+
+Was du NICHT brauchst:
+❌ GmbH (Einzelunternehmen reicht)
+❌ Steuerberater von Tag 1
+❌ Tausende Euro Startkapital
+
+Was du brauchst:
+✅ Gewerbeanmeldung (€20-€50, 1 Stunde)
+✅ Kleinunternehmerregelung (unter €22k = keine MwSt)
+✅ Ein konkretes Produkt oder Angebot
+
+Vollständiger Leitfaden mit Zeitplan:
+${BLOG_URL}/online-business-deutschland-starten
+
+#OnlineBusiness #Deutschland #Selbstständig #Gründung`,
+    mediaTitle: 'Online Business Deutschland 2026',
+    mediaDesc: 'Rechtliches, Steuern und erste Einnahmen — ehrlicher Guide',
+  },
+  {
+    text: `📊 Passives Einkommen 2026 — was WIRKLICH funktioniert (nach 12 Monaten Erfahrung)
+
+Methode 1: Digitale Produkte → ✅ funktioniert (ab Monat 3-6)
+Methode 2: Affiliate Marketing → ✅ funktioniert (ab Monat 12-24)
+Methode 3: ETF/Dividenden → ✅ funktioniert (braucht Kapital)
+Methode 4: YouTube → ⏳ langsam (ab Monat 12+)
+Methode 5: Dropshipping → ⚠️ schwierig 2026
+
+Ehrlicher Vergleich mit Zeitplan und realen Zahlen:
+${BLOG_URL}/passives-einkommen-aufbauen-2026
+
+#PassivesEinkommen #Ehrlichkeit #OnlineBusiness #KI`,
+    mediaTitle: 'Passives Einkommen 2026 — Ehrlicher Vergleich',
+    mediaDesc: '5 Strategien mit realistischen Zahlen und Zeitplan',
+  },
+  {
+    text: `🤖 Als KI-Freelancer starten — 5 Dienste die jetzt gefragt sind
+
+Was Unternehmen 2026 suchen und zahlen:
+
+1. KI-Texterstellung → €30-80/h
+2. Prompt Engineering → €60-150/h
+3. No-Code Automatisierung (Zapier/Make) → €50-120/h
+4. KI-Bildbearbeitung → €40-100/h
+5. KI-Videobearbeitung → €40-90/h
+
+Kein Abschluss nötig. Nur Praxis.
+
+Wie du in 30 Tagen ersten Auftrag bekommst:
+${BLOG_URL}/ki-freelancer-werden-deutschland
+
+#KIFreelancer #Freelancing #KI #Nebeneinkommen`,
+    mediaTitle: 'KI-Freelancer werden 2026',
+    mediaDesc: 'Diese 5 Dienste sind gefragt — so startest du ohne Portfolio',
+  },
+  {
+    text: `📧 Warum ich mit 20 E-Mail-Subscribern mehr verdiene als viele mit 2000 Instagram-Followern
+
+Instagram-Follower: sehen deinen Post vielleicht
+E-Mail-Subscriber: bekommen ihn direkt ins Postfach
+
+Meine Zahlen:
+• 20 Klaviyo-Subscriber
+• 3 automatische E-Mails
+• €111 Umsatz ohne aktives Zutun
+
+E-Mail-Liste aufbauen mit Klaviyo kostenlos:
+${BLOG_URL}/email-marketing-klaviyo-kostenlos
+
+#EmailMarketing #Klaviyo #OnlineBusiness #PassivesEinkommen`,
+    mediaTitle: 'E-Mail Marketing mit Klaviyo kostenlos',
+    mediaDesc: 'Warum 20 Subscriber mehr wert sind als 2000 Follower',
   },
 ];
 
