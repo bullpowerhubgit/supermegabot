@@ -1,0 +1,208 @@
+// Dynamic SEO Blog Endpoint
+// Serves articles stored in Supabase seo_content table
+// URL pattern: /blog/:slug (rewritten from vercel.json)
+// GET /api/blog?slug=ki-geld-verdienen → returns full HTML page
+
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
+const SUPABASE_ANON = process.env.SUPABASE_ANON_KEY;
+const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
+
+async function fetchArticle(slug) {
+  const url = `${SUPABASE_URL}/rest/v1/seo_content?slug=eq.${encodeURIComponent(slug)}&published=eq.true&select=*&limit=1`;
+  const r = await fetch(url, {
+    headers: {
+      apikey: SUPABASE_ANON,
+      Authorization: `Bearer ${SUPABASE_ANON}`,
+    },
+  });
+  if (!r.ok) throw new Error(`Supabase ${r.status}`);
+  const rows = await r.json();
+  return rows[0] || null;
+}
+
+async function fetchAllSlugs() {
+  const url = `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=slug,title,meta_description,created_at&order=created_at.desc`;
+  const r = await fetch(url, {
+    headers: {
+      apikey: SUPABASE_ANON,
+      Authorization: `Bearer ${SUPABASE_ANON}`,
+    },
+  });
+  if (!r.ok) throw new Error(`Supabase ${r.status}`);
+  return r.json();
+}
+
+function buildArticlePage(article) {
+  const dateStr = article.created_at
+    ? new Date(article.created_at).toISOString().split('T')[0]
+    : '2026-06-24';
+
+  return `<!DOCTYPE html>
+<html lang="${article.language || 'de'}">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>${article.title}</title>
+  <meta name="description" content="${article.meta_description || ''}" />
+  <link rel="canonical" href="https://autoincome-ai.vercel.app/blog/${article.slug}" />
+  <meta property="og:title" content="${article.title}" />
+  <meta property="og:description" content="${article.meta_description || ''}" />
+  <meta property="og:type" content="article" />
+  <meta property="og:url" content="https://autoincome-ai.vercel.app/blog/${article.slug}" />
+  <meta property="article:published_time" content="${dateStr}" />
+  ${article.schema_json ? `<script type="application/ld+json">${JSON.stringify(article.schema_json)}</script>` : ''}
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e2e8f0;line-height:1.8}
+    nav{background:rgba(15,15,26,0.95);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.05);position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+    .logo{font-size:1.1rem;font-weight:800;color:white;text-decoration:none}
+    .logo span{color:#7c3aed}
+    .nav-cta{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:8px 20px;border-radius:50px;font-size:.85rem;font-weight:700;text-decoration:none}
+    .hero{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:50px 20px;border-bottom:1px solid rgba(255,255,255,0.06)}
+    .hero-inner{max-width:800px;margin:0 auto}
+    .hero-meta{font-size:.85rem;color:#64748b;margin-bottom:16px}
+    h1{font-size:clamp(1.8rem,4vw,3rem);font-weight:900;line-height:1.2;margin-bottom:16px}
+    article{max-width:800px;margin:0 auto;padding:40px 20px}
+    article h2{font-size:1.6rem;font-weight:800;color:#f1f5f9;margin:40px 0 16px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06)}
+    article h3{font-size:1.2rem;font-weight:700;color:#e2e8f0;margin:24px 0 10px}
+    article p{color:#94a3b8;margin-bottom:18px}
+    article strong{color:#e2e8f0}
+    article a{color:#a78bfa;text-decoration:none}
+    article a:hover{text-decoration:underline}
+    article ul,article ol{padding-left:24px;margin-bottom:18px}
+    article li{color:#94a3b8;margin-bottom:6px}
+    .cta-box{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(91,33,182,.08));border:2px solid #7c3aed;border-radius:16px;padding:28px;text-align:center;margin:40px 0}
+    .cta-box h3{font-size:1.3rem;color:white;margin-bottom:8px}
+    .cta-box p{color:#94a3b8;margin-bottom:20px;font-size:.95rem}
+    .cta-box a{display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:14px 32px;border-radius:50px;font-size:1rem;font-weight:700;text-decoration:none}
+    footer{background:rgba(0,0,0,.3);padding:30px 20px;text-align:center;color:#475569;font-size:.85rem;border-top:1px solid rgba(255,255,255,.05);margin-top:50px}
+    footer a{color:#64748b;text-decoration:none;margin:0 8px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo">AI<span>Income</span></a>
+  <a href="/checkliste.html" class="nav-cta">Gratis Checkliste</a>
+</nav>
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-meta">📅 ${dateStr} &nbsp;|&nbsp; ✍️ Rudolf Sarkany</div>
+    <h1>${article.title}</h1>
+    <p style="color:#94a3b8;font-size:1.05rem">${article.meta_description || ''}</p>
+  </div>
+</div>
+<article>
+${article.content_html || '<p>Artikel wird geladen...</p>'}
+<div class="cta-box">
+  <h3>Bereit mit KI Einkommen aufzubauen?</h3>
+  <p>Der AI Income Machine 90-Day Blueprint — auf Deutsch, €37 Einmalzahlung.</p>
+  <a href="${PRODUCT_URL}" target="_blank">Jetzt starten →</a>
+</div>
+${article.faq_html ? `<section class="faq">${article.faq_html}</section>` : ''}
+</article>
+<footer>
+  <a href="/">Startseite</a>
+  <a href="/blog">Alle Artikel</a>
+  <a href="/checkliste.html">Gratis Checkliste</a>
+  <a href="/affiliate.html">Affiliate</a>
+  <p style="margin-top:12px">© 2026 AiiteC — Rudolf Sarkany</p>
+</footer>
+</body>
+</html>`;
+}
+
+function buildIndexPage(articles) {
+  const cards = articles.map((a) => `
+    <a href="/blog/${a.slug}" class="card">
+      <h2>${a.title}</h2>
+      <p>${a.meta_description || ''}</p>
+      <span class="read-more">Lesen →</span>
+    </a>`).join('');
+
+  return `<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KI Einkommen Blog — Alle Artikel</title>
+  <meta name="description" content="Alle Artikel über KI-Einkommen, Digistore24, passives Einkommen und Automatisierung auf Deutsch." />
+  <link rel="canonical" href="https://autoincome-ai.vercel.app/blog" />
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e2e8f0;line-height:1.7}
+    nav{background:rgba(15,15,26,0.95);padding:16px 20px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,0.05);position:sticky;top:0;z-index:100;backdrop-filter:blur(10px)}
+    .logo{font-size:1.1rem;font-weight:800;color:white;text-decoration:none}
+    .logo span{color:#7c3aed}
+    .nav-cta{background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:8px 20px;border-radius:50px;font-size:.85rem;font-weight:700;text-decoration:none}
+    .hero{background:linear-gradient(135deg,#1a1a2e,#16213e);padding:50px 20px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.06)}
+    h1{font-size:clamp(1.8rem,4vw,2.5rem);font-weight:900;margin-bottom:12px}
+    .hero p{color:#94a3b8;font-size:1.05rem}
+    .grid{max-width:900px;margin:40px auto;padding:0 20px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px}
+    .card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:24px;text-decoration:none;display:block;transition:border-color 0.2s}
+    .card:hover{border-color:#7c3aed}
+    .card h2{font-size:1.1rem;font-weight:700;color:#e2e8f0;margin-bottom:10px;line-height:1.4}
+    .card p{color:#64748b;font-size:0.9rem;margin-bottom:16px}
+    .card .read-more{color:#a78bfa;font-size:0.9rem;font-weight:600}
+    .empty{text-align:center;padding:60px 20px;color:#475569}
+    footer{background:rgba(0,0,0,.3);padding:30px 20px;text-align:center;color:#475569;font-size:.85rem;border-top:1px solid rgba(255,255,255,.05);margin-top:50px}
+    footer a{color:#64748b;text-decoration:none;margin:0 8px}
+  </style>
+</head>
+<body>
+<nav>
+  <a href="/" class="logo">AI<span>Income</span></a>
+  <a href="/checkliste.html" class="nav-cta">Gratis Checkliste</a>
+</nav>
+<div class="hero">
+  <h1>KI Einkommen Blog</h1>
+  <p>Alle Artikel über KI, passives Einkommen und Automatisierung — auf Deutsch.</p>
+</div>
+${articles.length > 0
+  ? `<div class="grid">${cards}</div>`
+  : '<div class="empty"><p>Artikel werden bald verfügbar.</p></div>'}
+<footer>
+  <a href="/">Startseite</a>
+  <a href="/checkliste.html">Gratis Checkliste</a>
+  <a href="/affiliate.html">Affiliate</a>
+  <a href="https://www.checkout-ds24.com/product/668035" target="_blank">Produkt</a>
+  <p style="margin-top:12px">© 2026 AiiteC — Rudolf Sarkany</p>
+</footer>
+</body>
+</html>`;
+}
+
+export default async function handler(req, res) {
+  if (!SUPABASE_ANON) {
+    return res.status(500).send('Supabase not configured');
+  }
+
+  const slug = req.query?.slug;
+
+  // Blog index: /blog (no slug)
+  if (!slug || slug === 'index') {
+    try {
+      const articles = await fetchAllSlugs();
+      const html = buildIndexPage(articles);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+      return res.status(200).send(html);
+    } catch (err) {
+      return res.status(500).send(`<h1>Error</h1><p>${err.message}</p>`);
+    }
+  }
+
+  // Article page
+  try {
+    const article = await fetchArticle(slug);
+    if (!article) {
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      return res.status(404).send(`<!DOCTYPE html><html><body style="font-family:sans-serif;background:#0f0f1a;color:#e2e8f0;padding:40px;text-align:center"><h1>Artikel nicht gefunden</h1><p><a href="/blog" style="color:#a78bfa">← Alle Artikel</a></p></body></html>`);
+    }
+    const html = buildArticlePage(article);
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
+    return res.status(200).send(html);
+  } catch (err) {
+    return res.status(500).send(`<h1>Error</h1><p>${err.message}</p>`);
+  }
+}
