@@ -1,10 +1,52 @@
 // LinkedIn auto-poster — DS24 product 668035 promotion
 // Runs Mo/Mi/Fr 09:00 UTC via Vercel Cron
+// Auto-refreshes LinkedIn access token on 401
 
 const PERSON_URN = process.env.LINKEDIN_PERSON_URN || 'urn:li:person:YcxbqVN0ZR';
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
+
+async function refreshLinkedInToken() {
+  const params = new URLSearchParams({
+    grant_type: 'refresh_token',
+    refresh_token: process.env.LINKEDIN_REFRESH_TOKEN,
+    client_id: process.env.LINKEDIN_CLIENT_ID,
+    client_secret: process.env.LINKEDIN_CLIENT_SECRET,
+  });
+  const r = await fetch('https://www.linkedin.com/oauth/v2/accessToken', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params.toString(),
+  });
+  if (!r.ok) throw new Error(`Token refresh failed: ${r.status} ${await r.text()}`);
+  const data = await r.json();
+  const newToken = data.access_token;
+  const newRefresh = data.refresh_token;
+
+  // Update Vercel env vars so next run uses fresh tokens
+  const vercelToken = process.env.VERCEL_API_TOKEN;
+  const projectId = process.env.VERCEL_PROJECT_ID;
+  if (vercelToken && projectId) {
+    const tokenEnvId = process.env.LI_TOKEN_ENV_ID;
+    const refreshEnvId = process.env.LI_REFRESH_ENV_ID;
+    if (tokenEnvId) {
+      await fetch(`https://api.vercel.com/v9/projects/${projectId}/env/${tokenEnvId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${vercelToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: newToken }),
+      });
+    }
+    if (refreshEnvId && newRefresh) {
+      await fetch(`https://api.vercel.com/v9/projects/${projectId}/env/${refreshEnvId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${vercelToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ value: newRefresh }),
+      });
+    }
+  }
+  return newToken;
+}
 
 const POSTS = [
   {
@@ -155,13 +197,25 @@ async function sendTelegram(msg) {
   });
 }
 
+async function postToLinkedIn(accessToken, payload) {
+  return fetch('https://api.linkedin.com/v2/ugcPosts', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+      'X-Restli-Protocol-Version': '2.0.0',
+    },
+    body: JSON.stringify(payload),
+  });
+}
+
 export default async function handler(req, res) {
   const secret = req.headers['x-cron-secret'] || req.query?.secret;
   if (secret !== process.env.CRON_SECRET) {
     return res.status(401).json({ error: 'unauthorized' });
   }
 
-  const accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
+  let accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
   if (!accessToken) {
     return res.status(500).json({ error: 'LINKEDIN_ACCESS_TOKEN missing' });
   }
@@ -192,15 +246,18 @@ export default async function handler(req, res) {
     },
   };
 
-  const response = await fetch('https://api.linkedin.com/v2/ugcPosts', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      'X-Restli-Protocol-Version': '2.0.0',
-    },
-    body: JSON.stringify(payload),
-  });
+  let response = await postToLinkedIn(accessToken, payload);
+
+  // Auto-refresh on 401
+  if (response.status === 401 && process.env.LINKEDIN_REFRESH_TOKEN) {
+    try {
+      accessToken = await refreshLinkedInToken();
+      response = await postToLinkedIn(accessToken, payload);
+    } catch (e) {
+      await sendTelegram(`❌ LinkedIn Token-Refresh fehlgeschlagen: ${e.message}`);
+      return res.status(500).json({ ok: false, error: e.message });
+    }
+  }
 
   if (!response.ok) {
     const err = await response.text();
