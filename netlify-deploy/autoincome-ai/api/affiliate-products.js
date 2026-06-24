@@ -1,41 +1,179 @@
-// Amazon + eBay + AliExpress Affiliate Auto-Poster
-// Nische: Smart Home / Gadgets (per Produktregel: eBay/Amazon/AliExpress = Smart Home)
+// Amazon + eBay + AliExpress Affiliate Poster
+// Nische: Smart Home / Gadgets (eBay/Amazon/AliExpress = Smart Home per Produktregel)
 // Cron: Di/Fr 09:00 UTC
-// Postet Affiliate-Produkte zu LinkedIn + Telegram
-// Amazon PA API + eBay Browse API + AliExpress DataIO
+// Kein PA API nötig — direkte Affiliate-Suchlinks + kuratierte Produktbeschreibungen
+// Amazon Associate Tag: bullpowerhub-21 | eBay EPN | AliExpress tracking_id: aiitec
 
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
-
-// Amazon Product Advertising API v5
-const AMAZON_ACCESS_KEY = process.env.AMAZON_ACCESS_KEY;
-const AMAZON_SECRET_KEY = process.env.AMAZON_SECRET_KEY;
-const AMAZON_ASSOCIATE_TAG = process.env.AMAZON_ASSOCIATE_TAG || 'aiitec-21';
-const AMAZON_REGION = 'de';
-const AMAZON_HOST = 'webservices.amazon.de';
-
-// eBay Browse API
-const EBAY_APP_ID = process.env.EBAY_APP_ID;
-const EBAY_CAMPAIGN_ID = process.env.EBAY_CAMPAIGN_ID;
-const EBAY_AFFILIATE_CUSTOM_ID = process.env.EBAY_AFFILIATE_CUSTOM_ID || 'aiitec';
-
-// AliExpress DataIO API
-const ALIEXPRESS_APP_KEY = process.env.ALIEXPRESS_APP_KEY;
-const ALIEXPRESS_ACCESS_TOKEN = process.env.ALIEXPRESS_ACCESS_TOKEN;
-
-// LinkedIn für Affiliate Posts
 const LINKEDIN_TOKEN = process.env.LINKEDIN_ACCESS_TOKEN;
 const LINKEDIN_AUTHOR = process.env.LINKEDIN_PERSON_URN;
 
-// Smart Home & Gadgets Keywords (Nischen-Regel: eBay/Amazon/AliExpress = Smart Home)
-const PRODUCT_KEYWORDS = [
-  { keyword: 'Smart Home Starter Set', category: 'Echo Dot OR Zigbee', asin_fallback: 'B09B8YWXDF' },
-  { keyword: 'Fitness Tracker 2026', category: 'Wearables', asin_fallback: 'B0CHK7PTJF' },
-  { keyword: 'Mini Beamer portabel', category: 'Electronics', asin_fallback: 'B09MCMZ3XK' },
-  { keyword: 'Smart Plug Steckdose WLAN', category: 'Smart Home', asin_fallback: 'B07S1BMMSS' },
-  { keyword: 'Roboter Staubsauger', category: 'Home Appliances', asin_fallback: 'B08QKNKZPF' },
-  { keyword: 'Kabellose Kopfhörer', category: 'Audio', asin_fallback: 'B07Q9MJKBV' },
+const AMAZON_TAG = process.env.AMAZON_ASSOCIATE_TAG || 'bullpowerhub-21';
+const EBAY_CAMPAIGN_ID = process.env.EBAY_CAMPAIGN_ID || '';
+
+// Kuratierte Smart Home / Gadgets Deals — rotierend pro Woche
+// Amazon: direkte ASIN + Associate Tag (echte Produkte, echte Provision)
+const DEALS = [
+  {
+    topic: 'Smart Home Starter — günstig einsteigen',
+    products: [
+      {
+        name: 'Amazon Echo Dot (5. Gen) — Smarter Lautsprecher mit Alexa',
+        platform: 'Amazon',
+        asin: 'B09B8YWXDF',
+        url: () => `https://www.amazon.de/dp/B09B8YWXDF?tag=${AMAZON_TAG}`,
+        priceRange: '€39–€59',
+        commission: '~3%',
+      },
+      {
+        name: 'Govee Smart LED Streifen 10m — App-steuerbar, RGB',
+        platform: 'Amazon',
+        asin: 'B09QY2CBQS',
+        url: () => `https://www.amazon.de/dp/B09QY2CBQS?tag=${AMAZON_TAG}`,
+        priceRange: '€25–€45',
+        commission: '~3%',
+      },
+      {
+        name: 'TP-Link Kasa Smart Plug WLAN — Zeitschaltuhr per App',
+        platform: 'Amazon',
+        asin: 'B07B8T3L88',
+        url: () => `https://www.amazon.de/dp/B07B8T3L88?tag=${AMAZON_TAG}`,
+        priceRange: '€15–€25',
+        commission: '~3%',
+      },
+    ],
+    ebaySearch: 'smart home set alexa',
+    aliSearch: 'smart home starter kit',
+  },
+  {
+    topic: 'Fitness & Wearables 2026 — die besten Tracker',
+    products: [
+      {
+        name: 'Xiaomi Smart Band 9 — Fitness Tracker mit 14 Tagen Akkulaufzeit',
+        platform: 'Amazon',
+        asin: 'B0CHK7PTJF',
+        url: () => `https://www.amazon.de/dp/B0CHK7PTJF?tag=${AMAZON_TAG}`,
+        priceRange: '€35–€50',
+        commission: '~3%',
+      },
+      {
+        name: 'Garmin vívofit jr. 3 — Aktivitätstracker für Kinder',
+        platform: 'Amazon',
+        asin: 'B08J5YS1VG',
+        url: () => `https://www.amazon.de/dp/B08J5YS1VG?tag=${AMAZON_TAG}`,
+        priceRange: '€70–€90',
+        commission: '~3%',
+      },
+    ],
+    ebaySearch: 'fitness tracker 2026',
+    aliSearch: 'fitness band smart bracelet',
+  },
+  {
+    topic: 'Roboter-Haushaltsgeräte — Putzen ohne Arbeit',
+    products: [
+      {
+        name: 'Eufy RoboVac 11S — Ultradünner Saugroboter (1300Pa)',
+        platform: 'Amazon',
+        asin: 'B07M9ZH1XG',
+        url: () => `https://www.amazon.de/dp/B07M9ZH1XG?tag=${AMAZON_TAG}`,
+        priceRange: '€120–€160',
+        commission: '~3%',
+      },
+      {
+        name: 'iRobot Roomba i3+ — Auto-Entleerung, Mapping-Funktion',
+        platform: 'Amazon',
+        asin: 'B08F5SS1P9',
+        url: () => `https://www.amazon.de/dp/B08F5SS1P9?tag=${AMAZON_TAG}`,
+        priceRange: '€300–€400',
+        commission: '~3%',
+      },
+    ],
+    ebaySearch: 'saugroboter roboter staubsauger',
+    aliSearch: 'robot vacuum cleaner',
+  },
+  {
+    topic: 'Kabellos & Kabellos — die besten Kopfhörer 2026',
+    products: [
+      {
+        name: 'Sony WH-1000XM5 — Premium Noise Cancelling Kopfhörer',
+        platform: 'Amazon',
+        asin: 'B09XS7JWHH',
+        url: () => `https://www.amazon.de/dp/B09XS7JWHH?tag=${AMAZON_TAG}`,
+        priceRange: '€280–€350',
+        commission: '~3%',
+      },
+      {
+        name: 'TOZO T6 True Wireless Earbuds — IPX8, 8h Laufzeit',
+        platform: 'Amazon',
+        asin: 'B07RGZ5NKS',
+        url: () => `https://www.amazon.de/dp/B07RGZ5NKS?tag=${AMAZON_TAG}`,
+        priceRange: '€20–€30',
+        commission: '~3%',
+      },
+    ],
+    ebaySearch: 'bluetooth kopfhörer noise cancelling',
+    aliSearch: 'wireless earbuds bluetooth',
+  },
+  {
+    topic: 'Mini-Beamer & Projektoren — Heimkino für jeden',
+    products: [
+      {
+        name: 'Anker Nebula Capsule II — Portabler Projektor mit Android TV',
+        platform: 'Amazon',
+        asin: 'B08G4TPS71',
+        url: () => `https://www.amazon.de/dp/B08G4TPS71?tag=${AMAZON_TAG}`,
+        priceRange: '€350–€400',
+        commission: '~3%',
+      },
+      {
+        name: 'Vankyo Leisure 3W Mini Beamer — 1080p, WLAN, Bluetooth',
+        platform: 'Amazon',
+        asin: 'B09MCMZ3XK',
+        url: () => `https://www.amazon.de/dp/B09MCMZ3XK?tag=${AMAZON_TAG}`,
+        priceRange: '€80–€110',
+        commission: '~3%',
+      },
+    ],
+    ebaySearch: 'mini beamer portable projektor',
+    aliSearch: 'mini projector portable',
+  },
+  {
+    topic: 'Smarte Beleuchtung — Philips Hue & Alternativen',
+    products: [
+      {
+        name: 'Philips Hue White & Color Starter Set — 3x E27 + Bridge',
+        platform: 'Amazon',
+        asin: 'B07DHJZMDM',
+        url: () => `https://www.amazon.de/dp/B07DHJZMDM?tag=${AMAZON_TAG}`,
+        priceRange: '€120–€150',
+        commission: '~3%',
+      },
+      {
+        name: 'LIFX A60 Smart Bulb — kein Hub nötig, 16 Mio. Farben',
+        platform: 'Amazon',
+        asin: 'B01KY02MS4',
+        url: () => `https://www.amazon.de/dp/B01KY02MS4?tag=${AMAZON_TAG}`,
+        priceRange: '€35–€50',
+        commission: '~3%',
+      },
+    ],
+    ebaySearch: 'smart bulb rgb wlan',
+    aliSearch: 'smart led bulb wifi',
+  },
 ];
+
+function getEbayAffiliateLink(query) {
+  const encoded = encodeURIComponent(query);
+  if (EBAY_CAMPAIGN_ID) {
+    return `https://rover.ebay.com/rover/1/707-53477-19255-0/1?icep_id=114&ipn=icep&toolid=20004&campid=${EBAY_CAMPAIGN_ID}&mpre=https://www.ebay.de/sch/i.html?_nkw=${encoded}&customid=aiitec`;
+  }
+  return `https://www.ebay.de/sch/i.html?_nkw=${encoded}`;
+}
+
+function getAliExpressLink(query) {
+  return `https://de.aliexpress.com/w/wholesale-${encodeURIComponent(query.replace(/\s+/g, '-'))}.html?trafficChannel=affiliate&d=y&CatId=0&SearchText=${encodeURIComponent(query)}&aff_fcid=aiitec&aff_fsk=aiitec&aff_platform=link-c-tool&sk=aiitec&aff_trace_key=aiitec`;
+}
 
 async function sendTelegram(msg) {
   if (!TELEGRAM_BOT || !TELEGRAM_CHAT) return;
@@ -43,124 +181,9 @@ async function sendTelegram(msg) {
     await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML', disable_web_page_preview: true }),
     });
   } catch {}
-}
-
-// Amazon PA API Signatur (AWS4-HMAC-SHA256)
-async function amazonSign(method, path, payload, headers) {
-  const crypto = await import('crypto');
-  const now = new Date();
-  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '').slice(0, 15) + 'Z';
-  const dateStamp = amzDate.slice(0, 8);
-  const service = 'ProductAdvertisingAPI';
-  const region = AMAZON_REGION;
-
-  const signedHeaders = 'content-encoding;content-type;host;x-amz-date;x-amz-target';
-  const canonicalHeaders =
-    `content-encoding:amz-1.0\ncontent-type:application/json; charset=utf-8\nhost:${AMAZON_HOST}\nx-amz-date:${amzDate}\nx-amz-target:com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems\n`;
-
-  const payloadHash = crypto.createHash('sha256').update(payload).digest('hex');
-  const canonicalRequest = [method, path, '', canonicalHeaders, signedHeaders, payloadHash].join('\n');
-  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
-  const stringToSign = `AWS4-HMAC-SHA256\n${amzDate}\n${credentialScope}\n${crypto.createHash('sha256').update(canonicalRequest).digest('hex')}`;
-
-  function hmac(key, data) {
-    return crypto.createHmac('sha256', key).update(data).digest();
-  }
-  const signingKey = hmac(hmac(hmac(hmac(`AWS4${AMAZON_SECRET_KEY}`, dateStamp), region), service), 'aws4_request');
-  const signature = crypto.createHmac('sha256', signingKey).update(stringToSign).digest('hex');
-
-  return {
-    ...headers,
-    'X-Amz-Date': amzDate,
-    Authorization: `AWS4-HMAC-SHA256 Credential=${AMAZON_ACCESS_KEY}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`,
-  };
-}
-
-async function searchAmazonProducts(keyword) {
-  if (!AMAZON_ACCESS_KEY || !AMAZON_SECRET_KEY) return null;
-  const payload = JSON.stringify({
-    Keywords: keyword,
-    Resources: ['ItemInfo.Title', 'Offers.Listings.Price', 'Images.Primary.Medium', 'DetailPageURL'],
-    PartnerTag: AMAZON_ASSOCIATE_TAG,
-    PartnerType: 'Associates',
-    Marketplace: 'www.amazon.de',
-    ItemCount: 3,
-  });
-  try {
-    const path = '/paapi5/searchitems';
-    const headers = await amazonSign('POST', path, payload, {
-      'Content-Encoding': 'amz-1.0',
-      'Content-Type': 'application/json; charset=utf-8',
-      Host: AMAZON_HOST,
-      'X-Amz-Target': 'com.amazon.paapi5.v1.ProductAdvertisingAPIv1.SearchItems',
-    });
-    const r = await fetch(`https://${AMAZON_HOST}${path}`, { method: 'POST', headers, body: payload });
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data.SearchResult?.Items || null;
-  } catch {
-    return null;
-  }
-}
-
-async function getAmazonDirectLink(keyword) {
-  const encoded = encodeURIComponent(keyword);
-  return `https://www.amazon.de/s?k=${encoded}&tag=${AMAZON_ASSOCIATE_TAG}`;
-}
-
-async function searchEbayProducts(keyword) {
-  if (!EBAY_APP_ID) return null;
-  try {
-    const r = await fetch(
-      `https://api.ebay.com/buy/browse/v1/item_summary/search?q=${encodeURIComponent(keyword)}&limit=3&filter=deliveryCountry:DE,currency:EUR`,
-      {
-        headers: {
-          Authorization: `Bearer ${EBAY_APP_ID}`,
-          'X-EBAY-C-MARKETPLACE-ID': 'EBAY_DE',
-          'Content-Language': 'de-DE',
-        },
-      }
-    );
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data.itemSummaries || null;
-  } catch {
-    return null;
-  }
-}
-
-function getEbayAffiliateLink(itemId) {
-  if (!EBAY_CAMPAIGN_ID) return `https://www.ebay.de/itm/${itemId}`;
-  return `https://rover.ebay.com/rover/1/707-53477-19255-0/1?icep_id=114&ipn=icep&toolid=20004&campid=${EBAY_CAMPAIGN_ID}&mpre=https://www.ebay.de/itm/${itemId}&customid=${EBAY_AFFILIATE_CUSTOM_ID}`;
-}
-
-async function searchAliExpressProducts(keyword) {
-  if (!ALIEXPRESS_APP_KEY || !ALIEXPRESS_ACCESS_TOKEN) return null;
-  try {
-    const params = new URLSearchParams({
-      app_key: ALIEXPRESS_APP_KEY,
-      access_token: ALIEXPRESS_ACCESS_TOKEN,
-      keywords: keyword,
-      local_country: 'DE',
-      local_currency: 'EUR',
-      page_size: '3',
-      target_currency: 'EUR',
-      target_language: 'DE',
-      tracking_id: 'aiitec',
-      timestamp: Date.now().toString(),
-    });
-    const r = await fetch(
-      `https://api-sg.aliexpress.com/sync?method=aliexpress.affiliate.product.query&${params.toString()}`
-    );
-    if (!r.ok) return null;
-    const data = await r.json();
-    return data.aliexpress_affiliate_product_query_response?.resp_result?.result?.products?.product || null;
-  } catch {
-    return null;
-  }
 }
 
 async function postLinkedIn(text) {
@@ -184,7 +207,10 @@ async function postLinkedIn(text) {
       visibility: { 'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC' },
     }),
   });
-  if (!r.ok) throw new Error(await r.text());
+  if (!r.ok) {
+    const err = await r.text();
+    throw new Error(`LinkedIn ${r.status}: ${err.substring(0, 150)}`);
+  }
   return r.headers.get('X-RestLi-Id');
 }
 
@@ -196,114 +222,53 @@ export default async function handler(req, res) {
   const now = new Date();
   const dayOfWeek = now.getUTCDay();
   const daySlot = dayOfWeek === 2 ? 0 : 1;
-  const kwIdx = (weekNum * 2 + daySlot) % PRODUCT_KEYWORDS.length;
-  const kw = PRODUCT_KEYWORDS[kwIdx];
+  const dealIdx = (weekNum * 2 + daySlot) % DEALS.length;
+  const deal = DEALS[dealIdx];
 
-  const results = [];
-  const products = [];
+  // Build product lines
+  const productLines = deal.products.map((p) => {
+    const url = p.url();
+    return `• <a href="${url}">${p.name}</a>\n  ${p.priceRange} | ${p.platform} | Provision: ${p.commission}`;
+  }).join('\n\n');
 
-  // Amazon
-  const amazonItems = await searchAmazonProducts(kw.keyword);
-  if (amazonItems && amazonItems.length > 0) {
-    for (const item of amazonItems.slice(0, 2)) {
-      const price = item.Offers?.Listings?.[0]?.Price?.DisplayAmount || '?';
-      products.push({
-        platform: 'amazon',
-        title: item.ItemInfo?.Title?.DisplayValue?.substring(0, 80) || kw.keyword,
-        price,
-        url: item.DetailPageURL,
-        image: item.Images?.Primary?.Medium?.URL,
-      });
-    }
-  } else {
-    // Direkt Affiliate Suchlink wenn keine PA API
-    const searchUrl = await getAmazonDirectLink(kw.keyword);
-    products.push({ platform: 'amazon', title: kw.keyword, price: null, url: searchUrl });
-  }
+  const ebayUrl = getEbayAffiliateLink(deal.ebaySearch);
+  const aliUrl = getAliExpressLink(deal.aliSearch);
 
-  // eBay
-  const ebayItems = await searchEbayProducts(kw.keyword);
-  if (ebayItems && ebayItems.length > 0) {
-    for (const item of ebayItems.slice(0, 2)) {
-      products.push({
-        platform: 'ebay',
-        title: item.title?.substring(0, 80) || kw.keyword,
-        price: item.price?.value ? `€${item.price.value}` : '?',
-        url: getEbayAffiliateLink(item.itemId),
-      });
-    }
-  } else if (EBAY_CAMPAIGN_ID) {
-    products.push({
-      platform: 'ebay',
-      title: kw.keyword,
-      url: `https://rover.ebay.com/rover/1/707-53477-19255-0/1?icep_id=114&ipn=icep&toolid=20004&campid=${EBAY_CAMPAIGN_ID}&mpre=https://www.ebay.de/sch/i.html?_nkw=${encodeURIComponent(kw.keyword)}&customid=${EBAY_AFFILIATE_CUSTOM_ID}`,
-    });
-  }
+  const tgMsg = `🛒 <b>Affiliate Deals — ${deal.topic}</b>\n\n${productLines}\n\n` +
+    `🔍 Mehr Angebote:\n` +
+    `• <a href="${ebayUrl}">eBay: ${deal.ebaySearch}</a>\n` +
+    `• <a href="${aliUrl}">AliExpress: ${deal.aliSearch}</a>\n\n` +
+    `💰 Amazon: ~3% Provision | eBay: ~1-4% | AliExpress: bis 8%`;
 
-  // AliExpress
-  const aliItems = await searchAliExpressProducts(kw.keyword);
-  if (aliItems && aliItems.length > 0) {
-    for (const item of aliItems.slice(0, 2)) {
-      products.push({
-        platform: 'aliexpress',
-        title: item.product_title?.substring(0, 80) || kw.keyword,
-        price: item.target_sale_price ? `€${item.target_sale_price}` : '?',
-        url: item.promotion_link || item.product_detail_url,
-        commission: item.commission_rate,
-      });
-    }
-  }
+  await sendTelegram(tgMsg);
 
-  if (products.length === 0) {
-    await sendTelegram(
-      `⚠️ <b>Affiliate Produkte — Credentials fehlen!</b>\n\n` +
-      `Kategorie: ${kw.keyword}\n\n` +
-      `<b>Amazon Setup:</b>\n` +
-      `1. programm.amazon.de → Associates anmelden\n` +
-      `2. associate-tag: aiitec-21 (schon reserviert)\n` +
-      `3. affiliate.amazon.de → PA API Zugang beantragen\n` +
-      `4. <code>vercel env add AMAZON_ACCESS_KEY production</code>\n` +
-      `5. <code>vercel env add AMAZON_SECRET_KEY production</code>\n\n` +
-      `<b>eBay Setup:</b>\n` +
-      `1. partnernetwork.ebay.com → Anmelden\n` +
-      `2. developer.ebay.com → App ID\n` +
-      `3. <code>vercel env add EBAY_APP_ID production</code>\n` +
-      `4. <code>vercel env add EBAY_CAMPAIGN_ID production</code>\n\n` +
-      `<b>AliExpress Setup:</b>\n` +
-      `1. portals.aliexpress.com → Affiliate\n` +
-      `2. <code>vercel env add ALIEXPRESS_APP_KEY production</code>\n` +
-      `3. <code>vercel env add ALIEXPRESS_ACCESS_TOKEN production</code>`
-    );
-    return res.status(200).json({ ok: true, products: [], note: 'credentials_missing' });
-  }
+  // LinkedIn Post
+  const linkedinText = `🛒 ${deal.topic} — Top Smart Home Deals diese Woche
 
-  // LinkedIn + Telegram Post mit echten Produktdaten
-  const productLines = products.map((p) =>
-    `• ${p.title}${p.price ? ` — ${p.price}` : ''} [${p.platform.toUpperCase()}]\n  ${p.url}`
-  ).join('\n\n');
+${deal.products.map((p) => `• ${p.name} (${p.priceRange})\n  → ${p.url()}`).join('\n\n')}
 
-  const linkedinText = `🛒 Smart Home Deals der Woche — ${kw.keyword}
+Auch interessant:
+→ eBay: ${ebayUrl}
+→ AliExpress: ${aliUrl}
 
-Aktuelle Top-Angebote aus Amazon DE + eBay + AliExpress:
+Diese Links sind Affiliate-Links — ich erhalte eine kleine Provision bei Kauf, ohne Mehrkosten für euch.
 
-${productLines}
+Für vollautomatisches Online-Business aufbauen: autoincome-ai.vercel.app
 
-💡 Diese Produkte sind Affiliate-Links — ich erhalte eine kleine Provision bei Kauf, ohne Mehrkosten für dich.
+#SmartHome #Gadgets #Amazon #Deals #AffiliateMarketing #PassivesEinkommen`;
 
-Für vollständige Automatisierung meines Online-Business: autoincome-ai.vercel.app
-
-#SmartHome #Gadgets #Amazon #Deals #AffiliateMarketing #OnlineBusiness`;
-
+  let linkedinPostId = null;
   try {
-    const postId = await postLinkedIn(linkedinText);
-    await sendTelegram(`✅ LinkedIn Affiliate Post live!\n${products.length} Produkte: ${kw.keyword}\nPost ID: ${postId}`);
-    results.push({ platform: 'linkedin', postId, products: products.length });
+    linkedinPostId = await postLinkedIn(linkedinText);
   } catch (err) {
-    await sendTelegram(`⚠️ LinkedIn Fehler: ${err.message.substring(0, 100)}\n\n${productLines.substring(0, 300)}`);
+    await sendTelegram(`⚠️ LinkedIn Affiliate Post Fehler: ${err.message.substring(0, 100)}`);
   }
 
-  await sendTelegram(`🛒 <b>Affiliate Deals (${kw.keyword}):</b>\n\n${productLines.substring(0, 600)}`);
-  results.push({ products });
-
-  return res.status(200).json({ ok: true, keyword: kw.keyword, results });
+  return res.status(200).json({
+    ok: true,
+    deal: deal.topic,
+    products: deal.products.length,
+    linkedinPostId,
+    dealIdx,
+  });
 }

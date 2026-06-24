@@ -218,30 +218,8 @@ export default async function handler(req, res) {
       );
     }
 
-    // Etsy
-    if (ETSY_KEY && ETSY_TOKEN && ETSY_SHOP_ID) {
-      try {
-        for (const listing of ETSY_LISTINGS) {
-          const created = await etsyCreateListing(listing);
-          await sendTelegram(`✅ Etsy Listing erstellt!\n📦 ID: ${created.listing_id}\n📝 ${listing.title}`);
-          results.push({ platform: 'etsy', listingId: created.listing_id });
-        }
-      } catch (err) {
-        await sendTelegram(`⚠️ Etsy Fehler: ${err.message.substring(0, 150)}`);
-        results.push({ platform: 'etsy', error: err.message });
-      }
-    } else {
-      await sendTelegram(
-        `🛍️ <b>Etsy Setup:</b>\n` +
-        `1. etsy.com → Shop erstellen\n` +
-        `2. developers.etsy.com → App erstellen\n` +
-        `3. OAuth2 Token (scope: listings_w)\n` +
-        `4. <code>vercel env add ETSY_API_KEY production</code>\n` +
-        `5. <code>vercel env add ETSY_ACCESS_TOKEN production</code>\n` +
-        `6. <code>vercel env add ETSY_SHOP_ID production</code>\n\n` +
-        `Etsy: 90 Mio. Käufer, digitale Downloads sofort geliefert!`
-      );
-    }
+        // Etsy: Accounts gesperrt — kein Etsy möglich
+    results.push({ platform: 'etsy', status: 'skipped_accounts_banned' });
   }
 
   return res.status(200).json({ ok: true, results, day: dayOfWeek });
