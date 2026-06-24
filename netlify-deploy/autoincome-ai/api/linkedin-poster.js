@@ -361,6 +361,97 @@ ${BLOG_URL}/email-marketing-klaviyo-kostenlos
     mediaTitle: 'E-Mail Marketing mit Klaviyo kostenlos',
     mediaDesc: 'Warum 20 Subscriber mehr wert sind als 2000 Follower',
   },
+  {
+    text: `🔥 Ich habe gerade ein neues Produkt gelauncht: SuperMegaBot KI-Automation System für €97
+
+Was drin ist:
+✅ Kompletter Automation-Code (deploy-ready)
+✅ LinkedIn-Bot läuft automatisch Mo/Mi/Fr
+✅ E-Mail-Sequenzen automatisch
+✅ Shopify + Digistore24 Integration
+✅ Telegram Revenue Reports täglich
+✅ 1-Click Deploy auf Railway
+
+Für wen ist es:
+→ Online-Unternehmer die alles automatisieren wollen
+→ Digitale Nomaden
+→ Affiliate-Marketer die skalieren wollen
+
+Früh-Käufer Preis: €97 (Normalpreis wird steigen)
+https://www.checkout-ds24.com/product/704677
+
+Oder erst das Starter-System testen → ${PRODUCT_URL}
+
+#KI #Automatisierung #SuperMegaBot #OnlineBusiness`,
+    mediaTitle: 'SuperMegaBot — Komplettes KI-Automation System',
+    mediaDesc: 'Vollautomatisches Online-Business in einem Paket für €97',
+  },
+  {
+    text: `💡 "Wie viele Stunden pro Woche brauchst du dafür?"
+
+Meine Antwort: ~2 Stunden pro Woche für das System-Management.
+
+Was in dieser Zeit passiert:
+• 3x LinkedIn Posts gehen automatisch raus
+• E-Mail-Sequenzen laufen automatisch
+• DS24 Verkaufsberichte kommen täglich per Telegram
+• Blog-Artikel werden automatisch indexiert
+
+Was ICH tue: Zahlen checken, Strategie anpassen.
+
+2h/Woche für ein System das passiv verdient:
+${PRODUCT_URL}
+
+#ZeitFürsLeben #Automatisierung #PassivesEinkommen #OnlineBusiness`,
+    mediaTitle: '2 Stunden pro Woche — passives Einkommen mit System',
+    mediaDesc: 'Wie das Automation-System den manuellen Aufwand auf 2h/Woche reduziert',
+  },
+  {
+    text: `🇩🇪 32 Blog-Artikel in einer Woche — und wie das SEO-Traffic bringt
+
+Mein SEO-System:
+1. Artikel in Supabase speichern
+2. Automatisch auf Website veröffentlicht
+3. IndexNow an Bing + Google geschickt
+4. Sitemap automatisch updated
+
+Gesamtkosten: €0 (Serverless + kostenloser DB-Tier)
+
+Welche Keywords ich ziele:
+• "Geld verdienen zuhause 2026"
+• "Passives Einkommen aufbauen"
+• "KI Business Ideen 2026"
+• "Heimarbeit seriös"
+
+Blog: ${BLOG_URL}
+Blueprint: ${PRODUCT_URL}
+
+#SEO #ContentMarketing #KI #OnlineBusiness`,
+    mediaTitle: '32 SEO-Artikel — automatisches Content-Marketing',
+    mediaDesc: 'Wie ich 32 Blog-Artikel ohne manuelle Arbeit publiziere und ranke',
+  },
+  {
+    text: `✉️ Affiliate-Recruiting per E-Mail — was ich dabei gelernt habe
+
+Ich habe letzte Woche eine Affiliate-Kampagne an 20 Subscriber gesendet.
+Betreff: "Verdiene bis zu €48,50 pro Verkauf"
+
+Was drin war:
+→ Blueprint €37 → 50% = €18,50 pro Sale
+→ SuperMegaBot €97 → 50% = €48,50 pro Sale
+
+Ergebnis: Wartet noch. Aber die Öffnungsrate war hoch.
+
+Key Insight: Affiliates wollen KONKRETE Zahlen.
+Nicht "verdiene viel" — sondern "€48,50 pro Sale, wöchentliche Auszahlung".
+
+Affiliate werden: https://autoincome-ai.vercel.app/affiliate.html
+Produkt testen: ${PRODUCT_URL}
+
+#AffiliateMarketing #EmailMarketing #Digistore24 #OnlineBusiness`,
+    mediaTitle: 'Affiliate-Recruiting — was wirklich funktioniert',
+    mediaDesc: 'Konkrete Zahlen schlagen vage Versprechen im Affiliate-Marketing',
+  },
 ];
 
 async function sendTelegram(msg) {
