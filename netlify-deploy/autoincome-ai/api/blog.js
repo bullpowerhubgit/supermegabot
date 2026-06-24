@@ -21,7 +21,7 @@ async function fetchArticle(slug) {
 }
 
 async function fetchAllSlugs() {
-  const url = `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=slug,title,meta_description,created_at&order=created_at.desc`;
+  const url = `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=slug,title,meta_description,created_at&order=created_at.desc&limit=200`;
   const r = await fetch(url, {
     headers: {
       apikey: SUPABASE_ANON,
