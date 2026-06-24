@@ -27,6 +27,14 @@
     {
       "path": "/api/linkedin-poster",
       "schedule": "0 9 * * 5"
+    },
+    {
+      "path": "/api/reddit-poster",
+      "schedule": "0 10 * * 2"
+    },
+    {
+      "path": "/api/reddit-poster",
+      "schedule": "0 10 * * 6"
     }
   ]
 }
