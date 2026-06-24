@@ -43,6 +43,66 @@
     {
       "path": "/api/seo-writer",
       "schedule": "0 6 * * 0"
+    },
+    {
+      "path": "/api/klaviyo-welcome",
+      "schedule": "0 10 * * *"
+    },
+    {
+      "path": "/api/instagram-poster",
+      "schedule": "0 11 * * 2"
+    },
+    {
+      "path": "/api/instagram-poster",
+      "schedule": "0 11 * * 4"
+    },
+    {
+      "path": "/api/instagram-poster",
+      "schedule": "0 11 * * 6"
+    },
+    {
+      "path": "/api/facebook-poster",
+      "schedule": "0 12 * * 1"
+    },
+    {
+      "path": "/api/facebook-poster",
+      "schedule": "0 12 * * 3"
+    },
+    {
+      "path": "/api/facebook-poster",
+      "schedule": "0 12 * * 5"
+    },
+    {
+      "path": "/api/pinterest-poster",
+      "schedule": "0 13 * * 1"
+    },
+    {
+      "path": "/api/pinterest-poster",
+      "schedule": "0 13 * * 4"
+    },
+    {
+      "path": "/api/tiktok-poster",
+      "schedule": "0 14 * * 1"
+    },
+    {
+      "path": "/api/tiktok-poster",
+      "schedule": "0 14 * * 3"
+    },
+    {
+      "path": "/api/tiktok-poster",
+      "schedule": "0 14 * * 5"
+    },
+    {
+      "path": "/api/fiverr-upwork-poster",
+      "schedule": "0 8 * * *"
+    },
+    {
+      "path": "/api/gumroad-etsy-poster",
+      "schedule": "0 15 * * 3"
+    },
+    {
+      "path": "/api/gumroad-etsy-poster",
+      "schedule": "0 15 * * 6"
     }
   ]
 }
