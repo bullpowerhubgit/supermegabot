@@ -1,13 +1,16 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-23 v37
+# SuperMegaBot CURRENT STATUS — 2026-06-24 v38
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** ✅ (Code vom 2026-06-21 — Railway Upgrade nötig!)
 - Shopify Store: **LIVE** — ineedit.com.co ✅
 - Shopify Produkte: **~6244 aktiv** + 2 digitale Produkte (AI Income Machine + SuperMegaBot) ✅
 - Shop Collections: **5 Collections** + KI & Automation befüllt ✅
-- Klaviyo: **4 Kampagnen GESENDET** ✅ (20 Subscriber)
-- Telegram: **2 Promo-Posts gesendet** ✅
+- Klaviyo: **7 Kampagnen GESENDET** ✅ (20 Subscriber)
+- Telegram: **Promo-Posts gesendet** ✅
 - DS24 Links: **GEFIXT** ✅
+- LinkedIn: **2 Posts live** ✅ (Auto-Cron Mo/Mi/Fr 09:00 UTC)
+- Vercel Crons: **5 aktiv** (Klaviyo 2x/wk, DS24 daily, LinkedIn 3x/wk)
+- Lead Magnet: **LIVE** — autoincome-ai.vercel.app/checkliste.html ✅
 - Marathon: **LÄUFT** 🔄
 
 ## 🚨 KRITISCH: RAILWAY UPGRADE NÖTIG
@@ -31,7 +34,25 @@
 - **Klaviyo**: 20 Subscriber, **7 Kampagnen GESENDET** ✅ (heute) — 1 confirmed open
 - **Mailchimp**: 17 Subscriber — Account disabled (freie Plan-Limits)
 - **GMC**: ~6244 Produkte — ⚠️ "Falsche Darstellung" Violation ausstehend
-- **autoincome-ai.vercel.app**: LIVE mit DS24 CTA + Klaviyo Email-Capture ✅
+- **autoincome-ai.vercel.app**: LIVE mit DS24 CTA + Klaviyo Email-Capture + Lead Magnet ✅
+
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-24 v38)
+
+### LinkedIn — Auto-Cron Live ✅
+- linkedin-poster.js deployed auf autoincome-ai.vercel.app
+- 7 Post-Templates (KI-Einkommen, Zahlen, Affiliates, Timing, etc.)
+- Vercel Cron: Mo/Mi/Fr 09:00 UTC → POST an LinkedIn API
+- Token Auto-Refresh: bei 401 → neuen Token via Refresh-Token holen → Vercel Env Var updaten
+- **2 Posts bereits live:** urn:li:share:7475354950999560192, urn:li:share:7475355531029803008
+
+### Lead Magnet — autoincome-ai.vercel.app ✅
+- **checkliste.html**: 21-Punkte Email-Gate-Signup-Page (Klaviyo opt-in → Download freigeschaltet)
+- **checkliste-download.html**: Vollständige interaktive Checkliste mit Checkboxen (localStorage persist)
+- Upsell zu DS24 668035 am Ende
+- index.html: Lead Magnet prominent featured mit Link zu /checkliste.html
+
+### Twitter: GEBLOCKT (402 — Credits depleted, v1.1 deprecated 404)
+- Alternative: LinkedIn (✅ live), Reddit (App muss "script" type werden — Rudolf muss ändern)
 
 ## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-23 v37)
 
