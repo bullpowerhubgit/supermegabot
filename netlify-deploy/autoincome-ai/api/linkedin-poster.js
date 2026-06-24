@@ -282,6 +282,68 @@ ${BLOG_URL}/ki-freelancer-werden-deutschland
     mediaDesc: 'Diese 5 Dienste sind gefragt — so startest du ohne Portfolio',
   },
   {
+    text: `🎯 Digistore24 vs. Etsy vs. Gumroad — wo verkauft man digitale Produkte in Deutschland 2026?
+
+Ich habe alle drei getestet. Ergebnis:
+
+🇩🇪 Digistore24:
+✅ Größte deutsche Plattform (7M Käufer)
+✅ Eingebautes Affiliate-System
+✅ MwSt. wird automatisch abgeführt
+❌ Weniger international bekannt
+
+🌍 Etsy + Gumroad:
+✅ International
+❌ Keine deutschen Käufer-Community
+❌ Komplexe MwSt. für EU-Verkäufer
+
+Mein Produkt läuft auf DS24 — vollautomatisch:
+${PRODUCT_URL}
+
+#Digistore24 #DigitaleProdukte #OnlineBusiness #Deutschland`,
+    mediaTitle: 'Digistore24 vs. Etsy vs. Gumroad 2026',
+    mediaDesc: 'Ehrlicher Vergleich: Wo verkaufst du digitale Produkte in Deutschland?',
+  },
+  {
+    text: `🔁 Warum ich nie aufgehört habe, auch als der erste Monat €0 brachte
+
+Monat 1: €0
+Monat 2: €0
+Monat 3: Erster Verkauf €37
+
+Was mich gehalten hat:
+→ Das System lief, ich musste nichts tun
+→ Jeden Tag neue Blog-Besucher ohne Aufwand
+→ Die E-Mail-Liste wuchs automatisch
+
+Passive Einnahmen brauchen Zeit. Aber dann laufen sie.
+
+Mein System das im Hintergrund arbeitet:
+${PRODUCT_URL}
+
+#Durchhalten #PassivesEinkommen #OnlineBusiness #Realität`,
+    mediaTitle: 'Warum Geduld der wichtigste KI-Business-Skill ist',
+    mediaDesc: 'Monat 1 €0, Monat 3 erster Verkauf — der ehrliche Weg',
+  },
+  {
+    text: `⚡ 5 Automatisierungen die ich täglich laufen habe — ohne einen Finger zu rühren:
+
+1. LinkedIn-Posts werden automatisch veröffentlicht
+2. E-Mails gehen automatisch an neue Subscriber raus
+3. SEO-Artikel werden wöchentlich generiert
+4. DS24 Sales-Report kommt morgens auf Telegram
+5. Klaviyo E-Mail-Kampagnen starten automatisch
+
+Total aktive Zeit pro Woche: ~0 Stunden
+
+Das komplette System als Blueprint:
+${PRODUCT_URL}
+
+#Automatisierung #KI #PassivesEinkommen #SystemStattChaos`,
+    mediaTitle: 'Diese 5 Automatisierungen laufen ohne mein Zutun',
+    mediaDesc: '0 Stunden pro Woche — dank System-Automatisierung',
+  },
+  {
     text: `📧 Warum ich mit 20 E-Mail-Subscribern mehr verdiene als viele mit 2000 Instagram-Followern
 
 Instagram-Follower: sehen deinen Post vielleicht
@@ -333,9 +395,13 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'LINKEDIN_ACCESS_TOKEN missing' });
   }
 
-  // Rotate posts by week number
+  // Rotate: different post per weekday so Mon/Wed/Fri each get a unique post
+  const now = new Date();
   const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
-  const post = POSTS[weekNum % POSTS.length];
+  const dayOfWeek = now.getUTCDay(); // 1=Mon, 3=Wed, 5=Fri
+  const daySlot = dayOfWeek === 1 ? 0 : dayOfWeek === 3 ? 1 : 2;
+  const postIndex = (weekNum * 3 + daySlot) % POSTS.length;
+  const post = POSTS[postIndex];
 
   const payload = {
     author: PERSON_URN,
@@ -382,13 +448,13 @@ export default async function handler(req, res) {
   const postId = data.id || '';
 
   await sendTelegram(
-    `✅ LinkedIn-Post live!\n<b>Post #${(weekNum % POSTS.length) + 1}/${POSTS.length}</b>\nID: <code>${postId}</code>`
+    `✅ LinkedIn-Post live!\n<b>Post #${postIndex + 1}/${POSTS.length}</b>\nID: <code>${postId}</code>`
   );
 
   return res.status(200).json({
     ok: true,
     postId,
-    postIndex: weekNum % POSTS.length,
+    postIndex,
     url: `https://www.linkedin.com/feed/update/${postId}/`,
   });
 }
