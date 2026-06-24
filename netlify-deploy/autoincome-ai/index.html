@@ -848,14 +848,23 @@ function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='bullpo
   <p style="color:#475569;font-size:0.85rem;margin-top:1rem;">Sofortzugang nach Zahlung · Digistore24 sichere Zahlung</p>
 </section>
 
-<!-- KLAVIYO EMAIL CAPTURE -->
-<section style="background:#040f1f;border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:3rem 2rem;max-width:700px;margin:3rem auto;text-align:center;">
-  <h3 style="font-size:1.5rem;font-weight:700;color:#fff;margin-bottom:0.5rem;">GRATIS: KI-Einsteiger Checkliste</h3>
-  <p style="color:#94a3b8;margin-bottom:1.5rem;">10 sofort einsetzbare KI-Tools die jeden Monat Geld sparen. Kostenlos per Email.</p>
-  <form onsubmit="submitKlaviyo(event)" style="display:flex;gap:1rem;max-width:500px;margin:0 auto;flex-wrap:wrap;">
+<!-- KLAVIYO EMAIL CAPTURE + LEAD MAGNET -->
+<section style="background:#040f1f;border:1px solid rgba(124,58,237,0.4);border-radius:12px;padding:3rem 2rem;max-width:700px;margin:3rem auto;text-align:center;">
+  <div style="display:inline-block;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);padding:5px 14px;border-radius:99px;font-size:12px;font-weight:700;margin-bottom:16px;text-transform:uppercase;letter-spacing:1px;">100% Kostenlos</div>
+  <h3 style="font-size:1.8rem;font-weight:800;color:#fff;margin-bottom:0.5rem;">KI-Einkommen Starter-Checkliste 2026</h3>
+  <p style="color:#94a3b8;margin-bottom:0.5rem;font-size:1.1rem;">21 Schritte für dein erstes passives KI-Einkommen — auf Deutsch</p>
+  <p style="color:#94a3b8;margin-bottom:1.5rem;font-size:0.9rem;">Kein Kreditkarte · Kein Spam · Sofortiger Zugriff</p>
+  <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;">
+    <span style="background:rgba(16,185,129,.1);color:#10b981;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600;">✓ Tech-Stack (gratis)</span>
+    <span style="background:rgba(16,185,129,.1);color:#10b981;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600;">✓ DS24 Affiliate-Trick</span>
+    <span style="background:rgba(16,185,129,.1);color:#10b981;padding:4px 12px;border-radius:99px;font-size:13px;font-weight:600;">✓ 90-Tage Fahrplan</span>
+  </div>
+  <a href="/checkliste.html" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:16px 36px;border-radius:10px;font-size:1.1rem;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(124,58,237,.4);">✅ Gratis Checkliste holen →</a>
+  <p style="color:#475569;font-size:0.8rem;margin-top:12px;">Oder direkt per E-Mail: </p>
+  <form onsubmit="submitKlaviyo(event)" style="display:flex;gap:1rem;max-width:500px;margin:12px auto 0;flex-wrap:wrap;">
     <input type="email" id="klaviyoEmail" placeholder="deine@email.de" required
       style="flex:1;min-width:200px;padding:14px 18px;border-radius:8px;border:1px solid rgba(6,182,212,0.3);background:#020d1e;color:#e2e8f0;font-size:1rem;outline:none;" />
-    <button type="submit" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);color:white;padding:14px 28px;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;white-space:nowrap;">Gratis erhalten</button>
+    <button type="submit" style="background:linear-gradient(135deg,#06b6d4,#3b82f6);color:white;padding:14px 28px;border:none;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;white-space:nowrap;">Senden</button>
   </form>
   <p id="klaviyoMsg" style="color:#10b981;margin-top:1rem;display:none;">Danke! Checke deine Email.</p>
 </section>
