@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>40% Provision — Werde Affiliate für AI Income Machine</title>
+<meta name="description" content="Verdiene 40% Provision (€14,80) pro Verkauf als Affiliate für AI Income Machine — das KI-Einkommenssystem auf Deutsch. Kostenlose Materialien, sofortige Auszahlung.">
+<style>
+  :root {
+    --primary: #7c3aed;
+    --primary-dark: #5b21b6;
+    --accent: #f59e0b;
+    --bg: #0f0f1a;
+    --card: #1a1a2e;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --green: #10b981;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; line-height: 1.6; }
+
+  .hero { max-width: 800px; margin: 0 auto; padding: 60px 24px 48px; text-align: center; }
+  .badge { display: inline-block; background: rgba(245,158,11,.15); color: var(--accent); border: 1px solid rgba(245,158,11,.3); padding: 6px 16px; border-radius: 99px; font-size: 13px; font-weight: 700; margin-bottom: 24px; letter-spacing: 1px; }
+  h1 { font-size: clamp(28px, 5vw, 48px); font-weight: 800; line-height: 1.2; margin-bottom: 16px; }
+  h1 span { color: var(--accent); }
+  .subtitle { color: var(--muted); font-size: 18px; max-width: 600px; margin: 0 auto 40px; }
+
+  .stats-row { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+  .stat-box { background: var(--card); border: 1px solid rgba(124,58,237,.3); border-radius: 12px; padding: 20px 28px; text-align: center; min-width: 140px; }
+  .stat-num { font-size: 32px; font-weight: 800; color: var(--accent); }
+  .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  .btn-cta { display: inline-block; background: linear-gradient(135deg, var(--accent), #d97706); color: #000; padding: 18px 44px; border-radius: 10px; font-size: 18px; font-weight: 800; text-decoration: none; box-shadow: 0 4px 24px rgba(245,158,11,.4); transition: opacity .2s; margin-bottom: 12px; }
+  .btn-cta:hover { opacity: .9; }
+  .btn-secondary { display: inline-block; padding: 12px 28px; background: transparent; border: 1px solid rgba(255,255,255,.2); color: var(--text); border-radius: 8px; text-decoration: none; font-size: 14px; margin-left: 12px; }
+
+  .section { max-width: 900px; margin: 0 auto 64px; padding: 0 24px; }
+  .section h2 { font-size: 28px; font-weight: 800; margin-bottom: 32px; text-align: center; }
+
+  .benefits-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
+  .benefit-card { background: var(--card); border: 1px solid rgba(255,255,255,.08); border-radius: 12px; padding: 24px; }
+  .benefit-card .icon { font-size: 28px; margin-bottom: 12px; }
+  .benefit-card h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+  .benefit-card p { font-size: 14px; color: var(--muted); }
+
+  .calc-box { background: var(--card); border: 1px solid rgba(124,58,237,.4); border-radius: 16px; padding: 36px; max-width: 600px; margin: 0 auto; }
+  .calc-box h3 { font-size: 20px; font-weight: 700; margin-bottom: 24px; text-align: center; }
+  .calc-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.06); font-size: 15px; }
+  .calc-row:last-child { border-bottom: none; font-size: 18px; font-weight: 700; color: var(--green); }
+  .calc-value { font-weight: 600; }
+
+  .steps { counter-reset: step; }
+  .step { display: flex; gap: 20px; padding: 24px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .step:last-child { border-bottom: none; }
+  .step-num { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px; flex-shrink: 0; }
+  .step-text h4 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .step-text p { font-size: 14px; color: var(--muted); }
+
+  .faq-item { padding: 20px 0; border-bottom: 1px solid rgba(255,255,255,.06); }
+  .faq-q { font-size: 16px; font-weight: 600; margin-bottom: 8px; cursor: pointer; }
+  .faq-a { font-size: 14px; color: var(--muted); }
+
+  .signup-card { background: var(--card); border: 1px solid rgba(124,58,237,.4); border-radius: 16px; padding: 40px; max-width: 520px; margin: 0 auto; text-align: center; }
+  .signup-card h3 { font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+  .signup-card p { color: var(--muted); margin-bottom: 24px; }
+  .form-input { width: 100%; padding: 14px 16px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); border-radius: 10px; color: var(--text); font-size: 16px; margin-bottom: 12px; outline: none; }
+  .form-input:focus { border-color: var(--primary); }
+  .btn-submit { width: 100%; padding: 16px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border: none; border-radius: 10px; font-size: 17px; font-weight: 700; cursor: pointer; }
+  .btn-submit:hover { opacity: .9; }
+  .success-msg { display: none; color: var(--green); font-size: 15px; margin-top: 16px; }
+
+  footer { text-align: center; padding: 40px 24px; color: var(--muted); font-size: 13px; border-top: 1px solid rgba(255,255,255,.06); }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="badge">AFFILIATE PROGRAMM</div>
+  <h1>Verdiene <span>€14,80</span><br>pro Verkauf</h1>
+  <p class="subtitle">Bewirb das meistverkaufte KI-Einkommenssystem auf Deutsch und verdiene 40% Provision — ohne Risiko, ohne Setup-Gebühr.</p>
+
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num">40%</div>
+      <div class="stat-label">Provision</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">€14,80</div>
+      <div class="stat-label">pro Verkauf</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">3%</div>
+      <div class="stat-label">Conversion Rate</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num">0</div>
+      <div class="stat-label">Rückgaben</div>
+    </div>
+  </div>
+
+  <a href="https://www.digistore24.com/product/668035" class="btn-cta" target="_blank">
+    Jetzt als Affiliate einsteigen →
+  </a>
+  <a href="#signup" class="btn-secondary">Erst mehr erfahren</a>
+</div>
+
+<div class="section">
+  <h2>Warum unser Affiliate-Programm?</h2>
+  <div class="benefits-grid">
+    <div class="benefit-card">
+      <div class="icon">💰</div>
+      <h3>40% Provision</h3>
+      <p>€14,80 pro Verkauf — sofort und automatisch via Digistore24. Wöchentliche Auszahlung.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">🇩🇪</div>
+      <h3>Deutschsprachiger Markt</h3>
+      <p>KI-Thema auf Englisch = übersättigt. Auf Deutsch = riesige Nachfrage, wenig Konkurrenz.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">✅</div>
+      <h3>0% Rückgaben</h3>
+      <p>3 Verkäufe, 0 Rückgaben. Käufer sind zufrieden — das minimiert dein Risiko.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">🎯</div>
+      <h3>Fertige Materialien</h3>
+      <p>Banner, Texte, E-Mail-Templates — alles fertig. Du musst nichts selbst erstellen.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">📊</div>
+      <h3>Echte Daten</h3>
+      <p>Tracking in Echtzeit via Digistore24. Du siehst jeden Klick, jede Conversion.</p>
+    </div>
+    <div class="benefit-card">
+      <div class="icon">🔄</div>
+      <h3>Wiederkehrende Käufer</h3>
+      <p>Zufriedene Käufer kaufen auch das nächste Produkt — du profitierst doppelt.</p>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Dein Verdienst-Rechner</h2>
+  <div class="calc-box">
+    <h3>Was du monatlich verdienen kannst:</h3>
+    <div class="calc-row">
+      <span>100 Besucher/Monat auf deinen Link</span>
+      <span class="calc-value">100</span>
+    </div>
+    <div class="calc-row">
+      <span>Conversion Rate (realistisch)</span>
+      <span class="calc-value">3%</span>
+    </div>
+    <div class="calc-row">
+      <span>= 3 Verkäufe/Monat</span>
+      <span class="calc-value">3</span>
+    </div>
+    <div class="calc-row">
+      <span>Provision pro Verkauf</span>
+      <span class="calc-value">€14,80</span>
+    </div>
+    <div class="calc-row">
+      <span>Monatlicher Gewinn</span>
+      <span class="calc-value">€44,40</span>
+    </div>
+  </div>
+  <p style="text-align:center;margin-top:16px;color:var(--muted);font-size:14px;">Mit 500 Besuchern/Monat = ~€222 passiv. Mit einem Newsletter von 1000 Lesern = potenziell €300–400/Monat.</p>
+</div>
+
+<div class="section">
+  <h2>So startest du in 10 Minuten</h2>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <h4>Digistore24 Account erstellen</h4>
+        <p>Kostenlos, in 2 Minuten. Geht auch mit bestehendem Account.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <h4>Produkt 668035 beantragen</h4>
+        <p>Auf der Produktseite auf "Als Affiliate bewerben" klicken → sofortige Zulassung.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <h4>Deinen Affiliate-Link erhalten</h4>
+        <p>Unique Link mit Tracking. Jeder Klick, jede Conversion wird dir zugerechnet.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-text">
+        <h4>Link teilen — fertig</h4>
+        <p>In deinen Blog, Newsletter, LinkedIn, YouTube, Telegram — wo deine Zielgruppe ist.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h2>Häufige Fragen</h2>
+  <div class="faq-item">
+    <div class="faq-q">Wie lange gilt die Cookie-Laufzeit?</div>
+    <div class="faq-a">30 Tage. Wer über deinen Link kommt und innerhalb von 30 Tagen kauft, zählt als deine Provision.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Wann bekomme ich meine Provision ausgezahlt?</div>
+    <div class="faq-a">Wöchentlich automatisch via Digistore24 — per SEPA-Überweisung oder PayPal.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Welche Marketingmethoden sind erlaubt?</div>
+    <div class="faq-a">Alles außer Spam. Blog, Social Media, E-Mail-Marketing, YouTube, Podcast — alles erlaubt.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Muss ich das Produkt selbst kaufen?</div>
+    <div class="faq-a">Nein — du kannst es kostenlos bewerben. Empfehlen wir trotzdem kurz reinzuschauen, damit du authentisch darüber schreiben kannst.</div>
+  </div>
+  <div class="faq-item">
+    <div class="faq-q">Gibt es Marketing-Materialien?</div>
+    <div class="faq-a">Ja — fertige Texte, E-Mail-Templates und Bullet-Points. Direkt nach Anmeldung erhältlich. Schreib uns auch direkt an: support@aiitec.de</div>
+  </div>
+</div>
+
+<div class="section" id="signup">
+  <div class="signup-card">
+    <h3>Interesse? Schreib uns!</h3>
+    <p>Hinterlasse deine E-Mail und wir schicken dir alle Infos + fertigen Marketing-Texte direkt zu.</p>
+    <form id="affiliateForm">
+      <input type="text" class="form-input" id="affName" placeholder="Dein Name" required>
+      <input type="email" class="form-input" id="affEmail" placeholder="Deine E-Mail" required>
+      <input type="text" class="form-input" id="affChannel" placeholder="Dein Kanal (LinkedIn, Newsletter, Blog...)" >
+      <button type="submit" class="btn-submit">Affiliate-Infos erhalten →</button>
+    </form>
+    <div class="success-msg" id="successMsg">
+      ✅ Danke! Du bekommst in Kürze alle Infos per E-Mail. Direkt starten:
+      <a href="https://www.digistore24.com/product/668035" style="color:var(--accent)">digistore24.com/product/668035</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2026 AiiteC · <a href="/">Home</a> · <a href="/checkliste.html">Gratis Checkliste</a> · <a href="https://www.checkout-ds24.com/product/668035">Produkt kaufen</a></p>
+  <p style="margin-top:8px">Produkt: AI Income Machine – 90-Day Blueprint · Produkt-ID: 668035</p>
+</footer>
+
+<script>
+const KLAVIYO_COMPANY = 'VaCYq3';
+const KLAVIYO_LIST = 'Xwxq6V';
+
+document.getElementById('affiliateForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('button');
+  btn.disabled = true;
+  btn.textContent = 'Wird gespeichert…';
+
+  const email = document.getElementById('affEmail').value.trim();
+  const name = document.getElementById('affName').value.trim();
+  const channel = document.getElementById('affChannel').value.trim();
+
+  try {
+    await fetch(`https://a.klaviyo.com/client/subscriptions/?company_id=${KLAVIYO_COMPANY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', revision: '2023-02-22' },
+      body: JSON.stringify({
+        data: {
+          type: 'subscription',
+          attributes: {
+            profile: {
+              data: {
+                type: 'profile',
+                attributes: {
+                  email: email,
+                  first_name: name.split(' ')[0] || name,
+                  last_name: name.split(' ').slice(1).join(' ') || '',
+                  properties: { source: 'affiliate-page', channel: channel || 'unbekannt', wants_affiliate: true }
+                }
+              }
+            }
+          },
+          relationships: { list: { data: { type: 'list', id: KLAVIYO_LIST } } }
+        }
+      })
+    });
+    document.getElementById('affiliateForm').style.display = 'none';
+    document.getElementById('successMsg').style.display = 'block';
+  } catch(err) {
+    btn.disabled = false;
+    btn.textContent = 'Affiliate-Infos erhalten →';
+    alert('Fehler. Bitte schreib direkt an support@aiitec.de');
+  }
+});
+</script>
+</body>
+</html>
