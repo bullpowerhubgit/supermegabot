@@ -39,7 +39,107 @@
       "started_at": "2026-06-15T21:00:00.009465+00:00",
       "status": "success",
       "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2216,
+      "error": null,
+      "finished_at": "2026-06-21T21:00:02.272883+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "telegram_digest",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "job_count": 6,
+          "sent": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "205aec76f62c41c6b750fd1095f2fc11",
+      "started_at": "2026-06-21T21:00:00.056750+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 5292,
+      "error": null,
+      "finished_at": "2026-06-22T06:00:05.368830+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "telegram_digest",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "job_count": 6,
+          "sent": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "88c5b5411b0b430a9066aadc371bbbce",
+      "started_at": "2026-06-22T06:00:00.076301+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 10148,
+      "error": null,
+      "finished_at": "2026-06-22T10:00:10.222438+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "telegram_digest",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "job_count": 6,
+          "sent": true
+        }
+      },
+      "pid": 61453,
+      "run_id": "6d265641c8f144ef9505f8577aa3eff2",
+      "started_at": "2026-06-22T10:00:00.074124+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 205,
+      "error": null,
+      "finished_at": "2026-06-22T21:00:00.280004+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "telegram_digest",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "job_count": 6,
+          "sent": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "51258e538b284731873ce6a0a43bd268",
+      "started_at": "2026-06-22T21:00:00.074812+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 197,
+      "error": null,
+      "finished_at": "2026-06-23T06:00:00.276510+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "telegram_digest",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "job_count": 6,
+          "sent": true
+        }
+      },
+      "pid": 47579,
+      "run_id": "7ecb4510acdc43d0868b303ee286b5eb",
+      "started_at": "2026-06-23T06:00:00.078844+00:00",
+      "status": "success",
+      "traceback": null
     }
   ],
-  "updated_at": "2026-06-15T21:00:00.158187+00:00"
+  "updated_at": "2026-06-23T06:00:00.278245+00:00"
 }

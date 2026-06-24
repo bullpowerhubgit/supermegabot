@@ -74,7 +74,226 @@
       "started_at": "2026-06-15T22:17:09.976677+00:00",
       "status": "success",
       "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 950,
+      "error": null,
+      "finished_at": "2026-06-21T22:17:07.217267+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 0,
+          "sample": [],
+          "scanned": 50
+        }
+      },
+      "pid": 61453,
+      "run_id": "bca25ddcf8a84d6aaaeee04d0fe4ca1e",
+      "started_at": "2026-06-21T22:17:06.266965+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 4569,
+      "error": null,
+      "finished_at": "2026-06-22T02:17:27.193716+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 0,
+          "sample": [],
+          "scanned": 50
+        }
+      },
+      "pid": 61453,
+      "run_id": "8c4243b14e18457c87152c56860d757a",
+      "started_at": "2026-06-22T02:17:22.623700+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 209,
+      "error": null,
+      "finished_at": "2026-06-22T06:17:18.418549+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 0,
+          "sample": [],
+          "scanned": 50
+        }
+      },
+      "pid": 61453,
+      "run_id": "72601aecfd9143c3ae9fbae793b6a33e",
+      "started_at": "2026-06-22T06:17:18.208708+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 206,
+      "error": null,
+      "finished_at": "2026-06-22T10:17:00.666942+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 47,
+          "sample": [
+            "GPS Tracker Hund \u2013 ideal f\u00fcr den deutschen Markt",
+            "Gosund Smart Plug Mini, 4er-Pack, App-gesteuert",
+            "GoPro Befestigung Set 50er Universal",
+            "GoPro Befestigung Set 50er Universal",
+            "GoPro Befestigung Set 50er Universal"
+          ],
+          "scanned": 50
+        }
+      },
+      "pid": 61453,
+      "run_id": "0be1c24bff3c44d2ac1d76d0aea50aab",
+      "started_at": "2026-06-22T10:17:00.460209+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 204,
+      "error": null,
+      "finished_at": "2026-06-22T14:17:08.416854+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 14,
+          "sample": [
+            "Unternehmensentwicklung",
+            "KI-Automation Pack \u2014 E-Commerce Tools",
+            "SmartAutomation",
+            "Gewichtsweste 10kg verstellbar",
+            "Musik Spieluhr Holz Baby Bewegung"
+          ],
+          "scanned": 50
+        }
+      },
+      "pid": 61453,
+      "run_id": "a3c0d5f774f34f13922f24474be0b9ea",
+      "started_at": "2026-06-22T14:17:08.211998+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 233,
+      "error": null,
+      "finished_at": "2026-06-22T18:17:04.735691+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 0,
+          "sample": [],
+          "scanned": 50
+        }
+      },
+      "pid": 47579,
+      "run_id": "2318e961f97f4d7588a084f1d9f258f1",
+      "started_at": "2026-06-22T18:17:04.502303+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 184,
+      "error": null,
+      "finished_at": "2026-06-22T22:17:11.714064+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 7,
+          "sample": [
+            "Survival Kit Notfall 20-teilig",
+            "Camping Solarladeger\u00e4t 21W faltbar USB",
+            "Knoblauchpresse Edelstahl Preis-Leistung",
+            "Reisekrankenversicherung Guide E-Book",
+            "Wanderst\u00f6cke Teleskop Aluminium Paar"
+          ],
+          "scanned": 50
+        }
+      },
+      "pid": 47579,
+      "run_id": "00bc90440f18480b85efd14dcd84f8f7",
+      "started_at": "2026-06-22T22:17:11.529831+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 326,
+      "error": null,
+      "finished_at": "2026-06-23T02:17:01.654419+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 11,
+          "sample": [
+            "KI-Automation Pack \u2014 E-Commerce Tools",
+            "Gewichtsweste 10kg verstellbar",
+            "Fernglas 10x42 Stickstoffgef\u00fcllt",
+            "Musik Spieluhr Holz Baby Bewegung",
+            "portable charger"
+          ],
+          "scanned": 50
+        }
+      },
+      "pid": 47579,
+      "run_id": "ebe1df7660eb4cd68738be0575b11bba",
+      "started_at": "2026-06-23T02:17:01.327553+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 235,
+      "error": null,
+      "finished_at": "2026-06-23T06:17:06.235175+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "catalog_watchdog",
+      "metadata": {
+        "priority": "normal",
+        "result": {
+          "non_active": 10,
+          "sample": [
+            "Automation-Guide \u2014 KI & Automation Guide 2026",
+            "Automation-Guide \u2014 KI & Automation Guide 2026",
+            "Automatischer Katzenfutterautomat WiFi",
+            "Automatischer Katzenfutterautomat WiFi",
+            "Automatische Tropfbew\u00e4sserung f\u00fcr Balkonk\u00e4sten (Solar)"
+          ],
+          "scanned": 50
+        }
+      },
+      "pid": 47579,
+      "run_id": "08a70466e50242a1aecf8956a1adc1cc",
+      "started_at": "2026-06-23T06:17:05.999295+00:00",
+      "status": "success",
+      "traceback": null
     }
   ],
-  "updated_at": "2026-06-15T22:17:10.209350+00:00"
+  "updated_at": "2026-06-23T06:17:06.236836+00:00"
 }

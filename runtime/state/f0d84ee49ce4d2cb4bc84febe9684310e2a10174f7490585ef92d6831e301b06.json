@@ -2020,7 +2020,5339 @@
       "started_at": "2026-06-15T22:37:10.198200+00:00",
       "status": "success",
       "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 261,
+      "error": null,
+      "finished_at": "2026-06-21T20:22:12.153621+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "60e35f1313b94a2fab35c9727ab369a5",
+      "started_at": "2026-06-21T20:22:11.892278+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1233,
+      "error": null,
+      "finished_at": "2026-06-21T20:37:07.980757+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "72e7741b26c440b7bcb9877feecc436b",
+      "started_at": "2026-06-21T20:37:06.746855+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 238,
+      "error": null,
+      "finished_at": "2026-06-21T20:52:12.052057+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "14be766abeb94f96ba52f99dafd918f2",
+      "started_at": "2026-06-21T20:52:11.813609+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2244,
+      "error": null,
+      "finished_at": "2026-06-21T21:07:04.436067+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "018f9fcd9bfb44e788cfed7f83954b5e",
+      "started_at": "2026-06-21T21:07:02.191784+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1247,
+      "error": null,
+      "finished_at": "2026-06-21T21:22:13.072156+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "f733a37fa8b44c239a39de3fe0f8c491",
+      "started_at": "2026-06-21T21:22:11.824586+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 932,
+      "error": null,
+      "finished_at": "2026-06-21T21:37:11.933752+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "9f730a138d694f5a8a1abfca32555a9c",
+      "started_at": "2026-06-21T21:37:11.001290+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1992,
+      "error": null,
+      "finished_at": "2026-06-21T21:52:06.171061+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "7d1cf516b66e4d879270a90ab6e1e82e",
+      "started_at": "2026-06-21T21:52:04.178749+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 517,
+      "error": null,
+      "finished_at": "2026-06-21T22:07:07.726460+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "194bd9c13b5a4a4abdb24c0ffadc77dd",
+      "started_at": "2026-06-21T22:07:07.209403+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 251,
+      "error": null,
+      "finished_at": "2026-06-21T22:22:06.567466+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "53f8c765cb104d0d84e1a66890fbf87f",
+      "started_at": "2026-06-21T22:22:06.316192+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 515,
+      "error": null,
+      "finished_at": "2026-06-21T22:37:05.165626+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "2e39bb6a4a0b442bb2a3c52798357bc4",
+      "started_at": "2026-06-21T22:37:04.650359+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 216,
+      "error": null,
+      "finished_at": "2026-06-21T22:52:14.817769+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "1f435a7f95bf4d62aeed5179a91165f6",
+      "started_at": "2026-06-21T22:52:14.601097+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 219,
+      "error": null,
+      "finished_at": "2026-06-21T23:07:02.106294+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "e3e1a9deaa88482592c9f905a312d542",
+      "started_at": "2026-06-21T23:07:01.886389+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 266,
+      "error": null,
+      "finished_at": "2026-06-21T23:22:06.685906+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "e6c5399a2556446eb86d289277934d27",
+      "started_at": "2026-06-21T23:22:06.419572+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 445,
+      "error": null,
+      "finished_at": "2026-06-21T23:37:13.027339+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "80b2f92f21834538bf95c5860e5fb046",
+      "started_at": "2026-06-21T23:37:12.581845+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 223,
+      "error": null,
+      "finished_at": "2026-06-21T23:52:00.596813+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "80f7859eaf414b6fae270f3bdc05f8d0",
+      "started_at": "2026-06-21T23:52:00.373533+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 30209,
+      "error": null,
+      "finished_at": "2026-06-22T00:07:36.713389+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "d1ceb356deb6482faa0178c0147461ea",
+      "started_at": "2026-06-22T00:07:06.503871+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 748,
+      "error": null,
+      "finished_at": "2026-06-22T00:22:08.042940+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "58c90283c99a465a9db2af69b87f6af7",
+      "started_at": "2026-06-22T00:22:07.294880+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 205,
+      "error": null,
+      "finished_at": "2026-06-22T00:37:00.902422+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "9be107e4e7b541f48e4b83b3698e1f70",
+      "started_at": "2026-06-22T00:37:00.697317+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1212,
+      "error": null,
+      "finished_at": "2026-06-22T00:52:04.978081+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "48eb20a8ef1e4884853af98103b7d4e5",
+      "started_at": "2026-06-22T00:52:03.765982+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 197,
+      "error": null,
+      "finished_at": "2026-06-22T01:07:10.279683+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "1eac797519ab484ba87d6af27e498156",
+      "started_at": "2026-06-22T01:07:10.082526+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 232,
+      "error": null,
+      "finished_at": "2026-06-22T01:22:12.356467+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "fa54adbce7694751857a7a5a9720f68f",
+      "started_at": "2026-06-22T01:22:12.123578+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 502,
+      "error": null,
+      "finished_at": "2026-06-22T01:37:03.969111+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "aaa89e206c5a446db95eedf784b5c98f",
+      "started_at": "2026-06-22T01:37:03.466820+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 489,
+      "error": null,
+      "finished_at": "2026-06-22T01:52:09.196658+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "bd5ace266c254dc79d86bf4ebfc53364",
+      "started_at": "2026-06-22T01:52:08.707278+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 987,
+      "error": null,
+      "finished_at": "2026-06-22T02:07:02.736577+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "c06b1b8024bd44f8a8503cc47d2f3281",
+      "started_at": "2026-06-22T02:07:01.748700+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 218,
+      "error": null,
+      "finished_at": "2026-06-22T02:22:00.614337+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "274e99537a3b423fad745c2e7de0276e",
+      "started_at": "2026-06-22T02:22:00.395516+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 758,
+      "error": null,
+      "finished_at": "2026-06-22T02:37:03.476709+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "44c15942840b4d8e991c4f59b9a8b9a3",
+      "started_at": "2026-06-22T02:37:02.718156+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 475,
+      "error": null,
+      "finished_at": "2026-06-22T02:52:12.053040+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "02d62e52817a486298d748fd64c16f51",
+      "started_at": "2026-06-22T02:52:11.577183+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 232,
+      "error": null,
+      "finished_at": "2026-06-22T03:07:05.327908+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "a318dec3f1114749bbef8f170ccdb1bf",
+      "started_at": "2026-06-22T03:07:05.095786+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 210,
+      "error": null,
+      "finished_at": "2026-06-22T03:22:01.081950+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "cf2bf81e49b840b8ba4909af8f8964a6",
+      "started_at": "2026-06-22T03:22:00.871142+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 451,
+      "error": null,
+      "finished_at": "2026-06-22T03:37:03.501430+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "3854d1cda45744b0b300aa2ecd26c7fc",
+      "started_at": "2026-06-22T03:37:03.049700+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 489,
+      "error": null,
+      "finished_at": "2026-06-22T03:52:11.165093+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "840473f929f4464db33967f070bb2159",
+      "started_at": "2026-06-22T03:52:10.676034+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1147,
+      "error": null,
+      "finished_at": "2026-06-22T04:07:11.491528+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "81cb3c270e7a413aa2a9e5b5ae64e791",
+      "started_at": "2026-06-22T04:07:10.344075+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1888,
+      "error": null,
+      "finished_at": "2026-06-22T04:22:06.329436+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "604c6e2e54454027821ea5fd0ae6e585",
+      "started_at": "2026-06-22T04:22:04.440944+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 699,
+      "error": null,
+      "finished_at": "2026-06-22T04:37:14.724446+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "df7b17974b864fd88cc584701f004191",
+      "started_at": "2026-06-22T04:37:14.025153+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 431,
+      "error": null,
+      "finished_at": "2026-06-22T04:52:10.836976+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "b52fe2746c1747cebc490081cb43d1b7",
+      "started_at": "2026-06-22T04:52:10.405500+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 242,
+      "error": null,
+      "finished_at": "2026-06-22T05:07:14.196938+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "2fa6c05133c643db9f8978b7d1a5d91e",
+      "started_at": "2026-06-22T05:07:13.954109+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1210,
+      "error": null,
+      "finished_at": "2026-06-22T05:22:11.594958+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "5de47c2b45d54ba7a94330a869fa0a8b",
+      "started_at": "2026-06-22T05:22:10.384533+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 249,
+      "error": null,
+      "finished_at": "2026-06-22T05:37:07.509795+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "af2d18310d5d42b49244c8322ee0ce9a",
+      "started_at": "2026-06-22T05:37:07.260236+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 229,
+      "error": null,
+      "finished_at": "2026-06-22T05:52:09.657112+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "c952616d0f684215b59cdd7e49eabdc3",
+      "started_at": "2026-06-22T05:52:09.427478+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 283,
+      "error": null,
+      "finished_at": "2026-06-22T06:07:11.165475+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "def50e4837f94ebc97897be34641bceb",
+      "started_at": "2026-06-22T06:07:10.881507+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 519,
+      "error": null,
+      "finished_at": "2026-06-22T06:22:02.127604+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "a32293ccfbb84051b556f50b4c5092ad",
+      "started_at": "2026-06-22T06:22:01.608485+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 905,
+      "error": null,
+      "finished_at": "2026-06-22T06:37:02.369886+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "84de1f8afda3492fa21866ce2326d8f3",
+      "started_at": "2026-06-22T06:37:01.464332+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 882,
+      "error": null,
+      "finished_at": "2026-06-22T06:52:10.091222+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "02e4774c62b64b3cb1abff03e311b70e",
+      "started_at": "2026-06-22T06:52:09.208809+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1235,
+      "error": null,
+      "finished_at": "2026-06-22T07:07:08.944214+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "cd791a60815a4ba597d4de3987975628",
+      "started_at": "2026-06-22T07:07:07.708633+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 494,
+      "error": null,
+      "finished_at": "2026-06-22T07:22:00.822159+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "9ed8f8096b80447ebf40e3a6973cfb04",
+      "started_at": "2026-06-22T07:22:00.327984+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 827,
+      "error": null,
+      "finished_at": "2026-06-22T07:37:13.671767+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "fc99b0ce715649b286b85eb10d4a279a",
+      "started_at": "2026-06-22T07:37:12.843785+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 219,
+      "error": null,
+      "finished_at": "2026-06-22T07:52:14.225009+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "671f855da4eb40e981ec1c4fa0203fe2",
+      "started_at": "2026-06-22T07:52:14.005985+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1309,
+      "error": null,
+      "finished_at": "2026-06-22T08:07:16.080214+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "f826769438fa4f81a687093c113c9329",
+      "started_at": "2026-06-22T08:07:14.771089+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1264,
+      "error": null,
+      "finished_at": "2026-06-22T08:22:04.837531+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "7f1014a1aaf5462fa03a4fd2a2d7e577",
+      "started_at": "2026-06-22T08:22:03.572724+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1762,
+      "error": null,
+      "finished_at": "2026-06-22T08:37:12.887255+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "ab0394b080034c44a75a3de1fcf70e8a",
+      "started_at": "2026-06-22T08:37:11.124744+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1228,
+      "error": null,
+      "finished_at": "2026-06-22T08:52:09.264375+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "4e76df5c2a954589bcc92db9be268ff5",
+      "started_at": "2026-06-22T08:52:08.036210+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 265,
+      "error": null,
+      "finished_at": "2026-06-22T09:07:09.149412+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "d9e51de86c82437b9ffae79def0125a9",
+      "started_at": "2026-06-22T09:07:08.883441+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1229,
+      "error": null,
+      "finished_at": "2026-06-22T09:22:08.817107+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "a4035db6216a4e46b12527dfac4525a5",
+      "started_at": "2026-06-22T09:22:07.587600+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 560,
+      "error": null,
+      "finished_at": "2026-06-22T09:37:13.129404+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "a448acf20ca5403eadf0c4196e62cfdb",
+      "started_at": "2026-06-22T09:37:12.569248+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 226,
+      "error": null,
+      "finished_at": "2026-06-22T09:52:05.556218+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "f3ba744686d04bbe84f7a8bf8d8c5e1c",
+      "started_at": "2026-06-22T09:52:05.329992+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 227,
+      "error": null,
+      "finished_at": "2026-06-22T10:07:08.242796+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "51ae45a48d294c61960f69d35617b501",
+      "started_at": "2026-06-22T10:07:08.015174+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 220,
+      "error": null,
+      "finished_at": "2026-06-22T10:22:02.274899+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "2ffa379611974da9a63c5a458cd56c2e",
+      "started_at": "2026-06-22T10:22:02.054000+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 211,
+      "error": null,
+      "finished_at": "2026-06-22T10:37:09.794124+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "c2b2d9efe90a4f9f8ba5fa3e196ea0ea",
+      "started_at": "2026-06-22T10:37:09.582910+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1016,
+      "error": null,
+      "finished_at": "2026-06-22T10:52:09.729474+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "3432cc0b6e9c4adb91cae826d3a3b76f",
+      "started_at": "2026-06-22T10:52:08.713226+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 561,
+      "error": null,
+      "finished_at": "2026-06-22T11:07:14.119104+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "8fd60f74e6294e4ab797960dd018d0a4",
+      "started_at": "2026-06-22T11:07:13.557215+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1886,
+      "error": null,
+      "finished_at": "2026-06-22T11:22:04.407058+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "ad23a6a8c4a74e7cbf8c10f96ccfd4f6",
+      "started_at": "2026-06-22T11:22:02.520647+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1224,
+      "error": null,
+      "finished_at": "2026-06-22T11:37:05.305376+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "5c001afec35d40c4af8c760157d4454b",
+      "started_at": "2026-06-22T11:37:04.080818+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 481,
+      "error": null,
+      "finished_at": "2026-06-22T11:52:05.341723+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "42507176f18840c0bbdcac8b3aa84382",
+      "started_at": "2026-06-22T11:52:04.860576+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 222,
+      "error": null,
+      "finished_at": "2026-06-22T12:07:10.586401+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "3f051c52644947e5b7a7059bc1397bef",
+      "started_at": "2026-06-22T12:07:10.364267+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 503,
+      "error": null,
+      "finished_at": "2026-06-22T12:22:12.540934+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "a17564ed288a4d1ab88125124d2c77c8",
+      "started_at": "2026-06-22T12:22:12.037733+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 504,
+      "error": null,
+      "finished_at": "2026-06-22T12:37:11.355585+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "12638a2f7a5b4d21a31a7cea771a77ba",
+      "started_at": "2026-06-22T12:37:10.851215+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1492,
+      "error": null,
+      "finished_at": "2026-06-22T12:52:14.079394+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "18a1dfaa0a1e44f2823cf92d07e88e3d",
+      "started_at": "2026-06-22T12:52:12.587311+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 260,
+      "error": null,
+      "finished_at": "2026-06-22T13:07:01.116071+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "f8e915d122874086b09c94837618c4be",
+      "started_at": "2026-06-22T13:07:00.855070+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1537,
+      "error": null,
+      "finished_at": "2026-06-22T13:22:09.926030+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "2aa5536c382543d7bae505a5c7186907",
+      "started_at": "2026-06-22T13:22:08.388320+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 224,
+      "error": null,
+      "finished_at": "2026-06-22T13:37:12.331367+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "45cefe3698624fbb9eae7c052c65d9e9",
+      "started_at": "2026-06-22T13:37:12.106435+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 248,
+      "error": null,
+      "finished_at": "2026-06-22T13:52:10.262800+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "7c854c178ede4a05816e84aef9c4af2f",
+      "started_at": "2026-06-22T13:52:10.014071+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 236,
+      "error": null,
+      "finished_at": "2026-06-22T14:07:15.091158+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "64b21198ceda467991aecbc317ab711c",
+      "started_at": "2026-06-22T14:07:14.854803+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2261,
+      "error": null,
+      "finished_at": "2026-06-22T14:22:10.542611+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "e27ce0e457ec430f91e0c5f8b9389918",
+      "started_at": "2026-06-22T14:22:08.280749+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 896,
+      "error": null,
+      "finished_at": "2026-06-22T14:37:02.594987+00:00",
+      "hostname": "MacBook-Pro-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 61453,
+      "run_id": "6fd7cfe52aa8420bba2ed0c80893e322",
+      "started_at": "2026-06-22T14:37:01.698068+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 526,
+      "error": null,
+      "finished_at": "2026-06-22T18:22:01.590634+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "eafcfffba8c0443d9a7c608c3dddf901",
+      "started_at": "2026-06-22T18:22:01.064269+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 503,
+      "error": null,
+      "finished_at": "2026-06-22T18:37:14.149678+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "4951fa269e8249c180c371133787d631",
+      "started_at": "2026-06-22T18:37:13.646314+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 249,
+      "error": null,
+      "finished_at": "2026-06-22T18:52:10.651484+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "d54450f157bd4849b9c1eb07fd06e06c",
+      "started_at": "2026-06-22T18:52:10.401976+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 515,
+      "error": null,
+      "finished_at": "2026-06-22T19:07:02.624764+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "ffe5d4a1e7664a4a814e67aa8e5854df",
+      "started_at": "2026-06-22T19:07:02.108786+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 216,
+      "error": null,
+      "finished_at": "2026-06-22T19:22:07.005038+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "a601b9b5af4b412780a78018e0044c19",
+      "started_at": "2026-06-22T19:22:06.788813+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 252,
+      "error": null,
+      "finished_at": "2026-06-22T19:37:07.077888+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "1d4050d40a2b49bab14352078c0484ba",
+      "started_at": "2026-06-22T19:37:06.825125+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 249,
+      "error": null,
+      "finished_at": "2026-06-22T19:52:07.518987+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "abd7203ca78a448a9069c09306fc5166",
+      "started_at": "2026-06-22T19:52:07.269347+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 543,
+      "error": null,
+      "finished_at": "2026-06-22T20:07:04.485024+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "2ce39447b0c0420db5f1661eda44ca6c",
+      "started_at": "2026-06-22T20:07:03.941083+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 230,
+      "error": null,
+      "finished_at": "2026-06-22T20:22:05.835019+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "05226391c5d74722aa893ebaf212d67e",
+      "started_at": "2026-06-22T20:22:05.604901+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2258,
+      "error": null,
+      "finished_at": "2026-06-22T20:37:06.265931+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "16af7a78606e454090ec8ab5b16a87ce",
+      "started_at": "2026-06-22T20:37:04.006986+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 285,
+      "error": null,
+      "finished_at": "2026-06-22T20:52:08.751275+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "975e8ba9db68441da62b36029ceabd8f",
+      "started_at": "2026-06-22T20:52:08.466193+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 262,
+      "error": null,
+      "finished_at": "2026-06-22T21:07:10.596520+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "594dbc55616840a995562232eab29573",
+      "started_at": "2026-06-22T21:07:10.334424+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 466,
+      "error": null,
+      "finished_at": "2026-06-22T21:22:01.189311+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "b2d533b9668d4d158adde8fbfbd2ed38",
+      "started_at": "2026-06-22T21:22:00.722947+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 269,
+      "error": null,
+      "finished_at": "2026-06-22T21:37:14.253708+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "8fd59c0f276147b8957099afce2c630b",
+      "started_at": "2026-06-22T21:37:13.984626+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1264,
+      "error": null,
+      "finished_at": "2026-06-22T21:52:10.130699+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "bdf66eb5c4204963acc54cf53c1e91f2",
+      "started_at": "2026-06-22T21:52:08.866588+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 470,
+      "error": null,
+      "finished_at": "2026-06-22T22:07:15.503519+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "4a699aa13d444bb7a6aded9ebd49a323",
+      "started_at": "2026-06-22T22:07:15.033372+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 446,
+      "error": null,
+      "finished_at": "2026-06-22T22:22:11.559705+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "3b1aa3e12c7740a5b3ad20e1a2e181fa",
+      "started_at": "2026-06-22T22:22:11.112874+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 203,
+      "error": null,
+      "finished_at": "2026-06-22T22:37:12.268161+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "1fd9e8a2970f4145a7690e304df75ea1",
+      "started_at": "2026-06-22T22:37:12.064727+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 228,
+      "error": null,
+      "finished_at": "2026-06-22T22:52:07.975340+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "afc51a85c82244cfaa8579e5141d66e3",
+      "started_at": "2026-06-22T22:52:07.746625+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 216,
+      "error": null,
+      "finished_at": "2026-06-22T23:07:08.791541+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "9072e607243949ecbef291fef0167fe3",
+      "started_at": "2026-06-22T23:07:08.575277+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 216,
+      "error": null,
+      "finished_at": "2026-06-22T23:22:12.232445+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "fbc97c17339840eb99e243c2703cba35",
+      "started_at": "2026-06-22T23:22:12.016398+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2261,
+      "error": null,
+      "finished_at": "2026-06-22T23:37:11.566400+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "eb85d1cdba7e4e54a4089e30c90a5a92",
+      "started_at": "2026-06-22T23:37:09.304723+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 191,
+      "error": null,
+      "finished_at": "2026-06-22T23:52:02.003672+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "1b7344159d62433e9cdb8a129b0847ed",
+      "started_at": "2026-06-22T23:52:01.811925+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 491,
+      "error": null,
+      "finished_at": "2026-06-23T00:07:12.268131+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "f729ebe13da046b2921c57845862b427",
+      "started_at": "2026-06-23T00:07:11.776401+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 228,
+      "error": null,
+      "finished_at": "2026-06-23T00:22:05.176697+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "2038d011fa1c417fb93c503da08e9a58",
+      "started_at": "2026-06-23T00:22:04.948589+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 460,
+      "error": null,
+      "finished_at": "2026-06-23T00:37:07.511512+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "1579c6479c9f45c3b795179d04dd8131",
+      "started_at": "2026-06-23T00:37:07.050801+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 251,
+      "error": null,
+      "finished_at": "2026-06-23T00:52:11.735612+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "b0012c4b3d5b404c9c01599c23ba84f2",
+      "started_at": "2026-06-23T00:52:11.484368+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 221,
+      "error": null,
+      "finished_at": "2026-06-23T01:07:09.553757+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "fb327e243baa4ab5bf1164d5c140f55d",
+      "started_at": "2026-06-23T01:07:09.332291+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 238,
+      "error": null,
+      "finished_at": "2026-06-23T01:22:04.496132+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "030f0ced66504bae99a2da242950b1e8",
+      "started_at": "2026-06-23T01:22:04.257202+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1226,
+      "error": null,
+      "finished_at": "2026-06-23T01:37:04.104403+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "b46d0391536246ebac0dd375d52168c0",
+      "started_at": "2026-06-23T01:37:02.877874+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 488,
+      "error": null,
+      "finished_at": "2026-06-23T01:52:06.068934+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "c0cae811719c4d139e126a97bb3c3d15",
+      "started_at": "2026-06-23T01:52:05.580579+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 224,
+      "error": null,
+      "finished_at": "2026-06-23T02:07:10.368640+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "c92038a635ad4ae5ae6a6bf7b135ee94",
+      "started_at": "2026-06-23T02:07:10.143981+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 493,
+      "error": null,
+      "finished_at": "2026-06-23T02:22:14.371218+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "a5a08c2f343c429ba50b722fde5d20e2",
+      "started_at": "2026-06-23T02:22:13.877239+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1302,
+      "error": null,
+      "finished_at": "2026-06-23T02:37:04.233446+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "955593c7c47846c78d21d91095773d17",
+      "started_at": "2026-06-23T02:37:02.930475+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 188,
+      "error": null,
+      "finished_at": "2026-06-23T02:52:05.393613+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "58c34367699f4673a676f9c81eb9d76f",
+      "started_at": "2026-06-23T02:52:05.205111+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1206,
+      "error": null,
+      "finished_at": "2026-06-23T03:07:10.911112+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "41fe276dbbfe4e6ba7eab1a6a1a788ae",
+      "started_at": "2026-06-23T03:07:09.704513+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1501,
+      "error": null,
+      "finished_at": "2026-06-23T03:22:10.820267+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "d63bd89bfbe14ae8a3ee68213c57c601",
+      "started_at": "2026-06-23T03:22:09.318797+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 230,
+      "error": null,
+      "finished_at": "2026-06-23T03:37:15.042234+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "cff99ef3b42747e998d93dced52d6801",
+      "started_at": "2026-06-23T03:37:14.811598+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 197,
+      "error": null,
+      "finished_at": "2026-06-23T03:52:06.004930+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "87eecc79f6e7450bb0d85e98275cfe18",
+      "started_at": "2026-06-23T03:52:05.807030+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 253,
+      "error": null,
+      "finished_at": "2026-06-23T04:07:04.791555+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "487ed18315644199a66fd89eb31cfff7",
+      "started_at": "2026-06-23T04:07:04.537924+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 2124,
+      "error": null,
+      "finished_at": "2026-06-23T04:22:10.866010+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "627f433d2a664061901ec40c52cdf105",
+      "started_at": "2026-06-23T04:22:08.741240+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 227,
+      "error": null,
+      "finished_at": "2026-06-23T04:37:11.030647+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "cc328fa0070442929c9cef22d7e1dac7",
+      "started_at": "2026-06-23T04:37:10.802719+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 466,
+      "error": null,
+      "finished_at": "2026-06-23T04:52:12.302974+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "840017d7a96442d4b76f55a736809500",
+      "started_at": "2026-06-23T04:52:11.836406+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 225,
+      "error": null,
+      "finished_at": "2026-06-23T05:07:13.539631+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "33f85f0bd40949948d20943292e9f4cf",
+      "started_at": "2026-06-23T05:07:13.314126+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 544,
+      "error": null,
+      "finished_at": "2026-06-23T05:22:00.763697+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "4b7b9437a19549a4bfa24b1f4dbb1f8b",
+      "started_at": "2026-06-23T05:22:00.219039+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 1964,
+      "error": null,
+      "finished_at": "2026-06-23T05:37:06.461339+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "fb83a409330343949b2f8c88f22ca2fd",
+      "started_at": "2026-06-23T05:37:04.496420+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 219,
+      "error": null,
+      "finished_at": "2026-06-23T05:52:01.983782+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "53604cbb0869442cb87a368966b9ac97",
+      "started_at": "2026-06-23T05:52:01.764524+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 212,
+      "error": null,
+      "finished_at": "2026-06-23T06:07:14.261830+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "6ae124b1f5b44cc3a6d98f3ba670ffa4",
+      "started_at": "2026-06-23T06:07:14.049267+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 240,
+      "error": null,
+      "finished_at": "2026-06-23T06:22:14.644776+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "b2a41d58461e4ae392b64d2a9d76cb42",
+      "started_at": "2026-06-23T06:22:14.404496+00:00",
+      "status": "success",
+      "traceback": null
+    },
+    {
+      "attempt": 1,
+      "duration_ms": 227,
+      "error": null,
+      "finished_at": "2026-06-23T06:37:13.388160+00:00",
+      "hostname": "MBP-von-Rudolf.fritz.box",
+      "job_id": "price_optimizer",
+      "metadata": {
+        "priority": "high",
+        "result": {
+          "delta_percent": 2.5,
+          "dry": [
+            {
+              "id": "gid://shopify/ProductVariant/57426667536771",
+              "price": "165.81"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667602307",
+              "price": "188.59"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667667843",
+              "price": "142.05"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667700611",
+              "price": "284.33"
+            },
+            {
+              "id": "gid://shopify/ProductVariant/57426667733379",
+              "price": "233.69"
+            }
+          ],
+          "updated_products": 0,
+          "updated_variants": 0
+        }
+      },
+      "pid": 47579,
+      "run_id": "c2fe64c724d14b0ca0dc0af68911b865",
+      "started_at": "2026-06-23T06:37:13.160604+00:00",
+      "status": "success",
+      "traceback": null
     }
   ],
-  "updated_at": "2026-06-15T22:37:11.420377+00:00"
+  "updated_at": "2026-06-23T06:37:13.394321+00:00"
 }

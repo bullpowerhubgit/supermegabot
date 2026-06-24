@@ -8,101 +8,35 @@
     { "source": "/blog/:slug", "destination": "/api/blog?slug=:slug" }
   ],
   "crons": [
-    {
-      "path": "/api/campaign-trigger",
-      "schedule": "0 8 * * 1"
-    },
-    {
-      "path": "/api/campaign-trigger",
-      "schedule": "0 8 * * 4"
-    },
-    {
-      "path": "/api/ds24-report",
-      "schedule": "0 7 * * *"
-    },
-    {
-      "path": "/api/linkedin-poster",
-      "schedule": "0 9 * * 1"
-    },
-    {
-      "path": "/api/linkedin-poster",
-      "schedule": "0 9 * * 3"
-    },
-    {
-      "path": "/api/linkedin-poster",
-      "schedule": "0 9 * * 5"
-    },
-    {
-      "path": "/api/reddit-poster",
-      "schedule": "0 10 * * 2"
-    },
-    {
-      "path": "/api/reddit-poster",
-      "schedule": "0 10 * * 6"
-    },
-    {
-      "path": "/api/seo-writer",
-      "schedule": "0 6 * * 0"
-    },
-    {
-      "path": "/api/klaviyo-welcome",
-      "schedule": "0 10 * * *"
-    },
-    {
-      "path": "/api/instagram-poster",
-      "schedule": "0 11 * * 2"
-    },
-    {
-      "path": "/api/instagram-poster",
-      "schedule": "0 11 * * 4"
-    },
-    {
-      "path": "/api/instagram-poster",
-      "schedule": "0 11 * * 6"
-    },
-    {
-      "path": "/api/facebook-poster",
-      "schedule": "0 12 * * 1"
-    },
-    {
-      "path": "/api/facebook-poster",
-      "schedule": "0 12 * * 3"
-    },
-    {
-      "path": "/api/facebook-poster",
-      "schedule": "0 12 * * 5"
-    },
-    {
-      "path": "/api/pinterest-poster",
-      "schedule": "0 13 * * 1"
-    },
-    {
-      "path": "/api/pinterest-poster",
-      "schedule": "0 13 * * 4"
-    },
-    {
-      "path": "/api/tiktok-poster",
-      "schedule": "0 14 * * 1"
-    },
-    {
-      "path": "/api/tiktok-poster",
-      "schedule": "0 14 * * 3"
-    },
-    {
-      "path": "/api/tiktok-poster",
-      "schedule": "0 14 * * 5"
-    },
-    {
-      "path": "/api/fiverr-upwork-poster",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/gumroad-etsy-poster",
-      "schedule": "0 15 * * 3"
-    },
-    {
-      "path": "/api/gumroad-etsy-poster",
-      "schedule": "0 15 * * 6"
-    }
+    { "path": "/api/campaign-trigger", "schedule": "0 8 * * 1" },
+    { "path": "/api/campaign-trigger", "schedule": "0 8 * * 4" },
+    { "path": "/api/ds24-report", "schedule": "0 7 * * *" },
+    { "path": "/api/linkedin-poster", "schedule": "0 9 * * 1" },
+    { "path": "/api/linkedin-poster", "schedule": "0 9 * * 3" },
+    { "path": "/api/linkedin-poster", "schedule": "0 9 * * 5" },
+    { "path": "/api/reddit-poster", "schedule": "0 10 * * 2" },
+    { "path": "/api/reddit-poster", "schedule": "0 10 * * 6" },
+    { "path": "/api/seo-writer", "schedule": "0 6 * * 0" },
+    { "path": "/api/klaviyo-welcome", "schedule": "0 10 * * *" },
+    { "path": "/api/meta-poster", "schedule": "0 11 * * 2" },
+    { "path": "/api/meta-poster", "schedule": "0 11 * * 4" },
+    { "path": "/api/meta-poster", "schedule": "0 11 * * 6" },
+    { "path": "/api/meta-poster", "schedule": "0 12 * * 1" },
+    { "path": "/api/meta-poster", "schedule": "0 12 * * 3" },
+    { "path": "/api/meta-poster", "schedule": "0 12 * * 5" },
+    { "path": "/api/visual-poster", "schedule": "0 13 * * 1" },
+    { "path": "/api/visual-poster", "schedule": "0 13 * * 4" },
+    { "path": "/api/visual-poster", "schedule": "0 14 * * 1" },
+    { "path": "/api/visual-poster", "schedule": "0 14 * * 3" },
+    { "path": "/api/visual-poster", "schedule": "0 14 * * 5" },
+    { "path": "/api/marketplace-poster", "schedule": "0 8 * * 1" },
+    { "path": "/api/marketplace-poster", "schedule": "0 8 * * 2" },
+    { "path": "/api/marketplace-poster", "schedule": "0 8 * * 3" },
+    { "path": "/api/marketplace-poster", "schedule": "0 8 * * 4" },
+    { "path": "/api/marketplace-poster", "schedule": "0 8 * * 5" },
+    { "path": "/api/marketplace-poster", "schedule": "0 15 * * 3" },
+    { "path": "/api/marketplace-poster", "schedule": "0 15 * * 6" },
+    { "path": "/api/affiliate-products", "schedule": "0 9 * * 2" },
+    { "path": "/api/affiliate-products", "schedule": "0 9 * * 5" }
   ]
 }

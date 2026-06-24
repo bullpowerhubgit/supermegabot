@@ -1,9 +1,9 @@
 {
   "attempt": 1,
-  "duration_ms": 1221,
+  "duration_ms": 227,
   "error": null,
-  "finished_at": "2026-06-15T22:37:11.419345+00:00",
-  "hostname": "MacBook-Pro-von-Rudolf.local",
+  "finished_at": "2026-06-23T06:37:13.388160+00:00",
+  "hostname": "MBP-von-Rudolf.fritz.box",
   "job_id": "price_optimizer",
   "metadata": {
     "priority": "high",
@@ -12,32 +12,32 @@
       "dry": [
         {
           "id": "gid://shopify/ProductVariant/57426667536771",
-          "price": "89.44"
+          "price": "165.81"
         },
         {
           "id": "gid://shopify/ProductVariant/57426667602307",
-          "price": "102.19"
+          "price": "188.59"
         },
         {
           "id": "gid://shopify/ProductVariant/57426667667843",
-          "price": "76.64"
+          "price": "142.05"
         },
         {
           "id": "gid://shopify/ProductVariant/57426667700611",
-          "price": "153.36"
+          "price": "284.33"
         },
         {
           "id": "gid://shopify/ProductVariant/57426667733379",
-          "price": "240.20"
+          "price": "233.69"
         }
       ],
       "updated_products": 0,
       "updated_variants": 0
     }
   },
-  "pid": 60382,
-  "run_id": "7d9a0f4a51424d2fab68b9077eba22dd",
-  "started_at": "2026-06-15T22:37:10.198200+00:00",
+  "pid": 47579,
+  "run_id": "c2fe64c724d14b0ca0dc0af68911b865",
+  "started_at": "2026-06-23T06:37:13.160604+00:00",
   "status": "success",
   "traceback": null
 }
