@@ -183,6 +183,34 @@ ${related.length > 0 ? `
   },{passive:true});
 })();
 </script>
+<div id="exit-popup" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);justify-content:center;align-items:center;">
+  <div style="background:linear-gradient(135deg,#1e1b4b,#1a0533);border:1px solid rgba(124,58,237,.5);border-radius:20px;padding:40px 36px;max-width:480px;width:90%;position:relative;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,.6);">
+    <button onclick="document.getElementById('exit-popup').style.display='none'" style="position:absolute;top:14px;right:18px;background:none;border:none;color:#64748b;font-size:1.4rem;cursor:pointer;line-height:1;">✕</button>
+    <div style="font-size:2.5rem;margin-bottom:12px;">⏳</div>
+    <h2 style="color:#f1f5f9;font-size:1.4rem;margin:0 0 10px;font-weight:800;">Warte — lies das bevor du gehst</h2>
+    <p style="color:#94a3b8;font-size:.95rem;margin:0 0 20px;line-height:1.6;">Der AI Income Machine Blueprint zeigt dir in 90 Tagen wie du mit KI automatisch Geld verdienst — auf Deutsch, Schritt für Schritt, €37 einmalig.</p>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;">
+      <span style="background:rgba(124,58,237,.2);color:#a78bfa;padding:4px 12px;border-radius:20px;font-size:.8rem;">✅ Sofortzugang</span>
+      <span style="background:rgba(124,58,237,.2);color:#a78bfa;padding:4px 12px;border-radius:20px;font-size:.8rem;">✅ 60 Tage Garantie</span>
+      <span style="background:rgba(124,58,237,.2);color:#a78bfa;padding:4px 12px;border-radius:20px;font-size:.8rem;">✅ Kein Abo</span>
+    </div>
+    <a href="https://www.checkout-ds24.com/product/668035" onclick="document.getElementById('exit-popup').style.display='none'" style="display:block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:14px 32px;border-radius:50px;font-size:1rem;font-weight:700;text-decoration:none;margin-bottom:12px;">Jetzt Blueprint holen — €37 →</a>
+    <button onclick="document.getElementById('exit-popup').style.display='none'" style="background:none;border:none;color:#475569;font-size:.82rem;cursor:pointer;text-decoration:underline;">Nein danke, ich verzichte</button>
+  </div>
+</div>
+<script>
+(function(){
+  var ep=document.getElementById('exit-popup');
+  var dismissed=sessionStorage.getItem('exit-dismissed');
+  if(dismissed)return;
+  document.addEventListener('mouseleave',function(e){
+    if(e.clientY<=0&&ep.style.display==='none'){
+      ep.style.display='flex';
+      sessionStorage.setItem('exit-dismissed','1');
+    }
+  });
+})();
+</script>
 </body>
 </html>`;
 }
