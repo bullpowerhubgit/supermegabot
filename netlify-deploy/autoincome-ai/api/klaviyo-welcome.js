@@ -1,6 +1,9 @@
 // Klaviyo: Email-Sequenz (täglich 10:00 UTC) + Webhook-Handler (Sofort-Welcome bei Subscriber)
 // Cron: 4-stufige Sequenz: Tag 0 Welcome | Tag 2 Follow-up | Tag 5 Urgency | Tag 10 Affiliate
 // Webhook: POST ohne CRON_SECRET → Sofort-Welcome für neuen Subscriber
+// DS24 IPN: POST mit buyer_email+sha_sign → Käufer in Klaviyo + Käufer-Email
+
+import { createHash } from 'crypto';
 
 const KLAVIYO_KEY = process.env.KLAVIYO_API_KEY;
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
@@ -10,6 +13,55 @@ const AFFILIATE_LIST_ID = 'WdgMfp';
 const CRON_SECRET = process.env.CRON_SECRET || 'bullpower2026';
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
 const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
+const DS24_IPN_PASSPHRASE = process.env.DS24_IPN_PASSPHRASE || '';
+const BUYER_LIST_ID = process.env.KLAVIYO_BUYER_LIST_ID || 'Xwxq6V';
+
+const BUYER_WELCOME_EMAIL = {
+  subject: '🎉 Kauf bestätigt — dein AI Income Machine Zugang ist bereit!',
+  preview: 'Deine Bestellung ist eingegangen. Hier ist alles was du brauchst.',
+  html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#ffffff;">
+<div style="text-align:center;padding:20px 0;">
+  <div style="font-size:3rem;">🎉</div>
+  <h1 style="color:#7c3aed;font-size:1.8rem;margin-top:8px;">Kauf bestätigt!</h1>
+  <p style="color:#64748b;">AI Income Machine — 90-Day Blueprint</p>
+</div>
+
+<div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:24px;margin:20px 0;text-align:center;">
+  <p style="color:#166534;font-weight:700;font-size:1.1rem;margin-bottom:12px;">✅ Dein Blueprint ist sofort verfügbar</p>
+  <a href="https://autoincome-ai.vercel.app/danke.html" style="display:inline-block;background:#22c55e;color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;font-size:1rem;margin:8px 0;">📄 Jetzt auf Blueprint zugreifen →</a>
+  <p style="color:#15803d;font-size:0.85rem;margin-top:8px;">Klick den Button um deinen Inhalt sofort zu starten</p>
+</div>
+
+<div style="background:#f8f9fa;border-radius:12px;padding:24px;margin:20px 0;">
+  <h2 style="color:#1e293b;font-size:1.2rem;margin-bottom:16px;">Was du jetzt bekommst:</h2>
+  <p style="color:#475569;line-height:2;">
+    ✅ <strong>90-Day AI Income Blueprint</strong> — vollständiger Schritt-für-Schritt Plan<br>
+    ✅ <strong>KI-Tool Stack Übersicht</strong> — genau welche Tools, wie einsetzen<br>
+    ✅ <strong>Wöchentliche Updates</strong> — neue Strategien und Optimierungen<br>
+    ✅ <strong>Support via Email</strong> — Fragen? Wir helfen dir weiter<br>
+    ✅ <strong>60-Tage Geld-zurück-Garantie</strong> — kein Risiko für dich
+  </p>
+</div>
+
+<div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:12px;padding:28px;margin:20px 0;color:white;text-align:center;">
+  <p style="font-size:0.9rem;opacity:0.8;margin-bottom:4px;">🔥 Exklusiv für Blueprint-Käufer</p>
+  <h2 style="font-size:1.4rem;margin-bottom:8px;">SuperMegaBot — Full Automation System</h2>
+  <p style="opacity:0.85;font-size:0.9rem;margin-bottom:16px;">Automatisiere alles was der Blueprint aufbaut. Shopify + DS24 + KI + Social — vollautomatisch.</p>
+  <div style="font-size:2rem;font-weight:900;margin:12px 0;">€97 <span style="font-size:1rem;opacity:0.6;text-decoration:line-through;">€297</span></div>
+  <a href="${UPSELL_URL}" style="display:inline-block;background:white;color:#1e1b4b;padding:12px 32px;border-radius:50px;font-size:1rem;font-weight:700;text-decoration:none;">Als Blueprint-Käufer upgraden →</a>
+  <p style="font-size:0.75rem;margin-top:12px;opacity:0.6;">Nur für Blueprint-Käufer verfügbar · Einmalzahlung</p>
+</div>
+
+<div style="border-top:1px solid #e2e8f0;padding:20px 0;text-align:center;color:#64748b;font-size:0.85rem;">
+  <p>Fragen? <a href="mailto:support@aiitec.de" style="color:#7c3aed;">support@aiitec.de</a></p>
+  <p style="margin-top:4px;">AiiteC · Rudolf Sarkany · Wien, Österreich</p>
+  <p style="margin-top:8px;font-size:0.75rem;color:#94a3b8;">
+    <a href="https://autoincome-ai.vercel.app/impressum.html" style="color:#94a3b8;">Impressum</a> &nbsp;·&nbsp;
+    Du erhältst diese Email weil du AI Income Machine Blueprint gekauft hast.
+  </p>
+</div>
+</body></html>`,
+};
 
 const WELCOME_EMAIL = {
   subject: '👋 Willkommen — hier ist dein kostenloser KI-Einkommens-Leitfaden',
@@ -544,6 +596,135 @@ async function sendAffiliateFollowup(emailObj, count, tag) {
   return campId;
 }
 
+async function handleDS24IPN(req, res) {
+  let params = {};
+  try {
+    if (typeof req.body === 'string' && req.body.includes('=')) {
+      for (const pair of req.body.split('&')) {
+        const [k, v] = pair.split('=');
+        if (k) params[decodeURIComponent(k)] = decodeURIComponent((v || '').replace(/\+/g, ' '));
+      }
+    } else if (typeof req.body === 'object') {
+      params = req.body;
+    }
+  } catch (e) {
+    return res.status(400).json({ error: 'IPN parse error' });
+  }
+
+  const email = params.buyer_email;
+  const firstName = params.buyer_firstname || '';
+  const lastName = params.buyer_lastname || '';
+  const productId = params.product_id || '';
+  const orderId = params.order_id || '';
+  const amount = params.billing_amount || params.net_amount || params.amount || '';
+  const receivedSign = params.sha_sign || '';
+
+  if (!email) return res.status(200).json({ ok: true, skipped: 'no email' });
+
+  // Optional: validate DS24 SHA2-512 signature
+  let signatureValid = true;
+  if (DS24_IPN_PASSPHRASE && receivedSign) {
+    const sorted = Object.keys(params)
+      .filter(k => k !== 'sha_sign' && params[k] !== '')
+      .sort();
+    const str = sorted.map(k => k + params[k]).join('') + DS24_IPN_PASSPHRASE;
+    const expected = createHash('sha512').update(str).digest('hex');
+    signatureValid = expected.toLowerCase() === receivedSign.toLowerCase();
+    if (!signatureValid) {
+      await sendTelegram(`⚠️ DS24 IPN Signatur ungültig!\nEmail: ${email}\nOrder: ${orderId}\nEmpfangen: ${receivedSign.substring(0, 20)}...`);
+    }
+  }
+
+  await sendTelegram(`💰 <b>DS24 KAUF!</b>\n📧 ${email} (${firstName} ${lastName})\n🛍️ Produkt: ${productId}\n📋 Order: ${orderId}\n💶 Betrag: €${amount}\n✅ Signatur: ${signatureValid ? 'OK' : 'nicht geprüft'}`);
+
+  try {
+    // Add buyer to Klaviyo with Buyer tag
+    const profileRes = await klaviyoRequest('POST', '/api/profiles/', {
+      data: {
+        type: 'profile',
+        attributes: {
+          email,
+          first_name: firstName,
+          last_name: lastName,
+          properties: {
+            ds24_product_id: productId,
+            ds24_order_id: orderId,
+            purchase_amount: amount,
+            purchase_date: new Date().toISOString(),
+            customer_type: 'buyer',
+          },
+        },
+      },
+    });
+
+    // Add to buyer list (subscribe)
+    const profileId = profileRes.data?.data?.id;
+    if (profileId) {
+      await klaviyoRequest('POST', `/api/lists/${BUYER_LIST_ID}/relationships/profiles/`, {
+        data: [{ type: 'profile', id: profileId }],
+      });
+    }
+
+    // Send buyer welcome email campaign
+    const t = await klaviyoRequest('POST', '/api/templates/', {
+      data: {
+        type: 'template',
+        attributes: {
+          name: `DS24 Buyer Welcome ${orderId} ${Date.now()}`,
+          html: BUYER_WELCOME_EMAIL.html,
+          subject: BUYER_WELCOME_EMAIL.subject,
+        },
+      },
+    });
+    const tmplId = t.data?.data?.id;
+
+    const c = await klaviyoRequest('POST', '/api/campaigns/', {
+      data: {
+        type: 'campaign',
+        attributes: {
+          name: `Käufer-Welcome ${firstName || email} ${orderId}`,
+          channel: 'email',
+          audiences: {
+            included: [BUYER_LIST_ID],
+            excluded: [],
+          },
+          send_strategy: {
+            method: 'immediate',
+          },
+          tracking_options: {
+            is_tracking_opens: true,
+            is_tracking_clicks: true,
+          },
+        },
+      },
+    });
+    const campId = c.data?.data?.id;
+
+    if (campId && tmplId) {
+      const msgs = await klaviyoRequest('GET', `/api/campaigns/${campId}/campaign-messages/`);
+      const msgId = msgs.data?.data?.[0]?.id;
+      if (msgId) {
+        await klaviyoRequest('POST', '/api/campaign-message-assign-template/', {
+          data: {
+            type: 'campaign-message',
+            id: msgId,
+            relationships: { template: { data: { type: 'template', id: tmplId } } },
+          },
+        });
+      }
+      await klaviyoRequest('POST', '/api/campaign-send-jobs/', {
+        data: { type: 'campaign-send-job', attributes: { id: campId } },
+      });
+    }
+
+    await sendTelegram(`📧 Käufer-Welcome gesendet an ${email}\nKampagne: ${campId}`);
+    return res.status(200).json({ ok: true, email, campId });
+  } catch (err) {
+    await sendTelegram(`❌ DS24 IPN Fehler für ${email}: ${err.message.substring(0, 150)}`);
+    return res.status(200).json({ ok: true, processed: false, error: err.message });
+  }
+}
+
 async function handleWebhook(req, res) {
   let body;
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
@@ -562,8 +743,17 @@ async function handleWebhook(req, res) {
 
 export default async function handler(req, res) {
   const secret = req.headers['x-cron-secret'] || req.query?.secret;
-  // Webhook-Mode: POST ohne CRON_SECRET = incoming Klaviyo event
-  if (req.method === 'POST' && secret !== CRON_SECRET) return handleWebhook(req, res);
+
+  if (req.method === 'POST') {
+    // DS24 IPN: form-encoded body with buyer_email + sha_sign
+    const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {});
+    if (rawBody.includes('buyer_email') && rawBody.includes('sha_sign')) {
+      return handleDS24IPN(req, res);
+    }
+    // Regular Klaviyo webhook
+    if (secret !== CRON_SECRET) return handleWebhook(req, res);
+  }
+
   if (secret !== CRON_SECRET) return res.status(401).json({ error: 'unauthorized' });
   if (!KLAVIYO_KEY) return res.status(200).json({ ok: true, note: 'no klaviyo key' });
 
