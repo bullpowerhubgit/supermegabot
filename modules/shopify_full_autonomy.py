@@ -1112,11 +1112,23 @@ async def fix_product_tags_tshirt(batch_size: int = 50, since_id: int = 0) -> di
 # 15. EMPTY SMART COLLECTION CLEANUP — löscht leere Smart Collections
 # ═══════════════════════════════════════════════════════════════════════════════
 
+_TSHIRT_TYPES = {"t-shirt", "shirt", "apparel", "clothing"}
+
+def _smart_col_should_delete(col: dict) -> bool:
+    """Delete a smart collection if ALL its rules are type-based with non-T-Shirt types."""
+    rules = col.get("rules", [])
+    if not rules:
+        return False
+    if not all(r.get("column") == "type" for r in rules):
+        return False  # has title/tag/vendor rules → keep
+    return not any(r.get("condition", "").lower() in _TSHIRT_TYPES for r in rules)
+
+
 async def cleanup_empty_smart_collections(max_delete: int = 100) -> dict:
     """
-    Löscht Smart Collections die 0 Produkte enthalten.
-    Diese entstehen wenn Produkt-Typen geändert werden (z.B. Smart Home → T-Shirt).
-    Macht Crawl-Budget frei und verhindert Google-Penalties für leere Kategorie-Seiten.
+    Löscht Smart Collections die leere Typ-Regeln haben (nicht T-Shirt).
+    Erkennung via Rule-Analyse, da products_count in der REST API nicht zuverlässig ist.
+    Für T-Shirt-Stores: löscht alle type-only Collections für andere Produkttypen.
     """
     if not _ok():
         return {"ok": False, "error": "no shopify credentials"}
@@ -1128,15 +1140,15 @@ async def cleanup_empty_smart_collections(max_delete: int = 100) -> dict:
     try:
         data = await asyncio.wait_for(
             _get("smart_collections.json",
-                 {"limit": 250, "fields": "id,title,products_count"}),
+                 {"limit": 250, "fields": "id,title,rules"}),
             timeout=20
         )
         cols = data.get("smart_collections", [])
 
-        empty = [c for c in cols if c.get("products_count", 0) == 0]
-        log.info("cleanup_empty_smart_collections: %d total, %d empty", len(cols), len(empty))
+        to_delete = [c for c in cols if _smart_col_should_delete(c)]
+        log.info("cleanup_empty_smart_collections: %d total, %d to delete", len(cols), len(to_delete))
 
-        for col in empty[:max_delete]:
+        for col in to_delete[:max_delete]:
             try:
                 async with aiohttp.ClientSession() as s:
                     async with s.delete(
@@ -1159,11 +1171,99 @@ async def cleanup_empty_smart_collections(max_delete: int = 100) -> dict:
             "deleted": deleted,
             "kept": kept,
             "errors": errors,
-            "total_found_empty": len(empty),
+            "total_to_delete": len(to_delete),
         }
     except Exception as e:
         log.error("cleanup_empty_smart_collections error: %s", e)
         return {"ok": False, "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 16. GOOGLE MERCHANT CENTER METAFIELDS — Google Shopping Attribute setzen
+# ═══════════════════════════════════════════════════════════════════════════════
+
+_GMC_METAFIELDS = [
+    ("google_product_category", "Apparel & Accessories > Clothing > Shirts & Tops", "single_line_text_field"),
+    ("gender", "Unisex", "single_line_text_field"),
+    ("age_group", "Adult", "single_line_text_field"),
+    ("material", "Baumwolle", "single_line_text_field"),
+    ("condition", "new", "single_line_text_field"),
+    ("brand", "I Want That I Need It", "single_line_text_field"),
+]
+
+async def fix_product_gmc_metafields(batch_size: int = 30, since_id: int = 0) -> dict:
+    """
+    Setzt Google Merchant Center Metafelder für alle T-Shirt Produkte.
+    Namespace: mm-google-shopping — wird vom Shopify Google Channel App gelesen.
+    Essentiell für Google Shopping Freischaltung (products_approved: None → genehmigt).
+    """
+    if not _ok():
+        return {"ok": False, "error": "no shopify credentials"}
+
+    updated = 0
+    failed = 0
+    last_id = since_id
+
+    try:
+        params = {
+            "limit": batch_size,
+            "status": "active",
+            "fields": "id,title,product_type",
+        }
+        if since_id:
+            params["since_id"] = since_id
+
+        data = await asyncio.wait_for(_get("products.json", params), timeout=20)
+        products = data.get("products", [])
+
+        for p in products:
+            pid = p["id"]
+            # Get existing metafields for this product
+            meta = await asyncio.wait_for(
+                _get(f"products/{pid}/metafields.json",
+                     {"namespace": "mm-google-shopping", "limit": 10}),
+                timeout=10
+            )
+            existing = {m["key"] for m in meta.get("metafields", [])}
+
+            product_updated = False
+            for key, value, mtype in _GMC_METAFIELDS:
+                if key not in existing:
+                    try:
+                        result = await asyncio.wait_for(
+                            _post(f"products/{pid}/metafields.json", {
+                                "metafield": {
+                                    "namespace": "mm-google-shopping",
+                                    "key": key,
+                                    "value": value,
+                                    "type": mtype,
+                                }
+                            }),
+                            timeout=10
+                        )
+                        if result.get("metafield", {}).get("id"):
+                            product_updated = True
+                    except Exception:
+                        pass
+                    await asyncio.sleep(0.3)
+
+            if product_updated:
+                updated += 1
+            last_id = pid
+            await asyncio.sleep(0.5)
+
+        log.info("fix_product_gmc_metafields: %d updated, %d failed, last_id=%d", updated, failed, last_id)
+        return {
+            "ok": True,
+            "updated": updated,
+            "failed": failed,
+            "processed": len(products),
+            "last_id": last_id,
+            "done": len(products) < batch_size,
+        }
+    except Exception as e:
+        log.error("fix_product_gmc_metafields error: %s", e)
+        return {"ok": False, "error": str(e), "last_id": last_id}
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
