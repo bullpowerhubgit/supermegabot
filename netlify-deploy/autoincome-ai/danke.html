@@ -77,7 +77,7 @@
 
 <div class="hero">
   <div class="hero-badge">✅ Kauf bestätigt</div>
-  <h1>Danke, <span>Rudolf</span>!<br/>Dein Blueprint wartet auf dich.</h1>
+  <h1>Danke, <span id="buyerName">Freund</span>!<br/>Dein Blueprint wartet auf dich.</h1>
   <p>Du hast den richtigen Schritt gemacht. Hier ist alles was du brauchst, um sofort loszulegen.</p>
 </div>
 
@@ -203,6 +203,16 @@
 </footer>
 
 <script>
+  // Personalize buyer name from DS24 URL params
+  (function(){
+    var p=new URLSearchParams(window.location.search);
+    var name=p.get('name')||p.get('customer_name')||p.get('first_name')||p.get('buyer_name')||p.get('vorname')||'';
+    if(name){
+      var clean=decodeURIComponent(name).split(' ')[0];
+      if(clean.length>1&&clean.length<30) document.getElementById('buyerName').textContent=clean;
+    }
+  })();
+
   // 24h upsell countdown
   (function(){
     var KEY='dankeCdEnd';
