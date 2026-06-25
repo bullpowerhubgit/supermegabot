@@ -41,6 +41,74 @@ import random as _rnd
 
 # ── Template Helpers (work WITHOUT AI) ───────────────────────────────────────
 
+_TSHIRT_BASE_TAGS = (
+    "t-shirt,shirt,mode,bekleidung,geschenk,unisex,baumwolle,druck,"
+    "fashion,oberteil,kurzarm,print on demand,rundhals,streetwear,casual,printify,ineedit"
+)
+
+_TSHIRT_KEYWORD_MAP: list = [
+    (["business", "finanzen", "invest", "geld", "reich", "erfolg", "unternehmer"],
+     "business,finanzen,geld verdienen,erfolg,karriere,unternehmer"),
+    (["fitness", "sport", "gym", "workout", "training", "laufen", "marathon", "meilen"],
+     "fitness,sport,gym,workout,training,gesundheit,aktiv"),
+    (["ki", " ai ", "künstliche intelligenz", "automation", "chatgpt", "llm"],
+     "ki,künstliche intelligenz,automation,technologie,ai,zukunft"),
+    (["marketing", "social", "instagram", "traffic", "seo", "ads"],
+     "marketing,social media,digital marketing,werbung,content"),
+    (["motivation", "mindset", "wachstum", "inspiration", "ziele"],
+     "motivation,mindset,erfolg,inspiration,wachstum,persönlichkeit"),
+    (["digital", "online", "e-commerce", "shopify", "amazon"],
+     "digital,online business,e-commerce,internet,shopify"),
+    (["coding", "code", "developer", "software", "programmier", "python", "java"],
+     "coding,programmieren,software,entwickler,it,tech,developer"),
+    (["crypto", "bitcoin", "blockchain", "nft", "web3"],
+     "crypto,bitcoin,blockchain,kryptowährung,web3,defi"),
+    (["gaming", "gamer", "esports", "stream", "twitch"],
+     "gaming,gamer,videospiele,esports,streamer,controller"),
+    (["musik", "band", "rock", "pop", "festival", "dj", "rap"],
+     "musik,band,festival,rock,pop,dj,rap,konzert"),
+    (["natur", "outdoor", "camping", "wandern", "berge", "wald"],
+     "natur,outdoor,camping,wandern,berge,abenteuer,umwelt"),
+    (["lustig", "witzig", "humor", "fun", "spaß", "witz"],
+     "lustig,humor,witzig,fun,spaß,geschenkidee"),
+    (["vintage", "retro", "classic", "oldschool", "90er"],
+     "vintage,retro,classic,nostalgie,oldschool"),
+    (["katze", "cat", "kitten", "kätzchen"],
+     "katze,cat,haustier,tier,cat lover,katzenpfote"),
+    (["hund", "dog", "welpe", "doggo"],
+     "hund,dog,haustier,tier,dog lover,hundebesitzer"),
+    (["mama", "mutter", "muttertag", "mom"],
+     "mama,mutter,muttertag,familie,eltern,geschenk mama"),
+    (["papa", "vater", "vatertag", "dad"],
+     "papa,vater,vatertag,familie,eltern,geschenk papa"),
+    (["geburtstag", "birthday", "jubiläum"],
+     "geburtstag,geburtstagsgeschenk,jubiläum,feier,party"),
+    (["weihnacht", "christmas", "xmas"],
+     "weihnachten,weihnachtsgeschenk,winter,advent,geschenk"),
+    (["yoga", "meditation", "wellness", "entspannung", "chakra"],
+     "yoga,meditation,wellness,gesundheit,entspannung,mindfulness"),
+    (["vegan", "vegetarisch", "pflanzlich", "green", "nachhaltig"],
+     "vegan,vegetarisch,gesundheit,nachhaltigkeit,umwelt"),
+    (["lehrer", "teacher", "schule", "bildung", "student"],
+     "lehrer,schule,bildung,lernen,pädagogik"),
+    (["kaffee", "coffee", "barista", "espresso", "latte"],
+     "kaffee,coffee,barista,genuss,morgen,café"),
+    (["bier", "beer", "prost", "brew", "hopfen"],
+     "bier,beer,prost,freunde,party,feier"),
+    (["kunst", "art", "kreativ", "design", "künstler"],
+     "kunst,kreativ,design,künstler,art lover"),
+    (["herausforderung", "challenge", "100 tage", "milestone"],
+     "herausforderung,challenge,motivation,sport,erfolg"),
+    (["crew", "team", "gang", "squad"],
+     "crew,team,gruppe,gemeinschaft,freunde"),
+    (["limited", "exclusive", "exklusiv", "special"],
+     "limited edition,exklusiv,special,selten"),
+    (["pride", "rainbow", "lgbtq", "queer"],
+     "pride,rainbow,lgbtq,vielfalt,farbenfroh"),
+    (["pizza", "food", "essen", "foodie", "chef", "kochen"],
+     "essen,foodie,chef,kochen,küche,food lover"),
+]
+
 _TAG_RULES: list = [
     (["smart home", "wifi", "alexa", "smarthome", "smart plug"],
      "smart home,gadget 2026,bestseller,smart plug,alexa,weihnachtsgeschenk,top seller,haus automation"),
@@ -78,6 +146,14 @@ _TAG_RULES: list = [
 
 def _template_tags(title: str, product_type: str = "") -> str:
     text = (title + " " + product_type).lower()
+    # T-Shirt specific tags
+    if "t-shirt" in product_type.lower() or product_type.lower() in ("t-shirt", "shirt", ""):
+        tags = set(_TSHIRT_BASE_TAGS.split(","))
+        for keywords, extra in _TSHIRT_KEYWORD_MAP:
+            if any(kw in text for kw in keywords):
+                tags.update(extra.split(","))
+        return ",".join(sorted(t.strip() for t in tags if t.strip()))
+    # Non-T-Shirt: smart home / gadgets
     for keywords, tags in _TAG_RULES:
         if any(kw in text for kw in keywords):
             return tags
@@ -960,6 +1036,133 @@ Gib zurück als JSON:
 
         return {"ok": True, "fixed": fixed, "weak_found": len(weak)}
     except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 14. T-SHIRT TAG FIXER — SEO-Tags für alle T-Shirt Produkte (Batch-fähig)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def fix_product_tags_tshirt(batch_size: int = 50, since_id: int = 0) -> dict:
+    """
+    Aktualisiert T-Shirt Produkt-Tags mit echten SEO-Tags.
+    Läuft in batch_size Schritten damit es vom Scheduler schrittweise aufgerufen werden kann.
+    Speichert den letzten since_id im State, sodass der nächste Aufruf weitermacht.
+    """
+    if not _ok():
+        return {"ok": False, "error": "no shopify credentials"}
+
+    updated = 0
+    failed = 0
+    last_id = since_id
+
+    try:
+        params = {
+            "limit": batch_size,
+            "status": "active",
+            "fields": "id,title,tags,product_type",
+        }
+        if since_id:
+            params["since_id"] = since_id
+
+        data = await asyncio.wait_for(_get("products.json", params), timeout=20)
+        products = data.get("products", [])
+
+        for p in products:
+            current = p.get("tags", "")
+            ptype = p.get("product_type", "")
+            title = p.get("title", "")
+
+            needs_fix = (
+                "shopify automation" in current.lower()
+                or "shopify product import" in current.lower()
+                or len(current.split(",")) < 8
+            )
+
+            if needs_fix:
+                new_tags = _template_tags(title, ptype or "T-Shirt")
+                try:
+                    await asyncio.wait_for(
+                        _put(f"products/{p['id']}.json",
+                             {"product": {"id": p["id"], "tags": new_tags}}),
+                        timeout=12
+                    )
+                    updated += 1
+                except Exception:
+                    failed += 1
+                await asyncio.sleep(0.6)
+
+            last_id = p["id"]
+
+        log.info("fix_product_tags_tshirt: %d updated, %d failed, last_id=%d", updated, failed, last_id)
+        return {
+            "ok": True,
+            "updated": updated,
+            "failed": failed,
+            "processed": len(products),
+            "last_id": last_id,
+            "done": len(products) < batch_size,
+        }
+    except Exception as e:
+        log.error("fix_product_tags_tshirt error: %s", e)
+        return {"ok": False, "error": str(e), "last_id": last_id}
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 15. EMPTY SMART COLLECTION CLEANUP — löscht leere Smart Collections
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def cleanup_empty_smart_collections(max_delete: int = 100) -> dict:
+    """
+    Löscht Smart Collections die 0 Produkte enthalten.
+    Diese entstehen wenn Produkt-Typen geändert werden (z.B. Smart Home → T-Shirt).
+    Macht Crawl-Budget frei und verhindert Google-Penalties für leere Kategorie-Seiten.
+    """
+    if not _ok():
+        return {"ok": False, "error": "no shopify credentials"}
+
+    deleted = 0
+    kept = 0
+    errors = 0
+
+    try:
+        data = await asyncio.wait_for(
+            _get("smart_collections.json",
+                 {"limit": 250, "fields": "id,title,products_count"}),
+            timeout=20
+        )
+        cols = data.get("smart_collections", [])
+
+        empty = [c for c in cols if c.get("products_count", 0) == 0]
+        log.info("cleanup_empty_smart_collections: %d total, %d empty", len(cols), len(empty))
+
+        for col in empty[:max_delete]:
+            try:
+                async with aiohttp.ClientSession() as s:
+                    async with s.delete(
+                        BASE(f"smart_collections/{col['id']}.json"),
+                        headers=HEADERS,
+                        timeout=aiohttp.ClientTimeout(total=10)
+                    ) as r:
+                        if r.status in (200, 204):
+                            deleted += 1
+                        else:
+                            errors += 1
+            except Exception:
+                errors += 1
+            await asyncio.sleep(0.8)
+
+        kept = len(cols) - deleted
+        log.info("Smart collection cleanup: %d deleted, %d kept, %d errors", deleted, kept, errors)
+        return {
+            "ok": True,
+            "deleted": deleted,
+            "kept": kept,
+            "errors": errors,
+            "total_found_empty": len(empty),
+        }
+    except Exception as e:
+        log.error("cleanup_empty_smart_collections error: %s", e)
         return {"ok": False, "error": str(e)}
 
 
