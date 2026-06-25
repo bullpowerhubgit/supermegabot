@@ -60,7 +60,20 @@ function buildArticlePage(article, related = []) {
   <meta property="og:type" content="article" />
   <meta property="og:url" content="https://autoincome-ai.vercel.app/blog/${article.slug}" />
   <meta property="article:published_time" content="${dateStr}" />
-  ${article.schema_json ? `<script type="application/ld+json">${JSON.stringify(article.schema_json)}</script>` : ''}
+  <meta property="og:image" content="https://autoincome-ai.vercel.app/og-image.png" />
+  <script type="application/ld+json">${JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": article.title,
+    "description": article.meta_description || '',
+    "datePublished": dateStr,
+    "dateModified": dateStr,
+    "author": { "@type": "Person", "name": "Rudolf Sarkany", "url": "https://autoincome-ai.vercel.app" },
+    "publisher": { "@type": "Organization", "name": "AiiteC", "url": "https://autoincome-ai.vercel.app", "logo": { "@type": "ImageObject", "url": "https://autoincome-ai.vercel.app/og-image.png" } },
+    "mainEntityOfPage": { "@type": "WebPage", "@id": `https://autoincome-ai.vercel.app/blog/${article.slug}` },
+    "inLanguage": article.language || "de",
+    "keywords": article.keyword || article.title
+  })}</script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e2e8f0;line-height:1.8}
