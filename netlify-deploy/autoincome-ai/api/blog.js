@@ -212,7 +212,24 @@ function buildIndexPage(articles) {
 </nav>
 <div class="hero">
   <h1>KI Einkommen Blog</h1>
-  <p>Alle Artikel über KI, passives Einkommen und Automatisierung — auf Deutsch.</p>
+  <p>100 Artikel über KI, passives Einkommen und Automatisierung — auf Deutsch.</p>
+  <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px;">
+    <a href="/blog/ki-einkommen-1000-euro-monat" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;padding:8px 18px;border-radius:50px;font-size:.85rem;text-decoration:none;">💶 1000€/Monat</a>
+    <a href="/blog/digistore24-affiliate-tipps-2026" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;padding:8px 18px;border-radius:50px;font-size:.85rem;text-decoration:none;">🎯 Affiliate</a>
+    <a href="/blog/ai-income-machine-blueprint-erfahrungen" style="background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.4);color:#f59e0b;padding:8px 18px;border-radius:50px;font-size:.85rem;text-decoration:none;">⭐ Blueprint Review</a>
+    <a href="/blog/ki-geld-verdienen-ohne-erfahrung" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;padding:8px 18px;border-radius:50px;font-size:.85rem;text-decoration:none;">🚀 Für Anfänger</a>
+    <a href="/blog/passives-einkommen-software-vergleich" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;padding:8px 18px;border-radius:50px;font-size:.85rem;text-decoration:none;">🔧 Tools</a>
+  </div>
+</div>
+<div style="max-width:900px;margin:0 auto;padding:24px 20px 0;background:linear-gradient(135deg,rgba(124,58,237,.08),rgba(16,185,129,.05));border:1px solid rgba(124,58,237,.2);border-radius:16px;">
+  <div style="display:flex;flex-wrap:wrap;gap:20px;align-items:center;justify-content:space-between;">
+    <div>
+      <p style="font-size:.75rem;color:#f59e0b;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">NEU</p>
+      <p style="font-size:1.05rem;font-weight:700;color:#f1f5f9;margin-bottom:4px;">90-Tage Blueprint: Dein Plan zum ersten KI-Einkommen</p>
+      <p style="font-size:.85rem;color:#94a3b8;">Einmalig €37 · 60-Tage-Garantie · Sofortzugang · Auf Deutsch</p>
+    </div>
+    <a href="https://www.checkout-ds24.com/product/668035" style="flex-shrink:0;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:12px 28px;border-radius:50px;font-weight:700;text-decoration:none;font-size:.95rem;">Jetzt für €37 →</a>
+  </div>
 </div>
 ${articles.length > 0
   ? `<div class="grid">${cards}</div>`
