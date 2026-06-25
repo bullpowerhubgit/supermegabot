@@ -33,7 +33,9 @@ async function fetchAllSlugs() {
 }
 
 async function fetchRelated(currentSlug) {
-  const url = `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&slug=neq.${encodeURIComponent(currentSlug)}&select=slug,title,meta_description&order=created_at.desc&limit=3`;
+  // Pseudo-random offset per slug so each article links to different related articles
+  const offset = currentSlug.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % 80;
+  const url = `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&slug=neq.${encodeURIComponent(currentSlug)}&select=slug,title,meta_description&order=id.asc&limit=4&offset=${offset}`;
   try {
     const r = await fetch(url, { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } });
     return r.ok ? r.json() : [];
@@ -149,9 +151,9 @@ ${article.faq_html ? `<section class="faq">${article.faq_html}</section>` : ''}
 </article>
 ${related.length > 0 ? `
 <div class="related">
-  <h3>Weitere Artikel</h3>
+  <h3>Das könnte dich auch interessieren</h3>
   <div class="related-grid">
-    ${related.map((r) => `<a href="/blog/${r.slug}" class="related-card"><h4>${r.title}</h4><p>${(r.meta_description || '').substring(0, 80)}…</p></a>`).join('')}
+    ${related.map((r) => `<a href="/blog/${r.slug}" class="related-card"><h4>${r.title}</h4><p>${(r.meta_description || '').substring(0, 90)}…</p></a>`).join('')}
   </div>
 </div>` : ''}
 <footer>
