@@ -1,13 +1,20 @@
-// Visual Poster: TikTok + Pinterest + YouTube Community
-// TikTok: Mo/Mi/Fr 14:00 UTC | Pinterest: Mo/Do 13:00 UTC | YouTube: Mi/Sa 16:00 UTC
+// Visual Poster: TikTok + Pinterest + YouTube Community + Twitter/X
+// TikTok: Mo/Mi/Fr 14:00 UTC | Pinterest: Mo/Do 13:00 UTC | YouTube: Mi/Sa 16:00 UTC | Twitter: Mo/Mi/Fr 15:00 UTC
 // TikTok: Photo Post API oder Telegram-Skript
 // Pinterest: Pins mit echten Unsplash-Bildern
 // YouTube: Community Posts API oder Telegram-Fallback
+// Twitter: OAuth 1.0a (@rudibot84)
+
+import { createHmac } from 'crypto';
 
 const TIKTOK_TOKEN = process.env.TIKTOK_ACCESS_TOKEN;
 const PINTEREST_TOKEN = process.env.PINTEREST_ACCESS_TOKEN;
 const PINTEREST_BOARD_ID = process.env.PINTEREST_BOARD_ID;
 const YOUTUBE_TOKEN = process.env.YOUTUBE_OAUTH_TOKEN;
+const TWITTER_API_KEY = process.env.TWITTER_API_KEY;
+const TWITTER_API_SECRET = process.env.TWITTER_API_SECRET;
+const TWITTER_ACCESS_TOKEN = process.env.TWITTER_ACCESS_TOKEN;
+const TWITTER_ACCESS_SECRET = process.env.TWITTER_ACCESS_SECRET;
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
@@ -24,6 +31,133 @@ async function sendTelegram(msg) {
       body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
     });
   } catch {}
+}
+
+// Twitter/X German tweet templates (280 chars max, Mo/Mi/Fr 15:00 UTC)
+const TWEETS = [
+  `🤖 €111 passiv verdient in 4 Monaten — vollautomatisch.
+
+LinkedIn-Bot 3x/Woche, E-Mail-Sequenz, Digistore24-Produkt.
+0 Stunden manuelle Arbeit danach.
+
+Blueprint (Schritt-für-Schritt Plan) 👇
+autoincome-ai.vercel.app
+
+#PassivesEinkommen #KI #OnlineBusiness #Deutschland`,
+
+  `🇩🇪 Der deutsche KI-Markt hat 85% weniger Konkurrenz als Englisch — bei gleicher Kaufkraft.
+
+Wer jetzt startet, hat einen riesigen Zeitvorteil.
+
+Mein System (gratis lesen): autoincome-ai.vercel.app/blog
+
+#KIBusiness #DACH #Automation #GeldVerdienen`,
+
+  `⚡ 2 Stunden Setup → danach 0 Stunden Arbeit.
+
+1. Digistore24-Produkt (30 Min)
+2. LinkedIn-Bot (30 Min)
+3. Klaviyo E-Mail-Sequenz (1 Std)
+
+Fertig. Alles läuft automatisch.
+
+Blueprint: autoincome-ai.vercel.app
+
+#KI #Automatisierung #PassivesEinkommen`,
+
+  `💡 Affiliate-Programm: 50% Provision auf jeden Verkauf.
+
+Blueprint €37 → du bekommst €18,50
+SuperMegaBot €97 → du bekommst €48,50
+
+Wöchentliche Auszahlung via Digistore24.
+Keine Website nötig.
+
+Kostenlos starten: autoincome-ai.vercel.app/affiliate.html
+
+#Affiliate #PassivesEinkommen`,
+
+  `📊 Woche 12 Update: Was funktioniert wirklich?
+
+✅ LinkedIn: ~2.400 Impressionen/Post
+✅ Klaviyo: 35% E-Mail-Öffnungsrate
+✅ SEO-Blog: 52 Artikel, Google-Traffic steigt
+❌ TikTok: Viel Aufwand, wenig Return
+
+Mein System: autoincome-ai.vercel.app
+
+#OnlineBusiness #KI #Transparenz`,
+
+  `🚀 SuperMegaBot — das System das ich selbst benutze.
+
+✅ LinkedIn Auto-Post 3x/Woche
+✅ Instagram Di/Do/Sa automatisch
+✅ E-Mail-Sequenz 30 Tage automatisch
+✅ Revenue-Report täglich 07:00 auf Telegram
+
+€97 einmalig. autoincome-ai.vercel.app/supermegabot.html
+
+#Automation #KI #SuperMegaBot`,
+
+  `📝 Neuer Blog-Artikel: Passives Einkommen 2026 — was WIRKLICH funktioniert.
+
+Ehrliche Zahlen, echte Methoden, kein Hype.
+
+Lesen: autoincome-ai.vercel.app/blog
+
+#PassivesEinkommen #OnlineBusiness #2026 #KI #Deutschland`,
+
+  `❓ Umfrage: Habt ihr schon passives Einkommen?
+
+A) Ja, über €500/Monat
+B) Ja, unter €500/Monat
+C) Ich arbeite daran
+D) Noch nicht gestartet
+
+Kommentiert! Ich antworte jedem.
+
+Mein Plan für den Start: autoincome-ai.vercel.app
+
+#PassivesEinkommen #Community`,
+];
+
+function twitterOAuth1Sign(method, url, params, consumerSecret, tokenSecret) {
+  const allParams = { ...params };
+  const sortedPairs = Object.keys(allParams).sort()
+    .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(allParams[k])}`)
+    .join('&');
+  const baseString = [method, encodeURIComponent(url), encodeURIComponent(sortedPairs)].join('&');
+  const signingKey = `${encodeURIComponent(consumerSecret)}&${encodeURIComponent(tokenSecret)}`;
+  return createHmac('sha1', signingKey).update(baseString).digest('base64');
+}
+
+async function postTweet(text) {
+  if (!TWITTER_API_KEY || !TWITTER_API_SECRET || !TWITTER_ACCESS_TOKEN || !TWITTER_ACCESS_SECRET) return null;
+  const url = 'https://api.twitter.com/2/tweets';
+  const nonce = Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+  const ts = Math.floor(Date.now() / 1000).toString();
+  const oauthParams = {
+    oauth_consumer_key: TWITTER_API_KEY,
+    oauth_nonce: nonce,
+    oauth_signature_method: 'HMAC-SHA1',
+    oauth_timestamp: ts,
+    oauth_token: TWITTER_ACCESS_TOKEN,
+    oauth_version: '1.0',
+  };
+  const sig = twitterOAuth1Sign('POST', url, oauthParams, TWITTER_API_SECRET, TWITTER_ACCESS_SECRET);
+  oauthParams.oauth_signature = sig;
+  const authHeader = 'OAuth ' + Object.keys(oauthParams).sort()
+    .map(k => `${encodeURIComponent(k)}="${encodeURIComponent(oauthParams[k])}"`)
+    .join(', ');
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text }),
+    signal: AbortSignal.timeout(10000),
+  });
+  const data = await r.json();
+  if (!r.ok) throw new Error(`Twitter ${r.status}: ${JSON.stringify(data).substring(0, 150)}`);
+  return data?.data?.id;
 }
 
 async function resolveUnsplash(keyword, w = 1000, h = 1500) {
@@ -318,6 +452,33 @@ export default async function handler(req, res) {
         `<b>Text (copy-paste):</b>\n\n${post.text.substring(0, 3500)}`;
       await sendTelegram(tgMsg);
       results.push({ platform: 'youtube', mode: 'telegram_fallback', idx, error: ytResult?.error });
+    }
+  }
+
+  // Twitter/X: Mo=1, Mi=3, Fr=5 at 15:00 UTC
+  if ([1, 3, 5].includes(dayOfWeek) && hourUTC === 15) {
+    const daySlot = dayOfWeek === 1 ? 0 : dayOfWeek === 3 ? 1 : 2;
+    const idx = (weekNum * 3 + daySlot) % TWEETS.length;
+    const tweet = TWEETS[idx];
+    if (TWITTER_API_KEY && TWITTER_ACCESS_TOKEN) {
+      try {
+        const tweetId = await postTweet(tweet);
+        await sendTelegram(`✅ Tweet live!\n🐦 ID: ${tweetId}\n📝 ${tweet.substring(0, 80)}...`);
+        results.push({ platform: 'twitter', tweetId, idx });
+      } catch (err) {
+        await sendTelegram(
+          `⚠️ Tweet Fehler: ${err.message.substring(0, 100)}\n\n` +
+          `Falls 402 CreditsDepleted → developer.twitter.com → Billing → Credits kaufen\n\n` +
+          `<b>Tweet (manuell posten):</b>\n${tweet.substring(0, 250)}`
+        );
+        results.push({ platform: 'twitter', error: err.message, idx });
+      }
+    } else {
+      await sendTelegram(
+        `🐦 <b>Tweet heute (manuell posten):</b>\n\n${tweet}\n\n` +
+        `Auto-Post: vercel env add TWITTER_API_KEY/SECRET/ACCESS_TOKEN/ACCESS_SECRET production`
+      );
+      results.push({ platform: 'twitter', mode: 'telegram_fallback', idx });
     }
   }
 

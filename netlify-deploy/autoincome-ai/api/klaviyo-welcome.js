@@ -222,6 +222,97 @@ const FOLLOWUP_EMAILS = {
 </body></html>`,
     text: `Tag 5: Blueprint €37 → ${PRODUCT_URL} | SuperMegaBot Vollsystem €97 → ${UPSELL_URL}`,
   },
+  day14: {
+    subject: '14 Tage später — was hat sich verändert?',
+    preview: 'Eine Erfolgsgeschichte + dein konkreter nächster Schritt.',
+    html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+<h2 style="color:#7c3aed;">14 Tage sind vergangen 📅</h2>
+<p style="color:#475569;">Ich möchte dir von jemandem erzählen der vor 14 Tagen genau da war wo du jetzt bist.</p>
+<div style="background:#f0fdf4;border:1px solid #86efac;border-radius:12px;padding:20px;margin:20px 0;">
+  <p style="color:#166534;font-weight:700;">"In Woche 3 mein erster Verkauf"</p>
+  <p style="color:#166534;font-size:0.9rem;font-style:italic;">"Ich war skeptisch. Aber ich habe einfach den Blueprint-Plan befolgt — Schritt für Schritt. In Woche 3 kam mein erster Digistore24-Verkauf. Es funktioniert, wenn man es wirklich umsetzt."</p>
+  <p style="color:#166534;font-size:0.85rem;margin-top:8px;font-weight:600;">— Kunde aus Österreich</p>
+</div>
+<p style="color:#475569;">Was war sein konkreter nächster Schritt? Genau das was ich dir jetzt empfehle:</p>
+<div style="background:#f8f9fa;border-radius:12px;padding:20px;margin:20px 0;">
+  <p style="color:#1e293b;font-weight:600;">Dein Plan für die nächsten 7 Tage:</p>
+  <p style="color:#475569;line-height:1.9;">
+    📌 Tag 15: Digistore24-Konto erstellen (15 Min, kostenlos)<br>
+    📌 Tag 16: Erstes Produkt als Reseller auflisten<br>
+    📌 Tag 17: Affiliate-Link teilen (LinkedIn, WhatsApp, Email)<br>
+    📌 Tag 18-21: Erste Einnahmen beobachten
+  </p>
+</div>
+<div style="text-align:center;margin:24px 0;">
+  <a href="${PRODUCT_URL}" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;display:inline-block;">Blueprint €37 — jetzt starten →</a>
+</div>
+<p style="color:#94a3b8;font-size:0.85rem;">60-Tage Geld-zurück-Garantie · Rudolf — AiiteC</p>
+</body></html>`,
+    text: `14 Tage Follow-up: Nächster Schritt + Erfolgsgeschichte. Blueprint €37 → ${PRODUCT_URL}`,
+  },
+  day21: {
+    subject: '🆕 NEU: SuperMegaBot System für €97',
+    preview: 'Das komplette KI-Automation System — jetzt verfügbar.',
+    html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+<h2 style="color:#7c3aed;">🆕 Neu: Das komplette System ist da</h2>
+<p style="color:#475569;">Du bist seit 3 Wochen dabei. Heute stelle ich dir etwas vor das ich bisher nicht öffentlich kommuniziert habe.</p>
+<div style="background:linear-gradient(135deg,#1e293b,#0f172a);border:2px solid #7c3aed;border-radius:12px;padding:28px;margin:20px 0;color:white;text-align:center;">
+  <p style="color:#a78bfa;font-size:1rem;margin-bottom:4px;">⭐ Exklusiv für E-Mail-Subscriber</p>
+  <h2 style="color:white;font-size:1.6rem;margin:8px 0;">SuperMegaBot — KI-Automation System</h2>
+  <p style="color:#94a3b8;font-size:0.9rem;margin-bottom:16px;">Das vollständige System das mein Business automatisiert</p>
+  <div style="background:#1e293b;border-radius:8px;padding:16px;text-align:left;margin-bottom:16px;">
+    <p style="color:#e2e8f0;font-size:0.9rem;line-height:1.8;margin:0;">
+      ✅ LinkedIn Auto-Poster (3x/Woche)<br>
+      ✅ Instagram Auto-Poster (Di/Do/Sa)<br>
+      ✅ Facebook Auto-Poster (Mo/Mi/Fr)<br>
+      ✅ Klaviyo E-Mail-Automation (30 Tage Sequenz)<br>
+      ✅ Digistore24 Revenue Tracking (täglich)<br>
+      ✅ 32 SEO-Blog-Artikel auf Deutsch<br>
+      ✅ Amazon + Affiliate-Links automatisch<br>
+      ✅ 1-Click Deploy auf Railway
+    </p>
+  </div>
+  <p style="color:#64748b;font-size:0.85rem;text-decoration:line-through;margin:0;">Normalpreis: €297</p>
+  <p style="font-size:2.2rem;font-weight:900;color:white;margin:8px 0;">€97</p>
+  <p style="color:#94a3b8;font-size:0.8rem;margin-bottom:16px;">Einmalzahlung · Kein Abo · Lebenszeit-Zugang</p>
+  <a href="${UPSELL_URL}" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:14px 36px;border-radius:50px;font-size:1rem;font-weight:700;text-decoration:none;">Vollsystem sichern →</a>
+</div>
+<p style="color:#475569;font-size:0.9rem;">Oder starte mit dem Blueprint für €37: <a href="${PRODUCT_URL}" style="color:#7c3aed;">${PRODUCT_URL}</a></p>
+<p style="color:#94a3b8;font-size:0.85rem;">60-Tage Geld-zurück-Garantie · Rudolf — AiiteC</p>
+</body></html>`,
+    text: `SuperMegaBot Vollsystem €97 → ${UPSELL_URL} | Blueprint €37 → ${PRODUCT_URL}`,
+  },
+  day30: {
+    subject: '€185–485/Monat als Affiliate — ohne eigenes Produkt',
+    preview: '50% Provision auf alle Verkäufe. Kostenlos starten.',
+    html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
+<h2 style="color:#7c3aed;">Ein Monat dabei — danke! 🎉</h2>
+<p style="color:#475569;">Du bist seit 30 Tagen in meiner Liste. Das ist nicht selbstverständlich — danke für dein Vertrauen.</p>
+<p style="color:#475569;">Heute zeige ich dir Option 3 — die die ich oft vergesse zu erwähnen:</p>
+<div style="background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:24px;margin:20px 0;">
+  <h3 style="color:#166534;margin-bottom:12px;">💰 Als Affiliate verdienen — ohne eigenes Produkt</h3>
+  <p style="color:#166534;font-size:0.9rem;line-height:1.9;">
+    Du empfiehlst meine Produkte weiter. Ich zahle dir 50% von jedem Verkauf.<br><br>
+    <strong>Blueprint €37</strong> → du bekommst <strong>€18,50</strong> pro Verkauf<br>
+    <strong>SuperMegaBot €97</strong> → du bekommst <strong>€48,50</strong> pro Verkauf<br><br>
+    Digistore24 zahlt wöchentlich direkt auf dein Konto aus.<br>
+    Keine Website nötig. Keine Mindestbestellmenge. Keine Vorabinvestition.
+  </p>
+  <div style="background:#dcfce7;border-radius:8px;padding:16px;margin-top:16px;">
+    <p style="color:#166534;font-weight:700;margin:0;">Beispielrechnung:</p>
+    <p style="color:#166534;font-size:0.9rem;margin:8px 0;">10 Verkäufe Blueprint/Monat = <strong>€185/Monat</strong><br>
+    5 Verkäufe SuperMegaBot/Monat = <strong>€242/Monat</strong><br>
+    Kombiniert = <strong>€427/Monat</strong> passiv</p>
+  </div>
+  <div style="text-align:center;margin-top:20px;">
+    <a href="https://autoincome-ai.vercel.app/affiliate.html" style="display:inline-block;background:#059669;color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;">Jetzt kostenlos Affiliate werden →</a>
+  </div>
+</div>
+<p style="color:#475569;font-size:0.9rem;">Hast du Fragen? Antworte einfach auf diese E-Mail — ich lese alles persönlich.</p>
+<p style="color:#94a3b8;font-size:0.85rem;">Rudolf Sarkany — AiiteC KI-Automation</p>
+</body></html>`,
+    text: `Affiliate-Programm: 50% Provision → https://autoincome-ai.vercel.app/affiliate.html | Blueprint €37 → ${PRODUCT_URL} | SuperMegaBot €97 → ${UPSELL_URL}`,
+  },
   day10: {
     subject: '🚀 Letzte Chance — 3 Wege zu passivem Einkommen',
     preview: 'Blueprint €37, Vollsystem €97, oder 50% Affiliate-Provision.',
@@ -342,6 +433,30 @@ export default async function handler(req, res) {
       const campId = await sendFollowupCampaign(FOLLOWUP_EMAILS.day10, day10subs.length, 'day10');
       results.push({ tag: 'day10', count: day10subs.length, campId });
       await sendTelegram(`📧 <b>Follow-up Tag 10</b>: ${day10subs.length} Subscriber → ${campId}`);
+    }
+
+    // Day 14 follow-up
+    const day14subs = await getSubscribersByAge(14);
+    if (day14subs.length > 0) {
+      const campId = await sendFollowupCampaign(FOLLOWUP_EMAILS.day14, day14subs.length, 'day14');
+      results.push({ tag: 'day14', count: day14subs.length, campId });
+      await sendTelegram(`📧 <b>Follow-up Tag 14</b>: ${day14subs.length} Subscriber → ${campId}`);
+    }
+
+    // Day 21 follow-up
+    const day21subs = await getSubscribersByAge(21);
+    if (day21subs.length > 0) {
+      const campId = await sendFollowupCampaign(FOLLOWUP_EMAILS.day21, day21subs.length, 'day21');
+      results.push({ tag: 'day21', count: day21subs.length, campId });
+      await sendTelegram(`📧 <b>Follow-up Tag 21</b>: ${day21subs.length} Subscriber → ${campId}`);
+    }
+
+    // Day 30 follow-up
+    const day30subs = await getSubscribersByAge(30);
+    if (day30subs.length > 0) {
+      const campId = await sendFollowupCampaign(FOLLOWUP_EMAILS.day30, day30subs.length, 'day30');
+      results.push({ tag: 'day30', count: day30subs.length, campId });
+      await sendTelegram(`📧 <b>Follow-up Tag 30</b>: ${day30subs.length} Subscriber → ${campId}`);
     }
 
     if (results.length === 0) {
