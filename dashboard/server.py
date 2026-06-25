@@ -1975,10 +1975,14 @@ async def handle_digistore_status(req):
     try:
         from modules.digistore24_automation import ping, get_sales_stats, get_products, setup_ipn, is_configured
         configured = is_configured()
-        ok = await ping() if configured else False
-        stats = await get_sales_stats() if ok else {}
-        products = await get_products() if ok else []
-        ipn_info = await setup_ipn()
+        ok = await asyncio.wait_for(ping(), timeout=8) if configured else False
+        stats = await asyncio.wait_for(get_sales_stats(), timeout=8) if ok else {}
+        products = await asyncio.wait_for(get_products(), timeout=8) if ok else []
+        try:
+            ipn_info = await asyncio.wait_for(setup_ipn(), timeout=5)
+            ipn_url = ipn_info.get("ipn_url", "")
+        except Exception:
+            ipn_url = "https://dudirudibot-mega-production.up.railway.app/api/digistore24/ipn"
         return web.json_response({
             "ok": ok,
             "connected": ok,
@@ -1986,9 +1990,11 @@ async def handle_digistore_status(req):
             "stats": stats,
             "product_count": len(products),
             "revenue_note": "€0 = Keine Transaktionen im Konto (API verbunden, Daten korrekt)" if ok and stats.get("total", 0) == 0 else None,
-            "ipn_url": ipn_info["ipn_url"],
+            "ipn_url": ipn_url,
             "ipn_setup_needed": True,
         })
+    except asyncio.TimeoutError:
+        return web.json_response({"ok": False, "connected": False, "error": "DS24 API timeout"})
     except Exception as e:
         return web.json_response({"ok": False, "connected": False, "error": str(e)})
 
@@ -7220,6 +7226,34 @@ async def handle_mega_autonomy_start(request: web.Request) -> web.Response:
 async def handle_mega_status(request: web.Request) -> web.Response:
     return await handle_status_full(request)
 
+async def handle_shopify_collections_get(req):
+    """GET /api/shopify/collections — list all Shopify collections."""
+    try:
+        import aiohttp as _ah
+        token  = os.getenv("SHOPIFY_ACCESS_TOKEN", "") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "") or os.getenv("SHOPIFY_STORE_DOMAIN", "")
+        ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        if not token or not domain:
+            return web.json_response({"ok": False, "error": "Shopify nicht konfiguriert"})
+        base = f"https://{domain}" if not domain.startswith("http") else domain
+        async with _ah.ClientSession(timeout=_ah.ClientTimeout(total=10)) as s:
+            async with s.get(
+                f"{base}/admin/api/{ver}/custom_collections.json?limit=50",
+                headers={"X-Shopify-Access-Token": token},
+            ) as r:
+                cc = (await r.json(content_type=None)).get("custom_collections", [])
+            async with s.get(
+                f"{base}/admin/api/{ver}/smart_collections.json?limit=50",
+                headers={"X-Shopify-Access-Token": token},
+            ) as r:
+                sc = (await r.json(content_type=None)).get("smart_collections", [])
+        collections = [{"id": c["id"], "title": c["title"], "type": "custom"} for c in cc] + \
+                      [{"id": c["id"], "title": c["title"], "type": "smart"} for c in sc]
+        return web.json_response({"ok": True, "collections": collections, "count": len(collections)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── Route Aliases for Dashboard Compatibility ───────────────────────────────────
 
 async def handle_shopify_sync_alias(request: web.Request) -> web.Response:
@@ -9089,6 +9123,10 @@ async def create_app():
     app.router.add_post("/api/dragon/article/send",       handle_dragon_article_send)
     app.router.add_get( "/api/dragon/article/stats",      handle_dragon_article_stats)
     app.router.add_get( "/api/system/overview",           handle_system_overview)
+    # ── GET ALIASES for previously 404 routes ────────────────────────────────
+    app.router.add_get( "/api/digistore/revenue",         handle_digistore_autonomy_revenue)
+    app.router.add_get( "/api/scheduler/tasks",           handle_automation_tasks)
+    app.router.add_get( "/api/shopify/collections",       handle_shopify_collections_get)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
