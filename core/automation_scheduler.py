@@ -2566,9 +2566,27 @@ async def task_shopify_cleanup_collections() -> str:
         from modules.shopify_full_autonomy import cleanup_empty_smart_collections
         r = await cleanup_empty_smart_collections(max_delete=100)
         return (f"ShopifyCleanupCollections: deleted={r.get('deleted',0)} "
-                f"kept={r.get('kept',0)} empty_found={r.get('total_found_empty',0)}")
+                f"kept={r.get('kept',0)} to_delete={r.get('total_to_delete',0)}")
     except Exception as e:
         return f"ShopifyCleanupCollections error: {e}"
+
+
+_shopify_gmc_since_id: int = 0  # global state for incremental GMC metafield updates
+
+async def task_shopify_gmc_metafields() -> str:
+    """Shopify: Google Shopping Metafelder für T-Shirts setzen (GMC Freischaltung)"""
+    global _shopify_gmc_since_id
+    try:
+        from modules.shopify_full_autonomy import fix_product_gmc_metafields
+        r = await fix_product_gmc_metafields(batch_size=30, since_id=_shopify_gmc_since_id)
+        if r.get("done"):
+            _shopify_gmc_since_id = 0  # reset after full cycle
+        else:
+            _shopify_gmc_since_id = r.get("last_id", 0)
+        return (f"ShopifyGMC: updated={r.get('updated',0)} "
+                f"processed={r.get('processed',0)} done={r.get('done')} since_id={_shopify_gmc_since_id}")
+    except Exception as e:
+        return f"ShopifyGMC error: {e}"
 
 
 # ── DS24 FULL AUTO ───────────────────────────────────────────────────────────
@@ -4794,6 +4812,7 @@ TASKS = [
     ("ebay_blast",            task_ebay_blast,          10800, 490),  # 3h — eBay multi blast
     ("shopify_fix_tags",      task_shopify_fix_tags,     3600,  530),  # 1h — T-Shirt SEO tags
     ("shopify_cleanup_cols",  task_shopify_cleanup_collections, 86400, 570),  # 24h — leere Collections
+    ("shopify_gmc_meta",      task_shopify_gmc_metafields, 3600, 610),  # 1h — Google Shopping metafelder
 ]
 
 
