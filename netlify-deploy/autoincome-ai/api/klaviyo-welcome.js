@@ -19,8 +19,14 @@ const WELCOME_EMAIL = {
   <p style="color:#64748b;font-size:1rem;">Du hast den ersten richtigen Schritt gemacht.</p>
 </div>
 
+<div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:24px;margin:20px 0;text-align:center;">
+  <p style="color:#166534;font-weight:700;font-size:1.1rem;margin-bottom:8px;">🎁 Dein kostenloses Geschenk ist bereit!</p>
+  <a href="https://autoincome-ai.vercel.app/blueprint.pdf" style="display:inline-block;background:#22c55e;color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;font-size:1rem;margin:8px 0;">📄 Blueprint PDF kostenlos herunterladen →</a>
+  <p style="color:#15803d;font-size:0.85rem;margin-top:8px;">90-Tage-Aktionsplan · 10 Seiten · Sofort-Download</p>
+</div>
+
 <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin:20px 0;">
-  <h2 style="color:#1e293b;font-size:1.3rem;margin-bottom:16px;">Was du jetzt bekommst:</h2>
+  <h2 style="color:#1e293b;font-size:1.3rem;margin-bottom:16px;">Was du als nächstes bekommst:</h2>
   <p style="color:#475569;line-height:1.8;">
     ✅ <strong>KI-Einkommens Checkliste</strong> — 21 Schritte zum ersten passiven Einkommen<br>
     ✅ <strong>Wöchentliche KI-Tipps</strong> — was wirklich funktioniert, was nicht<br>
