@@ -161,6 +161,28 @@ ${related.length > 0 ? `
   <a href="/affiliate.html">Affiliate</a>
   <p style="margin-top:12px">© 2026 AiiteC — Rudolf Sarkany</p>
 </footer>
+<div id="sticky-cta" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:999;background:linear-gradient(135deg,#1a0533,#16213e);border-top:1px solid rgba(124,58,237,.4);padding:12px 20px;box-shadow:0 -4px 24px rgba(0,0,0,.5);">
+  <div style="max-width:800px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+    <div style="flex:1;min-width:200px;">
+      <p style="margin:0;font-size:.8rem;color:#a78bfa;font-weight:700;text-transform:uppercase;letter-spacing:1px;">90-Tage Blueprint</p>
+      <p style="margin:4px 0 0;font-size:.93rem;color:#f1f5f9;font-weight:600;">Passives KI-Einkommen — Auf Deutsch · €37</p>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-shrink:0;">
+      <a href="https://www.checkout-ds24.com/product/668035" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:11px 28px;border-radius:50px;font-size:.9rem;font-weight:700;text-decoration:none;white-space:nowrap;">Jetzt für €37 →</a>
+      <button onclick="document.getElementById('sticky-cta').style.display='none'" style="background:none;border:none;color:#64748b;font-size:1.2rem;cursor:pointer;padding:4px 8px;line-height:1;">✕</button>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  var shown=false;
+  window.addEventListener('scroll',function(){
+    if(shown)return;
+    var pct=window.scrollY/(document.body.scrollHeight-window.innerHeight);
+    if(pct>0.3){shown=true;document.getElementById('sticky-cta').style.display='block';}
+  },{passive:true});
+})();
+</script>
 </body>
 </html>`;
 }
