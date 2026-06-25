@@ -1,90 +1,109 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-25 v42
+# SuperMegaBot CURRENT STATUS — 2026-06-25 v43
 
 ## SYSTEM STATUS
-- Railway Server: **LÄUFT** ✅ (Deploy läuft — 6 Commits heute)
+- Railway Server: **LÄUFT** ✅ (9 Commits heute — wartet auf Railway Hobby Upgrade!)
 - Vercel: **LIVE** ✅ (autoincome-ai.vercel.app)
-- Shopify Store: **LIVE** — 10.553 aktive Produkte ✅ (Collections bereinigt!)
-- DS24 Blueprint: **LIVE** ✅ — €37 (668035) | SuperMegaBot: €97 (704677)
-- GMC: **LIVE** ✅ — merchant_id: 5813214419, nicht suspended
-- NEXUS-1: **AKTIV** ✅ — 351 Aktionen heute, 1.866 gesamt
-- Printify: **LIVE** ✅ — 50 Produkte
+- Shopify Store: **LIVE** — 10.553 T-Shirts, Collections bereinigt ✅
+- DS24: **LIVE** ✅ — €37 Blueprint (668035) | €97 SuperMegaBot (704677)
+- GMC: **LIVE** ✅ — merchant_id: 5813214419, Metafelder werden gesetzt
 
 ## REVENUE STATUS (LIVE)
 - **DS24**: €111.00 (3 Verkäufe) ✅
-- **Shopify**: €0 (0 Bestellungen — Produkte vorhanden, Traffic fehlt)
+- **Shopify**: €0 (0 Bestellungen — Produkte vorhanden, Traffic im Aufbau)
 - **Ziel**: €1.000/Monat
-- **Fehlt**: ~24 weitere Blueprint-Verkäufe (€37) ODER ~10 SuperMegaBot (€97)
+- **Neue Artikel**: 5 hochkonvertierende DS24-Artikel (Blueprint + SuperMegaBot Kauflinks)
 
 ## 🚨 KRITISCH: MANUELLE SCHRITTE NÖTIG
 
-### 1. DS24 Produkt 668035 fixen (HÖCHSTE PRIORITÄT — Marketplace-Blockierung!)
-**Script:** `node /Users/rudolfsarkany/local-projects/telegram-automation-bot/ds24_autofix.js`
-**VORHER: Chrome komplett schließen (Cmd+Q)!**
+### 1. Railway Upgrade ($5/Monat) ← WICHTIGSTE AKTION!
+railway.app → Login → Hobby Plan wählen
+→ danach deployen alle 9 Commits automatisch!
+→ Dann starten: shopify_fix_tags, shopify_gmc_meta, shopify_cleanup_cols automatisch stündlich
 
-### 2. DS24 IPN URL setzen (1 Minute)
+### 2. DS24 Produkt 668035 fixen (HÖCHSTE PRIORITÄT — Marketplace-Blockierung!)
+```bash
+# Chrome komplett schließen (Cmd+Q) dann:
+node /Users/rudolfsarkany/local-projects/telegram-automation-bot/ds24_autofix.js
+```
+
+### 3. DS24 IPN URL setzen (1 Minute)
 digistore24.com → Einstellungen → Benachrichtigungen → IPN URL:
 `https://autoincome-ai.vercel.app/api/klaviyo-welcome`
 
-### 3. Railway Upgrade ($5/Monat) ← KRITISCH FÜR DEPLOYMENT
-railway.app → Login → Hobby Plan wählen → alle 6 Commits auto-deploy
-
-### 4. Reddit App-Typ ändern (1 Minute)
-reddit.com → Profil → Prefs → Apps → rodbot → Edit → **Typ: script** → Update
+### 4. Shopify Seiten erstellen (für Google Shopping Pflicht)
+Shopify Admin → Online Store → Pages → Add page:
+- "Datenschutzerklärung" (handle: datenschutz)
+- "Versand & Lieferung" (handle: versand)
+- "Rückgabe & Rückerstattung" (handle: rueckgabe)
+- "Kontakt" (handle: kontakt)
+- "Über uns" (handle: ueber-uns)
+[ODER: Shopify API Token um write_content Scope erweitern → dann kann ich es automatisch machen]
 
 ### 5. Facebook Token erneuern
 `bash /Users/rudolfsarkany/refresh_fb_token.sh`
 
-## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-25 v42 — Shopify Komplett-Setup)
+### 6. Reddit App-Typ ändern
+reddit.com/prefs/apps → rodbot → Edit → Typ: script
 
-### SHOPIFY STORE KOMPLETT EINGERICHTET:
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-25 v43)
 
-**1. Duplicate Collections bereinigt ✅**
-- War: 132 Custom Collections mit 19 Titel-Duplikaten (z.B. "Business & Finanzen" 14×!)
-- Jetzt: 60 saubere Custom Collections (72 Duplikate gelöscht)
-- 8 Collection-Beschreibungen für SEO hinzugefügt
+### SHOPIFY KOMPLETT-SETUP:
+1. **72 Duplikate gelöscht** (132 → 60 Custom Collections)
+2. **~370+ leere Smart Collections gelöscht** (842 → ~470, läuft noch im Hintergrund)
+3. **8 neue T-Shirt Smart Collections** (Business, Fitness, Motivation, Gaming, Geschenk, etc.)
+4. **10 Collection-Beschreibungen** für SEO hinzugefügt
+5. **T-Shirt SEO-Tag-System** implementiert (30 Keyword-Gruppen, _template_tags gefixt)
+6. **Google Shopping Metafelder** (6 Attribute: category, gender, age_group, material, condition, brand)
+7. **48+ Produkte** bereits mit GMC Metafeldern (läuft im Hintergrund für alle 10.553)
 
-**2. Smart Collections bereinigt ✅ (läuft noch)**
-- War: 842 Smart Collections (die meisten leer — für Smart Home/Alexa/Garten Typen)
-- Löschung: 196 leere typ-basierte Collections gelöscht (läuft im Hintergrund)
-- Behalten: title/tag/vendor-basierte Shirt-Collections (Business Shirts, Fitness Shirts, etc.)
+### NEUE API-ROUTES (3):
+- POST /api/shopify/fix-tags → SEO-Tags für 50 Produkte/Run
+- POST /api/shopify/cleanup-collections → Leere Collections löschen
+- POST /api/shopify/gmc-meta → Google Shopping Metafelder setzen
 
-**3. T-Shirt SEO-Tags Fix ✅ (neu im Scheduler)**
-- Alle 10.553 Produkte haben nur 2 nutzlose Tags ("shopify automation")
-- Neues System: 30 Keyword-Gruppen → automatische Tag-Generierung per Titel
-- Via Scheduler (task_shopify_fix_tags): 50 Produkte/Stunde → alle Updates in ~210h
-- API: POST /api/shopify/fix-tags
+### NEUE SCHEDULER-TASKS (28 total, war 25):
+- shopify_fix_tags (1h): 50 Produkte × SEO-Tags → alle 10.553 in ~210 Runs
+- shopify_cleanup_cols (24h): Leere Smart Collections entfernen
+- shopify_gmc_meta (1h): Google Shopping Metafelder für alle Produkte
 
-**4. _template_tags() für T-Shirts gefixt ✅**
-- War: generierte "gadget 2026" Tags für T-Shirts
-- Jetzt: 17 Base-Tags + keyword-basierte Zusatz-Tags auf Deutsch
+### DS24 CONVERSION CONTENT:
+**5 neue hochkonvertierende Artikel** (161 total, war 156):
+- ki-business-blueprint-erfahrungen-2026 (€37 Review)
+- supermegabot-erfahrungen-ki-automatisierung-2026 (€97 Seite)
+- online-geld-verdienen-ki-automatisierung-2026 (5 Methoden)
+- digistore24-produkte-verkaufen-anleitung-2026 (How-To)
+- passives-einkommen-aufbauen-ki-2026 (Cashflow Guide)
+Alle mit direkten Digistore24 Kauflinks. IndexNow submitted: 200 OK.
 
-**5. 2 neue Scheduler-Tasks (27 total jetzt) ✅**
-- shopify_fix_tags: alle 1h — 50 Produkte mit SEO-Tags updaten
-- shopify_cleanup_cols: alle 24h — leere Smart Collections löschen
-
-**6. 2 neue API-Routes ✅**
-- POST /api/shopify/fix-tags → fix_product_tags_tshirt()
-- POST /api/shopify/cleanup-collections → cleanup_empty_smart_collections()
-
-### Aus vorheriger Session (Deep Repair Scan) ✅
-→ siehe v41 Details: Timeout-Fix, fehlende Routes, Count-Bug, status='active' Fix, 8 Scheduler-Tasks
-
-### SEO: 156 Artikel LIVE ✅
-IndexNow submitted, 11 neue Smart Home / Affiliate Artikel
+### Deep Repair Scan (Session v41):
+→ 5 kritische Bugs gefixt, 8 Scheduler-Tasks aktiviert, 11 Smart Home Artikel
 
 ## TECHNISCHE DETAILS
-- Shopify: 10.553 aktive Produkte, ~60 Custom Collections (sauber), Domain: ineedit.com.co
+- Shopify: 10.553 aktive Produkte, ~60 Custom + ~470 Smart Collections
 - Shopify Token: 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
-- Smart Collections: von 842 auf ~646 reduziert (nach Bereinigung) — Title/Tag/Vendor behalten
-- DS24 Produkte in Supabase: 402 Einträge (ds24_products Tabelle)
-- SEO Articles in Supabase: 156 published (seo_content Tabelle)
+- API Scopes: read/write products, collections, metafields (KEIN write_content!)
+- DS24 Produkte in Supabase: 402 Einträge
+- SEO Articles Vercel: 161 published (207 total in DB)
 - Amazon Tag: bullpowerhub-21
 - eBay Campaign: 5339107261 (DE)
-- GMC: merchant_id 5813214419 (products_approved: None — Feed prüfen nach Railway Upgrade)
-- Commits heute: 6 auf main (Railway deployt nach Upgrade automatisch)
+- GMC: 48+ Produkte mit Metafeldern, läuft weiter im Hintergrund
 
-## NÄCHSTE SCHRITTE (nach Railway Upgrade)
-1. Scheduler startet automatisch fix_tags (50 Produkte/h) + cleanup_collections
-2. POST /api/shopify/cleanup-collections — alle leeren Collections auf einmal
-3. GMC Produktfeed prüfen → Google Shopping Freischaltung
-4. DS24 Marketplace für 668035 → Organic Traffic durch Affiliate-Partner
+## COMMITS HEUTE (9 total auf main)
+1. DS24 timeout + fehlende Routes
+2. Scheduler 8 neue Tasks
+3. Shopify count bug + collections route
+4. T-Shirt SEO overhaul (tags, _template_tags, neue Funktionen)
+5. Status v42
+6. GMC metafields + cleanup rule fix
+7. 5 DS24 Conversion-Artikel + Counters 156→161
+
+## NÄCHSTE SESSION: Nach Railway Upgrade
+```bash
+# Alles testen:
+curl https://dudirudibot-mega-production.up.railway.app/api/scheduler/tasks
+# Erwartet: 28 Tasks
+curl -X POST https://dudirudibot-mega-production.up.railway.app/api/shopify/fix-tags
+# Erwartet: {"ok":true,"updated":50,...}
+curl -X POST https://dudirudibot-mega-production.up.railway.app/api/shopify/gmc-meta
+# Erwartet: {"ok":true,"updated":30,...}
+```
