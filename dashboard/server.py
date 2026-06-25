@@ -4065,16 +4065,23 @@ async def handle_shopify_products(req):
         import aiohttp as _aiohttp
         shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-        version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+        version = os.getenv("SHOPIFY_API_VERSION", "2024-10")
         if not shop or not token:
             return web.json_response({"ok": False, "error": "SHOPIFY_SHOP_DOMAIN / SHOPIFY_ADMIN_API_TOKEN not set"})
         limit = int(req.rel_url.query.get("limit", "20"))
-        url = f"https://{shop}/admin/api/{version}/products.json?limit={limit}"
-        async with _aiohttp.ClientSession() as session:
-            async with session.get(url, headers={"X-Shopify-Access-Token": token}, timeout=_aiohttp.ClientTimeout(total=10)) as resp:
-                data = await resp.json()
-        products = data.get("products", [])
-        return web.json_response({"ok": True, "products": products, "count": len(products)})
+        hdrs = {"X-Shopify-Access-Token": token}
+        async with _aiohttp.ClientSession(timeout=_aiohttp.ClientTimeout(total=12)) as session:
+            async with session.get(
+                f"https://{shop}/admin/api/{version}/products/count.json?status=active",
+                headers=hdrs,
+            ) as rc:
+                total_count = (await rc.json(content_type=None)).get("count", 0)
+            async with session.get(
+                f"https://{shop}/admin/api/{version}/products.json?limit={limit}&status=active",
+                headers=hdrs,
+            ) as rp:
+                products = (await rp.json(content_type=None)).get("products", [])
+        return web.json_response({"ok": True, "products": products, "count": total_count, "page_count": len(products)})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 

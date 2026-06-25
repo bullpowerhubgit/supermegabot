@@ -206,7 +206,7 @@ async def _all_products(limit: int = 250) -> list:
     products = []
     since_id = None
     while True:
-        params = {"limit": limit, "status": "any"}
+        params = {"limit": limit, "status": "active"}
         if since_id:
             params["since_id"] = since_id
         data = await _get("products.json", params)
