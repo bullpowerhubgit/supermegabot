@@ -4754,6 +4754,15 @@ TASKS = [
     ("shopify_seo_blog",     task_shopify_seo_blog,    43200, 900),  # 12h — T-Shirt Blog Artikel
     # ── Backup ───────────────────────────────────────────────────────────────
     ("github_backup",        task_github_backup,       86400, 300),  # daily
+    # ── eBay / Amazon / AliExpress Affiliate + Auto-Fill (DeepScan Fix) ──────
+    ("ebay_auto_fill",        task_ebay_auto_fill,      14400, 210),  # 4h — eBay → Shopify import
+    ("amazon_affiliate",      task_amazon_affiliate_blast, 14400, 250),  # 4h — Amazon affiliate blast
+    ("aliexpress_import",     task_aliexpress_import,   28800, 290),  # 8h — AliExpress → Shopify
+    ("shopify_auto_fill",     task_shopify_auto_fill,   21600, 330),  # 6h — Shopify trending fill
+    ("ebay_cycle",            task_ebay_autonomy_cycle,  21600, 370),  # 6h — eBay full autonomy
+    ("amazon_cycle",          task_amazon_autonomy_cycle, 21600, 410),  # 6h — Amazon full autonomy
+    ("aliexpress_cycle",      task_aliexpress_autonomy_cycle, 28800, 450),  # 8h — AliExpress cycle
+    ("ebay_blast",            task_ebay_blast,          10800, 490),  # 3h — eBay multi blast
 ]
 
 
