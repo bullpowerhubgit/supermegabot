@@ -6,6 +6,7 @@ const KLAVIYO_KEY = process.env.KLAVIYO_API_KEY;
 const TELEGRAM_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const LIST_ID = 'Xwxq6V';
+const AFFILIATE_LIST_ID = 'WdgMfp';
 const CRON_SECRET = process.env.CRON_SECRET || 'bullpower2026';
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
 const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
@@ -63,6 +64,86 @@ const WELCOME_EMAIL = {
 </body></html>`,
   text: `Willkommen bei AiiteC! Dein AI Income Machine Blueprint für €37: ${PRODUCT_URL}`,
 };
+
+const AFFILIATE_WELCOME = {
+  subject: '🎯 Dein Affiliate-Link + fertige Marketing-Texte — alles hier',
+  preview: 'In 10 Minuten kannst du deinen ersten Link teilen.',
+  html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#fff;">
+<div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:16px;padding:32px;text-align:center;margin-bottom:24px;color:white;">
+  <h1 style="font-size:1.6rem;margin-bottom:8px;">Willkommen im Affiliate-Team! 🎉</h1>
+  <p style="opacity:.9;font-size:1rem;">Du verdienst jetzt €18,50 pro Blueprint-Verkauf und €48,50 pro SuperMegaBot-Verkauf.</p>
+</div>
+<h2 style="color:#1e293b;font-size:1.2rem;">Schritt 1 — Deinen Affiliate-Link holen (2 Minuten)</h2>
+<div style="background:#f8f9fa;border-radius:12px;padding:20px;margin:16px 0;">
+  <ol style="color:#475569;line-height:2;padding-left:20px;">
+    <li>Gehe zu <a href="https://www.digistore24.com" style="color:#7c3aed;">digistore24.com</a> und logge dich ein</li>
+    <li>Oben rechts: "Marketplace" klicken</li>
+    <li>Suche nach "AI Income Machine" oder gib direkt Produkt-ID <strong>668035</strong> ein</li>
+    <li>Klicke "Als Affiliate bewerben" → sofortige Zulassung</li>
+    <li>Kopiere deinen eindeutigen Affiliate-Link</li>
+  </ol>
+</div>
+<h2 style="color:#1e293b;font-size:1.2rem;">Schritt 2 — Sofort teilen (fertige Texte)</h2>
+<p style="color:#475569;">Hier sind copy-paste-bereite Marketing-Texte — <strong>ersetze [DEIN AFFILIATE-LINK] mit deinem Link:</strong></p>
+<div style="background:#f0f4ff;border-left:4px solid #7c3aed;border-radius:4px;padding:16px;margin:16px 0;font-size:0.9rem;color:#334155;">
+<strong>E-Mail (Betreff: Ich habe etwas gefunden...)</strong><br><br>
+Hallo [VORNAME],<br><br>
+Ich stoße nicht oft auf Produkte, die ich wirklich empfehlen kann. Der "AI Income Machine Blueprint" ist so eines.<br><br>
+Ein 90-Tage-Plan auf Deutsch, €37 einmalig, 60-Tage-Garantie:<br>
+[DEIN AFFILIATE-LINK]<br><br>
+[DEIN NAME]
+</div>
+<div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:4px;padding:16px;margin:16px 0;font-size:0.9rem;color:#334155;">
+<strong>LinkedIn Post:</strong><br><br>
+Ich habe den AI Income Machine Blueprint getestet — 90-Tage-Aktionsplan auf Deutsch, €37. Für alle die passiv Geld mit KI verdienen wollen.<br>
+Link in Kommentaren 👇<br><br>
+#PassivesEinkommen #KI #OnlineBusiness
+</div>
+<div style="background:#fef9c3;border-left:4px solid #f59e0b;border-radius:4px;padding:16px;margin:16px 0;font-size:0.9rem;color:#334155;">
+<strong>WhatsApp / Telegram:</strong><br><br>
+Hey, hast du schon mal von diesem KI-Blueprint gehört? 90-Tage-Plan auf Deutsch, einmalig €37: [DEIN AFFILIATE-LINK]
+</div>
+<div style="background:#fdf2f8;border:2px solid #a855f7;border-radius:12px;padding:24px;text-align:center;margin:24px 0;">
+  <p style="color:#7c3aed;font-weight:700;font-size:1.1rem;margin-bottom:8px;">Deine Provisionen auf einen Blick:</p>
+  <p style="color:#475569;">Blueprint (€37) → <strong style="color:#7c3aed;">€18,50</strong> pro Verkauf</p>
+  <p style="color:#475569;">SuperMegaBot (€97) → <strong style="color:#7c3aed;">€48,50</strong> pro Verkauf</p>
+  <p style="color:#475569;font-size:0.85rem;margin-top:8px;">Auszahlung: wöchentlich via Digistore24 · Cookie: 30 Tage</p>
+</div>
+<p style="color:#475569;font-size:0.9rem;">Fragen? Schreib uns: <a href="mailto:support@aiitec.de" style="color:#7c3aed;">support@aiitec.de</a></p>
+<div style="text-align:center;padding:20px 0;color:#94a3b8;font-size:0.8rem;border-top:1px solid #e2e8f0;margin-top:20px;">
+  <p>AiiteC · Rudolf Sarkany · <a href="https://autoincome-ai.vercel.app/affiliate.html" style="color:#7c3aed;">Alle Materialien</a></p>
+</div>
+</body></html>`,
+  text: 'Willkommen im Affiliate-Team! Dein Affiliate-Link: digistore24.com → Produkt 668035. Provision: 50% = €18,50 pro Sale.',
+};
+
+async function sendAffiliateCampaign(count) {
+  const date = new Date().toISOString().slice(0, 10);
+  const t = await klaviyoRequest('POST', '/api/templates/', {
+    data: { type: 'template', attributes: { name: `Affiliate-Welcome-${date}-${Date.now()}`, editor_type: 'CODE', html: AFFILIATE_WELCOME.html, text: AFFILIATE_WELCOME.text } },
+  });
+  if (t.status !== 201) throw new Error(`AffTmpl ${t.status}`);
+  const tmplId = t.data.data.id;
+  await new Promise(r => setTimeout(r, 1000));
+  const c = await klaviyoRequest('POST', '/api/campaigns/', {
+    data: { type: 'campaign', attributes: {
+      name: `Affiliate Welcome [${date}] — ${count}`,
+      audiences: { included: [AFFILIATE_LIST_ID], excluded: [] },
+      send_strategy: { method: 'immediate' },
+      'campaign-messages': { data: [{ type: 'campaign-message', attributes: { channel: 'email', label: 'Affiliate Welcome', content: { subject: AFFILIATE_WELCOME.subject, preview_text: AFFILIATE_WELCOME.preview, from_email: 'newsletter@aiitec.de', from_label: 'Rudolf — AiiteC', reply_to_email: 'support@aiitec.de' } } }] },
+    } },
+  });
+  if (![200, 201].includes(c.status)) throw new Error(`AffCamp ${c.status}`);
+  const campId = c.data.data.id;
+  await new Promise(r => setTimeout(r, 1000));
+  const msgs = await klaviyoRequest('GET', `/api/campaigns/${campId}/campaign-messages/`);
+  const msgId = msgs.data.data?.[0]?.id;
+  if (!msgId) throw new Error('No AffMsg ID');
+  await klaviyoRequest('POST', '/api/campaign-message-assign-template/', { data: { type: 'campaign-message', id: msgId, relationships: { template: { data: { type: 'template', id: tmplId } } } } });
+  await new Promise(r => setTimeout(r, 1000));
+  await klaviyoRequest('POST', '/api/campaign-send-jobs/', { data: { type: 'campaign-send-job', attributes: { id: campId } } });
+  return campId;
+}
 
 async function sendTelegram(msg) {
   if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT) return;
@@ -409,12 +490,26 @@ export default async function handler(req, res) {
   const results = [];
 
   try {
-    // Day 0 — welcome email
+    // Day 0 — welcome email (regular subscribers)
     const newSubs = await getNewSubscribers();
     if (newSubs.length > 0) {
       const campId = await sendWelcomeCampaign(newSubs.length);
       results.push({ tag: 'day0', count: newSubs.length, campId });
       await sendTelegram(`📧 <b>Welcome-Email</b>: ${newSubs.length} neue Subscriber → Kampagne ${campId}`);
+    }
+
+    // Day 0 — affiliate welcome email (affiliate-signups list)
+    try {
+      const affNewUrl = `/api/lists/${AFFILIATE_LIST_ID}/profiles/?filter=greater-than(joined_group_at,${new Date(Date.now()-36*60*60*1000).toISOString()}),less-than(joined_group_at,${new Date().toISOString()})&page[size]=100`;
+      const affR = await klaviyoRequest('GET', affNewUrl);
+      const affNew = affR.status === 200 ? (affR.data.data || []) : [];
+      if (affNew.length > 0) {
+        const campId = await sendAffiliateCampaign(affNew.length);
+        results.push({ tag: 'day0-affiliate', count: affNew.length, campId });
+        await sendTelegram(`🎯 <b>Affiliate-Welcome</b>: ${affNew.length} neue Affiliates → Kampagne ${campId}`);
+      }
+    } catch (affErr) {
+      await sendTelegram(`⚠️ Affiliate-Welcome Fehler: ${affErr.message.substring(0, 100)}`);
     }
 
     // Day 2 follow-up
