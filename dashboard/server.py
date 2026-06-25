@@ -6259,6 +6259,23 @@ async def handle_shopify_cleanup_collections(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_shopify_gmc_meta(req):
+    """POST /api/shopify/gmc-meta — Google Shopping Metafelder für Produkte setzen."""
+    data = {}
+    try:
+        data = await req.json()
+    except Exception:
+        pass
+    since_id = int(data.get("since_id", 0))
+    batch_size = int(data.get("batch_size", 30))
+    try:
+        from modules.shopify_full_autonomy import fix_product_gmc_metafields
+        result = await fix_product_gmc_metafields(batch_size=batch_size, since_id=since_id)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_shopify_discount_blast(req):
     """POST /api/shopify/discount-blast — Rabatt-Code erstellen + alle Kanäle."""
     data = {}
@@ -8884,6 +8901,7 @@ async def create_app():
     app.router.add_post("/api/shopify/mass-seo",          handle_shopify_mass_seo)
     app.router.add_post("/api/shopify/fix-tags",          handle_shopify_fix_tags)
     app.router.add_post("/api/shopify/cleanup-collections", handle_shopify_cleanup_collections)
+    app.router.add_post("/api/shopify/gmc-meta",          handle_shopify_gmc_meta)
     app.router.add_post("/api/shopify/discount-blast",    handle_shopify_discount_blast)
 
     # Product Generator routes
