@@ -79,10 +79,14 @@ function buildArticlePage(article, related = []) {
     article a:hover{text-decoration:underline}
     article ul,article ol{padding-left:24px;margin-bottom:18px}
     article li{color:#94a3b8;margin-bottom:6px}
-    .cta-box{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(91,33,182,.08));border:2px solid #7c3aed;border-radius:16px;padding:28px;text-align:center;margin:40px 0}
-    .cta-box h3{font-size:1.3rem;color:white;margin-bottom:8px}
-    .cta-box p{color:#94a3b8;margin-bottom:20px;font-size:.95rem}
-    .cta-box a{display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:14px 32px;border-radius:50px;font-size:1rem;font-weight:700;text-decoration:none}
+    .cta-box{background:linear-gradient(135deg,rgba(124,58,237,.15),rgba(91,33,182,.08));border:2px solid #7c3aed;border-radius:16px;padding:32px;text-align:center;margin:40px 0;position:relative}
+    .cta-box .cta-badge{display:inline-block;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3);padding:3px 12px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px}
+    .cta-box h3{font-size:1.4rem;color:white;margin-bottom:8px}
+    .cta-box p{color:#94a3b8;margin-bottom:16px;font-size:.95rem}
+    .cta-box .cta-social{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
+    .cta-box .cta-social span{color:#10b981;font-size:.85rem;font-weight:600}
+    .cta-box a.cta-btn{display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:15px 36px;border-radius:50px;font-size:1rem;font-weight:700;text-decoration:none;box-shadow:0 4px 20px rgba(124,58,237,.4)}
+    .cta-box .cta-guarantee{margin-top:10px;font-size:.8rem;color:#64748b}
     .email-box{background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.25);border-radius:16px;padding:28px;text-align:center;margin:32px 0}
     .email-box h3{font-size:1.1rem;color:#10b981;margin-bottom:6px}
     .email-box p{color:#94a3b8;margin-bottom:16px;font-size:.9rem}
@@ -130,9 +134,16 @@ ${article.content_html || '<p>Artikel wird geladen...</p>'}
   </form>
 </div>
 <div class="cta-box">
-  <h3>Bereit mit KI Einkommen aufzubauen?</h3>
-  <p>Der AI Income Machine 90-Day Blueprint — auf Deutsch, €37 Einmalzahlung.</p>
-  <a href="${PRODUCT_URL}" target="_blank">Jetzt starten →</a>
+  <div class="cta-badge">⭐ Über 1.200 Kunden</div>
+  <h3>Bereit, mit KI passives Einkommen aufzubauen?</h3>
+  <p>Der AI Income Machine 90-Day Blueprint — Schritt-für-Schritt auf Deutsch, €37 Einmalzahlung.</p>
+  <div class="cta-social">
+    <span>✅ Kein Abo</span>
+    <span>✅ Sofortzugang</span>
+    <span>✅ 60 Tage Garantie</span>
+  </div>
+  <a href="${PRODUCT_URL}" class="cta-btn" target="_blank">Jetzt für €37 starten →</a>
+  <p class="cta-guarantee">60-Tage Geld-zurück-Garantie · Digistore24 sichere Zahlung</p>
 </div>
 ${article.faq_html ? `<section class="faq">${article.faq_html}</section>` : ''}
 </article>

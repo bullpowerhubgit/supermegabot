@@ -1,14 +1,18 @@
-// Visual Poster: TikTok + Pinterest
-// TikTok: Mo/Mi/Fr 14:00 UTC | Pinterest: Mo/Do 13:00 UTC
+// Visual Poster: TikTok + Pinterest + YouTube Community
+// TikTok: Mo/Mi/Fr 14:00 UTC | Pinterest: Mo/Do 13:00 UTC | YouTube: Mi/Sa 16:00 UTC
 // TikTok: Photo Post API oder Telegram-Skript
 // Pinterest: Pins mit echten Unsplash-Bildern
+// YouTube: Community Posts API oder Telegram-Fallback
 
 const TIKTOK_TOKEN = process.env.TIKTOK_ACCESS_TOKEN;
 const PINTEREST_TOKEN = process.env.PINTEREST_ACCESS_TOKEN;
 const PINTEREST_BOARD_ID = process.env.PINTEREST_BOARD_ID;
+const YOUTUBE_TOKEN = process.env.YOUTUBE_OAUTH_TOKEN;
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
+const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
+const AFFILIATE_URL = 'https://autoincome-ai.vercel.app/affiliate.html';
 const BLOG_URL = 'https://autoincome-ai.vercel.app/blog';
 
 async function sendTelegram(msg) {
@@ -135,6 +139,65 @@ const TIKTOK_SCRIPTS = [
   },
 ];
 
+// YouTube Community Post Templates (8, rotierend Mi/Sa)
+const YOUTUBE_POSTS = [
+  {
+    text: `📊 Update: €111 — vollautomatisch in 4 Monaten\n\nIch teile hier offen was wirklich passiert:\n→ 3 Verkäufe auf Digistore24\n→ 0 Stunden manuelle Arbeit danach\n→ LinkedIn-Bot, Email-Sequenz, Blog-Artikel — alles läuft alleine\n\nDas ist der Proof of Concept. Jetzt skalieren.\n\nMein Blueprint (der Plan hinter diesem System): ${PRODUCT_URL}\n\nWas interessiert euch mehr: Das technische Setup oder die Marketing-Strategie? 👇`,
+    topic: 'revenue-update',
+  },
+  {
+    text: `🇩🇪 Warum der deutsche KI-Markt 2026 explodiert (und kaum einer macht mit)\n\nFakten die mich überrascht haben:\n• 85% weniger Konkurrenz als auf Englisch für KI-Themen\n• DACH hat höhere Kaufkraft als US bei Digital-Produkten\n• Deutsche LinkedIn-Nutzer konvertieren 3x besser als andere\n\nIch schreibe seit Monaten auf Deutsch über KI — und die Zahlen bestätigen es.\n\nDen vollständigen Artikel gibts hier: ${BLOG_URL}\n\nSchreibt ihr auch auf Deutsch oder Englisch? Warum? 👇`,
+    topic: 'market-analysis',
+  },
+  {
+    text: `🛠️ KI-Tools die ich WIRKLICH täglich nutze (kein Gesponserte)\n\nDie ehrliche Liste:\n✅ Claude für Code & Strategieplanung\n✅ Klaviyo für automatische E-Mails\n✅ Digistore24 für Zahlungsabwicklung\n✅ Vercel für kostenloses Hosting\n✅ Supabase für Datenbank + Blog\n\nWas ich NICHT mehr nutze:\n❌ ChatGPT Plus (zu teuer für den Use Case)\n❌ Zapier (zu langsam, zu teuer)\n❌ Manuelle Social Media Posts\n\nHabt ihr andere Favoriten? 👇`,
+    topic: 'tools-list',
+  },
+  {
+    text: `❓ Kurze Frage an euch — bitte ehrlich antworten!\n\nHabt ihr schon passives Einkommen?\n\nA) Ja, über €500/Monat\nB) Ja, unter €500/Monat\nC) Ich arbeite daran\nD) Noch nicht gestartet\n\nIch frage weil ich meinen nächsten Kurs darauf aufbauen möchte — was ist die größte Herausforderung?\n\nKommentiert einfach den Buchstaben + was euch aufhält. Ich antworte jedem! 👇`,
+    topic: 'engagement-poll',
+  },
+  {
+    text: `🤖 SuperMegaBot Launch — alle Details die ich bisher nicht geteilt habe\n\nWas ist SuperMegaBot eigentlich?\n→ Ein komplettes KI-Automation System das ich selbst täglich nutze\n→ LinkedIn postet automatisch 3x/Woche\n→ Email-Sequenz läuft 30 Tage lang automatisch\n→ Blog schreibt sich selbst (SEO-optimiert)\n→ Telegram-Reports jeden Morgen\n\nPreis: €97 (Einmalzahlung, kein Abo)\n\nDas komplette System: ${UPSELL_URL}\n\nFragen? Stellt sie hier in den Kommentaren! 👇`,
+    topic: 'product-launch',
+  },
+  {
+    text: `💰 50% Affiliate-Provision — so funktioniert es konkret\n\nIhr verdient Geld wenn ich Geld verdiene. So einfach:\n\nBlueprint €37 → ihr bekommt €18,50 pro Verkauf\nSuperMegaBot €97 → ihr bekommt €48,50 pro Verkauf\n\nDigistore24 zahlt wöchentlich auf euer Konto aus.\nKeine Website nötig. Keine Mindestbestellmenge.\n\n10 Verkäufe/Monat = €185–485 passiv.\n\nAlle Details + kostenlose Anmeldung: ${AFFILIATE_URL}\n\nWer ist dabei? Kommentar mit "AFFILIATE"! 👇`,
+    topic: 'affiliate-promo',
+  },
+  {
+    text: `📝 Neuer Blog-Artikel: Passives Einkommen 2026 — was wirklich funktioniert\n\nIch habe die letzten Wochen dokumentiert:\n✅ Was hat Einnahmen gebracht?\n✅ Was war Zeitverschwendung?\n✅ Welche Kanäle konvertieren am besten?\n\nSpoiler: LinkedIn und Email sind unschlagbar.\nTikTok? Viel Aufwand, wenig Return.\n\nGanzen Artikel lesen: ${BLOG_URL}\n\nWas ist eure Erfahrung mit verschiedenen Traffic-Quellen? 👇`,
+    topic: 'blog-article',
+  },
+  {
+    text: `📈 Wochenrückblick — meine Automatisierungs-Stats\n\nDiese Woche automatisch passiert:\n→ LinkedIn: 3 Posts veröffentlicht, ~2.400 Impressionen\n→ Email-Sequenz: Läuft für alle Subscriber (4 Stufen)\n→ Blog: Wöchentlicher SEO-Artikel erschienen\n→ Telegram: Täglicher Revenue-Report (07:00)\n→ Amazon Affiliate: 2 Posts mit Smart Home Deals\n\nGesamtaufwand meinerseits: ~0 Stunden\n\nWelche repetitiven Tasks würdet ihr gerne automatisieren? 👇`,
+    topic: 'weekly-recap',
+  },
+];
+
+async function tryYouTubePost(text) {
+  if (!YOUTUBE_TOKEN) return null;
+  try {
+    const r = await fetch('https://www.googleapis.com/youtube/v3/communityPosts?part=snippet', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${YOUTUBE_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ snippet: { type: 'textPost', textOriginalContent: text } }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (r.ok) {
+      const data = await r.json();
+      return { success: true, id: data.id };
+    }
+    const err = await r.text();
+    return { success: false, error: `YT ${r.status}: ${err.substring(0, 100)}` };
+  } catch (e) {
+    return { success: false, error: e.message };
+  }
+}
+
 async function postTikTokViaAPI(script) {
   const r = await fetch('https://open.tiktokapis.com/v2/post/publish/content/init/', {
     method: 'POST',
@@ -174,10 +237,11 @@ export default async function handler(req, res) {
   const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
   const now = new Date();
   const dayOfWeek = now.getUTCDay();
+  const hourUTC = now.getUTCHours();
   const results = [];
 
-  // Pinterest: Mo=1, Do=4
-  if ([1, 4].includes(dayOfWeek)) {
+  // Pinterest: Mo=1, Do=4 at 13:00 UTC
+  if ([1, 4].includes(dayOfWeek) && hourUTC === 13) {
     if (PINTEREST_TOKEN && PINTEREST_BOARD_ID) {
       const daySlot = dayOfWeek === 1 ? 0 : 1;
       const idx = (weekNum * 2 + daySlot) % PINS.length;
@@ -203,8 +267,8 @@ export default async function handler(req, res) {
     }
   }
 
-  // TikTok: Mo=1, Mi=3, Fr=5
-  if ([1, 3, 5].includes(dayOfWeek)) {
+  // TikTok: Mo=1, Mi=3, Fr=5 at 14:00 UTC
+  if ([1, 3, 5].includes(dayOfWeek) && hourUTC === 14) {
     const daySlot = dayOfWeek === 1 ? 0 : dayOfWeek === 3 ? 1 : 2;
     const idx = (weekNum * 3 + daySlot) % TIKTOK_SCRIPTS.length;
     const script = TIKTOK_SCRIPTS[idx];
@@ -231,5 +295,31 @@ export default async function handler(req, res) {
     }
   }
 
-  return res.status(200).json({ ok: true, results, day: dayOfWeek });
+  // YouTube Community: Mi=3, Sa=6 at 16:00 UTC
+  if ([3, 6].includes(dayOfWeek) && hourUTC === 16) {
+    const daySlot = dayOfWeek === 3 ? 0 : 1;
+    const idx = (weekNum * 2 + daySlot) % YOUTUBE_POSTS.length;
+    const post = YOUTUBE_POSTS[idx];
+
+    const ytResult = await tryYouTubePost(post.text);
+    const ytSuccess = ytResult?.success === true;
+
+    if (ytSuccess) {
+      await sendTelegram(`✅ YouTube Community Post live!\n📺 Post ID: ${ytResult.id}\n📝 Topic: ${post.topic}`);
+      results.push({ platform: 'youtube', postId: ytResult.id, idx });
+    } else {
+      const errNote = YOUTUBE_TOKEN
+        ? `API Fehler: ${ytResult?.error || 'unbekannt'}`
+        : 'Kein YOUTUBE_OAUTH_TOKEN gesetzt';
+      const tgMsg =
+        `📺 <b>YouTube Community Post (manuell posten):</b>\n` +
+        `⚠️ ${errNote}\n\n` +
+        `→ <b>Jetzt posten:</b> youtube.com/post\n\n` +
+        `<b>Text (copy-paste):</b>\n\n${post.text.substring(0, 3500)}`;
+      await sendTelegram(tgMsg);
+      results.push({ platform: 'youtube', mode: 'telegram_fallback', idx, error: ytResult?.error });
+    }
+  }
+
+  return res.status(200).json({ ok: true, results, day: dayOfWeek, hour: hourUTC });
 }

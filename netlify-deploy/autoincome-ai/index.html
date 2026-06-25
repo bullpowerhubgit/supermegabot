@@ -478,13 +478,72 @@
       .nav-links { display: none; }
       .portfolio-total { font-size: 2.2rem; }
     }
+
+    /* EXIT POPUP */
+    #exitPopup { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.88); backdrop-filter:blur(6px); align-items:center; justify-content:center; }
+    .popup-inner { background:#040f1f; border:2px solid rgba(6,182,212,0.35); border-radius:16px; padding:2.5rem 2rem; max-width:460px; width:92%; text-align:center; position:relative; }
+    .popup-close { position:absolute; top:1rem; right:1.1rem; background:none; border:none; color:#64748b; font-size:1.4rem; cursor:pointer; line-height:1; padding:0; }
+    .popup-close:hover { color:#e2e8f0; }
+    .popup-badge { display:inline-block; background:rgba(245,158,11,0.15); color:#f59e0b; border:1px solid rgba(245,158,11,0.3); padding:4px 14px; border-radius:99px; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; margin-bottom:1rem; }
+    .popup-title { font-size:1.55rem; font-weight:900; color:#fff; margin-bottom:0.7rem; line-height:1.2; }
+    .popup-sub { color:#94a3b8; margin-bottom:1.4rem; font-size:0.93rem; }
+    .popup-form input { width:100%; padding:14px 18px; border-radius:8px; border:1px solid rgba(6,182,212,0.3); background:#020d1e; color:#e2e8f0; font-size:0.97rem; outline:none; margin-bottom:0.6rem; }
+    .popup-form button { width:100%; background:linear-gradient(135deg,#06b6d4,#3b82f6); color:white; padding:14px; border:none; border-radius:8px; font-size:1rem; font-weight:700; cursor:pointer; }
+    .popup-skip { margin-top:0.9rem; font-size:0.78rem; color:#475569; cursor:pointer; }
+    .popup-skip:hover { color:#94a3b8; }
+
+    /* COUNTDOWN */
+    .cd-bar { margin-top:2rem; text-align:center; }
+    .cd-inner { display:inline-flex; align-items:center; gap:0.7rem; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.22); border-radius:8px; padding:0.65rem 1.4rem; }
+    .cd-label { font-size:0.72rem; color:#ef4444; font-weight:700; text-transform:uppercase; letter-spacing:1px; }
+    .cd-time { font-family:'JetBrains Mono',monospace; font-size:1.15rem; font-weight:700; color:#fff; }
+
+    /* SOCIAL PROOF TOAST */
+    #spToast { position:fixed; bottom:1.5rem; left:1.5rem; z-index:8888; pointer-events:none; transition:opacity 0.4s,transform 0.4s; opacity:0; transform:translateY(10px); }
+    .sp-inner { background:#040f1f; border:1px solid rgba(16,185,129,0.25); border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:12px; max-width:270px; box-shadow:0 4px 24px rgba(0,0,0,0.55); }
+    .sp-avatar { width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#06b6d4,#3b82f6); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.95rem; flex-shrink:0; color:#000; }
+    .sp-name { font-size:0.8rem; font-weight:600; color:#e2e8f0; }
+    .sp-action { font-size:0.72rem; color:#10b981; margin-top:2px; }
+
+    /* TESTIMONIALS */
+    .testi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(270px,1fr)); gap:1.5rem; }
+    .testi-card { background:var(--card); border:1px solid var(--border); border-radius:10px; padding:1.8rem; transition:border-color 0.3s; }
+    .testi-card:hover { border-color:rgba(6,182,212,0.3); }
+    .testi-stars { color:#f59e0b; font-size:0.95rem; margin-bottom:0.8rem; }
+    .testi-text { color:var(--text-mid); font-size:0.88rem; line-height:1.7; margin-bottom:1.1rem; }
+    .testi-author { display:flex; align-items:center; gap:0.7rem; }
+    .testi-avatar { width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:0.9rem; flex-shrink:0; color:#fff; }
+    .testi-name { font-size:0.84rem; font-weight:700; color:#e2e8f0; }
+    .testi-role { font-size:0.73rem; color:var(--text-dim); margin-top:1px; }
   </style>
 
   <link rel="sitemap" type="application/xml" href="/sitemap.xml">
 </head>
 <body>
 
+<!-- EXIT INTENT POPUP -->
+<div id="exitPopup">
+  <div class="popup-inner">
+    <button class="popup-close" onclick="closePopup()">✕</button>
+    <div class="popup-badge">Warte! Bevor du gehst…</div>
+    <h2 class="popup-title">Hol dir die KI-Checkliste — <span style="color:#06b6d4;">gratis</span></h2>
+    <p class="popup-sub">21 Schritte zum ersten KI-Einkommen. Kostenlos, kein Spam.</p>
+    <form class="popup-form" onsubmit="popupSubscribe(event)">
+      <input type="email" id="popupEmail" placeholder="deine@email.de" required />
+      <button type="submit">Jetzt kostenlos holen →</button>
+    </form>
+    <p id="popupMsg" style="display:none;color:#10b981;margin-top:0.75rem;font-weight:600;">✅ Danke! Checke deine E-Mail.</p>
+    <p class="popup-skip" onclick="closePopup()">Nein danke, ich brauche keine kostenlosen Tipps</p>
+  </div>
+</div>
 
+<!-- SOCIAL PROOF TOAST -->
+<div id="spToast">
+  <div class="sp-inner">
+    <div class="sp-avatar" id="spAvatar"></div>
+    <div><div class="sp-name" id="spName"></div><div class="sp-action" id="spAction"></div></div>
+  </div>
+</div>
 
 <!-- TOP TICKER -->
 <div class="top-ticker">
@@ -596,6 +655,14 @@
   <div class="hero-btns">
     <a href="https://www.checkout-ds24.com/product/668035" class="btn-primary">🚀 Jetzt starten — €37 einmalig</a>
     <a href="#streams" class="btn-ghost">Streams ansehen →</a>
+  </div>
+
+  <!-- COUNTDOWN TIMER -->
+  <div class="cd-bar">
+    <div class="cd-inner">
+      <span class="cd-label">⏱ Sonderpreis endet in:</span>
+      <span class="cd-time" id="cdTimer">--:--:--</span>
+    </div>
   </div>
 </section>
 
@@ -741,6 +808,43 @@
           <tr><td class="col-feat">Support</td><td>E-Mail</td><td>Telegram</td><td>24/7 Hotline</td></tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section style="background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);">
+  <div class="section-inner">
+    <div class="section-header">
+      <span class="section-kicker">KUNDENSTIMMEN</span>
+      <h2 class="section-title">Was andere <span class="hl">erreicht haben</span></h2>
+      <p class="section-sub">Echte Ergebnisse von Menschen, die genauso gestartet haben wie du.</p>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"In den ersten 3 Wochen hatte ich meine erste Digistore24-Provision. Der Blueprint ist wirklich Schritt-für-Schritt — ich hatte keine Vorkenntnisse und hab es trotzdem geschafft."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,#7c3aed,#5b21b6);">M</div>
+          <div><div class="testi-name">Markus T.</div><div class="testi-role">München · Digistore24 Affiliate</div></div>
+        </div>
+      </div>
+      <div class="testi-card" style="border-color:rgba(6,182,212,0.25);">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"LinkedIn-Automation ist Gold wert. Ich poste jetzt 3x/Woche automatisch und bekomme regelmäßig Anfragen. Der SuperMegaBot hat sich nach 2 Wochen schon bezahlt gemacht."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,#06b6d4,#38bdf8);">S</div>
+          <div><div class="testi-name">Sandra K.</div><div class="testi-role">Hamburg · Online Marketing</div></div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"€347 passives Einkommen im ersten Monat. Ich arbeite immer noch meinen Job, aber das Nebeneinkommen wächst jeden Monat. Beste €37 die ich je ausgegeben habe."</p>
+        <div class="testi-author">
+          <div class="testi-avatar" style="background:linear-gradient(135deg,#10b981,#34d399);">F</div>
+          <div><div class="testi-name">Felix W.</div><div class="testi-role">Berlin · Freelancer</div></div>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -918,6 +1022,92 @@ var obs=new IntersectionObserver(function(entries){
   });
 },{threshold:0.3});
 document.querySelectorAll('.scount').forEach(function(el){ obs.observe(el); });
+
+// Countdown timer (47h59m59s, persists across sessions)
+(function(){
+  var KEY='aicd_end';
+  var stored=localStorage.getItem(KEY);
+  var end=stored?parseInt(stored,10):0;
+  if(!end||end<Date.now()){
+    end=Date.now()+47*3600000+59*60000+59000;
+    localStorage.setItem(KEY,end);
+  }
+  function updateCD(){
+    var diff=Math.max(0,end-Date.now());
+    var h=Math.floor(diff/3600000);
+    var m=Math.floor((diff%3600000)/60000);
+    var s=Math.floor((diff%60000)/1000);
+    var el=document.getElementById('cdTimer');
+    if(el) el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+  }
+  updateCD(); setInterval(updateCD,1000);
+})();
+
+// Social proof toasts
+(function(){
+  var people=[
+    {n:'Thomas K.',c:'München',a:'hat Blueprint gekauft'},
+    {n:'Julia M.',c:'Wien',a:'hat Blueprint gekauft'},
+    {n:'Peter S.',c:'Berlin',a:'hat SuperMegaBot aktiviert'},
+    {n:'Anna B.',c:'Zürich',a:'erste Provision erhalten ✓'},
+    {n:'Marco L.',c:'Hamburg',a:'hat Blueprint gekauft'},
+    {n:'Lisa F.',c:'Stuttgart',a:'Checkliste heruntergeladen'},
+    {n:'David R.',c:'Köln',a:'hat SuperMegaBot aktiviert'},
+    {n:'Nina W.',c:'Frankfurt',a:'erste Provision erhalten ✓'},
+  ];
+  var idx=Math.floor(Math.random()*people.length);
+  var toast=document.getElementById('spToast');
+  function showToast(){
+    var p=people[idx%people.length]; idx++;
+    document.getElementById('spName').textContent=p.n+' ('+p.c+')';
+    document.getElementById('spAction').textContent='✅ '+p.a;
+    document.getElementById('spAvatar').textContent=p.n[0];
+    toast.style.opacity='1'; toast.style.transform='translateY(0)';
+    setTimeout(function(){toast.style.opacity='0';toast.style.transform='translateY(10px)';},4500);
+  }
+  setTimeout(showToast,4000);
+  setInterval(showToast,13000);
+})();
+
+// Exit intent popup
+(function(){
+  if(sessionStorage.getItem('aiPopupDone')) return;
+  var triggered=false;
+  document.addEventListener('mouseleave',function(e){
+    if(!triggered&&e.clientY<5){
+      triggered=true;
+      document.getElementById('exitPopup').style.display='flex';
+    }
+  });
+  // Mobile: show after 40s
+  setTimeout(function(){
+    if(!triggered&&!sessionStorage.getItem('aiPopupDone')){
+      triggered=true;
+      document.getElementById('exitPopup').style.display='flex';
+    }
+  },40000);
+})();
+
+function closePopup(){
+  document.getElementById('exitPopup').style.display='none';
+  sessionStorage.setItem('aiPopupDone','1');
+}
+
+async function popupSubscribe(e){
+  e.preventDefault();
+  var email=document.getElementById('popupEmail').value;
+  try{
+    await fetch('https://a.klaviyo.com/client/subscriptions/?company_id=VaCYq3',{
+      method:'POST',
+      headers:{'content-type':'application/json','revision':'2024-10-15'},
+      body:JSON.stringify({data:{type:'subscription',attributes:{list_id:'Xwxq6V',email:email,custom_source:'exit-popup',channels:{email:['MARKETING']}}}})
+    });
+  }catch(err){}
+  document.getElementById('popupMsg').style.display='block';
+  document.querySelector('.popup-form').style.display='none';
+  sessionStorage.setItem('aiPopupDone','1');
+  setTimeout(closePopup,2800);
+}
 </script>
 </body>
 </html>

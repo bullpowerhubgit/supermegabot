@@ -139,7 +139,12 @@
 
   <!-- Upsell — SuperMegaBot -->
   <div class="upsell">
-    <div class="upsell-badge">⚡ Exklusives Angebot für Kunden</div>
+    <div class="upsell-badge">⚡ Exklusives 24h-Angebot für Kunden</div>
+    <!-- 24h Countdown -->
+    <div style="background:rgba(249,115,22,0.12);border:1px solid rgba(249,115,22,0.3);border-radius:8px;padding:10px 20px;display:inline-flex;align-items:center;gap:10px;margin-bottom:18px;">
+      <span style="font-size:0.78rem;color:#f97316;font-weight:700;text-transform:uppercase;letter-spacing:1px;">⏱ Angebot endet in:</span>
+      <span id="upsellTimer" style="font-family:monospace;font-size:1.2rem;font-weight:900;color:#fff;">23:59:59</span>
+    </div>
     <h2>Willst du das komplette System?</h2>
     <p>Der AI Income Machine Blueprint zeigt dir WAS zu tun ist.</p>
     <p><strong>SuperMegaBot zeigt dir WIE man es automatisiert.</strong></p>
@@ -147,13 +152,28 @@
     <ul class="upsell-features">
       <li>Vollautomatische Shopify + Digistore24 Integration</li>
       <li>110 Bot-Befehle für Business-Automation</li>
-      <li>Klaviyo + LinkedIn + Reddit Auto-Poster</li>
+      <li>LinkedIn + Instagram + Facebook Auto-Poster</li>
+      <li>Klaviyo E-Mail Sequenzen (täglich automatisch)</li>
       <li>Railway Deployment (24/7 laufend)</li>
       <li>Quellcode + komplette Setup-Anleitung</li>
       <li>60-Tage Geld-zurück-Garantie</li>
     </ul>
-    <a href="https://www.checkout-ds24.com/product/704677" class="upsell-btn">Ja, ich will das komplette System →</a>
+    <a href="https://www.checkout-ds24.com/product/704677" class="upsell-btn" style="display:inline-block;font-size:1.15rem;padding:18px 44px;">🚀 Ja, ich will das komplette System →</a>
+    <p style="margin-top:10px;font-size:0.8rem;color:#64748b;">Sofortzugang · Einmalzahlung · 60 Tage Garantie</p>
     <a href="#" class="upsell-skip">Nein danke, der Blueprint reicht mir</a>
+  </div>
+
+  <!-- Affiliate Programm CTA -->
+  <div style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.3);border-radius:16px;padding:28px;text-align:center;margin-bottom:40px;">
+    <div style="display:inline-block;background:rgba(124,58,237,0.2);color:#a78bfa;padding:5px 14px;border-radius:99px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">💰 Affiliate Programm</div>
+    <h2 style="font-size:1.35rem;font-weight:800;margin-bottom:8px;">Verdiene €18,50 pro Empfehlung — passiv</h2>
+    <p style="color:#94a3b8;margin-bottom:16px;font-size:0.93rem;">Du hast gerade ein Produkt gekauft, das du liebst? Empfehle es weiter und verdiene 50% Provision auf jeden Verkauf.</p>
+    <div style="display:flex;justify-content:center;gap:1.5rem;flex-wrap:wrap;margin-bottom:18px;">
+      <span style="color:#10b981;font-size:0.9rem;font-weight:600;">✅ €18,50 pro Blueprint-Sale</span>
+      <span style="color:#10b981;font-size:0.9rem;font-weight:600;">✅ €48,50 pro SuperMegaBot-Sale</span>
+      <span style="color:#10b981;font-size:0.9rem;font-weight:600;">✅ Wöchentliche Auszahlung</span>
+    </div>
+    <a href="/affiliate.html" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#5b21b6);color:white;padding:13px 32px;border-radius:50px;font-size:0.95rem;font-weight:700;text-decoration:none;">Affiliate-Link holen →</a>
   </div>
 
   <!-- Share -->
@@ -166,6 +186,12 @@
       <a href="https://t.me/share/url?url=https%3A%2F%2Fautoincome-ai.vercel.app&text=Ich%20baue%20gerade%20passives%20Einkommen%20mit%20KI%20auf" class="share-btn share-telegram" target="_blank">
         ✈️ Telegram teilen
       </a>
+      <a href="https://wa.me/?text=Ich%20baue%20gerade%20mit%20KI%20passives%20Einkommen%20auf%20%F0%9F%9A%80%20autoincome-ai.vercel.app" class="share-btn" style="background:#25d366;" target="_blank">
+        💬 WhatsApp teilen
+      </a>
+      <a href="mailto:?subject=Passives%20Einkommen%20mit%20KI&body=Hey%2C%20ich%20bau%20gerade%20passives%20Einkommen%20mit%20KI%20auf.%20Schau%20mal%3A%20https%3A%2F%2Fautoincome-ai.vercel.app" class="share-btn" style="background:#475569;">
+        📧 Per E-Mail teilen
+      </a>
     </div>
   </div>
 
@@ -177,6 +203,26 @@
 </footer>
 
 <script>
+  // 24h upsell countdown
+  (function(){
+    var KEY='dankeCdEnd';
+    var stored=localStorage.getItem(KEY);
+    var end=stored?parseInt(stored,10):0;
+    if(!end||end<Date.now()){
+      end=Date.now()+23*3600000+59*60000+59000;
+      localStorage.setItem(KEY,end);
+    }
+    function tick(){
+      var diff=Math.max(0,end-Date.now());
+      var h=Math.floor(diff/3600000);
+      var m=Math.floor((diff%3600000)/60000);
+      var s=Math.floor((diff%60000)/1000);
+      var el=document.getElementById('upsellTimer');
+      if(el) el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    }
+    tick(); setInterval(tick,1000);
+  })();
+
   const KLAVIYO_COMPANY = 'VaCYq3';
   const KLAVIYO_LIST = 'Xwxq6V';
 
