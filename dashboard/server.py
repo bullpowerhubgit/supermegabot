@@ -7314,7 +7314,15 @@ async def handle_email_daily_summary_run(req: web.Request) -> web.Response:
     return await _trigger_task("email_daily_summary")
 
 async def handle_shopify_blog_run(req: web.Request) -> web.Response:
-    return await _trigger_task("shopify_blog_auto")
+    return await _trigger_task("shopify_seo_blog")
+
+async def handle_shopify_blog_check(req: web.Request) -> web.Response:
+    try:
+        from modules.shopify_blog_auto import check_permission
+        result = await check_permission()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_twitter_run(req: web.Request) -> web.Response:
     return await _trigger_task("twitter_auto_post", background=True)
@@ -9035,6 +9043,7 @@ async def create_app():
     app.router.add_post("/api/fiverr/sync",               handle_fiverr_run)
     app.router.add_post("/api/upwork/sync",               handle_upwork_run)
     app.router.add_post("/api/shopify/blog/post",         handle_shopify_blog_run)
+    app.router.add_get( "/api/shopify/blog/check",        handle_shopify_blog_check)
     app.router.add_post("/api/auto-poster/post",          handle_auto_poster_run_alias)
     app.router.add_get( "/api/stripe/plans",              handle_stripe_plans_info)
     app.router.add_get( "/api/shopify/inventory",         handle_shopify_inventory_live)

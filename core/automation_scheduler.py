@@ -1917,23 +1917,15 @@ async def task_push_notify_broadcast() -> str:
 
 
 async def task_shopify_seo_blog() -> str:
-    """Publish 3 AI-SEO blog posts to Shopify every 12h."""
+    """Publish 1 AI-SEO blog post to ineedit.com.co Shopify store every 12h (T-Shirt/POD niche)."""
     try:
-        from modules.shopify_seo_auto import auto_publish_blog_post
-        kws = ["Shopify Automatisierung mit KI 2026",
-               "eCommerce Umsatz steigern Tipps",
-               "Dropshipping Tool Vergleich"]
-        done = 0
-        for kw in kws:
-            try:
-                res = await auto_publish_blog_post(kw)
-                if res and not isinstance(res, Exception):
-                    done += 1
-            except Exception:
-                pass
-        return f"Shopify SEO Blog: {done}/3 Posts published"
-    except ImportError:
-        return "shopify_seo_auto nicht verfügbar"
+        from modules.shopify_blog_auto import publish_one_article
+        result = await publish_one_article()
+        if result.get("ok"):
+            return f"Shopify Blog OK: '{result.get('title')}' (ID {result.get('id')})"
+        return f"Shopify Blog Fehler: {result.get('reason') or result.get('error', 'unbekannt')}"
+    except ImportError as e:
+        return f"shopify_blog_auto nicht verfügbar: {e}"
     except Exception as e:
         return f"Shopify SEO Blog Fehler: {e}"
 
@@ -4758,6 +4750,8 @@ TASKS = [
     ("customer_export",      task_customer_export,      86400, 400),  # täglich — Shopify-Kunden → Klaviyo+MC
     ("klaviyo_mass",         task_klaviyo_mass_daily,   86400, 500),  # täglich — Klaviyo Mass Campaigns
     ("mailchimp_mass",       task_mailchimp_mass_daily, 86400, 550),  # täglich — Mailchimp Mass Campaigns
+    # ── Shopify SEO Blog (ineedit.com.co T-Shirt/POD) ────────────────────────
+    ("shopify_seo_blog",     task_shopify_seo_blog,    43200, 900),  # 12h — T-Shirt Blog Artikel
     # ── Backup ───────────────────────────────────────────────────────────────
     ("github_backup",        task_github_backup,       86400, 300),  # daily
 ]
