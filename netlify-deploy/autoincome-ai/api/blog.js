@@ -234,7 +234,7 @@ function buildIndexPage(articles) {
 </nav>
 <div class="hero">
   <h1>KI Einkommen Blog</h1>
-  <p>100 Artikel über KI, passives Einkommen und Automatisierung — auf Deutsch.</p>
+  <p>151 Artikel über KI, passives Einkommen und Automatisierung — auf Deutsch.</p>
   <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:24px;">
     <a href="/blog/ki-einkommen-1000-euro-monat" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;padding:8px 18px;border-radius:50px;font-size:.85rem;text-decoration:none;">💶 1000€/Monat</a>
     <a href="/blog/digistore24-affiliate-tipps-2026" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.4);color:#a78bfa;padding:8px 18px;border-radius:50px;font-size:.85rem;text-decoration:none;">🎯 Affiliate</a>
