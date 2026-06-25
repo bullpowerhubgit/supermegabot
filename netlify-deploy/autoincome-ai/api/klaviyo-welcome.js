@@ -464,6 +464,86 @@ async function sendFollowupCampaign(emailDef, subCount, tag) {
   return campId;
 }
 
+const AFFILIATE_FOLLOWUPS = {
+  day3: {
+    subject: '🔗 Hast du deinen Affiliate-Link schon geteilt?',
+    preview: 'Ein Post reicht für erste €18,50.',
+    html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#fff;">
+<h2 style="color:#7c3aed;">Vor 3 Tagen bist du Affiliate geworden 🎯</h2>
+<p style="color:#475569;">Hast du deinen Digistore24 Affiliate-Link schon? Falls nicht — hier nochmal kurz erklärt:</p>
+<div style="background:#f8f9fa;border-radius:12px;padding:20px;margin:16px 0;">
+<p style="color:#1e293b;font-weight:600;">In 3 Schritten zu deinem Link:</p>
+<ol style="color:#475569;line-height:2;padding-left:20px;">
+<li>digistore24.com → Login</li>
+<li>Marketplace → Suche "668035"</li>
+<li>"Als Affiliate bewerben" → Link kopieren ✅</li>
+</ol>
+</div>
+<p style="color:#475569;">Wenn du deinen Link hast, brauchst du nur <strong>einen einzigen Post</strong>, um die ersten €18,50 zu verdienen. Hier ist der einfachste:</p>
+<div style="background:#f0f4ff;border-left:4px solid #7c3aed;border-radius:4px;padding:16px;margin:16px 0;font-size:0.9rem;color:#334155;">
+<strong>WhatsApp an 5 Freunde:</strong><br><br>
+"Hey, ich habe diesen KI-Blueprint gefunden — auf Deutsch, €37, mit 60-Tage-Garantie. Falls du passiv Geld mit KI verdienen willst: [DEIN LINK]"
+</div>
+<p style="color:#475569;font-size:0.9rem;">Das dauert 3 Minuten. Bei 5 Freunden mit 1% Chance auf Kauf = 5% Chance = €18,50 × 0,05 = theoretisch €0,92 pro Nachricht. Das klingt wenig — aber schick die Nachricht an 100 Kontakte und es sind €92 für 15 Minuten Arbeit.</p>
+<p style="color:#475569;">Fragen? <a href="mailto:support@aiitec.de" style="color:#7c3aed;">support@aiitec.de</a> oder <a href="https://autoincome-ai.vercel.app/affiliate.html" style="color:#7c3aed;">alle Materialien hier</a>.</p>
+<div style="text-align:center;padding:16px 0;color:#94a3b8;font-size:0.8rem;border-top:1px solid #e2e8f0;margin-top:20px;"><p>AiiteC · Rudolf Sarkany</p></div>
+</body></html>`,
+    text: 'Affiliate-Link noch nicht geteilt? In 3 Minuten: digistore24.com → Marketplace → 668035 → Link kopieren → teilen.',
+  },
+  day7: {
+    subject: '💰 Erster Affiliate-Sale: So machen es unsere Besten',
+    preview: 'Die 3 Kanäle die am schnellsten konvertieren.',
+    html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#fff;">
+<h2 style="color:#7c3aed;">Woche 1 als Affiliate — wie läuft es? 🚀</h2>
+<p style="color:#475569;">Die erfolgreichsten Affiliates bei uns haben einen ersten Sale in den ersten 7–14 Tagen. Hier ist was sie gemeinsam haben:</p>
+<div style="background:#f0fdf4;border-radius:12px;padding:20px;margin:16px 0;">
+<p style="color:#166534;font-weight:600;">Die 3 schnellsten Kanäle für erste Sales:</p>
+<ul style="color:#374151;line-height:2;padding-left:20px;">
+<li><strong>E-Mail-Liste:</strong> Wenn du bereits eine Liste hast — eine E-Mail mit deinem Affiliate-Link genügt</li>
+<li><strong>LinkedIn:</strong> 1 organischer Post über das Produkt bringt oft 50–200 organische Views und 1–3 Klicks</li>
+<li><strong>Telegram/WhatsApp Gruppen:</strong> In thematisch passende Gruppen (Online Business, KI, Freelancing) teilen</li>
+</ul>
+</div>
+<div style="background:linear-gradient(135deg,#7c3aed,#5b21b6);border-radius:12px;padding:24px;text-align:center;color:white;margin:20px 0;">
+<p style="font-size:1rem;margin-bottom:8px;">Dein nächster Schritt:</p>
+<p style="font-size:1.2rem;font-weight:700;">Teile deinen Link auf EINEM Kanal noch heute</p>
+<p style="opacity:.8;font-size:0.85rem;margin-top:8px;">Bonus: Wer in den ersten 14 Tagen einen Sale erzielt, bekommt persönliches Feedback von Rudolf.</p>
+</div>
+<p style="color:#475569;font-size:0.9rem;">Fertige Texte zum Kopieren: <a href="https://autoincome-ai.vercel.app/affiliate.html#materialien" style="color:#7c3aed;">autoincome-ai.vercel.app/affiliate.html</a></p>
+<div style="text-align:center;padding:16px 0;color:#94a3b8;font-size:0.8rem;border-top:1px solid #e2e8f0;margin-top:20px;"><p>AiiteC · Rudolf Sarkany · support@aiitec.de</p></div>
+</body></html>`,
+    text: 'Woche 1 als Affiliate: Teile deinen Link auf E-Mail-Liste, LinkedIn oder Telegram/WhatsApp. Fertige Texte: autoincome-ai.vercel.app/affiliate.html',
+  },
+};
+
+async function sendAffiliateFollowup(emailObj, count, tag) {
+  const date = new Date().toISOString().slice(0, 10);
+  const t = await klaviyoRequest('POST', '/api/templates/', {
+    data: { type: 'template', attributes: { name: `Aff-Followup-${tag}-${date}-${Date.now()}`, editor_type: 'CODE', html: emailObj.html, text: emailObj.text } },
+  });
+  if (t.status !== 201) throw new Error(`AffFollowTmpl ${t.status}`);
+  const tmplId = t.data.data.id;
+  await new Promise(r => setTimeout(r, 800));
+  const c = await klaviyoRequest('POST', '/api/campaigns/', {
+    data: { type: 'campaign', attributes: {
+      name: `Affiliate ${tag} [${date}] — ${count}`,
+      audiences: { included: [AFFILIATE_LIST_ID], excluded: [] },
+      send_strategy: { method: 'immediate' },
+      'campaign-messages': { data: [{ type: 'campaign-message', attributes: { channel: 'email', label: `Affiliate ${tag}`, content: { subject: emailObj.subject, preview_text: emailObj.preview, from_email: 'newsletter@aiitec.de', from_label: 'Rudolf — AiiteC', reply_to_email: 'support@aiitec.de' } } }] },
+    } },
+  });
+  if (![200, 201].includes(c.status)) throw new Error(`AffFollowCamp ${c.status}`);
+  const campId = c.data.data.id;
+  await new Promise(r => setTimeout(r, 800));
+  const msgs = await klaviyoRequest('GET', `/api/campaigns/${campId}/campaign-messages/`);
+  const msgId = msgs.data.data?.[0]?.id;
+  if (!msgId) throw new Error('No AffFollow msgId');
+  await klaviyoRequest('POST', '/api/campaign-message-assign-template/', { data: { type: 'campaign-message', id: msgId, relationships: { template: { data: { type: 'template', id: tmplId } } } } });
+  await new Promise(r => setTimeout(r, 800));
+  await klaviyoRequest('POST', '/api/campaign-send-jobs/', { data: { type: 'campaign-send-job', attributes: { id: campId } } });
+  return campId;
+}
+
 async function handleWebhook(req, res) {
   let body;
   try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; } catch { return res.status(400).json({ error: 'Invalid JSON' }); }
@@ -558,6 +638,23 @@ export default async function handler(req, res) {
       const campId = await sendFollowupCampaign(FOLLOWUP_EMAILS.day30, day30subs.length, 'day30');
       results.push({ tag: 'day30', count: day30subs.length, campId });
       await sendTelegram(`📧 <b>Follow-up Tag 30</b>: ${day30subs.length} Subscriber → ${campId}`);
+    }
+
+    // Affiliate Day 3 + Day 7 follow-ups
+    for (const [daysAgo, tag, emailObj] of [[3,'day3',AFFILIATE_FOLLOWUPS.day3],[7,'day7',AFFILIATE_FOLLOWUPS.day7]]) {
+      try {
+        const from = new Date(Date.now() - (daysAgo + 0.6) * 24 * 60 * 60 * 1000).toISOString();
+        const to   = new Date(Date.now() - (daysAgo - 0.6) * 24 * 60 * 60 * 1000).toISOString();
+        const affR = await klaviyoRequest('GET', `/api/lists/${AFFILIATE_LIST_ID}/profiles/?filter=greater-than(joined_group_at,${from}),less-than(joined_group_at,${to})&page[size]=100`);
+        const affSubs = affR.status === 200 ? (affR.data.data || []) : [];
+        if (affSubs.length > 0) {
+          const campId = await sendAffiliateFollowup(emailObj, affSubs.length, tag);
+          results.push({ tag: `affiliate-${tag}`, count: affSubs.length, campId });
+          await sendTelegram(`🎯 <b>Affiliate Follow-up ${tag}</b>: ${affSubs.length} Affiliates → ${campId}`);
+        }
+      } catch (e) {
+        await sendTelegram(`⚠️ Affiliate ${tag} Fehler: ${e.message.substring(0,100)}`);
+      }
     }
 
     if (results.length === 0) {
