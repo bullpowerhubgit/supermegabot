@@ -1,13 +1,16 @@
-// Meta Auto-Poster: Instagram @aaiitecc + Facebook AiiteC Page
-// Instagram: Di/Do/Sa 11:00 UTC | Facebook: Mo/Mi/Fr 12:00 UTC
-// Benötigt: FB_PAGE_ACCESS_TOKEN (instagram_content_publish + pages_manage_posts)
-// Bilder: Unsplash API (echte Fotos, kein Platzhalter)
+// Meta Auto-Poster: Instagram @aaiitecc + Facebook AiiteC Page + Threads
+// Instagram: Di/Do/Sa 11:00 UTC | Facebook: Mo/Mi/Fr 12:00 UTC | Threads: täglich
+// Benötigt: FB_PAGE_ACCESS_TOKEN, THREADS_ACCESS_TOKEN
 
 const IG_USER_ID = process.env.IG_USER_ID || '17841478315197796';
 const FB_PAGE_ID = process.env.FB_PAGE_ID || '1016738738178786';
 const FB_APP_ID = process.env.FB_APP_ID || '1225412136200609';
 const FB_APP_SECRET = process.env.FB_APP_SECRET;
 const FB_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
+const THREADS_APP_ID = process.env.THREADS_APP_ID || '1224559653149864';
+const THREADS_APP_SECRET = process.env.THREADS_APP_SECRET;
+const THREADS_TOKEN = process.env.THREADS_ACCESS_TOKEN;
+const THREADS_USER_ID = process.env.THREADS_USER_ID || '17841478315197796';
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
@@ -15,9 +18,14 @@ const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
 const BLOG_URL = 'https://autoincome-ai.vercel.app/blog';
 const AFFILIATE_URL = 'https://autoincome-ai.vercel.app/affiliate.html';
 
-// Stabile Bilder via picsum.photos (kein API-Key nötig, deterministisch per seed)
-const IMAGE_SEEDS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
+const FB_REDIRECT_URI = 'https://autoincome-ai.vercel.app/api/meta-poster?action=fb-auth';
+const THREADS_REDIRECT_URI = 'https://autoincome-ai.vercel.app/api/meta-poster?action=threads-auth';
 
+const VERCEL_TOKEN = process.env.VERCEL_API_TOKEN;
+const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_dOdBHrPrCns5V1H3rSNi2dmyec6H';
+const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID || 'team_xulvdt7sib2RSt4BNoqVWeSy';
+
+const IMAGE_SEEDS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
 function getPicsumUrl(seed, width = 1080, height = 1080) {
   return `https://picsum.photos/seed/${seed}/${width}/${height}`;
 }
@@ -76,6 +84,16 @@ const FB_POSTS = [
   },
 ];
 
+const THREADS_POSTS = [
+  `🤖 KI-Einkommen 2026: €111 in 4 Monaten — vollautomatisch, ohne Ads, ohne Kunden-Calls.\n\nMein System postet, verkauft und meldet mir alles via Telegram.\n\nDer 90-Day Blueprint: ${PRODUCT_URL}`,
+  `💡 2026 ist das beste Jahr für KI-Automation im deutschsprachigen Markt.\n\n85% weniger Konkurrenz als Englisch. Gleiche Kaufkraft.\n\nKompletter Guide (kostenlos): ${BLOG_URL}`,
+  `📊 Meine echten Zahlen — keine Verkäufer-Phantasien:\n\nMonat 1–2: €0 (Aufbau)\nMonat 3: €37 ✅ erster Verkauf\nMonat 4: €74 ✅ zwei weitere automatisch\n\nSystem läuft ohne mich. Blueprint: ${PRODUCT_URL}`,
+  `💰 50% Provision — €18,50 bis €48,50 pro Empfehlung.\n\nKein Eigenkapital. Kein Risiko. Wöchentliche Auszahlung via Digistore24.\n\nAffiliates werden (kostenlos): ${AFFILIATE_URL}`,
+  `🚀 SuperMegaBot für €97: LinkedIn + Instagram + Reddit + E-Mail — alles automatisch.\n\nFrüh-Käufer Preis nur noch bis 30.06.2026: ${UPSELL_URL}`,
+  `📝 32+ kostenlose deutschsprachige Guides:\n• Passives Einkommen 2026\n• KI Business starten ohne Kapital\n• Digistore24 Produkt erstellen\n• Affiliate Marketing für Anfänger\n\n${BLOG_URL}`,
+  `🔥 Nur noch wenige Tage bis der Junipreis endet.\n\nAI Income Machine: €37 → danach €97\nSuperMegaBot: €97 → danach €297\n\nJetzt sichern: ${PRODUCT_URL}`,
+];
+
 async function sendTelegram(msg) {
   if (!TELEGRAM_BOT || !TELEGRAM_CHAT) return;
   try {
@@ -85,6 +103,19 @@ async function sendTelegram(msg) {
       body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
     });
   } catch {}
+}
+
+async function setVercelEnv(key, value) {
+  if (!VERCEL_TOKEN) return false;
+  const listRes = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`, { headers: { Authorization: `Bearer ${VERCEL_TOKEN}` } });
+  const list = await listRes.json();
+  const existing = list.envs?.find(e => e.key === key && e.target?.includes('production'));
+  if (existing) {
+    const r = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/env/${existing.id}?teamId=${VERCEL_TEAM_ID}`, { method: 'PATCH', headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify({ value }) });
+    return r.ok;
+  }
+  const r = await fetch(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`, { method: 'POST', headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify({ key, value, type: 'encrypted', target: ['production'] }) });
+  return r.ok;
 }
 
 async function getLongLivedToken() {
@@ -117,9 +148,7 @@ async function postInstagram(pageToken, imageUrl, caption) {
   });
   const container = await containerResp.json();
   if (!container.id) throw new Error(`IG container: ${JSON.stringify(container).substring(0, 200)}`);
-
   await new Promise((r) => setTimeout(r, 3000));
-
   const publishResp = await fetch(`https://graph.facebook.com/v21.0/${IG_USER_ID}/media_publish`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -143,40 +172,84 @@ async function postFacebook(pageToken, message, link) {
   return data.id;
 }
 
-const VERCEL_TOKEN = process.env.VERCEL_API_TOKEN;
-const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_dOdBHrPrCns5V1H3rSNi2dmyec6H';
-const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID || 'team_xulvdt7sib2RSt4BNoqVWeSy';
-const REDIRECT_URI = 'https://autoincome-ai.vercel.app/api/meta-poster?action=fb-auth';
-
-async function setVercelEnv(key, value) {
-  if (!VERCEL_TOKEN) return false;
-  const listRes = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`, { headers: { Authorization: `Bearer ${VERCEL_TOKEN}` } });
-  const list = await listRes.json();
-  const existing = list.envs?.find(e => e.key === key && e.target?.includes('production'));
-  if (existing) {
-    const r = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/env/${existing.id}?teamId=${VERCEL_TEAM_ID}`, { method: 'PATCH', headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify({ value }) });
-    return r.ok;
-  }
-  const r = await fetch(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`, { method: 'POST', headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify({ key, value, type: 'encrypted', target: ['production'] }) });
-  return r.ok;
+async function postToThreads(text) {
+  if (!THREADS_TOKEN) throw new Error('THREADS_ACCESS_TOKEN not set');
+  const containerResp = await fetch(`https://graph.threads.net/v1.0/${THREADS_USER_ID}/threads`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text, media_type: 'TEXT', access_token: THREADS_TOKEN }),
+  });
+  const container = await containerResp.json();
+  if (!container.id) throw new Error(`Threads container: ${JSON.stringify(container).substring(0, 200)}`);
+  await new Promise((r) => setTimeout(r, 3000));
+  const publishResp = await fetch(`https://graph.threads.net/v1.0/${THREADS_USER_ID}/threads_publish`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ creation_id: container.id, access_token: THREADS_TOKEN }),
+  });
+  const published = await publishResp.json();
+  if (!published.id) throw new Error(`Threads publish: ${JSON.stringify(published).substring(0, 200)}`);
+  return published.id;
 }
 
 export default async function handler(req, res) {
   const { action, code, error } = req.query || {};
 
-  // FB OAuth callback — no secret needed
-  if (action === 'fb-auth' || code || error) {
+  // Threads OAuth
+  if (action === 'threads-auth') {
+    const SCOPES = 'threads_basic,threads_content_publish';
+    if (error) {
+      await sendTelegram(`❌ Threads OAuth abgelehnt: ${error}`);
+      return res.status(200).send(`<html><body><h2>❌ Abgebrochen</h2><p>${error}</p></body></html>`);
+    }
+    if (!code) {
+      const url = `https://threads.net/oauth/authorize?client_id=${THREADS_APP_ID}&redirect_uri=${encodeURIComponent(THREADS_REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&response_type=code`;
+      return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>🧵 Threads OAuth</h2><p>Verbinde deinen Threads Account (AiiteC @aaiitecc)</p><a href="${url}" style="display:inline-block;background:#000;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700">Mit Threads autorisieren →</a><p style="color:#64748b;font-size:0.85rem;margin-top:20px">Scopes: ${SCOPES}</p><p style="color:#64748b;font-size:0.8rem">Redirect: ${THREADS_REDIRECT_URI}</p></body></html>`);
+    }
+    try {
+      const tkRes = await fetch('https://graph.threads.net/oauth/access_token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          client_id: THREADS_APP_ID,
+          client_secret: THREADS_APP_SECRET || '',
+          grant_type: 'authorization_code',
+          redirect_uri: THREADS_REDIRECT_URI,
+          code,
+        }),
+      });
+      const tkData = await tkRes.json();
+      if (tkData.error) throw new Error(String(tkData.error_message || tkData.error));
+      const shortToken = tkData.access_token;
+      const userId = tkData.user_id;
+      const longRes = await fetch(
+        `https://graph.threads.net/access_token?grant_type=th_exchange_token&client_id=${THREADS_APP_ID}&client_secret=${THREADS_APP_SECRET}&access_token=${shortToken}`
+      );
+      const longData = await longRes.json();
+      const longToken = longData.access_token || shortToken;
+      await setVercelEnv('THREADS_ACCESS_TOKEN', longToken);
+      if (userId) await setVercelEnv('THREADS_USER_ID', String(userId));
+      await sendTelegram(`✅ <b>Threads Token gespeichert!</b>\nUser ID: ${userId}\nThreads Poster läuft jetzt täglich!`);
+      return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>✅ Threads verbunden!</h2><p>Token gespeichert. Threads-Poster läuft täglich!</p><p style="color:#059669">Nächster Post: morgen 11:00 UTC</p></body></html>`);
+    } catch (err) {
+      await sendTelegram(`❌ Threads OAuth Fehler: ${err.message.substring(0, 200)}`);
+      return res.status(200).send(`<html><body><h2>❌ Fehler</h2><pre>${err.message}</pre></body></html>`);
+    }
+  }
+
+  // Facebook OAuth (action=fb-auth)
+  if (action === 'fb-auth') {
     const SCOPES = 'pages_manage_posts,instagram_content_publish,pages_read_engagement,pages_show_list,instagram_basic';
     if (error) {
       await sendTelegram(`❌ FB OAuth abgelehnt: ${error}`);
       return res.status(200).send(`<html><body><h2>❌ Abgebrochen</h2><p>${error}</p></body></html>`);
     }
     if (!code) {
-      const url = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&response_type=code`;
+      const url = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(FB_REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&response_type=code`;
       return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>🔐 Facebook OAuth</h2><a href="${url}" style="display:inline-block;background:#1877f2;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700">Mit Facebook autorisieren →</a><p style="color:#64748b;font-size:0.85rem;margin-top:20px">Scopes: ${SCOPES}</p></body></html>`);
     }
     try {
-      const tkRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&client_secret=${FB_APP_SECRET}&code=${code}`);
+      const tkRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(FB_REDIRECT_URI)}&client_secret=${FB_APP_SECRET}&code=${code}`);
       const tkData = await tkRes.json();
       if (tkData.error) throw new Error(JSON.stringify(tkData.error));
       const longRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${FB_APP_ID}&client_secret=${FB_APP_SECRET}&fb_exchange_token=${tkData.access_token}`);
@@ -198,60 +271,68 @@ export default async function handler(req, res) {
   const secret = req.headers['x-cron-secret'] || req.query?.secret;
   if (secret !== process.env.CRON_SECRET) return res.status(401).json({ error: 'unauthorized' });
 
-  if (!FB_TOKEN) {
-    await sendTelegram(
-      '❌ Meta Poster: FB_PAGE_ACCESS_TOKEN fehlt!\n' +
-      'Token holen: developers.facebook.com/tools/explorer\n' +
-      'App: 1225412136200609\n' +
-      'Permissions: pages_manage_posts + instagram_content_publish\n' +
-      'vercel env add FB_PAGE_ACCESS_TOKEN production'
-    );
-    return res.status(500).json({ error: 'FB_PAGE_ACCESS_TOKEN not set' });
-  }
-
   const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
   const now = new Date();
   const dayOfWeek = now.getUTCDay(); // 0=So,1=Mo,2=Di,3=Mi,4=Do,5=Fr,6=Sa
+  const dayOfYear = Math.floor((Date.now() - new Date(now.getFullYear(), 0, 0)) / 86400000);
   const results = [];
-
-  let pageToken;
-  try {
-    const longToken = await getLongLivedToken();
-    pageToken = await getPageToken(longToken);
-  } catch (err) {
-    await sendTelegram(`❌ Meta Token Fehler: ${err.message}`);
-    return res.status(500).json({ error: err.message });
-  }
 
   // Instagram: Di=2, Do=4, Sa=6
   if ([2, 4, 6].includes(dayOfWeek)) {
-    const daySlot = dayOfWeek === 2 ? 0 : dayOfWeek === 4 ? 1 : 2;
-    const idx = (weekNum * 3 + daySlot) % IG_POSTS.length;
-    const post = IG_POSTS[idx];
-    const imageUrl = await resolveImageUrl(post.keyword);
-    try {
-      const mediaId = await postInstagram(pageToken, imageUrl, post.caption);
-      await sendTelegram(`✅ Instagram @aaiitecc post live!\n📸 Media ID: ${mediaId}\n📝 ${post.caption.substring(0, 60)}...`);
-      results.push({ platform: 'instagram', mediaId, idx });
-    } catch (err) {
-      await sendTelegram(`❌ Instagram fehlgeschlagen: ${err.message.substring(0, 150)}`);
-      results.push({ platform: 'instagram', error: err.message });
+    if (!FB_TOKEN) {
+      results.push({ platform: 'instagram', error: 'FB_PAGE_ACCESS_TOKEN not set — visit /api/meta-poster?action=fb-auth' });
+    } else {
+      try {
+        const longToken = await getLongLivedToken();
+        const pageToken = await getPageToken(longToken);
+        const daySlot = dayOfWeek === 2 ? 0 : dayOfWeek === 4 ? 1 : 2;
+        const idx = (weekNum * 3 + daySlot) % IG_POSTS.length;
+        const post = IG_POSTS[idx];
+        const imageUrl = await resolveImageUrl(post.keyword);
+        const mediaId = await postInstagram(pageToken, imageUrl, post.caption);
+        await sendTelegram(`✅ Instagram @aaiitecc post live!\n📸 Media ID: ${mediaId}\n📝 ${post.caption.substring(0, 60)}...`);
+        results.push({ platform: 'instagram', mediaId, idx });
+      } catch (err) {
+        await sendTelegram(`❌ Instagram fehlgeschlagen: ${err.message.substring(0, 150)}`);
+        results.push({ platform: 'instagram', error: err.message });
+      }
     }
   }
 
   // Facebook: Mo=1, Mi=3, Fr=5
   if ([1, 3, 5].includes(dayOfWeek)) {
-    const daySlot = dayOfWeek === 1 ? 0 : dayOfWeek === 3 ? 1 : 2;
-    const idx = (weekNum * 3 + daySlot) % FB_POSTS.length;
-    const post = FB_POSTS[idx];
-    try {
-      const postId = await postFacebook(pageToken, post.message, post.link);
-      await sendTelegram(`✅ Facebook AiiteC Page post live!\n📌 Post ID: ${postId}\n📝 ${post.message.substring(0, 60)}...`);
-      results.push({ platform: 'facebook', postId, idx });
-    } catch (err) {
-      await sendTelegram(`❌ Facebook fehlgeschlagen: ${err.message.substring(0, 150)}`);
-      results.push({ platform: 'facebook', error: err.message });
+    if (!FB_TOKEN) {
+      results.push({ platform: 'facebook', error: 'FB_PAGE_ACCESS_TOKEN not set' });
+    } else {
+      try {
+        const longToken = await getLongLivedToken();
+        const pageToken = await getPageToken(longToken);
+        const daySlot = dayOfWeek === 1 ? 0 : dayOfWeek === 3 ? 1 : 2;
+        const idx = (weekNum * 3 + daySlot) % FB_POSTS.length;
+        const post = FB_POSTS[idx];
+        const postId = await postFacebook(pageToken, post.message, post.link);
+        await sendTelegram(`✅ Facebook AiiteC Page post live!\n📌 Post ID: ${postId}\n📝 ${post.message.substring(0, 60)}...`);
+        results.push({ platform: 'facebook', postId, idx });
+      } catch (err) {
+        await sendTelegram(`❌ Facebook fehlgeschlagen: ${err.message.substring(0, 150)}`);
+        results.push({ platform: 'facebook', error: err.message });
+      }
     }
+  }
+
+  // Threads: täglich (wenn Token vorhanden)
+  if (THREADS_TOKEN) {
+    try {
+      const idx = dayOfYear % THREADS_POSTS.length;
+      const postId = await postToThreads(THREADS_POSTS[idx]);
+      await sendTelegram(`✅ Threads @aaiitecc post live!\n📌 Post ID: ${postId}\n📝 ${THREADS_POSTS[idx].substring(0, 60)}...`);
+      results.push({ platform: 'threads', postId, idx });
+    } catch (err) {
+      await sendTelegram(`❌ Threads fehlgeschlagen: ${err.message.substring(0, 150)}`);
+      results.push({ platform: 'threads', error: err.message });
+    }
+  } else {
+    results.push({ platform: 'threads', skipped: true, reason: 'THREADS_ACCESS_TOKEN not set — visit /api/meta-poster?action=threads-auth' });
   }
 
   return res.status(200).json({ ok: true, results, day: dayOfWeek });
