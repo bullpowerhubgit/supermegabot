@@ -6,13 +6,12 @@ const IG_USER_ID = process.env.IG_USER_ID || '17841478315197796';
 const FB_PAGE_ID = process.env.FB_PAGE_ID || '1016738738178786';
 const FB_APP_ID = process.env.FB_APP_ID || '1225412136200609';
 const FB_APP_SECRET = process.env.FB_APP_SECRET;
-const FB_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 const THREADS_APP_ID = process.env.THREADS_APP_ID || '1224559653149864';
 const THREADS_APP_SECRET = process.env.THREADS_APP_SECRET;
-const THREADS_TOKEN = process.env.THREADS_ACCESS_TOKEN;
-const THREADS_USER_ID = process.env.THREADS_USER_ID || '17841478315197796';
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
 const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
 const BLOG_URL = 'https://autoincome-ai.vercel.app/blog';
@@ -20,10 +19,6 @@ const AFFILIATE_URL = 'https://autoincome-ai.vercel.app/affiliate.html';
 
 const FB_REDIRECT_URI = 'https://autoincome-ai.vercel.app/api/meta-poster?action=fb-auth';
 const THREADS_REDIRECT_URI = 'https://autoincome-ai.vercel.app/api/meta-poster?action=threads-auth';
-
-const VERCEL_TOKEN = process.env.VERCEL_API_TOKEN;
-const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_dOdBHrPrCns5V1H3rSNi2dmyec6H';
-const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID || 'team_xulvdt7sib2RSt4BNoqVWeSy';
 
 const IMAGE_SEEDS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
 function getPicsumUrl(seed, width = 1080, height = 1080) {
@@ -105,26 +100,37 @@ async function sendTelegram(msg) {
   } catch {}
 }
 
-async function setVercelEnv(key, value) {
-  if (!VERCEL_TOKEN) return false;
-  const listRes = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`, { headers: { Authorization: `Bearer ${VERCEL_TOKEN}` } });
-  const list = await listRes.json();
-  const existing = list.envs?.find(e => e.key === key && e.target?.includes('production'));
-  if (existing) {
-    const r = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/env/${existing.id}?teamId=${VERCEL_TEAM_ID}`, { method: 'PATCH', headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify({ value }) });
-    return r.ok;
-  }
-  const r = await fetch(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`, { method: 'POST', headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify({ key, value, type: 'encrypted', target: ['production'] }) });
+async function saveToken(platform, access_token, user_id = null) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return false;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/oauth_tokens`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'apikey': SUPABASE_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify({ platform, access_token, user_id, updated_at: new Date().toISOString() }),
+  });
   return r.ok;
 }
 
-async function getLongLivedToken() {
-  if (!FB_APP_SECRET) return FB_TOKEN;
+async function getToken(platform) {
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/oauth_tokens?platform=eq.${platform}&select=access_token,user_id`, {
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY },
+  });
+  const data = await r.json();
+  return data?.[0] || null;
+}
+
+async function getLongLivedToken(token) {
+  if (!FB_APP_SECRET || !token) return token;
   const r = await fetch(
-    `https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${FB_APP_ID}&client_secret=${FB_APP_SECRET}&fb_exchange_token=${FB_TOKEN}`
+    `https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${FB_APP_ID}&client_secret=${FB_APP_SECRET}&fb_exchange_token=${token}`
   );
   const data = await r.json();
-  return data.access_token || FB_TOKEN;
+  return data.access_token || token;
 }
 
 async function getPageToken(userToken) {
@@ -172,20 +178,20 @@ async function postFacebook(pageToken, message, link) {
   return data.id;
 }
 
-async function postToThreads(text) {
-  if (!THREADS_TOKEN) throw new Error('THREADS_ACCESS_TOKEN not set');
-  const containerResp = await fetch(`https://graph.threads.net/v1.0/${THREADS_USER_ID}/threads`, {
+async function postToThreads(text, token, userId) {
+  if (!token) throw new Error('Threads token not set');
+  const containerResp = await fetch(`https://graph.threads.net/v1.0/${userId}/threads`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, media_type: 'TEXT', access_token: THREADS_TOKEN }),
+    body: JSON.stringify({ text, media_type: 'TEXT', access_token: token }),
   });
   const container = await containerResp.json();
   if (!container.id) throw new Error(`Threads container: ${JSON.stringify(container).substring(0, 200)}`);
   await new Promise((r) => setTimeout(r, 3000));
-  const publishResp = await fetch(`https://graph.threads.net/v1.0/${THREADS_USER_ID}/threads_publish`, {
+  const publishResp = await fetch(`https://graph.threads.net/v1.0/${userId}/threads_publish`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ creation_id: container.id, access_token: THREADS_TOKEN }),
+    body: JSON.stringify({ creation_id: container.id, access_token: token }),
   });
   const published = await publishResp.json();
   if (!published.id) throw new Error(`Threads publish: ${JSON.stringify(published).substring(0, 200)}`);
@@ -227,10 +233,9 @@ export default async function handler(req, res) {
       );
       const longData = await longRes.json();
       const longToken = longData.access_token || shortToken;
-      await setVercelEnv('THREADS_ACCESS_TOKEN', longToken);
-      if (userId) await setVercelEnv('THREADS_USER_ID', String(userId));
+      await saveToken('threads', longToken, userId ? String(userId) : null);
       await sendTelegram(`✅ <b>Threads Token gespeichert!</b>\nUser ID: ${userId}\nThreads Poster läuft jetzt täglich!`);
-      return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>✅ Threads verbunden!</h2><p>Token gespeichert. Threads-Poster läuft täglich!</p><p style="color:#059669">Nächster Post: morgen 11:00 UTC</p></body></html>`);
+      return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>✅ Threads verbunden!</h2><p>Token in Supabase gespeichert. Threads-Poster läuft täglich!</p><p style="color:#059669">Nächster Post: morgen 11:00 UTC</p></body></html>`);
     } catch (err) {
       await sendTelegram(`❌ Threads OAuth Fehler: ${err.message.substring(0, 200)}`);
       return res.status(200).send(`<html><body><h2>❌ Fehler</h2><pre>${err.message}</pre></body></html>`);
@@ -259,9 +264,9 @@ export default async function handler(req, res) {
       const pagesData = await pagesRes.json();
       const page = pagesData.data?.find(p => p.id === FB_PAGE_ID) || pagesData.data?.[0];
       if (!page) throw new Error(`Seite ${FB_PAGE_ID} nicht gefunden: ${JSON.stringify(pagesData.data?.map(p => p.id))}`);
-      await setVercelEnv('FB_PAGE_ACCESS_TOKEN', page.access_token);
+      await saveToken('facebook', page.access_token, FB_PAGE_ID);
       await sendTelegram(`✅ <b>FB Token gespeichert!</b>\nSeite: ${page.name} (${FB_PAGE_ID})\nToken: ${page.access_token.substring(0, 20)}...\nMeta-Poster läuft wieder!`);
-      return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>✅ Token gespeichert!</h2><p>Seite: <strong>${page.name}</strong></p><p style="color:#059669">Meta-Poster läuft wieder! Nächster Post: morgen.</p></body></html>`);
+      return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>✅ Token gespeichert!</h2><p>Seite: <strong>${page.name}</strong></p><p style="color:#059669">Meta-Poster läuft wieder! Token in Supabase gesichert.</p></body></html>`);
     } catch (err) {
       await sendTelegram(`❌ FB OAuth Fehler: ${err.message.substring(0, 200)}`);
       return res.status(200).send(`<html><body><h2>❌ Fehler</h2><pre>${err.message}</pre></body></html>`);
@@ -270,6 +275,13 @@ export default async function handler(req, res) {
 
   const secret = req.headers['x-cron-secret'] || req.query?.secret;
   if (secret !== process.env.CRON_SECRET) return res.status(401).json({ error: 'unauthorized' });
+
+  // Fetch live tokens from Supabase (fallback to ENV)
+  const fbRow = await getToken('facebook');
+  const FB_TOKEN = fbRow?.access_token || process.env.FB_PAGE_ACCESS_TOKEN || null;
+  const threadsRow = await getToken('threads');
+  const THREADS_TOKEN = threadsRow?.access_token || process.env.THREADS_ACCESS_TOKEN || null;
+  const THREADS_USER_ID_LIVE = threadsRow?.user_id || process.env.THREADS_USER_ID || '17841478315197796';
 
   const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
   const now = new Date();
@@ -280,10 +292,10 @@ export default async function handler(req, res) {
   // Instagram: Di=2, Do=4, Sa=6
   if ([2, 4, 6].includes(dayOfWeek)) {
     if (!FB_TOKEN) {
-      results.push({ platform: 'instagram', error: 'FB_PAGE_ACCESS_TOKEN not set — visit /api/meta-poster?action=fb-auth' });
+      results.push({ platform: 'instagram', error: 'FB token not set — visit /api/meta-poster?action=fb-auth' });
     } else {
       try {
-        const longToken = await getLongLivedToken();
+        const longToken = await getLongLivedToken(FB_TOKEN);
         const pageToken = await getPageToken(longToken);
         const daySlot = dayOfWeek === 2 ? 0 : dayOfWeek === 4 ? 1 : 2;
         const idx = (weekNum * 3 + daySlot) % IG_POSTS.length;
@@ -302,10 +314,10 @@ export default async function handler(req, res) {
   // Facebook: Mo=1, Mi=3, Fr=5
   if ([1, 3, 5].includes(dayOfWeek)) {
     if (!FB_TOKEN) {
-      results.push({ platform: 'facebook', error: 'FB_PAGE_ACCESS_TOKEN not set' });
+      results.push({ platform: 'facebook', error: 'FB token not set — visit /api/meta-poster?action=fb-auth' });
     } else {
       try {
-        const longToken = await getLongLivedToken();
+        const longToken = await getLongLivedToken(FB_TOKEN);
         const pageToken = await getPageToken(longToken);
         const daySlot = dayOfWeek === 1 ? 0 : dayOfWeek === 3 ? 1 : 2;
         const idx = (weekNum * 3 + daySlot) % FB_POSTS.length;
@@ -324,7 +336,7 @@ export default async function handler(req, res) {
   if (THREADS_TOKEN) {
     try {
       const idx = dayOfYear % THREADS_POSTS.length;
-      const postId = await postToThreads(THREADS_POSTS[idx]);
+      const postId = await postToThreads(THREADS_POSTS[idx], THREADS_TOKEN, THREADS_USER_ID_LIVE);
       await sendTelegram(`✅ Threads @aaiitecc post live!\n📌 Post ID: ${postId}\n📝 ${THREADS_POSTS[idx].substring(0, 60)}...`);
       results.push({ platform: 'threads', postId, idx });
     } catch (err) {
