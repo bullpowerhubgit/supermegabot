@@ -172,7 +172,7 @@ function getEbayAffiliateLink(query) {
 }
 
 function getAliExpressLink(query) {
-  return `https://de.aliexpress.com/w/wholesale-${encodeURIComponent(query.replace(/\s+/g, '-'))}.html?trafficChannel=affiliate&d=y&CatId=0&SearchText=${encodeURIComponent(query)}&aff_fcid=aiitec&aff_fsk=aiitec&aff_platform=link-c-tool&sk=aiitec&aff_trace_key=aiitec`;
+  return `https://de.aliexpress.com/w/wholesale-${encodeURIComponent(query.replace(/\s+/g, '-'))}.html?SearchText=${encodeURIComponent(query)}`;
 }
 
 async function sendTelegram(msg) {
@@ -217,6 +217,10 @@ async function postLinkedIn(text) {
 export default async function handler(req, res) {
   const secret = req.headers['x-cron-secret'] || req.query?.secret;
   if (secret !== process.env.CRON_SECRET) return res.status(401).json({ error: 'unauthorized' });
+
+  if (!EBAY_CAMPAIGN_ID) {
+    await sendTelegram('⚠️ affiliate-products: EBAY_CAMPAIGN_ID fehlt → eBay-Links ohne Provision! Setze EBAY_CAMPAIGN_ID in Vercel ENV (EPN Kampagnen-ID).');
+  }
 
   const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
   const now = new Date();
