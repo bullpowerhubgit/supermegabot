@@ -23,6 +23,9 @@ TELEGRAM_ALERT   = os.getenv("TELEGRAM_CHAT_ID", "")       # system alerts → p
 TELEGRAM_CHAT    = TELEGRAM_CHANNEL or TELEGRAM_ALERT or "" # fall back to private chat if no channel
 TWITTER_WEBHOOK = os.getenv("TWITTER_WEBHOOK_URL", "http://localhost:8888/api/twitter/post")
 TWITTER_SECRET  = os.getenv("TWITTER_WEBHOOK_SECRET", "bullpower2026")
+FB_PAGE_ID      = os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")  # AiiteC
+FB_PAGE_TOKEN   = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", os.getenv("FACEBOOK_PAGE_TOKEN", ""))
+GRAPH_API_VERSION = "v21.0"
 
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "social"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
@@ -160,6 +163,29 @@ async def post_to_telegram(text: str, extra_html: str = "") -> dict:
         return {"ok": False, "error": str(e)}
 
 
+async def post_to_facebook(text: str) -> dict:
+    """Postet auf AiiteC Facebook Page (1016738738178786)."""
+    if not FB_PAGE_TOKEN:
+        return {"ok": False, "error": "FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
+
+    url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{FB_PAGE_ID}/feed"
+    payload = {"message": text, "access_token": FB_PAGE_TOKEN}
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(url, data=payload, timeout=aiohttp.ClientTimeout(total=15)) as resp:
+                data = await resp.json()
+                if "id" in data:
+                    log.info("facebook: post live (id=%s)", data["id"])
+                    return {"ok": True, "platform": "facebook", "post_id": data["id"]}
+                else:
+                    log.error("facebook error: %s", data)
+                    return {"ok": False, "error": data.get("error", {}).get("message", str(data))}
+    except Exception as e:
+        log.error("facebook exception: %s", e)
+        return {"ok": False, "error": str(e)}
+
+
 async def post_to_twitter(text: str) -> dict:
     """Versucht Tweet über internen Webhook."""
     try:
@@ -188,7 +214,11 @@ async def post_daily_content(force_template_index: int = None) -> dict:
     text = template["text"]
     extra = template.get("telegram_extra", "")
 
-    results = {"index": idx, "twitter": None, "telegram": None, "timestamp": datetime.now(timezone.utc).isoformat()}
+    results = {"index": idx, "twitter": None, "telegram": None, "facebook": None, "timestamp": datetime.now(timezone.utc).isoformat()}
+
+    # Facebook — immer posten (AiiteC page, 1.322 Follower)
+    fb_result = await post_to_facebook(text)
+    results["facebook"] = fb_result
 
     twitter_result = await post_to_twitter(text)
     results["twitter"] = twitter_result
@@ -197,9 +227,10 @@ async def post_daily_content(force_template_index: int = None) -> dict:
         log.info("Twitter nicht verfügbar — Fallback auf Telegram")
         telegram_result = await post_to_telegram(text, extra)
         results["telegram"] = telegram_result
-        results["channel_used"] = "telegram" if telegram_result["ok"] else "none"
+        channels_used = ["telegram" if telegram_result["ok"] else None, "facebook" if fb_result["ok"] else None]
+        results["channel_used"] = "+".join(c for c in channels_used if c) or "none"
     else:
-        results["channel_used"] = "twitter"
+        results["channel_used"] = "twitter" + ("+facebook" if fb_result["ok"] else "")
 
     _save_state(idx, results)
     await _brutus_fire(text[:300])
@@ -208,14 +239,18 @@ async def post_daily_content(force_template_index: int = None) -> dict:
 
 
 async def post_to_all_channels(text: str) -> dict:
-    """Postet gleichzeitig auf Twitter UND Telegram."""
+    """Postet gleichzeitig auf Twitter, Telegram UND Facebook."""
     twitter_task = asyncio.create_task(post_to_twitter(text))
     telegram_task = asyncio.create_task(post_to_telegram(text))
-    twitter_result, telegram_result = await asyncio.gather(twitter_task, telegram_task, return_exceptions=True)
+    facebook_task = asyncio.create_task(post_to_facebook(text))
+    twitter_result, telegram_result, facebook_result = await asyncio.gather(
+        twitter_task, telegram_task, facebook_task, return_exceptions=True
+    )
 
     return {
         "twitter": twitter_result if not isinstance(twitter_result, Exception) else {"ok": False, "error": str(twitter_result)},
         "telegram": telegram_result if not isinstance(telegram_result, Exception) else {"ok": False, "error": str(telegram_result)},
+        "facebook": facebook_result if not isinstance(facebook_result, Exception) else {"ok": False, "error": str(facebook_result)},
         "timestamp": datetime.now(timezone.utc).isoformat(),
     }
 
