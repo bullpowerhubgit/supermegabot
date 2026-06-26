@@ -15,18 +15,11 @@ const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
 const BLOG_URL = 'https://autoincome-ai.vercel.app/blog';
 const AFFILIATE_URL = 'https://autoincome-ai.vercel.app/affiliate.html';
 
-// Echte Unsplash Bilder nach Keyword (kein API-Key nötig, stabile URLs)
-const IMAGE_KEYWORDS = [
-  'laptop,business,money',
-  'entrepreneur,success,office',
-  'automation,technology,ai',
-  'passive,income,finance',
-  'digital,marketing,growth',
-  'online,business,startup',
-];
+// Stabile Bilder via picsum.photos (kein API-Key nötig, deterministisch per seed)
+const IMAGE_SEEDS = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120];
 
-function getUnsplashUrl(keyword, width = 1080, height = 1080) {
-  return `https://source.unsplash.com/${width}x${height}/?${keyword}`;
+function getPicsumUrl(seed, width = 1080, height = 1080) {
+  return `https://picsum.photos/seed/${seed}/${width}/${height}`;
 }
 
 const IG_POSTS = [
@@ -112,13 +105,8 @@ async function getPageToken(userToken) {
 }
 
 async function resolveImageUrl(keyword) {
-  // Resolve Unsplash redirect to get stable direct image URL
-  try {
-    const unsplashUrl = getUnsplashUrl(keyword, 1080, 1080);
-    const r = await fetch(unsplashUrl, { method: 'HEAD', redirect: 'follow' });
-    if (r.url && r.url.includes('images.unsplash.com')) return r.url;
-  } catch {}
-  return getUnsplashUrl(keyword, 1080, 1080);
+  const idx = IMAGE_SEEDS[Math.abs(keyword.charCodeAt(0) + keyword.length) % IMAGE_SEEDS.length];
+  return getPicsumUrl(idx, 1080, 1080);
 }
 
 async function postInstagram(pageToken, imageUrl, caption) {

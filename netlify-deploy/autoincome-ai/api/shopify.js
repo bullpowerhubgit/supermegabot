@@ -116,9 +116,10 @@ async function handleDailyReport(res) {
     const yesterday  = new Date(now - 24 * 60 * 60 * 1000).toISOString();
     const weekAgo    = new Date(now - 7 * 24 * 60 * 60 * 1000).toISOString();
     const monthStart = now.toISOString().slice(0, 7) + '-01T00:00:00Z';
-    const [todayData, weekData, shopData, productData] = await Promise.all([
+    const [todayData, weekData, monthData, shopData, productData] = await Promise.all([
       shopifyGet(`/orders.json?status=any&created_at_min=${yesterday}&limit=250`),
       shopifyGet(`/orders.json?status=any&created_at_min=${weekAgo}&limit=250`),
+      shopifyGet(`/orders.json?status=any&created_at_min=${monthStart}&limit=250`),
       shopifyGet('/shop.json'),
       shopifyGet('/products/count.json?status=active'),
     ]);
@@ -126,11 +127,11 @@ async function handleDailyReport(res) {
     const sumRevenue = (orders) => orders.reduce((s, o) => s + parseFloat(o.total_price || 0), 0);
     const todayOrders = paidOnly(todayData.orders);
     const weekOrders  = paidOnly(weekData.orders);
+    const monthOrders = paidOnly(monthData.orders);
     const todayRev    = sumRevenue(todayOrders);
     const weekRev     = sumRevenue(weekOrders);
     const currency    = shopData.shop?.currency || 'EUR';
     const productCount = productData.count || 0;
-    const monthOrders = weekOrders.filter(o => o.created_at >= monthStart);
     const monthRev    = sumRevenue(monthOrders);
     const monthPct    = Math.min(100, Math.round((monthRev / 1000) * 100));
     const itemMap = {};
