@@ -160,15 +160,10 @@ async function postTweet(text) {
   return data?.data?.id;
 }
 
+const PICSUM_SEEDS = [11, 22, 33, 44, 55, 66, 77, 88, 99, 111, 222, 333];
 async function resolveUnsplash(keyword, w = 1000, h = 1500) {
-  try {
-    const r = await fetch(`https://source.unsplash.com/${w}x${h}/?${keyword}`, {
-      method: 'HEAD',
-      redirect: 'follow',
-    });
-    if (r.url && r.url.includes('images.unsplash.com')) return r.url;
-  } catch {}
-  return `https://source.unsplash.com/${w}x${h}/?${keyword}`;
+  const seed = PICSUM_SEEDS[Math.abs((keyword.charCodeAt(0) || 0) + keyword.length) % PICSUM_SEEDS.length];
+  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
 }
 
 // Pinterest Pins
