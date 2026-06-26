@@ -70,7 +70,7 @@ const FB_POSTS = [
     link: PRODUCT_URL,
   },
   {
-    message: `🔥 Neues Produkt: SuperMegaBot KI-Automation System für €97\n\nDas vollständige KI-Automation System:\n• LinkedIn + Reddit + Instagram Bots\n• E-Mail-Automation (täglich)\n• Shopify + Digistore24 Integration\n• Telegram Revenue Reports\n• 32 SEO-Artikel inklusive\n• 1-Click Deploy auf Railway\n\nFrüh-Käufer Preis: ${UPSELL_URL}\n\n#SuperMegaBot #KIAutomation #OnlineBusiness #Neuheit`,
+    message: `🔥 Neues Produkt: SuperMegaBot KI-Automation System für €97\n\nDas vollständige KI-Automation System:\n• LinkedIn + Reddit + Instagram Bots\n• E-Mail-Automation (täglich)\n• Shopify + Digistore24 Integration\n• Telegram Revenue Reports\n• 32 SEO-Artikel inklusive\n• 1-Click Deploy auf Railway\n\nFrüh-Käufer Preis: €97\n\nDetails + Kauf: ${UPSELL_URL}\n\n#SuperMegaBot #KIAutomation #OnlineBusiness #Neuheit`,
     link: UPSELL_URL,
   },
   {
