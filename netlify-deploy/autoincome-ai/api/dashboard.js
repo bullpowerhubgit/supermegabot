@@ -5,7 +5,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
 const SUPABASE_ANON = process.env.SUPABASE_ANON_KEY;
 const CRON_SECRET = process.env.CRON_SECRET || 'bullpower2026';
-const KLAVIYO_KEY = process.env.KLAVIYO_PRIVATE_KEY;
+const KLAVIYO_KEY = process.env.KLAVIYO_API_KEY;
 const DS24_KEY = process.env.DIGISTORE24_API_KEY;
 const STRIPE_KEY = process.env.STRIPE_SECRET_KEY;
 const SHOPIFY_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN;
