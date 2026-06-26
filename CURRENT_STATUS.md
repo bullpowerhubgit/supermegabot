@@ -1,108 +1,85 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-26 v44
+# SuperMegaBot CURRENT STATUS — 2026-06-26 v45
 
 ## SYSTEM STATUS
-- Railway Server: **LÄUFT** ✅ (9 Commits heute — wartet auf Railway Hobby Upgrade!)
+- Railway Server: **LÄUFT** ✅ (wartet auf Railway Hobby Upgrade!)
 - Vercel: **LIVE** ✅ (autoincome-ai.vercel.app)
 - Shopify Store: **LIVE** — 10.553 T-Shirts, Collections bereinigt ✅
 - DS24: **LIVE** ✅ — €37 Blueprint (668035) | €97 SuperMegaBot (704677)
-- GMC: **LIVE** ✅ — merchant_id: 5813214419, Metafelder werden gesetzt
+- GMC: **LIVE** ✅ — merchant_id: 5813214419
 
 ## REVENUE STATUS (LIVE)
 - **DS24**: €111.00 (3 Verkäufe) ✅
-- **Shopify**: €0 (0 Bestellungen — Produkte vorhanden, Traffic im Aufbau)
-- **Ziel**: €1.000/Monat
-- **Neue Artikel**: 5 hochkonvertierende DS24-Artikel (Blueprint + SuperMegaBot Kauflinks)
+- **Shopify**: €0 (0 Bestellungen — Traffic im Aufbau)
+- **Ziel**: €1.000/Monat — noch €889 fehlen
 
 ## 🚨 KRITISCH: MANUELLE SCHRITTE NÖTIG
 
-### 1. Railway Upgrade ($5/Monat) ← WICHTIGSTE AKTION!
-railway.app → Login → Hobby Plan wählen
-→ danach deployen alle 9 Commits automatisch!
-→ Dann starten: shopify_fix_tags, shopify_gmc_meta, shopify_cleanup_cols automatisch stündlich
-
-### 2. DS24 Produkt 668035 fixen (HÖCHSTE PRIORITÄT — Marketplace-Blockierung!)
-```bash
-# Chrome komplett schließen (Cmd+Q) dann:
-node /Users/rudolfsarkany/local-projects/telegram-automation-bot/ds24_autofix.js
-```
-
-### 3. DS24 IPN URL setzen (1 Minute)
+### 1. DS24 IPN URL setzen (1 Minute — fehlende Käufer-Emails!)
 digistore24.com → Einstellungen → Benachrichtigungen → IPN URL:
 `https://autoincome-ai.vercel.app/api/klaviyo-welcome`
 
-### 4. Shopify Seiten erstellen (für Google Shopping Pflicht) ✅ ERLEDIGT 2026-06-26
-- Datenschutzerklärung → /pages/710351978883
-- Versand & Lieferung → /pages/710352011651
-- Rückgabe & Rückerstattung → /pages/710352044419
-- Kontakt → /pages/710352077187
-- Über uns → /pages/710352109955
-Alle 5 Seiten erstellt, Sichtbar, GDPR-konformer Inhalt ✅
+### 2. Reddit OAuth aktivieren (einmalig, 3 Minuten)
+1. reddit.com/prefs/apps → rodbot → Edit → Redirect URI setzen:
+   `https://autoincome-ai.vercel.app/api/reddit-poster?action=oauth-callback`
+2. Dann besuchen: `https://autoincome-ai.vercel.app/api/reddit-poster?action=oauth-start`
+3. "Allow" klicken → Reddit postet automatisch Di+Sa zu r/passiveincome
 
-### 5. Facebook Token erneuern
-`bash /Users/rudolfsarkany/refresh_fb_token.sh`
+### 3. Facebook Token erneuern (Chrome → aiitecbuuss@gmail.com)
+`https://autoincome-ai.vercel.app/api/meta-poster?action=fb-auth`
 
-### 6. Reddit App-Typ ändern
-reddit.com/prefs/apps → rodbot → Edit → Typ: script
+### 4. Railway Upgrade ($5/Monat) — für Shopify-Automation
+railway.app → Login → Hobby Plan → dann starten alle Shopify-Tasks
 
-## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-25 v43)
+### 5. Twitter Credits ($1–5) — für Twitter Auto-Posts
+developer.twitter.com → Billing → Credits
 
-### SHOPIFY KOMPLETT-SETUP:
-1. **72 Duplikate gelöscht** (132 → 60 Custom Collections)
-2. **~370+ leere Smart Collections gelöscht** (842 → ~470, läuft noch im Hintergrund)
-3. **8 neue T-Shirt Smart Collections** (Business, Fitness, Motivation, Gaming, Geschenk, etc.)
-4. **10 Collection-Beschreibungen** für SEO hinzugefügt
-5. **T-Shirt SEO-Tag-System** implementiert (30 Keyword-Gruppen, _template_tags gefixt)
-6. **Google Shopping Metafelder** (6 Attribute: category, gender, age_group, material, condition, brand)
-7. **48+ Produkte** bereits mit GMC Metafeldern (läuft im Hintergrund für alle 10.553)
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-26 v45)
 
-### NEUE API-ROUTES (3):
-- POST /api/shopify/fix-tags → SEO-Tags für 50 Produkte/Run
-- POST /api/shopify/cleanup-collections → Leere Collections löschen
-- POST /api/shopify/gmc-meta → Google Shopping Metafelder setzen
+### VERCEL: AUTOINCOME-AI VERBESSERUNGEN
+1. **KI Einkommens-Rechner** gebaut: `/rechner`
+   - 3-Fragen Quiz → Email-Capture → Persönlicher Aktionsplan
+   - Viral-Tool: LinkedIn/Twitter Share-Buttons eingebaut
+   - /rechner in sitemap.xml + sofort zu IndexNow submitted
+   - LinkedIn-Post-Template für Calculator-Promotion hinzugefügt
 
-### NEUE SCHEDULER-TASKS (28 total, war 25):
-- shopify_fix_tags (1h): 50 Produkte × SEO-Tags → alle 10.553 in ~210 Runs
-- shopify_cleanup_cols (24h): Leere Smart Collections entfernen
-- shopify_gmc_meta (1h): Google Shopping Metafelder für alle Produkte
+2. **Affiliate Commission Fix** in campaign-trigger.js
+   - 40% Provision (€14,80) → 50% Provision (€18,50) korrigiert
+   - Affiliate-CTA-Link: direkt zu /affiliate.html (statt DS24 direkt)
+   - SuperMegaBot €97 Provision (€48,50) jetzt auch erwähnt
 
-### DS24 CONVERSION CONTENT:
-**5 neue hochkonvertierende Artikel** (161 total, war 156):
-- ki-business-blueprint-erfahrungen-2026 (€37 Review)
-- supermegabot-erfahrungen-ki-automatisierung-2026 (€97 Seite)
-- online-geld-verdienen-ki-automatisierung-2026 (5 Methoden)
-- digistore24-produkte-verkaufen-anleitung-2026 (How-To)
-- passives-einkommen-aufbauen-ki-2026 (Cashflow Guide)
-Alle mit direkten Digistore24 Kauflinks. IndexNow submitted: 200 OK.
+3. **Blog Trust-Fix** (blog.js)
+   - Falsches Badge "Über 1.200 Kunden" entfernt (nur 3 echte Käufer — Legal-Risk DE UWG §5)
+   - Ersetzt durch "60-Tage Geld-zurück-Garantie"
 
-### Deep Repair Scan (Session v41):
-→ 5 kritische Bugs gefixt, 8 Scheduler-Tasks aktiviert, 11 Smart Home Artikel
+4. **6 neue SEO-Artikel** in Supabase (total jetzt ~170 Artikel):
+   - digistore24-affiliate-werden-anleitung-2026 (Affiliate-Rekrutierung)
+   - ki-einkommen-rechner-2026-was-kann-ich-verdienen (/rechner Support)
+   - digistore24-affiliate-provision-maximieren-2026 (Strategien)
+   - supermegabot-kaufen-ki-automation-system-2026 (Buyer Intent €97)
+   - passives-einkommen-500-euro-monat-aufbauen-ki (High-Volume Keyword)
+   - 1000-euro-monat-online-verdienen-ki-anleitung-2026 (High Commercial Intent)
+   Alle 6 sofort zu IndexNow submitted: 200 OK
+
+5. **162 bestehende Blog-Artikel** → IndexNow (vollständige Neu-Einreichung)
+   - host: autoincome-ai.vercel.app
+   - Alle 161+ Artikel sofort bei Google + Bing + Yandex eingereicht
+
+6. **Commits** gepusht:
+   - feat: KI Einkommens-Rechner + affiliate commission fix + blog trust fix
+   - chore: add /rechner to sitemap.xml
 
 ## TECHNISCHE DETAILS
 - Shopify: 10.553 aktive Produkte, ~60 Custom + ~470 Smart Collections
-- Shopify Token: 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
-- API Scopes: read/write products, collections, metafields (KEIN write_content!)
 - DS24 Produkte in Supabase: 402 Einträge
-- SEO Articles Vercel: 161 published (207 total in DB)
+- SEO Articles Supabase: ~170 published
 - Amazon Tag: bullpowerhub-21
 - eBay Campaign: 5339107261 (DE)
-- GMC: 48+ Produkte mit Metafeldern, läuft weiter im Hintergrund
+- Vercel KI Einkommens-Rechner: https://autoincome-ai.vercel.app/rechner
+- IndexNow Key: bullpower2026indexnow
 
-## COMMITS HEUTE (9 total auf main)
-1. DS24 timeout + fehlende Routes
-2. Scheduler 8 neue Tasks
-3. Shopify count bug + collections route
-4. T-Shirt SEO overhaul (tags, _template_tags, neue Funktionen)
-5. Status v42
-6. GMC metafields + cleanup rule fix
-7. 5 DS24 Conversion-Artikel + Counters 156→161
-
-## NÄCHSTE SESSION: Nach Railway Upgrade
-```bash
-# Alles testen:
-curl https://dudirudibot-mega-production.up.railway.app/api/scheduler/tasks
-# Erwartet: 28 Tasks
-curl -X POST https://dudirudibot-mega-production.up.railway.app/api/shopify/fix-tags
-# Erwartet: {"ok":true,"updated":50,...}
-curl -X POST https://dudirudibot-mega-production.up.railway.app/api/shopify/gmc-meta
-# Erwartet: {"ok":true,"updated":30,...}
-```
+## NÄCHSTE SESSION: Schwerpunkte
+1. Prüfen ob DS24 IPN URL gesetzt (Rudolf-Aktion)
+2. Prüfen ob Reddit OAuth aktiviert (Rudolf-Aktion)
+3. Weitere SEO-Artikel schreiben (Buyer-Intent Keywords)
+4. OpenRouter Daily-Limit prüfen — seo-writer.js sollte wieder laufen (läuft täglich via Cron)
+5. Klaviyo Subscriber-Zahl prüfen — E-Mail-Liste Wachstum messen
