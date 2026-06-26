@@ -11,6 +11,7 @@ const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const PERPLEXITY_KEY = process.env.PERPLEXITY_API_KEY;
 const GEMINI_KEY = process.env.GOOGLE_API_KEY || process.env.GCP_API_KEY;
 const OPENAI_KEY = process.env.OPENAI_API_KEY;
+const OPENROUTER_KEY = process.env.OPENROUTER_API_KEY || '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';
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
@@ -110,19 +111,7 @@ async function sendTelegram(msg) {
 }
 
 async function generateArticle(topic) {
-  const prompt = `Schreibe einen detaillierten deutschen SEO-Artikel zum Thema "${topic.keyword}".
-
-Anforderungen:
-- 1000-1400 Wörter
-- Auf Deutsch, Zielgruppe: Anfänger die online Geld verdienen wollen
-- Keyword "${topic.keyword}" natürlich in H1, erste H2 und Text einbauen
-- Ehrlich, hilfreich, KEINE übertriebenen Versprechen
-- Konkrete Zahlen, Tools, Schritte wo möglich
-- Am Ende ein kurzer CTA-Absatz zum AI Income Machine Blueprint (${PRODUCT_URL})
-- Format: Fließtext mit ## für H2 und ### für H3, **fett** für wichtige Begriffe
-- Keine HTML-Tags, nur Markdown
-
-Beginne direkt mit dem ersten Absatz (kein Titel, keine Einleitung).`;
+  const prompt = `Schreibe einen deutschen SEO-Artikel zum Thema "${topic.keyword}". 800-1000 Wörter. Zielgruppe: Anfänger die online Geld verdienen wollen. Keyword "${topic.keyword}" in der ersten H2 einbauen. Ehrlich, hilfreich, konkrete Schritte. Am Ende: kurzer CTA zum AI Income Machine Blueprint (${PRODUCT_URL}). Format: ## für H2, ### für H3, **fett** für wichtige Begriffe, kein HTML. Beginne direkt mit dem ersten Absatz.`;
 
   // Gemini (Google AI — kostenlos) bevorzugt, Perplexity als Fallback
   if (GEMINI_KEY) {
@@ -163,9 +152,42 @@ Beginne direkt mit dem ersten Absatz (kein Titel, keine Einleitung).`;
       const content = data.choices?.[0]?.message?.content;
       if (content) return { content, wordCount: content.split(/\s+/).length };
     }
+    // fall through on quota/error — try OpenRouter next
   }
 
-  if (!PERPLEXITY_KEY) throw new Error('Kein API Key (Gemini + OpenAI + Perplexity nicht verfügbar)');
+  // OpenRouter free models — third fallback (fast models first to fit Vercel 60s timeout)
+  if (OPENROUTER_KEY) {
+    const orModels = [
+      'nvidia/nemotron-3-nano-30b-a3b:free',
+      'meta-llama/llama-3.2-3b-instruct:free',
+      'openai/gpt-oss-120b:free',
+    ];
+    for (const orModel of orModels) {
+      const r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_KEY}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': 'https://autoincome-ai.vercel.app',
+          'X-Title': 'AutoIncome AI SEO Writer',
+        },
+        body: JSON.stringify({
+          model: orModel,
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 1600,
+          temperature: 0.7,
+        }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const content = data.choices?.[0]?.message?.content;
+        if (content) return { content, wordCount: content.split(/\s+/).length };
+      }
+      // 429 or error → try next model
+    }
+  }
+
+  if (!PERPLEXITY_KEY) throw new Error('Kein API Key (Gemini + OpenAI + OpenRouter + Perplexity nicht verfügbar)');
 
   const r = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
@@ -264,7 +286,7 @@ export default async function handler(req, res) {
   // Rotate by week number
   const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
 
-  if (!PERPLEXITY_KEY && !GEMINI_KEY && !OPENAI_KEY) {
+  if (!PERPLEXITY_KEY && !GEMINI_KEY && !OPENAI_KEY && !OPENROUTER_KEY) {
     // No API key — re-ping IndexNow for existing articles to keep Google crawling
     const existingUrls = ARTICLE_TOPICS.map((t) => `https://${SITE_HOST}/blog/${t.slug}`);
     await submitToIndexNow(existingUrls[weekNum % existingUrls.length].split('/blog/')[1]);
