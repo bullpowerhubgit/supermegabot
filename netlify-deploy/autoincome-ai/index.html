@@ -687,8 +687,8 @@
   <!-- COUNTDOWN TIMER -->
   <div class="cd-bar">
     <div class="cd-inner">
-      <span class="cd-label">⏱ Sonderpreis endet in:</span>
-      <span class="cd-time" id="cdTimer">--:--:--</span>
+      <span class="cd-label">🔴 Junipreis endet 30.06. — noch:</span>
+      <span class="cd-time" id="cdTimer">--T --:--:--</span>
     </div>
   </div>
 </section>
@@ -876,6 +876,11 @@
   </div>
 </section>
 
+<!-- URGENCY BANNER -->
+<div style="background:linear-gradient(90deg,#991b1b,#dc2626);padding:14px 20px;text-align:center;border-top:1px solid rgba(255,255,255,0.1);border-bottom:1px solid rgba(255,255,255,0.1);">
+  <p style="color:white;font-weight:700;font-size:1rem;margin:0;">🔴 Junipreis läuft ab! Noch <span id="urgencyTimer" style="font-family:monospace;background:rgba(0,0,0,0.3);padding:2px 8px;border-radius:4px;">--</span> bis 30.06.2026 — danach regulärer Preis</p>
+</div>
+
 <!-- PRICING -->
 <section id="pricing">
   <div class="section-inner">
@@ -1051,24 +1056,33 @@ var obs=new IntersectionObserver(function(entries){
 },{threshold:0.3});
 document.querySelectorAll('.scount').forEach(function(el){ obs.observe(el); });
 
-// Countdown timer (47h59m59s, persists across sessions)
+// Countdown timer — real deadline: 30. Juni 2026 23:59:59 CET (= UTC+2 = 21:59:59 UTC)
 (function(){
-  var KEY='aicd_end';
-  var stored=localStorage.getItem(KEY);
-  var end=stored?parseInt(stored,10):0;
-  if(!end||end<Date.now()){
-    end=Date.now()+47*3600000+59*60000+59000;
-    localStorage.setItem(KEY,end);
-  }
+  var DEADLINE = new Date('2026-06-30T21:59:59Z').getTime();
   function updateCD(){
-    var diff=Math.max(0,end-Date.now());
-    var h=Math.floor(diff/3600000);
+    var diff=Math.max(0,DEADLINE-Date.now());
+    var d=Math.floor(diff/86400000);
+    var h=Math.floor((diff%86400000)/3600000);
     var m=Math.floor((diff%3600000)/60000);
     var s=Math.floor((diff%60000)/1000);
     var el=document.getElementById('cdTimer');
-    if(el) el.textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    if(el) el.textContent=d+'T '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
   }
   updateCD(); setInterval(updateCD,1000);
+})();
+
+// Urgency banner timer (same June 30 deadline)
+(function(){
+  var DEADLINE=new Date('2026-06-30T21:59:59Z').getTime();
+  function upd(){
+    var diff=Math.max(0,DEADLINE-Date.now());
+    var d=Math.floor(diff/86400000);
+    var h=Math.floor((diff%86400000)/3600000);
+    var m=Math.floor((diff%3600000)/60000);
+    var el=document.getElementById('urgencyTimer');
+    if(el) el.textContent=d+'T '+String(h).padStart(2,'0')+'h '+String(m).padStart(2,'0')+'m';
+  }
+  upd(); setInterval(upd,30000);
 })();
 
 // Social proof toasts
