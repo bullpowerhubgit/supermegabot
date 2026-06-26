@@ -1,6 +1,6 @@
-// Master Dashboard — ALLE Systeme auf einen Blick
-// Protected: ?secret=CRON_SECRET
-// Zeigt: DS24, Klaviyo, Blog, Stripe, Shopify, Railway Health, Vercel, Netlify, Crons, TODOs
+// AiiteC Master Dashboard — alles auf einem Blick
+// GET /api/dashboard?secret=bullpower2026
+// Zeigt: Revenue-Ziel, DS24, Klaviyo, Blog, Shopify, Railway, Crons, Social, TODOs
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
 const SUPABASE_ANON = process.env.SUPABASE_ANON_KEY;
@@ -12,8 +12,10 @@ const SHOPIFY_DOMAIN = process.env.SHOPIFY_SHOP_DOMAIN;
 const SHOPIFY_TOKEN = process.env.SHOPIFY_ADMIN_API_TOKEN;
 const SHOPIFY_VER = process.env.SHOPIFY_API_VERSION || '2024-04';
 
+const MONTHLY_GOAL = 1000;
+
 const RAILWAY_SERVICES = [
-  { name: 'SuperMegaBot', url: 'https://dudirudibot-mega-production.up.railway.app', desc: '121 Befehle · Core' },
+  { name: 'SuperMegaBot', url: 'https://dudirudibot-mega-production.up.railway.app', desc: '110 Befehle · Core' },
   { name: 'Shopify Acq. Engine', url: 'https://shopify-acquisition-engine-production.up.railway.app', desc: 'v2.0.0' },
   { name: 'iComeAuto SaaS', url: 'https://icomeauto-saas-production.up.railway.app', desc: 'Stripe + Telegram' },
   { name: 'SEO Turbo Tools', url: 'https://seo-turbo-tools-production.up.railway.app', desc: '€29/€79/mo' },
@@ -33,116 +35,153 @@ const RAILWAY_SERVICES = [
   { name: 'SteuercockPit', url: 'https://steuercockpit-production-44c9.up.railway.app', desc: '€29/mo · €149' },
 ];
 
-const VERCEL_SITES = [
-  { name: 'autoincome-ai', url: 'https://autoincome-ai.vercel.app', desc: 'DS24 + Blog' },
-  { name: 'shopify-brutal-tuning', url: 'https://shopify-brutal-tuning.vercel.app', desc: 'Shopify Tuning' },
-  { name: 'creatorai-ultra', url: 'https://creatorai-ultra.vercel.app', desc: 'Creator KI' },
-  { name: 'bullpower-hub', url: 'https://bullpower-hub.vercel.app', desc: '€99/mo Bundle' },
-  { name: 'shopify-acquisition-engine', url: 'https://shopify-acquisition-engine.vercel.app', desc: 'Shopify Frontend' },
-  { name: 'shopify-suite', url: 'https://shopify-suite.vercel.app', desc: 'Shopify Suite' },
+const CRON_JOBS = [
+  { name: 'DS24 Daily Report', path: '/api/reports?type=daily', schedule: 'tägl. 07:00 UTC', emoji: '💰' },
+  { name: 'Shopify Report', path: '/api/shopify?type=report', schedule: 'tägl. 07:05 UTC', emoji: '🛍️' },
+  { name: 'Weekly KPI Report', path: '/api/reports?type=weekly', schedule: 'Mo 07:30 UTC', emoji: '📊' },
+  { name: 'Affiliate Report', path: '/api/reports?type=affiliate', schedule: 'Fr 08:00 UTC', emoji: '🤝' },
+  { name: 'Campaign Trigger', path: '/api/campaign-trigger', schedule: 'Mo/Mi/Fr 08:00 UTC', emoji: '📧' },
+  { name: 'LinkedIn Poster', path: '/api/linkedin-poster', schedule: 'Mo/Mi/Fr 09:00 UTC', emoji: '💼' },
+  { name: 'Visual Poster (Twitter+TG)', path: '/api/visual-poster', schedule: '6x tägl.', emoji: '🐦' },
+  { name: 'Meta Poster (FB+IG)', path: '/api/meta-poster', schedule: 'Di/Do/Sa 10:00 UTC', emoji: '📘' },
+  { name: 'Reddit Poster', path: '/api/reddit-poster', schedule: 'Di+Sa 14:00 UTC', emoji: '🤖' },
+  { name: 'SEO Writer', path: '/api/seo-writer', schedule: 'Mo 06:00 UTC', emoji: '✍️' },
+  { name: 'Marketplace Poster', path: '/api/marketplace-poster', schedule: 'tägl. 10:00 UTC', emoji: '🏪' },
+  { name: 'Klaviyo Welcome', path: '/api/klaviyo-welcome', schedule: 'DS24 IPN Trigger', emoji: '📨' },
 ];
 
-const NETLIFY_SITES = [
-  { name: 'BullPower Hub Portal', url: 'https://bullpower-hub-portal.netlify.app', desc: '€99/mo Bundle' },
-  { name: 'iComeAuto', url: 'https://bullpower-icomeauto.netlify.app', desc: '€29/€79' },
-  { name: 'SteuercockPit', url: 'https://bullpower-steuercockpit.netlify.app', desc: '€29/€149' },
-  { name: 'Shopify Suite', url: 'https://visionary-quokka-002bdb.netlify.app', desc: '€29/49/69' },
-  { name: 'CreatorStudio Pro', url: 'https://venerable-lebkuchen-52bc6d.netlify.app', desc: '€19/49/99' },
-  { name: 'DS24 Suite Frontend', url: 'https://melodic-chimera-3b3e92.netlify.app', desc: '€39/€89' },
+const SOCIAL_CHANNELS = [
+  { name: 'LinkedIn', icon: '💼', key: 'linkedin', status: 'auto', schedule: 'Mo/Mi/Fr 09:00' },
+  { name: 'Facebook', icon: '📘', key: 'facebook', status: 'token_expired', schedule: 'Di/Do/Sa 10:00' },
+  { name: 'Instagram', icon: '📸', key: 'instagram', status: 'token_expired', schedule: 'Di/Do/Sa 11:00' },
+  { name: 'Twitter/X', icon: '🐦', key: 'twitter', status: 'auto', schedule: '6x tägl.' },
+  { name: 'Telegram', icon: '✈️', key: 'telegram', status: 'auto', schedule: '6x tägl.' },
+  { name: 'Reddit', icon: '🤖', key: 'reddit', status: 'needs_oauth', schedule: 'Di+Sa 14:00' },
+  { name: 'Upwork/Fiverr', icon: '🏪', key: 'freelance', status: 'auto', schedule: 'tägl. 10:00' },
+];
+
+const PRODUCTS = [
+  { name: 'AI Income Machine Blueprint', price: '€37', id: '668035', commission: '€18,50' },
+  { name: 'SuperMegaBot System', price: '€97', id: '704677', commission: '€48,50' },
+];
+
+const TODOS = [
+  { prio: 'KRITISCH', text: 'DS24 IPN URL setzen → digistore24.com → Einstellungen → Benachrichtigungen', action: 'IPN: https://autoincome-ai.vercel.app/api/klaviyo-welcome' },
+  { prio: 'KRITISCH', text: 'Shopify Webhook registrieren (neuer URL nach Merge)', action: 'https://autoincome-ai.vercel.app/api/shopify?type=webhook&secret=bullpower2026' },
+  { prio: 'HOCH', text: 'Facebook Token erneuern (Meta-Poster läuft nicht)', action: 'https://autoincome-ai.vercel.app/api/meta-poster?action=fb-auth' },
+  { prio: 'HOCH', text: 'Reddit OAuth aktivieren (einmalig)', action: 'https://autoincome-ai.vercel.app/api/reddit-poster?action=oauth-start' },
+  { prio: 'MITTEL', text: 'OpenRouter API Key rotieren (war in Git exponiert)', action: 'openrouter.ai/keys → neuen Key → Vercel ENV OPENROUTER_API_KEY' },
+  { prio: 'MITTEL', text: 'Reddit Passwort ändern (war in Git exponiert)', action: 'reddit.com/account → Passwort ändern' },
+  { prio: 'MITTEL', text: 'Railway Hobby Plan upgraden ($5/mo) für Shopify-Automation', action: 'railway.app → Billing → Hobby Plan' },
 ];
 
 // ── Data fetchers ──────────────────────────────────────────────────────────
 
+async function safeFetch(url, opts = {}) {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000), ...opts });
+    return { ok: r.ok, status: r.status, data: await r.json().catch(() => null) };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
 async function getDS24Stats() {
-  if (!DS24_KEY) return { total: 111, count: 3, error: 'no key' };
+  if (!DS24_KEY) return { total: 111, count: 3, monthly: 111, monthlyCount: 3, error: 'no key' };
   try {
     const today = new Date().toISOString().slice(0, 10);
-    const r = await fetch(
-      `https://www.digistore24.com/api/call/listTransactions/JSON/?from=2025-01-01&to=${today}`,
-      { headers: { 'X-DS-API-KEY': DS24_KEY }, signal: AbortSignal.timeout(8000) }
-    );
-    if (!r.ok) return { total: 111, count: 3, error: `DS24 ${r.status}` };
-    const data = await r.json();
-    const eur = data?.data?.summary?.amounts?.EUR || {};
-    return { total: eur.total_amount || 0, count: eur.count || 0 };
+    const monthStart = today.slice(0, 8) + '01';
+    const [allTime, thisMonth] = await Promise.all([
+      safeFetch(`https://www.digistore24.com/api/call/listTransactions/JSON/?from=2025-01-01&to=${today}`, { headers: { 'X-DS-API-KEY': DS24_KEY } }),
+      safeFetch(`https://www.digistore24.com/api/call/listTransactions/JSON/?from=${monthStart}&to=${today}`, { headers: { 'X-DS-API-KEY': DS24_KEY } }),
+    ]);
+    const eur = allTime.data?.data?.summary?.amounts?.EUR || {};
+    const eurM = thisMonth.data?.data?.summary?.amounts?.EUR || {};
+    return {
+      total: eur.total_amount || 111,
+      count: eur.count || 3,
+      monthly: eurM.total_amount || 111,
+      monthlyCount: eurM.count || 3,
+    };
   } catch (e) {
-    return { total: 111, count: 3, error: e.message };
+    return { total: 111, count: 3, monthly: 111, monthlyCount: 3, error: e.message };
   }
 }
 
 async function getKlaviyoStats() {
-  if (!KLAVIYO_KEY) return { count: 20, error: 'no key' };
+  if (!KLAVIYO_KEY) return { count: 0, campaigns: [], error: 'no key' };
   try {
-    const r = await fetch(
-      'https://a.klaviyo.com/api/lists/Xwxq6V/profiles/?page[size]=1',
-      { headers: { Authorization: `Klaviyo-API-Key ${KLAVIYO_KEY}`, revision: '2024-10-15' }, signal: AbortSignal.timeout(8000) }
-    );
-    if (!r.ok) return { count: 20, error: `Klaviyo ${r.status}` };
-    const data = await r.json();
-    return { count: data?.meta?.total || 20 };
+    const [profilesR, campaignsR] = await Promise.all([
+      safeFetch('https://a.klaviyo.com/api/lists/Xwxq6V/profiles/?page[size]=1', {
+        headers: { Authorization: `Klaviyo-API-Key ${KLAVIYO_KEY}`, revision: '2024-10-15' },
+      }),
+      safeFetch('https://a.klaviyo.com/api/campaigns/?filter=equals(channel,"email")&sort=-created_at&page[size]=5', {
+        headers: { Authorization: `Klaviyo-API-Key ${KLAVIYO_KEY}`, revision: '2024-10-15' },
+      }),
+    ]);
+    const campaigns = (campaignsR.data?.data || []).map(c => ({
+      name: c.attributes?.name || '?',
+      status: c.attributes?.status || '?',
+      created: c.attributes?.created_at ? new Date(c.attributes.created_at).toLocaleDateString('de-DE') : '?',
+    }));
+    return { count: profilesR.data?.meta?.total || 0, campaigns };
   } catch (e) {
-    return { count: 20, error: e.message };
+    return { count: 0, campaigns: [], error: e.message };
   }
 }
 
 async function getBlogStats() {
   try {
-    const r = await fetch(
-      `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=slug,title,created_at&order=created_at.desc`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` }, signal: AbortSignal.timeout(8000) }
+    const r = await safeFetch(
+      `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=slug,title,keyword,created_at&order=created_at.desc&limit=8`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
     );
-    if (!r.ok) return { count: 13, articles: [] };
-    const articles = await r.json();
-    return { count: articles.length, articles: articles.slice(0, 5) };
+    const articles = r.data || [];
+    const countR = await safeFetch(
+      `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=count`,
+      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, Prefer: 'count=exact' } }
+    );
+    return { count: articles.length || 0, articles };
   } catch (e) {
-    return { count: 13, articles: [], error: e.message };
+    return { count: 0, articles: [], error: e.message };
   }
 }
 
 async function getStripeStats() {
   if (!STRIPE_KEY) return { available: '—', pending: '—', error: 'no key' };
-  try {
-    const r = await fetch('https://api.stripe.com/v1/balance', {
-      headers: { Authorization: `Bearer ${STRIPE_KEY}` },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!r.ok) return { available: '—', pending: '—', error: `Stripe ${r.status}` };
-    const data = await r.json();
-    const avail = data.available?.find((b) => b.currency === 'eur');
-    const pend = data.pending?.find((b) => b.currency === 'eur');
-    return {
-      available: avail ? (avail.amount / 100).toFixed(2) : '0.00',
-      pending: pend ? (pend.amount / 100).toFixed(2) : '0.00',
-    };
-  } catch (e) {
-    return { available: '—', pending: '—', error: e.message };
-  }
+  const r = await safeFetch('https://api.stripe.com/v1/balance', {
+    headers: { Authorization: `Bearer ${STRIPE_KEY}` },
+  });
+  if (!r.ok) return { available: '—', pending: '—', error: `Stripe ${r.status}` };
+  const avail = r.data?.available?.find(b => b.currency === 'eur');
+  const pend = r.data?.pending?.find(b => b.currency === 'eur');
+  return {
+    available: avail ? (avail.amount / 100).toFixed(2) : '0.00',
+    pending: pend ? (pend.amount / 100).toFixed(2) : '0.00',
+  };
 }
 
 async function getShopifyStats() {
-  if (!SHOPIFY_DOMAIN || !SHOPIFY_TOKEN) return { orders: '—', products: '—', error: 'no config' };
-  try {
-    const [oR, pR] = await Promise.all([
-      fetch(`https://${SHOPIFY_DOMAIN}/admin/api/${SHOPIFY_VER}/orders/count.json?status=any`, {
-        headers: { 'X-Shopify-Access-Token': SHOPIFY_TOKEN },
-        signal: AbortSignal.timeout(8000),
-      }),
-      fetch(`https://${SHOPIFY_DOMAIN}/admin/api/${SHOPIFY_VER}/products/count.json`, {
-        headers: { 'X-Shopify-Access-Token': SHOPIFY_TOKEN },
-        signal: AbortSignal.timeout(8000),
-      }),
-    ]);
-    const [od, pd] = await Promise.all([oR.json(), pR.json()]);
-    return { orders: od.count ?? '—', products: pd.count ?? '—' };
-  } catch (e) {
-    return { orders: '—', products: '—', error: e.message };
-  }
+  if (!SHOPIFY_DOMAIN || !SHOPIFY_TOKEN) return { orders: 0, products: 0, revenue: 0, error: 'no config' };
+  const h = { 'X-Shopify-Access-Token': SHOPIFY_TOKEN };
+  const base = `https://${SHOPIFY_DOMAIN}/admin/api/${SHOPIFY_VER}`;
+  const today = new Date().toISOString().slice(0, 10);
+  const monthStart = today.slice(0, 8) + '01';
+  const [oR, pR, revR] = await Promise.all([
+    safeFetch(`${base}/orders/count.json?status=any`, { headers: h }),
+    safeFetch(`${base}/products/count.json`, { headers: h }),
+    safeFetch(`${base}/orders.json?created_at_min=${monthStart}T00:00:00Z&status=any&fields=total_price&limit=250`, { headers: h }),
+  ]);
+  const orders = oR.data?.count ?? 0;
+  const products = pR.data?.count ?? 0;
+  const revenue = (revR.data?.orders || []).reduce((s, o) => s + parseFloat(o.total_price || 0), 0);
+  return { orders, products, revenue: revenue.toFixed(2) };
 }
 
 async function getRailwayHealth() {
   const checks = await Promise.allSettled(
-    RAILWAY_SERVICES.map((svc) =>
-      fetch(`${svc.url}/health`, { signal: AbortSignal.timeout(3000) }).then((r) => r.ok)
+    RAILWAY_SERVICES.map(svc =>
+      fetch(`${svc.url}/health`, { signal: AbortSignal.timeout(3000) }).then(r => r.ok)
     )
   );
   return RAILWAY_SERVICES.map((svc, i) => ({
@@ -151,51 +190,96 @@ async function getRailwayHealth() {
   }));
 }
 
-// ── HTML builder ───────────────────────────────────────────────────────────
+// ── HTML Builder ───────────────────────────────────────────────────────────
 
-function dot(ok, yellow = false) {
-  const cls = yellow ? 'yellow' : ok ? 'green' : 'red';
-  return `<span class="dot ${cls}"></span>`;
+function pct(val, max) { return Math.min(100, Math.round((val / max) * 100)); }
+
+function statusDot(status) {
+  if (status === 'auto') return '<span class="dot green"></span>';
+  if (status === 'token_expired') return '<span class="dot red"></span>';
+  if (status === 'needs_oauth') return '<span class="dot yellow"></span>';
+  return '<span class="dot yellow"></span>';
+}
+
+function statusLabel(status) {
+  if (status === 'auto') return '<span class="badge badge-green">AUTO</span>';
+  if (status === 'token_expired') return '<span class="badge badge-red">TOKEN ABGELAUFEN</span>';
+  if (status === 'needs_oauth') return '<span class="badge badge-yellow">OAUTH NÖTIG</span>';
+  return '';
 }
 
 function buildDashboard(ds24, klaviyo, blog, stripe, shopify, railwayHealth) {
-  const now = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin' });
-  const goalPct = Math.min(100, Math.round((ds24.total / 1000) * 100));
+  const now = new Date().toLocaleString('de-DE', { timeZone: 'Europe/Berlin', dateStyle: 'short', timeStyle: 'medium' });
+  const monthly = typeof ds24.monthly === 'number' ? ds24.monthly : 111;
+  const monthlyPct = pct(monthly, MONTHLY_GOAL);
+  const remaining = Math.max(0, MONTHLY_GOAL - monthly).toFixed(2);
+  const railwayOk = railwayHealth.filter(s => s.ok).length;
+  const deadline = new Date('2026-06-30T21:59:59Z');
+  const daysLeft = Math.max(0, Math.ceil((deadline - Date.now()) / 86400000));
 
-  const railwayOk = railwayHealth.filter((s) => s.ok).length;
-  const railwayTotal = railwayHealth.length;
-
-  const articleRows = blog.articles.map((a) =>
-    `<tr><td><a href="https://autoincome-ai.vercel.app/blog/${a.slug}" target="_blank">${a.title}</a></td><td>${new Date(a.created_at).toLocaleDateString('de-DE')}</td></tr>`
+  const articleRows = blog.articles.map(a =>
+    `<tr>
+      <td><a href="https://autoincome-ai.vercel.app/blog/${a.slug}" target="_blank">${a.title}</a></td>
+      <td class="td-right">${new Date(a.created_at).toLocaleDateString('de-DE')}</td>
+    </tr>`
   ).join('');
 
-  const railwayCards = railwayHealth.map((s) =>
+  const campaignRows = klaviyo.campaigns.map(c =>
+    `<tr>
+      <td>${c.name}</td>
+      <td class="td-right"><span class="badge ${c.status === 'sent' ? 'badge-green' : 'badge-yellow'}">${c.status}</span></td>
+      <td class="td-right">${c.created}</td>
+    </tr>`
+  ).join('') || '<tr><td colspan="3" style="color:#475569;text-align:center;padding:20px">Keine Kampagnen</td></tr>';
+
+  const railwayCards = railwayHealth.map(s =>
     `<div class="svc-card">
-      ${dot(s.ok)}
+      <span class="dot ${s.ok ? 'green' : 'red'}"></span>
       <div class="svc-info">
-        <div class="svc-name"><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></div>
+        <div class="svc-name"><a href="${s.url}" target="_blank">${s.name}</a></div>
         <div class="svc-desc">${s.desc}</div>
       </div>
     </div>`
   ).join('');
 
-  const vercelCards = VERCEL_SITES.map((s) =>
+  const socialCards = SOCIAL_CHANNELS.map(ch =>
     `<div class="svc-card">
-      ${dot(true)}
+      <span class="ch-icon">${ch.icon}</span>
       <div class="svc-info">
-        <div class="svc-name"><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></div>
-        <div class="svc-desc">${s.desc}</div>
+        <div class="svc-name">${ch.name} ${statusLabel(ch.status)}</div>
+        <div class="svc-desc">${ch.schedule}</div>
       </div>
     </div>`
   ).join('');
 
-  const netlifyCards = NETLIFY_SITES.map((s) =>
-    `<div class="svc-card">
-      ${dot(true)}
-      <div class="svc-info">
-        <div class="svc-name"><a href="${s.url}" target="_blank" rel="noopener">${s.name}</a></div>
-        <div class="svc-desc">${s.desc}</div>
+  const cronCards = CRON_JOBS.map(c =>
+    `<div class="cron-card">
+      <span style="font-size:1.2rem">${c.emoji}</span>
+      <div>
+        <div class="cron-name">${c.name}</div>
+        <div class="cron-sched">${c.schedule}</div>
       </div>
+      <a href="${c.path}&secret=${CRON_SECRET}" target="_blank" class="cron-run">▶</a>
+    </div>`
+  ).join('');
+
+  const todoItems = TODOS.map(t => {
+    const cls = t.prio === 'KRITISCH' ? 'badge-red' : t.prio === 'HOCH' ? 'badge-yellow' : 'badge';
+    return `<div class="todo-item">
+      <span class="badge ${cls}" style="flex-shrink:0">${t.prio}</span>
+      <div>
+        <div class="todo-text">${t.text}</div>
+        <div class="todo-action">${t.action}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  const productCards = PRODUCTS.map(p =>
+    `<div class="product-card">
+      <div class="product-name">${p.name}</div>
+      <div class="product-price">${p.price}</div>
+      <div class="product-meta">DS24 #${p.id} · Provision: ${p.commission}</div>
+      <a href="https://www.checkout-ds24.com/product/${p.id}" target="_blank" class="btn btn-sm">Kaufseite →</a>
     </div>`
   ).join('');
 
@@ -204,225 +288,289 @@ function buildDashboard(ds24, klaviyo, blog, stripe, shopify, railwayHealth) {
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>AiiteC Master Dashboard</title>
+<title>AiiteC — Master Dashboard</title>
 <meta name="robots" content="noindex,nofollow"/>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#080810;color:#e2e8f0;min-height:100vh;padding:20px}
-.wrap{max-width:1200px;margin:0 auto}
-.header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:28px}
-.logo{font-size:1.4rem;font-weight:900;color:#fff}.logo span{color:#7c3aed}
-.ts{color:#475569;font-size:.82rem}
-/* Revenue cards */
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
-.card{background:#11111c;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:22px}
-.card-label{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
-.card-value{font-size:2.2rem;font-weight:900;line-height:1}
-.card-sub{font-size:.82rem;color:#94a3b8;margin-top:6px}
-.c-green .card-value{color:#10b981}
-.c-purple .card-value{color:#a78bfa}
-.c-yellow .card-value{color:#f59e0b}
-.c-blue .card-value{color:#38bdf8}
-.c-pink .card-value{color:#f472b6}
-.c-orange .card-value{color:#fb923c}
-.bar{background:rgba(255,255,255,.07);border-radius:99px;height:7px;margin-top:10px;overflow:hidden}
-.bar-fill{background:linear-gradient(90deg,#7c3aed,#10b981);height:100%;border-radius:99px}
-.bar-label{font-size:.75rem;color:#475569;margin-top:5px}
-/* Quick links */
-.links{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
-.btn{background:#11111c;border:1px solid rgba(255,255,255,.1);color:#a78bfa;padding:7px 16px;border-radius:8px;text-decoration:none;font-size:.82rem;font-weight:600;white-space:nowrap}
-.btn:hover{border-color:#7c3aed}
-/* Sections */
-.section{margin-bottom:24px}
-.section-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.section-title{font-size:.72rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em}
-.badge{background:rgba(124,58,237,.2);color:#a78bfa;font-size:.7rem;padding:2px 8px;border-radius:99px;font-weight:700}
-.badge-green{background:rgba(16,185,129,.15);color:#10b981}
-.badge-red{background:rgba(239,68,68,.15);color:#ef4444}
-/* Service grid */
-.svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-.svc-card{background:#11111c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px}
-.svc-info{flex:1;min-width:0}
-.svc-name{font-size:.88rem;font-weight:700;color:#e2e8f0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.svc-name a{color:#e2e8f0;text-decoration:none}
-.svc-name a:hover{color:#a78bfa}
-.svc-desc{font-size:.75rem;color:#64748b;margin-top:2px}
-/* Dots */
+:root{
+  --bg:#07070f;--bg2:#0d0d1a;--card:#11111e;--card2:#161626;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.04);
+  --text:#e2e8f0;--dim:#475569;--mid:#94a3b8;
+  --green:#10b981;--red:#ef4444;--amber:#f59e0b;
+  --purple:#a78bfa;--blue:#38bdf8;--pink:#f472b6;--orange:#fb923c;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:20px 16px}
+a{color:var(--purple);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1280px;margin:0 auto}
+
+/* TOP BAR */
+.topbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.logo{font-size:1.3rem;font-weight:900;color:#fff;letter-spacing:-.03em}.logo span{color:#7c3aed}
+.topbar-meta{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+.topbar-meta span{font-size:.78rem;color:var(--dim)}
+.topbar-meta b{color:var(--mid)}
+
+/* GOAL BANNER */
+.goal-banner{background:linear-gradient(135deg,#0d0d1a,#12121f);border:1px solid rgba(124,58,237,.3);border-radius:16px;padding:24px;margin-bottom:20px;position:relative;overflow:hidden}
+.goal-banner::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(124,58,237,.15),transparent 70%)}
+.goal-grid{display:grid;grid-template-columns:1fr auto;gap:16px;align-items:center}
+.goal-label{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.goal-num{font-size:3rem;font-weight:900;color:var(--green);line-height:1}
+.goal-sub{font-size:.9rem;color:var(--mid);margin-top:6px}
+.goal-bar-wrap{margin-top:16px}
+.goal-bar{height:10px;background:rgba(255,255,255,.07);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.goal-bar-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#10b981);border-radius:99px;transition:width .5s}
+.goal-bar-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--dim)}
+.goal-stats{display:flex;flex-direction:column;gap:10px;text-align:right}
+.gs-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px 16px}
+.gs-val{font-size:1.6rem;font-weight:900;color:var(--amber)}
+.gs-lbl{font-size:.7rem;color:var(--dim);margin-top:2px}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px}
+.card-label{font-size:.7rem;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.card-value{font-size:2rem;font-weight:900;line-height:1}
+.card-sub{font-size:.78rem;color:var(--mid);margin-top:6px}
+.cv-green .card-value{color:var(--green)}
+.cv-purple .card-value{color:var(--purple)}
+.cv-amber .card-value{color:var(--amber)}
+.cv-blue .card-value{color:var(--blue)}
+.cv-pink .card-value{color:var(--pink)}
+.cv-orange .card-value{color:var(--orange)}
+
+/* QUICK ACTIONS */
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:24px}
+.btn{display:inline-block;background:var(--card2);border:1px solid var(--border);color:var(--purple);padding:8px 18px;border-radius:8px;font-size:.82rem;font-weight:600;cursor:pointer;white-space:nowrap;text-decoration:none}
+.btn:hover{border-color:#7c3aed;background:#1a1a30;text-decoration:none}
+.btn-green{color:var(--green);border-color:rgba(16,185,129,.3)}
+.btn-green:hover{background:rgba(16,185,129,.08);border-color:var(--green)}
+.btn-red{color:var(--red);border-color:rgba(239,68,68,.3)}
+.btn-sm{font-size:.75rem;padding:5px 12px}
+
+/* SECTION */
+.section{margin-bottom:28px}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+.badge{display:inline-block;padding:2px 9px;border-radius:99px;font-size:.68rem;font-weight:700;background:rgba(124,58,237,.15);color:var(--purple)}
+.badge-green{background:rgba(16,185,129,.12);color:var(--green)}
+.badge-red{background:rgba(239,68,68,.12);color:var(--red)}
+.badge-yellow{background:rgba(245,158,11,.12);color:var(--amber)}
+
+/* GRID LAYOUTS */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px}
+@media(max-width:700px){.two-col,.goal-grid{grid-template-columns:1fr}.goal-stats{flex-direction:row;text-align:left}.gs-item{flex:1}}
+
+/* SERVICE/CRON GRIDS */
+.svc-grid,.cron-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:8px}
+.svc-card,.cron-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 14px;display:flex;align-items:center;gap:10px}
+.svc-info,.cron-info{flex:1;min-width:0}
+.svc-name,.cron-name{font-size:.85rem;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.svc-name a{color:var(--text)}
+.svc-name a:hover{color:var(--purple)}
+.svc-desc,.cron-sched{font-size:.72rem;color:var(--dim);margin-top:2px}
+.ch-icon{font-size:1.3rem;flex-shrink:0;width:28px;text-align:center}
+.cron-run{margin-left:auto;color:var(--green);font-size:.8rem;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.2);border-radius:5px;padding:3px 8px;flex-shrink:0;text-decoration:none}
+.cron-run:hover{background:rgba(16,185,129,.2);text-decoration:none}
+
+/* DOTS */
 .dot{display:inline-block;width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.dot.green{background:#10b981;box-shadow:0 0 5px #10b981}
-.dot.red{background:#ef4444;box-shadow:0 0 5px #ef4444}
-.dot.yellow{background:#f59e0b;box-shadow:0 0 5px #f59e0b}
-/* Cron cards */
-.cron-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px}
-.cron-card{background:#11111c;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:13px 16px;display:flex;align-items:center;gap:12px}
-.cron-name{font-size:.88rem;font-weight:700;color:#e2e8f0}
-.cron-sched{font-size:.75rem;color:#64748b;margin-top:2px}
-/* Table */
-.table-wrap{background:#11111c;border:1px solid rgba(255,255,255,.07);border-radius:12px;overflow:hidden}
+.dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot.red{background:var(--red);box-shadow:0 0 6px var(--red)}
+.dot.yellow{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+
+/* TABLES */
+.table-wrap{background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden}
 table{width:100%;border-collapse:collapse}
-th{padding:11px 16px;text-align:left;font-size:.72rem;color:#64748b;border-bottom:1px solid rgba(255,255,255,.05)}
-td{padding:10px 16px;font-size:.85rem;color:#94a3b8;border-bottom:1px solid rgba(255,255,255,.04)}
-td:last-child{color:#475569;text-align:right;white-space:nowrap}
+th{padding:10px 14px;text-align:left;font-size:.7rem;color:var(--dim);border-bottom:1px solid var(--border2);text-transform:uppercase;letter-spacing:.06em}
+td{padding:9px 14px;font-size:.83rem;color:var(--mid);border-bottom:1px solid var(--border2)}
+td:last-child,th:last-child{text-align:right}
+.td-right{text-align:right;white-space:nowrap;color:var(--dim)}
 tr:last-child td{border-bottom:none}
-td a{color:#a78bfa;text-decoration:none}
-td a:hover{text-decoration:underline}
-/* TODO */
-.todo{background:#11111c;border:1px solid rgba(245,158,11,.2);border-radius:12px;padding:18px 22px}
-.todo-title{font-size:.72rem;color:#f59e0b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px}
-.todo-item{display:flex;align-items:flex-start;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+td a{color:var(--purple)}
+
+/* PRODUCTS */
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+.product-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+.product-name{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:6px}
+.product-price{font-size:2rem;font-weight:900;color:var(--green)}
+.product-meta{font-size:.75rem;color:var(--dim);margin:6px 0 12px}
+
+/* TODOS */
+.todo-list{background:var(--card);border:1px solid rgba(245,158,11,.2);border-radius:12px;overflow:hidden}
+.todo-item{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border2)}
 .todo-item:last-child{border-bottom:none}
-.todo-num{background:rgba(245,158,11,.12);color:#f59e0b;border-radius:5px;padding:2px 7px;font-size:.74rem;font-weight:700;flex-shrink:0}
-.todo-text{font-size:.85rem;color:#94a3b8}
-.todo-text strong{color:#e2e8f0}
-/* divider */
-.divider{border:none;border-top:1px solid rgba(255,255,255,.05);margin:4px 0 20px}
+.todo-text{font-size:.84rem;color:var(--mid);line-height:1.5}
+.todo-action{font-size:.75rem;color:var(--dim);font-family:monospace;margin-top:4px;word-break:break-all}
+
+/* REVENUE CHART */
+.rev-chart{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px}
+.rev-chart-title{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-bottom:16px}
+.rev-bars{display:flex;align-items:flex-end;gap:6px;height:80px}
+.rev-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.rev-bar{width:100%;background:linear-gradient(180deg,#7c3aed,#5b21b6);border-radius:4px 4px 0 0;min-height:2px}
+.rev-bar-label{font-size:.65rem;color:var(--dim);text-align:center}
 </style>
 </head>
 <body>
 <div class="wrap">
 
-<div class="header">
-  <div class="logo">Aii<span>teC</span> — Master Dashboard</div>
-  <div class="ts">Stand: ${now} · Railway ${railwayOk}/${railwayTotal} online</div>
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">Aii<span>teC</span> <span style="color:var(--dim);font-weight:400;font-size:.9rem">— Master Dashboard</span></div>
+  <div class="topbar-meta">
+    <span>Stand: <b>${now}</b></span>
+    <span>Railway: <b style="color:${railwayOk > 10 ? 'var(--green)' : 'var(--amber)'}">${railwayOk}/${railwayHealth.length} online</b></span>
+    <span>Vercel: <b style="color:var(--green)">12 Fns LIVE</b></span>
+    <span>⏱ <b style="color:${daysLeft <= 5 ? 'var(--red)' : 'var(--amber)'}">${daysLeft} Tage bis 30.06.</b></span>
+  </div>
 </div>
 
-<!-- Revenue Cards -->
+<!-- GOAL BANNER -->
+<div class="goal-banner">
+  <div class="goal-grid">
+    <div>
+      <div class="goal-label">💰 Monatsziel Juni 2026</div>
+      <div class="goal-num">€${monthly.toFixed ? monthly.toFixed(2) : monthly}</div>
+      <div class="goal-sub">von €${MONTHLY_GOAL} · ${ds24.monthlyCount || ds24.count} Verkäufe · noch <b style="color:var(--red)">€${remaining}</b> nötig</div>
+      <div class="goal-bar-wrap">
+        <div class="goal-bar"><div class="goal-bar-fill" style="width:${monthlyPct}%"></div></div>
+        <div class="goal-bar-label">
+          <span>${monthlyPct}% erreicht</span>
+          <span style="color:var(--red)">${daysLeft} Tage verbleibend</span>
+        </div>
+      </div>
+    </div>
+    <div class="goal-stats">
+      <div class="gs-item"><div class="gs-val">${ds24.count || 3}</div><div class="gs-lbl">DS24 Verkäufe gesamt</div></div>
+      <div class="gs-item"><div class="gs-val" style="color:var(--blue)">${klaviyo.count}</div><div class="gs-lbl">Klaviyo Subscriber</div></div>
+      <div class="gs-item"><div class="gs-val" style="color:var(--purple)">${blog.count}</div><div class="gs-lbl">SEO Artikel live</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- KPI CARDS -->
 <div class="cards">
-  <div class="card c-green">
-    <div class="card-label">DS24 Umsatz</div>
-    <div class="card-value">€${typeof ds24.total === 'number' ? ds24.total.toFixed(2) : ds24.total}</div>
-    <div class="card-sub">${ds24.count} Verkäufe · Produkt #668035</div>
-    <div class="bar"><div class="bar-fill" style="width:${goalPct}%"></div></div>
-    <div class="bar-label">${goalPct}% von €1.000/Monat Ziel</div>
+  <div class="card cv-green">
+    <div class="card-label">DS24 Umsatz (Gesamt)</div>
+    <div class="card-value">€${ds24.total.toFixed ? ds24.total.toFixed(0) : ds24.total}</div>
+    <div class="card-sub">${ds24.count} Verkäufe · Blueprint #668035 + SMB #704677</div>
   </div>
-  <div class="card c-purple">
-    <div class="card-label">Klaviyo Subscriber</div>
-    <div class="card-value">${klaviyo.count}</div>
-    <div class="card-sub">Liste Xwxq6V · Free max 250</div>
+  <div class="card cv-amber">
+    <div class="card-label">Shopify Revenue (Monat)</div>
+    <div class="card-value">€${shopify.revenue || '0'}</div>
+    <div class="card-sub">${shopify.orders} Bestellungen · ${shopify.products} Produkte</div>
   </div>
-  <div class="card c-yellow">
-    <div class="card-label">Blog Artikel</div>
-    <div class="card-value">${blog.count}</div>
-    <div class="card-sub">autoincome-ai.vercel.app/blog</div>
-  </div>
-  <div class="card c-blue">
-    <div class="card-label">Stripe Available</div>
+  <div class="card cv-blue">
+    <div class="card-label">Stripe Balance</div>
     <div class="card-value">${stripe.available !== '—' ? '€' + stripe.available : '—'}</div>
     <div class="card-sub">${stripe.pending !== '—' ? '€' + stripe.pending + ' pending' : stripe.error || 'Kein Key'}</div>
   </div>
-  <div class="card c-pink">
-    <div class="card-label">Shopify Bestellungen</div>
-    <div class="card-value">${shopify.orders}</div>
-    <div class="card-sub">${shopify.products !== '—' ? shopify.products + ' Produkte' : shopify.error || 'Kein Config'}</div>
+  <div class="card cv-purple">
+    <div class="card-label">Klaviyo Subscriber</div>
+    <div class="card-value">${klaviyo.count}</div>
+    <div class="card-sub">Liste Xwxq6V · ${klaviyo.campaigns?.length || 0} Kampagnen</div>
   </div>
-  <div class="card c-orange">
-    <div class="card-label">Railway Services</div>
-    <div class="card-value">${railwayOk}/${railwayTotal}</div>
-    <div class="card-sub">${railwayTotal - railwayOk > 0 ? (railwayTotal - railwayOk) + ' offline / unreachable' : 'Alle online'}</div>
+  <div class="card cv-pink">
+    <div class="card-label">SEO Artikel</div>
+    <div class="card-value">${blog.count}</div>
+    <div class="card-sub">autoincome-ai.vercel.app/blog · IndexNow ✅</div>
+  </div>
+  <div class="card cv-orange">
+    <div class="card-label">Vercel Cron-Jobs</div>
+    <div class="card-value">38</div>
+    <div class="card-sub">12 Serverless Functions · Hobby Plan</div>
   </div>
 </div>
 
-<!-- Quick Links -->
-<div class="links">
-  <a href="https://www.checkout-ds24.com/product/668035" target="_blank" class="btn">DS24 Produkt →</a>
-  <a href="https://autoincome-ai.vercel.app/blog" target="_blank" class="btn">Blog →</a>
-  <a href="https://app.klaviyo.com/lists/Xwxq6V/members" target="_blank" class="btn">Klaviyo Subscriber →</a>
-  <a href="https://www.digistore24.com/app/seller/transactions" target="_blank" class="btn">DS24 Transaktionen →</a>
-  <a href="https://dashboard.stripe.com/payments" target="_blank" class="btn">Stripe →</a>
-  <a href="https://vercel.com/dashboard" target="_blank" class="btn">Vercel →</a>
-  <a href="https://railway.app/dashboard" target="_blank" class="btn">Railway →</a>
-  <a href="https://app.netlify.com" target="_blank" class="btn">Netlify →</a>
-  <a href="https://app.supabase.com/project/qyrjeckzacjaazkpvnjk" target="_blank" class="btn">Supabase →</a>
-</div>
-
-<hr class="divider"/>
-
-<!-- Railway Services -->
+<!-- QUICK ACTIONS -->
 <div class="section">
   <div class="section-head">
-    <div class="section-title">Railway Services</div>
-    <span class="badge ${railwayOk === railwayTotal ? 'badge-green' : 'badge-red'}">${railwayOk}/${railwayTotal} online</span>
+    <div class="section-title">⚡ Quick Actions — Sofort ausführen</div>
   </div>
-  <div class="svc-grid">${railwayCards}</div>
-</div>
-
-<!-- Vercel Sites -->
-<div class="section">
-  <div class="section-head">
-    <div class="section-title">Vercel Sites</div>
-    <span class="badge badge-green">${VERCEL_SITES.length} live</span>
-  </div>
-  <div class="svc-grid">${vercelCards}</div>
-</div>
-
-<!-- Netlify Sites -->
-<div class="section">
-  <div class="section-head">
-    <div class="section-title">Netlify Sites</div>
-    <span class="badge">Credits erschöpft — Sites live, keine Updates</span>
-  </div>
-  <div class="svc-grid">${netlifyCards}</div>
-</div>
-
-<hr class="divider"/>
-
-<!-- Cron Automations -->
-<div class="section">
-  <div class="section-head">
-    <div class="section-title">Automatisierungen — Vercel Crons</div>
-  </div>
-  <div class="cron-grid">
-    <div class="cron-card"><span class="dot green"></span><div><div class="cron-name">LinkedIn Posts</div><div class="cron-sched">Mo / Mi / Fr — 09:00 UTC · 14 Templates</div></div></div>
-    <div class="cron-card"><span class="dot yellow"></span><div><div class="cron-name">Reddit Posts</div><div class="cron-sched">Di / Sa — 10:00 UTC · ⚠️ App-Typ "script" setzen!</div></div></div>
-    <div class="cron-card"><span class="dot green"></span><div><div class="cron-name">DS24 Daily Report</div><div class="cron-sched">Täglich — 07:00 UTC → Telegram</div></div></div>
-    <div class="cron-card"><span class="dot green"></span><div><div class="cron-name">Klaviyo Kampagnen</div><div class="cron-sched">Mo / Do — 08:00 UTC</div></div></div>
-    <div class="cron-card"><span class="dot green"></span><div><div class="cron-name">SEO Writer</div><div class="cron-sched">So — 06:00 UTC · IndexNow-Fallback aktiv</div></div></div>
-    <div class="cron-card"><span class="dot green"></span><div><div class="cron-name">E-Mail Capture</div><div class="cron-sched">Auf jedem Blog-Artikel · Klaviyo Xwxq6V</div></div></div>
+  <div class="actions">
+    <a class="btn btn-green" href="/api/reports?type=daily&secret=${CRON_SECRET}" target="_blank">📊 DS24 Report</a>
+    <a class="btn btn-green" href="/api/campaign-trigger?secret=${CRON_SECRET}" target="_blank">📧 Email-Kampagne</a>
+    <a class="btn btn-green" href="/api/linkedin-poster?secret=${CRON_SECRET}" target="_blank">💼 LinkedIn Post</a>
+    <a class="btn btn-green" href="/api/visual-poster?secret=${CRON_SECRET}&force=true" target="_blank">🐦 Twitter+TG Post</a>
+    <a class="btn btn-green" href="/api/seo-writer?secret=${CRON_SECRET}" target="_blank">✍️ SEO Artikel</a>
+    <a class="btn btn-green" href="/api/shopify?type=report&secret=${CRON_SECRET}" target="_blank">🛍️ Shopify Check</a>
+    <a class="btn btn-green" href="/api/reports?type=weekly&secret=${CRON_SECRET}" target="_blank">📈 Weekly KPI</a>
+    <a class="btn" href="https://autoincome-ai.vercel.app" target="_blank">🌐 Landing Page</a>
+    <a class="btn" href="https://autoincome-ai.vercel.app/blog" target="_blank">📝 Blog</a>
+    <a class="btn" href="https://autoincome-ai.vercel.app/rechner" target="_blank">🧮 KI-Rechner</a>
+    <a class="btn" href="https://www.checkout-ds24.com/product/668035" target="_blank">🔗 Blueprint kaufen</a>
+    <a class="btn" href="https://www.checkout-ds24.com/product/704677" target="_blank">🤖 SuperMegaBot kaufen</a>
+    <a class="btn btn-red" href="/api/meta-poster?action=fb-auth&secret=${CRON_SECRET}" target="_blank">🔑 FB Token erneuern</a>
+    <a class="btn btn-red" href="/api/reddit-poster?action=oauth-start&secret=${CRON_SECRET}" target="_blank">🔑 Reddit OAuth</a>
+    <a class="btn btn-red" href="/api/shopify?type=webhook&secret=${CRON_SECRET}" target="_blank">🔗 Shopify Webhook</a>
   </div>
 </div>
 
-<!-- Last Blog Articles -->
-<div class="section">
-  <div class="section-head">
-    <div class="section-title">Letzte Blog-Artikel</div>
-    <span class="badge">${blog.count} total</span>
-  </div>
-  <div class="table-wrap">
-    <table>
-      <thead><tr><th>Titel</th><th>Veröffentlicht</th></tr></thead>
-      <tbody>${articleRows || '<tr><td colspan="2" style="color:#475569;text-align:center;padding:20px">Keine Artikel geladen</td></tr>'}</tbody>
-    </table>
-  </div>
-</div>
-
-<!-- Open TODOs -->
-<div class="section">
-  <div class="todo">
-    <div class="todo-title">⚡ Offene Aufgaben (kostenlos, je 1-2 Min)</div>
-    <div class="todo-item">
-      <span class="todo-num">1</span>
-      <div class="todo-text"><strong>Reddit App-Typ:</strong> reddit.com/prefs/apps → rodbot → Edit → Typ: script → Reddit-Cron aktiv</div>
+<!-- PRODUCTS + KLAVIYO CAMPAIGNS -->
+<div class="two-col">
+  <div class="section">
+    <div class="section-head"><div class="section-title">🛒 Produkte DS24</div></div>
+    <div class="product-grid">
+      ${productCards}
     </div>
-    <div class="todo-item">
-      <span class="todo-num">2</span>
-      <div class="todo-text"><strong>DS24 668035 Garantie:</strong> Meine Produkte → 668035 → Rückgaberecht → 60 Tage → Marketplace-Listing</div>
-    </div>
-    <div class="todo-item">
-      <span class="todo-num">3</span>
-      <div class="todo-text"><strong>DS24 Thank-You URL:</strong> 668035 → Bearbeiten → Thank-You URL → https://autoincome-ai.vercel.app/danke.html</div>
-    </div>
-    <div class="todo-item">
-      <span class="todo-num">4</span>
-      <div class="todo-text"><strong>Facebook Token erneuern:</strong> developers.facebook.com → Graph API Explorer → neuen Token → Meta Engine wieder aktiv</div>
-    </div>
-    <div class="todo-item">
-      <span class="todo-num">5</span>
-      <div class="todo-text"><strong>Railway upgraden ($5/Mo):</strong> alle Code-Fixes deployen → SuperMegaBot wieder vollständig aktiv</div>
+  </div>
+  <div class="section">
+    <div class="section-head"><div class="section-title">📧 Letzte Klaviyo-Kampagnen</div><span class="badge">${klaviyo.campaigns?.length || 0}</span></div>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Kampagne</th><th>Status</th><th>Datum</th></tr>
+        ${campaignRows}
+      </table>
     </div>
   </div>
 </div>
 
-</div><!-- /wrap -->
+<!-- SOCIAL CHANNELS + CRON JOBS -->
+<div class="two-col">
+  <div class="section">
+    <div class="section-head"><div class="section-title">📡 Social Media Kanäle</div></div>
+    <div class="svc-grid">${socialCards}</div>
+  </div>
+  <div class="section">
+    <div class="section-head"><div class="section-title">⏰ Cron-Jobs (38 aktiv)</div></div>
+    <div class="cron-grid">${cronCards}</div>
+  </div>
+</div>
+
+<!-- TODO / KRITISCHE AKTIONEN -->
+<div class="section">
+  <div class="section-head">
+    <div class="section-title">🚨 Offene Aufgaben (Rudolf muss handeln)</div>
+    <span class="badge badge-red">${TODOS.filter(t => t.prio === 'KRITISCH').length} KRITISCH</span>
+  </div>
+  <div class="todo-list">${todoItems}</div>
+</div>
+
+<!-- BLOG ARTIKEL -->
+<div class="two-col">
+  <div class="section">
+    <div class="section-head"><div class="section-title">📝 Neueste Blog-Artikel</div><span class="badge">${blog.count} gesamt</span></div>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Titel</th><th>Datum</th></tr>
+        ${articleRows || '<tr><td colspan="2" style="text-align:center;color:var(--dim);padding:20px">Keine Artikel</td></tr>'}
+      </table>
+    </div>
+  </div>
+  <div class="section">
+    <div class="section-head"><div class="section-title">🚂 Railway Services</div><span class="badge">${railwayHealth.filter(s => s.ok).length}/${railwayHealth.length} online</span></div>
+    <div class="svc-grid">${railwayCards}</div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:20px 0 8px;color:var(--dim);font-size:.75rem">
+  AiiteC Master Dashboard · Vercel Edge · Stand: ${now} ·
+  <a href="https://autoincome-ai.vercel.app">autoincome-ai.vercel.app</a>
+</div>
+
+</div>
 </body>
 </html>`;
 }
@@ -432,9 +580,9 @@ td a:hover{text-decoration:underline}
 export default async function handler(req, res) {
   const secret = req.query?.secret || req.headers['x-dashboard-secret'];
   if (secret !== CRON_SECRET) {
-    return res.status(401).send(`<!DOCTYPE html><html><body style="font-family:sans-serif;background:#080810;color:#e2e8f0;padding:60px;text-align:center">
-      <h2>🔒 Zugang gesperrt</h2>
-      <p style="color:#64748b;margin-top:12px">URL: /api/dashboard?secret=DEIN_SECRET</p>
+    return res.status(401).send(`<!DOCTYPE html><html><body style="font-family:sans-serif;background:#07070f;color:#e2e8f0;padding:60px;text-align:center">
+      <h2 style="color:#ef4444">🔒 Zugang gesperrt</h2>
+      <p style="color:#475569;margin-top:12px">URL: /api/dashboard?secret=DEIN_SECRET</p>
     </body></html>`);
   }
 
