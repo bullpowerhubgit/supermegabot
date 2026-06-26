@@ -483,7 +483,8 @@ export default async function handler(req, res) {
 
   let accessToken = process.env.LINKEDIN_ACCESS_TOKEN;
   if (!accessToken) {
-    return res.status(500).json({ error: 'LINKEDIN_ACCESS_TOKEN missing' });
+    await sendTelegram('❌ LinkedIn Poster: LINKEDIN_ACCESS_TOKEN fehlt in Vercel ENV!');
+    return res.status(200).json({ ok: false, error: 'LINKEDIN_ACCESS_TOKEN missing' });
   }
 
   // Rotate: different post per weekday so Mon/Wed/Fri each get a unique post
@@ -531,8 +532,8 @@ export default async function handler(req, res) {
 
   if (!response.ok) {
     const err = await response.text();
-    await sendTelegram(`❌ LinkedIn-Post fehlgeschlagen: ${err.substring(0, 200)}`);
-    return res.status(500).json({ ok: false, error: err });
+    await sendTelegram(`❌ LinkedIn-Post fehlgeschlagen (${response.status}): ${err.substring(0, 200)}`);
+    return res.status(200).json({ ok: false, status: response.status, error: err });
   }
 
   const data = await response.json();
