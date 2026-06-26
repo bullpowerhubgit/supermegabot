@@ -359,6 +359,13 @@ function showResult() {
 }
 
 function onEmailSubmit(e) {
+  const emailVal = document.getElementById('gate-email').value.trim();
+  if (!emailVal || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailVal)) {
+    e.preventDefault();
+    document.getElementById('gate-email').style.border = '2px solid #ef4444';
+    document.getElementById('gate-email').placeholder = 'Bitte echte E-Mail eingeben!';
+    return false;
+  }
   setTimeout(function(){
     document.getElementById('email-gate').style.display = 'none';
     document.getElementById('plan-section').style.display = 'block';

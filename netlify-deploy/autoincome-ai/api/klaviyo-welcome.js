@@ -73,9 +73,9 @@ const WELCOME_EMAIL = {
 </div>
 
 <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:12px;padding:24px;margin:20px 0;text-align:center;">
-  <p style="color:#166534;font-weight:700;font-size:1.1rem;margin-bottom:8px;">🎁 Dein kostenloses Geschenk ist bereit!</p>
-  <a href="https://autoincome-ai.vercel.app/blueprint.pdf" style="display:inline-block;background:#22c55e;color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;font-size:1rem;margin:8px 0;">📄 Blueprint PDF kostenlos herunterladen →</a>
-  <p style="color:#15803d;font-size:0.85rem;margin-top:8px;">90-Tage-Aktionsplan · 10 Seiten · Sofort-Download</p>
+  <p style="color:#166534;font-weight:700;font-size:1.1rem;margin-bottom:8px;">🎁 Deine kostenlose KI-Einkommens-Checkliste!</p>
+  <a href="https://autoincome-ai.vercel.app/checkliste.html" style="display:inline-block;background:#22c55e;color:white;padding:14px 32px;border-radius:50px;font-weight:700;text-decoration:none;font-size:1rem;margin:8px 0;">✅ 21-Punkte Checkliste kostenlos öffnen →</a>
+  <p style="color:#15803d;font-size:0.85rem;margin-top:8px;">21 Schritte · KI-Einkommen aufbauen · Sofort verfügbar</p>
 </div>
 
 <div style="background:#f8f9fa;border-radius:12px;padding:24px;margin:20px 0;">
@@ -745,9 +745,9 @@ export default async function handler(req, res) {
   const secret = req.headers['x-cron-secret'] || req.query?.secret;
 
   if (req.method === 'POST') {
-    // DS24 IPN: form-encoded body with buyer_email + sha_sign
+    // DS24 IPN: form-encoded body with buyer_email (sha_sign optional if no passphrase set)
     const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body || {});
-    if (rawBody.includes('buyer_email') && rawBody.includes('sha_sign')) {
+    if (rawBody.includes('buyer_email') && (rawBody.includes('sha_sign') || rawBody.includes('transaction_id') || rawBody.includes('order_id'))) {
       return handleDS24IPN(req, res);
     }
     // Regular Klaviyo webhook
