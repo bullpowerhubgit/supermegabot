@@ -10,6 +10,7 @@ const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const PERPLEXITY_KEY = process.env.PERPLEXITY_API_KEY;
 const GEMINI_KEY = process.env.GOOGLE_API_KEY || process.env.GCP_API_KEY;
+const OPENAI_KEY = process.env.OPENAI_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
@@ -145,7 +146,26 @@ Beginne direkt mit dem ersten Absatz (kein Titel, keine Einleitung).`;
     }
   }
 
-  if (!PERPLEXITY_KEY) throw new Error('Kein API Key (Gemini + Perplexity beide nicht verfügbar)');
+  // OpenAI gpt-4o-mini as second fallback
+  if (OPENAI_KEY) {
+    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${OPENAI_KEY}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 2200,
+        temperature: 0.7,
+      }),
+    });
+    if (r.ok) {
+      const data = await r.json();
+      const content = data.choices?.[0]?.message?.content;
+      if (content) return { content, wordCount: content.split(/\s+/).length };
+    }
+  }
+
+  if (!PERPLEXITY_KEY) throw new Error('Kein API Key (Gemini + OpenAI + Perplexity nicht verfügbar)');
 
   const r = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
@@ -244,7 +264,7 @@ export default async function handler(req, res) {
   // Rotate by week number
   const weekNum = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
 
-  if (!PERPLEXITY_KEY) {
+  if (!PERPLEXITY_KEY && !GEMINI_KEY && !OPENAI_KEY) {
     // No API key — re-ping IndexNow for existing articles to keep Google crawling
     const existingUrls = ARTICLE_TOPICS.map((t) => `https://${SITE_HOST}/blog/${t.slug}`);
     await submitToIndexNow(existingUrls[weekNum % existingUrls.length].split('/blog/')[1]);
