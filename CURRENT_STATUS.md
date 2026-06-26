@@ -1,4 +1,4 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-25 v43
+# SuperMegaBot CURRENT STATUS — 2026-06-26 v44
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** ✅ (9 Commits heute — wartet auf Railway Hobby Upgrade!)
@@ -30,14 +30,13 @@ node /Users/rudolfsarkany/local-projects/telegram-automation-bot/ds24_autofix.js
 digistore24.com → Einstellungen → Benachrichtigungen → IPN URL:
 `https://autoincome-ai.vercel.app/api/klaviyo-welcome`
 
-### 4. Shopify Seiten erstellen (für Google Shopping Pflicht)
-Shopify Admin → Online Store → Pages → Add page:
-- "Datenschutzerklärung" (handle: datenschutz)
-- "Versand & Lieferung" (handle: versand)
-- "Rückgabe & Rückerstattung" (handle: rueckgabe)
-- "Kontakt" (handle: kontakt)
-- "Über uns" (handle: ueber-uns)
-[ODER: Shopify API Token um write_content Scope erweitern → dann kann ich es automatisch machen]
+### 4. Shopify Seiten erstellen (für Google Shopping Pflicht) ✅ ERLEDIGT 2026-06-26
+- Datenschutzerklärung → /pages/710351978883
+- Versand & Lieferung → /pages/710352011651
+- Rückgabe & Rückerstattung → /pages/710352044419
+- Kontakt → /pages/710352077187
+- Über uns → /pages/710352109955
+Alle 5 Seiten erstellt, Sichtbar, GDPR-konformer Inhalt ✅
 
 ### 5. Facebook Token erneuern
 `bash /Users/rudolfsarkany/refresh_fb_token.sh`
