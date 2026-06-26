@@ -155,7 +155,58 @@ async function postFacebook(pageToken, message, link) {
   return data.id;
 }
 
+const VERCEL_TOKEN = process.env.VERCEL_API_TOKEN;
+const VERCEL_PROJECT_ID = process.env.VERCEL_PROJECT_ID || 'prj_dOdBHrPrCns5V1H3rSNi2dmyec6H';
+const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID || 'team_xulvdt7sib2RSt4BNoqVWeSy';
+const REDIRECT_URI = 'https://autoincome-ai.vercel.app/api/meta-poster?action=fb-auth';
+
+async function setVercelEnv(key, value) {
+  if (!VERCEL_TOKEN) return false;
+  const listRes = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`, { headers: { Authorization: `Bearer ${VERCEL_TOKEN}` } });
+  const list = await listRes.json();
+  const existing = list.envs?.find(e => e.key === key && e.target?.includes('production'));
+  if (existing) {
+    const r = await fetch(`https://api.vercel.com/v9/projects/${VERCEL_PROJECT_ID}/env/${existing.id}?teamId=${VERCEL_TEAM_ID}`, { method: 'PATCH', headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify({ value }) });
+    return r.ok;
+  }
+  const r = await fetch(`https://api.vercel.com/v10/projects/${VERCEL_PROJECT_ID}/env?teamId=${VERCEL_TEAM_ID}`, { method: 'POST', headers: { Authorization: `Bearer ${VERCEL_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify({ key, value, type: 'encrypted', target: ['production'] }) });
+  return r.ok;
+}
+
 export default async function handler(req, res) {
+  const { action, code, error } = req.query || {};
+
+  // FB OAuth callback — no secret needed
+  if (action === 'fb-auth' || code || error) {
+    const SCOPES = 'pages_manage_posts,instagram_content_publish,pages_read_engagement,pages_show_list,instagram_basic';
+    if (error) {
+      await sendTelegram(`❌ FB OAuth abgelehnt: ${error}`);
+      return res.status(200).send(`<html><body><h2>❌ Abgebrochen</h2><p>${error}</p></body></html>`);
+    }
+    if (!code) {
+      const url = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&response_type=code`;
+      return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>🔐 Facebook OAuth</h2><a href="${url}" style="display:inline-block;background:#1877f2;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700">Mit Facebook autorisieren →</a><p style="color:#64748b;font-size:0.85rem;margin-top:20px">Scopes: ${SCOPES}</p></body></html>`);
+    }
+    try {
+      const tkRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?client_id=${FB_APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&client_secret=${FB_APP_SECRET}&code=${code}`);
+      const tkData = await tkRes.json();
+      if (tkData.error) throw new Error(JSON.stringify(tkData.error));
+      const longRes = await fetch(`https://graph.facebook.com/v21.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${FB_APP_ID}&client_secret=${FB_APP_SECRET}&fb_exchange_token=${tkData.access_token}`);
+      const longData = await longRes.json();
+      const longToken = longData.access_token || tkData.access_token;
+      const pagesRes = await fetch(`https://graph.facebook.com/v21.0/me/accounts?access_token=${longToken}`);
+      const pagesData = await pagesRes.json();
+      const page = pagesData.data?.find(p => p.id === FB_PAGE_ID) || pagesData.data?.[0];
+      if (!page) throw new Error(`Seite ${FB_PAGE_ID} nicht gefunden: ${JSON.stringify(pagesData.data?.map(p => p.id))}`);
+      await setVercelEnv('FB_PAGE_ACCESS_TOKEN', page.access_token);
+      await sendTelegram(`✅ <b>FB Token gespeichert!</b>\nSeite: ${page.name} (${FB_PAGE_ID})\nToken: ${page.access_token.substring(0, 20)}...\nMeta-Poster läuft wieder!`);
+      return res.status(200).send(`<html><body style="font-family:sans-serif;max-width:600px;margin:40px auto;padding:20px"><h2>✅ Token gespeichert!</h2><p>Seite: <strong>${page.name}</strong></p><p style="color:#059669">Meta-Poster läuft wieder! Nächster Post: morgen.</p></body></html>`);
+    } catch (err) {
+      await sendTelegram(`❌ FB OAuth Fehler: ${err.message.substring(0, 200)}`);
+      return res.status(200).send(`<html><body><h2>❌ Fehler</h2><pre>${err.message}</pre></body></html>`);
+    }
+  }
+
   const secret = req.headers['x-cron-secret'] || req.query?.secret;
   if (secret !== process.env.CRON_SECRET) return res.status(401).json({ error: 'unauthorized' });
 
