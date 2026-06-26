@@ -43,6 +43,9 @@
     { "path": "/api/visual-poster?secret=bullpower2026", "schedule": "0 16 * * 6" },
     { "path": "/api/visual-poster?secret=bullpower2026", "schedule": "0 15 * * 1" },
     { "path": "/api/visual-poster?secret=bullpower2026", "schedule": "0 15 * * 3" },
-    { "path": "/api/visual-poster?secret=bullpower2026", "schedule": "0 15 * * 5" }
+    { "path": "/api/visual-poster?secret=bullpower2026", "schedule": "0 15 * * 5" },
+    { "path": "/api/shopify-report?secret=bullpower2026", "schedule": "5 7 * * *" },
+    { "path": "/api/weekly-report?secret=bullpower2026", "schedule": "30 7 * * 1" },
+    { "path": "/api/affiliate-report?secret=bullpower2026", "schedule": "0 8 * * 5" }
   ]
 }
