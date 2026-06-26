@@ -478,11 +478,13 @@ Produkt testen: ${PRODUCT_URL}
 
 async function sendTelegram(msg) {
   if (!TELEGRAM_BOT || !TELEGRAM_CHAT) return;
-  await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
-  });
+  try {
+    await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT}/sendMessage`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: TELEGRAM_CHAT, text: msg, parse_mode: 'HTML' }),
+    });
+  } catch {}
 }
 
 async function postToLinkedIn(accessToken, payload) {
@@ -528,7 +530,7 @@ export default async function handler(req, res) {
           {
             status: 'READY',
             description: { text: post.mediaDesc },
-            originalUrl: PRODUCT_URL,
+            originalUrl: post.mediaUrl || PRODUCT_URL,
             title: { text: post.mediaTitle },
           },
         ],
