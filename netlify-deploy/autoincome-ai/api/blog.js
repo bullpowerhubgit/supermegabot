@@ -323,7 +323,7 @@ export default async function handler(req, res) {
       const articles = await fetchAllSlugs();
       const html = buildIndexPage(articles);
       res.setHeader('Content-Type', 'text/html; charset=utf-8');
-      res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+      res.setHeader('Cache-Control', 'no-store');
       return res.status(200).send(html);
     } catch (err) {
       return res.status(500).send(`<h1>Error</h1><p>${err.message}</p>`);
@@ -339,7 +339,7 @@ export default async function handler(req, res) {
     }
     const html = buildArticlePage(article, related);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate=600');
+    res.setHeader('Cache-Control', 'no-store');
     return res.status(200).send(html);
   } catch (err) {
     return res.status(500).send(`<h1>Error</h1><p>${err.message}</p>`);
