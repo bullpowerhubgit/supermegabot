@@ -112,9 +112,33 @@ api/
 - IndexNow Key: bullpower2026indexnow
 - Vercel Crons: 38 aktive Jobs
 
-## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-26 v48)
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-26 v49 — RepScan + Dashboard Fixes)
 
-### UNIFIED DASHBOARD + DEEP REPSCAN
+### DEEP REPSCAN — ALLE 12 API DATEIEN GESCANNT + FIXES DEPLOYED
+
+**RepScan Ergebnisse (Commit d1ae412):**
+
+| DATEI | KATEGORIE | BUG | STATUS |
+|---|---|---|---|
+| dashboard.js | BUG | getBlogStats() gab max 8 zurück (articles.length statt countR) | ✅ FIXED |
+| shopify.js | BUG | monthOrders aus weekOrders gefiltert — fehlte Hälfte d. Monats | ✅ FIXED |
+| meta-poster.js | DEPRECATED API | source.unsplash.com deprecated → picsum.photos | ✅ FIXED |
+| visual-poster.js | DEPRECATED API | source.unsplash.com deprecated → picsum.photos | ✅ FIXED |
+| dashboard.js | FEATURE | Auto-Refresh 90s + Live-Countdown bis 30.06. | ✅ ADDED |
+| klaviyo-welcome.js | INFO | BUYER_LIST_ID = Xwxq6V (keine Segmentierung Käufer/Subscriber) | ACCEPTABLE |
+| reports.js | INFO | KLAVIYO_LIST_ID inline hardcoded | MINOR |
+| reddit-poster.js | SECURITY | Passwort war in Git exponiert | Rudolf manuell |
+| meta-poster.js | SECURITY | FB Token abgelaufen | Rudolf manuell |
+| marketplace-poster.js | INFO | Etsy: beide Accounts gesperrt — korrekt geskippt | OK |
+
+### MASTER DASHBOARD LIVE
+**URL: `https://autoincome-ai.vercel.app/api/dashboard?secret=bullpower2026`**
+- Revenue-Goal-Banner: €111/€1.000 + Live-Countdown bis 30.06.
+- 6 KPI-Cards: DS24, Shopify, Stripe, Klaviyo, Blog (echter Count), Crons
+- 15 Quick-Action-Buttons (Reports, Posts, Token, Webhooks)
+- Klaviyo-Kampagnen, Social-Kanäle-Status, 12 Cron-Jobs mit Run-Links
+- TODO-Liste (KRITISCH/HOCH/MITTEL), 18 Railway-Services-Health
+- Auto-Refresh alle 90 Sekunden
 
 1. **Master Dashboard** komplett neu gebaut (dashboard.js, 603 Zeilen):
    - URL: `https://autoincome-ai.vercel.app/api/dashboard?secret=bullpower2026`
