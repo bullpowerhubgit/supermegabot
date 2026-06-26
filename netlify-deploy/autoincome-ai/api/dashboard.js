@@ -132,16 +132,19 @@ async function getKlaviyoStats() {
 
 async function getBlogStats() {
   try {
-    const r = await safeFetch(
-      `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=slug,title,keyword,created_at&order=created_at.desc&limit=8`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
-    );
+    const [r, countR] = await Promise.all([
+      safeFetch(
+        `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=slug,title,keyword,created_at&order=created_at.desc&limit=8`,
+        { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+      ),
+      safeFetch(
+        `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=count`,
+        { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, Prefer: 'count=exact' } }
+      ),
+    ]);
     const articles = r.data || [];
-    const countR = await safeFetch(
-      `${SUPABASE_URL}/rest/v1/seo_content?published=eq.true&select=count`,
-      { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}`, Prefer: 'count=exact' } }
-    );
-    return { count: articles.length || 0, articles };
+    const totalCount = parseInt(countR.data?.[0]?.count || articles.length, 10);
+    return { count: totalCount, articles };
   } catch (e) {
     return { count: 0, articles: [], error: e.message };
   }
@@ -412,6 +415,32 @@ td a{color:var(--purple)}
 .rev-bar{width:100%;background:linear-gradient(180deg,#7c3aed,#5b21b6);border-radius:4px 4px 0 0;min-height:2px}
 .rev-bar-label{font-size:.65rem;color:var(--dim);text-align:center}
 </style>
+<script>
+// Auto-refresh every 90 seconds
+(function(){
+  var t=90,el;
+  function tick(){
+    if(!el) el=document.getElementById('refreshTimer');
+    if(el) el.textContent=t+'s';
+    if(--t<0){location.reload();return;}
+    setTimeout(tick,1000);
+  }
+  tick();
+  // Countdown to June 30
+  var DL=new Date('2026-06-30T21:59:59Z').getTime();
+  function cdTick(){
+    var diff=Math.max(0,DL-Date.now());
+    var d=Math.floor(diff/86400000);
+    var h=Math.floor((diff%86400000)/3600000);
+    var m=Math.floor((diff%3600000)/60000);
+    var s=Math.floor((diff%60000)/1000);
+    var el2=document.getElementById('deadlineCountdown');
+    if(el2) el2.textContent=d+'T '+String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+    setTimeout(cdTick,1000);
+  }
+  cdTick();
+})();
+</script>
 </head>
 <body>
 <div class="wrap">
@@ -423,7 +452,8 @@ td a{color:var(--purple)}
     <span>Stand: <b>${now}</b></span>
     <span>Railway: <b style="color:${railwayOk > 10 ? 'var(--green)' : 'var(--amber)'}">${railwayOk}/${railwayHealth.length} online</b></span>
     <span>Vercel: <b style="color:var(--green)">12 Fns LIVE</b></span>
-    <span>⏱ <b style="color:${daysLeft <= 5 ? 'var(--red)' : 'var(--amber)'}">${daysLeft} Tage bis 30.06.</b></span>
+    <span>⏱ Deadline: <b id="deadlineCountdown" style="color:${daysLeft <= 5 ? 'var(--red)' : 'var(--amber)'}">--</b></span>
+    <span>🔄 Refresh: <b id="refreshTimer" style="color:var(--dim)">90s</b></span>
   </div>
 </div>
 
