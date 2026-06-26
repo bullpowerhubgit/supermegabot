@@ -1,4 +1,4 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-26 v45
+# SuperMegaBot CURRENT STATUS — 2026-06-26 v46
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** ✅ (wartet auf Railway Hobby Upgrade!)
@@ -77,9 +77,59 @@ developer.twitter.com → Billing → Credits
 - Vercel KI Einkommens-Rechner: https://autoincome-ai.vercel.app/rechner
 - IndexNow Key: bullpower2026indexnow
 
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-26 v46)
+
+### DEEP REPSCAN + ALLE FIXES
+1. **Security**: Reddit-Passwort + OpenRouter-Key aus Code entfernt
+2. **Revenue**: danke.html — PDF-Gate: nur sichtbar mit DS24 Kauf-Parametern
+3. **Revenue**: Welcome-Email gibt nicht mehr das bezahlte PDF gratis (→ Checkliste statt PDF)
+4. **Logik**: DS24-Report zeigt jetzt Monatsrevenue separat + DS24_KEY-Guard
+5. **Logik**: campaign-trigger.js "14-Tage" → "60-Tage-Garantie" überall
+6. **Logik**: dashboard.js KLAVIYO_PRIVATE_KEY → KLAVIYO_API_KEY (Subscriber-Count war falsch)
+7. **Logik**: meta-poster.js "Früh-Käufer Preis: ${URL}" Bug gefixt
+8. **Logik**: visual-poster.js Tweet "52 Artikel" → "170+ Artikel"
+9. **Logik**: blog.js Artikel-Anzahl jetzt dynamisch
+10. **Logik**: income-calculator.js Email-Gate-Bypass verhindert
+11. **SEO**: index.html Schema.org Preis €37 + Availability vollständig
+
+### NEUE AUTOMATIONEN (4 neue API-Dateien)
+12. **shopify-report.js**: Tägl. 07:05 UTC — Shopify Orders/Revenue (24h+Woche+Monat) → Telegram
+13. **shopify-webhook.js**: Shopify Order→Klaviyo Integration (einmalig aktivieren nötig, s.u.)
+14. **weekly-report.js**: Mo 07:30 UTC — DS24 + Shopify + Klaviyo + Blog kombiniert → Telegram
+15. **affiliate-report.js**: Fr 08:00 UTC — DS24 Affiliate-Performance → Telegram
+- Total Vercel Crons: **38** (war 35)
+
+## 🚨 KRITISCH: MANUELLE SCHRITTE NÖTIG
+
+### 1. DS24 IPN URL setzen (1 Minute — fehlende Käufer-Emails!)
+digistore24.com → Einstellungen → Benachrichtigungen → IPN URL:
+`https://autoincome-ai.vercel.app/api/klaviyo-welcome`
+
+### 2. Shopify Webhook registrieren (EINMALIG, 10 Sekunden!)
+Browser öffnen:
+`https://autoincome-ai.vercel.app/api/shopify-webhook?secret=bullpower2026`
+→ Danach sendet Shopify jede Bestellung automatisch an Klaviyo!
+
+### 3. Reddit OAuth aktivieren (einmalig, 3 Minuten)
+reddit.com/prefs/apps → rodbot → Edit → Redirect URI setzen:
+`https://autoincome-ai.vercel.app/api/reddit-poster?action=oauth-callback`
+Dann besuchen: `https://autoincome-ai.vercel.app/api/reddit-poster?action=oauth-start`
+
+### 4. OpenRouter Key rotieren (SECURITY!)
+openrouter.ai/keys → alten Key löschen → neuen Key in Vercel ENV `OPENROUTER_API_KEY` setzen
+(alter Key war im Git exponiert)
+
+### 5. Reddit-Passwort ändern (SECURITY!)
+reddit.com/account → Passwort ändern (war im Git-History exponiert)
+
+### 6. Facebook Token erneuern
+`https://autoincome-ai.vercel.app/api/meta-poster?action=fb-auth`
+
+### 7. GMC Verifizierung — ERLEDIGT ✅ (heute abgeschlossen)
+
 ## NÄCHSTE SESSION: Schwerpunkte
-1. Prüfen ob DS24 IPN URL gesetzt (Rudolf-Aktion)
-2. Prüfen ob Reddit OAuth aktiviert (Rudolf-Aktion)
-3. Weitere SEO-Artikel schreiben (Buyer-Intent Keywords)
-4. OpenRouter Daily-Limit prüfen — seo-writer.js sollte wieder laufen (läuft täglich via Cron)
-5. Klaviyo Subscriber-Zahl prüfen — E-Mail-Liste Wachstum messen
+1. **Shopify Webhook aktivieren** (s.o. Schritt 2) — sofort mehr Klaviyo-Leads
+2. **DS24 IPN URL setzen** (s.o. Schritt 1) — Käufer bekommen Emails
+3. Weitere SEO-Artikel mit hohem Buyer-Intent schreiben
+4. OpenRouter Key rotieren (Security)
+5. Klaviyo Subscriber-Wachstum + Öffnungsraten prüfen
