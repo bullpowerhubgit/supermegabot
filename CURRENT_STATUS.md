@@ -1,4 +1,4 @@
-# SuperMegaBot CURRENT STATUS — 2026-06-26 v47
+# SuperMegaBot CURRENT STATUS — 2026-06-26 v48
 
 ## SYSTEM STATUS
 - Railway Server: **LÄUFT** ✅ (wartet auf Railway Hobby Upgrade!)
@@ -112,10 +112,43 @@ api/
 - IndexNow Key: bullpower2026indexnow
 - Vercel Crons: 38 aktive Jobs
 
-## NÄCHSTE SESSION: €1.000-PUSH FORTSETZEN
-1. Überprüfen ob Affiliate-Kampagne geliefert → Klaviyo Dashboard checken
-2. DS24 IPN URL setzen (Rudolf — KRITISCH für Käufer-Emails!)
-3. Shopify Webhook registrieren (NEUER URL nach Merge — s.o.)
-4. Facebook Token erneuern → Meta-Poster wieder aktiv
-5. LinkedIn-Post morgen früh über Affiliate-Programm (nach Rate-Limit Reset)
-6. Nächste Woche: Klaviyo Öffnungsraten + Conversion prüfen
+## HEUTE ABGESCHLOSSEN ✅ (Session 2026-06-26 v48)
+
+### UNIFIED DASHBOARD + DEEP REPSCAN
+
+1. **Master Dashboard** komplett neu gebaut (dashboard.js, 603 Zeilen):
+   - URL: `https://autoincome-ai.vercel.app/api/dashboard?secret=bullpower2026`
+   - Revenue-Goal-Banner: €111/€1.000 mit Progress-Bar + Countdown
+   - 6 KPI-Cards: DS24, Shopify-Monat, Stripe, Klaviyo, Blog, Crons
+   - 15 Quick-Action-Buttons (Reports, Posts, Token-Erneuerung, Webhooks)
+   - Letzte 5 Klaviyo-Kampagnen mit Status
+   - 7 Social-Media-Kanäle mit Ampel-Status (auto/token_expired/needs_oauth)
+   - 12 Cron-Jobs mit direkten Run-Links
+   - TODOs mit KRITISCH/HOCH/MITTEL Priorisierung
+   - 18 Railway-Services Health-Grid
+   - Neueste 8 SEO-Artikel
+   - DS24 monatlich vs. gesamt getrennt
+
+2. **Alle Vercel ENV** korrekt gesetzt:
+   - SHOPIFY_SHOP_DOMAIN, SHOPIFY_ADMIN_API_TOKEN, SHOPIFY_API_VERSION
+   - Alle bereits vorhandenen TG, Klaviyo Keys bestätigt
+   - 3× deployt, Shopify-Report läuft: `{"ok":true,"products":10713}`
+
+3. **Deep RepScan** läuft als Background-Agent (Ergebnis folgt)
+
+4. **€1.000-Push** (insgesamt heute gestartet):
+   - 4 Klaviyo-Kampagnen gesendet (Blueprint ×2, Affiliate, SuperMegaBot)
+   - Telegram-Broadcast (msg_id=91368)
+   - 15 neue SEO-Artikel (10+5), alle IndexNow submitted
+   - Urgency-Countdown + roter Banner auf Landing Page
+   - Upwork-Post über marketplace-poster
+
+## DASHBOARD ZUGANG
+`https://autoincome-ai.vercel.app/api/dashboard?secret=bullpower2026`
+
+## NÄCHSTE SESSION
+1. Deep RepScan Ergebnisse anwenden (Agent läuft noch)
+2. DS24 IPN URL setzen (KRITISCH!)
+3. Shopify Webhook registrieren (KRITISCH!)
+4. Facebook Token erneuern
+5. LinkedIn-Post morgen früh (nach Rate-Limit Reset)
