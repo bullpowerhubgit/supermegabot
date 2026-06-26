@@ -1,16 +1,21 @@
 // Reddit auto-poster — DS24 product 668035 promotion
 // Runs Tue + Sat 10:00 UTC via Vercel Cron
-// OAuth2 flow: password grant (script app type required)
+// OAuth2: Authorization Code flow (web app) OR password grant (script app)
 // Posts to: r/passiveincome, r/Entrepreneur, r/beermoney (rotating)
 
-const REDDIT_CLIENT_ID = process.env.REDDIT_CLIENT_ID;
-const REDDIT_CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET;
-const REDDIT_USERNAME = process.env.REDDIT_USERNAME || 'Upper-Competition505';
-const REDDIT_PASSWORD = process.env.REDDIT_PASSWORD;
+const REDDIT_CLIENT_ID = process.env.REDDIT_CLIENT_ID || 'hqgJAQe6Qiu5s5r1Vqc0Og';
+const REDDIT_CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET || 'xsH99P7iCQAPeknbAXe5F9Nd9fV7aA';
+const REDDIT_USERNAME = process.env.REDDIT_USERNAME || 'bullpowersrtkennels';
+const REDDIT_PASSWORD = process.env.REDDIT_PASSWORD || 'Upper-Competition505';
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
 const AFFILIATE_URL = 'https://autoincome-ai.vercel.app/affiliate.html';
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const REDIRECT_URI = 'https://autoincome-ai.vercel.app/api/reddit-poster?action=oauth-callback';
+const REDDIT_TOKEN_ID = '00000000-0000-0000-0001-reddit000001';
+const USER_AGENT = `AutoIncomeBot/1.0 by ${REDDIT_USERNAME}`;
 
 // Post templates — rotating by week
 const POSTS = [
@@ -160,6 +165,58 @@ Not a get-rich story but genuinely passive income growing over time.`,
   },
 ];
 
+async function storeTokenToSupabase(tokenData) {
+  if (!SUPABASE_KEY) return;
+  const context = { ...tokenData, stored_at: Date.now() };
+  await fetch(`${SUPABASE_URL}/rest/v1/agent_memory`, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_KEY,
+      Authorization: `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      Prefer: 'resolution=merge-duplicates',
+    },
+    body: JSON.stringify({
+      id: REDDIT_TOKEN_ID,
+      agent_role: 'reddit-oauth',
+      type: 'fact',
+      content: tokenData.refresh_token || tokenData.access_token,
+      context,
+      confidence: 100,
+    }),
+  });
+}
+
+async function loadTokenFromSupabase() {
+  if (!SUPABASE_KEY) return null;
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/agent_memory?id=eq.${REDDIT_TOKEN_ID}&select=context`, {
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+  });
+  if (!r.ok) return null;
+  const data = await r.json();
+  return data?.[0]?.context || null;
+}
+
+async function getRedditTokenViaOAuth() {
+  const stored = await loadTokenFromSupabase();
+  if (!stored?.refresh_token && !stored?.access_token) throw new Error('no_stored_token');
+
+  const ageMs = Date.now() - (stored.stored_at || 0);
+  if (ageMs < 55 * 60 * 1000 && stored.access_token) return stored.access_token;
+
+  const creds = Buffer.from(`${REDDIT_CLIENT_ID}:${REDDIT_CLIENT_SECRET}`).toString('base64');
+  const r = await fetch('https://www.reddit.com/api/v1/access_token', {
+    method: 'POST',
+    headers: { Authorization: `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': USER_AGENT },
+    body: new URLSearchParams({ grant_type: 'refresh_token', refresh_token: stored.refresh_token }).toString(),
+  });
+  if (!r.ok) throw new Error(`Refresh failed ${r.status}`);
+  const data = await r.json();
+  if (data.error) throw new Error(`Refresh error: ${data.error}`);
+  await storeTokenToSupabase({ ...data, refresh_token: stored.refresh_token });
+  return data.access_token;
+}
+
 async function sendTelegram(msg) {
   if (!TELEGRAM_BOT || !TELEGRAM_CHAT) return;
   try {
@@ -227,15 +284,45 @@ async function submitPost(token, subreddit, title, text) {
 }
 
 export default async function handler(req, res) {
-  const secret = req.headers['x-cron-secret'] || req.query?.secret;
-  if (secret !== process.env.CRON_SECRET) {
-    return res.status(401).json({ error: 'unauthorized' });
+  const { action, code, error: oauthError, state } = req.query || {};
+
+  // OAuth Authorization Code flow — runs before secret check
+  if (action === 'oauth-start') {
+    const s = Math.random().toString(36).slice(2);
+    const url =
+      `https://www.reddit.com/api/v1/authorize` +
+      `?client_id=${REDDIT_CLIENT_ID}` +
+      `&response_type=code` +
+      `&state=${s}` +
+      `&redirect_uri=${encodeURIComponent(REDIRECT_URI)}` +
+      `&duration=permanent` +
+      `&scope=submit,read,identity`;
+    res.setHeader('Location', url);
+    return res.status(302).end();
   }
 
-  if (!REDDIT_PASSWORD) {
-    await sendTelegram('❌ Reddit poster: REDDIT_PASSWORD env var fehlt!');
-    return res.status(500).json({ error: 'REDDIT_PASSWORD missing' });
+  if (action === 'oauth-callback' || code || oauthError) {
+    if (oauthError) return res.status(400).send(`<h2>Reddit OAuth Fehler: ${oauthError}</h2>`);
+    if (!code) return res.status(400).send('<h2>Kein Code von Reddit erhalten.</h2>');
+    try {
+      const creds = Buffer.from(`${REDDIT_CLIENT_ID}:${REDDIT_CLIENT_SECRET}`).toString('base64');
+      const r = await fetch('https://www.reddit.com/api/v1/access_token', {
+        method: 'POST',
+        headers: { Authorization: `Basic ${creds}`, 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': USER_AGENT },
+        body: new URLSearchParams({ grant_type: 'authorization_code', code, redirect_uri: REDIRECT_URI }).toString(),
+      });
+      const data = await r.json();
+      if (data.error || !data.access_token) throw new Error(data.error || 'no access_token');
+      await storeTokenToSupabase(data);
+      await sendTelegram('✅ Reddit OAuth erfolgreich! reddit-poster postet jetzt automatisch Di+Sa 10:00 UTC zu r/passiveincome, r/Entrepreneur, r/beermoney.');
+      return res.status(200).send(`<html><body style="font-family:sans-serif;padding:40px;background:#0f0f1a;color:#e2e8f0"><h2 style="color:#4ade80">✅ Reddit OAuth erfolgreich!</h2><p>Der Reddit Auto-Poster ist jetzt aktiviert.<br>Posts gehen automatisch Di+Sa 10:00 UTC an r/passiveincome, r/Entrepreneur und r/beermoney.</p><p><a href="/" style="color:#a78bfa">← Zurück</a></p></body></html>`);
+    } catch (err) {
+      return res.status(500).send(`<h2>OAuth Fehler: ${err.message}</h2>`);
+    }
   }
+
+  const secret = req.headers['x-cron-secret'] || req.query?.secret;
+  if (secret !== process.env.CRON_SECRET) return res.status(401).json({ error: 'unauthorized' });
 
   // Rotate posts by day-of-week + week number for variety
   const now = new Date();
@@ -243,13 +330,22 @@ export default async function handler(req, res) {
   const postIndex = weekNum % POSTS.length;
   const post = POSTS[postIndex];
 
+  // Try OAuth token first (web app flow), then password grant (script type)
   let token;
   try {
-    token = await getRedditToken();
-  } catch (err) {
-    const msg = `❌ Reddit Login fehlgeschlagen: ${err.message}\n💡 App-Typ muss "script" sein! reddit.com/prefs/apps → rodbot → Edit → script`;
-    await sendTelegram(msg);
-    return res.status(500).json({ ok: false, error: err.message, fix: 'Change Reddit app type to "script"' });
+    token = await getRedditTokenViaOAuth();
+  } catch {
+    try {
+      token = await getRedditToken();
+    } catch (err) {
+      const authUrl = 'https://autoincome-ai.vercel.app/api/reddit-poster?action=oauth-start';
+      await sendTelegram(
+        `❌ Reddit: Kein Token verfügbar.\n\n` +
+        `🔗 Einmalig autorisieren (klick):\n${authUrl}\n\n` +
+        `Alternativ: reddit.com/prefs/apps → rodbot → Edit → Typ: script`
+      );
+      return res.status(500).json({ ok: false, error: err.message, fix: authUrl });
+    }
   }
 
   // Wait 2 seconds after auth (Reddit rate limit)
