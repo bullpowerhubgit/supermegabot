@@ -55,13 +55,13 @@ Komplettes System ansehen →
   {
     name: 'Social Proof — Zahlen sprechen',
     subject: '📊 3 Käufer, 0 Rückgaben — was du wissen solltest',
-    preview: '€111 Revenue. 14-Tage-Garantie. Was macht Käufer #4?',
+    preview: '€111 Revenue. 60-Tage-Garantie. Was macht Käufer #4?',
     html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
 <h2>📊 Die Zahlen sprechen für sich</h2>
 <p>Fakten zum AI Income Machine 90-Day Blueprint:</p>
 <div style="background:#f8f9fa;border-left:4px solid #FF6B00;padding:15px;margin:15px 0;">
 <strong>✅ 3 zahlende Kunden</strong> — haben für €37 gekauft<br>
-<strong>✅ 0 Rückgaben</strong> — trotz 14-Tage-Garantie<br>
+<strong>✅ 0 Rückgaben</strong> — trotz 60-Tage-Garantie<br>
 <strong>✅ €111 Gesamt-Revenue</strong> — organisch gewachsen<br>
 <strong>✅ Sofortzugang</strong> — direkt nach Zahlung
 </div>

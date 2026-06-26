@@ -4,9 +4,9 @@
 // Posts to: r/passiveincome, r/Entrepreneur, r/beermoney (rotating)
 
 const REDDIT_CLIENT_ID = process.env.REDDIT_CLIENT_ID || 'hqgJAQe6Qiu5s5r1Vqc0Og';
-const REDDIT_CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET || 'xsH99P7iCQAPeknbAXe5F9Nd9fV7aA';
+const REDDIT_CLIENT_SECRET = process.env.REDDIT_CLIENT_SECRET;
 const REDDIT_USERNAME = process.env.REDDIT_USERNAME || 'bullpowersrtkennels';
-const REDDIT_PASSWORD = process.env.REDDIT_PASSWORD || 'Upper-Competition505';
+const REDDIT_PASSWORD = process.env.REDDIT_PASSWORD;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
 const AFFILIATE_URL = 'https://autoincome-ai.vercel.app/affiliate.html';
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
