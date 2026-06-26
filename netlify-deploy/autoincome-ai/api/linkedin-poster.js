@@ -5,6 +5,7 @@
 const PERSON_URN = process.env.LINKEDIN_PERSON_URN || 'urn:li:person:YcxbqVN0ZR';
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
 const BLOG_URL = 'https://autoincome-ai.vercel.app/blog';
+const CALCULATOR_URL = 'https://autoincome-ai.vercel.app/rechner';
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 
@@ -429,6 +430,27 @@ Blueprint: ${PRODUCT_URL}
 #SEO #ContentMarketing #KI #OnlineBusiness`,
     mediaTitle: '32 SEO-Artikel — automatisches Content-Marketing',
     mediaDesc: 'Wie ich 32 Blog-Artikel ohne manuelle Arbeit publiziere und ranke',
+  },
+  {
+    text: `🧮 Wie viel kannst du mit KI WIRKLICH verdienen? (kostenloser Rechner)
+
+Ich habe einen Einkommens-Rechner gebaut — 3 Fragen, 60 Sekunden, sofortiges Ergebnis.
+
+Er berechnet:
+📊 Realistisches Einkommen in Monat 1-2
+📊 Projection für Monat 3-4
+📊 Was in Monat 5-6 möglich ist
+
+Plus: Persönlicher Aktionsplan für deine gewählte Methode (Affiliate, Digitale Produkte, Freelancing, Shopify).
+
+Völlig kostenlos, keine Anmeldung nötig:
+👉 ${CALCULATOR_URL}
+
+Ich war überrascht wie viele nach dem Test geschrieben haben "ich hätte nicht gedacht dass das so realistisch machbar ist"
+
+#KI #EinkommensRechner #PassivesEinkommen #OnlineBusiness`,
+    mediaTitle: 'KI Einkommens-Rechner 2026',
+    mediaDesc: 'Kostenlos berechnen: Was kannst du mit KI wirklich verdienen?',
   },
   {
     text: `✉️ Affiliate-Recruiting per E-Mail — was ich dabei gelernt habe

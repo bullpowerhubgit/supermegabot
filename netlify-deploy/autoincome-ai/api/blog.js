@@ -149,7 +149,7 @@ ${article.content_html || '<p>Artikel wird geladen...</p>'}
   </form>
 </div>
 <div class="cta-box">
-  <div class="cta-badge">⭐ Über 1.200 Kunden</div>
+  <div class="cta-badge">⭐ 60-Tage Geld-zurück-Garantie</div>
   <h3>Bereit, mit KI passives Einkommen aufzubauen?</h3>
   <p>Der AI Income Machine 90-Day Blueprint — Schritt-für-Schritt auf Deutsch, €37 Einmalzahlung.</p>
   <div class="cta-social">

@@ -5,7 +5,8 @@
   "outputDirectory": ".",
   "rewrites": [
     { "source": "/blog", "destination": "/api/blog?slug=index" },
-    { "source": "/blog/:slug", "destination": "/api/blog?slug=:slug" }
+    { "source": "/blog/:slug", "destination": "/api/blog?slug=:slug" },
+    { "source": "/rechner", "destination": "/api/income-calculator" }
   ],
   "crons": [
     { "path": "/api/campaign-trigger?secret=bullpower2026", "schedule": "0 8 * * 1" },

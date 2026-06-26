@@ -76,25 +76,26 @@ Käufer #4 werden — €37
   },
   {
     name: 'Affiliate Recruitment Reminder',
-    subject: '💰 40% Provision: Wirst du unser Affiliate?',
-    preview: '€14.80 pro Verkauf. Fertige Marketing-Materialien.',
+    subject: '💰 50% Provision: Wirst du unser Affiliate?',
+    preview: '€18,50 pro Verkauf. Fertige Marketing-Materialien. Wöchentliche Auszahlung.',
     html: `<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;">
-<h2>💰 Verdiene 40% Provision</h2>
+<h2>💰 Verdiene 50% Provision</h2>
 <p>Als Affiliate des AI Income Machine Blueprints verdienst du:</p>
 <ul>
-<li>40% Provision = €14.80 pro Sale</li>
+<li>50% Provision = <strong>€18,50 pro Blueprint-Verkauf</strong></li>
+<li>50% Provision = <strong>€48,50 pro SuperMegaBot-Verkauf (€97)</strong></li>
 <li>Fertige Marketing-Templates inklusive</li>
-<li>Sofortige Auszahlung über Digistore24</li>
-<li>Keine Vorabkosten, kein Risiko</li>
+<li>Wöchentliche Auszahlung direkt über Digistore24</li>
+<li>Keine Vorabkosten, kein Risiko, sofortige Zulassung</li>
 </ul>
 <p style="text-align:center;margin:30px 0;">
-<a href="https://www.digistore24.com/product/668035" style="background:#FF6B00;color:white;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:1.1rem;font-weight:700;">
+<a href="https://autoincome-ai.vercel.app/affiliate.html" style="background:#FF6B00;color:white;padding:16px 40px;text-decoration:none;border-radius:8px;font-size:1.1rem;font-weight:700;">
 Kostenlos als Affiliate anmelden →
 </a>
 </p>
 <p>Rudolf Sarkany</p>
 </body></html>`,
-    text: '40% Provision als Affiliate: https://www.digistore24.com/product/668035',
+    text: '50% Provision als Affiliate: €18,50/Verkauf Blueprint, €48,50/Verkauf SuperMegaBot → https://autoincome-ai.vercel.app/affiliate.html',
   },
 ];
 
