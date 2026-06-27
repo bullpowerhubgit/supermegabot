@@ -2261,12 +2261,12 @@ async def handle_mailchimp_send_campaign(req):
         body = await req.json()
     except Exception:
         body = {}
-    subject  = body.get("subject", "🚀 KI Income Machine — Jetzt passiv verdienen")
+    subject  = body.get("subject", "🚀 SuperMegaBot — Shopify Vollautomatisierung für €97")
     html_body = body.get("html", """<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-<h1 style="color:#1a1a2e">Passives Einkommen mit KI — so geht's</h1>
+<h1 style="color:#1a1a2e">Shopify auf KI-Autopilot — einmalig €97</h1>
 <p>Hallo,</p>
-<p>die AI Income Machine ist das vollautomatische System für Online-Einkommen mit KI. Einmal einrichten — dauerhaft verdienen.</p>
-<p><a href=os.getenv("DS24_AFFILIATE_LINK", "https://autopilot-store-suite-fmbka.myshopify.com") style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
+<p>SuperMegaBot automatisiert deinen Shopify-Shop vollständig: Produktrecherche, Beschreibungen, Social Media, Emails — alles läuft automatisch. Einmal kaufen, dauerhaft profitieren.</p>
+<p><a href="https://tecbuuss.gumroad.com/l/wcqdjx" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt sichern — €97 Lifetime →</a></p>
 <p style="color:#888;font-size:12px">Rudolf Sarkany · BullPower Hub · Wien<br><a href="*|UNSUB|*" style="color:#888">Abmelden</a></p>
 </body></html>""")
     list_id = body.get("list_id", os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0"))
@@ -2281,12 +2281,12 @@ async def handle_klaviyo_send_campaign(req):
         body = await req.json()
     except Exception:
         body = {}
-    subject  = body.get("subject", "🚀 Exklusives Angebot — KI Income Machine")
+    subject  = body.get("subject", "🚀 SuperMegaBot — Shopify Autopilot für einmalig €97")
     html_body = body.get("html", """<html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-<h1 style="color:#1a1a2e">Mach passives Einkommen mit KI</h1>
+<h1 style="color:#1a1a2e">Shopify auf KI-Autopilot — kein Abo, Lifetime</h1>
 <p>Hallo,</p>
-<p>Entdecke die AI Income Machine — das vollautomatische System für passives Online-Einkommen.</p>
-<p><a href=os.getenv("DS24_AFFILIATE_LINK", "https://autopilot-store-suite-fmbka.myshopify.com") style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt starten — nur €37 →</a></p>
+<p>SuperMegaBot übernimmt deinen Shopify-Shop: 10.500+ Produkte automatisch, Social Media auf 9 Kanälen, Emails vollautomatisch. Einmalig €97 — kein monatliches Abo.</p>
+<p><a href="https://tecbuuss.gumroad.com/l/wcqdjx" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt sichern — €97 Lifetime →</a></p>
 <p style="color:#888;font-size:12px">Rudolf | AIITEC · BullPower Hub</p>
 </body></html>""")
     list_id = body.get("list_id", os.getenv("KLAVIYO_LIST_ID", "Xwxq6V"))
