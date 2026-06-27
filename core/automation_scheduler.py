@@ -4077,6 +4077,16 @@ async def task_aliexpress_autonomy_cycle() -> str:
         return f"AliExpress cycle error: {e}"
 
 
+async def task_alibaba_import() -> str:
+    """6h — Alibaba/1688 trending products → Shopify via AliExpress API bridge."""
+    try:
+        from modules.alibaba_autonomy import run_alibaba_cycle
+        r = await run_alibaba_cycle()
+        return f"Alibaba: {r.get('imported',0)} importiert | {r.get('published',0)} publiziert"
+    except Exception as e:
+        return f"Alibaba Import Fehler: {e}"
+
+
 async def task_printify_autonomy_cycle() -> str:
     try:
         from modules.printify_autonomy import run_printify_cycle
@@ -4809,6 +4819,7 @@ TASKS = [
     ("ebay_cycle",            task_ebay_autonomy_cycle,  21600, 370),  # 6h — eBay full autonomy
     ("amazon_cycle",          task_amazon_autonomy_cycle, 21600, 410),  # 6h — Amazon full autonomy
     ("aliexpress_cycle",      task_aliexpress_autonomy_cycle, 28800, 450),  # 8h — AliExpress cycle
+    ("alibaba_import",        task_alibaba_import,           21600, 470),  # 6h — Alibaba/1688 → Shopify
     ("ebay_blast",            task_ebay_blast,          10800, 490),  # 3h — eBay multi blast
     ("shopify_fix_tags",      task_shopify_fix_tags,     3600,  530),  # 1h — T-Shirt SEO tags
     ("shopify_cleanup_cols",  task_shopify_cleanup_collections, 86400, 570),  # 24h — leere Collections
