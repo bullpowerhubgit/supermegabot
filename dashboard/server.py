@@ -9907,6 +9907,9 @@ async def _email_brain_check_bg():
 
 async def handle_email_brain_check(req):
     """POST /api/email/brain/check — runs in background to avoid 502 timeout."""
+    import os as _os
+    if _os.getenv("EMAIL_BRAIN_ENABLED", "false").lower() != "true":
+        return web.json_response({"status": "disabled", "message": "EmailBrain is disabled (EMAIL_BRAIN_ENABLED != true)"}, status=503)
     try:
         asyncio.create_task(_email_brain_check_bg())
         return web.json_response({"status": "ok", "result": "email check started in background"})
