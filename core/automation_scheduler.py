@@ -4797,7 +4797,7 @@ TASKS = [
     # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
     ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
-    ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram
+    ("social_scheduler",     task_social_scheduler,    43200, 120),  # 12h — Twitter + Telegram (reduced to avoid FB spam)
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
     ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
     # ── Marketplace Auto-Poster ───────────────────────────────────────────────
