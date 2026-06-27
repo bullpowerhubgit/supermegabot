@@ -16,7 +16,7 @@ TELEGRAM_TOKEN = lambda: os.getenv("TELEGRAM_BOT_TOKEN_2") or os.getenv("TELEGRA
 TELEGRAM_CHAT_ID = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_DOMAIN = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN = lambda: os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-API_VERSION = lambda: os.getenv("SHOPIFY_API_VERSION", "2026-04")
+API_VERSION = lambda: os.getenv("SHOPIFY_API_VERSION", "2024-10")
 
 
 def _shopify_get(endpoint: str) -> dict:
