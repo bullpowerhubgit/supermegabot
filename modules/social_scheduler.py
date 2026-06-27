@@ -89,21 +89,21 @@ CONTENT_TEMPLATES = [
         "text": "🎯 3 Dinge die sofort deinen Shopify-Umsatz erhöhen:\n\n1. Abandoned Cart Email (automatisch)\n2. Post-Purchase Upsell (KI-gesteuert)\n3. Social Proof auf Produktseiten\n\nAlles automatisch: https://ineedit.com.co",
         "telegram_extra": "",
     },
-    # DS24 Product 668035 promotions
+    # Gumroad — LIVE, sofort kaufbar
     {
-        "text": "🤖 AI Income Machine – 90-Day Blueprint\n\nIn 90 Tagen mit KI passives Einkommen aufbauen:\n✅ Schritt-für-Schritt System auf Deutsch\n✅ Top 5 KI-Tools die wirklich Geld bringen\n✅ Vollautomatisch — ohne Programmierkenntnisse\n\n€37 einmalig: https://www.checkout-ds24.com/product/668035\n\n#KI #PassivesEinkommen #AIMoney",
+        "text": "🚀 SuperMegaBot — Shopify Vollautomatisierung\n\nDein Shopify-Shop auf KI-Autopilot:\n✅ 10.500+ Produkte automatisch importiert\n✅ KI findet Bestseller in Echtzeit\n✅ Social Media auf 9 Kanälen gleichzeitig\n✅ Revenue-Tracking vollautomatisch\n\n💶 Einmalig €97 — kein Abo, Lifetime-Zugang\n\n👉 https://tecbuuss.gumroad.com/l/wcqdjx\n\n#Shopify #KI #Automation #ECommerce",
         "telegram_extra": "",
     },
     {
-        "text": "💰 Wie funktioniert KI-Einkommen 2026?\n\nSchritt 1: Richtige KI-Tools auswählen\nSchritt 2: System einrichten (einmalig)\nSchritt 3: Automatisch Geld verdienen\n\n→ Das komplette System für €37:\nhttps://www.checkout-ds24.com/product/668035\n\n#KIGeldVerdienen #AIIncome",
+        "text": "💰 40h/Woche Shopify-Arbeit → 0h manuell.\n\nSuperMegaBot übernimmt alles:\n→ Produktrecherche: 2h → 2min\n→ Beschreibungen: 20min → sofort\n→ Social Media: täglich → automatisch\n→ Emails: manuell → vollautomatisch\n\nEinmalig €97 — dann läuft es alleine.\n\n🔗 https://tecbuuss.gumroad.com/l/wcqdjx\n\n#ShopifyAutomation #PassivesEinkommen",
         "telegram_extra": "",
     },
     {
-        "text": "⚡ Bereits 3 Menschen haben gestartet — du auch?\n\nAI Income Machine 90-Day Blueprint:\n→ €37 einmalig\n→ Sofortzugang\n→ 14 Tage Geld-zurück-Garantie\n\n🔗 https://www.checkout-ds24.com/product/668035",
+        "text": "⚡ SuperMegaBot — der einzige Shopify-Bot den du brauchst.\n\n🤖 KI-gesteuerte Produktauswahl\n📊 Live Revenue-Dashboard\n📱 Facebook + Instagram + TikTok automatisch\n📧 Email-Sequenzen vollautomatisch\n\nEinmalig €97 (kein Abo!)\n\n👉 Jetzt sichern: https://tecbuuss.gumroad.com/l/wcqdjx",
         "telegram_extra": "",
     },
     {
-        "text": "🚀 SuperMegaBot KI-Automation System\n\nVollständige E-Commerce Automatisierung:\n🤖 Shopify Store auf Autopilot\n📊 Revenue-Tracking in Echtzeit\n📱 Social Media auf allen Kanälen\n📧 Email-Marketing vollautomatisch\n\nFür €97 (einmalig):\nhttps://www.checkout-ds24.com/product/704677\n\n#Automation #KI #Shopify",
+        "text": "🎯 Stell dir vor: Morgen früh wachst du auf und dein Shopify-Shop hat über Nacht Bestellungen bekommen — automatisch.\n\nDas ist SuperMegaBot.\n\n💶 Einmalig €97 — kein monatliches Abo.\n\n👉 https://tecbuuss.gumroad.com/l/wcqdjx\n\n#Shopify #AutomatischGeldVerdienen #KI2026",
         "telegram_extra": "",
     },
 ]
