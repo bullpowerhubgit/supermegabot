@@ -219,9 +219,15 @@ def _rule_classify(subject: str, sender: str, body: str) -> dict:
     no_reply_signals = ["noreply", "no-reply", "donotreply", "newsletter", "unsubscribe",
                         "notification", "automated", "autoresponder", "bounce", "mailer-daemon",
                         "postmaster", "billing@", "invoice@", "receipt@", "order@",
-                        "notification@", "alert@", "@news.", "@mail.", "@mailings.", "@email.",
+                        "notification@", "alert@", "support@", "helpdesk@", "tickets@",
+                        "@news.", "@mail.", "@mailings.", "@email.",
                         "@lists.", "@em.", "@sg.", "@em2.", "@reply."]
-    if any(sig in frm for sig in no_reply_signals):
+    # Also block support ticket confirmation subjects
+    no_reply_subjects = ["we received your request", "your request has been received",
+                         "ticket created", "ticket #", "support ticket", "case created",
+                         "your case", "thanks for contacting", "thank you for contacting",
+                         "support request id", "request id is"]
+    if any(sig in frm for sig in no_reply_signals) or any(sig in s for sig in no_reply_subjects):
         return {"category": "newsletter", "priority": "low", "reply_needed": False,
                 "reply_draft": "", "label": "Newsletter", "archive": True,
                 "telegram_alert": False, "summary": subject[:80]}
