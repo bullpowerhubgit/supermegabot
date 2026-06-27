@@ -522,6 +522,10 @@ def get_email_stats() -> dict:
 
 async def run_email_check() -> str:
     """Check all Gmail accounts, classify, reply, label. Called by scheduler."""
+    if os.getenv("EMAIL_BRAIN_ENABLED", "false").lower() != "true":
+        log.info("EmailBrain disabled (EMAIL_BRAIN_ENABLED != true)")
+        return "EmailBrain disabled — set EMAIL_BRAIN_ENABLED=true to re-enable"
+
     accounts = _accounts()
     if not accounts:
         return "No email accounts configured (set GMAIL_USER + GMAIL_APP_PASSWORD)"
