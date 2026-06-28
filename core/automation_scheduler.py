@@ -1140,24 +1140,6 @@ async def task_auto_funnel() -> str:
         return f"AutoFunnel error: {e}"
 
 
-async def task_email_check() -> str:
-    """EmailBrain — IMAP poll aller Gmail-Konten, KI-Klassifizierung, Auto-Antwort, Labels."""
-    try:
-        from modules.email_brain import run_email_check
-        return await run_email_check()
-    except Exception as e:
-        return f"EmailBrain error: {e}"
-
-
-async def task_email_daily_summary() -> str:
-    """EmailBrain — täglicher Telegram-Report."""
-    try:
-        from modules.email_brain import send_email_daily_summary
-        await send_email_daily_summary()
-        return "Email daily summary sent"
-    except Exception as e:
-        return f"EmailBrain summary error: {e}"
-
 
 async def task_mega_auto_post() -> str:
     """Mega Auto Poster — postet auf ALLE Kanäle gleichzeitig (alle 30 Min)."""

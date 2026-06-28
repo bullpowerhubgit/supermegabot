@@ -124,7 +124,6 @@ CRITICAL_FILES: list[str] = [
     "modules/klaviyo_automation.py",
     "modules/mega_auto_poster.py",
     "modules/brutus_traffic_engine.py",
-    "modules/email_brain.py",
     "modules/rudiclone.py",
     "requirements.txt",
     "railway.toml",
