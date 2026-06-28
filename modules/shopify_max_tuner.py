@@ -216,7 +216,7 @@ async def request_reviews_automation() -> dict:
         name = (o.get("customer") or {}).get("first_name", "Kunde")
         product = (o.get("line_items") or [{}])[0].get("title", "Ihr Produkt")
         try:
-            from modules.email_brain import send_email
+            from modules.email_client import send_email
             subject = f"Wie war Ihre Erfahrung mit {product}?"
             body = (
                 f"Hallo {name},\n\n"
@@ -226,7 +226,7 @@ async def request_reviews_automation() -> dict:
                 "⭐ Jetzt bewerten: https://bullpower-hub-portal.netlify.app/review\n\n"
                 "Herzlichen Dank!\nIhr BullPower Hub Team"
             )
-            await send_email(to=email, subject=subject, body=body)
+            await send_email(to=email, subject=subject, html=body)
             sent += 1
         except Exception as e:
             logger.error(f"Review email to {email}: {e}")
@@ -309,7 +309,7 @@ async def recover_abandoned_checkouts() -> dict:
         total = c.get("total_price", "0")
         items = ", ".join(li.get("title", "") for li in (c.get("line_items") or [])[:2])
         try:
-            from modules.email_brain import send_email
+            from modules.email_client import send_email
             subject = f"🛒 {name}, du hast etwas vergessen!"
             body = (
                 f"Hallo {name},\n\n"
@@ -320,7 +320,7 @@ async def recover_abandoned_checkouts() -> dict:
                 "➡️ Zum Warenkorb: https://autopilot-store-suite-fmbka.myshopify.com/cart\n\n"
                 "BullPower Hub Team"
             )
-            await send_email(to=email, subject=subject, body=body)
+            await send_email(to=email, subject=subject, html=body)
             recovered += 1
         except Exception as e:
             logger.error(f"Cart recovery email {email}: {e}")

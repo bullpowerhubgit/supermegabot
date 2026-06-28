@@ -7179,12 +7179,7 @@ async def handle_email_blast(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_email_daily_blast(request: web.Request) -> web.Response:
-    try:
-        from modules.email_brain import send_email_daily_summary
-        await send_email_daily_summary()
-        return web.json_response({"ok": True, "action": "daily_summary_sent"})
-    except Exception as e:
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+    return web.json_response({"ok": False, "status": "disabled", "message": "EmailBrain removed"}, status=503)
 
 async def handle_email_stats(request: web.Request) -> web.Response:
     try:
@@ -7317,7 +7312,7 @@ async def handle_shopify_sync_alias(request: web.Request) -> web.Response:
     return await handle_shopify_full_auto(request)
 
 async def handle_email_check_alias(request: web.Request) -> web.Response:
-    return await handle_email_brain_check(request)
+    return web.json_response({"ok": False, "status": "disabled", "message": "EmailBrain removed"}, status=503)
 
 async def handle_ds24_sync_alias(request: web.Request) -> web.Response:
     return await handle_digistore_autonomy_cycle(request)
@@ -7399,10 +7394,10 @@ async def handle_pinterest_run(req: web.Request) -> web.Response:
     return await _trigger_task("pinterest_auto_post", background=True)
 
 async def handle_email_run(req: web.Request) -> web.Response:
-    return await _trigger_task("email_check", background=True)
+    return web.json_response({"ok": False, "status": "disabled", "message": "EmailBrain removed"}, status=503)
 
 async def handle_email_daily_summary_run(req: web.Request) -> web.Response:
-    return await _trigger_task("email_daily_summary")
+    return web.json_response({"ok": False, "status": "disabled", "message": "EmailBrain removed"}, status=503)
 
 async def handle_shopify_blog_run(req: web.Request) -> web.Response:
     return await _trigger_task("shopify_seo_blog")
@@ -8662,9 +8657,6 @@ async def create_app():
     app.router.add_get("/api/infra/status",           handle_infra_status)
     app.router.add_post("/api/export/customers",      handle_export_customers)
     app.router.add_get("/api/export/customers/stats", handle_export_customers_stats)
-    app.router.add_get("/api/email/brain/stats",      handle_email_brain_stats)
-    app.router.add_post("/api/email/brain/check",     handle_email_brain_check)
-    app.router.add_get("/api/email/brain/setup",      handle_email_brain_setup)
     app.router.add_get("/api/revenue/summary",        handle_revenue_summary)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
@@ -9885,48 +9877,6 @@ async def handle_universal_lead_capture(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
-async def handle_email_brain_stats(req):
-    """GET /api/email/brain/stats — daily stats from EmailBrain."""
-    try:
-        from pathlib import Path as _Path
-        import json as _json
-        stats_file = _Path(os.getenv("DATA_DIR", "data")) / "email_stats.json"
-        stats = _json.loads(stats_file.read_text()) if stats_file.exists() else {}
-        return web.json_response({"status": "ok", "stats": stats})
-    except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
-
-
-async def _email_brain_check_bg():
-    try:
-        from modules.email_brain import run_email_check
-        await run_email_check()
-    except Exception as e:
-        log.error("Background email check error: %s", e)
-
-
-async def handle_email_brain_check(req):
-    """POST /api/email/brain/check — runs in background to avoid 502 timeout."""
-    import os as _os
-    if _os.getenv("EMAIL_BRAIN_ENABLED", "false").lower() != "true":
-        return web.json_response({"status": "disabled", "message": "EmailBrain is disabled (EMAIL_BRAIN_ENABLED != true)"}, status=503)
-    try:
-        asyncio.create_task(_email_brain_check_bg())
-        return web.json_response({"status": "ok", "result": "email check started in background"})
-    except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
-
-
-async def handle_email_brain_setup(req):
-    """GET /api/email/brain/setup — verify IMAP connectivity."""
-    try:
-        from modules.email_brain import run_email_setup_check
-        result = await run_email_setup_check()
-        return web.json_response({"status": "ok", "result": result})
-    except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
-
-
 async def handle_revenue_summary(req):
     """GET /api/revenue/summary — combined revenue from Stripe + Shopify + DS24."""
     import aiohttp as _aiohttp
@@ -10060,7 +10010,7 @@ async def handle_scheduler_status(req):
         tasks = [
             "shopify_sync", "ds24_revenue_sync", "health_alert", "trend_analysis",
             "backup", "ds24_funnel_sync", "traffic_seo_run", "brutus_run",
-            "cro_run", "auto_funnel", "email_check", "email_daily_summary"
+            "cro_run", "auto_funnel"
         ]
         return web.json_response({"status": "ok", "tasks": {t: {"state": "running"} for t in tasks}})
 
@@ -10083,7 +10033,7 @@ async def handle_scheduler_trigger(req):
         return web.json_response({"error": "task name required", "available": available}, status=400)
     # Tasks that are known to run longer than HTTP timeout — fire and return immediately
     _long_tasks = {
-        "indexnow_mega_blast", "email_check", "email_brain_check", "mega_seo_cycle",
+        "indexnow_mega_blast", "mega_seo_cycle",
         "brutus_ds24_affiliate", "traffic_swarm_full", "traffic_mega_cycle",
         "gmc_product_fix", "shopify_full_auto", "amazon_autonomy_cycle",
         "ebay_auto_fill", "backlink_outreach", "seo_mega_factory", "ultra_indexnow_all",
