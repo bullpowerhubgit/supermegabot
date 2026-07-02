@@ -1,12 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const SHOPIFY_DOMAIN = Deno.env.get("SHOPIFY_SHOP_DOMAIN") ?? "autopilot-store-suite-fmbka.myshopify.com";
-const FB_PAGE_ID     = Deno.env.get("FACEBOOK_PAGE_ID") ?? "1016738738178786";
-const FB_TOKEN       = Deno.env.get("FACEBOOK_PAGE_TOKEN") ?? "";
-const TG_TOKEN       = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
-const TG_CHAT_ID     = Deno.env.get("TELEGRAM_CHAT_ID") ?? "";
-const SHOP_URL       = "https://ineedit.com.co";
-const BOT_URL        = Deno.env.get("BOT_LANDING_URL") ?? "https://dudirudibot-mega-production.up.railway.app/telegram";
+const SHOPIFY_DOMAIN  = Deno.env.get("SHOPIFY_SHOP_DOMAIN") ?? "autopilot-store-suite-fmbka.myshopify.com";
+const FB_PAGE_ID      = Deno.env.get("FACEBOOK_PAGE_ID") ?? "1016738738178786";
+const FB_TOKEN        = Deno.env.get("FACEBOOK_PAGE_TOKEN") ?? "";
+const TG_TOKEN        = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
+const TG_CHAT_ID      = Deno.env.get("TELEGRAM_CHAT_ID") ?? "";
+const LI_TOKEN        = Deno.env.get("LINKEDIN_ACCESS_TOKEN") ?? "";
+const LI_PERSON_URN   = Deno.env.get("LINKEDIN_PERSON_URN") ?? "urn:li:person:YcxbqVN0ZR";
+const SHOP_URL        = "https://ineedit.com.co";
+const BOT_URL         = Deno.env.get("BOT_LANDING_URL") ?? "https://dudirudibot-mega-production.up.railway.app/telegram";
 const SHARE_BOT_DAILY = Deno.env.get("SHARE_BOT_DAILY") ?? "true";
 
 const CAPTIONS = [
@@ -167,18 +169,52 @@ async function postBotPromo(): Promise<boolean> {
   return tgData.ok || !fbData.error;
 }
 
+async function postLinkedIn(prod: any): Promise<boolean> {
+  if (!LI_TOKEN || !LI_PERSON_URN) return false;
+  const text = `🔥 ${prod.title}\n\n💶 Nur €${prod.price} — jetzt im Shop!\n👉 ${prod.link}\n\n#SmartHome #Gadgets #Deals #Ecommerce #OnlineShopping`;
+  const body = {
+    author: LI_PERSON_URN,
+    lifecycleState: "PUBLISHED",
+    specificContent: {
+      "com.linkedin.ugc.ShareContent": {
+        shareCommentary: { text },
+        shareMediaCategory: "ARTICLE",
+        media: [{ status: "READY", originalUrl: prod.link }],
+      },
+    },
+    visibility: { "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC" },
+  };
+  const res = await fetch("https://api.linkedin.com/v2/ugcPosts", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${LI_TOKEN}`,
+      "Content-Type": "application/json",
+      "X-Restli-Protocol-Version": "2.0.0",
+    },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 200 || res.status === 201) {
+    const data = await res.json();
+    console.log("LinkedIn ok:", data.id ?? "posted");
+    return true;
+  }
+  console.error("LinkedIn error:", res.status, await res.text());
+  return false;
+}
+
 serve(async (_req) => {
   try {
     const prod = await getRandomProduct();
     console.log(`Produkt: ${prod.title} | €${prod.price}`);
 
-    const [fbOk, tgOk, promoOk] = await Promise.all([
+    const [fbOk, tgOk, liOk, promoOk] = await Promise.all([
       postFacebook(prod),
       postTelegram(prod),
+      postLinkedIn(prod),
       postBotPromo(),
     ]);
 
-    const status = { product: prod.title, price: prod.price, facebook: fbOk, telegram: tgOk, bot_promo: promoOk };
+    const status = { product: prod.title, price: prod.price, facebook: fbOk, telegram: tgOk, linkedin: liOk, bot_promo: promoOk };
     return new Response(JSON.stringify(status), {
       headers: { "Content-Type": "application/json" },
       status: fbOk || tgOk ? 200 : 500,
