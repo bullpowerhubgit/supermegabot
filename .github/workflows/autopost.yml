@@ -1,4 +1,4 @@
-name: Autopost — Shopify → Facebook + Telegram
+name: Autopost - Shopify to Facebook and Telegram
 
 on:
   schedule:
