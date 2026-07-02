@@ -3,170 +3,137 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 const SHOPIFY_DOMAIN  = Deno.env.get("SHOPIFY_SHOP_DOMAIN") ?? "autopilot-store-suite-fmbka.myshopify.com";
 const FB_PAGE_ID      = Deno.env.get("FACEBOOK_PAGE_ID") ?? "1016738738178786";
 const FB_TOKEN        = Deno.env.get("FACEBOOK_PAGE_TOKEN") ?? "";
+const FB_TOKEN_INEEDIT = Deno.env.get("FACEBOOK_PAGE_TOKEN_I_NEED_IT") ?? "";
+const FB_PAGE_INEEDIT = "1058648427339278";
+const IG_BUSINESS_ID  = Deno.env.get("INSTAGRAM_BUSINESS_ACCOUNT_ID") ?? "17841478315197796";
 const TG_TOKEN        = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
 const TG_CHAT_ID      = Deno.env.get("TELEGRAM_CHAT_ID") ?? "";
 const LI_TOKEN        = Deno.env.get("LINKEDIN_ACCESS_TOKEN") ?? "";
 const LI_PERSON_URN   = Deno.env.get("LINKEDIN_PERSON_URN") ?? "urn:li:person:YcxbqVN0ZR";
+const DISCORD_TOKEN   = Deno.env.get("DISCORD_BOT_TOKEN") ?? "";
+const DISCORD_CHAN    = Deno.env.get("DISCORD_CHANNEL_ID") ?? "";
+const PINTEREST_TOKEN = Deno.env.get("PINTEREST_ACCESS_TOKEN") ?? "";
+const PINTEREST_BOARD = Deno.env.get("PINTEREST_BOARD_ID") ?? "";
 const SHOP_URL        = "https://ineedit.com.co";
 const BOT_URL         = Deno.env.get("BOT_LANDING_URL") ?? "https://dudirudibot-mega-production.up.railway.app/telegram";
-const SHARE_BOT_DAILY = Deno.env.get("SHARE_BOT_DAILY") ?? "true";
 
 const CAPTIONS = [
-  "🔥 Trending jetzt: {title}\n💶 Nur €{price}\n👉 {link}\n\n#fashion #style #gadgets #deals",
-  "✨ Neu im Shop: {title}\n💰 €{price} — Limitiert!\n🛒 {link}\n\n#onlineshopping #gadgets #smarthome",
-  "🛍️ {title}\n💶 Jetzt für €{price}\n👆 Link im Profil oder: {link}\n\n#shopping #deals #techgadgets",
-  "💥 Deal des Tages: {title}\n💵 €{price}\n🔗 {link}\n\n#sale #deals #gadgets #smarthome",
-  "🎯 {title}\n⚡ Nur €{price} | Schnell zugreifen!\n{link}\n\n#deals #gadgets #techdeals",
+  "🔥 Trending: {title}\n💶 Nur €{price}\n👉 {link}\n\n#smarthome #gadgets #techdeals #deals #ineedit",
+  "✨ Neu im Shop: {title}\n💰 €{price} — jetzt zugreifen!\n🛒 {link}\n\n#onlineshopping #gadgets #deals",
+  "🛍️ {title}\n💶 Jetzt für €{price}\n👆 {link}\n\n#shopping #techgadgets #smarthome #sale",
+  "💥 Deal: {title}\n💵 €{price}\n🔗 {link}\n\n#deals #gadgets #smarthome #lifestyle",
+  "🎯 {title}\n⚡ Nur €{price} | Schnell!\n{link}\n\n#techdeals #gadgets #smarthome",
+  "🌟 {title} — Top Qualität!\n💶 €{price} | 🚚 Schnelle Lieferung\n{link}\n\n#shopping #deals",
 ];
 
-// Bild-URLs die NICHT gepostet werden dürfen (Amazon-Branding, Logos, Platzhalter)
 const BAD_IMG_PATTERNS = [
-  "media-amazon.com",
-  "ssl-images-amazon.com",
-  "images-amazon.com",
-  "amazon.com/images",
-  "/amazon-",
-  "smile",
-  "prime",
-  "fresh",
-  "logo",
-  "brand",
-  "icon",
-  "placeholder",
-  "no-image",
-  "noimage",
-  "default-image",
+  "media-amazon.com", "ssl-images-amazon.com", "images-amazon.com",
+  "amazon.com/images", "logo", "brand", "icon", "placeholder",
+  "no-image", "noimage", "default-image", "images.unsplash.com",
+  "picsum.photos", "loremflickr", "pexels",
 ];
 
 function isValidProductImg(url: string): boolean {
   if (!url) return false;
   const lower = url.toLowerCase();
-  // Ablehnen wenn URL Amazon-Branding oder bekannte Platzhalter enthält
   if (BAD_IMG_PATTERNS.some(p => lower.includes(p))) return false;
-  // Nur HTTPS-Bilder mit Bild-Endung akzeptieren
   return /\.(jpg|jpeg|png|webp)(\?|$)/i.test(lower);
 }
 
 function getValidImg(images: any[]): string {
-  if (!images?.length) return "";
-  // Alle Bilder durchsuchen, erstes valides nehmen
-  for (const img of images) {
+  for (const img of (images ?? [])) {
     const src = img?.src ?? "";
     if (isValidProductImg(src)) return src;
   }
-  return ""; // Kein valides Bild → Text-only Post
+  return "";
+}
+
+function fillCaption(title: string, price: string, link: string) {
+  const tpl = CAPTIONS[Math.floor(Math.random() * CAPTIONS.length)];
+  return tpl.replace("{title}", title).replace("{price}", price).replace("{link}", link);
 }
 
 async function getRandomProduct() {
-  const page = Math.floor(Math.random() * 5) + 1;
-  const url = `https://${SHOPIFY_DOMAIN}/products.json?limit=50&page=${page}`;
-  const res = await fetch(url);
-  const data = await res.json();
-  let products: any[] = data.products ?? [];
-
-  if (!products.length) {
-    const fallback = await fetch(`https://${SHOPIFY_DOMAIN}/products.json?limit=50`);
-    const fb = await fallback.json();
-    products = fb.products ?? [];
+  const page = Math.floor(Math.random() * 8) + 1;
+  const url  = `https://${SHOPIFY_DOMAIN}/products.json`;
+  let products: any[] = [];
+  for (const pg of [page, 1, 2]) {
+    const res = await fetch(`${url}?limit=50&page=${pg}`);
+    const data = await res.json();
+    products = data.products ?? [];
+    if (products.length) break;
   }
-
-  if (!products.length) throw new Error("Keine Produkte gefunden");
-
-  // Produkte mit validen Bildern bevorzugen
-  const withImg = products.filter(p => getValidImg(p.images ?? []) !== "");
-  const pool    = withImg.length > 0 ? withImg : products;
-  const p       = pool[Math.floor(Math.random() * pool.length)];
-  const img     = getValidImg(p.images ?? []);
-
-  console.log(`Bild: ${img ? "OK" : "FEHLT/UNGÜLTIG — Text-only"} | ${img.slice(0,60)}`);
-
+  if (!products.length) throw new Error("Keine Produkte");
+  // Filter fake products (€29.99 placeholder)
+  const real = products.filter(p => p.variants?.[0]?.price !== "29.99");
+  const pool = real.length > 0 ? real : products;
+  const withImg = pool.filter(p => getValidImg(p.images ?? []) !== "");
+  const src  = withImg.length > 0 ? withImg : pool;
+  const p    = src[Math.floor(Math.random() * src.length)];
+  const img  = getValidImg(p.images ?? []);
   return {
     title: p.title ?? "Top Produkt",
-    price: p.variants?.[0]?.price ?? "29.99",
+    price: p.variants?.[0]?.price ?? "0",
     img,
     link:  `${SHOP_URL}/products/${p.handle ?? ""}`,
   };
 }
 
-function fillCaption(prod: { title: string; price: string; link: string }) {
-  const tpl = CAPTIONS[Math.floor(Math.random() * CAPTIONS.length)];
-  return tpl.replace("{title}", prod.title).replace("{price}", prod.price).replace("{link}", prod.link);
+async function postFacebook(prod: any, pageId = FB_PAGE_ID, token = FB_TOKEN): Promise<boolean> {
+  if (!token) return false;
+  const caption = fillCaption(prod.title, prod.price, prod.link);
+  const endpoint = prod.img
+    ? `https://graph.facebook.com/v21.0/${pageId}/photos`
+    : `https://graph.facebook.com/v21.0/${pageId}/feed`;
+  const body = prod.img
+    ? { url: prod.img, caption, access_token: token }
+    : { message: caption, link: prod.link, access_token: token };
+  const res    = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  const result = await res.json();
+  if (result.error) { console.error("FB error:", result.error.message); return false; }
+  console.log("FB ok:", result.id ?? result.post_id);
+  return true;
 }
 
-async function postFacebook(prod: any): Promise<boolean> {
-  if (!FB_TOKEN) return false;
-  const caption = fillCaption(prod);
-  const endpoint = prod.img
-    ? `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/photos`
-    : `https://graph.facebook.com/v21.0/${FB_PAGE_ID}/feed`;
-  const body = prod.img
-    ? { url: prod.img, caption, access_token: FB_TOKEN }
-    : { message: caption, link: prod.link, access_token: FB_TOKEN };
-
-  const res = await fetch(endpoint, {
+async function postInstagram(prod: any): Promise<boolean> {
+  if (!FB_TOKEN || !IG_BUSINESS_ID || !prod.img) return false;
+  const caption = fillCaption(prod.title, prod.price, prod.link) + "\n\n#aaiitecc #ineedit";
+  // Step 1: Create media container
+  const r1 = await fetch(`https://graph.facebook.com/v21.0/${IG_BUSINESS_ID}/media`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
+    body: JSON.stringify({ image_url: prod.img, caption, access_token: FB_TOKEN }),
   });
-  const result = await res.json();
-  if (result.error) {
-    console.error("FB error:", result.error.message);
-    return false;
-  }
-  console.log("FB ok:", result.id ?? result.post_id);
+  const d1 = await r1.json();
+  if (d1.error) { console.error("IG create error:", d1.error.message); return false; }
+  const creationId = d1.id;
+  if (!creationId) return false;
+  // Step 2: Publish
+  await new Promise(r => setTimeout(r, 3000));
+  const r2 = await fetch(`https://graph.facebook.com/v21.0/${IG_BUSINESS_ID}/media_publish`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ creation_id: creationId, access_token: FB_TOKEN }),
+  });
+  const d2 = await r2.json();
+  if (d2.error) { console.error("IG publish error:", d2.error.message); return false; }
+  console.log("Instagram ok:", d2.id);
   return true;
 }
 
 async function postTelegram(prod: any): Promise<boolean> {
   if (!TG_TOKEN || !TG_CHAT_ID) return false;
   const text = `🛍 *${prod.title}*\n💶 €${prod.price}\n[➡️ Jetzt kaufen](${prod.link})`;
-
   const endpoint = prod.img
     ? `https://api.telegram.org/bot${TG_TOKEN}/sendPhoto`
     : `https://api.telegram.org/bot${TG_TOKEN}/sendMessage`;
   const body = prod.img
     ? { chat_id: TG_CHAT_ID, photo: prod.img, caption: text, parse_mode: "Markdown" }
     : { chat_id: TG_CHAT_ID, text, parse_mode: "Markdown" };
-
-  const res = await fetch(endpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
+  const res    = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const result = await res.json();
   console.log("TG:", result.ok ? "ok" : result.description);
   return result.ok;
-}
-
-async function postBotPromo(): Promise<boolean> {
-  if (SHARE_BOT_DAILY !== "true") return false;
-  const hour = new Date().getUTCHours();
-  // Nur einmal täglich um 18:00 UTC (20:00 CEST)
-  if (hour !== 18) return false;
-
-  const promoTexts = [
-    `🤖 Dein Shop auf Autopilot — @DudiRudibot automatisiert Shopify, Social-Posts & Umsatz-Tracking.\n👉 ${BOT_URL}\n\n#automation #shopify #ecommerce #telegram`,
-    `💡 110+ Befehle für deinen Online-Shop — direkt in Telegram.\n🛒 Shopify Sync · 📊 Revenue · 🔥 AI Trends\n👉 ${BOT_URL}\n\n#smarthome #gadgets #onlineshop`,
-    `⚡ Weniger Zeit im Dashboard, mehr Umsatz.\n@DudiRudibot macht die Arbeit — du gibst die Richtung vor.\n🔗 ${BOT_URL}\n\n#aitools #shopautomation #telegram`,
-  ];
-  const text = promoTexts[Math.floor(Math.random() * promoTexts.length)];
-
-  const tgRes = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: TG_CHAT_ID, text, parse_mode: "Markdown", disable_web_page_preview: false }),
-  });
-  const tgData = await tgRes.json();
-
-  const fbRes = await fetch(`https://graph.facebook.com/v21.0/${FB_PAGE_ID}/feed`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ message: text, link: BOT_URL, access_token: FB_TOKEN }),
-  });
-  const fbData = await fbRes.json();
-
-  console.log("Bot promo TG:", tgData.ok, "FB:", !fbData.error);
-  return tgData.ok || !fbData.error;
 }
 
 async function postLinkedIn(prod: any): Promise<boolean> {
@@ -186,38 +153,80 @@ async function postLinkedIn(prod: any): Promise<boolean> {
   };
   const res = await fetch("https://api.linkedin.com/v2/ugcPosts", {
     method: "POST",
-    headers: {
-      "Authorization": `Bearer ${LI_TOKEN}`,
-      "Content-Type": "application/json",
-      "X-Restli-Protocol-Version": "2.0.0",
-    },
+    headers: { "Authorization": `Bearer ${LI_TOKEN}`, "Content-Type": "application/json", "X-Restli-Protocol-Version": "2.0.0" },
     body: JSON.stringify(body),
   });
-  if (res.status === 200 || res.status === 201) {
-    const data = await res.json();
-    console.log("LinkedIn ok:", data.id ?? "posted");
-    return true;
-  }
+  if (res.status === 200 || res.status === 201) { console.log("LinkedIn ok:", (await res.json()).id); return true; }
   console.error("LinkedIn error:", res.status, await res.text());
+  return false;
+}
+
+async function postDiscord(prod: any): Promise<boolean> {
+  if (!DISCORD_TOKEN || !DISCORD_CHAN) return false;
+  const content = `🛍️ **${prod.title}**\n💶 **€${prod.price}**\n🔗 ${prod.link}\n\n#deals #gadgets #smarthome`;
+  const body: any = { content };
+  if (prod.img) body.embeds = [{ image: { url: prod.img }, color: 0xC9A84C }];
+  const res = await fetch(`https://discord.com/api/v10/channels/${DISCORD_CHAN}/messages`, {
+    method: "POST",
+    headers: { "Authorization": `Bot ${DISCORD_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 200) { console.log("Discord ok:", (await res.json()).id); return true; }
+  console.error("Discord error:", res.status);
+  return false;
+}
+
+async function postPinterest(prod: any): Promise<boolean> {
+  if (!PINTEREST_TOKEN || !PINTEREST_BOARD || !prod.img) return false;
+  const body = {
+    board_id: PINTEREST_BOARD,
+    title: prod.title,
+    description: `💶 €${prod.price} | ${prod.link}`,
+    link: prod.link,
+    media_source: { source_type: "image_url", url: prod.img },
+  };
+  const res = await fetch("https://api.pinterest.com/v5/pins", {
+    method: "POST",
+    headers: { "Authorization": `Bearer ${PINTEREST_TOKEN}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  if (res.status === 200 || res.status === 201) { console.log("Pinterest ok:", (await res.json()).id); return true; }
+  console.error("Pinterest error:", res.status);
   return false;
 }
 
 serve(async (_req) => {
   try {
     const prod = await getRandomProduct();
-    console.log(`Produkt: ${prod.title} | €${prod.price}`);
+    console.log(`Produkt: ${prod.title} | €${prod.price} | img=${prod.img ? "OK" : "FEHLT"}`);
 
-    const [fbOk, tgOk, liOk, promoOk] = await Promise.all([
-      postFacebook(prod),
+    const [fbAiitec, fbIneedit, ig, tg, li, discord, pinterest] = await Promise.all([
+      postFacebook(prod, FB_PAGE_ID, FB_TOKEN),
+      postFacebook(prod, FB_PAGE_INEEDIT, FB_TOKEN_INEEDIT),
+      postInstagram(prod),
       postTelegram(prod),
       postLinkedIn(prod),
-      postBotPromo(),
+      postDiscord(prod),
+      postPinterest(prod),
     ]);
 
-    const status = { product: prod.title, price: prod.price, facebook: fbOk, telegram: tgOk, linkedin: liOk, bot_promo: promoOk };
+    const status = {
+      product: prod.title,
+      price: prod.price,
+      facebook_aiitec: fbAiitec,
+      facebook_ineedit: fbIneedit,
+      instagram: ig,
+      telegram: tg,
+      linkedin: li,
+      discord,
+      pinterest,
+      timestamp: new Date().toISOString(),
+    };
+
+    console.log("RESULT:", JSON.stringify(status));
     return new Response(JSON.stringify(status), {
       headers: { "Content-Type": "application/json" },
-      status: fbOk || tgOk ? 200 : 500,
+      status: fbAiitec || tg ? 200 : 500,
     });
   } catch (err) {
     console.error(err);
