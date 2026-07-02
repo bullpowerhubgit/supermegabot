@@ -2294,6 +2294,40 @@ async def task_social_scheduler() -> str:
         return f"SocialScheduler Fehler: {e}"
 
 
+async def task_multiplatform_autopost() -> str:
+    """Multi-Platform Autopost: FB + Instagram + Telegram + LinkedIn + Reddit + Discord + Pinterest (alle 6h)."""
+    import asyncio, subprocess, sys
+    try:
+        script = os.path.join(os.path.dirname(__file__), "..", "scripts", "autopost_full.py")
+        proc = await asyncio.create_subprocess_exec(
+            sys.executable, script,
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
+            env={**os.environ}
+        )
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=120)
+        output = stdout.decode("utf-8", errors="replace")[-500:]
+        return f"MultiPost: {output.strip()}"
+    except Exception as e:
+        return f"MultiPost Fehler: {e}"
+
+
+async def task_daily_trend_upload() -> str:
+    """Täglich: meistgesuchte Trend-Produkte via eBay Browse API → Shopify importieren."""
+    import asyncio, subprocess, sys
+    try:
+        script = os.path.join(os.path.dirname(__file__), "..", "scripts", "shopify_daily_trends.py")
+        proc = await asyncio.create_subprocess_exec(
+            sys.executable, script, "150",
+            stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.STDOUT,
+            env={**os.environ}
+        )
+        stdout, _ = await asyncio.wait_for(proc.communicate(), timeout=300)
+        output = stdout.decode("utf-8", errors="replace")[-300:]
+        return f"TrendUpload: {output.strip()}"
+    except Exception as e:
+        return f"TrendUpload Fehler: {e}"
+
+
 # ── SEO MEGA ENGINE ───────────────────────────────────────────────────────────
 
 async def task_seo_mega_factory() -> str:
@@ -4801,7 +4835,9 @@ TASKS = [
     # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
     ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
-    ("social_scheduler",     task_social_scheduler,    43200, 120),  # 12h — Twitter + Telegram (reduced to avoid FB spam)
+    ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
+    ("multiplatform_post",   task_multiplatform_autopost, 21600, 125),  # 6h — FB+IG+TG+LI+Reddit+Discord
+    ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
     ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
     # ── Marketplace Auto-Poster ───────────────────────────────────────────────
