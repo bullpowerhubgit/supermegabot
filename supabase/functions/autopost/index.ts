@@ -6,6 +6,8 @@ const FB_TOKEN       = Deno.env.get("FACEBOOK_PAGE_TOKEN") ?? "";
 const TG_TOKEN       = Deno.env.get("TELEGRAM_BOT_TOKEN") ?? "";
 const TG_CHAT_ID     = Deno.env.get("TELEGRAM_CHAT_ID") ?? "";
 const SHOP_URL       = "https://ineedit.com.co";
+const BOT_URL        = Deno.env.get("BOT_LANDING_URL") ?? "https://dudirudibot-mega-production.up.railway.app/telegram";
+const SHARE_BOT_DAILY = Deno.env.get("SHARE_BOT_DAILY") ?? "true";
 
 const CAPTIONS = [
   "🔥 Trending jetzt: {title}\n💶 Nur €{price}\n👉 {link}\n\n#fashion #style #gadgets #deals",
@@ -89,14 +91,49 @@ async function postTelegram(prod: any): Promise<boolean> {
   return result.ok;
 }
 
+async function postBotPromo(): Promise<boolean> {
+  if (SHARE_BOT_DAILY !== "true") return false;
+  const hour = new Date().getUTCHours();
+  // Nur einmal täglich um 18:00 UTC (20:00 CEST)
+  if (hour !== 18) return false;
+
+  const promoTexts = [
+    `🤖 Dein Shop auf Autopilot — @DudiRudibot automatisiert Shopify, Social-Posts & Umsatz-Tracking.\n👉 ${BOT_URL}\n\n#automation #shopify #ecommerce #telegram`,
+    `💡 110+ Befehle für deinen Online-Shop — direkt in Telegram.\n🛒 Shopify Sync · 📊 Revenue · 🔥 AI Trends\n👉 ${BOT_URL}\n\n#smarthome #gadgets #onlineshop`,
+    `⚡ Weniger Zeit im Dashboard, mehr Umsatz.\n@DudiRudibot macht die Arbeit — du gibst die Richtung vor.\n🔗 ${BOT_URL}\n\n#aitools #shopautomation #telegram`,
+  ];
+  const text = promoTexts[Math.floor(Math.random() * promoTexts.length)];
+
+  const tgRes = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: TG_CHAT_ID, text, parse_mode: "Markdown", disable_web_page_preview: false }),
+  });
+  const tgData = await tgRes.json();
+
+  const fbRes = await fetch(`https://graph.facebook.com/v21.0/${FB_PAGE_ID}/feed`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: text, link: BOT_URL, access_token: FB_TOKEN }),
+  });
+  const fbData = await fbRes.json();
+
+  console.log("Bot promo TG:", tgData.ok, "FB:", !fbData.error);
+  return tgData.ok || !fbData.error;
+}
+
 serve(async (_req) => {
   try {
     const prod = await getRandomProduct();
     console.log(`Produkt: ${prod.title} | €${prod.price}`);
 
-    const [fbOk, tgOk] = await Promise.all([postFacebook(prod), postTelegram(prod)]);
+    const [fbOk, tgOk, promoOk] = await Promise.all([
+      postFacebook(prod),
+      postTelegram(prod),
+      postBotPromo(),
+    ]);
 
-    const status = { product: prod.title, price: prod.price, facebook: fbOk, telegram: tgOk };
+    const status = { product: prod.title, price: prod.price, facebook: fbOk, telegram: tgOk, bot_promo: promoOk };
     return new Response(JSON.stringify(status), {
       headers: { "Content-Type": "application/json" },
       status: fbOk || tgOk ? 200 : 500,

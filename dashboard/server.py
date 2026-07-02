@@ -3561,6 +3561,14 @@ async def handle_telegram_webhook(req):
         return web.Response(status=200)
 
 
+async def handle_telegram_landing(req):
+    """GET /telegram — DudiRudibot Subscription Landing Page."""
+    html_file = Path(__file__).parent / "telegram.html"
+    if not html_file.exists():
+        return web.Response(status=404, text="telegram.html nicht gefunden")
+    return web.Response(content_type="text/html", text=html_file.read_text(encoding="utf-8"))
+
+
 async def handle_checkout_page(req):
     """Redirect to Stripe Checkout für Telegram-Nutzer."""
     plan = req.rel_url.query.get("plan", "starter")
@@ -8605,6 +8613,8 @@ async def create_app():
     app.router.add_post("/api/webhook/telegram",      handle_telegram_webhook)
     app.router.add_post("/api/telegram/webhook",      handle_telegram_webhook)
     app.router.add_get("/api/telegram/setup",         handle_telegram_setup)
+    app.router.add_get("/telegram",                   handle_telegram_landing)
+    app.router.add_get("/bot",                        handle_telegram_landing)
     app.router.add_get("/checkout",                   handle_checkout_page)
     app.router.add_get("/datenschutz",                handle_datenschutz)
     app.router.add_get("/privacy",                    handle_datenschutz)

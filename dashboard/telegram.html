@@ -1,0 +1,715 @@
+<title>DudiRudibot — KI-Automatisierung für E-Commerce</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ground: #090D1A;
+    --surface: #12192E;
+    --surface2: #1A2540;
+    --teal: #00C89A;
+    --teal-dim: rgba(0,200,154,.12);
+    --ember: #FF5A28;
+    --text: #ECF1FF;
+    --muted: #68748F;
+    --border: rgba(255,255,255,.07);
+    --mono: 'SF Mono', 'Cascadia Code', 'Consolas', 'Lucida Console', monospace;
+    --body: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--ground);
+    color: var(--text);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.68;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  /* ─── NAV ─── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 clamp(20px, 5vw, 60px);
+    height: 60px;
+    background: rgba(9,13,26,.88);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: var(--mono);
+    font-size: 15px;
+    color: var(--teal);
+    letter-spacing: .02em;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nav-logo .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--teal);
+    animation: pulse 2s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: .4; transform: scale(.75); }
+  }
+  .nav-cta {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--teal); color: #090D1A;
+    font-size: 13px; font-weight: 700; letter-spacing: .04em;
+    text-transform: uppercase;
+    padding: 8px 18px; border-radius: 4px;
+    text-decoration: none;
+    transition: opacity .15s;
+  }
+  .nav-cta:hover { opacity: .85; }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    padding: 100px clamp(20px, 5vw, 60px) 80px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; text-align: center; }
+    .hero-phone { order: -1; max-width: 320px; margin: 0 auto; }
+  }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px; font-weight: 400;
+    color: var(--teal);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  h1 {
+    font-size: clamp(36px, 5vw, 58px);
+    font-weight: 800;
+    line-height: 1.08;
+    letter-spacing: -.025em;
+    text-wrap: balance;
+    margin-bottom: 20px;
+  }
+  h1 em {
+    font-style: normal;
+    color: var(--teal);
+  }
+
+  .hero-sub {
+    font-size: 18px;
+    color: var(--muted);
+    max-width: 480px;
+    margin-bottom: 36px;
+    line-height: 1.6;
+  }
+
+  .hero-actions { display: flex; gap: 14px; flex-wrap: wrap; }
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--ember); color: #fff;
+    font-size: 15px; font-weight: 700;
+    padding: 14px 28px; border-radius: 5px;
+    text-decoration: none;
+    transition: transform .12s, box-shadow .12s;
+    box-shadow: 0 4px 20px rgba(255,90,40,.3);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(255,90,40,.4); }
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1px solid var(--border); color: var(--text);
+    font-size: 15px; font-weight: 500;
+    padding: 14px 24px; border-radius: 5px;
+    text-decoration: none;
+    background: var(--surface);
+    transition: border-color .15s;
+  }
+  .btn-secondary:hover { border-color: var(--teal); }
+
+  .stat-row {
+    display: flex; gap: 32px; margin-top: 48px; flex-wrap: wrap;
+  }
+  .stat { }
+  .stat-n {
+    font-family: var(--mono);
+    font-size: 28px; font-weight: 700; color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-n span { color: var(--teal); }
+  .stat-l { font-size: 12px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; margin-top: 2px; }
+
+  /* ─── PHONE MOCK ─── */
+  .hero-phone { position: relative; }
+  .phone-frame {
+    background: #1C1C1E;
+    border-radius: 38px;
+    padding: 14px;
+    box-shadow: 0 40px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+    max-width: 300px;
+    margin: 0 auto;
+    position: relative;
+  }
+  .phone-inner {
+    background: #000;
+    border-radius: 26px;
+    overflow: hidden;
+    min-height: 540px;
+    display: flex; flex-direction: column;
+  }
+
+  .chat-header {
+    background: #1C1C1E;
+    padding: 14px 16px 10px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #2C2C2E;
+  }
+  .chat-avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--teal) 0%, #0088ff 100%);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+  .chat-info { }
+  .chat-name { font-size: 14px; font-weight: 600; color: #fff; }
+  .chat-status { font-size: 11px; color: var(--teal); }
+
+  .chat-body {
+    flex: 1;
+    padding: 12px 10px;
+    display: flex; flex-direction: column; gap: 8px;
+    background: #000;
+    min-height: 420px;
+  }
+
+  .msg {
+    max-width: 85%;
+    padding: 8px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    opacity: 0;
+    transform: translateY(6px);
+    animation: fadeUp .3s ease forwards;
+  }
+  .msg.user {
+    align-self: flex-end;
+    background: #0A84FF;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg.bot {
+    align-self: flex-start;
+    background: #1C1C1E;
+    color: #fff;
+    border-bottom-left-radius: 4px;
+  }
+  .msg-time {
+    font-size: 10px; opacity: .5; margin-top: 3px;
+    text-align: right;
+  }
+  .msg code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: rgba(0,200,154,.15);
+    color: var(--teal);
+    padding: 1px 5px; border-radius: 3px;
+  }
+  .msg strong { color: #FFD60A; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .msg:nth-child(1) { animation-delay: .4s; }
+  .msg:nth-child(2) { animation-delay: 1.2s; }
+  .msg:nth-child(3) { animation-delay: 2.2s; }
+  .msg:nth-child(4) { animation-delay: 3.4s; }
+  .msg:nth-child(5) { animation-delay: 4.6s; }
+  .msg:nth-child(6) { animation-delay: 5.8s; }
+
+  .typing-indicator {
+    align-self: flex-start;
+    display: flex; gap: 4px; align-items: center;
+    padding: 10px 14px;
+    background: #1C1C1E;
+    border-radius: 14px;
+    border-bottom-left-radius: 4px;
+    opacity: 0;
+    animation: fadeUp .3s ease 1.6s forwards;
+  }
+  .typing-indicator span {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: #8E8E93;
+    animation: bounce 1.2s ease infinite;
+  }
+  .typing-indicator span:nth-child(2) { animation-delay: .2s; }
+  .typing-indicator span:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: .4; }
+    40% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  /* ─── FEATURES ─── */
+  .section {
+    padding: clamp(64px, 8vw, 120px) clamp(20px, 5vw, 60px);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: var(--mono);
+    font-size: 11px; color: var(--muted);
+    letter-spacing: .16em; text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  h2 {
+    font-size: clamp(28px, 3.5vw, 44px);
+    font-weight: 800;
+    letter-spacing: -.02em;
+    line-height: 1.12;
+    text-wrap: balance;
+    margin-bottom: 16px;
+  }
+  .section-sub {
+    font-size: 17px; color: var(--muted); max-width: 560px;
+    margin-bottom: 56px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .feature-cell {
+    background: var(--surface);
+    padding: 28px 24px;
+    transition: background .15s;
+  }
+  .feature-cell:hover { background: var(--surface2); }
+  .feature-icon {
+    font-size: 24px; margin-bottom: 14px;
+    display: block;
+  }
+  .feature-title {
+    font-size: 15px; font-weight: 700; margin-bottom: 6px;
+  }
+  .feature-desc { font-size: 14px; color: var(--muted); line-height: 1.55; }
+  .feature-cmd {
+    display: inline-block;
+    font-family: var(--mono); font-size: 11px;
+    color: var(--teal); background: var(--teal-dim);
+    padding: 3px 8px; border-radius: 3px;
+    margin-top: 10px; letter-spacing: .04em;
+  }
+
+  /* ─── DIVIDER ─── */
+  .divider {
+    height: 1px; background: var(--border);
+    margin: 0 clamp(20px, 5vw, 60px);
+  }
+
+  /* ─── PRICING ─── */
+  .pricing-bands {
+    display: flex; flex-direction: column; gap: 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .pricing-band {
+    display: grid;
+    grid-template-columns: 220px 1fr auto;
+    gap: 24px; align-items: center;
+    padding: 28px 32px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    transition: background .15s;
+    position: relative;
+  }
+  .pricing-band:last-child { border-bottom: none; }
+  .pricing-band:hover { background: var(--surface2); }
+  .pricing-band.featured {
+    background: rgba(0,200,154,.06);
+    border-left: 3px solid var(--teal);
+  }
+  .pricing-band.featured .plan-badge {
+    display: inline-block;
+    font-family: var(--mono); font-size: 10px;
+    color: var(--teal); background: var(--teal-dim);
+    padding: 2px 8px; border-radius: 2px;
+    letter-spacing: .1em; text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .plan-badge { display: none; }
+  .plan-name { font-size: 20px; font-weight: 800; }
+  .plan-price {
+    font-family: var(--mono);
+    font-size: 32px; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+  }
+  .plan-price span { font-size: 16px; font-weight: 400; color: var(--muted); }
+  .plan-features {
+    flex: 1;
+    list-style: none;
+    display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .plan-features li {
+    font-size: 13px; color: var(--muted);
+    background: rgba(255,255,255,.04);
+    padding: 4px 10px; border-radius: 3px;
+    white-space: nowrap;
+  }
+  .plan-features li::before { content: '✓ '; color: var(--teal); }
+  .plan-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 12px 24px; border-radius: 5px;
+    font-size: 14px; font-weight: 700;
+    text-decoration: none; white-space: nowrap;
+    transition: all .15s;
+  }
+  .plan-btn-main { background: var(--ember); color: #fff; box-shadow: 0 3px 14px rgba(255,90,40,.25); }
+  .plan-btn-main:hover { box-shadow: 0 5px 20px rgba(255,90,40,.4); }
+  .plan-btn-alt { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .plan-btn-alt:hover { border-color: var(--teal); }
+
+  @media (max-width: 760px) {
+    .pricing-band { grid-template-columns: 1fr; gap: 16px; }
+    .plan-price { font-size: 28px; }
+  }
+
+  /* ─── COMMANDS ─── */
+  .cmds-section {
+    background: var(--surface);
+    border-radius: 10px;
+    padding: 36px;
+    overflow-x: auto;
+  }
+  .cmds-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+  }
+  .cmd-chip {
+    font-family: var(--mono); font-size: 12px;
+    color: var(--teal); background: var(--teal-dim);
+    padding: 6px 12px; border-radius: 4px;
+    border: 1px solid rgba(0,200,154,.2);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+
+  /* ─── BOTTOM CTA ─── */
+  .cta-strip {
+    padding: clamp(60px, 8vw, 100px) clamp(20px, 5vw, 60px);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cta-strip::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% 50%, rgba(0,200,154,.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .cta-strip h2 { max-width: 600px; margin: 0 auto 16px; }
+  .cta-strip p { color: var(--muted); margin-bottom: 36px; font-size: 17px; }
+  .cta-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 28px clamp(20px, 5vw, 60px);
+    display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px;
+  }
+  footer p { font-size: 13px; color: var(--muted); }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--teal); }
+  .footer-links { display: flex; gap: 24px; }
+
+  /* ─── DOT GRID BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; z-index: -1;
+    background-image: radial-gradient(circle, rgba(255,255,255,.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+  }
+</style>
+
+<nav>
+  <div class="nav-logo">
+    <div class="dot"></div>
+    @DudiRudibot
+  </div>
+  <a class="nav-cta" href="https://t.me/DudiRudibot" target="_blank">
+    ▶ Bot starten
+  </a>
+</nav>
+
+<main>
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">KI-Automatisierung · E-Commerce</p>
+      <h1>Dein <em>autonomer</em> Shop-Assistent auf Telegram</h1>
+      <p class="hero-sub">@DudiRudibot übernimmt Shopify-Produkte, Umsatz-Tracking, Social-Posts und Trend-Analysen — vollautomatisch, 24/7.</p>
+      <div class="hero-actions">
+        <a class="btn-primary" href="https://t.me/DudiRudibot" target="_blank">
+          Telegram öffnen
+        </a>
+        <a class="btn-secondary" href="#pricing">
+          Pläne & Preise
+        </a>
+      </div>
+      <div class="stat-row">
+        <div class="stat">
+          <div class="stat-n">110<span>+</span></div>
+          <div class="stat-l">Bot-Befehle</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">805<span></span></div>
+          <div class="stat-l">Shopify Produkte</div>
+        </div>
+        <div class="stat">
+          <div class="stat-n">24<span>/7</span></div>
+          <div class="stat-l">Live Monitoring</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHONE MOCK -->
+    <div class="hero-phone">
+      <div class="phone-frame">
+        <div class="phone-inner">
+          <div class="chat-header">
+            <div class="chat-avatar">🤖</div>
+            <div class="chat-info">
+              <div class="chat-name">DudiRudibot</div>
+              <div class="chat-status">● online</div>
+            </div>
+          </div>
+          <div class="chat-body">
+            <div class="msg user">
+              /umsatz
+              <div class="msg-time">09:14</div>
+            </div>
+            <div class="typing-indicator">
+              <span></span><span></span><span></span>
+            </div>
+            <div class="msg bot">
+              📊 <strong>Heutiger Umsatz</strong><br>
+              Shopify: <code>€ 347,80</code><br>
+              DS24: <code>€ 129,00</code><br>
+              Gesamt: <code>€ 476,80</code>
+              <div class="msg-time">09:14</div>
+            </div>
+            <div class="msg user">
+              /trending
+              <div class="msg-time">09:15</div>
+            </div>
+            <div class="msg bot">
+              🔥 <strong>Top Trends jetzt:</strong><br>
+              1. Smart Home Stecker<br>
+              2. LED Strip WiFi<br>
+              3. Mini Beamer 4K<br>
+              <code>/import smart-home</code> zum Einspielen
+              <div class="msg-time">09:15</div>
+            </div>
+            <div class="msg user">
+              /post facebook
+              <div class="msg-time">09:16</div>
+            </div>
+            <div class="msg bot">
+              ✅ Produktpost auf Facebook veröffentlicht — 3 von 3 Kanälen aktiv.
+              <div class="msg-time">09:16</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- FEATURES -->
+  <div class="section">
+    <p class="section-label">Was der Bot macht</p>
+    <h2>Alles automatisch — du tippst einen Befehl, er erledigt den Rest.</h2>
+    <p class="section-sub">Von Produktimporten bis zu Social-Media-Posts: DudiRudibot verbindet deine Tools und arbeitet rund um die Uhr.</p>
+
+    <div class="features-grid">
+      <div class="feature-cell">
+        <span class="feature-icon">🛒</span>
+        <div class="feature-title">Shopify-Integration</div>
+        <div class="feature-desc">Produkte importieren, Preise aktualisieren, Bestand prüfen — alles direkt per Befehl.</div>
+        <span class="feature-cmd">/import &lt;keyword&gt;</span>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-icon">💰</span>
+        <div class="feature-title">Umsatz-Tracking</div>
+        <div class="feature-desc">Shopify + Digistore24 Einnahmen live, täglich und monatlich auf Abruf.</div>
+        <span class="feature-cmd">/umsatz</span>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-icon">📱</span>
+        <div class="feature-title">Social-Auto-Posts</div>
+        <div class="feature-desc">Facebook, Telegram, Instagram — Produkte werden täglich automatisch gepostet.</div>
+        <span class="feature-cmd">/post all</span>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-icon">🔥</span>
+        <div class="feature-title">KI Trend-Analyse</div>
+        <div class="feature-desc">Erkennt profitable Nischen in Echtzeit — mit Claude AI und Perplexity.</div>
+        <span class="feature-cmd">/trending</span>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-icon">📊</span>
+        <div class="feature-title">System-Monitoring</div>
+        <div class="feature-desc">Health-Status, Fehler-Alerts und Performance-Reports direkt im Chat.</div>
+        <span class="feature-cmd">/health</span>
+      </div>
+      <div class="feature-cell">
+        <span class="feature-icon">🤖</span>
+        <div class="feature-title">AI-Assistent</div>
+        <div class="feature-desc">Produktbeschreibungen, E-Mails, Ads-Texte — auf Knopfdruck generiert.</div>
+        <span class="feature-cmd">/ai schreibe ...</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PRICING -->
+  <div class="section" id="pricing">
+    <p class="section-label">Abo-Modelle</p>
+    <h2>Wähle deinen Plan — starte sofort.</h2>
+    <p class="section-sub">Alle Pläne beinhalten den Bot-Zugang auf Telegram. Upgrade oder kündige jederzeit.</p>
+
+    <div class="pricing-bands">
+      <div class="pricing-band">
+        <div>
+          <div class="plan-name">Starter</div>
+          <div class="plan-price">€49 <span>/ Monat</span></div>
+        </div>
+        <ul class="plan-features">
+          <li>Alle Basis-Befehle</li>
+          <li>Shopify Sync</li>
+          <li>Umsatz-Tracking</li>
+          <li>Social Posts täglich</li>
+        </ul>
+        <a class="plan-btn plan-btn-alt" href="https://t.me/DudiRudibot" target="_blank">Starten →</a>
+      </div>
+
+      <div class="pricing-band featured">
+        <div>
+          <span class="plan-badge">Empfohlen</span>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">€99 <span>/ Monat</span></div>
+        </div>
+        <ul class="plan-features">
+          <li>Alles aus Starter</li>
+          <li>KI Trend-Analyse</li>
+          <li>Digistore24 Integration</li>
+          <li>Stripe Automationen</li>
+          <li>Priority Support</li>
+        </ul>
+        <a class="plan-btn plan-btn-main" href="https://t.me/DudiRudibot" target="_blank">Pro starten →</a>
+      </div>
+
+      <div class="pricing-band">
+        <div>
+          <div class="plan-name">Enterprise</div>
+          <div class="plan-price">€299 <span>/ Monat</span></div>
+        </div>
+        <ul class="plan-features">
+          <li>Alles aus Pro</li>
+          <li>Eigene Agent-Teams</li>
+          <li>Multi-Store</li>
+          <li>API-Zugang</li>
+          <li>Dedicated Onboarding</li>
+        </ul>
+        <a class="plan-btn plan-btn-alt" href="https://t.me/DudiRudibot" target="_blank">Kontakt →</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- COMMANDS -->
+  <div class="section">
+    <p class="section-label">110+ Befehle</p>
+    <h2>Jeder Befehl ist ein Automatisierungs-Schritt.</h2>
+    <p class="section-sub">Keine App-Wechsel, keine Dashboards öffnen — alles bleibt in Telegram.</p>
+    <div class="cmds-section">
+      <div class="cmds-grid" id="cmd-grid"></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM CTA -->
+  <div class="cta-strip">
+    <h2>Bereit für E-Commerce auf Autopilot?</h2>
+    <p>Öffne den Bot auf Telegram und tippe <strong style="color:var(--teal); font-family: var(--mono);">/start</strong> — in 30 Sekunden bist du verbunden.</p>
+    <div class="cta-actions">
+      <a class="btn-primary" href="https://t.me/DudiRudibot" target="_blank" style="font-size:16px; padding:16px 36px;">
+        @DudiRudibot auf Telegram öffnen
+      </a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <p>© 2026 AiiteC / BullPower Hub — <a href="https://t.me/DudiRudibot">@DudiRudibot</a></p>
+  <div class="footer-links">
+    <a href="/privacy">Datenschutz</a>
+    <a href="/terms">AGB</a>
+    <a href="https://ineedit.com.co">Shop</a>
+  </div>
+</footer>
+
+<script>
+  const commands = [
+    '/start', '/help', '/umsatz', '/umsatz_heute', '/umsatz_monat',
+    '/trending', '/import', '/import_auto', '/shopify_sync', '/produkte',
+    '/bestand', '/preis_update', '/post', '/post_facebook', '/post_telegram',
+    '/post_all', '/health', '/status', '/memory', '/ai', '/gpt',
+    '/claude', '/analyse', '/audit', '/report', '/kunden', '/orders',
+    '/ds24_sync', '/ds24_umsatz', '/stripe_status', '/checkout',
+    '/plan_starter', '/plan_pro', '/plan_enterprise', '/upgrade',
+    '/backup', '/restore', '/logs', '/alerts', '/scheduler',
+    '/agent_start', '/agent_stop', '/rudiclone', '/geheimwaffe',
+    '/scrape', '/keyword', '/nische', '/competitor', '/wettbewerb',
+    '/email_list', '/klaviyo_sync', '/twilio_sms', '/mailchimp',
+    '/affiliate', '/provision', '/link_tracker', '/ab_test',
+    '/printify_sync', '/printify_produkt', '/fulfillment',
+    '/ebay_check', '/amazon_check', '/aliexpress',
+    '/supabase_check', '/db_status', '/migration',
+    '/github_push', '/deploy', '/rollback',
+    '/telegram_post', '/channel_post', '/broadcast',
+    '/reddit_post', '/pinterest_post',
+    '/cashflow', '/kosten', '/gewinn', '/steuer_export',
+    '/qr_code', '/shortlink', '/tracking',
+    '/daily_report', '/weekly_report', '/monthly_report',
+    '/reminder', '/alarm', '/cron_add', '/cron_list',
+    '/system_info', '/cpu', '/ram', '/disk',
+    '/update', '/version', '/changelog', '/feedback',
+    '/invite', '/referral', '/team_add',
+  ];
+
+  const grid = document.getElementById('cmd-grid');
+  commands.forEach(cmd => {
+    const el = document.createElement('div');
+    el.className = 'cmd-chip';
+    el.textContent = cmd;
+    grid.appendChild(el);
+  });
+</script>
