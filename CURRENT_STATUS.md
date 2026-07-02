@@ -27,7 +27,8 @@
 | Facebook | AiiteC Page 1016738738178786 | ✅ LIVE Posts täglich | ~? |
 | Telegram | Bot aktiv | ✅ LIVE | aktiv |
 | Instagram | @aaiitecc | ⚠️ Token OK, braucht Meta App Review für Posts | 4.868 |
-| YouTube | @AIITECrs UCy5U7UGOMNkvUR2-5Qm4yiA | ⚠️ API-Key OK, OAuth fehlt für Posts | 4.160 |
+| YouTube @rudolfsarkani1592 | UCwW2wQf6La0wrmDZ5oafz5Q | ✅ OAuth verbunden (youtube.force-ssl) | 9 |
+| YouTube @AIITECrs | UCy5U7UGOMNkvUR2-5Qm4yiA | ❌ Anderes Google-Konto nötig | 4.160 |
 | Reddit | /u/bullpowersrtkennels | ⚠️ Einmalige Autorisierung nötig | - |
 | Pinterest | rudolfsarkany1984@gmail.com | ❌ PINTEREST_APP_ID fehlt | - |
 | TikTok | - | ❌ Keine Credentials | - |
@@ -50,11 +51,12 @@ python3 scripts/oauth_connect.py reddit
 # → Token wird automatisch in .env gespeichert ✅
 ```
 
-### 2. YouTube Community Posts verbinden (2 Min)
-```bash
-python3 scripts/oauth_connect.py youtube
-# → Browser öffnet sich → Mit AiiteC Google-Konto einloggen → Autorisieren
-# → YOUTUBE_REFRESH_TOKEN wird in .env gespeichert ✅
+### 2. YouTube AiiteC Kanal verbinden
+```
+⚠️ Status: YouTube Community Posts API existiert nicht mehr (Google hat Endpoint entfernt).
+⚠️ Das @AIITECrs Konto ist auf einem anderen Google-Konto als bullpowersrtkennels@gmail.com.
+→ Mit welchem Google-Konto ist @AIITECrs angemeldet? (z.B. rudolfsarkany1984@gmail.com?)
+→ Falls YouTube-Video-Upload gewünscht: python3 scripts/oauth_connect.py youtube (mit richtigem Konto)
 ```
 
 ### 3. Pinterest verbinden (10 Min)
