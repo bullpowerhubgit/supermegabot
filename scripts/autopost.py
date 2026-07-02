@@ -3,7 +3,7 @@
 Autopost: Shopify Produkt → Facebook + Telegram + Reddit + YouTube Community
 Läuft via Supabase pg_cron 4x täglich — kein Server nötig, €0 Kosten
 """
-import os, random, requests, sys, json, base64
+import os, re, random, requests, sys, json, base64
 from datetime import datetime, timezone
 
 SHOPIFY_DOMAIN  = os.environ.get("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
@@ -29,29 +29,56 @@ CAPTIONS = [
     "🎯 {title}\n⚡ Nur €{price} | Schnell zugreifen!\n{link}\n\n#techdeals #gadgets #smarthome",
 ]
 
-def get_random_product():
-    """Holt zufälliges Shopify-Produkt via öffentlichem Storefront-Endpoint (kein Admin-Token nötig)."""
-    # Zufällige Seite für Abwechslung
-    page = random.randint(1, 5)
-    url = f"https://{SHOPIFY_DOMAIN}/products.json"
+_BAD_IMG = [
+    "media-amazon.com", "ssl-images-amazon.com", "images-amazon.com",
+    "amazon.com/images", "smile", "prime", "fresh", "logo", "brand",
+    "icon", "placeholder", "no-image", "noimage", "default-image",
+]
 
-    r = requests.get(url, params={"limit": 50, "page": page}, timeout=15)
+def _valid_img(url: str) -> bool:
+    """True wenn die Bild-URL ein echtes Produktbild ist (kein Amazon-Branding etc.)."""
+    if not url:
+        return False
+    lower = url.lower()
+    if any(p in lower for p in _BAD_IMG):
+        return False
+    return bool(re.search(r"\.(jpg|jpeg|png|webp)(\?|$)", lower, re.I))
+
+def _get_valid_img(images: list) -> str:
+    """Erstes valides Produktbild aus der Liste holen."""
+    for img in images:
+        src = img.get("src", "") if isinstance(img, dict) else str(img)
+        if _valid_img(src):
+            return src
+    return ""
+
+def get_random_product():
+    """Holt zufälliges Shopify-Produkt mit validem Bild (kein Amazon-Branding)."""
+    page = random.randint(1, 5)
+    url  = f"https://{SHOPIFY_DOMAIN}/products.json"
+
+    r        = requests.get(url, params={"limit": 50, "page": page}, timeout=15)
     products = r.json().get("products", [])
 
     if not products:
-        # Fallback: erste Seite
-        r = requests.get(url, params={"limit": 50, "page": 1}, timeout=15)
+        r        = requests.get(url, params={"limit": 50, "page": 1}, timeout=15)
         products = r.json().get("products", [])
 
     if not products:
         raise RuntimeError("Keine Shopify-Produkte gefunden")
 
-    p = random.choice(products)
-    img   = p.get("images", [{}])[0].get("src", "")
-    price = p.get("variants", [{}])[0].get("price", "29.99")
+    # Produkte mit validen Bildern bevorzugen
+    with_img = [p for p in products if _get_valid_img(p.get("images", []))]
+    pool     = with_img if with_img else products
+    p        = random.choice(pool)
+    img      = _get_valid_img(p.get("images", []))
+
+    if not img:
+        print("⚠️  Kein valides Produktbild — Text-only Post")
+
     return {
         "title": p.get("title", "Top Produkt"),
-        "price": price,
+        "price": p.get("variants", [{}])[0].get("price", "29.99"),
         "img":   img,
         "link":  f"{SHOP_URL}/products/{p.get('handle', '')}",
     }
