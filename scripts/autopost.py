@@ -176,36 +176,9 @@ def _yt_get_token() -> str:
 
 
 def post_youtube_community(prod: dict) -> bool:
-    """Post to YouTube Community tab (requires channel 500+ subs — we have 4160)."""
-    if not YT_REFRESH_TOKEN:
-        print("⚠️  YOUTUBE_REFRESH_TOKEN fehlt — übersprungen (einmalig: python3 scripts/oauth_connect.py youtube)")
-        return False
-    token = _yt_get_token()
-    if not token:
-        print("❌ YouTube: Token-Refresh fehlgeschlagen")
-        return False
-    text = (f"🔥 {prod['title']}\n"
-            f"💶 Nur €{prod['price']}\n"
-            f"👉 {prod['link']}\n\n"
-            f"#smarthome #gadgets #onlineshopping #deals")
-    body: dict = {
-        "snippet": {
-            "type": "text",
-            "text": text,
-        }
-    }
-    r = requests.post(
-        "https://www.googleapis.com/youtube/v3/communityPosts?part=snippet",
-        headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-        json=body,
-        timeout=20,
-    )
-    result = r.json()
-    if "id" in result:
-        print(f"✅ YouTube Community: post_id={result['id']}")
-        return True
-    err = result.get("error", {}).get("message", str(result))
-    print(f"❌ YouTube Community: {err}", file=sys.stderr)
+    """YouTube Community Posts — Google hat diesen API-Endpoint entfernt (404).
+    Token ist gespeichert (youtube.force-ssl Scope) für künftige Video-Upload-Features."""
+    print("⚠️  YouTube Community Posts API von Google entfernt — kein öffentlicher Endpoint verfügbar.")
     return False
 
 
