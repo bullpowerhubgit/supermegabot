@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Autopost: Shopify Produkt → Facebook + Telegram + Reddit + YouTube Community
+Autopost: Shopify Produkt → Facebook + Telegram + Reddit + LinkedIn + YouTube
 Läuft via Supabase pg_cron 4x täglich — kein Server nötig, €0 Kosten
 """
 import os, re, random, requests, sys, json, base64
@@ -19,6 +19,8 @@ YT_CLIENT_ID      = os.environ.get("GOOGLE_CLIENT_ID_AIITEC", os.environ.get("YO
 YT_CLIENT_SECRET  = os.environ.get("GOOGLE_CLIENT_SECRET_AIITEC", os.environ.get("YOUTUBE_CLIENT_SECRET", ""))
 YT_REFRESH_TOKEN  = os.environ.get("YOUTUBE_REFRESH_TOKEN", os.environ.get("GOOGLE_REFRESH_TOKEN_AIITEC", ""))
 YT_CHANNEL_ID     = os.environ.get("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
+LI_TOKEN          = os.environ.get("LINKEDIN_ACCESS_TOKEN", "")
+LI_PERSON_URN     = os.environ.get("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
 SHOP_URL       = "https://ineedit.com.co"
 
 CAPTIONS = [
@@ -203,9 +205,45 @@ def _yt_get_token() -> str:
 
 
 def post_youtube_community(prod: dict) -> bool:
-    """YouTube Community Posts — Google hat diesen API-Endpoint entfernt (404).
-    Token ist gespeichert (youtube.force-ssl Scope) für künftige Video-Upload-Features."""
-    print("⚠️  YouTube Community Posts API von Google entfernt — kein öffentlicher Endpoint verfügbar.")
+    """YouTube Community Posts — Google hat diesen API-Endpoint entfernt (404)."""
+    print("⚠️  YouTube Community Posts API von Google entfernt.")
+    return False
+
+
+def post_linkedin(prod: dict) -> bool:
+    if not LI_TOKEN or not LI_PERSON_URN:
+        print("⚠️  LINKEDIN_ACCESS_TOKEN fehlt — übersprungen")
+        return False
+
+    text = (
+        f"🔥 {prod['title']}\n\n"
+        f"💶 Nur €{prod['price']} — jetzt im Shop!\n"
+        f"👉 {prod['link']}\n\n"
+        f"#SmartHome #Gadgets #Deals #Ecommerce #OnlineShopping"
+    )
+    body = {
+        "author": LI_PERSON_URN,
+        "lifecycleState": "PUBLISHED",
+        "specificContent": {
+            "com.linkedin.ugc.ShareContent": {
+                "shareCommentary": {"text": text},
+                "shareMediaCategory": "ARTICLE",
+                "media": [{"status": "READY", "originalUrl": prod["link"]}],
+            }
+        },
+        "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+    }
+    r = requests.post(
+        "https://api.linkedin.com/v2/ugcPosts",
+        headers={"Authorization": f"Bearer {LI_TOKEN}", "Content-Type": "application/json",
+                 "X-Restli-Protocol-Version": "2.0.0"},
+        json=body, timeout=20,
+    )
+    if r.status_code in (200, 201):
+        post_id = r.json().get("id", "?")
+        print(f"✅ LinkedIn: post_id={post_id}")
+        return True
+    print(f"❌ LinkedIn: {r.status_code} {r.text[:200]}", file=sys.stderr)
     return False
 
 
@@ -223,9 +261,10 @@ if __name__ == "__main__":
     fb_ok = post_facebook(prod)
     tg_ok = post_telegram(prod)
     rd_ok = post_reddit(prod)
+    li_ok = post_linkedin(prod)
     yt_ok = post_youtube_community(prod)
 
-    results = {"FB": fb_ok, "TG": tg_ok, "Reddit": rd_ok, "YT": yt_ok}
+    results = {"FB": fb_ok, "TG": tg_ok, "Reddit": rd_ok, "LinkedIn": li_ok, "YT": yt_ok}
     summary = " | ".join(f"{k}={'✅' if v else '❌'}" for k, v in results.items())
     print(f"✅ Fertig — {summary}")
 
