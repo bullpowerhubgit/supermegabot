@@ -17,6 +17,44 @@ const CAPTIONS = [
   "🎯 {title}\n⚡ Nur €{price} | Schnell zugreifen!\n{link}\n\n#deals #gadgets #techdeals",
 ];
 
+// Bild-URLs die NICHT gepostet werden dürfen (Amazon-Branding, Logos, Platzhalter)
+const BAD_IMG_PATTERNS = [
+  "media-amazon.com",
+  "ssl-images-amazon.com",
+  "images-amazon.com",
+  "amazon.com/images",
+  "/amazon-",
+  "smile",
+  "prime",
+  "fresh",
+  "logo",
+  "brand",
+  "icon",
+  "placeholder",
+  "no-image",
+  "noimage",
+  "default-image",
+];
+
+function isValidProductImg(url: string): boolean {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  // Ablehnen wenn URL Amazon-Branding oder bekannte Platzhalter enthält
+  if (BAD_IMG_PATTERNS.some(p => lower.includes(p))) return false;
+  // Nur HTTPS-Bilder mit Bild-Endung akzeptieren
+  return /\.(jpg|jpeg|png|webp)(\?|$)/i.test(lower);
+}
+
+function getValidImg(images: any[]): string {
+  if (!images?.length) return "";
+  // Alle Bilder durchsuchen, erstes valides nehmen
+  for (const img of images) {
+    const src = img?.src ?? "";
+    if (isValidProductImg(src)) return src;
+  }
+  return ""; // Kein valides Bild → Text-only Post
+}
+
 async function getRandomProduct() {
   const page = Math.floor(Math.random() * 5) + 1;
   const url = `https://${SHOPIFY_DOMAIN}/products.json?limit=50&page=${page}`;
@@ -32,11 +70,18 @@ async function getRandomProduct() {
 
   if (!products.length) throw new Error("Keine Produkte gefunden");
 
-  const p = products[Math.floor(Math.random() * products.length)];
+  // Produkte mit validen Bildern bevorzugen
+  const withImg = products.filter(p => getValidImg(p.images ?? []) !== "");
+  const pool    = withImg.length > 0 ? withImg : products;
+  const p       = pool[Math.floor(Math.random() * pool.length)];
+  const img     = getValidImg(p.images ?? []);
+
+  console.log(`Bild: ${img ? "OK" : "FEHLT/UNGÜLTIG — Text-only"} | ${img.slice(0,60)}`);
+
   return {
     title: p.title ?? "Top Produkt",
     price: p.variants?.[0]?.price ?? "29.99",
-    img:   p.images?.[0]?.src ?? "",
+    img,
     link:  `${SHOP_URL}/products/${p.handle ?? ""}`,
   };
 }
