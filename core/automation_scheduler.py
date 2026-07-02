@@ -4765,6 +4765,28 @@ async def task_streetwear_email() -> str:
         return f"StreetEmail Fehler: {e}"
 
 
+async def task_youtube_shorts() -> str:
+    """Täglich: Shopify Produkt als YouTube Short (9:16 Video) hochladen."""
+    import asyncio, subprocess
+    try:
+        yt_rt = os.getenv("YOUTUBE_REFRESH_TOKEN", "")
+        if not yt_rt:
+            return "YouTube Shorts: YOUTUBE_REFRESH_TOKEN fehlt — übersprungen"
+        script = Path(__file__).parent.parent / "scripts" / "youtube_shopify_shorts.py"
+        result = await asyncio.create_subprocess_exec(
+            "python3", str(script),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        stdout, stderr = await asyncio.wait_for(result.communicate(), timeout=600)
+        out = stdout.decode().strip() or stderr.decode().strip()
+        if result.returncode == 0:
+            return f"YouTube Short ✅: {out[:100]}"
+        return f"YouTube Short ❌: {out[:100]}"
+    except Exception as e:
+        return f"YouTube Shorts Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -4792,6 +4814,7 @@ TASKS = [
     # ── Shopify SEO Blog (ineedit.com.co T-Shirt/POD) ────────────────────────
     ("shopify_seo_blog",     task_shopify_seo_blog,    43200, 900),  # 12h — T-Shirt Blog Artikel
     # ── Backup ───────────────────────────────────────────────────────────────
+    ("youtube_shorts",       task_youtube_shorts,       86400, 900),  # täglich — Shopify Produkt als YouTube Short
     ("github_backup",        task_github_backup,       86400, 300),  # daily
     # ── eBay / Amazon / AliExpress Affiliate + Auto-Fill (DeepScan Fix) ──────
     ("ebay_auto_fill",        task_ebay_auto_fill,      14400, 210),  # 4h — eBay → Shopify import
