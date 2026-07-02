@@ -9145,7 +9145,6 @@ async def create_app():
     # ── QUANTUM SELF-REPAIR ROUTES ───────────────────────────────────────────
     app.router.add_get( "/api/quantum/status",            handle_quantum_status)
     app.router.add_post("/api/quantum/scan",              handle_quantum_scan)
-    app.router.add_post("/api/quantum/repair",            handle_quantum_repair)
     # ── AUTONOMOUS PRODUCT PIPELINE ROUTES ───────────────────────────────────
     app.router.add_post("/api/product/pipeline/run",      handle_product_pipeline_run)
     app.router.add_get( "/api/product/pipeline/history",  handle_product_pipeline_history)
