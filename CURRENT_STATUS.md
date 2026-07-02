@@ -1,80 +1,97 @@
 # SuperMegaBot — Aktueller Status
-> Zuletzt aktualisiert: 2026-06-27 16:35 UTC | Session v7
+> Zuletzt aktualisiert: 2026-07-02 | Session v8 (Social Media Audit)
 
 ## System-Status
 | Service | URL | Status |
 |---------|-----|--------|
-| SuperMegaBot | dudirudibot-mega-production.up.railway.app | ✅ LIVE (Code: 21. Juni — Railway Trial abgelaufen) |
-| MetaSocialEngine | meta-social-engine-production.up.railway.app | ✅ LIVE (FB Token heute gefixt) |
-| Vercel autoincome-ai | autoincome-ai.vercel.app | ✅ LIVE (meta-poster Gumroad fix deployed) |
+| SuperMegaBot | dudirudibot-mega-production.up.railway.app | ⚠️ Railway Trial abgelaufen |
+| Supabase Autopost | pg_cron 4x täglich | ✅ LIVE (FB ✅ TG ✅) |
+| Shopify Store | ineedit.com.co | ✅ 805 Produkte aktiv |
+| Stripe | Live-Modus | ✅ Key rotiert 2026-07-02 |
+
+## HEUTE ERLEDIGT (2026-07-02)
+- ✅ **System-Audit** — 805 Shopify-Produkte geprüft (alle OK), 14 Python-Pakete OK, keine Syntax-Fehler
+- ✅ **Doppelte Route** `/api/quantum/repair` entfernt (Zeile 9148) — commit ca21601
+- ✅ **Hashtags** autopost.py: `#streetwear` → `#smarthome #gadgets` (korrekt)
+- ✅ **Stripe Key** rotiert: `sk_live_51Tg1U0R...` in .env
+- ✅ **Supabase Edge Function** autopost live (getestet FB ✅ TG ✅)
+- ✅ **pg_cron** 4x täglich: 09/13/17/21 Uhr CEST
+- ✅ **autopost.py** erweitert: Reddit + YouTube Community Posts (Fallback wenn kein Token)
+- ✅ **scripts/oauth_connect.py** — einmaliger OAuth-Helper für Reddit/Pinterest/YouTube
+- ✅ **YouTube Channel** @AIITECrs = UCy5U7UGOMNkvUR2-5Qm4yiA, 4.160 Abos — API-Key OK
+- ✅ **Instagram @aaiitecc** — 4.868 Follower, Token OK (Posts brauchen Meta App Review)
+
+## SOCIAL MEDIA STATUS
+| Kanal | Account | Status | Follower |
+|-------|---------|--------|---------|
+| Facebook | AiiteC Page 1016738738178786 | ✅ LIVE Posts täglich | ~? |
+| Telegram | Bot aktiv | ✅ LIVE | aktiv |
+| Instagram | @aaiitecc | ⚠️ Token OK, braucht Meta App Review für Posts | 4.868 |
+| YouTube | @AIITECrs UCy5U7UGOMNkvUR2-5Qm4yiA | ⚠️ API-Key OK, OAuth fehlt für Posts | 4.160 |
+| Reddit | /u/bullpowersrtkennels | ⚠️ Einmalige Autorisierung nötig | - |
+| Pinterest | rudolfsarkany1984@gmail.com | ❌ PINTEREST_APP_ID fehlt | - |
+| TikTok | - | ❌ Keine Credentials | - |
+
+## WAS RUDOLF EINMALIG MACHEN MUSS
+
+### 1. Reddit verbinden (5 Min)
+```bash
+# Schritt 1: Reddit App zu "web app" + redirect_uri ändern
+# Gehe zu: https://www.reddit.com/prefs/apps
+# → Edit App "hqgJAQe6Qiu5s5r1Vqc0Og"
+# → Redirect URI setzen auf: http://localhost:9999/callback
+# → Speichern
+
+# Schritt 2: Lokalen OAuth-Flow starten
+cd /Users/rudolfsarkany/CascadeProjects/supermegabot
+pip install python-dotenv requests
+python3 scripts/oauth_connect.py reddit
+# → Browser öffnet sich → Mit Reddit einloggen → Autorisieren
+# → Token wird automatisch in .env gespeichert ✅
+```
+
+### 2. YouTube Community Posts verbinden (2 Min)
+```bash
+python3 scripts/oauth_connect.py youtube
+# → Browser öffnet sich → Mit AiiteC Google-Konto einloggen → Autorisieren
+# → YOUTUBE_REFRESH_TOKEN wird in .env gespeichert ✅
+```
+
+### 3. Pinterest verbinden (10 Min)
+```bash
+# Schritt 1: Kostenloses Developer-Konto erstellen
+# https://developers.pinterest.com/apps/ → "Create App" (kostenlos)
+# App Name: SuperMegaBot, Redirect: http://localhost:9999/callback
+# → App ID und App Secret kopieren
+
+# Schritt 2: .env ergänzen
+# PINTEREST_APP_ID=deine_app_id
+# PINTEREST_APP_SECRET=dein_secret
+
+# Schritt 3: OAuth
+python3 scripts/oauth_connect.py pinterest
+```
+
+### 4. Instagram zweites Konto (6K+ Follower)
+- Welche Instagram-Account ist das? Username nennen!
+- Muss mit einer Facebook Page verknüpft sein
+- Dann: Facebook Business Manager → Account verbinden → Token holen
+
+### 5. TikTok (kostenlos, braucht Zeit)
+- https://developers.tiktok.com/ → "Manage Apps" → Create App (kostenlos)
+- Login Kit + Share Kit beantragen (Prüfung 2-3 Tage)
+
+## KRITISCHE OFFENE PUNKTE
+| # | Problem | Lösung |
+|---|---------|--------|
+| 🔴 | Railway Trial abgelaufen | railway.app/billing bezahlen |
+| 🟡 | GitHub Actions Billing Lock | github.com/settings/billing — Supabase-Fallback läuft aber |
+| 🟡 | 22 Dependabot Security Warnungen | github.com/bullpowerhubgit/supermegabot/security |
+| 🟡 | Alle Produkte €29.99 (keine Preisvarianz) | Shopify Preise variieren für bessere Conversion |
+| 🟢 | Reddit/YouTube/Pinterest OAuth | Scripts fertig — einmalig starten |
 
 ## REVENUE
 | Quelle | Betrag |
 |--------|--------|
-| Digistore24 | €111 gesamt (3 Bestellungen, historisch) |
-| Gumroad | €0 heute (LIVE: tecbuuss.gumroad.com/l/wcqdjx — €97) |
-| Stripe | €0 |
-| **LÜCKE bis Ziel** | **€889 bis 30. Juni** |
-
-## WAS DIESE SESSION GEMACHT WURDE (2026-06-27)
-- ✅ **meta-poster.js** — DS24 Links 668035/704677 (BANNED) → Gumroad (committed → Vercel auto-deploy)
-- ✅ **Circuit Breakers** — alle resettet (/api/circuit/reset)
-- ✅ **meta-social-engine Token** — alter abgelaufener Token EAARag... → permanenter AiiteC Page Token EAAPJuGq... (Railway FACEBOOK_ACCESS_TOKEN gesetzt)
-- ✅ **10 Facebook-Posts heute** — 5 manuell mit CTAs: "3 Tage noch", Social Proof, FAQ, Transparenz
-- ✅ **Klaviyo Campaign** — "⚡ 3 Tage noch — KI-System für €97" (ID: 01KW4YNNRDPKTYG9VYJH396C09)
-- ✅ **Telegram Status-Broadcast** — gesendet
-
-## KRITISCHE PROBLEME (muss Rudolf manuell lösen)
-
-### 🔴 P0: Railway Trial abgelaufen — KEIN DEPLOY MÖGLICH
-- **Effekt:** Code vom 21. Juni läuft noch — 6 Tage Fixes nicht aktiv
-- **Fix:** railway.app → Billing → Hobby Plan (~€5/Mo)
-- **Was dann deployed werden muss:** git push → GitHub Action → Railway auto-deploy
-
-### 🔴 P0: Anthropic API Credits leer
-- **Effekt:** AI-Content-Generierung schlägt fehl → Template-Fallbacks
-- **Fix:** console.anthropic.com → Billing → Credits kaufen (€10 reicht)
-
-### 🟡 P1: Threads OAuth fehlt (NEUER KANAL — wichtig!)
-- **Fix:** Browser → autoincome-ai.vercel.app/api/meta-poster?action=threads-auth
-- **Dann:** Token wird automatisch in Supabase gespeichert
-
-### 🟡 P1: Twitter 402 — 155 Tasks fake-succeed
-- **Fix:** developer.twitter.com → Basic Plan ($5/Mo) ODER Tasks deaktivieren
-
-### 🟡 P1: LinkedIn 429 heute (Reset morgen ~06:00 UTC)
-- **Problem:** 3 parallele Railway-Tasks + Vercel Cron = 13 Posts/Tag → Rate-Limit
-- **Fix nach Railway Upgrade:** linkedin_burst + linkedin_post Tasks aus TASKS Liste entfernen
-
-## FACEBOOK — Einziger funktionierender Social-Kanal
-- **Seite:** AiiteC — 1.322 Follower
-- **Token:** Permanent (NIE ablaufend): EAAPJuGqUUrY...
-- **Heute:** 10 Posts mit Gumroad-Links ✅
-- **Automatisch:** alle 30min via /api/auto-poster/run
-- **Manuell:** curl -X POST https://dudirudibot-mega-production.up.railway.app/api/auto-poster/run
-
-## GUMROAD PRODUKT (einziger funktionierender Checkout)
-- **URL:** https://tecbuuss.gumroad.com/l/wcqdjx
-- **Preis:** €97 | **Status:** 200 OK ✅
-
-## REALISTISCHER PLAN FÜR 3 TAGE
-
-### Realistisch (ohne Paid Ads): €50-200
-- Facebook Organic: 10+ Posts/Tag mit Gumroad-Links
-
-### Mit Railway Upgrade (€5): €200-500
-- LinkedIn reaktiviert (600+ Connections)
-- Threads neu (neue Zielgruppe)
-- Alle Code-Fixes von 6 Tagen aktiv
-
-### Was NICHT hilft (spare dir die Zeit):
-- Twitter (braucht $5/Mo Plan)
-- Klaviyo/Mailchimp (3 Kontakte)
-- Telegram (2 Mitglieder)
-- Neue SEO-Artikel (zu kurz für Google)
-
-## SOFORT TUN (nächste Session):
-1. railway.app/billing → Hobby Plan
-2. console.anthropic.com → Credits kaufen
-3. autoincome-ai.vercel.app/api/meta-poster?action=threads-auth → Threads OAuth
-4. Post manuell auf Facebook über AiiteC Page in relevante Gruppen
+| Digistore24 | €111 gesamt |
+| Stripe | Live-Modus aktiv |
