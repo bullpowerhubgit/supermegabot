@@ -6,8 +6,7 @@ Läuft via GitHub Actions 4x täglich — kein Server nötig, €0 Kosten
 import os, random, requests, sys, json
 from datetime import datetime
 
-SHOPIFY_DOMAIN = os.environ["SHOPIFY_SHOP_DOMAIN"]
-SHOPIFY_TOKEN  = os.environ["SHOPIFY_ADMIN_API_TOKEN"]
+SHOPIFY_DOMAIN = os.environ.get("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 FB_PAGE_ID     = os.environ.get("FACEBOOK_PAGE_ID", "1016738738178786")
 FB_TOKEN       = os.environ.get("FACEBOOK_PAGE_TOKEN", "")
 TG_TOKEN       = os.environ.get("TELEGRAM_BOT_TOKEN", "")
@@ -23,23 +22,17 @@ CAPTIONS = [
 ]
 
 def get_random_product():
-    """Holt zufälliges Shopify-Produkt via cursor-based pagination."""
-    url = f"https://{SHOPIFY_DOMAIN}/admin/api/2024-10/products.json"
-    headers = {"X-Shopify-Access-Token": SHOPIFY_TOKEN}
+    """Holt zufälliges Shopify-Produkt via öffentlichem Storefront-Endpoint (kein Admin-Token nötig)."""
+    # Zufällige Seite für Abwechslung
+    page = random.randint(1, 5)
+    url = f"https://{SHOPIFY_DOMAIN}/products.json"
 
-    # Zufälligen Offset über since_id Ansatz
-    offsets = [1, 1000, 2000, 3000, 4000, 5000, 6000, 7000, 8000, 9000]
-    since_id = random.choice(offsets)
-
-    r = requests.get(url, headers=headers,
-                     params={"limit": 20, "since_id": since_id, "status": "active"},
-                     timeout=15)
+    r = requests.get(url, params={"limit": 50, "page": page}, timeout=15)
     products = r.json().get("products", [])
 
     if not products:
         # Fallback: erste Seite
-        r = requests.get(url, headers=headers,
-                         params={"limit": 20, "status": "active"}, timeout=15)
+        r = requests.get(url, params={"limit": 50, "page": 1}, timeout=15)
         products = r.json().get("products", [])
 
     if not products:
