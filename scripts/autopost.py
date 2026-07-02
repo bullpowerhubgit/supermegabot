@@ -4,7 +4,7 @@ Autopost: Shopify Produkt → Facebook + Telegram
 Läuft via GitHub Actions 4x täglich — kein Server nötig, €0 Kosten
 """
 import os, random, requests, sys, json
-from datetime import datetime
+from datetime import datetime, timezone
 
 SHOPIFY_DOMAIN = os.environ.get("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 FB_PAGE_ID     = os.environ.get("FACEBOOK_PAGE_ID", "1016738738178786")
@@ -14,11 +14,11 @@ TG_CHAT_ID     = os.environ.get("TELEGRAM_CHAT_ID", "")
 SHOP_URL       = "https://ineedit.com.co"
 
 CAPTIONS = [
-    "🔥 Trending jetzt: {title}\n💶 Nur €{price}\n👉 {link}\n\n#fashion #style #tshirt #streetwear",
-    "✨ Neu im Shop: {title}\n💰 €{price} — Limitiert!\n🛒 {link}\n\n#onlineshopping #mode #outfit",
-    "🛍️ {title}\n💶 Jetzt für €{price}\n👆 Link im Profil oder: {link}\n\n#shopping #tshirts #shop",
-    "💥 Deal des Tages: {title}\n💵 €{price}\n🔗 {link}\n\n#sale #deals #fashion #clothing",
-    "🎯 {title}\n⚡ Nur €{price} | Schnell zugreifen!\n{link}\n\n#streetstyle #tshirt #fashion",
+    "🔥 Trending jetzt: {title}\n💶 Nur €{price}\n👉 {link}\n\n#smarthome #gadgets #techdeals #shopping",
+    "✨ Neu im Shop: {title}\n💰 €{price} — Limitiert!\n🛒 {link}\n\n#onlineshopping #gadgets #deals",
+    "🛍️ {title}\n💶 Jetzt für €{price}\n👆 Link im Profil oder: {link}\n\n#smarthome #techgadgets #sale",
+    "💥 Deal des Tages: {title}\n💵 €{price}\n🔗 {link}\n\n#deals #gadgets #smarthome #lifestyle",
+    "🎯 {title}\n⚡ Nur €{price} | Schnell zugreifen!\n{link}\n\n#techdeals #gadgets #smarthome",
 ]
 
 def get_random_product():
@@ -108,7 +108,7 @@ def post_telegram(prod: dict) -> bool:
     return ok
 
 if __name__ == "__main__":
-    ts = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     print(f"🚀 Autopost gestartet — {ts}")
 
     try:
