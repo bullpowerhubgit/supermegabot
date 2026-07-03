@@ -1,99 +1,71 @@
 # SuperMegaBot — Aktueller Status
-> Zuletzt aktualisiert: 2026-07-02 | Session v8 (Social Media Audit)
+> Zuletzt aktualisiert: 2026-07-03 | Session v9
 
 ## System-Status
 | Service | URL | Status |
 |---------|-----|--------|
-| SuperMegaBot | dudirudibot-mega-production.up.railway.app | ⚠️ Railway Trial abgelaufen |
-| Supabase Autopost | pg_cron 4x täglich | ✅ LIVE (FB ✅ TG ✅) |
-| Shopify Store | ineedit.com.co | ✅ 805 Produkte aktiv |
+| SuperMegaBot Railway | dudirudibot-mega-production.up.railway.app | 🔴 OFFLINE — Abo unbezahlt |
+| Supabase Autopost | pg_cron 8x täglich | ✅ LIVE (FB ✅ TG ✅ getestet 2026-07-03) |
+| Shopify Store | ineedit.com.co | ✅ 2449 Produkte, alle €29.99 |
 | Stripe | Live-Modus | ✅ Key rotiert 2026-07-02 |
+| GitHub Actions | bullpowerhubgit/supermegabot | 🔴 GESPERRT — Billing Lock |
 
-## HEUTE ERLEDIGT (2026-07-02)
-- ✅ **System-Audit** — 805 Shopify-Produkte geprüft (alle OK), 14 Python-Pakete OK, keine Syntax-Fehler
-- ✅ **Doppelte Route** `/api/quantum/repair` entfernt (Zeile 9148) — commit ca21601
-- ✅ **Hashtags** autopost.py: `#streetwear` → `#smarthome #gadgets` (korrekt)
-- ✅ **Stripe Key** rotiert: `sk_live_51Tg1U0R...` in .env
-- ✅ **Supabase Edge Function** autopost live (getestet FB ✅ TG ✅)
-- ✅ **pg_cron** 4x täglich: 09/13/17/21 Uhr CEST
-- ✅ **autopost.py** erweitert: Reddit + YouTube Community Posts (Fallback wenn kein Token)
-- ✅ **scripts/oauth_connect.py** — einmaliger OAuth-Helper für Reddit/Pinterest/YouTube
-- ✅ **YouTube Channel** @AIITECrs = UCy5U7UGOMNkvUR2-5Qm4yiA, 4.160 Abos — API-Key OK
-- ✅ **Instagram @aaiitecc** — 4.868 Follower, Token OK (Posts brauchen Meta App Review)
+## HEUTE ERLEDIGT (2026-07-03)
+- ✅ **Shopify Bulk Update** — 2449 Produkte, 2573 Varianten auf €29.99, 359 Inventar auf 10
+- ✅ **Shopify Passwortschutz** — bereits deaktiviert (enabled: false)
+- ✅ **Autopost Edge Function** — getestet: FB ✅ TG ✅ (läuft 8x täglich)
+- ✅ **Shopify OAuth Callback** — Route `/api/shopify/oauth/callback` in server.py (Commit 2449971)
+- ✅ **pg_cron** — aktiv: `0 6,9,12,15,18,21,0,3 * * *`
+
+## KRITISCHE BLOCKER (nur mit Zahlung lösbar)
+| # | Problem | Wo bezahlen |
+|---|---------|-------------|
+| 🔴 | Railway Abo unbezahlt → Server down | railway.app → Billing |
+| 🔴 | GitHub Actions locked → kein Auto-Deploy | github.com/settings/billing |
+| 🟡 | SendGrid Trial abgelaufen 04.01.2026 | sendgrid.com → Abrechnung (Free reicht) |
+
+## SHOPIFY TOKEN (blockiert Python-Scripts)
+**Status:** Alle 12 Tokens ungültig — App neu installiert, alter Token weg
+**Fix:** Shopify Admin → Apps → Apps entwickeln → deine App → API-Anmeldedaten → **"API-Zugriffstoken rotieren"** → sofort kopieren → mir geben
+**Workaround bis dahin:** Shopify MCP (claude.ai) direkt nutzbar — keine Scripts nötig
 
 ## SOCIAL MEDIA STATUS
-| Kanal | Account | Status | Follower |
-|-------|---------|--------|---------|
-| Facebook | AiiteC Page 1016738738178786 | ✅ LIVE Posts täglich | ~? |
-| Telegram | Bot aktiv | ✅ LIVE | aktiv |
-| Instagram | @aaiitecc | ⚠️ Token OK, braucht Meta App Review für Posts | 4.868 |
-| YouTube @rudolfsarkani1592 | UCwW2wQf6La0wrmDZ5oafz5Q | ✅ OAuth verbunden (youtube.force-ssl) | 9 |
-| YouTube @AIITECrs | UCy5U7UGOMNkvUR2-5Qm4yiA | ❌ Anderes Google-Konto nötig | 4.160 |
-| Reddit | /u/bullpowersrtkennels | ⚠️ Einmalige Autorisierung nötig | - |
-| Pinterest | rudolfsarkany1984@gmail.com | ❌ PINTEREST_APP_ID fehlt | - |
-| TikTok | - | ❌ Keine Credentials | - |
+| Kanal | Account | Status |
+|-------|---------|--------|
+| Facebook | AiiteC Page 1016738738178786 | ✅ LIVE — täglich |
+| Telegram | Bot aktiv | ✅ LIVE — täglich |
+| Instagram | @aaiitecc 4.868 Follower | ⚠️ Braucht Meta App Review |
+| YouTube @rudolfsarkani1592 | 9 Subs | ✅ OAuth verbunden |
+| YouTube @AIITECrs | 4.160 Subs | ❌ Anderes Google-Konto nötig |
+| Reddit /u/bullpowersrtkennels | - | ❌ OAuth ausstehend |
+| Pinterest | rudolfsarkany1984@gmail.com | ❌ App-ID fehlt |
+| TikTok | - | ❌ Keine Credentials |
 
 ## WAS RUDOLF EINMALIG MACHEN MUSS
+### 1. Railway bezahlen 🔴 (2 Min)
+→ railway.app → Billing → Pay outstanding balance
 
-### 1. Reddit verbinden (5 Min)
-```bash
-# Schritt 1: Reddit App zu "web app" + redirect_uri ändern
-# Gehe zu: https://www.reddit.com/prefs/apps
-# → Edit App "hqgJAQe6Qiu5s5r1Vqc0Og"
-# → Redirect URI setzen auf: http://localhost:9999/callback
-# → Speichern
+### 2. GitHub Actions Billing 🔴 (2 Min)
+→ github.com/settings/billing → Actions-Minuten
 
-# Schritt 2: Lokalen OAuth-Flow starten
-cd /Users/rudolfsarkany/CascadeProjects/supermegabot
-pip install python-dotenv requests
-python3 scripts/oauth_connect.py reddit
-# → Browser öffnet sich → Mit Reddit einloggen → Autorisieren
-# → Token wird automatisch in .env gespeichert ✅
-```
+### 3. Shopify Token rotieren 🟡 (1 Klick)
+→ Shopify Admin → Apps → Apps entwickeln → App → API-Anmeldedaten → Token rotieren → kopieren
 
-### 2. YouTube AiiteC Kanal verbinden
-```
-⚠️ Status: YouTube Community Posts API existiert nicht mehr (Google hat Endpoint entfernt).
-⚠️ Das @AIITECrs Konto ist auf einem anderen Google-Konto als bullpowersrtkennels@gmail.com.
-→ Mit welchem Google-Konto ist @AIITECrs angemeldet? (z.B. rudolfsarkany1984@gmail.com?)
-→ Falls YouTube-Video-Upload gewünscht: python3 scripts/oauth_connect.py youtube (mit richtigem Konto)
-```
+### 4. Reddit Script-App setzen 🟢 (5 Min)
+→ reddit.com/prefs/apps → App "hqgJAQe6Qiu5s5r1Vqc0Og" → Edit → Typ: "script"
+→ Dann: python3 scripts/oauth_connect.py reddit
 
-### 3. Pinterest verbinden (10 Min)
-```bash
-# Schritt 1: Kostenloses Developer-Konto erstellen
-# https://developers.pinterest.com/apps/ → "Create App" (kostenlos)
-# App Name: SuperMegaBot, Redirect: http://localhost:9999/callback
-# → App ID und App Secret kopieren
-
-# Schritt 2: .env ergänzen
-# PINTEREST_APP_ID=deine_app_id
-# PINTEREST_APP_SECRET=dein_secret
-
-# Schritt 3: OAuth
-python3 scripts/oauth_connect.py pinterest
-```
-
-### 4. Instagram zweites Konto (6K+ Follower)
-- Welche Instagram-Account ist das? Username nennen!
-- Muss mit einer Facebook Page verknüpft sein
-- Dann: Facebook Business Manager → Account verbinden → Token holen
-
-### 5. TikTok (kostenlos, braucht Zeit)
-- https://developers.tiktok.com/ → "Manage Apps" → Create App (kostenlos)
-- Login Kit + Share Kit beantragen (Prüfung 2-3 Tage)
-
-## KRITISCHE OFFENE PUNKTE
-| # | Problem | Lösung |
-|---|---------|--------|
-| 🔴 | Railway Trial abgelaufen | railway.app/billing bezahlen |
-| 🟡 | GitHub Actions Billing Lock | github.com/settings/billing — Supabase-Fallback läuft aber |
-| 🟡 | 22 Dependabot Security Warnungen | github.com/bullpowerhubgit/supermegabot/security |
-| 🟡 | Alle Produkte €29.99 (keine Preisvarianz) | Shopify Preise variieren für bessere Conversion |
-| 🟢 | Reddit/YouTube/Pinterest OAuth | Scripts fertig — einmalig starten |
+### 5. SendGrid Free Plan aktivieren 🟢 (2 Min)
+→ app.sendgrid.com/account/billing → Rechnungsadresse + Zahlungsmethode → Free: 100/Tag
 
 ## REVENUE
 | Quelle | Betrag |
 |--------|--------|
 | Digistore24 | €111 gesamt |
 | Stripe | Live-Modus aktiv |
+
+## NÄCHSTE SCHRITTE (sobald Railway bezahlt)
+1. Shopify Preisvariation (nicht alle einheitlich €29.99)
+2. Pinterest App erstellen + OAuth
+3. Instagram Meta App Review
+4. YouTube @AIITECrs — welches Google-Konto?
