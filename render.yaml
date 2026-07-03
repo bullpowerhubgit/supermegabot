@@ -1,7 +1,7 @@
 # Render.com configuration — Free alternative to Railway
 # Free tier: 750 compute hours/month, 512MB RAM
-# Note: Free tier spins down after 15 min inactivity (use UptimeRobot to keep alive)
-# Deploy: Connect GitHub repo at dashboard.render.com → New Web Service
+# Spins down after 15 min inactivity — use UptimeRobot (free) to keep alive
+# Deploy: dashboard.render.com → New Web Service → Connect GitHub → bullpowerhubgit/supermegabot
 
 services:
   - type: web
@@ -15,5 +15,5 @@ services:
     envVars:
       - key: PORT
         value: 10000
-      - key: NODE_ENV
-        value: production
+      - key: PYTHON_VERSION
+        value: 3.11.0
