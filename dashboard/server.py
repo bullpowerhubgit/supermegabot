@@ -3834,6 +3834,57 @@ async def _push_order_to_pipedrive(order: dict):
             deal_id = rd.get("data", {}).get("id")
             log.info("[PIPEDRIVE] Deal erstellt: #%s → Deal ID %s", order_num, deal_id)
 
+async def handle_shopify_oauth_callback(req: web.Request) -> web.Response:
+    """GET /api/shopify/oauth/callback — exchange OAuth code for access token and save."""
+    import hmac as _hmac, hashlib as _hashlib
+    params = dict(req.rel_url.query)
+    hmac_val = params.pop("hmac", "")
+    api_secret = os.getenv("SHOPIFY_API_SECRET", "")
+    if api_secret:
+        query_str = "&".join(f"{k}={v}" for k, v in sorted(params.items()))
+        expected  = _hmac.new(api_secret.encode(), query_str.encode(), _hashlib.sha256).hexdigest()
+        if not _hmac.compare_digest(expected, hmac_val):
+            return web.Response(text="HMAC invalid", status=400)
+    code = params.get("code", "")
+    shop = params.get("shop", os.getenv("SHOPIFY_SHOP_DOMAIN", ""))
+    if not code or not shop:
+        return web.Response(text="Missing code or shop", status=400)
+    api_key    = os.getenv("SHOPIFY_API_KEY", "")
+    api_secret = os.getenv("SHOPIFY_API_SECRET", "")
+    try:
+        async with aiohttp.ClientSession() as sess:
+            async with sess.post(
+                f"https://{shop}/admin/oauth/access_token",
+                json={"client_id": api_key, "client_secret": api_secret, "code": code},
+            ) as r:
+                data = await r.json()
+        token = data.get("access_token", "")
+        if not token:
+            return web.Response(text=f"No token in response: {data}", status=500)
+        log.info("[SHOPIFY-OAUTH] New token received for %s: %s...", shop, token[:12])
+        # Persist to Supabase oauth_tokens
+        try:
+            from modules.supabase_client import get_supabase
+            sb = get_supabase()
+            sb.table("oauth_tokens").upsert(
+                {"platform": "shopify", "access_token": token, "user_id": shop}
+            ).execute()
+            log.info("[SHOPIFY-OAUTH] Token saved to Supabase")
+        except Exception as e:
+            log.warning("[SHOPIFY-OAUTH] Supabase save failed: %s", e)
+        return web.Response(
+            content_type="text/html",
+            text=f"""<html><body style="font-family:sans-serif;padding:40px;background:#f0fdf4">
+<h1 style="color:#16a34a">&#x2705; Shopify Token erhalten!</h1>
+<p>Token wurde gespeichert. Du kannst dieses Fenster schliessen.</p>
+<code style="background:#dcfce7;padding:8px;display:block;word-break:break-all">{token}</code>
+</body></html>""",
+        )
+    except Exception as e:
+        log.error("[SHOPIFY-OAUTH] Error: %s", e)
+        return web.Response(text=f"Error: {e}", status=500)
+
+
 async def handle_shopify_order_webhook_route(req):
     """Shopify Order Webhook — Telegram-Alarm + Printify + Printful + Pipedrive."""
     try:
@@ -8606,6 +8657,7 @@ async def create_app():
     app.router.add_post("/api/shopify/customer-webhook",  handle_shopify_customer_webhook)
     app.router.add_post("/api/discord/interactions",      handle_discord_interactions)
     app.router.add_get("/api/discord/oauth/callback",     handle_discord_oauth_callback)
+    app.router.add_get("/api/shopify/oauth/callback",     handle_shopify_oauth_callback)
     app.router.add_get("/api/shopify/orders",         handle_shopify_orders)
     app.router.add_get("/api/shopify/products",       handle_shopify_products)
     app.router.add_get("/api/shopify/revenue",        handle_shopify_revenue)
