@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Autopost: Shopify Produkt → Facebook + Telegram + Reddit + LinkedIn + YouTube
+Autopost: Shopify Produkt → Facebook + Telegram + Twitter + LinkedIn + Reddit + YouTube
 Läuft via Supabase pg_cron 4x täglich — kein Server nötig, €0 Kosten
 """
-import os, re, random, requests, sys, json, base64
+import os, re, random, requests, sys, json, base64, hmac, hashlib, time, urllib.parse
 from datetime import datetime, timezone
 
 SHOPIFY_DOMAIN  = os.environ.get("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
@@ -21,6 +21,10 @@ YT_REFRESH_TOKEN  = os.environ.get("YOUTUBE_REFRESH_TOKEN", os.environ.get("GOOG
 YT_CHANNEL_ID     = os.environ.get("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
 LI_TOKEN          = os.environ.get("LINKEDIN_ACCESS_TOKEN", "")
 LI_PERSON_URN     = os.environ.get("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
+TW_API_KEY        = os.environ.get("TWITTER_API_KEY", "aQOS6rsgujmDKF1wEEb4z2uCk")
+TW_API_SECRET     = os.environ.get("TWITTER_API_SECRET", "mfmeN4ELdoXFY7oriv7P9Mzhw6hTEZIMAPtFzykQ2raPV6eYuz")
+TW_ACCESS_TOKEN   = os.environ.get("TWITTER_ACCESS_TOKEN", "2067894499016085505-YEQ2ZXCF1959aux8XhzAmcqzATbHo0")
+TW_TOKEN_SECRET   = os.environ.get("TWITTER_ACCESS_TOKEN_SECRET", "qkdTIaK81EsJf7TGhlExVSO6cpoo02KiPtzp2MMVvHOhp")
 SHOP_URL       = "https://ineedit.com.co"
 
 CAPTIONS = [
@@ -204,6 +208,50 @@ def _yt_get_token() -> str:
     return r.json().get("access_token", "")
 
 
+def _tw_oauth1_header(method: str, url: str, extra_params: dict = None) -> str:
+    """Generate OAuth 1.0a Authorization header for Twitter."""
+    params = {
+        "oauth_consumer_key": TW_API_KEY,
+        "oauth_nonce": base64.b64encode(os.urandom(24)).decode().replace("+","").replace("/","").replace("=",""),
+        "oauth_signature_method": "HMAC-SHA1",
+        "oauth_timestamp": str(int(time.time())),
+        "oauth_token": TW_ACCESS_TOKEN,
+        "oauth_version": "1.0",
+    }
+    all_params = {**params, **(extra_params or {})}
+    sorted_params = "&".join(
+        f"{urllib.parse.quote(k, '')}={urllib.parse.quote(v, '')}"
+        for k, v in sorted(all_params.items())
+    )
+    base = f"{method}&{urllib.parse.quote(url, '')}&{urllib.parse.quote(sorted_params, '')}"
+    signing_key = f"{urllib.parse.quote(TW_API_SECRET, '')}&{urllib.parse.quote(TW_TOKEN_SECRET, '')}"
+    sig = base64.b64encode(hmac.new(signing_key.encode(), base.encode(), hashlib.sha1).digest()).decode()
+    params["oauth_signature"] = sig
+    return 'OAuth ' + ', '.join(
+        f'{urllib.parse.quote(k, "")}="{urllib.parse.quote(v, "")}"'
+        for k, v in sorted(params.items())
+    )
+
+
+def post_twitter(prod: dict) -> bool:
+    if not TW_API_KEY or not TW_ACCESS_TOKEN:
+        print("⚠️  Twitter-Credentials fehlen — übersprungen")
+        return False
+    text = f"🔥 {prod['title']}\n💶 Nur €{prod['price']}\n👉 {prod['link']}\n\n#SmartHome #Gadgets #Deals #TechDeals"
+    text = text[:280]
+    url = "https://api.twitter.com/2/tweets"
+    auth = _tw_oauth1_header("POST", url)
+    r = requests.post(url,
+        headers={"Authorization": auth, "Content-Type": "application/json"},
+        json={"text": text}, timeout=20)
+    if r.status_code in (200, 201):
+        tw_id = r.json().get("data", {}).get("id", "?")
+        print(f"✅ Twitter: tweet_id={tw_id}")
+        return True
+    print(f"❌ Twitter: {r.status_code} {r.text[:200]}", file=sys.stderr)
+    return False
+
+
 def post_youtube_community(prod: dict) -> bool:
     """YouTube Community Posts — Google hat diesen API-Endpoint entfernt (404)."""
     print("⚠️  YouTube Community Posts API von Google entfernt.")
@@ -260,11 +308,12 @@ if __name__ == "__main__":
 
     fb_ok = post_facebook(prod)
     tg_ok = post_telegram(prod)
+    tw_ok = post_twitter(prod)
     rd_ok = post_reddit(prod)
     li_ok = post_linkedin(prod)
     yt_ok = post_youtube_community(prod)
 
-    results = {"FB": fb_ok, "TG": tg_ok, "Reddit": rd_ok, "LinkedIn": li_ok, "YT": yt_ok}
+    results = {"FB": fb_ok, "TG": tg_ok, "TW": tw_ok, "Reddit": rd_ok, "LinkedIn": li_ok, "YT": yt_ok}
     summary = " | ".join(f"{k}={'✅' if v else '❌'}" for k, v in results.items())
     print(f"✅ Fertig — {summary}")
 
