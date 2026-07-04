@@ -1,106 +1,22 @@
 {
-  "timestamp": "2026-05-28T10:07:35.478703",
+  "timestamp": "2026-06-26T12:47:03.749545",
   "fix_mode": false,
   "syntax": {
-    "ok": 48,
+    "ok": 621,
     "errors": []
   },
   "imports": {
-    "ok": 29,
+    "ok": 205,
     "errors": []
   },
   "api": {
-    "server_up": true,
+    "server_up": false,
     "endpoints": [
       {
         "method": "GET",
         "path": "/api/status",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/services",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/health",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/shopify",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/analytics",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/revenue",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/kpis",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/agents",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/logs",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "GET",
-        "path": "/api/metrics",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "POST",
-        "path": "/api/chat",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "POST",
-        "path": "/api/chat/clear",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "POST",
-        "path": "/api/logs/clear",
-        "status": 200,
-        "reachable": true
-      },
-      {
-        "method": "POST",
-        "path": "/api/service/start",
-        "status": 404,
-        "reachable": true
-      },
-      {
-        "method": "POST",
-        "path": "/api/service/stop",
-        "status": 404,
-        "reachable": true
+        "status": 0,
+        "reachable": false
       }
     ]
   },
@@ -116,10 +32,542 @@
     ]
   },
   "patterns": {
-    "findings": []
+    "findings": [
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/core/mega_orchestrator.py",
+        "line": 1271,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/password-sync-suite/web-app/modules/monitoring_agent.py",
+        "line": 42,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/password-sync-suite/web-app/modules/monitoring_agent.py",
+        "line": 50,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-army/agents/agent_optimizer.py",
+        "line": 42,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 54,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 184,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 207,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 292,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 341,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 361,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 378,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 402,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 403,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 404,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 424,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 453,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 464,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 470,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 703,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/rudibot-eternal/eternal_guardian.py",
+        "line": 1248,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/dodge-challenger-autoscan.py",
+        "line": 30,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/dodge-challenger-autoscan.py",
+        "line": 152,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/mini-vci-bruteforce.py",
+        "line": 28,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/test-bluetooth-rfcomm.py",
+        "line": 23,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/test-bluetooth-rfcomm.py",
+        "line": 61,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/test-thinkdiag-advanced.py",
+        "line": 89,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/test-thinkdiag-bluetooth.py",
+        "line": 48,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/test-usb-eingabe-final.py",
+        "line": 40,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a05d0310ae801e08c/windsurf/scripts/thinkdiag2-letzter-versuch.py",
+        "line": 27,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/core/mega_orchestrator.py",
+        "line": 1213,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/password-sync-suite/web-app/modules/monitoring_agent.py",
+        "line": 42,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/password-sync-suite/web-app/modules/monitoring_agent.py",
+        "line": 50,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-army/agents/agent_optimizer.py",
+        "line": 42,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 54,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 184,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 207,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 292,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 341,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 361,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 378,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 402,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 403,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 404,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 424,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 453,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 464,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 470,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 703,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/rudibot-eternal/eternal_guardian.py",
+        "line": 1248,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/dodge-challenger-autoscan.py",
+        "line": 30,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/dodge-challenger-autoscan.py",
+        "line": 152,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/mini-vci-bruteforce.py",
+        "line": 28,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/test-bluetooth-rfcomm.py",
+        "line": 23,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/test-bluetooth-rfcomm.py",
+        "line": 61,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/test-thinkdiag-advanced.py",
+        "line": 89,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/test-thinkdiag-bluetooth.py",
+        "line": 48,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/test-usb-eingabe-final.py",
+        "line": 40,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": ".claude/worktrees/agent-a4a659c52eaa91dca/windsurf/scripts/thinkdiag2-letzter-versuch.py",
+        "line": 27,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "core/mega_orchestrator.py",
+        "line": 1923,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "node_modules/flatted/python/flatted.py",
+        "line": 56,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "password-sync-suite/web-app/modules/monitoring_agent.py",
+        "line": 42,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "password-sync-suite/web-app/modules/monitoring_agent.py",
+        "line": 50,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "rudibot-army/agents/agent_optimizer.py",
+        "line": 42,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 54,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 184,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 207,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 292,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 341,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 361,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 378,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 402,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 403,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 404,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 424,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 453,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 464,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 470,
+        "issue": "bare except: clause",
+        "snippet": "except: pass"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 703,
+        "issue": "bare except: clause",
+        "snippet": "except: return False"
+      },
+      {
+        "file": "rudibot-eternal/eternal_guardian.py",
+        "line": 1248,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/dodge-challenger-autoscan.py",
+        "line": 30,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/dodge-challenger-autoscan.py",
+        "line": 152,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/mini-vci-bruteforce.py",
+        "line": 28,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/test-bluetooth-rfcomm.py",
+        "line": 23,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/test-bluetooth-rfcomm.py",
+        "line": 61,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/test-thinkdiag-advanced.py",
+        "line": 89,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/test-thinkdiag-bluetooth.py",
+        "line": 48,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/test-usb-eingabe-final.py",
+        "line": 40,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      },
+      {
+        "file": "windsurf/scripts/thinkdiag2-letzter-versuch.py",
+        "line": 27,
+        "issue": "bare except: clause",
+        "snippet": "except:"
+      }
+    ]
   },
   "history": {
-    "found": false
+    "stuck_hashes": [
+      "03f4c35825a9"
+    ],
+    "fixed": false
   },
-  "overall_pass": true
+  "overall_pass": false
 }
