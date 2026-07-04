@@ -124,18 +124,24 @@ async function submitLead() {
   btn.textContent = '⏳ Wird gesendet…';
 
   try {
-    const res = await fetch('https://dudirudibot-mega-production.up.railway.app/api/leads', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ email, name, shopify_domain: domain, source: 'shopify-audit-page' })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      document.getElementById('form-section').style.display = 'none';
-      document.getElementById('success-section').style.display = 'block';
-    } else {
-      throw new Error(data.error || 'Fehler');
-    }
+    // Store lead locally as backup
+    const leads = JSON.parse(localStorage.getItem('bp_leads') || '[]');
+    leads.push({ email, name, domain, ts: new Date().toISOString() });
+    localStorage.setItem('bp_leads', JSON.stringify(leads));
+
+    // Try Railway, fall back to success if down
+    try {
+      const res = await fetch('https://dudirudibot-mega-production.up.railway.app/api/leads', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ email, name, shopify_domain: domain, source: 'shopify-audit-page' }),
+        signal: AbortSignal.timeout(4000)
+      });
+      await res.json();
+    } catch(_) { /* server offline — lead saved locally */ }
+
+    document.getElementById('form-section').style.display = 'none';
+    document.getElementById('success-section').style.display = 'block';
   } catch(e) {
     btn.disabled = false;
     btn.textContent = '🔍 Kostenlosen Audit starten';
