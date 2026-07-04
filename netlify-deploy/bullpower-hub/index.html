@@ -414,37 +414,8 @@
 </head>
 <body>
 <style>
-#bp-gate{position:fixed;top:0;left:0;width:100%;height:100%;background:#04040a;display:flex;align-items:center;justify-content:center;z-index:99999;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-#bp-gate .box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:24px;padding:2.8rem 2.5rem;width:100%;max-width:420px;text-align:center;box-shadow:0 0 80px #f59e0b22}
-#bp-gate .logo{width:64px;height:64px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem}
-#bp-gate h1{color:#fff;font-size:1.5rem;font-weight:800;margin:0 0 0.3rem;letter-spacing:-0.02em}<div style="display:inline-block;background:rgba(255,255,255,0.07);color:#f59e0b;border:1px solid #f59e0b40;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1.2rem">Bundle €99/mo</div>
-#bp-gate .tag{color:#94a3b8;font-size:0.85rem;margin:0 0 0.5rem}
-#bp-gate .feat{color:#f59e0b;font-size:0.8rem;font-weight:600;margin:0 0 1.8rem;opacity:0.9}
-#bp-gate input{width:100%;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:0.9rem 1rem;color:#fff;font-size:1rem;outline:none;box-sizing:border-box;transition:border-color 0.2s}
-#bp-gate input:focus{border-color:#f59e0b}
-#bp-gate input::placeholder{color:#475569}
-#bp-gate button{width:100%;margin-top:0.8rem;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;border:none;border-radius:12px;padding:0.95rem;font-size:1rem;font-weight:700;cursor:pointer;transition:all 0.2s;letter-spacing:0.01em}
-#bp-gate button:hover{transform:translateY(-1px);box-shadow:0 8px 25px #f59e0b44}
-#bp-gate .err{color:#ef4444;font-size:0.85rem;margin-top:0.7rem;display:none}
-#bp-gate .footer{color:#1e293b;font-size:0.73rem;margin-top:1.5rem}
 </style>
-<div id="bp-gate">
-  <div class="box">
-    <div class="logo">⚡</div>
-    <h1>BullPower Hub</h1>
-    <div style="display:inline-block;background:rgba(255,255,255,0.07);color:#f59e0b;border:1px solid #f59e0b40;border-radius:20px;padding:0.3rem 0.9rem;font-size:0.8rem;font-weight:600;margin-bottom:1rem">Bundle €99/mo</div>
-    <div class="tag">Alle 12 Tools. Ein Portal. 55% Ersparnis.</div>
-    <div class="feat">12 SaaS-Tools im Bundle für nur €99/mo</div>
-    <input type="password" id="bp-pw" placeholder="Demo-Passwort eingeben..." onkeydown="if(event.key==='Enter')bpCheck()">
-    <button onclick="bpCheck()">🔓 Demo freischalten</button>
-    <div class="err" id="bp-err">❌ Falsches Passwort. Tipp: Majkuti1984.</div>
-    <div class="footer">© 2026 Rudolf Sarkany · BullPower Tools</div>
-  </div>
-</div>
-<script>
-(function(){if(localStorage.getItem('bp_ok')==='1'){var g=document.getElementById('bp-gate');if(g)g.style.display='none';}})();
-function bpCheck(){var pw=document.getElementById('bp-pw').value;if(pw==='Majkuti1984.'){localStorage.setItem('bp_ok','1');document.getElementById('bp-gate').style.display='none';}else{document.getElementById('bp-err').style.display='block';document.getElementById('bp-pw').value='';document.getElementById('bp-pw').focus();}}
-</script>
+
 
 <!-- NAV -->
 <nav>
