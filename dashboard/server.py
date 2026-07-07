@@ -4046,6 +4046,59 @@ async def handle_shopify_order_webhook_v2(req):
     return await handle_shopify_order_webhook_route(req)
 
 
+async def handle_shopify_checkout_create_webhook(req):
+    """POST /api/webhooks/shopify/checkout-create — track new checkouts for abandoned cart recovery."""
+    try:
+        data = await req.json()
+        from modules.abandoned_cart_recovery import handle_checkout_webhook
+        await handle_checkout_webhook(data, event_type="create")
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("Checkout-create webhook error: %s", e)
+        return web.Response(status=200)
+
+
+async def handle_shopify_checkout_update_webhook(req):
+    """POST /api/webhooks/shopify/checkout-update — mark completed checkouts."""
+    try:
+        data = await req.json()
+        from modules.abandoned_cart_recovery import handle_checkout_webhook
+        await handle_checkout_webhook(data, event_type="update")
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("Checkout-update webhook error: %s", e)
+        return web.Response(status=200)
+
+
+async def handle_shopify_order_create_for_cart(req):
+    """POST /api/webhooks/shopify/order-create — mark checkout as purchased (cancel recovery)."""
+    try:
+        data = await req.json()
+        from modules.abandoned_cart_recovery import handle_order_webhook
+        import asyncio
+        asyncio.create_task(handle_order_webhook(data))
+        # Also run the original order webhook logic
+        from modules.shopify_automation import handle_shopify_order_webhook
+        asyncio.create_task(handle_shopify_order_webhook(data))
+        asyncio.create_task(_push_order_to_pipedrive(data))
+        asyncio.create_task(_pod_fulfill_order(data))
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("Order-create webhook error: %s", e)
+        return web.Response(status=200)
+
+
+async def handle_abandoned_cart_manual_run(req):
+    """POST /api/abandoned-cart/run — manually trigger abandoned cart recovery."""
+    try:
+        from modules.abandoned_cart_recovery import run_abandoned_cart_recovery
+        result = await run_abandoned_cart_recovery()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        log.error("Manual abandoned cart run error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_shopify_customer_webhook(req):
     """POST /api/shopify/customer-webhook — sync new Shopify customers to Klaviyo."""
     try:
@@ -8652,9 +8705,14 @@ async def create_app():
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_get("/api/stripe/subscriptions",   handle_stripe_subscriptions)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
-    app.router.add_post("/api/shopify/order-webhook",     handle_shopify_order_webhook_route)
-    app.router.add_post("/api/webhooks/shopify-order",    handle_shopify_order_webhook_v2)
-    app.router.add_post("/api/shopify/customer-webhook",  handle_shopify_customer_webhook)
+    app.router.add_post("/api/shopify/order-webhook",                     handle_shopify_order_webhook_route)
+    app.router.add_post("/api/webhooks/shopify-order",                    handle_shopify_order_webhook_v2)
+    app.router.add_post("/api/shopify/customer-webhook",                  handle_shopify_customer_webhook)
+    # Abandoned Cart Recovery webhooks
+    app.router.add_post("/api/webhooks/shopify/checkout-create",          handle_shopify_checkout_create_webhook)
+    app.router.add_post("/api/webhooks/shopify/checkout-update",          handle_shopify_checkout_update_webhook)
+    app.router.add_post("/api/webhooks/shopify/order-create",             handle_shopify_order_create_for_cart)
+    app.router.add_post("/api/abandoned-cart/run",                        handle_abandoned_cart_manual_run)
     app.router.add_post("/api/discord/interactions",      handle_discord_interactions)
     app.router.add_get("/api/discord/oauth/callback",     handle_discord_oauth_callback)
     app.router.add_get("/api/shopify/oauth/callback",     handle_shopify_oauth_callback)

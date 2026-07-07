@@ -754,6 +754,15 @@ async def task_shopify_orders_alert() -> str:
         return f"Fehler: {e}"
 
 
+async def task_abandoned_cart_recovery() -> str:
+    """Send abandoned cart recovery emails every hour for ineedit.com.co."""
+    try:
+        from modules.abandoned_cart_recovery import run_abandoned_cart_recovery
+        return await run_abandoned_cart_recovery()
+    except Exception as e:
+        return f"Abandoned Cart Recovery Fehler: {e}"
+
+
 async def task_printify_discover_shop() -> str:
     """Auto-discover Printify shop ID and save to data dir."""
     try:
@@ -4828,7 +4837,8 @@ TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Monitoring (kostenlos) ────────────────────────────────────────────────
     ("system_health",        task_system_health,        300,   10),  # 5 min
-    ("shopify_orders_alert", task_shopify_orders_alert,  600,  15),  # 10 min — Bestellung → Telegram
+    ("shopify_orders_alert",   task_shopify_orders_alert,   600,  15),  # 10 min — Bestellung → Telegram
+    ("abandoned_cart_recovery", task_abandoned_cart_recovery, 3600, 120),  # 1h — Abandoned Cart E-Mail Recovery
     ("digistore_sync",       task_digistore_sync,        900,  30),  # 15 min — DS24 Einnahmen
     ("printify_autofulfill", task_printify_autofulfill, 1800,  45),  # 30 min — POD Fulfillment
     ("stripe_monitor",       task_stripe_monitor,       1800,  25),  # 30 min — Zahlungen
