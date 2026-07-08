@@ -39,8 +39,20 @@
 - Shopify: ineedit.com.co (10k Produkte, Smart Collections)
 - Viral Scanner: https://supermegabot-production.up.railway.app/viral
 
+## 🚀 MONEY MACHINE ENGINE (NEU — 2026-07-08)
+| Modul | Status | Scheduler |
+|-------|--------|-----------|
+| modules/oos_sniper.py | ✅ LIVE | alle 2h |
+| modules/review_goldmine.py | ✅ LIVE | on-demand |
+| modules/cart_rescue.py | ✅ LIVE | Shopify Webhook |
+| modules/money_machine.py | ✅ LIVE | alle 4h |
+- Route: /money-machine — Dashboard mit START-Button
+- Route: /api/money-machine/run-all — startet alle 5 Engines
+- 13 API-Routen registriert (oos-sniper, review-goldmine, cart-rescue)
+
 ## 📋 NÄCHSTE SESSION: WEITERMACHEN MIT
-1. Shopify Produkt-Import (viral geratete Produkte importieren)
-2. Reddit API fix (Script App → Personal Use App in reddit.com/prefs/apps)
-3. Facebook Groups Posting (braucht Meta App Review — langfristig)
-4. Instagram Token erneuern wenn nötig (~2026-09-06)
+1. Reddit: Neues OAuth2-App erstellen (reddit.com/prefs/apps → create an app) und REDDIT_REFRESH_TOKEN setzen
+   - REDDIT_REFRESH_TOKEN fehlt — App "rodbot" (hqgJAQe6Qiu5s5r1Vqc0Og) ist tot/deleted
+   - Eingeloggt als u/Upper-Competition505 — neue App unter diesem Account
+2. Facebook Groups Posting (braucht Meta App Review — langfristig)
+3. Instagram Token erneuern wenn nötig (~2026-09-06)
