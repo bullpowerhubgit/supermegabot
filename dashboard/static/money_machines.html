@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Money Machines — Command Center</title>
+<style>
+/* ─── Tokens ─────────────────────────────────────────────────────── */
+:root {
+  --bg:        #060B10;
+  --surface:   #0D1520;
+  --surface2:  #162030;
+  --surface3:  #1E2D42;
+  --border:    #1F3047;
+  --teal:      #00D4B8;
+  --teal-dim:  rgba(0,212,184,.12);
+  --teal-glow: rgba(0,212,184,.25);
+  --amber:     #F59E0B;
+  --amber-dim: rgba(245,158,11,.12);
+  --amber-glow:rgba(245,158,11,.25);
+  --text:      #D8E8F2;
+  --muted:     #4D6475;
+  --faint:     #2A3D50;
+  --good:      #10B981;
+  --warn:      #EF4444;
+  --radius:    10px;
+}
+
+/* ─── Reset ──────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 16px; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Type scale ─────────────────────────────────────────────────── */
+.label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.metric-value {
+  font-size: 2.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.metric-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  letter-spacing: .04em;
+  margin-top: 4px;
+}
+
+/* ─── Layout ─────────────────────────────────────────────────────── */
+.page {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 24px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 28px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.logo-icon {
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, var(--teal), var(--amber));
+  border-radius: 8px;
+}
+.logo-icon svg { width: 22px; height: 22px; }
+.logo-title { font-size: 1.1rem; font-weight: 700; letter-spacing: -.02em; }
+.logo-sub { font-size: 11px; color: var(--muted); margin-top: 1px; }
+.header-time { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Grid */
+.machines-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+@media (max-width: 900px) { .machines-grid { grid-template-columns: 1fr; } }
+
+/* Machine panel */
+.machine {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.machine-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 22px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.machine-icon {
+  width: 36px; height: 36px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.machine-teal { background: var(--teal-dim); color: var(--teal); }
+.machine-amber { background: var(--amber-dim); color: var(--amber); }
+.machine-name { font-size: .95rem; font-weight: 700; }
+.machine-desc { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.machine-badge {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .06em;
+  padding: 3px 8px;
+  border-radius: 4px;
+}
+.badge-live { background: rgba(16,185,129,.15); color: var(--good); }
+.badge-idle { background: var(--faint); color: var(--muted); }
+
+/* Metrics row */
+.metrics-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+.metric-cell {
+  padding: 16px 18px;
+  border-right: 1px solid var(--border);
+  min-width: 0;
+}
+.metric-cell:last-child { border-right: none; }
+.metric-teal { color: var(--teal); }
+.metric-amber { color: var(--amber); }
+.metric-good  { color: var(--good); }
+
+/* Scan control */
+.scan-control {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--border);
+}
+.scan-btn {
+  position: relative;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: opacity .15s, transform .1s;
+  flex-shrink: 0;
+}
+.scan-btn:active { transform: scale(.97); }
+.scan-btn-teal {
+  background: var(--teal);
+  color: #000;
+}
+.scan-btn-amber {
+  background: var(--amber);
+  color: #000;
+}
+.scan-btn:disabled { opacity: .5; cursor: wait; }
+.scan-info { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.scan-status { font-size: 11px; font-weight: 600; margin-top: 3px; }
+.scan-status-ok    { color: var(--good); }
+.scan-status-err   { color: var(--warn); }
+.scan-status-run   { color: var(--teal); }
+
+/* ─── Radar pulse animation ──────────────────────────────────────── */
+.pulse-wrap {
+  position: relative;
+  width: 44px; height: 44px;
+  flex-shrink: 0;
+}
+.pulse-dot {
+  position: absolute;
+  inset: 50%; transform: translate(-50%,-50%);
+  width: 8px; height: 8px;
+  border-radius: 50%;
+}
+.pulse-ring {
+  position: absolute;
+  inset: 50%; transform: translate(-50%,-50%);
+  border-radius: 50%;
+  border: 1.5px solid;
+  opacity: 0;
+}
+.pulsing .pulse-ring:nth-child(2) { animation: radar .8s ease-out infinite; }
+.pulsing .pulse-ring:nth-child(3) { animation: radar .8s ease-out infinite .25s; }
+.pulsing .pulse-ring:nth-child(4) { animation: radar .8s ease-out infinite .5s; }
+@keyframes radar {
+  0%   { width: 8px; height: 8px; opacity: .9; inset: 50%; transform: translate(-50%,-50%); }
+  100% { width: 44px; height: 44px; opacity: 0; inset: 50%; transform: translate(-50%,-50%); }
+}
+.pulse-teal .pulse-dot { background: var(--teal); }
+.pulse-teal .pulse-ring { border-color: var(--teal); }
+.pulse-amber .pulse-dot { background: var(--amber); }
+.pulse-amber .pulse-ring { border-color: var(--amber); }
+
+/* Feed section */
+.feed-section {
+  padding: 18px 22px;
+}
+.feed-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.feed-list { display: flex; flex-direction: column; gap: 6px; }
+.feed-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.feed-item-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.feed-pill {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.pill-teal { background: var(--teal-dim); color: var(--teal); }
+.pill-amber { background: var(--amber-dim); color: var(--amber); }
+.pill-good  { background: rgba(16,185,129,.15); color: var(--good); }
+.pill-warn  { background: rgba(239,68,68,.15); color: var(--warn); }
+.feed-item-text { color: var(--text); font-size: 12px; }
+.feed-item-sub  { color: var(--muted); font-size: 11px; margin-top: 3px; }
+
+/* Lead table */
+.lead-table-wrap { overflow-x: auto; }
+.lead-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.lead-table th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.lead-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--faint);
+  vertical-align: middle;
+}
+.lead-table tr:last-child td { border-bottom: none; }
+.lead-table tr:hover td { background: var(--surface3); }
+.conf-bar-wrap {
+  width: 60px;
+  background: var(--faint);
+  border-radius: 3px;
+  height: 4px;
+  display: inline-block;
+  vertical-align: middle;
+}
+.conf-bar {
+  height: 4px;
+  border-radius: 3px;
+  background: var(--amber);
+}
+.conf-val {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--amber);
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.outreach-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 10px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.outreach-btn:hover { border-color: var(--amber); color: var(--amber); }
+.outreach-btn.sent  { border-color: var(--good); color: var(--good); cursor: default; }
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 32px 20px;
+  color: var(--muted);
+  font-size: 13px;
+}
+.empty-icon { font-size: 28px; margin-bottom: 8px; opacity: .4; }
+
+/* Error / loading */
+.loading-bar {
+  height: 2px;
+  background: var(--border);
+  overflow: hidden;
+  margin-bottom: -1px;
+}
+.loading-bar-inner {
+  height: 100%;
+  width: 0;
+  transition: width .3s;
+}
+.loading-teal .loading-bar-inner { background: var(--teal); }
+.loading-amber .loading-bar-inner { background: var(--amber); }
+
+/* Scrollable feed */
+.feed-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 4px;
+}
+.feed-scroll::-webkit-scrollbar { width: 4px; }
+.feed-scroll::-webkit-scrollbar-track { background: transparent; }
+.feed-scroll::-webkit-scrollbar-thumb { background: var(--faint); border-radius: 2px; }
+
+/* Divider */
+.section-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0;
+}
+
+/* Toast */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 18px;
+  font-size: 13px;
+  max-width: 320px;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s, transform .2s;
+  z-index: 999;
+  pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- Header -->
+  <header class="header">
+    <div class="logo">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+          <path d="M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>
+        </svg>
+      </div>
+      <div>
+        <div class="logo-title">Money Machines</div>
+        <div class="logo-sub">SuperMegaBot · Command Center</div>
+      </div>
+    </div>
+    <div class="header-time" id="clock">—</div>
+  </header>
+
+  <!-- Two panels -->
+  <div class="machines-grid">
+
+    <!-- ── DEMAND ORACLE ─────────────────────────────────────────── -->
+    <div class="machine" id="do-machine">
+      <div class="loading-bar loading-teal" id="do-load">
+        <div class="loading-bar-inner" id="do-load-bar"></div>
+      </div>
+
+      <div class="machine-header">
+        <div class="machine-icon machine-teal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="M12 8v4l3 3"/>
+            <path d="M3 12h2M19 12h2M12 3v2M12 19v2"/>
+          </svg>
+        </div>
+        <div>
+          <div class="machine-name">Demand Oracle</div>
+          <div class="machine-desc">Reddit → KI-Cluster → Pre-Order · Zero Lagerrisiko</div>
+        </div>
+        <span class="machine-badge badge-idle" id="do-badge">IDLE</span>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics-row">
+        <div class="metric-cell">
+          <div class="metric-value metric-teal" id="do-wishes">—</div>
+          <div class="metric-label">Wünsche</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-value" id="do-clusters">—</div>
+          <div class="metric-label">Konzepte</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-value metric-good" id="do-products">—</div>
+          <div class="metric-label">Pre-Orders live</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-value metric-teal" id="do-orders">—</div>
+          <div class="metric-label">Bestellungen</div>
+        </div>
+      </div>
+
+      <!-- Scan control -->
+      <div class="scan-control">
+        <div class="pulse-wrap pulse-teal" id="do-pulse">
+          <div class="pulse-dot"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+        </div>
+        <button class="scan-btn scan-btn-teal" id="do-scan-btn" onclick="triggerScan('demand')">
+          Scan starten
+        </button>
+        <div>
+          <div class="scan-info">13 Subreddits · 14 Wish-Pattern · KI-Clustering</div>
+          <div class="scan-status" id="do-status">Bereit — Minimum: 10 Vorbestellungen</div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Active pre-orders -->
+      <div class="feed-section">
+        <div class="feed-header">
+          <span class="label">Aktive Pre-Order Produkte</span>
+          <span class="label" id="do-min-label">Min: 10 Stück</span>
+        </div>
+        <div class="feed-scroll" id="do-products-list">
+          <div class="empty-state">
+            <div class="empty-icon">◎</div>
+            Noch keine Pre-Order Produkte.<br>
+            Ersten Scan starten →
+          </div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Recent wishes -->
+      <div class="feed-section">
+        <div class="feed-header">
+          <span class="label">Letzte Reddit-Wünsche</span>
+          <button class="outreach-btn" onclick="loadWishes()">Aktualisieren</button>
+        </div>
+        <div class="feed-scroll" id="do-wishes-list">
+          <div class="empty-state">
+            <div class="empty-icon">⋯</div>
+            Lade Daten…
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── B2B INTENT RADAR ──────────────────────────────────────── -->
+    <div class="machine" id="b2b-machine">
+      <div class="loading-bar loading-amber" id="b2b-load">
+        <div class="loading-bar-inner" id="b2b-load-bar"></div>
+      </div>
+
+      <div class="machine-header">
+        <div class="machine-icon machine-amber">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M22 12A10 10 0 1 1 12 2"/>
+            <path d="M22 2L12 12"/>
+            <circle cx="12" cy="12" r="3"/>
+          </svg>
+        </div>
+        <div>
+          <div class="machine-name">B2B Intent Radar</div>
+          <div class="machine-desc">HackerNews · Reddit · GitHub · RSS → Lead-Datenbank</div>
+        </div>
+        <span class="machine-badge badge-idle" id="b2b-badge">IDLE</span>
+      </div>
+
+      <!-- Metrics -->
+      <div class="metrics-row">
+        <div class="metric-cell">
+          <div class="metric-value metric-amber" id="b2b-signals">—</div>
+          <div class="metric-label">Signale</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-value" id="b2b-leads">—</div>
+          <div class="metric-label">Leads</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-value metric-good" id="b2b-hconf">—</div>
+          <div class="metric-label">High-Conf (≥80%)</div>
+        </div>
+        <div class="metric-cell">
+          <div class="metric-value metric-amber" id="b2b-alerts">—</div>
+          <div class="metric-label">Alerts gesendet</div>
+        </div>
+      </div>
+
+      <!-- Scan control -->
+      <div class="scan-control">
+        <div class="pulse-wrap pulse-amber" id="b2b-pulse">
+          <div class="pulse-dot"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+          <div class="pulse-ring"></div>
+        </div>
+        <button class="scan-btn scan-btn-amber" id="b2b-scan-btn" onclick="triggerScan('b2b')">
+          Radar starten
+        </button>
+        <div>
+          <div class="scan-info">HN Hiring · Reddit B2B · GitHub Orgs · Funding RSS</div>
+          <div class="scan-status" id="b2b-status">Bereit — Alert-Schwelle: 80% Konfidenz</div>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Top leads table -->
+      <div class="feed-section">
+        <div class="feed-header">
+          <span class="label">Top Leads nach Konfidenz</span>
+          <button class="outreach-btn" onclick="loadLeads()">Aktualisieren</button>
+        </div>
+        <div class="lead-table-wrap">
+          <table class="lead-table" id="b2b-leads-table">
+            <thead>
+              <tr>
+                <th>Firma</th>
+                <th>Branche</th>
+                <th>Kaufabsicht</th>
+                <th>Konfidenz</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="b2b-leads-body">
+              <tr><td colspan="5">
+                <div class="empty-state">
+                  <div class="empty-icon">◎</div>
+                  Noch keine Leads.<br>Radar starten →
+                </div>
+              </td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-divider"></div>
+
+      <!-- Recent signals -->
+      <div class="feed-section">
+        <div class="feed-header">
+          <span class="label">Letzte Signale nach Quelle</span>
+        </div>
+        <div class="feed-scroll" id="b2b-signals-feed">
+          <div class="empty-state">
+            <div class="empty-icon">⋯</div>
+            Radar noch nicht gestartet.
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- .machines-grid -->
+</div><!-- .page -->
+
+<div id="toast"></div>
+
+<script>
+// ── Config ────────────────────────────────────────────────────────
+const API = '';  // relative — served from same origin
+
+// ── Clock ─────────────────────────────────────────────────────────
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleDateString('de-DE') + ' · ' +
+    now.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+updateClock();
+setInterval(updateClock, 1000);
+
+// ── Toast ─────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg, color) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.borderColor = color || 'var(--border)';
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ── Loading bar ───────────────────────────────────────────────────
+function setLoading(machine, pct) {
+  const bar = document.getElementById(machine + '-load-bar');
+  if (bar) bar.style.width = pct + '%';
+}
+
+// ── Demand Oracle: load stats ──────────────────────────────────────
+async function loadDemandStats() {
+  try {
+    const res  = await fetch(API + '/api/demand-oracle/stats');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    const s = data.stats;
+
+    document.getElementById('do-wishes').textContent   = fmt(s.total_wishes  ?? 0);
+    document.getElementById('do-clusters').textContent = fmt(s.total_clusters ?? 0);
+    document.getElementById('do-products').textContent = fmt(s.products_live  ?? 0);
+    document.getElementById('do-orders').textContent   = fmt(s.total_preorders ?? 0);
+
+    // Active products list
+    const list = document.getElementById('do-products-list');
+    if (s.active_products && s.active_products.length > 0) {
+      list.innerHTML = s.active_products.map(p => {
+        const pct = Math.min(100, Math.round((p.preorder_count || 0) / (s.pre_order_minimum || 10) * 100));
+        return `
+          <div class="feed-item">
+            <div class="feed-item-top">
+              <span class="feed-pill pill-teal">${esc(p.category || 'Gadgets')}</span>
+              <span style="font-weight:600;font-size:12px">${esc(p.concept || '').substring(0,55)}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+              <div style="flex:1;background:var(--faint);border-radius:3px;height:4px">
+                <div style="width:${pct}%;background:var(--teal);border-radius:3px;height:4px"></div>
+              </div>
+              <span style="font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap">
+                ${p.preorder_count || 0} / ${s.pre_order_minimum || 10} Bestell.
+              </span>
+            </div>
+          </div>`;
+      }).join('');
+    } else {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">◎</div>Noch keine Pre-Order Produkte.<br>Ersten Scan starten →</div>`;
+    }
+
+    badge('do', 'LIVE', 'badge-live');
+  } catch (e) {
+    badge('do', 'ERROR', 'badge-idle');
+    console.error('DemandOracle stats error:', e);
+  }
+}
+
+// ── Demand Oracle: load wishes ─────────────────────────────────────
+async function loadWishes() {
+  try {
+    const res  = await fetch(API + '/api/demand-oracle/wishes');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const list = document.getElementById('do-wishes-list');
+    if (data.wishes && data.wishes.length > 0) {
+      list.innerHTML = data.wishes.slice(0, 30).map(w => `
+        <div class="feed-item">
+          <div class="feed-item-top">
+            <span class="feed-pill pill-teal">r/${esc(w.subreddit || 'de')}</span>
+            <span style="color:var(--muted);font-size:11px">Score: ${w.score || 0}</span>
+          </div>
+          <div class="feed-item-text">${esc(w.text || '').substring(0, 140)}</div>
+        </div>`).join('');
+    } else {
+      list.innerHTML = `<div class="empty-state"><div class="empty-icon">⋯</div>Keine Wünsche gefunden.<br>Scan starten →</div>`;
+    }
+  } catch (e) {
+    const list = document.getElementById('do-wishes-list');
+    list.innerHTML = `<div class="empty-state" style="color:var(--warn)">Verbindungsfehler: ${esc(e.message)}</div>`;
+  }
+}
+
+// ── B2B Radar: load stats ──────────────────────────────────────────
+async function loadB2BStats() {
+  try {
+    const res  = await fetch(API + '/api/b2b-radar/stats');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+    const s = data.stats;
+
+    document.getElementById('b2b-signals').textContent = fmt(s.total_signals    ?? 0);
+    document.getElementById('b2b-leads').textContent   = fmt(s.total_leads      ?? 0);
+    document.getElementById('b2b-hconf').textContent   = fmt(s.high_conf_leads  ?? 0);
+    document.getElementById('b2b-alerts').textContent  = fmt(
+      s.last_scan ? (s.last_scan.alerts ?? 0) : 0
+    );
+
+    badge('b2b', 'LIVE', 'badge-live');
+  } catch (e) {
+    badge('b2b', 'ERROR', 'badge-idle');
+    console.error('B2BRadar stats error:', e);
+  }
+}
+
+// ── B2B Radar: load leads ──────────────────────────────────────────
+async function loadLeads() {
+  try {
+    const res  = await fetch(API + '/api/b2b-radar/leads');
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error);
+
+    const tbody = document.getElementById('b2b-leads-body');
+    if (data.leads && data.leads.length > 0) {
+      tbody.innerHTML = data.leads.slice(0, 15).map(l => {
+        const conf  = Math.round((l.best_conf || 0) * 100);
+        const pct   = conf;
+        const color = conf >= 80 ? 'var(--amber)' : conf >= 65 ? 'var(--teal)' : 'var(--muted)';
+        return `<tr>
+          <td style="font-weight:600">${esc(l.company || '?')}</td>
+          <td style="color:var(--muted)">${esc((l.industry || '—').substring(0,20))}</td>
+          <td>${esc((l.buy_categories || '—').substring(0,30))}</td>
+          <td>
+            <div class="conf-bar-wrap"><div class="conf-bar" style="width:${pct}%;background:${color}"></div></div>
+            <span class="conf-val" style="color:${color}">${conf}%</span>
+          </td>
+          <td>
+            <button class="outreach-btn ${l.outreach_sent ? 'sent' : ''}"
+              onclick="markOutreach('${esc(l.company)}', this)"
+              ${l.outreach_sent ? 'disabled' : ''}>
+              ${l.outreach_sent ? '✓ Kontaktiert' : 'Kontaktieren'}
+            </button>
+          </td>
+        </tr>`;
+      }).join('');
+
+      // Build signals source breakdown
+      const srcMap = {};
+      data.leads.forEach(l => {
+        const src = l.industry || 'Unbekannt';
+        srcMap[src] = (srcMap[src] || 0) + 1;
+      });
+      const feed = document.getElementById('b2b-signals-feed');
+      feed.innerHTML = Object.entries(srcMap).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([src, cnt]) => `
+        <div class="feed-item" style="display:flex;align-items:center;justify-content:space-between">
+          <span class="feed-pill pill-amber">${esc(src)}</span>
+          <span style="font-size:12px;font-variant-numeric:tabular-nums">${cnt} Lead${cnt>1?'s':''}</span>
+        </div>`).join('');
+    } else {
+      tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><div class="empty-icon">◎</div>Noch keine Leads.<br>Radar starten →</div></td></tr>`;
+    }
+  } catch (e) {
+    const tbody = document.getElementById('b2b-leads-body');
+    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state" style="color:var(--warn)">Fehler: ${esc(e.message)}</div></td></tr>`;
+  }
+}
+
+// ── Mark outreach ──────────────────────────────────────────────────
+async function markOutreach(company, btn) {
+  try {
+    const res = await fetch(API + '/api/b2b-radar/outreach', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({company}),
+    });
+    const data = await res.json();
+    if (data.ok) {
+      btn.textContent = '✓ Kontaktiert';
+      btn.classList.add('sent');
+      btn.disabled = true;
+      showToast(`${company} als kontaktiert markiert`, 'var(--good)');
+    }
+  } catch (e) {
+    showToast('Fehler beim Speichern', 'var(--warn)');
+  }
+}
+
+// ── Trigger scan ───────────────────────────────────────────────────
+async function triggerScan(machine) {
+  const isDemand = machine === 'demand';
+  const endpoint = isDemand ? '/api/demand-oracle/scan' : '/api/b2b-radar/scan';
+  const btn      = document.getElementById(isDemand ? 'do-scan-btn' : 'b2b-scan-btn');
+  const pulse    = document.getElementById(isDemand ? 'do-pulse' : 'b2b-pulse');
+  const status   = document.getElementById(isDemand ? 'do-status' : 'b2b-status');
+
+  btn.disabled = true;
+  btn.textContent = 'Läuft…';
+  pulse.classList.add('pulsing');
+  badge(isDemand ? 'do' : 'b2b', 'SCANNING', 'badge-live');
+
+  const steps = isDemand
+    ? ['Reddit wird gescannt…', 'KI clustert Wünsche…', 'Pre-Order Produkte werden erstellt…', 'Abgeschlossen!']
+    : ['HackerNews wird gelesen…', 'Reddit B2B Signale…', 'GitHub Orgs…', 'KI klassifiziert Leads…', 'Abgeschlossen!'];
+
+  let si = 0;
+  status.className = 'scan-status scan-status-run';
+  const stepTimer = setInterval(() => {
+    if (si < steps.length) { status.textContent = steps[si++]; }
+  }, 3000);
+
+  try {
+    const res  = await fetch(API + endpoint, { method: 'POST' });
+    const data = await res.json();
+
+    clearInterval(stepTimer);
+    pulse.classList.remove('pulsing');
+    btn.disabled    = false;
+    btn.textContent = isDemand ? 'Scan starten' : 'Radar starten';
+    status.className = 'scan-status scan-status-ok';
+    status.textContent = 'Scan läuft im Hintergrund — wird in ~2 min fertig';
+    showToast(data.message || 'Scan gestartet!', isDemand ? 'var(--teal)' : 'var(--amber)');
+
+    // Reload stats after 5 seconds
+    setTimeout(() => {
+      if (isDemand) { loadDemandStats(); loadWishes(); }
+      else           { loadB2BStats(); loadLeads(); }
+    }, 5000);
+
+  } catch (e) {
+    clearInterval(stepTimer);
+    pulse.classList.remove('pulsing');
+    btn.disabled    = false;
+    btn.textContent = isDemand ? 'Scan starten' : 'Radar starten';
+    status.className = 'scan-status scan-status-err';
+    status.textContent = 'Verbindungsfehler — Server erreichbar?';
+    badge(isDemand ? 'do' : 'b2b', 'ERROR', 'badge-idle');
+    showToast('Fehler: ' + e.message, 'var(--warn)');
+  }
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function fmt(n) {
+  return Number(n).toLocaleString('de-DE');
+}
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function badge(machine, text, cls) {
+  const el = document.getElementById(machine + '-badge');
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'machine-badge ' + cls;
+}
+
+// ── Init ──────────────────────────────────────────────────────────
+async function init() {
+  await Promise.all([loadDemandStats(), loadB2BStats()]);
+  loadWishes();
+  loadLeads();
+}
+init();
+
+// Auto-refresh every 60s
+setInterval(() => {
+  loadDemandStats();
+  loadB2BStats();
+  loadLeads();
+}, 60000);
+</script>
+</body>
+</html>

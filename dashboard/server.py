@@ -145,6 +145,18 @@ _INDEX_HTML = Path(__file__).parent / 'index.html'
 # API Routes — existing handlers
 # ---------------------------------------------------------------------------
 
+_MONEY_MACHINES_HTML = Path(__file__).parent / "static" / "money_machines.html"
+
+
+async def handle_money_machines(req):
+    """GET /money-machines — Demand Oracle + B2B Intent Radar live dashboard."""
+    try:
+        html = _MONEY_MACHINES_HTML.read_text(encoding="utf-8")
+    except Exception:
+        html = "<h1>money_machines.html nicht gefunden</h1>"
+    return web.Response(text=html, content_type="text/html")
+
+
 async def handle_index(req):
     try:
         html = _INDEX_HTML.read_text(encoding="utf-8")
@@ -2033,6 +2045,49 @@ async def handle_intent_bridge_process(req):
             "products": products,
             "response": response,
         })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_radar_stats(req):
+    """GET /api/b2b-radar/stats"""
+    try:
+        from modules.b2b_intent_radar import get_stats
+        return web.json_response({"ok": True, "stats": get_stats()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_radar_scan(req):
+    """POST /api/b2b-radar/scan — trigger manual scan"""
+    try:
+        from modules.b2b_intent_radar import run_b2b_scan
+        asyncio.create_task(run_b2b_scan())
+        return web.json_response({"ok": True, "message": "B2B Intent Radar scan gestartet"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_radar_leads(req):
+    """GET /api/b2b-radar/leads — export all leads"""
+    try:
+        from modules.b2b_intent_radar import get_leads_for_export
+        leads = get_leads_for_export()
+        return web.json_response({"ok": True, "count": len(leads), "leads": leads})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_b2b_radar_outreach(req):
+    """POST /api/b2b-radar/outreach — mark company as contacted"""
+    try:
+        body    = await req.json()
+        company = body.get("company", "")
+        if not company:
+            return web.json_response({"ok": False, "error": "company required"}, status=400)
+        from modules.b2b_intent_radar import mark_outreach_sent
+        await mark_outreach_sent(company)
+        return web.json_response({"ok": True, "company": company})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
@@ -8603,6 +8658,7 @@ async def create_app():
 
     # Existing routes
     app.router.add_get("/", handle_index)
+    app.router.add_get("/money-machines", handle_money_machines)
     app.router.add_post("/api/chat", handle_chat)
     # Telegram Hub Bridge endpoints
     app.router.add_post("/api/bot/execute", handle_bot_execute)
@@ -8707,6 +8763,12 @@ async def create_app():
     app.router.add_get("/api/demand-oracle/stats",    handle_demand_oracle_stats)
     app.router.add_post("/api/demand-oracle/scan",    handle_demand_oracle_scan)
     app.router.add_get("/api/demand-oracle/wishes",   handle_demand_oracle_wishes)
+
+    # ── B2B Intent Radar ──────────────────────────────────────────────────────
+    app.router.add_get("/api/b2b-radar/stats",      handle_b2b_radar_stats)
+    app.router.add_post("/api/b2b-radar/scan",      handle_b2b_radar_scan)
+    app.router.add_get("/api/b2b-radar/leads",      handle_b2b_radar_leads)
+    app.router.add_post("/api/b2b-radar/outreach",  handle_b2b_radar_outreach)
 
     # ── Digistore24 ───────────────────────────────────────────────────────────
     app.router.add_get("/api/intent-bridge/stats",    handle_intent_bridge_stats)
