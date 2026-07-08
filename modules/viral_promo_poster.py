@@ -28,7 +28,8 @@ _BASE_DIR = Path(__file__).parent.parent
 _DB_PATH  = _BASE_DIR / "data" / "promo_poster.db"
 _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
 
-SUBSCRIBE_URL = "https://supermegabot-production.up.railway.app/viral"
+SUBSCRIBE_URL    = "https://supermegabot-production.up.railway.app/viral"
+GUMROAD_PRODUCT_URL = "https://tecbuuss.gumroad.com/l/liastd"
 
 # ── Env helpers ───────────────────────────────────────────────────────────────
 def _fb_page_token()   -> str: return os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", "")
@@ -148,7 +149,8 @@ Winkel: {angle_hints.get(angle, angle)}
 
 Produkt/Tool: Viral Window Scanner — findet viral gehende Dropshipping-Produkte bevor alle anderen.
 Preise: Alert €29/mo, Pro €79/mo, Agency €199/mo
-Link am Ende: {SUBSCRIBE_URL}
+Gumroad Abo-Link: {GUMROAD_PRODUCT_URL}
+Dashboard-Link: {SUBSCRIBE_URL}
 
 Gib NUR den fertigen Post-Text zurück, keine Erklärungen."""
 
@@ -416,42 +418,13 @@ async def post_telegram_channels(text: str) -> Dict:
 # ── Gumroad ───────────────────────────────────────────────────────────────────
 
 async def create_gumroad_product() -> Dict:
-    token = _gumroad_token()
-    if not token:
-        return {"ok": False, "error": "no Gumroad token"}
-    desc = (
-        "🔥 Viral Window Scanner — Dropshipping Trend-Alarm\n\n"
-        "Findet viral gehende Produkte BEVOR alle anderen sie kennen.\n\n"
-        "✅ 6 Echtzeit-Signalquellen (TikTok, Google Trends, Amazon, Reddit, AliExpress)\n"
-        "✅ AI-Score (0–100) pro Produkt\n"
-        "✅ Telegram-Alert bei Score ≥ 55\n"
-        "✅ Automatischer Shopify-Import bei Score ≥ 72\n"
-        "✅ Facebook Ad-Copy automatisch generiert\n\n"
-        "Tiers: Alert €29/mo | Pro €79/mo | Agency €199/mo\n"
-        f"Direkt abonnieren: {SUBSCRIBE_URL}"
-    )
-    try:
-        async with _session() as s:
-            async with s.post(
-                "https://api.gumroad.com/v2/products",
-                data={
-                    "access_token":        token,
-                    "name":                "Viral Window Scanner — Dropshipping Trend-Alarm",
-                    "description":         desc,
-                    "price":               2900,
-                    "currency":            "eur",
-                    "published":           "true",
-                    "require_shipping":    "false",
-                    "subscription_duration": "monthly",
-                }
-            ) as r:
-                data = await r.json()
-                if data.get("success"):
-                    prod = data.get("product", {})
-                    return {"ok": True, "url": prod.get("short_url", ""), "id": prod.get("id", "")}
-                return {"ok": False, "error": data.get("message", str(data))}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
+    # Produkt wurde bereits manuell erstellt und ist live:
+    return {
+        "ok": True,
+        "url": GUMROAD_PRODUCT_URL,
+        "id": "liastd",
+        "note": "Product pre-created via browser — tecbuuss.gumroad.com"
+    }
 
 # ── Main orchestrator ─────────────────────────────────────────────────────────
 
