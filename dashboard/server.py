@@ -9336,6 +9336,18 @@ async def create_app():
     app.router.add_get( "/api/shopify/collections",       handle_shopify_collections_get)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
+    # ── VIRAL WINDOW SCANNER ─────────────────────────────────────────────────
+    app.router.add_get( "/viral",                   handle_viral_page)
+    app.router.add_get( "/viral/success",           handle_viral_success)
+    app.router.add_get( "/api/viral/status",        handle_viral_status)
+    app.router.add_post("/api/viral/scan",          handle_viral_scan)
+    app.router.add_get( "/api/viral/alerts",        handle_viral_alerts)
+    app.router.add_post("/api/viral/subscribe",     handle_viral_subscribe)
+    app.router.add_post("/api/viral/webhook",       handle_viral_webhook)
+    app.router.add_post("/api/viral/setup",         handle_viral_setup)
+    app.router.add_post("/api/viral/tg-register",   handle_viral_tg_register)
+    # ── END VIRAL WINDOW SCANNER ──────────────────────────────────────────────
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
@@ -11491,6 +11503,449 @@ setInterval(refreshAll, 30000);
 </script>
 </body>
 </html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  VIRAL WINDOW SCANNER — Handlers
+# ═══════════════════════════════════════════════════════════════════════════
+
+_viral_scan_running = False
+
+async def handle_viral_status(req):
+    try:
+        from modules.viral_window_scanner import get_status
+        data = await get_status()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_viral_scan(req):
+    global _viral_scan_running
+    if _viral_scan_running:
+        return web.json_response({"ok": False, "error": "Scan läuft bereits"})
+    async def _bg():
+        global _viral_scan_running
+        _viral_scan_running = True
+        try:
+            from modules.viral_window_scanner import run_scan
+            await run_scan()
+        except Exception as e:
+            log.error("Viral scan error: %s", e)
+        finally:
+            _viral_scan_running = False
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "Scan gestartet im Hintergrund"})
+
+
+async def handle_viral_alerts(req):
+    try:
+        limit = int(req.rel_url.query.get("limit", "20"))
+        from modules.viral_window_scanner import get_latest_alerts
+        data = await get_latest_alerts(limit=limit)
+        return web.json_response({"ok": True, "alerts": data, "count": len(data)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_viral_subscribe(req):
+    try:
+        body = await req.json()
+        email = body.get("email", "").strip()
+        tier  = body.get("tier", "alert").strip()
+        if not email or "@" not in email:
+            return web.json_response({"ok": False, "error": "Ungültige E-Mail"}, status=400)
+        if tier not in ("alert", "pro", "agency"):
+            return web.json_response({"ok": False, "error": "Ungültiger Tier"}, status=400)
+        from modules.viral_window_scanner import create_checkout_session
+        result = await create_checkout_session(email, tier)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_viral_webhook(req):
+    try:
+        payload   = await req.read()
+        signature = req.headers.get("Stripe-Signature", "")
+        from modules.viral_window_scanner import handle_stripe_webhook
+        result = await handle_stripe_webhook(payload, signature)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_viral_setup(req):
+    try:
+        from modules.viral_window_scanner import setup_stripe_products
+        result = await setup_stripe_products()
+        return web.json_response({"ok": True, "products": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_viral_tg_register(req):
+    try:
+        body = await req.json()
+        email = body.get("email", "").strip()
+        telegram_id = body.get("telegram_id", "").strip()
+        tier  = body.get("tier", "alert").strip()
+        if not email or not telegram_id:
+            return web.json_response({"ok": False, "error": "email + telegram_id erforderlich"}, status=400)
+        from modules.viral_window_scanner import add_telegram_subscriber
+        result = await add_telegram_subscriber(email, telegram_id, tier)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_viral_success(req):
+    session_id = req.rel_url.query.get("session_id", "")
+    html = f"""<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<title>Willkommen — Viral Window Scanner</title>
+<style>
+*{{box-sizing:border-box;margin:0;padding:0}}
+body{{font-family:system-ui,sans-serif;background:#0d1117;color:#e6edf3;
+  display:flex;align-items:center;justify-content:center;min-height:100vh}}
+.card{{background:#161b22;border:1px solid #238636;border-radius:16px;
+  padding:48px;max-width:520px;text-align:center}}
+.icon{{font-size:4rem;margin-bottom:24px}}
+h1{{font-size:1.8rem;margin-bottom:12px;color:#2ea043}}
+p{{color:#8b949e;line-height:1.6;margin-bottom:24px}}
+.btn{{display:inline-block;background:linear-gradient(90deg,#238636,#2ea043);
+  color:#fff;padding:12px 32px;border-radius:8px;text-decoration:none;
+  font-weight:700;font-size:1rem}}
+.sub-id{{font-size:.75rem;color:#484f58;margin-top:16px}}
+</style></head><body>
+<div class="card">
+  <div class="icon">🔥</div>
+  <h1>Subscription aktiv!</h1>
+  <p>Du bekommst ab sofort Echtzeit-Alerts sobald ein Produkt ein
+  Viral-Fenster öffnet — bevor der Markt gesättigt ist.</p>
+  <p><strong>Nächster Schritt:</strong> Sende deinem Telegram-Bot deine Telegram-ID
+  damit Alerts direkt ankommen.<br>
+  Kommando: <code>/register deine@email.de</code></p>
+  <a href="/viral" class="btn">→ Zum Dashboard</a>
+  <div class="sub-id">Session: {session_id[:20]}...</div>
+</div></body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_viral_page(req):
+    html = """<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Viral Window Scanner — Echtzeit Trendprodukte</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh}
+header{background:#161b22;border-bottom:1px solid #30363d;padding:16px 24px;
+  display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:1.2rem;background:linear-gradient(90deg,#ff6b35,#ff0066);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:800}
+.nav a{color:#58a6ff;text-decoration:none;margin-left:16px;font-size:.85rem}
+.hero{text-align:center;padding:60px 24px 40px}
+.hero-badge{display:inline-block;background:rgba(255,107,53,.15);border:1px solid #ff6b35;
+  color:#ff6b35;padding:6px 16px;border-radius:20px;font-size:.8rem;font-weight:700;
+  margin-bottom:20px;letter-spacing:.5px}
+.hero h2{font-size:2.8rem;font-weight:900;line-height:1.15;margin-bottom:16px}
+.hero h2 span{background:linear-gradient(90deg,#ff6b35,#ff0066);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:#8b949e;font-size:1.1rem;max-width:580px;margin:0 auto 32px;line-height:1.6}
+.hero-stats{display:flex;gap:32px;justify-content:center;margin-bottom:40px;flex-wrap:wrap}
+.stat-pill{background:#161b22;border:1px solid #30363d;border-radius:10px;
+  padding:14px 24px;text-align:center;min-width:120px}
+.stat-num{font-size:1.6rem;font-weight:900;color:#ff6b35}
+.stat-lbl{font-size:.75rem;color:#8b949e;margin-top:2px}
+.signals{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:10px;max-width:900px;margin:0 auto 48px;padding:0 24px}
+.sig-card{background:#161b22;border:1px solid #30363d;border-radius:10px;
+  padding:14px;display:flex;align-items:center;gap:10px}
+.sig-icon{font-size:1.4rem}
+.sig-name{font-size:.85rem;font-weight:600;color:#e6edf3}
+.sig-desc{font-size:.72rem;color:#8b949e;margin-top:2px}
+.pricing{max-width:900px;margin:0 auto;padding:0 24px 60px}
+.pricing h3{text-align:center;font-size:1.8rem;margin-bottom:8px}
+.pricing-sub{text-align:center;color:#8b949e;margin-bottom:32px;font-size:.95rem}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.plan{background:#161b22;border:1px solid #30363d;border-radius:12px;
+  padding:28px;position:relative;transition:border-color .2s}
+.plan.featured{border-color:#ff6b35;box-shadow:0 0 30px rgba(255,107,53,.15)}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:linear-gradient(90deg,#ff6b35,#ff0066);color:#fff;padding:4px 14px;
+  border-radius:12px;font-size:.72rem;font-weight:700;white-space:nowrap}
+.plan-name{font-size:1.1rem;font-weight:800;margin-bottom:8px}
+.plan-price{font-size:2.4rem;font-weight:900;color:#ff6b35;margin-bottom:4px}
+.plan-price span{font-size:.9rem;color:#8b949e;font-weight:400}
+.plan-desc{color:#8b949e;font-size:.85rem;margin-bottom:20px;line-height:1.5}
+.plan-features{list-style:none;margin-bottom:24px}
+.plan-features li{padding:6px 0;font-size:.88rem;border-bottom:1px solid #21262d;
+  display:flex;align-items:center;gap:8px}
+.plan-features li:last-child{border:none}
+.plan-features li::before{content:"✓";color:#2ea043;font-weight:700}
+.plan-btn{width:100%;padding:13px;border:none;border-radius:8px;cursor:pointer;
+  font-weight:700;font-size:.95rem;transition:opacity .15s}
+.plan-btn-primary{background:linear-gradient(90deg,#ff6b35,#ff0066);color:#fff}
+.plan-btn-secondary{background:#21262d;color:#e6edf3;border:1px solid #30363d}
+.plan-btn:hover{opacity:.85}
+.alerts-section{max-width:900px;margin:0 auto;padding:0 24px 60px}
+.alerts-section h3{font-size:1.5rem;margin-bottom:20px}
+.alert-card{background:#161b22;border:1px solid #30363d;border-radius:10px;
+  padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px}
+.alert-score{background:rgba(255,107,53,.15);border:1px solid #ff6b35;color:#ff6b35;
+  font-weight:900;font-size:1.1rem;padding:10px 16px;border-radius:8px;
+  white-space:nowrap;min-width:70px;text-align:center}
+.alert-kw{font-weight:700;font-size:.95rem;margin-bottom:4px}
+.alert-meta{font-size:.78rem;color:#8b949e}
+.alert-window{margin-left:auto;font-size:.8rem;background:#21262d;
+  padding:4px 10px;border-radius:6px;white-space:nowrap}
+.scan-btn{background:linear-gradient(90deg,#ff6b35,#ff0066);color:#fff;border:none;
+  padding:12px 28px;border-radius:8px;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:opacity .15s}
+.scan-btn:hover{opacity:.85}
+.scan-btn:disabled{opacity:.5;cursor:not-allowed}
+.status-bar{background:#161b22;border-bottom:1px solid #30363d;
+  padding:8px 24px;font-size:.8rem;color:#8b949e;display:flex;gap:20px;flex-wrap:wrap}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);
+  z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:#161b22;border:1px solid #30363d;border-radius:16px;
+  padding:36px;max-width:440px;width:90%}
+.modal h4{font-size:1.3rem;margin-bottom:8px}
+.modal p{color:#8b949e;font-size:.88rem;margin-bottom:20px;line-height:1.5}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:.82rem;color:#8b949e;margin-bottom:6px}
+.form-group input{width:100%;background:#0d1117;border:1px solid #30363d;
+  color:#e6edf3;padding:10px 14px;border-radius:8px;font-size:.9rem}
+.form-group input:focus{outline:none;border-color:#ff6b35}
+.modal-footer{display:flex;gap:10px;margin-top:20px}
+.btn-cancel{flex:1;padding:11px;background:#21262d;border:1px solid #30363d;
+  color:#e6edf3;border-radius:8px;cursor:pointer;font-weight:600}
+.btn-pay{flex:2;padding:11px;background:linear-gradient(90deg,#ff6b35,#ff0066);
+  color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:700}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.loading{animation:pulse 1.2s infinite;color:#8b949e}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔥 Viral Window Scanner</h1>
+  <nav class="nav">
+    <a href="/">Dashboard</a>
+    <a href="/viral">Scanner</a>
+    <a href="/master">Master</a>
+  </nav>
+</header>
+<div class="status-bar">
+  <span>Signale: <strong id="stat-signals">...</strong></span>
+  <span>High-Score: <strong id="stat-high">...</strong></span>
+  <span>Alerts gesendet: <strong id="stat-alerts">...</strong></span>
+  <span>Shopify Imports: <strong id="stat-imports">...</strong></span>
+  <span>Subscriber: <strong id="stat-subs">...</strong></span>
+  <span style="margin-left:auto">
+    <button class="scan-btn" id="scan-btn" onclick="triggerScan()">▶ Scan starten</button>
+  </span>
+</div>
+
+<div class="hero">
+  <div class="hero-badge">🌍 WELTEINZIGARTIGES TOOL</div>
+  <h2>Finde Produkte bevor sie<br><span>viral werden</span></h2>
+  <p>Unser AI-Scanner kombiniert 5 Echtzeit-Signalquellen und erkennt
+  das 48-72h Trend-Fenster — bevor der Markt gesättigt ist.
+  Du bekommst das fertige Shopify-Listing, den Lieferanten und die Ad-Copy.</p>
+  <div class="hero-stats">
+    <div class="stat-pill"><div class="stat-num" id="h-signals">--</div><div class="stat-lbl">Signale heute</div></div>
+    <div class="stat-pill"><div class="stat-num" id="h-score">--</div><div class="stat-lbl">Top Score</div></div>
+    <div class="stat-pill"><div class="stat-num" id="h-imports">--</div><div class="stat-lbl">Auto-Imports</div></div>
+    <div class="stat-pill"><div class="stat-num" id="h-subs">--</div><div class="stat-lbl">Subscriber</div></div>
+  </div>
+</div>
+
+<div class="signals">
+  <div class="sig-card">
+    <div class="sig-icon">📈</div>
+    <div><div class="sig-name">Google Trends</div><div class="sig-desc">Echtzeit RSS DE/AT</div></div>
+  </div>
+  <div class="sig-card">
+    <div class="sig-icon">📦</div>
+    <div><div class="sig-name">Amazon Movers</div><div class="sig-desc">Stundendaten DE</div></div>
+  </div>
+  <div class="sig-card">
+    <div class="sig-icon">🏭</div>
+    <div><div class="sig-name">AliExpress</div><div class="sig-desc">Top Bestseller</div></div>
+  </div>
+  <div class="sig-card">
+    <div class="sig-icon">💬</div>
+    <div><div class="sig-name">Reddit</div><div class="sig-desc">r/ecommerce + mehr</div></div>
+  </div>
+  <div class="sig-card">
+    <div class="sig-icon">🎵</div>
+    <div><div class="sig-name">TikTok Niches</div><div class="sig-desc">30 Trending-Niches</div></div>
+  </div>
+  <div class="sig-card">
+    <div class="sig-icon">🤖</div>
+    <div><div class="sig-name">AI Scoring</div><div class="sig-desc">Claude / GPT-4o</div></div>
+  </div>
+</div>
+
+<div class="alerts-section">
+  <h3>🔥 Letzte Viral Alerts</h3>
+  <div id="alerts-list"><div class="loading">Lade Alerts...</div></div>
+</div>
+
+<div class="pricing">
+  <h3>💎 Subscription Tiers</h3>
+  <p class="pricing-sub">Wähle deinen Plan — kündige jederzeit</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Alert Only</div>
+      <div class="plan-price">€29 <span>/ Monat</span></div>
+      <div class="plan-desc">Echtzeit-Telegram-Alert wenn Score 55+</div>
+      <ul class="plan-features">
+        <li>Telegram Alert (Score 55+)</li>
+        <li>Keyword + Score + Quellen</li>
+        <li>Fenster-Countdown</li>
+        <li>Supplier-Hint</li>
+      </ul>
+      <button class="plan-btn plan-btn-secondary" onclick="openModal('alert')">Jetzt starten</button>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">⭐ BELIEBTESTER</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">€79 <span>/ Monat</span></div>
+      <div class="plan-desc">Alerts + Shopify Auto-Import + alle Details</div>
+      <ul class="plan-features">
+        <li>Alles aus Alert</li>
+        <li>Shopify Auto-Import (Score 72+)</li>
+        <li>Fertiges Listing (Titel, Desc, Tags)</li>
+        <li>Margin-Kalkulation</li>
+        <li>Frühere Alerts (Score 40+)</li>
+      </ul>
+      <button class="plan-btn plan-btn-primary" onclick="openModal('pro')">Pro starten</button>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price">€199 <span>/ Monat</span></div>
+      <div class="plan-desc">5 Stores, White-Label, persönlicher Support</div>
+      <ul class="plan-features">
+        <li>Alles aus Pro</li>
+        <li>5 Shopify Stores</li>
+        <li>White-Label Reports</li>
+        <li>Priority Alerts</li>
+        <li>Persönlicher Telegram-Support</li>
+      </ul>
+      <button class="plan-btn plan-btn-secondary" onclick="openModal('agency')">Agency anfragen</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h4 id="modal-title">Subscription starten</h4>
+    <p id="modal-desc">Du wirst zu Stripe weitergeleitet. Sichere Zahlung, kündige jederzeit.</p>
+    <div class="form-group">
+      <label>E-Mail-Adresse</label>
+      <input type="email" id="modal-email" placeholder="deine@email.de" required>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+      <button class="btn-pay" id="pay-btn" onclick="startCheckout()">💳 Jetzt abonnieren →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedTier = 'alert';
+const tierLabels = {alert:'Alert Only (€29/Mo)',pro:'Pro (€79/Mo)',agency:'Agency (€199/Mo)'};
+
+async function loadStatus() {
+  try {
+    const r = await fetch('/api/viral/status');
+    const d = await r.json();
+    if(!d.ok) return;
+    document.getElementById('stat-signals').textContent = d.total_signals || 0;
+    document.getElementById('stat-high').textContent    = d.high_score || 0;
+    document.getElementById('stat-alerts').textContent  = d.alerts_sent || 0;
+    document.getElementById('stat-imports').textContent = d.shopify_imports || 0;
+    document.getElementById('stat-subs').textContent    = d.subs_active || 0;
+    document.getElementById('h-signals').textContent    = d.total_signals || 0;
+    document.getElementById('h-score').textContent      = d.top_products?.[0]?.score?.toFixed(0) || '--';
+    document.getElementById('h-imports').textContent    = d.shopify_imports || 0;
+    document.getElementById('h-subs').textContent       = d.subs_active || 0;
+  } catch(e) { console.log('Status load error:', e); }
+}
+
+async function loadAlerts() {
+  try {
+    const r = await fetch('/api/viral/alerts?limit=10');
+    const d = await r.json();
+    const el = document.getElementById('alerts-list');
+    if(!d.ok || !d.alerts?.length) {
+      el.innerHTML = '<div style="color:#8b949e;padding:20px;text-align:center">Noch keine Alerts — starte den ersten Scan! ▶</div>';
+      return;
+    }
+    el.innerHTML = d.alerts.map(a => {
+      const dt = a.sent_at ? new Date(a.sent_at*1000).toLocaleString('de-DE') : '--';
+      const score = Math.round(a.score || 0);
+      const scoreColor = score>=85?'#ff0066':score>=70?'#ff6b35':'#f0a500';
+      return `<div class="alert-card">
+        <div class="alert-score" style="border-color:${scoreColor};color:${scoreColor}">${score}</div>
+        <div style="flex:1;min-width:0">
+          <div class="alert-kw">${a.keyword}</div>
+          <div class="alert-meta">📡 ${a.sources||'multi'} · 🏭 ${a.supplier||'AliExpress'} · 💰 ~${Math.round(a.margin_pct||55)}% Margin${a.shopify_id?(' · ✅ Shopify'):''}</div>
+          <div class="alert-meta" style="margin-top:4px">${dt}</div>
+        </div>
+        <div class="alert-window">⏱ ${a.window_h||48}h Fenster</div>
+      </div>`;
+    }).join('');
+  } catch(e) { document.getElementById('alerts-list').innerHTML='<div style="color:#f85149">Fehler beim Laden</div>'; }
+}
+
+async function triggerScan() {
+  const btn = document.getElementById('scan-btn');
+  btn.disabled = true; btn.textContent = '⏳ Scan läuft...';
+  try {
+    const r = await fetch('/api/viral/scan', {method:'POST'});
+    const d = await r.json();
+    if(d.ok) {
+      btn.textContent = '✅ Scan gestartet';
+      setTimeout(()=>{btn.textContent='▶ Scan starten';btn.disabled=false;loadStatus();loadAlerts();}, 60000);
+    } else {
+      btn.textContent = d.error || 'Fehler'; btn.disabled = false;
+    }
+  } catch(e) { btn.textContent='Fehler'; btn.disabled=false; }
+}
+
+function openModal(tier) {
+  selectedTier = tier;
+  document.getElementById('modal-title').textContent = tierLabels[tier];
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+
+async function startCheckout() {
+  const email = document.getElementById('modal-email').value.trim();
+  if(!email || !email.includes('@')) { alert('Bitte eine gültige E-Mail eingeben'); return; }
+  const btn = document.getElementById('pay-btn');
+  btn.textContent = '⏳ Weiterleitung...'; btn.disabled = true;
+  try {
+    const r = await fetch('/api/viral/subscribe', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({email, tier:selectedTier})
+    });
+    const d = await r.json();
+    if(d.checkout_url) { window.location.href = d.checkout_url; }
+    else { alert(d.error || 'Checkout nicht verfügbar — Stripe Price IDs prüfen (/api/viral/setup)'); btn.textContent='Jetzt abonnieren →'; btn.disabled=false; }
+  } catch(e) { alert('Netzwerkfehler'); btn.textContent='Jetzt abonnieren →'; btn.disabled=false; }
+}
+
+loadStatus(); loadAlerts();
+setInterval(()=>{loadStatus();loadAlerts();}, 30000);
+</script>
+</body></html>"""
     return web.Response(text=html, content_type="text/html")
 
 
