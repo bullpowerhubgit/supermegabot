@@ -2809,31 +2809,222 @@ async def task_insolvenz_radar_scan() -> str:
 
 
 async def task_insolvenz_radar_autopost() -> str:
-    """Insolvenz Radar Autopost — postet Top-Lead täglich auf Telegram als Social Proof"""
+    """Insolvenz Radar Autopost — täglich auf LinkedIn + Twitter + Facebook + Telegram"""
+    import json as _json
+    import os
+    import aiohttp
+
     try:
-        from modules.insolvenz_radar import get_top_leads
-        import os, aiohttp
-        leads = get_top_leads(limit=1)
+        from modules.insolvenz_radar import get_top_leads, get_status
+        leads = get_top_leads(limit=3)
         if not leads:
-            return "InsolvenzRadar Autopost: keine Leads"
-        lead = leads[0]
-        import json as _json
-        types = _json.loads(lead.get("lead_types", "[]"))
-        msg = (
-            f"&#x1F3DB; <b>Insolvenz Radar &mdash; Top Lead heute</b>\n\n"
-            f"&#x1F3E2; <b>{lead['debtor_name']}</b>\n"
-            f"&#x1F4CD; {lead.get('bundesland','?')} | {lead.get('branche','?')}\n"
-            f"&#x1F3AF; Score: <b>{lead['score']}/100</b>\n"
-            f"&#x1F91D; Ideal f&#252;r: {', '.join(types)}\n\n"
-            f"<i>Mehr auf /insolvenz-radar</i>"
+            return "InsolvenzRadar Autopost: keine Leads vorhanden"
+
+        lead      = leads[0]
+        name      = lead["debtor_name"]
+        score     = lead.get("score", 0)
+        branche   = lead.get("branche", "Unbekannt")
+        bundesland = lead.get("bundesland", "DE")
+        types     = _json.loads(lead.get("lead_types", "[]"))
+        summary   = lead.get("ai_summary", "")
+        ins_type  = lead.get("insolvency_type", "Insolvenz")
+        status    = get_status()
+        total     = status.get("total_leads", 0)
+
+        dash_url  = os.getenv("DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
+
+        results = {}
+
+        # ── 1. LINKEDIN ───────────────────────────────────────────────────────
+        linkedin_token = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
+        linkedin_urn   = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
+        if not linkedin_urn.startswith("urn:li:"):
+            linkedin_urn = f"urn:li:person:{linkedin_urn}"
+
+        # Professioneller LinkedIn-Post (kein HTML, plain text)
+        type_list = ", ".join(types[:3]) if types else "Steuerberater, Factoring"
+        ai_line   = f"\n\n💡 {summary}" if summary else ""
+        li_text   = (
+            f"🏛️ Insolvenz Radar: {total}+ B2B-Leads aus dem deutschen Staatsregister\n\n"
+            f"Heute neu: {ins_type} in {bundesland}\n"
+            f"Branche: {branche} | Score: {score}/100\n"
+            f"Ideal für: {type_list}"
+            f"{ai_line}\n\n"
+            f"Das Insolvenzregister ist 100% kostenlos und öffentlich — "
+            f"aber niemand hat es bisher als B2B-Leadmaschine genutzt.\n\n"
+            f"Mehr: {dash_url}/insolvenz-radar\n\n"
+            f"#Insolvenzen #B2BLeads #Steuerberater #Factoring #Digitalisierung"
         )
-        token = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1","")
-        chat  = os.getenv("TELEGRAM_CHAT_ID","")
-        if token and chat:
-            async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as s:
-                await s.post(f"https://api.telegram.org/bot{token}/sendMessage",
-                             json={"chat_id": chat, "text": msg, "parse_mode": "HTML"})
-        return f"InsolvenzRadar Autopost: {lead['debtor_name']} (Score {lead['score']})"
+
+        if linkedin_token:
+            try:
+                async with aiohttp.ClientSession(
+                    connector=aiohttp.TCPConnector(ssl=False),
+                    timeout=aiohttp.ClientTimeout(total=15)
+                ) as s:
+                    async with s.post(
+                        "https://api.linkedin.com/v2/ugcPosts",
+                        headers={
+                            "Authorization": f"Bearer {linkedin_token}",
+                            "Content-Type": "application/json",
+                            "X-Restli-Protocol-Version": "2.0.0",
+                        },
+                        json={
+                            "author": linkedin_urn,
+                            "lifecycleState": "PUBLISHED",
+                            "specificContent": {
+                                "com.linkedin.ugc.ShareContent": {
+                                    "shareCommentary": {"text": li_text},
+                                    "shareMediaCategory": "NONE",
+                                }
+                            },
+                            "visibility": {
+                                "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"
+                            },
+                        }
+                    ) as r:
+                        d = await r.json(content_type=None)
+                        results["linkedin"] = "OK" if d.get("id") else f"ERR: {str(d)[:80]}"
+            except Exception as e:
+                results["linkedin"] = f"ERR: {e}"
+        else:
+            results["linkedin"] = "SKIP (kein Token)"
+
+        await asyncio.sleep(1)
+
+        # ── 2. TWITTER / X ───────────────────────────────────────────────────
+        tw_api_key    = os.getenv("TWITTER_API_KEY", "")
+        tw_api_secret = os.getenv("TWITTER_API_SECRET", "")
+        tw_token      = os.getenv("TWITTER_ACCESS_TOKEN", "")
+        tw_secret     = os.getenv("TWITTER_ACCESS_TOKEN_SECRET",
+                                  os.getenv("TWITTER_ACCESS_SECRET", ""))
+
+        # Kurzer Tweet (max 280 Zeichen)
+        tweet_text = (
+            f"🏛️ {total}+ B2B-Leads aus dem dt. Insolvenzregister — automatisch, täglich, kostenlos.\n\n"
+            f"Heute: {branche} in {bundesland} | Score {score}/100\n"
+            f"Ideal für: {type_list[:60]}\n\n"
+            f"#Insolvenz #B2B #Steuerberater\n{dash_url}/insolvenz-radar"
+        )
+        tweet_text = tweet_text[:280]
+
+        if tw_api_key and tw_api_secret and tw_token and tw_secret:
+            try:
+                import hmac as _hmac, hashlib, base64, urllib.parse
+                # OAuth 1.0a Header
+                ts    = str(int(time.time()))
+                nonce = hashlib.md5(ts.encode()).hexdigest()
+                tweet_url = "https://api.twitter.com/2/tweets"
+                oauth_params = {
+                    "oauth_consumer_key":     tw_api_key,
+                    "oauth_nonce":            nonce,
+                    "oauth_signature_method": "HMAC-SHA1",
+                    "oauth_timestamp":        ts,
+                    "oauth_token":            tw_token,
+                    "oauth_version":          "1.0",
+                }
+                base_str = "&".join([
+                    "POST",
+                    urllib.parse.quote(tweet_url, safe=""),
+                    urllib.parse.quote(
+                        "&".join(f"{k}={urllib.parse.quote(v, safe='')}"
+                                 for k, v in sorted(oauth_params.items())),
+                        safe=""
+                    )
+                ])
+                signing_key = (urllib.parse.quote(tw_api_secret, safe="") + "&" +
+                               urllib.parse.quote(tw_secret, safe=""))
+                sig = base64.b64encode(
+                    _hmac.new(signing_key.encode(), base_str.encode(), hashlib.sha1).digest()
+                ).decode()
+                oauth_params["oauth_signature"] = sig
+                auth_header = "OAuth " + ", ".join(
+                    f'{k}="{urllib.parse.quote(v, safe="")}"'
+                    for k, v in sorted(oauth_params.items())
+                )
+                async with aiohttp.ClientSession(
+                    connector=aiohttp.TCPConnector(ssl=False),
+                    timeout=aiohttp.ClientTimeout(total=15)
+                ) as s:
+                    async with s.post(
+                        tweet_url,
+                        headers={"Authorization": auth_header,
+                                 "Content-Type": "application/json"},
+                        json={"text": tweet_text}
+                    ) as r:
+                        d = await r.json(content_type=None)
+                        results["twitter"] = "OK" if d.get("data", {}).get("id") else f"ERR: {str(d)[:80]}"
+            except Exception as e:
+                results["twitter"] = f"ERR: {e}"
+        else:
+            results["twitter"] = "SKIP (kein Token)"
+
+        await asyncio.sleep(1)
+
+        # ── 3. FACEBOOK (AiiteC Page) ─────────────────────────────────────────
+        fb_token  = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC",
+                              os.getenv("FACEBOOK_PAGE_TOKEN", ""))
+        fb_page   = os.getenv("FACEBOOK_PAGE_ID_AIITEC",
+                              os.getenv("FACEBOOK_PAGE_ID", "1016738738178786"))
+
+        fb_text = (
+            f"🏛️ Insolvenz Radar: {total}+ B2B-Leads täglich aus dem deutschen Staatsregister\n\n"
+            f"Das Insolvenzregister ist öffentlich & kostenlos — aber niemand nutzt es als Leadmaschine.\n\n"
+            f"Heute: {branche} | Score {score}/100 | Ideal für {type_list}\n\n"
+            f"👉 {dash_url}/insolvenz-radar\n\n"
+            f"#Insolvenz #B2BLeads #Steuerberater #Factoring"
+        )
+
+        if fb_token:
+            try:
+                async with aiohttp.ClientSession(
+                    connector=aiohttp.TCPConnector(ssl=False),
+                    timeout=aiohttp.ClientTimeout(total=15)
+                ) as s:
+                    async with s.post(
+                        f"https://graph.facebook.com/v18.0/{fb_page}/feed",
+                        data={"message": fb_text, "access_token": fb_token}
+                    ) as r:
+                        d = await r.json(content_type=None)
+                        results["facebook"] = "OK" if d.get("id") else f"ERR: {str(d)[:80]}"
+            except Exception as e:
+                results["facebook"] = f"ERR: {e}"
+        else:
+            results["facebook"] = "SKIP (kein Token)"
+
+        await asyncio.sleep(0.5)
+
+        # ── 4. TELEGRAM ───────────────────────────────────────────────────────
+        tg_token = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
+        tg_chat  = os.getenv("TELEGRAM_CHAT_ID", "")
+        tg_msg = (
+            f"🏛️ <b>Insolvenz Radar — Täglicher Autopost</b>\n\n"
+            f"✅ Gepostet auf:\n"
+            + "\n".join(f"  {'✅' if v=='OK' else '❌'} {k.capitalize()}: {v}"
+                        for k, v in results.items()) +
+            f"\n\n📊 Leads gesamt: <b>{total}</b>\n"
+            f"🏢 Top Lead: <b>{name}</b> | Score {score}\n"
+            f"🏭 {branche} | 🎯 {type_list}\n"
+            f"{f'💡 {summary}' if summary else ''}"
+        )
+        if tg_token and tg_chat:
+            try:
+                async with aiohttp.ClientSession(
+                    connector=aiohttp.TCPConnector(ssl=False),
+                    timeout=aiohttp.ClientTimeout(total=10)
+                ) as s:
+                    await s.post(
+                        f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                        json={"chat_id": tg_chat, "text": tg_msg,
+                              "parse_mode": "HTML", "disable_web_page_preview": True}
+                    )
+                results["telegram"] = "OK"
+            except Exception as e:
+                results["telegram"] = f"ERR: {e}"
+
+        ok_channels = [k for k, v in results.items() if v == "OK"]
+        return (f"InsolvenzRadar Autopost: {name} (Score {score}) → "
+                f"{', '.join(ok_channels) or 'keine Kanäle'} ✅")
     except Exception as e:
         return f"InsolvenzRadar Autopost error: {e}"
 
