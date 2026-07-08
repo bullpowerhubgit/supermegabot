@@ -2037,6 +2037,42 @@ async def handle_intent_bridge_process(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_demand_oracle_stats(req):
+    """GET /api/demand-oracle/stats"""
+    try:
+        from modules.demand_oracle import get_stats
+        return web.json_response({"ok": True, "stats": get_stats()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_demand_oracle_scan(req):
+    """POST /api/demand-oracle/scan — trigger manual scan"""
+    try:
+        from modules.demand_oracle import run_demand_scan
+        asyncio.create_task(run_demand_scan())
+        return web.json_response({"ok": True, "message": "Demand Oracle scan gestartet"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_demand_oracle_wishes(req):
+    """GET /api/demand-oracle/wishes — recent wish expressions"""
+    try:
+        import sqlite3
+        from pathlib import Path
+        db_path = Path(__file__).parent.parent / "data" / "demand_oracle.db"
+        con = sqlite3.connect(str(db_path))
+        con.row_factory = sqlite3.Row
+        wishes = con.execute(
+            "SELECT text, subreddit, score, ts FROM do_wishes ORDER BY ts DESC LIMIT 50"
+        ).fetchall()
+        con.close()
+        return web.json_response({"ok": True, "wishes": [dict(w) for w in wishes]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_digistore_status(req):
     try:
         from modules.digistore24_automation import ping, get_sales_stats, get_products, setup_ipn, is_configured
@@ -8666,6 +8702,11 @@ async def create_app():
     app.router.add_get("/api/ebay-arbitrage/stats",    handle_ebay_arbitrage_stats)
     app.router.add_post("/api/ebay-arbitrage/scan",    handle_ebay_arbitrage_scan)
     app.router.add_post("/api/ebay-arbitrage/preview", handle_ebay_arbitrage_preview)
+
+    # ── Demand Oracle ─────────────────────────────────────────────────────────
+    app.router.add_get("/api/demand-oracle/stats",    handle_demand_oracle_stats)
+    app.router.add_post("/api/demand-oracle/scan",    handle_demand_oracle_scan)
+    app.router.add_get("/api/demand-oracle/wishes",   handle_demand_oracle_wishes)
 
     # ── Digistore24 ───────────────────────────────────────────────────────────
     app.router.add_get("/api/intent-bridge/stats",    handle_intent_bridge_stats)
