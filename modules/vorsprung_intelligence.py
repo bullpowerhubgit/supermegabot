@@ -134,146 +134,149 @@ async def _claude_analyze(system: str, user_msg: str) -> str:
         return f"Claude error: {e}"
 
 
-# ── Scraper 1: OpenCorporates — Deutsche Unternehmensdaten (gratis API) ──────
+# ── Scraper 1: GLEIF — Deutsche Unternehmensdaten (gratis, kein API-Key) ──────
 
 async def scrape_opencorporates_de(query: str = "insolvenz", max_results: int = 20) -> list[dict]:
-    """
-    OpenCorporates freie API — deutsche Unternehmensstatus-Änderungen.
-    Zeigt inaktive/aufgelöste Unternehmen → Insolvenz-Signal.
-    """
+    """GLEIF LEI-Datenbank — deutsche Unternehmen mit LEI (gratis, kein API-Key)."""
     signals = []
-    url = "https://api.opencorporates.com/v0.4/companies/search"
+    url = "https://api.gleif.org/api/v1/lei-records"
     params = {
-        "q": query,
-        "jurisdiction_code": "de",
-        "inactive": "true",
-        "per_page": min(max_results, 30),
+        "filter[entity.legalName]": query,
+        "page[size]": min(max_results, 20),
+        "page[number]": 1,
     }
     try:
-        async with aiohttp.ClientSession(headers=HEADERS_BROWSER) as s:
+        async with aiohttp.ClientSession(headers={"Accept": "application/vnd.api+json"}) as s:
             async with s.get(url, params=params, timeout=aiohttp.ClientTimeout(total=20)) as r:
                 if r.status != 200:
-                    log.warning(f"OpenCorporates status {r.status}")
+                    log.warning(f"GLEIF status {r.status}")
                     return signals
                 data = await r.json()
-                companies = data.get("results", {}).get("companies", [])
-                for entry in companies[:max_results]:
-                    c = entry.get("company", {})
-                    name = c.get("name", "")
+                for item in data.get("data", [])[:max_results]:
+                    attr = item.get("attributes", {})
+                    entity = attr.get("entity", {})
+                    reg = attr.get("registration", {})
+                    name = entity.get("legalName", {}).get("name", "")
                     if not name:
                         continue
+                    status = entity.get("status", "ACTIVE")
                     signals.append({
-                        "signal_type": "company_change",
-                        "source": "opencorporates_de",
+                        "signal_type": "company_change" if status != "ACTIVE" else "new_company",
+                        "source": "gleif_de",
                         "entity_name": name,
                         "signal_data": {
-                            "company_number": c.get("company_number", ""),
-                            "status": c.get("current_status", "inactive"),
-                            "incorporation_date": c.get("incorporation_date", ""),
-                            "dissolution_date": c.get("dissolution_date", ""),
-                            "registered_address": str(c.get("registered_address", "")),
-                            "jurisdiction": "de",
-                            "opencorporates_url": c.get("opencorporates_url", ""),
+                            "lei": item.get("id", ""),
+                            "status": status,
+                            "jurisdiction": entity.get("legalJurisdiction", "DE"),
+                            "registration_date": reg.get("initialRegistrationDate", ""),
+                            "last_update": reg.get("lastUpdateDate", ""),
+                            "legal_form": entity.get("legalForm", {}).get("id", ""),
                         },
-                        "intelligence_score": 82,
+                        "intelligence_score": 80,
                         "created_at": datetime.now(timezone.utc).isoformat(),
                     })
     except Exception as e:
-        log.warning(f"OpenCorporates scrape error: {e}")
-    log.info(f"OpenCorporates DE: {len(signals)} Signale gefunden")
+        log.warning(f"GLEIF scrape error: {e}")
+    log.info(f"GLEIF DE: {len(signals)} Signale gefunden")
     return signals
 
 
 async def scrape_opencorporates_active(sector: str = "software", max_results: int = 15) -> list[dict]:
-    """Neue aktive DACH-Unternehmen — M&A / Sales-Intelligence."""
+    """GLEIF: Neue DACH-Unternehmen nach Branche — M&A / Sales-Intelligence."""
     signals = []
-    url = "https://api.opencorporates.com/v0.4/companies/search"
-    params = {
-        "q": sector,
-        "jurisdiction_code": "de",
-        "inactive": "false",
-        "per_page": min(max_results, 30),
-        "order": "incorporation_date",
-    }
+    sectors = [sector, f"{sector} GmbH", f"{sector} AG"]
     try:
-        async with aiohttp.ClientSession(headers=HEADERS_BROWSER) as s:
-            async with s.get(url, params=params, timeout=aiohttp.ClientTimeout(total=20)) as r:
-                if r.status != 200:
-                    return signals
-                data = await r.json()
-                companies = data.get("results", {}).get("companies", [])
-                for entry in companies[:max_results]:
-                    c = entry.get("company", {})
-                    name = c.get("name", "")
-                    if not name:
-                        continue
-                    inc_date = c.get("incorporation_date", "")
-                    signals.append({
-                        "signal_type": "new_company",
-                        "source": "opencorporates_de_new",
-                        "entity_name": name,
-                        "signal_data": {
-                            "company_number": c.get("company_number", ""),
-                            "incorporation_date": inc_date,
-                            "registered_address": str(c.get("registered_address", "")),
-                            "jurisdiction": "de",
-                            "sector_query": sector,
-                            "opencorporates_url": c.get("opencorporates_url", ""),
-                            "sales_window_days": 30,
-                        },
-                        "intelligence_score": 78,
-                        "created_at": datetime.now(timezone.utc).isoformat(),
-                    })
+        async with aiohttp.ClientSession(headers={"Accept": "application/vnd.api+json"}) as s:
+            for q in sectors[:2]:
+                url = "https://api.gleif.org/api/v1/lei-records"
+                params = {
+                    "filter[entity.legalName]": q,
+                    "filter[entity.legalJurisdiction]": "DE",
+                    "page[size]": min(max_results, 10),
+                }
+                try:
+                    async with s.get(url, params=params, timeout=aiohttp.ClientTimeout(total=15)) as r:
+                        if r.status != 200:
+                            continue
+                        data = await r.json()
+                        for item in data.get("data", [])[:max_results]:
+                            attr = item.get("attributes", {})
+                            entity = attr.get("entity", {})
+                            reg = attr.get("registration", {})
+                            name = entity.get("legalName", {}).get("name", "")
+                            if not name:
+                                continue
+                            inc_date = reg.get("initialRegistrationDate", "")
+                            signals.append({
+                                "signal_type": "new_company",
+                                "source": "gleif_de_new",
+                                "entity_name": name,
+                                "signal_data": {
+                                    "lei": item.get("id", ""),
+                                    "incorporation_date": inc_date,
+                                    "jurisdiction": "de",
+                                    "sector_query": sector,
+                                    "sales_window_days": 30,
+                                },
+                                "intelligence_score": 78,
+                                "created_at": datetime.now(timezone.utc).isoformat(),
+                            })
+                except Exception:
+                    continue
     except Exception as e:
-        log.warning(f"OpenCorporates new company error: {e}")
+        log.warning(f"GLEIF new company error: {e}")
+    log.info(f"GLEIF neue Unternehmen: {len(signals)} Signale")
     return signals
 
 
 # ── Scraper 2: EUIPO EU-Markenanmeldungen ────────────────────────────────────
 
 async def scrape_euipo_trademarks(query: str = "", lang: str = "de", limit: int = 20) -> list[dict]:
-    """Holt neue EU-Markenanmeldungen aus der EUIPO-Datenbank."""
+    """EU-Markenanmeldungen via EUIPO eSearch API (öffentlich, kein Auth)."""
     signals = []
-    url = "https://euipo.europa.eu/api/trademark/search/v2"
+    # EUIPO eSearch public JSON API
+    url = "https://euipo.europa.eu/eSearch/rest/trademarks"
     params = {
-        "language": lang,
-        "limit": limit,
-        "offset": 0,
-        "status": "Filed",
-        "sort": "applicationDate",
-        "sortDir": "desc",
+        "basicSearch": "true",
+        "criteria": f"tm-text:{query}" if query else "tm-status:Filed",
+        "rows": min(limit, 20),
+        "start": 0,
+        "sortBy": "applicationDate",
+        "sortOrder": "desc",
     }
-    if query:
-        params["text"] = query
-
     try:
         async with aiohttp.ClientSession(headers={**HEADERS_BROWSER, "Accept": "application/json"}) as s:
             async with s.get(url, params=params, timeout=aiohttp.ClientTimeout(total=20)) as r:
                 if r.status == 200:
                     data = await r.json()
-                    trademarks = data.get("trademarks", data.get("results", []))
+                    trademarks = data.get("trademarkBag", {}).get("trademark", data.get("results", []))
+                    if not isinstance(trademarks, list):
+                        trademarks = [trademarks] if trademarks else []
                     for tm in trademarks[:limit]:
-                        name = tm.get("trademarkName") or tm.get("name", "")
+                        name = (tm.get("wordMarkSpecification") or {}).get("markVerbalElementText", "") or tm.get("trademarkName", "")
                         applicant = ""
-                        if tm.get("holders"):
-                            applicant = tm["holders"][0].get("name", "")
+                        holders = tm.get("applicantBag", {}).get("applicant", [])
+                        if holders:
+                            if isinstance(holders, list) and holders:
+                                applicant = holders[0].get("applicantAddressBag", {}).get("applicantAddress", [{}])[0].get("applicantName", "") if holders else ""
+                            elif isinstance(holders, dict):
+                                applicant = holders.get("applicantName", "")
                         signals.append({
                             "signal_type": "trademark_filing",
                             "source": "euipo",
-                            "entity_name": applicant or name,
+                            "entity_name": applicant or name or "Unknown",
                             "signal_data": {
                                 "trademark": name,
                                 "applicant": applicant,
                                 "application_date": tm.get("applicationDate", ""),
                                 "application_number": tm.get("applicationNumber", ""),
-                                "nice_classes": tm.get("niceClasses", []),
-                                "status": tm.get("status", "Filed"),
+                                "status": tm.get("markCurrentStatusCode", "Filed"),
                             },
                             "intelligence_score": 72,
                             "created_at": datetime.now(timezone.utc).isoformat(),
                         })
                 else:
-                    log.warning(f"EUIPO status {r.status}")
+                    log.warning(f"EUIPO eSearch status {r.status}")
     except Exception as e:
         log.warning(f"EUIPO scrape error: {e}")
     log.info(f"EUIPO: {len(signals)} Markenanmeldungen gefunden")
