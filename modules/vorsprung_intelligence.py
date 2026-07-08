@@ -541,14 +541,22 @@ async def scrape_twitter_regret_signals(max_results: int = 10) -> list[dict]:
 
 
 async def scrape_all_regret_signals() -> list[dict]:
-    """Regret-Signals von HN + Twitter + Reddit parallel sammeln."""
+    """
+    Regret-Signals von HN + Twitter + Reddit RSS + Pullpush parallel sammeln.
+    Reddit: kein OAuth (seit 2023 keine Script Apps mehr) — RSS + Pullpush.io stattdessen.
+    """
     tasks = [
-        scrape_hackernews_signals(min_score=30, limit=40),
+        scrape_hackernews_signals(min_score=20, limit=50),
         scrape_twitter_regret_signals(max_results=10),
-        # Reddit: OAuth-Search mit RSS-Fallback
-        reddit_search_oauth("I wish I had bought", "investing", 15),
-        reddit_search_oauth("regret not buying", "personalfinance", 10),
-        scrape_reddit_finance_rss("ValueInvesting", 20),
+        # Reddit RSS — kein Auth, keine App nötig
+        scrape_reddit_rss("investing", 25),
+        scrape_reddit_rss("personalfinance", 20),
+        scrape_reddit_rss("ValueInvesting", 20),
+        scrape_reddit_rss("finanzen", 15),
+        # Pullpush.io — Pushshift-Nachfolger, gratis Reddit-Suche
+        scrape_pullpush_regret("I wish I had bought", 20),
+        scrape_pullpush_regret("should have invested", 15),
+        scrape_pullpush_regret("missed the pump", 10),
     ]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     combined = []
@@ -870,167 +878,133 @@ async def _post_twitter(tweet_text: str) -> dict:
         return {"ok": False, "error": str(e)}
 
 
-async def _reddit_get_token() -> str:
-    """
-    Reddit OAuth2 Token via Password Grant.
-    App muss in reddit.com/prefs/apps als 'Script' App registriert sein.
-    Rudolf's App: hqgJAQe6Qiu5s5r1Vqc0Og / User: bullpowersrtkennels
-    """
-    client_id = os.getenv("REDDIT_CLIENT_ID", "hqgJAQe6Qiu5s5r1Vqc0Og")
-    secret    = os.getenv("REDDIT_CLIENT_SECRET", "xsH99P7iCQAPeknbAXe5F9Nd9fV7aA")
-    username  = os.getenv("REDDIT_USERNAME", "bullpowersrtkennels")
-    password  = os.getenv("REDDIT_PASSWORD", "Upper-Competition505")
-
-    import base64
-    creds = base64.b64encode(f"{client_id}:{secret}".encode()).decode()
-    ua = f"VORSPRUNG:intelligence:v1.0 (by /u/{username})"
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://www.reddit.com/api/v1/access_token",
-                headers={
-                    "Authorization": f"Basic {creds}",
-                    "User-Agent": ua,
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
-                data=f"grant_type=password&username={username}&password={password}",
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    return data.get("access_token", "")
-                text = await r.text()
-                log.warning(f"Reddit token {r.status}: {text[:100]}")
-    except Exception as e:
-        log.warning(f"Reddit token error: {e}")
-    return ""
+_REDDIT_UA = "VORSPRUNG:intelligence:v1.0 (contact: bullpowersrtkennels@gmail.com)"
+_REDDIT_SUBS = ["investing", "personalfinance", "ValueInvesting", "finanzen", "CryptoCurrency"]
+_REGRET_KEYWORDS = [
+    "wish", "regret", "should have", "missed", "fomo", "too late",
+    "hätte", "bereue", "verpasst", "hätte gekauft", "hätte investiert",
+    "I wish I had", "should have bought", "I regret",
+]
 
 
-async def scrape_reddit_finance_rss(subreddit: str = "investing", limit: int = 20) -> list[dict]:
+async def scrape_reddit_rss(subreddit: str, limit: int = 25) -> list[dict]:
     """
-    Reddit RSS Feed — funktioniert ohne Auth für öffentliche Subreddits.
-    Holt die neuesten Posts als Regret/Finance-Signal.
+    Reddit öffentlicher RSS Feed — kein Account, keine App, kein OAuth nötig.
+    Seit 2023 die einzige verlässliche kostenlose Methode.
     """
     signals = []
-    ua = "VORSPRUNG:intelligence:v1.0 (by /u/bullpowersrtkennels)"
-    url = f"https://www.reddit.com/r/{subreddit}/.rss?limit={limit}"
+    url = f"https://www.reddit.com/r/{subreddit}/new/.rss?limit={limit}"
     try:
-        async with aiohttp.ClientSession(headers={"User-Agent": ua}) as s:
-            async with s.get(url, timeout=aiohttp.ClientTimeout(total=15)) as r:
-                if r.status == 200:
-                    xml = await r.text()
-                    entries = re.findall(
-                        r'<entry>.*?<title[^>]*>(?:<!\[CDATA\[)?([^\]<]{5,200})(?:\]\]>)?</title>.*?<author><name>([^<]*)</name></author>.*?</entry>',
-                        xml, re.DOTALL
-                    )
-                    for title, author in entries[:limit]:
-                        title = title.strip()
-                        if not title or title.lower().startswith("newest"):
-                            continue
-                        is_regret = any(kw in title.lower() for kw in [
-                            "wish", "regret", "should have", "missed", "fomo",
-                            "hätte", "bereue", "verpasst", "hätte gekauft"
-                        ])
-                        signals.append({
-                            "signal_type": "regret_signal" if is_regret else "market_signal",
-                            "source": f"reddit_r_{subreddit}",
-                            "entity_name": title[:100],
-                            "signal_data": {
-                                "title": title[:200],
-                                "author": author.strip(),
-                                "subreddit": subreddit,
-                                "is_regret": is_regret,
-                                "url": f"https://www.reddit.com/r/{subreddit}/",
-                            },
-                            "intelligence_score": 72 if is_regret else 55,
-                            "created_at": datetime.now(timezone.utc).isoformat(),
-                        })
-                else:
-                    log.warning(f"Reddit RSS {subreddit}: {r.status}")
+        async with aiohttp.ClientSession(headers={"User-Agent": _REDDIT_UA}) as s:
+            async with s.get(url, timeout=aiohttp.ClientTimeout(total=20)) as r:
+                if r.status != 200:
+                    log.warning(f"Reddit RSS r/{subreddit}: {r.status}")
+                    return signals
+                xml = await r.text()
+
+        # Atom feed entries
+        raw_entries = re.findall(r'<entry>(.*?)</entry>', xml, re.DOTALL)
+        for entry in raw_entries[:limit]:
+            title_m = re.search(r'<title[^>]*>(?:<!\[CDATA\[)?([^\]<]{3,200})(?:\]\]>)?</title>', entry)
+            link_m  = re.search(r'<link[^/]*/?>|<link[^>]+href="([^"]+)"', entry)
+            author_m = re.search(r'<name>([^<]+)</name>', entry)
+
+            title  = title_m.group(1).strip() if title_m else ""
+            link   = link_m.group(1) if (link_m and link_m.lastindex) else f"https://www.reddit.com/r/{subreddit}/"
+            author = author_m.group(1).strip() if author_m else ""
+
+            if not title or len(title) < 5:
+                continue
+
+            title_lo = title.lower()
+            is_regret = any(kw in title_lo for kw in _REGRET_KEYWORDS)
+            signals.append({
+                "signal_type": "regret_signal" if is_regret else "market_signal",
+                "source": f"reddit_r_{subreddit}",
+                "entity_name": title[:100],
+                "signal_data": {
+                    "title": title[:200],
+                    "author": author,
+                    "subreddit": subreddit,
+                    "is_regret": is_regret,
+                    "url": link,
+                },
+                "intelligence_score": 74 if is_regret else 52,
+                "created_at": datetime.now(timezone.utc).isoformat(),
+            })
     except Exception as e:
-        log.warning(f"Reddit RSS error ({subreddit}): {e}")
+        log.warning(f"Reddit RSS error (r/{subreddit}): {e}")
     return signals
 
 
-async def reddit_search_oauth(query: str, subreddit: str = "investing", limit: int = 10) -> list[dict]:
-    """Reddit OAuth-Search — braucht gültigen Token (Script App)."""
+async def scrape_pullpush_regret(query: str = "I wish I had bought", limit: int = 20) -> list[dict]:
+    """
+    Pullpush.io (freie Pushshift-Alternative) — Reddit-Suche ohne OAuth.
+    Durchsucht historische Reddit-Posts nach Regret-Signals.
+    """
     signals = []
-    token = await _reddit_get_token()
-    if not token:
-        # Fallback: RSS-Feed ohne Auth
-        return await scrape_reddit_finance_rss(subreddit, limit)
-
-    ua = "VORSPRUNG:intelligence:v1.0 (by /u/bullpowersrtkennels)"
-    url = f"https://oauth.reddit.com/r/{subreddit}/search"
+    url = "https://api.pullpush.io/reddit/submission/search/"
+    params = {
+        "q": query,
+        "size": limit,
+        "sort_type": "score",
+    }
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.get(
-                url,
-                params={"q": query, "sort": "new", "limit": limit, "restrict_sr": "1"},
-                headers={"Authorization": f"Bearer {token}", "User-Agent": ua},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
+        async with aiohttp.ClientSession(headers={"User-Agent": _REDDIT_UA}) as s:
+            async with s.get(url, params=params, timeout=aiohttp.ClientTimeout(total=20)) as r:
                 if r.status == 200:
                     data = await r.json()
-                    for post in data.get("data", {}).get("children", []):
-                        p = post.get("data", {})
+                    posts = data.get("data", [])
+                    for p in posts[:limit]:
                         title = p.get("title", "")
                         if not title:
                             continue
                         score = p.get("score", 0)
                         signals.append({
                             "signal_type": "regret_signal",
-                            "source": f"reddit_oauth_r_{subreddit}",
-                            "entity_name": query[:60],
+                            "source": "pullpush_reddit",
+                            "entity_name": title[:100],
                             "signal_data": {
                                 "title": title[:200],
+                                "selftext": p.get("selftext", "")[:300],
                                 "score": score,
-                                "comments": p.get("num_comments", 0),
+                                "num_comments": p.get("num_comments", 0),
+                                "subreddit": p.get("subreddit", ""),
                                 "query": query,
-                                "subreddit": subreddit,
-                                "url": f"https://reddit.com{p.get('permalink', '')}",
+                                "url": f"https://www.reddit.com{p.get('permalink', '')}",
+                                "created_utc": p.get("created_utc"),
                             },
-                            "intelligence_score": min(100, 50 + min(score // 10, 50)),
+                            "intelligence_score": min(100, 45 + min(score // 8, 55)),
                             "created_at": datetime.now(timezone.utc).isoformat(),
                         })
                 else:
-                    log.warning(f"Reddit OAuth search {r.status} — fallback to RSS")
-                    return await scrape_reddit_finance_rss(subreddit, limit)
+                    log.warning(f"Pullpush {r.status} for query: {query[:40]}")
     except Exception as e:
-        log.warning(f"Reddit OAuth error: {e}")
+        log.warning(f"Pullpush error: {e}")
+    log.info(f"Pullpush Reddit: {len(signals)} Regret-Signale für '{query[:40]}'")
     return signals
 
 
 async def _post_reddit_finance(title: str, body: str, subreddit: str = "ValueInvesting") -> dict:
-    """Postet auf Reddit r/ValueInvesting oder r/quant via OAuth."""
-    token = await _reddit_get_token()
-    if not token:
-        return {"ok": False, "error": "Reddit token konnte nicht ermittelt werden (App-Typ prüfen: muss 'Script' sein in reddit.com/prefs/apps)"}
-
-    ua = "VORSPRUNG:intelligence:v1.0 (by /u/bullpowersrtkennels)"
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://oauth.reddit.com/api/submit",
-                headers={"Authorization": f"Bearer {token}", "User-Agent": ua},
-                data={
-                    "sr": subreddit,
-                    "kind": "self",
-                    "title": title[:300],
-                    "text": body[:40000],
-                    "nsfw": "false",
-                    "spoiler": "false",
-                },
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                data = await r.json()
-                if r.status == 200 and not data.get("json", {}).get("errors"):
-                    link = data.get("json", {}).get("data", {}).get("url", "")
-                    return {"ok": True, "url": link, "platform": f"reddit_r_{subreddit}"}
-                errors = data.get("json", {}).get("errors", [])
-                return {"ok": False, "error": str(errors)}
-    except Exception as e:
-        return {"ok": False, "error": str(e)}
+    """
+    Reddit Posting: Seit 2023 keine Script-Apps mehr → manueller Hinweis.
+    Alternativer Kanal: Telegram-Nachricht mit vollständigem Post-Entwurf.
+    """
+    # Reddit API erlaubt seit 2023 kein Password Grant mehr für neue Apps.
+    # Lösung: Post-Entwurf via Telegram schicken, Rudolf postet manuell in 30s.
+    tg_msg = (
+        f"📋 <b>VORSPRUNG Reddit-Entwurf für r/{subreddit}</b>\n\n"
+        f"<b>Titel:</b> {title[:200]}\n\n"
+        f"<b>Text:</b>\n{body[:600]}...\n\n"
+        f"👉 Jetzt posten: https://www.reddit.com/r/{subreddit}/submit"
+    )
+    await _tg(tg_msg)
+    return {
+        "ok": True,
+        "platform": f"reddit_draft_r_{subreddit}",
+        "note": "Entwurf via Telegram gesendet — Reddit seit 2023 kein Script-App OAuth mehr",
+        "manual_url": f"https://www.reddit.com/r/{subreddit}/submit",
+    }
 
 
 async def auto_promote_vorsprung(briefing: str, signal_count: int) -> dict:
