@@ -5172,6 +5172,21 @@ async def task_youtube_shorts() -> str:
         return f"YouTube Shorts Fehler: {e}"
 
 
+async def task_fb_token_refresh() -> str:
+    """Facebook/Instagram Token Auto-Refresh: täglich prüfen, bei < 15 Tagen bis Ablauf erneuern."""
+    try:
+        from modules.facebook_token_refresher import check_and_refresh
+        result = await check_and_refresh()
+        action = result.get("action", "?")
+        if action == "refreshed":
+            return f"FB Token erneuert ✅ — {result.get('new_days','?')} Tage gültig bis {result.get('new_expires','?')[:10]}"
+        elif action == "skipped":
+            return f"FB Token OK — {result.get('days_left','?')} Tage verbleibend, kein Refresh nötig"
+        return f"FB Token: {action} — {result.get('error', result.get('reason', '?'))}"
+    except Exception as e:
+        return f"FB Token Refresh Fehler: {e}"
+
+
 async def task_vorsprung_scan() -> str:
     """VORSPRUNG Intelligence: Bundesanzeiger + EUIPO + DPMA + Reddit → AI-Briefing → Telegram."""
     try:
@@ -5243,6 +5258,8 @@ TASKS = [
     ("shopify_fix_tags",      task_shopify_fix_tags,     3600,  530),  # 1h — T-Shirt SEO tags
     ("shopify_cleanup_cols",  task_shopify_cleanup_collections, 86400, 570),  # 24h — leere Collections
     ("shopify_gmc_meta",      task_shopify_gmc_metafields, 3600, 610),  # 1h — Google Shopping metafelder
+    # ── Facebook/Instagram Token Auto-Refresh ────────────────────────────────
+    ("fb_token_refresh",      task_fb_token_refresh,       86400, 3600),  # täglich — Token auto-erneuern vor Ablauf
 ]
 
 
