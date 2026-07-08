@@ -9672,6 +9672,14 @@ async def create_app():
     app.router.add_post("/api/cart-rescue/test",         handle_cart_test)
     # ── END MONEY MACHINE ─────────────────────────────────────────────────────
 
+    # ── OUTREACH ENGINE ──────────────────────────────────────────────────────
+    app.router.add_get( "/outreach",                    handle_outreach_page)
+    app.router.add_get( "/api/outreach/status",         handle_outreach_status)
+    app.router.add_get( "/api/outreach/queue",          handle_outreach_queue)
+    app.router.add_post("/api/outreach/run",            handle_outreach_run)
+    app.router.add_post("/api/outreach/mark-replied",   handle_outreach_mark_replied)
+    # ── END OUTREACH ENGINE ───────────────────────────────────────────────────
+
     # ── INSOLVENZ RADAR PRO ───────────────────────────────────────────────────
     app.router.add_get( "/insolvenz-radar",              handle_ir_page)
     app.router.add_get( "/insolvenz-radar/success",      handle_ir_success)
@@ -11866,6 +11874,258 @@ setInterval(refreshAll, 30000);
 </body>
 </html>"""
     return web.Response(text=html, content_type="text/html")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  OUTREACH ENGINE — Handlers
+# ═══════════════════════════════════════════════════════════════════════════
+
+_outreach_running = False
+
+async def handle_outreach_page(req):
+    html = """<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>&#x1F4E7; Outreach Engine &mdash; Automatische B2B-Akquise</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--card:#111118;--border:#1e1e2e;--accent:#2563eb;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--text:#e2e8f0;--muted:#64748b}
+body{font-family:'SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#050d1a 0%,#0f172a 60%,#0a1a05 100%);border-bottom:1px solid #1e3a5f;padding:18px 28px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.4rem;font-weight:900}
+.logo span{background:linear-gradient(90deg,#3b82f6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav a{color:#94a3b8;text-decoration:none;margin-left:18px;font-size:.82rem}
+.hero{padding:30px 28px 20px;border-bottom:1px solid var(--border)}
+.hero h1{font-size:1.8rem;font-weight:900;margin-bottom:6px}
+.hero h1 span{background:linear-gradient(90deg,#3b82f6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:.88rem;max-width:620px;line-height:1.6;margin-bottom:16px}
+.stats-row{display:flex;gap:16px;flex-wrap:wrap}
+.stat-box{background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:12px 18px;min-width:110px}
+.stat-val{font-size:1.6rem;font-weight:900;color:#3b82f6}
+.stat-lbl{font-size:.7rem;color:var(--muted);margin-top:2px}
+.action-bar{padding:16px 28px;display:flex;gap:12px;align-items:center;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.btn{padding:10px 22px;border:none;border-radius:9px;cursor:pointer;font-weight:800;font-size:.84rem;transition:opacity .15s}
+.btn-fire{background:linear-gradient(90deg,#2563eb,#10b981);color:#fff;font-size:.9rem;padding:12px 28px}
+.btn-fire:hover{opacity:.85}
+.btn-fire:disabled{opacity:.4;cursor:not-allowed}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.filter-group{display:flex;align-items:center;gap:8px;margin-left:auto}
+.filter-group label{font-size:.78rem;color:var(--muted)}
+select{background:#0d0d16;border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:7px;font-size:.82rem}
+.queue-section{padding:20px 28px}
+.queue-section h3{font-size:.88rem;font-weight:700;color:var(--muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.queue-grid{display:flex;flex-direction:column;gap:10px}
+.outreach-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px;display:grid;grid-template-columns:1fr auto;gap:12px}
+.outreach-card.sent{border-color:rgba(16,185,129,.3)}
+.outreach-card.replied{border-color:var(--green);background:rgba(16,185,129,.05)}
+.outreach-card.error{border-color:rgba(239,68,68,.3)}
+.oc-top{display:flex;align-items:flex-start;gap:12px}
+.oc-icon{font-size:1.4rem;flex-shrink:0}
+.oc-target{font-weight:800;font-size:.92rem}
+.oc-meta{font-size:.74rem;color:var(--muted);margin-top:3px}
+.oc-lead{display:flex;align-items:center;gap:8px;margin-top:10px;padding:8px 12px;background:#0d0d16;border-radius:8px;font-size:.8rem}
+.lead-score{padding:2px 8px;border-radius:5px;font-weight:800;font-size:.7rem}
+.ls-high{background:rgba(239,68,68,.15);color:#ef4444}
+.ls-mid{background:rgba(245,158,11,.15);color:#f59e0b}
+.ls-low{background:rgba(100,116,139,.1);color:#64748b}
+.oc-subject{font-size:.8rem;color:var(--muted);margin-top:8px;font-style:italic}
+.oc-actions{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.status-badge{padding:3px 10px;border-radius:6px;font-size:.7rem;font-weight:700}
+.sb-pending{background:rgba(245,158,11,.15);color:#f59e0b}
+.sb-sent{background:rgba(37,99,235,.15);color:#3b82f6}
+.sb-replied{background:rgba(16,185,129,.15);color:#10b981}
+.sb-error{background:rgba(239,68,68,.15);color:#ef4444}
+.btn-copy{padding:5px 12px;border-radius:6px;background:#1e1e2e;border:1px solid var(--border);color:var(--text);cursor:pointer;font-size:.74rem;font-weight:700;white-space:nowrap}
+.btn-copy:hover{background:#2a2a3e}
+.btn-replied{padding:5px 12px;border-radius:6px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#10b981;cursor:pointer;font-size:.74rem;font-weight:700}
+.li-msg-box{display:none;margin-top:10px;padding:12px;background:#0d0d16;border:1px solid var(--border);border-radius:8px;font-size:.78rem;color:#94a3b8;white-space:pre-wrap;word-break:break-word;line-height:1.5}
+.li-msg-box.open{display:block}
+.toast{position:fixed;bottom:24px;right:24px;background:#10b981;color:#fff;padding:10px 20px;border-radius:10px;font-weight:700;font-size:.84rem;transform:translateY(100px);transition:transform .3s;z-index:300}
+.toast.show{transform:translateY(0)}
+.empty{padding:40px;text-align:center;color:var(--muted);font-size:.88rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+</style></head><body>
+<div class="header">
+  <div class="logo">&#x1F4E7; <span>Outreach Engine</span></div>
+  <nav class="nav">
+    <a href="/">Dashboard</a><a href="/insolvenz-radar">Insolvenz Radar</a><a href="/money-machine">Money Machine</a>
+  </nav>
+</div>
+
+<div class="hero">
+  <h1>&#x1F4E7; <span>Automatische B2B-Akquise</span></h1>
+  <p>Nimmt die besten Leads aus dem Insolvenz Radar, generiert personalisierte Nachrichten f&#252;r
+  Steuerberater + Factoring-Firmen und sendet sie automatisch per Gmail. LinkedIn-Nachrichten mit 1 Klick kopieren.</p>
+  <div class="stats-row">
+    <div class="stat-box"><div class="stat-val" id="stat-total">--</div><div class="stat-lbl">Gesamt</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-sent">--</div><div class="stat-lbl">Gesendet</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-pending">--</div><div class="stat-lbl">Ausstehend</div></div>
+    <div class="stat-box"><div class="stat-val" id="stat-today">--</div><div class="stat-lbl">Heute</div></div>
+  </div>
+</div>
+
+<div class="action-bar">
+  <button class="btn btn-fire" id="fire-btn" onclick="runOutreach()">
+    &#x1F680; 10 Nachrichten JETZT senden
+  </button>
+  <button class="btn btn-outline" onclick="runOutreach(false)">
+    &#x270F; Nur generieren (kein Senden)
+  </button>
+  <div class="filter-group">
+    <label>Zeige:</label>
+    <select id="f-status" onchange="loadQueue()">
+      <option value="">Alle</option>
+      <option value="pending">Ausstehend</option>
+      <option value="sent">Gesendet</option>
+      <option value="replied">Geantwortet</option>
+      <option value="error">Fehler</option>
+    </select>
+  </div>
+</div>
+
+<div class="queue-section">
+  <h3>&#x1F4CB; Outreach Queue</h3>
+  <div class="queue-grid" id="queue-grid"><div class="empty">Lade Queue...</div></div>
+</div>
+
+<div id="toast" class="toast">&#x2705; Kopiert!</div>
+
+<script>
+async function loadStatus(){try{const r=await fetch('/api/outreach/status');const d=await r.json();if(!d.ok)return;document.getElementById('stat-total').textContent=d.total||0;document.getElementById('stat-sent').textContent=d.sent||0;document.getElementById('stat-pending').textContent=d.pending||0;document.getElementById('stat-today').textContent=d.today||0;}catch(e){}}
+
+async function loadQueue(){
+  const status=document.getElementById('f-status').value;
+  const grid=document.getElementById('queue-grid');
+  grid.innerHTML='<div class="empty">Lade...</div>';
+  try{
+    const r=await fetch('/api/outreach/queue?status='+encodeURIComponent(status)+'&limit=30');
+    const d=await r.json();
+    const items=d.queue||[];
+    if(!items.length){grid.innerHTML='<div class="empty">Keine Eintr&#228;ge in dieser Kategorie.</div>';return;}
+    grid.innerHTML=items.map(item=>{
+      const sc=item.lead_score||0;
+      const scClass=sc>=70?'ls-high':sc>=50?'ls-mid':'ls-low';
+      const st=item.status||'pending';
+      const stLabel={pending:'Ausstehend',sent:'Gesendet',replied:'Geantwortet &#x1F389;',error:'Fehler'};
+      const stClass={'pending':'sb-pending','sent':'sb-sent','replied':'sb-replied','error':'sb-error'};
+      const channelIcon={'email':'&#x1F4E7;','linkedin':'&#x1F517;','twitter':'&#x1F426;'}['email']||'&#x1F4E7;';
+      const liMsg=item.body_linkedin||'';
+      return `<div class="outreach-card ${st}" id="card-${item.id}">
+        <div>
+          <div class="oc-top">
+            <div class="oc-icon">${channelIcon}</div>
+            <div>
+              <div class="oc-target">${item.target_name}</div>
+              <div class="oc-meta">${item.target_type||'?'} &middot; ${item.target_email||'kein Email'}</div>
+            </div>
+          </div>
+          <div class="oc-lead">
+            <span class="lead-score ${scClass}">${sc}</span>
+            <span><b>${item.lead_name||'?'}</b></span>
+            <span style="color:var(--muted)">${item.lead_bundesland||''} &middot; ${item.lead_branche||''}</span>
+          </div>
+          <div class="oc-subject">Betreff: ${item.subject||'?'}</div>
+          <div class="li-msg-box" id="li-${item.id}">${(liMsg).replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+        </div>
+        <div class="oc-actions">
+          <span class="status-badge ${stClass[st]||'sb-pending'}">${stLabel[st]||st}</span>
+          <button class="btn-copy" onclick="copyLinkedIn(${item.id},'${encodeURIComponent(liMsg)}')">&#x1F517; LI kopieren</button>
+          ${st!=='replied'?`<button class="btn-replied" onclick="markReplied(${item.id})">&#x2714; Geantwortet</button>`:''}
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){grid.innerHTML='<div class="empty">Fehler: '+e.message+'</div>';}
+}
+
+async function runOutreach(autoSend=true){
+  const btn=document.getElementById('fire-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spin">&#9881;</span>&nbsp;Generiere + Sende...';
+  try{
+    const r=await fetch('/api/outreach/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({auto_send:autoSend})});
+    const d=await r.json();
+    if(d.ok){
+      btn.innerHTML=`&#x2705; ${d.sent} gesendet, ${d.generated} generiert`;
+      loadStatus();loadQueue();
+      setTimeout(()=>{btn.disabled=false;btn.innerHTML='&#x1F680; 10 Nachrichten JETZT senden';},10000);
+    }else{btn.innerHTML='&#x26A0; '+d.error;btn.disabled=false;}
+  }catch(e){btn.innerHTML='&#x26A0; Fehler';btn.disabled=false;}
+}
+
+function copyLinkedIn(id,encoded){
+  const text=decodeURIComponent(encoded);
+  navigator.clipboard.writeText(text).then(()=>{showToast('LinkedIn-Nachricht kopiert!');});
+  const box=document.getElementById('li-'+id);
+  if(box){box.classList.toggle('open');}
+}
+
+async function markReplied(id){
+  await fetch('/api/outreach/mark-replied',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});
+  document.getElementById('card-'+id).className='outreach-card replied';
+  showToast('Als "Geantwortet" markiert &#x1F389;');
+  setTimeout(loadQueue,1000);
+}
+
+function showToast(msg){const t=document.getElementById('toast');t.innerHTML=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500);}
+
+loadStatus();loadQueue();setInterval(loadStatus,30000);
+</script></body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_outreach_status(req):
+    try:
+        from modules.outreach_engine import get_status
+        return web.json_response(get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_outreach_queue(req):
+    try:
+        from modules.outreach_engine import get_queue
+        status = req.rel_url.query.get("status", "")
+        limit  = int(req.rel_url.query.get("limit", "50"))
+        return web.json_response({"ok": True, "queue": get_queue(status=status, limit=limit)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_outreach_run(req):
+    global _outreach_running
+    if _outreach_running:
+        return web.json_response({"ok": False, "error": "Läuft bereits"})
+    try:
+        body      = await req.json()
+        auto_send = body.get("auto_send", True)
+    except Exception:
+        auto_send = True
+
+    async def _bg():
+        global _outreach_running
+        _outreach_running = True
+        try:
+            from modules.outreach_engine import generate_outreach_batch
+            await generate_outreach_batch(auto_send_email=auto_send, max_targets=10)
+        except Exception as e:
+            log.error("Outreach batch: %s", e)
+        finally:
+            _outreach_running = False
+
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "Outreach-Batch gestartet",
+                              "auto_send": auto_send})
+
+
+async def handle_outreach_mark_replied(req):
+    try:
+        body = await req.json()
+        oid  = int(body.get("id", 0))
+        from modules.outreach_engine import mark_replied
+        return web.json_response(mark_replied(oid))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
