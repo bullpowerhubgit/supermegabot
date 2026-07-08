@@ -4911,6 +4911,16 @@ class AutomationScheduler:
             self._task_handles.append(handle)
         # Telegram bot uses webhook mode (server.py /webhook/telegram) — polling disabled
         log.info("Telegram: webhook mode active, polling disabled")
+        # GroupInfiltrator — Pyrogram user client for group monitoring (if credentials set)
+        try:
+            from modules.group_infiltrator import start_background, is_configured
+            if is_configured():
+                await start_background()
+                log.info("GroupInfiltrator started — monitoring Telegram groups for buying intent")
+            else:
+                log.info("GroupInfiltrator: TELEGRAM_API_ID/HASH not set — skipping (run scripts/join_groups.py to enable)")
+        except Exception as e:
+            log.warning("GroupInfiltrator start failed: %s", e)
 
     async def stop(self):
         self._running = False
