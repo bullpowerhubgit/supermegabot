@@ -1971,6 +1971,40 @@ async def handle_social_status(req):
         return web.json_response({"error": str(e)}, status=500)
 
 
+async def handle_intent_bridge_stats(req):
+    """GET /api/intent-bridge/stats — live stats for the Intent-to-Sale Bridge."""
+    try:
+        from modules.intent_to_sale_bridge import get_stats
+        stats = get_stats()
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_intent_bridge_process(req):
+    """POST /api/intent-bridge/process — manual test: analyze a message."""
+    try:
+        body = await req.json()
+        text    = body.get("text", "")
+        chat_id = body.get("chat_id", "test")
+        if not text:
+            return web.json_response({"ok": False, "error": "text required"}, status=400)
+        from modules.intent_to_sale_bridge import classify_intent, search_products, generate_response
+        intent   = await classify_intent(text)
+        products = await search_products(intent.get("category", "general"), intent.get("keywords", []))
+        response = ""
+        if products and intent.get("is_buying") and intent.get("confidence", 0) >= 0.75:
+            response = await generate_response(text, products, intent.get("language", "de"))
+        return web.json_response({
+            "ok": True,
+            "intent": intent,
+            "products": products,
+            "response": response,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_digistore_status(req):
     try:
         from modules.digistore24_automation import ping, get_sales_stats, get_products, setup_ipn, is_configured
@@ -8597,6 +8631,8 @@ async def create_app():
     app.router.add_get("/api/social/status",          handle_social_status)
 
     # ── Digistore24 ───────────────────────────────────────────────────────────
+    app.router.add_get("/api/intent-bridge/stats",    handle_intent_bridge_stats)
+    app.router.add_post("/api/intent-bridge/process", handle_intent_bridge_process)
     app.router.add_get("/api/digistore/status",       handle_digistore_status)
     app.router.add_get("/api/digistore/orders",       handle_digistore_orders)
     app.router.add_post("/api/digistore24/ipn",       handle_digistore_ipn)

@@ -19,6 +19,7 @@ Stoppen:
 """
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -30,6 +31,23 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 from typing import Any
+
+# Intent-to-Sale Bridge (optional — loaded lazily to avoid import errors on startup)
+_intent_bridge = None
+
+def _get_intent_bridge():
+    global _intent_bridge
+    if _intent_bridge is None:
+        try:
+            import sys as _sys
+            _sys.path.insert(0, str(Path(__file__).parent))
+            from modules.intent_to_sale_bridge import process_group_message
+            _intent_bridge = process_group_message
+        except Exception as e:
+            log_placeholder = logging.getLogger("hub-bridge")
+            log_placeholder.warning("IntentBridge not loaded: %s", e)
+            _intent_bridge = False
+    return _intent_bridge if _intent_bridge is not False else None
 
 # .env laden
 _THIS_DIR = Path(__file__).resolve().parent
@@ -125,19 +143,51 @@ def is_allowed(chat_id: int | str) -> bool:
     return str(chat_id) == str(ALLOWED_CHAT_ID)
 
 
+def _run_intent_bridge(text: str, chat_id: str, user: dict, message_id: int, chat_type: str) -> None:
+    """Fire-and-forget: run intent analysis in background without blocking the poll loop."""
+    bridge_fn = _get_intent_bridge()
+    if not bridge_fn:
+        return
+    try:
+        username = user.get("username") or user.get("first_name") or ""
+        user_id  = str(user.get("id", ""))
+        asyncio.run(bridge_fn(
+            text=text,
+            chat_id=str(chat_id),
+            user_id=user_id,
+            username=username,
+            message_id=message_id,
+            chat_type=chat_type,
+        ))
+    except Exception as e:
+        logging.getLogger("hub-bridge").debug("IntentBridge run error: %s", e)
+
+
 def handle_message(message: dict[str, Any]) -> None:
-    chat = message.get("chat", {})
-    chat_id = chat.get("id")
-    text = (message.get("text") or "").strip()
+    chat      = message.get("chat", {})
+    chat_id   = chat.get("id")
+    chat_type = chat.get("type", "private")  # private | group | supergroup | channel
+    user      = message.get("from", {})
+    text      = (message.get("text") or "").strip()
+    msg_id    = message.get("message_id")
+
     if not chat_id or not text:
         return
 
+    # ── Intent Bridge: intercept all non-command group messages ──────────────
+    is_group = chat_type in ("group", "supergroup")
+    if is_group and not text.startswith("/"):
+        _run_intent_bridge(text, chat_id, user, msg_id, chat_type)
+        # Don't block or reply further — the bridge handles the response
+
     if not is_allowed(chat_id):
-        telegram_call(
-            "sendMessage",
-            chat_id=chat_id,
-            text="Zugriff verweigert — dieser Chat ist nicht autorisiert.",
-        )
+        # Non-group unauthorized chats get a rejection; groups are silently ignored
+        if not is_group:
+            telegram_call(
+                "sendMessage",
+                chat_id=chat_id,
+                text="Zugriff verweigert — dieser Chat ist nicht autorisiert.",
+            )
         return
 
     # Commands like "/army_status@MyBot" → "/army_status"
