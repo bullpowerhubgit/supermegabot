@@ -2787,6 +2787,24 @@ async def task_viral_window_scan() -> str:
     except Exception as e:
         return f"ViralWindowScan error: {e}"
 
+
+async def task_product_intelligence_hub() -> str:
+    """Product Intelligence Hub — viral_scanner + pipeline + intent_bridge (alle 3 Tools)."""
+    try:
+        from modules.product_intelligence_hub import run_hub_cycle
+        result = await run_hub_cycle()
+        if result.get("ok"):
+            return (
+                f"Hub OK — {result['signals_total']} Signale, "
+                f"{result['pipelines_ok']}/{result['pipelines_run']} Pipelines, "
+                f"{result['intent_registered']} Intent-Bridge registriert, "
+                f"{result['elapsed_sec']}s"
+            )
+        return f"Hub: {result.get('error', 'unknown')}"
+    except Exception as e:
+        return f"Hub error: {e}"
+
+
 async def task_community_growth_post() -> str:
     try:
         from modules.growth_hacker import task_community_grow
@@ -4881,6 +4899,7 @@ TASKS = [
     ("intent_bridge_report", task_intent_bridge_report, 86400, 200),  # 24h — Intent-to-Sale Bridge Tagesbericht
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
     ("viral_window_scan",   task_viral_window_scan,    7200,  55),  # 2h — Viral Window Scanner
+    ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 125),  # 6h — FB+IG+TG+LI+Reddit+Discord
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
