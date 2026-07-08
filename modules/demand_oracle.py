@@ -406,13 +406,34 @@ async def create_preorder_product(concept: dict) -> dict | None:
                     pid    = str(prod.get("id", ""))
                     handle = prod.get("handle", "")
                     store  = SHOPIFY_STORE().rstrip("/")
-                    log.info("PRE-ORDER created: %s (€%.2f) — %s/products/%s",
-                             concept_title[:50], price, store, handle)
+                    product_url = f"{store}/products/{handle}"
+                    log.info("PRE-ORDER created: %s (€%.2f) — %s", concept_title[:50], price, product_url)
+
+                    # Auto-post to all channels (Telegram, Facebook, Instagram, Twitter)
+                    try:
+                        from modules.mega_auto_poster import post_to_all_channels
+                        post_content = {
+                            "title":       concept_title,
+                            "description": f"🔥 NEU: {wish_count} Menschen haben genau dieses Produkt gewünscht!\n\n"
+                                           f"{summary}\n\n"
+                                           f"✅ Pre-Order: Wird produziert sobald {PRE_ORDER_MINIMUM} Bestellungen erreicht.\n"
+                                           f"✅ Preis: €{price:.2f} — 100% Geld zurück wenn nicht produziert.\n\n"
+                                           f"👉 Jetzt vorbestellen: {product_url}",
+                            "url":         product_url,
+                            "price":       price,
+                            "image_url":   "",
+                            "tags":        ["preorder", "demand-oracle", category.lower()],
+                        }
+                        asyncio.create_task(post_to_all_channels(post_content))
+                        log.info("Autopost gestartet für: %s", concept_title[:50])
+                    except Exception as pe:
+                        log.debug("Autopost error (non-critical): %s", pe)
+
                     return {
                         "shopify_id":     pid,
                         "shopify_handle": handle,
                         "price":          price,
-                        "url":            f"{store}/products/{handle}",
+                        "url":            product_url,
                     }
                 else:
                     body = await r.text()
