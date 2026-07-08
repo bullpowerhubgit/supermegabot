@@ -1,71 +1,72 @@
-# SuperMegaBot — Aktueller Status
-> Zuletzt aktualisiert: 2026-07-03 | Session v9
+# SuperMegaBot — CURRENT STATUS
+**Stand: 2026-07-08**
 
-## System-Status
-| Service | URL | Status |
-|---------|-----|--------|
-| SuperMegaBot Railway | dudirudibot-mega-production.up.railway.app | 🔴 OFFLINE — Abo unbezahlt |
-| Supabase Autopost | pg_cron 8x täglich | ✅ LIVE (FB ✅ TG ✅ getestet 2026-07-03) |
-| Shopify Store | ineedit.com.co | ✅ 2449 Produkte, alle €29.99 |
-| Stripe | Live-Modus | ✅ Key rotiert 2026-07-02 |
-| GitHub Actions | bullpowerhubgit/supermegabot | 🔴 GESPERRT — Billing Lock |
+## ✅ ERLEDIGT HEUTE
 
-## HEUTE ERLEDIGT (2026-07-03)
-- ✅ **Shopify Bulk Update** — 2449 Produkte, 2573 Varianten auf €29.99, 359 Inventar auf 10
-- ✅ **Shopify Passwortschutz** — bereits deaktiviert (enabled: false)
-- ✅ **Autopost Edge Function** — getestet: FB ✅ TG ✅ (läuft 8x täglich)
-- ✅ **Shopify OAuth Callback** — Route `/api/shopify/oauth/callback` in server.py (Commit 2449971)
-- ✅ **pg_cron** — aktiv: `0 6,9,12,15,18,21,0,3 * * *`
+### Gumroad Produkt LIVE
+- URL: https://tecbuuss.gumroad.com/l/liastd
+- Preis: €29/Monat (Membership, Alert-Plan)
+- Konto: aiitecbuuss@gmail.com (via Google Login)
+- Beschreibung vollständig, published ✅
 
-## KRITISCHE BLOCKER (nur mit Zahlung lösbar)
-| # | Problem | Wo bezahlen |
-|---|---------|-------------|
-| 🔴 | Railway Abo unbezahlt → Server down | railway.app → Billing |
-| 🔴 | GitHub Actions locked → kein Auto-Deploy | github.com/settings/billing |
-| 🟡 | SendGrid Trial abgelaufen 04.01.2026 | sendgrid.com → Abrechnung (Free reicht) |
+### Posts abgesetzt (heute, manuell ausgelöst)
+| Plattform | Status | Details |
+|-----------|--------|---------|
+| ✅ Facebook AiiteC Page | LIVE | Post ID: 1016738738178786_122128547403219541 |
+| ✅ LinkedIn | LIVE | Share: urn:li:share:7480698560959787009 |
+| ✅ Telegram | LIVE | Message ID: 111238 |
+| ✅ Reddit r/dropshipping | LIVE | u/Upper-Competition505, Flair: Discussion |
+| ❌ Twitter/X | GEBLOCKT | Passkey-Auth — Rudolf muss manuell einloggen |
+| ❌ Facebook Groups | AUSSTEHEND | User-Token expired 22. Juni 2026 |
 
-## SHOPIFY TOKEN (blockiert Python-Scripts)
-**Status:** Alle 12 Tokens ungültig — App neu installiert, alter Token weg
-**Fix:** Shopify Admin → Apps → Apps entwickeln → deine App → API-Anmeldedaten → **"API-Zugriffstoken rotieren"** → sofort kopieren → mir geben
-**Workaround bis dahin:** Shopify MCP (claude.ai) direkt nutzbar — keine Scripts nötig
+### Code-Änderungen
+- `modules/viral_promo_poster.py`:
+  - `GUMROAD_PRODUCT_URL = "https://tecbuuss.gumroad.com/l/liastd"` hinzugefügt
+  - `create_gumroad_product()` gibt live URL zurück (kein Token mehr nötig)
+  - AI-generierte Posts enthalten jetzt Gumroad-Link
+- Commit: `e395d9a` auf main gepusht, Railway deployed automatisch
 
-## SOCIAL MEDIA STATUS
-| Kanal | Account | Status |
-|-------|---------|--------|
-| Facebook | AiiteC Page 1016738738178786 | ✅ LIVE — täglich |
-| Telegram | Bot aktiv | ✅ LIVE — täglich |
-| Instagram | @aaiitecc 4.868 Follower | ⚠️ Braucht Meta App Review |
-| YouTube @rudolfsarkani1592 | 9 Subs | ✅ OAuth verbunden |
-| YouTube @AIITECrs | 4.160 Subs | ❌ Anderes Google-Konto nötig |
-| Reddit /u/bullpowersrtkennels | - | ❌ OAuth ausstehend |
-| Pinterest | rudolfsarkany1984@gmail.com | ❌ App-ID fehlt |
-| TikTok | - | ❌ Keine Credentials |
+### Funktionierende API-Credentials
+- ✅ Facebook Page Token (AiiteC): valid
+- ✅ LinkedIn Access Token: valid
+- ✅ Telegram Bot Token: valid
+- ✅ Anthropic/Claude API: valid
+- ❌ Reddit API: 401 (script app problem) → Browser-Posting funktioniert
+- ❌ Twitter API: "no credits" (Free-Tier Limit) + Passkey-Login blockiert
+- ❌ Gumroad API Token: abgeschnitten → durch Browser-Produkt ersetzt
 
-## WAS RUDOLF EINMALIG MACHEN MUSS
-### 1. Railway bezahlen 🔴 (2 Min)
-→ railway.app → Billing → Pay outstanding balance
+## 🚧 NOCH OFFEN
 
-### 2. GitHub Actions Billing 🔴 (2 Min)
-→ github.com/settings/billing → Actions-Minuten
+### Twitter/X
+- Account: rudibot84 (hat Passkey eingerichtet)
+- Lösung: Rudolf muss im Browser x.com öffnen und sich mit Passkey/Touch ID anmelden
+- Danach: twikit cookies extrahieren via `python3 -c "import twikit; ..."`
+- Oder: Twitter API Basic Plan aktivieren ($100/mo) für direkten API-Zugang
 
-### 3. Shopify Token rotieren 🟡 (1 Klick)
-→ Shopify Admin → Apps → Apps entwickeln → App → API-Anmeldedaten → Token rotieren → kopieren
+### Facebook User Token erneuern (für Groups-Posting)
+- Gehe zu: https://developers.facebook.com/tools/explorer/
+- Login als dragonadnp@gmail.com
+- Berechtigungen: groups_access_member_info, publish_to_groups
+- Neuen Token in .env als FACEBOOK_USER_TOKEN eintragen
 
-### 4. Reddit Script-App setzen 🟢 (5 Min)
-→ reddit.com/prefs/apps → App "hqgJAQe6Qiu5s5r1Vqc0Og" → Edit → Typ: "script"
-→ Dann: python3 scripts/oauth_connect.py reddit
+### Automation Scheduler (viral_promo_poster.py)
+- Läuft alle 6h automatisch via Railway-Scheduler
+- Postet auf: Telegram + FB Page + LinkedIn (Reddit manuell)
+- Twitter wird übersprungen bis Token funktioniert
 
-### 5. SendGrid Free Plan aktivieren 🟢 (2 Min)
-→ app.sendgrid.com/account/billing → Rechnungsadresse + Zahlungsmethode → Free: 100/Tag
+## 💰 AKTIVE MONETARISIERUNG
+- Stripe Produkte: Alert €29, Pro €79, Agency €199 (Preise erstellt)
+- Gumroad: Alert-Plan €29/mo live → https://tecbuuss.gumroad.com/l/liastd
+- Shopify: ineedit.com.co (10k Produkte, Smart Collections)
+- Viral Scanner Dashboard: https://supermegabot-production.up.railway.app/viral
 
-## REVENUE
-| Quelle | Betrag |
-|--------|--------|
-| Digistore24 | €111 gesamt |
-| Stripe | Live-Modus aktiv |
+## 🔧 SYSTEM STATUS
+- Railway: https://supermegabot-production.up.railway.app/health → OK
+- LaunchAgent: com.supermegabot.automation läuft (PID aktiv)
+- Desktop Button: ~/Desktop/🔥 Viral Scanner.app
+- Tagesbericht: täglich 08:00 Uhr via Telegram
 
-## NÄCHSTE SCHRITTE (sobald Railway bezahlt)
-1. Shopify Preisvariation (nicht alle einheitlich €29.99)
-2. Pinterest App erstellen + OAuth
-3. Instagram Meta App Review
-4. YouTube @AIITECrs — welches Google-Konto?
+## 📋 NÄCHSTE SESSION: WEITERMACHEN MIT
+1. Twitter Login (Rudolf muss Passkey bestätigen, dann twikit cookies speichern)
+2. Facebook User Token erneuern → Groups-Posting aktivieren
+3. Shopify Produkt-Import (weitere viral geratete Produkte)
