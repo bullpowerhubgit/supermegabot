@@ -302,23 +302,97 @@ def _oauth1_header(method: str, url: str, params: Dict) -> str:
     )
 
 
+_TWITTER_COOKIES = _BASE_DIR / "data" / "twitter_cookies.json"
+_TWITTER_BEARER = (
+    "AAAAAAAAAAAAAAAAAAAAANRILgAAAAAAnNwIzUejRCOuH5E6I8xnZz4puTs"
+    "%3D1Zv7ttfk8LF81IUq16cHjhLTvJu4FA33AGWWjCpTnA"
+)
+_TWITTER_GQL_URL = "https://x.com/i/api/graphql/SoVnbfCycZ7fERGCwpZkYA/CreateTweet"
+
+async def _twitter_cookies_dict() -> Optional[dict]:
+    if not _TWITTER_COOKIES.exists():
+        return None
+    try:
+        import json
+        with open(_TWITTER_COOKIES) as f:
+            return json.load(f)
+    except Exception:
+        return None
+
 async def post_twitter(text: str) -> Dict:
-    if not _tw_api_key():
-        return {"ok": False, "error": "no Twitter credentials"}
     text = text[:280]
-    url  = "https://api.twitter.com/2/tweets"
+    # GraphQL cookie-auth (works on Free tier, no API tier required)
+    cookies = await _twitter_cookies_dict()
+    if cookies:
+        ct0 = cookies.get("ct0", "")
+        try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+                "Authorization": f"Bearer {_TWITTER_BEARER}",
+                "Content-Type": "application/json",
+                "x-csrf-token": ct0,
+                "x-twitter-auth-type": "OAuth2Session",
+                "x-twitter-active-user": "yes",
+                "Referer": "https://x.com/",
+                "Origin": "https://x.com",
+            }
+            payload = {
+                "variables": {
+                    "tweet_text": text, "dark_request": False,
+                    "media": {"media_entities": [], "possibly_sensitive": False},
+                    "semantic_annotation_ids": []
+                },
+                "features": {
+                    "tweetypie_unmention_optimization_enabled": True,
+                    "responsive_web_edit_tweet_api_enabled": True,
+                    "view_counts_everywhere_api_enabled": True,
+                    "longform_notetweets_consumption_enabled": True,
+                    "tweet_awards_web_tipping_enabled": False,
+                    "longform_notetweets_rich_text_read_enabled": True,
+                    "rweb_video_timestamps_enabled": True,
+                    "creator_subscriptions_tweet_preview_api_enabled": True,
+                    "responsive_web_graphql_exclude_directive_enabled": True,
+                    "verified_phone_label_enabled": False,
+                    "freedom_of_speech_not_reach_fetch_enabled": True,
+                    "standardized_nudges_misinfo": True,
+                    "tweet_with_visibility_results_prefer_gql_limited_actions_policy_enabled": True,
+                    "responsive_web_graphql_skip_user_profile_image_extensions_enabled": False,
+                    "responsive_web_graphql_timeline_navigation_enabled": True,
+                    "responsive_web_enhance_cards_enabled": False,
+                },
+                "queryId": "SoVnbfCycZ7fERGCwpZkYA"
+            }
+            async with _session() as s:
+                async with s.post(_TWITTER_GQL_URL, headers=headers,
+                                  cookies=cookies, json=payload) as r:
+                    data = await r.json()
+                    if r.status == 200 and "data" in data and data.get("data"):
+                        try:
+                            tid = data["data"]["create_tweet"]["tweet_results"]["result"]["rest_id"]
+                            return {"ok": True, "tweet_id": tid}
+                        except (KeyError, TypeError):
+                            pass
+                    # Extract error
+                    errs = data.get("errors", [{}])
+                    msg = errs[0].get("message", str(data)) if errs else str(data)
+                    return {"ok": False, "error": msg[:200]}
+        except Exception as e:
+            log.warning("Twitter GraphQL failed: %s", e)
+    # Fallback: OAuth 1.0a v2
+    if not _tw_api_key():
+        return {"ok": False, "error": "no Twitter cookies or API key"}
+    url = "https://api.twitter.com/2/tweets"
     try:
         auth_header = _oauth1_header("POST", url, {})
         async with _session() as s:
-            async with s.post(
-                url,
-                headers={"Authorization": auth_header, "Content-Type": "application/json"},
-                json={"text": text}
-            ) as r:
+            async with s.post(url,
+                              headers={"Authorization": auth_header,
+                                       "Content-Type": "application/json"},
+                              json={"text": text}) as r:
                 data = await r.json()
                 if r.status in (200, 201) and "data" in data:
                     return {"ok": True, "tweet_id": data["data"].get("id")}
-                return {"ok": False, "error": data.get("detail", data.get("errors", str(data)))}
+                return {"ok": False, "error": data.get("detail", str(data))}
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
