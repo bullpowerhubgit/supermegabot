@@ -599,7 +599,7 @@ async def handle_gmc_setup(req):
                 msg = (f"🛍️ <b>Google Shopping Feed</b>\n\n"
                        f"{'✅ Bereits registriert' if status == 'already_registered' else '🎉 JETZT REGISTRIERT!'}\n"
                        f"Feed ID: {result.get('feed_id','?')}\n"
-                       f"URL: {result.get('feed_url', 'https://dudirudibot-mega-production.up.railway.app/api/gmc/feed.xml')}\n"
+                       f"URL: {result.get('feed_url', 'https://supermegabot-production.up.railway.app/api/gmc/feed.xml')}\n"
                        f"662 Produkte gehen live bei Google Shopping!")
                 async with aiohttp.ClientSession() as s2:
                     await s2.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
@@ -2601,6 +2601,51 @@ async def handle_gumroad_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_gumroad_callback(req):
+    """GET /api/gumroad/callback — OAuth2 auth code → access + refresh token."""
+    code  = req.rel_url.query.get("code", "")
+    error = req.rel_url.query.get("error", "")
+    if error:
+        return web.json_response({"ok": False, "error": error})
+    if not code:
+        return web.json_response({"ok": False, "error": "no code in callback"})
+    client_id     = os.getenv("GUMROAD_CLIENT_ID", "")
+    client_secret = os.getenv("GUMROAD_CLIENT_SECRET", "")
+    redirect_uri  = "https://supermegabot-production.up.railway.app/api/gumroad/callback"
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.gumroad.com/oauth/token",
+                data={
+                    "code": code,
+                    "client_id": client_id,
+                    "client_secret": client_secret,
+                    "redirect_uri": redirect_uri,
+                    "grant_type": "authorization_code",
+                },
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                d = await r.json(content_type=None)
+        access_token  = d.get("access_token", "")
+        refresh_token = d.get("refresh_token", "")
+        if not access_token:
+            return web.json_response({"ok": False, "error": "no access_token", "detail": d})
+        os.environ["GUMROAD_ACCESS_TOKEN"] = access_token
+        os.environ["GUMROAD_TOKEN"] = access_token
+        if refresh_token:
+            os.environ["GUMROAD_REFRESH_TOKEN"] = refresh_token
+        log.info("Gumroad OAuth callback: access_token=%s...", access_token[:12])
+        return web.Response(content_type="text/html", text=(
+            "<h2>✅ Gumroad verbunden!</h2>"
+            "<p>Access Token dauerhaft gesetzt. Gumroad-API ab jetzt vollautomatisch.</p>"
+            f"<p>Token: {access_token[:20]}...</p>"
+            f"<p>Scopes: {d.get('scope', '?')}</p>"
+        ))
+    except Exception as e:
+        log.exception("Gumroad callback error")
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_gumroad_webhook(req):
     """POST /api/gumroad/webhook — Gumroad sale/refund ping notifications."""
     try:
@@ -3585,7 +3630,7 @@ async def handle_telegram_webhook(req):
         if not chat_id or not bot_token:
             return web.Response(status=200)
 
-        base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
+        base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'supermegabot-production.up.railway.app')}"
 
         # --- Befehle ---
         if text in ("/start", "/menu", "/dashboard", "/hilfe", "/help"):
@@ -3732,7 +3777,7 @@ async def handle_checkout_page(req):
     """Redirect to Stripe Checkout für Telegram-Nutzer."""
     plan = req.rel_url.query.get("plan", "starter")
     chat_id = req.rel_url.query.get("chat_id", "")
-    base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
+    base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'supermegabot-production.up.railway.app')}"
     try:
         from modules.monetization import create_checkout_session
         session = create_checkout_session(
@@ -3772,7 +3817,7 @@ async def handle_telegram_setup(req):
     if not token:
         return web.json_response({"ok": False, "error": "No TELEGRAM_BOT_TOKEN configured"})
 
-    base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'dudirudibot-mega-production.up.railway.app')}"
+    base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'supermegabot-production.up.railway.app')}"
     results = {}
 
     async with aiohttp.ClientSession() as session:
@@ -3933,7 +3978,7 @@ async def handle_discord_oauth_callback(req: web.Request) -> web.Response:
         return web.Response(status=400, text="Missing code parameter")
     client_id = os.getenv("DISCORD_CLIENT_ID", "1515460691664965672")
     client_secret = os.getenv("DISCORD_CLIENT_SECRET", "6d5mLOnMBHgnHAOq8a2ngHdkcx4ClLjH")
-    redirect_uri = os.getenv("DISCORD_REDIRECT_URI", "https://dudirudibot-mega-production.up.railway.app/api/discord/oauth/callback")
+    redirect_uri = os.getenv("DISCORD_REDIRECT_URI", "https://supermegabot-production.up.railway.app/api/discord/oauth/callback")
     import aiohttp as _aiohttp
     async with _aiohttp.ClientSession() as session:
         resp = await session.post("https://discord.com/api/oauth2/token", data={
@@ -4413,7 +4458,7 @@ async def handle_google_callback(req):
             try:
                 access_token = result.get("access_token", "")
                 merchant_id  = os.getenv("GMC_MERCHANT_ID", "5813214419")
-                feed_url     = "https://dudirudibot-mega-production.up.railway.app/api/gmc/feed.xml"
+                feed_url     = "https://supermegabot-production.up.railway.app/api/gmc/feed.xml"
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s2:
                     # Check existing feeds
                     r2 = await s2.get(
@@ -4719,19 +4764,22 @@ async def handle_reddit_auth_start(req):
     """GET /api/reddit/auth — Reddit OAuth2 authorization_code flow (web app type)."""
     client_id = os.getenv("REDDIT_CLIENT_ID", "")
     if not client_id:
-        return web.json_response({"ok": False, "error": "REDDIT_CLIENT_ID not set"})
-    # If refresh token already stored, no need to re-auth
+        return web.json_response({
+            "ok": False,
+            "error": "REDDIT_CLIENT_ID not set",
+            "action_needed": "Gehe zu https://www.reddit.com/prefs/apps → 'create an app' → Typ: script → Name: SuperMegaBot → Redirect: http://localhost:8888 → CAPTCHA lösen → CLIENT_ID + SECRET in .env setzen",
+        })
     if os.getenv("REDDIT_REFRESH_TOKEN", ""):
         return web.json_response({"ok": True, "status": "already_authorized",
                                   "info": "Reddit refresh token already set — posting should work"})
     import secrets
     state = secrets.token_urlsafe(16)
-    redirect_uri = "https://dudirudibot-mega-production.up.railway.app/api/reddit/callback"
+    redirect_uri = "https://supermegabot-production.up.railway.app/api/reddit/callback"
     auth_url = (
         f"https://www.reddit.com/api/v1/authorize"
         f"?client_id={client_id}&response_type=code&state={state}"
         f"&redirect_uri={redirect_uri}"
-        f"&duration=permanent&scope=submit+read+identity"
+        f"&duration=permanent&scope=submit+read+identity+flair"
     )
     raise web.HTTPFound(location=auth_url)
 
@@ -4746,7 +4794,7 @@ async def handle_reddit_callback(req):
         return web.json_response({"ok": False, "error": "no code"})
     client_id     = os.getenv("REDDIT_CLIENT_ID", "")
     client_secret = os.getenv("REDDIT_CLIENT_SECRET", "")
-    redirect_uri  = "https://dudirudibot-mega-production.up.railway.app/api/reddit/callback"
+    redirect_uri  = "https://supermegabot-production.up.railway.app/api/reddit/callback"
     try:
         import aiohttp
         import base64
@@ -4775,7 +4823,7 @@ async def handle_reddit_callback(req):
             import asyncio as _asyncio
             _proc = await _asyncio.create_subprocess_exec(
                 "railway", "variables", "set", f"REDDIT_REFRESH_TOKEN={refresh_token}",
-                "--service", "dudirudibot-mega",
+                "--service", "supermegabot",
                 stdout=_asyncio.subprocess.PIPE, stderr=_asyncio.subprocess.PIPE,
             )
             await _proc.communicate()
@@ -4797,7 +4845,7 @@ async def handle_pinterest_auth(req):
     if not client_id:
         return web.json_response({"ok": False, "error": "PINTEREST_APP_ID not set in Railway"})
     redirect_uri = os.getenv("PINTEREST_REDIRECT_URI",
-                             "https://dudirudibot-mega-production.up.railway.app/api/pinterest/callback")
+                             "https://supermegabot-production.up.railway.app/api/pinterest/callback")
     scope = "boards:read,pins:read,pins:write"
     auth_url = (f"https://www.pinterest.com/oauth/?client_id={client_id}"
                 f"&redirect_uri={redirect_uri}&response_type=code&scope={scope}")
@@ -4813,7 +4861,7 @@ async def handle_pinterest_callback(req):
     client_id = os.getenv("PINTEREST_APP_ID", os.getenv("PINTEREST_CLIENT_ID", ""))
     client_secret = os.getenv("PINTEREST_APP_SECRET", os.getenv("PINTEREST_CLIENT_SECRET", ""))
     redirect_uri = os.getenv("PINTEREST_REDIRECT_URI",
-                             "https://dudirudibot-mega-production.up.railway.app/api/pinterest/callback")
+                             "https://supermegabot-production.up.railway.app/api/pinterest/callback")
     if not client_id or not client_secret:
         return web.json_response({"ok": False, "error": "Pinterest credentials not configured"}, status=500)
     import base64
@@ -4908,7 +4956,7 @@ async def handle_trello_set_token(req):
             return web.json_response({"ok": False, "error": "Token zu kurz (min 60 Zeichen)"}, status=400)
         import subprocess
         subprocess.run(
-            ["railway", "variables", "set", f"TRELLO_TOKEN={token}", "--service", "dudirudibot-mega"],
+            ["railway", "variables", "set", f"TRELLO_TOKEN={token}", "--service", "supermegabot"],
             capture_output=True, timeout=30
         )
         os.environ["TRELLO_TOKEN"] = token
@@ -4919,8 +4967,8 @@ async def handle_trello_set_token(req):
         if lists:
             today_list = next((l for l in lists if "heute" in l["name"].lower() or "today" in l["name"].lower()), lists[0])
             week_list  = next((l for l in lists if "woche" in l["name"].lower() or "week" in l["name"].lower()), lists[-1])
-            subprocess.run(["railway","variables","set",f"TRELLO_LIST_TODAY={today_list['id']}","--service","dudirudibot-mega"], capture_output=True, timeout=30)
-            subprocess.run(["railway","variables","set",f"TRELLO_LIST_WEEK={week_list['id']}","--service","dudirudibot-mega"], capture_output=True, timeout=30)
+            subprocess.run(["railway","variables","set",f"TRELLO_LIST_TODAY={today_list['id']}","--service","supermegabot"], capture_output=True, timeout=30)
+            subprocess.run(["railway","variables","set",f"TRELLO_LIST_WEEK={week_list['id']}","--service","supermegabot"], capture_output=True, timeout=30)
             os.environ["TRELLO_LIST_TODAY"] = today_list["id"]
             os.environ["TRELLO_LIST_WEEK"]  = week_list["id"]
         return web.json_response({"ok": True,
@@ -5495,7 +5543,7 @@ async def handle_tiktok_auth(req):
         return web.json_response({"ok": False, "error": "TIKTOK_APP_KEY not set in Railway"})
     redirect_uri = os.getenv(
         "TIKTOK_REDIRECT_URI",
-        "https://dudirudibot-mega-production.up.railway.app/api/tiktok/callback",
+        "https://supermegabot-production.up.railway.app/api/tiktok/callback",
     )
     auth_url = (
         f"https://auth.tiktok-shops.com/api/v2/oauth/login/"
@@ -5951,7 +5999,7 @@ async def logging_middleware(request, handler):
 
 
 _CORS_TRUSTED = {
-    "https://dudirudibot-mega-production.up.railway.app",
+    "https://supermegabot-production.up.railway.app",
     "http://localhost:8888",
     "http://127.0.0.1:8888",
 }
@@ -5967,7 +6015,7 @@ async def cors_middleware(request, handler):
             resp = exc
     if request.path.startswith("/api/"):
         origin = request.headers.get("Origin", "")
-        resp.headers["Access-Control-Allow-Origin"] = origin if origin in _CORS_TRUSTED else "https://dudirudibot-mega-production.up.railway.app"
+        resp.headers["Access-Control-Allow-Origin"] = origin if origin in _CORS_TRUSTED else "https://supermegabot-production.up.railway.app"
         resp.headers["Vary"] = "Origin"
     else:
         resp.headers["Access-Control-Allow-Origin"] = "*"
@@ -8445,7 +8493,7 @@ async def handle_shopify_oauth_callback(req: web.Request) -> web.Response:
             return web.Response(text=f"Fehler: {d}", status=400)
         import subprocess
         subprocess.run(["railway","variables","set",
-                        f"SHOPIFY_ADMIN_API_TOKEN={new_token}","--service","dudirudibot-mega"],
+                        f"SHOPIFY_ADMIN_API_TOKEN={new_token}","--service","supermegabot"],
                        capture_output=True, timeout=30)
         tg_tok = os.getenv("TELEGRAM_BOT_TOKEN","")
         tg_ch  = os.getenv("TELEGRAM_CHAT_ID","")
@@ -8477,7 +8525,7 @@ async def handle_shopify_oauth_start(req: web.Request) -> web.Response:
     url = ("https://autopilot-store-suite-fmbka.myshopify.com/admin/oauth/authorize"
            "?client_id=65d04d461e18f4661429ab02ce3418a0"
            f"&scope={urllib.parse.quote(scopes)}"
-           "&redirect_uri=https%3A//dudirudibot-mega-production.up.railway.app/api/shopify/callback"
+           "&redirect_uri=https%3A//supermegabot-production.up.railway.app/api/shopify/callback"
            "&state=aiitec2026")
     raise web.HTTPFound(url)
 
@@ -8975,7 +9023,7 @@ async def create_app():
     app.router.add_get("/api/digistore24/ipn",        lambda r: web.json_response({
         "ok": True,
         "endpoint": "DS24 IPN active",
-        "url": "https://dudirudibot-mega-production.up.railway.app/api/digistore24/ipn",
+        "url": "https://supermegabot-production.up.railway.app/api/digistore24/ipn",
     }))
 
     # ── Mailchimp ─────────────────────────────────────────────────────────────
@@ -9008,6 +9056,7 @@ async def create_app():
     # ── Etsy + Gumroad ────────────────────────────────────────────────────────
     app.router.add_get("/api/etsy/status",            handle_etsy_status)
     app.router.add_get("/api/gumroad/status",         handle_gumroad_status)
+    app.router.add_get("/api/gumroad/callback",       handle_gumroad_callback)
     app.router.add_post("/api/gumroad/webhook",       handle_gumroad_webhook)
     app.router.add_get("/api/gumroad/products",       handle_gumroad_products)
     app.router.add_get("/api/gumroad/sales",          handle_gumroad_sales)
@@ -10324,7 +10373,7 @@ async def handle_infra_status(req: web.Request) -> web.Response:
     """GET /api/infra/status — ping all Railway/Vercel/Netlify services in parallel."""
     SERVICES_LIST = [
         # Railway backends
-        {"name": "SuperMegaBot", "url": "https://dudirudibot-mega-production.up.railway.app/health", "type": "railway"},
+        {"name": "SuperMegaBot", "url": "https://supermegabot-production.up.railway.app/health", "type": "railway"},
         {"name": "Shopify Acq.", "url": "https://shopify-acquisition-engine-production.up.railway.app/health", "type": "railway"},
         {"name": "iComeAuto", "url": "https://icomeauto-saas-production.up.railway.app/health", "type": "railway"},
         {"name": "SEO Turbo", "url": "https://seo-turbo-tools-production.up.railway.app/health", "type": "railway"},
@@ -10925,7 +10974,7 @@ async def handle_facebook_callback(req):
         code = req.rel_url.query.get("code", "")
         if not code:
             return web.Response(text="Missing code parameter", status=400)
-        redirect_uri = "https://dudirudibot-mega-production.up.railway.app/api/facebook/callback"
+        redirect_uri = "https://supermegabot-production.up.railway.app/api/facebook/callback"
         result = await handle_facebook_oauth_callback(code, redirect_uri)
         if result.get("ok"):
             html = ("<html><body style='background:#1a1a2e;color:#fff;font-family:Arial;text-align:center;padding:50px'>"
@@ -11136,7 +11185,7 @@ async def handle_robots_txt(req):
         "Allow: /\n"
         "Disallow: /api/\n"
         "Disallow: /webhook/\n\n"
-        "Sitemap: https://dudirudibot-mega-production.up.railway.app/sitemap.xml\n"
+        "Sitemap: https://supermegabot-production.up.railway.app/sitemap.xml\n"
     )
     return web.Response(text=content, content_type="text/plain")
 
@@ -11260,7 +11309,7 @@ async def handle_shopify_seo_run(req):
 async def handle_twitter_post(req):
     """POST /api/twitter/post — Tweet Webhook (twikit + API Fallback).
     Body: {"text": "...", "secret": "bullpower2026"} ODER leer für Auto-Tweet.
-    Webhook URL: https://dudirudibot-mega-production.up.railway.app/api/twitter/post
+    Webhook URL: https://supermegabot-production.up.railway.app/api/twitter/post
     """
     try:
         body = {}
