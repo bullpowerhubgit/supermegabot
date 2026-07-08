@@ -5530,6 +5530,95 @@ async def handle_tiktok_callback(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_tiktok_content_auth(req):
+    """GET /api/tiktok/content/auth — redirect to TikTok Content Posting API OAuth."""
+    client_key = os.getenv("TIKTOK_CLIENT_KEY", "")
+    if not client_key:
+        return web.Response(
+            content_type="text/html",
+            text=(
+                "<html><body style='font-family:sans-serif;padding:40px;background:#111;color:#eee'>"
+                "<h2>&#x26A0; TIKTOK_CLIENT_KEY fehlt</h2>"
+                "<p>Setze in Railway: <b>TIKTOK_CLIENT_KEY</b> = deinen TikTok App Client Key</p>"
+                "<p>Den findest du im TikTok Developer Portal → aiitec App → Anmeldeinformationen</p>"
+                "</body></html>"
+            ),
+        )
+    redirect_uri = os.getenv(
+        "TIKTOK_REDIRECT_URI",
+        "https://supermegabot-production.up.railway.app/api/tiktok/content/callback",
+    )
+    import urllib.parse
+    params = urllib.parse.urlencode({
+        "client_key": client_key,
+        "scope": "video.publish,video.upload,user.info.basic",
+        "response_type": "code",
+        "redirect_uri": redirect_uri,
+        "state": "smb_content_posting",
+    })
+    auth_url = f"https://www.tiktok.com/v2/auth/authorize?{params}"
+    raise web.HTTPFound(auth_url)
+
+
+async def handle_tiktok_content_callback(req):
+    """GET /api/tiktok/content/callback — exchange code for Content Posting access token."""
+    code = req.rel_url.query.get("code", "")
+    error = req.rel_url.query.get("error", "")
+    if error:
+        return web.Response(
+            content_type="text/html",
+            text=f"<html><body style='padding:40px;background:#111;color:#eee'><h2>&#x274C; TikTok Error</h2><p>{error}</p></body></html>",
+        )
+    if not code:
+        return web.json_response({"ok": False, "error": "No code received"})
+
+    client_key = os.getenv("TIKTOK_CLIENT_KEY", "")
+    client_secret = os.getenv("TIKTOK_CLIENT_SECRET", "")
+    redirect_uri = os.getenv(
+        "TIKTOK_REDIRECT_URI",
+        "https://supermegabot-production.up.railway.app/api/tiktok/content/callback",
+    )
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            resp = await session.post(
+                "https://open.tiktokapis.com/v2/oauth/token/",
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                data={
+                    "client_key": client_key,
+                    "client_secret": client_secret,
+                    "code": code,
+                    "grant_type": "authorization_code",
+                    "redirect_uri": redirect_uri,
+                },
+            )
+            data = await resp.json()
+
+        access_token = data.get("access_token", "")
+        refresh_token = data.get("refresh_token", "")
+        open_id = data.get("open_id", "")
+
+        if access_token:
+            return web.Response(
+                content_type="text/html",
+                text=(
+                    "<html><body style='font-family:sans-serif;padding:40px;background:#111;color:#eee'>"
+                    "<h2>&#x2705; TikTok Content Posting API verbunden!</h2>"
+                    "<p>Setze folgende Variablen in Railway:</p>"
+                    f"<pre style='background:#222;padding:16px;border-radius:8px'>"
+                    f"TIKTOK_ACCESS_TOKEN={access_token}\n"
+                    f"TIKTOK_REFRESH_TOKEN={refresh_token}\n"
+                    f"TIKTOK_OPEN_ID={open_id}</pre>"
+                    "<p>&#x1F4CB; Kopiere die Werte oben in Railway → Variables</p>"
+                    "<p><a href='/' style='color:#4af'>&#x2190; Dashboard</a></p>"
+                    "</body></html>"
+                ),
+            )
+        return web.json_response({"ok": False, "error": data.get("message", "Token exchange failed"), "raw": data}, status=500)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ── SEMrush handlers ──────────────────────────────────────────────────────────
 
 async def handle_semrush_keyword(req):
@@ -9101,6 +9190,8 @@ async def create_app():
     app.router.add_get( "/api/tiktok/research/ads",      handle_tiktok_research_ads)
     app.router.add_get( "/api/tiktok/auth",              handle_tiktok_auth)
     app.router.add_get( "/api/tiktok/callback",          handle_tiktok_callback)
+    app.router.add_get( "/api/tiktok/content/auth",     handle_tiktok_content_auth)
+    app.router.add_get( "/api/tiktok/content/callback", handle_tiktok_content_callback)
 
     # ── SEMRush / SEO Research ───────────────────────────────────────────────
     app.router.add_get( "/api/semrush/keyword",          handle_semrush_keyword)
