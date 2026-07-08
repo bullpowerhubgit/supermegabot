@@ -7537,7 +7537,12 @@ async def handle_email_blast(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_email_daily_blast(request: web.Request) -> web.Response:
-    return web.json_response({"ok": False, "status": "disabled", "message": "EmailBrain removed"}, status=503)
+    try:
+        from modules.email_blast_engine import run_daily_blast
+        result = await run_daily_blast()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_email_stats(request: web.Request) -> web.Response:
     try:
@@ -7670,7 +7675,27 @@ async def handle_shopify_sync_alias(request: web.Request) -> web.Response:
     return await handle_shopify_full_auto(request)
 
 async def handle_email_check_alias(request: web.Request) -> web.Response:
-    return web.json_response({"ok": False, "status": "disabled", "message": "EmailBrain removed"}, status=503)
+    try:
+        from modules.email_sequence_engine import get_stats
+        stats = await get_stats()
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_email_test_send(req: web.Request) -> web.Response:
+    try:
+        data = await req.json()
+    except Exception:
+        data = {}
+    to_email = data.get("email", os.getenv("TEST_EMAIL", "bullpowersrtkennels@gmail.com"))
+    try:
+        from modules.smtp_email import send_email
+        result = await send_email(to_email=to_email, subject="SuperMegaBot Test Email",
+                                  html_body="<h1>SuperMegaBot</h1><p>Email-System funktioniert.</p>")
+        return web.json_response({"ok": True, "sent_to": to_email, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_ds24_sync_alias(request: web.Request) -> web.Response:
     return await handle_digistore_autonomy_cycle(request)
@@ -7752,10 +7777,20 @@ async def handle_pinterest_run(req: web.Request) -> web.Response:
     return await _trigger_task("pinterest_auto_post", background=True)
 
 async def handle_email_run(req: web.Request) -> web.Response:
-    return web.json_response({"ok": False, "status": "disabled", "message": "EmailBrain removed"}, status=503)
+    try:
+        from modules.email_sequence_engine import process_due_emails
+        result = await process_due_emails()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_email_daily_summary_run(req: web.Request) -> web.Response:
-    return web.json_response({"ok": False, "status": "disabled", "message": "EmailBrain removed"}, status=503)
+    try:
+        from modules.email_blast_engine import run_email_cycle
+        result = await run_email_cycle()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 async def handle_shopify_blog_run(req: web.Request) -> web.Response:
     return await _trigger_task("shopify_seo_blog")
@@ -9432,7 +9467,6 @@ async def create_app():
     app.router.add_post("/api/tiktok/cycle",             handle_tiktok_autonomy_cycle)
     # ── Gumroad ───────────────────────────────────────────────────────────────
     app.router.add_post("/api/gumroad/create-all",       handle_gumroad_create_all)
-    app.router.add_post("/api/gumroad/blast",            handle_gumroad_blast)
     app.router.add_get( "/api/gumroad/list",             handle_gumroad_list)
     # ── Pinterest ─────────────────────────────────────────────────────────────
     app.router.add_post("/api/pinterest/pin-products",   handle_pinterest_pin_products)
@@ -9578,9 +9612,6 @@ async def create_app():
     app.router.add_get( "/api/digistore24/products",      handle_ds24_product_list)
     app.router.add_get( "/api/digistore24/orders",        handle_digistore_orders)
     app.router.add_post("/api/reddit/blast",              handle_reddit_blast)  # also POST
-    # ── QUANTUM SELF-REPAIR ROUTES ───────────────────────────────────────────
-    app.router.add_get( "/api/quantum/status",            handle_quantum_status)
-    app.router.add_post("/api/quantum/scan",              handle_quantum_scan)
     # ── AUTONOMOUS PRODUCT PIPELINE ROUTES ───────────────────────────────────
     app.router.add_post("/api/product/pipeline/run",      handle_product_pipeline_run)
     app.router.add_get( "/api/product/pipeline/history",  handle_product_pipeline_history)
@@ -9614,6 +9645,12 @@ async def create_app():
     app.router.add_get( "/api/digistore/revenue",         handle_digistore_autonomy_revenue)
     app.router.add_get( "/api/scheduler/tasks",           handle_automation_tasks)
     app.router.add_get( "/api/shopify/collections",       handle_shopify_collections_get)
+    app.router.add_get( "/api/content/status",            handle_content_stats)
+    app.router.add_get( "/api/digistore/products",        handle_ds24_product_list)
+    app.router.add_get( "/api/affiliates/status",         handle_affiliate_stats_new)
+    app.router.add_get( "/api/analytics/summary",         handle_analytics_legacy)
+    app.router.add_get( "/api/meta/status",               handle_meta_ads_status)
+    app.router.add_post("/api/email/test",                handle_email_test_send)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # ── MONEY MACHINE ────────────────────────────────────────────────────────
