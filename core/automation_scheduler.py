@@ -2293,6 +2293,22 @@ async def task_twitter_seo_thread() -> str:
         return f"Twitter Thread Fehler: {e}"
 
 
+async def task_intent_bridge_report() -> str:
+    """Intent-to-Sale Bridge: täglicher Report + Cleanup alter Events (alle 24h)."""
+    try:
+        from modules.intent_to_sale_bridge import scheduled_daily_report, get_stats
+        result = await scheduled_daily_report()
+        stats = get_stats()
+        return (
+            f"IntentBridge: {result} | "
+            f"gesamt={stats.get('total_detected',0)} "
+            f"geantwortet={stats.get('total_responded',0)} "
+            f"rate={stats.get('response_rate',0)}%"
+        )
+    except Exception as e:
+        return f"IntentBridge Report Fehler: {e}"
+
+
 async def task_social_scheduler() -> str:
     """Social Scheduler: Twitter → Telegram Fallback (alle 6h)."""
     try:
@@ -4845,6 +4861,7 @@ TASKS = [
     # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
     ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
+    ("intent_bridge_report", task_intent_bridge_report, 86400, 200),  # 24h — Intent-to-Sale Bridge Tagesbericht
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 125),  # 6h — FB+IG+TG+LI+Reddit+Discord
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
