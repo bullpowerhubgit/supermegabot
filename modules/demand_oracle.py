@@ -522,8 +522,9 @@ async def run_demand_scan() -> dict:
     # 2. Cluster into product concepts
     clusters = await cluster_desires(all_wishes)
 
-    # 3. Filter: only create products for clusters with enough demand
-    viable = [c for c in clusters if c.get("wish_count", 0) >= MIN_CLUSTER_SIZE]
+    # 3. All AI-identified clusters are viable (Claude already quality-filters)
+    # Keyword-based clusters need MIN_CLUSTER_SIZE; AI clusters trust wish_count≥1
+    viable = clusters
     log.info("[DemandOracle] %d viable clusters from %d wishes", len(viable), len(all_wishes))
 
     # 4. Create pre-order products (max N per run)
@@ -558,8 +559,8 @@ async def run_demand_scan() -> dict:
             created.append({**concept, **product})
             await asyncio.sleep(3)
 
-    # Mark wishes as clustered
-    if all_wishes:
+    # Mark wishes as clustered only if products were actually created
+    if created:
         with _db() as con:
             con.execute("UPDATE do_wishes SET clustered=1 WHERE clustered=0")
 
