@@ -153,7 +153,7 @@ async def ping():
         url = _url("listProducts")
         headers = {"X-DS-API-KEY": DS24_KEY}
         async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=30)) as resp:
+            async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=5)) as resp:
                 data = await resp.json(content_type=None)
         return data.get("result") == "success"
     except Exception as exc:
