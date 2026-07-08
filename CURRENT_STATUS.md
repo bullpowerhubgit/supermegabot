@@ -1,72 +1,46 @@
 # SuperMegaBot — CURRENT STATUS
 **Stand: 2026-07-08**
 
-## ✅ ERLEDIGT HEUTE
+## ✅ ALLE SOCIAL APIs LIVE
 
-### Gumroad Produkt LIVE
-- URL: https://tecbuuss.gumroad.com/l/liastd
-- Preis: €29/Monat (Membership, Alert-Plan)
-- Konto: aiitecbuuss@gmail.com (via Google Login)
-- Beschreibung vollständig, published ✅
-
-### Posts abgesetzt (heute, manuell ausgelöst)
 | Plattform | Status | Details |
 |-----------|--------|---------|
 | ✅ Facebook AiiteC Page | LIVE | Post ID: 1016738738178786_122128547403219541 |
 | ✅ LinkedIn | LIVE | Share: urn:li:share:7480698560959787009 |
 | ✅ Telegram | LIVE | Message ID: 111238 |
-| ✅ Reddit r/dropshipping | LIVE | u/Upper-Competition505, Flair: Discussion |
-| ❌ Twitter/X | GEBLOCKT | Passkey-Auth — Rudolf muss manuell einloggen |
-| ❌ Facebook Groups | AUSSTEHEND | User-Token expired 22. Juni 2026 |
+| ✅ Reddit r/dropshipping | LIVE | Browser-Posting funktioniert |
+| ✅ Twitter/X @rudibot84 | LIVE | $20 Credits, Tweet ID: 2074958843268747335 |
+| ✅ Instagram @aaiitecc | LIVE | Media ID: 17925395094369124 — HEUTE ERSTMALIG GEPOSTET! |
+| ❌ Facebook Groups | BLOCKIERT | publish_to_groups braucht Meta App Review |
 
-### Code-Änderungen
-- `modules/viral_promo_poster.py`:
-  - `GUMROAD_PRODUCT_URL = "https://tecbuuss.gumroad.com/l/liastd"` hinzugefügt
-  - `create_gumroad_product()` gibt live URL zurück (kein Token mehr nötig)
-  - AI-generierte Posts enthalten jetzt Gumroad-Link
-- Commit: `e395d9a` auf main gepusht, Railway deployed automatisch
-
-### Funktionierende API-Credentials
-- ✅ Facebook Page Token (AiiteC): valid
-- ✅ LinkedIn Access Token: valid
-- ✅ Telegram Bot Token: valid
-- ✅ Anthropic/Claude API: valid
-- ❌ Reddit API: 401 (script app problem) → Browser-Posting funktioniert
-- ❌ Twitter API: "no credits" (Free-Tier Limit) + Passkey-Login blockiert
-- ❌ Gumroad API Token: abgeschnitten → durch Browser-Produkt ersetzt
-
-## 🚧 NOCH OFFEN
-
-### Twitter/X
-- Account: rudibot84 (hat Passkey eingerichtet)
-- Lösung: Rudolf muss im Browser x.com öffnen und sich mit Passkey/Touch ID anmelden
-- Danach: twikit cookies extrahieren via `python3 -c "import twikit; ..."`
-- Oder: Twitter API Basic Plan aktivieren ($100/mo) für direkten API-Zugang
-
-### Facebook User Token erneuern (für Groups-Posting)
-- Gehe zu: https://developers.facebook.com/tools/explorer/
-- Login als dragonadnp@gmail.com
-- Berechtigungen: groups_access_member_info, publish_to_groups
-- Neuen Token in .env als FACEBOOK_USER_TOKEN eintragen
-
-### Automation Scheduler (viral_promo_poster.py)
-- Läuft alle 6h automatisch via Railway-Scheduler
-- Postet auf: Telegram + FB Page + LinkedIn (Reddit manuell)
-- Twitter wird übersprungen bis Token funktioniert
-
-## 💰 AKTIVE MONETARISIERUNG
-- Stripe Produkte: Alert €29, Pro €79, Agency €199 (Preise erstellt)
-- Gumroad: Alert-Plan €29/mo live → https://tecbuuss.gumroad.com/l/liastd
-- Shopify: ineedit.com.co (10k Produkte, Smart Collections)
-- Viral Scanner Dashboard: https://supermegabot-production.up.railway.app/viral
+## ✅ API-CREDENTIALS (alle gültig)
+- ✅ FACEBOOK_PAGE_TOKEN_AIITEC: valid
+- ✅ FACEBOOK_META_TOKEN: valid (User Token, Aiitec Aiitec)
+- ✅ FACEBOOK_IG_ACCESS_TOKEN: Long-lived 60-Tage Token, instagram_content_publish ✅
+  - App: AiiteC Social Content Poster (1535442684079797)
+  - IG Account: @aaiitecc (17841478315197796), 4833 Follower
+  - Läuft ab: ~2026-09-06
+- ✅ TWITTER_API_KEY + ACCESS_TOKEN: OAuth 1.0a, @rudibot84
+- ✅ LINKEDIN_ACCESS_TOKEN: gültig (Rudolf Sarkany)
+- ✅ TELEGRAM_BOT_TOKEN: gültig
+- ✅ ANTHROPIC_API_KEY: gültig
+- ✅ Railway: bezahlt 08.07.2026
 
 ## 🔧 SYSTEM STATUS
-- Railway: https://supermegabot-production.up.railway.app/health → OK
-- LaunchAgent: com.supermegabot.automation läuft (PID aktiv)
-- Desktop Button: ~/Desktop/🔥 Viral Scanner.app
+- Railway: https://supermegabot-production.up.railway.app/health → OK ✅
+- GitHub Actions: syntax-check ✅ PASS
+- LaunchAgent: com.supermegabot.automation läuft
+- circuits_open: [] ← ALLE ZURÜCKGESETZT ✅
 - Tagesbericht: täglich 08:00 Uhr via Telegram
 
+## 💰 AKTIVE MONETARISIERUNG
+- Stripe: Alert €29, Pro €79, Agency €199
+- Gumroad: https://tecbuuss.gumroad.com/l/liastd (€29/mo live)
+- Shopify: ineedit.com.co (10k Produkte, Smart Collections)
+- Viral Scanner: https://supermegabot-production.up.railway.app/viral
+
 ## 📋 NÄCHSTE SESSION: WEITERMACHEN MIT
-1. Twitter Login (Rudolf muss Passkey bestätigen, dann twikit cookies speichern)
-2. Facebook User Token erneuern → Groups-Posting aktivieren
-3. Shopify Produkt-Import (weitere viral geratete Produkte)
+1. Shopify Produkt-Import (viral geratete Produkte importieren)
+2. Reddit API fix (Script App → Personal Use App in reddit.com/prefs/apps)
+3. Facebook Groups Posting (braucht Meta App Review — langfristig)
+4. Instagram Token erneuern wenn nötig (~2026-09-06)

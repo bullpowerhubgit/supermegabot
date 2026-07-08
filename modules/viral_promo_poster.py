@@ -49,6 +49,8 @@ def _tg_token()        -> str: return os.getenv("TELEGRAM_BOT_TOKEN", "")
 def _tg_chat()         -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _gumroad_token()   -> str: return os.getenv("GUMROAD_ACCESS_TOKEN", "")
 def _anthropic_key()   -> str: return os.getenv("ANTHROPIC_API_KEY", "")
+def _ig_token()        -> str: return os.getenv("FACEBOOK_IG_ACCESS_TOKEN", os.getenv("FACEBOOK_META_TOKEN", ""))
+def _ig_account_id()   -> str: return os.getenv("INSTAGRAM_BUSINESS_ACCOUNT_ID", "17841478315197796")
 
 # Cooldowns in seconds
 _COOLDOWNS = {
@@ -59,6 +61,7 @@ _COOLDOWNS = {
     "reddit":          259200,  # 3 days per subreddit
     "telegram":        43200,   # 12 h
     "gumroad":         604800,  # 1 week (product creation)
+    "instagram":       43200,   # 12 h
 }
 
 _REDDIT_SUBREDDITS = [
@@ -131,7 +134,8 @@ async def generate_post_content(platform: str, angle: str, top_products: List[Di
         "twitter":  "Schreib auf Englisch, max 270 Zeichen, Hook-first, 2-3 Hashtags am Ende",
         "linkedin": "Schreib auf Deutsch, professionell, B2B-Fokus, 3 kurze Absätze, kein Spam-Feeling",
         "reddit":   "Schreib auf Englisch, value-first, kein Verkaufs-Ton, hilfreich und authentisch, 3-5 Sätze",
-        "telegram": "Schreib auf Deutsch, kurz, emoji-reich, max 3 Zeilen",
+        "telegram":  "Schreib auf Deutsch, kurz, emoji-reich, max 3 Zeilen",
+        "instagram": "Schreib auf Englisch, visual storytelling, max 2200 Zeichen, 5-10 relevante Hashtags am Ende, emoji-reich",
     }
 
     angle_hints = {
@@ -415,6 +419,42 @@ async def post_telegram_channels(text: str) -> Dict:
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
+# ── Instagram Graph API ───────────────────────────────────────────────────────
+
+async def post_instagram(caption: str, image_url: str = "") -> Dict:
+    token = _ig_token()
+    ig_id = _ig_account_id()
+    if not token:
+        return {"ok": False, "error": "no Instagram token (FACEBOOK_IG_ACCESS_TOKEN)"}
+    if not image_url:
+        image_url = "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1080&q=80"
+    try:
+        async with _session() as s:
+            # Step 1: Create media container
+            async with s.post(
+                f"https://graph.facebook.com/v25.0/{ig_id}/media",
+                json={"image_url": image_url, "caption": caption[:2200], "access_token": token}
+            ) as r:
+                data = await r.json()
+                if "error" in data:
+                    return {"ok": False, "error": data["error"].get("message", str(data["error"]))}
+                container_id = data.get("id")
+            if not container_id:
+                return {"ok": False, "error": "no container_id returned"}
+            # Step 2: Publish
+            await asyncio.sleep(2)
+            async with s.post(
+                f"https://graph.facebook.com/v25.0/{ig_id}/media_publish",
+                json={"creation_id": container_id, "access_token": token}
+            ) as r:
+                data = await r.json()
+                if "error" in data:
+                    return {"ok": False, "error": data["error"].get("message", str(data["error"]))}
+                return {"ok": True, "media_id": data.get("id")}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
 # ── Gumroad ───────────────────────────────────────────────────────────────────
 
 async def create_gumroad_product() -> Dict:
@@ -469,6 +509,19 @@ async def run_promo_cycle(top_products: Optional[List[Dict]] = None) -> Dict:
         else:
             results["errors"].append(f"twitter: {res.get('error')}")
             log.warning("Twitter failed: %s", res.get("error"))
+
+    # ── Instagram ─────────────────────────────────────────────────────────────
+    if _cooldown_ok("instagram", "main") and _ig_token():
+        text = await generate_post_content("instagram", angle, top_products)
+        res  = await post_instagram(text)
+        if res["ok"]:
+            _record("instagram", "main", angle, text, "ok")
+            results["platforms"].append("instagram")
+            results["posted_count"] += 1
+            log.info("Instagram OK: %s", res.get("media_id"))
+        else:
+            results["errors"].append(f"instagram: {res.get('error')}")
+            log.warning("Instagram failed: %s", res.get("error"))
 
     # ── Facebook Page ─────────────────────────────────────────────────────────
     if _cooldown_ok("facebook_page", _fb_page_id()) and _fb_page_token():
