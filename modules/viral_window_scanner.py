@@ -78,6 +78,11 @@ def init_db():
             source      TEXT NOT NULL,
             raw_data    TEXT,
             score       REAL DEFAULT 0,
+            saturation  INTEGER DEFAULT -1,
+            ek_eur      REAL DEFAULT 0,
+            vk_eur      REAL DEFAULT 0,
+            margin_pct  REAL DEFAULT 0,
+            fb_ad_json  TEXT,
             first_seen  INTEGER,
             last_seen   INTEGER,
             alerted     INTEGER DEFAULT 0,
@@ -507,10 +512,156 @@ def _heuristic_score(items: List[Dict]) -> List[Dict]:
     return result
 
 
+# ── Signal Source 6: Shopify-Sättigungs-Check ────────────────────────────────
+
+async def fetch_shopify_saturation(keywords: List[str]) -> Dict[str, int]:
+    """Schätzt Shopify-Sättigung via DuckDuckGo HTML-Suche (kein API-Key nötig)."""
+    saturation: Dict[str, int] = {}
+    for kw in keywords[:15]:
+        query = f"site:myshopify.com {kw}"
+        url = f"https://html.duckduckgo.com/html/?q={query.replace(' ', '+')}"
+        try:
+            async with _session(12) as s:
+                async with s.get(url, headers={"User-Agent": "Mozilla/5.0"}) as r:
+                    if r.status != 200:
+                        saturation[kw] = -1
+                        continue
+                    html = await r.text()
+                    # Anzahl Ergebnisse aus DDG-HTML auslesen
+                    count_match = re.search(
+                        r'(\d[\d,\.]+)\s+(?:Ergebnisse|results)', html, re.IGNORECASE
+                    )
+                    if count_match:
+                        raw = count_match.group(1).replace(",", "").replace(".", "")
+                        saturation[kw] = int(raw)
+                    else:
+                        # Zähle sichtbare .result Einträge als Mindestschätzung
+                        hits = len(re.findall(r'class="result"', html))
+                        saturation[kw] = hits * 10
+        except Exception as e:
+            log.debug("Saturation check error (%s): %s", kw, e)
+            saturation[kw] = -1
+        await asyncio.sleep(0.8)
+    return saturation
+
+
+# ── Margin-Rechner ────────────────────────────────────────────────────────────
+
+def calculate_margin(ek_eur: float, vk_eur: float, shipping_eur: float = 3.5) -> Dict:
+    """Berechnet Nettomargin inkl. Versand und Shopify-Gebühren (2%)."""
+    if ek_eur <= 0 or vk_eur <= 0:
+        return {"margin_eur": 0, "margin_pct": 0, "roi_pct": 0}
+    shopify_fee = vk_eur * 0.02
+    cost_total  = ek_eur + shipping_eur + shopify_fee
+    margin_eur  = vk_eur - cost_total
+    margin_pct  = (margin_eur / vk_eur * 100) if vk_eur > 0 else 0
+    roi_pct     = (margin_eur / cost_total * 100) if cost_total > 0 else 0
+    return {
+        "ek_eur":      round(ek_eur, 2),
+        "vk_eur":      round(vk_eur, 2),
+        "shipping_eur": round(shipping_eur, 2),
+        "shopify_fee":  round(shopify_fee, 2),
+        "margin_eur":   round(margin_eur, 2),
+        "margin_pct":   round(margin_pct, 1),
+        "roi_pct":      round(roi_pct, 1),
+    }
+
+
+# ── Facebook Ad Copy Generator ────────────────────────────────────────────────
+
+async def generate_fb_ad_copy(item: Dict) -> Dict[str, str]:
+    """Generiert 3 Facebook-Ad-Varianten (Hook / Body / CTA) via Claude/OpenAI."""
+    kw     = item["keyword"]
+    score  = item["score"]
+    margin = item.get("margin_pct", 55)
+    reason = item.get("reason", "")
+
+    prompt = f"""Du bist ein Facebook-Ads-Experte für deutschsprachige E-Commerce-Shops.
+Erstelle 3 verschiedene Facebook-Ad-Varianten für dieses Trending-Produkt:
+
+Produkt: {kw}
+Trend-Score: {score}/100
+Warum trending: {reason}
+Margin: ~{margin:.0f}%
+
+Format (NUR JSON, kein Text drumrum):
+{{
+  "ad_a": {{
+    "hook": "Erste Zeile die stoppt (max 10 Wörter)",
+    "body": "2-3 Sätze Produktvorteile + Social Proof",
+    "cta": "Call-to-Action Button Text"
+  }},
+  "ad_b": {{
+    "hook": "Andere Emotion/Winkel",
+    "body": "Problem → Lösung Stil",
+    "cta": "CTA"
+  }},
+  "ad_c": {{
+    "hook": "FOMO/Urgency Winkel",
+    "body": "Limitiert/Trending Stil",
+    "cta": "CTA"
+  }},
+  "hashtags": "#tag1 #tag2 #tag3 #tag4 #tag5"
+}}"""
+
+    empty = {
+        "ad_a": {"hook": f"🔥 {kw} — jetzt trending!", "body": reason, "cta": "Jetzt kaufen"},
+        "ad_b": {"hook": f"Alle kaufen gerade: {kw}", "body": f"Score {score}/100 • Margin ~{margin:.0f}%", "cta": "Zum Shop"},
+        "ad_c": {"hook": "Trend-Fenster schließt sich!", "body": f"{kw} — limitiertes Angebot", "cta": "Sichern"},
+        "hashtags": "#trending #dropshipping #onlineshop #trendprodukt #viral"
+    }
+
+    try:
+        api_key = _anthropic()
+        raw_text = ""
+        if api_key:
+            async with _session(25) as s:
+                async with s.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": api_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json"
+                    },
+                    json={
+                        "model": "claude-haiku-4-5-20251001",
+                        "max_tokens": 800,
+                        "messages": [{"role": "user", "content": prompt}]
+                    }
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        raw_text = d.get("content", [{}])[0].get("text", "")
+        elif _openai():
+            async with _session(25) as s:
+                async with s.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_openai()}",
+                             "Content-Type": "application/json"},
+                    json={
+                        "model": "gpt-4o-mini",
+                        "messages": [{"role": "user", "content": prompt}],
+                        "max_tokens": 800
+                    }
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        raw_text = d["choices"][0]["message"]["content"]
+
+        if raw_text:
+            match = re.search(r"\{.*\}", raw_text, re.DOTALL)
+            if match:
+                return json.loads(match.group())
+    except Exception as e:
+        log.debug("FB Ad Copy error: %s", e)
+
+    return empty
+
+
 # ── Signal-Aggregator ─────────────────────────────────────────────────────────
 
 async def aggregate_signals() -> List[Dict]:
-    log.info("Starte Signal-Aggregation von 5 Quellen...")
+    log.info("Starte Signal-Aggregation von 6 Quellen...")
     tasks = [
         fetch_google_trends(),
         fetch_amazon_movers(),
@@ -533,14 +684,22 @@ async def aggregate_signals() -> List[Dict]:
     for sig in all_signals:
         kw_key = sig["keyword"].lower()[:80]
         if kw_key not in merged:
-            merged[kw_key] = {**sig, "sources": [sig["source"]]}
+            merged[kw_key] = {**sig, "sources": [sig["source"]], "saturation": -1}
         else:
             if sig["source"] not in merged[kw_key]["sources"]:
                 merged[kw_key]["sources"].append(sig["source"])
-            # Aggregiere numerische Felder
+            # Aggregiere numerische Felder — KEIN Duplikat, nur summieren
             for field in ["traffic", "rank_gain", "upvotes", "order_count"]:
                 if field in sig:
                     merged[kw_key][field] = merged[kw_key].get(field, 0) + sig.get(field, 0)
+
+    # Signal 6: Shopify-Sättigung — wird direkt in merged eingetragen (kein neuer Eintrag)
+    if merged:
+        kw_list = [v["keyword"] for v in list(merged.values())[:15]]
+        saturation_map = await fetch_shopify_saturation(kw_list)
+        for kw_key, entry in merged.items():
+            kw = entry["keyword"]
+            entry["saturation"] = saturation_map.get(kw, saturation_map.get(kw.lower(), -1))
 
     log.info("Aggregiert: %d eindeutige Keywords aus %d Signalen",
              len(merged), len(all_signals))
@@ -567,40 +726,89 @@ async def run_scan() -> Dict:
     # 3. In DB speichern + Top-Produkte finden
     high_score_items = []
     with _db() as conn:
+        # Spalten nachrüsten falls DB aus älterer Version
+        for col, coltype in [
+            ("saturation", "INTEGER DEFAULT -1"),
+            ("ek_eur", "REAL DEFAULT 0"),
+            ("vk_eur", "REAL DEFAULT 0"),
+            ("margin_pct", "REAL DEFAULT 0"),
+            ("fb_ad_json", "TEXT"),
+        ]:
+            try:
+                conn.execute(f"ALTER TABLE viral_signals ADD COLUMN {col} {coltype}")
+            except Exception:
+                pass  # Spalte existiert bereits
+
         for item in scored:
-            kw   = item["keyword"]
-            sc   = item["score"]
-            srcs = item.get("sources", "")
+            kw       = item["keyword"]
+            sc       = item["score"]
+            sat      = item.get("saturation", -1)
+            srcs     = item.get("sources", "")
             if isinstance(srcs, list):
                 srcs = ",".join(srcs)
-            # Prüfe ob schon bekannt
+
+            # Margin aus AI-Score ableiten (EK Schätzung: score/100 * 40 + 5 EUR)
+            ek_est  = round(5 + (sc / 100) * 35, 2)
+            vk_est  = round(ek_est * (2.5 + item.get("margin_pct", 55) / 100), 2)
+            mg      = calculate_margin(ek_est, vk_est)
+
             existing = conn.execute(
-                "SELECT id, score, alerted, imported FROM viral_signals WHERE keyword=?",
+                "SELECT id, score, alerted, imported, fb_ad_json FROM viral_signals WHERE keyword=?",
                 (kw,)
             ).fetchone()
             if existing:
                 conn.execute(
-                    "UPDATE viral_signals SET score=?, last_seen=?, sources=? WHERE keyword=?",
-                    (sc, now, srcs, kw)
+                    """UPDATE viral_signals
+                       SET score=?, last_seen=?, source=?, saturation=?,
+                           ek_eur=?, vk_eur=?, margin_pct=?
+                       WHERE keyword=?""",
+                    (sc, now, srcs, sat, mg["ek_eur"], mg["vk_eur"], mg["margin_pct"], kw)
                 )
             else:
                 conn.execute(
                     """INSERT INTO viral_signals
-                       (keyword, source, score, first_seen, last_seen)
-                       VALUES (?, ?, ?, ?, ?)""",
-                    (kw, srcs, sc, now, now)
+                       (keyword, source, score, saturation, ek_eur, vk_eur, margin_pct,
+                        first_seen, last_seen)
+                       VALUES (?,?,?,?,?,?,?,?,?)""",
+                    (kw, srcs, sc, sat, mg["ek_eur"], mg["vk_eur"], mg["margin_pct"], now, now)
                 )
-            if sc >= MIN_SCORE_ALERT:
-                alerted  = existing["alerted"]  if existing else 0
-                imported = existing["imported"] if existing else 0
-                high_score_items.append({**item, "alerted": alerted, "imported": imported})
 
-    # 4. Alerts + Shopify-Import
+            if sc >= MIN_SCORE_ALERT:
+                alerted      = existing["alerted"]    if existing else 0
+                imported     = existing["imported"]   if existing else 0
+                fb_ad_cached = existing["fb_ad_json"] if existing else None
+                high_score_items.append({
+                    **item,
+                    "alerted":       alerted,
+                    "imported":      imported,
+                    "margin_data":   mg,
+                    "saturation":    sat,
+                    "fb_ad_cached":  fb_ad_cached,
+                })
+
+    # 4. FB Ad Copy + Alerts + Shopify-Import (pro Produkt EINMALIG generieren)
     imported_count = 0
     alerted_count  = 0
     for item in sorted(high_score_items, key=lambda x: x["score"], reverse=True)[:10]:
         kw = item["keyword"]
         sc = item["score"]
+
+        # FB Ad Copy nur generieren wenn noch nicht vorhanden
+        fb_ad = None
+        if not item.get("fb_ad_cached"):
+            fb_ad = await generate_fb_ad_copy(item)
+            with _db() as conn:
+                conn.execute(
+                    "UPDATE viral_signals SET fb_ad_json=? WHERE keyword=?",
+                    (json.dumps(fb_ad), kw)
+                )
+        else:
+            try:
+                fb_ad = json.loads(item["fb_ad_cached"])
+            except Exception:
+                fb_ad = None
+
+        item["fb_ad"] = fb_ad
 
         # Shopify-Import wenn Score hoch genug und noch nicht importiert
         shopify_id = None
@@ -613,7 +821,7 @@ async def run_scan() -> Dict:
                     )
                 imported_count += 1
 
-        # Telegram-Alert wenn noch nicht gesendet (max 1x pro 24h)
+        # Telegram-Alert nur 1x pro Keyword
         if not item.get("alerted"):
             await _send_alert(item, shopify_id)
             with _db() as conn:
@@ -659,27 +867,61 @@ async def _shopify_import(item: Dict) -> Optional[str]:
     window = item.get("window_h", WINDOW_HOURS)
     reason = item.get("reason", "")
 
-    # Beschreibung generieren
+    # Margin-Daten
+    mg = item.get("margin_data", {})
+    margin_html = ""
+    if mg and mg.get("ek_eur", 0) > 0:
+        margin_html = (
+            f"<p>💵 <strong>Margin-Rechner:</strong> "
+            f"EK ~€{mg['ek_eur']} | VK ~€{mg['vk_eur']} | "
+            f"Gewinn ~€{mg['margin_eur']} ({mg['margin_pct']}%) | ROI {mg['roi_pct']}%</p>"
+        )
+
+    # Sättigungs-Info
+    sat = item.get("saturation", -1)
+    sat_html = ""
+    if sat >= 0:
+        level = "NIEDRIG 🟢" if sat < 50 else ("MITTEL 🟡" if sat < 500 else "HOCH 🔴")
+        sat_html = f"<p>🏪 Shopify-Sättigung: {level} (~{sat} Stores haben dieses Produkt)</p>"
+
+    # FB Ad Copy Block
+    fb_ad = item.get("fb_ad", {})
+    fb_html = ""
+    if fb_ad and fb_ad.get("ad_a"):
+        ad_a = fb_ad["ad_a"]
+        fb_html = f"""<h3>📢 Facebook Ad Copy (automatisch generiert)</h3>
+<p><strong>Hook:</strong> {ad_a.get('hook','')}</p>
+<p>{ad_a.get('body','')}</p>
+<p><em>CTA: {ad_a.get('cta','Jetzt kaufen')}</em></p>
+<p>{fb_ad.get('hashtags','')}</p>"""
+
     body = f"""<h2>🔥 Trending Produkt — Viral Window aktiv!</h2>
-<p><strong>AI-Score: {score}/100</strong> | Margin-Potenzial: ~{margin:.0f}%</p>
-<p>Dieses Produkt wurde von unserem Viral Window Scanner mit einem Score von {score} bewertet.
-Das Trend-Fenster ist aktuell offen ({window}h Schätzung).</p>
+<p><strong>AI-Score: {score}/100</strong> | Trend-Fenster: ~{window}h offen</p>
 <p><em>{reason}</em></p>
+{margin_html}{sat_html}
 <p>Supplier: {item.get('supplier_hint', 'AliExpress')}</p>
-<h3>Über dieses Produkt</h3>
-<p>{kw} ist derzeit in mehreren Trend-Signalen gleichzeitig sichtbar (Google Trends, Amazon,
-Reddit, TikTok). Das deutet auf organische Nachfrage hin — ideal für Dropshipping.</p>"""
+<h3>Warum jetzt kaufen?</h3>
+<p>{kw} ist gleichzeitig in mehreren Trend-Quellen sichtbar (Google Trends, Amazon Movers,
+Reddit, TikTok) — organische Nachfrage deutet auf kurzes, profitables Zeitfenster hin.</p>
+{fb_html}"""
 
     tags = [
         "viral-window", "trending-2026",
         f"score-{int(score)}",
         item.get("supplier_hint", "aliexpress").lower().replace(" ", "-")
     ]
+    if sat >= 0 and sat < 50:
+        tags.append("low-competition")
+
+    # Preis aus Margin-Daten
+    vk = mg.get("vk_eur", 0) if mg else 0
+    if vk <= 0:
+        vk = round(29.99 + (score / 100) * 50, 2)
 
     try:
         result = await shopify_client.create_product(
             title=kw,
-            price=round(29.99 + (score / 100) * 50, 2),
+            price=vk,
             vendor="Viral Window Scanner",
             body_html=body,
             product_type="Trending Product",
@@ -720,12 +962,31 @@ async def _send_alert(item: Dict, shopify_id: Optional[str] = None):
         if domain:
             shopify_line = f"\n🛍️ <b>Auto-Import:</b> <a href='https://{domain}/admin/products/{shopify_id}'>Shopify ✅</a>"
 
+    # Margin-Daten aus item holen
+    mg = item.get("margin_data", {})
+    margin_line = ""
+    if mg and mg.get("ek_eur", 0) > 0:
+        margin_line = (
+            f"\n💵 EK: ~€{mg['ek_eur']} → VK: ~€{mg['vk_eur']} "
+            f"→ Gewinn: €{mg['margin_eur']} ({mg['margin_pct']}%)"
+        )
+
+    # Sättigungs-Info
+    sat = item.get("saturation", -1)
+    sat_line = ""
+    if sat >= 0:
+        if sat < 50:
+            sat_line = f"\n🟢 Sättigung: NIEDRIG (~{sat} Shops)"
+        elif sat < 500:
+            sat_line = f"\n🟡 Sättigung: MITTEL (~{sat} Shops)"
+        else:
+            sat_line = f"\n🔴 Sättigung: HOCH (~{sat} Shops)"
+
     msg = f"""{emoji} <b>VIRAL WINDOW ALERT</b> {emoji}
 
 🎯 <b>{kw}</b>
 📊 <b>Score: {score}/100</b> — {urgency} handeln!
-⏱️ Trend-Fenster: ~{window}h noch offen
-💰 Margin-Potenzial: ~{margin:.0f}%
+⏱️ Trend-Fenster: ~{window}h noch offen{margin_line}{sat_line}
 📡 Signale: {srcs}
 🏭 Supplier: {supplier}
 {shopify_line}
@@ -739,8 +1000,21 @@ async def _send_alert(item: Dict, shopify_id: Optional[str] = None):
     # An Rudolf's Chat senden
     await _tg_send(msg)
 
-    # An alle aktiven Subscriber senden
-    await _notify_subscribers(msg, min_tier_score=score)
+    # Pro/Agency Subscriber bekommen zusätzlich FB Ad Copy
+    fb_ad = item.get("fb_ad")
+    fb_msg = None
+    if fb_ad:
+        ad_a = fb_ad.get("ad_a", {})
+        fb_msg = (
+            f"📢 <b>FB Ad Copy für: {kw}</b>\n\n"
+            f"<b>Ad A (Hook):</b> {ad_a.get('hook','')}\n"
+            f"{ad_a.get('body','')}\n"
+            f"🔘 <i>{ad_a.get('cta','')}</i>\n\n"
+            f"{fb_ad.get('hashtags','')}"
+        )
+
+    # An alle aktiven Subscriber senden (tier-basiert)
+    await _notify_subscribers(msg, fb_msg=fb_msg, min_tier_score=score)
 
     # In DB loggen
     with _db() as conn:
@@ -752,7 +1026,7 @@ async def _send_alert(item: Dict, shopify_id: Optional[str] = None):
         )
 
 
-async def _notify_subscribers(msg: str, min_tier_score: float = 0):
+async def _notify_subscribers(msg: str, fb_msg: str = None, min_tier_score: float = 0):
     with _db() as conn:
         subs = conn.execute(
             "SELECT telegram_id, tier FROM viral_subscribers WHERE active=1 AND telegram_id != ''"
@@ -767,6 +1041,10 @@ async def _notify_subscribers(msg: str, min_tier_score: float = 0):
         if not tid:
             continue
         await _tg_send(msg, chat_id=tid)
+        # Pro + Agency bekommen zusätzlich FB Ad Copy
+        if fb_msg and tier in ("pro", "agency"):
+            await asyncio.sleep(0.2)
+            await _tg_send(fb_msg, chat_id=tid)
         await asyncio.sleep(0.05)
 
 
