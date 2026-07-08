@@ -2302,6 +2302,15 @@ async def task_ebay_arbitrage_scan() -> str:
         return f"EbayArbitrage Fehler: {e}"
 
 
+async def task_demand_oracle_scan() -> str:
+    """Demand Oracle: Reddit-Wünsche → KI-Clustering → Pre-Order-Produkte (alle 12h)."""
+    try:
+        from modules.demand_oracle import scheduled_demand_scan
+        return await scheduled_demand_scan()
+    except Exception as e:
+        return f"DemandOracle Fehler: {e}"
+
+
 async def task_intent_bridge_report() -> str:
     """Intent-to-Sale Bridge: täglicher Report + Cleanup alter Events (alle 24h)."""
     try:
@@ -4928,6 +4937,7 @@ TASKS = [
     ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
     ("intent_bridge_report", task_intent_bridge_report, 86400, 200),  # 24h — Intent-to-Sale Bridge Tagesbericht
     ("ebay_arbitrage_scan",  task_ebay_arbitrage_scan,  21600, 180),  # 6h — eBay Arbitrage: AliExpress→eBay→Shopify
+    ("demand_oracle_scan",   task_demand_oracle_scan,   43200, 240),  # 12h — Demand Oracle: Reddit→Cluster→Pre-Order
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
     ("viral_window_scan",   task_viral_window_scan,    7200,  55),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",    task_oos_sniper_scan,      7200,  58),  # 2h — OOS Sniper
