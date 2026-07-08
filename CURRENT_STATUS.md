@@ -49,12 +49,24 @@
 | modules/insolvenz_radar.py | ✅ LIVE | alle 12h |
 | modules/outreach_engine.py | ✅ LIVE | /outreach Dashboard |
 | modules/outreach_autonomous.py | ✅ LÄUFT (PID 34189) | täglich 09:00 |
+| modules/handelsregister_radar.py | ✅ BEREIT | täglich 08:00 |
+| modules/ai_act_scanner.py | ✅ BEREIT | täglich 10:00 |
+| modules/zvg_radar.py | ✅ BEREIT | täglich 07:00 |
 - Route: /money-machine — Dashboard mit 1-Klick START-Button
 - Route: /insolvenz-radar — B2B Lead Machine (Insolvenzregister DE)
 - Route: /outreach — Outreach Queue + Email-Versand Dashboard
 - Outreach Agent: automatisch täglich 09:00, 10 Emails/Tag via Gmail
 - Desktop-Launcher mit Auto-Watchdog: MONEY_MACHINE_START.command
 - Server lokal: PORT=8888 (NICHT 3000 — PORT=3000 in .env überschreiben!)
+
+## 🆕 3 NEUE AUTONOME LEAD-AGENTEN (2026-07-09)
+| Agent | Ziel | Revenue | Desktop-Button |
+|-------|------|---------|----------------|
+| handelsregister_radar.py | Neue GmbHs → Steuerberater/SaaS Leads | €10-25/Lead | HANDELSREGISTER_START.command |
+| ai_act_scanner.py | KMU EU AI Act Risiko → €299 Reports | €99-299/Firma | AI_ACT_START.command |
+| zvg_radar.py | Zwangsversteigerungen → Bank/Anwalt Leads | €30-150/Lead | ZVG_RADAR_START.command |
+- Alle drei: vollautonomer Daemon-Modus + --now Test-Flag
+- Staggered Schedule: ZVG 07:00, HR 08:00, Outreach 09:00, AI Act 10:00
 
 ## 📋 NÄCHSTE SESSION: WEITERMACHEN MIT
 1. Reddit: Neues OAuth2-App erstellen (reddit.com/prefs/apps → create an app) und REDDIT_REFRESH_TOKEN setzen
