@@ -2798,6 +2798,46 @@ async def task_viral_trend_scan() -> str:
         return f"ViralTrend error: {e}"
 
 
+async def task_insolvenz_radar_scan() -> str:
+    """Insolvenz Radar — täglich neue B2B-Leads aus dem Insolvenzregister"""
+    try:
+        from modules.insolvenz_radar import run_scan
+        result = await run_scan(min_score_alert=60)
+        return f"InsolvenzRadar OK — {result.get('new_leads',0)} neue Leads, {result.get('alerts_sent',0)} Alerts"
+    except Exception as e:
+        return f"InsolvenzRadar error: {e}"
+
+
+async def task_insolvenz_radar_autopost() -> str:
+    """Insolvenz Radar Autopost — postet Top-Lead täglich auf Telegram als Social Proof"""
+    try:
+        from modules.insolvenz_radar import get_top_leads
+        import os, aiohttp
+        leads = get_top_leads(limit=1)
+        if not leads:
+            return "InsolvenzRadar Autopost: keine Leads"
+        lead = leads[0]
+        import json as _json
+        types = _json.loads(lead.get("lead_types", "[]"))
+        msg = (
+            f"&#x1F3DB; <b>Insolvenz Radar &mdash; Top Lead heute</b>\n\n"
+            f"&#x1F3E2; <b>{lead['debtor_name']}</b>\n"
+            f"&#x1F4CD; {lead.get('bundesland','?')} | {lead.get('branche','?')}\n"
+            f"&#x1F3AF; Score: <b>{lead['score']}/100</b>\n"
+            f"&#x1F91D; Ideal f&#252;r: {', '.join(types)}\n\n"
+            f"<i>Mehr auf /insolvenz-radar</i>"
+        )
+        token = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1","")
+        chat  = os.getenv("TELEGRAM_CHAT_ID","")
+        if token and chat:
+            async with aiohttp.ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as s:
+                await s.post(f"https://api.telegram.org/bot{token}/sendMessage",
+                             json={"chat_id": chat, "text": msg, "parse_mode": "HTML"})
+        return f"InsolvenzRadar Autopost: {lead['debtor_name']} (Score {lead['score']})"
+    except Exception as e:
+        return f"InsolvenzRadar Autopost error: {e}"
+
+
 async def task_oos_sniper_scan() -> str:
     """OOS Sniper — Konkurrenz Out-of-Stock Scan"""
     try:
@@ -4976,9 +5016,11 @@ TASKS = [
     ("b2b_intent_radar",    task_b2b_intent_radar_scan, 21600, 280),  # 6h — B2B Intent Radar: HN+Reddit+GitHub→Leads
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
     ("vorsprung_scan",       task_vorsprung_scan,      21600, 300),  # 6h — VORSPRUNG Intelligence (Bundesanzeiger+EUIPO+DPMA+Reddit)
-    ("viral_window_scan",   task_viral_window_scan,    7200,  55),  # 2h — Viral Window Scanner
-    ("oos_sniper_scan",    task_oos_sniper_scan,      7200,  58),  # 2h — OOS Sniper
-    ("money_machine_run",  task_money_machine_run,   14400,  65),  # 4h — Money Machine (alle 5 Engines)
+    ("viral_window_scan",      task_viral_window_scan,       7200,  55),  # 2h — Viral Window Scanner
+    ("oos_sniper_scan",        task_oos_sniper_scan,         7200,  58),  # 2h — OOS Sniper
+    ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
+    ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
+    ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
     ("viral_promo",         task_viral_promo_poster,       21600, 90),  # 6h — Multi-Channel Promo (FB/TW/LI/Reddit/TG)
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 125),  # 6h — FB+IG+TG+LI+Reddit+Discord

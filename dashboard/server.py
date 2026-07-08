@@ -9635,6 +9635,15 @@ async def create_app():
     app.router.add_post("/api/cart-rescue/test",         handle_cart_test)
     # ── END MONEY MACHINE ─────────────────────────────────────────────────────
 
+    # ── INSOLVENZ RADAR PRO ───────────────────────────────────────────────────
+    app.router.add_get( "/insolvenz-radar",              handle_ir_page)
+    app.router.add_get( "/insolvenz-radar/success",      handle_ir_success)
+    app.router.add_get( "/api/insolvenz-radar/status",   handle_ir_status)
+    app.router.add_get( "/api/insolvenz-radar/leads",    handle_ir_leads)
+    app.router.add_post("/api/insolvenz-radar/scan",     handle_ir_scan)
+    app.router.add_post("/api/insolvenz-radar/checkout", handle_ir_checkout)
+    # ── END INSOLVENZ RADAR ───────────────────────────────────────────────────
+
     # ── VIRAL WINDOW SCANNER ─────────────────────────────────────────────────
     app.router.add_get( "/viral",                   handle_viral_page)
     app.router.add_get( "/viral/success",           handle_viral_success)
@@ -11819,6 +11828,311 @@ setInterval(refreshAll, 30000);
 </script>
 </body>
 </html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  INSOLVENZ RADAR PRO — Handlers
+# ═══════════════════════════════════════════════════════════════════════════
+
+_ir_running = False
+
+async def handle_ir_page(req):
+    html = """<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>&#x1F3DB; Insolvenz Radar Pro &mdash; B2B Leadmaschine</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--card:#111118;--border:#1e1e2e;--accent:#dc2626;--accent2:#f97316;--green:#10b981;--yellow:#f59e0b;--blue:#3b82f6;--text:#e2e8f0;--muted:#64748b}
+body{font-family:'SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#1a0505 0%,#0f172a 50%,#150a00 100%);border-bottom:1px solid #4b1111;padding:18px 28px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.4rem;font-weight:900}
+.logo span{background:linear-gradient(90deg,#ef4444,#f97316,#fbbf24);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav a{color:#94a3b8;text-decoration:none;margin-left:18px;font-size:.82rem}
+.hero{padding:36px 28px 20px;background:linear-gradient(180deg,rgba(220,38,38,.07) 0%,transparent 100%);border-bottom:1px solid rgba(220,38,38,.15)}
+.hero h1{font-size:2rem;font-weight:900;margin-bottom:8px}
+.hero h1 span{background:linear-gradient(90deg,#ef4444,#f97316);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--muted);font-size:.92rem;max-width:600px;line-height:1.6;margin-bottom:20px}
+.hero-stats{display:flex;gap:24px;flex-wrap:wrap}
+.hstat{background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:10px;padding:14px 20px;min-width:130px}
+.hstat-val{font-size:1.8rem;font-weight:900;color:#ef4444}
+.hstat-label{font-size:.72rem;color:var(--muted);margin-top:2px}
+.controls{display:flex;gap:10px;padding:16px 28px;flex-wrap:wrap;align-items:center;border-bottom:1px solid var(--border)}
+.filter-group{display:flex;align-items:center;gap:8px}
+.filter-group label{font-size:.78rem;color:var(--muted);white-space:nowrap}
+select,input[type=number]{background:#0d0d16;border:1px solid var(--border);color:var(--text);padding:7px 12px;border-radius:7px;font-size:.82rem}
+.btn{padding:8px 18px;border:none;border-radius:8px;cursor:pointer;font-weight:700;font-size:.82rem;transition:opacity .15s}
+.btn-scan{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
+.btn-scan:hover{opacity:.85}
+.btn-scan:disabled{opacity:.4;cursor:not-allowed}
+.leads-grid{padding:20px 28px}
+.leads-grid h3{font-size:.9rem;font-weight:700;color:var(--muted);margin-bottom:14px}
+.lead-table{width:100%;border-collapse:collapse}
+.lead-table th{text-align:left;padding:10px 12px;font-size:.72rem;color:var(--muted);border-bottom:1px solid var(--border);text-transform:uppercase;letter-spacing:.5px}
+.lead-table td{padding:12px;border-bottom:1px solid rgba(30,30,46,.6);font-size:.84rem;vertical-align:top}
+.lead-table tr:hover td{background:rgba(255,255,255,.02)}
+.score-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:6px;font-size:.72rem;font-weight:800}
+.score-high{background:rgba(220,38,38,.2);color:#ef4444;border:1px solid rgba(220,38,38,.3)}
+.score-mid{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.25)}
+.score-low{background:rgba(100,116,139,.1);color:#64748b;border:1px solid rgba(100,116,139,.2)}
+.lead-name{font-weight:700;color:var(--text);max-width:220px;word-break:break-word}
+.lead-meta{font-size:.72rem;color:var(--muted);margin-top:3px}
+.tag{display:inline-block;padding:2px 8px;background:rgba(59,130,246,.1);color:#60a5fa;border-radius:4px;font-size:.68rem;margin:2px 2px 0 0;border:1px solid rgba(59,130,246,.2)}
+.pricing{padding:28px}
+.pricing h2{font-size:1.4rem;font-weight:800;margin-bottom:6px}
+.pricing-sub{color:var(--muted);font-size:.88rem;margin-bottom:22px}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.plan{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px;position:relative}
+.plan.featured{border-color:var(--accent);box-shadow:0 0 25px rgba(220,38,38,.12)}
+.plan-badge{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;padding:3px 12px;border-radius:8px;font-size:.7rem;font-weight:800}
+.plan-name{font-size:.95rem;font-weight:800;margin-bottom:4px}
+.plan-price{font-size:1.9rem;font-weight:900;color:var(--accent);margin-bottom:4px}
+.plan-price span{font-size:.8rem;color:var(--muted);font-weight:400}
+.plan-features{list-style:none;margin:14px 0 18px}
+.plan-features li{padding:4px 0;font-size:.82rem;color:#94a3b8;border-bottom:1px solid var(--border);display:flex;gap:7px;align-items:center}
+.plan-features li:last-child{border:none}
+.plan-features li::before{content:"\\2713";color:var(--green);font-weight:800}
+.plan-btn{width:100%;padding:11px;border:none;border-radius:8px;font-weight:800;font-size:.87rem;cursor:pointer}
+.plan-btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
+.plan-btn-secondary{background:#1e1e2e;color:var(--text);border:1px solid var(--border)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid rgba(220,38,38,.3);border-radius:16px;padding:32px;max-width:400px;width:90%}
+.modal h4{font-size:1.15rem;font-weight:800;margin-bottom:7px}
+.modal p{color:var(--muted);font-size:.84rem;margin-bottom:16px}
+.form-group label{display:block;font-size:.77rem;color:var(--muted);margin-bottom:5px}
+.form-group input{width:100%;background:#0d0d16;border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:.87rem;margin-bottom:12px}
+.modal-footer{display:flex;gap:8px;margin-top:14px}
+.btn-cancel{flex:1;padding:10px;background:#1e1e2e;border:1px solid var(--border);color:var(--text);border-radius:8px;cursor:pointer;font-weight:700}
+.btn-pay{flex:2;padding:10px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:800}
+.empty{padding:40px;text-align:center;color:var(--muted);font-size:.88rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+</style></head><body>
+<div class="header">
+  <div class="logo">&#x1F3DB; <span>Insolvenz Radar Pro</span></div>
+  <nav class="nav">
+    <a href="/">Dashboard</a><a href="/money-machine">Money Machine</a><a href="/viral">Viral</a>
+  </nav>
+</div>
+
+<div class="hero">
+  <h1>&#x1F3DB; <span>Staatsregister = Deine</span> Leadmaschine</h1>
+  <p>T&#228;glich neue B2B-Leads aus dem offiziellen deutschen Insolvenzregister &mdash; automatisch bewertet, nach Branche geclustert, sofort per Telegram gemeldet. Ideal f&#252;r Steuerberater, Factoring-Firmen und M&amp;A-Berater.</p>
+  <div class="hero-stats" id="hero-stats">
+    <div class="hstat"><div class="hstat-val" id="stat-total">--</div><div class="hstat-label">Leads gesamt</div></div>
+    <div class="hstat"><div class="hstat-val" id="stat-today">--</div><div class="hstat-label">Heute neu</div></div>
+    <div class="hstat"><div class="hstat-val" id="stat-high">--</div><div class="hstat-label">Score 70+</div></div>
+    <div class="hstat"><div class="hstat-val" id="stat-alerted">--</div><div class="hstat-label">Alerts gesendet</div></div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="filter-group">
+    <label>Bundesland</label>
+    <select id="f-bl" onchange="loadLeads()">
+      <option value="">Alle</option>
+      <option value="NW">NRW</option><option value="BY">Bayern</option>
+      <option value="BW">Baden-W&#252;rttemberg</option><option value="HE">Hessen</option>
+      <option value="NI">Niedersachsen</option><option value="BE">Berlin</option>
+      <option value="HH">Hamburg</option><option value="SN">Sachsen</option>
+      <option value="RP">Rheinland-Pfalz</option><option value="ST">Sachsen-Anhalt</option>
+      <option value="SH">Schleswig-Holstein</option><option value="TH">Th&#252;ringen</option>
+      <option value="BB">Brandenburg</option><option value="MV">Mecklenburg-VP</option>
+      <option value="SL">Saarland</option><option value="HB">Bremen</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Min. Score</label>
+    <select id="f-score" onchange="loadLeads()">
+      <option value="0">Alle</option><option value="40">40+</option>
+      <option value="60" selected>60+</option><option value="70">70+</option>
+      <option value="80">80+</option>
+    </select>
+  </div>
+  <button class="btn btn-scan" id="scan-btn" onclick="triggerScan()">&#x1F50D; Jetzt Scannen</button>
+</div>
+
+<div class="leads-grid">
+  <h3 id="leads-title">&#x2C3; Lade Leads...</h3>
+  <div id="leads-container"><div class="empty">Lade...</div></div>
+</div>
+
+<div class="pricing">
+  <h2>&#x1F4B0; Insolvenz Radar Pro &mdash; Subscriptions</h2>
+  <p class="pricing-sub">T&#228;glich frische B2B-Leads. F&#252;r Steuerberater, Factoring, M&amp;A, Inkasso.</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price">&#8364;29 <span>/ Monat</span></div>
+      <ul class="plan-features">
+        <li>50 Leads/Tag</li><li>Score-Filter</li>
+        <li>Email-Alert t&#228;glich</li><li>1 Bundesland</li>
+      </ul>
+      <button class="plan-btn plan-btn-secondary" onclick="openModal('starter')">Starten &rarr;</button>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">&#x2B50; PROFI-WAHL</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">&#8364;79 <span>/ Monat</span></div>
+      <ul class="plan-features">
+        <li>Unlimitierte Leads</li><li>Alle 16 Bundesl&#228;nder</li>
+        <li>Echtzeit Telegram-Alert</li><li>CRM-Webhook (HubSpot/Pipedrive)</li>
+        <li>AI-Lead-Scoring</li><li>Branchen-Filter</li>
+      </ul>
+      <button class="plan-btn plan-btn-primary" onclick="openModal('pro')">Pro starten &rarr;</button>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price">&#8364;199 <span>/ Monat</span></div>
+      <ul class="plan-features">
+        <li>Alles aus Pro</li><li>White-Label Dashboard</li>
+        <li>REST API-Zugang</li><li>Eigene Score-Regeln</li>
+        <li>Priority Support</li>
+      </ul>
+      <button class="plan-btn plan-btn-secondary" onclick="openModal('agency')">Agency &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h4 id="modal-title">Insolvenz Radar starten</h4>
+    <p>Weiterleitung zu Stripe. T&#228;glich frische B2B-Leads. K&#252;ndige jederzeit.</p>
+    <div class="form-group">
+      <label>E-Mail-Adresse</label>
+      <input type="email" id="modal-email" placeholder="kanzlei@email.de">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+      <button class="btn-pay" id="pay-btn" onclick="doCheckout()">&#x1F4B3; Jetzt zahlen &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedTier = 'starter';
+const BL = {BB:'Brandenburg',BE:'Berlin',BW:'Baden-W.',BY:'Bayern',HB:'Bremen',HE:'Hessen',HH:'Hamburg',MV:'Mecklenburg-VP',NI:'Niedersachsen',NW:'NRW',RP:'Rheinland-Pfalz',SH:'Schleswig-Holstein',SL:'Saarland',SN:'Sachsen',ST:'Sachsen-Anhalt',TH:'Th\\u00FCringen'};
+
+async function loadStatus(){try{const r=await fetch('/api/insolvenz-radar/status');const d=await r.json();if(!d.ok)return;document.getElementById('stat-total').textContent=d.total_leads||0;document.getElementById('stat-today').textContent=d.leads_today||0;document.getElementById('stat-high').textContent=d.high_score||0;document.getElementById('stat-alerted').textContent=d.alerted||0;}catch(e){}}
+
+async function loadLeads(){
+  const bl=document.getElementById('f-bl').value;
+  const score=document.getElementById('f-score').value;
+  const container=document.getElementById('leads-container');
+  const title=document.getElementById('leads-title');
+  container.innerHTML='<div class="empty">Lade...</div>';
+  try{
+    const params=new URLSearchParams();
+    if(bl)params.set('bundesland',bl);
+    if(score)params.set('min_score',score);
+    params.set('limit','50');
+    const r=await fetch('/api/insolvenz-radar/leads?'+params);
+    const d=await r.json();
+    const leads=d.leads||[];
+    title.textContent=leads.length+' Leads (Score '+score+'+ | '+(bl?BL[bl]||bl:'Alle Bundesl\\u00E4nder')+')';
+    if(!leads.length){container.innerHTML='<div class="empty">Keine Leads f\\u00FCr diese Filter. Scan starten?</div>';return;}
+    container.innerHTML='<table class="lead-table"><thead><tr><th>Score</th><th>Unternehmen</th><th>Bundesland</th><th>Branche</th><th>Lead-Typ</th><th>Datum</th></tr></thead><tbody>'+
+    leads.map(l=>{
+      const sc=l.score||0;
+      const scClass=sc>=70?'score-high':sc>=50?'score-mid':'score-low';
+      const types=(l.lead_types?JSON.parse(l.lead_types):[]).map(t=>'<span class="tag">'+t+'</span>').join('');
+      const summary=l.ai_summary?'<div style="font-size:.7rem;color:#64748b;margin-top:4px;max-width:200px">'+l.ai_summary+'</div>':'';
+      return '<tr><td><span class="score-badge '+scClass+'">'+sc+'</span></td>'+
+             '<td><div class="lead-name">'+l.debtor_name+'</div><div class="lead-meta">'+l.rechtsform+' &middot; '+l.court+'</div>'+summary+'</td>'+
+             '<td>'+(BL[l.bundesland]||l.bundesland||'?')+'</td>'+
+             '<td>'+(l.branche||'?')+'</td>'+
+             '<td>'+types+'</td>'+
+             '<td style="font-size:.72rem;color:var(--muted)">'+(l.publication_date||'?')+'</td></tr>';
+    }).join('')+'</tbody></table>';
+  }catch(e){container.innerHTML='<div class="empty">Fehler: '+e.message+'</div>';}
+}
+
+async function triggerScan(){
+  const btn=document.getElementById('scan-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spin">&#9881;</span> Scannt...';
+  try{
+    const r=await fetch('/api/insolvenz-radar/scan',{method:'POST'});
+    const d=await r.json();
+    btn.innerHTML='&#x2705; '+d.status;
+    setTimeout(()=>{btn.disabled=false;btn.innerHTML='&#x1F50D; Jetzt Scannen';loadStatus();loadLeads();},8000);
+  }catch(e){btn.disabled=false;btn.innerHTML='&#x26A0; Fehler';}
+}
+
+function openModal(tier){selectedTier=tier;const l={starter:'Starter \\u20AC29/mo',pro:'Pro \\u20AC79/mo',agency:'Agency \\u20AC199/mo'};document.getElementById('modal-title').textContent='Insolvenz Radar '+l[tier];document.getElementById('modal-overlay').classList.add('open');}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+async function doCheckout(){const email=document.getElementById('modal-email').value.trim();if(!email.includes('@')){alert('G\\u00FCltige E-Mail eingeben');return;}const btn=document.getElementById('pay-btn');btn.textContent='\\u23F3 Weiterleitung...';btn.disabled=true;try{const r=await fetch('/api/insolvenz-radar/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,tier:selectedTier})});const d=await r.json();if(d.checkout_url){window.location.href=d.checkout_url;}else{alert(d.error||'Fehler');btn.textContent='\\uD83D\\uDCB3 Jetzt zahlen \\u2192';btn.disabled=false;}}catch(e){alert(e.message);btn.textContent='\\uD83D\\uDCB3 Jetzt zahlen \\u2192';btn.disabled=false;}}
+
+loadStatus();loadLeads();setInterval(loadStatus,30000);
+</script></body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_ir_status(req):
+    try:
+        from modules.insolvenz_radar import get_status
+        return web.json_response(get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ir_leads(req):
+    try:
+        from modules.insolvenz_radar import get_leads
+        bl         = req.rel_url.query.get("bundesland", "")
+        min_score  = int(req.rel_url.query.get("min_score", "0"))
+        branche    = req.rel_url.query.get("branche", "")
+        limit      = int(req.rel_url.query.get("limit", "50"))
+        offset     = int(req.rel_url.query.get("offset", "0"))
+        leads = get_leads(bundesland=bl, min_score=min_score, branche=branche,
+                          limit=limit, offset=offset)
+        return web.json_response({"ok": True, "leads": leads, "count": len(leads)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ir_scan(req):
+    global _ir_running
+    if _ir_running:
+        return web.json_response({"ok": False, "status": "Scan läuft bereits"})
+    async def _bg():
+        global _ir_running
+        _ir_running = True
+        try:
+            from modules.insolvenz_radar import run_scan
+            await run_scan()
+        except Exception as e:
+            log.error("InsolvenzRadar scan: %s", e)
+        finally:
+            _ir_running = False
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "Insolvenz-Scan gestartet"})
+
+
+async def handle_ir_checkout(req):
+    try:
+        body  = await req.json()
+        email = body.get("email", "").strip()
+        tier  = body.get("tier", "starter").strip()
+        if not email or "@" not in email:
+            return web.json_response({"ok": False, "error": "Ungültige E-Mail"}, status=400)
+        from modules.insolvenz_radar import create_checkout
+        return web.json_response(await create_checkout(email, tier))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ir_success(req):
+    html = """<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>&#x1F3DB; Insolvenz Radar aktiv</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#0a0a0f;color:#e2e8f0;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.card{background:#111118;border:1px solid #dc2626;border-radius:20px;padding:48px;max-width:480px;text-align:center;box-shadow:0 0 50px rgba(220,38,38,.12)}
+.icon{font-size:4.5rem;margin-bottom:20px}h1{font-size:1.7rem;margin-bottom:10px;color:#ef4444}
+p{color:#64748b;line-height:1.7;margin-bottom:24px}a{display:inline-block;background:linear-gradient(90deg,#dc2626,#f97316);color:#fff;padding:13px 32px;border-radius:10px;text-decoration:none;font-weight:800}</style></head>
+<body><div class="card"><div class="icon">&#x1F3DB;</div><h1>Insolvenz Radar aktiv!</h1>
+<p>T&#228;glich frische B2B-Leads aus dem deutschen Insolvenzregister.<br>Telegram-Alerts kommen automatisch wenn Score-Schwelle erreicht wird.</p>
+<a href="/insolvenz-radar">&#x2192; Zum Radar-Dashboard</a></div></body></html>"""
     return web.Response(text=html, content_type="text/html")
 
 
