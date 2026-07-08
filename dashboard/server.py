@@ -8729,6 +8729,55 @@ async def handle_revenue_stats(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── VORSPRUNG INTELLIGENCE HANDLERS ─────────────────────────────────────────
+
+_vorsprung_scan_cache: dict = {}
+
+
+async def handle_vorsprung_status(req: web.Request) -> web.Response:
+    try:
+        from modules.vorsprung_intelligence import get_status
+        data = await get_status()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_vorsprung_signals(req: web.Request) -> web.Response:
+    try:
+        from modules.vorsprung_intelligence import _supa_recent
+        limit = int(req.rel_url.query.get("limit", 50))
+        signals = await _supa_recent(limit)
+        return web.json_response({"ok": True, "count": len(signals), "signals": signals})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_vorsprung_scan(req: web.Request) -> web.Response:
+    try:
+        from modules.vorsprung_intelligence import run_full_scan
+        result = await run_full_scan()
+        _vorsprung_scan_cache["last"] = result
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_vorsprung_briefing(req: web.Request) -> web.Response:
+    try:
+        from modules.vorsprung_intelligence import _supa_recent, generate_intelligence_briefing
+        signals = await _supa_recent(100)
+        if not signals:
+            return web.json_response({"briefing": "Noch keine Signale. Bitte zuerst /api/vorsprung/scan aufrufen."})
+        briefing = await generate_intelligence_briefing(signals)
+        return web.json_response({"ok": True, "briefing": briefing, "signal_count": len(signals)})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# ── END VORSPRUNG INTELLIGENCE ────────────────────────────────────────────────
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -9607,6 +9656,13 @@ async def create_app():
     app.router.add_post("/api/promo/run",   handle_promo_run)
     app.router.add_get( "/api/promo/stats", handle_promo_stats)
     # ── END VIRAL PROMO POSTER ────────────────────────────────────────────────
+
+    # ── VORSPRUNG INTELLIGENCE ENGINE ─────────────────────────────────────────
+    app.router.add_get( "/api/vorsprung/status",   handle_vorsprung_status)
+    app.router.add_get( "/api/vorsprung/signals",  handle_vorsprung_signals)
+    app.router.add_post("/api/vorsprung/scan",     handle_vorsprung_scan)
+    app.router.add_get( "/api/vorsprung/briefing", handle_vorsprung_briefing)
+    # ── END VORSPRUNG INTELLIGENCE ────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
