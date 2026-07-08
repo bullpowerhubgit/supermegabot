@@ -2770,6 +2770,23 @@ async def task_viral_trend_scan() -> str:
     except Exception as e:
         return f"ViralTrend error: {e}"
 
+
+async def task_viral_window_scan() -> str:
+    """Viral Window Scanner — 5 Signalquellen + AI-Score + Shopify-Import + Telegram-Alert"""
+    try:
+        from modules.viral_window_scanner import run_scan
+        result = await run_scan()
+        if result.get("ok"):
+            return (
+                f"ViralWindowScan OK — {result['signals_total']} Signale, "
+                f"{result['high_score']} high-score, "
+                f"{result['alerts_sent']} alerts, "
+                f"{result['shopify_imported']} Shopify-Imports"
+            )
+        return f"ViralWindowScan: {result.get('error', 'unknown')}"
+    except Exception as e:
+        return f"ViralWindowScan error: {e}"
+
 async def task_community_growth_post() -> str:
     try:
         from modules.growth_hacker import task_community_grow
@@ -4863,6 +4880,7 @@ TASKS = [
     ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
     ("intent_bridge_report", task_intent_bridge_report, 86400, 200),  # 24h — Intent-to-Sale Bridge Tagesbericht
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
+    ("viral_window_scan",   task_viral_window_scan,    7200,  55),  # 2h — Viral Window Scanner
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 125),  # 6h — FB+IG+TG+LI+Reddit+Discord
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
