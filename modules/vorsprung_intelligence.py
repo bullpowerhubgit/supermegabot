@@ -54,6 +54,9 @@ async def _supa_insert(rows: list[dict]) -> int:
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
         "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Content-Profile": "public",
+        "Accept-Profile": "public",
         "Prefer": "return=minimal",
     }
     try:
@@ -72,6 +75,7 @@ async def _supa_recent(limit: int = 50) -> list[dict]:
     headers = {
         "apikey": SUPABASE_KEY,
         "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Accept-Profile": "public",
     }
     try:
         async with aiohttp.ClientSession() as s:
