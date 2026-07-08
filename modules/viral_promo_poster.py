@@ -359,14 +359,22 @@ async def post_linkedin(text: str) -> Dict:
 # ── Reddit ────────────────────────────────────────────────────────────────────
 
 async def _reddit_token() -> Optional[str]:
-    ua = "ViralWindowScanner/1.0 by bullpowersrtkennels"
+    # Reddit app (hqgJAQe6Qiu5s5r1Vqc0Og / rodbot) credentials are dead — app was deleted.
+    # Password grant requires valid script-type app owned by the same account.
+    # Return None gracefully until new app credentials are configured via REDDIT_REFRESH_TOKEN.
+    refresh_token = os.getenv("REDDIT_REFRESH_TOKEN", "")
+    if not refresh_token:
+        log.warning("Reddit: REDDIT_REFRESH_TOKEN not set — Reddit posting skipped. "
+                    "Create new app at reddit.com/prefs/apps and run OAuth2 flow.")
+        return None
+    ua = "SuperMegaBot/1.0 by Upper-Competition505"
     try:
         async with _session() as s:
             async with s.post(
                 "https://www.reddit.com/api/v1/access_token",
                 headers={"User-Agent": ua},
                 auth=aiohttp.BasicAuth(_reddit_id(), _reddit_secret()),
-                data={"grant_type": "password", "username": _reddit_user(), "password": _reddit_pass()}
+                data={"grant_type": "refresh_token", "refresh_token": refresh_token}
             ) as r:
                 data = await r.json()
                 return data.get("access_token")
@@ -381,7 +389,7 @@ async def post_reddit(subreddit: str, title: str, text: str) -> Dict:
     token = await _reddit_token()
     if not token:
         return {"ok": False, "error": "Reddit auth failed"}
-    ua = "ViralWindowScanner/1.0 by bullpowersrtkennels"
+    ua = "SuperMegaBot/1.0 by Upper-Competition505"
     try:
         await asyncio.sleep(2)  # Reddit rate limit
         async with _session() as s:
