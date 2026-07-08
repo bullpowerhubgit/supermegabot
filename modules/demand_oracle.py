@@ -21,6 +21,7 @@ import os
 import re
 import sqlite3
 import time
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
@@ -70,6 +71,14 @@ WISH_PATTERNS = [
 MIN_CLUSTER_SIZE    = 3     # minimum wishes to create a pre-order product
 PRE_ORDER_MINIMUM   = 10   # minimum pre-orders before fulfillment triggered
 MAX_PRODUCTS_PER_RUN = 3   # max new pre-order products per scan
+
+
+def _strip_html(text: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", text)
+    for ent, rep in [("&amp;", "&"), ("&lt;", "<"), ("&gt;", ">"),
+                     ("&quot;", '"'), ("&#x27;", "'"), ("&nbsp;", " ")]:
+        text = text.replace(ent, rep)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -123,32 +132,38 @@ def init_db() -> None:
 # Step 1: Mine latent demand from Reddit
 # ─────────────────────────────────────────────────────────────────────────────
 
-async def mine_reddit_wishes(limit_per_sub: int = 50) -> list[dict]:
-    """Scan subreddits for latent product wish expressions."""
-    cid    = REDDIT_CLIENT_ID()
-    secret = REDDIT_CLIENT_SECRET()
-    if not cid or not secret:
-        log.warning("REDDIT_CLIENT_ID/SECRET not set — mining skipped")
-        return []
+def _parse_rss_entries(xml_text: str) -> list[dict]:
+    """Parse Reddit Atom RSS feed into list of {title, body, url} dicts."""
+    entries = []
+    try:
+        root = ET.fromstring(xml_text)
+        ns   = {"atom": "http://www.w3.org/2005/Atom"}
+        for entry in root.findall("atom:entry", ns):
+            title_el   = entry.find("atom:title", ns)
+            content_el = entry.find("atom:content", ns)
+            link_el    = entry.find("atom:link", ns)
+            title = title_el.text if title_el is not None else ""
+            body  = _strip_html(content_el.text or "") if content_el is not None else ""
+            url   = link_el.get("href", "") if link_el is not None else ""
+            entries.append({"title": title, "body": body[:600], "url": url})
+    except Exception as e:
+        log.debug("RSS parse error: %s", e)
+    return entries
 
+
+async def mine_reddit_wishes(limit_per_sub: int = 25) -> list[dict]:
+    """Scan subreddits for latent product wish expressions.
+
+    Uses Reddit's public Atom RSS feed — no OAuth, no App, no credentials:
+      https://www.reddit.com/r/{sub}/new/.rss?limit=N
+    Works on all public subreddits with a browser-like User-Agent.
+    """
     import aiohttp
 
-    # Get Reddit OAuth token
-    async with aiohttp.ClientSession() as sess:
-        async with sess.post(
-            "https://www.reddit.com/api/v1/access_token",
-            auth=aiohttp.BasicAuth(cid, secret),
-            data={"grant_type": "client_credentials"},
-            headers={"User-Agent": REDDIT_USER_AGENT},
-            timeout=aiohttp.ClientTimeout(total=15),
-        ) as r:
-            tok_data = await r.json(content_type=None)
-    token = tok_data.get("access_token", "")
-    if not token:
-        log.warning("Reddit token failed: %s", tok_data)
-        return []
-
-    headers = {"Authorization": f"bearer {token}", "User-Agent": REDDIT_USER_AGENT}
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/rss+xml, application/atom+xml, text/xml",
+    }
     wishes: list[dict] = []
     compiled = [re.compile(p, re.IGNORECASE) for p in WISH_PATTERNS]
 
@@ -156,22 +171,25 @@ async def mine_reddit_wishes(limit_per_sub: int = 50) -> list[dict]:
         for sub in SCAN_SUBREDDITS:
             try:
                 async with sess.get(
-                    f"https://oauth.reddit.com/r/{sub}/new.json",
+                    f"https://www.reddit.com/r/{sub}/new/.rss",
                     params={"limit": limit_per_sub},
                     timeout=aiohttp.ClientTimeout(total=20),
                 ) as r:
-                    if r.status != 200:
+                    if r.status == 429:
+                        await asyncio.sleep(15)
                         continue
-                    data = await r.json(content_type=None)
+                    if r.status != 200:
+                        log.debug("Reddit RSS r/%s status %s", sub, r.status)
+                        continue
+                    xml_text = await r.text(errors="ignore")
 
-                posts = data.get("data", {}).get("children", [])
-                for post in posts:
-                    p = post.get("data", {})
-                    title   = p.get("title", "")
-                    selftext = p.get("selftext", "")
+                entries = _parse_rss_entries(xml_text)
+                for entry in entries:
+                    title    = entry["title"]
+                    selftext = entry["body"]
                     full_text = f"{title} {selftext}"
-                    score    = p.get("score", 0)
-                    url      = f"https://reddit.com{p.get('permalink', '')}"
+                    url      = entry["url"]
+                    score    = 0  # RSS doesn't include score
 
                     # Check for wish patterns
                     matched = any(pat.search(full_text) for pat in compiled)

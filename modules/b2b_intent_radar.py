@@ -203,33 +203,18 @@ def _strip_html(text: str) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def fetch_reddit_signals() -> list[dict]:
-    """Scan Reddit subs for B2B buying intent."""
-    cid    = REDDIT_CID()
-    secret = REDDIT_SECRET()
-    if not cid or not secret:
-        return []
+    """Scan Reddit subs for B2B buying intent.
 
+    Uses Reddit's public JSON API — no OAuth, no App required:
+      https://www.reddit.com/r/{sub}/new.json
+    Works on all public subreddits without credentials.
+    """
     import aiohttp
 
-    # Auth
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://www.reddit.com/api/v1/access_token",
-                auth=aiohttp.BasicAuth(cid, secret),
-                data={"grant_type": "client_credentials"},
-                headers={"User-Agent": REDDIT_UA},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                tok = (await r.json(content_type=None)).get("access_token", "")
-    except Exception as e:
-        log.debug("Reddit auth error: %s", e)
-        return []
-
-    if not tok:
-        return []
-
-    hdrs = {"Authorization": f"bearer {tok}", "User-Agent": REDDIT_UA}
+    hdrs = {
+        "User-Agent": REDDIT_UA,
+        "Accept": "application/json",
+    }
     signals = []
 
     # B2B purchase intent patterns
@@ -246,22 +231,43 @@ async def fetch_reddit_signals() -> list[dict]:
         ]
     ]
 
-    async with aiohttp.ClientSession(headers=hdrs) as s:
+    rss_hdrs = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/rss+xml, application/atom+xml, text/xml",
+    }
+    async with aiohttp.ClientSession(headers=rss_hdrs) as s:
         for sub in TARGET_SUBS:
             try:
                 async with s.get(
-                    f"https://oauth.reddit.com/r/{sub}/new.json",
+                    f"https://www.reddit.com/r/{sub}/new/.rss",
                     params={"limit": 30},
                     timeout=aiohttp.ClientTimeout(total=20),
                 ) as r:
-                    if r.status != 200:
+                    if r.status == 429:
+                        await asyncio.sleep(15)
                         continue
-                    posts = (await r.json(content_type=None)).get("data", {}).get("children", [])
+                    if r.status != 200:
+                        log.debug("Reddit RSS r/%s status %s", sub, r.status)
+                        continue
+                    xml_text = await r.text(errors="ignore")
+
+                # Parse Atom RSS
+                root = ET.fromstring(xml_text)
+                ns   = {"atom": "http://www.w3.org/2005/Atom"}
+                posts = []
+                for entry in root.findall("atom:entry", ns):
+                    title_el   = entry.find("atom:title", ns)
+                    content_el = entry.find("atom:content", ns)
+                    link_el    = entry.find("atom:link", ns)
+                    posts.append({
+                        "title": title_el.text if title_el is not None else "",
+                        "selftext": _strip_html(content_el.text or "") if content_el is not None else "",
+                        "url": link_el.get("href", "") if link_el is not None else "",
+                    })
 
                 for post in posts:
-                    p = post.get("data", {})
-                    title    = p.get("title", "")
-                    selftext = p.get("selftext", "")[:400]
+                    title    = post.get("title", "")
+                    selftext = post.get("selftext", "")[:400]
                     full     = f"{title} {selftext}"
                     full_l   = full.lower()
 
@@ -277,7 +283,7 @@ async def fetch_reddit_signals() -> list[dict]:
                         "source":      f"reddit/r/{sub}",
                         "signal_type": "purchase_intent",
                         "signal_text": f"{title[:200]} | {selftext[:200]}",
-                        "url":         f"https://reddit.com{p.get('permalink', '')}",
+                        "url":         post.get("url", ""),
                     })
 
                 await asyncio.sleep(1)
