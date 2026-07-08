@@ -215,6 +215,7 @@ def fetch_unread_emails() -> list:
             in_reply = msg.get("In-Reply-To", "") or msg.get("References", "")
             body    = extract_body(msg)
 
+            list_unsub = msg.get("List-Unsubscribe", "")
             results.append({
                 "imap_id": msg_id,
                 "message_id": msg_uid.strip(),
@@ -223,6 +224,7 @@ def fetch_unread_emails() -> list:
                 "body": body[:2000],
                 "in_reply_to": in_reply,
                 "is_reply": bool(in_reply),
+                "is_marketing": bool(list_unsub),
             })
 
         mail.logout()
@@ -286,11 +288,13 @@ Produktwahl nach Kontext:
 - Erwähnt Handelsregister / GmbH / Gründung → HR_LEADS
 - Erwähnt Insolvenz / Factoring / Inkasso → INSOLVENZ_DEAL
 
-INTERESTED = positives Interesse, will kaufen, "schicken Sie mir", "wie funktioniert", "ja gerne"
-QUESTION = neutrales Nachfragen ohne klares Kaufsignal
-UNSUBSCRIBE = kein Interesse, abmelden, aufhören
-NOT_INTERESTED = explizit abgelehnt
-OUT_OF_OFFICE = Abwesenheitsnotiz"""
+INTERESTED = DIREKTE persönliche Antwort mit klar positivem Kaufsignal ("ja", "schicken Sie mir", "Angebot annehmen", "wie kann ich kaufen", "Preis nennen"). NUR wenn es eine echte menschliche Antwort ist.
+QUESTION = Direkte persönliche Nachfrage ohne klares Kaufsignal.
+UNSUBSCRIBE = Abmeldewunsch, "kein Interesse", "bitte keine weiteren Emails".
+NOT_INTERESTED = Ablehnung ODER automatische Email, Newsletter, Sequenz-Email, Marketing-Email.
+OUT_OF_OFFICE = Abwesenheitsnotiz oder Bounce.
+
+KRITISCH: Wenn die Email automatisch aussieht (Newsletter, Sequenz, kein direkter Bezug auf ein Angebot von uns), IMMER NOT_INTERESTED zurückgeben. Im Zweifel NOT_INTERESTED."""
 
     try:
         resp = client.messages.create(
@@ -421,6 +425,15 @@ async def run_cycle(con: sqlite3.Connection):
         # Blocklist?
         if con.execute("SELECT 1 FROM blocklist WHERE email=?", (email_addr,)).fetchone():
             log.info(f"Blocklist: {email_addr} ignoriert")
+            continue
+
+        # Marketing-/Newsletter-Emails sofort überspringen
+        if em.get("is_marketing"):
+            con.execute(
+                "INSERT OR IGNORE INTO processed_messages (message_id, sender, subject, classification) VALUES (?,?,?,?)",
+                (msg_id, sender, subject, "MARKETING")
+            )
+            con.commit()
             continue
 
         # Bounces direkt behandeln — echten Empfänger in Blocklist
