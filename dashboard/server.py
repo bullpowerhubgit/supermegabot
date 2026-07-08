@@ -2137,7 +2137,7 @@ async def handle_digistore_status(req):
         # Parallel statt sequenziell — spart ~16s
         ok, stats, products = await asyncio.wait_for(
             asyncio.gather(ping(), get_sales_stats(), get_products(), return_exceptions=True),
-            timeout=10,
+            timeout=20,
         )
         ok = ok if isinstance(ok, bool) else False
         stats = stats if isinstance(stats, dict) else {}
@@ -7820,6 +7820,34 @@ async def handle_upwork_run(req: web.Request) -> web.Response:
 async def handle_linkedin_run(req: web.Request) -> web.Response:
     return await _trigger_task("linkedin_auto_post")
 
+async def handle_instagram_status(req: web.Request) -> web.Response:
+    """GET /api/instagram/status — check Instagram token validity."""
+    token = (
+        os.getenv("FACEBOOK_IG_ACCESS_TOKEN") or
+        os.getenv("INSTAGRAM_TOKEN_AIITEC") or
+        os.getenv("INSTAGRAM_ACCESS_TOKEN", "")
+    )
+    account_id = os.getenv("INSTAGRAM_ACCOUNT_ID") or os.getenv("INSTAGRAM_BUSINESS_ACCOUNT_ID", "17841478315197796")
+    if not token:
+        return web.json_response({"ok": False, "error": "no Instagram token set"})
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://graph.facebook.com/v20.0/{account_id}",
+                params={"fields": "id,username,followers_count,media_count", "access_token": token},
+                timeout=aiohttp.ClientTimeout(total=8),
+            ) as r:
+                d = await r.json()
+        if "error" in d:
+            return web.json_response({"ok": False, "error": d["error"].get("message", "?")})
+        return web.json_response({
+            "ok": True, "connected": True,
+            "username": d.get("username"), "account_id": d.get("id"),
+            "followers": d.get("followers_count"), "media_count": d.get("media_count"),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
 async def handle_instagram_run(req: web.Request) -> web.Response:
     return await _trigger_task("instagram_auto_post", background=True)
 
@@ -9590,6 +9618,7 @@ async def create_app():
     app.router.add_post("/api/fiverr/run",               handle_fiverr_run)
     app.router.add_post("/api/upwork/run",               handle_upwork_run)
     app.router.add_post("/api/linkedin/run",             handle_linkedin_run)
+    app.router.add_get( "/api/instagram/status",         handle_instagram_status)
     app.router.add_post("/api/instagram/run",            handle_instagram_run)
     app.router.add_post("/api/pinterest/run",            handle_pinterest_run)
     app.router.add_post("/api/email/run",                handle_email_run)
@@ -10995,8 +11024,15 @@ async def handle_facebook_status(req):
     """GET /api/facebook/status — check if tokens are valid."""
     try:
         from modules.facebook_token_manager import check_token
+        # FACEBOOK_USER_TOKEN → fallback to FACEBOOK_ACCESS_TOKEN or META_ACCESS_TOKEN
+        user_tok = (
+            os.getenv("FACEBOOK_USER_TOKEN") or
+            os.getenv("FACEBOOK_META_TOKEN") or
+            os.getenv("META_ACCESS_TOKEN") or
+            os.getenv("FACEBOOK_ACCESS_TOKEN", "")
+        )
         tokens = {
-            "user_token":        os.getenv("FACEBOOK_USER_TOKEN", ""),
+            "user_token":        user_tok,
             "page_token_iwin":   os.getenv("FACEBOOK_PAGE_TOKEN_IWIN", ""),
             "page_token_aiitec": os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC", ""),
         }
