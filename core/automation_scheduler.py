@@ -5172,6 +5172,18 @@ async def task_youtube_shorts() -> str:
         return f"YouTube Shorts Fehler: {e}"
 
 
+async def task_twitter_cookie_refresh() -> str:
+    """Twitter/X Cookie Auto-Refresh: täglich Chrome-Cookies extrahieren und speichern."""
+    try:
+        from modules.twitter_cookie_refresher import refresh_cookies
+        ok = refresh_cookies()
+        if ok:
+            return "Twitter Cookies erneuert ✅ — Cookie-Auth aktiv"
+        return "Twitter Cookies: Chrome nicht verfügbar oder nicht eingeloggt"
+    except Exception as e:
+        return f"Twitter Cookie Refresh Fehler: {e}"
+
+
 async def task_fb_token_refresh() -> str:
     """Facebook/Instagram Token Auto-Refresh: täglich prüfen, bei < 15 Tagen bis Ablauf erneuern."""
     try:
@@ -5260,6 +5272,8 @@ TASKS = [
     ("shopify_gmc_meta",      task_shopify_gmc_metafields, 3600, 610),  # 1h — Google Shopping metafelder
     # ── Facebook/Instagram Token Auto-Refresh ────────────────────────────────
     ("fb_token_refresh",      task_fb_token_refresh,       86400, 3600),  # täglich — Token auto-erneuern vor Ablauf
+    # ── Twitter Cookie Auto-Refresh (aus Chrome) ─────────────────────────────
+    ("twitter_cookie_refresh", task_twitter_cookie_refresh, 86400, 3650),  # täglich — Chrome Cookies erneuern
 ]
 
 
