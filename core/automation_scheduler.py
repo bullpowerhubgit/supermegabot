@@ -2780,6 +2780,27 @@ async def task_viral_trend_scan() -> str:
         return f"ViralTrend error: {e}"
 
 
+async def task_oos_sniper_scan() -> str:
+    """OOS Sniper — Konkurrenz Out-of-Stock Scan"""
+    try:
+        from modules.oos_sniper import run_scan
+        result = await run_scan()
+        return f"OOSSniper OK — {result.get('targets',0)} Targets, {result.get('oos_events',0)} OOS Events"
+    except Exception as e:
+        return f"OOSSniper error: {e}"
+
+
+async def task_money_machine_run() -> str:
+    """Money Machine — alle Engines in einem Run"""
+    try:
+        from modules.money_machine import run_all_engines
+        results = await run_all_engines()
+        ok = sum(1 for r in results.values() if r.get("ok"))
+        return f"MoneyMachine OK — {ok}/{len(results)} Engines"
+    except Exception as e:
+        return f"MoneyMachine error: {e}"
+
+
 async def task_viral_window_scan() -> str:
     """Viral Window Scanner — 5 Signalquellen + AI-Score + Shopify-Import + Telegram-Alert"""
     try:
@@ -4909,6 +4930,8 @@ TASKS = [
     ("ebay_arbitrage_scan",  task_ebay_arbitrage_scan,  21600, 180),  # 6h — eBay Arbitrage: AliExpress→eBay→Shopify
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
     ("viral_window_scan",   task_viral_window_scan,    7200,  55),  # 2h — Viral Window Scanner
+    ("oos_sniper_scan",    task_oos_sniper_scan,      7200,  58),  # 2h — OOS Sniper
+    ("money_machine_run",  task_money_machine_run,   14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 125),  # 6h — FB+IG+TG+LI+Reddit+Discord
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
