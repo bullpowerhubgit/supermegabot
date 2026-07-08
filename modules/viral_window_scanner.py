@@ -125,6 +125,19 @@ def init_db():
         CREATE INDEX IF NOT EXISTS idx_viral_keyword ON viral_signals(keyword);
         CREATE INDEX IF NOT EXISTS idx_viral_score   ON viral_signals(score DESC);
         """)
+        # Spalten-Migration für ältere DB-Versionen
+        for col, coltype in [
+            ("saturation", "INTEGER DEFAULT -1"),
+            ("ek_eur",     "REAL DEFAULT 0"),
+            ("vk_eur",     "REAL DEFAULT 0"),
+            ("margin_pct", "REAL DEFAULT 0"),
+            ("fb_ad_json", "TEXT"),
+            ("sources",    "TEXT"),
+        ]:
+            try:
+                c.execute(f"ALTER TABLE viral_signals ADD COLUMN {col} {coltype}")
+            except Exception:
+                pass
 
 
 # ── HTTP Helper ───────────────────────────────────────────────────────────────
