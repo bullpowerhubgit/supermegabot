@@ -1,26 +1,27 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-08**
+**Stand: 2026-07-09**
 
-## ✅ ALLE SOCIAL APIs LIVE
+## ✅ ALLE SOCIAL APIs VOLL AUTONOM LIVE
 
-| Plattform | Status | Details |
-|-----------|--------|---------|
-| ✅ Facebook AiiteC Page | LIVE | Post ID: 1016738738178786_122128547403219541 |
-| ✅ LinkedIn | LIVE | Share: urn:li:share:7480698560959787009 |
-| ✅ Telegram | LIVE | Message ID: 111238 |
-| ✅ Reddit r/dropshipping | LIVE | Browser-Posting funktioniert |
-| ✅ Twitter/X @rudibot84 | LIVE | $20 Credits, Tweet ID: 2074958843268747335 |
-| ✅ Instagram @aaiitecc | LIVE | Media ID: 17925395094369124 — HEUTE ERSTMALIG GEPOSTET! |
-| ❌ Facebook Groups | BLOCKIERT | publish_to_groups braucht Meta App Review |
+| Plattform | Status | Details | Intervall |
+|-----------|--------|---------|-----------|
+| ✅ Telegram | LIVE | Bot 8600739487 | alle 6h |
+| ✅ Facebook Page (AiiteC) | LIVE | adposter-engine Token, Page 1016738738178786 | alle 6h |
+| ✅ Instagram @aaiitecc | LIVE | Token bis 2026-09-06, 4833 Follower | alle 6h |
+| ✅ LinkedIn | LIVE | Rudolf Sarkany (1/Tag Rate-Limit respektiert) | alle 6h |
+| ✅ Twitter/X @rudibot84 | LIVE | Cookie-Auth via Chrome GraphQL, tägl. auto-refresh | alle 6h |
+| ✅ Reddit SCAN | LIVE | Pullpush.io 8 Signale/Scan | alle 2h |
+| ❌ Reddit POSTING | WARTE | REDDIT_REFRESH_TOKEN fehlt — neue App nötig | — |
+| ❌ Facebook Groups | BLOCKIERT | Meta App Review nötig | — |
 
 ## ✅ API-CREDENTIALS (alle gültig)
-- ✅ FACEBOOK_PAGE_TOKEN_AIITEC: valid
-- ✅ FACEBOOK_META_TOKEN: valid (User Token, Aiitec Aiitec)
+- ✅ FACEBOOK_PAGE_TOKEN_AIITEC: EAARagX8U6aEBRjUpmL... (adposter-engine, getestet 2026-07-09)
 - ✅ FACEBOOK_IG_ACCESS_TOKEN: Long-lived Token, instagram_content_publish ✅
   - App: AiiteC Social Content Poster (1535442684079797)
   - IG Account: @aaiitecc (17841478315197796), 4833 Follower
   - Läuft ab: 2026-09-06 (erneuert 2026-07-08)
-- ✅ TWITTER_API_KEY + ACCESS_TOKEN: OAuth 1.0a, @rudibot84
+- ✅ Twitter Cookie-Auth: data/twitter_cookies.json (Chrome-Cookies tägl. auto-refresh)
+- ✅ TWITTER_API_KEY + ACCESS_TOKEN: OAuth 1.0a (@rudibot84, Fallback)
 - ✅ LINKEDIN_ACCESS_TOKEN: gültig (Rudolf Sarkany)
 - ✅ TELEGRAM_BOT_TOKEN: gültig
 - ✅ ANTHROPIC_API_KEY: gültig
@@ -35,7 +36,7 @@
 
 ## 💰 AKTIVE MONETARISIERUNG
 - Stripe: Alert €29, Pro €79, Agency €199
-- Gumroad: https://tecbuuss.gumroad.com/l/liastd (€29/mo live)
+- Gumroad: https://tecbuuss.gumroad.com/l/liastd (€29/mo live) ✅ API LIVE (OAuth2, 2026-07-09)
 - Shopify: ineedit.com.co (10k Produkte, Smart Collections)
 - Viral Scanner: https://supermegabot-production.up.railway.app/viral
 
@@ -70,8 +71,15 @@
 
 ## 📋 NÄCHSTE SESSION: WEITERMACHEN MIT
 1. Reddit: Neues OAuth2-App erstellen (reddit.com/prefs/apps → create an app) und REDDIT_REFRESH_TOKEN setzen
-   - REDDIT_REFRESH_TOKEN fehlt — App "rodbot" (hqgJAQe6Qiu5s5r1Vqc0Og) ist tot/deleted
-   - Eingeloggt als u/Upper-Competition505 — neue App unter diesem Account
+   - CAPTCHA blockiert Automation — Rudolf muss selbst auf reddit.com/prefs/apps → "create an app" klicken
+   - App-Typ: "script", Name: SuperMegaBot, Redirect: http://localhost:8888
+   - Dann CLIENT_ID + SECRET in .env setzen
 2. Facebook Groups Posting (braucht Meta App Review — langfristig)
 3. Instagram Token erneuern wenn nötig (~2026-09-06)
 4. SERVER STARTEN: PORT=8888 DASHBOARD_PORT=8888 python3 dashboard/server.py
+
+## ✅ GUMROAD API — VOLLSTÄNDIG LIVE (2026-07-09)
+- OAuth2 Flow abgeschlossen: edit_products + view_sales + view_profile
+- ACCESS_TOKEN: d5wXFmEBNdIGzQWuOxSxpmIZbPmzuOfQDlqbQrKPsb8 ✅
+- REFRESH_TOKEN: zWUgUs-636qmQuUV1IoGlHAegS5fsgqNYGHDLqSqmgA
+- .env + GitHub Secrets gesetzt
