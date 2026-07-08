@@ -206,6 +206,75 @@ async def _post_instagram(content: dict) -> bool:
         return False
 
 
+async def _post_tiktok(content: dict) -> bool:
+    """Post video/photo to TikTok via Content Posting API."""
+    token = os.getenv("TIKTOK_ACCESS_TOKEN", "")
+    if not token:
+        log.debug("TikTok: kein Access Token (TIKTOK_ACCESS_TOKEN fehlt)")
+        return False
+    try:
+        import aiohttp
+        tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:5])
+        caption = f"{content.get('title','')} {tags}"[:150]
+        image_url = content.get("image_url", "")
+        if not image_url:
+            log.debug("TikTok: kein Bild für Post")
+            return False
+        # TikTok Photo Post API
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://open.tiktokapis.com/v2/post/publish/content/init/",
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json; charset=UTF-8"},
+                json={
+                    "post_info": {"title": caption, "privacy_level": "PUBLIC_TO_EVERYONE", "disable_duet": False, "disable_comment": False, "disable_stitch": False},
+                    "source_info": {"source": "PULL_FROM_URL", "photo_cover_index": 0, "photo_images": [image_url]},
+                    "post_mode": "DIRECT_POST",
+                    "media_type": "PHOTO",
+                },
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                d = await r.json(content_type=None)
+                ok = d.get("error", {}).get("code", "error") == "ok"
+                if not ok:
+                    log.debug("TikTok error: %s", d.get("error", {}))
+                return ok
+    except Exception as exc:
+        log.warning("TikTok post failed: %s", exc)
+        return False
+
+
+async def _post_pinterest(content: dict) -> bool:
+    """Create a Pinterest Pin via API v5."""
+    token = os.getenv("PINTEREST_ACCESS_TOKEN", "")
+    board_id = os.getenv("PINTEREST_BOARD_ID", "")
+    if not token or not board_id:
+        log.debug("Pinterest: kein Token oder Board ID")
+        return False
+    try:
+        import aiohttp
+        tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:10])
+        description = f"{content.get('body', '')} {tags}"[:500]
+        image_url = content.get("image_url", IG_PIXEL)
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.pinterest.com/v5/pins",
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                json={
+                    "title": content.get("title", "")[:100],
+                    "description": description,
+                    "board_id": board_id,
+                    "media_source": {"source_type": "image_url", "url": image_url},
+                    "link": content.get("url", ""),
+                },
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                d = await r.json(content_type=None)
+                return bool(d.get("id"))
+    except Exception as exc:
+        log.warning("Pinterest post failed: %s", exc)
+        return False
+
+
 async def _get_shopify_blog_id() -> str:
     blog_id = os.getenv("SHOPIFY_BLOG_ID", "")
     if blog_id:
@@ -472,9 +541,10 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
 
     results = await asyncio.gather(
         _post_telegram(content),
-        _post_facebook_page(FB_PAGE_IWIN,   fb_token_iwin,   content),
         _post_facebook_page(FB_PAGE_AIITEC, fb_token_aiitec, content),
         _post_instagram(content),
+        _post_tiktok(content),
+        _post_pinterest(content),
         _post_shopify_blog(content),
         _post_klaviyo_campaign(content),
         _post_mailchimp_campaign(content),
@@ -485,7 +555,8 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
     )
 
     channel_names = [
-        "telegram", "facebook_iwin", "facebook_aiitec", "instagram",
+        "telegram", "facebook_aiitec", "instagram",
+        "tiktok", "pinterest",
         "shopify_blog", "klaviyo", "mailchimp", "sendgrid", "twitter", "linkedin",
     ]
     out = {}
