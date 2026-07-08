@@ -9348,6 +9348,11 @@ async def create_app():
     app.router.add_post("/api/viral/tg-register",   handle_viral_tg_register)
     # ── END VIRAL WINDOW SCANNER ──────────────────────────────────────────────
 
+    # ── PRODUCT INTELLIGENCE HUB ──────────────────────────────────────────────
+    app.router.add_get( "/api/hub/status",  handle_hub_status)
+    app.router.add_post("/api/hub/run",     handle_hub_run)
+    # ── END PRODUCT INTELLIGENCE HUB ──────────────────────────────────────────
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
@@ -11964,6 +11969,39 @@ def _free_port(port: int) -> None:
                 pass
     except Exception:
         pass
+
+
+# ── Product Intelligence Hub Handlers ────────────────────────────────────────
+
+async def handle_hub_status(req):
+    """GET /api/hub/status — Status aller 3 Module: scanner + pipeline + intent bridge."""
+    try:
+        from modules.product_intelligence_hub import get_hub_status
+        result = await get_hub_status()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+_hub_running = False
+
+async def handle_hub_run(req):
+    """POST /api/hub/run — Startet vollständigen Hub-Zyklus (alle 3 Tools)."""
+    global _hub_running
+    if _hub_running:
+        return web.json_response({"ok": False, "error": "Hub läuft bereits"})
+
+    async def _bg():
+        global _hub_running
+        _hub_running = True
+        try:
+            from modules.product_intelligence_hub import run_hub_cycle
+            await run_hub_cycle()
+        finally:
+            _hub_running = False
+
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "Hub-Zyklus gestartet (alle 3 Tools)"})
 
 
 if __name__ == "__main__":
