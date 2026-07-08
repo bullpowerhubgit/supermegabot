@@ -4941,6 +4941,20 @@ async def task_youtube_shorts() -> str:
         return f"YouTube Shorts Fehler: {e}"
 
 
+async def task_vorsprung_scan() -> str:
+    """VORSPRUNG Intelligence: Bundesanzeiger + EUIPO + DPMA + Reddit → AI-Briefing → Telegram."""
+    try:
+        from modules.vorsprung_intelligence import run_full_scan
+        result = await run_full_scan()
+        return (
+            f"OK — {result.get('signals_collected', 0)} Signale gesammelt, "
+            f"{result.get('signals_stored', 0)} gespeichert, "
+            f"Briefing generiert"
+        )
+    except Exception as e:
+        return f"VORSPRUNG Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -4961,6 +4975,7 @@ TASKS = [
     ("demand_oracle_scan",   task_demand_oracle_scan,   43200, 240),  # 12h — Demand Oracle: Reddit→Cluster→Pre-Order
     ("b2b_intent_radar",    task_b2b_intent_radar_scan, 21600, 280),  # 6h — B2B Intent Radar: HN+Reddit+GitHub→Leads
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
+    ("vorsprung_scan",       task_vorsprung_scan,      21600, 300),  # 6h — VORSPRUNG Intelligence (Bundesanzeiger+EUIPO+DPMA+Reddit)
     ("viral_window_scan",   task_viral_window_scan,    7200,  55),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",    task_oos_sniper_scan,      7200,  58),  # 2h — OOS Sniper
     ("money_machine_run",  task_money_machine_run,   14400,  65),  # 4h — Money Machine (alle 5 Engines)
