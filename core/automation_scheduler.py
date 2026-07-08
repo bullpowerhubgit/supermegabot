@@ -2293,6 +2293,15 @@ async def task_twitter_seo_thread() -> str:
         return f"Twitter Thread Fehler: {e}"
 
 
+async def task_ebay_arbitrage_scan() -> str:
+    """eBay-Arbitrage-Autopilot: AliExpress→eBay Margenscan→Shopify Import (alle 6h)."""
+    try:
+        from modules.ebay_arbitrage import scheduled_arbitrage_scan
+        return await scheduled_arbitrage_scan()
+    except Exception as e:
+        return f"EbayArbitrage Fehler: {e}"
+
+
 async def task_intent_bridge_report() -> str:
     """Intent-to-Sale Bridge: täglicher Report + Cleanup alter Events (alle 24h)."""
     try:
@@ -4897,6 +4906,7 @@ TASKS = [
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
     ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
     ("intent_bridge_report", task_intent_bridge_report, 86400, 200),  # 24h — Intent-to-Sale Bridge Tagesbericht
+    ("ebay_arbitrage_scan",  task_ebay_arbitrage_scan,  21600, 180),  # 6h — eBay Arbitrage: AliExpress→eBay→Shopify
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
     ("viral_window_scan",   task_viral_window_scan,    7200,  55),  # 2h — Viral Window Scanner
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)

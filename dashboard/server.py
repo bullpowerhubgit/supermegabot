@@ -1971,6 +1971,38 @@ async def handle_social_status(req):
         return web.json_response({"error": str(e)}, status=500)
 
 
+async def handle_ebay_arbitrage_stats(req):
+    """GET /api/ebay-arbitrage/stats"""
+    try:
+        from modules.ebay_arbitrage import get_stats
+        return web.json_response({"ok": True, **get_stats()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ebay_arbitrage_scan(req):
+    """POST /api/ebay-arbitrage/scan — trigger manual scan (non-blocking)"""
+    try:
+        from modules.ebay_arbitrage import run_full_scan
+        asyncio.create_task(run_full_scan(max_imports=5))
+        return web.json_response({"ok": True, "message": "Arbitrage scan gestartet — Ergebnis via Telegram"})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ebay_arbitrage_preview(req):
+    """POST /api/ebay-arbitrage/preview — scan one category without importing"""
+    try:
+        body     = await req.json()
+        category = body.get("category", "Smart Home")
+        keywords = body.get("keywords", ["smart steckdose wlan"])
+        from modules.ebay_arbitrage import scan_category
+        opps = await asyncio.wait_for(scan_category(category, keywords), timeout=30)
+        return web.json_response({"ok": True, "opportunities": opps[:10], "count": len(opps)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_intent_bridge_stats(req):
     """GET /api/intent-bridge/stats — live stats for the Intent-to-Sale Bridge."""
     try:
@@ -8629,6 +8661,11 @@ async def create_app():
 
     # ── Social Media ──────────────────────────────────────────────────────────
     app.router.add_get("/api/social/status",          handle_social_status)
+
+    # ── eBay Arbitrage ────────────────────────────────────────────────────────
+    app.router.add_get("/api/ebay-arbitrage/stats",    handle_ebay_arbitrage_stats)
+    app.router.add_post("/api/ebay-arbitrage/scan",    handle_ebay_arbitrage_scan)
+    app.router.add_post("/api/ebay-arbitrage/preview", handle_ebay_arbitrage_preview)
 
     # ── Digistore24 ───────────────────────────────────────────────────────────
     app.router.add_get("/api/intent-bridge/stats",    handle_intent_bridge_stats)
