@@ -2836,6 +2836,18 @@ async def task_viral_window_scan() -> str:
         return f"ViralWindowScan error: {e}"
 
 
+async def task_viral_promo_poster() -> str:
+    """Viral Promo Poster — Multi-Channel Marketing für den Viral Window Scanner."""
+    try:
+        from modules.viral_promo_poster import run_promo_cycle
+        result = await run_promo_cycle()
+        count  = result.get("posted_count", 0)
+        plats  = result.get("platforms", [])
+        return f"Promo: {count} Posts auf {', '.join(plats) if plats else 'keiner Plattform'}"
+    except Exception as e:
+        return f"Promo error: {e}"
+
+
 async def task_product_intelligence_hub() -> str:
     """Product Intelligence Hub — viral_scanner + pipeline + intent_bridge (alle 3 Tools)."""
     try:
@@ -4953,6 +4965,7 @@ TASKS = [
     ("oos_sniper_scan",    task_oos_sniper_scan,      7200,  58),  # 2h — OOS Sniper
     ("money_machine_run",  task_money_machine_run,   14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
+    ("viral_promo",         task_viral_promo_poster,       21600, 90),  # 6h — Multi-Channel Promo (FB/TW/LI/Reddit/TG)
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 125),  # 6h — FB+IG+TG+LI+Reddit+Discord
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
