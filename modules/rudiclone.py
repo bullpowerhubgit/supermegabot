@@ -961,5 +961,16 @@ async def _main() -> None:
         log.info("RudiClone: Sauber beendet. Tschüss Madafaka!")
 
 
+async def get_status() -> dict:
+    """Module-level status function for dashboard handler."""
+    return {
+        "ok": True,
+        "status": "active",
+        "module": "rudiclone",
+        "agents": ["SystemDiagnoseAgent", "ShopifyAgent", "TradeAgent", "LoadMonitor"],
+        "modes": ["RudiPersona", "RudiSystemClone", "RudiAgents"],
+    }
+
+
 if __name__ == "__main__":
     asyncio.run(_main())

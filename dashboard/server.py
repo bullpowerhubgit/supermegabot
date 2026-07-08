@@ -2130,28 +2130,30 @@ async def handle_demand_oracle_wishes(req):
 
 async def handle_digistore_status(req):
     try:
-        from modules.digistore24_automation import ping, get_sales_stats, get_products, setup_ipn, is_configured
+        from modules.digistore24_automation import ping, get_sales_stats, get_products, is_configured
         configured = is_configured()
-        ok = await asyncio.wait_for(ping(), timeout=8) if configured else False
-        stats = await asyncio.wait_for(get_sales_stats(), timeout=8) if ok else {}
-        products = await asyncio.wait_for(get_products(), timeout=8) if ok else []
-        try:
-            ipn_info = await asyncio.wait_for(setup_ipn(), timeout=5)
-            ipn_url = ipn_info.get("ipn_url", "")
-        except Exception:
-            ipn_url = "https://dudirudibot-mega-production.up.railway.app/api/digistore24/ipn"
+        if not configured:
+            return web.json_response({"ok": False, "connected": False, "configured": False, "error": "DS24 nicht konfiguriert"})
+        # Parallel statt sequenziell — spart ~16s
+        ok, stats, products = await asyncio.wait_for(
+            asyncio.gather(ping(), get_sales_stats(), get_products(), return_exceptions=True),
+            timeout=10,
+        )
+        ok = ok if isinstance(ok, bool) else False
+        stats = stats if isinstance(stats, dict) else {}
+        products = products if isinstance(products, list) else []
+        ipn_url = "https://supermegabot-production.up.railway.app/api/digistore24/ipn"
         return web.json_response({
             "ok": ok,
             "connected": ok,
             "configured": configured,
             "stats": stats,
             "product_count": len(products),
-            "revenue_note": "€0 = Keine Transaktionen im Konto (API verbunden, Daten korrekt)" if ok and stats.get("total", 0) == 0 else None,
+            "revenue_note": "€0 = Keine Transaktionen im Konto" if ok and stats.get("total", 0) == 0 else None,
             "ipn_url": ipn_url,
-            "ipn_setup_needed": True,
         })
     except asyncio.TimeoutError:
-        return web.json_response({"ok": False, "connected": False, "error": "DS24 API timeout"})
+        return web.json_response({"ok": False, "connected": False, "error": "DS24 API timeout (>10s)"})
     except Exception as e:
         return web.json_response({"ok": False, "connected": False, "error": str(e)})
 
@@ -9742,6 +9744,12 @@ async def create_app():
     app.router.add_get( "/api/facebook/token/status",  handle_fb_token_status)
     app.router.add_post("/api/facebook/token/refresh", handle_fb_token_refresh)
     # ── END FACEBOOK TOKEN ────────────────────────────────────────────────────
+    # ── MISSING STATUS ALIASES ────────────────────────────────────────────────
+    app.router.add_get("/api/b2b/status",           handle_b2b_radar_stats)
+    app.router.add_get("/api/demand-oracle/status", handle_demand_oracle_stats)
+    app.router.add_get("/api/insolvenz/status",     handle_ir_status)
+    app.router.add_get("/api/agent/status",         handle_agents_overview)
+    # ── END MISSING ALIASES ───────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())

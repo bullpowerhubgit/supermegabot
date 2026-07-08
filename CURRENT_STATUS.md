@@ -16,10 +16,10 @@
 ## ✅ API-CREDENTIALS (alle gültig)
 - ✅ FACEBOOK_PAGE_TOKEN_AIITEC: valid
 - ✅ FACEBOOK_META_TOKEN: valid (User Token, Aiitec Aiitec)
-- ✅ FACEBOOK_IG_ACCESS_TOKEN: Long-lived 60-Tage Token, instagram_content_publish ✅
+- ✅ FACEBOOK_IG_ACCESS_TOKEN: Long-lived Token, instagram_content_publish ✅
   - App: AiiteC Social Content Poster (1535442684079797)
   - IG Account: @aaiitecc (17841478315197796), 4833 Follower
-  - Läuft ab: ~2026-09-06
+  - Läuft ab: 2026-09-06 (erneuert 2026-07-08)
 - ✅ TWITTER_API_KEY + ACCESS_TOKEN: OAuth 1.0a, @rudibot84
 - ✅ LINKEDIN_ACCESS_TOKEN: gültig (Rudolf Sarkany)
 - ✅ TELEGRAM_BOT_TOKEN: gültig
@@ -39,16 +39,22 @@
 - Shopify: ineedit.com.co (10k Produkte, Smart Collections)
 - Viral Scanner: https://supermegabot-production.up.railway.app/viral
 
-## 🚀 MONEY MACHINE ENGINE (NEU — 2026-07-08)
+## 🚀 MONEY MACHINE ENGINE (LIVE — 2026-07-08)
 | Modul | Status | Scheduler |
 |-------|--------|-----------|
 | modules/oos_sniper.py | ✅ LIVE | alle 2h |
 | modules/review_goldmine.py | ✅ LIVE | on-demand |
 | modules/cart_rescue.py | ✅ LIVE | Shopify Webhook |
 | modules/money_machine.py | ✅ LIVE | alle 4h |
-- Route: /money-machine — Dashboard mit START-Button
-- Route: /api/money-machine/run-all — startet alle 5 Engines
-- 13 API-Routen registriert (oos-sniper, review-goldmine, cart-rescue)
+| modules/insolvenz_radar.py | ✅ LIVE | alle 12h |
+| modules/outreach_engine.py | ✅ LIVE | /outreach Dashboard |
+| modules/outreach_autonomous.py | ✅ LÄUFT (PID 34189) | täglich 09:00 |
+- Route: /money-machine — Dashboard mit 1-Klick START-Button
+- Route: /insolvenz-radar — B2B Lead Machine (Insolvenzregister DE)
+- Route: /outreach — Outreach Queue + Email-Versand Dashboard
+- Outreach Agent: automatisch täglich 09:00, 10 Emails/Tag via Gmail
+- Desktop-Launcher mit Auto-Watchdog: MONEY_MACHINE_START.command
+- Server lokal: PORT=8888 (NICHT 3000 — PORT=3000 in .env überschreiben!)
 
 ## 📋 NÄCHSTE SESSION: WEITERMACHEN MIT
 1. Reddit: Neues OAuth2-App erstellen (reddit.com/prefs/apps → create an app) und REDDIT_REFRESH_TOKEN setzen
@@ -56,3 +62,4 @@
    - Eingeloggt als u/Upper-Competition505 — neue App unter diesem Account
 2. Facebook Groups Posting (braucht Meta App Review — langfristig)
 3. Instagram Token erneuern wenn nötig (~2026-09-06)
+4. SERVER STARTEN: PORT=8888 DASHBOARD_PORT=8888 python3 dashboard/server.py
