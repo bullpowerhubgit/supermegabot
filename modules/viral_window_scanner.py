@@ -733,6 +733,7 @@ async def run_scan() -> Dict:
             ("vk_eur", "REAL DEFAULT 0"),
             ("margin_pct", "REAL DEFAULT 0"),
             ("fb_ad_json", "TEXT"),
+            ("sources", "TEXT"),
         ]:
             try:
                 conn.execute(f"ALTER TABLE viral_signals ADD COLUMN {col} {coltype}")
@@ -1254,7 +1255,7 @@ async def get_status() -> Dict:
             "SELECT COUNT(*) FROM viral_signals WHERE imported=1"
         ).fetchone()[0]
         top5 = conn.execute(
-            "SELECT keyword, score, source AS sources FROM viral_signals ORDER BY score DESC LIMIT 5"
+            "SELECT keyword, score, sources FROM viral_signals ORDER BY score DESC LIMIT 5"
         ).fetchall()
         last_alert = conn.execute(
             "SELECT keyword, score, sent_at FROM viral_alerts ORDER BY sent_at DESC LIMIT 1"
