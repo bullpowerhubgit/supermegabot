@@ -8813,6 +8813,27 @@ async def handle_vorsprung_briefing(req: web.Request) -> web.Response:
 # ── END VORSPRUNG INTELLIGENCE ────────────────────────────────────────────────
 
 
+# ── FACEBOOK / INSTAGRAM TOKEN AUTO-REFRESH ───────────────────────────────────
+
+async def handle_fb_token_status(req: web.Request) -> web.Response:
+    try:
+        from modules.facebook_token_refresher import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_fb_token_refresh(req: web.Request) -> web.Response:
+    try:
+        from modules.facebook_token_refresher import check_and_refresh
+        result = await check_and_refresh()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+# ── END FACEBOOK TOKEN AUTO-REFRESH ──────────────────────────────────────────
+
+
 async def create_app():
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
@@ -9717,6 +9738,10 @@ async def create_app():
     app.router.add_post("/api/vorsprung/scan",     handle_vorsprung_scan)
     app.router.add_get( "/api/vorsprung/briefing", handle_vorsprung_briefing)
     # ── END VORSPRUNG INTELLIGENCE ────────────────────────────────────────────
+    # ── FACEBOOK TOKEN AUTO-REFRESH ───────────────────────────────────────────
+    app.router.add_get( "/api/facebook/token/status",  handle_fb_token_status)
+    app.router.add_post("/api/facebook/token/refresh", handle_fb_token_refresh)
+    # ── END FACEBOOK TOKEN ────────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
