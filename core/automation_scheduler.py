@@ -2302,6 +2302,15 @@ async def task_ebay_arbitrage_scan() -> str:
         return f"EbayArbitrage Fehler: {e}"
 
 
+async def task_b2b_intent_radar_scan() -> str:
+    """B2B Intent Radar: HN+Reddit+GitHub+RSS → KI-Klassifizierung → Lead-Datenbank (alle 6h)."""
+    try:
+        from modules.b2b_intent_radar import scheduled_b2b_scan
+        return await scheduled_b2b_scan()
+    except Exception as e:
+        return f"B2BIntentRadar Fehler: {e}"
+
+
 async def task_demand_oracle_scan() -> str:
     """Demand Oracle: Reddit-Wünsche → KI-Clustering → Pre-Order-Produkte (alle 12h)."""
     try:
@@ -4938,6 +4947,7 @@ TASKS = [
     ("intent_bridge_report", task_intent_bridge_report, 86400, 200),  # 24h — Intent-to-Sale Bridge Tagesbericht
     ("ebay_arbitrage_scan",  task_ebay_arbitrage_scan,  21600, 180),  # 6h — eBay Arbitrage: AliExpress→eBay→Shopify
     ("demand_oracle_scan",   task_demand_oracle_scan,   43200, 240),  # 12h — Demand Oracle: Reddit→Cluster→Pre-Order
+    ("b2b_intent_radar",    task_b2b_intent_radar_scan, 21600, 280),  # 6h — B2B Intent Radar: HN+Reddit+GitHub→Leads
     ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
     ("viral_window_scan",   task_viral_window_scan,    7200,  55),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",    task_oos_sniper_scan,      7200,  58),  # 2h — OOS Sniper
