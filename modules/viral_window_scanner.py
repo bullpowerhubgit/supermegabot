@@ -319,45 +319,79 @@ async def fetch_aliexpress_trending() -> List[Dict]:
     return results
 
 
-# ── Signal Source 4: Reddit (Public JSON) ────────────────────────────────────
+# ── Signal Source 4: Reddit via RSS + Pullpush.io (kein Auth nötig) ──────────
 
-REDDIT_SUBS = [
-    "Entrepreneur", "ecommerce", "dropship",
-    "Flipping", "AmazonFBA", "shopify"
-]
+REDDIT_SUBS = ["gadgets", "smarthome", "ecommerce", "Entrepreneur"]
+
+async def _reddit_rss(sub: str, session) -> List[Dict]:
+    """Public RSS feed — kein Auth, kein Rate-Limit-Problem."""
+    url = f"https://old.reddit.com/r/{sub}/.rss"
+    results = []
+    try:
+        async with session.get(url, headers={"User-Agent": "Mozilla/5.0"}) as r:
+            if r.status != 200:
+                return []
+            text = await r.text()
+        import re
+        titles = re.findall(r"<title><!\[CDATA\[(.+?)\]\]></title>", text)
+        for title in titles[1:]:  # skip feed title
+            title = title.strip()
+            if len(title) < 10 or title.lower() in ("hot", sub.lower()):
+                continue
+            results.append({
+                "keyword": title[:120],
+                "source": "reddit_rss",
+                "subreddit": sub,
+                "upvotes": 0,
+                "ratio": 0,
+                "raw": ""
+            })
+    except Exception as e:
+        log.debug("Reddit RSS (%s): %s", sub, e)
+    return results
+
+
+async def _reddit_pullpush(sub: str, session) -> List[Dict]:
+    """Pullpush.io — kostenloses Reddit-Archiv, kein Auth."""
+    url = (f"https://api.pullpush.io/reddit/search/submission/"
+           f"?subreddit={sub}&size=15&sort=score&order=desc")
+    results = []
+    try:
+        async with session.get(url, headers={"User-Agent": "Mozilla/5.0"}) as r:
+            if r.status != 200:
+                return []
+            data = await r.json()
+        for post in data.get("data", []):
+            title = post.get("title", "")
+            score = post.get("score", 0)
+            if not title or score < 20:
+                continue
+            results.append({
+                "keyword": title[:120],
+                "source": "pullpush",
+                "subreddit": sub,
+                "upvotes": score,
+                "ratio": 0,
+                "raw": ""
+            })
+    except Exception as e:
+        log.debug("Pullpush (%s): %s", sub, e)
+    return results
+
 
 async def fetch_reddit_signals() -> List[Dict]:
     results = []
-    for sub in REDDIT_SUBS[:4]:
-        url = f"https://www.reddit.com/r/{sub}/hot.json?limit=15"
-        try:
-            async with _session(15) as s:
-                async with s.get(
-                    url,
-                    headers={"User-Agent": "ViralScanner/1.0 by AiiteC"}
-                ) as r:
-                    if r.status != 200:
-                        continue
-                    data = await r.json()
-                    posts = data.get("data", {}).get("children", [])
-                    for post in posts:
-                        p = post.get("data", {})
-                        title = p.get("title", "")
-                        score = p.get("score", 0)
-                        ups   = p.get("upvote_ratio", 0)
-                        if score < 50 or len(title) < 10:
-                            continue
-                        results.append({
-                            "keyword": title[:120],
-                            "source": "reddit",
-                            "subreddit": sub,
-                            "upvotes": score,
-                            "ratio": ups,
-                            "raw": ""
-                        })
-        except Exception as e:
-            log.debug("Reddit error (%s): %s", sub, e)
-        await asyncio.sleep(1)
+    async with _session(15) as s:
+        for sub in REDDIT_SUBS:
+            # Pullpush.io als Primary (zuverlässig, kein Auth)
+            pp = await _reddit_pullpush(sub, s)
+            if pp:
+                results.extend(pp)
+            else:
+                # Fallback: old.reddit.com RSS
+                rss = await _reddit_rss(sub, s)
+                results.extend(rss)
+            await asyncio.sleep(0.5)
     return results
 
 
