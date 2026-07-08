@@ -851,90 +851,84 @@ async def run_scan() -> Dict:
 # ── Shopify Auto-Import ───────────────────────────────────────────────────────
 
 async def _shopify_import(item: Dict) -> Optional[str]:
-    try:
-        from modules import shopify_client
-    except ImportError:
-        try:
-            import importlib, sys
-            sys.path.insert(0, str(_BASE_DIR))
-            shopify_client = importlib.import_module("modules.shopify_client")
-        except Exception as e:
-            log.warning("Shopify client nicht verfügbar: %s", e)
-            return None
+    token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    version = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    if not token or not domain:
+        log.warning("Shopify credentials fehlen")
+        return None
 
     kw     = item["keyword"]
     score  = item["score"]
-    margin = item.get("margin_pct", 55)
     window = item.get("window_h", WINDOW_HOURS)
     reason = item.get("reason", "")
 
-    # Margin-Daten
     mg = item.get("margin_data", {})
     margin_html = ""
     if mg and mg.get("ek_eur", 0) > 0:
         margin_html = (
-            f"<p>💵 <strong>Margin-Rechner:</strong> "
+            f"<p>💵 <strong>Margin:</strong> "
             f"EK ~€{mg['ek_eur']} | VK ~€{mg['vk_eur']} | "
-            f"Gewinn ~€{mg['margin_eur']} ({mg['margin_pct']}%) | ROI {mg['roi_pct']}%</p>"
+            f"Gewinn ~€{mg.get('margin_eur',0)} ({mg['margin_pct']}%) | ROI {mg.get('roi_pct',0)}%</p>"
         )
 
-    # Sättigungs-Info
     sat = item.get("saturation", -1)
     sat_html = ""
     if sat >= 0:
         level = "NIEDRIG 🟢" if sat < 50 else ("MITTEL 🟡" if sat < 500 else "HOCH 🔴")
-        sat_html = f"<p>🏪 Shopify-Sättigung: {level} (~{sat} Stores haben dieses Produkt)</p>"
+        sat_html = f"<p>🏪 Shopify-Sättigung: {level} (~{sat} Stores)</p>"
 
-    # FB Ad Copy Block
     fb_ad = item.get("fb_ad", {})
     fb_html = ""
     if fb_ad and fb_ad.get("ad_a"):
         ad_a = fb_ad["ad_a"]
-        fb_html = f"""<h3>📢 Facebook Ad Copy (automatisch generiert)</h3>
-<p><strong>Hook:</strong> {ad_a.get('hook','')}</p>
-<p>{ad_a.get('body','')}</p>
-<p><em>CTA: {ad_a.get('cta','Jetzt kaufen')}</em></p>
-<p>{fb_ad.get('hashtags','')}</p>"""
+        fb_html = (f"<h3>📢 Facebook Ad</h3>"
+                   f"<p><strong>Hook:</strong> {ad_a.get('hook','')}</p>"
+                   f"<p>{ad_a.get('body','')}</p>"
+                   f"<p><em>CTA: {ad_a.get('cta','Jetzt kaufen')}</em></p>")
 
-    body = f"""<h2>🔥 Trending Produkt — Viral Window aktiv!</h2>
-<p><strong>AI-Score: {score}/100</strong> | Trend-Fenster: ~{window}h offen</p>
-<p><em>{reason}</em></p>
-{margin_html}{sat_html}
-<p>Supplier: {item.get('supplier_hint', 'AliExpress')}</p>
-<h3>Warum jetzt kaufen?</h3>
-<p>{kw} ist gleichzeitig in mehreren Trend-Quellen sichtbar (Google Trends, Amazon Movers,
-Reddit, TikTok) — organische Nachfrage deutet auf kurzes, profitables Zeitfenster hin.</p>
-{fb_html}"""
+    body = (f"<h2>🔥 Trending — AI-Score {score}/100</h2>"
+            f"<p>Trend-Fenster: ~{window}h | {reason}</p>"
+            f"{margin_html}{sat_html}"
+            f"<p>Supplier: {item.get('supplier_hint','AliExpress')}</p>"
+            f"<h3>Warum jetzt?</h3>"
+            f"<p>{kw} ist in mehreren Quellen gleichzeitig sichtbar.</p>"
+            f"{fb_html}")
 
-    tags = [
-        "viral-window", "trending-2026",
-        f"score-{int(score)}",
-        item.get("supplier_hint", "aliexpress").lower().replace(" ", "-")
-    ]
+    tags = ["viral-window", "trending-2026", f"score-{int(score)}",
+            item.get("supplier_hint", "aliexpress").lower().replace(" ", "-")]
     if sat >= 0 and sat < 50:
         tags.append("low-competition")
 
-    # Preis aus Margin-Daten
     vk = mg.get("vk_eur", 0) if mg else 0
     if vk <= 0:
         vk = round(29.99 + (score / 100) * 50, 2)
 
+    payload = {
+        "product": {
+            "title": kw,
+            "body_html": body,
+            "vendor": "Viral Window Scanner",
+            "product_type": "Trending Product",
+            "status": "active",
+            "tags": ",".join(tags),
+            "variants": [{"price": str(vk), "inventory_management": "shopify",
+                          "inventory_quantity": 10}]
+        }
+    }
     try:
-        result = await shopify_client.create_product(
-            title=kw,
-            price=vk,
-            vendor="Viral Window Scanner",
-            body_html=body,
-            product_type="Trending Product",
-            tags=tags
-        )
-        product_id = (result.get("product") or {}).get("id", "")
-        if product_id:
-            log.info("Shopify Import OK: %s → %s", kw, product_id)
-            return str(product_id)
-        errors = result.get("userErrors", [])
-        if errors:
-            log.warning("Shopify Import Fehler: %s", errors)
+        async with _session(30) as s:
+            async with s.post(
+                f"https://{domain}/admin/api/{version}/products.json",
+                headers={"X-Shopify-Access-Token": token, "Content-Type": "application/json"},
+                json=payload
+            ) as r:
+                data = await r.json()
+                product_id = str(data.get("product", {}).get("id", ""))
+                if product_id:
+                    log.info("Shopify Import OK: %s → %s", kw, product_id)
+                    return product_id
+                log.warning("Shopify Import Fehler: %s", data.get("errors", data))
     except Exception as e:
         log.warning("Shopify Import Exception: %s", e)
     return None
