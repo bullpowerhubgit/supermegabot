@@ -787,7 +787,35 @@ async def run_scan() -> Dict:
                     "fb_ad_cached":  fb_ad_cached,
                 })
 
-    # 4. FB Ad Copy + Alerts + Shopify-Import (pro Produkt EINMALIG generieren)
+    # 4a. Bestehende unimportierte High-Score Signale aus DB nachladen
+    with _db() as conn:
+        pending = conn.execute(
+            """SELECT keyword, score, source AS sources, saturation, ek_eur, vk_eur,
+                      margin_pct, fb_ad_json, alerted, imported
+               FROM viral_signals
+               WHERE score >= ? AND imported = 0
+               ORDER BY score DESC LIMIT 20""",
+            (MIN_SCORE_SHOPIFY_IMPORT,)
+        ).fetchall()
+        existing_kws = {i["keyword"] for i in high_score_items}
+        for row in pending:
+            if row["keyword"] not in existing_kws:
+                high_score_items.append({
+                    "keyword":      row["keyword"],
+                    "score":        row["score"],
+                    "sources":      row["sources"],
+                    "saturation":   row["saturation"] or -1,
+                    "alerted":      row["alerted"],
+                    "imported":     row["imported"],
+                    "margin_data":  {"ek_eur": row["ek_eur"], "vk_eur": row["vk_eur"],
+                                     "margin_pct": row["margin_pct"], "margin_eur": 0, "roi_pct": 0},
+                    "supplier_hint": "AliExpress",
+                    "reason":       "Bestehendes High-Score Signal — jetzt importiert",
+                    "window_h":     WINDOW_HOURS,
+                    "fb_ad_cached": row["fb_ad_json"],
+                })
+
+    # 4b. FB Ad Copy + Alerts + Shopify-Import (pro Produkt EINMALIG generieren)
     imported_count = 0
     alerted_count  = 0
     for item in sorted(high_score_items, key=lambda x: x["score"], reverse=True)[:10]:
