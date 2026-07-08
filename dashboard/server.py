@@ -9373,6 +9373,25 @@ async def create_app():
     app.router.add_get( "/api/shopify/collections",       handle_shopify_collections_get)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
+    # ── MONEY MACHINE ────────────────────────────────────────────────────────
+    app.router.add_get( "/money-machine",                handle_money_machine_page)
+    app.router.add_get( "/money-machine/success",        handle_mm_success)
+    app.router.add_post("/api/money-machine/run-all",    handle_mm_run_all)
+    app.router.add_get( "/api/money-machine/status",     handle_mm_status)
+    app.router.add_post("/api/money-machine/checkout",   handle_mm_checkout)
+    # ── OOS SNIPER ───────────────────────────────────────────────────────────
+    app.router.add_get( "/api/oos-sniper/status",        handle_oos_status)
+    app.router.add_post("/api/oos-sniper/scan",          handle_oos_scan)
+    app.router.add_post("/api/oos-sniper/targets",       handle_oos_add_target)
+    # ── REVIEW GOLDMINE ──────────────────────────────────────────────────────
+    app.router.add_post("/api/review-goldmine/analyze",  handle_review_analyze)
+    app.router.add_get( "/api/review-goldmine/status",   handle_review_status)
+    # ── CART RESCUE ──────────────────────────────────────────────────────────
+    app.router.add_post("/api/cart-rescue/webhook",      handle_cart_webhook)
+    app.router.add_get( "/api/cart-rescue/status",       handle_cart_status)
+    app.router.add_post("/api/cart-rescue/test",         handle_cart_test)
+    # ── END MONEY MACHINE ─────────────────────────────────────────────────────
+
     # ── VIRAL WINDOW SCANNER ─────────────────────────────────────────────────
     app.router.add_get( "/viral",                   handle_viral_page)
     app.router.add_get( "/viral/success",           handle_viral_success)
@@ -11546,6 +11565,334 @@ setInterval(refreshAll, 30000);
 </body>
 </html>"""
     return web.Response(text=html, content_type="text/html")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  MONEY MACHINE — Unified Orchestrator Handlers
+# ═══════════════════════════════════════════════════════════════════════════
+
+_mm_running = False
+
+async def handle_money_machine_page(req):
+    html = """<!DOCTYPE html>
+<html lang="de"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>&#x1F4B0; Money Machine &mdash; 5 Engines in 1</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--card:#111118;--border:#1e1e2e;--accent:#7c3aed;--accent2:#06b6d4;--green:#10b981;--red:#ef4444;--yellow:#f59e0b;--text:#e2e8f0;--muted:#64748b}
+body{font-family:'SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#1a0533 0%,#0f172a 50%,#001a2c 100%);border-bottom:1px solid #2d1b69;padding:20px 32px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:1.5rem;font-weight:900}
+.logo span{background:linear-gradient(90deg,#a855f7,#06b6d4,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav a{color:#94a3b8;text-decoration:none;margin-left:20px;font-size:.85rem}
+.start-zone{text-align:center;padding:40px 24px 20px;background:linear-gradient(180deg,rgba(124,58,237,.08) 0%,transparent 100%)}
+.start-title{font-size:.85rem;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px}
+.btn-mega{display:inline-flex;align-items:center;gap:14px;background:linear-gradient(135deg,#7c3aed,#6d28d9,#4c1d95);color:#fff;border:none;padding:22px 52px;border-radius:16px;font-size:1.4rem;font-weight:900;cursor:pointer;box-shadow:0 0 60px rgba(124,58,237,.5),0 4px 20px rgba(0,0,0,.4);transition:transform .15s,box-shadow .15s;text-transform:uppercase}
+.btn-mega:hover{transform:scale(1.03);box-shadow:0 0 80px rgba(124,58,237,.7)}
+.btn-mega:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.pulse-dot{width:16px;height:16px;border-radius:50%;background:#10b981;box-shadow:0 0 0 0 rgba(16,185,129,.6);animation:pulse-ring 1.5s infinite;flex-shrink:0}
+@keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(16,185,129,.6)}70%{box-shadow:0 0 0 10px rgba(16,185,129,0)}100%{box-shadow:0 0 0 0 rgba(16,185,129,0)}}
+.start-status{margin-top:14px;font-size:.88rem;color:var(--muted);min-height:22px}
+.revenue-banner{display:flex;gap:16px;padding:14px 32px;background:rgba(16,185,129,.06);border-bottom:1px solid rgba(16,185,129,.2);flex-wrap:wrap;align-items:center}
+.rev-item{display:flex;align-items:center;gap:8px}
+.rev-label{font-size:.78rem;color:var(--muted)}
+.rev-value{font-size:1rem;font-weight:800;color:var(--green)}
+.rev-divider{width:1px;height:20px;background:var(--border)}
+.engines{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:16px;padding:24px 32px}
+.engine-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px;transition:border-color .2s}
+.engine-card.ok{border-color:var(--green)}
+.engine-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.engine-icon{font-size:1.5rem}
+.engine-title{font-weight:800;font-size:.95rem}
+.engine-sub{font-size:.72rem;color:var(--muted);margin-top:2px}
+.engine-status{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:.75rem;font-weight:600}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.dot.green{background:var(--green);box-shadow:0 0 6px var(--green)}
+.dot.red{background:var(--red)}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.stat{background:#0d0d16;border-radius:8px;padding:10px 12px}
+.stat-label{font-size:.68rem;color:var(--muted);margin-bottom:3px}
+.stat-value{font-size:.9rem;font-weight:700}
+.engine-footer{display:flex;gap:8px;margin-top:14px}
+.btn-sm{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;font-size:.78rem;font-weight:700}
+.btn-trigger{background:rgba(124,58,237,.2);color:#a855f7;border:1px solid rgba(124,58,237,.3)}
+.btn-open{background:#0d0d16;color:#64748b;border:1px solid var(--border);text-decoration:none}
+.pricing{padding:24px 32px 48px}
+.pricing h2{font-size:1.5rem;font-weight:800;margin-bottom:6px}
+.pricing-sub{color:var(--muted);margin-bottom:24px;font-size:.9rem}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.plan{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;position:relative}
+.plan.featured{border-color:var(--accent);box-shadow:0 0 30px rgba(124,58,237,.15)}
+.plan-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;padding:4px 14px;border-radius:10px;font-size:.72rem;font-weight:800}
+.plan-name{font-size:1rem;font-weight:800;margin-bottom:6px}
+.plan-price{font-size:2rem;font-weight:900;color:var(--accent);margin-bottom:4px}
+.plan-price span{font-size:.82rem;color:var(--muted);font-weight:400}
+.plan-features{list-style:none;margin:14px 0 18px}
+.plan-features li{padding:5px 0;font-size:.83rem;color:#94a3b8;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:center}
+.plan-features li:last-child{border:none}
+.plan-features li::before{content:"checkmark";content:"\\2713";color:var(--green);font-weight:800}
+.plan-btn{width:100%;padding:12px;border:none;border-radius:9px;font-weight:800;font-size:.88rem;cursor:pointer}
+.plan-btn-primary{background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff}
+.plan-btn-secondary{background:#1e1e2e;color:var(--text);border:1px solid var(--border)}
+.log-section{padding:0 32px 40px}
+.log-section h3{font-size:.9rem;font-weight:700;margin-bottom:10px;color:var(--muted)}
+.log-list{background:var(--card);border:1px solid var(--border);border-radius:12px;max-height:160px;overflow-y:auto;font-family:monospace;font-size:.76rem}
+.log-line{padding:7px 14px;border-bottom:1px solid var(--border);color:#7dd3fc;display:flex;gap:12px}
+.log-line:last-child{border:none}
+.log-time{color:var(--muted);flex-shrink:0}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:34px;max-width:400px;width:90%}
+.modal h4{font-size:1.2rem;font-weight:800;margin-bottom:8px}
+.modal p{color:var(--muted);font-size:.85rem;margin-bottom:18px}
+.form-group label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px}
+.form-group input{width:100%;background:#0d0d16;border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:8px;font-size:.88rem}
+.modal-footer{display:flex;gap:10px;margin-top:18px}
+.btn-cancel{flex:1;padding:11px;background:#1e1e2e;border:1px solid var(--border);color:var(--text);border-radius:8px;cursor:pointer;font-weight:700}
+.btn-pay{flex:2;padding:11px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:800}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin .8s linear infinite}
+</style></head><body>
+<div class="header">
+  <div class="logo">&#x1F4B0; <span>Money Machine</span></div>
+  <nav class="nav">
+    <a href="/">Dashboard</a><a href="/viral">Viral</a><a href="/engines">Engines</a><a href="/master">Master</a>
+  </nav>
+</div>
+<div class="start-zone">
+  <div class="start-title">&#x1F680; Alle 5 Engines gleichzeitig starten</div>
+  <button class="btn-mega" id="mega-btn" onclick="startAll()">
+    <div class="pulse-dot"></div>
+    ALLES STARTEN &mdash; GELD VERDIENEN
+  </button>
+  <div class="start-status" id="start-status">Bereit. 1 Klick = alle 5 Engines laufen sofort.</div>
+</div>
+<div class="revenue-banner">
+  <div class="rev-item"><span class="rev-label">eBay Profit</span><span class="rev-value" id="rev-ebay">&#8364;--</span></div>
+  <div class="rev-divider"></div>
+  <div class="rev-item"><span class="rev-label">Cart Rescue</span><span class="rev-value" id="rev-cart">&#8364;--</span></div>
+  <div class="rev-divider"></div>
+  <div class="rev-item"><span class="rev-label">Viral Alerts</span><span class="rev-value" id="rev-viral">--</span></div>
+  <div class="rev-divider"></div>
+  <div class="rev-item"><span class="rev-label">OOS Events</span><span class="rev-value" id="rev-oos">--</span></div>
+  <div class="rev-divider"></div>
+  <div class="rev-item"><span class="rev-label">Review Analysen</span><span class="rev-value" id="rev-review">--</span></div>
+  <div class="rev-divider"></div>
+  <div class="rev-item"><span class="rev-label">Shopify Imports</span><span class="rev-value" id="rev-imports">--</span></div>
+</div>
+<div class="engines" id="engine-grid"><div style="grid-column:1/-1;padding:40px;text-align:center;color:var(--muted)">Lade Status...</div></div>
+<div class="pricing">
+  <h2>&#x1F48E; Money Machine Subscription</h2>
+  <p class="pricing-sub">1 Abo &mdash; alle 5 Engines &mdash; alle Alerts &mdash; alle Auto-Imports</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Alert</div>
+      <div class="plan-price">&#8364;29 <span>/ Monat</span></div>
+      <ul class="plan-features">
+        <li>Viral Window Alerts (Score 55+)</li><li>OOS Sniper Alerts</li>
+        <li>Cart Rescue via Telegram</li><li>T&#228;glicher Revenue Report</li>
+      </ul>
+      <button class="plan-btn plan-btn-secondary" onclick="openModal('alert')">Starten &rarr;</button>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">&#x2B50; MEISTGEW&#196;HLT</div>
+      <div class="plan-name">Pro</div>
+      <div class="plan-price">&#8364;79 <span>/ Monat</span></div>
+      <ul class="plan-features">
+        <li>Alles aus Alert</li><li>Shopify Auto-Import (Score 72+)</li>
+        <li>Amazon Review Goldmine (unlimitiert)</li><li>eBay Arbitrage Auto-Import</li>
+        <li>WhatsApp Cart Rescue</li><li>Fr&#252;here Alerts (Score 40+)</li>
+      </ul>
+      <button class="plan-btn plan-btn-primary" onclick="openModal('pro')">Pro starten &rarr;</button>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Agency</div>
+      <div class="plan-price">&#8364;199 <span>/ Monat</span></div>
+      <ul class="plan-features">
+        <li>Alles aus Pro</li><li>5 Shopify Stores</li>
+        <li>White-Label Dashboard</li><li>Priority Alerts</li><li>Telegram-Support</li>
+      </ul>
+      <button class="plan-btn plan-btn-secondary" onclick="openModal('agency')">Agency &rarr;</button>
+    </div>
+  </div>
+</div>
+<div class="log-section">
+  <h3>&#x1F4CB; Engine Log</h3>
+  <div class="log-list" id="log-list">
+    <div class="log-line"><span class="log-time">--:--</span><span>Warte auf ersten Run...</span></div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h4 id="modal-title">Money Machine</h4>
+    <p>Weiterleitung zu Stripe. Alle 5 Engines. K&#252;ndige jederzeit.</p>
+    <div class="form-group"><label>E-Mail</label>
+    <input type="email" id="modal-email" placeholder="deine@email.de"></div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Abbrechen</button>
+      <button class="btn-pay" id="pay-btn" onclick="doCheckout()">&#x1F4B3; Jetzt zahlen &rarr;</button>
+    </div>
+  </div>
+</div>
+<script>
+let selectedTier='alert';
+const logs=[];
+function addLog(msg){const t=new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});logs.unshift({t,msg});if(logs.length>30)logs.pop();document.getElementById('log-list').innerHTML=logs.map(l=>'<div class="log-line"><span class="log-time">'+l.t+'</span><span>'+l.msg+'</span></div>').join('');}
+async function loadStatus(){try{const r=await fetch('/api/money-machine/status');const d=await r.json();if(!d.ok)return;renderEngines(d.engines||{});const e=d.engines||{};document.getElementById('rev-ebay').textContent='\\u20AC'+(e.ebay?.total_profit||0).toFixed(2);document.getElementById('rev-cart').textContent='\\u20AC'+(e.cart?.recovered_revenue||0).toFixed(2);document.getElementById('rev-viral').textContent=(e.viral?.alerts_sent||0)+' Alerts';document.getElementById('rev-oos').textContent=(e.oos?.oos_now||0)+' aktiv';document.getElementById('rev-review').textContent=(e.review?.analyses||0)+' ges.';document.getElementById('rev-imports').textContent=(e.viral?.shopify_imports||0)+' Imports';}catch(e){addLog('\\u26A0 Status-Fehler: '+e.message);}}
+function renderEngines(engines){const defs=[{key:'viral',icon:'\\uD83D\\uDD25',title:'Viral Window Scanner',sub:'5 Signalquellen \\u2192 AI-Score \\u2192 Shopify-Import',stats:e=>({'Signale':e.total_signals||0,'High-Score':e.high_score||0,'Alerts':e.alerts_sent||0,'Imports':e.shopify_imports||0}),trigger:'/api/viral/scan',page:'/viral'},{key:'oos',icon:'\\uD83C\\uDFAF',title:'OOS Sniper',sub:'Konkurrenz Out-of-Stock \\u2192 Sofort-Alert',stats:e=>({'Targets':e.targets||0,'Tracked':e.tracked||0,'OOS jetzt':e.oos_now||0,'Events':e.events_7d||0}),trigger:'/api/oos-sniper/scan',page:'/api/oos-sniper/status'},{key:'review',icon:'\\u2B50',title:'Review Goldmine',sub:'Amazon 1\\u2605 \\u2192 Ad-Copy in 60s',stats:e=>({'Analysen':e.analyses||0,'AI-Assets':e.analyses||0,'Cached':'--','Keywords':'--'}),trigger:null,page:'/api/review-goldmine/status'},{key:'cart',icon:'\\uD83D\\uDED2',title:'Cart Rescue',sub:'Abandoned Checkout \\u2192 Telegram/WhatsApp',stats:e=>({'Gesamt':e.total||0,'Gesendet':e.sent||0,'Recovered':e.recovered||0,'Rate':(e.recovery_rate||0)+'%'}),trigger:null,page:'/api/cart-rescue/status'},{key:'ebay',icon:'\\uD83D\\uDCE6',title:'eBay Arbitrage',sub:'AliExpress EK \\u2192 eBay Markt \\u2192 Shopify',stats:e=>({'Gescannt':e.total_scanned||0,'Importiert':e.total_imported||0,'Profit':'\\u20AC'+(e.total_profit||0).toFixed(2),'Marge':(e.avg_margin||0).toFixed(0)+'%'}),trigger:'/api/ebay-arbitrage/scan',page:'/api/ebay-arbitrage/stats'}];
+document.getElementById('engine-grid').innerHTML=defs.map(def=>{const e=engines[def.key]||{};const ok=e.ok!==false;const st=def.stats(e);const sh=Object.entries(st).map(([k,v])=>'<div class="stat"><div class="stat-label">'+k+'</div><div class="stat-value">'+v+'</div></div>').join('');const tb=def.trigger?'<button class="btn-sm btn-trigger" onclick="triggerEngine(\''+def.key+'\',\''+def.trigger+'\')">\\u25B6 Starten</button>':'<span class="btn-sm btn-open" style="opacity:.5">Auto</span>';return '<div class="engine-card '+(ok?'ok':'')+'"><div class="engine-header"><div class="engine-icon">'+def.icon+'</div><div><div class="engine-title">'+def.title+'</div><div class="engine-sub">'+def.sub+'</div></div><div class="engine-status"><div class="dot '+(ok?'green':'red')+'"></div>'+(ok?'Aktiv':'Fehler')+'</div></div><div class="stats-grid">'+sh+'</div><div class="engine-footer">'+tb+'<a href="'+def.page+'" target="_blank" class="btn-sm btn-open">\\u2197 Details</a></div></div>'}).join('');}
+async function startAll(){const btn=document.getElementById('mega-btn');const st=document.getElementById('start-status');btn.disabled=true;btn.innerHTML='<span class="spin">\\u2699</span>&nbsp;Alle 5 Engines laufen...';st.textContent='Viral Scanner + OOS Sniper + eBay Arbitrage gestartet...';addLog('\\uD83D\\uDE80 MONEY MACHINE GESTARTET');try{const r=await fetch('/api/money-machine/run-all',{method:'POST'});const d=await r.json();if(d.ok){btn.innerHTML='\\u2705 ENGINES LAUFEN';st.textContent='L\\u00E4uft im Hintergrund. Telegram-Alert kommt wenn fertig.';addLog('\\u2705 Run gestartet \\u2014 Alert kommt via Telegram');setTimeout(loadStatus,8000);setTimeout(()=>{btn.disabled=false;btn.innerHTML='<div class="pulse-dot"></div>ALLES STARTEN \\u2014 GELD VERDIENEN';st.textContent='Bereit f\\u00FCr n\\u00E4chsten Run.';},90000);}else{btn.innerHTML='\\u26A0 '+(d.error||'Fehler');btn.disabled=false;}}catch(e){btn.innerHTML='\\u26A0 Netzwerkfehler';btn.disabled=false;addLog('\\u274C '+e.message);}}
+async function triggerEngine(key,url){addLog('\\u25B6 '+key.toUpperCase()+' gestartet...');try{const r=await fetch(url,{method:'POST'});const d=await r.json();addLog('\\u2705 '+key+': '+JSON.stringify(d).slice(0,70));setTimeout(loadStatus,3000);}catch(e){addLog('\\u274C '+key+': '+e.message);}}
+function openModal(tier){selectedTier=tier;const l={alert:'Alert \\u20AC29/mo',pro:'Pro \\u20AC79/mo',agency:'Agency \\u20AC199/mo'};document.getElementById('modal-title').textContent='Money Machine '+l[tier];document.getElementById('modal-overlay').classList.add('open');}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+async function doCheckout(){const email=document.getElementById('modal-email').value.trim();if(!email.includes('@')){alert('G\\u00FCltige E-Mail eingeben');return;}const btn=document.getElementById('pay-btn');btn.textContent='\\u23F3 Weiterleitung...';btn.disabled=true;try{const r=await fetch('/api/money-machine/checkout',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email,tier:selectedTier})});const d=await r.json();if(d.checkout_url){window.location.href=d.checkout_url;}else{alert(d.error||'Checkout nicht verf\\u00FCgbar');btn.textContent='\\uD83D\\uDCB3 Jetzt zahlen \\u2192';btn.disabled=false;}}catch(e){alert('Fehler: '+e.message);btn.textContent='\\uD83D\\uDCB3 Jetzt zahlen \\u2192';btn.disabled=false;}}
+loadStatus();setInterval(loadStatus,30000);addLog('\\uD83D\\uDCB0 Money Machine Dashboard geladen');
+</script></body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_mm_run_all(req):
+    global _mm_running
+    if _mm_running:
+        return web.json_response({"ok": False, "error": "Bereits am laufen"})
+    async def _bg():
+        global _mm_running
+        _mm_running = True
+        try:
+            from modules.money_machine import run_all_engines
+            await run_all_engines()
+        except Exception as e:
+            log.error("MoneyMachine run error: %s", e)
+        finally:
+            _mm_running = False
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "Alle Engines gestartet"})
+
+
+async def handle_mm_status(req):
+    try:
+        from modules.money_machine import get_combined_status
+        data = await get_combined_status()
+        return web.json_response(data)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_mm_checkout(req):
+    try:
+        body  = await req.json()
+        email = body.get("email", "").strip()
+        tier  = body.get("tier", "alert").strip()
+        if not email or "@" not in email:
+            return web.json_response({"ok": False, "error": "Ungültige E-Mail"}, status=400)
+        from modules.money_machine import create_mm_checkout
+        return web.json_response(await create_mm_checkout(email, tier))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_mm_success(req):
+    html = """<!DOCTYPE html><html lang="de"><head><meta charset="utf-8"><title>&#x1F389; Money Machine aktiv</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#0a0a0f;color:#e2e8f0;display:flex;align-items:center;justify-content:center;min-height:100vh}
+.card{background:#111118;border:1px solid #10b981;border-radius:20px;padding:52px;max-width:500px;text-align:center;box-shadow:0 0 60px rgba(16,185,129,.15)}
+.icon{font-size:5rem;margin-bottom:24px}h1{font-size:1.8rem;margin-bottom:12px;color:#10b981}
+p{color:#64748b;line-height:1.7;margin-bottom:28px}a{display:inline-block;background:linear-gradient(90deg,#7c3aed,#06b6d4);color:#fff;padding:14px 36px;border-radius:10px;text-decoration:none;font-weight:800}</style></head>
+<body><div class="card"><div class="icon">&#x1F389;</div><h1>Money Machine aktiv!</h1>
+<p>Alle 5 Engines laufen jetzt f&#252;r dich:<br>
+Viral Scanner &#x1F525; &#x2022; OOS Sniper &#x1F3AF; &#x2022; Review Goldmine &#x2B50; &#x2022; Cart Rescue &#x1F6D2; &#x2022; eBay Arbitrage &#x1F4E6;<br><br>
+Telegram-Alerts kommen sobald Geld-Chancen erkannt werden.</p>
+<a href="/money-machine">&#x2192; Zum Dashboard</a></div></body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+# ── OOS Sniper ────────────────────────────────────────────────────────────────
+
+async def handle_oos_status(req):
+    try:
+        from modules.oos_sniper import get_status
+        return web.json_response(get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_oos_scan(req):
+    async def _bg():
+        try:
+            from modules.oos_sniper import run_scan
+            await run_scan()
+        except Exception as e:
+            log.error("OOS scan: %s", e)
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "OOS Scan gestartet"})
+
+
+async def handle_oos_add_target(req):
+    try:
+        body   = await req.json()
+        domain = body.get("domain", "").strip()
+        label  = body.get("label", "").strip()
+        if not domain:
+            return web.json_response({"ok": False, "error": "domain fehlt"}, status=400)
+        from modules.oos_sniper import add_target
+        return web.json_response(add_target(domain, label))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── Review Goldmine ───────────────────────────────────────────────────────────
+
+async def handle_review_analyze(req):
+    try:
+        body        = await req.json()
+        url_or_asin = body.get("asin", body.get("url", "")).strip()
+        if not url_or_asin:
+            return web.json_response({"ok": False, "error": "asin fehlt"}, status=400)
+        from modules.review_goldmine import analyze
+        return web.json_response(await analyze(url_or_asin))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_review_status(req):
+    try:
+        from modules.review_goldmine import get_status
+        return web.json_response(get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── Cart Rescue ───────────────────────────────────────────────────────────────
+
+async def handle_cart_webhook(req):
+    try:
+        payload  = await req.read()
+        hmac_hdr = req.headers.get("X-Shopify-Hmac-Sha256", "")
+        from modules.cart_rescue import handle_webhook
+        return web.json_response(await handle_webhook(payload, hmac_hdr))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_cart_status(req):
+    try:
+        from modules.cart_rescue import get_status
+        return web.json_response(get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_cart_test(req):
+    try:
+        body = await req.json()
+        from modules.cart_rescue import manual_trigger
+        return web.json_response(await manual_trigger(
+            body.get("email", ""), body.get("product", "Test Produkt"),
+            float(body.get("price", 29.99)), body.get("url", "https://ineedit.com.co")
+        ))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
