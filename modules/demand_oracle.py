@@ -235,63 +235,92 @@ async def mine_reddit_wishes(limit_per_sub: int = 25) -> list[dict]:
 # Step 2: Cluster desires into product concepts using Claude
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ── Keyword-based category detection (AI-independent fallback) ────────────────
+_CATEGORY_MAP = {
+    "Solar":      ["solar", "powerstation", "balkonkraftwerk", "photovoltaik", "akku", "powerbank"],
+    "Smart Home": ["smart home", "smarthome", "alexa", "google home", "zigbee", "z-wave", "automation",
+                   "bewegungsmelder", "rolladen", "thermostat", "steckdose"],
+    "Gadgets":    ["gadget", "tool", "werkzeug", "usb", "ladegerät", "kabel", "adapter"],
+    "Outdoor":    ["camping", "outdoor", "wandern", "rucksack", "zelt", "survival", "garten"],
+    "Küche":      ["wasserkocher", "kaffeemaschine", "küche", "kochen", "mixer", "küchenmaschine"],
+    "Sicherheit": ["kamera", "alarm", "überwachung", "schloss", "türklingel", "sicherheit"],
+    "Gesundheit": ["sport", "fitness", "gesundheit", "schlaf", "massage", "ergonomie"],
+    "Elektronik": ["laptop", "monitor", "tastatur", "maus", "headset", "lautsprecher", "tablet"],
+    "Klimaanlage":["klimaanlage", "klimagerät", "ventilator", "lüfter", "kühlung", "heizung"],
+}
+
+def _keyword_cluster(wishes: list[dict]) -> list[dict]:
+    """Keyword-based clustering without AI — instant, no API needed."""
+    buckets: dict[str, list[dict]] = {cat: [] for cat in _CATEGORY_MAP}
+
+    for w in wishes:
+        text_lower = w.get("text", "").lower()
+        for cat, keywords in _CATEGORY_MAP.items():
+            if any(kw in text_lower for kw in keywords):
+                buckets[cat].append(w)
+                break
+
+    clusters = []
+    for cat, cat_wishes in buckets.items():
+        if not cat_wishes:
+            continue
+        # Build concept title from most common words in titles
+        all_text = " ".join(w.get("text", "")[:80] for w in cat_wishes)
+        # Extract price mentions
+        prices = re.findall(r"(\d+)\s*€", all_text)
+        avg_price = int(sum(int(p) for p in prices) / len(prices)) if prices else 79
+        avg_price = min(max(avg_price, 19), 199)
+
+        clusters.append({
+            "concept":        f"{cat}-Produkt nach Nutzerwunsch — {len(cat_wishes)} Anfragen",
+            "category":       cat,
+            "wish_count":     len(cat_wishes),
+            "max_price_eur":  avg_price,
+            "keywords":       _CATEGORY_MAP[cat][:4],
+            "demand_summary": f"{len(cat_wishes)} Reddit-Nutzer suchen {cat}-Produkte",
+        })
+
+    log.info("Keyword-Clustering: %d Konzepte aus %d Wünschen", len(clusters), len(wishes))
+    return clusters[:5]
+
+
 async def cluster_desires(wishes: list[dict]) -> list[dict]:
-    """Use Claude to cluster raw wishes into actionable product concepts."""
+    """Cluster raw wishes into product concepts — AI if available, keyword-fallback otherwise."""
     if not wishes:
         return []
 
+    # Try AI first
     try:
         from modules.ai_client import ai_complete
-    except ImportError:
-        return []
-
-    # Take up to 60 wishes for clustering (token budget)
-    sample = sorted(wishes, key=lambda w: w.get("score", 0), reverse=True)[:60]
-    wish_texts = "\n".join(f"- {w['text'][:200]}" for w in sample)
-
-    prompt = f"""Analysiere diese Produkt-Wünsche aus Reddit und identifiziere konkrete Produkt-Konzepte.
+        sample     = sorted(wishes, key=lambda w: w.get("score", 0), reverse=True)[:60]
+        wish_texts = "\n".join(f"- {w['text'][:200]}" for w in sample)
+        prompt = f"""Analysiere diese Produkt-Wünsche und identifiziere konkrete Produkt-Konzepte.
 
 Wünsche:
 {wish_texts}
 
-Erstelle eine JSON-Liste von Produkt-Konzepten die man WIRKLICH verkaufen kann. Nur konkrete physische Produkte.
+Nur gültiges JSON-Array zurückgeben:
+[{{"concept":"...","category":"Solar","wish_count":3,"max_price_eur":80,"keywords":["solar"],"demand_summary":"..."}}]
+Nur Produkte unter 200€, max 5 Konzepte."""
 
-Format (NUR gültiges JSON, kein Markdown):
-[
-  {{
-    "concept": "Solar-Powerbank mit integrierter Taschenlampe unter 80€",
-    "category": "Solar",
-    "wish_count": 5,
-    "max_price_eur": 80,
-    "keywords": ["solar", "powerbank", "taschenlampe", "camping"],
-    "demand_summary": "5 Nutzer suchen eine kompakte Solar-Powerbank die auch als Taschenlampe dient"
-  }}
-]
-
-Regeln:
-- Nur Produkte unter 200€
-- Mindestens 2 ähnliche Wünsche für ein Konzept
-- Smart Home, Elektronik, Outdoor, Solar, Gadgets bevorzugt
-- Max 5 Konzepte zurückgeben
-- Keine Dienstleistungen, nur physische Produkte"""
-
-    raw = await ai_complete(prompt, model_hint="fast", max_tokens=800)
-
-    try:
-        # Clean JSON from possible markdown
-        cleaned = raw.strip()
-        if "```" in cleaned:
-            cleaned = cleaned.split("```")[1]
+        raw = await ai_complete(prompt, model_hint="fast", max_tokens=800)
+        if raw:
+            cleaned = raw.strip()
+            if "```" in cleaned:
+                cleaned = cleaned.split("```")[1]
+                if cleaned.startswith("json"):
+                    cleaned = cleaned[4:]
             if cleaned.startswith("json"):
                 cleaned = cleaned[4:]
-        clusters = json.loads(cleaned.strip())
-        if not isinstance(clusters, list):
-            return []
-        log.info("Clustered %d product concepts from %d wishes", len(clusters), len(wishes))
-        return clusters
+            clusters = json.loads(cleaned.strip())
+            if isinstance(clusters, list) and clusters:
+                log.info("AI clustered %d concepts from %d wishes", len(clusters), len(wishes))
+                return clusters
     except Exception as e:
-        log.warning("Cluster parse failed: %s | raw=%s", e, raw[:200])
-        return []
+        log.debug("AI clustering failed (%s) — using keyword fallback", e)
+
+    # Keyword fallback — always works, no API needed
+    return _keyword_cluster(wishes)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -301,7 +330,6 @@ Regeln:
 async def create_preorder_product(concept: dict) -> dict | None:
     """Create a Shopify pre-order product from a demand cluster concept."""
     import aiohttp
-    from modules.ai_client import ai_complete
 
     domain  = SHOPIFY_DOMAIN()
     token   = SHOPIFY_TOKEN()
@@ -317,37 +345,21 @@ async def create_preorder_product(concept: dict) -> dict | None:
     concept_title = concept.get("concept", "")
     summary    = concept.get("demand_summary", "")
 
-    # Generate compelling pre-order description
-    desc_prompt = f"""Schreibe eine überzeugende Pre-Order-Produktbeschreibung.
-
-Produkt: {concept_title}
-Nachfrage: {wish_count} Menschen haben genau dieses Produkt gesucht
-Maximaler Preis laut Nachfrage: €{max_price:.0f}
-Unser Pre-Order-Preis: €{price:.2f}
-
-Die Beschreibung soll:
-1. Erklären warum dieses Produkt bisher nicht existiert hat
-2. Die Knappheit betonen: "Nur produziert wenn {PRE_ORDER_MINIMUM} Bestellungen erreicht"
-3. Den Vorteil für Früh-Besteller hervorheben
-4. Trust aufbauen: Geld-zurück-Garantie wenn nicht produziert
-5. 3-4 konkrete Produktvorteile als HTML-Liste
-6. Ca. 150 Wörter, Deutsch
-7. HTML format mit <p> und <ul><li>
-
-Nur HTML, keine Erklärungen."""
-
-    description = await ai_complete(desc_prompt, model_hint="fast", max_tokens=400)
-    if not description:
-        description = (
-            f"<p><strong>🔥 PRE-ORDER: {wish_count} Menschen haben genau dieses Produkt gesucht!</strong></p>"
-            f"<p>{summary}</p>"
-            f"<ul>"
-            f"<li>✅ Wird produziert sobald {PRE_ORDER_MINIMUM} Bestellungen erreicht</li>"
-            f"<li>✅ 100% Geld zurück wenn nicht produziert</li>"
-            f"<li>✅ Preis basiert auf echter Nachfrage-Analyse</li>"
-            f"<li>✅ Lieferung ca. 4-6 Wochen nach Produktion</li>"
-            f"</ul>"
-        )
+    # Description — template-based, no AI needed
+    description = (
+        f"<p><strong>🔥 PRE-ORDER: {wish_count} Reddit-Nutzer haben genau dieses Produkt gesucht!</strong></p>"
+        f"<p>{summary}</p>"
+        f"<p>Dieses Produkt wird exklusiv für unsere Community produziert — "
+        f"basierend auf echter Nachfrageanalyse aus {wish_count} Nutzeranfragen.</p>"
+        f"<ul>"
+        f"<li>✅ Wird produziert sobald <strong>{PRE_ORDER_MINIMUM} Bestellungen</strong> erreicht sind</li>"
+        f"<li>✅ <strong>100% Geld zurück</strong> wenn Minimum nicht erreicht</li>"
+        f"<li>✅ Preis €{price:.2f} — basiert auf echter Nachfrage-Analyse</li>"
+        f"<li>✅ Lieferung ca. 4–6 Wochen nach Erreichen des Minimums</li>"
+        f"<li>✅ Früh-Besteller erhalten kostenlosen Versand</li>"
+        f"</ul>"
+        f"<p><em>Kategorie: {category} | Von der Community gewünscht</em></p>"
+    )
 
     # Shopify product payload
     tags = ["preorder", "demand-oracle", category.lower()] + concept.get("keywords", [])[:3]

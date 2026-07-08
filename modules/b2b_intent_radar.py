@@ -410,75 +410,123 @@ async def fetch_funding_signals() -> list[dict]:
 # Claude: classify signal → extract company + buying intent
 # ─────────────────────────────────────────────────────────────────────────────
 
+# ── Keyword-based B2B signal scoring (no AI needed) ──────────────────────────
+_B2B_KEYWORDS = {
+    "Shopify Automation": ["shopify", "woocommerce", "e-commerce", "ecommerce", "bestellungen", "shop", "online-shop", "magento"],
+    "Telegram Bot":       ["telegram", "bot", "automation", "automatisierung", "channel", "gruppe"],
+    "AI Tools":           ["ai", "künstliche intelligenz", "chatgpt", "claude", "llm", "openai", "ki-tool"],
+    "CRM / Lead Gen":     ["crm", "leads", "kunden", "kundenverwaltung", "newsletter", "email-marketing", "mailchimp"],
+    "E-Mail Marketing":   ["email", "newsletter", "mailchimp", "klaviyo", "kampagne", "subscribers"],
+    "Analytics":          ["analytics", "tracking", "dashboard", "reporting", "daten", "auswertung"],
+    "Payment / Stripe":   ["stripe", "zahlung", "bezahlung", "checkout", "payment", "abonnement"],
+}
+
+_INDUSTRY_HINTS = {
+    "E-Commerce":     ["shopify", "woocommerce", "produkte", "versand", "bestellungen", "shop"],
+    "SaaS":           ["saas", "subscription", "software", "api", "developer", "startup"],
+    "Retail":         ["retail", "laden", "store", "verkauf", "händler"],
+    "Marketing":      ["marketing", "content", "social media", "seo", "ads", "instagram", "tiktok"],
+    "Dienstleistung": ["agentur", "agency", "freelancer", "beratung", "consulting"],
+}
+
+def _keyword_classify(signals: list[dict]) -> list[dict]:
+    """Keyword-based B2B signal classification — no API needed."""
+    results = []
+    for i, s in enumerate(signals[:MAX_SIGNALS_PER_RUN]):
+        text = (s.get("signal_text", "") + " " + s.get("title", "")).lower()
+
+        # Detect buy category
+        buy_category = "E-Commerce Automation"
+        for cat, kws in _B2B_KEYWORDS.items():
+            if any(kw in text for kw in kws):
+                buy_category = cat
+                break
+
+        # Detect industry
+        industry = "E-Commerce"
+        for ind, kws in _INDUSTRY_HINTS.items():
+            if any(kw in text for kw in kws):
+                industry = ind
+                break
+
+        # Extract company name from signal — prefer HN / funding sources
+        company = "Unbekannt"
+        if s.get("source") == "hackernews":
+            m = re.search(r"\|([^|]+?)\|", s.get("signal_text", ""))
+            if m:
+                company = m.group(1).strip()
+        elif s.get("company"):
+            company = s["company"]
+
+        # Confidence: base 0.65 for any signal, +bonus for specific keywords
+        high_intent = ["suche", "looking for", "brauche", "empfehlung", "recommendation",
+                       "budget", "kaufen", "buy", "best tool", "welches tool"]
+        conf = 0.65 + 0.05 * sum(1 for kw in high_intent if kw in text)
+        conf = min(conf, 0.92)
+
+        contact_map = {"hackernews": "HN-Kommentar", "reddit": "Reddit-Reply", "github": "GitHub Issue", "rss": "E-Mail Outreach"}
+        contact_hint = contact_map.get(s.get("source", ""), "LinkedIn DM")
+
+        results.append({
+            **s,
+            "index":        i,
+            "company":      company,
+            "industry":     industry,
+            "size_est":     "Startup" if s.get("source") == "hackernews" else "KMU",
+            "buy_category": buy_category,
+            "confidence":   round(conf, 2),
+            "contact_hint": contact_hint,
+        })
+
+    log.info("Keyword-classified %d signals", len(results))
+    return results
+
+
 async def classify_signals(signals: list[dict]) -> list[dict]:
-    """Use Claude to extract company + buying intent from raw signals."""
+    """Extract company + buying intent — AI if available, keyword-fallback otherwise."""
     if not signals:
         return []
 
+    # Try AI first
     try:
         from modules.ai_client import ai_complete
-    except ImportError:
-        return []
-
-    # Process in batches of 10
-    results: list[dict] = []
-    batch_size = 10
-
-    for i in range(0, min(len(signals), MAX_SIGNALS_PER_RUN), batch_size):
-        batch = signals[i:i + batch_size]
-        batch_text = "\n\n".join(
-            f"[{j+1}] SOURCE: {s['source']} | TYPE: {s['signal_type']}\n{s['signal_text'][:300]}"
-            for j, s in enumerate(batch)
-        )
-
-        prompt = f"""Analysiere diese B2B-Kaufabsichts-Signale. Extrahiere für jedes Signal die Firmen-Info.
+        results: list[dict] = []
+        batch_size = 10
+        for i in range(0, min(len(signals), MAX_SIGNALS_PER_RUN), batch_size):
+            batch = signals[i:i + batch_size]
+            batch_text = "\n\n".join(
+                f"[{j+1}] SOURCE: {s['source']} | TYPE: {s['signal_type']}\n{s['signal_text'][:300]}"
+                for j, s in enumerate(batch)
+            )
+            prompt = f"""Analysiere B2B-Kaufabsichts-Signale, extrahiere Firmen-Info. Nur JSON:
+[{{"index":1,"company":"Name","industry":"E-Commerce","size_est":"Startup","buy_category":"Shopify Automation","confidence":0.85,"contact_hint":"Reddit-Reply"}}]
 
 Signale:
 {batch_text}
 
-Antworte mit einem JSON-Array mit einem Objekt pro Signal (Index 1 bis {len(batch)}):
-[
-  {{
-    "index": 1,
-    "company": "Firmenname oder 'Unbekannt'",
-    "industry": "E-Commerce / SaaS / Retail / etc.",
-    "size_est": "Startup / KMU / Enterprise",
-    "buy_category": "Was kaufen sie wahrscheinlich? (z.B. 'Shopify Automation', 'CRM', 'E-Mail Marketing')",
-    "confidence": 0.85,
-    "contact_hint": "Wie am besten ansprechen? (z.B. 'LinkedIn DM', 'Kommentar auf Reddit', 'Kaltakquise')"
-  }}
-]
+Regeln: confidence 0-1, nur >0.4, max {len(batch)} Objekte, gültiges JSON."""
+            raw = await ai_complete(prompt, model_hint="fast", max_tokens=600)
+            if raw:
+                cleaned = raw.strip()
+                if "```" in cleaned:
+                    cleaned = cleaned.split("```")[1]
+                    if cleaned.startswith("json"):
+                        cleaned = cleaned[4:]
+                classified = json.loads(cleaned.strip())
+                if isinstance(classified, list):
+                    for c in classified:
+                        idx = c.get("index", 0) - 1
+                        if 0 <= idx < len(batch):
+                            results.append({**batch[idx], **c, "index": idx})
+            await asyncio.sleep(2)
+        if results:
+            log.info("AI classified %d signals → %d leads", len(signals), len(results))
+            return results
+    except Exception as e:
+        log.debug("AI classification failed (%s) — using keyword fallback", e)
 
-Regeln:
-- confidence: 0.0-1.0 (wie wahrscheinlich ist ein aktiver Kauf in den nächsten 30 Tagen?)
-- Nur zurückgeben wenn confidence > 0.4
-- buy_category: spezifisch, was auf SuperMegaBot SaaS passt (E-Commerce Automation, Telegram Bot, AI Tools)
-- Nur gültiges JSON, kein Markdown"""
-
-        raw = await ai_complete(prompt, model_hint="fast", max_tokens=600)
-        try:
-            cleaned = raw.strip()
-            if "```" in cleaned:
-                cleaned = cleaned.split("```")[1]
-                if cleaned.startswith("json"):
-                    cleaned = cleaned[4:]
-            classified = json.loads(cleaned.strip())
-            if not isinstance(classified, list):
-                continue
-
-            for c in classified:
-                idx = c.get("index", 0) - 1
-                if 0 <= idx < len(batch):
-                    orig = batch[idx]
-                    results.append({**orig, **c, "index": idx})
-
-        except Exception as e:
-            log.debug("Classify parse error: %s | raw=%s", e, raw[:200])
-
-        await asyncio.sleep(2)
-
-    log.info("Classified %d signals → %d leads", len(signals), len(results))
-    return results
+    # Keyword fallback — always works, no API needed
+    return _keyword_classify(signals)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
