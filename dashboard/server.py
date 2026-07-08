@@ -9512,6 +9512,11 @@ async def create_app():
     app.router.add_post("/api/hub/run",     handle_hub_run)
     # ── END PRODUCT INTELLIGENCE HUB ──────────────────────────────────────────
 
+    # ── VIRAL PROMO POSTER ────────────────────────────────────────────────────
+    app.router.add_post("/api/promo/run",   handle_promo_run)
+    app.router.add_get( "/api/promo/stats", handle_promo_stats)
+    # ── END VIRAL PROMO POSTER ────────────────────────────────────────────────
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
@@ -12489,6 +12494,40 @@ async def handle_hub_run(req):
 
     asyncio.create_task(_bg())
     return web.json_response({"ok": True, "status": "Hub-Zyklus gestartet (alle 3 Tools)"})
+
+
+# ── VIRAL PROMO POSTER handlers ───────────────────────────────────────────────
+
+_promo_running = False
+
+async def handle_promo_run(req):
+    """POST /api/promo/run — Startet Multi-Channel Promo-Zyklus."""
+    global _promo_running
+    if _promo_running:
+        return web.json_response({"ok": False, "error": "Promo läuft bereits"})
+
+    async def _bg():
+        global _promo_running
+        _promo_running = True
+        try:
+            from modules.viral_promo_poster import run_promo_cycle
+            await run_promo_cycle()
+        except Exception as e:
+            log.error("Promo error: %s", e)
+        finally:
+            _promo_running = False
+
+    asyncio.create_task(_bg())
+    return web.json_response({"ok": True, "status": "Promo gestartet (FB/Twitter/LinkedIn/Reddit/TG/Gumroad)"})
+
+
+async def handle_promo_stats(req):
+    """GET /api/promo/stats — Posting-Statistiken."""
+    try:
+        from modules.viral_promo_poster import get_promo_stats
+        return web.json_response(await get_promo_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 if __name__ == "__main__":
