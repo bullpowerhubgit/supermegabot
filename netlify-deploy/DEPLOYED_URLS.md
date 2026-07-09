@@ -24,7 +24,7 @@ Passwort für alle Password-Gates: `bullpower2026`
 
 | Service | URL | Status |
 |---------|-----|--------|
-| SuperMegaBot (Dashboard) | https://dudirudibot-mega-production.up.railway.app | ✅ LIVE — 54 Tasks |
+| SuperMegaBot (Dashboard) | https://supermegabot-production.up.railway.app | ✅ LIVE — 54 Tasks |
 | AdPoster Engine | https://adposter-engine-production.up.railway.app | ✅ LIVE |
 | IcomeAuto | https://icomeauto-production-e4e5.up.railway.app | ✅ LIVE — Stripe |
 | Steuercockpit | https://steuercockpit-production-44c9.up.railway.app | ✅ LIVE — Stripe |
@@ -61,7 +61,7 @@ Passwort für alle Password-Gates: `bullpower2026`
 2. **https://icomeauto-production-e4e5.up.railway.app** — Stripe Checkout live
 3. **https://steuercockpit-production-44c9.up.railway.app** — Stripe Checkout live
 4. **https://shopify-brutal-tuning.vercel.app** — Full SEO + Stripe CTAs
-5. **https://dudirudibot-mega-production.up.railway.app** — OMEGA Engine aktiv
+5. **https://supermegabot-production.up.railway.app** — OMEGA Engine aktiv
 
 ## OMEGA Traffic Engine (Railway — Autonomous)
 

@@ -47,7 +47,7 @@ Felder:
 - **Company Name:** BullPower Hub
 - **Website URL:** https://bullpower-hub-portal.netlify.app
 - **Privacy Policy URL:** https://bullpowerhubgit.github.io/bullpower-legal/datenschutz.html
-- **Redirect URI:** https://dudirudibot-mega-production.up.railway.app/api/pinterest/callback
+- **Redirect URI:** https://supermegabot-production.up.railway.app/api/pinterest/callback
 
 ### Schritt 3: Env-Var setzen sobald App genehmigt
 railway variables set PINTEREST_API_KEY=<neue App ID>
