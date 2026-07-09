@@ -180,7 +180,8 @@ Gib NUR den fertigen Post-Text zurück, keine Erklärungen."""
                       "messages": [{"role": "user", "content": prompt}]}
             ) as r:
                 data = await r.json()
-                return data.get("content", [{}])[0].get("text", "").strip()
+                text = data.get("content", [{}])[0].get("text", "").strip()
+                return text if text else _fallback_content(platform, angle, top_products)
     except Exception as e:
         log.warning("AI generation failed: %s", e)
         return _fallback_content(platform, angle, top_products)
