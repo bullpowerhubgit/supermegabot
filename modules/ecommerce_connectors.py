@@ -296,6 +296,27 @@ class GumroadConnector:
                     errors.append(f"{p['name'][:30]}: {e}")
         return {"published": published, "errors": errors, "total": len(products)}
 
+    async def delete_product(self, product_id: str) -> Dict:
+        """Delete a product via DELETE /products/{id}."""
+        if not self._ok():
+            raise RuntimeError("GumroadConnector: GUMROAD_ACCESS_TOKEN fehlt")
+        async with _session() as s:
+            async with s.delete(f"{self.BASE}/products/{product_id}",
+                                headers=self._headers()) as r:
+                r.raise_for_status()
+                return await r.json()
+
+    async def create_subscription(self, name: str, price_cents: int,
+                                   description: str, recurrence: str = "monthly") -> Dict:
+        """Create a subscription product (can be published without file upload)."""
+        payload: Dict[str, Any] = {
+            "name": name,
+            "price": price_cents,
+            "description": description,
+            "subscription_duration": recurrence,
+        }
+        return await self._post("/products", payload)
+
     async def get_sales(self, after: str = "", before: str = "") -> List[Dict]:
         """
         Return sales records, optionally filtered by date range.
