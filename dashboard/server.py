@@ -15,8 +15,8 @@ from pathlib import Path
 
 _SERVER_START_TIME = time.time()
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
 sys.path.insert(0, str(Path.home()))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from aiohttp import web
 import aiohttp
@@ -4774,7 +4774,8 @@ async def handle_reddit_auth_start(req):
                                   "info": "Reddit refresh token already set — posting should work"})
     import secrets
     state = secrets.token_urlsafe(16)
-    redirect_uri = "https://supermegabot-production.up.railway.app/api/reddit/callback"
+    base_url = os.getenv("PUBLIC_URL", "http://localhost:8888")
+    redirect_uri = f"{base_url}/api/reddit/callback"
     auth_url = (
         f"https://www.reddit.com/api/v1/authorize"
         f"?client_id={client_id}&response_type=code&state={state}"
@@ -4794,7 +4795,8 @@ async def handle_reddit_callback(req):
         return web.json_response({"ok": False, "error": "no code"})
     client_id     = os.getenv("REDDIT_CLIENT_ID", "")
     client_secret = os.getenv("REDDIT_CLIENT_SECRET", "")
-    redirect_uri  = "https://supermegabot-production.up.railway.app/api/reddit/callback"
+    base_url      = os.getenv("PUBLIC_URL", "http://localhost:8888")
+    redirect_uri  = f"{base_url}/api/reddit/callback"
     try:
         import aiohttp
         import base64
