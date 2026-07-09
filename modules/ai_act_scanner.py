@@ -333,6 +333,7 @@ async def scan_single(firma: str, branche: str = "Sonstige", ort: str = "Deutsch
 # ── Haupt-Run ─────────────────────────────────────────────────────────────────
 
 async def run_cycle() -> Dict:
+    init_db()
     start   = time.time()
     results = {"scanned": 0, "emails_sent": 0, "high_risk": 0}
 
