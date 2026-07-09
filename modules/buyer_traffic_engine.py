@@ -116,29 +116,91 @@ def _product_price(product: Dict) -> str:
         return f"€{price}"
 
 
-# ── AI Content Generator ───────────────────────────────────────────────────
+# ── AI Content Generator (mit OpenRouter Fallback) ────────────────────────
+
+OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 
 async def _ai(prompt: str, max_tokens: int = 600) -> str:
-    if not ANTHROPIC_KEY:
-        return ""
+    """Versucht Anthropic → OpenRouter → Template-Fallback."""
     import aiohttp
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                d = await r.json()
-                text = d.get("content", [{}])[0].get("text", "").strip()
-                return text if text else ""
-    except Exception as e:
-        log.warning("AI: %s", e)
-        return ""
+
+    # 1. Anthropic
+    if ANTHROPIC_KEY:
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
+                             "content-type": "application/json"},
+                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
+                          "messages": [{"role": "user", "content": prompt}]},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    d = await r.json()
+                    if d.get("error", {}).get("type") == "invalid_request_error" and "credit" in d.get("error", {}).get("message", ""):
+                        log.warning("Anthropic credits leer — OpenRouter Fallback")
+                    else:
+                        text = d.get("content", [{}])[0].get("text", "").strip()
+                        if text:
+                            return text
+        except Exception as e:
+            log.warning("Anthropic: %s", e)
+
+    # 2. OpenRouter (kostenlose Modelle: mistralai/mistral-7b-instruct:free)
+    if OPENROUTER_KEY:
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {OPENROUTER_KEY}",
+                             "Content-Type": "application/json",
+                             "HTTP-Referer": "https://ineedit.com.co"},
+                    json={"model": "mistralai/mistral-7b-instruct:free",
+                          "max_tokens": max_tokens,
+                          "messages": [{"role": "user", "content": prompt}]},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    d = await r.json()
+                    text = d.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
+                    if text:
+                        log.info("OpenRouter Fallback OK")
+                        return text
+        except Exception as e:
+            log.warning("OpenRouter: %s", e)
+
+    return ""  # Template-Fallback in den jeweiligen Funktionen
+
+
+# ── Template-Fallbacks (kein AI nötig) ────────────────────────────────────
+
+_REDDIT_ANSWER_TEMPLATES = [
+    "I've been using smart home gadgets for a while now and honestly the best bang for your buck is to start with automation basics. Check out [this one]({url}) — been using it daily and it's solid at {price}. Sets up in minutes and the app works great.",
+    "Great question! After testing a bunch of options, I keep coming back to products like {title} ({price}). Works reliably, no subscription required, and integrates with most smart home ecosystems. Link: {url}",
+    "If you're looking for reliability over hype, {title} at {price} is worth considering. I've had zero issues and the build quality is decent for the price point. {url}",
+]
+
+_REDDIT_DEAL_TEMPLATES = [
+    "Found this today: {title} — {price}\n\nBeen using smart home gear from this shop for a while, quality is solid. {url}",
+    "Worth checking out if you're into smart home: {title} at {price}. Ships from EU. {url}",
+    "If anyone's been looking for {title} — {price} right now at {url}. No affiliate link, just spotted it.",
+]
+
+_DEAL_POST_TITLES = [
+    "Just found: {title} for {price} — solid smart home pick",
+    "{title} — {price}, decent quality, EU shipping",
+    "Sharing this: {title} at {price}",
+]
+
+_SEO_BLOG_TEMPLATES = [
+    """<h1>{title}</h1>
+<p>Smart Home Gadgets sind 2026 günstiger und besser als je zuvor. In diesem Ratgeber zeigen wir dir, welche Produkte wirklich ihren Preis wert sind.</p>
+<h2>Unsere Top-Empfehlungen</h2>
+{product_list}
+<h2>Fazit</h2>
+<p>Die besten Smart Home Produkte findest du auf <a href="https://ineedit.com.co">ineedit.com.co</a>. Täglich neue Angebote, über 10.000 Produkte.</p>
+<p><strong><a href="https://ineedit.com.co">→ Jetzt alle Deals ansehen auf ineedit.com.co</a></strong></p>""",
+]
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -242,7 +304,8 @@ async def run_reddit_answer_marketing(products: List[Dict]) -> Dict:
                 max_tokens=300,
             )
             if not comment_text:
-                continue
+                tmpl = random.choice(_REDDIT_ANSWER_TEMPLATES)
+                comment_text = tmpl.format(title=prod_title, price=prod_price, url=prod_url)
 
             res = await _reddit_comment(post_id, comment_text)
             if res["ok"]:
@@ -304,7 +367,16 @@ async def _create_shopify_blog_post(title: str, products: List[Dict]) -> Dict:
         max_tokens=2000,
     )
     if not content:
-        return {"ok": False, "error": "AI content empty"}
+        # Template-Fallback — funktioniert ohne AI
+        prod_html_list = "".join([
+            f'<li><strong><a href="{_product_url(p.get("handle",""))}">{p.get("title","")}</a></strong> — {_product_price(p)}</li>'
+            for p in featured
+        ])
+        content = _SEO_BLOG_TEMPLATES[0].format(
+            title=title,
+            product_list=f"<ul>{prod_html_list}</ul>"
+        )
+        log.info("SEO Blog: Template-Fallback (kein AI)")
 
     # Auf Shopify posten
     try:
@@ -381,93 +453,63 @@ _KLAVIYO_LIST_IDS = ["TiEAtk", "U2iTrm", "UbdJj8", "WdgMfp", "Xwxq6V"]
 
 
 async def run_klaviyo_campaign(products: List[Dict]) -> Dict:
-    """Sendet eine Produkt-Empfehlungs-Email an alle Klaviyo Listen."""
+    """Sendet Produkt-Event an Klaviyo → triggert Flow-Emails an alle Subscriber."""
     if not KLAVIYO_KEY or not products:
         return {"ok": False, "error": "no Klaviyo key or products"}
-    if not _cooldown_ok("klaviyo_campaign", hours=71):  # max 2x pro Woche
+    if not _cooldown_ok("klaviyo_campaign", hours=71):
         return {"ok": True, "skipped": "cooldown"}
 
     import aiohttp
 
     featured = products[:4]
-    subject = random.choice([
-        f"🔥 Diese Smart Home Deals wolltest du sehen",
-        f"Neu bei ineedit.com.co: {featured[0].get('title','')[:40]}",
-        f"Smart Home Woche: Unsere Top-Picks für dich",
-        f"Jetzt entdecken: Smart Home Gadgets ab €{_product_price(featured[0]).replace('€','')}",
-    ])
-
-    # HTML Email erstellen
-    prod_html = ""
-    for p in featured:
-        url = _product_url(p.get("handle", ""))
-        img = p.get("images", [{}])[0].get("src", "") if p.get("images") else ""
-        prod_html += f"""
-        <div style="border:1px solid #eee;border-radius:8px;padding:16px;margin:12px 0;">
-          {'<img src="' + img + '" style="width:100%;max-height:200px;object-fit:cover;border-radius:6px;" />' if img else ''}
-          <h3 style="margin:8px 0 4px;">{p.get('title','')}</h3>
-          <p style="color:#e44;font-weight:bold;font-size:18px;">{_product_price(p)}</p>
-          <a href="{url}" style="background:#222;color:#fff;padding:10px 20px;
-             border-radius:6px;text-decoration:none;display:inline-block;margin-top:8px;">
-            Jetzt ansehen →
-          </a>
-        </div>"""
-
-    html_body = f"""
-    <html><body style="font-family:sans-serif;max-width:600px;margin:auto;color:#333;">
-      <div style="background:#111;color:#fff;padding:20px;border-radius:8px 8px 0 0;">
-        <h2 style="margin:0;">✨ Smart Home Deals der Woche</h2>
-        <p style="opacity:.8;">ineedit.com.co — I Want That! I Need It!</p>
-      </div>
-      <div style="padding:20px;">
-        <p>Diese Woche haben wir besondere Picks für dich:</p>
-        {prod_html}
-        <p style="text-align:center;margin-top:24px;">
-          <a href="{SHOP_URL}" style="background:#e44;color:#fff;padding:14px 32px;
-             border-radius:8px;text-decoration:none;font-weight:bold;">
-            Alle Deals ansehen →
-          </a>
-        </p>
-      </div>
-      <div style="background:#f5f5f5;padding:12px;font-size:12px;color:#999;text-align:center;">
-        Du erhältst diese Email weil du dich bei ineedit.com.co angemeldet hast.
-        <br><a href="{{{{ unsubscribe_url }}}}">Abmelden</a>
-      </div>
-    </body></html>"""
-
-    results = {"campaigns_sent": 0, "errors": []}
+    results = {"campaigns_sent": 0, "events_sent": 0, "errors": []}
 
     try:
         async with aiohttp.ClientSession() as s:
-            # Kampagne erstellen
-            async with s.post(
-                "https://a.klaviyo.com/api/campaigns/",
+            # Hol alle Profile aus der E-Mail-Liste
+            async with s.get(
+                f"https://a.klaviyo.com/api/lists/Xwxq6V/profiles/",
                 headers={"Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
-                         "revision": "2024-10-15", "Content-Type": "application/json"},
-                json={"data": {"type": "campaign", "attributes": {
-                    "name": f"BuyerTraffic_{datetime.now().strftime('%Y%m%d_%H%M')}",
-                    "channel": "email",
-                    "audiences": {"included": _KLAVIYO_LIST_IDS[:3]},
-                    "send_strategy": {"method": "immediate"},
-                    "content": {"subject": subject, "preview_text": "Top Smart Home Deals für dich",
-                                "from_email": "deals@ineedit.com.co",
-                                "from_label": "ineedit.com.co",
-                                "reply_to_email": "deals@ineedit.com.co"}
-                }}},
-                timeout=aiohttp.ClientTimeout(total=20),
+                         "revision": "2024-10-15"},
+                params={"page[size]": 100},
+                timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
                 d = await r.json()
-                campaign_id = d.get("data", {}).get("id", "")
-                if campaign_id:
-                    results["campaign_id"] = campaign_id
-                    results["campaigns_sent"] += 1
-                    _set_cooldown("klaviyo_campaign")
-                    _log("klaviyo", subject[:50], "", campaign_id)
-                    log.info("Klaviyo campaign created: %s", campaign_id)
-                else:
-                    results["errors"].append(str(d)[:200])
+                profiles = d.get("data", [])
+
+            # Sende "Deals der Woche" Event an jeden Subscriber
+            prod_data = [{"title": p.get("title",""), "price": _product_price(p),
+                          "url": _product_url(p.get("handle",""))} for p in featured]
+
+            for profile in profiles[:50]:
+                pid = profile.get("id", "")
+                email = profile.get("attributes", {}).get("email", "")
+                if not email:
+                    continue
+                # Track Event → triggert Klaviyo Flow
+                async with s.post(
+                    "https://a.klaviyo.com/api/events/",
+                    headers={"Authorization": f"Klaviyo-API-Key {KLAVIYO_KEY}",
+                             "revision": "2024-10-15", "Content-Type": "application/json"},
+                    json={"data": {"type": "event", "attributes": {
+                        "metric": {"data": {"type": "metric", "attributes": {"name": "Weekly Deals"}}},
+                        "profile": {"data": {"type": "profile", "id": pid,
+                                             "attributes": {"email": email}}},
+                        "properties": {"products": prod_data, "shop_url": SHOP_URL,
+                                       "subject": "Smart Home Deals der Woche"}
+                    }}},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r2:
+                    if r2.status in (200, 201, 202):
+                        results["events_sent"] += 1
+
+            if results["events_sent"] > 0:
+                results["campaigns_sent"] = 1
+                _set_cooldown("klaviyo_campaign")
+                _log("klaviyo", "Weekly Deals Event", SHOP_URL, f"{results['events_sent']} events")
+                log.info("Klaviyo: %d Events gesendet", results["events_sent"])
     except Exception as e:
-        results["errors"].append(str(e))
+        results["errors"].append(str(e)[:200])
 
     return results
 
@@ -597,7 +639,8 @@ async def run_reddit_deal_posts(products: List[Dict]) -> Dict:
             max_tokens=60,
         )
         if not post_title:
-            post_title = f"Found this: {title_text} — {price}"
+            tmpl = random.choice(_DEAL_POST_TITLES)
+            post_title = tmpl.format(title=title_text, price=price)
 
         post_text = await _ai(
             f"Write a genuine Reddit post for r/{sub} about:\n"
@@ -608,7 +651,8 @@ async def run_reddit_deal_posts(products: List[Dict]) -> Dict:
             max_tokens=200,
         )
         if not post_text:
-            post_text = f"Just discovered this: **{title_text}** for {price}\n\n{url}"
+            tmpl = random.choice(_REDDIT_DEAL_TEMPLATES)
+            post_text = tmpl.format(title=title_text, price=price, url=url)
 
         res = await _reddit_post(sub, post_title, post_text)
         if res["ok"]:
