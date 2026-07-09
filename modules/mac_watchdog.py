@@ -43,8 +43,8 @@ STATE_FILE = PROJECT_DIR / "data" / "mac_watchdog_state.json"
 RAILWAY_SERVICES = [
     ("supermegabot",          "https://supermegabot-production.up.railway.app/health"),
     ("icomeauto",             "https://icomeauto-production.up.railway.app/health"),
-    ("steuercockpit",         "https://steuercockpit-production-44c9.up.railway.app/health"),
-    ("shopify-acquisition",   "https://shopify-acquisition-engine-production.up.railway.app/health"),
+    ("steuercockpit",         "https://steuercockpit-production.up.railway.app/health"),
+    ("shopify-acquisition",   "https://shopify-acquisition-production.up.railway.app/health"),
 ]
 
 # Thresholds
