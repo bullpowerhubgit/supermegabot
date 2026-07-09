@@ -6282,6 +6282,74 @@ async def task_shoptext_promo() -> str:
         )
     except Exception as e:
         return f"ShopText Promo error: {e}"
+# ── EU Compliance Engine Tasks ───────────────────────────────────────────────
+
+async def task_eu_compliance_tweet() -> str:
+    """Postet AI-Act Compliance Alert auf Twitter + Telegram (alle 8h)."""
+    try:
+        import sys, os
+        eu_path = str(Path(__file__).parent.parent / "eu-compliance-saas")
+        if eu_path not in sys.path:
+            sys.path.insert(0, eu_path)
+        from modules.auto_poster import _post_tweet, _post_telegram, _generate_tweet_claude, _days_to_deadline
+        days = _days_to_deadline()
+        topics = [
+            f"⏰ Noch {days} Tage bis zur EU-KI-Act-Pflicht (2.8.2026). Chatbots ohne Disclosure = bis €15 Mio. Bußgeld. Automatischer Fix: https://eu-compliance-saas-production.up.railway.app #EUCompliance #AIAct",
+            f"📦 EU Zollreform seit 1.7.2026: €150-Freigrenze weg. Jedes Paket kostet jetzt €3+ Zoll. HS-Code Klassifizierer: https://eu-compliance-saas-production.up.railway.app #EUZoll #Shopify",
+        ]
+        import random
+        tweet_text = await _generate_tweet_claude("EU KI-Act Frist, Bußgeld €15 Mio, Shopify Compliance")
+        if not tweet_text:
+            tweet_text = topics[days % len(topics)]
+        tw_ok = await _post_tweet(tweet_text)
+        tg_text = (
+            f"📣 <b>EU Compliance Update</b>\n"
+            f"⏰ {days} Tage bis AI-Act-Frist\n"
+            f"💰 Bußgeld bis €15 Mio. ohne Offenlegung\n"
+            f"🔗 https://eu-compliance-saas-production.up.railway.app"
+        )
+        tg_ok = await _post_telegram(tg_text)
+        return f"EUComplianceTweet: Twitter={tw_ok} Telegram={tg_ok} days_left={days}"
+    except Exception as e:
+        return f"EUComplianceTweet Fehler: {e}"
+
+
+async def task_eu_compliance_lead_scan() -> str:
+    """Scannt Shopify-Stores auf AI-Act-Verstöße und baut Lead-Pipeline (alle 4h)."""
+    try:
+        import sys
+        eu_path = str(Path(__file__).parent.parent / "eu-compliance-saas")
+        if eu_path not in sys.path:
+            sys.path.insert(0, eu_path)
+        from modules.lead_finder import discover_shopify_stores, scan_and_score_leads, _load_leads, _save_leads, get_lead_stats
+        stores = await discover_shopify_stores(limit=10)
+        new_leads = await scan_and_score_leads(stores)
+        existing = _load_leads()
+        existing_shops = {l["shop"] for l in existing}
+        fresh = [l for l in new_leads if l["shop"] not in existing_shops]
+        if fresh:
+            existing.extend(fresh)
+            _save_leads(existing)
+        stats = get_lead_stats()
+        return f"EULeadScan: {len(fresh)} neue Leads, Pipeline={stats['total_leads']}, Potenzial=€{stats['pipeline_value_eur']:.0f}"
+    except Exception as e:
+        return f"EULeadScan Fehler: {e}"
+
+
+async def task_eu_compliance_zvg() -> str:
+    """Aktualisiert ZVG NRW Lead-Radar (alle 4h)."""
+    try:
+        import sys
+        eu_path = str(Path(__file__).parent.parent / "eu-compliance-saas")
+        if eu_path not in sys.path:
+            sys.path.insert(0, eu_path)
+        from modules.zvg_radar import fetch_zvg_listings, get_nrw_market_stats
+        leads = await fetch_zvg_listings("NRW", 30)
+        top = leads[0] if leads else {}
+        stats = get_nrw_market_stats()
+        return f"ZVGRadar: {len(leads)} Leads geladen, Top={top.get('property_type','?')} in {top.get('location','?')}, NRW={stats['nrw_share_of_germany_pct']}%"
+    except Exception as e:
+        return f"ZVGRadar Fehler: {e}"
 
 
 # ── Task registry ────────────────────────────────────────────────────────────
@@ -6474,6 +6542,157 @@ TASKS = [
     ("shopify_github_sync",    task_shopify_github_sync,     86400, 3990),  # 24h — Shopify Produkte→GitHub Backup
     # ── KÄUFER-TRAFFIC ENGINE (vollkostenlos, 5 Kanäle) ─────────────────────
     ("buyer_traffic_engine",   task_buyer_traffic_engine,    14400, 4010),  # 4h — Reddit Answers+SEO Blog+Klaviyo+TG+Deals
+    # ── Real-time (every few minutes) ────────────────────────────────────────
+    ("system_health",           task_system_health,           300,    10),   # 5 min
+    ("railway_health",          task_railway_health,          600,    20),   # 10 min
+    ("shopify_orders_alert",    task_shopify_orders_alert,    600,    15),   # 10 min
+    # ── Sales & Orders (every 15-30 min) ─────────────────────────────────────
+    ("digistore_sync",          task_digistore_sync,          900,    30),   # 15 min
+    ("printify_autofulfill",    task_printify_autofulfill,    1800,   45),   # 30 min
+    ("pod_autofulfill",         task_pod_autofulfill,         1800,   50),   # 30 min
+    ("etsy_sync",               task_etsy_sync,               1800,   60),   # 30 min
+    ("gumroad_sync",            task_gumroad_sync,            1800,   75),   # 30 min
+    ("digistore_products_check",task_digistore_products_check,1800,   85),   # 30 min
+    # ── Marketing & Sync (hourly) ─────────────────────────────────────────────
+    ("ds24_funnel_sync",         task_ds24_funnel_sync,        900,    35),   # 15 min — neue Käufer sofort
+    ("mailchimp_sync",          task_mailchimp_sync,          3600,   90),   # 1h
+    ("shopify_sync",            task_shopify_sync,            3600,   120),  # 1h
+    ("social_status",           task_social_status,           3600,   150),  # 1h
+    ("social_autoposter",       task_social_autoposter,       3600,   180),  # 1h
+    # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
+    ("seo_optimizer",           task_seo_optimizer,           7200,   200),  # 2h
+    ("traffic_seo_run",         task_traffic_seo_run,          3600,  210),  # 1h — AI SEO+Traffic (war 6h)
+    ("brutus_run",              task_brutus_run,               3600,    5),   # 1h — BRUTUS alle Kanäle (war 3h)
+    ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
+    ("api_keys_health",         task_api_keys_health,         21600,  61),   # 6h
+    ("trading_report",          task_trading_report,          21600,  240),  # 6h
+    ("printify_discover_shop",  task_printify_discover_shop,  21600,   6),   # 6h (fast start)
+    # ── Maintenance (hourly) ──────────────────────────────────────────────────
+    ("env_auto_update",         task_env_auto_update,         3600,   8),    # 1h (fast start)
+    ("printify_shopify_sync",   task_printify_shopify_sync,   3600,   170),  # 1h
+    # ── Setup (every 6h) ─────────────────────────────────────────────────────
+    ("shopify_webhooks_setup",  task_shopify_webhooks_setup,  21600,  12),   # 6h (fast start)
+    # ── Daily ─────────────────────────────────────────────────────────────────
+    ("revenue_report",          task_revenue_report,          86400,  270),  # daily
+    ("content_calendar",        task_content_calendar,        86400,  290),  # daily
+    ("github_backup",           task_github_backup,           86400,  300),  # daily
+    ("gmc_refresh",             task_gmc_refresh,             86400,  310),  # daily
+    ("youtube_stats",           task_youtube_stats,           86400,  320),  # daily
+    ("log_cleanup",             task_log_cleanup,             86400,  330),  # daily
+    ("daily_summary",           task_daily_summary,           86400,  340),  # daily
+    # ── Stripe & Drive ───────────────────────────────────────────────────────
+    ("stripe_monitor",          task_stripe_monitor,          1800,   25),   # 30 min
+    ("drive_backup",            task_drive_backup,            86400,  360),  # daily
+    # ── ContentHub (integriert alle 5 Content-Engines) ────────────────────
+    ("content_cycle",           task_content_cycle,            3600,  400),  # 1h — SEO+Social+Twitter+FB (war 6h)
+    ("freelance_cycle",         task_freelance_cycle,         14400,  420),  # 4h — Fiverr+Upwork (war 12h)
+    ("mega_auto_post",          task_mega_auto_post,           1800,   16),  # 30 Min — alle Kanäle gleichzeitig
+    # ── CRO + Auto Funnel ────────────────────────────────────────────────
+    ("cro_run",                 task_cro_run,                 3600,   121),  # hourly — Klaviyo flows + urgency
+    ("auto_funnel",             task_auto_funnel,             1800,    62),  # 30 min — DS24 buyers → funnel
+    # ── Email Brain ──────────────────────────────────────────────────────
+    ("email_check",             task_email_check,              900,    31),  # 15 min — IMAP poll + AI classify + auto-reply
+    ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
+    ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
+    ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
+    ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
+    ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
+    ("twitter_auto_post",       task_twitter_auto_post,      3600,    21),   # 1h — Auto-Tweet
+    ("shopify_blog_auto",       task_shopify_blog_auto,      7200,    46),   # 2h — Auto-Blog-Post
+    # ── Email Sequences (drip processing) ────────────────────────────────
+    ("email_seq_process",       task_email_seq_process,      3600,    55),   # 1h — process due drip emails
+    ("email_seq_enroll",        task_email_seq_enroll,       1800,    65),   # 30 min — auto-enroll new Shopify buyers
+    # ── Lead Automation ──────────────────────────────────────────────────
+    ("lead_nurture",            task_lead_nurture,           3600,    70),   # 1h — process new leads → Klaviyo + sequence
+    # ── Platform Posting (extra coverage) ────────────────────────────────
+    ("pinterest_auto_post",     task_pinterest_auto_post,    7200,    80),   # 2h — Pinterest pins
+    ("telegram_broadcast",      task_telegram_broadcast,     21600,   91),   # 6h — Telegram channel post
+    ("instagram_auto_post",     task_instagram_auto_post,    14400,  100),   # 4h — Instagram post
+    ("linkedin_auto_post",      task_linkedin_auto_post,     21600,  110),   # 6h — LinkedIn AI post
+    ("youtube_auto_post",       task_youtube_auto_post,       7200,  122),   # 2h — YouTube community post
+    # ── Autonomy Max-Upgrades ─────────────────────────────────────────────
+    ("competitor_monitor",      task_competitor_monitor,     86400,  500),   # daily — Konkurrenz-Check
+    ("ab_test_analyze",         task_ab_test_analyze,        43200,  510),   # 12h — A/B Gewinner auswählen
+    ("ai_content_calendar",     task_ai_content_calendar,    86400,  520),   # daily 06:00 — KI-Kalender
+    ("revenue_optimize",        task_revenue_optimize,       43200,  530),   # 12h — Revenue-KI-Empfehlungen
+    # ── REVOLUTION PACK — SEO + Traffic + Automation Max ─────────────────
+    ("google_index_submit",     task_google_index_submit,    86400,  540),   # daily — Google+Bing Indexierung
+    ("push_notify_broadcast",   task_push_notify_broadcast,  21600,  550),   # 6h — Web Push an Subscriber
+    ("shopify_seo_blog",        task_shopify_seo_blog,       43200,  560),   # 12h — 3x KI Shopify Blog Posts
+    ("viral_referral_trigger",  task_viral_referral_trigger, 86400,  570),   # daily — Viral Referral Loop
+    ("onboarding_seq_trigger",  task_onboarding_sequence_trigger, 43200, 580), # 12h — 7-Day Onboarding
+    # ── REVOLUTION v3: 10.000x SEO + Traffic + Backlinks + Revenue ───────────
+    ("seo_dominator",           task_seo_dominator,          7200,    26),   # 2h — Schema.org + IndexNow + Sitemap
+    ("backlink_bomber",         task_backlink_bomber,        7200,    36),   # 2h — IndexNow + RSS XML-RPC pings
+    ("content_velocity",        task_content_velocity,       7200,    56),   # 2h — 10-Format Content überall
+    ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   76),   # 4h — Reddit + Medium + LinkedIn
+    ("revenue_maximizer",       task_revenue_maximizer,      14400,   95),   # 4h — Cart Recovery + Winback
+    ("free_syndication",        task_free_syndication,       21600,  115),   # 6h — Dev.to + Hashnode + Medium + Discord
+    ("github_blog",             task_github_blog,            14400,  135),   # 4h — GitHub Pages SEO Blog
+    # ── CONTENT FACTORY: AI-powered omnichannel content engine ───────────────
+    ("content_factory_run",     task_content_factory_run,   14400,  130),   # 4h — full package from trending
+    ("social_batch_gen",        task_social_batch_gen,      86400,  151),   # daily — 30-day social calendar
+    ("trending_topic_scan",     task_trending_topic_scan,   43200,  171),   # 12h — catch viral waves early
+    ("content_calendar_weekly", task_content_calendar_weekly, 604800, 190), # weekly — Monday calendar build
+    # ── CONVERSION MAXIMIZER — 10 AI systems ─────────────────────────────────
+    ("conversion_scan",         task_conversion_scan,         900,   610),  # 15min — A/B + social proof + lead scoring
+    ("daily_optimization",      task_daily_optimization,      3600,  620),  # 1h — revenue opt + funnel analysis
+    ("funnel_daily",            task_funnel_daily,            86400, 630),  # daily — full funnel Telegram report
+    # ── OMEGA TRAFFIC ENGINE — REVOLUTION ────────────────────────────────────
+    ("omega_full",              task_omega_full,              86400,  700),  # daily — full cycle: index+artikel+competitor
+    ("omega_index",             task_omega_index,              3600,  710),  # 1h — Google+Bing instant index aller URLs
+    ("omega_article",           task_omega_article,           86400,  720),  # daily — neuer SEO-Artikel (rotierend)
+    ("omega_competitor",        task_omega_competitor,        21600,  730),  # 6h — competitor keywords klauen
+    ("omega_social_proof",      task_omega_social_proof,      14400,  740),  # 4h — Testimonial auf Telegram
+    ("omega_youtube",           task_omega_youtube,           86400,  750),  # daily — YouTube SEO-Paket
+    ("omega_indexnow_sitemap",  task_omega_indexnow_sitemap,  43200,  760),  # 12h — Sitemaps bei IndexNow einreichen
+    # ── TWITTER / X AUTOPOSTER (AIITEC Account) ──────────────────────────────
+    ("twitter_daily_tweets",    task_twitter_daily_tweets,    14400,  800),  # 4h — 3 Tweets täglich
+    ("twitter_seo_thread",      task_twitter_seo_thread,      86400,  810),  # daily — SEO-Thread (3 Tweets)
+    # ── SEO MEGA ENGINE — 60 Artikel/Tag, Auto-Indexierung ───────────────────
+    ("seo_mega_factory",        task_seo_mega_factory,         7200, 3600),  # 2h — 5 Artikel generieren (start 1h)
+    ("seo_mega_submit",         task_seo_mega_submit,         14400, 4200),  # 4h — Google+Bing+IndexNow ping (1h10m)
+    ("seo_competitor_analysis", task_seo_competitor_analysis, 43200, 5400),  # 12h — Konkurrenz-Keywords (1h30m)
+    # ── TRAFFIC SWARM — Multi-Platform Distribution ───────────────────────────
+    ("traffic_swarm_full",      task_traffic_swarm_full,      21600, 4800),  # 6h — Full Swarm alle Module (1h20m)
+    ("traffic_velocity",        task_traffic_velocity_check,   3600, 2700),  # 1h — Drop/Spike Detection (45m)
+    ("rss_rebuild",             task_rss_rebuild,             43200, 5401),  # 12h — RSS Feed rebuild (1h30m)
+    ("content_freshness",       task_content_freshness,       86400, 6000),  # daily — Update alte Artikel (1h40m)
+    ("backlink_outreach",       task_backlink_outreach_gen,   86400, 6600),  # daily — Outreach Emails (1h50m)
+    # ── ADS ENGINE — Facebook/Google/TikTok ──────────────────────────────────
+    ("ads_monitor",             task_ads_performance_monitor,  3600, 3000),  # 1h — Performance Check (50m)
+    ("ads_optimize",            task_ads_optimize_run,        14400, 5402),  # 4h — Pause Loser/Scale Winner (1h30m)
+    ("ads_rotate",              task_ads_creative_rotate,     86400, 7200),  # daily — Fresh Ad Copy (2h)
+    # ── REVENUE INTELLIGENCE — Forecast + Leaks + Churn ──────────────────────
+    ("revenue_autopilot",       task_revenue_autopilot_run,    3600, 2400),  # 1h — Full Revenue Scan (40m)
+    ("revenue_morning",         task_revenue_briefing_morning, 86400, 3601),  # daily — 8am Briefing (1h)
+    ("revenue_leaks",           task_revenue_leak_check,       1800, 1800),  # 30min — Failed Payments (30m)
+    ("churn_prevention",        task_churn_prevention,        21600, 5403),  # 6h — Churn Risk Score (1h30m)
+    # ── SHOPIFY MAX TUNER — Full Conversion Machine ───────────────────────────
+    ("shopify_max_seo",         task_shopify_max_seo,         14400, 4801),  # 4h — AI SEO alle Produkte (1h20m)
+    ("shopify_cart_recover",    task_shopify_cart_recover,     3600, 2100),  # 1h — Abandoned Cart Recovery (35m)
+    ("shopify_price_optimize",  task_shopify_price_optimize,  86400, 7201),  # daily — .99 Psychological Pricing (2h)
+    ("shopify_daily_intel",     task_shopify_daily_intel,     86400, 7202),  # daily — 7-Day Revenue Report (2h)
+    ("shopify_inventory",       task_shopify_inventory_check,  7200, 3602),  # 2h — Low Stock Alerts (1h)
+    ("shopify_reviews",         task_shopify_review_request,  14400, 5404),  # 4h — Review Request Emails (1h30m)
+    # ── GROWTH HACKER — Viral + Influencer + Referral ────────────────────────
+    ("viral_trend",             task_viral_trend_scan,         7200, 2401),  # 2h — Reddit Trends (40m)
+    ("community_growth",        task_community_growth_post,    7200, 3603),  # 2h — Community Post (1h)
+    ("growth_briefing",         task_growth_morning_briefing, 86400, 7203),  # daily — 7am Briefing (2h)
+    ("influencer_pipeline",     task_influencer_pipeline,     86400, 7204),  # daily — Outreach List (2h)
+    ("press_release",           task_press_release_generate,  86400, 7205),  # daily — AI Press Release (2h)
+    ("testimonials",            task_testimonial_engine,      43200, 5405),  # 12h — Social Proof (1h30m)
+    ("referral_system",         task_referral_system_run,     43200, 6001),  # 12h — Referral Codes (1h40m)
+    # ── ULTRA SEO ARSENAL — 14+ Services IndexNow + Parasite SEO ─────────────
+    ("ultra_seo_cycle",         task_ultra_seo_cycle,         10800, 1130),  # 3h — Full Ultra SEO: IndexNow+Sitemap+Content
+    ("ultra_indexnow_all",      task_ultra_indexnow_all,      21600, 1140),  # 6h — Alle 14+ Properties IndexNow
+    ("ultra_seo_health",        task_ultra_seo_health,        14400, 1150),  # 4h — Property Health Check
+    # ── SOCIAL SCHEDULER — Twitter + Telegram Fallback ────────────────────────
+    ("social_scheduler",        task_social_scheduler,        21600, 1200),  # 6h — Twitter post; Telegram fallback
+    # ── EU COMPLIANCE ENGINE — AI-Act · HS-Code · VAT-OSS · ZVG Leads ────────
+    ("eu_compliance_tweet",     task_eu_compliance_tweet,      28800, 1300),  # 8h — Compliance Tweet + Telegram
+    ("eu_compliance_lead_scan", task_eu_compliance_lead_scan,  14400, 1310),  # 4h — Shopify AI-Act Violation Scan
+    ("eu_compliance_zvg",       task_eu_compliance_zvg,        14400, 1320),  # 4h — ZVG NRW Lead-Radar Update
 ]
 
 

@@ -34,6 +34,9 @@ from modules.ai_act_scanner import generate_compliance_report, bulk_scan_stores,
 from modules.hs_classifier import classify_hs_code, classify_product_catalog, calculate_customs_impact
 from modules.vat_oss_engine import calculate_vat_liability, generate_quarterly_prefill, assess_non_eu_seller_risk, EU_VAT_RATES, OSS_REGISTRATION_STEPS
 from modules.zvg_radar import fetch_zvg_listings, get_nrw_market_stats
+from modules.auto_poster import twitter_posting_loop, telegram_marketing_loop, post_new_subscriber_announcement
+from modules.lead_finder import lead_scan_loop, get_lead_stats
+from modules.email_engine import onboard_new_subscriber, send_welcome_email
 
 PORT = int(os.getenv("PORT", "8090"))
 STRIPE_SECRET = os.getenv("STRIPE_SECRET_KEY", "")
@@ -227,13 +230,16 @@ async def handle_success(req):
     plan = req.rel_url.query.get("plan", "")
     email = req.rel_url.query.get("email", "")
     if email and plan:
+        price = PLANS.get(plan, {}).get("price_eur", 0)
         _subscribers[email] = {"plan": plan, "created_at": datetime.now(timezone.utc).isoformat()}
         await telegram_notify(
             f"✅ <b>NEUER SUBSCRIBER!</b>\n"
             f"📧 {email}\n"
-            f"📦 Plan: {plan} — €{PLANS.get(plan, {}).get('price_eur', 0)}/Monat\n"
-            f"💰 MRR +€{PLANS.get(plan, {}).get('price_eur', 0)}"
+            f"📦 Plan: {plan} — €{price}/Monat\n"
+            f"💰 MRR +€{price}"
         )
+        asyncio.create_task(onboard_new_subscriber(email, plan))
+        asyncio.create_task(post_new_subscriber_announcement(email, plan, price))
     return web.Response(text=_get_success_page(plan, email), content_type="text/html")
 
 
@@ -348,20 +354,30 @@ async def handle_dashboard(req):
     """Internes Admin-Dashboard."""
     mrr = sum(PLANS.get(s.get("plan", ""), {}).get("price_eur", 0) for s in _subscribers.values())
     days_to_deadline = (datetime(2026, 8, 2, tzinfo=timezone.utc) - datetime.now(timezone.utc)).days
+    lead_stats = get_lead_stats()
     return web.json_response({
         "uptime_seconds": time.time() - _start,
         "subscribers": len(_subscribers),
         "mrr_eur": mrr,
         "arr_eur": mrr * 12,
         "leads_cached": len(_leads_cache),
+        "lead_pipeline": lead_stats,
         "days_to_ai_act_deadline": days_to_deadline,
         "services": {
             "ai_act_scanner": "active",
             "hs_classifier": "active",
             "vat_oss": "active",
             "zvg_radar": "active",
+            "auto_poster_twitter": "active",
+            "auto_poster_telegram": "active",
+            "lead_finder": "active",
+            "email_engine": "active",
         },
     })
+
+
+async def handle_lead_stats(req):
+    return web.json_response(get_lead_stats())
 
 
 # ---------------------------------------------------------------------------
@@ -622,6 +638,7 @@ def create_app():
     app.router.add_post("/api/vat/prefill", handle_vat_prefill)
     app.router.add_get("/api/zvg/leads", handle_zvg_leads)
     app.router.add_get("/api/zvg/stats", handle_zvg_stats)
+    app.router.add_get("/api/leads", handle_lead_stats)
     return app
 
 
@@ -641,6 +658,9 @@ async def main():
     asyncio.create_task(autonomous_lead_gen_loop())
     asyncio.create_task(zvg_refresh_loop())
     asyncio.create_task(daily_revenue_report())
+    asyncio.create_task(twitter_posting_loop())
+    asyncio.create_task(telegram_marketing_loop(_leads_cache))
+    asyncio.create_task(lead_scan_loop())
     await asyncio.Event().wait()
 
 
