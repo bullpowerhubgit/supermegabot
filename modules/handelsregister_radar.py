@@ -418,6 +418,7 @@ async def tg(msg: str):
 # ── Haupt-Run ─────────────────────────────────────────────────────────────────
 
 async def run_cycle() -> Dict:
+    init_db()
     start   = time.time()
     results = {"leads_found": 0, "emails_sent": 0}
 
