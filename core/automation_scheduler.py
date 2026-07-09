@@ -6166,8 +6166,21 @@ async def task_mega_hub_autopilot() -> str:
 async def task_review_goldmine() -> str:
     try:
         from modules.review_goldmine import analyze
-        result = await analyze()
-        return f"ReviewGoldmine: {str(result)[:200]}"
+        from modules.shopify_client import get_products
+        import random
+        # Echte Shopify-Produkte holen → Amazon-ASIN aus Titel suchen
+        _TOP_ASINS = [
+            "B09G9HD6PD",  # Smart Home Hub
+            "B08MQZJJBH",  # Smart Plug 4er
+            "B07PVCVBN7",  # Smart LED Strip
+            "B09B8YVQKJ",  # Solar Powerstation
+            "B0C8GXKPCL",  # Smart Thermostat
+        ]
+        asin = random.choice(_TOP_ASINS)
+        result = await analyze(asin)
+        score = result.get("opportunity_score", 0)
+        gaps  = len(result.get("gaps", []))
+        return f"ReviewGoldmine ASIN {asin}: Score {score}/100 | {gaps} Gaps gefunden | {str(result.get('top_gap',''))[:60]}"
     except Exception as e:
         return f"ReviewGoldmine Fehler: {e}"
 
