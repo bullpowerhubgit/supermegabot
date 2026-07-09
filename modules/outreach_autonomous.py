@@ -562,6 +562,7 @@ async def tg(msg: str):
 
 async def run_outreach_cycle() -> Dict:
     """Ein kompletter Akquise-Zyklus: Scrapen → Bewerten → Generieren → Senden."""
+    init_db()  # Tabellen erstellen falls noch nicht vorhanden
     start   = time.time()
     results = {"leads_found": 0, "emails_sent": 0, "errors": 0, "batch": []}
 
