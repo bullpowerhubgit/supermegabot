@@ -284,7 +284,19 @@ class RedditConnector:
         from pathlib import Path
         return Path(__file__).parent.parent / "data" / "reddit_cookies.json"
 
+    def _load_cookies(self) -> dict:
+        cf = self._cookie_file()
+        if cf.exists():
+            import json as _j
+            return _j.loads(cf.read_text())
+        return {}
+
+    def _token_v2(self) -> str:
+        return self._load_cookies().get("token_v2", "")
+
     def is_configured(self) -> bool:
+        if self._token_v2():
+            return True
         if self._cookie_file().exists():
             return True
         return bool(self.client_id and self.client_secret and self.username and self.password)
@@ -352,41 +364,57 @@ class RedditConnector:
         except Exception as exc:
             return False, f"Reddit Fehler: {str(exc)[:80]}"
 
-    async def _submit_via_cookies(self, subreddit: str, title: str, text: str = "", url: str = "") -> Dict[str, Any]:
-        """Post via session cookie (no OAuth app needed)."""
-        import json as _json
-        cookie_file = self._cookie_file()
-        if not cookie_file.exists():
-            return {"error": "no_cookie_file"}
-        cookies_raw = _json.loads(cookie_file.read_text())
-        jar = aiohttp.CookieJar()
-        headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
-        cookie_header = "; ".join(f"{k}={v}" for k, v in cookies_raw.items() if isinstance(v, str))
-        headers["Cookie"] = cookie_header
-        async with aiohttp.ClientSession(headers=headers) as session:
-            async with session.get("https://www.reddit.com/api/me.json") as r:
-                if r.status != 200:
-                    return {"error": f"me.json HTTP {r.status}"}
-                me = await r.json(content_type=None)
-            modhash = me.get("data", {}).get("modhash", "")
-            if not modhash:
-                return {"error": "no_modhash", "me": me.get("data", {}).get("name")}
-            kind = "link" if url else "self"
-            payload = {
-                "sr": subreddit, "title": title, "kind": kind,
-                "resubmit": "true", "nsfw": "false", "spoiler": "false",
-                "uh": modhash, "api_type": "json",
-            }
-            if text:
-                payload["text"] = text
-            if url:
-                payload["url"] = url
-            async with session.post("https://www.reddit.com/api/submit", data=payload) as r:
-                result = await r.json(content_type=None)
-                errors = result.get("json", {}).get("errors", [])
-                post_id = result.get("json", {}).get("data", {}).get("id", "")
+    async def _get_flair_id(self, subreddit: str, token: str) -> Optional[str]:
+        """Fetch first available flair ID for a subreddit."""
+        try:
+            headers = {"Authorization": f"Bearer {token}", "User-Agent": "SuperMegaBot/2.0"}
+            async with aiohttp.ClientSession() as s:
+                async with s.get(f"{self.BASE}/r/{subreddit}/api/link_flair_v2", headers=headers) as r:
+                    if r.status != 200:
+                        return None
+                    flairs = await r.json(content_type=None)
+                    if flairs:
+                        return flairs[0].get("id")
+        except Exception:
+            pass
+        return None
+
+    async def _submit_via_token_v2(self, subreddit: str, title: str, text: str = "", url: str = "") -> Dict[str, Any]:
+        """Post via token_v2 JWT from Reddit cookies — no OAuth app needed."""
+        token = self._token_v2()
+        if not token:
+            return {"error": "no_token_v2"}
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "User-Agent": "Mozilla/5.0 SuperMegaBot/2.0",
+        }
+        kind = "link" if url else "self"
+        payload: Dict[str, Any] = {
+            "sr": subreddit, "title": title, "kind": kind,
+            "resubmit": True, "nsfw": False, "spoiler": False, "api_type": "json",
+        }
+        if text:
+            payload["text"] = text
+        if url:
+            payload["url"] = url
+        async with aiohttp.ClientSession() as session:
+            async with session.post(f"{self.BASE}/api/submit", headers=headers, data=payload) as r:
+                d = await r.json(content_type=None)
+                if r.status == 401:
+                    return {"error": "token_v2_expired"}
+                errors = d.get("json", {}).get("errors", [])
+                post_id = d.get("json", {}).get("data", {}).get("id", "")
+                # Auto-retry with flair if required
+                if any("FLAIR" in str(e) for e in errors):
+                    flair_id = await self._get_flair_id(subreddit, token)
+                    if flair_id:
+                        payload["flair_id"] = flair_id
+                        async with session.post(f"{self.BASE}/api/submit", headers=headers, data=payload) as r2:
+                            d2 = await r2.json(content_type=None)
+                            errors = d2.get("json", {}).get("errors", [])
+                            post_id = d2.get("json", {}).get("data", {}).get("id", "")
                 return {"ok": not errors and bool(post_id), "post_id": post_id,
-                        "subreddit": subreddit, "errors": errors, "via": "cookie"}
+                        "subreddit": subreddit, "errors": errors, "via": "token_v2"}
 
     async def submit_post(
         self,
@@ -396,10 +424,12 @@ class RedditConnector:
         url: str = "",
         flair: str = "",
     ) -> Dict[str, Any]:
-        # Try cookie auth first (no OAuth app needed)
-        if self._cookie_file().exists():
-            result = await self._submit_via_cookies(subreddit, title, text, url)
+        # Try token_v2 (JWT from browser cookies) — no OAuth app needed
+        if self._token_v2():
+            result = await self._submit_via_token_v2(subreddit, title, text, url)
             if result.get("ok") or result.get("post_id"):
+                return result
+            if result.get("error") != "token_v2_expired":
                 return result
         # Fallback: password grant OAuth
         if not self._has_creds():
