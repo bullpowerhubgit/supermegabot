@@ -6052,6 +6052,90 @@ async def task_vorsprung_scan() -> str:
 
 # ── Vollautonome Agenten ─────────────────────────────────────────────────────
 
+async def task_aliexpress_auto_download() -> str:
+    try:
+        from modules.aliexpress_downloader import run_auto_download
+        result = await run_auto_download()
+        imported = result.get("imported", 0) if isinstance(result, dict) else 0
+        return f"AliExpress Auto-Download: {imported} Produkte→Shopify ✅"
+    except Exception as e:
+        return f"AliExpress Fehler: {e}"
+
+async def task_ki_leasing_daily_reports() -> str:
+    try:
+        from modules.ki_leasing_engine import send_daily_reports
+        result = await send_daily_reports()
+        sent = result.get("sent", 0) if isinstance(result, dict) else 0
+        errors = result.get("errors", 0) if isinstance(result, dict) else 0
+        return f"KI-Leasing Reports: {sent} gesendet, {errors} Fehler ✅"
+    except Exception as e:
+        return f"KI-Leasing Fehler: {e}"
+
+async def task_gumroad_brutus_traffic() -> str:
+    try:
+        from modules.gumroad_client import run_with_brutus_traffic
+        result = await run_with_brutus_traffic()
+        sales = result.get("stats", {}).get("sales_count", "?") if isinstance(result, dict) else "?"
+        return f"Gumroad+BRUTUS Traffic: {sales} Sales, Traffic-Swarm aktiv ✅"
+    except Exception as e:
+        return f"Gumroad Fehler: {e}"
+
+async def task_outreach_engine_batch() -> str:
+    try:
+        from modules.outreach_engine import generate_outreach_batch
+        result = await generate_outreach_batch(auto_send_email=True, max_targets=10)
+        gen = result.get("generated", 0) if isinstance(result, dict) else 0
+        sent = result.get("sent", 0) if isinstance(result, dict) else 0
+        return f"Outreach Batch: {gen} generiert, {sent} gesendet ✅"
+    except Exception as e:
+        return f"Outreach Engine Fehler: {e}"
+
+async def task_agent_teams_health() -> str:
+    try:
+        from modules.agent_teams import run_all_teams_health_check
+        result = await run_all_teams_health_check()
+        if isinstance(result, dict):
+            ok = sum(1 for v in result.values() if v.get("ok") if isinstance(v, dict))
+            total = len(result)
+            return f"Agent Teams: {ok}/{total} healthy ✅"
+        return f"Agent Teams Health: {str(result)[:150]}"
+    except Exception as e:
+        return f"Agent Teams Fehler: {e}"
+
+async def task_tiktok_status_check() -> str:
+    try:
+        from modules.tiktok_research import check_status
+        result = await check_status()
+        if isinstance(result, dict):
+            status = result.get("status", result.get("connected", "?"))
+            return f"TikTok Status: {status} ✅"
+        return f"TikTok: {str(result)[:150]}"
+    except Exception as e:
+        return f"TikTok Status Fehler: {e}"
+
+async def task_telegram_services_check() -> str:
+    try:
+        from modules.telegram_master_dashboard import check_all_services
+        result = await check_all_services()
+        if isinstance(result, dict):
+            ok = sum(1 for v in result.values() if isinstance(v, dict) and v.get("ok"))
+            total = len(result)
+            return f"Telegram Services: {ok}/{total} online ✅"
+        return f"Telegram Services: {str(result)[:150]}"
+    except Exception as e:
+        return f"Telegram Services Fehler: {e}"
+
+async def task_shopify_github_sync() -> str:
+    try:
+        from modules.shopify_client import sync_products_to_github
+        result = await sync_products_to_github()
+        if isinstance(result, dict):
+            count = result.get("count", result.get("synced", "?"))
+            return f"Shopify→GitHub Sync: {count} Produkte backed up ✅"
+        return f"Shopify→GitHub: {str(result)[:150]}"
+    except Exception as e:
+        return f"Shopify→GitHub Fehler: {e}"
+
 async def task_rudiclone_agent() -> str:
     try:
         from modules.rudiclone import run_once
@@ -6141,7 +6225,7 @@ TASKS = [
     ("ebay_arbitrage_scan",  task_ebay_arbitrage_scan,  21600, 180),  # 6h — eBay Arbitrage: AliExpress→eBay→Shopify
     ("demand_oracle_scan",   task_demand_oracle_scan,   43200, 240),  # 12h — Demand Oracle: Reddit→Cluster→Pre-Order
     ("b2b_intent_radar",    task_b2b_intent_radar_scan, 21600, 280),  # 6h — B2B Intent Radar: HN+Reddit+GitHub→Leads
-    ("social_scheduler",     task_social_scheduler,    21600, 120),  # 6h — Twitter + Telegram Fallback
+    ("social_scheduler",     task_social_scheduler,    21600, 1800), # 6h — Twitter + Telegram (30min startup delay)
     ("vorsprung_scan",       task_vorsprung_scan,      21600, 300),  # 6h — VORSPRUNG Intelligence (Bundesanzeiger+EUIPO+DPMA+Reddit)
     ("viral_window_scan",      task_viral_window_scan,       7200,  55),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",        task_oos_sniper_scan,         7200,  58),  # 2h — OOS Sniper
@@ -6149,8 +6233,8 @@ TASKS = [
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
-    ("viral_promo",         task_viral_promo_poster,       21600, 90),  # 6h — Multi-Channel Promo (FB/TW/LI/Reddit/TG)
-    ("multiplatform_post",   task_multiplatform_autopost, 21600, 125),  # 6h — FB+IG+TG+LI+Reddit+Discord
+    ("viral_promo",         task_viral_promo_poster,       21600, 2100), # 6h — Multi-Channel Promo (35min startup delay)
+    ("multiplatform_post",   task_multiplatform_autopost, 21600, 2400), # 6h — FB+IG+TG+LI+Reddit+Discord (40min startup delay)
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
     ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
@@ -6298,6 +6382,15 @@ TASKS = [
     ("review_goldmine",        task_review_goldmine,        86400, 3670),  # 24h — Review Scraping + KI-Analyse
     ("gmc_monitor_run",        task_gmc_monitor,            14400, 3690),  # 4h  — Google Merchant Center Status
     ("campaign_manager_run",   task_campaign_manager,       28800, 3710),  # 8h  — Campaign Manager Check
+    # ── NEUE MODULE — VOLLAUTOMATISIERUNG KOMPLETT ────────────────────────────
+    ("aliexpress_auto",        task_aliexpress_auto_download, 21600, 3850),  # 6h  — AliExpress Produkte→Shopify
+    ("ki_leasing_reports",     task_ki_leasing_daily_reports, 86400, 3870),  # 24h — KI-Leasing Kunden-Reports per Email
+    ("gumroad_brutus",         task_gumroad_brutus_traffic,  43200, 3890),  # 12h — Gumroad Stats + Traffic Swarm
+    ("outreach_batch",         task_outreach_engine_batch,   43200, 3910),  # 12h — B2B Outreach 10 Nachrichten
+    ("agent_teams_health",     task_agent_teams_health,      86400, 3930),  # 24h — Alle Agent-Teams Health Check
+    ("tiktok_status",          task_tiktok_status_check,     21600, 3950),  # 6h  — TikTok Ads + Pixel Status
+    ("telegram_svc_check",     task_telegram_services_check,  7200, 3970),  # 2h  — Telegram Service Monitoring
+    ("shopify_github_sync",    task_shopify_github_sync,     86400, 3990),  # 24h — Shopify Produkte→GitHub Backup
 ]
 
 
