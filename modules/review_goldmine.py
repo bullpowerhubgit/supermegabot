@@ -232,12 +232,12 @@ Erstelle SOFORT einsetzbare Marketing-Assets. Antworte als JSON:
             "Verarbeitung minderwertig"
         ],
         "shopify_description": f"<h3>Das Beste am Markt — ohne die typischen Probleme</h3><p>Wir haben die Reviews analysiert und ein überlegenes Produkt entwickelt.</p>",
-        "fb_headline": f"Endlich: {product_title.split()[0]} der funktioniert",
+        "fb_headline": f"Endlich: {(product_title.split() or ['Produkt'])[0]} der funktioniert",
         "fb_primary": "Kein billigen Ausreden mehr. Qualität die hält was sie verspricht. Jetzt bestellen →",
         "fb_cta": "Jetzt kaufen",
-        "google_headlines": [f"{product_title.split()[0]} kaufen", "Beste Qualität", "Sofort lieferbar"],
+        "google_headlines": [f"{(product_title.split() or ['Produkt'])[0]} kaufen", "Beste Qualität", "Sofort lieferbar"],
         "seo_keywords": [product_title.lower(), f"{product_title.lower()} kaufen", "beste alternative"],
-        "email_subjects": [f"⚠️ Vorsicht beim Kauf von {product_title.split()[0]}", f"Das bessere {product_title.split()[0]}", "Warum Kunden wechseln"],
+        "email_subjects": [f"⚠️ Vorsicht beim Kauf von {(product_title.split() or ['diesem Produkt'])[0]}", f"Das bessere {(product_title.split() or ['Produkt'])[0]}", "Warum Kunden wechseln"],
         "unique_selling_point": f"Im Gegensatz zum Konkurrenten bieten wir garantierte Qualität mit 30-Tage-Rückgabe."
     }
 
