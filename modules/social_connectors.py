@@ -287,8 +287,17 @@ class RedditConnector:
     def _load_cookies(self) -> dict:
         cf = self._cookie_file()
         if cf.exists():
-            import json as _j
-            return _j.loads(cf.read_text())
+            try:
+                import json as _j
+                cookies = _j.loads(cf.read_text())
+                if cookies.get("token_v2"):
+                    return cookies
+            except Exception:
+                pass
+        # Fallback: REDDIT_TOKEN_V2 env var (used on Railway where data/ is not deployed)
+        env_token = _env("REDDIT_TOKEN_V2")
+        if env_token:
+            return {"token_v2": env_token}
         return {}
 
     def _token_v2(self) -> str:
