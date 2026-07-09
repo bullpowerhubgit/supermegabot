@@ -6291,8 +6291,7 @@ TASKS = [
     ("mailchimp_mass",       task_mailchimp_mass_daily, 86400, 550),  # täglich — Mailchimp Mass Campaigns
     # ── Content Loop Engine (Smart Home SEO → alle Kanäle gratis) ───────────
     ("content_loop_engine",  task_content_loop_engine, 28800, 600),  # 8h  — SEO-Artikel + IndexNow + Telegram + LinkedIn
-    # ── Shopify SEO Blog (ineedit.com.co T-Shirt/POD) ────────────────────────
-    ("shopify_seo_blog",     task_shopify_seo_blog,    43200, 900),  # 12h — T-Shirt Blog Artikel
+    # shopify_seo_blog (T-Shirt) deaktiviert — ersetzt durch content_loop_engine (Smart Home)
     # ── Backup ───────────────────────────────────────────────────────────────
     ("youtube_shorts",       task_youtube_shorts,       86400, 900),  # täglich — Shopify Produkt als YouTube Short
     ("github_backup",        task_github_backup,       86400, 300),  # daily
