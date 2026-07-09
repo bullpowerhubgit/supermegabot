@@ -6322,6 +6322,18 @@ async def handle_gumroad_create(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_gumroad_publish_all(req):
+    """POST /api/gumroad/publish-all — Publish all unpublished Gumroad products."""
+    try:
+        from modules.ecommerce_connectors import GumroadConnector
+        gum = GumroadConnector()
+        result = await gum.publish_all()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        log.error("handle_gumroad_publish_all: %s", e)
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_gumroad_blast(req):
     """POST /api/gumroad/blast — Gumroad stats + BRUTUS traffic swarm for digital products."""
     try:
@@ -9120,6 +9132,7 @@ async def create_app():
     app.router.add_get("/api/gumroad/sales",          handle_gumroad_sales)
     app.router.add_post("/api/gumroad/product/create", handle_gumroad_create)
     app.router.add_post("/api/gumroad/blast",         handle_gumroad_blast)
+    app.router.add_post("/api/gumroad/publish-all",  handle_gumroad_publish_all)
     # ── Fiverr ────────────────────────────────────────────────────────────────
     app.router.add_get("/api/fiverr/status",          handle_fiverr_status)
     app.router.add_get("/api/fiverr/gigs",            handle_fiverr_gigs)
