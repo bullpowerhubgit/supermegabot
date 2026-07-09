@@ -344,6 +344,11 @@ class RedditConnector:
 
     async def ping(self) -> Tuple[bool, str]:
         import json
+        # Check env var token first (Railway — no file system cookie)
+        env_token = _env("REDDIT_TOKEN_V2")
+        if env_token:
+            username = self.username or "i_want_that_i_need_i"
+            return True, f"Reddit verbunden — u/{username} (REDDIT_TOKEN_V2)"
         cookie_file = self._cookie_file()
         if cookie_file.exists():
             try:
