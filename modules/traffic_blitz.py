@@ -591,7 +591,7 @@ async def run_traffic_blitz(mode: str = "full") -> dict:
             results[name] = {"ok": False, "error": str(exc)}
 
     ok_count = sum(1 for v in results.values() if (v if isinstance(v, bool) else v.get("ok", False)))
-    log.info("Traffic Blitz: %d/%d channels OK | topic: %s", ok_count, len(tasks), topic)
+    log.info("Traffic Blitz: %d/%d channels OK | topic: %s", ok_count, len(task_defs), topic)
     return {"ok": ok_count > 0, "channels_ok": ok_count, "topic": topic, "results": results}
 
 
