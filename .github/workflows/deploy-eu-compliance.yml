@@ -1,0 +1,38 @@
+name: Deploy EU Compliance SaaS to Railway
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'eu-compliance-saas/**'
+  workflow_dispatch:
+
+jobs:
+  syntax-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install aiohttp python-dotenv beautifulsoup4
+      - name: Syntax check
+        run: |
+          cd eu-compliance-saas
+          for f in modules/*.py server.py; do
+            python3 -m py_compile "$f" && echo "OK: $f"
+          done
+
+  deploy:
+    needs: syntax-check
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+      - name: Deploy EU Compliance SaaS
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --detach --service eu-compliance-saas
