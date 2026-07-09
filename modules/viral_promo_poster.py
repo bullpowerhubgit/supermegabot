@@ -41,7 +41,7 @@ def _tw_token()        -> str: return os.getenv("TWITTER_ACCESS_TOKEN", "")
 def _tw_token_secret() -> str: return os.getenv("TWITTER_ACCESS_TOKEN_SECRET", "")
 def _li_token()        -> str: return os.getenv("LINKEDIN_ACCESS_TOKEN", "")
 def _li_urn()          -> str: return os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
-def _reddit_user()     -> str: return os.getenv("REDDIT_USERNAME", "bullpowersrtkennels")
+def _reddit_user()     -> str: return os.getenv("REDDIT_USERNAME", "i_want_that_i_need_i")
 def _reddit_pass()     -> str: return os.getenv("REDDIT_PASSWORD", "")
 def _reddit_id()       -> str: return os.getenv("REDDIT_CLIENT_ID", "hqgJAQe6Qiu5s5r1Vqc0Og")
 def _reddit_secret()   -> str: return os.getenv("REDDIT_CLIENT_SECRET", "")
@@ -433,52 +433,37 @@ async def post_linkedin(text: str) -> Dict:
 # ── Reddit ────────────────────────────────────────────────────────────────────
 
 async def _reddit_token() -> Optional[str]:
-    # Reddit app (hqgJAQe6Qiu5s5r1Vqc0Og / rodbot) credentials are dead — app was deleted.
-    # Password grant requires valid script-type app owned by the same account.
-    # Return None gracefully until new app credentials are configured via REDDIT_REFRESH_TOKEN.
-    refresh_token = os.getenv("REDDIT_REFRESH_TOKEN", "")
-    if not refresh_token:
-        log.warning("Reddit: REDDIT_REFRESH_TOKEN not set — Reddit posting skipped. "
-                    "Create new app at reddit.com/prefs/apps and run OAuth2 flow.")
+    client_id = _reddit_id()
+    client_secret = _reddit_secret()
+    username = _reddit_user()
+    password = _reddit_pass()
+    if not all([client_id, client_secret, username, password]):
+        log.warning("Reddit: missing credentials (REDDIT_CLIENT_ID/SECRET/USERNAME/PASSWORD) — skipped")
         return None
-    ua = "SuperMegaBot/1.0 by Upper-Competition505"
+    ua = f"SuperMegaBot/1.0 by {username}"
     try:
         async with _session() as s:
             async with s.post(
                 "https://www.reddit.com/api/v1/access_token",
                 headers={"User-Agent": ua},
-                auth=aiohttp.BasicAuth(_reddit_id(), _reddit_secret()),
-                data={"grant_type": "refresh_token", "refresh_token": refresh_token}
+                auth=aiohttp.BasicAuth(client_id, client_secret),
+                data={"grant_type": "password", "username": username, "password": password}
             ) as r:
                 data = await r.json()
-                return data.get("access_token")
+                token = data.get("access_token")
+                if not token:
+                    log.warning("Reddit auth failed: %s", data.get("error", data))
+                return token
     except Exception as e:
         log.warning("Reddit auth failed: %s", e)
         return None
 
 
 async def post_reddit(subreddit: str, title: str, text: str) -> Dict:
-    if not _reddit_id() or not _reddit_secret():
-        return {"ok": False, "error": "no Reddit credentials"}
-    token = await _reddit_token()
-    if not token:
-        return {"ok": False, "error": "Reddit auth failed"}
-    ua = "SuperMegaBot/1.0 by Upper-Competition505"
     try:
-        await asyncio.sleep(2)  # Reddit rate limit
-        async with _session() as s:
-            async with s.post(
-                "https://oauth.reddit.com/api/submit",
-                headers={"Authorization": f"Bearer {token}", "User-Agent": ua},
-                data={"sr": subreddit, "kind": "self", "title": title,
-                      "text": text, "nsfw": "false", "spoiler": "false"}
-            ) as r:
-                data = await r.json()
-                jquery = data.get("jquery", [])
-                errors = [x for x in jquery if isinstance(x, list) and len(x) > 3 and x[3] and isinstance(x[3], list) and x[3]]
-                if not errors:
-                    return {"ok": True, "subreddit": subreddit}
-                return {"ok": False, "error": str(errors[:2])}
+        from modules.reddit_cookie_poster import submit_post as _rcp_submit
+        result = await _rcp_submit(subreddit=subreddit, title=title, text=text)
+        return result
     except Exception as e:
         return {"ok": False, "error": str(e)}
 
