@@ -352,6 +352,42 @@ class RedditConnector:
         except Exception as exc:
             return False, f"Reddit Fehler: {str(exc)[:80]}"
 
+    async def _submit_via_cookies(self, subreddit: str, title: str, text: str = "", url: str = "") -> Dict[str, Any]:
+        """Post via session cookie (no OAuth app needed)."""
+        import json as _json
+        cookie_file = self._cookie_file()
+        if not cookie_file.exists():
+            return {"error": "no_cookie_file"}
+        cookies_raw = _json.loads(cookie_file.read_text())
+        jar = aiohttp.CookieJar()
+        headers = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36"}
+        cookie_header = "; ".join(f"{k}={v}" for k, v in cookies_raw.items() if isinstance(v, str))
+        headers["Cookie"] = cookie_header
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get("https://www.reddit.com/api/me.json") as r:
+                if r.status != 200:
+                    return {"error": f"me.json HTTP {r.status}"}
+                me = await r.json(content_type=None)
+            modhash = me.get("data", {}).get("modhash", "")
+            if not modhash:
+                return {"error": "no_modhash", "me": me.get("data", {}).get("name")}
+            kind = "link" if url else "self"
+            payload = {
+                "sr": subreddit, "title": title, "kind": kind,
+                "resubmit": "true", "nsfw": "false", "spoiler": "false",
+                "uh": modhash, "api_type": "json",
+            }
+            if text:
+                payload["text"] = text
+            if url:
+                payload["url"] = url
+            async with session.post("https://www.reddit.com/api/submit", data=payload) as r:
+                result = await r.json(content_type=None)
+                errors = result.get("json", {}).get("errors", [])
+                post_id = result.get("json", {}).get("data", {}).get("id", "")
+                return {"ok": not errors and bool(post_id), "post_id": post_id,
+                        "subreddit": subreddit, "errors": errors, "via": "cookie"}
+
     async def submit_post(
         self,
         subreddit: str,
@@ -360,6 +396,12 @@ class RedditConnector:
         url: str = "",
         flair: str = "",
     ) -> Dict[str, Any]:
+        # Try cookie auth first (no OAuth app needed)
+        if self._cookie_file().exists():
+            result = await self._submit_via_cookies(subreddit, title, text, url)
+            if result.get("ok") or result.get("post_id"):
+                return result
+        # Fallback: password grant OAuth
         if not self._has_creds():
             return {"available": False, "reason": "REDDIT_CLIENT_ID/SECRET/USERNAME/PASSWORD not set", "platform": "reddit"}
         token = await self._get_token()
@@ -368,12 +410,8 @@ class RedditConnector:
         api_url = f"{self.BASE}/api/submit"
         kind = "link" if url else "self"
         payload: Dict[str, Any] = {
-            "sr": subreddit,
-            "title": title,
-            "kind": kind,
-            "resubmit": True,
-            "nsfw": False,
-            "spoiler": False,
+            "sr": subreddit, "title": title, "kind": kind,
+            "resubmit": True, "nsfw": False, "spoiler": False, "api_type": "json",
         }
         if text:
             payload["text"] = text
@@ -382,10 +420,8 @@ class RedditConnector:
         if flair:
             payload["flair_text"] = flair
         async with aiohttp.ClientSession() as session:
-            async with session.post(
-                api_url, headers=self._headers(token), data=payload
-            ) as resp:
-                return await resp.json()
+            async with session.post(api_url, headers=self._headers(token), data=payload) as resp:
+                return await resp.json(content_type=None)
 
     async def get_subreddit_posts(
         self, subreddit: str, limit: int = 10
