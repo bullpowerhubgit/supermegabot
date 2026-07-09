@@ -6085,6 +6085,27 @@ async def handle_seo_status(request: web.Request) -> web.Response:
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
+# BUYER TRAFFIC ENGINE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+async def handle_buyer_traffic_run(request: web.Request) -> web.Response:
+    try:
+        from modules.buyer_traffic_engine import run_buyer_traffic_cycle
+        r = await run_buyer_traffic_cycle()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_buyer_traffic_stats(request: web.Request) -> web.Response:
+    try:
+        from modules.buyer_traffic_engine import get_traffic_stats
+        r = await get_traffic_stats()
+        return web.json_response(r)
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
 # TRAFFIC SWARM ROUTES
 # ═══════════════════════════════════════════════════════════════════════════════
 
@@ -9316,6 +9337,9 @@ async def create_app():
     app.router.add_post("/api/seo/submit",             handle_seo_submit)
     app.router.add_post("/api/seo/competitor",         handle_seo_competitor)
     # ── Traffic Swarm routes ────────────────────────────────────────────────
+    # ── Buyer Traffic Engine ───────────────────────────────────────────────
+    app.router.add_post("/api/buyer-traffic/run",          handle_buyer_traffic_run)
+    app.router.add_get( "/api/buyer-traffic/stats",        handle_buyer_traffic_stats)
     app.router.add_post("/api/traffic/swarm",          handle_traffic_swarm)
     app.router.add_get( "/api/traffic/velocity",       handle_traffic_velocity)
     app.router.add_get( "/api/traffic/rss.xml",        handle_traffic_rss)
