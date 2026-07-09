@@ -5889,8 +5889,8 @@ async def task_geheimwaffe() -> str:
 async def task_reply_monitor() -> str:
     """Reply Monitor: Social Media Mentions + Kommentare auto-beantworten (alle 2h)."""
     try:
-        from modules.reply_monitor import run_cycle
-        r = await run_cycle()
+        from modules.reply_monitor import run_now
+        r = await run_now()
         return f"Reply Monitor: {r}"
     except Exception as e:
         return f"Reply Monitor Fehler: {e}"
@@ -5950,51 +5950,57 @@ async def task_reddit_cookie_refresh() -> str:
         return f"Reddit Cookie Refresh Fehler: {e}"
 
 
+_REDDIT_TEMPLATES = {
+    "smarthome": [
+        ("Best smart home upgrades I made in 2026 — worth every cent",
+         "After testing dozens of smart home gadgets, these are the ones that actually made my life easier. Started with a smart thermostat (saved 30% on energy bills), added smart plugs for all high-draw appliances, and finally got a proper hub. The key is starting small and building a system that works for YOUR lifestyle. Happy to answer questions about what worked and what didn't."),
+        ("Smart home on a budget: €200 that transformed my apartment",
+         "You don't need thousands for a great smart home. I started with €200 and now control lighting, temperature, security and entertainment from my phone. Trick: buy compatible devices, skip proprietary ecosystems, prioritize what you use daily. My top picks for budget-conscious beginners are in the comments."),
+    ],
+    "gadgets": [
+        ("These 5 gadgets actually changed my daily routine — honest review after 6 months",
+         "I've tested hundreds of gadgets and most end up in a drawer. These 5 I still use every single day after 6 months. What makes them different? They solve real problems, have excellent build quality, and the companies actually support them long-term. Not sponsored — just genuinely useful tech."),
+        ("Gadget review: what I bought vs what I actually kept",
+         "I went on a gadget-buying spree last year. Here's what survived the 6-month reality check. Short version: simple beats complex, quality beats quantity, and the best gadget is the one you actually use. Details and specific picks in comments."),
+    ],
+    "passive_income": [
+        ("My e-commerce automation setup: what's actually working in 2026",
+         "After 2 years of trial and error, here's my honest breakdown of what generates consistent passive income. The fundamentals: find a real market need, solve it better than existing options, automate fulfillment. Happy to share specifics on any of these income streams."),
+        ("From 0 to consistent monthly income: the boring but effective approach",
+         "No get-rich-quick schemes. Just consistent work on systems that earn while I sleep. Took 18 months to hit meaningful numbers but now it's genuinely passive. Key: focus on ONE channel first, systemize it completely, then expand. Most people fail by doing everything at once."),
+    ],
+    "Entrepreneur": [
+        ("What I wish I knew before starting my online business",
+         "3 years in, profitable, and these are the things I got wrong at the start. Biggest mistake: building everything myself instead of buying existing solutions. Second: not validating demand before building. Third: underestimating how long everything takes. What questions do you have about starting out?"),
+        ("Honest revenue breakdown: solo online business, year 3",
+         "Transparency post because I hated vague income reports. Real numbers, real effort required, real sustainability. The short version: it's possible, it's not easy, and compounding effects only kick in after year 2. Full breakdown in comments."),
+    ],
+}
+
+
 async def task_reddit_monetized_post() -> str:
     """Reddit Contributor Program: alle 4h wertvolle Smart-Home/Business-Posts für Earnings."""
+    import os, random, asyncio as _aio
+
     try:
-        from modules.reddit_cookie_poster import post_to_subreddits, refresh_cookies, _load_cookies
-        import anthropic, os
+        from modules.reddit_cookie_poster import _load_cookies, refresh_cookies, submit_post
 
         cookies = _load_cookies()
         if not cookies.get("token_v2"):
             if not refresh_cookies():
                 return "Reddit: Keine Cookies — bitte in Chrome einloggen"
-            cookies = _load_cookies()
-
-        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
-        subreddits_by_niche = [
-            ("smarthome", "Smart Home Automation"),
-            ("gadgets", "Must-Have Gadgets 2026"),
-            ("passive_income", "E-Commerce Side Hustle"),
-            ("Entrepreneur", "Online Business"),
-        ]
 
         posted = []
-        for sub, niche in subreddits_by_niche:
-            msg = client.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=400,
-                messages=[{"role": "user", "content": (
-                    f"Write a helpful Reddit post for r/{sub} about '{niche}'. "
-                    "Value-first, no sales pitch, authentic personal experience tone. "
-                    "Format: TITLE: [title]\n\nBODY: [3-4 sentences]"
-                )}]
-            )
-            raw = msg.content[0].text
-            title = raw.split("TITLE:")[-1].split("\n")[0].strip()[:300]
-            body  = raw.split("BODY:")[-1].strip()[:500] if "BODY:" in raw else raw[:500]
-
-            from modules.reddit_cookie_poster import submit_post
+        for sub, templates in _REDDIT_TEMPLATES.items():
+            title, body = random.choice(templates)
             r = await submit_post(subreddit=sub, title=title, text=body)
             if r.get("ok"):
                 posted.append(f"r/{sub}: {r.get('url','')}")
-            import asyncio as _aio
-            await _aio.sleep(35)  # Reddit rate limit
+            await _aio.sleep(35)
 
-        return f"Reddit Monetized Posts: {len(posted)}/{len(subreddits_by_niche)} ✅\n" + "\n".join(posted)
+        return f"Reddit Monetized: {len(posted)}/{len(_REDDIT_TEMPLATES)} Posts ✅\n" + "\n".join(posted)
     except Exception as e:
-        return f"Reddit Monetized Post Fehler: {e}"
+        return f"Reddit Monetized Fehler: {e}"
 
 
 async def task_fb_cookies_refresh() -> str:
@@ -6256,7 +6262,7 @@ TASKS = [
     # ── SOCIAL & CONTENT ──────────────────────────────────────────────────────
     ("discord",                task_discord_automation,     21600, 2540),  # 6h  — Discord Promo-Posts
     ("twitter_auto",           task_twitter_auto_poster,    14400, 2580),  # 4h  — Tweets zu Trending-Produkten
-    ("instagram_pipeline",     task_instagram_pipeline,     14400, 2620),  # 4h  — Shopify→IG Posts+Stories
+    ("instagram_pipeline",     task_instagram_pipeline,     21600, 2620),  # 6h  — Shopify→IG Posts+Stories
     ("youtube_autonomy",       task_youtube_autonomy,       43200, 2660),  # 12h — YouTube Videos+Shorts auto
     ("tiktok_trends",          task_tiktok_trends_scraper,  21600, 2700),  # 6h  — TikTok viral Produkte+Content
     ("hashnode",               task_hashnode_publisher,     86400, 2740),  # 24h — SEO-Artikel auf Hashnode
