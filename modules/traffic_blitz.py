@@ -577,16 +577,16 @@ async def run_traffic_blitz(mode: str = "full") -> dict:
     topic = random.choice(SEO_TOPICS)
     results: dict = {}
 
-    tasks = [
-        ("linkedin",  linkedin_ai_post(topic)),
-        ("shopify",   create_shopify_blog_post(topic)),
-        ("indexnow",  indexnow_blast()),
-        ("telegram",  post_telegram_seo(topic)),
+    task_defs = [
+        ("linkedin",  lambda: linkedin_ai_post(topic)),
+        ("shopify",   lambda: create_shopify_blog_post(topic)),
+        ("indexnow",  lambda: indexnow_blast()),
+        ("telegram",  lambda: post_telegram_seo(topic)),
     ]
 
-    for name, coro in tasks:
+    for name, coro_fn in task_defs:
         try:
-            results[name] = await coro
+            results[name] = await coro_fn()
         except Exception as exc:
             results[name] = {"ok": False, "error": str(exc)}
 
