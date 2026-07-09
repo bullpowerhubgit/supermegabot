@@ -3209,8 +3209,14 @@ async def handle_social_drafts(req):
             "generated_at": generated_at,
         })
     except Exception as e:
+        err_msg = str(e)
         log.error("handle_social_drafts error: %s", e)
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+        if "credit balance" in err_msg.lower() or "too low" in err_msg.lower():
+            return web.json_response(
+                {"ok": False, "error": "Anthropic API Credits aufgebraucht — bitte unter console.anthropic.com aufladen"},
+                status=503,
+            )
+        return web.json_response({"ok": False, "error": err_msg}, status=500)
 
 
 async def handle_social_schedule(req):
