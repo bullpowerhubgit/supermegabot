@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RudiBot Dashboard - Dark</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0a0e1a;color:#f3f4f6;min-height:100vh;display:flex}
+.sidebar{width:240px;background:linear-gradient(180deg,#0f172a 0%,#1e1b4b 100%);border-right:1px solid #1f2937;padding:20px 0;position:fixed;height:100vh;left:0;top:0;z-index:100}
+.sidebar-logo{display:flex;align-items:center;gap:12px;padding:0 20px 24px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:16px}
+.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:20px}
+.sidebar-logo span{font-size:18px;font-weight:700;background:linear-gradient(135deg,#fff,#a5b4fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-item{display:flex;align-items:center;gap:12px;padding:12px 20px;margin:2px 12px;border-radius:10px;color:#9ca3af;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.2s;border:none;background:transparent;width:calc(100% - 24px);text-align:left}
+.nav-item:hover{background:rgba(255,255,255,0.05);color:#fff}
+.nav-item.active{background:linear-gradient(135deg,rgba(79,70,229,0.35),rgba(99,102,241,0.25));color:#fff;border:1px solid rgba(99,102,241,0.4)}
+.nav-item .icon{font-size:18px;width:24px;text-align:center}
+.section-title{padding:20px 20px 8px;font-size:11px;text-transform:uppercase;letter-spacing:0.1em;color:#6b7280;font-weight:700}
+.main{margin-left:240px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.header{height:64px;background:rgba(15,23,42,0.95);backdrop-filter:blur(10px);border-bottom:1px solid #1f2937;display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:50}
+.header-title{font-size:20px;font-weight:600}
+.status-badge{display:flex;align-items:center;gap:6px;background:rgba(34,197,94,0.15);color:#22c55e;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700}
+.status-badge::before{content:'';width:8px;height:8px;background:#22c55e;border-radius:50%;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.btn-primary{background:linear-gradient(135deg,#4f46e5,#6366f1);color:#fff;border:none;padding:10px 22px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(79,70,229,0.4)}
+.content{padding:28px 30px;flex:1}
+.page-title{font-size:26px;font-weight:700;margin-bottom:24px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:20px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.card{background:#1f2937;border:1px solid #374151;border-radius:16px;padding:24px;position:relative;overflow:hidden;transition:all 0.3s}
+.card:hover{border-color:rgba(99,102,241,0.5);transform:translateY(-2px)}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,0.6),transparent)}
+.card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.card-title{font-size:16px;font-weight:600}
+.card-sub{font-size:12px;color:#6b7280;margin-top:4px}
+.chart-container{height:260px;position:relative}
+.chart-bars{display:flex;align-items:flex-end;justify-content:space-around;height:200px;gap:12px;padding:0 10px}
+.chart-bar{flex:1;background:linear-gradient(180deg,#6366f1,#4f46e5);border-radius:8px 8px 0 0;min-width:36px;position:relative;transition:all 0.3s}
+.chart-bar:hover{filter:brightness(1.3);transform:scaleY(1.02)}
+.chart-bar-value{position:absolute;top:-28px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:700;color:#fff;background:rgba(0,0,0,0.6);padding:2px 8px;border-radius:6px}
+.chart-axis{display:flex;justify-content:space-between;padding:35px 10px 0;font-size:11px;color:#6b7280}
+.funnel{display:flex;flex-direction:column;gap:14px;padding:10px 0}
+.funnel-item{display:flex;align-items:center;gap:12px}
+.funnel-bar{height:36px;border-radius:8px;display:flex;align-items:center;justify-content:flex-end;padding-right:14px;color:#fff;font-size:13px;font-weight:700;transition:all 0.3s}
+.funnel-bar:hover{filter:brightness(1.2)}
+.funnel-label{width:90px;font-size:13px;color:#9ca3af;font-weight:500}
+.stat-card{background:#1f2937;border:1px solid #374151;border-radius:16px;padding:28px 24px;text-align:center;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(99,102,241,0.6),transparent)}
+.stat-title{font-size:14px;color:#9ca3af;margin-bottom:14px;font-weight:500}
+.stat-value{font-size:40px;font-weight:800;margin-bottom:10px}
+.stat-value.blue{color:#3b82f6}
+.stat-value.purple{color:#a78bfa}
+.stat-value.orange{color:#f97316}
+.stat-change{font-size:13px;font-weight:600}
+.stat-change.positive{color:#22c55e}
+.table-container{background:#1f2937;border:1px solid #374151;border-radius:16px;overflow:hidden}
+.table-header{padding:20px 24px;border-bottom:1px solid #374151;font-size:17px;font-weight:700}
+.table-row{display:grid;grid-template-columns:50px 1fr 100px;align-items:center;padding:14px 24px;border-bottom:1px solid rgba(55,65,81,0.6);font-size:14px;transition:all 0.2s}
+.table-row:hover{background:rgba(79,70,229,0.08)}
+.table-row:last-child{border-bottom:none}
+.table-row.header{color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.06em;padding:12px 24px;font-weight:600}
+.rank{width:32px;height:32px;border-radius:10px;background:rgba(59,130,246,0.15);color:#3b82f6;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.product-name{font-weight:600}
+.product-sub{font-size:12px;color:#6b7280;margin-top:3px}
+.product-price{text-align:right;font-weight:700;font-size:16px;color:#a78bfa}
+.metric-card{background:#1f2937;border:1px solid #374151;border-radius:14px;padding:20px;text-align:center}
+.metric-card .metric-icon{font-size:28px;margin-bottom:10px}
+.metric-card .metric-label{font-size:13px;color:#9ca3af;margin-bottom:6px}
+.metric-card .metric-value{font-size:32px;font-weight:800;color:#fff}
+.ai-card{background:linear-gradient(135deg,rgba(79,70,229,0.2),rgba(99,102,241,0.15));border:1px solid rgba(99,102,241,0.3);border-radius:16px;padding:24px;display:flex;align-items:center;justify-content:space-between}
+.ai-card-left{display:flex;align-items:center;gap:16px}
+.ai-icon{width:50px;height:50px;border-radius:14px;background:linear-gradient(135deg,#4f46e5,#6366f1);display:flex;align-items:center;justify-content:center;font-size:24px}
+.system-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:16px}
+.system-item{background:#111827;border:1px solid #1f2937;border-radius:12px;padding:16px;text-align:center;transition:all 0.3s}
+.system-item:hover{border-color:rgba(99,102,241,0.3);transform:translateY(-2px)}
+.system-item .sys-icon{font-size:24px;margin-bottom:8px}
+.system-item .sys-label{font-size:12px;color:#9ca3af;margin-bottom:4px}
+.system-item .sys-value{font-size:14px;font-weight:600;color:#22c55e}
+.view{display:none}
+.view.active{display:block;animation:fadeIn 0.4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.platform-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px}
+.platform-card{background:#1f2937;border:1px solid #374151;border-radius:14px;padding:18px;text-align:center;transition:all 0.3s}
+.platform-card:hover{border-color:rgba(99,102,241,0.4);transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.3)}
+.platform-card .plat-icon{font-size:28px;margin-bottom:10px}
+.platform-card .plat-name{font-size:14px;font-weight:600;margin-bottom:6px}
+.platform-card .plat-status{font-size:12px;color:#22c55e;font-weight:500}
+@media(max-width:1200px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}.sidebar{width:70px}.nav-item span,.sidebar-logo span,.section-title{display:none}.main{margin-left:70px}}
+@media(max-width:768px){.sidebar{display:none}.main{margin-left:0}}
+</style>
+</head>
+<body>
+<aside class="sidebar">
+<div class="sidebar-logo"><div class="avatar">🤖</div><span>RudiBot</span></div>
+<nav>
+<button class="nav-item active" data-view="dashboard"><span class="icon">📊</span><span>Armaturenbrett</span></button>
+<button class="nav-item" data-view="ai"><span class="icon">🧠</span><span>KI-Assistent</span></button>
+<button class="nav-item" data-view="orders"><span class="icon">📦</span><span>Bestellungen</span></button>
+<button class="nav-item" data-view="products"><span class="icon">🛍️</span><span>Produkte</span></button>
+<button class="nav-item" data-view="customers"><span class="icon">👥</span><span>Kunden</span></button>
+<button class="nav-item" data-view="analytics"><span class="icon">📈</span><span>Analysen</span></button>
+<div class="section-title">System</div>
+<button class="nav-item" data-view="agents"><span class="icon">🤖</span><span>Agenten</span></button>
+<button class="nav-item" data-view="platforms"><span class="icon">🌐</span><span>Plattformen</span></button>
+<button class="nav-item" data-view="finance"><span class="icon">💰</span><span>Monetarisierung</span></button>
+</nav>
+</aside>
+<main class="main">
+<header class="header">
+<div style="display:flex;align-items:center;gap:16px"><h1 class="header-title" id="page-title">Armaturenbrett</h1><div class="status-badge">Online</div></div>
+<div style="display:flex;align-items:center;gap:16px"><span style="color:#9ca3af;font-size:14px">7.6.2026</span><button class="btn-primary">melden</button></div>
+</header>
+<div class="content">
+<div class="view active" id="view-dashboard">
+<h2 class="page-title">Dashboard-Übersicht</h2>
+<div class="grid-4">
+<div class="metric-card"><div class="metric-icon">📦</div><div class="metric-label">Bestellungen</div><div class="metric-value">0</div></div>
+<div class="metric-card"><div class="metric-icon">🛍️</div><div class="metric-label">Aktive Produkte</div><div class="metric-value">0</div></div>
+<div class="metric-card"><div class="metric-icon">👥</div><div class="metric-label">Kunden</div><div class="metric-value">0</div></div>
+<div class="metric-card"><div class="metric-icon">📊</div><div class="metric-label">Artikel verkauft</div><div class="metric-value">0</div></div>
+</div>
+<div class="ai-card" style="margin-top:20px">
+<div class="ai-card-left">
+<div class="ai-icon">🤖</div>
+<div><div style="font-size:18px;font-weight:700">RudiBot KI-Assistent</div><div style="font-size:13px;color:#9ca3af;margin-top:4px">Sprich mit mir - ich kann alles steuern, überwachen und automatisieren!</div></div>
+</div>
+<button class="btn-primary" style="padding:10px 24px">Jetzt starten</button>
+</div>
+<div class="card" style="margin-top:20px">
+<div class="card-header"><div><div class="card-title">Systemstatus</div><div class="card-sub">Alle Systeme online</div></div></div>
+<div class="system-grid">
+<div class="system-item"><div class="sys-icon">🟢</div><div class="sys-label">Online</div><div class="sys-value">Telegram-Bot</div></div>
+<div class="system-item"><div class="sys-icon">🔗</div><div class="sys-label">Verbunden</div><div class="sys-value">Shopify API</div></div>
+<div class="system-item"><div class="sys-icon">💰</div><div class="sys-label">Aktiv</div><div class="sys-value">Monetarisierung</div></div>
+<div class="system-item"><div class="sys-icon">🌐</div><div class="sys-label">Bereit</div><div class="sys-value">API-Gateway</div></div>
+</div>
+</div>
+</div>
+<div class="view" id="view-ai">
+<h2 class="page-title">KI-Assistent</h2>
+<div class="ai-card"><div class="ai-card-left"><div class="ai-icon">🤖</div><div><div style="font-size:18px;font-weight:700">RudiBot Monetarisierungs-Manager</div><div style="font-size:13px;color:#9ca3af;margin-top:4px">Alle Automatisierungen aktiv - 48 Plattformen verbunden</div></div></div><button class="btn-primary">Chat starten</button></div>
+</div>
+<div class="view" id="view-orders">
+<h2 class="page-title">Bestellungen</h2>
+<div class="card"><div class="card-title">Shopify Bestellungen</div><div style="color:#9ca3af;margin-top:12px;font-size:14px">Keine neuen Bestellungen vorhanden.</div></div>
+</div>
+<div class="view" id="view-products">
+<h2 class="page-title">Produkte</h2>
+<div class="card"><div class="card-title">Shopify Produkte</div><div style="color:#9ca3af;margin-top:12px;font-size:14px">0 Produkte im Store.</div></div>
+</div>
+<div class="view" id="view-customers">
+<h2 class="page-title">Kunden</h2>
+<div class="card"><div class="card-title">Kundenübersicht</div><div style="color:#9ca3af;margin-top:12px;font-size:14px">0 Kunden registriert.</div></div>
+</div>
+<div class="view" id="view-analytics">
+<h2 class="page-title">Analysen & Berichte</h2>
+<div class="grid-2">
+<div class="card"><div class="card-header"><div class="card-title">Monatlicher Umsatz</div></div>
+<div class="chart-container"><div class="chart-bars">
+<div class="chart-bar" style="height:25%"><span class="chart-bar-value">2000 €</span></div>
+<div class="chart-bar" style="height:40%"><span class="chart-bar-value">3500 €</span></div>
+<div class="chart-bar" style="height:55%"><span class="chart-bar-value">2800 €</span></div>
+<div class="chart-bar" style="height:70%"><span class="chart-bar-value">4200 €</span></div>
+<div class="chart-bar" style="height:85%"><span class="chart-bar-value">5100 €</span></div>
+<div class="chart-bar" style="height:65%"><span class="chart-bar-value">3800 €</span></div>
+</div><div class="chart-axis"><span>Januar</span><span>Februar</span><span>März</span><span>April</span><span>Mai</span><span>Juni</span></div></div>
+</div>
+<div class="card"><div class="card-header"><div class="card-title">Konversionstrichter</div></div>
+<div class="funnel">
+<div class="funnel-item"><span class="funnel-label">Leads</span><div class="funnel-bar" style="width:100%;background:linear-gradient(90deg,#3b82f6,#6366f1)">100</div></div>
+<div class="funnel-item"><span class="funnel-label">Interessiert</span><div class="funnel-bar" style="width:60%;background:linear-gradient(90deg,#6366f1,#8b5cf6)">60</div></div>
+<div class="funnel-item"><span class="funnel-label">Anrufe</span><div class="funnel-bar" style="width:25%;background:linear-gradient(90deg,#8b5cf6,#a855f7)">25</div></div>
+<div class="funnel-item"><span class="funnel-label">Verkäufe</span><div class="funnel-bar" style="width:12%;background:linear-gradient(90deg,#a855f7,#22c55e)">12</div></div>
+</div>
+</div>
+</div>
+<div class="grid-3">
+<div class="stat-card"><div class="stat-title">Durchschnittlicher Deal</div><div class="stat-value blue">847 €</div><div class="stat-change positive">+15% vs letzter Monat</div></div>
+<div class="stat-card"><div class="stat-title">Umrechnungskurs</div><div class="stat-value purple">12%</div><div class="stat-change positive">+3% vs letzter Monat</div></div>
+<div class="stat-card"><div class="stat-title">Kundenlebenszeit</div><div class="stat-value orange">8,5 Monate</div><div class="stat-change positive">+1,2 Monate vs letztes Jahr</div></div>
+</div>
+<div class="table-container">
+<div class="table-header">Top-Produkte</div>
+<div class="table-row header"><div>#</div><div>Produkt</div><div style="text-align:right">Umsatz</div></div>
+<div class="table-row"><div class="rank">1</div><div><div class="product-name">Audit + Fix Sprint</div><div class="product-sub">Service-Paket</div></div><div class="product-price">990 €</div></div>
+<div class="table-row"><div class="rank">2</div><div><div class="product-name">Shopify Automation</div><div class="product-sub">Einrichtung</div></div><div class="product-price">1.490 €</div></div>
+<div class="table-row"><div class="rank">3</div><div><div class="product-name">RudiBot Master</div><div class="product-sub">Lizenz</div></div><div class="product-price">2.900 €</div></div>
+</div>
+</div>
+<div class="view" id="view-agents">
+<h2 class="page-title">Agenten & Bots</h2>
+<div class="grid-2">
+<div class="card"><div class="card-header"><div><div class="card-title">Hauptagenten (8)</div><div class="card-sub">Spezialisierte Aufgaben</div></div><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">8 Active</span></div>
+<div style="margin-top:12px">
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #374151"><span style="font-weight:500">Eternal Guardian</span><span style="color:#22c55e;font-weight:600">Self-Healing Active</span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #374151"><span style="font-weight:500">Deployment Commander</span><span style="color:#22c55e;font-weight:600">Git Automation</span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #374151"><span style="font-weight:500">Health Supervisor</span><span style="color:#22c55e;font-weight:600">24/7 Monitoring</span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0"><span style="font-weight:500">Recovery Master</span><span style="color:#22c55e;font-weight:600">Rollback Ready</span></div>
+</div></div>
+<div class="card"><div class="card-header"><div><div class="card-title">Micro Bots (5)</div><div class="card-sub">Schnelle Tasks</div></div><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">5 Active</span></div>
+<div style="margin-top:12px">
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #374151"><span style="font-weight:500">@DudiRudibot</span><span style="color:#22c55e;font-weight:600">Telegram Active</span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #374151"><span style="font-weight:500">Shopify Monitor</span><span style="color:#22c55e;font-weight:600">Webhook Ready</span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0"><span style="font-weight:500">Stripe Watcher</span><span style="color:#22c55e;font-weight:600">Payment Active</span></div>
+</div></div>
+</div>
+</div>
+<div class="view" id="view-platforms">
+<h2 class="page-title">Platform Matrix (48)</h2>
+<div class="platform-grid">
+<div class="platform-card"><div class="plat-icon">📱</div><div class="plat-name">Telegram</div><div class="plat-status">Bot Active</div></div>
+<div class="platform-card"><div class="plat-icon">🛒</div><div class="plat-name">Shopify</div><div class="plat-status">Connected</div></div>
+<div class="platform-card"><div class="plat-icon">💳</div><div class="plat-name">Stripe</div><div class="plat-status">Live Mode</div></div>
+<div class="platform-card"><div class="plat-icon">🗃️</div><div class="plat-name">Supabase</div><div class="plat-status">Connected</div></div>
+<div class="platform-card"><div class="plat-icon">🤖</div><div class="plat-name">OpenAI</div><div class="plat-status">API Ready</div></div>
+<div class="platform-card"><div class="plat-icon">🧠</div><div class="plat-name">Anthropic</div><div class="plat-status">Claude Active</div></div>
+<div class="platform-card"><div class="plat-icon">🔍</div><div class="plat-name">Perplexity</div><div class="plat-status">Search API</div></div>
+<div class="platform-card"><div class="plat-icon">▶️</div><div class="plat-name">YouTube</div><div class="plat-status">Autoposting</div></div>
+</div>
+</div>
+<div class="view" id="view-finance">
+<h2 class="page-title">Monetarisierung</h2>
+<div class="grid-2">
+<div class="card"><div class="card-header"><div><div class="card-title">Gesamtumsatz</div><div class="card-sub">Revenue Tracking</div></div><span style="background:rgba(250,204,21,0.15);color:#facc15;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">Setup Required</span></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px">
+<div style="background:#111827;padding:18px;border-radius:12px;text-align:center"><div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Umsatz</div><div style="font-size:26px;font-weight:800">€0</div></div>
+<div style="background:#111827;padding:18px;border-radius:12px;text-align:center"><div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Kosten</div><div style="font-size:26px;font-weight:800">€0</div></div>
+<div style="background:#111827;padding:18px;border-radius:12px;text-align:center"><div style="font-size:12px;color:#9ca3af;margin-bottom:6px">Profit</div><div style="font-size:26px;font-weight:800">€0</div></div>
+</div></div>
+<div class="card"><div class="card-header"><div><div class="card-title">Shopify Sprint</div><div class="card-sub">E-Commerce Automation</div></div><span style="background:rgba(34,197,94,0.15);color:#22c55e;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:700">Active</span></div>
+<div style="margin-top:16px">
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #374151"><span>Produkte</span><span style="color:#9ca3af">0</span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #374151"><span>Bestellungen</span><span style="color:#9ca3af">0</span></div>
+<div style="display:flex;justify-content:space-between;padding:12px 0"><span>Umsatz</span><span style="color:#9ca3af">€0</span></div>
+</div></div>
+</div>
+</div>
+</div>
+</main>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  var buttons = document.querySelectorAll('.nav-item');
+  
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var viewId = this.getAttribute('data-view') || 'dashboard';
+      
+      // Alle Views verstecken
+      document.querySelectorAll('.view').forEach(function(v) {
+        v.classList.remove('active');
+      });
+      
+      // Ziel-View anzeigen
+      var targetView = document.getElementById('view-' + viewId);
+      if (targetView) targetView.classList.add('active');
+      
+      // Active-Klasse aktualisieren
+      document.querySelectorAll('.nav-item').forEach(function(n) {
+        n.classList.remove('active');
+      });
+      this.classList.add('active');
+      
+      // Titel aktualisieren
+      var titles = {
+        dashboard: 'Armaturenbrett',
+        ai: 'KI-Assistent',
+        orders: 'Bestellungen',
+        products: 'Produkte',
+        customers: 'Kunden',
+        analytics: 'Analysen',
+        agents: 'Agenten & Bots',
+        platforms: 'Platform Matrix',
+        finance: 'Monetarisierung'
+      };
+      var titleEl = document.getElementById('page-title');
+      if (titleEl) titleEl.textContent = titles[viewId] || 'Dashboard';
+    });
+  });
+});
+</script>
+</body>
+</html>
