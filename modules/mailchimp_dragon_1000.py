@@ -19,7 +19,7 @@ import aiohttp
 
 log = logging.getLogger("MailchimpDragon1000")
 
-DRAGON_KEY    = os.getenv("MAILCHIMP_DRAGON_API_KEY", "4206e572541883eb39eb2c52d9a3a116-us18")
+DRAGON_KEY    = os.getenv("MAILCHIMP_DRAGON_API_KEY", "")
 DRAGON_LIST   = os.getenv("MAILCHIMP_DRAGON_LIST_ID", "0e84a22a44")
 DRAGON_SERVER = os.getenv("MAILCHIMP_DRAGON_SERVER", "us18")
 DRAGON_BASE   = f"https://{DRAGON_SERVER}.api.mailchimp.com/3.0"
