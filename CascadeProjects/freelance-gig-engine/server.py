@@ -149,7 +149,7 @@ SERVICES = [
         "price_basic": 200, "price_standard": 500, "price_premium": 1200,
         "delivery_days": [5, 10, 21],
         "skills": ["Python", "Telegram API", "Stripe", "AI/ML", "aiohttp"],
-        "demo_url": "https://dudirudibot-mega-production.up.railway.app"
+        "demo_url": "https://supermegabot-production.up.railway.app"
     },
     {
         "title": "E-Commerce KI-Automatisierung: Produkt-Research, Pricing & Import",

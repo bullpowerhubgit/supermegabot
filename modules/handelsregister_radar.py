@@ -124,81 +124,120 @@ BUNDESLAENDER_HR = {
     "Baden-Württemberg": "BW",
     "Hessen":            "HE",
     "Hamburg":           "HH",
+    "Berlin":            "BE",
 }
 
 _HR_BASE        = "https://www.handelsregister.de"
 _HR_WELCOME_URL = "https://www.handelsregister.de/rp_web/welcome.xhtml"
-_HR_SEARCH_URL  = "https://www.handelsregister.de/rp_web/search.xhtml"
+_HR_BKM_URL     = "https://www.handelsregister.de/rp_web/bekanntmachungen/welcome.xhtml"
+# Kategorien die KEINE Leads sind (Löschungen)
+_SKIP_KATEGORIEN = {"Löschungsankündigung"}
 
-async def scrape_neugründungen(max_per_land: int = 20) -> List[Dict]:
-    """Scrapt neue HRB-Eintragungen via JSF-Session: welcome→search GET→search POST."""
-    results = []
-    _HEADERS = {
+async def _get_bkm_session() -> tuple:
+    """Gibt (session, bkm_url, vs) zurück — vollständige JSF-Navigation zu Bekanntmachungen."""
+    H_BASE = {
         "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept": "text/html,application/xhtml+xml,*/*;q=0.9",
         "Accept-Language": "de-DE,de;q=0.9",
     }
+    session = aiohttp.ClientSession(
+        headers=H_BASE,
+        timeout=aiohttp.ClientTimeout(total=45),
+        cookie_jar=aiohttp.CookieJar(),
+    )
+    # Schritt 1: Welcome → JSESSIONID + headerForm ViewState
+    async with session.get(_HR_WELCOME_URL) as r:
+        html = await r.text(errors="replace")
+
+    hf_action_m = re.search(r'id="headerForm"[^>]+action="([^"]+)"', html)
+    vs_m = re.search(r'name="javax\.faces\.ViewState"[^>]+value="([^"]+)"', html)
+    bkm_m = re.search(r"Registerbekanntmachungen.*?addSubmitParam\([^)]+\{([^}]+)\}", html, re.DOTALL)
+    if not (hf_action_m and vs_m and bkm_m):
+        await session.close()
+        return None, None, None
+
+    full_hf = _HR_BASE + hf_action_m.group(1)
+    vs = vs_m.group(1)
+    bkm_params = dict(re.findall(r"'([^']+)':'([^']+)'", bkm_m.group(1)))
+
+    await asyncio.sleep(0.5)
+
+    # Schritt 2: navigate to Bekanntmachungen
+    async with session.post(full_hf,
+                            data={"headerForm": "headerForm", "javax.faces.ViewState": vs, **bkm_params},
+                            headers={"Content-Type": "application/x-www-form-urlencoded",
+                                     "Origin": _HR_BASE}) as r:
+        html2 = await r.text(errors="replace")
+        bkm_url = str(r.url)
+
+    vs2_m = re.search(r'name="javax\.faces\.ViewState"[^>]+value="([^"]+)"', html2)
+    if not vs2_m:
+        await session.close()
+        return None, None, None
+
+    return session, bkm_url, vs2_m.group(1)
+
+
+async def scrape_neugründungen(max_per_land: int = 20) -> List[Dict]:
+    """Scrapt Registerbekanntmachungen von heute via JSF-AJAX (3-Schritt-Flow)."""
+    from datetime import date
+    today = date.today().strftime("%d.%m.%Y")
+    results = []
 
     for bl_name, bl_code in list(BUNDESLAENDER_HR.items())[:3]:
+        session = None
         try:
-            async with aiohttp.ClientSession(
-                headers=_HEADERS,
-                timeout=aiohttp.ClientTimeout(total=45),
-                connector=aiohttp.TCPConnector(ssl=True),
-                cookie_jar=aiohttp.CookieJar(),
-            ) as session:
-                # Schritt 1: welcome.xhtml → JSESSIONID cookie holen
-                async with session.get(_HR_WELCOME_URL) as r:
-                    if r.status not in (200, 400):
-                        log.warning("HR %s: welcome %d", bl_name, r.status)
-                        continue
-                    await r.read()
+            session, bkm_url, vs = await _get_bkm_session()
+            if not session:
+                log.warning("HR %s: Session-Aufbau fehlgeschlagen", bl_name)
+                continue
 
-                # Schritt 2: search.xhtml → ViewState holen
-                async with session.get(_HR_SEARCH_URL) as r:
-                    html = await r.text(errors="replace")
-                    log.debug("HR %s: search GET %d", bl_name, r.status)
+            await asyncio.sleep(0.5)
 
-                vs_match = (
-                    re.search(r'id="javax\.faces\.ViewState"[^>]+value="([^"]+)"', html)
-                    or re.search(r'name="javax\.faces\.ViewState"[^>]+value="([^"]+)"', html)
-                    or re.search(r'javax\.faces\.ViewState.*?value="([^"]+)"', html, re.DOTALL)
-                )
-                if not vs_match:
-                    log.warning("HR %s: kein ViewState in search.xhtml", bl_name)
-                    continue
-                view_state = vs_match.group(1)
-                log.info("HR %s: ViewState OK", bl_name)
+            # Schritt 3: AJAX-Filter POST
+            ajax_data = {
+                "bekanntMachungenForm": "bekanntMachungenForm",
+                "bekanntMachungenForm:datum_von_input": today,
+                "bekanntMachungenForm:datum_bis_input": today,
+                "bekanntMachungenForm:land_input": bl_code,
+                "bekanntMachungenForm:land_focus": "",
+                "bekanntMachungenForm:registergericht_input": "",
+                "bekanntMachungenForm:registergericht_focus": "",
+                "bekanntMachungenForm:registergericht_filter": "",
+                "bekanntMachungenForm:sitz": "",
+                "bekanntMachungenForm:kategorie_input": "",
+                "bekanntMachungenForm:kategorie_focus": "",
+                "bekanntMachungenForm:kategorie_filter": "",
+                "javax.faces.partial.ajax": "true",
+                "javax.faces.source": "bekanntMachungenForm:rrbSuche",
+                "javax.faces.partial.execute": "bekanntMachungenForm",
+                "javax.faces.partial.render": "bekanntMachungenForm",
+                "bekanntMachungenForm:rrbSuche": "bekanntMachungenForm:rrbSuche",
+                "javax.faces.ViewState": vs,
+            }
+            ajax_headers = {
+                "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+                "Accept": "application/xml, text/xml, */*; q=0.01",
+                "X-Requested-With": "XMLHttpRequest",
+                "Faces-Request": "partial/ajax",
+                "Origin": _HR_BASE,
+                "Referer": bkm_url,
+            }
+            async with session.post(bkm_url, data=ajax_data, headers=ajax_headers) as r:
+                xml_resp = await r.text(errors="replace")
+                log.info("HR %s: AJAX %d", bl_name, r.status)
 
-                # Schritt 3: Suche POSTen (nurNeueintr=on → nur Neugründungen heute)
-                form_data = {
-                    "form": "form",
-                    "form:schlagwoerter": "",
-                    "form:registerArt": "HRB",
-                    "form:registerNummer": "",
-                    "form:registergericht": "",
-                    "form:bundesland": bl_code,
-                    "form:zeitraum": "tag",
-                    "form:nurNeueintr": "on",
-                    "form:ergebnisseProSeite": "100",
-                    "form:btnSuche": "Suchen",
-                    "javax.faces.ViewState": view_state,
-                }
-                async with session.post(
-                    _HR_SEARCH_URL,
-                    data=form_data,
-                    headers={**_HEADERS, "Content-Type": "application/x-www-form-urlencoded",
-                              "Referer": _HR_SEARCH_URL, "Origin": _HR_BASE},
-                ) as r:
-                    html = await r.text(errors="replace")
-                    log.info("HR %s: POST %d", bl_name, r.status)
-                    batch = _parse_hr_html(html, bl_name)
-                    results.extend(batch[:max_per_land])
-                    log.info("HR %s: %d Einträge", bl_name, len(batch))
+            batch = _parse_bkm_xml(xml_resp, bl_name, today)
+            results.extend(batch[:max_per_land])
+            log.info("HR %s: %d Bekanntmachungen heute", bl_name, len(batch))
 
-            await asyncio.sleep(3)
         except Exception as e:
             log.warning("HR %s: %s", bl_name, e)
+        finally:
+            if session:
+                await session.close()
+
+        await asyncio.sleep(3)
 
     if not results:
         log.warning("Scraping 0 Einträge — Demo-Daten")
@@ -206,30 +245,67 @@ async def scrape_neugründungen(max_per_land: int = 20) -> List[Dict]:
     return results
 
 
-def _parse_hr_html(html: str, bundesland: str) -> List[Dict]:
+def _parse_bkm_xml(xml_resp: str, bundesland: str, datum: str) -> List[Dict]:
+    """Parst die PrimeFaces AJAX-XML-Antwort aus Registerbekanntmachungen."""
     entries = []
-    rows = re.findall(r'<tr[^>]*>(.*?)</tr>', html, re.DOTALL | re.IGNORECASE)
-    for row in rows:
-        cells = re.findall(r'<td[^>]*>(.*?)</td>', row, re.DOTALL)
-        cells = [re.sub(r'<[^>]+>', '', c).strip() for c in cells]
-        if len(cells) >= 3:
-            firma = cells[0] if cells else ""
-            if not firma or len(firma) < 4:
-                continue
-            rechtsform = "GmbH"
-            if "ag" in firma.lower() or " ag" in firma.lower():
-                rechtsform = "AG"
-            elif "ug" in firma.lower():
-                rechtsform = "UG"
-            uid = hashlib.md5(f"{firma}{bundesland}".encode()).hexdigest()[:16]
-            entries.append({
-                "uid": uid, "firma": firma, "rechtsform": rechtsform,
-                "amtsgericht": cells[1] if len(cells) > 1 else "",
-                "registernr":  cells[2] if len(cells) > 2 else "",
-                "bundesland": bundesland, "ort": bundesland,
-                "datum": datetime.now().strftime("%Y-%m-%d"),
-                "scraped_at": int(time.time()),
-            })
+    # CDATA aus partial-response extrahieren
+    cdata_m = re.search(r'<!\[CDATA\[(.*?)\]\]>', xml_resp, re.DOTALL)
+    if not cdata_m:
+        return entries
+    html = cdata_m.group(1)
+
+    # Label-Elemente = ein Eintrag pro Bekanntmachung
+    # Nur Labels mit Amtsgericht/HRB-Inhalt (nicht Form-Feld-Labels)
+    labels = [l for l in re.findall(r'<label[^>]+class="ui-outputlabel[^"]*"[^>]*>(.*?)</label>', html, re.DOTALL)
+              if re.search(r'Amtsgericht|HR[ABCGPVR]|Sonstige|Einreichung|Bekanntmachung|Löschung', l)]
+    for raw in labels:
+        text = re.sub(r'<[^>]+>', '', raw).strip()
+        parts = [p.strip() for p in text.split('\n') if p.strip()]
+        if len(parts) < 2:
+            continue
+
+        kategorie = parts[0].strip()
+        if kategorie in _SKIP_KATEGORIEN:
+            continue
+
+        # Zeile 2: "Bayern Amtsgericht München HRB 226327"
+        reg_line = parts[1] if len(parts) > 1 else ""
+        reg_m = re.search(r'(HR[ABCGPV]|GnR|VR|PR)\s+(\d+)', reg_line)
+        registernr = f"{reg_m.group(1)} {reg_m.group(2)}" if reg_m else ""
+        ag_m = re.search(r'Amtsgericht\s+(\S+)', reg_line)
+        amtsgericht = ag_m.group(1) if ag_m else ""
+
+        # Zeile 3: "Firma – Ort"
+        firma_line = parts[2] if len(parts) > 2 else parts[1]
+        if ' – ' in firma_line:
+            firma, ort = firma_line.split(' – ', 1)
+        elif ' - ' in firma_line:
+            firma, ort = firma_line.split(' - ', 1)
+        else:
+            firma, ort = firma_line, bundesland
+        firma = firma.strip()
+        ort = ort.strip()
+
+        if not firma or len(firma) < 3:
+            continue
+
+        rechtsform = "GmbH"
+        fl = firma.lower()
+        if " ag" in fl or fl.endswith(" ag"):
+            rechtsform = "AG"
+        elif "ug " in fl or "ug (" in fl:
+            rechtsform = "UG"
+        elif "kg" in fl:
+            rechtsform = "KG"
+
+        uid = hashlib.md5(f"{firma}{bundesland}{registernr}".encode()).hexdigest()[:16]
+        entries.append({
+            "uid": uid, "firma": firma, "rechtsform": rechtsform,
+            "amtsgericht": amtsgericht, "registernr": registernr,
+            "bundesland": bundesland, "ort": ort,
+            "datum": datum, "kategorie": kategorie,
+            "scraped_at": int(time.time()),
+        })
     return entries
 
 

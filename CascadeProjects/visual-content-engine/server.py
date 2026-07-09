@@ -35,7 +35,7 @@ PRODUCTS = [
     {"name": "Shopify Acquisition Engine", "url": "https://shopify-acquisition-engine-production.up.railway.app", "price": "49€/mo", "niche": "E-Commerce Automatisierung"},
     {"name": "SEO Turbo Tools", "url": "https://seo-turbo-tools-production.up.railway.app", "price": "29€/mo", "niche": "SEO & Online Marketing"},
     {"name": "iComeAuto SaaS", "url": "https://icomeauto-saas-production.up.railway.app", "price": "29€/mo", "niche": "Passives Einkommen"},
-    {"name": "SuperMegaBot", "url": "https://dudirudibot-mega-production.up.railway.app", "price": "49€/mo", "niche": "KI Business Automatisierung"},
+    {"name": "SuperMegaBot", "url": "https://supermegabot-production.up.railway.app", "price": "49€/mo", "niche": "KI Business Automatisierung"},
 ]
 
 DB_PATH = "/tmp/visual_content.db"
