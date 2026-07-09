@@ -6091,8 +6091,8 @@ async def handle_seo_status(request: web.Request) -> web.Response:
 async def handle_buyer_traffic_run(request: web.Request) -> web.Response:
     try:
         from modules.buyer_traffic_engine import run_buyer_traffic_cycle
-        r = await run_buyer_traffic_cycle()
-        return web.json_response(r)
+        asyncio.ensure_future(run_buyer_traffic_cycle())
+        return web.json_response({"ok": True, "status": "started", "message": "Buyer Traffic Cycle läuft im Hintergrund"})
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
 
