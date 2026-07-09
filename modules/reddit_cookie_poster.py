@@ -148,6 +148,26 @@ async def _get_modhash(session: aiohttp.ClientSession, cookies: dict) -> str:
         return ""
 
 
+async def _fetch_first_flair(subreddit: str, token: str, username: str) -> str:
+    """Fetch the first available link flair ID for a subreddit."""
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://oauth.reddit.com/r/{subreddit}/api/link_flair_v2",
+                headers={"Authorization": f"Bearer {token}",
+                         "User-Agent": f"SuperMegaBot/2.0 by /u/{username}"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                flairs = await r.json(content_type=None)
+                if isinstance(flairs, list) and flairs:
+                    flair_id = flairs[0].get("id", "")
+                    log.info("Auto-selected flair '%s' for r/%s", flairs[0].get("text", "?"), subreddit)
+                    return flair_id
+    except Exception as e:
+        log.warning("Flair fetch failed for r/%s: %s", subreddit, e)
+    return ""
+
+
 async def submit_post(
     subreddit: str,
     title: str,
@@ -206,17 +226,35 @@ async def submit_post(
     json_d = d.get("json", d)
     errors = json_d.get("errors", [])
     if errors:
+        err_str = str(errors)
+        # Auto-fetch flair and retry if flair required
+        if "FLAIR_REQUIRED" in err_str or "SUBMIT_VALIDATION_FLAIR_REQUIRED" in err_str:
+            flair_id = await _fetch_first_flair(subreddit, token, username)
+            if flair_id:
+                payload["flair_id"] = flair_id
+                try:
+                    async with aiohttp.ClientSession() as sf:
+                        async with sf.post(
+                            "https://oauth.reddit.com/api/submit", data=payload,
+                            headers={"Authorization": f"Bearer {token}",
+                                     "User-Agent": f"SuperMegaBot/2.0 by /u/{username}"},
+                            timeout=aiohttp.ClientTimeout(total=20),
+                        ) as rf:
+                            d = await rf.json(content_type=None)
+                    json_d = d.get("json", d)
+                    errors = json_d.get("errors", [])
+                except Exception:
+                    pass
         # token expired — refresh and retry once
-        if any("UNAUTHENTICATED" in str(e) or "auth" in str(e).lower() for e in errors):
+        if errors and any("UNAUTHENTICATED" in str(e) or "auth" in str(e).lower() for e in errors):
             if refresh_cookies():
                 cookies = _load_cookies()
                 token = cookies.get("token_v2", "")
                 if token:
-                    payload_retry = {**payload, }
                     try:
                         async with aiohttp.ClientSession() as s2:
                             async with s2.post(
-                                "https://oauth.reddit.com/api/submit", data=payload_retry,
+                                "https://oauth.reddit.com/api/submit", data=payload,
                                 headers={"Authorization": f"Bearer {token}",
                                          "User-Agent": f"SuperMegaBot/2.0 by /u/{username}"},
                                 timeout=aiohttp.ClientTimeout(total=20),
