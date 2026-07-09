@@ -71,7 +71,7 @@ _load_env()
 
 def _anthropic() -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _gmail_user() -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "xulp qyuz gxnb vfqw")
+def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
 def _tg_token()   -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
 def _tg_chat()    -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 
