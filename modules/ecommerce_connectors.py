@@ -267,6 +267,35 @@ class GumroadConnector:
             payload["url"] = url
         return await self._post("/products", payload)
 
+    async def _put(self, path: str, data: Dict) -> Dict:
+        if not self._ok():
+            raise RuntimeError("GumroadConnector: GUMROAD_ACCESS_TOKEN fehlt")
+        async with _session() as s:
+            async with s.put(f"{self.BASE}{path}", headers=self._headers(), data=data) as r:
+                if r.status == 401:
+                    raise PermissionError("Gumroad 401 — Token ungültig")
+                r.raise_for_status()
+                return await r.json()
+
+    async def update_product(self, product_id: str, **fields) -> Dict:
+        """Update product fields via PUT /products/{id}. Accepts published=True, name, price, etc."""
+        return await self._put(f"/products/{product_id}", {str(k): str(v) for k, v in fields.items()})
+
+    async def publish_all(self) -> Dict:
+        """Publish all unpublished products — returns count published."""
+        products = await self.get_products()
+        published = 0
+        errors = []
+        for p in products:
+            if not p.get("published", False):
+                try:
+                    await self.update_product(p["id"], published="true")
+                    published += 1
+                    log.info("Gumroad: %s → published", p["name"][:50])
+                except Exception as e:
+                    errors.append(f"{p['name'][:30]}: {e}")
+        return {"published": published, "errors": errors, "total": len(products)}
+
     async def get_sales(self, after: str = "", before: str = "") -> List[Dict]:
         """
         Return sales records, optionally filtered by date range.
