@@ -457,6 +457,24 @@ async def task_monitor_hub() -> str:
         return f"Monitor Hub Fehler: {e}"
 
 
+async def task_mac_watchdog() -> str:
+    """Mac Watchdog: CPU/RAM/Disk + Railway + APIs + auto-repair alle 5 Min."""
+    try:
+        from modules.mac_watchdog import run_mac_watchdog
+        result = await run_mac_watchdog()
+        repaired = result.get("repaired", [])
+        issues   = result.get("issues", [])
+        if repaired:
+            return f"Watchdog: repariert {repaired} | {len(issues)} Issues"
+        if issues:
+            return f"Watchdog: {len(issues)} Issues — {'; '.join(issues[:2])}"
+        return "Watchdog: Mac + alle Services OK ✅"
+    except ImportError as e:
+        return f"mac_watchdog nicht verfügbar: {e}"
+    except Exception as e:
+        return f"Mac Watchdog Fehler: {e}"
+
+
 async def task_railway_health() -> str:
     """Ping all 13 Railway services, Telegram alert if any DOWN."""
     import aiohttp
@@ -6272,8 +6290,9 @@ async def task_shoptext_promo() -> str:
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Monitoring (kostenlos) ────────────────────────────────────────────────
-    ("monitor_hub",          task_monitor_hub,         1800,   60),  # 30 min — Gmail + Telegram + Scheduler
-    ("system_health",        task_system_health,        300,   10),  # 5 min
+    ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
+    ("monitor_hub",          task_monitor_hub,          1800,   60),  # 30 min — Gmail + Telegram + Scheduler
+    ("system_health",        task_system_health,         300,   10),  # 5 min
     ("shopify_orders_alert",   task_shopify_orders_alert,   600,  15),  # 10 min — Bestellung → Telegram
     ("abandoned_cart_recovery", task_abandoned_cart_recovery, 3600, 120),  # 1h — Abandoned Cart E-Mail Recovery
     ("digistore_sync",       task_digistore_sync,        900,  30),  # 15 min — DS24 Einnahmen
