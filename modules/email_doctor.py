@@ -22,13 +22,13 @@ TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 KLAVIYO_KEY  = os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_242945f7521ac82039ed5dbf7ff8e6cf1c")
 KLAVIYO_LIST = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 
-# Mailchimp AIITEC
-MC_KEY     = os.getenv("MAILCHIMP_API_KEY", "1d35dd606aad1a9f1bbd10d2dd2e2ea7-us7")
+# Mailchimp AIITEC (key in .env — alle hardcoded keys abgelaufen)
+MC_KEY     = os.getenv("MAILCHIMP_API_KEY", "")
 MC_SERVER  = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 MC_LIST    = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
 
 # Mailchimp Dragon
-DRAGON_KEY    = os.getenv("MAILCHIMP_DRAGON_API_KEY", "4206e572541883eb39eb2c52d9a3a116-us18")
+DRAGON_KEY    = os.getenv("MAILCHIMP_DRAGON_API_KEY", "")
 DRAGON_LIST   = os.getenv("MAILCHIMP_DRAGON_LIST_ID", "0e84a22a44")
 DRAGON_SERVER = os.getenv("MAILCHIMP_DRAGON_SERVER", "us18")
 

@@ -251,7 +251,8 @@ async def printify_seo_blast() -> dict:
         import aiohttp
         from modules.ai_client import ai_complete
 
-        pf_headers = {"Authorization": f"Bearer {PRINTIFY_KEY()}", "Content-Type": "application/json"}
+        _pf_ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+        pf_headers = {"Authorization": f"Bearer {PRINTIFY_KEY()}", "Content-Type": "application/json", "User-Agent": _pf_ua}
 
         async with aiohttp.ClientSession() as s:
             async with s.get(

@@ -16,7 +16,7 @@ import aiohttp
 
 log = logging.getLogger("MailchimpAutonomy")
 
-API_KEY = os.getenv("MAILCHIMP_API_KEY", "1d35dd606aad1a9f1bbd10d2dd2e2ea7-us7")
+API_KEY = os.getenv("MAILCHIMP_API_KEY", "")
 LIST_ID = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
 SERVER = os.getenv("MAILCHIMP_SERVER_PREFIX", os.getenv("MAILCHIMP_SERVER", "us7"))
 BASE = f"https://{SERVER}.api.mailchimp.com/3.0"
@@ -24,7 +24,7 @@ FROM_EMAIL = os.getenv("FROM_EMAIL", "aiitecbuuss@gmail.com")
 FROM_NAME = os.getenv("MAILCHIMP_FROM_NAME", "DragonApp")
 
 # DragonApp Mailchimp (dragonadnp@gmail.com) — separate account us18
-DRAGON_API_KEY = os.getenv("MAILCHIMP_DRAGON_API_KEY", "4206e572541883eb39eb2c52d9a3a116-us18")
+DRAGON_API_KEY = os.getenv("MAILCHIMP_DRAGON_API_KEY", "")
 DRAGON_LIST_ID = os.getenv("MAILCHIMP_DRAGON_LIST_ID", "0e84a22a44")
 DRAGON_SERVER  = os.getenv("MAILCHIMP_DRAGON_SERVER", "us18")
 DRAGON_BASE    = f"https://{DRAGON_SERVER}.api.mailchimp.com/3.0"

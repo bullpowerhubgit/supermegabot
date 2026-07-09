@@ -591,6 +591,7 @@ class PrintOnDemandWorkflow:
                 headers = {
                     "Authorization": f"Bearer {printify_token}",
                     "Content-Type": "application/json",
+                    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
                 }
                 async with _session(30) as s:
                     async with s.post(url, headers=headers, json=printify_payload) as r:
