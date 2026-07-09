@@ -138,18 +138,15 @@ async def _post_telegram(content: dict) -> bool:
     if not TG_TOKEN or not TG_CHAT:
         return False
     try:
+        from modules.telegram_safe import tg_send
         import aiohttp
         tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:5])
-        text = f"*{content['title']}*\n\n{content['body']}\n\n{tags}\n\n🔗 {content.get('url', '')}"
+        url  = content.get("url", "").strip()
+        text = f"*{content['title']}*\n\n{content['body']}\n\n{tags}"
+        if url:
+            text += f"\n\n🔗 {url}"
         async with aiohttp.ClientSession() as s:
-            async with s.post(
-                f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
-                json={"chat_id": TG_CHAT, "text": text[:4096], "parse_mode": "HTML",
-                      "disable_web_page_preview": False},
-                timeout=aiohttp.ClientTimeout(total=10),
-            ) as r:
-                d = await r.json(content_type=None)
-        return d.get("ok", False)
+            return await tg_send(s, text, chat_id=TG_CHAT)
     except Exception as exc:
         log.warning("Telegram post failed: %s", exc)
         return False
