@@ -187,7 +187,11 @@ async def scrape_neugründungen(max_per_land: int = 20) -> List[Dict]:
     for bl_name, bl_code in list(BUNDESLAENDER_HR.items())[:3]:
         session = None
         try:
-            session, bkm_url, vs = await _get_bkm_session()
+            for _attempt in range(2):
+                session, bkm_url, vs = await _get_bkm_session()
+                if session:
+                    break
+                await asyncio.sleep(2)
             if not session:
                 log.warning("HR %s: Session-Aufbau fehlgeschlagen", bl_name)
                 continue
@@ -259,7 +263,9 @@ def _parse_bkm_xml(xml_resp: str, bundesland: str, datum: str) -> List[Dict]:
     labels = [l for l in re.findall(r'<label[^>]+class="ui-outputlabel[^"]*"[^>]*>(.*?)</label>', html, re.DOTALL)
               if re.search(r'Amtsgericht|HR[ABCGPVR]|Sonstige|Einreichung|Bekanntmachung|Löschung', l)]
     for raw in labels:
-        text = re.sub(r'<[^>]+>', '', raw).strip()
+        # <br> → \n vor dem Tag-Stripping, sonst alles auf einer Zeile
+        normalized = re.sub(r'<br\s*/?>', '\n', raw, flags=re.IGNORECASE)
+        text = re.sub(r'<[^>]+>', '', normalized).strip()
         parts = [p.strip() for p in text.split('\n') if p.strip()]
         if len(parts) < 2:
             continue
