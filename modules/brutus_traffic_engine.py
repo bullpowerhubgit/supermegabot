@@ -278,7 +278,12 @@ Nur JSON, kein anderer Text."""
         end = raw.rfind("]") + 1
         if start < 0 or end <= 0:
             return trends[:3]
-        result = json.loads(raw[start:end])
+        # Bereinige häufige AI-JSON-Fehler (Kommas, Sonderzeichen)
+        cleaned = raw[start:end].replace("\n", " ").replace("\r", "")
+        # Entferne trailing commas vor ] oder }
+        import re as _re
+        cleaned = _re.sub(r",\s*([}\]])", r"\1", cleaned)
+        result = json.loads(cleaned)
         return [t for t in result if t.get("pre_peak") and t.get("score", 0) >= 7]
     except Exception as exc:
         log.debug("Predict error: %s", exc)
@@ -409,20 +414,20 @@ async def content_swarm(keyword: str, angle: str = "") -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def deploy_to_telegram(keyword: str, content: dict):
-    """Telegram Channel — sofortige Reichweite."""
+    """Telegram Channel — sofortige Reichweite (mit URL-Validierung)."""
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
         return
     try:
+        from modules.telegram_safe import tg_send
         import aiohttp
         social = content.get("social_post", "")[:800]
         msg = f"🚀 *BRUTUS Auto-Post*\n\nThema: {keyword}\n\n{social}"
         async with aiohttp.ClientSession() as s:
-            await s.post(
-                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                json={"chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"},
-                timeout=aiohttp.ClientTimeout(total=10),
-            )
-        log.info("BRUTUS: Deployed to Telegram")
+            sent = await tg_send(s, msg, chat_id=TELEGRAM_CHAT)
+        if sent:
+            log.info("BRUTUS: Deployed to Telegram ✅")
+        else:
+            log.info("BRUTUS: Telegram-Post übersprungen (kaputte Links)")
     except Exception as exc:
         log.warning("Telegram deploy error: %s", exc)
 

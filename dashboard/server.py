@@ -10784,6 +10784,8 @@ async def handle_scheduler_trigger(req):
         # B2B Lead tasks — JSF scraping + email sending takes 30-90s
         "handelsregister", "outreach_auto", "zvg_radar", "ai_act",
         "insolvenz_radar_scan", "insolvenz_autopost",
+        # DS24 product creation — AI + API calls take 30-120s per product
+        "ds24_product_creator", "ds24_affiliate_blast",
     }
     try:
         from core.automation_scheduler import get_scheduler
