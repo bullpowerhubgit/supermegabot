@@ -6100,6 +6100,22 @@ async def task_campaign_manager() -> str:
         return f"Campaign Manager Fehler: {e}"
 
 
+async def task_shoptext_promo() -> str:
+    """ShopText.ai Vollautomation: TG + Reddit Promo alle 3h."""
+    try:
+        from modules.shoptext_promo import run_promo_cycle
+        result = await run_promo_cycle()
+        tg = result.get("telegram", {})
+        rd = result.get("reddit", {})
+        stats = result.get("shoptext_stats", {})
+        return (
+            f"ShopText Promo: TG={tg.get('posted',0)} Reddit={rd.get('posted',0)} "
+            f"Generierungen={stats.get('total_generations',0)} Paid={stats.get('paid_users',0)}"
+        )
+    except Exception as e:
+        return f"ShopText Promo error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -6165,6 +6181,8 @@ TASKS = [
     ("reddit_cookie_refresh",  task_reddit_cookie_refresh,  86400, 3700),  # täglich — Reddit Chrome Cookies erneuern
     # ── Reddit Contributor Program — Monetized Posts alle 4h ─────────────────
     ("reddit_monetized",       task_reddit_monetized_post,  14400,  620),  # 4h — Reddit Earnings (Contributor Program)
+    # ── ShopText.ai Vollautomation ────────────────────────────────────────────
+    ("shoptext_promo",         task_shoptext_promo,         10800,  180),  # 3h — TG + Reddit Promo für ShopText.ai
     # ══════════════════════════════════════════════════════════════════════════
     # ██ MONETARISIERUNGS-OFFENSIVE — ALLE REVENUE-STREAMS LIVE ██
     # ══════════════════════════════════════════════════════════════════════════
