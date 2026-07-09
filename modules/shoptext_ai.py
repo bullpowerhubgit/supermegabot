@@ -152,28 +152,8 @@ def create_checkout_session(plan: str, email: str, base_url: str) -> str:
 
 # ── AI Text Generation ───────────────────────────────────────────────────────
 
-async def generate_product_text(
-    product_name: str,
-    keywords: str = "",
-    product_type: str = "",
-    tone: str = "professionell",
-) -> dict:
-    """Generate SEO-optimized German product text via Claude."""
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("ANTHROPIC_API_KEY fehlt")
-
-    kw = ", ".join(k.strip() for k in keywords.split(",") if k.strip()) if keywords else "keine angegeben"
-    ptype_hint = f" (Produktkategorie: {product_type})" if product_type else ""
-    tone_map = {
-        "professionell": "seriös und vertrauenswürdig",
-        "modern": "modern, frisch und jugendlich",
-        "luxus": "exklusiv, hochwertig und premium",
-        "freundlich": "herzlich, nahbar und einladend",
-    }
-    tone_desc = tone_map.get(tone, "professionell und klar")
-
-    prompt = f"""Du bist ein erfahrener E-Commerce-Texter für deutsche Shopify-Händler.
+def _build_prompt(product_name: str, ptype_hint: str, kw: str, tone_desc: str) -> str:
+    return f"""Du bist ein erfahrener E-Commerce-Texter für deutsche Shopify-Händler.
 
 Erstelle SEO-optimierte Produkttexte für:
 Produktname: {product_name}{ptype_hint}
@@ -190,39 +170,145 @@ Antworte NUR mit diesem JSON-Objekt, ohne Erklärungen:
   "bullet_points": ["⚡ Schlüsselvorteil 1", "✅ Schlüsselvorteil 2", "🎯 Schlüsselvorteil 3", "📦 Schlüsselvorteil 4", "💡 Schlüsselvorteil 5"]
 }}"""
 
-    payload = json.dumps({
-        "model": os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
-        "max_tokens": 1200,
-        "messages": [{"role": "user", "content": prompt}],
-    }).encode()
 
-    req = urllib.request.Request(
-        f"{ANTHROPIC_API_BASE}/messages",
-        data=payload,
-        method="POST",
-    )
-    req.add_header("x-api-key", api_key)
-    req.add_header("anthropic-version", "2023-06-01")
-    req.add_header("content-type", "application/json")
-
-    loop = asyncio.get_event_loop()
-
-    def _call():
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return json.loads(r.read())
-
-    try:
-        resp = await loop.run_in_executor(None, _call)
-    except urllib.error.HTTPError as e:
-        body = e.read().decode()
-        raise RuntimeError(f"Claude API Fehler {e.code}: {body}")
-
-    raw = resp["content"][0]["text"].strip()
-
-    # Extract JSON block
+def _parse_ai_response(raw: str) -> dict:
+    raw = raw.strip()
     if raw.startswith("{"):
         return json.loads(raw)
     match = re.search(r"\{.*\}", raw, re.DOTALL)
     if match:
         return json.loads(match.group())
-    raise ValueError("Kein JSON in Claude-Antwort")
+    raise ValueError("Kein JSON in KI-Antwort")
+
+
+async def _try_anthropic(prompt: str) -> dict:
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("no key")
+    payload = json.dumps({
+        "model": os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
+        "max_tokens": 1200,
+        "messages": [{"role": "user", "content": prompt}],
+    }).encode()
+    req = urllib.request.Request(f"{ANTHROPIC_API_BASE}/messages", data=payload, method="POST")
+    req.add_header("x-api-key", api_key)
+    req.add_header("anthropic-version", "2023-06-01")
+    req.add_header("content-type", "application/json")
+    loop = asyncio.get_event_loop()
+    def _call():
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())
+    try:
+        resp = await loop.run_in_executor(None, _call)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"Anthropic {e.code}: {e.read().decode()[:200]}")
+    return _parse_ai_response(resp["content"][0]["text"])
+
+
+async def _try_openai(prompt: str) -> dict:
+    api_key = os.getenv("OPENAI_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("no key")
+    payload = json.dumps({
+        "model": "gpt-4o-mini",
+        "max_tokens": 1200,
+        "messages": [{"role": "user", "content": prompt}],
+        "response_format": {"type": "json_object"},
+    }).encode()
+    req = urllib.request.Request("https://api.openai.com/v1/chat/completions", data=payload, method="POST")
+    req.add_header("Authorization", f"Bearer {api_key}")
+    req.add_header("Content-Type", "application/json")
+    loop = asyncio.get_event_loop()
+    def _call():
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())
+    try:
+        resp = await loop.run_in_executor(None, _call)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"OpenAI {e.code}: {e.read().decode()[:200]}")
+    return _parse_ai_response(resp["choices"][0]["message"]["content"])
+
+
+async def _try_deepseek(prompt: str) -> dict:
+    api_key = os.getenv("DEEPSEEK_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("no key")
+    payload = json.dumps({
+        "model": "deepseek-chat",
+        "max_tokens": 1200,
+        "messages": [{"role": "user", "content": prompt}],
+        "response_format": {"type": "json_object"},
+    }).encode()
+    req = urllib.request.Request("https://api.deepseek.com/v1/chat/completions", data=payload, method="POST")
+    req.add_header("Authorization", f"Bearer {api_key}")
+    req.add_header("Content-Type", "application/json")
+    loop = asyncio.get_event_loop()
+    def _call():
+        with urllib.request.urlopen(req, timeout=30) as r:
+            return json.loads(r.read())
+    try:
+        resp = await loop.run_in_executor(None, _call)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"DeepSeek {e.code}: {e.read().decode()[:200]}")
+    return _parse_ai_response(resp["choices"][0]["message"]["content"])
+
+
+async def _try_openrouter(prompt: str) -> dict:
+    api_key = os.getenv("OPENROUTER_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("no key")
+    payload = json.dumps({
+        "model": "deepseek/deepseek-chat",
+        "max_tokens": 1200,
+        "messages": [{"role": "user", "content": prompt}],
+    }).encode()
+    req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=payload, method="POST")
+    req.add_header("Authorization", f"Bearer {api_key}")
+    req.add_header("Content-Type", "application/json")
+    req.add_header("HTTP-Referer", "https://supermegabot-production.up.railway.app")
+    loop = asyncio.get_event_loop()
+    def _call():
+        with urllib.request.urlopen(req, timeout=45) as r:
+            return json.loads(r.read())
+    try:
+        resp = await loop.run_in_executor(None, _call)
+    except urllib.error.HTTPError as e:
+        raise RuntimeError(f"OpenRouter {e.code}: {e.read().decode()[:200]}")
+    return _parse_ai_response(resp["choices"][0]["message"]["content"])
+
+
+async def generate_product_text(
+    product_name: str,
+    keywords: str = "",
+    product_type: str = "",
+    tone: str = "professionell",
+) -> dict:
+    """Generate SEO-optimized German product text — Anthropic → OpenAI → OpenRouter fallback."""
+    kw = ", ".join(k.strip() for k in keywords.split(",") if k.strip()) if keywords else "keine angegeben"
+    ptype_hint = f" (Produktkategorie: {product_type})" if product_type else ""
+    tone_map = {
+        "professionell": "seriös und vertrauenswürdig",
+        "modern": "modern, frisch und jugendlich",
+        "luxus": "exklusiv, hochwertig und premium",
+        "freundlich": "herzlich, nahbar und einladend",
+    }
+    tone_desc = tone_map.get(tone, "professionell und klar")
+    prompt = _build_prompt(product_name, ptype_hint, kw, tone_desc)
+
+    providers = [
+        ("DeepSeek",   _try_deepseek),
+        ("OpenAI",     _try_openai),
+        ("OpenRouter", _try_openrouter),
+        ("Anthropic",  _try_anthropic),
+    ]
+    last_err = None
+    for name, fn in providers:
+        try:
+            result = await fn(prompt)
+            log.info("ShopText generated via %s", name)
+            return result
+        except Exception as e:
+            log.warning("Provider %s failed: %s — trying next", name, e)
+            last_err = e
+
+    raise RuntimeError(f"Alle KI-Provider fehlgeschlagen. Letzter Fehler: {last_err}")
