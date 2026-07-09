@@ -455,12 +455,12 @@ async def create_full_product(
             "thankyou_url": f"{SHOP_URL}/pages/danke",
         }
 
-    # 2. Produkt anlegen
+    # 2. Produkt anlegen (keine salespage_url — DS24 blockt fremde Domains)
     product_id = await create_product(
         name_de=data["name_de"],
         description_de=data.get("description_de", ""),
-        salespage_url=data.get("salespage_url", SHOP_URL),
-        thankyou_url=data.get("thankyou_url", f"{SHOP_URL}/pages/danke"),
+        salespage_url="",
+        thankyou_url="",
         name_intern=data.get("name_intern", ""),
         access_instructions_de=data.get("access_instructions_de", ""),
         affiliate_commission=affiliate_commission,
