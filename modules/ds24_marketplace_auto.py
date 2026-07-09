@@ -196,8 +196,42 @@ async def auto_apply_batch(products: list) -> dict:
     return {"applied": applied, "failed": failed, "already_applied": already}
 
 
+MAX_BLASTS_PER_DAY = 3  # Maximal 3 DS24-Posts pro Tag — kein Spam!
+
+async def _ds24_link_ok(link: str) -> bool:
+    """Prüft ob DS24-Link wirklich kaufbar ist (nicht nur HTTP 200)."""
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(link, allow_redirects=True,
+                             timeout=aiohttp.ClientTimeout(total=8),
+                             headers={"User-Agent": "Mozilla/5.0"}) as r:
+                if r.status >= 400:
+                    return False
+                body = await r.text(errors="ignore")
+                bad = ["nicht verkauft werden", "not available for sale",
+                       "kann nicht verkauft", "temporarily unavailable",
+                       "currently unavailable", "nicht verfügbar"]
+                return not any(b in body.lower() for b in bad)
+    except Exception:
+        return False
+
+
 async def blast_approved_marketplace_products() -> dict:
-    """Holt alle genehmigten Affiliate-Links + blasted sie."""
+    """Holt genehmigte Affiliate-Links + postet MAX 3 pro Tag mit Link-Check."""
+    import json, hashlib
+    from pathlib import Path
+    state_file = Path(__file__).parent.parent / "data" / "ds24_blast_state.json"
+    try:
+        state = json.loads(state_file.read_text()) if state_file.exists() else {}
+    except Exception:
+        state = {}
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    sent_today = state.get("date") == today and state.get("count", 0) or 0
+
+    if sent_today >= MAX_BLASTS_PER_DAY:
+        log.info("DS24 Blast: Tageslimit %d erreicht — übersprungen", MAX_BLASTS_PER_DAY)
+        return {"ok": True, "blasted": 0, "reason": "daily_limit_reached", "sent_today": sent_today}
+
     data = await _ds24_get("listAffiliateLinks")
     links = (
         data.get("data", {}).get("affiliate_links", []) or
@@ -207,11 +241,18 @@ async def blast_approved_marketplace_products() -> dict:
     approved = [p for p in links if p.get("approval_status", "approved") in ("approved", "")]
     blasted = 0
 
-    for p in approved[:20]:
+    for p in approved[:10]:
+        if sent_today + blasted >= MAX_BLASTS_PER_DAY:
+            break
         pid = str(p.get("product_id", p.get("id", "")))
         name = p.get("name", p.get("title", f"Produkt #{pid}"))[:60]
         link = f"https://www.checkout-ds24.com/redir/{pid}/{AFFILIATE_ID}/"
         commission = float(p.get("affiliate_commission_percentage", 0) or 0)
+
+        # Link-Check BEVOR wir posten!
+        if not await _ds24_link_ok(link):
+            log.warning("DS24 Produkt %s nicht verfügbar — übersprungen", pid)
+            continue
 
         content = await _ai(
             f"Kurzer überzeugender Affiliate-Post (3 Sätze, deutsch) für: {name}. "
@@ -222,12 +263,14 @@ async def blast_approved_marketplace_products() -> dict:
         try:
             from modules.brutus_core import fire
             await fire(name, content, link=link,
-                       channels=["telegram", "slack", "discord", "mailchimp", "klaviyo"])
+                       channels=["telegram", "slack"])
             blasted += 1
         except Exception as e:
             log.warning("Blast error %s: %s", pid, e)
-        await asyncio.sleep(1.5)
+        await asyncio.sleep(5.0)
 
+    state_file.parent.mkdir(parents=True, exist_ok=True)
+    state_file.write_text(json.dumps({"date": today, "count": sent_today + blasted}))
     return {"ok": True, "blasted": blasted, "total_approved": len(approved)}
 
 

@@ -351,7 +351,9 @@ async def create_product(
     """Legt ein neues Produkt auf Digistore24 an. Gibt product_id zurück."""
     data_payload: dict = {
         "name_de": name_de[:100],
-        "name_intern": (name_intern or name_de[:40].lower().replace(" ", "-").replace("ä", "ae").replace("ö", "oe").replace("ü", "ue"))[:40],
+        "name_intern": re.sub(r"[^a-z0-9\-]", "", (name_intern or name_de[:40]).lower()
+                              .replace(" ", "-").replace("ä", "ae").replace("ö", "oe")
+                              .replace("ü", "ue").replace("&", "und").replace("+", "plus"))[:40],
         "description_de": description_de[:2000],
         "access_instructions_de": access_instructions_de or "Zugang wird nach Zahlungseingang per E-Mail zugeschickt.",
         "language": "de",

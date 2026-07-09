@@ -58,7 +58,7 @@ CONTENT_TEMPLATES = [
         "telegram_extra": "",
     },
     {
-        "text": "⚡ Shopify Brutal Tuning: +47% Conversion Rate garantiert.\n\nA/B-Tests, Page Speed & CRO — alles automatisch.\n👉 https://shopify-brutal-tuning.vercel.app\n\n#Shopify #CRO #Ecommerce",
+        "text": "⚡ Shopify CRO auf Autopilot: +47% Conversion Rate durch KI-gesteuerte A/B-Tests & Page Speed.\n\nAlles automatisch — kein Aufwand.\n👉 https://ineedit.com.co\n\n#Shopify #CRO #Ecommerce",
         "telegram_extra": "",
     },
     {
@@ -130,43 +130,41 @@ def _save_state(index: int, results: dict) -> None:
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
 
+async def _validate_urls(text: str) -> str:
+    """Prüft alle URLs im Text, ersetzt kaputte durch ineedit.com.co."""
+    try:
+        from modules.telegram_safe import validate_and_fix_text
+        async with aiohttp.ClientSession() as s:
+            fixed = await validate_and_fix_text(s, text)
+            return fixed if fixed is not None else text
+    except Exception:
+        return text
+
+
 async def post_to_telegram(text: str, extra_html: str = "") -> dict:
-    """Sendet Nachricht an Telegram Channel/Chat."""
+    """Sendet Nachricht an Telegram Channel/Chat mit URL-Validierung."""
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
         return {"ok": False, "error": "Telegram credentials fehlen"}
 
-    html_text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
-    html_text = html_text.replace("#", "<b>#</b>", 1) if "#" in html_text else html_text
-    full_message = f"<b>📢 SuperMegaBot Update</b>\n\n{html_text}{extra_html}"
-
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-    payload = {
-        "chat_id": TELEGRAM_CHAT,
-        "text": full_message,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": False,
-    }
-
     try:
-        async with aiohttp.ClientSession() as session:
-            async with session.post(url, json=payload, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                data = await resp.json()
-                if data.get("ok"):
-                    msg_id = data["result"]["message_id"]
-                    log.info("telegram: gesendet (message_id=%s)", msg_id)
-                    return {"ok": True, "platform": "telegram", "message_id": msg_id}
-                else:
-                    log.error("telegram error: %s", data)
-                    return {"ok": False, "error": data.get("description", "unknown")}
+        from modules.telegram_safe import tg_send_safe
+        full_text = f"📢 SuperMegaBot Update\n\n{text}{extra_html}"
+        ok = await tg_send_safe(full_text, chat_id=TELEGRAM_CHAT)
+        if ok:
+            log.info("telegram: gesendet via telegram_safe")
+            return {"ok": True, "platform": "telegram"}
+        return {"ok": False, "error": "send failed"}
     except Exception as e:
         log.error("telegram exception: %s", e)
         return {"ok": False, "error": str(e)}
 
 
 async def post_to_facebook(text: str) -> dict:
-    """Postet auf AiiteC Facebook Page (1016738738178786)."""
+    """Postet auf AiiteC Facebook Page (1016738738178786) mit URL-Validierung."""
     if not FB_PAGE_TOKEN:
         return {"ok": False, "error": "FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
+
+    text = await _validate_urls(text)
 
     url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{FB_PAGE_ID}/feed"
     payload = {"message": text, "access_token": FB_PAGE_TOKEN}
@@ -187,7 +185,8 @@ async def post_to_facebook(text: str) -> dict:
 
 
 async def post_to_twitter(text: str) -> dict:
-    """Versucht Tweet über internen Webhook."""
+    """Versucht Tweet über internen Webhook mit URL-Validierung."""
+    text = await _validate_urls(text)
     try:
         async with aiohttp.ClientSession() as session:
             async with session.post(
