@@ -863,6 +863,12 @@ def get_hub() -> MegaHub:
     return _hub
 
 
+async def run_autopilot(goal: str = "Täglicher Business-Autopilot: Status prüfen, Optimierungen anwenden, Revenue maximieren") -> str:
+    """Module-level entry point for scheduler: runs MegaHub autopilot with a default daily goal."""
+    hub = get_hub()
+    return await hub.autopilot.run_autopilot(goal)
+
+
 # ── CLI-Test ──────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     async def _test():
