@@ -331,25 +331,28 @@ async def _scrape_gnews_insolvenz(max_entries: int = 25) -> List[Dict]:
     return unique[:max_entries]
 
 
-# Regex: Firmenname vor/nach Schlüsselwörtern (mind. 10 Zeichen)
+# Regex: Firmenname vor/nach Schlüsselwörtern — kein IGNORECASE (verhindert "Mag"→"AG" FP)
+_LEGAL_FORMS = r"(?:GmbH\s*&\s*Co\.\s*KG|GmbH|AG|UG\s*\(haftungsbeschränkt\)|UG|KG|OHG|e\.K\.|GbR|e\.V\.)"
+# BEFORE: Firma STEHT VOR "Insolvenz..." — negativer Lookahead verhindert "Insolvenz..." als Firmenname
 _COMPANY_BEFORE_RE = re.compile(
-    r"([A-ZÄÖÜ][A-Za-zÄÖÜäöüß&.\- ]{8,40}(?:GmbH|AG|UG|KG|OHG|e\.K\.|GbR|e\.V\.))"
-    r"(?:\s+(?:Insolvenz|insolvent|meldet|stellt|beantragt|ist|eröffnet))",
-    re.IGNORECASE,
+    r"(?<![\w])(?!Insolvenz|Insolvent)"
+    r"([A-ZÄÖÜ][A-Za-zÄÖÜäöüß0-9&.,\- ]{7,45}" + _LEGAL_FORMS + r")"
+    r"(?=\s+(?:[Ii]nsolven[tz]|insolvent|meldet|stellt|beantragt|eröffnet))",
 )
+# AFTER: Firma FOLGT AUF "Insolvenz..." — erfasst echten Firmennamen nach Keyword
 _COMPANY_AFTER_RE = re.compile(
-    r"(?:Insolvenz(?:antrag|verfahren)?|insolvent)\s+(?:bei|für|der|von|über)?\s*"
-    r"([A-ZÄÖÜ][A-Za-zÄÖÜäöüß&.\- ]{8,40}(?:GmbH|AG|UG|KG|OHG|e\.K\.|GbR|e\.V\.))",
-    re.IGNORECASE,
+    r"(?:[Ii]nsolven[tz](?:antrag|verfahren)?|insolvent)\s+(?:bei|für|der|von|über)?\s*"
+    r"([A-ZÄÖÜ][A-Za-zÄÖÜäöüß0-9&.,\- ]{7,45}" + _LEGAL_FORMS + r")",
 )
+_ARTICLE_PREFIX_RE = re.compile(r"^(?:Die|Der|Das|The|Eine?)\s+", re.IGNORECASE)
 
 
 def _extract_company_gnews(title: str) -> str:
     for pat in (_COMPANY_BEFORE_RE, _COMPANY_AFTER_RE):
         m = pat.search(title)
         if m:
-            name = m.group(1).strip()
-            if len(name) >= 10:
+            name = _ARTICLE_PREFIX_RE.sub("", m.group(1).strip())
+            if len(name) >= 10 and any(lf in name for lf in ["GmbH", " AG", " UG", " KG", "OHG", "GbR", "e.K."]):
                 return name
     return ""
 
