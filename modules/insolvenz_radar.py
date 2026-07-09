@@ -29,9 +29,11 @@ import os
 import re
 import sqlite3
 import time
+import xml.etree.ElementTree as ET
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Optional
+from urllib.parse import unquote
 
 import aiohttp
 
@@ -273,6 +275,85 @@ def _parse_insolvenz_html(html: str, bundesland: str) -> List[Dict]:
     return entries
 
 
+# ── Scraper: Google News RSS (Insolvenz-Nachrichten) ─────────────────────────
+
+async def _scrape_gnews_insolvenz(max_entries: int = 25) -> List[Dict]:
+    """Google News RSS — 'Insolvenz GmbH Deutschland' — kein JS nötig."""
+    results: List[Dict] = []
+    queries = [
+        "Insolvenz+GmbH+Deutschland",
+        "Insolvenzantrag+Unternehmen",
+        "Insolvenzverfahren+er%C3%B6ffnet",
+    ]
+    for q in queries:
+        url = f"https://news.google.com/rss/search?q={q}&hl=de&gl=DE&ceid=DE:de"
+        try:
+            async with _session(20) as s:
+                async with s.get(url) as r:
+                    if r.status != 200:
+                        continue
+                    xml_text = await r.text()
+            root = ET.fromstring(xml_text)
+            for item in root.iter("item"):
+                title_el = item.find("title")
+                link_el  = item.find("link")
+                pub_el   = item.find("pubDate")
+                if title_el is None:
+                    continue
+                title = title_el.text or ""
+                link  = link_el.text  if link_el  is not None else ""
+                pub   = pub_el.text   if pub_el   is not None else ""
+
+                company = _extract_company_gnews(title)
+                if not company:
+                    continue
+
+                uid = hashlib.md5(f"gnews_{company}_{pub[:10]}".encode()).hexdigest()[:16]
+                results.append({
+                    "uid":              uid,
+                    "debtor_name":      company,
+                    "court":            "",
+                    "case_number":      "",
+                    "bundesland":       "",
+                    "publication_date": pub[:10] if pub else "",
+                    "insolvency_type":  "Insolvenz (Pressemeldung)",
+                    "raw_text":         title[:500],
+                    "source":           "google_news",
+                })
+        except Exception as exc:
+            log.debug("GNews RSS %s: %s", q, exc)
+    seen: set = set()
+    unique: List[Dict] = []
+    for e in results:
+        if e["uid"] not in seen:
+            seen.add(e["uid"])
+            unique.append(e)
+    return unique[:max_entries]
+
+
+# Regex: Firmenname vor/nach Schlüsselwörtern (mind. 10 Zeichen)
+_COMPANY_BEFORE_RE = re.compile(
+    r"([A-ZÄÖÜ][A-Za-zÄÖÜäöüß&.\- ]{8,40}(?:GmbH|AG|UG|KG|OHG|e\.K\.|GbR|e\.V\.))"
+    r"(?:\s+(?:Insolvenz|insolvent|meldet|stellt|beantragt|ist|eröffnet))",
+    re.IGNORECASE,
+)
+_COMPANY_AFTER_RE = re.compile(
+    r"(?:Insolvenz(?:antrag|verfahren)?|insolvent)\s+(?:bei|für|der|von|über)?\s*"
+    r"([A-ZÄÖÜ][A-Za-zÄÖÜäöüß&.\- ]{8,40}(?:GmbH|AG|UG|KG|OHG|e\.K\.|GbR|e\.V\.))",
+    re.IGNORECASE,
+)
+
+
+def _extract_company_gnews(title: str) -> str:
+    for pat in (_COMPANY_BEFORE_RE, _COMPANY_AFTER_RE):
+        m = pat.search(title)
+        if m:
+            name = m.group(1).strip()
+            if len(name) >= 10:
+                return name
+    return ""
+
+
 # ── Scraper: Neugründungen via Bundesanzeiger ─────────────────────────────────
 
 async def scrape_neugruendungen(max_results: int = 30) -> List[Dict]:
@@ -430,9 +511,44 @@ async def run_scan(bundesland: str = "", min_score_alert: int = 60) -> Dict:
     started = int(time.time())
     log.info("InsolvenzRadar Scan gestartet (BL=%s)", bundesland or "ALL")
 
-    # 1. Scrapen
-    entries = await scrape_insolvenzbekanntmachungen(bundesland, max_results=50)
-    log.info("Gescrapt: %d Insolvenz-Einträge", len(entries))
+    # 1. Scrapen — Multi-Source (JSF-Seite liefert 0 → Google News RSS als Hauptquelle)
+    entries: List[Dict] = []
+    try:
+        jsf = await scrape_insolvenzbekanntmachungen(bundesland, max_results=50)
+        entries.extend(jsf)
+        log.info("JSF-Scraper: %d Einträge", len(jsf))
+    except Exception as _e:
+        log.warning("JSF-Scraper Fehler: %s", _e)
+
+    try:
+        gnews = await _scrape_gnews_insolvenz(max_entries=25)
+        entries.extend(gnews)
+        log.info("Google News RSS: %d Einträge", len(gnews))
+    except Exception as _e:
+        log.warning("Google News RSS Fehler: %s", _e)
+
+    try:
+        neu = await scrape_neugruendungen(max_results=20)
+        entries.extend(neu)
+        log.info("Bundesanzeiger Neugründungen: %d Einträge", len(neu))
+    except Exception as _e:
+        log.debug("Bundesanzeiger Fehler: %s", _e)
+
+    # Deduplizieren
+    seen_uids: set = set()
+    unique: List[Dict] = []
+    for e in entries:
+        if e["uid"] not in seen_uids:
+            seen_uids.add(e["uid"])
+            unique.append(e)
+    entries = unique[:50]
+
+    if not entries:
+        log.warning("InsolvenzRadar: alle Quellen leer — kein Scan heute")
+        return {"ok": True, "new_leads": 0, "alerts_sent": 0, "duration_s": 0,
+                "scanned_at": datetime.now(timezone.utc).isoformat()}
+
+    log.info("Gesamt: %d eindeutige Insolvenz-Einträge", len(entries))
 
     new_count   = 0
     alert_count = 0
