@@ -972,5 +972,15 @@ async def get_status() -> dict:
     }
 
 
+async def run_once() -> dict:
+    """Module-level entry point for scheduler: runs all 4 agents once and returns summary."""
+    agents = RudiAgents()
+    results = {}
+    for agent_name in ["SystemDiagnoseAgent", "ShopifyAgent", "TradeAgent", "LoadMonitor"]:
+        results[agent_name] = await agents.run_once(agent_name)
+    ok = sum(1 for r in results.values() if "error" not in r)
+    return {"ok": True, "agents_run": len(results), "ok_count": ok, "results": results}
+
+
 if __name__ == "__main__":
     asyncio.run(_main())
