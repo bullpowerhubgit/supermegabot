@@ -253,28 +253,111 @@ async def _try_deepseek(prompt: str) -> dict:
     return _parse_ai_response(resp["choices"][0]["message"]["content"])
 
 
-async def _try_openrouter(prompt: str) -> dict:
-    api_key = os.getenv("OPENROUTER_API_KEY", "")
+async def _try_groq(prompt: str) -> dict:
+    """Groq Free Tier: 14.400 Anfragen/Tag kostenlos."""
+    api_key = os.getenv("GROQ_API_KEY", "")
     if not api_key:
         raise RuntimeError("no key")
     payload = json.dumps({
-        "model": "deepseek/deepseek-chat",
+        "model": "llama-3.1-8b-instant",
         "max_tokens": 1200,
-        "messages": [{"role": "user", "content": prompt}],
+        "messages": [
+            {"role": "system", "content": "Du antwortest immer mit einem validen JSON-Objekt ohne Erklärungen."},
+            {"role": "user", "content": prompt},
+        ],
     }).encode()
-    req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=payload, method="POST")
+    req = urllib.request.Request("https://api.groq.com/openai/v1/chat/completions", data=payload, method="POST")
     req.add_header("Authorization", f"Bearer {api_key}")
     req.add_header("Content-Type", "application/json")
-    req.add_header("HTTP-Referer", "https://supermegabot-production.up.railway.app")
     loop = asyncio.get_event_loop()
     def _call():
-        with urllib.request.urlopen(req, timeout=45) as r:
+        with urllib.request.urlopen(req, timeout=30) as r:
             return json.loads(r.read())
     try:
         resp = await loop.run_in_executor(None, _call)
     except urllib.error.HTTPError as e:
-        raise RuntimeError(f"OpenRouter {e.code}: {e.read().decode()[:200]}")
+        raise RuntimeError(f"Groq {e.code}: {e.read().decode()[:200]}")
     return _parse_ai_response(resp["choices"][0]["message"]["content"])
+
+
+async def _try_openrouter_free(prompt: str) -> dict:
+    """OpenRouter Free Models — mehrere Modelle versuchen."""
+    api_key = os.getenv("OPENROUTER_API_KEY", "")
+    if not api_key:
+        raise RuntimeError("no key")
+    free_models = [
+        "google/gemma-2-9b-it:free",
+        "mistralai/mistral-7b-instruct:free",
+        "microsoft/phi-3-mini-128k-instruct:free",
+        "meta-llama/llama-3.1-8b-instruct:free",
+    ]
+    last_err: Exception = RuntimeError("no models tried")
+    for model in free_models:
+        payload = json.dumps({
+            "model": model,
+            "max_tokens": 1200,
+            "messages": [{"role": "user", "content": prompt}],
+        }).encode()
+        req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=payload, method="POST")
+        req.add_header("Authorization", f"Bearer {api_key}")
+        req.add_header("Content-Type", "application/json")
+        req.add_header("HTTP-Referer", "https://supermegabot-production.up.railway.app")
+        loop = asyncio.get_event_loop()
+        def _make_call(p=payload, r=req):
+            with urllib.request.urlopen(r, timeout=45) as resp:
+                return json.loads(resp.read())
+        try:
+            resp = await loop.run_in_executor(None, _make_call)
+            content = resp["choices"][0]["message"]["content"]
+            return _parse_ai_response(content)
+        except Exception as e:
+            log.warning("OpenRouter model %s failed: %s", model, str(e)[:80])
+            last_err = e
+            continue
+    raise RuntimeError(f"Alle OpenRouter Free Models fehlgeschlagen: {last_err}")
+
+
+def _template_fallback(product_name: str, keywords: str, product_type: str, tone: str) -> dict:
+    """Template-basierter Generator — funktioniert ohne AI-Credits, immer verfügbar."""
+    kw_list = [k.strip() for k in keywords.split(",") if k.strip()] if keywords else []
+    kw_str = ", ".join(kw_list[:3]) if kw_list else product_name
+    ptype = product_type or "Produkt"
+
+    tone_intros = {
+        "modern": "Entdecke die neue Generation",
+        "luxus": "Erlebe kompromisslose Qualität mit",
+        "freundlich": "Wir freuen uns, dir vorzustellen:",
+        "professionell": "Professionelle Lösung:",
+    }
+    intro = tone_intros.get(tone, "Entdecke")
+
+    tags = kw_list[:5] if kw_list else [product_name.lower(), ptype.lower(), "shop", "qualität", "kaufen"]
+
+    description = (
+        f"{intro} {product_name} — das {ptype} das deinen Alltag vereinfacht.\n\n"
+        f"Mit {product_name} bekommst du ein Produkt, das höchste Qualitätsstandards erfüllt "
+        f"und speziell für anspruchsvolle Kunden entwickelt wurde. "
+        f"{('Highlights: ' + kw_str + '.') if kw_str else ''}\n\n"
+        f"Überzeugende Eigenschaften machen {product_name} zur ersten Wahl für alle, "
+        f"die Wert auf Zuverlässigkeit und Leistung legen. "
+        f"Bestelle jetzt und profitiere von schnellem Versand und erstklassigem Kundenservice."
+    )
+
+    return {
+        "title": f"{product_name[:60]}",
+        "description": description,
+        "meta_title": f"{product_name[:55]} kaufen",
+        "meta_description": f"{product_name} ✓ Jetzt bestellen ✓ Schneller Versand ✓ Top Qualität | {kw_str[:50]}",
+        "tags": tags[:5],
+        "bullet_points": [
+            f"⚡ {product_name} — erstklassige Qualität",
+            f"✅ {kw_list[0] if kw_list else 'Hochwertig'} — für anspruchsvolle Kunden",
+            f"🎯 Schneller Versand aus Deutschland",
+            f"📦 30 Tage Rückgaberecht",
+            f"💡 Kundensupport auf Deutsch",
+        ],
+        "_provider": "template",
+    }
 
 
 async def generate_product_text(
@@ -296,19 +379,20 @@ async def generate_product_text(
     prompt = _build_prompt(product_name, ptype_hint, kw, tone_desc)
 
     providers = [
-        ("DeepSeek",   _try_deepseek),
-        ("OpenAI",     _try_openai),
-        ("OpenRouter", _try_openrouter),
-        ("Anthropic",  _try_anthropic),
+        ("DeepSeek",       _try_deepseek),
+        ("OpenAI",         _try_openai),
+        ("Groq",           _try_groq),
+        ("OpenRouter",     _try_openrouter_free),
+        ("Anthropic",      _try_anthropic),
     ]
-    last_err = None
     for name, fn in providers:
         try:
             result = await fn(prompt)
             log.info("ShopText generated via %s", name)
             return result
         except Exception as e:
-            log.warning("Provider %s failed: %s — trying next", name, e)
-            last_err = e
+            log.warning("Provider %s failed: %s — trying next", name, str(e)[:120])
 
-    raise RuntimeError(f"Alle KI-Provider fehlgeschlagen. Letzter Fehler: {last_err}")
+    # Template-Fallback — immer verfügbar, kein API-Key nötig
+    log.warning("Alle KI-Provider fehlgeschlagen — Template-Fallback aktiv")
+    return _template_fallback(product_name, keywords, product_type, tone)
