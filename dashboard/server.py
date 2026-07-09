@@ -10766,6 +10766,9 @@ async def handle_scheduler_trigger(req):
         "tiktok_brutus", "upwork_proposal_gen", "product_generator", "revenue_blitz",
         "traffic_blitz_full", "ds24_traffic", "shopify_seo_blast", "shopify_mass_cycle",
         "autonomous_pipeline", "auto_product_pipeline", "bundle_creation_cycle",
+        # B2B Lead tasks — JSF scraping + email sending takes 30-90s
+        "handelsregister", "outreach_auto", "zvg_radar", "ai_act",
+        "insolvenz_radar_scan", "insolvenz_autopost",
     }
     try:
         from core.automation_scheduler import get_scheduler
