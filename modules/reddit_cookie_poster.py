@@ -27,6 +27,10 @@ COOKIES_FILE = DATA_DIR / "reddit_cookies.json"
 
 REDDIT_USERNAME = os.getenv("REDDIT_USERNAME", "")
 
+# Global rate-limit tracker — prevents bursting for low-karma accounts
+_last_post_time: float = 0.0
+MIN_POST_INTERVAL_S = 600  # 10 minutes between posts (low-karma accounts need this)
+
 SUBREDDITS_DEFAULT = [
     "passive_income", "entrepreneur", "ecommerce", "dropshipping",
     "affiliatemarketing", "smallbusiness", "Flipping",
@@ -180,6 +184,14 @@ async def submit_post(
     No OAuth2 app, no CAPTCHA, no script-type app needed.
     Returns {"ok": True, "url": "..."} or {"ok": False, "error": "..."}
     """
+    global _last_post_time
+    import time
+    elapsed = time.time() - _last_post_time
+    if elapsed < MIN_POST_INTERVAL_S:
+        wait_s = int(MIN_POST_INTERVAL_S - elapsed)
+        log.info("Reddit: rate-limit guard — waiting %ds before posting", wait_s)
+        await asyncio.sleep(wait_s)
+
     cookies = _load_cookies()
     token = cookies.get("token_v2", "")
 
@@ -271,6 +283,8 @@ async def submit_post(
     if not post_url:
         return {"ok": False, "error": "No URL returned", "raw": d}
 
+    import time
+    _last_post_time = time.time()
     log.info("Reddit posted to r/%s: %s", subreddit, post_url)
     return {"ok": True, "url": post_url, "subreddit": subreddit}
 
