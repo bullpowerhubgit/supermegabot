@@ -244,8 +244,7 @@ async def scrape_neugründungen(max_per_land: int = 20) -> List[Dict]:
         await asyncio.sleep(3)
 
     if not results:
-        log.warning("Scraping 0 Einträge — Demo-Daten")
-        results = _hr_demo()
+        log.warning("Handelsregister: Scraping ergab 0 Ergebnisse — kein Outreach heute")
     return results
 
 
