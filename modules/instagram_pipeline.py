@@ -27,7 +27,7 @@ TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")     # system alerts only
 TG_CHANNEL     = os.getenv("TELEGRAM_CHANNEL_ID", "")  # marketing posts → public channel
 
 STORE_URL      = "https://ineedit.com.co"
-DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.digistore24.com/redir/500000/user37405262/")
+DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
 
 CONTENT_POOL = [
     ("🔥 KI-Business auf Autopilot!", "Stell dir vor: dein Online-Business läuft 24/7 — ohne dass du dabei sein musst. Mit KI-Automatisierung wird das Realität. Produkte, Marketing, Emails — alles automatisch. 💡 Link in Bio!"),

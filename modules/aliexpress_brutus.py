@@ -57,18 +57,9 @@ async def _ai(prompt: str) -> str:
 
 
 async def _telegram(text: str) -> bool:
-    if not (TELEGRAM_TOKEN and TELEGRAM_CHAT):
-        return False
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                json={"chat_id": TELEGRAM_CHAT, "text": text, "parse_mode": "HTML",
-                      "disable_web_page_preview": False},
-                timeout=aiohttp.ClientTimeout(total=10),
-            ) as r:
-                d = await r.json(content_type=None)
-        return d.get("ok", False)
+        from modules.telegram_safe import tg_send_safe
+        return await tg_send_safe(text)
     except Exception:
         return False
 

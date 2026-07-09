@@ -152,15 +152,40 @@ Kein Hashtag, kein Emoji-Spam, max 2 Emojis gesamt. Auf Deutsch."""
     return text
 
 
-async def blast_single_product(product: dict, channels: list = None) -> dict:
-    """Einen Affiliate-Produkt auf allen Kanälen blasten."""
+MAX_BLAST_PER_DAY = 2   # Maximal 2 Affiliate-Produkte pro Tag = kein Spam
+
+
+async def _link_ok(link: str) -> bool:
+    """Prüft ob DS24-Link wirklich kaufbar ist."""
+    import aiohttp
     try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(link, allow_redirects=True,
+                             timeout=aiohttp.ClientTimeout(total=8),
+                             headers={"User-Agent": "Mozilla/5.0"}) as r:
+                if r.status >= 400:
+                    return False
+                body = await r.text(errors="ignore")
+                bad = ["nicht verkauft werden", "not available for sale",
+                       "kann nicht verkauft", "temporarily unavailable",
+                       "currently unavailable", "nicht verfügbar", "Fehler"]
+                return not any(b.lower() in body.lower() for b in bad)
+    except Exception:
+        return False
+
+
+async def blast_single_product(product: dict, channels: list = None) -> dict:
+    """Einen Affiliate-Produkt auf allen Kanälen blasten — mit Link-Check."""
+    try:
+        if not await _link_ok(product["link"]):
+            log.warning("DS24 Produkt %s nicht verfügbar — übersprungen", product.get("id"))
+            return {"ok": False, "skipped": True, "reason": "link_not_available"}
+
         content = await generate_affiliate_post(product)
         title = product.get("title", f"DS24 Empfehlung #{product['id']}")
 
         from modules.brutus_core import fire
-        ch = channels or ["telegram", "slack", "discord", "linkedin",
-                          "shopify_blog", "mailchimp", "klaviyo"]
+        ch = channels or ["telegram", "slack", "shopify_blog", "mailchimp"]
         result = await fire(title, content, link=product["link"], channels=ch)
         log.info("Blasted product %s via %d channels", product["id"], len(ch))
         return {"ok": True, "product_id": product["id"], "channels": len(ch)}
@@ -169,57 +194,46 @@ async def blast_single_product(product: dict, channels: list = None) -> dict:
         return {"ok": False, "error": str(e)}
 
 
-async def blast_all_approved(delay: float = 2.0) -> dict:
-    """Alle 22 genehmigten Affiliate-Produkte blasten — vollautomatisch."""
+async def blast_all_approved(delay: float = 5.0) -> dict:
+    """Maximal 2 eigene Produkte pro Tag blasten — kein Spam."""
+    import json
+    from pathlib import Path
+    state_file = Path(__file__).parent.parent / "data" / "ds24_blaster_state.json"
+    try:
+        state = json.loads(state_file.read_text()) if state_file.exists() else {}
+    except Exception:
+        state = {}
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    sent_today = state.get("count", 0) if state.get("date") == today else 0
+
+    if sent_today >= MAX_BLAST_PER_DAY:
+        log.info("DS24 Blaster: Tageslimit %d erreicht", MAX_BLAST_PER_DAY)
+        return {"ok": True, "blasted": 0, "reason": "daily_limit_reached"}
+
+    # Nur OWN products (668035, 704677) — keine fremden redir-Links
+    own_products = [p for p in DS24_APPROVED_PRODUCTS if p.get("own_product")]
     blasted = 0
     failed = 0
     results = []
 
-    log.info("Starte Blast von %d genehmigten DS24-Produkten", len(DS24_APPROVED_PRODUCTS))
+    log.info("Starte Blast von %d eigenen DS24-Produkten (Limit %d/Tag)",
+             len(own_products), MAX_BLAST_PER_DAY)
 
-    # Telegram-Start-Meldung
-    try:
-        from modules.brutus_core import fire
-        await fire(
-            "🚀 DS24 Affiliate-Blast gestartet!",
-            f"Blaste jetzt {len(DS24_APPROVED_PRODUCTS)} genehmigte Affiliate-Produkte "
-            f"auf allen Kanälen.\nLinks wurden von DS24 aktualisiert.",
-            channels=["telegram", "slack"]
-        )
-    except Exception:
-        pass
-
-    for product in DS24_APPROVED_PRODUCTS:
+    for product in own_products:
+        if sent_today + blasted >= MAX_BLAST_PER_DAY:
+            break
         r = await blast_single_product(product)
         if r.get("ok"):
             blasted += 1
-        else:
+        elif not r.get("skipped"):
             failed += 1
         results.append(r)
         await asyncio.sleep(delay)
 
-    # Abschluss-Meldung
+    # State speichern
     try:
-        from modules.brutus_core import fire
-        await fire(
-            f"✅ DS24 Affiliate-Blast abgeschlossen!",
-            f"{blasted}/{len(DS24_APPROVED_PRODUCTS)} Produkte erfolgreich auf allen Kanälen.\n"
-            f"Affiliate-ID: {AFFILIATE_ID}",
-            channels=["telegram", "slack"]
-        )
-    except Exception:
-        pass
-
-    # Supabase loggen
-    try:
-        from modules.supabase_client import get_client
-        for r in results:
-            if r.get("ok"):
-                get_client().table("ds24_affiliate_blasts").insert({
-                    "product_id": r["product_id"],
-                    "channels": r.get("channels", 0),
-                    "blasted_at": datetime.now(timezone.utc).isoformat(),
-                }).execute()
+        state_file.parent.mkdir(parents=True, exist_ok=True)
+        state_file.write_text(json.dumps({"date": today, "count": sent_today + blasted}))
     except Exception:
         pass
 
@@ -227,7 +241,7 @@ async def blast_all_approved(delay: float = 2.0) -> dict:
         "ok": True,
         "blasted": blasted,
         "failed": failed,
-        "total": len(DS24_APPROVED_PRODUCTS),
+        "total": len(own_products),
     }
 
 

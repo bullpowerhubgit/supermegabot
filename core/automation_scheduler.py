@@ -5561,6 +5561,26 @@ async def task_printify_autonomy() -> str:
 
 # ── EMAIL & CRM ───────────────────────────────────────────────────────────────
 
+async def task_email_check() -> str:
+    """Email Brain: IMAP-Postfach pollen + AI-Klassifizierung + Auto-Reply (alle 15 min)."""
+    try:
+        from modules.email_blast_engine import check_inbox_replies
+        r = await check_inbox_replies()
+        return f"Email Check: {r}"
+    except Exception as e:
+        return f"Email Check: {e}"
+
+
+async def task_email_daily_summary() -> str:
+    """Email Daily Summary: tägl. Telegram-Zusammenfassung der Email-Aktivitäten."""
+    try:
+        from modules.email_blast_engine import get_daily_summary
+        r = await get_daily_summary()
+        return f"Email Daily Summary: {r}"
+    except Exception as e:
+        return f"Email Daily Summary: {e}"
+
+
 async def task_email_blast_engine() -> str:
     """Email Blast Engine: alle Email-Listen täglich mit Revenue-Content bespielen (alle 6h)."""
     try:
@@ -6562,7 +6582,7 @@ TASKS = [
     # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
     ("seo_optimizer",           task_seo_optimizer,           7200,   200),  # 2h
     ("traffic_seo_run",         task_traffic_seo_run,          3600,  210),  # 1h — AI SEO+Traffic (war 6h)
-    ("brutus_run",              task_brutus_run,               3600,    5),   # 1h — BRUTUS alle Kanäle (war 3h)
+    ("brutus_run",              task_brutus_run,              21600,    5),   # 6h — BRUTUS alle Kanäle (drosselt Spam)
     ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
     ("api_keys_health",         task_api_keys_health,         21600,  61),   # 6h
     ("trading_report",          task_trading_report,          21600,  240),  # 6h
