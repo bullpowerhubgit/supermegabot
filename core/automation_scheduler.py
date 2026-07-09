@@ -5284,6 +5284,660 @@ async def task_super_revenue_blitz() -> str:
         return f"Super Revenue Blitz Fehler: {e}"
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# ██ VOLLAUTOMATISIERUNGS-OFFENSIVE — ALLE 63 REVENUE-STREAMS ██
+# ══════════════════════════════════════════════════════════════════════════════
+
+# ── REVENUE-KRITISCH ──────────────────────────────────────────────────────────
+
+async def task_digistore_autonomy() -> str:
+    """Digistore24 Autonomy: Produkte + Funnels + Traffic vollautomatisch (alle 6h)."""
+    try:
+        from modules.digistore_autonomy import run_digistore_cycle
+        r = await run_digistore_cycle()
+        return f"DS24 Autonomy: {r}"
+    except Exception as e:
+        return f"DS24 Autonomy Fehler: {e}"
+
+
+async def task_ds24_auto_fill() -> str:
+    """DS24 Auto-Fill: neue Digistore24-Produkte automatisch anlegen (alle 4h)."""
+    try:
+        from modules.ds24_auto_fill import run_ds24_auto_fill
+        r = await run_ds24_auto_fill()
+        return f"DS24 Auto-Fill: {r}"
+    except Exception as e:
+        return f"DS24 Auto-Fill Fehler: {e}"
+
+
+async def task_ds24_product_creator() -> str:
+    """DS24 Product Creator: digitale Produkte aus Trends auto-erstellen (alle 12h)."""
+    try:
+        from modules.ds24_product_creator import auto_create_products
+        r = await auto_create_products()
+        return f"DS24 Products: {r}"
+    except Exception as e:
+        return f"DS24 Product Creator Fehler: {e}"
+
+
+async def task_ds24_marketplace_auto() -> str:
+    """DS24 Marketplace Auto: Produkte auf DS24-Marketplace listen + optimieren (alle 8h)."""
+    try:
+        from modules.ds24_marketplace_auto import run_full_marketplace_cycle
+        r = await run_full_marketplace_cycle()
+        return f"DS24 Marketplace: {r}"
+    except Exception as e:
+        return f"DS24 Marketplace Fehler: {e}"
+
+
+async def task_ds24_funnel_automation() -> str:
+    """DS24 Funnel: automatische Sales-Funnels erstellen + optimieren (alle 6h)."""
+    try:
+        from modules.ds24_funnel_automation import run_funnel
+        r = await run_funnel()
+        return f"DS24 Funnel: {r}"
+    except Exception as e:
+        return f"DS24 Funnel Fehler: {e}"
+
+
+async def task_stripe_auto_billing() -> str:
+    """Stripe Auto-Billing: Abonnements prüfen + Rechnungen automatisch versenden (alle 6h)."""
+    try:
+        from modules.stripe_auto_billing import run_billing_cycle
+        r = await run_billing_cycle()
+        return f"Stripe Billing: {r}"
+    except Exception as e:
+        return f"Stripe Billing Fehler: {e}"
+
+
+async def task_revenue_auto_payout() -> str:
+    """Revenue Auto-Payout: täglicher Revenue-Report + automatische Auszahlungslogik."""
+    try:
+        from modules.revenue_auto_payout import run_daily_revenue_report
+        r = await run_daily_revenue_report()
+        return f"Revenue Report: {r}"
+    except Exception as e:
+        return f"Revenue Report Fehler: {e}"
+
+
+async def task_revenue_maximizer() -> str:
+    """Revenue Maximizer: Upsells + Cross-Sells + Pricing-Optimierung (alle 4h)."""
+    try:
+        from modules.revenue_maximizer import run_revenue_maximizer
+        r = await run_revenue_maximizer()
+        return f"Revenue Max: {r}"
+    except Exception as e:
+        return f"Revenue Maximizer Fehler: {e}"
+
+
+async def task_revenue_mega_tracker() -> str:
+    """Revenue Mega Tracker: alle Kanäle + Plattformen in einem Dashboard (alle 8h)."""
+    try:
+        from modules.revenue_mega_tracker import run_revenue_tracker_cycle
+        r = await run_revenue_tracker_cycle()
+        return f"Revenue Tracker: {r}"
+    except Exception as e:
+        return f"Revenue Tracker Fehler: {e}"
+
+
+async def task_conversion_engine() -> str:
+    """Conversion Engine: CRO + A/B-Tests + Heatmap-Analyse automatisch (alle 6h)."""
+    try:
+        from modules.conversion_engine import daily_revenue_optimization
+        r = await daily_revenue_optimization()
+        return f"Conversion: {r}"
+    except Exception as e:
+        return f"Conversion Engine Fehler: {e}"
+
+
+async def task_dynamic_pricing() -> str:
+    """Dynamic Pricing: Shopify-Preise nach Nachfrage + Wettbewerb auto-anpassen (alle 4h)."""
+    try:
+        from modules.dynamic_pricing import run_dynamic_pricing_cycle
+        r = await run_dynamic_pricing_cycle()
+        return f"Dynamic Pricing: {r}"
+    except Exception as e:
+        return f"Dynamic Pricing Fehler: {e}"
+
+
+async def task_product_bundle_engine() -> str:
+    """Product Bundle Engine: profitable Bundles aus Shopify-Produkten auto-erstellen (alle 12h)."""
+    try:
+        from modules.product_bundle_engine import run_daily_bundle_cycle
+        r = await run_daily_bundle_cycle()
+        return f"Bundles: {r}"
+    except Exception as e:
+        return f"Product Bundle Fehler: {e}"
+
+
+async def task_product_generator() -> str:
+    """Product Generator: neue Produkt-Ideen aus Trends generieren + importieren (alle 8h)."""
+    try:
+        from modules.product_generator import run_generator_cycle
+        r = await run_generator_cycle()
+        return f"Product Gen: {r}"
+    except Exception as e:
+        return f"Product Generator Fehler: {e}"
+
+
+# ── SHOPIFY-AUTONOMY ──────────────────────────────────────────────────────────
+
+async def task_shopify_full_autonomy() -> str:
+    """Shopify Full Autonomy: SEO-Fix + Collections + Restock + Titel (alle 6h)."""
+    try:
+        from modules.shopify_full_autonomy import run_full_autonomy_cycle
+        r = await run_full_autonomy_cycle()
+        return f"Shopify Autonomy: {r}"
+    except Exception as e:
+        return f"Shopify Autonomy Fehler: {e}"
+
+
+async def task_shopify_mass_creator() -> str:
+    """Shopify Mass Creator: Massenimport + Produkterstellung aus allen Quellen (alle 12h)."""
+    try:
+        from modules.shopify_mass_creator import run_shopify_mass_cycle
+        r = await run_shopify_mass_cycle()
+        return f"Shopify Mass: {r}"
+    except Exception as e:
+        return f"Shopify Mass Creator Fehler: {e}"
+
+
+async def task_autonomous_pipeline() -> str:
+    """Autonomous Pipeline: Produkt-Pipeline von Quelle bis Shopify vollautomatisch (alle 6h)."""
+    try:
+        from modules.autonomous_pipeline import run_pipeline_cycle
+        r = await run_pipeline_cycle()
+        return f"Pipeline: {r}"
+    except Exception as e:
+        return f"Autonomous Pipeline Fehler: {e}"
+
+
+async def task_auto_sorter() -> str:
+    """Auto-Sorter: Shopify-Produkte automatisch in Collections einsortieren (alle 4h)."""
+    try:
+        from modules.auto_sorter import run_sort_cycle
+        r = await run_sort_cycle()
+        return f"Auto-Sort: {r}"
+    except Exception as e:
+        return f"Auto-Sorter Fehler: {e}"
+
+
+async def task_gmc_product_fixer() -> str:
+    """GMC Product Fixer: Google Merchant Center Fehler auto-korrigieren (alle 6h)."""
+    try:
+        from modules.gmc_product_fixer import run_gmc_fixer_cycle
+        r = await run_gmc_fixer_cycle()
+        return f"GMC Fixer: {r}"
+    except Exception as e:
+        return f"GMC Fixer Fehler: {e}"
+
+
+# ── PRINT-ON-DEMAND ───────────────────────────────────────────────────────────
+
+async def task_printful_autonomy() -> str:
+    """Printful Autonomy: neue POD-Produkte erstellen + fulfillment (alle 8h)."""
+    try:
+        from modules.printful_autonomy import run_printful_cycle
+        r = await run_printful_cycle()
+        return f"Printful: {r}"
+    except Exception as e:
+        return f"Printful Fehler: {e}"
+
+
+async def task_printify_autonomy() -> str:
+    """Printify Autonomy: Trending-Designs → Printify → Shopify (alle 8h)."""
+    try:
+        from modules.printify_autonomy import run_printify_cycle
+        r = await run_printify_cycle()
+        return f"Printify: {r}"
+    except Exception as e:
+        return f"Printify Fehler: {e}"
+
+
+# ── EMAIL & CRM ───────────────────────────────────────────────────────────────
+
+async def task_email_blast_engine() -> str:
+    """Email Blast Engine: alle Email-Listen täglich mit Revenue-Content bespielen (alle 6h)."""
+    try:
+        from modules.email_blast_engine import run_email_cycle
+        r = await run_email_cycle()
+        return f"Email Blast: {r}"
+    except Exception as e:
+        return f"Email Blast Fehler: {e}"
+
+
+async def task_email_sequence_engine() -> str:
+    """Email Sequence Engine: neue Kunden automatisch in Sequenzen einschreiben (alle 4h)."""
+    try:
+        from modules.email_sequence_engine import auto_enroll_new_customers
+        r = await auto_enroll_new_customers()
+        return f"Email Sequences: {r}"
+    except Exception as e:
+        return f"Email Sequence Fehler: {e}"
+
+
+async def task_mailchimp_autonomy() -> str:
+    """Mailchimp Autonomy: Kampagnen + Welcome-Sequenzen vollautomatisch (alle 12h)."""
+    try:
+        from modules.mailchimp_autonomy import run_mailchimp_cycle
+        r = await run_mailchimp_cycle()
+        return f"Mailchimp: {r}"
+    except Exception as e:
+        return f"Mailchimp Autonomy Fehler: {e}"
+
+
+async def task_mailchimp_dragon_1000() -> str:
+    """Mailchimp Dragon 1000: 1000-Artikel-Kampagne täglich (alle 24h)."""
+    try:
+        from modules.mailchimp_dragon_1000 import run_dragon_article_cycle
+        r = await run_dragon_article_cycle()
+        return f"Dragon 1000: {r}"
+    except Exception as e:
+        return f"Dragon 1000 Fehler: {e}"
+
+
+# ── TRAFFIC & SEO ─────────────────────────────────────────────────────────────
+
+async def task_traffic_mega_engine() -> str:
+    """Traffic Mega Engine: viral campaigns + backlinks + social (alle 6h)."""
+    try:
+        from modules.traffic_mega_engine import run_traffic_cycle
+        r = await run_traffic_cycle()
+        return f"Traffic Mega: {r}"
+    except Exception as e:
+        return f"Traffic Mega Fehler: {e}"
+
+
+async def task_traffic_swarm() -> str:
+    """Traffic Swarm: Multi-Channel Traffic-Schwarm (alle 8h)."""
+    try:
+        from modules.traffic_swarm import run_full_traffic_swarm
+        r = await run_full_traffic_swarm()
+        return f"Traffic Swarm: {r}"
+    except Exception as e:
+        return f"Traffic Swarm Fehler: {e}"
+
+
+async def task_seo_mega_engine() -> str:
+    """SEO Mega Engine: Content-Factory + vollständiger SEO-Zyklus (alle 6h)."""
+    try:
+        from modules.seo_mega_engine import run_seo_mega_engine
+        r = await run_seo_mega_engine()
+        return f"SEO Mega: {r}"
+    except Exception as e:
+        return f"SEO Mega Fehler: {e}"
+
+
+async def task_seo_traffic_blitz() -> str:
+    """SEO Traffic Blitz: Sitemap + Keywords + Backlinks + Schema + Internal Links (alle 8h)."""
+    try:
+        from modules.seo_traffic_blitz import run_full_seo_blast
+        r = await run_full_seo_blast()
+        return f"SEO Blitz: {r}"
+    except Exception as e:
+        return f"SEO Traffic Blitz Fehler: {e}"
+
+
+async def task_ultra_seo_arsenal() -> str:
+    """Ultra SEO Arsenal: vollständige SEO-Optimierung aller Seiten (alle 8h)."""
+    try:
+        from modules.ultra_seo_arsenal import run_ultra_seo_cycle
+        r = await run_ultra_seo_cycle()
+        return f"Ultra SEO: {r}"
+    except Exception as e:
+        return f"Ultra SEO Fehler: {e}"
+
+
+async def task_omega_traffic_engine() -> str:
+    """Omega Traffic Engine: multi-channel viral traffic (alle 6h)."""
+    try:
+        from modules.omega_traffic_engine import run_omega_cycle
+        r = await run_omega_cycle()
+        return f"Omega Traffic: {r}"
+    except Exception as e:
+        return f"Omega Traffic Fehler: {e}"
+
+
+async def task_viral_traffic_machine() -> str:
+    """Viral Traffic Machine: Reddit+Medium+LinkedIn+Trending alle 4h."""
+    try:
+        from modules.viral_traffic_machine import run_viral_traffic_machine
+        r = await run_viral_traffic_machine()
+        return f"Viral Traffic: {r}"
+    except Exception as e:
+        return f"Viral Traffic Fehler: {e}"
+
+
+async def task_mass_content_blaster() -> str:
+    """Mass Content Blaster: Massenposting auf alle Kanäle gleichzeitig (alle 6h)."""
+    try:
+        from modules.mass_content_blaster import run_mass_blast
+        r = await run_mass_blast()
+        return f"Mass Blast: {r}"
+    except Exception as e:
+        return f"Mass Content Fehler: {e}"
+
+
+async def task_traffic_mega_v2() -> str:
+    """Traffic Mega V2: erweiterter Traffic-Zyklus mit neuen Kanälen (alle 8h)."""
+    try:
+        from modules.traffic_mega_v2 import run_traffic_mega_cycle
+        r = await run_traffic_mega_cycle()
+        return f"Traffic V2: {r}"
+    except Exception as e:
+        return f"Traffic V2 Fehler: {e}"
+
+
+async def task_traffic_blitz() -> str:
+    """Traffic Blitz: LinkedIn + Shopify SEO + schneller Multi-Channel-Burst (alle 6h)."""
+    try:
+        from modules.traffic_blitz import run_traffic_blitz
+        r = await run_traffic_blitz()
+        return f"Traffic Blitz: {r}"
+    except Exception as e:
+        return f"Traffic Blitz Fehler: {e}"
+
+
+async def task_content_velocity_engine() -> str:
+    """Content Velocity Engine: high-speed Content-Produktion für alle Kanäle (alle 6h)."""
+    try:
+        from modules.content_velocity_engine import run_content_velocity
+        r = await run_content_velocity()
+        return f"Content Velocity: {r}"
+    except Exception as e:
+        return f"Content Velocity Fehler: {e}"
+
+
+async def task_free_syndication_network() -> str:
+    """Free Syndication Network: kostenloses Content-Syndication auf 20+ Plattformen (alle 8h)."""
+    try:
+        from modules.free_syndication_network import run_free_syndication
+        r = await run_free_syndication()
+        return f"Syndication: {r}"
+    except Exception as e:
+        return f"Syndication Fehler: {e}"
+
+
+# ── SOCIAL & CONTENT ──────────────────────────────────────────────────────────
+
+async def task_discord_automation() -> str:
+    """Discord Automation: Promo-Posts in relevante Discord-Server (alle 6h)."""
+    try:
+        from modules.discord_automation import run_discord_promo
+        r = await run_discord_promo()
+        return f"Discord: {r}"
+    except Exception as e:
+        return f"Discord Fehler: {e}"
+
+
+async def task_twitter_auto_poster() -> str:
+    """Twitter Auto-Poster: Tweets zu Trending-Produkten (alle 4h)."""
+    try:
+        from modules.twitter_auto_poster import run_auto_tweet
+        r = await run_auto_tweet()
+        return f"Twitter Auto: {r}"
+    except Exception as e:
+        return f"Twitter Auto-Poster Fehler: {e}"
+
+
+async def task_instagram_pipeline() -> str:
+    """Instagram Pipeline: Shopify-Produkte → IG Posts + Stories (alle 4h)."""
+    try:
+        from modules.instagram_pipeline import run_pipeline
+        r = await run_pipeline()
+        return f"Instagram: {r}"
+    except Exception as e:
+        return f"Instagram Pipeline Fehler: {e}"
+
+
+async def task_youtube_autonomy() -> str:
+    """YouTube Autonomy: Produkt-Videos + Shorts auto-generieren (alle 12h)."""
+    try:
+        from modules.youtube_autonomy import run_youtube_cycle
+        r = await run_youtube_cycle()
+        return f"YouTube: {r}"
+    except Exception as e:
+        return f"YouTube Fehler: {e}"
+
+
+async def task_tiktok_trends_scraper() -> str:
+    """TikTok Trends Scraper: virale TikTok-Produkte scrapen + als Content posten (alle 6h)."""
+    try:
+        from modules.tiktok_trends_scraper import run_tiktok_trend_blast
+        r = await run_tiktok_trend_blast()
+        return f"TikTok Trends: {r}"
+    except Exception as e:
+        return f"TikTok Trends Fehler: {e}"
+
+
+async def task_hashnode_publisher() -> str:
+    """Hashnode Publisher: SEO-Artikel auf Hashnode.dev veröffentlichen (tägl.)."""
+    try:
+        from modules.hashnode_publisher import run_hashnode_post
+        r = await run_hashnode_post()
+        return f"Hashnode: {r}"
+    except Exception as e:
+        return f"Hashnode Fehler: {e}"
+
+
+async def task_dev_to_publisher() -> str:
+    """Dev.to Publisher: Tech-Artikel auf Dev.to veröffentlichen (tägl.)."""
+    try:
+        from modules.dev_to_publisher import run_dev_to_post
+        r = await run_dev_to_post()
+        return f"Dev.to: {r}"
+    except Exception as e:
+        return f"Dev.to Fehler: {e}"
+
+
+async def task_content_hub() -> str:
+    """Content Hub: zentraler Content-Zyklus für alle Kanäle (alle 6h)."""
+    try:
+        from modules.content_hub import run_content_cycle
+        r = await run_content_cycle()
+        return f"Content Hub: {r}"
+    except Exception as e:
+        return f"Content Hub Fehler: {e}"
+
+
+async def task_mega_auto_poster() -> str:
+    """Mega Auto-Poster: DS24 + Shopify Produkte auf alle Kanäle gleichzeitig (alle 6h)."""
+    try:
+        from modules.mega_auto_poster import run_full_auto_post
+        r = await run_full_auto_post()
+        return f"Mega Post: {r}"
+    except Exception as e:
+        return f"Mega Auto-Poster Fehler: {e}"
+
+
+# ── FREELANCE ─────────────────────────────────────────────────────────────────
+
+async def task_fiverr_scraper() -> str:
+    """Fiverr Scraper: Buyer Requests scrapen + auto-Angebote abgeben (alle 12h)."""
+    try:
+        from modules.fiverr_scraper import run_fiverr_full_blast
+        r = await run_fiverr_full_blast()
+        return f"Fiverr Scraper: {r}"
+    except Exception as e:
+        return f"Fiverr Scraper Fehler: {e}"
+
+
+async def task_fiverr_seo_promoter() -> str:
+    """Fiverr SEO Promoter: Gig-Rankings verbessern + Promotions (alle 8h)."""
+    try:
+        from modules.fiverr_seo_promoter import run_fiverr_promotion_cycle
+        r = await run_fiverr_promotion_cycle()
+        return f"Fiverr SEO: {r}"
+    except Exception as e:
+        return f"Fiverr SEO Fehler: {e}"
+
+
+async def task_upwork_job_scraper() -> str:
+    """Upwork Job Scraper: relevante Jobs finden + Alerts senden (alle 6h)."""
+    try:
+        from modules.upwork_job_scraper import run_upwork_job_alert
+        r = await run_upwork_job_alert()
+        return f"Upwork Jobs: {r}"
+    except Exception as e:
+        return f"Upwork Scraper Fehler: {e}"
+
+
+async def task_upwork_proposal_auto() -> str:
+    """Upwork Proposal Auto: KI-Proposals für passende Jobs auto-generieren (alle 8h)."""
+    try:
+        from modules.upwork_proposal_auto import run_upwork_proposal_generation
+        r = await run_upwork_proposal_generation()
+        return f"Upwork Proposals: {r}"
+    except Exception as e:
+        return f"Upwork Proposal Fehler: {e}"
+
+
+# ── B2B-LEADS ─────────────────────────────────────────────────────────────────
+
+async def task_handelsregister_radar() -> str:
+    """Handelsregister Radar: neue GmbHs scrapen → B2B-Leads (tägl.)."""
+    try:
+        from modules.handelsregister_radar import run_cycle
+        r = await run_cycle()
+        return f"HR Radar: {r}"
+    except Exception as e:
+        return f"HR Radar Fehler: {e}"
+
+
+async def task_zvg_radar() -> str:
+    """ZVG Radar: Zwangsversteigerungen → Bank/Anwalt Leads (tägl.)."""
+    try:
+        from modules.zvg_radar import run_cycle
+        r = await run_cycle()
+        return f"ZVG Radar: {r}"
+    except Exception as e:
+        return f"ZVG Radar Fehler: {e}"
+
+
+async def task_ai_act_scanner() -> str:
+    """AI Act Scanner: KMU EU AI Act Risiko → €299 Reports (tägl.)."""
+    try:
+        from modules.ai_act_scanner import run_cycle
+        r = await run_cycle()
+        return f"AI Act: {r}"
+    except Exception as e:
+        return f"AI Act Fehler: {e}"
+
+
+async def task_b2b_pipeline() -> str:
+    """B2B Pipeline: Prospecting + Outreach automatisch (alle 12h)."""
+    try:
+        from modules.b2b_pipeline import run_prospecting
+        r = await run_prospecting()
+        return f"B2B Pipeline: {r}"
+    except Exception as e:
+        return f"B2B Pipeline Fehler: {e}"
+
+
+async def task_growth_engine() -> str:
+    """Growth Engine: Review-Automation + Winback + VIP-Promotions (tägl.)."""
+    try:
+        from modules.growth_engine import run_review_automation
+        r = await run_review_automation()
+        return f"Growth: {r}"
+    except Exception as e:
+        return f"Growth Engine Fehler: {e}"
+
+
+# ── WACHSTUM & OPTIMIERUNG ────────────────────────────────────────────────────
+
+async def task_growth_hacker() -> str:
+    """Growth Hacker: Referral-Program + Wachstums-Experimente (tägl.)."""
+    try:
+        from modules.growth_hacker import run_referral_program
+        r = await run_referral_program()
+        return f"Growth Hack: {r}"
+    except Exception as e:
+        return f"Growth Hacker Fehler: {e}"
+
+
+async def task_auto_funnel() -> str:
+    """Auto Funnel: tägliche Funnel-Tasks + Optimierungen (tägl.)."""
+    try:
+        from modules.auto_funnel import run_daily_funnel_tasks
+        r = await run_daily_funnel_tasks()
+        return f"Auto Funnel: {r}"
+    except Exception as e:
+        return f"Auto Funnel Fehler: {e}"
+
+
+async def task_cro_engine() -> str:
+    """CRO Engine: Conversion Rate Optimization automatisch (alle 8h)."""
+    try:
+        from modules.cro_engine import run_cro
+        r = await run_cro()
+        return f"CRO: {r}"
+    except Exception as e:
+        return f"CRO Engine Fehler: {e}"
+
+
+async def task_geheimwaffe() -> str:
+    """Geheimwaffe: competitive intelligence + full automation (tägl.)."""
+    try:
+        from modules.geheimwaffe import run_full_automation
+        r = await run_full_automation()
+        return f"Geheimwaffe: {r}"
+    except Exception as e:
+        return f"Geheimwaffe Fehler: {e}"
+
+
+async def task_reply_monitor() -> str:
+    """Reply Monitor: Social Media Mentions + Kommentare auto-beantworten (alle 2h)."""
+    try:
+        from modules.reply_monitor import run_cycle
+        r = await run_cycle()
+        return f"Reply Monitor: {r}"
+    except Exception as e:
+        return f"Reply Monitor Fehler: {e}"
+
+
+async def task_twilio_sms_revenue() -> str:
+    """Twilio SMS: täglicher Revenue-Bericht per SMS (tägl.)."""
+    try:
+        from modules.twilio_sms import run_daily_revenue_sms
+        r = await run_daily_revenue_sms()
+        return f"SMS Revenue: {r}"
+    except Exception as e:
+        return f"Twilio SMS Fehler: {e}"
+
+
+# ── SELBST-OPTIMIERUNG ────────────────────────────────────────────────────────
+
+async def task_quantum_self_improver() -> str:
+    """Quantum Self-Improver: KI optimiert eigenen Code + Workflows (tägl.)."""
+    try:
+        from modules.quantum_self_improver import run_quantum_cycle
+        r = await run_quantum_cycle()
+        return f"Quantum Improve: {r}"
+    except Exception as e:
+        return f"Quantum Improver Fehler: {e}"
+
+
+async def task_quantum_self_repair() -> str:
+    """Quantum Self-Repair: Fehler im System auto-erkennen + reparieren (alle 12h)."""
+    try:
+        from modules.quantum_self_repair import run_quantum_scan
+        r = await run_quantum_scan()
+        return f"Quantum Repair: {r}"
+    except Exception as e:
+        return f"Quantum Repair Fehler: {e}"
+
+
+async def task_auto_token_refresher() -> str:
+    """Auto Token Refresher: alle API-Tokens prüfen + rechtzeitig erneuern (alle 12h)."""
+    try:
+        from modules.auto_token_refresher import run_token_health_check
+        r = await run_token_health_check()
+        return f"Token Health: {r}"
+    except Exception as e:
+        return f"Token Refresher Fehler: {e}"
+
+
 async def task_reddit_cookie_refresh() -> str:
     """Reddit Cookie Auto-Refresh: täglich Chrome-Cookies extrahieren — kein OAuth2 App nötig."""
     try:
@@ -5481,6 +6135,82 @@ TASKS = [
     # ── Facebook Groups Cookie-Posting (kein App Review, kein OAuth2 nötig) ──
     ("fb_cookies_refresh",     task_fb_cookies_refresh,     86400, 3750),  # täglich — FB Chrome Cookies erneuern
     ("fb_groups_post",         task_fb_groups_post,         21600, 3800),  # 6h — Posts in FB-Gruppen
+    # ══════════════════════════════════════════════════════════════════════════
+    # ██ VOLLAUTOMATISIERUNGS-OFFENSIVE — 63 NEUE REVENUE-STREAMS ██
+    # ══════════════════════════════════════════════════════════════════════════
+    # ── REVENUE-KRITISCH ──────────────────────────────────────────────────────
+    ("digistore_autonomy",     task_digistore_autonomy,     21600, 1100),  # 6h  — DS24 Produkte+Funnels+Traffic
+    ("ds24_auto_fill",         task_ds24_auto_fill,         14400, 1140),  # 4h  — DS24 neue Produkte auto-anlegen
+    ("ds24_product_creator",   task_ds24_product_creator,   43200, 1180),  # 12h — DS24 digitale Produkte aus Trends
+    ("ds24_marketplace_auto",  task_ds24_marketplace_auto,  28800, 1220),  # 8h  — DS24 Marketplace listen+optimieren
+    ("ds24_funnel_auto",       task_ds24_funnel_automation, 21600, 1260),  # 6h  — DS24 Sales-Funnels auto
+    ("stripe_auto_billing",    task_stripe_auto_billing,    21600, 1300),  # 6h  — Stripe Abos+Rechnungen auto
+    ("revenue_payout",         task_revenue_auto_payout,    86400, 1340),  # 24h — Revenue-Report + Auszahlung
+    ("revenue_maximizer",      task_revenue_maximizer,      14400, 1380),  # 4h  — Upsells+Cross-Sells+Pricing
+    ("revenue_mega_tracker",   task_revenue_mega_tracker,   28800, 1420),  # 8h  — Alle Kanäle Revenue-Dashboard
+    ("conversion_engine",      task_conversion_engine,      21600, 1460),  # 6h  — CRO+A/B-Tests automatisch
+    ("dynamic_pricing",        task_dynamic_pricing,        14400, 1500),  # 4h  — Shopify Preise nach Nachfrage
+    ("product_bundles",        task_product_bundle_engine,  43200, 1540),  # 12h — Profitable Bundles erstellen
+    ("product_generator",      task_product_generator,      28800, 1580),  # 8h  — Produkt-Ideen aus Trends
+    # ── SHOPIFY-AUTONOMY ──────────────────────────────────────────────────────
+    ("shopify_full_autonomy",  task_shopify_full_autonomy,  21600, 1620),  # 6h  — SEO+Collections+Restock+Titel
+    ("shopify_mass_creator",   task_shopify_mass_creator,   43200, 1660),  # 12h — Massenimport alle Quellen
+    ("autonomous_pipeline",    task_autonomous_pipeline,    21600, 1700),  # 6h  — Quelle→Shopify vollautomatisch
+    ("auto_sorter",            task_auto_sorter,            14400, 1740),  # 4h  — Shopify Collections auto-sort
+    ("gmc_fixer",              task_gmc_product_fixer,      21600, 1780),  # 6h  — Google Merchant Fehler fixen
+    # ── PRINT-ON-DEMAND ───────────────────────────────────────────────────────
+    ("printful_autonomy",      task_printful_autonomy,      28800, 1820),  # 8h  — Printful POD+Fulfillment
+    ("printify_autonomy",      task_printify_autonomy,      28800, 1860),  # 8h  — Printify Trending→Shopify
+    # ── EMAIL & CRM ───────────────────────────────────────────────────────────
+    ("email_blast",            task_email_blast_engine,     21600, 1900),  # 6h  — Alle Email-Listen bespielen
+    ("email_sequences",        task_email_sequence_engine,  14400, 1940),  # 4h  — Neue Kunden in Sequenz einschreiben
+    ("mailchimp_autonomy",     task_mailchimp_autonomy,     43200, 1980),  # 12h — Mailchimp Kampagnen+Welcome
+    ("mailchimp_dragon",       task_mailchimp_dragon_1000,  86400, 2020),  # 24h — 1000-Artikel-Kampagne
+    # ── TRAFFIC & SEO ─────────────────────────────────────────────────────────
+    ("traffic_mega",           task_traffic_mega_engine,    21600, 2060),  # 6h  — Viral+Backlinks+Social
+    ("traffic_swarm",          task_traffic_swarm,          28800, 2100),  # 8h  — Multi-Channel Traffic-Schwarm
+    ("seo_mega",               task_seo_mega_engine,        21600, 2140),  # 6h  — Content-Factory+SEO-Zyklus
+    ("seo_traffic_blitz",      task_seo_traffic_blitz,      28800, 2180),  # 8h  — Sitemap+Keywords+Backlinks
+    ("ultra_seo",              task_ultra_seo_arsenal,      28800, 2220),  # 8h  — Ultra SEO alle Seiten
+    ("omega_traffic",          task_omega_traffic_engine,   21600, 2260),  # 6h  — Multi-Channel viral traffic
+    ("viral_traffic",          task_viral_traffic_machine,  14400, 2300),  # 4h  — Reddit+Medium+LinkedIn+Trending
+    ("mass_content",           task_mass_content_blaster,   21600, 2340),  # 6h  — Massenposting alle Kanäle
+    ("traffic_v2",             task_traffic_mega_v2,        28800, 2380),  # 8h  — Erweiterter Traffic-Zyklus
+    ("traffic_blitz",          task_traffic_blitz,          21600, 2420),  # 6h  — LinkedIn+Shopify+Burst
+    ("content_velocity",       task_content_velocity_engine,21600, 2460),  # 6h  — High-Speed Content-Produktion
+    ("syndication",            task_free_syndication_network,28800, 2500),  # 8h  — Kostenloses Content-Syndication
+    # ── SOCIAL & CONTENT ──────────────────────────────────────────────────────
+    ("discord",                task_discord_automation,     21600, 2540),  # 6h  — Discord Promo-Posts
+    ("twitter_auto",           task_twitter_auto_poster,    14400, 2580),  # 4h  — Tweets zu Trending-Produkten
+    ("instagram_pipeline",     task_instagram_pipeline,     14400, 2620),  # 4h  — Shopify→IG Posts+Stories
+    ("youtube_autonomy",       task_youtube_autonomy,       43200, 2660),  # 12h — YouTube Videos+Shorts auto
+    ("tiktok_trends",          task_tiktok_trends_scraper,  21600, 2700),  # 6h  — TikTok viral Produkte+Content
+    ("hashnode",               task_hashnode_publisher,     86400, 2740),  # 24h — SEO-Artikel auf Hashnode
+    ("dev_to",                 task_dev_to_publisher,       86400, 2780),  # 24h — Tech-Artikel auf Dev.to
+    ("content_hub",            task_content_hub,            21600, 2820),  # 6h  — Content-Zyklus alle Kanäle
+    ("mega_auto_post",         task_mega_auto_poster,       21600, 2860),  # 6h  — DS24+Shopify alle Kanäle
+    # ── FREELANCE ─────────────────────────────────────────────────────────────
+    ("fiverr_scraper",         task_fiverr_scraper,         43200, 2900),  # 12h — Buyer Requests+auto-Angebote
+    ("fiverr_seo",             task_fiverr_seo_promoter,    28800, 2940),  # 8h  — Gig-Rankings verbessern
+    ("upwork_jobs",            task_upwork_job_scraper,     21600, 2980),  # 6h  — Jobs finden+Alerts
+    ("upwork_proposals",       task_upwork_proposal_auto,   28800, 3020),  # 8h  — KI-Proposals auto-generieren
+    # ── B2B-LEADS ─────────────────────────────────────────────────────────────
+    ("handelsregister",        task_handelsregister_radar,  86400, 3060),  # 24h — neue GmbHs→B2B Leads
+    ("zvg_radar",              task_zvg_radar,              86400, 3100),  # 24h — Zwangsversteigerungen→Leads
+    ("ai_act",                 task_ai_act_scanner,         86400, 3140),  # 24h — EU AI Act KMU Risiko→Reports
+    ("b2b_pipeline",           task_b2b_pipeline,           43200, 3180),  # 12h — B2B Prospecting+Outreach
+    ("growth_engine",          task_growth_engine,          86400, 3220),  # 24h — Reviews+Winback+VIP
+    # ── WACHSTUM & OPTIMIERUNG ────────────────────────────────────────────────
+    ("growth_hacker",          task_growth_hacker,          86400, 3260),  # 24h — Referral+Wachstums-Experimente
+    ("auto_funnel",            task_auto_funnel,            86400, 3300),  # 24h — tägliche Funnel-Tasks
+    ("cro_engine",             task_cro_engine,             28800, 3340),  # 8h  — CRO automatisch
+    ("geheimwaffe",            task_geheimwaffe,            86400, 3380),  # 24h — Competitive Intelligence
+    ("reply_monitor",          task_reply_monitor,           7200, 3420),  # 2h  — Social Mentions auto-beantworten
+    ("twilio_sms",             task_twilio_sms_revenue,     86400, 3460),  # 24h — Revenue-SMS täglich
+    # ── SELBST-OPTIMIERUNG ────────────────────────────────────────────────────
+    ("quantum_improve",        task_quantum_self_improver,  86400, 3500),  # 24h — KI optimiert eigenen Code
+    ("quantum_repair",         task_quantum_self_repair,    43200, 3540),  # 12h — Fehler auto-erkennen+reparieren
+    ("token_refresher",        task_auto_token_refresher,   43200, 3580),  # 12h — API-Tokens prüfen+erneuern
 ]
 
 
