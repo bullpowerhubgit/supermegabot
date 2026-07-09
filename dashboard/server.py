@@ -9295,6 +9295,7 @@ async def create_app():
     app.router.add_post("/api/content/velocity",      handle_content_velocity)
     app.router.add_post("/api/viral/traffic",         handle_viral_traffic)
     app.router.add_post("/api/revenue/maximize",      handle_revenue_maximizer_run)
+    app.router.add_post("/api/watchdog/run",           handle_mac_watchdog)
     app.router.add_post("/api/monitor/run",            handle_monitor_hub)
     app.router.add_post("/api/content-loop/run",      handle_content_loop)
     app.router.add_post("/api/syndication/run",       handle_free_syndication)
@@ -11365,6 +11366,19 @@ async def handle_revenue_maximizer_run(req):
             logging.getLogger("RevMax").error("BG error: %s", exc)
     asyncio.ensure_future(_bg())
     return web.json_response({"status": "started", "message": "RevenueMaximizer läuft — Cart Recovery + Winback + Urgency"})
+
+
+async def handle_mac_watchdog(req):
+    """POST /api/watchdog/run — Mac + Railway + APIs sofort prüfen + auto-repair."""
+    async def _bg():
+        try:
+            from modules.mac_watchdog import run_mac_watchdog
+            await run_mac_watchdog()
+        except Exception as exc:
+            logging.getLogger("MacWatchdog").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started",
+                              "message": "Mac Watchdog läuft — CPU/RAM/Disk + Railway + APIs + auto-repair"})
 
 
 async def handle_monitor_hub(req):
