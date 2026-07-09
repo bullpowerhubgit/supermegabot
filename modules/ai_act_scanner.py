@@ -439,9 +439,13 @@ async def scheduler_loop():
             await asyncio.sleep(secs)
 
 
+try:
+    init_db()
+except Exception as _e:
+    import logging as _log; _log.getLogger("AIActScanner").warning("init_db at import: %s", _e)
+
 if __name__ == "__main__":
     if "--now" in sys.argv or "--test" in sys.argv:
-        init_db()
         asyncio.run(run_cycle())
     elif "--scan" in sys.argv:
         idx = sys.argv.index("--scan")
