@@ -9831,6 +9831,22 @@ async def create_app():
     app.router.add_get("/api/agent/status",         handle_agents_overview)
     # ── END MISSING ALIASES ───────────────────────────────────────────────────
 
+    # ── ShopText.ai — KI-Produkttexte SaaS ──────────────────────────────────
+    try:
+        from dashboard.routes.shoptext_routes import (
+            handle_shoptext_landing, handle_shoptext_generate,
+            handle_shoptext_checkout, handle_shoptext_success,
+            handle_shoptext_stats,
+        )
+        app.router.add_get("/shoptext",                  handle_shoptext_landing)
+        app.router.add_post("/api/shoptext/generate",    handle_shoptext_generate)
+        app.router.add_post("/api/shoptext/checkout",    handle_shoptext_checkout)
+        app.router.add_get("/shoptext/success",          handle_shoptext_success)
+        app.router.add_get("/api/shoptext/stats",        handle_shoptext_stats)
+        log.info("ShopText.ai routes registered at /shoptext")
+    except Exception as _e:
+        log.warning("ShopText.ai routes failed to register: %s", _e)
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
