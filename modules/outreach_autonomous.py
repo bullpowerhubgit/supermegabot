@@ -40,6 +40,8 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import aiohttp
+import xml.etree.ElementTree as ET
+from urllib.parse import unquote
 
 # ── Logging ───────────────────────────────────────────────────────────────────
 logging.basicConfig(
@@ -140,98 +142,243 @@ TARGETS = [
 ]
 
 
-# ── Insolvenz-Scraper (komplett eigenständig) ─────────────────────────────────
+# ── Insolvenz-Scraper (Multi-Source: Google News RSS + HR-DB + Northdata) ──────
 
 async def scrape_insolvencies(max_entries: int = 30) -> List[Dict]:
-    """Scrapt insolvenzbekanntmachungen.de direkt — keine externe Abhängigkeit."""
-    entries = []
-    bundeslaender = ["nw", "by", "bw", "hh", "be"]  # Größte zuerst
+    """Echte Daten aus 3 Quellen — kein Demo-Fallback."""
+    entries: List[Dict] = []
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
-        "Accept-Language": "de-DE,de;q=0.9",
-    }
-
+    # Quelle 1: Google News RSS — aktuelle Insolvenzmeldungen DE
     try:
-        async with aiohttp.ClientSession(
-            headers=headers,
-            timeout=aiohttp.ClientTimeout(total=30),
-            connector=aiohttp.TCPConnector(ssl=False)
-        ) as session:
-            for bl in bundeslaender:
-                if len(entries) >= max_entries:
-                    break
-                try:
-                    url = (
-                        f"https://www.insolvenzbekanntmachungen.de/ap/suche.jsf"
-                        f"?bundesland={bl.upper()}&gerichtsstand=&startDatum=&endDatum="
-                        f"&name=&aktenzeichen=&absender=&insolvenzen=true&loeschungen=false"
-                    )
-                    async with session.get(url) as r:
-                        if r.status != 200:
-                            continue
-                        html = await r.text(errors="replace")
-                        batch = _parse_html(html, bl.upper())
-                        entries.extend(batch)
-                        log.info("Scraped %s: %d Einträge", bl.upper(), len(batch))
-                    await asyncio.sleep(2.0)
-                except Exception as e:
-                    log.debug("Scrape %s: %s", bl, e)
+        gnews = await _scrape_google_news_rss()
+        entries.extend(gnews)
+        log.info("Google News RSS: %d Einträge", len(gnews))
     except Exception as e:
-        log.warning("Scraper session: %s", e)
+        log.warning("Google News: %s", e)
 
-    # Falls scraping schlägt: synthetische Demo-Daten für Tests
-    if not entries:
-        log.warning("Scraping ergab 0 Einträge — nutze Demo-Daten")
-        entries = _demo_entries()
+    # Quelle 2: Handelsregister-DB — neue GmbH-Gründungen (immer Lead-Potenzial)
+    try:
+        hr = _read_handelsregister_db(limit=15)
+        entries.extend(hr)
+        log.info("Handelsregister-DB: %d Einträge", len(hr))
+    except Exception as e:
+        log.warning("HR-DB: %s", e)
 
-    return entries[:max_entries]
+    # Quelle 3: Northdata Web-Suche — Insolvenz-Firmen
+    if len(entries) < 5:
+        try:
+            nd = await _scrape_northdata()
+            entries.extend(nd)
+            log.info("Northdata: %d Einträge", len(nd))
+        except Exception as e:
+            log.warning("Northdata: %s", e)
+
+    # Dedup via UID
+    seen: set = set()
+    unique: List[Dict] = []
+    for e in entries:
+        if e["uid"] not in seen:
+            seen.add(e["uid"])
+            unique.append(e)
+
+    if not unique:
+        log.warning("Alle Quellen leer — heute kein Outreach-Lauf möglich")
+
+    return unique[:max_entries]
 
 
-def _parse_html(html: str, bundesland: str) -> List[Dict]:
-    results = []
-    rows = re.findall(
-        r'<tr[^>]+class="(?:odd|even)"[^>]*>(.*?)</tr>',
-        html, re.DOTALL | re.IGNORECASE
-    )
-    for row in rows:
-        cells = re.findall(r'<td[^>]*>(.*?)</td>', row, re.DOTALL)
-        cells = [re.sub(r'<[^>]+>', '', c).strip() for c in cells]
-        if len(cells) >= 4:
-            debtor    = cells[2] if len(cells) > 2 else ""
-            court     = cells[1] if len(cells) > 1 else ""
-            case_no   = cells[3] if len(cells) > 3 else ""
-            ins_type  = cells[4] if len(cells) > 4 else "Insolvenzeröffnung"
-            if not debtor or len(debtor) < 3:
+async def _scrape_google_news_rss() -> List[Dict]:
+    """Google News RSS für deutsche Insolvenzmeldungen — kein JS nötig."""
+    results: List[Dict] = []
+    queries = [
+        "Insolvenz+GmbH+Deutschland",
+        "Insolvenzantrag+GmbH+insolvent",
+    ]
+
+    for query in queries:
+        url = f"https://news.google.com/rss/search?q={query}&hl=de&gl=DE&ceid=DE:de"
+        try:
+            async with aiohttp.ClientSession(
+                headers={"User-Agent": "Mozilla/5.0 (compatible; NewsBot/1.0)"},
+                timeout=aiohttp.ClientTimeout(total=15),
+                connector=aiohttp.TCPConnector(ssl=False)
+            ) as s:
+                async with s.get(url) as r:
+                    if r.status != 200:
+                        log.debug("GNews %s → HTTP %s", query, r.status)
+                        continue
+                    content = await r.text(errors="replace")
+
+            root = ET.fromstring(content)
+            channel = root.find("channel")
+            if not channel:
                 continue
-            uid = hashlib.md5(f"{debtor}{court}{case_no}".encode()).hexdigest()[:16]
-            results.append({
-                "uid": uid, "debtor_name": debtor, "court": court,
-                "case_number": case_no, "bundesland": bundesland,
-                "insolvency_type": ins_type or "Insolvenzeröffnung",
-                "scraped_at": int(time.time()),
-            })
+
+            for item in channel.findall("item")[:15]:
+                title = item.findtext("title") or ""
+                desc  = item.findtext("description") or ""
+                pub   = item.findtext("pubDate") or ""
+                full  = title + " " + desc
+
+                company = _extract_company_from_news(full)
+                if not company:
+                    continue
+
+                uid = hashlib.md5(f"gnews_{company}_{pub[:20]}".encode()).hexdigest()[:16]
+                results.append({
+                    "uid":             uid,
+                    "debtor_name":     company,
+                    "court":           "",
+                    "case_number":     "",
+                    "bundesland":      _extract_bundesland(full),
+                    "insolvency_type": "Insolvenzeröffnung",
+                    "source":          "google_news",
+                    "raw_title":       title[:200],
+                    "scraped_at":      int(time.time()),
+                })
+
+            await asyncio.sleep(1.0)
+        except ET.ParseError as e:
+            log.debug("GNews XML-Parse: %s", e)
+        except Exception as e:
+            log.debug("GNews %s: %s", query, e)
+
     return results
 
 
-def _demo_entries() -> List[Dict]:
-    demo = [
-        ("Muster Logistik GmbH",     "NW", "Logistik",      "Insolvenzeröffnung"),
-        ("Schmidt Bau GmbH & Co. KG","BY", "Baugewerbe",     "Insolvenzeröffnung"),
-        ("Handel Plus AG",           "BW", "Handel",         "Abweisung mangels Masse"),
-        ("Transport Nord GmbH",      "HH", "Transport",      "Insolvenzeröffnung"),
-        ("Immobilien West GmbH",     "BE", "Immobilien",     "Insolvenzeröffnung"),
+def _extract_company_from_news(text: str) -> str:
+    """Extrahiert Firmenname (GmbH/AG/SE/UG/KG) aus Nachrichtentext."""
+    # Require at least one real word (3+ chars) before the legal suffix
+    pattern = (
+        r'([A-ZÄÖÜ][A-Za-zÄÖÜäöü\-&\.]{2,}(?:\s+[A-Za-zÄÖÜäöü\-&\.]{1,}){0,5}'
+        r'\s*(?:GmbH(?:\s*&\s*Co\.?\s*KG)?|Aktiengesellschaft|UG\s*\(haftungsbeschränkt\)|'
+        r'(?<![A-Za-z])(?:AG|SE|UG|KG|OHG|eG)(?![A-Za-z])))'
+    )
+    m = re.search(pattern, text)
+    if m:
+        name = re.sub(r"\s+", " ", m.group(1)).strip()
+        if 10 <= len(name) <= 90:
+            return name
+    return ""
+
+
+def _extract_bundesland(text: str) -> str:
+    city_bl = {
+        "München": "BY", "Nürnberg": "BY", "Augsburg": "BY", "Bayern": "BY",
+        "Köln": "NW", "Düsseldorf": "NW", "Dortmund": "NW", "Essen": "NW", "NRW": "NW",
+        "Berlin": "BE", "Hamburg": "HH", "Bremen": "HB",
+        "Stuttgart": "BW", "Freiburg": "BW", "Baden-Württemberg": "BW",
+        "Frankfurt": "HE", "Kassel": "HE", "Hessen": "HE",
+        "Hannover": "NI", "Niedersachsen": "NI",
+        "Dresden": "SN", "Leipzig": "SN", "Sachsen": "SN",
+        "Erfurt": "TH", "Thüringen": "TH",
+        "Mainz": "RP", "Rheinland-Pfalz": "RP",
+        "Saarbrücken": "SL", "Saarland": "SL",
+        "Kiel": "SH", "Schleswig-Holstein": "SH",
+        "Rostock": "MV", "Mecklenburg": "MV",
+        "Magdeburg": "ST", "Sachsen-Anhalt": "ST",
+        "Potsdam": "BB", "Brandenburg": "BB",
+    }
+    tl = text.lower()
+    for city, code in city_bl.items():
+        if city.lower() in tl:
+            return code
+    return "DE"
+
+
+def _read_handelsregister_db(limit: int = 15) -> List[Dict]:
+    """Liest neue GmbH-Gründungen aus handelsregister_radar.db (letzte 7 Tage)."""
+    hr_db = _BASE / "data" / "handelsregister_radar.db"
+    if not hr_db.exists():
+        log.debug("HR-DB nicht gefunden: %s", hr_db)
+        return []
+
+    results: List[Dict] = []
+    cutoff = int(time.time()) - 7 * 86400
+    try:
+        conn = sqlite3.connect(str(hr_db))
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute(
+            "SELECT * FROM hr_leads WHERE scraped_at > ? ORDER BY scraped_at DESC LIMIT ?",
+            (cutoff, limit)
+        ).fetchall()
+        conn.close()
+
+        for row in rows:
+            r = dict(row)
+            firma = r.get("firma") or ""
+            if not firma:
+                continue
+            uid = r.get("uid") or hashlib.md5(f"hr_{firma}".encode()).hexdigest()[:16]
+            results.append({
+                "uid":             uid,
+                "debtor_name":     firma,
+                "court":           r.get("amtsgericht", ""),
+                "case_number":     r.get("registernr", ""),
+                "bundesland":      r.get("bundesland", "") or r.get("ort", "DE"),
+                "insolvency_type": "Neugründung",
+                "source":          "handelsregister",
+                "scraped_at":      r.get("scraped_at", int(time.time())),
+            })
+    except Exception as e:
+        log.warning("HR-DB Lesen: %s", e)
+
+    return results
+
+
+async def _scrape_northdata() -> List[Dict]:
+    """Northdata.de — Firmen mit Insolvenz-Keywords (Fallback-Quelle)."""
+    results: List[Dict] = []
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,*/*;q=0.9",
+        "Accept-Language": "de-DE,de;q=0.9",
+    }
+
+    urls = [
+        "https://www.northdata.de/?q=Insolvenz+GmbH&geo=Deutschland",
+        "https://www.northdata.de/?q=insolvenzverfahren+GmbH",
     ]
-    entries = []
-    for name, bl, branche, itype in demo:
-        uid = hashlib.md5(f"{name}{bl}".encode()).hexdigest()[:16]
-        entries.append({
-            "uid": uid, "debtor_name": name, "bundesland": bl,
-            "branche": branche, "insolvency_type": itype,
-            "scraped_at": int(time.time()),
-        })
-    return entries
+
+    for url in urls:
+        try:
+            async with aiohttp.ClientSession(
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=20),
+                connector=aiohttp.TCPConnector(ssl=False)
+            ) as s:
+                async with s.get(url) as r:
+                    if r.status != 200:
+                        continue
+                    html = await r.text(errors="replace")
+
+            # Links im Format /FIRMENNAME,%20Stadt/HRB12345
+            links = re.findall(
+                r'/([A-ZÄÖÜ][^/\s"<>]{2,60}(?:GmbH|AG|SE|UG|KG)[^/\s"<>]{0,30})/HR[AB]\d+',
+                html
+            )
+            for raw in links[:10]:
+                name = unquote(raw).replace("+", " ").replace(",", "").strip()
+                name = re.sub(r"\s+", " ", name)
+                if len(name) < 4:
+                    continue
+                uid = hashlib.md5(f"nd_{name}".encode()).hexdigest()[:16]
+                results.append({
+                    "uid":             uid,
+                    "debtor_name":     name,
+                    "court":           "",
+                    "case_number":     "",
+                    "bundesland":      "DE",
+                    "insolvency_type": "Insolvenzeröffnung",
+                    "source":          "northdata",
+                    "scraped_at":      int(time.time()),
+                })
+
+            await asyncio.sleep(1.5)
+        except Exception as e:
+            log.debug("Northdata %s: %s", url, e)
+
+    return results
 
 
 # ── Scoring ───────────────────────────────────────────────────────────────────
