@@ -441,6 +441,22 @@ async def task_system_health() -> str:
         return f"Fehler: {e}"
 
 
+async def task_monitor_hub() -> str:
+    """Monitor Hub: Gmail (beide Konten) + Telegram Posts + Scheduler-Fehler alle 30 Min."""
+    try:
+        from modules.monitor_hub import run_monitor_hub
+        result = await run_monitor_hub()
+        alerts = result.get("alerts", 0)
+        issues = result.get("issues", [])
+        if alerts:
+            return f"Monitor Hub: {alerts} Alert(s) — {'; '.join(issues[:3])}"
+        return "Monitor Hub: alles OK ✅"
+    except ImportError as e:
+        return f"monitor_hub nicht verfügbar: {e}"
+    except Exception as e:
+        return f"Monitor Hub Fehler: {e}"
+
+
 async def task_railway_health() -> str:
     """Ping all 13 Railway services, Telegram alert if any DOWN."""
     import aiohttp
@@ -6256,6 +6272,7 @@ async def task_shoptext_promo() -> str:
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Monitoring (kostenlos) ────────────────────────────────────────────────
+    ("monitor_hub",          task_monitor_hub,         1800,   60),  # 30 min — Gmail + Telegram + Scheduler
     ("system_health",        task_system_health,        300,   10),  # 5 min
     ("shopify_orders_alert",   task_shopify_orders_alert,   600,  15),  # 10 min — Bestellung → Telegram
     ("abandoned_cart_recovery", task_abandoned_cart_recovery, 3600, 120),  # 1h — Abandoned Cart E-Mail Recovery
