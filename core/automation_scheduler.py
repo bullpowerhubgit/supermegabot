@@ -6044,6 +6044,62 @@ async def task_vorsprung_scan() -> str:
         return f"VORSPRUNG Fehler: {e}"
 
 
+# ── Vollautonome Agenten ─────────────────────────────────────────────────────
+
+async def task_rudiclone_agent() -> str:
+    try:
+        from modules.rudiclone import run_once
+        result = await run_once()
+        return f"RudiClone: {str(result)[:200]}"
+    except Exception as e:
+        return f"RudiClone Fehler: {e}"
+
+
+async def task_outreach_auto() -> str:
+    try:
+        from modules.outreach_autonomous import run_outreach_cycle
+        result = await run_outreach_cycle()
+        return f"Outreach: {str(result)[:200]}"
+    except Exception as e:
+        return f"Outreach Fehler: {e}"
+
+
+async def task_mega_hub_autopilot() -> str:
+    try:
+        from modules.mega_hub import run_autopilot
+        result = await run_autopilot()
+        return f"MegaHub: {str(result)[:200]}"
+    except Exception as e:
+        return f"MegaHub Fehler: {e}"
+
+
+async def task_review_goldmine() -> str:
+    try:
+        from modules.review_goldmine import analyze
+        result = await analyze()
+        return f"ReviewGoldmine: {str(result)[:200]}"
+    except Exception as e:
+        return f"ReviewGoldmine Fehler: {e}"
+
+
+async def task_gmc_monitor() -> str:
+    try:
+        from modules.gmc_monitor import get_full_status
+        result = await get_full_status()
+        return f"GMC: {str(result)[:200]}"
+    except Exception as e:
+        return f"GMC Monitor Fehler: {e}"
+
+
+async def task_campaign_manager() -> str:
+    try:
+        from modules.campaign_manager import get_campaigns
+        result = await get_campaigns()
+        return f"Campaigns: {str(result)[:200]}"
+    except Exception as e:
+        return f"Campaign Manager Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -6211,6 +6267,13 @@ TASKS = [
     ("quantum_improve",        task_quantum_self_improver,  86400, 3500),  # 24h — KI optimiert eigenen Code
     ("quantum_repair",         task_quantum_self_repair,    43200, 3540),  # 12h — Fehler auto-erkennen+reparieren
     ("token_refresher",        task_auto_token_refresher,   43200, 3580),  # 12h — API-Tokens prüfen+erneuern
+    # ── VOLLAUTONOME AGENTEN ──────────────────────────────────────────────────
+    ("rudiclone_agent",        task_rudiclone_agent,        86400, 3610),  # 24h — RudiClone Business Strategist
+    ("outreach_auto",          task_outreach_auto,          43200, 3630),  # 12h — Autonomer B2B Outreach Cycle
+    ("mega_hub_autopilot",     task_mega_hub_autopilot,     21600, 3650),  # 6h  — MegaHub Master Autopilot
+    ("review_goldmine",        task_review_goldmine,        86400, 3670),  # 24h — Review Scraping + KI-Analyse
+    ("gmc_monitor_run",        task_gmc_monitor,            14400, 3690),  # 4h  — Google Merchant Center Status
+    ("campaign_manager_run",   task_campaign_manager,       28800, 3710),  # 8h  — Campaign Manager Check
 ]
 
 
