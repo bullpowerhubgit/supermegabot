@@ -32,7 +32,7 @@
         "suspicious_count": 0,
         "issues": []
       },
-      "ts": "2026-07-09 06:35:54"
+      "ts": "2026-07-09 06:38:54"
     },
     "micro_ping": {
       "status": "warning",
@@ -44,7 +44,7 @@
           "Autoheal"
         ]
       },
-      "ts": "2026-07-09 06:35:24"
+      "ts": "2026-07-09 06:38:36"
     },
     "optimizer": {
       "status": "ok",
@@ -112,13 +112,13 @@
     },
     "micro_backup": {
       "status": "ok",
-      "message": "\u2705 supermegabot: Backup OK (2026-06-03 07:34)",
+      "message": "\u2705 supermegabot: Backup OK (2026-07-09 06:35)",
       "data": {
         "results": [
-          "\u2705 supermegabot: Backup OK (2026-06-03 07:34)"
+          "\u2705 supermegabot: Backup OK (2026-07-09 06:35)"
         ]
       },
-      "ts": "2026-06-03 07:34:13"
+      "ts": "2026-07-09 06:35:59"
     },
     "micro_ai": {
       "status": "ok",
@@ -130,41 +130,6 @@
     }
   },
   "events": [
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:55:46"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:55:53"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 2/2 OK",
-      "ts": "13:56:16"
-    },
-    {
-      "agent": "security",
-      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
-      "ts": "13:56:45"
-    },
-    {
-      "agent": "monitor",
-      "msg": "Services: 1/2 OK",
-      "ts": "13:56:49"
-    },
-    {
-      "agent": "shopify",
-      "msg": "Orders: 0 | \u20ac0 Gesamt | \u20ac0 Heute | 0 Produkte",
-      "ts": "13:56:52"
-    },
-    {
-      "agent": "micro_ping",
-      "msg": "4/6 Services UP",
-      "ts": "13:56:53"
-    },
     {
       "agent": "optimizer",
       "msg": "CPU:44% RAM:81% Disk:57%",
@@ -1129,6 +1094,41 @@
       "agent": "security",
       "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
       "ts": "06:35:54"
+    },
+    {
+      "agent": "micro_backup",
+      "msg": "\u2705 supermegabot: Backup OK (2026-07-09 06:35)",
+      "ts": "06:35:59"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "4/6 Services UP",
+      "ts": "06:36:24"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "06:36:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "06:37:31"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "06:37:54"
+    },
+    {
+      "agent": "micro_ping",
+      "msg": "3/6 Services UP",
+      "ts": "06:38:36"
+    },
+    {
+      "agent": "security",
+      "msg": "VPN:verbunden | Keys:0 fehlend | Suspicious:0",
+      "ts": "06:38:54"
     }
   ],
   "fixes": [],
