@@ -6,12 +6,12 @@ from datetime import datetime
 
 log = logging.getLogger(__name__)
 
-APP_ID     = os.getenv("FACEBOOK_APP_ID", "1225412136200609")
-APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "bdd22b7b61fcfd9fd8eed1ab8fedf27b")
+APP_ID     = os.getenv("FACEBOOK_APP_ID", "1535442684079797")
+APP_SECRET = os.getenv("FACEBOOK_APP_SECRET", "b613acc6d413eee849cf7d4814b68376")
 TG_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
 BASE       = "https://graph.facebook.com/v19.0"
-CALLBACK_URL = "https://dudirudibot-mega-production.up.railway.app/api/facebook/callback"
+CALLBACK_URL = "https://supermegabot-production.up.railway.app/api/facebook/callback"
 RAILWAY_SERVICE = "dudirudibot-mega"
 SCOPES = "pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish,pages_show_list,public_profile"
 
