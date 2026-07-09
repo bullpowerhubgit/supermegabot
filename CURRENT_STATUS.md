@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-09**
+**Stand: 2026-07-09 (Session 2)**
 
 ## ✅ ALLE SOCIAL APIs VOLL AUTONOM LIVE
 
@@ -98,13 +98,12 @@
 - Staggered Schedule: ZVG 07:00, HR 08:00, Outreach 09:00, AI Act 10:00
 
 ## 📋 NÄCHSTE SESSION: WEITERMACHEN MIT
-1. Reddit: Neues OAuth2-App erstellen (reddit.com/prefs/apps → create an app) und REDDIT_REFRESH_TOKEN setzen
-   - CAPTCHA blockiert Automation — Rudolf muss selbst auf reddit.com/prefs/apps → "create an app" klicken
-   - App-Typ: "script", Name: SuperMegaBot, Redirect: http://localhost:8888
-   - Dann CLIENT_ID + SECRET in .env setzen
+1. ~~Reddit: Neues OAuth2-App~~ → GELÖST via Cookie-Auth! Kein App nötig.
 2. Facebook Groups Posting (braucht Meta App Review — langfristig)
 3. Instagram Token erneuern wenn nötig (~2026-09-06)
 4. SERVER STARTEN: PORT=8888 DASHBOARD_PORT=8888 python3 dashboard/server.py
+5. DS24 Produkte vermarkten: 418 Produkte live, aber €0 aktuelle Umsätze — Social Posting läuft!
+6. Stripe Subscriber gewinnen: Viral Scanner live, 0 aktive Abos — Traffic über Social läuft seit heute
 
 ## ✅ GUMROAD API — VOLLSTÄNDIG LIVE (2026-07-09)
 - OAuth2 Flow abgeschlossen: edit_products + view_sales + view_profile
