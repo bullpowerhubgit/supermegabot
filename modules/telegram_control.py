@@ -214,7 +214,7 @@ def kb_projects() -> list:
 
 
 _RAILWAY_SERVICES = {
-    "smb":         ("SuperMegaBot",          "https://dudirudibot-mega-production.up.railway.app"),
+    "smb":         ("SuperMegaBot",          "https://supermegabot-production.up.railway.app"),
     "acquisition": ("Shopify Acquisition",   "https://shopify-acquisition-engine-production.up.railway.app"),
     "seo":         ("SEO Turbo Tools",       "https://seo-turbo-tools-production.up.railway.app"),
     "steuer":      ("SteuercockPit",         "https://steuercockpit-production-44c9.up.railway.app"),

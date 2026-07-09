@@ -16,7 +16,7 @@ log = logging.getLogger("Selbstverbesserung")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
-RAILWAY_URL    = os.getenv("RAILWAY_PUBLIC_DOMAIN", "dudirudibot-mega-production.up.railway.app")
+RAILWAY_URL    = os.getenv("RAILWAY_PUBLIC_DOMAIN", "supermegabot-production.up.railway.app")
 BASE_URL       = f"https://{RAILWAY_URL}"
 
 

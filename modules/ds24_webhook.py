@@ -3,7 +3,7 @@
 DS24 Dankeseite-Webhook — wird nach jedem Kauf von DS24 aufgerufen.
 Schlüssel: O5jqklqAcxTvkKHp0rvn (in DS24 → Produkt → Dankeseite eintragen)
 
-Dankeseite-URL: https://dudirudibot-mega-production.up.railway.app/api/ds24/dankeseite
+Dankeseite-URL: https://supermegabot-production.up.railway.app/api/ds24/dankeseite
 
 DS24 übergibt folgende Parameter (GET oder POST):
   order_id, product_id, product_name, buyer_email, buyer_name,
@@ -25,7 +25,7 @@ DS24_DANKESEITE_KEY = os.getenv("DS24_DANKESEITE_KEY", "O5jqklqAcxTvkKHp0rvn")
 DS24_KEY = os.getenv("DS24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
-RAILWAY_URL    = "https://dudirudibot-mega-production.up.railway.app"
+RAILWAY_URL    = "https://supermegabot-production.up.railway.app"
 
 
 async def _telegram(msg: str) -> None:

@@ -20,7 +20,7 @@ TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 
-REDIRECT_URL = "https://dudirudibot-mega-production.up.railway.app/api/printful/callback"
+REDIRECT_URL = "https://supermegabot-production.up.railway.app/api/printful/callback"
 
 
 def _token() -> str:

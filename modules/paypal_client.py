@@ -62,7 +62,7 @@ async def nvp_call(method: str, params: dict) -> dict:
 async def create_checkout(amount: float, currency: str = "EUR",
                           item_name: str = "SuperMegaBot",
                           notify_url: str = "") -> dict:
-    base_url = "https://dudirudibot-mega-production.up.railway.app"
+    base_url = "https://supermegabot-production.up.railway.app"
     params = {
         "PAYMENTACTION": "Sale",
         "AMT": f"{amount:.2f}",
@@ -136,7 +136,7 @@ async def create_order(amount: float, currency: str = "EUR", description: str = 
     token = await get_rest_token()
     if not token:
         return {"ok": False, "error": "no access token"}
-    base_url = "https://dudirudibot-mega-production.up.railway.app"
+    base_url = "https://supermegabot-production.up.railway.app"
     try:
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
             async with s.post(

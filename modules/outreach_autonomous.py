@@ -285,7 +285,7 @@ def classify_branche(entry: Dict) -> str:
 
 async def generate_message(target: Dict, lead: Dict) -> Dict:
     """Claude Haiku oder Fallback-Template."""
-    dashboard = os.getenv("DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
+    dashboard = os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
 
     def fallback() -> Dict:
         subject = (f"Insolvenz-Lead: {lead['debtor_name']} "

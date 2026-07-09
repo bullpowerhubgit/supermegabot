@@ -13,7 +13,7 @@ from pathlib import Path
 
 log = logging.getLogger("BacklinkBomber")
 
-SITE_URL    = os.getenv("SITE_URL", "https://dudirudibot-mega-production.up.railway.app")
+SITE_URL    = os.getenv("SITE_URL", "https://supermegabot-production.up.railway.app")
 SITE_TITLE  = os.getenv("SITE_TITLE", "BullPower Hub — KI Automatisierung & Shopify")
 SITE_DESC   = os.getenv("SITE_DESC", "Vollautomatisches E-Commerce System mit KI. Shopify, DS24, Telegram.")
 TG_TOKEN    = os.getenv("TELEGRAM_BOT_TOKEN", "")

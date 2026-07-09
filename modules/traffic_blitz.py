@@ -43,7 +43,7 @@ DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqd
 INDEXNOW_KEY     = "bullpowerhubgit"
 INDEXNOW_DOMAINS = [
     # Railway backend
-    "dudirudibot-mega-production.up.railway.app",
+    "supermegabot-production.up.railway.app",
     # Shopify store
     "ineedit.com.co",
     # GitHub Pages

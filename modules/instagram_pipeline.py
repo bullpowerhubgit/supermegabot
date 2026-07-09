@@ -192,7 +192,7 @@ async def run_pipeline() -> dict:
         await _tg(
             "⚠️ <b>Instagram/Facebook Pipeline</b>\n\n"
             "Kein Token — bitte einmalig klicken:\n"
-            "https://dudirudibot-mega-production.up.railway.app/api/facebook/oauth"
+            "https://supermegabot-production.up.railway.app/api/facebook/oauth"
         )
         return {**results, "error": "FACEBOOK_PAGE_TOKEN_AIITEC nicht gesetzt"}
 

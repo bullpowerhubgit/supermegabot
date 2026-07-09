@@ -34,7 +34,7 @@ SHOPIFY_API_VER    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 KLAVIYO_KEY        = os.getenv("KLAVIYO_API_KEY", "")
 PRICE_FLOOR        = float(os.getenv("PRICE_FLOOR", "5.0"))
 BASE_URL           = os.getenv("RAILWAY_PUBLIC_DOMAIN",
-                                "https://dudirudibot-mega-production.up.railway.app")
+                                "https://supermegabot-production.up.railway.app")
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
 
