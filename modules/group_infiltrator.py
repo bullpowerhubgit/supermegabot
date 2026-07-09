@@ -152,6 +152,12 @@ async def run_monitor() -> None:
         log.warning("GroupInfiltrator: TELEGRAM_API_ID / TELEGRAM_API_HASH not set — skipping")
         return
 
+    # Session-Datei muss vorhanden sein — sonst kein interaktiver Login möglich (Railway)
+    session_path = Path(SESSION_FILE + ".session")
+    if not session_path.exists():
+        log.warning("GroupInfiltrator: Session-Datei %s fehlt — lokal einmalig einloggen: python3 scripts/create_tg_session.py", session_path)
+        return
+
     try:
         from pyrogram import Client, filters
         from pyrogram.types import Message
@@ -195,6 +201,9 @@ async def run_monitor() -> None:
 async def start_background() -> None:
     """Non-blocking start — creates an asyncio task for the monitor loop."""
     if not is_configured():
+        return
+    if not Path(SESSION_FILE + ".session").exists():
+        log.warning("GroupInfiltrator: Session fehlt — übersprungen")
         return
     asyncio.create_task(run_monitor(), name="group_infiltrator")
     log.info("GroupInfiltrator background task created")
