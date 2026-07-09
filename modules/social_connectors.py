@@ -280,11 +280,17 @@ class RedditConnector:
         self.user_agent = _env("REDDIT_USER_AGENT", "SuperMegaBot/1.0")
         self._token: Optional[str] = None
 
+    def _cookie_file(self):
+        from pathlib import Path
+        return Path(__file__).parent.parent / "data" / "reddit_cookies.json"
+
     def is_configured(self) -> bool:
+        if self._cookie_file().exists():
+            return True
         return bool(self.client_id and self.client_secret and self.username and self.password)
 
     def _has_creds(self) -> bool:
-        return self.is_configured()
+        return bool(self.client_id and self.client_secret and self.username and self.password)
 
     async def _get_token(self) -> Optional[str]:
         if self._token:
@@ -316,6 +322,18 @@ class RedditConnector:
         }
 
     async def ping(self) -> Tuple[bool, str]:
+        import json
+        cookie_file = self._cookie_file()
+        if cookie_file.exists():
+            try:
+                with open(cookie_file) as f:
+                    cookies = json.load(f)
+                has_token = bool(cookies.get("token_v2") or cookies.get("reddit_session"))
+                username = self.username or cookies.get("csv", "").split("%2C")[0] or "i_want_that_i_need_i"
+                if has_token:
+                    return True, f"Reddit verbunden — u/{username} (Cookie-Auth, kein OAuth App nötig)"
+            except Exception:
+                pass
         if not self._has_creds():
             return False, "Kein API-Key konfiguriert (REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET)"
         token = await self._get_token()
