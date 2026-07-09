@@ -60,7 +60,7 @@ _load_env()
 
 def _anthropic() -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _gmail_user() -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "xulp qyuz gxnb vfqw")
+def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
 def _tg_token()   -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
 def _tg_chat()    -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 
@@ -185,8 +185,7 @@ async def scrape_zvg(max_per_land: int = 15) -> List[Dict]:
         log.warning("ZVG Session: %s", e)
 
     if not results:
-        log.warning("Scraping 0 Ergebnisse — Demo-Daten")
-        results = _zvg_demo()
+        log.warning("ZVG-Portal: Scraping ergab 0 Ergebnisse — kein Outreach heute")
     return results
 
 
@@ -485,9 +484,13 @@ async def scheduler_loop():
             await asyncio.sleep(secs)
 
 
+try:
+    init_db()
+except Exception as _e:
+    import logging as _log; _log.getLogger("ZVGRadar").warning("init_db at import: %s", _e)
+
 if __name__ == "__main__":
     if "--now" in sys.argv or "--test" in sys.argv:
-        init_db()
         asyncio.run(run_cycle())
     else:
         asyncio.run(scheduler_loop())
