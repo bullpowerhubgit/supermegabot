@@ -5196,6 +5196,71 @@ async def task_reddit_cookie_refresh() -> str:
         return f"Reddit Cookie Refresh Fehler: {e}"
 
 
+async def task_reddit_monetized_post() -> str:
+    """Reddit Contributor Program: alle 4h wertvolle Smart-Home/Business-Posts für Earnings."""
+    try:
+        from modules.reddit_cookie_poster import post_to_subreddits, refresh_cookies, _load_cookies
+        import anthropic, os
+
+        cookies = _load_cookies()
+        if not cookies.get("token_v2"):
+            if not refresh_cookies():
+                return "Reddit: Keine Cookies — bitte in Chrome einloggen"
+            cookies = _load_cookies()
+
+        client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY", ""))
+        subreddits_by_niche = [
+            ("smarthome", "Smart Home Automation"),
+            ("gadgets", "Must-Have Gadgets 2026"),
+            ("passive_income", "E-Commerce Side Hustle"),
+            ("Entrepreneur", "Online Business"),
+        ]
+
+        posted = []
+        for sub, niche in subreddits_by_niche:
+            msg = client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=400,
+                messages=[{"role": "user", "content": (
+                    f"Write a helpful Reddit post for r/{sub} about '{niche}'. "
+                    "Value-first, no sales pitch, authentic personal experience tone. "
+                    "Format: TITLE: [title]\n\nBODY: [3-4 sentences]"
+                )}]
+            )
+            raw = msg.content[0].text
+            title = raw.split("TITLE:")[-1].split("\n")[0].strip()[:300]
+            body  = raw.split("BODY:")[-1].strip()[:500] if "BODY:" in raw else raw[:500]
+
+            from modules.reddit_cookie_poster import submit_post
+            r = await submit_post(subreddit=sub, title=title, text=body)
+            if r.get("ok"):
+                posted.append(f"r/{sub}: {r.get('url','')}")
+            import asyncio as _aio
+            await _aio.sleep(35)  # Reddit rate limit
+
+        return f"Reddit Monetized Posts: {len(posted)}/{len(subreddits_by_niche)} ✅\n" + "\n".join(posted)
+    except Exception as e:
+        return f"Reddit Monetized Post Fehler: {e}"
+
+
+async def task_fb_cookies_refresh() -> str:
+    """Facebook Cookie Auto-Refresh: täglich Chrome-Cookies extrahieren — kein OAuth2 App Review nötig."""
+    try:
+        from modules.facebook_group_poster import task_facebook_cookies_refresh
+        return await task_facebook_cookies_refresh()
+    except Exception as e:
+        return f"Facebook Cookie Refresh Fehler: {e}"
+
+
+async def task_fb_groups_post() -> str:
+    """Facebook Groups Posting: alle 6h in deutsche Business/KI-Gruppen posten — Cookie-Auth."""
+    try:
+        from modules.facebook_group_poster import task_facebook_groups_post
+        return await task_facebook_groups_post()
+    except Exception as e:
+        return f"Facebook Groups Post Fehler: {e}"
+
+
 async def task_fb_token_refresh() -> str:
     """Facebook/Instagram Token Auto-Refresh: täglich prüfen, bei < 15 Tagen bis Ablauf erneuern."""
     try:
@@ -5288,6 +5353,11 @@ TASKS = [
     ("twitter_cookie_refresh", task_twitter_cookie_refresh, 86400, 3650),  # täglich — Chrome Cookies erneuern
     # ── Reddit Cookie Auto-Refresh (aus Chrome — kein OAuth2 App nötig) ──────
     ("reddit_cookie_refresh",  task_reddit_cookie_refresh,  86400, 3700),  # täglich — Reddit Chrome Cookies erneuern
+    # ── Reddit Contributor Program — Monetized Posts alle 4h ─────────────────
+    ("reddit_monetized",       task_reddit_monetized_post,  14400,  620),  # 4h — Reddit Earnings (Contributor Program)
+    # ── Facebook Groups Cookie-Posting (kein App Review, kein OAuth2 nötig) ──
+    ("fb_cookies_refresh",     task_fb_cookies_refresh,     86400, 3750),  # täglich — FB Chrome Cookies erneuern
+    ("fb_groups_post",         task_fb_groups_post,         21600, 3800),  # 6h — Posts in FB-Gruppen
 ]
 
 

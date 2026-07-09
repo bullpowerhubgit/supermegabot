@@ -65,7 +65,16 @@ _COOLDOWNS = {
 }
 
 _REDDIT_SUBREDDITS = [
-    "dropshipping", "ecommerce", "Entrepreneur", "passive_income", "sidehustle",
+    "smarthome", "homeautomation", "gadgets", "shutupandtakemymoney",
+    "Entrepreneur", "passive_income", "sidehustle", "WorkOnline",
+    "ecommerce", "dropshipping", "SideProject", "BuyItForLife",
+]
+
+# Subreddits optimiert für Reddit Contributor Program (hohe Premium-Member-Dichte)
+_REDDIT_MONETIZED_SUBREDDITS = [
+    "gadgets", "smarthome", "homeautomation", "shutupandtakemymoney",
+    "Entrepreneur", "passive_income", "PersonalFinanceGermany",
+    "sidehustle", "WorkOnline", "BuyItForLife",
 ]
 
 _ANGLES = ["product_alert", "feature_highlight", "how_it_works", "success_story"]
@@ -628,31 +637,31 @@ async def run_promo_cycle(top_products: Optional[List[Dict]] = None) -> Dict:
             results["errors"].append(f"linkedin: {res.get('error')}")
             log.warning("LinkedIn failed: %s", res.get("error"))
 
-    # ── Reddit ────────────────────────────────────────────────────────────────
-    if _reddit_id() and _reddit_secret():
-        reddit_text = await generate_post_content("reddit", angle, top_products)
-        kw    = top_products[0].get("keyword", "viral products") if top_products else "viral products"
-        score = int(top_products[0].get("score", 78)) if top_products else 78
-        title_templates = [
-            f"I built a tool that found '{kw}' trending 48h before it went mainstream (score {score}/100)",
-            f"How I auto-detect viral dropshipping products before everyone else — real example: {kw}",
-            f"Found {kw} trending across 6 sources simultaneously — sharing my method",
-            f"My AI spotted '{kw}' (score {score}) 2 days before Amazon Movers & Shakers listed it",
-        ]
-        title = random.choice(title_templates)
-        for sub in _REDDIT_SUBREDDITS:
-            if not _cooldown_ok("reddit", sub):
-                continue
-            res = await post_reddit(sub, title, reddit_text)
-            if res["ok"]:
-                _record("reddit", sub, angle, reddit_text, "ok")
-                results["platforms"].append(f"reddit/r/{sub}")
-                results["posted_count"] += 1
-                log.info("Reddit r/%s OK", sub)
-            else:
-                results["errors"].append(f"reddit/{sub}: {res.get('error')}")
-                log.warning("Reddit r/%s failed: %s", sub, res.get("error"))
-            await asyncio.sleep(3)  # Reddit rate limit between subreddits
+    # ── Reddit (Cookie-Auth — vollautomatisch via Chrome token_v2) ───────────
+    reddit_text = await generate_post_content("reddit", angle, top_products)
+    kw    = top_products[0].get("keyword", "Smart Home Gadgets") if top_products else "Smart Home Gadgets"
+    score = int(top_products[0].get("score", 78)) if top_products else 78
+    title_templates = [
+        f"These Smart Home gadgets changed my daily routine completely ({kw})",
+        f"I tested 50+ smart home products — here are the ones actually worth buying",
+        f"Smart Home on a budget: best gadgets under €50 that actually work",
+        f"My honest review of {kw} after 3 months of daily use",
+        f"How to automate your home without spending a fortune — {kw} review",
+    ]
+    title = random.choice(title_templates)
+    for sub in _REDDIT_MONETIZED_SUBREDDITS:
+        if not _cooldown_ok("reddit", sub):
+            continue
+        res = await post_reddit(sub, title, reddit_text)
+        if res["ok"]:
+            _record("reddit", sub, angle, reddit_text, "ok")
+            results["platforms"].append(f"reddit/r/{sub}")
+            results["posted_count"] += 1
+            log.info("Reddit r/%s OK", sub)
+        else:
+            results["errors"].append(f"reddit/{sub}: {res.get('error')}")
+            log.warning("Reddit r/%s failed: %s", sub, res.get("error"))
+        await asyncio.sleep(10)  # Reddit rate limit between subreddits
 
     # ── Gumroad (once per week) ───────────────────────────────────────────────
     if _cooldown_ok("gumroad", "product") and _gumroad_token():
