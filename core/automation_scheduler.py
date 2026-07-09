@@ -5184,6 +5184,106 @@ async def task_twitter_cookie_refresh() -> str:
         return f"Twitter Cookie Refresh Fehler: {e}"
 
 
+async def task_gumroad_cycle() -> str:
+    """Gumroad: neue digitale Produkte auto-erstellen + promoten (tägl.)."""
+    try:
+        from modules.gumroad_autonomy import run_gumroad_cycle
+        r = await run_gumroad_cycle()
+        return f"Gumroad: {r.get('created',0)} Produkte erstellt | {r.get('revenue',0)}€ Umsatz | {r.get('posts',0)} Promo-Posts"
+    except Exception as e:
+        return f"Gumroad Cycle Fehler: {e}"
+
+
+async def task_ds24_affiliate_blast() -> str:
+    """DS24 Affiliate: tägl. Blast auf alle Kanäle (Telegram, Twitter, LinkedIn, Reddit)."""
+    try:
+        from modules.ds24_affiliate_blaster import run_daily_affiliate_blast
+        r = await run_daily_affiliate_blast()
+        return f"DS24 Affiliate: {r.get('products',0)} Produkte | {r.get('posts',0)} Posts | {r.get('channels',[])} Kanäle"
+    except Exception as e:
+        return f"DS24 Affiliate Blast Fehler: {e}"
+
+
+async def task_fiverr_cycle() -> str:
+    """Fiverr: Gig-Promotions + neue Angebote generieren (alle 12h)."""
+    try:
+        from modules.fiverr_autonomy import run_fiverr_cycle
+        r = await run_fiverr_cycle()
+        return f"Fiverr: {r.get('promoted',0)} Gigs promoted | {r.get('new_orders',0)} neue Orders"
+    except Exception as e:
+        return f"Fiverr Cycle Fehler: {e}"
+
+
+async def task_upwork_cycle() -> str:
+    """Upwork: Jobs scannen + Proposals auto-generieren (alle 12h)."""
+    try:
+        from modules.upwork_autonomy import run_upwork_cycle
+        r = await run_upwork_cycle()
+        return f"Upwork: {r.get('jobs_found',0)} Jobs | {r.get('proposals',0)} Proposals gesendet"
+    except Exception as e:
+        return f"Upwork Cycle Fehler: {e}"
+
+
+async def task_klaviyo_cycle() -> str:
+    """Klaviyo: automatische Email-Kampagnen für Shopify-Kunden (alle 8h)."""
+    try:
+        from modules.klaviyo_autonomy import run_klaviyo_cycle
+        r = await run_klaviyo_cycle()
+        return f"Klaviyo: {r.get('campaigns',0)} Kampagnen | {r.get('subscribers',0)} Subs | {r.get('revenue',0)}€"
+    except Exception as e:
+        return f"Klaviyo Cycle Fehler: {e}"
+
+
+async def task_pinterest_cycle() -> str:
+    """Pinterest: Shopify-Produkte als Pins (alle 4h) — organischer Traffic + Sales."""
+    try:
+        from modules.pinterest_autonomy import run_pinterest_cycle
+        r = await run_pinterest_cycle()
+        return f"Pinterest: {r.get('pins',0)} Pins erstellt | {r.get('boards',0)} Boards"
+    except Exception as e:
+        return f"Pinterest Cycle Fehler: {e}"
+
+
+async def task_tiktok_cycle() -> str:
+    """TikTok: Produkte syncen + Content generieren (alle 4h)."""
+    try:
+        from modules.tiktok_autonomy import run_tiktok_cycle
+        r = await run_tiktok_cycle()
+        return f"TikTok: {r.get('synced',0)} Produkte | {r.get('videos',0)} Videos | {r.get('shop_orders',0)} Shop Orders"
+    except Exception as e:
+        return f"TikTok Cycle Fehler: {e}"
+
+
+async def task_affiliate_mega_blast() -> str:
+    """Affiliate Mega Engine: Amazon/eBay/DS24 Links auf alle Kanäle (alle 6h)."""
+    try:
+        from modules.affiliate_mega_engine import run_affiliate_blast
+        r = await run_affiliate_blast()
+        return f"Affiliate Mega: {r.get('posts',0)} Posts | {r.get('clicks',0)} Clicks | {r.get('networks',[])} Networks"
+    except Exception as e:
+        return f"Affiliate Mega Blast Fehler: {e}"
+
+
+async def task_revenue_fast_track() -> str:
+    """Revenue Fast Track: Flash Sales + Upsells + Cart Recovery in einem Zyklus (alle 6h)."""
+    try:
+        from modules.revenue_fast_track import run_revenue_fast_track
+        r = await run_revenue_fast_track()
+        return f"Revenue Fast Track: {r.get('actions',0)} Aktionen | {r.get('revenue',0)}€ generiert"
+    except Exception as e:
+        return f"Revenue Fast Track Fehler: {e}"
+
+
+async def task_super_revenue_blitz() -> str:
+    """Super Revenue Blitz: Multi-Platform Blast + AliExpress Import + Klaviyo/Mailchimp (alle 8h)."""
+    try:
+        from modules.super_revenue_blitz import revenue_blast_now
+        r = await revenue_blast_now()
+        return f"Revenue Blitz: {r.get('channels_hit',0)} Kanäle | {r.get('products_imported',0)} Produkte | {r.get('emails_sent',0)} Emails"
+    except Exception as e:
+        return f"Super Revenue Blitz Fehler: {e}"
+
+
 async def task_reddit_cookie_refresh() -> str:
     """Reddit Cookie Auto-Refresh: täglich Chrome-Cookies extrahieren — kein OAuth2 App nötig."""
     try:
@@ -5355,6 +5455,29 @@ TASKS = [
     ("reddit_cookie_refresh",  task_reddit_cookie_refresh,  86400, 3700),  # täglich — Reddit Chrome Cookies erneuern
     # ── Reddit Contributor Program — Monetized Posts alle 4h ─────────────────
     ("reddit_monetized",       task_reddit_monetized_post,  14400,  620),  # 4h — Reddit Earnings (Contributor Program)
+    # ══════════════════════════════════════════════════════════════════════════
+    # ██ MONETARISIERUNGS-OFFENSIVE — ALLE REVENUE-STREAMS LIVE ██
+    # ══════════════════════════════════════════════════════════════════════════
+    # ── Gumroad Digitale Produkte ─────────────────────────────────────────────
+    ("gumroad_cycle",          task_gumroad_cycle,          43200, 660),   # 12h — Gumroad Produkte + Promos
+    # ── DS24 Affiliate Blast ──────────────────────────────────────────────────
+    ("ds24_affiliate_blast",   task_ds24_affiliate_blast,   21600, 700),   # 6h — DS24 Affiliate → alle Kanäle
+    # ── Fiverr Freelance ──────────────────────────────────────────────────────
+    ("fiverr_cycle",           task_fiverr_cycle,           43200, 740),   # 12h — Fiverr Gig Promotions
+    # ── Upwork Freelance ──────────────────────────────────────────────────────
+    ("upwork_cycle",           task_upwork_cycle,           43200, 780),   # 12h — Upwork Proposals Auto
+    # ── Klaviyo Email Automation ──────────────────────────────────────────────
+    ("klaviyo_cycle",          task_klaviyo_cycle,          28800, 820),   # 8h — Klaviyo Kampagnen
+    # ── Pinterest Traffic ─────────────────────────────────────────────────────
+    ("pinterest_cycle",        task_pinterest_cycle,        14400, 860),   # 4h — Pinterest Pins → Shop Traffic
+    # ── TikTok Shop Sync ──────────────────────────────────────────────────────
+    ("tiktok_cycle",           task_tiktok_cycle,           14400, 900),   # 4h — TikTok Shop + Videos
+    # ── Affiliate Mega Engine ─────────────────────────────────────────────────
+    ("affiliate_mega",         task_affiliate_mega_blast,   21600, 940),   # 6h — Amazon+eBay+DS24 Affiliate Blast
+    # ── Revenue Fast Track ────────────────────────────────────────────────────
+    ("revenue_fast_track",     task_revenue_fast_track,     21600, 980),   # 6h — Flash Sales + Upsells + Cart Recovery
+    # ── Super Revenue Blitz ───────────────────────────────────────────────────
+    ("super_revenue_blitz",    task_super_revenue_blitz,    28800, 1020),  # 8h — Multi-Platform + AliExpress + Email
     # ── Facebook Groups Cookie-Posting (kein App Review, kein OAuth2 nötig) ──
     ("fb_cookies_refresh",     task_fb_cookies_refresh,     86400, 3750),  # täglich — FB Chrome Cookies erneuern
     ("fb_groups_post",         task_fb_groups_post,         21600, 3800),  # 6h — Posts in FB-Gruppen
