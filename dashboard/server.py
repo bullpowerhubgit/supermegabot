@@ -9831,6 +9831,24 @@ async def create_app():
     app.router.add_get("/api/agent/status",         handle_agents_overview)
     # ── END MISSING ALIASES ───────────────────────────────────────────────────
 
+    # ── KI-Mitarbeiter-Leasing — SYS-01 ─────────────────────────────────────
+    app.router.add_get( "/ki-leasing",                  handle_ki_leasing_page)
+    app.router.add_get( "/ki-leasing/success",          handle_ki_leasing_success)
+    app.router.add_post("/api/ki-leasing/checkout",     handle_ki_leasing_checkout)
+    app.router.add_post("/api/ki-leasing/webhook",      handle_ki_leasing_webhook)
+    app.router.add_get( "/api/ki-leasing/clients",      handle_ki_leasing_clients)
+    app.router.add_get( "/api/ki-leasing/status",       handle_ki_leasing_status)
+    app.router.add_post("/api/ki-leasing/send-now",     handle_ki_leasing_send_now)
+    log.info("KI-Leasing routes registered at /ki-leasing")
+
+    # ── KI-Leasing Daily Report Loop (08:30 täglich) ─────────────────────────
+    try:
+        from modules.ki_leasing_engine import run_daily_loop
+        asyncio.create_task(run_daily_loop())
+        log.info("KI-Leasing daily report loop started")
+    except Exception as _e:
+        log.warning("KI-Leasing daily loop failed: %s", _e)
+
     # ── ShopText.ai — KI-Produkttexte SaaS ──────────────────────────────────
     try:
         from dashboard.routes.shoptext_routes import (
@@ -12816,6 +12834,294 @@ Viral Scanner &#x1F525; &#x2022; OOS Sniper &#x1F3AF; &#x2022; Review Goldmine &
 Telegram-Alerts kommen sobald Geld-Chancen erkannt werden.</p>
 <a href="/money-machine">&#x2192; Zum Dashboard</a></div></body></html>"""
     return web.Response(text=html, content_type="text/html")
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  KI-MITARBEITER-LEASING — SYS-01
+# ═══════════════════════════════════════════════════════════════════════════
+
+_KI_LEASING_PAGE = """<!DOCTYPE html><html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KI-Mitarbeiter-Leasing — Täglich Leads. Nie krank. Nie Urlaub.</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07090E;--s1:#0C0F17;--s2:#111520;--bd:#1C2234;--bd2:#242D42;
+  --amber:#F5A623;--ad:rgba(245,166,35,.12);--ab:rgba(245,166,35,.30);
+  --green:#14C47A;--gd:rgba(20,196,122,.10);
+  --ice:#C9D4E8;--dim:#6A7A99;--dim2:#8FA3C0;
+  --mono:"SF Mono","Cascadia Code","Consolas",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+body{background:var(--bg);color:var(--ice);font-family:var(--sans);font-size:15px;line-height:1.6;-webkit-font-smoothing:antialiased}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(to bottom,transparent 0px,transparent 3px,rgba(0,0,0,.05) 3px,rgba(0,0,0,.05) 4px);z-index:9}
+/* HEADER */
+.topbar{background:var(--amber);color:#000;text-align:center;padding:7px;font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.25em;text-transform:uppercase}
+.hdr{display:flex;justify-content:space-between;align-items:center;padding:16px 48px;border-bottom:1px solid var(--bd2);background:var(--s1)}
+.hdr-brand{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.1em;text-transform:uppercase}
+.hdr-brand b{color:var(--amber)}
+/* HERO */
+.main{max-width:1100px;margin:0 auto;padding:64px 32px 80px}
+.eyebrow{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.eyebrow::before{content:'';display:block;width:32px;height:1px;background:var(--amber)}
+.eyebrow span{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.2em;text-transform:uppercase}
+.hero-h1{font-size:clamp(36px,5.5vw,72px);font-weight:900;letter-spacing:-.045em;line-height:1;margin-bottom:20px;text-wrap:balance}
+.hero-h1 em{font-style:normal;color:var(--amber)}
+.hero-sub{font-size:17px;color:var(--dim2);line-height:1.75;max-width:580px;margin-bottom:48px}
+/* STATS ROW */
+.stats-row{display:flex;gap:2px;background:var(--bd);margin-bottom:56px}
+.stat-box{flex:1;background:var(--s2);padding:24px;text-align:center}
+.stat-num{font-family:var(--mono);font-size:36px;font-weight:700;color:var(--amber);display:block;line-height:1}
+.stat-lbl{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.12em;text-transform:uppercase;margin-top:6px;display:block}
+/* SECTION */
+.sec-head{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+.sec-lbl{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.18em;text-transform:uppercase;white-space:nowrap}
+.sec-rule{flex:1;height:1px;background:var(--bd2)}
+/* HOW IT WORKS */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;background:var(--bd);margin-bottom:56px}
+.step{background:var(--s2);padding:24px}
+.step-n{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:.1em;margin-bottom:10px}
+.step-t{font-size:15px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
+.step-d{font-size:13px;color:var(--dim2);line-height:1.7}
+/* PRICING */
+.pricing{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--bd);margin-bottom:56px}
+.plan{background:var(--s2);padding:32px}
+.plan.featured{background:var(--s1);border:1px solid var(--amber)}
+.plan-badge{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.18em;color:var(--amber);background:var(--ad);border:1px solid var(--ab);padding:2px 8px;display:inline-block;margin-bottom:14px}
+.plan-name{font-size:20px;font-weight:700;letter-spacing:-.025em;margin-bottom:6px}
+.plan-price{font-family:var(--mono);font-size:44px;font-weight:700;color:var(--amber);line-height:1;margin-bottom:4px}
+.plan-price span{font-size:16px;color:var(--dim)}
+.plan-desc{font-size:13px;color:var(--dim2);margin-bottom:20px;line-height:1.7}
+.plan-features{list-style:none;margin-bottom:28px}
+.plan-features li{font-size:13px;color:var(--dim2);padding:7px 0;border-bottom:1px solid var(--bd);padding-left:18px;position:relative}
+.plan-features li::before{content:'→';position:absolute;left:0;color:var(--amber);font-size:11px}
+/* FORM */
+.order-form{display:flex;flex-direction:column;gap:10px}
+.order-form input[type=email]{background:var(--bg);border:1px solid var(--bd2);color:var(--ice);padding:12px 14px;font-size:14px;font-family:var(--sans);outline:none;width:100%}
+.order-form input[type=email]:focus{border-color:var(--amber)}
+.btn-buy{background:var(--amber);color:#000;border:none;padding:14px 24px;font-size:15px;font-weight:700;cursor:pointer;width:100%;letter-spacing:.02em;transition:opacity .15s}
+.btn-buy:hover{opacity:.88}
+.btn-buy:disabled{opacity:.4;cursor:not-allowed}
+.form-note{font-family:var(--mono);font-size:10px;color:var(--dim);text-align:center;margin-top:6px}
+/* TRUST */
+.trust-row{display:flex;flex-wrap:wrap;gap:2px;background:var(--bd);margin-bottom:56px}
+.trust-item{flex:1;min-width:180px;background:var(--s2);padding:20px;display:flex;align-items:center;gap:14px}
+.trust-icon{font-size:20px;flex-shrink:0}
+.trust-text{font-size:13px;color:var(--dim2);line-height:1.5}
+.trust-text b{color:var(--ice);display:block;margin-bottom:2px}
+/* TESTIMONIAL / DEMO */
+.demo-report{border:1px solid var(--bd2);background:var(--s1);padding:24px;margin-bottom:56px}
+.demo-tag{font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.demo-tag::before{content:'';display:block;width:20px;height:1px;background:var(--amber)}
+.demo-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bd)}
+.demo-row:last-child{border-bottom:none}
+.demo-co{font-size:14px;font-weight:600}
+.demo-score{font-family:var(--mono);font-size:13px;color:var(--green)}
+.demo-type{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.08em}
+.demo-amt{font-family:var(--mono);font-size:12px;color:var(--amber)}
+/* RESPONSIVE */
+@media(max-width:800px){
+  .hdr{padding:14px 20px}
+  .main{padding:40px 20px 60px}
+  .stats-row,.steps,.pricing,.trust-row{grid-template-columns:1fr}
+  .steps{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="topbar">KI-MITARBEITER-LEASING &nbsp;⬤&nbsp; TÄGLICH AKTIV — NIE KRANK — NIE URLAUB</div>
+<header class="hdr">
+  <div class="hdr-brand"><b>Bull Power</b> Intelligence Unit</div>
+  <div style="font-family:var(--mono);font-size:10px;color:var(--dim)">Stand: tägl. 08:30 automatisch</div>
+</header>
+
+<main class="main">
+  <div class="eyebrow"><span>Kein Tool. Kein Abo. Reines Ergebnis.</span></div>
+  <h1 class="hero-h1">Ihr KI-Mitarbeiter.<br><em>Täglich aktiv.</em><br>Ohne Pause.</h1>
+  <p class="hero-sub">Sie erhalten täglich qualifizierte B2B-Leads direkt in Ihr Postfach — automatisch analysiert, bewertet und aufbereitet. Kein Aufwand Ihrerseits. Kein Setup. Kein Tool zu bedienen.</p>
+
+  <div class="stats-row">
+    <div class="stat-box"><span class="stat-num">08:30</span><span class="stat-lbl">Tägl. Lieferzeit</span></div>
+    <div class="stat-box"><span class="stat-num">100</span><span class="stat-lbl">Score-Punkte max.</span></div>
+    <div class="stat-box"><span class="stat-num">3+</span><span class="stat-lbl">Datenquellen live</span></div>
+    <div class="stat-box"><span class="stat-num">0</span><span class="stat-lbl">Einrichtungsaufwand</span></div>
+  </div>
+
+  <div class="sec-head"><span class="sec-lbl">So funktioniert es</span><div class="sec-rule"></div></div>
+  <div class="steps">
+    <div class="step"><div class="step-n">SCHRITT 01</div><div class="step-t">Paket wählen</div><div class="step-d">Basic (10 Leads/Tag) oder Pro (25 Leads + Compliance). Zahlung per Kreditkarte.</div></div>
+    <div class="step"><div class="step-n">SCHRITT 02</div><div class="step-t">Aktivierung</div><div class="step-d">Nach Zahlung ist Ihr Account sofort aktiv. Nächster Report: morgen 08:30 Uhr.</div></div>
+    <div class="step"><div class="step-n">SCHRITT 03</div><div class="step-t">Tägl. Report</div><div class="step-d">Jeden Morgen erhalten Sie Ihre besten Leads — bewertet, priorisiert, sofort nutzbar.</div></div>
+    <div class="step"><div class="step-n">SCHRITT 04</div><div class="step-t">Wachstum</div><div class="step-d">Sie akquirieren. Wir liefern. Monatlich kündbar — ohne Risiko.</div></div>
+  </div>
+
+  <div class="sec-head"><span class="sec-lbl">Beispiel-Report (heutige Leads)</span><div class="sec-rule"></div></div>
+  <div class="demo-report">
+    <div class="demo-tag">Vorschau — heutiger Report — 5 von 10 Leads</div>
+    <div class="demo-row"><div><div class="demo-co">Muster Logistik GmbH & Co. KG</div><div class="demo-type">INSOLVENZ — Amtsgericht München</div></div><div style="text-align:right"><div class="demo-score">Score: 91</div><div class="demo-amt">€340.000</div></div></div>
+    <div class="demo-row"><div><div class="demo-co">Tech Solutions Berlin GmbH</div><div class="demo-type">AI-ACT-RISIKO — IT/Software</div></div><div style="text-align:right"><div class="demo-score">Score: 84</div><div class="demo-amt">Bußgeld €35 Mio.</div></div></div>
+    <div class="demo-row"><div><div class="demo-co">Digital Marketing Hamburg AG</div><div class="demo-type">INSOLVENZ — Amtsgericht Hamburg</div></div><div style="text-align:right"><div class="demo-score">Score: 79</div><div class="demo-amt">€1.2 Mio.</div></div></div>
+    <div class="demo-row"><div><div class="demo-co">E-Commerce Ventures GmbH</div><div class="demo-type">AI-ACT-RISIKO — Handel/E-Commerce</div></div><div style="text-align:right"><div class="demo-score">Score: 76</div><div class="demo-amt">Bußgeld €15 Mio.</div></div></div>
+    <div class="demo-row"><div><div class="demo-co">Bau & Immobilien Köln GmbH</div><div class="demo-type">INSOLVENZ — Amtsgericht Köln</div></div><div style="text-align:right"><div class="demo-score">Score: 72</div><div class="demo-amt">€890.000</div></div></div>
+    <div style="padding-top:12px;font-family:var(--mono);font-size:10px;color:var(--dim)">+ 5 weitere Leads nur für Abonnenten &nbsp;|&nbsp; Basic-Kunden erhalten tägl. 10 · Pro-Kunden 25 Leads</div>
+  </div>
+
+  <div class="sec-head"><span class="sec-lbl">Pakete &amp; Preise</span><div class="sec-rule"></div></div>
+  <div class="pricing">
+    <div class="plan">
+      <div class="plan-name">Lead-Agent Basic</div>
+      <div class="plan-price">€499<span>/Monat</span></div>
+      <p class="plan-desc">10 qualifizierte B2B-Leads täglich — geeignet für Einzelakquisiteure und kleine Vertriebsteams.</p>
+      <ul class="plan-features">
+        <li>10 bewertete Leads täglich (Score 0–100)</li>
+        <li>Insolvenz-Daten (DE Handelsregister)</li>
+        <li>EU AI Act Risiko-Signale</li>
+        <li>Personalisierter HTML-Report per Email</li>
+        <li>Tägl. Lieferung 08:30 Uhr</li>
+        <li>Monatlich kündbar</li>
+      </ul>
+      <div class="order-form" id="form-basic">
+        <input type="email" placeholder="Ihre Email-Adresse" id="email-basic" autocomplete="email">
+        <button class="btn-buy" onclick="checkout('basic')">Jetzt bestellen — €499/Monat</button>
+        <div class="form-note">Sicher bezahlen via Stripe · Jederzeit kündbar</div>
+      </div>
+    </div>
+    <div class="plan featured">
+      <div class="plan-badge">EMPFOHLEN</div>
+      <div class="plan-name">Compliance-Wächter Pro</div>
+      <div class="plan-price">€999<span>/Monat</span></div>
+      <p class="plan-desc">25 Leads täglich + vollständiges EU AI Act Monitoring — für wachsende Vertriebsteams mit Compliance-Fokus.</p>
+      <ul class="plan-features">
+        <li>25 bewertete Leads täglich</li>
+        <li>EU AI Act Compliance-Monitoring</li>
+        <li>Monatlicher Compliance-Report</li>
+        <li>Alle Basic-Features inkl.</li>
+        <li>Priority-Email-Support</li>
+        <li>Monatlich kündbar</li>
+      </ul>
+      <div class="order-form" id="form-pro">
+        <input type="email" placeholder="Ihre Email-Adresse" id="email-pro" autocomplete="email">
+        <button class="btn-buy" onclick="checkout('pro')">Jetzt bestellen — €999/Monat</button>
+        <div class="form-note">Sicher bezahlen via Stripe · Jederzeit kündbar</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec-head"><span class="sec-lbl">Warum KI-Leasing</span><div class="sec-rule"></div></div>
+  <div class="trust-row">
+    <div class="trust-item"><div class="trust-icon">⏰</div><div class="trust-text"><b>Keine Einrichtung</b>Sofort aktiv nach Zahlung. Kein Tool, kein Passwort, kein Training.</div></div>
+    <div class="trust-item"><div class="trust-icon">📊</div><div class="trust-text"><b>Echte Daten</b>Insolvenzbekanntmachungen.de, Handelsregister, EU AI Act Risikoanalyse.</div></div>
+    <div class="trust-item"><div class="trust-icon">📧</div><div class="trust-text"><b>Direkt ins Postfach</b>Kein Login, kein Dashboard. Report kommt tägl. um 08:30 an Ihre Email.</div></div>
+    <div class="trust-item"><div class="trust-icon">🔄</div><div class="trust-text"><b>Monatlich kündbar</b>Kein Jahresvertrag. Kein Risiko. Kündigung jederzeit möglich.</div></div>
+  </div>
+</main>
+
+<script>
+async function checkout(pkg) {
+  const emailEl = document.getElementById('email-' + pkg);
+  const email   = emailEl ? emailEl.value.trim() : '';
+  if (!email || !email.includes('@')) { alert('Bitte gültige Email-Adresse eingeben.'); return; }
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Weiterleitung...';
+  try {
+    const r = await fetch('/api/ki-leasing/checkout', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({email, package: pkg})
+    });
+    const d = await r.json();
+    if (d.ok && d.checkout_url) {
+      window.location.href = d.checkout_url;
+    } else {
+      alert('Fehler: ' + (d.error || 'Unbekannt'));
+      btn.disabled = false;
+      btn.textContent = 'Jetzt bestellen';
+    }
+  } catch(e) {
+    alert('Netzwerkfehler: ' + e.message);
+    btn.disabled = false;
+    btn.textContent = 'Jetzt bestellen';
+  }
+}
+</script>
+</body></html>"""
+
+
+async def handle_ki_leasing_page(req):
+    return web.Response(text=_KI_LEASING_PAGE, content_type="text/html")
+
+
+async def handle_ki_leasing_success(req):
+    session_id = req.rel_url.query.get("session", "")
+    html = f"""<!DOCTYPE html><html lang="de"><head><meta charset="utf-8">
+<title>KI-Leasing aktiv!</title>
+<style>*{{margin:0;padding:0;box-sizing:border-box}}body{{font-family:system-ui,sans-serif;background:#07090E;color:#E2E8F0;display:flex;align-items:center;justify-content:center;min-height:100vh}}
+.card{{background:#111520;border:1px solid #F5A623;padding:52px;max-width:520px;text-align:center;box-shadow:0 0 60px rgba(245,166,35,.12)}}
+.num{{font-size:4rem;margin-bottom:20px;font-family:monospace;color:#F5A623;font-weight:900}}
+h1{{font-size:1.6rem;font-weight:800;letter-spacing:-.03em;margin-bottom:10px}}
+p{{color:#64748B;line-height:1.8;margin-bottom:24px;font-size:14px}}
+a{{display:inline-block;background:#F5A623;color:#000;padding:13px 32px;text-decoration:none;font-weight:800;font-size:15px}}</style></head>
+<body><div class="card">
+  <div class="num">✓</div>
+  <h1>Ihr KI-Mitarbeiter ist aktiv!</h1>
+  <p>Zahlung erfolgreich. Ihr erster Report kommt <b style="color:#F5A623">morgen um 08:30 Uhr</b> an Ihre Email-Adresse.<br><br>
+  Der KI-Mitarbeiter analysiert bereits heute Nacht die besten Leads für Sie.</p>
+  <a href="/ki-leasing">Zurück zur Übersicht</a>
+</div></body></html>"""
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_ki_leasing_checkout(req):
+    try:
+        body    = await req.json()
+        email   = body.get("email", "").strip()
+        package = body.get("package", "basic").strip()
+        if not email or "@" not in email:
+            return web.json_response({"ok": False, "error": "Ungültige E-Mail"}, status=400)
+        from modules.ki_leasing_engine import create_checkout
+        return web.json_response(await create_checkout(email, package))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ki_leasing_webhook(req):
+    try:
+        payload    = await req.read()
+        sig_header = req.headers.get("Stripe-Signature", "")
+        event      = json.loads(payload)
+        from modules.ki_leasing_engine import handle_webhook
+        result = await handle_webhook(event)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=400)
+
+
+async def handle_ki_leasing_clients(req):
+    try:
+        from modules.ki_leasing_engine import get_active_clients
+        return web.json_response({"ok": True, "clients": get_active_clients()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ki_leasing_status(req):
+    try:
+        from modules.ki_leasing_engine import get_stats
+        return web.json_response({"ok": True, **get_stats()})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ki_leasing_send_now(req):
+    try:
+        from modules.ki_leasing_engine import send_daily_reports
+        result = await send_daily_reports()
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
 # ── OOS Sniper ────────────────────────────────────────────────────────────────
