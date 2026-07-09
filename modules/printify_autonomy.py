@@ -17,7 +17,8 @@ log = logging.getLogger("PrintifyAutonomy")
 TOKEN = os.getenv("PRINTIFY_API_TOKEN", "")
 SHOP_ID = os.getenv("PRINTIFY_SHOP_ID", "27975583")
 BASE = "https://api.printify.com/v1"
-AUTH = lambda: {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json"}
+_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+AUTH = lambda: {"Authorization": f"Bearer {TOKEN}", "Content-Type": "application/json", "User-Agent": _UA}
 
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 

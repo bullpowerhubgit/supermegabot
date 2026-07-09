@@ -50,7 +50,7 @@ KNOWN_FIXES = {
     "META_ACCESS_TOKEN": "Facebook/Instagram Token erneuern via Meta Business Suite",
     "PINTEREST_ACCESS_TOKEN not set": "Pinterest Token via pinterest_autonomy.py holen",
     "DS24_API_KEY": "DS24 Key: 1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N (aiitec)",
-    "MAILCHIMP_DRAGON_API_KEY": "Dragon Key: 4206e572541883eb39eb2c52d9a3a116-us18",
+    "MAILCHIMP_DRAGON_API_KEY": "Neuen Mailchimp Key generieren: mailchimp.com/account/api",
     "Reddit.*web app": "Reddit App-Typ zu 'script' ändern: reddit.com/prefs/apps → rodbot",
     "402": "Credits kaufen: Twitter/DeepSeek/Amazon PA-API",
     "no credentials": "Credentials in Railway ENV setzen",

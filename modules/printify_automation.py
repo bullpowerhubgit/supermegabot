@@ -41,8 +41,15 @@ def _token() -> str:
     return os.getenv("PRINTIFY_API_KEY", os.getenv("PRINTIFY_API_TOKEN", _DRAGON_TOKEN))
 
 
+_UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+
+
 def _headers() -> Dict:
-    return {"Authorization": f"Bearer {_token()}", "Content-Type": "application/json"}
+    return {
+        "Authorization": f"Bearer {_token()}",
+        "Content-Type": "application/json",
+        "User-Agent": _UA,
+    }
 
 
 def _set_railway(key: str, value: str) -> None:

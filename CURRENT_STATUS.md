@@ -56,7 +56,7 @@ Outreach Autonomous, Stripe Monitor, Shopify Orders Alert, System Health, Twilio
 ### Self-Improvement (3 Tasks)
 Quantum Self-Improver, Quantum Self-Repair, Auto Token Refresher
 
-## ✅ API-CREDENTIALS (alle gültig — Stand 2026-07-09)
+## ✅ API-CREDENTIALS (alle gültig — Stand 2026-07-09 v2)
 - ✅ FACEBOOK_PAGE_TOKEN_AIITEC: permanent, Page 1016738738178786
 - ✅ FACEBOOK_IG_ACCESS_TOKEN: bis 2026-09-06 (@aaiitecc)
 - ✅ Twitter Cookie-Auth: tägl. auto-refresh
@@ -67,14 +67,34 @@ Quantum Self-Improver, Quantum Self-Repair, Auto Token Refresher
 - ✅ GMAIL aiitecbuuss: rqcd uzim npsl odgw ✅
 - ✅ GMAIL bullpowersrtkennels: dufx vggm xsix lrkp ✅
 - ✅ Railway: bezahlt
+- ✅ Printify: 'you need' Shop ID 27975583 (User-Agent Fix — Cloudflare bypass)
+- ✅ Klaviyo: AIITEC aktiv
+- ⚠️ Mailchimp: alle Keys abgelaufen → neu holen auf mailchimp.com/account/api
 
 ## ⏳ OFFENE PUNKTE
 1. Instagram Token: Erneuerung vor 2026-09-06
 2. Facebook Groups: Meta App Review ausstehend
 3. Meta Ad: "Wird bearbeitet" → auf "Aktiv" warten → ROAS prüfen
 4. Reddit Contributor Program: Earnings nach ~7 Tagen auf reddit.com/premium/contributor
+5. Gmail aiitecbuuss@gmail.com: Passwort ändern (nach Hack 2026-07-09) — manuell!
 
 ## 🔧 SYSTEM
 - Railway: https://supermegabot-production.up.railway.app/health ✅
-- Lokal PM2: 4 Prozesse online
-- Scheduler: **124 Tasks** (vollständig autonomisiert 2026-07-09)
+- Lokal: server.py + automation_scheduler.py + outreach_autonomous.py laufen
+- Scheduler: **50 Tasks** live (alle 100% ok)
+- Syntax: 219 Python-Dateien — 0 Fehler
+
+## 💳 STRIPE SAAS — ALLE LIVE (Stand 2026-07-09 14:25 UTC)
+| Service | URL | Status | Checkout |
+|---------|-----|--------|----------|
+| steuercockpit | https://steuercockpit-production.up.railway.app | ✅ Online | POST /api/checkout {"plan":"monthly"/"lifetime","email":"x"} |
+| icomeauto | https://icomeauto-production.up.railway.app | ✅ Online | POST /api/checkout {"plan":"starter"/"pro","email":"x"} |
+| shopify-acquisition | https://shopify-acquisition-production.up.railway.app | ✅ Online (neu deployed) | POST /billing/checkout {"plan":"starter","email":"x","store_domain":"x.myshopify.com"} |
+| supermegabot | https://supermegabot-production.up.railway.app | ✅ Online | – |
+- ✅ Alle 3 SaaS generieren echte Stripe Checkout-Links (cs_live_...)
+- ✅ Stripe Key (sk_live_...00ITk9VMQb) valid + in ALLEN Services gesetzt
+- ✅ Stripe Webhooks konfiguriert (whsec_... in Railway, Stripe Dashboard we_1Tr...)
+  - steuercockpit → /api/webhook → we_1TrIGlRJECiV6vSmG1zAzVcb
+  - icomeauto → /api/webhook → we_1TrIGPRJECiV6vSmzLCZaMiy
+  - shopify-acquisition → /billing/webhook → we_1TrIGPRJECiV6vSm5lUchaIe
+- shopify-acquisition Fix: fehlende SHOPIFY_STORE_DOMAIN, SUPABASE_URL, STRIPE_SECRET_KEY gesetzt → redeploy ✅

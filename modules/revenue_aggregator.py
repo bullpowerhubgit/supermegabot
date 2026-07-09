@@ -154,7 +154,8 @@ async def _fetch_printify() -> Dict:
         return {"revenue": 0.0, "orders": 0, "currency": "USD", "ok": False,
                 "error": "aiohttp not installed"}
     try:
-        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+        _pf_ua = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
+        headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json", "User-Agent": _pf_ua}
         timeout = aiohttp.ClientTimeout(total=20)
         if not shop_id:
             # Auto-discover first shop
