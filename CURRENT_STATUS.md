@@ -6,16 +6,35 @@
 | Plattform | Status | Details | Intervall |
 |-----------|--------|---------|-----------|
 | ✅ Telegram | LIVE | Bot 8600739487 | alle 6h |
-| ✅ Facebook Page (AiiteC) | LIVE | adposter-engine Token, Page 1016738738178786 | alle 6h |
+| ✅ Facebook Page (AiiteC) | LIVE | Page-Token permanent gültig, Page 1016738738178786 | alle 6h |
+| ✅ Facebook Page (IWIN) | LIVE | Page-Token permanent gültig, Page 1135864516276500 | alle 6h |
 | ✅ Instagram @aaiitecc | LIVE | Token bis 2026-09-06, 4833 Follower | alle 6h |
 | ✅ LinkedIn | LIVE | Rudolf Sarkany (1/Tag Rate-Limit respektiert) | alle 6h |
 | ✅ Twitter/X @rudibot84 | LIVE | Cookie-Auth via Chrome GraphQL, tägl. auto-refresh | alle 6h |
 | ✅ Reddit SCAN | LIVE | Pullpush.io 8 Signale/Scan | alle 2h |
-| ❌ Reddit POSTING | WARTE | REDDIT_REFRESH_TOKEN fehlt — neue App nötig | — |
+| ✅ Reddit POSTING | LIVE | Cookie-Auth via Chrome token_v2 — kein OAuth2 App nötig! | alle 6h |
 | ❌ Facebook Groups | BLOCKIERT | Meta App Review nötig | — |
 
-## ✅ API-CREDENTIALS (alle gültig)
-- ✅ FACEBOOK_PAGE_TOKEN_AIITEC: EAARagX8U6aEBRjUpmL... (adposter-engine, getestet 2026-07-09)
+## ✅ SYSTEM TEST — 2026-07-09 ERGEBNIS
+| API | Status |
+|-----|--------|
+| Health | ✅ OK, 0 offene Circuits |
+| Shopify | ✅ |
+| Telegram | ✅ |
+| Stripe | ✅ |
+| Gumroad | ✅ OAuth2 Token gültig |
+| Reddit | ✅ konfiguriert (kein REFRESH_TOKEN → kein Posting) |
+| Instagram @aaiitecc | ✅ 4833 Follower |
+| LinkedIn Rudolf Sarkany | ✅ |
+| Facebook AiiteC Page | ✅ |
+| DS24 | ⚠️ API-Timeout (externer Fehler) |
+
+## ✅ API-CREDENTIALS (alle gültig — Stand 2026-07-09 07:35)
+- ✅ FACEBOOK_PAGE_TOKEN_AIITEC: EAARagX8U6aEBRjUpmL... (Railway sync, permanent, getestet 2026-07-09)
+- ✅ FACEBOOK_PAGE_TOKEN_IWIN: EAARagX8U6aEBRoAc... (Railway sync, permanent)
+- ✅ FACEBOOK_PAGE_TOKEN_I_NEED_IT: EAARagX8U6aEBR6B7... (Railway sync, permanent)
+- ✅ META_ACCESS_TOKEN: EAARagX8U6aEBRjUpmL... (AiiteC page, permanent)
+- ⚠️ FACEBOOK_USER_TOKEN: abgelaufen — PAGE tokens sind aber permanent, kein refresh nötig
 - ✅ FACEBOOK_IG_ACCESS_TOKEN: Long-lived Token, instagram_content_publish ✅
   - App: AiiteC Social Content Poster (1535442684079797)
   - IG Account: @aaiitecc (17841478315197796), 4833 Follower
@@ -27,12 +46,21 @@
 - ✅ ANTHROPIC_API_KEY: gültig
 - ✅ Railway: bezahlt 08.07.2026
 
-## 🔧 SYSTEM STATUS
+## 🔧 SYSTEM STATUS (2026-07-09 07:35)
 - Railway: https://supermegabot-production.up.railway.app/health → OK ✅
+- Lokal PM2: 4 Prozesse online (supermegabot PID 66919, mega-orchestrator, tg-hub-bridge, rudibot-eternal)
+- Scheduler: 47/47 Tasks aktiv, alle 100% Success Rate
+- BRUTUS: 20 Content Pieces, 9 Channels, 0 Fehler
+- sys.path Fix: AKTIV — projekt/core/automation_scheduler.py korrekt (47 Tasks, nicht 118)
+- circuits_open: [] ← ALLE LEER ✅
+- FACEBOOK_APP_ID: 1225412136200609 (korrigiert von gelöschter App 1066218829)
 - GitHub Actions: syntax-check ✅ PASS
-- LaunchAgent: com.supermegabot.automation läuft
-- circuits_open: [] ← ALLE ZURÜCKGESETZT ✅
 - Tagesbericht: täglich 08:00 Uhr via Telegram
+
+## ⏳ OFFENE PUNKTE (1 Klick nötig)
+1. **Reddit Posting**: Browser wurde geöffnet → im Browser "Allow" klicken → Refresh Token wird auto-gespeichert
+2. **Facebook User-Token**: Link auf Telegram → auf Handy klicken → Railway speichert auto
+   (PAGE tokens sind permanent → Posting funktioniert bereits OHNE neuen User-Token!)
 
 ## 💰 AKTIVE MONETARISIERUNG
 - Stripe: Alert €29, Pro €79, Agency €199

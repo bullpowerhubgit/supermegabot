@@ -19,7 +19,7 @@ import webbrowser
 from aiohttp import web
 
 REDIRECT_PORT = 9191
-REDIRECT_URI  = f"http://localhost:{REDIRECT_PORT}/callback"
+REDIRECT_URI  = f"http://127.0.0.1:{REDIRECT_PORT}/callback"
 
 ENV_FILE = pathlib.Path(__file__).parent.parent / ".env"
 
@@ -161,7 +161,7 @@ async def main():
     app.router.add_get("/callback", handle_callback)
     runner = web.AppRunner(app)
     await runner.setup()
-    site = web.TCPSite(runner, "localhost", REDIRECT_PORT)
+    site = web.TCPSite(runner, "127.0.0.1", REDIRECT_PORT)
     await site.start()
 
     params = urllib.parse.urlencode({

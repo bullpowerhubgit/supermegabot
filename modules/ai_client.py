@@ -19,7 +19,7 @@ _GEMINI     = lambda: os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY"
 
 _OPENROUTER_MODEL   = "liquid/lfm-2.5-1.2b-instruct:free"
 _GROQ_MODEL         = "llama-3.1-8b-instant"
-_OPENROUTER_REFERER = "https://dudirudibot-mega-production.up.railway.app"
+_OPENROUTER_REFERER = "https://supermegabot-production.up.railway.app"
 _GEMINI_URLS        = [
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",

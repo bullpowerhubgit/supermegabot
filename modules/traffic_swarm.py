@@ -42,7 +42,7 @@ SUPABASE_KEY    = os.getenv("SUPABASE_SERVICE_KEY", "") or os.getenv("SUPABASE_A
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-01")
-SITE_URL        = os.getenv("SITE_URL", "https://dudirudibot-mega-production.up.railway.app")
+SITE_URL        = os.getenv("SITE_URL", "https://supermegabot-production.up.railway.app")
 EMAIL_FROM      = os.getenv("SENDGRID_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
 SENDGRID_KEY    = os.getenv("SENDGRID_API_KEY", "")
 
