@@ -177,15 +177,9 @@ async def _ai(prompt: str, max_tokens: int = 200) -> str:
 
 
 async def _tg_send(text: str) -> bool:
-    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
-        return False
     try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
-            async with s.post(
-                f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
-                json={"chat_id": TELEGRAM_CHAT, "text": text[:4096]},
-            ) as r:
-                return r.status == 200
+        from modules.telegram_safe import tg_send_safe
+        return await tg_send_safe(text)
     except Exception:
         return False
 
