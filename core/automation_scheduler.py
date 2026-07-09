@@ -1487,6 +1487,32 @@ async def task_facebook_token_check() -> str:
         return f"FB token check error: {e}"
 
 
+async def task_email_check() -> str:
+    """IMAP poll + AI-classify + auto-reply for incoming emails."""
+    try:
+        from modules.email_brain import check_and_process_emails
+        result = await check_and_process_emails()
+        checked = result.get("checked", 0)
+        replied = result.get("replied", 0)
+        return f"EmailBrain: {checked} emails checked, {replied} auto-replied"
+    except ImportError:
+        return "EmailBrain: module not available (skipped)"
+    except Exception as e:
+        return f"EmailBrain Fehler: {e}"
+
+
+async def task_email_daily_summary() -> str:
+    """Daily email summary via Telegram."""
+    try:
+        from modules.email_brain import send_daily_summary
+        result = await send_daily_summary()
+        return f"EmailSummary: {result}"
+    except ImportError:
+        return "EmailSummary: module not available (skipped)"
+    except Exception as e:
+        return f"EmailSummary Fehler: {e}"
+
+
 async def task_email_seq_process() -> str:
     """Process all due drip emails across all enrolled sequences."""
     try:
@@ -5889,6 +5915,29 @@ async def task_ai_act_scanner() -> str:
         return f"AI Act Fehler: {e}"
 
 
+async def task_lead_subscriber_delivery() -> str:
+    """Lead Subscription Engine: tägliche Leads an Paying Subscriber (08:00)."""
+    try:
+        from modules.lead_subscriber_engine import run_daily_delivery
+        r = await run_daily_delivery()
+        subs = r.get("subscribers", 0)
+        delivered = r.get("delivered", 0)
+        leads = r.get("insolvenz", 0) + r.get("zvg", 0) + r.get("hr", 0)
+        return f"LeadSubs: {delivered}/{subs} Subs, {leads} Leads"
+    except Exception as e:
+        return f"LeadSubs Fehler: {e}"
+
+
+async def task_lead_cold_outreach() -> str:
+    """Lead Cold Outreach: 5 Outreach-Emails an Factoring-Firmen (tägl.)."""
+    try:
+        from modules.lead_subscriber_engine import run_cold_outreach
+        r = await run_cold_outreach()
+        return f"LeadOutreach: {r.get('sent', 0)} gesendet, {r.get('skipped', 0)} übersprungen"
+    except Exception as e:
+        return f"LeadOutreach Fehler: {e}"
+
+
 async def task_b2b_pipeline() -> str:
     """B2B Pipeline: Prospecting + Outreach automatisch (alle 12h)."""
     try:
@@ -6508,10 +6557,13 @@ TASKS = [
     ("upwork_jobs",            task_upwork_job_scraper,     21600, 2980),  # 6h  — Jobs finden+Alerts
     ("upwork_proposals",       task_upwork_proposal_auto,   28800, 3020),  # 8h  — KI-Proposals auto-generieren
     # ── B2B-LEADS ─────────────────────────────────────────────────────────────
-    ("handelsregister",        task_handelsregister_radar,  86400, 3060),  # 24h — neue GmbHs→B2B Leads
-    ("zvg_radar",              task_zvg_radar,              86400, 3100),  # 24h — Zwangsversteigerungen→Leads
-    ("ai_act",                 task_ai_act_scanner,         86400, 3140),  # 24h — EU AI Act KMU Risiko→Reports
-    ("b2b_pipeline",           task_b2b_pipeline,           43200, 3180),  # 12h — B2B Prospecting+Outreach
+    ("handelsregister",        task_handelsregister_radar,      86400, 3060),  # 24h — neue GmbHs→B2B Leads
+    ("zvg_radar",              task_zvg_radar,                  86400, 3100),  # 24h — Zwangsversteigerungen→Leads
+    ("ai_act",                 task_ai_act_scanner,             86400, 3140),  # 24h — EU AI Act KMU Risiko→Reports
+    ("b2b_pipeline",           task_b2b_pipeline,               43200, 3180),  # 12h — B2B Prospecting+Outreach
+    # ── LEAD SUBSCRIPTION REVENUE ────────────────────────────────────────────────
+    ("lead_delivery",          task_lead_subscriber_delivery,   86400,  300),  # 24h — Leads an Subscribers 08:00
+    ("lead_outreach",          task_lead_cold_outreach,         86400, 3190),  # 24h — Kalt-Akquise Factoring-Firmen
     ("growth_engine",          task_growth_engine,          86400, 3220),  # 24h — Reviews+Winback+VIP
     # ── WACHSTUM & OPTIMIERUNG ────────────────────────────────────────────────
     ("growth_hacker",          task_growth_hacker,          86400, 3260),  # 24h — Referral+Wachstums-Experimente
