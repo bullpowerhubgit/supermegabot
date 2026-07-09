@@ -9881,6 +9881,15 @@ async def create_app():
     except Exception as _e:
         log.warning(f"Telegram Master Dashboard startup failed: {_e}")
 
+    # ── Automation Scheduler starten (131 Tasks) ─────────────────────────────
+    try:
+        from core.automation_scheduler import get_scheduler as _get_sched
+        _sched = _get_sched()
+        asyncio.create_task(_sched.start())
+        log.info("AutomationScheduler gestartet — %d Tasks registriert", len(_sched._task_handles) if hasattr(_sched, '_task_handles') else 0)
+    except Exception as _sched_e:
+        log.error("AutomationScheduler Fehler: %s", _sched_e)
+
     return app
 
 
