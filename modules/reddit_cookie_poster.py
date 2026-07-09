@@ -122,9 +122,15 @@ def refresh_cookies() -> bool:
 def _load_cookies() -> dict:
     if COOKIES_FILE.exists():
         try:
-            return json.loads(COOKIES_FILE.read_text())
+            cookies = json.loads(COOKIES_FILE.read_text())
+            if cookies.get("token_v2"):
+                return cookies
         except Exception:
             pass
+    # Fallback: env var REDDIT_TOKEN_V2 (used on Railway where data/ is not deployed)
+    env_token = os.getenv("REDDIT_TOKEN_V2", "")
+    if env_token:
+        return {"token_v2": env_token}
     return {}
 
 
