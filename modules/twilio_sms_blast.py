@@ -19,7 +19,7 @@ TO_NUMBER    = os.getenv("TWILIO_VERIFIED_TO", "+4917622890860")
 _TWILIO_URL  = f"https://api.twilio.com/2010-04-01/Accounts/{ACCOUNT_SID}/Messages.json"
 
 STORE_URL    = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
-PROD_URL     = "https://dudirudibot-mega-production.up.railway.app"
+PROD_URL     = "https://supermegabot-production.up.railway.app"
 
 
 async def _send_sms(body: str, to: str = None) -> dict:

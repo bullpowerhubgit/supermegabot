@@ -33,7 +33,7 @@ FACEBOOK_PAGE_ID           = os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")
 DISCORD_WEBHOOK_URL        = os.getenv("DISCORD_WEBHOOK_URL", "")
 BASE_URL                   = os.getenv(
     "SUPERMEGABOT_DASHBOARD_URL",
-    "https://dudirudibot-mega-production.up.railway.app",
+    "https://supermegabot-production.up.railway.app",
 )
 
 _DATA_DIR = os.getenv("DATA_DIR", "/tmp")
@@ -43,7 +43,7 @@ PRODUCTS = [
     {"name": "Shopify Acquisition Engine", "url": "https://shopify-acquisition-engine-production.up.railway.app", "price": "€49/mo", "niche": "E-Commerce Automatisierung"},
     {"name": "SEO Turbo Tools",            "url": "https://seo-turbo-tools-production.up.railway.app",            "price": "€29/mo", "niche": "SEO & Marketing"},
     {"name": "iComeAuto SaaS",             "url": "https://icomeauto-saas-production.up.railway.app",             "price": "€29/mo", "niche": "Passives Einkommen"},
-    {"name": "SuperMegaBot",               "url": "https://dudirudibot-mega-production.up.railway.app",           "price": "€49/mo", "niche": "KI Business Automatisierung"},
+    {"name": "SuperMegaBot",               "url": "https://supermegabot-production.up.railway.app",           "price": "€49/mo", "niche": "KI Business Automatisierung"},
     {"name": "Telegram Automation Bot",    "url": "https://telegram-automation-bot-production.up.railway.app",    "price": "€39/mo", "niche": "Telegram Marketing"},
 ]
 
@@ -68,7 +68,7 @@ SEO_KEYWORDS = [
 FREELANCE_SERVICES = [
     {"title": "Shopify Store Vollautomatisierung mit KI", "price": 350, "url": "https://shopify-acquisition-engine-production.up.railway.app"},
     {"title": "SEO Audit & KI Meta-Descriptions",        "price": 150, "url": "https://seo-turbo-tools-production.up.railway.app"},
-    {"title": "Custom Telegram Bot mit Stripe Payment",  "price": 500, "url": "https://dudirudibot-mega-production.up.railway.app"},
+    {"title": "Custom Telegram Bot mit Stripe Payment",  "price": 500, "url": "https://supermegabot-production.up.railway.app"},
     {"title": "E-Commerce KI-Automatisierung Setup",     "price": 300, "url": "https://shopify-acquisition-engine-production.up.railway.app"},
 ]
 

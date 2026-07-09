@@ -320,7 +320,7 @@ Gesamt: {len(leads)} neue Verfahren heute | Hochwertige Objekte (Score≥80): {s
 
 ---
 Täglicher ZVG-Lead-Service:
-https://dudirudibot-mega-production.up.railway.app/insolvenz-radar
+https://supermegabot-production.up.railway.app/insolvenz-radar
 
 Preismodelle: €{buyer['preis']}/Lead einzeln | €199/mo unbegrenzt | €499/mo mit AI-Analyse
 

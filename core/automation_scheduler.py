@@ -445,7 +445,7 @@ async def task_railway_health() -> str:
     """Ping all 13 Railway services, Telegram alert if any DOWN."""
     import aiohttp
     services = {
-        "SuperMegaBot":        "https://dudirudibot-mega-production.up.railway.app/health",
+        "SuperMegaBot":        "https://supermegabot-production.up.railway.app/health",
         "MetaSocialEngine":    "https://meta-social-engine-production.up.railway.app/health",
         "SEOTurboTools":       "https://seo-turbo-tools-production.up.railway.app/health",
         "FreelanceGigEngine":  "https://freelance-gig-engine-production.up.railway.app/health",
@@ -1822,7 +1822,7 @@ async def task_google_index_submit() -> str:
     import aiohttp
     key = os.getenv("GOOGLE_INDEXING_KEY", "")
     urls = [
-        "https://dudirudibot-mega-production.up.railway.app/",
+        "https://supermegabot-production.up.railway.app/",
         "https://bullpowerhubgit.github.io/shopify-brutal-tuning-landing/",
         "https://bullpower-lead.netlify.app/",
         "https://bullpower-hub-portal.netlify.app/",
@@ -1845,7 +1845,7 @@ async def task_google_index_submit() -> str:
                         pass
                 return f"Google Indexing API: {submitted}/{len(urls)} URLs"
             # Fallback: free sitemap ping
-            sitemap = "https://dudirudibot-mega-production.up.railway.app/sitemap.xml"
+            sitemap = "https://supermegabot-production.up.railway.app/sitemap.xml"
             for ping in [f"https://www.google.com/ping?sitemap={sitemap}",
                          f"https://www.bing.com/ping?sitemap={sitemap}"]:
                 try:
@@ -1952,7 +1952,7 @@ async def task_viral_referral_trigger() -> str:
                                  "revision": "2024-10-15", "Content-Type": "application/json"},
                         json={"data": {"type": "profile", "attributes": {
                             "email": email,
-                            "properties": {"referral_url": f"https://dudirudibot-mega-production.up.railway.app/api/referral/{ref}",
+                            "properties": {"referral_url": f"https://supermegabot-production.up.railway.app/api/referral/{ref}",
                                            "referral_triggered": True},
                         }}},
                     )
@@ -2831,7 +2831,7 @@ async def task_insolvenz_radar_autopost() -> str:
         status    = get_status()
         total     = status.get("total_leads", 0)
 
-        dash_url  = os.getenv("DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
+        dash_url  = os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
 
         results = {}
 
@@ -3780,7 +3780,7 @@ async def task_twilio_morning_brief() -> str:
             f"🤖 149 Automatisierungen laufen\n"
             f"🔥 DS24 Affiliate aktiv\n\n"
             f"👉 DS24: https://autopilot-store-suite-fmbka.myshopify.com\n"
-            f"📊 Dashboard: https://dudirudibot-mega-production.up.railway.app"
+            f"📊 Dashboard: https://supermegabot-production.up.railway.app"
         )
         ok = await _twilio_send(to, msg)
         return f"Morning SMS: {'sent ✅' if ok else 'failed ❌'} → {to}"
@@ -3816,7 +3816,7 @@ async def task_twilio_revenue_alert() -> str:
             f"🎉 NEUE BESTELLUNG!\n"
             f"💰 {len(orders)} Order(s) — €{total:.2f}\n"
             f"📦 Shopify Store aktiv\n"
-            f"👉 https://dudirudibot-mega-production.up.railway.app"
+            f"👉 https://supermegabot-production.up.railway.app"
         )
         ok = await _twilio_send(to, msg)
         return f"Revenue SMS: {'sent ✅' if ok else 'failed ❌'} — {len(orders)} orders €{total:.2f}"
@@ -3870,7 +3870,7 @@ async def task_twilio_stripe_alert() -> str:
             f"💳 STRIPE ZAHLUNG!\n"
             f"💰 {len(payments)} Payment(s) — €{total:.2f}\n"
             f"🎉 Revenue kommt rein!\n"
-            f"📊 https://dudirudibot-mega-production.up.railway.app"
+            f"📊 https://supermegabot-production.up.railway.app"
         )
         ok = await _twilio_send(to, msg)
         return f"Stripe SMS: {'sent ✅' if ok else 'failed ❌'} — €{total:.2f}"
@@ -3941,7 +3941,7 @@ async def task_hermes_strategy() -> str:
         # Revenue-Snapshot holen
         try:
             import aiohttp
-            smb_url = os.getenv("SUPERMEGABOT_URL", "https://dudirudibot-mega-production.up.railway.app")
+            smb_url = os.getenv("SUPERMEGABOT_URL", "https://supermegabot-production.up.railway.app")
             async with aiohttp.ClientSession() as s:
                 async with s.get(f"{smb_url}/api/revenue/summary",
                                  timeout=aiohttp.ClientTimeout(total=15)) as r:
@@ -3972,7 +3972,7 @@ async def task_slack_revenue_report() -> str:
     try:
         from modules.slack_notify import send_slack
         import aiohttp
-        smb_url = os.getenv("SUPERMEGABOT_URL", "https://dudirudibot-mega-production.up.railway.app")
+        smb_url = os.getenv("SUPERMEGABOT_URL", "https://supermegabot-production.up.railway.app")
         async with aiohttp.ClientSession() as s:
             async with s.get(f"{smb_url}/api/revenue/summary",
                              timeout=aiohttp.ClientTimeout(total=15)) as r:
@@ -3993,7 +3993,7 @@ async def task_slack_error_monitor() -> str:
     try:
         from modules.slack_notify import send_slack
         import aiohttp
-        smb_url = os.getenv("SUPERMEGABOT_URL", "https://dudirudibot-mega-production.up.railway.app")
+        smb_url = os.getenv("SUPERMEGABOT_URL", "https://supermegabot-production.up.railway.app")
         async with aiohttp.ClientSession() as s:
             async with s.get(f"{smb_url}/health", timeout=aiohttp.ClientTimeout(total=10)) as r:
                 health = await r.json() if r.status == 200 else {"status": f"HTTP {r.status}"}
@@ -5184,6 +5184,18 @@ async def task_twitter_cookie_refresh() -> str:
         return f"Twitter Cookie Refresh Fehler: {e}"
 
 
+async def task_reddit_cookie_refresh() -> str:
+    """Reddit Cookie Auto-Refresh: täglich Chrome-Cookies extrahieren — kein OAuth2 App nötig."""
+    try:
+        from modules.reddit_cookie_poster import refresh_cookies
+        ok = refresh_cookies()
+        if ok:
+            return "Reddit Cookies erneuert ✅ — Cookie-Auth aktiv (kein OAuth2 App nötig)"
+        return "Reddit Cookies: Chrome nicht verfügbar oder nicht bei Reddit eingeloggt"
+    except Exception as e:
+        return f"Reddit Cookie Refresh Fehler: {e}"
+
+
 async def task_fb_token_refresh() -> str:
     """Facebook/Instagram Token Auto-Refresh: täglich prüfen, bei < 15 Tagen bis Ablauf erneuern."""
     try:
@@ -5274,6 +5286,8 @@ TASKS = [
     ("fb_token_refresh",      task_fb_token_refresh,       86400, 3600),  # täglich — Token auto-erneuern vor Ablauf
     # ── Twitter Cookie Auto-Refresh (aus Chrome) ─────────────────────────────
     ("twitter_cookie_refresh", task_twitter_cookie_refresh, 86400, 3650),  # täglich — Chrome Cookies erneuern
+    # ── Reddit Cookie Auto-Refresh (aus Chrome — kein OAuth2 App nötig) ──────
+    ("reddit_cookie_refresh",  task_reddit_cookie_refresh,  86400, 3700),  # täglich — Reddit Chrome Cookies erneuern
 ]
 
 

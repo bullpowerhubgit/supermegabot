@@ -1017,7 +1017,7 @@ class CommandRouter:
         import stripe as _stripe
         dashboard_url = os.getenv(
             "DASHBOARD_URL",
-            os.getenv("SUPERMEGABOT_DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
+            os.getenv("SUPERMEGABOT_DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
         )
         sk = os.getenv("STRIPE_SECRET_KEY", "")
         price_starter = os.getenv("STRIPE_PRICE_STARTER", "")

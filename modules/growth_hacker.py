@@ -13,7 +13,7 @@ TELEGRAM_CHAT_ID   = os.getenv("TELEGRAM_CHAT_ID", "")
 SUPABASE_URL        = os.getenv("SUPABASE_URL", "")
 SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 MEDIUM_TOKEN        = os.getenv("MEDIUM_INTEGRATION_TOKEN", "")
-BASE_URL            = os.getenv("BASE_URL", "https://dudirudibot-mega-production.up.railway.app")
+BASE_URL            = os.getenv("BASE_URL", "https://supermegabot-production.up.railway.app")
 
 # ── Internal helpers ──────────────────────────────────────────────────────────
 

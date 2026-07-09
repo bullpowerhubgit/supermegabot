@@ -119,40 +119,86 @@ def init_db():
 # ── Scraper ───────────────────────────────────────────────────────────────────
 
 BUNDESLAENDER_HR = {
-    "Bayern":            "https://www.handelsregister.de/rp_web/ergebnisse.xhtml?registerArt=HRB&bundesland=BY&nurNeueintr=on",
-    "NRW":               "https://www.handelsregister.de/rp_web/ergebnisse.xhtml?registerArt=HRB&bundesland=NW&nurNeueintr=on",
-    "Baden-Württemberg": "https://www.handelsregister.de/rp_web/ergebnisse.xhtml?registerArt=HRB&bundesland=BW&nurNeueintr=on",
-    "Hessen":            "https://www.handelsregister.de/rp_web/ergebnisse.xhtml?registerArt=HRB&bundesland=HE&nurNeueintr=on",
-    "Hamburg":           "https://www.handelsregister.de/rp_web/ergebnisse.xhtml?registerArt=HRB&bundesland=HH&nurNeueintr=on",
+    "Bayern":            "BY",
+    "NRW":               "NW",
+    "Baden-Württemberg": "BW",
+    "Hessen":            "HE",
+    "Hamburg":           "HH",
 }
 
+_HR_BASE        = "https://www.handelsregister.de"
+_HR_WELCOME_URL = "https://www.handelsregister.de/rp_web/welcome.xhtml"
+_HR_SEARCH_URL  = "https://www.handelsregister.de/rp_web/search.xhtml"
+
 async def scrape_neugründungen(max_per_land: int = 20) -> List[Dict]:
-    """Scrapt neue HRB-Eintragungen (Neugründungen GmbH/AG)."""
+    """Scrapt neue HRB-Eintragungen via JSF-Session: welcome→search GET→search POST."""
     results = []
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
-        "Accept": "text/html,application/xhtml+xml,*/*;q=0.8",
+    _HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         "Accept-Language": "de-DE,de;q=0.9",
     }
-    try:
-        async with aiohttp.ClientSession(
-            headers=headers,
-            timeout=aiohttp.ClientTimeout(total=30),
-            connector=aiohttp.TCPConnector(ssl=False)
-        ) as session:
-            for bl_name, url in list(BUNDESLAENDER_HR.items())[:3]:
-                try:
-                    async with session.get(url) as r:
-                        if r.status == 200:
-                            html = await r.text(errors="replace")
-                            batch = _parse_hr_html(html, bl_name)
-                            results.extend(batch[:max_per_land])
-                            log.info("HR %s: %d Einträge", bl_name, len(batch))
-                    await asyncio.sleep(2.5)
-                except Exception as e:
-                    log.debug("HR %s: %s", bl_name, e)
-    except Exception as e:
-        log.warning("HR Scraper Session: %s", e)
+
+    for bl_name, bl_code in list(BUNDESLAENDER_HR.items())[:3]:
+        try:
+            async with aiohttp.ClientSession(
+                headers=_HEADERS,
+                timeout=aiohttp.ClientTimeout(total=45),
+                connector=aiohttp.TCPConnector(ssl=True),
+                cookie_jar=aiohttp.CookieJar(),
+            ) as session:
+                # Schritt 1: welcome.xhtml → JSESSIONID cookie holen
+                async with session.get(_HR_WELCOME_URL) as r:
+                    if r.status not in (200, 400):
+                        log.warning("HR %s: welcome %d", bl_name, r.status)
+                        continue
+                    await r.read()
+
+                # Schritt 2: search.xhtml → ViewState holen
+                async with session.get(_HR_SEARCH_URL) as r:
+                    html = await r.text(errors="replace")
+                    log.debug("HR %s: search GET %d", bl_name, r.status)
+
+                vs_match = (
+                    re.search(r'id="javax\.faces\.ViewState"[^>]+value="([^"]+)"', html)
+                    or re.search(r'name="javax\.faces\.ViewState"[^>]+value="([^"]+)"', html)
+                    or re.search(r'javax\.faces\.ViewState.*?value="([^"]+)"', html, re.DOTALL)
+                )
+                if not vs_match:
+                    log.warning("HR %s: kein ViewState in search.xhtml", bl_name)
+                    continue
+                view_state = vs_match.group(1)
+                log.info("HR %s: ViewState OK", bl_name)
+
+                # Schritt 3: Suche POSTen (nurNeueintr=on → nur Neugründungen heute)
+                form_data = {
+                    "form": "form",
+                    "form:schlagwoerter": "",
+                    "form:registerArt": "HRB",
+                    "form:registerNummer": "",
+                    "form:registergericht": "",
+                    "form:bundesland": bl_code,
+                    "form:zeitraum": "tag",
+                    "form:nurNeueintr": "on",
+                    "form:ergebnisseProSeite": "100",
+                    "form:btnSuche": "Suchen",
+                    "javax.faces.ViewState": view_state,
+                }
+                async with session.post(
+                    _HR_SEARCH_URL,
+                    data=form_data,
+                    headers={**_HEADERS, "Content-Type": "application/x-www-form-urlencoded",
+                              "Referer": _HR_SEARCH_URL, "Origin": _HR_BASE},
+                ) as r:
+                    html = await r.text(errors="replace")
+                    log.info("HR %s: POST %d", bl_name, r.status)
+                    batch = _parse_hr_html(html, bl_name)
+                    results.extend(batch[:max_per_land])
+                    log.info("HR %s: %d Einträge", bl_name, len(batch))
+
+            await asyncio.sleep(3)
+        except Exception as e:
+            log.warning("HR %s: %s", bl_name, e)
 
     if not results:
         log.warning("Scraping 0 Einträge — Demo-Daten")
@@ -239,7 +285,7 @@ Gesamt: {len(leads)} neue {buyer['type']}-Leads heute.
 
 ---
 Diesen täglichen Lead-Service buchen Sie unter:
-https://dudirudibot-mega-production.up.railway.app/insolvenz-radar
+https://supermegabot-production.up.railway.app/insolvenz-radar
 
 Täglich neu | Gefiltert nach Bundesland und Rechtsform | €{buyer['preis']}/Lead oder Flat-Rate Subscription
 

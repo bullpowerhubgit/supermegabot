@@ -17,7 +17,7 @@ BASE_URL  = f'https://api.telegram.org/bot{BOT_TOKEN}'
 
 # Alle 19 Railway-Services
 SERVICES = {
-    'supermegabot':      'https://dudirudibot-mega-production.up.railway.app/health',
+    'supermegabot':      'https://supermegabot-production.up.railway.app/health',
     'shopify-acq':       'https://shopify-acquisition-engine-production.up.railway.app/health',
     'icomeauto':         'https://icomeauto-saas-production.up.railway.app/health',
     'seo-tools':         'https://seo-turbo-tools-production.up.railway.app/health',

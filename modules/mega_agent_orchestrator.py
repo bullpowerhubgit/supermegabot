@@ -325,16 +325,16 @@ async def get_orchestrator_status() -> dict:
     platform_status = {}
 
     checks = {
-        "Klaviyo":    "https://dudirudibot-mega-production.up.railway.app/api/klaviyo/status",
-        "Mailchimp":  "https://dudirudibot-mega-production.up.railway.app/api/email/status",
-        "Twilio":     "https://dudirudibot-mega-production.up.railway.app/api/twilio/status",
-        "AliExpress": "https://dudirudibot-mega-production.up.railway.app/api/aliexpress/status",
-        "eBay":       "https://dudirudibot-mega-production.up.railway.app/api/ebay/status",
-        "Amazon":     "https://dudirudibot-mega-production.up.railway.app/api/amazon/status",
-        "Fiverr":     "https://dudirudibot-mega-production.up.railway.app/api/fiverr/status",
-        "TikTok":     "https://dudirudibot-mega-production.up.railway.app/api/tiktok/status",
-        "YouTube":    "https://dudirudibot-mega-production.up.railway.app/api/youtube/status",
-        "Discord":    "https://dudirudibot-mega-production.up.railway.app/api/discord/status",
+        "Klaviyo":    "https://supermegabot-production.up.railway.app/api/klaviyo/status",
+        "Mailchimp":  "https://supermegabot-production.up.railway.app/api/email/status",
+        "Twilio":     "https://supermegabot-production.up.railway.app/api/twilio/status",
+        "AliExpress": "https://supermegabot-production.up.railway.app/api/aliexpress/status",
+        "eBay":       "https://supermegabot-production.up.railway.app/api/ebay/status",
+        "Amazon":     "https://supermegabot-production.up.railway.app/api/amazon/status",
+        "Fiverr":     "https://supermegabot-production.up.railway.app/api/fiverr/status",
+        "TikTok":     "https://supermegabot-production.up.railway.app/api/tiktok/status",
+        "YouTube":    "https://supermegabot-production.up.railway.app/api/youtube/status",
+        "Discord":    "https://supermegabot-production.up.railway.app/api/discord/status",
     }
 
     async def _check(name: str, url: str) -> tuple[str, bool]:

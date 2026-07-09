@@ -81,7 +81,7 @@ async def run_hashnode_post(topic: str = "Shopify Automation mit KI — 2026 Gui
     prompt = (
         f"Write a professional Hashnode blog post in English about: {topic}\n"
         "Format: Markdown, 700-1000 words, H2 headings, practical code examples, "
-        "CTA for SuperMegaBot (https://dudirudibot-mega-production.up.railway.app)\n"
+        "CTA for SuperMegaBot (https://supermegabot-production.up.railway.app)\n"
         "First line: title only (no #)"
     )
     try:
@@ -91,6 +91,6 @@ async def run_hashnode_post(topic: str = "Shopify Automation mit KI — 2026 Gui
         body  = "\n".join(lines[1:]).strip() if len(lines) > 1 else raw
     except Exception:
         title = f"Shopify AI Automation Guide — {ts}"
-        body  = "## Introduction\n\nAutomate your Shopify store with AI...\n\n[Try SuperMegaBot](https://dudirudibot-mega-production.up.railway.app)"
+        body  = "## Introduction\n\nAutomate your Shopify store with AI...\n\n[Try SuperMegaBot](https://supermegabot-production.up.railway.app)"
 
     return await publish_article(title, body, ["automation", "ecommerce", "ai", "shopify"])

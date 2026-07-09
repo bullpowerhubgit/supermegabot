@@ -497,7 +497,7 @@ async def _post_linkedin(content: dict) -> bool:
     try:
         import aiohttp
         tags = " ".join(f"#{t}" for t in content.get("hashtags", [])[:3])
-        text = f"{content['body'][:600]}\n\n{tags}\n\n👉 {content.get('url','https://dudirudibot-mega-production.up.railway.app')}".strip()
+        text = f"{content['body'][:600]}\n\n{tags}\n\n👉 {content.get('url','https://supermegabot-production.up.railway.app')}".strip()
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 "https://api.linkedin.com/v2/ugcPosts",

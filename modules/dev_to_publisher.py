@@ -74,7 +74,7 @@ async def run_dev_to_post(topic: str = "KI-Automation für E-Commerce 2026") -> 
     prompt = (
         f"Schreib einen professionellen dev.to Artikel auf Englisch über: {topic}\n"
         "Format: Markdown, 600-900 Wörter, H2-Überschriften, praktische Tipps, "
-        "CTA am Ende für SuperMegaBot SaaS (https://dudirudibot-mega-production.up.railway.app)\n"
+        "CTA am Ende für SuperMegaBot SaaS (https://supermegabot-production.up.railway.app)\n"
         "Erste Zeile: nur der Titel ohne #"
     )
     try:
@@ -84,7 +84,7 @@ async def run_dev_to_post(topic: str = "KI-Automation für E-Commerce 2026") -> 
         body   = "\n".join(lines[1:]).strip() if len(lines) > 1 else raw
     except Exception:
         title = f"AI Automation for E-Commerce — {ts}"
-        body  = f"*{topic}*\n\nLearn how to automate your Shopify store with AI...\n\n[Try SuperMegaBot Free](https://dudirudibot-mega-production.up.railway.app)"
+        body  = f"*{topic}*\n\nLearn how to automate your Shopify store with AI...\n\n[Try SuperMegaBot Free](https://supermegabot-production.up.railway.app)"
 
     tags = ["automation", "ecommerce", "python", "ai"]
     return await publish_article(title, body, tags)

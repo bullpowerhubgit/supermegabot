@@ -436,7 +436,7 @@ async def rotate_ad_creatives() -> dict:
     """Every 3 days: generate fresh copy, replace underperforming creatives."""
     products = [
         {"name": "BullPower Hub", "url": "https://bullpower-hub-portal.netlify.app"},
-        {"name": "SuperMegaBot SEO Pro", "url": "https://dudirudibot-mega-production.up.railway.app"},
+        {"name": "SuperMegaBot SEO Pro", "url": "https://supermegabot-production.up.railway.app"},
     ]
     results = []
     for p in products:

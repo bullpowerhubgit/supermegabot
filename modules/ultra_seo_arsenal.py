@@ -28,7 +28,7 @@ SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 
 # All BullPower properties — 14 Railway services + GitHub Pages
 ALL_PROPERTIES = {
-    "supermegabot":          "https://dudirudibot-mega-production.up.railway.app",
+    "supermegabot":          "https://supermegabot-production.up.railway.app",
     "meta_social":           "https://meta-social-engine-production.up.railway.app",
     "seo_turbo":             "https://seo-turbo-tools-production.up.railway.app",
     "freelance_gig":         "https://freelance-gig-engine-production.up.railway.app",
@@ -122,7 +122,7 @@ async def submit_indexnow(urls: list[str], host: str = "") -> dict:
         return {"submitted": 0}
 
     # Default host = main Railway app which serves the key file
-    _host = host or "dudirudibot-mega-production.up.railway.app"
+    _host = host or "supermegabot-production.up.railway.app"
     # Filter to only URLs that belong to this host
     filtered = [u for u in urls if _host in u]
     if not filtered:
@@ -188,7 +188,7 @@ async def submit_all_properties_to_indexnow() -> dict:
             payload = {
                 "host": host,
                 "key": INDEXNOW_KEY,
-                "keyLocation": f"https://dudirudibot-mega-production.up.railway.app/{INDEXNOW_KEY}.txt",
+                "keyLocation": f"https://supermegabot-production.up.railway.app/{INDEXNOW_KEY}.txt",
                 "urlList": urls[:100],
             }
             for ep in INDEXNOW_ENDPOINTS:
@@ -212,7 +212,7 @@ async def submit_all_properties_to_indexnow() -> dict:
 async def ping_search_engines_sitemap(sitemap_url: str = "") -> dict:
     """Ping Google + Bing with sitemap URL."""
     if not sitemap_url:
-        sitemap_url = f"https://dudirudibot-mega-production.up.railway.app/sitemap.xml"
+        sitemap_url = f"https://supermegabot-production.up.railway.app/sitemap.xml"
 
     endpoints = [
         f"https://www.google.com/ping?sitemap={sitemap_url}",
@@ -258,7 +258,7 @@ Format: Markdown-kompatibler Text
 - Beginne mit einer starken Hook-Aussage
 - 3 konkrete Tipps/Punkte
 - Natürliche Keywords: KI, Automatisierung, Online Business, BullPower Hub
-- Ende mit CTA: "Mehr erfahren: https://dudirudibot-mega-production.up.railway.app/"
+- Ende mit CTA: "Mehr erfahren: https://supermegabot-production.up.railway.app/"
 - Kein Clickbait, echte Informationen
 - Tone: professionell aber zugänglich
 
@@ -292,7 +292,7 @@ async def post_to_medium_rss(title: str, content: str) -> dict:
                     "content": content,
                     "publishStatus": "public",
                     "tags": ["KI", "Online Business", "Automatisierung", "E-Commerce"],
-                    "canonicalUrl": "https://dudirudibot-mega-production.up.railway.app/",
+                    "canonicalUrl": "https://supermegabot-production.up.railway.app/",
                 },
                 timeout=aiohttp.ClientTimeout(total=20),
             )
@@ -356,7 +356,7 @@ async def instant_index_new_content(url: str, description: str = "") -> dict:
     result = await submit_indexnow([url])
 
     # Also ping Google/Bing
-    sitemap = f"https://dudirudibot-mega-production.up.railway.app/sitemap.xml"
+    sitemap = f"https://supermegabot-production.up.railway.app/sitemap.xml"
     async with aiohttp.ClientSession() as s:
         for ping_url in [
             f"https://www.google.com/ping?sitemap={sitemap}",

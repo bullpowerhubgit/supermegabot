@@ -14,7 +14,7 @@ import aiohttp
 log = logging.getLogger("GMCFeedUploader")
 
 MERCHANT_ID = os.getenv("GMC_MERCHANT_ID", "5813214419")
-FEED_URL    = "https://dudirudibot-mega-production.up.railway.app/api/gmc/feed.xml"
+FEED_URL    = "https://supermegabot-production.up.railway.app/api/gmc/feed.xml"
 CONTENT_API = "https://shoppingcontent.googleapis.com/content/v2.1"
 
 

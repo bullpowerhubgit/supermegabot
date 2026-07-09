@@ -7,7 +7,7 @@ LINKEDIN_CLIENT_ID = os.getenv("LINKEDIN_CLIENT_ID", "")
 LINKEDIN_CLIENT_SECRET = os.getenv("LINKEDIN_CLIENT_SECRET", "")
 LINKEDIN_REDIRECT_URI = os.getenv(
     "LINKEDIN_REDIRECT_URI",
-    "https://dudirudibot-mega-production.up.railway.app/api/linkedin/callback",
+    "https://supermegabot-production.up.railway.app/api/linkedin/callback",
 )
 LINKEDIN_PERSON_URN = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
 LINKEDIN_SCOPES = "r_liteprofile r_emailaddress w_member_social"

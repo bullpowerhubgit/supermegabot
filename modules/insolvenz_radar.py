@@ -47,7 +47,7 @@ def _anthropic()   -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _openai()      -> str: return os.getenv("OPENAI_API_KEY", "")
 def _stripe_key()  -> str: return os.getenv("STRIPE_SECRET_KEY", "")
 def _dashboard_url() -> str:
-    return os.getenv("DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
+    return os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
 
 def _price_starter() -> str:
     return os.getenv("INSOLVENZ_PRICE_STARTER") or os.getenv("PRICE_TELEGRAM_STARTER", "price_1TjodoRJECiV6vSmL726jLd3")

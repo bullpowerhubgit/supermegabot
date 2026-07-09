@@ -1195,7 +1195,7 @@ async def create_checkout_session(email: str, tier: str = "alert") -> Dict:
     if not price_id:
         return {"error": f"VIRAL_PRICE_{tier.upper()} nicht gesetzt — zuerst /api/viral/setup aufrufen"}
 
-    dashboard_url = os.getenv("DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
+    dashboard_url = os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
     session = await _stripe("POST", "checkout/sessions", {
         "payment_method_types[]":       "card",
         "mode":                          "subscription",

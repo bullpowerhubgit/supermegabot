@@ -6,7 +6,7 @@
 cat CURRENT_STATUS.md
 
 # Schritt 2: System-Health prüfen
-curl -s https://dudirudibot-mega-production.up.railway.app/health
+curl -s https://supermegabot-production.up.railway.app/health
 
 # Schritt 3: Offene Punkte aus CURRENT_STATUS.md abarbeiten — OHNE FRAGEN!
 ```

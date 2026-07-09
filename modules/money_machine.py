@@ -49,7 +49,7 @@ def _tg_token()     -> str: return os.getenv("TELEGRAM_BOT_TOKEN", "")
 def _tg_chat()      -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _dashboard_url()-> str: return os.getenv(
     "DASHBOARD_URL",
-    "https://dudirudibot-mega-production.up.railway.app"
+    "https://supermegabot-production.up.railway.app"
 )
 
 

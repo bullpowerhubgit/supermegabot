@@ -53,7 +53,7 @@ def _gmail_user2()    -> str: return os.getenv("GMAIL_USER_BULLPOWER", "bullpowe
 def _gmail_pass2()    -> str: return os.getenv("GMAIL_APP_PASSWORD_BULLPOWER", "")
 def _tg_token()       -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
 def _tg_chat()        -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
-def _dashboard_url()  -> str: return os.getenv("DASHBOARD_URL", "https://dudirudibot-mega-production.up.railway.app")
+def _dashboard_url()  -> str: return os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
 
 # ── Feste Ziel-Liste: Factoring & Inkasso DE ──────────────────────────────────
 FACTORING_TARGETS = [

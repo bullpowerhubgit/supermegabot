@@ -48,7 +48,7 @@ FIX_LOG       = DATA_DIR / "fix_history.json"
 SCAN_LOG      = DATA_DIR / "last_scan.json"
 
 BASE_URL      = os.getenv("SUPERMEGABOT_URL",
-                           "https://dudirudibot-mega-production.up.railway.app")
+                           "https://supermegabot-production.up.railway.app")
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TG_TOKEN      = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT       = os.getenv("TELEGRAM_CHAT_ID", "")

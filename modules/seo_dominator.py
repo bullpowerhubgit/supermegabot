@@ -22,7 +22,7 @@ SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT         = _TG_CHANNEL or ""
-SITE_URL        = os.getenv("SITE_URL", "https://dudirudibot-mega-production.up.railway.app")
+SITE_URL        = os.getenv("SITE_URL", "https://supermegabot-production.up.railway.app")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "seo_dominator"))
 
