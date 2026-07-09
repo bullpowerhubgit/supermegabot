@@ -15,7 +15,7 @@ const SHOPIFY_VER = process.env.SHOPIFY_API_VERSION || '2024-04';
 const MONTHLY_GOAL = 1000;
 
 const RAILWAY_SERVICES = [
-  { name: 'SuperMegaBot', url: 'https://dudirudibot-mega-production.up.railway.app', desc: '110 Befehle · Core' },
+  { name: 'SuperMegaBot', url: 'https://supermegabot-production.up.railway.app', desc: '110 Befehle · Core' },
   { name: 'Shopify Acq. Engine', url: 'https://shopify-acquisition-engine-production.up.railway.app', desc: 'v2.0.0' },
   { name: 'iComeAuto SaaS', url: 'https://icomeauto-saas-production.up.railway.app', desc: 'Stripe + Telegram' },
   { name: 'SEO Turbo Tools', url: 'https://seo-turbo-tools-production.up.railway.app', desc: '€29/€79/mo' },

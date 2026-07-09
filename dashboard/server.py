@@ -1300,13 +1300,14 @@ async def handle_env_check(req):
 async def handle_supabase_status(req):
     """Supabase connection status."""
     supabase_url = os.getenv("SUPABASE_URL", "")
-    configured = bool(supabase_url and os.getenv("SUPABASE_ANON_KEY"))
+    service_key = os.getenv("SUPABASE_SERVICE_KEY", "")
+    configured = bool(supabase_url and service_key)
     reachable = False
     if configured:
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=4)) as s:
                 async with s.get(f"{supabase_url}/rest/v1/",
-                                 headers={"apikey": os.getenv("SUPABASE_ANON_KEY", "")}) as r:
+                                 headers={"apikey": service_key, "Authorization": f"Bearer {service_key}"}) as r:
                     reachable = r.status in (200, 400)
         except Exception:
             pass
