@@ -296,6 +296,7 @@ OUT_OF_OFFICE = Abwesenheitsnotiz oder Bounce.
 
 KRITISCH: Wenn die Email automatisch aussieht (Newsletter, Sequenz, kein direkter Bezug auf ein Angebot von uns), IMMER NOT_INTERESTED zurückgeben. Im Zweifel NOT_INTERESTED."""
 
+    err_msg = "API nicht verfügbar"
     try:
         resp = client.messages.create(
             model="claude-haiku-4-5-20251001",
@@ -303,14 +304,14 @@ KRITISCH: Wenn die Email automatisch aussieht (Newsletter, Sequenz, kein direkte
             messages=[{"role": "user", "content": prompt}],
         )
         text = resp.content[0].text.strip()
-        # JSON extrahieren
         match = re.search(r'\{.*\}', text, re.DOTALL)
         if match:
             return json.loads(match.group())
     except Exception as e:
+        err_msg = str(e)
         log.error(f"Claude Klassifikation Fehler: {e}")
 
-    return {"classification": "UNKNOWN", "product_key": "AI_ACT_REPORT", "confidence": 0, "reason": str(e)}
+    return {"classification": "UNKNOWN", "product_key": "AI_ACT_REPORT", "confidence": 0, "reason": err_msg}
 
 # ── Auto-Reply Email ──────────────────────────────────────────────────────────
 def send_auto_reply(to_email: str, original_subject: str, product_key: str, stripe_link: str) -> bool:
