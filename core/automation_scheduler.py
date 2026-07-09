@@ -3095,6 +3095,21 @@ async def task_viral_promo_poster() -> str:
         return f"Promo error: {e}"
 
 
+async def task_buyer_traffic_engine() -> str:
+    """Buyer Traffic Engine — 5 kostenlose Käufer-Traffic-Kanäle vollautomatisch."""
+    try:
+        from modules.buyer_traffic_engine import run_buyer_traffic_cycle
+        result = await run_buyer_traffic_cycle()
+        total = result.get("total_actions", 0)
+        reddit_a = result.get("reddit_answers", {}).get("commented", 0)
+        blog = "✅" if result.get("seo_blog", {}).get("ok") and not result.get("seo_blog", {}).get("skipped") else "⏭"
+        deals = result.get("reddit_deals", {}).get("posted", 0)
+        tg = result.get("telegram_deals", {}).get("posted", 0)
+        return f"BuyerTraffic: {total} Aktionen | Reddit Answers:{reddit_a} Blog:{blog} Deals:{deals} TG:{tg}"
+    except Exception as e:
+        return f"BuyerTraffic error: {e}"
+
+
 async def task_product_intelligence_hub() -> str:
     """Product Intelligence Hub — viral_scanner + pipeline + intent_bridge (alle 3 Tools)."""
     try:
@@ -6422,6 +6437,8 @@ TASKS = [
     ("tiktok_status",          task_tiktok_status_check,     21600, 3950),  # 6h  — TikTok Ads + Pixel Status
     ("telegram_svc_check",     task_telegram_services_check,  7200, 3970),  # 2h  — Telegram Service Monitoring
     ("shopify_github_sync",    task_shopify_github_sync,     86400, 3990),  # 24h — Shopify Produkte→GitHub Backup
+    # ── KÄUFER-TRAFFIC ENGINE (vollkostenlos, 5 Kanäle) ─────────────────────
+    ("buyer_traffic_engine",   task_buyer_traffic_engine,    14400, 4010),  # 4h — Reddit Answers+SEO Blog+Klaviyo+TG+Deals
 ]
 
 
