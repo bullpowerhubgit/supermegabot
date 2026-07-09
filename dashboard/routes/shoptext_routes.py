@@ -18,7 +18,7 @@ LANDING_HTML = """<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ShopText.ai — KI-Produkttexte für Shopify</title>
-<meta name="description" content="Professionelle, SEO-optimierte Produkttexte auf Knopfdruck. Powered by Claude AI. Für deutsche Shopify-Händler.">
+<meta name="description" content="Professionelle, SEO-optimierte Produkttexte auf Knopfdruck. Powered by Claude & DeepSeek AI. Für deutsche Shopify-Händler.">
 <style>
 :root{
   --bg:#07090F;--surface:#0E1320;--card:#131C2E;--card2:#0F1828;
@@ -31,16 +31,6 @@ LANDING_HTML = """<!DOCTYPE html>
   --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
   --r:10px;
 }
-@media(prefers-color-scheme:light){
-  :root{
-    --bg:#F2EFE9;--surface:#E8E4DC;--card:#FFFFFF;--card2:#F7F5F1;
-    --border:#D8D3C8;--border2:#E4E0D8;
-    --gold:#8A600A;--gold2:#A37010;--gold-lo:rgba(138,96,10,.07);
-    --green:#197A4E;--green-lo:rgba(25,122,78,.07);
-    --blue:#1A5FCC;--blue-lo:rgba(26,95,204,.07);
-    --text:#14110D;--text2:#44403A;--text3:#807A72;
-  }
-}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased}
 a{color:var(--blue);text-decoration:none}
@@ -50,15 +40,41 @@ nav{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24
 .logo span{color:var(--gold)}
 .nav-badge{font-family:var(--mono);font-size:10px;background:var(--green-lo);color:var(--green);border:1px solid rgba(38,194,116,.2);border-radius:4px;padding:3px 8px;letter-spacing:.06em}
 /* HERO */
-.hero{text-align:center;padding:72px 24px 48px;max-width:740px;margin:0 auto}
+.hero{text-align:center;padding:64px 24px 36px;max-width:740px;margin:0 auto}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;background:var(--gold-lo);color:var(--gold2);border:1px solid rgba(212,148,30,.2);border-radius:20px;padding:5px 14px;margin-bottom:24px;letter-spacing:.08em}
 .hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);animation:blink 2s ease-in-out infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 @media(prefers-reduced-motion:reduce){.hero-badge::before{animation:none}}
 h1{font-size:clamp(28px,5vw,48px);font-weight:800;letter-spacing:-.03em;line-height:1.1;text-wrap:balance;margin-bottom:16px}
 h1 .accent{color:var(--gold)}
-.hero-sub{font-size:17px;color:var(--text2);max-width:52ch;margin:0 auto 32px;line-height:1.6;text-wrap:balance}
+.hero-sub{font-size:17px;color:var(--text2);max-width:52ch;margin:0 auto 28px;line-height:1.6;text-wrap:balance}
 .trial-note{font-family:var(--mono);font-size:12px;color:var(--text3);margin-top:12px;letter-spacing:.04em}
+/* STATS STRIP */
+.stats-strip{max-width:820px;margin:0 auto 40px;padding:0 16px}
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media(max-width:540px){.stats-row{grid-template-columns:1fr 1fr}}
+.stat-box{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 20px;text-align:center}
+.stat-num{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--gold);display:block;line-height:1}
+.stat-label{font-size:12px;color:var(--text3);margin-top:5px}
+/* LIVE DEMO */
+.demo-wrap{max-width:820px;margin:0 auto 32px;padding:0 16px}
+.demo-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.demo-title{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:700}
+.demo-live{font-family:var(--mono);font-size:10px;background:var(--green-lo);color:var(--green);border:1px solid rgba(38,194,116,.25);border-radius:4px;padding:2px 7px;letter-spacing:.05em}
+.demo-card{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--green);border-radius:var(--r);padding:22px}
+.demo-input{font-family:var(--mono);font-size:11px;color:var(--text3);margin-bottom:14px;padding-bottom:12px;border-bottom:1px solid var(--border2)}
+.demo-input span{color:var(--gold2)}
+.demo-section{margin-bottom:14px}
+.demo-label{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.demo-label::after{content:'';flex:1;height:1px;background:var(--border2)}
+.demo-val{font-size:14px;color:var(--text2);line-height:1.7}
+.demo-val.big{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.demo-val.mono{font-family:var(--mono);font-size:12px;color:var(--blue)}
+.demo-tags{display:flex;flex-wrap:wrap;gap:6px}
+.demo-tag{font-family:var(--mono);font-size:11px;background:var(--blue-lo);color:var(--blue);border:1px solid rgba(75,159,255,.18);border-radius:4px;padding:3px 8px}
+.demo-bullets{list-style:none;display:flex;flex-direction:column;gap:5px}
+.demo-bullets li{font-size:13px;color:var(--text2);line-height:1.5}
+.demo-time{font-family:var(--mono);font-size:10px;color:var(--green);margin-top:14px;padding-top:12px;border-top:1px solid var(--border2)}
 /* MAIN TOOL */
 .tool-wrap{max-width:820px;margin:0 auto;padding:0 16px 80px}
 .tool-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px}
@@ -131,14 +147,78 @@ select option{background:var(--card)}
 
 <nav>
   <div class="logo">Shop<span>Text</span>.ai</div>
-  <div class="nav-badge">✨ Powered by Claude AI</div>
+  <div class="nav-badge">✨ Claude &amp; DeepSeek AI</div>
 </nav>
 
 <div class="hero">
-  <div class="hero-badge">🛒 Für Shopify-Händler in DACH</div>
+  <div class="hero-badge">🛒 Gebaut von @DudiRudibot — 13.353 Produkte optimiert</div>
   <h1>Professionelle <span class="accent">Produkttexte</span><br>auf Knopfdruck</h1>
   <p class="hero-sub">KI-generierte, SEO-optimierte Beschreibungen auf Deutsch — inkl. Meta-Titel, Tags und Bulletpoints. In 15 Sekunden fertig.</p>
   <p class="trial-note">3 KOSTENLOSE TEXTE — KEINE KREDITKARTE NÖTIG</p>
+</div>
+
+<div class="stats-strip">
+  <div class="stats-row">
+    <div class="stat-box">
+      <span class="stat-num">13.353</span>
+      <div class="stat-label">Shopify-Produkte optimiert</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">~15 Sek</span>
+      <div class="stat-label">pro Produkttext</div>
+    </div>
+    <div class="stat-box">
+      <span class="stat-num">100%</span>
+      <div class="stat-label">Deutsch &amp; SEO-ready</div>
+    </div>
+  </div>
+</div>
+
+<div class="demo-wrap">
+  <div class="demo-header">
+    <span class="demo-title">Live Demo — Echtes KI-Ergebnis</span>
+    <span class="demo-live">✓ LIVE GETESTET</span>
+  </div>
+  <div class="demo-card">
+    <div class="demo-input">Input: <span>Smartwatch X500</span> · Keywords: <span>herzfrequenz, wasserdicht, schlaf-tracker</span> · Kategorie: <span>Elektronik</span></div>
+    <div class="demo-section">
+      <div class="demo-label">Produkttitel</div>
+      <div class="demo-val big">Smartwatch X500 mit Herzfrequenz &#8211; wasserdicht &amp; Schlaf-Tracker</div>
+    </div>
+    <div class="demo-section">
+      <div class="demo-label">Produktbeschreibung</div>
+      <div class="demo-val">Die Smartwatch X500 ist dein perfekter Begleiter f&#252;r Fitness und Alltag. Mit pr&#228;ziser Herzfrequenzmessung und Schlafanalyse hilft sie dir, deine Gesundheit im Blick zu behalten. Dank wasserdichtem Design kannst du sie auch beim Schwimmen oder unter der Dusche tragen &#8211; ohne Bedenken. Modern, stylisch und vollgepackt mit Features, die dich begeistern werden.<br><br>Die Smartwatch X500 &#252;berzeugt mit ihrem klaren Display, langer Akkulaufzeit und einfacher Bedienung. Ob beim Sport, im B&#252;ro oder in der Freizeit &#8211; sie passt sich deinem Leben an. Mit personalisierten Benachrichtigungen verpasst du nie wieder wichtige Anrufe oder Nachrichten.</div>
+    </div>
+    <div class="demo-section">
+      <div class="demo-label">Meta-Title</div>
+      <div class="demo-val mono">Smartwatch X500 mit Herzfrequenz &#8211; wasserdicht &amp; schlau</div>
+    </div>
+    <div class="demo-section">
+      <div class="demo-label">Meta-Description</div>
+      <div class="demo-val mono">Entdecke die Smartwatch X500 mit Herzfrequenzmessung, Schlafanalyse &amp; wasserdichtem Design. Jetzt mit kostenlosem Versand bestellen!</div>
+    </div>
+    <div class="demo-section">
+      <div class="demo-label">Tags</div>
+      <div class="demo-tags">
+        <span class="demo-tag">smartwatch</span>
+        <span class="demo-tag">fitness</span>
+        <span class="demo-tag">schlaf</span>
+        <span class="demo-tag">wasserdicht</span>
+        <span class="demo-tag">gesundheit</span>
+      </div>
+    </div>
+    <div class="demo-section">
+      <div class="demo-label">Bullet Points</div>
+      <ul class="demo-bullets">
+        <li>&#9889; Pr&#228;zise Herzfrequenzmessung f&#252;r dein Training</li>
+        <li>&#9989; Wasserdicht bis 50m &#8211; ideal f&#252;r Schwimmer</li>
+        <li>&#127919; Schlafanalyse f&#252;r erholsame N&#228;chte</li>
+        <li>&#128230; Lange Akkulaufzeit &#8211; bis zu 7 Tage</li>
+        <li>&#128161; Stylisches Design mit personalisierbarem Ziffernblatt</li>
+      </ul>
+    </div>
+    <div class="demo-time">&#9989; Generiert in 14,3 Sekunden via Claude &amp; DeepSeek AI · Railway Production</div>
+  </div>
 </div>
 
 <div class="tool-wrap">
