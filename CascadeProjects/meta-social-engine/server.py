@@ -128,7 +128,7 @@ PRODUCTS = [
     {"name": "Shopify Acquisition Engine", "url": "https://shopify-acquisition-engine-production.up.railway.app", "price": "€49/mo", "tagline": "KI findet automatisch Bestseller-Produkte für deinen Shopify-Store"},
     {"name": "SEO Turbo Tools", "url": "https://seo-turbo-tools-production.up.railway.app", "price": "€29/mo", "tagline": "Automatische SEO-Analyse & Meta-Description Generator"},
     {"name": "iComeAuto SaaS", "url": "https://icomeauto-saas-production.up.railway.app", "price": "€29/mo", "tagline": "Vollautomatisches Einkommenssystem"},
-    {"name": "SuperMegaBot", "url": "https://dudirudibot-mega-production.up.railway.app", "price": "€49/mo", "tagline": "110+ Bot-Commands für E-Commerce Automatisierung"},
+    {"name": "SuperMegaBot", "url": "https://supermegabot-production.up.railway.app", "price": "€49/mo", "tagline": "110+ Bot-Commands für E-Commerce Automatisierung"},
 ]
 
 DB_PATH = "/tmp/meta_engine.db"
