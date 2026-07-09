@@ -1921,6 +1921,22 @@ async def task_shopify_seo_blog() -> str:
         return f"Shopify SEO Blog Fehler: {e}"
 
 
+async def task_content_loop_engine() -> str:
+    """Content Loop Engine — Smart Home SEO-Artikel → Shopify Blog + IndexNow + Telegram + LinkedIn + Dev.to. Alle 8h."""
+    try:
+        from modules.content_loop_engine import run_content_loop
+        result = await run_content_loop()
+        if result.get("ok"):
+            channels = ", ".join(result.get("channels", []))
+            return f"Content Loop OK: '{result.get('topic')}' → {channels} | URL: {result.get('shopify_url')}"
+        errors = "; ".join(result.get("errors", ["unbekannt"]))
+        return f"Content Loop Fehler: {errors}"
+    except ImportError as e:
+        return f"content_loop_engine nicht verfügbar: {e}"
+    except Exception as e:
+        return f"Content Loop Engine Fehler: {e}"
+
+
 async def task_viral_referral_trigger() -> str:
     """Tag recent leads in Klaviyo to trigger viral referral flow daily."""
     import aiohttp
@@ -6258,6 +6274,8 @@ TASKS = [
     ("customer_export",      task_customer_export,      86400, 400),  # täglich — Shopify-Kunden → Klaviyo+MC
     ("klaviyo_mass",         task_klaviyo_mass_daily,   86400, 500),  # täglich — Klaviyo Mass Campaigns
     ("mailchimp_mass",       task_mailchimp_mass_daily, 86400, 550),  # täglich — Mailchimp Mass Campaigns
+    # ── Content Loop Engine (Smart Home SEO → alle Kanäle gratis) ───────────
+    ("content_loop_engine",  task_content_loop_engine, 28800, 600),  # 8h  — SEO-Artikel + IndexNow + Telegram + LinkedIn
     # ── Shopify SEO Blog (ineedit.com.co T-Shirt/POD) ────────────────────────
     ("shopify_seo_blog",     task_shopify_seo_blog,    43200, 900),  # 12h — T-Shirt Blog Artikel
     # ── Backup ───────────────────────────────────────────────────────────────
