@@ -245,3 +245,14 @@ async def get_email_stats() -> dict:
 async def run_email_cycle() -> dict:
     """Scheduler-Einstiegspunkt."""
     return await run_daily_blast()
+
+
+async def check_inbox_replies() -> dict:
+    """IMAP-Postfach pollen — Stub (kein IMAP konfiguriert)."""
+    return {"ok": True, "checked": 0, "replies": 0, "note": "IMAP not configured"}
+
+
+async def get_daily_summary() -> dict:
+    """Tägliche Email-Zusammenfassung."""
+    stats = await get_email_stats()
+    return {"ok": True, "summary": stats}
