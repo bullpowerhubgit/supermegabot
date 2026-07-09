@@ -372,7 +372,7 @@ def _get_leads_for_report(package: str) -> List[Dict]:
                 log.warning("Lead-DB AI-Act Fehler: %s", e)
 
     if not leads:
-        leads = _demo_leads(limit)
+        log.warning("KI-Leasing: Keine echten Leads — Quellen prüfen")
 
     return leads[:limit]
 
