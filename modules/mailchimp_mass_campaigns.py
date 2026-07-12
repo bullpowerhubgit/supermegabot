@@ -288,8 +288,8 @@ async def _notify(msg: str):
     try:
         from modules.notify_hub import notify
         await notify(msg, level="info")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def _get_list_id() -> str:
@@ -373,8 +373,8 @@ Nur: 1 Headline h2, 2-3 Sätze Fließtext, kein CTA. Max 100 Wörter."""
             "theme": theme, "sent": sent,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     return {"ok": True, "campaign_id": cid, "title": title, "sent": sent}
 
@@ -402,8 +402,8 @@ async def mass_create_mailchimp_campaigns(count: int = 200, workers: int = 3) ->
         from modules.supabase_client import get_client
         rows = get_client().table("mailchimp_mass_campaigns").select("title").execute()
         existing = {r["title"] for r in rows.data or []}
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     templates = [t for t in MC_TEMPLATES if t["title"] not in existing]
     random.shuffle(templates)
@@ -446,8 +446,8 @@ async def mass_create_mailchimp_campaigns(count: int = 200, workers: int = 3) ->
             await fire("Mailchimp Mass Kampagnen gestartet",
                        f"✅ {ok} Mailchimp Kampagnen erstellt & gesendet!",
                        channels=["telegram", "slack"])
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
 
     await _notify(f"✅ Mailchimp Mass Complete: {ok} Kampagnen, {err} failed!")
     return {"ok": True, "created": ok, "failed": err}

@@ -50,8 +50,8 @@ async def ping():
                     ) as resp2:
                         root = await resp2.json(content_type=None)
                 account_name = root.get("account_name", account_name)
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("skipped: %s", _e)
             return True, account_name
         return False, data.get("detail", "Auth failed")
     except Exception as exc:

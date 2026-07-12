@@ -125,8 +125,8 @@ def _load_cookies() -> dict:
             cookies = json.loads(COOKIES_FILE.read_text())
             if cookies.get("token_v2"):
                 return cookies
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
     # Fallback: env var REDDIT_TOKEN_V2 (used on Railway where data/ is not deployed)
     env_token = os.getenv("REDDIT_TOKEN_V2", "")
     if env_token:
@@ -261,8 +261,8 @@ async def submit_post(
                             d = await rf.json(content_type=None)
                     json_d = d.get("json", d)
                     errors = json_d.get("errors", [])
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
         # token expired — refresh and retry once
         if errors and any("UNAUTHENTICATED" in str(e) or "auth" in str(e).lower() for e in errors):
             if refresh_cookies():
@@ -280,8 +280,8 @@ async def submit_post(
                                 d = await r2.json(content_type=None)
                         json_d = d.get("json", d)
                         errors = json_d.get("errors", [])
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        log.debug("skipped: %s", _e)
         if errors:
             return {"ok": False, "error": str(errors)}
 

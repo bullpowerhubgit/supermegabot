@@ -499,8 +499,8 @@ class ImmortalController:
                     f"\n🧠 Brain: {stats.get('total_repairs',0)} Reparaturen total\n"
                     f"🎓 Permanent gelöst: {len(stats.get('permanently_resolved',[]))} Muster"
                 )
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("skipped: %s", _e)
 
         icon = "✅" if running else "❌"
         return (

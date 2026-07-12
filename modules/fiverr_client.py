@@ -31,8 +31,8 @@ def _set_railway(key: str, value: str) -> None:
             ["railway", "variables", "set", f"{key}={value}", "--service", "dudirudibot-mega"],
             capture_output=True, timeout=30,
         )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("suppressed: %s", _e)
 
 
 async def _get(path: str, params: dict = None) -> dict:

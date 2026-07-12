@@ -39,7 +39,7 @@ SHOPIFY_VER      = lambda: os.getenv("SHOPIFY_API_VERSION", "2024-10")
 GITHUB_TOKEN     = lambda: os.getenv("GITHUB_TOKEN", "")
 GITHUB_PAGES_REPO = "bullpowerhubgit/bullpowerhubgit.github.io"
 DEVTO_KEY        = lambda: os.getenv("DEVTO_API_KEY", "")
-DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
 INDEXNOW_KEY     = "bullpowerhubgit"
 INDEXNOW_DOMAINS = [
     # Railway backend
@@ -371,8 +371,8 @@ async def indexnow_blast() -> dict:
                     async with s.post(ep, json=payload) as r:
                         await r.read()
             submitted += len(url_list)
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
     return {"submitted": submitted, "domains": len(domain_grp)}
 
 

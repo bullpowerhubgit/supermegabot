@@ -154,8 +154,8 @@ JSON Format:
             m = re.search(r'\{.*\}', text, re.DOTALL)
             if m:
                 return json.loads(m.group())
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug("skipped: %s", _e)
         return {}
 
     async def fix_product(self, product: dict, session_stats: dict) -> dict:
@@ -259,8 +259,8 @@ Erstelle:
             m = re.search(r'\{.*\}', text, re.DOTALL)
             if m:
                 return json.loads(m.group())
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug("skipped: %s", _e)
         return {}
 
     async def create_shopify_product(self, product_data: dict) -> dict:
@@ -338,14 +338,14 @@ Erstelle:
                                 await brutus_fire(
                                     title=f"🛒 Verbessert: {result['title'][:40]}",
                                     body=f"Dieses Produkt wurde frisch aktualisiert — bessere Beschreibung, optimierter Preis, neue Bilder.",
-                                    link=fos.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx"),
+                                    link=os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277"),
                                     niche="shopify trending produkt",
                                     tags=["shopify", "neu", "deal"],
                                     channels=["telegram", "klaviyo"]  # Nur leise Kanäle für Updates
                                 )
                                 stats["brutus_fires"] += 1
-                            except Exception:
-                                pass
+                            except Exception as _e:
+                                logger.debug("skipped: %s", _e)
                         await asyncio.sleep(1)
                     except Exception as e:
                         logger.error(f"Fix product {product.get('id')}: {e}")
@@ -378,8 +378,8 @@ Erstelle:
                                 tags=["neu", "trending", niche.replace(" ", "-")]
                             )
                             stats["brutus_fires"] += 1
-                        except Exception:
-                            pass
+                        except Exception as _e:
+                            logger.debug("skipped: %s", _e)
 
                     await asyncio.sleep(3)
                 except Exception as e:
@@ -398,8 +398,8 @@ Erstelle:
                     f"⏰ {datetime.utcnow().strftime('%H:%M UTC')}"
                 )
                 await _telegram(msg, session)
-            except Exception:
-                pass
+            except Exception as _e:
+                logger.debug("skipped: %s", _e)
 
             logger.info(f"ShopifyAutoFill done: {stats}")
             return stats
@@ -469,7 +469,7 @@ Antworte NUR als JSON-Array (kein anderer Text):
                 "https://autopilot-store-suite-fmbka.myshopify.com/",
                 keywords=[p["title"] for p in created] + ["online shop 2026", "trending produkte"],
             )
-        except Exception:
-            pass
+        except Exception as _e:
+            logger.debug("skipped: %s", _e)
 
     return {"ok": len(created) > 0, "created": len(created), "products": created}

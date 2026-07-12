@@ -79,8 +79,8 @@ async def _tg(msg: str):
                 json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def ping_google_bing(sitemap_url: str = "") -> dict:
@@ -235,8 +235,8 @@ async def ping_all_rss_services(blog_url: str, blog_title: str = "BullPower Hub 
                 pinged += 1
                 try:
                     r.close()
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
     log.info("RSS ping done: %d ok, %d errors", pinged, errors)
     return {"ok": True, "pinged": pinged, "errors": errors}
 
@@ -248,8 +248,8 @@ async def auto_inject_schema_to_shopify(limit: int = 30) -> dict:
     state = {}
     try:
         state = json.loads(state_file.read_text())
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     products = await get_shopify_products_for_seo(limit=50)
     if not products:

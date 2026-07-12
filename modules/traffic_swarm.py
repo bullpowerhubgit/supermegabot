@@ -56,14 +56,14 @@ async def _tg(msg: str) -> None:
     if not TG_TOKEN or not TG_CHAT:
         return
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             await s.post(
                 f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
                 json={"chat_id": TG_CHAT, "text": msg[:4096]},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("swarm suppressed: %s", _e)
 
 
 # ── Claude Haiku helper ────────────────────────────────────────────────────────
@@ -112,7 +112,7 @@ async def _log_utm_to_supabase(url: str, source: str, medium: str, campaign: str
     if not SUPABASE_URL or not SUPABASE_KEY:
         return
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             await s.post(
                 f"{SUPABASE_URL}/rest/v1/utm_clicks",
                 headers={
@@ -130,8 +130,8 @@ async def _log_utm_to_supabase(url: str, source: str, medium: str, campaign: str
                 },
                 timeout=aiohttp.ClientTimeout(total=5),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("swarm suppressed: %s", _e)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -199,7 +199,7 @@ async def monitor_traffic_velocity() -> dict:
 
     async def count_events(since: str, until: str) -> int:
         try:
-            async with aiohttp.ClientSession() as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.get(
                     f"{SUPABASE_URL}/rest/v1/lead_events",
                     headers={**headers, "Prefer": "count=exact", "Range": "0-0"},
@@ -256,7 +256,7 @@ async def post_to_hackernews(title: str, url: str) -> dict:
 
     # Try HN API to check if story exists
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(
                 f"https://hn.algolia.com/api/v1/search?query={urllib.parse.quote(title[:50])}&tags=story&hitsPerPage=3",
                 timeout=aiohttp.ClientTimeout(total=10),
@@ -266,8 +266,8 @@ async def post_to_hackernews(title: str, url: str) -> dict:
                 if hits:
                     return {"ok": True, "exists": True, "hn_id": hits[0].get("objectID"),
                             "points": hits[0].get("points", 0)}
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("swarm suppressed: %s", _e)
 
     log.info("HN submit URL prepared: %s", hn_submit[:100])
     return {"ok": True, "submit_url": hn_submit, "title": title}
@@ -329,7 +329,7 @@ async def _send_outreach_via_sendgrid(emails: list[dict]) -> dict:
     sent = {}
     if not SENDGRID_KEY:
         return sent
-    async with aiohttp.ClientSession() as s:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
         for email in emails:
             domain = email.get("to_domain", "")
             contact = f"hello@{domain}"
@@ -411,7 +411,7 @@ async def _fetch_shopify_blog_posts(limit: int = 20) -> list[dict]:
     if not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
         return []
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(
                 f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VERSION}/articles.json",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
@@ -444,7 +444,7 @@ async def detect_keyword_cannibalization() -> dict:
         return {"ok": False, "reason": "Shopify not configured"}
 
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(
                 f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VERSION}/products.json",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
@@ -514,7 +514,7 @@ async def refresh_stale_content(days_old: int = 90) -> dict:
     cutoff = (datetime.now(timezone.utc) - timedelta(days=days_old)).isoformat()
 
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(
                 f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VERSION}/articles.json",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
@@ -543,7 +543,7 @@ async def refresh_stale_content(days_old: int = 90) -> dict:
                     f'<p><strong>Update {datetime.now().year}:</strong> {update_text}</p>')
 
         try:
-            async with aiohttp.ClientSession() as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 await s.put(
                     f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VERSION}/articles/{article['id']}.json",
                     headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN,
@@ -660,7 +660,7 @@ async def run_full_traffic_swarm(topic: str | None = None) -> dict:
 async def _get_trending_topic() -> str:
     """Fetch one trending topic from Google Trends DE RSS."""
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(
                 "https://trends.google.com/trends/trendingsearches/daily/rss?geo=DE",
                 timeout=aiohttp.ClientTimeout(total=10),
@@ -670,8 +670,8 @@ async def _get_trending_topic() -> str:
         items = root.findall(".//item/title")
         if items:
             return items[0].text or ""
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("swarm suppressed: %s", _e)
     return ""
 
 

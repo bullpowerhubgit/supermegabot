@@ -263,8 +263,8 @@ async def _notify(msg: str):
     try:
         from modules.notify_hub import notify
         await notify(msg, level="info")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 def _build_html(template: dict, custom_body: str = "") -> str:
@@ -367,8 +367,8 @@ Max 150 Wörter."""
             "theme": theme, "sent": sent,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     return {"ok": True, "campaign_id": cid, "name": name, "sent": sent}
 
@@ -398,8 +398,8 @@ async def mass_create_klaviyo_campaigns(count: int = 200, workers: int = 3) -> d
         from modules.supabase_client import get_client
         rows = get_client().table("klaviyo_mass_campaigns").select("name").execute()
         existing = {r["name"] for r in rows.data or []}
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     templates = [t for t in CAMPAIGN_TEMPLATES if t["name"] not in existing]
     random.shuffle(templates)
@@ -444,8 +444,8 @@ async def mass_create_klaviyo_campaigns(count: int = 200, workers: int = 3) -> d
             await fire("Klaviyo Mass Kampagnen gestartet",
                        f"✅ {ok} E-Mail Kampagnen erstellt und gesendet!",
                        channels=["telegram", "slack"])
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
 
     await _notify(f"✅ Klaviyo Mass Complete: {ok} Kampagnen erstellt, {err} failed!")
     return {"ok": True, "created": ok, "failed": err}

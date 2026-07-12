@@ -76,7 +76,7 @@ async def search_trending_ali(keywords: list = None, count: int = 10) -> list:
     params["sign"] = _ali_sign(params, APP_SECRET)
 
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(ALI_API_URL, data=params,
                               timeout=aiohttp.ClientTimeout(total=20)) as r:
                 data = await r.json()
@@ -152,7 +152,7 @@ Nur HTML, kein JSON."""
                 "alt": product["title"][:200],
             }]
 
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(
                 f"https://{SHOP}/admin/api/{SHOPIFY_VER}/products.json",
                 headers=SHOPIFY_HEADERS,

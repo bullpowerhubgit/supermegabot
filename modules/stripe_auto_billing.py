@@ -71,8 +71,8 @@ async def _telegram(msg: str) -> None:
                 json={"chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=8),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def _send_email(to: str, subject: str, html: str) -> None:
@@ -152,8 +152,8 @@ async def check_subscriptions() -> dict:
                             event_name="Stripe Subscription Started",
                             properties={"sub_id": sub.get("id", "")},
                         )
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        log.debug("skipped: %s", _e)
                 await _telegram(
                     f"🎉 <b>NEUE SUBSCRIPTION!</b>\n"
                     f"Kunde: {email}\n"

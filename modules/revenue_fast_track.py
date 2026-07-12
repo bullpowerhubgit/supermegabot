@@ -22,7 +22,7 @@ SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.mysh
 SHOP_URL = f"https://{SHOP_DOMAIN}"
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
 DS24_USER = os.getenv("DS24_USER_ID", "user37405262")
 GUMROAD_TOKEN = os.getenv("GUMROAD_ACCESS_TOKEN", "")
 AMAZON_TAG = os.getenv("AMAZON_AFFILIATE_TAG", "bullpowerhub-21")
@@ -79,8 +79,8 @@ async def _tg(msg: str) -> None:
     try:
         from modules.telegram_hub_bridge import send_telegram_message
         await send_telegram_message(msg[:3500])
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def shopify_flash_sale(discount_pct: int = 15) -> dict[str, Any]:
@@ -174,8 +174,8 @@ async def gumroad_blast() -> dict[str, Any]:
             try:
                 from modules.brutus_core import fire
                 await fire(f"Gumroad: {name}", f"{name} {price} — {url}", channels=["telegram", "linkedin"])
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("skipped: %s", _e)
 
             blasted.append({"name": name, "url": url, "price": price})
 
@@ -203,8 +203,8 @@ async def ds24_mega_blast(count: int = 20) -> dict[str, Any]:
                         text,
                         channels=["telegram", "linkedin"] if i % 8 == 0 else ["telegram"],
                     )
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
             sent += 1
         except Exception as e:
             log.warning("DS24 blast text %d failed: %s", i, e)

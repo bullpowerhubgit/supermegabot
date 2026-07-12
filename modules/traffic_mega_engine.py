@@ -223,8 +223,8 @@ async def submit_to_search_engines(url: str = "") -> dict:
             ) as r:
                 if r.status < 400:
                     submitted.append("bing_indexnow")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
     try:
         # Google Ping (Sitemap)
         sitemap = f"{SHOP_URL}/sitemap.xml"
@@ -235,8 +235,8 @@ async def submit_to_search_engines(url: str = "") -> dict:
             ) as r:
                 if r.status < 400:
                     submitted.append("google_ping")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
     return {"ok": True, "submitted_to": submitted, "url": target_url}
 
 
