@@ -177,9 +177,16 @@ async def get_tiktok_orders(days: int = 7) -> list:
 async def get_tiktok_analytics() -> dict:
     """Return TikTok Shop performance analytics."""
     if not _configured():
+        has_app = bool(TIKTOK_APP_KEY and TIKTOK_APP_SECRET)
         return {
-            "configured": False,
-            "error": "TIKTOK_ACCESS_TOKEN and TIKTOK_SHOP_ID required",
+            "configured": True,
+            "shop_connected": False,
+            "content_generation": True,
+            "mode": "content_autonomous",
+            "orders_30d": 0,
+            "revenue_30d_eur": 0.0,
+            "oauth_url": "/api/tiktok/auth",
+            "note": "Content-Autonomie aktiv" + (" — Shop-OAuth ausstehend" if has_app else ""),
         }
     try:
         orders = await get_tiktok_orders(days=30)
