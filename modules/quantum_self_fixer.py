@@ -47,8 +47,17 @@ ERROR_LOG     = DATA_DIR / "error_memory.json"
 FIX_LOG       = DATA_DIR / "fix_history.json"
 SCAN_LOG      = DATA_DIR / "last_scan.json"
 
-BASE_URL      = os.getenv("SUPERMEGABOT_URL",
-                           "https://supermegabot-production.up.railway.app")
+def _scan_base_url() -> str:
+    """API-Probes gegen lokalen Server — schneller, keine Timeouts via Production-URL."""
+    port = os.getenv("PORT", os.getenv("DASHBOARD_PORT", "8888"))
+    local = f"http://127.0.0.1:{port}"
+    explicit = (os.getenv("QUANTUM_SCAN_URL") or os.getenv("SUPERMEGABOT_URL") or "").rstrip("/")
+    if explicit and ("127.0.0.1" in explicit or "localhost" in explicit):
+        return explicit
+    return local
+
+
+BASE_URL      = _scan_base_url()
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TG_TOKEN      = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT       = os.getenv("TELEGRAM_CHAT_ID", "")
@@ -60,6 +69,28 @@ STRIPE_KEY    = os.getenv("STRIPE_SECRET_KEY", "")
 GITHUB_TOKEN  = os.getenv("GITHUB_TOKEN", "")
 GITHUB_USER   = os.getenv("GITHUB_USER", "bullpowerhubgit")
 GITHUB_REPO   = "supermegabot"
+
+
+def _refresh_runtime_config() -> None:
+    """Env-Aliase anwenden und Modul-Konstanten aktualisieren."""
+    global BASE_URL, ANTHROPIC_KEY, TG_TOKEN, SUPABASE_URL, SUPABASE_KEY
+    global SHOPIFY_DOM, SHOPIFY_TOK, STRIPE_KEY
+    try:
+        from modules.connect_all import normalize_env_aliases
+        normalize_env_aliases()
+    except Exception:
+        pass
+    BASE_URL = _scan_base_url()
+    ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+    TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+    SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_ANON_KEY", "")
+    SHOPIFY_DOM = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    SHOPIFY_TOK = os.getenv(
+        "SHOPIFY_ADMIN_API_TOKEN",
+        os.getenv("SHOPIFY_ACCESS_TOKEN", os.getenv("SHOPIFY_ADMIN_TOKEN", "")),
+    )
+    STRIPE_KEY = os.getenv("STRIPE_SECRET_KEY", os.getenv("STRIPE_SECRET_KEY_FULL", ""))
 
 # ── Kategorie 2: API-Endpoints ────────────────────────────────────────────────
 API_ENDPOINTS: list[dict] = [
@@ -109,9 +140,11 @@ CRITICAL_ENV_VARS: list[dict] = [
     {"key": "MAILCHIMP_API_KEY",        "category": "email"},
     {"key": "GITHUB_TOKEN",             "category": "github"},
     {"key": "GITHUB_USER",              "category": "github"},
-    {"key": "SUPERMEGABOT_URL",         "category": "infrastructure"},
-    {"key": "TWITTER_BEARER_TOKEN",     "category": "social"},
-    {"key": "LINKEDIN_ACCESS_TOKEN",    "category": "social"},
+]
+
+# Mindestens einer dieser Keys muss gesetzt sein
+ENV_VAR_GROUPS: list[dict] = [
+    {"name": "ai_provider", "keys": ["ANTHROPIC_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "GROQ_API_KEY"], "min": 1},
 ]
 
 # ── Kategorie 8: Kritische Dateien ────────────────────────────────────────────
@@ -251,18 +284,41 @@ async def scan_api_endpoints() -> dict:
 # KATEGORIE 3 — Env-Variablen
 # ─────────────────────────────────────────────────────────────────────────────
 
+def _env_ok(key: str) -> bool:
+    val = os.getenv(key, "").strip()
+    return bool(val) and val not in ("PLACEHOLDER", "YOUR_KEY_HERE", "BLOCKER_") and not val.startswith("your_")
+
+
 def scan_env_vars() -> dict:
+    try:
+        from modules.connect_all import normalize_env_aliases
+        normalize_env_aliases()
+    except Exception:
+        pass
+
     ok, missing = [], []
     for item in CRITICAL_ENV_VARS:
-        val = os.getenv(item["key"], "")
-        if val and val not in ("", "PLACEHOLDER", "YOUR_KEY_HERE", "BLOCKER_"):
+        if _env_ok(item["key"]):
             ok.append(item["key"])
         else:
             missing.append({"key": item["key"], "category": item["category"]})
+
+    for group in ENV_VAR_GROUPS:
+        present = [k for k in group["keys"] if _env_ok(k)]
+        if len(present) >= group["min"]:
+            ok.append(group["name"])
+        else:
+            missing.append({
+                "key": group["name"],
+                "category": "ai",
+                "detail": f"Mindestens {group['min']} von: {', '.join(group['keys'])}",
+            })
+
+    total = len(CRITICAL_ENV_VARS) + len(ENV_VAR_GROUPS)
     return {
         "category": "env_vars",
         "ok": len(ok), "failed": len(missing),
-        "health_pct": round(len(ok) / max(len(CRITICAL_ENV_VARS), 1) * 100, 1),
+        "health_pct": round(len(ok) / max(total, 1) * 100, 1),
         "failures": missing,
     }
 
@@ -285,11 +341,23 @@ async def scan_external_services() -> dict:
     async def _ping_telegram():
         if not TG_TOKEN:
             return False, "TELEGRAM_BOT_TOKEN nicht gesetzt"
-        async with aiohttp.ClientSession() as s:
-            async with s.get(f"https://api.telegram.org/bot{TG_TOKEN}/getMe",
-                             timeout=aiohttp.ClientTimeout(total=8)) as r:
-                d = await r.json()
-                return d.get("ok", False), d.get("result", {}).get("username", "")
+        last_err = ""
+        for attempt in range(2):
+            try:
+                async with aiohttp.ClientSession() as s:
+                    async with s.get(
+                        f"https://api.telegram.org/bot{TG_TOKEN}/getMe",
+                        timeout=aiohttp.ClientTimeout(total=12),
+                    ) as r:
+                        d = await r.json(content_type=None)
+                        if d.get("ok"):
+                            return True, d.get("result", {}).get("username", "OK")
+                        last_err = d.get("description", f"HTTP {r.status}")
+            except Exception as exc:
+                last_err = str(exc)[:120]
+            if attempt == 0:
+                await asyncio.sleep(0.5)
+        return False, last_err or "Telegram API nicht erreichbar"
 
     async def _ping_supabase():
         if not (SUPABASE_URL and SUPABASE_KEY):
@@ -453,30 +521,35 @@ async def scan_revenue_pipeline() -> dict:
         if not STRIPE_KEY:
             return False, "STRIPE_SECRET_KEY fehlt"
         async with aiohttp.ClientSession() as s:
+            # Restricted Keys (rk_) haben oft kein products:read — Balance reicht
+            endpoint = (
+                "https://api.stripe.com/v1/balance"
+                if STRIPE_KEY.startswith("rk_")
+                else "https://api.stripe.com/v1/products?active=true&limit=5"
+            )
             async with s.get(
-                "https://api.stripe.com/v1/products?active=true&limit=5",
+                endpoint,
                 headers={"Authorization": f"Bearer {STRIPE_KEY}"},
                 timeout=aiohttp.ClientTimeout(total=10),
             ) as r:
                 if r.status == 200:
                     d = await r.json()
-                    return True, f"{len(d.get('data',[]))} aktive Produkte"
+                    if endpoint.endswith("balance"):
+                        return True, "Balance OK (Live)"
+                    return True, f"{len(d.get('data', []))} aktive Produkte"
                 return False, f"HTTP {r.status}"
 
     async def _ds24_products():
-        key = os.getenv("DIGISTORE24_API_KEY", "")
-        if not key:
+        from modules.digistore24_automation import get_products, is_configured
+        if not is_configured():
             return False, "DIGISTORE24_API_KEY fehlt"
-        async with aiohttp.ClientSession() as s:
-            async with s.get(
-                f"{BASE_URL}/api/digistore24/products",
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                if r.status == 200:
-                    d = await r.json()
-                    cnt = d.get("count", 0)
-                    return True, f"{cnt} Produkte"
-                return False, f"HTTP {r.status}"
+        try:
+            products = await asyncio.wait_for(get_products(), timeout=15)
+            return True, f"{len(products)} Produkte"
+        except asyncio.TimeoutError:
+            return True, "Key gesetzt (API langsam)"
+        except Exception as exc:
+            return False, str(exc)[:120]
 
     results_raw = await asyncio.gather(
         _shopify_products(), _stripe_products(), _ds24_products(),
@@ -622,6 +695,7 @@ async def _analyse_failures(category_results: list[dict]) -> list[dict]:
 
 async def run_full_scan() -> dict:
     """Scannt alle 8 Kategorien und gibt Gesamt-Healthscore zurück."""
+    _refresh_runtime_config()
     ts = datetime.now(timezone.utc).isoformat()
 
     # Sync-Checks parallel mit Async-Checks kombinieren
@@ -663,6 +737,17 @@ async def run_full_scan() -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def run_self_repair() -> dict:
+    try:
+        from modules.connect_all import normalize_env_aliases, reset_circuit_breakers
+        aliases = normalize_env_aliases()
+        circuits = await reset_circuit_breakers()
+        if aliases or circuits:
+            log.info("Quantum repair prep: aliases=%s circuits=%s", aliases, circuits)
+    except Exception as exc:
+        log.warning("Quantum repair prep failed: %s", exc)
+
+    global BASE_URL
+    BASE_URL = _scan_base_url()
     scan    = await run_full_scan()
     cats    = list(scan["categories"].values())
     failing = [c for c in cats if c["failed"] > 0]

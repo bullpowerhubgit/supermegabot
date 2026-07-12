@@ -526,7 +526,14 @@ async function runQuantumRepair(){await ap('/api/quantum/repair',{});toast('🔧
 async function runQuantumImprove(){await ap('/api/quantum/improve',{});toast('🧠 Self-Improve gestartet','ok');}
 
 async function loadQuantum(){
-  const d=await get('/api/quantum/status');if(!d||!d.total_checks)return;
+  let d=await get('/api/quantum/status');
+  const stale=!d||!d.last_scan_ts||(Date.now()-new Date(d.last_scan_ts).getTime()>1800000);
+  if(stale||!d?.total_checks){
+    await ap('/api/quantum/scan',{});
+    await new Promise(r=>setTimeout(r,12000));
+    d=await get('/api/quantum/status');
+  }
+  if(!d||!d.total_checks)return;
   const pct=d.overall_health_pct||0;
   fe('q-score',pct+'%');fe('q-checks',(d.total_ok||0)+' / '+(d.total_checks||0)+' Checks OK');
   fe('h-health',pct+'%');
@@ -536,7 +543,14 @@ async function loadQuantum(){
   if(badge){badge.textContent=pct>=99?'✓ 100%':pct+'%';badge.style.background=pct>=99?'var(--green)':pct>=90?'var(--yellow)':'var(--red)';}
   if(d.ts)fe('q-ts','Letzter Scan: '+new Date(d.ts).toLocaleTimeString('de-AT'));
   const cats=d.categories||{};
-  function sc(id,cat){if(!cat)return;fe('qc-'+id,(cat.failed>0?'❌ '+cat.failed+' FAIL':'✅ '+cat.ok+' OK'));document.getElementById('qc-'+id).style.color=cat.failed>0?'var(--red)':'var(--green)';}
+  function sc(id,cat){
+    if(!cat)return;
+    const el=document.getElementById('qc-'+id);
+    if(!el)return;
+    const fail=Number(cat.failed||0),ok=Number(cat.ok||0);
+    el.textContent=fail>0?('❌ '+fail+' FAIL'):('✅ '+ok+' OK');
+    el.style.color=fail>0?'var(--red)':'var(--green)';
+  }
   sc('py',cats.python_modules);sc('api',cats.api_endpoints);sc('env',cats.env_vars);
   sc('ext',cats.external_services);sc('sched',cats.scheduler_tasks);
   sc('rev',cats.revenue_pipeline);sc('db',cats.databases);sc('fs',cats.filesystem);

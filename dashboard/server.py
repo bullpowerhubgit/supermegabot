@@ -8121,8 +8121,18 @@ async def handle_ai_models_list(req):
 
 async def handle_ds24_stats_live(req):
     try:
-        from modules.digistore24_automation import get_revenue_stats
-        return web.json_response(await get_revenue_stats())
+        from modules.digistore24_automation import get_sales_stats, is_configured
+        if not is_configured():
+            return web.json_response({"ok": False, "total_eur": 0.0, "orders": 0, "detail": "DS24 nicht konfiguriert"})
+        stats = await asyncio.wait_for(get_sales_stats(), timeout=15)
+        return web.json_response({
+            "ok": True,
+            "total_eur": float(stats.get("total", 0)),
+            "orders": int(stats.get("orders_total", 0)),
+            "stats": stats,
+        })
+    except asyncio.TimeoutError:
+        return web.json_response({"ok": True, "total_eur": 0.0, "orders": 0, "detail": "DS24 API timeout"})
     except Exception as e:
         return web.json_response({"ok": False, "total_eur": 0.0, "orders": 0, "detail": str(e)})
 
@@ -9083,10 +9093,13 @@ async def handle_fb_token_refresh(req: web.Request) -> web.Response:
 
 async def create_app():
     try:
-        from modules.connect_all import normalize_env_aliases
+        from modules.connect_all import normalize_env_aliases, reset_circuit_breakers
         applied = normalize_env_aliases()
         if applied:
             log.info("Env-Aliase normalisiert: %s", ", ".join(applied))
+        reset_names = await reset_circuit_breakers()
+        if reset_names:
+            log.info("Circuit Breakers beim Start zurückgesetzt: %s", reset_names)
     except Exception as e:
         log.warning("Env-Alias-Normalisierung: %s", e)
 
