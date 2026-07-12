@@ -5597,11 +5597,13 @@ async def task_printify_autonomy() -> str:
 # ── EMAIL & CRM ───────────────────────────────────────────────────────────────
 
 async def task_email_check() -> str:
-    """Email Brain: IMAP-Postfach pollen + AI-Klassifizierung + Auto-Reply (alle 15 min)."""
+    """Email Check: IMAP-Postfächer pollen — nur lesen, kein Auto-Reply."""
     try:
-        from modules.email_blast_engine import check_inbox_replies
-        r = await check_inbox_replies()
-        return f"Email Check: {r}"
+        from modules.reply_monitor import check_inboxes_readonly
+        r = await check_inboxes_readonly()
+        total = r.get("total_unread", 0)
+        auto = "AN" if r.get("auto_reply_enabled") else "AUS"
+        return f"Email Check: {total} ungelesen | Auto-Reply {auto}"
     except Exception as e:
         return f"Email Check: {e}"
 
@@ -6030,11 +6032,14 @@ async def task_geheimwaffe() -> str:
 
 
 async def task_reply_monitor() -> str:
-    """Reply Monitor: Social Media Mentions + Kommentare auto-beantworten (alle 2h)."""
+    """Reply Monitor: Gmail prüfen + klassifizieren (Auto-Reply nur wenn REPLY_MONITOR_AUTO_REPLY=true)."""
     try:
-        from modules.reply_monitor import run_now
-        r = await run_now()
-        return f"Reply Monitor: {r}"
+        from modules.reply_monitor import run_now, AUTO_REPLY_ENABLED, REPLY_MONITOR_ENABLED
+        if not REPLY_MONITOR_ENABLED:
+            return "Reply Monitor: deaktiviert (REPLY_MONITOR_ENABLED=false)"
+        await run_now()
+        mode = "Auto-Reply AN" if AUTO_REPLY_ENABLED else "Auto-Reply AUS"
+        return f"Reply Monitor: Zyklus OK ({mode})"
     except Exception as e:
         return f"Reply Monitor Fehler: {e}"
 

@@ -46,6 +46,8 @@ TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 CHECK_INTERVAL = 15 * 60  # 15 Minuten
 DB_PATH = Path("data/reply_monitor.db")
+AUTO_REPLY_ENABLED = os.getenv("REPLY_MONITOR_AUTO_REPLY", "false").lower() in ("true", "1", "yes", "on")
+REPLY_MONITOR_ENABLED = os.getenv("REPLY_MONITOR_ENABLED", "true").lower() not in ("false", "0", "off", "no")
 
 # ── Outreach-Schlüsselwörter (erkennen ob Reply auf unsere Emails) ──────────
 OUTREACH_KEYWORDS = [
@@ -478,23 +480,32 @@ async def run_cycle(con: sqlite3.Connection):
         tg_sent     = 0
 
         if classification == "INTERESTED":
-            stripe_link = get_or_create_stripe_link(con, product_key)
-            sent = send_auto_reply(email_addr, subject, product_key, stripe_link)
-            reply_sent = 1 if sent else 0
-
             prod = PRODUCTS.get(product_key, {})
             preis = f"€{prod.get('amount', 0)//100}"
             if prod.get("recurring"):
                 preis += "/mo"
 
-            tg_msg = (
-                f"🔥 <b>HOT LEAD — Kaufinteresse!</b>\n\n"
-                f"Von: {email_addr}\n"
-                f"Betreff: {subject[:80]}\n"
-                f"Produkt: {prod.get('name','?')} ({preis})\n"
-                f"Zitat: <i>\"{key_phrase[:100]}\"</i>\n\n"
-                f"✅ Auto-Reply mit Stripe-Link gesendet:\n{stripe_link}"
-            )
+            if AUTO_REPLY_ENABLED:
+                stripe_link = get_or_create_stripe_link(con, product_key)
+                sent = send_auto_reply(email_addr, subject, product_key, stripe_link)
+                reply_sent = 1 if sent else 0
+                tg_msg = (
+                    f"🔥 <b>HOT LEAD — Kaufinteresse!</b>\n\n"
+                    f"Von: {email_addr}\n"
+                    f"Betreff: {subject[:80]}\n"
+                    f"Produkt: {prod.get('name','?')} ({preis})\n"
+                    f"Zitat: <i>\"{key_phrase[:100]}\"</i>\n\n"
+                    f"✅ Auto-Reply mit Stripe-Link gesendet:\n{stripe_link}"
+                )
+            else:
+                tg_msg = (
+                    f"🔥 <b>HOT LEAD — Kaufinteresse (manuell antworten)</b>\n\n"
+                    f"Von: {email_addr}\n"
+                    f"Betreff: {subject[:80]}\n"
+                    f"Produkt: {prod.get('name','?')} ({preis})\n"
+                    f"Zitat: <i>\"{key_phrase[:100]}\"</i>\n\n"
+                    f"⏸️ Auto-Reply ist AUS — bitte selbst antworten."
+                )
             await telegram_alert(tg_msg)
             tg_sent = 1
             new_interested += 1
@@ -545,10 +556,11 @@ async def run_cycle(con: sqlite3.Connection):
 # ── Daemon / CLI ──────────────────────────────────────────────────────────────
 async def scheduler_loop():
     con = init_db()
-    log.info("Reply Monitor gestartet — alle 15 Min prüfen")
+    mode = "Auto-Stripe-Reply aktiv" if AUTO_REPLY_ENABLED else "Nur prüfen — Auto-Reply AUS"
+    log.info("Reply Monitor gestartet — alle 15 Min prüfen (%s)", mode)
     await telegram_alert(
-        "🚀 <b>Reply Monitor gestartet</b>\n"
-        "Prüfe alle 15 Min auf Antworten → Auto-Stripe-Reply aktiv."
+        f"🚀 <b>Reply Monitor gestartet</b>\n"
+        f"Prüfe alle 15 Min auf Antworten → {mode}."
     )
 
     while True:
@@ -563,8 +575,78 @@ async def scheduler_loop():
         await asyncio.sleep(CHECK_INTERVAL)
 
 async def run_now():
+    if not REPLY_MONITOR_ENABLED:
+        return {"ok": True, "skipped": True, "reason": "REPLY_MONITOR_ENABLED=false"}
     con = init_db()
     await run_cycle(con)
+    return {"ok": True, "auto_reply": AUTO_REPLY_ENABLED}
+
+
+async def check_inboxes_readonly() -> dict:
+    """Beide Gmail-Postfächer prüfen — nur lesen, keine Antworten senden."""
+    from modules.monitor_hub import GMAIL_ACCOUNTS, _decode_header, _is_important
+
+    accounts_out = []
+    total_unread = 0
+
+    for acc in GMAIL_ACCOUNTS:
+        pwd = (acc.get("pwd") or "").replace(" ", "")
+        entry = {"account": acc["label"], "email": acc["user"], "unread": [], "unread_count": 0, "ok": False}
+        if not pwd:
+            entry["error"] = "kein App-Passwort konfiguriert"
+            accounts_out.append(entry)
+            continue
+        try:
+            mail = imaplib.IMAP4_SSL(IMAP_HOST, IMAP_PORT)
+            mail.login(acc["user"], pwd)
+            mail.select("INBOX")
+            _, data = mail.search(None, "UNSEEN")
+            ids = data[0].split() if data[0] else []
+            entry["unread_count"] = len(ids)
+            total_unread += len(ids)
+
+            for uid in ids[-20:]:
+                _, msg_data = mail.fetch(uid, "(RFC822)")
+                if not msg_data or not msg_data[0]:
+                    continue
+                msg = email.message_from_bytes(msg_data[0][1])
+                sender = _decode_header(msg.get("From", ""))
+                subject = _decode_header(msg.get("Subject", ""))
+                entry["unread"].append({
+                    "sender": sender[:80],
+                    "subject": subject[:100],
+                    "important": _is_important(sender, subject),
+                })
+            mail.logout()
+            entry["ok"] = True
+        except Exception as e:
+            entry["error"] = str(e)
+        accounts_out.append(entry)
+
+    aiitec_unread = []
+    try:
+        for em in fetch_unread_emails():
+            aiitec_unread.append({
+                "sender": em.get("sender", "")[:80],
+                "subject": em.get("subject", "")[:100],
+                "is_reply": em.get("is_reply", False),
+                "is_marketing": em.get("is_marketing", False),
+            })
+    except Exception as e:
+        aiitec_unread = [{"error": str(e)}]
+
+    return {
+        "ok": True,
+        "auto_reply_enabled": AUTO_REPLY_ENABLED,
+        "reply_monitor_enabled": REPLY_MONITOR_ENABLED,
+        "total_unread": total_unread,
+        "accounts": accounts_out,
+        "aiitec_outreach_inbox": {
+            "email": GMAIL_USER,
+            "unread_count": len(aiitec_unread),
+            "messages": aiitec_unread,
+        },
+    }
 
 if __name__ == "__main__":
     if "--now" in sys.argv:
