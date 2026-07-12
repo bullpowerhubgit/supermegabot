@@ -5315,6 +5315,21 @@ async def task_umsatzmaschine_daily() -> str:
         return f"Umsatzmaschine Fehler: {e}"
 
 
+async def task_mega_command_center() -> str:
+    """BullPower MEGA Command Center — alle Revenue-Systeme parallel."""
+    try:
+        from modules.mega_command_center import run_mega_cycle
+        r = await run_mega_cycle()
+        if r.get("skipped"):
+            return f"MEGA skipped: {r.get('reason', '?')}"
+        return (
+            f"MEGA: {r.get('steps_ok', 0)}/{r.get('steps_total', 0)} OK | "
+            f"€{r.get('revenue', {}).get('month_eur', 0):.0f}/Monat"
+        )
+    except Exception as e:
+        return f"MEGA Command Center Fehler: {e}"
+
+
 async def task_fiverr_cycle() -> str:
     """Fiverr: Gig-Promotions + neue Angebote generieren (alle 12h)."""
     try:
@@ -6480,6 +6495,7 @@ TASKS = [
     ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
     ("revenue_engine",         task_revenue_engine,         7200,   69),  # 2h — Geld-Zyklus (DS24+Klaviyo)
     ("umsatzmaschine_daily",   task_umsatzmaschine_daily,   7200,   71),  # 2h — Vollautonom (Backup zum Boot-Loop)
+    ("mega_command_center",    task_mega_command_center,    14400,  72),  # 4h — MEGA Geldmaschine (alle Systeme)
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)

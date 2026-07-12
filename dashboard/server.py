@@ -9497,6 +9497,10 @@ async def create_app():
     app.router.add_post("/api/umsatzmaschine/run",    handle_umsatzmaschine_run)
     app.router.add_post("/api/umsatzmaschine/delivery", handle_umsatzmaschine_delivery)
     app.router.add_post("/api/umsatzmaschine/autonomous", handle_umsatzmaschine_autonomous)
+    app.router.add_get("/api/mega/status",           handle_mega_status)
+    app.router.add_post("/api/mega/run",             handle_mega_run)
+    app.router.add_post("/api/mega/autonomous",      handle_mega_autonomous)
+    app.router.add_post("/api/mega/daily",           handle_mega_run)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
     app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
@@ -10134,6 +10138,14 @@ async def create_app():
                  os.getenv("UMSATZMASCHINE_INTERVAL_S", "7200"))
     except Exception as _e:
         log.warning("Umsatzmaschine autonomous loop failed: %s", _e)
+
+    try:
+        from modules.mega_command_center import run_autonomous_loop as mega_loop
+        asyncio.create_task(mega_loop())
+        log.info("MEGA Command Center loop started (interval=%ss)",
+                 os.getenv("MEGA_INTERVAL_S", "14400"))
+    except Exception as _e:
+        log.warning("MEGA Command Center loop failed: %s", _e)
 
     # ── ShopText.ai — KI-Produkttexte SaaS ──────────────────────────────────
     try:
@@ -10925,6 +10937,37 @@ async def handle_umsatzmaschine_run(req):
 async def handle_umsatzmaschine_autonomous(req):
     """POST /api/umsatzmaschine/autonomous — alias für vollautonomen Zyklus."""
     return await handle_umsatzmaschine_run(req)
+
+
+async def handle_mega_status(req):
+    """GET /api/mega/status — BullPower MEGA Command Center Status."""
+    try:
+        from modules.mega_command_center import get_status
+        return web.json_response(get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_mega_run(req):
+    """POST /api/mega/run — vollständiger MEGA-Geldzyklus."""
+    try:
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        from modules.mega_command_center import run_mega_cycle, run_daily_cycle
+        if body.get("daily"):
+            result = await run_daily_cycle()
+        else:
+            result = await run_mega_cycle(body.get("steps"))
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_mega_autonomous(req):
+    return await handle_mega_run(req)
 
 
 async def handle_umsatzmaschine_delivery(req):
