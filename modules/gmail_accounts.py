@@ -16,6 +16,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 log = logging.getLogger("GmailAccounts")
 
+SECRETS_FILE = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")) / "gmail_secrets.json"
+
 DEFAULT_EMAILS: Dict[int, str] = {
     1: "dragonadnp@gmail.com",
     2: "nikolestimi@gmail.com",
@@ -36,6 +38,26 @@ ALIASES: List[Tuple[str, str, int]] = [
 _rr_idx = 0
 
 
+def _load_secrets() -> Dict[str, str]:
+    """Runtime-Passwörter aus data/gmail_secrets.json (nicht in Git)."""
+    if not SECRETS_FILE.exists():
+        return {}
+    try:
+        import json
+        data = json.loads(SECRETS_FILE.read_text(encoding="utf-8"))
+        return {str(k): str(v) for k, v in (data.get("passwords") or data).items()}
+    except Exception:
+        return {}
+
+
+def _save_secret(index: int, password: str) -> None:
+    import json
+    SECRETS_FILE.parent.mkdir(parents=True, exist_ok=True)
+    data: Dict[str, Any] = {"passwords": _load_secrets()}
+    data["passwords"][str(index)] = password.strip()
+    SECRETS_FILE.write_text(json.dumps(data, indent=2), encoding="utf-8")
+
+
 @dataclass
 class GmailAccount:
     index: int
@@ -52,6 +74,9 @@ class GmailAccount:
 
 
 def _password_for(index: int) -> str:
+    secrets = _load_secrets()
+    if secrets.get(str(index)):
+        return secrets[str(index)].strip()
     pwd = os.getenv(f"GMAIL_APP_PASSWORD_{index}", "").strip()
     if pwd:
         return pwd
@@ -262,4 +287,43 @@ def get_status() -> Dict[str, Any]:
             {"index": a.index, "email": a.email, "configured": a.configured, "host": a.smtp_host}
             for a in accounts
         ],
+    }
+
+
+def configure_account(index: int, password: str, email: str = "") -> Dict[str, Any]:
+    """App-Passwort speichern + SMTP testen. index 1-8."""
+    if not 1 <= index <= 8:
+        return {"ok": False, "error": "index muss 1-8 sein"}
+    if not password or len(password.replace(" ", "")) < 8:
+        return {"ok": False, "error": "App-Passwort fehlt oder ungültig"}
+    if email:
+        os.environ[f"GMAIL_USER_{index}"] = email.strip()
+    _save_secret(index, password)
+    acc = next((a for a in list_accounts() if a.index == index), None)
+    if not acc:
+        return {"ok": False, "error": "Konto nicht gefunden"}
+    acc = GmailAccount(
+        index=acc.index, email=email or acc.email, password=password.strip(),
+        smtp_host=acc.smtp_host, smtp_port=acc.smtp_port,
+        imap_host=acc.imap_host, label=acc.label,
+    )
+    test = test_smtp(acc)
+    railway_synced = False
+    if test.get("ok"):
+        try:
+            import subprocess
+            r = subprocess.run(
+                ["railway", "variables", "set", f"GMAIL_APP_PASSWORD_{index}={password.strip()}"],
+                capture_output=True, text=True, timeout=15,
+            )
+            railway_synced = r.returncode == 0
+        except Exception:
+            pass
+    return {
+        "ok": test.get("ok", False),
+        "index": index,
+        "email": acc.email,
+        "smtp": test,
+        "railway_synced": railway_synced,
+        "message": "Konto aktiv" if test.get("ok") else test.get("error", "SMTP fehlgeschlagen"),
     }
