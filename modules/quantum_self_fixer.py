@@ -340,7 +340,18 @@ async def scan_external_services() -> dict:
                 headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01"},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
-                return r.status in (200, 400), f"HTTP {r.status}"
+                # 200=ok, 400=no credits (key valid), 401=wrong key
+                if r.status == 400:
+                    return True, "Verbunden (kein Guthaben)"
+                return r.status == 200, f"HTTP {r.status}"
+
+    async def _ping_amazon():
+        tracking_id = os.getenv("AMAZON_TRACKING_ID", "bullpowerhub-21")
+        link = f"https://www.amazon.de/s?k=test&tag={tracking_id}"
+        async with aiohttp.ClientSession() as s:
+            async with s.get(link, timeout=aiohttp.ClientTimeout(total=8),
+                             allow_redirects=True) as r:
+                return r.status in (200, 301, 302), f"Affiliate-Tag: {tracking_id}"
 
     results = await asyncio.gather(
         _check("Telegram",   _ping_telegram()),
@@ -348,6 +359,7 @@ async def scan_external_services() -> dict:
         _check("Shopify",    _ping_shopify()),
         _check("Stripe",     _ping_stripe()),
         _check("Anthropic",  _ping_anthropic()),
+        _check("Amazon",     _ping_amazon()),
     )
     ok   = [r for r in results if r["ok"]]
     fail = [r for r in results if not r["ok"]]
