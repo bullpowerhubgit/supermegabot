@@ -6680,8 +6680,8 @@ TASKS = [
     # ── Platform Posting (extra coverage) ────────────────────────────────
     ("pinterest_auto_post",     task_pinterest_auto_post,    7200,    80),   # 2h — Pinterest pins
     ("telegram_broadcast",      task_telegram_broadcast,     21600,   91),   # 6h — Telegram channel post
-    ("instagram_auto_post",     task_instagram_auto_post,    14400,  100),   # 4h — Instagram post
-    ("linkedin_auto_post",      task_linkedin_auto_post,     21600,  110),   # 6h — LinkedIn AI post
+    ("instagram_auto_post",     task_instagram_auto_post,    86400, 3700),  # 24h — Instagram (rate limit: max 1x/Tag via this task; pipeline handles 6h)
+    ("linkedin_auto_post",      task_linkedin_auto_post,     86400, 3710),  # 24h — LinkedIn (rate limit: max 1x/Tag)
     ("youtube_auto_post",       task_youtube_auto_post,       7200,  122),   # 2h — YouTube community post
     # ── Autonomy Max-Upgrades ─────────────────────────────────────────────
     ("competitor_monitor",      task_competitor_monitor,     86400,  500),   # daily — Konkurrenz-Check

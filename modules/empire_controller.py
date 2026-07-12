@@ -41,7 +41,7 @@ logging.basicConfig(
 )
 log = logging.getLogger("EmpireController")
 
-BASE = Path(__file__).parent.parent
+BASE = Path(__file__).resolve().parent.parent  # absoluter Pfad — kein CWD-Drift
 
 # ── Env ──────────────────────────────────────────────────────────────────────
 
@@ -61,7 +61,7 @@ def _tg_chat()       -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _stripe_key()    -> str: return os.getenv("STRIPE_SECRET_KEY", "")
 def _dashboard_url() -> str: return os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
 
-PYTHON = sys.executable  # gleiche Python-Umgebung wie der Controller
+PYTHON = "/usr/local/bin/python3"  # Python 3.13 mit aiohttp (Xcode-Python 3.9 hat kein aiohttp)
 
 # ── Agent-Definitionen ────────────────────────────────────────────────────────
 
