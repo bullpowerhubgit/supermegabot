@@ -5593,17 +5593,19 @@ async def handle_tiktok_research_ads(req):
 
 
 async def handle_tiktok_auth(req):
-    """GET /api/tiktok/auth — redirect to TikTok Shop OAuth."""
-    app_key = os.getenv("TIKTOK_APP_KEY", "")
-    if not app_key:
-        return web.json_response({"ok": False, "error": "TIKTOK_APP_KEY not set in Railway"})
+    """GET /api/tiktok/auth — TikTok Business API OAuth (nicht Shop-API)."""
+    # Bevorzuge Business-API-Key (TIKTOK_CLIENT_KEY), fallback auf Shop-Key
+    client_key = os.getenv("TIKTOK_CLIENT_KEY", os.getenv("TIKTOK_APP_KEY", ""))
+    if not client_key:
+        return web.json_response({"ok": False, "error": "TIKTOK_CLIENT_KEY nicht gesetzt"})
     redirect_uri = os.getenv(
         "TIKTOK_REDIRECT_URI",
         "https://supermegabot-production.up.railway.app/api/tiktok/callback",
     )
+    # TikTok Business API OAuth 2.0
     auth_url = (
-        f"https://auth.tiktok-shops.com/api/v2/oauth/login/"
-        f"?app_key={app_key}&redirect_uri={redirect_uri}&state=smb_tiktok"
+        f"https://business-api.tiktok.com/portal/auth"
+        f"?app_id={client_key}&redirect_uri={redirect_uri}&state=smb_tiktok_biz"
     )
     raise web.HTTPFound(auth_url)
 
