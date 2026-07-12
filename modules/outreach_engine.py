@@ -302,12 +302,9 @@ async def generate_outreach_batch(
         from modules.insolvenz_radar import get_leads
         leads = get_leads(min_score=min_lead_score, limit=20)
     except Exception as e:
-        log.warning("Keine Insolvenz-Leads: %s — nutze Demo-Daten", e)
-        leads = [{
-            "uid": "demo_001", "debtor_name": "Muster GmbH", "bundesland": "NW",
-            "branche": "Logistik", "score": 75, "insolvency_type": "Insolvenzeröffnung",
-            "lead_types": '["Steuerberater", "Factoring"]', "ai_summary": "Mittleres Unternehmen, sofortiger Beratungsbedarf",
-        }]
+        log.error("Keine Insolvenz-Leads: %s — kein Fake-Fallback", e)
+        log.error("Keine Leads verfügbar — Insolvenz Radar zuerst ausführen")
+        return {"ok": False, "error": "Keine Leads — erst Scan starten"}
 
     if not leads:
         return {"ok": False, "error": "Keine Leads im Insolvenz Radar — erst Scan starten"}

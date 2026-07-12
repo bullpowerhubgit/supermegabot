@@ -293,7 +293,7 @@ async def _get_image_url(query: str) -> str:
 
     # LoremFlickr: immer verfügbar, keyword-basiert, kostenlos
     safe_q = re.sub(r'[^a-zA-Z0-9 ]', '', query)[:60].strip().replace(" ", ",")
-    return f"https://loremflickr.com/640/640/{safe_q or 'product'}"
+    return ""
 
 
 # ─── Shopify Produkt erstellen ────────────────────────────────────────────────
