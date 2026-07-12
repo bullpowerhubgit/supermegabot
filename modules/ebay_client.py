@@ -89,10 +89,15 @@ async def get_trending_items(category: str = "139973", limit: int = 10) -> dict:
 
 
 async def get_stats() -> dict:
+    token_ok = bool(EBAY_TOKEN)
+    if not token_ok and EBAY_APP_ID and EBAY_CERT_ID:
+        token_ok = bool(await get_oauth_token())
+    affiliate_mode = bool(EBAY_CAMPAIGN_ID and EBAY_AFFILIATE_ID)
     return {
         "ok": True,
-        "configured": bool(EBAY_APP_ID and EBAY_CERT_ID),
-        "epn_active": bool(EBAY_CAMPAIGN_ID and EBAY_AFFILIATE_ID),
+        "configured": bool((EBAY_APP_ID and EBAY_CERT_ID) or affiliate_mode or token_ok),
+        "api_connected": token_ok,
+        "epn_active": affiliate_mode,
         "app_id_set": bool(EBAY_APP_ID),
         "campaign_id_set": bool(EBAY_CAMPAIGN_ID),
         "marketplace": EBAY_SITE,

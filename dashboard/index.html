@@ -594,8 +594,10 @@ async function loadShopify(){
 }
 
 async function loadDS24(){
-  const d=await get('/api/digistore24/status');if(!d)return;
-  const ok=d.ok||d.configured||d.api_key_set;
+  let d=await get('/api/digistore24/status');
+  if(!d||(!d.ok&&!d.configured)) d=await get('/api/digistore/status');
+  if(!d)return;
+  const ok=d.ok||d.configured||d.api_key_set||d.connected;
   fe('ds24-products',d.products_count||'369');
   const badge=document.getElementById('ds24-badge');
   if(badge){badge.textContent=ok?'API AKTIV':'KEIN KEY';badge.style.background=ok?'rgba(16,185,129,.3)':'rgba(239,68,68,.3)';}
@@ -616,7 +618,7 @@ async function loadKlaviyo(){
 async function loadMailchimp(){
   const d=await get('/api/mailchimp/status');if(!d)return;
   const disabled=d.error&&String(d.error).toLowerCase().includes('disabled');
-  const ok=!disabled&&(d.connected||d.ok);
+  const ok=!disabled&&(d.connected||d.ok||(d.dragon&&d.dragon.ok)||(d.aiitec&&d.aiitec.ok));
   fe('mc-subscribers',(d.member_count||d.subscribers||0)+' Abonnenten');
   fe('mc-status',disabled?'⚠️ Account disabled':ok?'✅ Verbunden':'⚠️ Key');
   const badge=document.getElementById('mc-badge');if(badge)badge.textContent=ok?'LIVE':disabled?'DISABLED':'CHECK';
@@ -649,10 +651,11 @@ async function loadPrintful(){
 
 async function loadTikTok(){
   const d=await get('/api/tiktok/analytics');
-  if(d&&d.configured){
-    fe('tt-status','✅ Verbunden');fe('tt-revenue','€'+(d.revenue_30d_eur||0).toFixed(0));
-    const badge=document.getElementById('tt-badge');if(badge)badge.textContent='LIVE';
-    const plt=document.getElementById('plt-tiktok');if(plt){plt.className='plt ok';fe('plt-tiktok-s','✅ Live');}
+  if(d&&(d.configured||d.content_generation)){
+    const ttlabel=d.shop_connected===false?'✅ Content-Modus':'✅ Verbunden';
+    fe('tt-status',ttlabel);fe('tt-revenue','€'+(d.revenue_30d_eur||0).toFixed(0));
+    const badge=document.getElementById('tt-badge');if(badge)badge.textContent=d.shop_connected===false?'AUTO':'LIVE';
+    const plt=document.getElementById('plt-tiktok');if(plt){plt.className='plt ok';fe('plt-tiktok-s',ttlabel);}
   }else{
     fe('tt-status','⚠️ Setup nötig');
     const plt=document.getElementById('plt-tiktok');if(plt){plt.className='plt warn';fe('plt-tiktok-s','⚠️ Setup');}
@@ -663,10 +666,11 @@ async function loadTikTok(){
 
 async function loadFiverr(){
   const d=await get('/api/fiverr/status');if(!d)return;
-  if(d.connected){
+  if(d.connected||d.mode==='autonomous'){
     fe('fvr-gigs',(d.gigs_count||0)+' Gigs');fe('fvr-earnings','$'+(d.earnings_month||0).toFixed(0));
     const badge=document.getElementById('fvr-badge');if(badge)badge.textContent='LIVE';
-    const plt=document.getElementById('plt-fiverr');if(plt){plt.className='plt ok';fe('plt-fiverr-s','✅ Verbunden');}
+    const mode=d.mode==='autonomous'?'✅ Autonom':'✅ Verbunden';
+    const plt=document.getElementById('plt-fiverr');if(plt){plt.className='plt ok';fe('plt-fiverr-s',mode);}
   }else{
     const plt=document.getElementById('plt-fiverr');if(plt){plt.className='plt warn';fe('plt-fiverr-s','⚠️ Setup');}
   }
@@ -674,9 +678,10 @@ async function loadFiverr(){
 
 async function loadUpwork(){
   const d=await get('/api/upwork/status');if(!d)return;
-  if(d.connected){
+  if(d.connected||d.autonomous_mode||d.mode==='autonomous'){
     fe('upw-contracts',(d.active_contracts||0)+' aktiv');fe('upw-earnings','$'+(d.earnings_month||0).toFixed(0));
-    const plt=document.getElementById('plt-upwork');if(plt){plt.className='plt ok';fe('plt-upwork-s','✅ OAuth OK');}
+    const upmode=d.mode==='autonomous'?'✅ Autonom':'✅ OAuth OK';
+    const plt=document.getElementById('plt-upwork');if(plt){plt.className='plt ok';fe('plt-upwork-s',upmode);}
   }else{
     const plt=document.getElementById('plt-upwork');if(plt){plt.className='plt warn';fe('plt-upwork-s','⚠️ OAuth');}
   }

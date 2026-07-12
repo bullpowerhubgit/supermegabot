@@ -330,8 +330,22 @@ async def scan_external_services() -> dict:
                 return r.status == 200, f"HTTP {r.status}"
 
     async def _ping_anthropic():
+        openrouter = os.getenv("OPENROUTER_API_KEY", "")
+        groq = os.getenv("GROQ_API_KEY", "")
+        openai = os.getenv("OPENAI_API_KEY", "")
+
+        async def _fallback_detail() -> tuple[bool, str]:
+            if openrouter:
+                return True, "OpenRouter Fallback aktiv"
+            if groq:
+                return True, "Groq Fallback aktiv"
+            if openai:
+                return True, "OpenAI Fallback aktiv"
+            return False, "Kein AI Provider verfügbar"
+
         if not ANTHROPIC_KEY:
-            return False, "ANTHROPIC_API_KEY nicht gesetzt"
+            return await _fallback_detail()
+
         async with aiohttp.ClientSession() as s:
             async with s.post(
                 "https://api.anthropic.com/v1/messages",
@@ -340,10 +354,14 @@ async def scan_external_services() -> dict:
                 headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01"},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
-                # 200=ok, 400=no credits (key valid), 401=wrong key
-                if r.status == 400:
-                    return True, "Verbunden (kein Guthaben)"
-                return r.status == 200, f"HTTP {r.status}"
+                if r.status in (200, 400):
+                    detail = "Verbunden" if r.status == 200 else "Verbunden (Credits aufladen)"
+                    return True, detail
+                if r.status in (401, 402, 429, 529):
+                    ok, detail = await _fallback_detail()
+                    if ok:
+                        return True, detail
+                return False, f"HTTP {r.status}"
 
     async def _ping_amazon():
         tracking_id = os.getenv("AMAZON_TRACKING_ID", "bullpowerhub-21")
