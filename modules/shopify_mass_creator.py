@@ -635,6 +635,8 @@ async def blast_shopify_products(limit: int = 10) -> dict:
 
 async def run_shopify_mass_cycle() -> dict:
     """Scheduler: täglich 50 neue Produkte + blast Top-10."""
+    if os.getenv("SHOPIFY_MASS_CREATOR_ENABLED", "true").lower() in ("false", "0", "off"):
+        return {"ok": True, "skipped": True, "reason": "SHOPIFY_MASS_CREATOR_ENABLED=false (Qualitäts-Modus)"}
     create_r = await mass_create_shopify_products(count=50, workers=3)
     blast_r  = await blast_shopify_products(limit=10)
     return {"ok": True, "created": create_r.get("created", 0),

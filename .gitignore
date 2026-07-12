@@ -18,6 +18,7 @@ RudiBot-Secure-API/
 **/service-account*.json
 **/serviceaccount*.json
 **/*credentials*.json
+credentials/
 *-key.json
 gcloud/
 .config/gcloud/

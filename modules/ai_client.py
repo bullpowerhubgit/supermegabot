@@ -32,6 +32,10 @@ _OLLAMA_FIRST       = os.getenv("OLLAMA_FIRST", "true").lower() != "false"
 _OLLAMA_TIMEOUT     = int(os.getenv("OLLAMA_TIMEOUT", "5"))  # short timeout so cloud fallback is fast
 
 
+def _enabled(name: str) -> bool:
+    return os.getenv(f"{name}_ENABLED", "true").lower() not in ("false", "0", "off")
+
+
 async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", max_tokens: int = 1200) -> str:
     """Full fallback chain: OpenClaw(Ollama) → Anthropic → OpenAI → OpenRouter → Groq → Gemini → Perplexity → empty."""
     import aiohttp
@@ -62,8 +66,10 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("OpenClaw offline: %s — using cloud fallback", e)
 
+    primary = os.getenv("AI_PROVIDER_PRIMARY", "").lower()
+
     # 1. Anthropic (skip on 529 = no credits, 401 = invalid)
-    if _ANTHROPIC():
+    if _ANTHROPIC() and _enabled("ANTHROPIC") and primary not in ("openai", "groq", "gemini"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(
@@ -83,8 +89,8 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
         except Exception as e:
             log.debug("Anthropic error: %s", e)
 
-    # 2. OpenAI
-    if _OPENAI():
+    # 2. OpenAI (primary when AI_PROVIDER_PRIMARY=openai)
+    if _OPENAI() and primary in ("", "openai"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.post(
@@ -172,7 +178,7 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
             log.debug("OpenRouter error: %s", e)
 
     # 6. Perplexity (min 16 tokens required by API)
-    if _PERPLEXITY():
+    if _PERPLEXITY() and _enabled("PERPLEXITY"):
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
                 async with s.post(
