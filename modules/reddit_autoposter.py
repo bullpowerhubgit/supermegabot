@@ -11,7 +11,7 @@ REDDIT_CLIENT_ID     = os.getenv("REDDIT_CLIENT_ID", "")
 REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET", "")
 REDDIT_USERNAME      = os.getenv("REDDIT_USERNAME", "")
 REDDIT_PASSWORD      = os.getenv("REDDIT_PASSWORD", "")
-DS24_LINK            = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+DS24_LINK            = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
 
 TARGET_SUBREDDITS = [
     # Verified working via cookie-auth (no flair req, no AI-block):
@@ -40,8 +40,8 @@ def _load_refresh_token() -> str:
         rt_file = data_dir / "reddit_refresh_token.json"
         if rt_file.exists():
             return _json.loads(rt_file.read_text()).get("refresh_token", "")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
     return ""
 
 

@@ -249,8 +249,8 @@ def extract_body(msg) -> str:
             if part.get_content_type() == "text/plain":
                 try:
                     body += part.get_payload(decode=True).decode("utf-8", errors="replace")
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
     else:
         try:
             body = msg.get_payload(decode=True).decode("utf-8", errors="replace")

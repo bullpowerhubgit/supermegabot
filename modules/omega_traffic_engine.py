@@ -152,8 +152,8 @@ async def _google_ping_fallback(urls: list[str]) -> dict:
                                                timeout=aiohttp.ClientTimeout(total=8)) as r:
                             if r.status in (200, 202):
                                 submitted.append(sitemap)
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        log.debug("skipped: %s", _e)
         return {"submitted": submitted, "method": "sitemap_ping"}
     except Exception as e:
         return {"error": str(e)}
@@ -849,5 +849,5 @@ async def _telegram(msg: str) -> None:
                 json={"chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)

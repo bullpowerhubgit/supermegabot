@@ -116,8 +116,8 @@ async def sync_products_to_tiktok() -> dict:
         try:
             from modules.brutus_core import fire
             await fire("TikTok Shop Produkte", msg, link=SHOP_URL, channels=["telegram"])
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
     return {"ok": True, "mode": "promo_only", "products_ready": len(products),
             "note": "Set TIKTOK_ACCESS_TOKEN in Railway for TikTok Shop API"}
 
@@ -154,8 +154,8 @@ Trennzeichen: ---"""
             f"📱 {count} neue TikTok Scripts generiert!\n\nNische: {target_niche}\n\n{script_preview}...",
             link=SHOP_URL, channels=["telegram"]
         )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     return {"ok": True, "niche": target_niche, "scripts_generated": len(scripts), "scripts": scripts}
 

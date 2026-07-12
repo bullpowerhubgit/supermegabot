@@ -48,8 +48,8 @@ async def _tg(msg: str):
                 f"https://api.telegram.org/bot{token}/sendMessage",
                 json={"chat_id": chat, "text": msg, "parse_mode": "HTML"}
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 # ── Health ────────────────────────────────────────────────────────────────────
@@ -439,8 +439,8 @@ async def get_stats() -> Dict:
     }
     try:
         _CACHE_FILE.write_text(json.dumps(cache, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     return {
         "ok":             True,
@@ -462,8 +462,8 @@ async def monitor_payments() -> str:
     if cache_ts_file.exists():
         try:
             last_check = float(cache_ts_file.read_text().strip())
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
 
     charges = await get_charges(limit=50, days_back=1)
     new_payments = [

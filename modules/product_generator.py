@@ -272,8 +272,8 @@ async def _get_image_url(query: str) -> str:
             photos = pd.get("photos", [])
             if photos:
                 return photos[0]["src"]["medium"]
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
 
     if UNSPLASH_KEY:
         try:
@@ -288,8 +288,8 @@ async def _get_image_url(query: str) -> str:
             results = ud.get("results", [])
             if results:
                 return results[0]["urls"]["small"]
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
 
     # LoremFlickr: immer verfügbar, keyword-basiert, kostenlos
     safe_q = re.sub(r'[^a-zA-Z0-9 ]', '', query)[:60].strip().replace(" ", ",")
@@ -366,8 +366,8 @@ async def create_shopify_product(product_data: dict, image_url: str) -> Optional
                 await _shopify_post("collects.json", {
                     "collect": {"collection_id": int(cid), "product_id": product["id"]}
                 })
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("skipped: %s", _e)
 
     return product
 
@@ -483,8 +483,8 @@ async def run_generator_cycle(count: int = 3, from_trends: bool = True) -> dict:
                 f"🏭 Product Generator: {len(created)} neue Produkte erstellt!\n\n{titles}",
                 level="success"
             )
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
 
     log.info("Generator cycle done: %d created, %d failed", len(created), failed)
     return {

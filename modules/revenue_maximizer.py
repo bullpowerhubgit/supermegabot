@@ -37,8 +37,8 @@ async def _tg(msg: str):
                 json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def get_shopify_abandoned_checkouts() -> list:
@@ -103,8 +103,8 @@ async def recover_abandoned_carts() -> dict:
     already_recovered = set()
     try:
         already_recovered = set(json.loads(recovered_file.read_text()))
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     checkouts = await get_shopify_abandoned_checkouts()
     newly_recovered = 0
@@ -196,8 +196,8 @@ async def klaviyo_winback_campaign() -> dict:
                         if email:
                             await klaviyo_trigger_flow(email, "Winback", {"days_inactive": 90})
                             winback_count += 1
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
 
         return {"ok": True, "profiles_checked": len(profiles), "winback_triggered": winback_count}
     except Exception as e:

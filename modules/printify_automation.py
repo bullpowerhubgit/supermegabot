@@ -58,8 +58,8 @@ def _set_railway(key: str, value: str) -> None:
             ["railway", "variables", "set", f"{key}={value}", "--service", "dudirudibot-mega"],
             capture_output=True, timeout=30
         )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("suppressed: %s", _e)
 
 
 async def _tg(msg: str) -> None:
@@ -67,14 +67,14 @@ async def _tg(msg: str) -> None:
         return
     try:
         import aiohttp
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             await s.post(
                 f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
                 json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("suppressed: %s", _e)
 
 
 async def _get(path: str) -> Dict:
@@ -119,8 +119,8 @@ async def _shop_id() -> str:
         try:
             cached = json.loads(_SHOP_CACHE.read_text())
             return str(cached["shop_id"])
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("suppressed: %s", _e)
     shops = await get_shops()
     if not shops:
         raise ValueError("Kein Printify-Shop gefunden")
@@ -215,8 +215,8 @@ async def sync_all_products_to_shopify() -> Dict:
                 keywords=[f"Print on Demand {published[0]}", "Custom Merchandise 2026"],
                 max_keywords=2
             )
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("suppressed: %s", _e)
     return {"published": len(published), "already_live": already, "failed": len(failed)}
 
 

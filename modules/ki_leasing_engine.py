@@ -540,8 +540,8 @@ async def _tg_alert(text: str):
                 json={"chat_id": chat, "text": text, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=5)
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 # ── CLI ───────────────────────────────────────────────────────────────────────

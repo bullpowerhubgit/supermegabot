@@ -107,7 +107,7 @@ async def send_payment_blast() -> dict:
    style="background:#0070BA;color:#fff;padding:18px 40px;text-decoration:none;font-weight:bold;border-radius:8px;display:inline-block;margin:5px 0;font-size:18px;">
    💰 MIT PAYPAL ZAHLEN
 </a>
-<p style="margin-top:20px;"><a href="https://tecbuuss.gumroad.com/l/wcqdjx" style="color:#FFD700;">Mehr Infos zum Produkt →</a></p>
+<p style="margin-top:20px;"><a href="https://www.checkout-ds24.com/product/710277" style="color:#FFD700;">Mehr Infos zum Produkt →</a></p>
 <hr style="border:1px solid #333;margin:20px 0;">
 <p style="font-size:11px;color:#555;">AIITEC — AI Automation | Diese E-Mail wurde automatisch generiert</p>
 </body></html>"""

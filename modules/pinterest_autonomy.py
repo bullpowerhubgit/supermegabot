@@ -136,8 +136,8 @@ async def auto_pin_products(limit: int = 5) -> dict:
                 link=preview["link"],
                 channels=["telegram", "slack"]
             )
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
 
     return {"ok": True, "mode": "api" if PINTEREST_TOKEN else "promo_only",
             "pinned": pinned, "products_processed": len(products),

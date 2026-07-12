@@ -60,7 +60,7 @@ async def _supa_insert(rows: list[dict]) -> int:
         "Prefer": "return=minimal",
     }
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(url, headers=headers, json=rows, timeout=aiohttp.ClientTimeout(total=15)) as r:
                 return len(rows) if r.status in (200, 201) else 0
     except Exception as e:
@@ -78,7 +78,7 @@ async def _supa_recent(limit: int = 50) -> list[dict]:
         "Accept-Profile": "public",
     }
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as r:
                 if r.status == 200:
                     return await r.json()
@@ -94,7 +94,7 @@ async def _tg(msg: str) -> bool:
         return False
     url = f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage"
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(url, json={
                 "chat_id": TG_CHAT_ID,
                 "text": msg[:4000],
@@ -124,7 +124,7 @@ async def _claude_analyze(system: str, user_msg: str) -> str:
         "messages": [{"role": "user", "content": user_msg}],
     }
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(url, headers=headers, json=body, timeout=aiohttp.ClientTimeout(total=30)) as r:
                 if r.status == 200:
                     data = await r.json()
@@ -400,8 +400,8 @@ async def scrape_hackernews_signals(min_score: int = 50, limit: int = 30) -> lis
                     async with s.get(f"{base}/item/{sid}.json", timeout=aiohttp.ClientTimeout(total=8)) as r:
                         if r.status == 200:
                             return await r.json()
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("suppressed: %s", _e)
                 return None
 
             batch = await asyncio.gather(*[fetch_story(sid) for sid in top_ids[:limit]], return_exceptions=True)
@@ -505,7 +505,7 @@ async def scrape_twitter_regret_signals(max_results: int = 10) -> list[dict]:
             for k, v in sorted(oauth_params.items())
         )
         try:
-            async with aiohttp.ClientSession() as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.get(
                     url, params=params,
                     headers={"Authorization": auth_header},
@@ -787,7 +787,7 @@ async def _post_linkedin(content: str) -> dict:
     urn = LINKEDIN_URN
     if not urn:
         try:
-            async with aiohttp.ClientSession() as s:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
                 async with s.get(
                     "https://api.linkedin.com/v2/userinfo",
                     headers={"Authorization": f"Bearer {LINKEDIN_TOKEN}"},
@@ -796,8 +796,8 @@ async def _post_linkedin(content: str) -> dict:
                     if r.status == 200:
                         info = await r.json()
                         urn = f"urn:li:person:{info.get('sub', '')}"
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("suppressed: %s", _e)
 
     if not urn:
         return {"ok": False, "error": "LinkedIn Person URN nicht ermittelbar"}
@@ -814,7 +814,7 @@ async def _post_linkedin(content: str) -> dict:
         "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
     }
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(
                 "https://api.linkedin.com/v2/ugcPosts",
                 headers={
@@ -869,7 +869,7 @@ async def _post_twitter(tweet_text: str) -> dict:
     auth_header = "OAuth " + ", ".join(f'{k}="{urllib.parse.quote(str(v), safe="")}"' for k, v in sorted(params.items()))
 
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(
                 url,
                 headers={"Authorization": auth_header, "Content-Type": "application/json"},

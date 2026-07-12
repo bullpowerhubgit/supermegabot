@@ -42,8 +42,8 @@ async def _notify(msg: str):
     try:
         from modules.notify_hub import notify
         await notify(msg, level="info")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def _fire(title: str, content: str) -> dict:
@@ -221,8 +221,8 @@ async def check_milestones(today_total: float, prev_milestone_key: str = "revenu
                     {"key": prev_milestone_key, "value": str(ms)},
                     on_conflict="key"
                 ).execute()
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("skipped: %s", _e)
             break
 
 

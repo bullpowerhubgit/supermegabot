@@ -53,8 +53,8 @@ def _set_railway(key: str, value: str) -> None:
             ["railway", "variables", "set", f"{key}={value}", "--service", "dudirudibot-mega"],
             capture_output=True, timeout=30
         )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def _tg(msg: str) -> None:
@@ -68,8 +68,8 @@ async def _tg(msg: str) -> None:
                 json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def _get(path: str) -> Dict:
@@ -113,8 +113,8 @@ async def auto_detect_store() -> str:
     if _STORE_CACHE.exists():
         try:
             return str(json.loads(_STORE_CACHE.read_text())["store_id"])
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
     stores = await get_stores()
     if not stores:
         raise ValueError("Kein Printful-Store gefunden")

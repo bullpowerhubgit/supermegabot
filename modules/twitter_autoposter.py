@@ -163,7 +163,7 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
             log.info("twikit tweet gesendet: %s", tweet_id)
             # Telegram Notification
             if TELEGRAM_TOKEN and TELEGRAM_CHAT:
-                async with aiohttp.ClientSession() as sess:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as sess:
                     await sess.post(
                         f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
                         json={"chat_id": TELEGRAM_CHAT, "text": f"🐦 Tweet live!\nhttps://twitter.com/{TWITTER_USERNAME}/status/{tweet_id}\n\n{text[:100]}..."},
@@ -177,7 +177,7 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
     # Weg 2: Make.com Webhook (falls konfiguriert)
     if MAKE_WEBHOOK_URL:
         try:
-            async with aiohttp.ClientSession() as session:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as session:
                 async with session.post(
                     MAKE_WEBHOOK_URL,
                     json={"text": text, "reply_to": reply_to_id},
@@ -203,7 +203,7 @@ async def post_tweet(text: str, reply_to_id: Optional[str] = None) -> dict:
 
         auth_header = _oauth1_header("POST", url)
 
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as session:
             async with session.post(
                 url,
                 json=payload,
@@ -267,7 +267,7 @@ async def generate_shopify_product_tweet() -> Optional[str]:
     """Tweet über ein aktuelles Shopify-Produkt aus dem Store."""
     try:
         import aiohttp, random
-        async with aiohttp.ClientSession() as session:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as session:
             async with session.get(
                 f"https://{SHOPIFY_DOMAIN}/admin/api/2024-10/products.json?limit=10&status=active",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
@@ -417,7 +417,7 @@ async def run_with_brutus_traffic(topic: str = "Shopify Automation 2026") -> dic
         brutus_result = await run_brutus_swarm(
             niche=topic,
             affiliate_url=os.getenv("DS24_AFFILIATE_LINK",
-                                    os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")),
+                                    os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")),
         )
     except Exception as e:
         brutus_result = {"error": str(e)}
@@ -430,11 +430,11 @@ async def _telegram(msg: str) -> None:
         return
     try:
         import aiohttp
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             await s.post(
                 f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
                 json={"chat_id": TELEGRAM_CHAT, "text": msg},
                 timeout=aiohttp.ClientTimeout(total=8),
             )
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("suppressed: %s", _e)

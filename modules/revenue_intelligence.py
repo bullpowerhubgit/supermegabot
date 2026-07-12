@@ -172,8 +172,8 @@ async def identify_churn_risk() -> list[dict]:
             try:
                 last = datetime.fromisoformat(c["last_active"].replace("Z", "+00:00"))
                 days_inactive = (datetime.now(timezone.utc) - last).days
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("suppressed: %s", _e)
         score = min(int(days_inactive * 3), 100)
         entry = {"customer_id": c.get("id"), "email": c.get("email"),
                  "churn_score": score, "days_inactive": days_inactive,
@@ -329,7 +329,7 @@ async def revenue_autopilot() -> dict:
     # Proaktiv: DS24 Affiliate Blast wenn keine neuen Subs (immer Umsatz pushen)
     if not new_subs:
         try:
-            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
             shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
             promos = [
                 f"💰 Passives Einkommen mit KI-Automation? Starte jetzt → {ds24_link}",
@@ -341,22 +341,22 @@ async def revenue_autopilot() -> dict:
             from modules.brutus_core import fire
             await fire("💰 Revenue Push", promo, channels=["telegram"])
             actions_taken.append("ds24_promo_blast")
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("suppressed: %s", _e)
 
     # Proaktiv: Gumroad Digital Products bewerben
     try:
-        gumroad_url = "https://tecbuuss.gumroad.com/l/wcqdjx"
-        gumroad_promos = [
+        ds24_url = "https://www.checkout-ds24.com/product/710277"
+        ds24_promos = [
             f"📦 Digitale Produkte — sofort downloadbar: {gumroad_url}",
-            f"💡 Shopify Automation Masterpack — 50+ Templates: {gumroad_url}",
+            f"💡 KI E-Commerce Autopilot 2026 — 50+ Templates: {gumroad_url}",
         ]
-        gumroad_promo = random.choice(gumroad_promos)
+        ds24_promo = random.choice(ds24_promos)
         from modules.brutus_core import fire
         await fire("Gumroad Promo", gumroad_promo, channels=["telegram"])
         actions_taken.append("gumroad_promo_blast")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("suppressed: %s", _e)
 
     return {"actions": actions_taken, "timestamp": datetime.now(timezone.utc).isoformat()}
 

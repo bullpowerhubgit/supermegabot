@@ -19,7 +19,7 @@ import aiohttp
 log = logging.getLogger("MassContentBlaster")
 
 DB_PATH = Path(os.getenv("DATA_DIR", "/tmp/supermegabot")) / "mass_content.db"
-DS24_LINK = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+DS24_LINK = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
 SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'autopilot-store-suite-fmbka.myshopify.com')}")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL    = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → must be public channel
@@ -31,8 +31,8 @@ TELEGRAM_CHAT  = _TG_CHANNEL if _TG_CHANNEL and _TG_CHANNEL.startswith("-100") e
 APPROVED_LINKS = [
     "https://www.checkout-ds24.com/product/668035",
     "https://www.checkout-ds24.com/product/704677",
-    "https://tecbuuss.gumroad.com/l/tnyyvb",
-    "https://tecbuuss.gumroad.com/l/wcqdjx",
+    "https://www.checkout-ds24.com/product/710277",
+    "https://www.checkout-ds24.com/product/710277",
 ]
 if "669750" in DS24_LINK or "576000" in DS24_LINK or "578000" in DS24_LINK:
     DS24_LINK = APPROVED_LINKS[0]  # override unapproved/wrong product
@@ -245,8 +245,8 @@ async def run_mass_blast(topics_per_run: int = 5) -> dict:
                     platforms_hit.add("devto")
                     total_posted += 1
                     _mark_blasted(topic, "devto")
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("skipped: %s", _e)
 
         # Hashnode (if key set)
         hn_key = os.getenv("HASHNODE_API_KEY", "") or os.getenv("HASHNODE_TOKEN", "")
@@ -258,8 +258,8 @@ async def run_mass_blast(topics_per_run: int = 5) -> dict:
                     platforms_hit.add("hashnode")
                     total_posted += 1
                     _mark_blasted(topic, "hashnode")
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("skipped: %s", _e)
 
         topics_used += 1
         await asyncio.sleep(0.5)

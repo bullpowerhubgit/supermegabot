@@ -17,7 +17,7 @@ import aiohttp
 log = logging.getLogger("AffiliateMegaEngine")
 
 AMAZON_TAG    = os.getenv("AMAZON_ASSOCIATE_TAG", "bullpowerhub-21")
-DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
 AFFILIATE_ID  = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 EBAY_CAMPAIGN = os.getenv("EBAY_CAMPAIGN_ID", "")
 EBAY_AFFILIATE = os.getenv("EBAY_AFFILIATE_ID", "")

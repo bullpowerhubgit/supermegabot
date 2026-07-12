@@ -239,8 +239,8 @@ async def send_daily_revenue_report(
                     loop = _asyncio.get_event_loop()
                     st = await loop.run_in_executor(None, get_revenue_summary)
                     stripe_eur = st.get("today_revenue", 0.0)
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
 
             gm = platforms.get("gumroad", {})
             from modules.revenue_aggregator import _to_eur as _rev_to_eur

@@ -115,8 +115,8 @@ async def run_tiktok_trend_blast(count: int = 5) -> dict:
             from modules.brutus_traffic_engine import brutus_run
             r = await brutus_run(niche=f"tiktok trend {niche}")
             channels_hit += r.get("channels_hit", 0)
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
 
         await asyncio.sleep(0.5)
 
