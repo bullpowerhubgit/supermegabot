@@ -429,6 +429,26 @@ class MegaBotUmsatzmaschine:
         doc.build(story)
         return filename
 
+    def generate_kfw_antrag(self, antrag_data: Dict[str, Any], *, merge_live: bool = True) -> str:
+        """KfW ERP-Gründerkredit StartGeld — Businessplan-PDF aus Antragsdaten."""
+        from modules.megabot_kfw_generator import KfWAntragGenerator, fetch_live_antrag_data
+
+        data: Dict[str, Any] = {}
+        if merge_live:
+            data = asyncio.run(fetch_live_antrag_data())
+        data.update(antrag_data or {})
+        if not data.get("verwendung") and data.get("kredit_betrag"):
+            total = int(data["kredit_betrag"])
+            data["verwendung"] = {
+                "marketing": int(total * 0.4),
+                "infrastruktur": int(total * 0.3),
+                "betrieb": int(total * 0.2),
+                "reserve": int(total * 0.1),
+            }
+        path = KfWAntragGenerator().generate_kfw_startgeld_pdf(data)
+        log.info("KfW Antrag PDF: %s", path)
+        return path
+
     async def deliver_insolvency_alerts(self, client_id: str) -> Dict[str, Any]:
         client = self.clients[client_id]
         insolvenz = get_daily_insolvency_alerts(20)
@@ -815,6 +835,19 @@ if __name__ == "__main__":
         if cmd in ("register", "client") and len(sys.argv) >= 4:
             cid = bot.register_new_client(sys.argv[2], sys.argv[3])
             print(json.dumps({"client_id": cid, "email": sys.argv[2], "package": sys.argv[3]}, indent=2))
+            return
+        if cmd in ("kfw", "kfw-antrag"):
+            overrides: Dict[str, Any] = {}
+            if len(sys.argv) > 2 and Path(sys.argv[2]).exists():
+                overrides = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+            elif len(sys.argv) > 2:
+                overrides["antragsteller"] = sys.argv[2]
+            if len(sys.argv) > 3:
+                overrides["unternehmen"] = sys.argv[3]
+            if len(sys.argv) > 4:
+                overrides["kredit_betrag"] = int(sys.argv[4])
+            pdf = bot.generate_kfw_antrag(overrides)
+            print(json.dumps({"ok": True, "pdf": pdf}, indent=2, ensure_ascii=False))
             return
         r = await run_autonomous_cycle()
         print(json.dumps(r, indent=2, ensure_ascii=False, default=str))
