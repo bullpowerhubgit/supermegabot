@@ -38,7 +38,10 @@ def _token() -> str:
         "5m7IDG75Ileln_bWIX8Ei03p-vv7mKnPzCOjHTkBqmbNI9fgkyxj-xZnmRj67csQ8_S-EVBGNOlmDsYLCwbpMnXiiEwW7Y7zsra"
         "zsrilFLyiwKeQ"
     )
-    return os.getenv("PRINTIFY_API_KEY", os.getenv("PRINTIFY_API_TOKEN", _DRAGON_TOKEN))
+    return os.getenv(
+        "PRINTIFY_API_KEY",
+        os.getenv("PRINTIFY_TOKEN", os.getenv("PRINTIFY_API_TOKEN", _DRAGON_TOKEN)),
+    )
 
 
 _UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"

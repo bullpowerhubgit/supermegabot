@@ -188,6 +188,7 @@ a{color:inherit;text-decoration:none}
 <!-- FIRE BUTTONS -->
 <div class="sect">🚀 REVENUE STREAMS — ALLE KANÄLE TRIGGERN <span class="badge badge-orange">ONE-CLICK</span></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+  <button class="btn btn-fire" onclick="connectAll()">🔗 ALLES VERBINDEN</button>
   <button class="btn btn-fire" onclick="fireAll()">🔥 ALLE GLEICHZEITIG STARTEN</button>
   <button class="btn btn-purple" onclick="launchMarketing()">📧 Marketing Blast</button>
   <button class="btn btn-blue" onclick="launchSEO()">🔍 SEO + IndexNow</button>
@@ -732,6 +733,26 @@ async function loadTasks(){
   const runs=Number(d.total_runs??arr.reduce((s,t)=>s+Number(t.total||0),0));
   fe('sched-total',total+' Tasks');fe('task-count',total+'');
   fe('sched-runs',runs+' gesamt');fe('h-tasks',total+'');
+}
+
+async function connectAll(){
+  toast('🔗 Verbinde alle Plattformen...','info');
+  addLog('🔗 Connect All gestartet','i');
+  const btn=document.querySelector('[onclick="connectAll()"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Verbinde...';}
+  try{
+    const d=await ap('/api/connect/all',{sync_railway:true,start_tasks:true});
+    if(!d){toast('✗ Connect All fehlgeschlagen','err');return;}
+    const msg=(d.connected_count||0)+'/'+(d.total||0)+' verbunden';
+    toast('✅ '+msg,'ok');
+    addLog('✅ Connect All: '+msg+' | Railway: '+(d.railway_sync?.synced||0)+' Keys','');
+    if(d.oauth_required&&Object.keys(d.oauth_required).length){
+      addLog('OAuth nötig: '+Object.keys(d.oauth_required).join(', '),'i');
+    }
+    await refreshAll();
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='🔗 ALLES VERBINDEN';}
+  }
 }
 
 async function fireAll(){

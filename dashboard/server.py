@@ -8485,6 +8485,44 @@ async def handle_credential_scan(req):
     return web.json_response({"ok": True, "status": "scan gestartet — poll GET /api/credentials/status"})
 
 
+async def handle_connect_all(req):
+    """POST /api/connect/all — alle Plattformen verbinden + Railway-Sync."""
+    try:
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        from modules.connect_all import run_connect_all
+        result = await run_connect_all(
+            sync_railway=body.get("sync_railway", True),
+            start_tasks=body.get("start_tasks", True),
+            scan_credentials=body.get("scan_credentials", True),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_connect_status(req):
+    """GET /api/connect/status — Plattform-Verbindungsstatus ohne Side-Effects."""
+    try:
+        from modules.connect_all import ping_all_platforms, _oauth_links, normalize_env_aliases
+        aliases = normalize_env_aliases()
+        platforms = await ping_all_platforms()
+        connected = sum(1 for p in platforms if p.get("connected"))
+        return web.json_response({
+            "ok": True,
+            "connected_count": connected,
+            "total": len(platforms),
+            "platforms": platforms,
+            "oauth_required": _oauth_links(),
+            "env_aliases_applied": aliases,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ── Quantum Self-Repair Engine ────────────────────────────────────────────────
 
 async def handle_quantum_status(req):
@@ -9044,6 +9082,14 @@ async def handle_fb_token_refresh(req: web.Request) -> web.Response:
 
 
 async def create_app():
+    try:
+        from modules.connect_all import normalize_env_aliases
+        applied = normalize_env_aliases()
+        if applied:
+            log.info("Env-Aliase normalisiert: %s", ", ".join(applied))
+    except Exception as e:
+        log.warning("Env-Alias-Normalisierung: %s", e)
+
     from core.mega_orchestrator import MegaOrchestrator
     bot = MegaOrchestrator()
     await bot.start()
@@ -9867,6 +9913,9 @@ async def create_app():
     # ── CREDENTIAL ACTIVATOR ROUTES ──────────────────────────────────────────
     app.router.add_get( "/api/credentials/status",       handle_credential_status)
     app.router.add_post("/api/credentials/scan",         handle_credential_scan)
+    app.router.add_post("/api/connect/all",              handle_connect_all)
+    app.router.add_get( "/api/connect/status",           handle_connect_status)
+    app.router.add_get( "/api/setup/connect-all",       handle_connect_status)
     # ── MASTER CONTROL PANEL ─────────────────────────────────────────────────
     app.router.add_post("/api/master/start-all",         handle_master_start_all)
     app.router.add_get( "/api/master/status",            handle_master_status)
