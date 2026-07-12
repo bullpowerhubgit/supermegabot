@@ -60,11 +60,18 @@ async def ping() -> tuple[bool, str]:
         return False, "STRIPE_SECRET_KEY nicht gesetzt"
     try:
         async with _session() as s:
+            # Try /account first (full key), fall back to /balance (restricted key OK)
             async with s.get(f"{_BASE}/account", headers=_auth()) as r:
                 if r.status == 200:
                     d = await r.json()
                     name = d.get("display_name") or d.get("business_profile", {}).get("name", "OK")
                     return True, name
+                if r.status == 403:
+                    # Restricted key — verify via /balance endpoint
+                    async with s.get(f"{_BASE}/balance", headers=_auth()) as r2:
+                        if r2.status == 200:
+                            return True, "Stripe (restricted key)"
+                        return False, f"HTTP {r2.status}"
                 return False, f"HTTP {r.status}"
     except Exception as e:
         return False, str(e)
