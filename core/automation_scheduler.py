@@ -5513,6 +5513,16 @@ async def task_product_generator() -> str:
 
 # ── SHOPIFY-AUTONOMY ──────────────────────────────────────────────────────────
 
+async def task_shopify_daily_healer() -> str:
+    """Shopify Daily Healer: Inventory Policy + Beschreibungen + Preise täglich heilen."""
+    try:
+        from modules.shopify_daily_healer import run_daily_heal
+        r = await run_daily_heal()
+        return f"Daily Heal: {r}"
+    except Exception as e:
+        return f"Shopify Healer Fehler: {e}"
+
+
 async def task_shopify_full_autonomy() -> str:
     """Shopify Full Autonomy: SEO-Fix + Collections + Restock + Titel (alle 6h)."""
     try:
@@ -6535,6 +6545,7 @@ TASKS = [
     ("product_bundles",        task_product_bundle_engine,  43200, 1540),  # 12h — Profitable Bundles erstellen
     ("product_generator",      task_product_generator,      28800, 1580),  # 8h  — Produkt-Ideen aus Trends
     # ── SHOPIFY-AUTONOMY ──────────────────────────────────────────────────────
+    ("shopify_daily_healer",   task_shopify_daily_healer,   86400, 600),   # 24h — Inventory+Desc+Preis auto-heilen
     ("shopify_full_autonomy",  task_shopify_full_autonomy,  21600, 1620),  # 6h  — SEO+Collections+Restock+Titel
     ("shopify_mass_creator",   task_shopify_mass_creator,   43200, 1660),  # 12h — Massenimport alle Quellen
     ("autonomous_pipeline",    task_autonomous_pipeline,    21600, 1700),  # 6h  — Quelle→Shopify vollautomatisch
@@ -6836,7 +6847,19 @@ class AutomationScheduler:
         except Exception:
             pass
 
+    # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
+    _ALWAYS_RUN = frozenset({
+        "health", "system_health", "railway_health", "github_backup",
+        "circuit_reset", "shopify_sync", "email_check", "email_daily_summary",
+    })
+
     async def _execute(self, name: str, fn: Callable) -> str:
+        if (
+            os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes")
+            and name not in self._ALWAYS_RUN
+        ):
+            log.info("[%s] SOCIAL_POSTING_PAUSED=true — Task übersprungen", name)
+            return "PAUSED"
         t0 = time.monotonic()
         try:
             result = await fn()
