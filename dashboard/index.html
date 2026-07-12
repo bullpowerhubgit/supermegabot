@@ -185,9 +185,45 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- MEGA AUTONOMY -->
+<div class="sect">⚡ MEGA GELDMASCHINE — VOLLAUTONOM <span class="badge badge-green" id="mega-badge">AUTO</span></div>
+<div class="g3" style="margin-bottom:12px">
+  <div class="card g-green">
+    <div class="card-h"><div class="card-t">🤖 MEGA Command Center</div>
+      <button class="btn btn-fire" style="font-size:10px" onclick="runMegaNow()">▶ JETZT STARTEN</button>
+    </div>
+    <div class="srow"><span class="slbl">Autonom</span><span class="sval" style="color:var(--green)" id="mega-auto">—</span></div>
+    <div class="srow"><span class="slbl">Zyklus</span><span class="sval" id="mega-interval">—</span></div>
+    <div class="srow"><span class="slbl">Letzter Run</span><span class="sval" id="mega-last">—</span></div>
+    <div class="srow"><span class="slbl">Systeme OK</span><span class="sval" style="color:var(--cyan)" id="mega-steps">—</span></div>
+    <div class="srow"><span class="slbl">Monatsumsatz</span><span class="sval" style="color:var(--green)" id="mega-revenue">€—</span></div>
+  </div>
+  <div class="card g-purple">
+    <div class="card-h"><div class="card-t">💎 Umsatzmaschine + Revenue</div></div>
+    <div class="srow"><span class="slbl">Umsatzmaschine</span><span class="sval" id="um-status">—</span></div>
+    <div class="srow"><span class="slbl">Clients aktiv</span><span class="sval" id="um-clients">—</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-purple" style="flex:1;font-size:10px" onclick="fire('umsatz','POST','/api/umsatzmaschine/run')">🤖 Umsatz</button>
+      <button class="btn btn-green" style="flex:1;font-size:10px" onclick="fire('revenue','POST','/api/revenue/run')">💰 Revenue</button>
+      <button class="btn btn-orange" style="flex:1;font-size:10px" onclick="fire('money','POST','/api/money-machine/run-all')">🎰 Money</button>
+    </div>
+  </div>
+  <div class="card g-cyan">
+    <div class="card-h"><div class="card-t">📅 Täglich Auto-Post</div><span class="badge badge-blue">SHOP+SOCIAL</span></div>
+    <div class="srow"><span class="slbl">Shopify Blog</span><span class="sval">alle 2h</span></div>
+    <div class="srow"><span class="slbl">Social Posts</span><span class="sval">alle 1h</span></div>
+    <div class="srow"><span class="slbl">Buyer Traffic</span><span class="sval">alle 4h</span></div>
+    <div style="display:flex;gap:5px;margin-top:10px">
+      <button class="btn btn-cyan" style="flex:1;font-size:10px" onclick="runMegaDaily()">📅 Daily Cycle</button>
+      <button class="btn btn-blue" style="flex:1;font-size:10px" onclick="fire('social','POST','/api/mega/run',{steps:['social_post']})">📱 Social</button>
+    </div>
+  </div>
+</div>
+
 <!-- FIRE BUTTONS -->
 <div class="sect">🚀 REVENUE STREAMS — ALLE KANÄLE TRIGGERN <span class="badge badge-orange">ONE-CLICK</span></div>
 <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+  <button class="btn btn-fire" onclick="runMegaNow()">⚡ MEGA GELDMASCHINE</button>
   <button class="btn btn-fire" onclick="connectAll()">🔗 ALLES VERBINDEN</button>
   <button class="btn btn-fire" onclick="fireAll()">🔥 ALLE GLEICHZEITIG STARTEN</button>
   <button class="btn btn-purple" onclick="launchMarketing()">📧 Marketing Blast</button>
@@ -214,6 +250,11 @@ a{color:inherit;text-decoration:none}
   <div class="fire-btn" id="fb-shopify-import" onclick="fire('shopify-import','POST','/api/shopify/import')"><div class="fire-icon">📥</div><div class="fire-name">SHOPIFY IMPORT</div><div class="fire-status" id="fs-shopify-import">bereit</div></div>
   <div class="fire-btn" id="fb-brutus" onclick="fire('brutus','POST','/api/brutus/run',{})"><div class="fire-icon">💥</div><div class="fire-name">BRUTUS TRAFFIC</div><div class="fire-status" id="fs-brutus">bereit</div></div>
   <div class="fire-btn" id="fb-qscan" onclick="runQuantumScan()"><div class="fire-icon">⚛️</div><div class="fire-name">QUANTUM SCAN</div><div class="fire-status" id="fs-qscan">bereit</div></div>
+  <div class="fire-btn" id="fb-mega" onclick="runMegaNow()"><div class="fire-icon">⚡</div><div class="fire-name">MEGA RUN</div><div class="fire-status" id="fs-mega">bereit</div></div>
+  <div class="fire-btn" id="fb-umsatz" onclick="fire('umsatz','POST','/api/umsatzmaschine/run')"><div class="fire-icon">🤖</div><div class="fire-name">UMSATZ</div><div class="fire-status" id="fs-umsatz">bereit</div></div>
+  <div class="fire-btn" id="fb-revenue" onclick="fire('revenue','POST','/api/revenue/run')"><div class="fire-icon">💎</div><div class="fire-name">REVENUE</div><div class="fire-status" id="fs-revenue">bereit</div></div>
+  <div class="fire-btn" id="fb-buyer" onclick="fire('buyer','POST','/api/mega/run',{steps:['buyer_traffic']})"><div class="fire-icon">🎯</div><div class="fire-name">BUYER TRAFFIC</div><div class="fire-status" id="fs-buyer">bereit</div></div>
+  <div class="fire-btn" id="fb-social" onclick="fire('social','POST','/api/mega/run',{steps:['social_post']})"><div class="fire-icon">📱</div><div class="fire-name">SOCIAL POST</div><div class="fire-status" id="fs-social">bereit</div></div>
 </div>
 
 <!-- PLATFORM STATUS -->
@@ -424,6 +465,9 @@ a{color:inherit;text-decoration:none}
       <a href="/api/indexnow/status" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">🔍 IndexNow Status</a>
       <a href="/api/trends/latest" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">📈 Trends Latest</a>
       <a href="/api/pipeline/status" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">⚡ Pipeline Status</a>
+      <a href="/api/mega/status" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">⚡ MEGA Status</a>
+      <a href="/api/umsatzmaschine/status" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">🤖 Umsatzmaschine</a>
+      <a href="/api/email/accounts/check" target="_blank" class="btn btn-dark" style="font-size:10px;justify-content:flex-start">📧 Gmail Konten</a>
     </div>
   </div>
 </div>
@@ -769,9 +813,47 @@ async function connectAll(){
   }
 }
 
+async function runMegaNow(){
+  toast('⚡ MEGA Geldmaschine startet...','info');
+  addLog('⚡ MEGA Command Center — vollständiger Zyklus','i');
+  const btn=document.getElementById('fb-mega'),st=document.getElementById('fs-mega');
+  if(btn)btn.className='fire-btn running';if(st)st.textContent='⏳ läuft...';
+  const d=await ap('/api/mega/run',{});
+  if(d){
+    const ok=d.steps_ok||0,tot=d.steps_total||0;
+    fe('mega-steps',ok+'/'+tot+' OK');
+    fe('mega-revenue','€'+(d.revenue?.month_eur||0).toFixed(0));
+    if(btn)btn.className='fire-btn done';if(st)st.textContent=ok+'/'+tot+' OK';
+    setTimeout(()=>{if(btn)btn.className='fire-btn';if(st)st.textContent='bereit';},8000);
+    await loadMegaStatus();
+  }
+}
+async function runMegaDaily(){
+  toast('📅 Daily Cycle (Shop+Social+Traffic)...','info');
+  await ap('/api/mega/daily',{daily:true});
+  await loadMegaStatus();
+}
+async function loadMegaStatus(){
+  const[mega,um]=await Promise.all([get('/api/mega/status'),get('/api/umsatzmaschine/status')]);
+  if(mega){
+    fe('mega-auto',mega.autonomous?'✅ AN':'⏸ AUS');
+    fe('mega-interval',(mega.interval_hours||4)+'h');
+    fe('mega-last',mega.last_run?new Date(mega.last_run).toLocaleString('de-AT'):'noch nie');
+    const lr=mega.last_result||{};
+    fe('mega-steps',(lr.steps_ok||'—')+' Systeme');
+    fe('mega-revenue','€'+(lr.month_eur||0).toFixed(0));
+    const badge=document.getElementById('mega-badge');
+    if(badge){badge.textContent=mega.autonomous?'AUTO':'OFF';badge.className='badge '+(mega.autonomous?'badge-green':'badge-red');}
+  }
+  if(um){
+    fe('um-status',um.autonomous?'✅ '+um.cycles_total+' Zyklen':'—');
+    fe('um-clients',(um.clients_active||0)+' aktiv / '+(um.clients_total||0));
+  }
+}
 async function fireAll(){
   toast('🔥 ALLE KANÄLE STARTEN...','info');
-  addLog('🔥 FIRE ALL — 13 Revenue Streams parallel','i');
+  addLog('🔥 FIRE ALL — MEGA + 16 Revenue Streams','i');
+  runMegaNow();
   const streams=[
     ['shopify-blog','POST','/api/shopify/blog'],['klaviyo','POST','/api/klaviyo/run'],
     ['mailchimp','POST','/api/mailchimp/run'],['ds24','POST','/api/ds24/run'],
@@ -779,9 +861,9 @@ async function fireAll(){
     ['ebay','POST','/api/ebay/run'],['printify','POST','/api/printify/autopublish'],
     ['printful','POST','/api/printful/sync'],['rss','POST','/api/rss/run'],
     ['indexnow','POST','/api/indexnow/blast'],['seo','POST','/api/shopify/seo'],
-    ['pipeline','POST','/api/pipeline/run'],
+    ['pipeline','POST','/api/pipeline/run'],['money','POST','/api/money-machine/run-all'],
   ];
-  streams.forEach(([id,method,path],i)=>setTimeout(()=>fire(id,method,path),i*200));
+  streams.forEach(([id,method,path],i)=>setTimeout(()=>fire(id,method,path),i*300));
 }
 function launchMarketing(){fire('klaviyo','POST','/api/klaviyo/run');fire('mailchimp','POST','/api/mailchimp/run');fire('rss','POST','/api/rss/run');}
 function launchSEO(){fire('indexnow','POST','/api/indexnow/blast');fire('seo','POST','/api/shopify/seo');}
@@ -793,7 +875,7 @@ async function refreshAll(){
     loadDS24(),loadShopify(),loadKlaviyo(),loadMailchimp(),
     loadPrintify(),loadPrintful(),loadStripe(),
     loadTikTok(),loadFiverr(),loadUpwork(),loadEbay(),
-    loadTasks(),loadRSS(),
+    loadTasks(),loadRSS(),loadMegaStatus(),
   ]);
 }
 
