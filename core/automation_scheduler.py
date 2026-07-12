@@ -3116,6 +3116,15 @@ async def task_money_machine_run() -> str:
         return f"MoneyMachine error: {e}"
 
 
+async def task_geldmaschine_skalierung() -> str:
+    """Geldmaschine Skalierung — 5 Strategien zu €10k/Monat (alle 4h)."""
+    try:
+        from modules.geldmaschine_skalierung import run_scaling_cycle_str
+        return await run_scaling_cycle_str()
+    except Exception as e:
+        return f"Geldmaschine Skalierung Fehler: {e}"
+
+
 async def task_viral_window_scan() -> str:
     """Viral Window Scanner — 5 Signalquellen + AI-Score + Shopify-Import + Telegram-Alert"""
     try:
@@ -6442,6 +6451,7 @@ TASKS = [
     ("viral_window_scan",      task_viral_window_scan,       7200, 600),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",        task_oos_sniper_scan,         7200,  58),  # 2h — OOS Sniper
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
+    ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — €10k Skalierung (5 Strategien)
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)

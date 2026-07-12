@@ -540,7 +540,12 @@ Antworte NUR mit JSON-Array:
     return extras
 
 
-async def mass_create_shopify_products(count: int = 1000, workers: int = 5) -> dict:
+async def mass_create_shopify_products(
+    count: int = 1000,
+    workers: int = 5,
+    niches: Optional[list[str]] = None,
+    keywords: Optional[list[str]] = None,
+) -> dict:
     """5 parallele Worker erstellen bis zu 1000 Produkte."""
     # Deduplizierung
     existing_titles: set[str] = set()
@@ -552,6 +557,20 @@ async def mass_create_shopify_products(count: int = 1000, workers: int = 5) -> d
         log.debug("skipped: %s", _e)
 
     templates = [t for t in SHOPIFY_PRODUCT_TEMPLATES if t["title"] not in existing_titles]
+    if niches:
+        niche_set = {n.lower() for n in niches}
+        templates = [t for t in templates if t.get("niche", "").lower() in niche_set]
+    if keywords:
+        kw = [k.lower() for k in keywords]
+
+        def _matches_kw(tmpl: dict) -> bool:
+            blob = f"{tmpl.get('title', '')} {tmpl.get('tags', '')}".lower()
+            return any(k in blob for k in kw)
+
+        if niches:
+            templates = [t for t in templates if t.get("niche", "").lower() in {n.lower() for n in niches} or _matches_kw(t)]
+        else:
+            templates = [t for t in templates if _matches_kw(t)]
     random.shuffle(templates)
 
     # Auffüllen mit KI-Konzepten wenn nötig

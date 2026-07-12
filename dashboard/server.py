@@ -9270,6 +9270,8 @@ async def create_app():
     app.router.add_post("/api/export/customers",      handle_export_customers)
     app.router.add_get("/api/export/customers/stats", handle_export_customers_stats)
     app.router.add_get("/api/revenue/summary",        handle_revenue_summary)
+    app.router.add_get("/api/scaling/status",         handle_scaling_status)
+    app.router.add_post("/api/scaling/run",           handle_scaling_run)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
     app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
@@ -10614,6 +10616,27 @@ async def handle_universal_lead_capture(req):
         return web.json_response({"ok": True, "enrolled": True, "email": email})
     except Exception as e:
         log.error(f"Lead capture error: {e}")
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_scaling_status(req):
+    """GET /api/scaling/status — Geldmaschine €10k Skalierung (echte Revenue-Daten)."""
+    try:
+        from modules.geldmaschine_skalierung import get_scaling_status
+        return web.json_response(await get_scaling_status())
+    except Exception as e:
+        log.error("handle_scaling_status: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_scaling_run(req):
+    """POST /api/scaling/run — Skalierungs-Zyklus sofort starten."""
+    try:
+        from modules.geldmaschine_skalierung import run_scaling_cycle
+        result = await run_scaling_cycle()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_scaling_run: %s", e)
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
