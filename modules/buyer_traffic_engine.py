@@ -740,8 +740,8 @@ async def run_buyer_traffic_cycle() -> Dict:
                 await s.post(f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
                              json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "Markdown"},
                              timeout=aiohttp.ClientTimeout(total=8))
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
 
     log.info("BuyerTraffic done: %d actions", results["total_actions"])
     return results

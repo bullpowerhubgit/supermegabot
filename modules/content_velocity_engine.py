@@ -49,8 +49,8 @@ def _append_log(entry: dict):
     logs = []
     try:
         logs = json.loads(LOG_FILE.read_text())
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     logs.append(entry)
     LOG_FILE.write_text(json.dumps(logs[-500:], ensure_ascii=False, indent=2))
 

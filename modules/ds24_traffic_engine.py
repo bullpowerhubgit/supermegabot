@@ -146,8 +146,8 @@ JSON Format:
             m = re.search(r'\{[^{}]*"telegram"[^{}]*\}', text, re.DOTALL)
             if m:
                 return json.loads(m.group())
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Ignored error: %s", e)
 
         # Fallback Template
         return {

@@ -97,8 +97,8 @@ def _log_channel(run_id: int, keyword: str, channel: str, status: str, detail: s
         )
         conn.commit()
         conn.close()
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 def get_brutus_history(limit: int = 50) -> list:
@@ -367,7 +367,7 @@ def _fallback_content_swarm(keyword: str) -> dict:
     _ds24 = (
         os.getenv("DS24_AFFILIATE_LINK")
         or os.getenv("AIITEC_AFFILIATE_URL")
-        or os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+        or os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
     )
     idx = int(hashlib.md5(keyword.encode()).hexdigest(), 16) % len(_BRUTUS_TEMPLATES)
     tmpl = _BRUTUS_TEMPLATES[idx]
@@ -826,7 +826,7 @@ async def post_to_reddit(keyword: str, content_pack: dict) -> dict:
             api_headers = {**headers, "Authorization": f"bearer {tok}"}
             title = content_pack.get("headline", keyword)[:300]
             body  = content_pack.get("caption", content_pack.get("blog_intro", ""))[:2000]
-            _affiliate = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+            _affiliate = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
             body += f"\n\n🔗 Mehr: {_affiliate}"
             posted = 0
             for sub in ["shopify", "ecommerce", "entrepreneur"]:
@@ -904,7 +904,7 @@ async def post_to_pinterest(keyword: str, content_pack: dict, image_url: str = "
             image_url = "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png"
         title       = content_pack.get("headline", keyword)[:100]
         description = content_pack.get("caption", "")[:500]
-        _aff_base = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+        _aff_base = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
         link = f"{_aff_base}?utm_source=pinterest&utm_medium=pin&utm_campaign={keyword.replace(' ','_')}"
         payload = {"board_id": board_id, "title": title, "description": description,
                    "link": link, "media_source": {"source_type": "image_url", "url": image_url}}
@@ -957,8 +957,8 @@ async def generate_video_script(keyword: str, content_pack: dict) -> dict:
                                       json={"keyword": keyword, "script": script,
                                             "created_at": datetime.now(timezone.utc).isoformat()}) as r:
                         await r.read()
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Ignored error: %s", e)
         log.info("BRUTUS VideoScript: created for '%s' (%d chars)", keyword, len(script))
         return {"created": True, "chars": len(script)}
     except Exception as e:
@@ -1123,8 +1123,8 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
             f"Nische: {niche}"
         )
         await send_telegram(msg)
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     log.info("BRUTUS DONE: %s", json.dumps(results))
     return results
