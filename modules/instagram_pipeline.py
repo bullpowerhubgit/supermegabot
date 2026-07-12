@@ -29,6 +29,27 @@ TG_CHANNEL     = os.getenv("TELEGRAM_CHANNEL_ID", "")  # marketing posts → pub
 STORE_URL      = "https://ineedit.com.co"
 DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
 
+_IG_STATE_FILE = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "social")) / "ig_last_posted.json"
+
+
+def _ig_posted_today() -> bool:
+    """Returns True if Instagram was already posted to today (UTC)."""
+    import json
+    today = datetime.now().strftime("%Y-%m-%d")
+    try:
+        if _IG_STATE_FILE.exists():
+            data = json.loads(_IG_STATE_FILE.read_text())
+            return data.get("last_date") == today
+    except Exception:
+        pass
+    return False
+
+
+def _ig_mark_posted() -> None:
+    import json
+    _IG_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    _IG_STATE_FILE.write_text(json.dumps({"last_date": datetime.now().strftime("%Y-%m-%d")}))
+
 CONTENT_POOL = [
     ("🔥 KI-Business auf Autopilot!", "Stell dir vor: dein Online-Business läuft 24/7 — ohne dass du dabei sein musst. Mit KI-Automatisierung wird das Realität. Produkte, Marketing, Emails — alles automatisch. 💡 Link in Bio!"),
     ("💰 Passives Einkommen 2026", "Mehr als 500 Unternehmer nutzen bereits KI-Tools um monatlich 4-stellige Einnahmen zu generieren — vollautomatisch. Starte noch heute! 🚀"),
@@ -178,6 +199,9 @@ async def run_pipeline() -> dict:
     if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
         log.warning("instagram_pipeline: SOCIAL_POSTING_PAUSED=true — übersprungen")
         return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
+    if _ig_posted_today():
+        log.info("instagram_pipeline: bereits heute gepostet — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "IG_DAILY_LIMIT"}
     title, text = await _generate_content()
     image_url   = await _get_shopify_image()
     token       = await _page_token()
@@ -218,5 +242,7 @@ async def run_pipeline() -> dict:
     )
     await _tg(status_msg)
 
+    if fb_ok or ig_ok:
+        _ig_mark_posted()
     log.info("InstagramPipeline: FB=%s IG=%s", fb_ok, ig_ok)
     return results
