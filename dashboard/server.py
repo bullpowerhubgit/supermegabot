@@ -7871,6 +7871,25 @@ async def handle_email_test_send(req: web.Request) -> web.Response:
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
+
+async def handle_email_accounts_check(req: web.Request) -> web.Response:
+    """GET /api/email/accounts/check — SMTP-Test aller 8 Gmail-Konten."""
+    try:
+        from modules.gmail_accounts import test_all_accounts
+        return web.json_response(test_all_accounts())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_email_brain_setup(req: web.Request) -> web.Response:
+    """GET/POST /api/email/brain/setup — EmailBrain Konto-Health."""
+    try:
+        from modules.email_brain import setup_accounts
+        return web.json_response(await setup_accounts())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_ds24_sync_alias(request: web.Request) -> web.Response:
     return await handle_digistore_autonomy_cycle(request)
 
@@ -10017,6 +10036,9 @@ async def create_app():
     app.router.add_get( "/api/analytics/summary",         handle_analytics_legacy)
     app.router.add_get( "/api/meta/status",               handle_meta_ads_status)
     app.router.add_post("/api/email/test",                handle_email_test_send)
+    app.router.add_get( "/api/email/accounts/check",      handle_email_accounts_check)
+    app.router.add_get( "/api/email/brain/setup",         handle_email_brain_setup)
+    app.router.add_post("/api/email/brain/setup",         handle_email_brain_setup)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # ── MONEY MACHINE ────────────────────────────────────────────────────────

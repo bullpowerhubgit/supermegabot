@@ -56,8 +56,10 @@ def _load_env():
 _load_env()
 
 def _stripe_key()    -> str: return os.getenv("STRIPE_SECRET_KEY", "")
-def _gmail_user()    -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-def _gmail_pass()    -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
+def _gmail_user() -> str:
+    from modules.gmail_accounts import pick_account
+    acc = pick_account()
+    return acc.email if acc else os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
 def _tg_token()      -> str: return os.getenv("TELEGRAM_BOT_TOKEN", "")
 def _tg_chat()       -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _dashboard_url() -> str: return os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
@@ -444,19 +446,11 @@ def _build_report_html(client: Dict, leads: List[Dict]) -> str:
 
 
 def _send_email(to: str, subject: str, html: str) -> bool:
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"]    = _gmail_user()
-        msg["To"]      = to
-        msg.attach(MIMEText(html, "html", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as s:
-            s.login(_gmail_user(), _gmail_pass())
-            s.sendmail(_gmail_user(), to, msg.as_string())
-        return True
-    except Exception as e:
-        log.error("Email-Fehler an %s: %s", to, e)
-        return False
+    from modules.gmail_accounts import send_email as ga_send
+    ok, _via = ga_send(to, subject, "", html=html)
+    if not ok:
+        log.error("Email-Fehler an %s", to)
+    return ok
 
 
 async def send_daily_reports() -> Dict:

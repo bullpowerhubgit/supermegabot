@@ -240,48 +240,21 @@ Antworte als JSON:
 # ── Email-Versand ─────────────────────────────────────────────────────────────
 
 def send_email(to_email: str, subject: str, body: str, sender_idx: int = 0) -> bool:
-    """Sendet Email via Gmail SMTP (App-Passwort)."""
-    if sender_idx == 0:
-        user = _gmail_user()
-        pw   = _gmail_pass()
-    else:
-        user = _gmail_user2()
-        pw   = _gmail_pass2()
-
-    if not user or not pw:
-        log.warning("Gmail credentials fehlen (sender_idx=%s)", sender_idx)
-        return False
-
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"]    = f"Rudolf Sarkany <{user}>"
-        msg["To"]      = to_email
-        msg["Reply-To"] = user
-
-        # Plain text
-        msg.attach(MIMEText(body, "plain", "utf-8"))
-
-        # HTML version
-        html_body = body.replace("\n", "<br>")
-        html = f"""<html><body style="font-family:Arial,sans-serif;color:#333;max-width:600px">
+    """Sendet via gmail_accounts — sender_idx 0=aiitec(5), 1=bullpower(3)."""
+    from modules.gmail_accounts import send_email as ga_send
+    idx = 5 if sender_idx == 0 else 3
+    html_body = body.replace("\n", "<br>")
+    html = f"""<html><body style="font-family:Arial,sans-serif;color:#333;max-width:600px">
 <p>{html_body}</p>
 <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
-<p style="font-size:12px;color:#999">
-Um sich abzumelden, antworten Sie mit "Abmeldung" auf diese Email.
-</p>
+<p style="font-size:12px;color:#999">Abmeldung: Antworten Sie mit "Abmeldung"</p>
 </body></html>"""
-        msg.attach(MIMEText(html, "html", "utf-8"))
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as server:
-            server.login(user, pw.replace(" ", ""))
-            server.sendmail(user, to_email, msg.as_string())
-
-        log.info("Email gesendet: %s → %s", subject[:40], to_email)
-        return True
-    except Exception as e:
-        log.warning("Email send error (%s): %s", to_email, e)
-        return False
+    ok, via = ga_send(to_email, subject, body, html=html, account_index=idx)
+    if not ok:
+        ok, via = ga_send(to_email, subject, body, html=html)
+    if ok:
+        log.info("Email gesendet: %s → %s via %s", subject[:40], to_email, via)
+    return ok
 
 
 # ── Hauptfunktion: Outreach-Batch generieren & senden ────────────────────────
