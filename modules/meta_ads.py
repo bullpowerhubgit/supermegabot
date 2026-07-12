@@ -14,6 +14,7 @@ _API = "https://graph.facebook.com/v21.0"
 def _token() -> str:
     return (
         os.getenv("META_ADS_TOKEN")
+        or os.getenv("META_ACCESS_TOKEN")
         or os.getenv("FACEBOOK_ACCESS_TOKEN")
         or os.getenv("META_USER_TOKEN")
         or os.getenv("FACEBOOK_USER_TOKEN")
