@@ -451,7 +451,7 @@ async def create_shopify_product(template: dict) -> dict:
 
     desc = await generate_seo_description(template)
     safe_q = title.replace(" ", ",")[:40]
-    image_url = f"https://loremflickr.com/800/800/{safe_q}"
+    image_url = ""
 
     payload = {
         "product": {

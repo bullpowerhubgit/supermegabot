@@ -133,7 +133,7 @@ async def create_pod_product(title: str, description: str,
 
     # Upload design image (LoremFlickr — kein Key nötig)
     safe_title = title.replace(" ", ",")[:40]
-    img_url = f"https://loremflickr.com/800/800/{safe_title}"
+    img_url = ""
     image_id = await _upload_image_url(img_url, f"{title[:30].replace(' ','_')}.jpg")
 
     print_areas_images = []

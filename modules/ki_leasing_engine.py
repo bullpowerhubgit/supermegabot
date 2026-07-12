@@ -377,20 +377,6 @@ def _get_leads_for_report(package: str) -> List[Dict]:
     return leads[:limit]
 
 
-def _demo_leads(count: int) -> List[Dict]:
-    samples = [
-        {"company": "Muster GmbH & Co. KG", "score": 88, "type": "Insolvenz", "category": "Handel", "contact": "", "detail": "Amtsgericht München", "amount": "€240.000"},
-        {"company": "Tech Solutions Berlin GmbH", "score": 82, "type": "AI-Act-Risiko", "category": "IT/Software", "contact": "", "detail": "Risiko-Level: HOCH", "amount": "Bußgeld bis €35 Mio."},
-        {"company": "Logistik Nord AG", "score": 79, "type": "Insolvenz", "category": "Logistik", "contact": "", "detail": "Amtsgericht Hamburg", "amount": "€1.2 Mio."},
-        {"company": "Digital Agency Frankfurt", "score": 74, "type": "AI-Act-Risiko", "category": "Marketing", "contact": "", "detail": "Risiko-Level: MITTEL", "amount": "Bußgeld bis €15 Mio."},
-        {"company": "Bau & Immobilien Köln GmbH", "score": 71, "type": "Insolvenz", "category": "Immobilien", "contact": "", "detail": "Amtsgericht Köln", "amount": "€890.000"},
-    ]
-    result = []
-    for i in range(count):
-        result.append(samples[i % len(samples)])
-    return result
-
-
 def _build_report_html(client: Dict, leads: List[Dict]) -> str:
     pkg_info = PACKAGES.get(client["package"], PACKAGES["basic"])
     rows_html = ""

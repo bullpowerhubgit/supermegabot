@@ -167,26 +167,8 @@ class PriceCollector:
             return results
 
         except ImportError:
-            log.warning("ccxt not installed - using mock prices")
-            return self._mock_prices()
-
-    def _mock_prices(self) -> Dict:
-        import random
-        base_prices = {"BTC/USDT": 95000, "ETH/USDT": 3400, "BNB/USDT": 680, "SOL/USDT": 210, "XRP/USDT": 2.5}
-        results = {}
-        for exchange in EXCHANGES:
-            for pair, base in base_prices.items():
-                spread = base * random.uniform(-0.005, 0.005)
-                price = base + spread
-                results[f"{exchange}:{pair}"] = {
-                    "exchange": exchange,
-                    "pair": pair,
-                    "bid": price * 0.9995,
-                    "ask": price * 1.0005,
-                    "last": price,
-                    "volume": random.uniform(100, 10000),
-                }
-        return results
+            log.error("ccxt nicht installiert — Preise nicht abrufbar. pip install ccxt")
+            return {}
 
     async def get_prices(self, force_refresh: bool = False) -> Dict:
         if not force_refresh and time.time() - self._cache_time < 30:

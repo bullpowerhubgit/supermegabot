@@ -109,7 +109,7 @@ async def search_trending_ali(keywords: list = None, count: int = 10) -> list:
                 "title": kw_fb,
                 "price": f"{random.randint(10, 79)}.99",
                 "url": f"https://www.aliexpress.com/wholesale?SearchText={kw_fb.replace(' ', '+')}",
-                "image": f"https://loremflickr.com/640/640/{kw_fb.replace(' ', ',')}",
+                "image": "",
                 "keyword": kw_fb,
             })
     return products

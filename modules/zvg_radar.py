@@ -244,29 +244,6 @@ def _detect_objekt_typ(text: str) -> str:
     return "Immobilie"
 
 
-def _zvg_demo() -> List[Dict]:
-    demo = [
-        ("AG München",       "1 K 234/26",  "Mehrfamilienhaus",  "Schleißheimer Str. 45, München",    "Bayern",   "€850.000", "15.08.2026"),
-        ("AG Hamburg",       "67 K 89/26",  "Gewerbeobjekt",     "Speicherstadt 12, Hamburg",          "Hamburg",  "€1.200.000","22.08.2026"),
-        ("AG Köln",          "45 K 123/26", "Einfamilienhaus",   "Gürtelstr. 8, Köln",                 "NRW",      "€380.000", "10.09.2026"),
-        ("AG Frankfurt",     "12 K 567/26", "Bürogebäude",       "Mainzer Landstr. 200, Frankfurt",    "Hessen",   "€2.400.000","05.09.2026"),
-        ("AG Berlin-Mitte",  "33 K 44/26",  "Eigentumswohnung",  "Friedrichstr. 100, Berlin",          "Berlin",   "€290.000", "18.08.2026"),
-        ("AG München",       "2 K 890/26",  "Industrie",         "Werkstr. 5, Augsburg",               "Bayern",   "€650.000", "25.09.2026"),
-        ("AG Düsseldorf",    "78 K 23/26",  "Hotel",             "Königsallee 40, Düsseldorf",         "NRW",      "€3.500.000","12.10.2026"),
-        ("AG Stuttgart",     "56 K 111/26", "Mehrfamilienhaus",  "Silberburgstr. 88, Stuttgart",       "Baden-W.", "€720.000", "30.08.2026"),
-    ]
-    entries = []
-    for gericht, akz, typ, adresse, bl, wert, termin in demo:
-        uid = hashlib.md5(f"{gericht}{akz}".encode()).hexdigest()[:16]
-        entries.append({
-            "uid": uid, "gericht": gericht, "aktenzeichen": akz,
-            "objekt_typ": typ, "objekt_adresse": adresse,
-            "bundesland": bl, "verkehrswert": wert,
-            "termin_datum": termin, "scraped_at": int(time.time()),
-        })
-    return entries
-
-
 def _score(entry: Dict) -> int:
     return OBJEKT_WERTUNG.get(entry.get("objekt_typ",""), 60)
 

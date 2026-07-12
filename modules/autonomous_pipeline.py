@@ -119,7 +119,7 @@ async def generate_product_idea(niche: str, product_type: str) -> dict:
 
 async def create_shopify_product(idea: dict) -> Optional[str]:
     """Erstellt Shopify-Produkt aus Idee. Gibt product_id zurück."""
-    img_url = f"https://loremflickr.com/800/600/{idea['tags'][0].replace(' ', ',')}"
+    img_url = ""
     payload = {
         "product": {
             "title": idea["name"],
