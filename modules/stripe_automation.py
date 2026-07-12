@@ -301,6 +301,16 @@ async def _auto_enroll_buyer(email: str, first_name: str, amount: float, sequenc
         log.warning("Klaviyo enroll failed: %s", e)
 
 
+async def _umsatzmaschine_delivery(session_data: dict) -> None:
+    """Stripe Checkout → MegaBot Umsatzmaschine: Kunde registrieren + Delivery."""
+    try:
+        from modules.megabot_umsatzmaschine import handle_stripe_checkout
+        r = await handle_stripe_checkout(session_data)
+        log.info("Umsatzmaschine: %s", r.get("message", r))
+    except Exception as e:
+        log.warning("Umsatzmaschine delivery: %s", e)
+
+
 async def _trello_card_for_event(etype: str, event_data: dict) -> None:
     """Fire-and-forget Trello card creation for Stripe events."""
     try:
@@ -343,6 +353,7 @@ async def handle_webhook_event(event: Dict) -> str:
         )
         if email and "@" in email:
             asyncio.create_task(_auto_enroll_buyer(email, name, amount, seq))
+            asyncio.create_task(_umsatzmaschine_delivery(data))
         return f"checkout.session.completed handled → {seq}"
 
     if etype == "customer.subscription.created":
