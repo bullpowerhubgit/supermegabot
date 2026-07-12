@@ -307,6 +307,9 @@ TOPICS = [
 
 async def run_free_syndication(topic: str | None = None) -> dict:
     """Run full syndication cycle across all free platforms."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("FreeSyndication: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     import random
     if not topic:
         topic = random.choice(TOPICS)

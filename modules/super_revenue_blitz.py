@@ -117,6 +117,9 @@ async def _github_seo_post(topic: str) -> Optional[str]:
 
 async def revenue_blast_now() -> dict:
     """Triggert SOFORT alle Revenue-Kanäle gleichzeitig."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("RevenueBlitz: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     link = DS24_LINK()
     offer_text = (
         f"🔥 <b>SuperMegaBot — Vollautomatisches Online-Business</b>\n\n"
