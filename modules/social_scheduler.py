@@ -109,6 +109,9 @@ CONTENT_TEMPLATES = [
 ]
 
 
+DAILY_POST_LIMIT = int(os.getenv("DAILY_POST_LIMIT", "3"))
+
+
 def _next_template_index() -> int:
     import json
     try:
@@ -120,12 +123,33 @@ def _next_template_index() -> int:
     return 0
 
 
+def _today_post_count() -> int:
+    import json
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    try:
+        if STATE_FILE.exists():
+            state = json.loads(STATE_FILE.read_text())
+            if state.get("last_post_date") == today:
+                return state.get("posts_today", 0)
+    except Exception:
+        pass
+    return 0
+
+
 def _save_state(index: int, results: dict) -> None:
     import json
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    try:
+        existing = json.loads(STATE_FILE.read_text()) if STATE_FILE.exists() else {}
+    except Exception:
+        existing = {}
+    posts_today = existing.get("posts_today", 0) + 1 if existing.get("last_post_date") == today else 1
     state = {
         "last_index": index,
         "last_run": datetime.now(timezone.utc).isoformat(),
         "last_results": results,
+        "last_post_date": today,
+        "posts_today": posts_today,
     }
     STATE_FILE.write_text(json.dumps(state, indent=2))
 
@@ -164,6 +188,10 @@ async def post_to_facebook(text: str) -> dict:
     if not FB_PAGE_TOKEN:
         return {"ok": False, "error": "FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
 
+    dead_url = await _check_urls_in_text(text)
+    if dead_url:
+        log.error("post_to_facebook: URL_DEAD=%s — Post abgebrochen", dead_url)
+        return {"ok": False, "error": f"URL_DEAD: {dead_url}"}
     text = await _validate_urls(text)
 
     url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{FB_PAGE_ID}/feed"
@@ -186,6 +214,10 @@ async def post_to_facebook(text: str) -> dict:
 
 async def post_to_twitter(text: str) -> dict:
     """Versucht Tweet über internen Webhook mit URL-Validierung."""
+    dead_url = await _check_urls_in_text(text)
+    if dead_url:
+        log.error("post_to_twitter: URL_DEAD=%s — Post abgebrochen", dead_url)
+        return {"ok": False, "error": f"URL_DEAD: {dead_url}"}
     text = await _validate_urls(text)
     try:
         async with aiohttp.ClientSession() as session:
@@ -206,11 +238,36 @@ async def post_to_twitter(text: str) -> dict:
         return {"ok": False, "error": str(e)}
 
 
+async def _check_urls_in_text(text: str) -> str | None:
+    """Prüft alle https:// URLs im Text. Gibt erste tote URL zurück oder None."""
+    import re as _re
+    urls = _re.findall(r'https://[^\s\'"\\>)\]]+', text)
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
+            for url in urls:
+                url = url.rstrip('.,;)')
+                try:
+                    async with s.get(url, allow_redirects=True) as r:
+                        if r.status >= 400:
+                            log.warning("URL_DEAD %s → %s", url, r.status)
+                            return url
+                except Exception:
+                    log.warning("URL_UNREACHABLE %s", url)
+                    return url
+    except Exception:
+        pass
+    return None
+
+
 async def post_daily_content(force_template_index: int = None) -> dict:
     """Hauptfunktion: postet auf Twitter, fällt auf Telegram zurück."""
     if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
         log.warning("social_scheduler: SOCIAL_POSTING_PAUSED=true — übersprungen")
         return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
+    today_count = _today_post_count()
+    if today_count >= DAILY_POST_LIMIT:
+        log.info("social_scheduler: Tageslimit %d/%d erreicht — übersprungen", today_count, DAILY_POST_LIMIT)
+        return {"ok": False, "skipped": True, "reason": f"DAILY_LIMIT_{today_count}/{DAILY_POST_LIMIT}"}
     idx = force_template_index if force_template_index is not None else _next_template_index()
     template = CONTENT_TEMPLATES[idx]
     text = template["text"]
