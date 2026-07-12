@@ -33,7 +33,7 @@ log = logging.getLogger("reply_monitor")
 
 # ── Config ──────────────────────────────────────────────────────────────────
 GMAIL_USER = os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-GMAIL_PASS = os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw").replace(" ", "")
+GMAIL_PASS = os.getenv("GMAIL_APP_PASSWORD_AIITEC", "").replace(" ", "")
 IMAP_HOST  = "imap.gmail.com"
 IMAP_PORT  = 993
 SMTP_HOST  = "smtp.gmail.com"
