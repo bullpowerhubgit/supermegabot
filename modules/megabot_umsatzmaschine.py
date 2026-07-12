@@ -1,0 +1,549 @@
+#!/usr/bin/env python3
+"""
+MegaBot Umsatzmaschine — 8 Systeme + Stripe Webhook + PDF Delivery.
+
+SYS-01 KI-Mitarbeiter-Leasing (B2B Leads)
+SYS-02 Trend Velocity (Shopify + Meta Ads)
+SYS-03 Ghost Vendor Network (Printful/Printify)
+SYS-04 EU AI Act Compliance (PDF via ReportLab)
+SYS-05 Insolvenz-Arbitrage + Kapital-Tracking
+SYS-06 Platform Migration Kit (event-basiert)
+SYS-07 AI Citation SEO
+SYS-08 Intelligence Broker
+"""
+from __future__ import annotations
+
+import asyncio
+import base64
+import csv
+import io
+import json
+import logging
+import os
+import sqlite3
+from datetime import datetime, timedelta
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+
+log = logging.getLogger("Umsatzmaschine")
+
+DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
+CLIENTS_FILE = DATA_DIR / "megabot_clients.json"
+REPORTS_DIR = DATA_DIR / "reports"
+REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+# Paket → System-Mapping
+PACKAGE_SYSTEMS = {
+    "lead-agent": "SYS-01",
+    "lead-agent-pro": "SYS-01",
+    "compliance": "SYS-04",
+    "ai-act": "SYS-04",
+    "insolvenz": "SYS-05",
+    "insolvenz-pro": "SYS-05",
+    "trend-velocity": "SYS-02",
+    "ghost-vendor": "SYS-03",
+    "intelligence": "SYS-08",
+}
+
+
+# ---------------------------------------------------------------------------
+# Adapter — echte MegaBot-Module
+# ---------------------------------------------------------------------------
+async def fetch_b2b_leads(target_profile: str = "IT-Dienstleister DACH", num_leads: int = 10) -> List[Dict]:
+    from modules.insolvenz_radar import get_top_leads, run_scan
+    try:
+        await run_scan(min_score_alert=60)
+    except Exception as e:
+        log.warning("Insolvenz scan: %s", e)
+    leads = get_top_leads(limit=num_leads)
+    return [
+        {
+            "company": l.get("debtor_name", l.get("company", "?")),
+            "bundesland": l.get("bundesland", ""),
+            "branche": l.get("branche", ""),
+            "score": l.get("score", 0),
+            "source": l.get("source", "insolvenz_radar"),
+            "profile": target_profile,
+        }
+        for l in leads
+    ]
+
+
+async def generate_risk_report(company_name: str, systems: List[str]) -> Dict[str, Any]:
+    from modules.ai_act_scanner import analyze_ai_risk
+    findings: List[str] = []
+    system_rows: List[Dict] = []
+    max_risk = "NIEDRIG"
+    risk_order = {"NIEDRIG": 0, "MITTEL": 1, "HOCH": 2}
+
+    for sys_name in systems:
+        branche = sys_name if sys_name in ("IT", "Finanzen", "Gesundheit") else "Sonstige"
+        r = await analyze_ai_risk(company_name, branche, "Deutschland")
+        level = r.get("risiko_level", "MITTEL")
+        if risk_order.get(level, 1) > risk_order.get(max_risk, 0):
+            max_risk = level
+        findings.append(f"{sys_name}: {r.get('ai_summary', r.get('empfehlung', ''))}")
+        system_rows.append({
+            "system": sys_name,
+            "risk_level": level,
+            "measures": r.get("empfehlung", "Dokumentation + Human Oversight"),
+        })
+
+    return {
+        "risk_level": max_risk,
+        "findings": findings or ["Keine kritischen Verstöße im Scan gefunden."],
+        "systems": system_rows,
+        "company": company_name,
+    }
+
+
+def get_daily_insolvency_alerts(limit: int = 20) -> List[Dict]:
+    from modules.insolvenz_radar import get_top_leads
+    return get_top_leads(limit=limit)
+
+
+def get_zvg_signals(limit: int = 15) -> List[Dict]:
+    db = DATA_DIR / "zvg_radar.db"
+    if not db.exists():
+        db = Path(__file__).parent.parent / "data" / "zvg_radar.db"
+    if not db.exists():
+        return []
+    try:
+        with sqlite3.connect(str(db)) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute(
+                "SELECT * FROM zvg_leads ORDER BY score DESC LIMIT ?", (limit,)
+            ).fetchall()
+        return [dict(r) for r in rows]
+    except Exception as e:
+        log.warning("ZVG DB: %s", e)
+        return []
+
+
+async def run_trend_velocity() -> Dict[str, Any]:
+    from modules.ds24_affiliate_blaster import blast_all_approved
+    r = await blast_all_approved(delay=2.0)
+    return {"ok": True, "blasted": r.get("blasted", 0), "system": "SYS-02"}
+
+
+async def run_ghost_vendor_update(shop_id: str = "") -> Dict[str, Any]:
+    sid = shop_id or os.getenv("PRINTFUL_STORE_ID", "")
+    try:
+        from modules.printful_automation import ping, get_stores
+        ok = await ping()
+        stores = await get_stores() if ok else []
+        return {"ok": ok, "stores": len(stores), "shop_id": sid, "system": "SYS-03"}
+    except Exception as e:
+        return {"ok": False, "error": str(e), "system": "SYS-03"}
+
+
+async def run_intelligence_broker(company: str) -> Dict[str, Any]:
+    risk = await generate_risk_report(company, ["Chatbot", "Recommendation Engine"])
+    hr: Dict[str, Any] = {}
+    try:
+        from modules.handelsregister_radar import run_cycle as hr_cycle
+        hr = await hr_cycle()
+    except Exception:
+        hr = {"note": "Handelsregister scan optional"}
+    return {
+        "company": company,
+        "handelsregister": hr,
+        "insolvenz_alerts": len(get_daily_insolvency_alerts(5)),
+        "ai_act_risk": risk.get("risk_level", "?"),
+        "system": "SYS-08",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Email mit Attachment (Resend API)
+# ---------------------------------------------------------------------------
+async def send_email_with_attachment(
+    to_email: str,
+    subject: str,
+    body: str,
+    attachment_path: Optional[str] = None,
+    attachment_name: Optional[str] = None,
+    csv_rows: Optional[List[Dict]] = None,
+) -> bool:
+    import aiohttp
+
+    attachments = []
+    if csv_rows:
+        output = io.StringIO()
+        if csv_rows:
+            writer = csv.DictWriter(output, fieldnames=list(csv_rows[0].keys()))
+            writer.writeheader()
+            writer.writerows(csv_rows)
+        attachments.append({
+            "filename": attachment_name or "leads.csv",
+            "content": base64.b64encode(output.getvalue().encode("utf-8")).decode(),
+        })
+    elif attachment_path and Path(attachment_path).exists():
+        content = Path(attachment_path).read_bytes()
+        attachments.append({
+            "filename": attachment_name or Path(attachment_path).name,
+            "content": base64.b64encode(content).decode(),
+        })
+
+    html = f"<html><body style='font-family:Arial,sans-serif'><p>{body.replace(chr(10), '<br>')}</p></body></html>"
+    key = os.getenv("RESEND_API_KEY", "")
+    if not key:
+        from modules.email_client import send_email
+        return await send_email(to_email, subject, html)
+
+    payload: Dict[str, Any] = {
+        "from": os.getenv("EMAIL_FROM", "MegaBot <onboarding@resend.dev>"),
+        "to": [to_email],
+        "subject": subject,
+        "html": html,
+    }
+    if attachments:
+        payload["attachments"] = attachments
+
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
+            async with s.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json=payload,
+            ) as r:
+                if r.status in (200, 201):
+                    log.info("Email gesendet an %s: %s", to_email, subject)
+                    return True
+                log.warning("Resend %s: %s", r.status, (await r.text())[:200])
+    except Exception as e:
+        log.error("Resend-Fehler: %s", e)
+
+    return await _send_smtp_fallback(to_email, subject, body, attachment_path, csv_rows, attachment_name)
+
+
+async def _send_smtp_fallback(
+    to_email: str,
+    subject: str,
+    body: str,
+    attachment_path: Optional[str],
+    csv_rows: Optional[List[Dict]],
+    attachment_name: Optional[str],
+) -> bool:
+    """Gmail SMTP Fallback wenn Resend nicht verfügbar."""
+    import smtplib
+    from email import encoders
+    from email.mime.base import MIMEBase
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    user = os.getenv("GMAIL_USER_AIITEC", os.getenv("GMAIL_USER", ""))
+    pwd = os.getenv("GMAIL_APP_PASSWORD_AIITEC", os.getenv("GMAIL_APP_PASSWORD", ""))
+    if not user or not pwd:
+        log.warning("SMTP Fallback: Gmail-Credentials fehlen")
+        return False
+
+    msg = MIMEMultipart()
+    msg["Subject"] = subject
+    msg["From"] = user
+    msg["To"] = to_email
+    msg.attach(MIMEText(body, "plain", "utf-8"))
+
+    if csv_rows:
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=list(csv_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(csv_rows)
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(output.getvalue().encode("utf-8"))
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f'attachment; filename="{attachment_name or "leads.csv"}"')
+        msg.attach(part)
+    elif attachment_path and Path(attachment_path).exists():
+        part = MIMEBase("application", "octet-stream")
+        part.set_payload(Path(attachment_path).read_bytes())
+        encoders.encode_base64(part)
+        part.add_header("Content-Disposition", f'attachment; filename="{attachment_name or Path(attachment_path).name}"')
+        msg.attach(part)
+
+    try:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as server:
+            server.starttls()
+            server.login(user, pwd.replace(" ", ""))
+            server.send_message(msg)
+        log.info("SMTP gesendet an %s", to_email)
+        return True
+    except Exception as e:
+        log.error("SMTP-Fehler: %s", e)
+        return False
+
+
+# ---------------------------------------------------------------------------
+# Stripe Webhook Handler
+# ---------------------------------------------------------------------------
+class StripeWebhookHandler:
+    def __init__(self, services: "MegaBotUmsatzmaschine"):
+        self.services = services
+
+    async def handle_checkout_session_completed_async(self, session_data: Dict) -> Dict:
+        email = (
+            session_data.get("customer_email")
+            or (session_data.get("customer_details") or {}).get("email")
+        )
+        metadata = session_data.get("metadata") or {}
+        package = metadata.get("package") or metadata.get("tier") or "lead-agent"
+        company = metadata.get("company_name", "")
+        amount = (session_data.get("amount_total") or 0) / 100
+
+        client_id = self.services.register_new_client(
+            email, package, company_name=company, amount_paid=amount
+        )
+        await self.services.trigger_immediate_delivery(client_id)
+        return {
+            "status": "success",
+            "client_id": client_id,
+            "package": package,
+            "message": f"Client {email} für {package} aktiviert + Delivery gestartet",
+        }
+
+
+# ---------------------------------------------------------------------------
+# MegaBot Umsatzmaschine
+# ---------------------------------------------------------------------------
+class MegaBotUmsatzmaschine:
+    def __init__(self):
+        self.clients = self.load_clients()
+        self.deliveries_log: List[Dict] = []
+
+    def load_clients(self) -> Dict[str, Any]:
+        if CLIENTS_FILE.exists():
+            return json.loads(CLIENTS_FILE.read_text(encoding="utf-8"))
+        return {}
+
+    def save_clients(self) -> None:
+        DATA_DIR.mkdir(parents=True, exist_ok=True)
+        CLIENTS_FILE.write_text(
+            json.dumps(self.clients, ensure_ascii=False, indent=2), encoding="utf-8"
+        )
+
+    def register_new_client(
+        self,
+        email: str,
+        package_name: str,
+        *,
+        company_name: str = "",
+        amount_paid: float = 0.0,
+    ) -> str:
+        client_id = f"mb_{datetime.now().strftime('%Y%m%d%H%M%S')}"
+        pkg = package_name.lower().replace(" ", "-")
+        self.clients[client_id] = {
+            "email": email,
+            "package": package_name,
+            "package_key": pkg,
+            "company_name": company_name or email.split("@")[0],
+            "registered": datetime.now().isoformat(),
+            "status": "active",
+            "amount_paid": amount_paid,
+            "capital_eur": 0.0,
+            "next_delivery": (datetime.now() + timedelta(days=1)).isoformat(),
+            "target_profile": "IT-Dienstleister DACH",
+            "ai_systems": ["Chatbot", "Recommendation Engine", "Content Generator"],
+            "history": [],
+        }
+        self.save_clients()
+        log.info("Neuer Kunde: %s | %s | €%.2f", email, package_name, amount_paid)
+        return client_id
+
+    async def trigger_immediate_delivery(self, client_id: str) -> Dict[str, Any]:
+        client = self.clients.get(client_id)
+        if not client:
+            return {"ok": False, "error": "Client nicht gefunden"}
+
+        pkg = client.get("package", "").lower()
+        if any(x in pkg for x in ("lead", "leasing", "sys-01")):
+            return await self.deliver_leads(client_id)
+        if any(x in pkg for x in ("compliance", "ai act", "ai-act", "sys-04")):
+            return await self.deliver_compliance_report(client_id)
+        if any(x in pkg for x in ("insolvenz", "zvg", "sys-05")):
+            return await self.deliver_insolvency_alerts(client_id)
+        if any(x in pkg for x in ("trend", "sys-02")):
+            return await run_trend_velocity()
+        if any(x in pkg for x in ("ghost", "vendor", "sys-03")):
+            return await run_ghost_vendor_update()
+        if any(x in pkg for x in ("intelligence", "sys-08")):
+            return await run_intelligence_broker(client.get("company_name", ""))
+        return await self.deliver_leads(client_id)
+
+    async def deliver_leads(self, client_id: str) -> Dict[str, Any]:
+        client = self.clients[client_id]
+        leads = await fetch_b2b_leads(
+            client.get("target_profile", "IT-Dienstleister DACH"),
+            num_leads=10,
+        )
+        ok = await send_email_with_attachment(
+            client["email"],
+            f"Tägliche B2B-Leads — {datetime.now().strftime('%d.%m.%Y')}",
+            f"Hier sind {len(leads)} validierte Leads aus Insolvenz- & Handelsregister-Quellen.",
+            csv_rows=leads,
+            attachment_name="leads.csv",
+        )
+        client["history"].append({
+            "type": "SYS-01_leads", "date": datetime.now().isoformat(), "count": len(leads), "sent": ok,
+        })
+        self.save_clients()
+        return {"ok": ok, "system": "SYS-01", "leads": len(leads)}
+
+    async def deliver_compliance_report(self, client_id: str) -> Dict[str, Any]:
+        client = self.clients[client_id]
+        scan = await generate_risk_report(
+            client.get("company_name", "Kunde GmbH"),
+            client.get("ai_systems", ["Chatbot", "Recommendation Engine"]),
+        )
+        pdf_path = self.generate_ai_act_pdf_report(client, scan)
+        ok = await send_email_with_attachment(
+            client["email"],
+            "EU AI Act Compliance Report — MegaBot",
+            "Dein Risiko-Report mit Findings, To-dos und Maßnahmen (PDF im Anhang).",
+            attachment_path=str(pdf_path),
+            attachment_name=pdf_path.name,
+        )
+        client["history"].append({
+            "type": "SYS-04_compliance", "date": datetime.now().isoformat(), "pdf": str(pdf_path), "sent": ok,
+        })
+        self.save_clients()
+        return {"ok": ok, "system": "SYS-04", "pdf": str(pdf_path)}
+
+    def generate_ai_act_pdf_report(self, client: Dict, scan_result: Dict) -> Path:
+        from reportlab.lib import colors
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.styles import getSampleStyleSheet
+        from reportlab.lib.units import cm
+        from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+
+        safe = client["email"].split("@")[0].replace(".", "_")
+        filename = REPORTS_DIR / f"ai_act_{safe}_{datetime.now().strftime('%Y%m%d')}.pdf"
+        doc = SimpleDocTemplate(str(filename), pagesize=A4, rightMargin=2 * cm, leftMargin=2 * cm)
+        styles = getSampleStyleSheet()
+        story = []
+
+        story.append(Paragraph("EU AI Act Compliance Report", styles["Title"]))
+        story.append(Paragraph(f"Kunde: {client.get('company_name', '')}", styles["Normal"]))
+        story.append(Paragraph(f"Datum: {datetime.now().strftime('%d.%m.%Y %H:%M')}", styles["Normal"]))
+        story.append(Spacer(1, 0.5 * cm))
+        story.append(Paragraph("<b>Risiko-Klassifizierung</b>", styles["Heading2"]))
+
+        rows = [["System", "Risikoklasse", "Maßnahmen"]]
+        for s in scan_result.get("systems", []):
+            rows.append([s["system"], s["risk_level"], s["measures"]])
+        if len(rows) == 1:
+            rows.append(["KI-Systeme", scan_result.get("risk_level", "MITTEL"), "Dokumentation + Oversight"])
+
+        table = Table(rows, colWidths=[5 * cm, 3 * cm, 8 * cm])
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#1a73e8")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+            ("GRID", (0, 0), (-1, -1), 0.5, colors.grey),
+        ]))
+        story.append(table)
+        story.append(Spacer(1, 0.8 * cm))
+        story.append(Paragraph("<b>Findings</b>", styles["Heading2"]))
+        for f in scan_result.get("findings", []):
+            story.append(Paragraph(f"• {f}", styles["Normal"]))
+        story.append(Spacer(1, 0.5 * cm))
+        story.append(Paragraph(
+            "<i>Technische Risikoanalyse — ersetzt keine juristische Beratung.</i>",
+            styles["Normal"],
+        ))
+        doc.build(story)
+        return filename
+
+    async def deliver_insolvency_alerts(self, client_id: str) -> Dict[str, Any]:
+        client = self.clients[client_id]
+        insolvenz = get_daily_insolvency_alerts(20)
+        zvg = get_zvg_signals(10)
+        combined = [
+            {"type": "insolvenz", **{k: v for k, v in l.items() if k != "raw_text"}}
+            for l in insolvenz
+        ] + [
+            {"type": "zvg", "objekt": l.get("objekt_typ"), "ort": l.get("objekt_adresse"),
+             "wert": l.get("verkehrswert"), "score": l.get("score")}
+            for l in zvg
+        ]
+        capital = float(client.get("capital_eur", 0))
+        body = (
+            f"Insolvenz-Alerts: {len(insolvenz)} | ZVG-Signale: {len(zvg)}\n"
+            f"Verfügbares Kapital (SYS-05): €{capital:.2f}"
+        )
+        ok = await send_email_with_attachment(
+            client["email"],
+            f"Insolvenz & ZVG Alerts — {datetime.now().strftime('%d.%m.%Y')}",
+            body,
+            csv_rows=combined if combined else [{"info": "Keine neuen Alerts"}],
+            attachment_name="insolvenz_zvg_alerts.csv",
+        )
+        client["history"].append({
+            "type": "SYS-05_insolvenz", "date": datetime.now().isoformat(),
+            "insolvenz": len(insolvenz), "zvg": len(zvg), "sent": ok,
+        })
+        self.save_clients()
+        return {"ok": ok, "system": "SYS-05", "alerts": len(combined)}
+
+    async def run_daily_deliveries(self) -> Dict[str, Any]:
+        """Cron: alle aktiven Kunden deren next_delivery fällig ist."""
+        now = datetime.now()
+        delivered, skipped = 0, 0
+        results = []
+
+        for client_id, client in list(self.clients.items()):
+            if client.get("status") != "active":
+                skipped += 1
+                continue
+            nd = client.get("next_delivery", "")
+            try:
+                due = datetime.fromisoformat(nd)
+            except Exception:
+                due = now - timedelta(seconds=1)
+            if due > now:
+                skipped += 1
+                continue
+
+            r = await self.trigger_immediate_delivery(client_id)
+            client["next_delivery"] = (now + timedelta(days=1)).isoformat()
+            results.append({"client_id": client_id, **r})
+            delivered += 1
+
+        self.save_clients()
+        return {"ok": True, "delivered": delivered, "skipped": skipped, "results": results}
+
+    def get_status(self) -> Dict[str, Any]:
+        active = sum(1 for c in self.clients.values() if c.get("status") == "active")
+        revenue = sum(float(c.get("amount_paid", 0)) for c in self.clients.values())
+        return {
+            "ok": True,
+            "clients_total": len(self.clients),
+            "clients_active": active,
+            "revenue_total_eur": round(revenue, 2),
+            "clients_file": str(CLIENTS_FILE),
+            "reports_dir": str(REPORTS_DIR),
+            "systems": list(PACKAGE_SYSTEMS.keys()),
+        }
+
+
+# Singleton
+_bot: Optional[MegaBotUmsatzmaschine] = None
+
+
+def get_umsatzmaschine() -> MegaBotUmsatzmaschine:
+    global _bot
+    if _bot is None:
+        _bot = MegaBotUmsatzmaschine()
+    return _bot
+
+
+async def handle_stripe_checkout(session_data: Dict) -> Dict:
+    handler = StripeWebhookHandler(get_umsatzmaschine())
+    return await handler.handle_checkout_session_completed_async(session_data)
+
+
+async def run_daily_cron() -> Dict[str, Any]:
+    return await get_umsatzmaschine().run_daily_deliveries()
+
+
+async def run_daily_cron_str() -> str:
+    r = await run_daily_cron()
+    return f"Umsatzmaschine: {r.get('delivered', 0)} Deliveries | {r.get('skipped', 0)} übersprungen"

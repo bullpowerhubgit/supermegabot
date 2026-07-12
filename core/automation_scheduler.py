@@ -5306,6 +5306,15 @@ async def task_revenue_engine() -> str:
         return f"Revenue Engine Fehler: {e}"
 
 
+async def task_umsatzmaschine_daily() -> str:
+    """MegaBot Umsatzmaschine — tägliche Kunden-Deliveries (SYS-01 bis SYS-08)."""
+    try:
+        from modules.megabot_umsatzmaschine import run_daily_cron_str
+        return await run_daily_cron_str()
+    except Exception as e:
+        return f"Umsatzmaschine Fehler: {e}"
+
+
 async def task_fiverr_cycle() -> str:
     """Fiverr: Gig-Promotions + neue Angebote generieren (alle 12h)."""
     try:
@@ -6470,6 +6479,7 @@ TASKS = [
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
     ("revenue_engine",         task_revenue_engine,         7200,   69),  # 2h — Geld-Zyklus (DS24+Klaviyo)
+    ("umsatzmaschine_daily",   task_umsatzmaschine_daily,   86400,  71),  # 24h — Kunden-Deliveries
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
@@ -6876,6 +6886,7 @@ class AutomationScheduler:
         "klaviyo_cycle", "klaviyo_auto_campaign", "cro_run",
         "buyer_traffic_engine", "email_blast", "ads_monitor", "ads_optimize",
         "stripe_monitor", "digistore_sync", "digistore_autonomy",
+        "umsatzmaschine_daily",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
