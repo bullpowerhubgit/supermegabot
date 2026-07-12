@@ -34,6 +34,10 @@ _ENV_ALIASES: Dict[str, List[str]] = {
     "OPENROUTER_API_KEY": ["OPENROUTER_KEY"],
     "DIGISTORE24_API_KEY": ["DIGISTORE24_API_KEY_FULL", "DS24_API_KEY"],
     "STRIPE_SECRET_KEY": ["STRIPE_SECRET_KEY_FULL"],
+    "TIKTOK_APP_KEY": ["TIKTOK_CLIENT_KEY"],
+    "TIKTOK_APP_SECRET": ["TIKTOK_CLIENT_SECRET"],
+    "TIKTOK_CLIENT_KEY": ["TIKTOK_APP_KEY"],
+    "TIKTOK_CLIENT_SECRET": ["TIKTOK_APP_SECRET"],
 }
 
 
@@ -147,7 +151,10 @@ async def ping_all_platforms() -> List[Dict[str, Any]]:
 
     async def _printful():
         from modules.printful_automation import ping
-        return await ping()
+        if not os.getenv("PRINTFUL_API_KEY", "").strip():
+            return False, "PRINTFUL_API_KEY fehlt"
+        ok = await ping()
+        return ok, "OK" if ok else "API-Fehler — Key prüfen"
 
     async def _tiktok():
         from modules.tiktok_shop_sync import get_tiktok_analytics
@@ -235,7 +242,8 @@ async def sync_railway_env(extra_keys: Optional[List[str]] = None) -> Dict[str, 
         "PRINTFUL_API_KEY", "PRINTFUL_STORE_ID",
         "EBAY_APP_ID", "EBAY_CLIENT_ID", "EBAY_CLIENT_SECRET",
         "TIKTOK_APP_KEY", "TIKTOK_APP_SECRET",
-        "META_ACCESS_TOKEN", "PINTEREST_ACCESS_TOKEN",
+        "TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_SECRET",
+        "META_ACCESS_TOKEN", "PINTEREST_ACCESS_TOKEN", "PINTEREST_APP_ID",
         "REDDIT_CLIENT_ID", "REDDIT_CLIENT_SECRET", "REDDIT_TOKEN_V2",
         "GITHUB_TOKEN", "PERPLEXITY_API_KEY",
     ]
