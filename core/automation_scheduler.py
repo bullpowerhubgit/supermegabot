@@ -6695,7 +6695,7 @@ TASKS = [
     ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   76),   # 4h — Reddit + Medium + LinkedIn
     # revenue_maximizer duplicate removed (kept 4h/1380s version above)
     ("free_syndication",        task_free_syndication,       21600,  115),   # 6h — Dev.to + Hashnode + Medium + Discord
-    ("github_blog",             task_github_blog,            14400,  135),   # 4h — GitHub Pages SEO Blog
+    # github_blog duplicate removed (kept 4h/60s version above)
     # ── CONTENT FACTORY: AI-powered omnichannel content engine ───────────────
     ("content_factory_run",     task_content_factory_run,   14400,  130),   # 4h — full package from trending
     ("social_batch_gen",        task_social_batch_gen,      86400,  151),   # daily — 30-day social calendar

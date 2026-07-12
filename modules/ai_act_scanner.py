@@ -449,8 +449,11 @@ if __name__ == "__main__":
         asyncio.run(run_cycle())
     elif "--scan" in sys.argv:
         idx = sys.argv.index("--scan")
-        firma = sys.argv[idx+1] if idx + 1 < len(sys.argv) else "Muster GmbH"
-        branche = sys.argv[idx+2] if idx + 2 < len(sys.argv) else "Sonstige"
+        if idx + 1 >= len(sys.argv) or sys.argv[idx + 1].startswith("-"):
+            print("Usage: ai_act_scanner.py --scan <firma> [branche]")
+            sys.exit(1)
+        firma = sys.argv[idx + 1]
+        branche = sys.argv[idx + 2] if idx + 2 < len(sys.argv) and not sys.argv[idx + 2].startswith("-") else "Sonstige"
         asyncio.run(scan_single(firma, branche))
     else:
         asyncio.run(scheduler_loop())

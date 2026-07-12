@@ -148,8 +148,8 @@ def get_or_create_stripe_link(con: sqlite3.Connection, product_key: str) -> str:
         return row[0]
 
     if not STRIPE_KEY:
-        log.warning("STRIPE_SECRET_KEY fehlt — kein echter Checkout-Link")
-        return f"https://buy.stripe.com/PLACEHOLDER_{product_key}"
+        log.error("STRIPE_SECRET_KEY fehlt — kein Checkout-Link für %s", product_key)
+        return ""
 
     import stripe
     stripe.api_key = STRIPE_KEY
