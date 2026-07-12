@@ -314,6 +314,9 @@ async def post_daily_tweets(count: int = 3) -> dict:
     Postet täglich mehrere Tweets zu verschiedenen Themen.
     Rotiert durch Topics für maximale Keyword-Abdeckung.
     """
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("twitter_autoposter: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     import random
     posted = []
     failed = []
@@ -369,6 +372,9 @@ async def post_daily_tweets(count: int = 3) -> dict:
 
 async def post_seo_thread() -> dict:
     """Postet einen SEO-optimierten Thread (3-5 Tweets) via AI Fallback-Chain."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("twitter_autoposter seo_thread: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     prompt = """Erstelle einen Twitter-Thread auf DEUTSCH (3 Tweets) zum Thema:
 "Wie man Shopify 2026 vollautomatisiert mit KI"
 

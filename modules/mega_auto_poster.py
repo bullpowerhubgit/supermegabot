@@ -576,6 +576,9 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
 
 async def auto_post_ds24_product() -> dict:
     """Fetch DS24 product and post to all channels."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("MegaAutoPoster DS24: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     try:
         from modules.digistore24_automation import get_products
         products = await get_products()
@@ -628,6 +631,9 @@ async def auto_post_shopify_products(limit: int = 3) -> dict:
 
 async def run_full_auto_post() -> dict:
     """Master function: generate content and post everywhere."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("MegaAutoPoster: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     log.info("MegaAutoPoster: starting full auto post run")
     results = {}
     # Post DS24 product

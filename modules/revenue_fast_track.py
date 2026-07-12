@@ -260,6 +260,9 @@ async def stripe_revenue_pulse() -> dict[str, Any]:
 
 
 async def run_revenue_fast_track() -> dict[str, Any]:
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("RevenueFastTrack: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     start = time.time()
     log.info("RevenueFastTrack cycle starting")
 
