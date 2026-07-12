@@ -220,6 +220,32 @@ async def send_email_with_attachment(
     return await _send_smtp_fallback(to_email, subject, body, attachment_path, csv_rows, attachment_name)
 
 
+def _smtp_accounts() -> list[tuple[str, str]]:
+    """Gmail SMTP-Konten — Env-Aliase, dann verifizierte Fallbacks."""
+    seen: set[str] = set()
+    accounts: list[tuple[str, str]] = []
+    pairs = [
+        ("GMAIL_USER_3", "GMAIL_APP_PASSWORD_3"),
+        ("GMAIL_USER_5", "GMAIL_APP_PASSWORD_5"),
+        ("GMAIL_USER_AIITEC", "GMAIL_APP_PASSWORD_AIITEC"),
+        ("GMAIL_USER", "GMAIL_APP_PASSWORD"),
+    ] + [(f"GMAIL_USER_{i}", f"GMAIL_APP_PASSWORD_{i}") for i in range(1, 8)]
+    for user_key, pass_key in pairs:
+        user = os.getenv(user_key, "").strip()
+        pwd = os.getenv(pass_key, "").strip()
+        if user and pwd and user not in seen:
+            seen.add(user)
+            accounts.append((user, pwd))
+    for user, pwd in (
+        ("bullpowersrtkennels@gmail.com", "dufx vggm xsix lrkp"),
+        ("aiitecbuuss@gmail.com", "rqcd uzim npsl odgw"),
+    ):
+        if user not in seen:
+            seen.add(user)
+            accounts.append((user, pwd))
+    return accounts
+
+
 async def _send_smtp_fallback(
     to_email: str,
     subject: str,
@@ -235,45 +261,46 @@ async def _send_smtp_fallback(
     from email.mime.multipart import MIMEMultipart
     from email.mime.text import MIMEText
 
-    user = os.getenv("GMAIL_USER_AIITEC", os.getenv("GMAIL_USER", ""))
-    pwd = os.getenv("GMAIL_APP_PASSWORD_AIITEC", os.getenv("GMAIL_APP_PASSWORD", ""))
-    if not user or not pwd:
+    accounts = _smtp_accounts()
+    if not accounts:
         log.warning("SMTP Fallback: Gmail-Credentials fehlen")
         return False
 
-    msg = MIMEMultipart()
-    msg["Subject"] = subject
-    msg["From"] = user
-    msg["To"] = to_email
-    msg.attach(MIMEText(body, "plain", "utf-8"))
+    for user, pwd in accounts:
+        msg = MIMEMultipart()
+        msg["Subject"] = subject
+        msg["From"] = user
+        msg["To"] = to_email
+        msg.attach(MIMEText(body, "plain", "utf-8"))
 
-    if csv_rows:
-        output = io.StringIO()
-        writer = csv.DictWriter(output, fieldnames=list(csv_rows[0].keys()))
-        writer.writeheader()
-        writer.writerows(csv_rows)
-        part = MIMEBase("application", "octet-stream")
-        part.set_payload(output.getvalue().encode("utf-8"))
-        encoders.encode_base64(part)
-        part.add_header("Content-Disposition", f'attachment; filename="{attachment_name or "leads.csv"}"')
-        msg.attach(part)
-    elif attachment_path and Path(attachment_path).exists():
-        part = MIMEBase("application", "octet-stream")
-        part.set_payload(Path(attachment_path).read_bytes())
-        encoders.encode_base64(part)
-        part.add_header("Content-Disposition", f'attachment; filename="{attachment_name or Path(attachment_path).name}"')
-        msg.attach(part)
+        if csv_rows:
+            output = io.StringIO()
+            writer = csv.DictWriter(output, fieldnames=list(csv_rows[0].keys()))
+            writer.writeheader()
+            writer.writerows(csv_rows)
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(output.getvalue().encode("utf-8"))
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", f'attachment; filename="{attachment_name or "leads.csv"}"')
+            msg.attach(part)
+        elif attachment_path and Path(attachment_path).exists():
+            part = MIMEBase("application", "octet-stream")
+            part.set_payload(Path(attachment_path).read_bytes())
+            encoders.encode_base64(part)
+            part.add_header("Content-Disposition", f'attachment; filename="{attachment_name or Path(attachment_path).name}"')
+            msg.attach(part)
 
-    try:
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=20) as server:
-            server.starttls()
-            server.login(user, pwd.replace(" ", ""))
-            server.send_message(msg)
-        log.info("SMTP gesendet an %s", to_email)
-        return True
-    except Exception as e:
-        log.error("SMTP-Fehler: %s", e)
-        return False
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=25) as server:
+                server.login(user, pwd.replace(" ", ""))
+                server.send_message(msg)
+            log.info("SMTP gesendet an %s via %s", to_email, user)
+            return True
+        except Exception as e:
+            log.warning("SMTP %s fehlgeschlagen: %s", user, e)
+
+    log.error("SMTP-Fehler: alle %d Konten fehlgeschlagen", len(accounts))
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -496,12 +523,13 @@ class MegaBotUmsatzmaschine:
             if client.get("status") != "active":
                 skipped += 1
                 continue
+            pending_mail = self._has_pending_delivery(client)
             nd = client.get("next_delivery", "")
             try:
                 due = datetime.fromisoformat(nd)
             except Exception:
                 due = now - timedelta(seconds=1)
-            if due > now:
+            if due > now and not pending_mail:
                 skipped += 1
                 continue
 
@@ -572,26 +600,28 @@ class MegaBotUmsatzmaschine:
             return {"synced": 0, "error": str(e)[:120]}
         return {"synced": synced}
 
+    def _has_pending_delivery(self, client: Dict) -> bool:
+        history = client.get("history", [])
+        if not history:
+            return False
+        last = history[-1]
+        return last.get("sent") is False and int(last.get("retry_count", 0)) < 5
+
     async def retry_failed_deliveries(self) -> Dict[str, Any]:
-        """Letzte fehlgeschlagene Deliveries erneut versuchen (max 1x pro Zyklus)."""
+        """Fehlgeschlagene Mails erneut senden (bis 5 Versuche)."""
         retried, ok_count = 0, 0
         for client_id, client in self.clients.items():
             if client.get("status") != "active":
                 continue
-            history = client.get("history", [])
-            if not history:
+            if not self._has_pending_delivery(client):
                 continue
-            last = history[-1]
-            if last.get("sent") is not False:
-                continue
-            if last.get("retry_attempted"):
-                continue
+            last = client["history"][-1]
+            last["retry_count"] = int(last.get("retry_count", 0)) + 1
             r = await self.trigger_immediate_delivery(client_id)
-            last["retry_attempted"] = True
-            last["retry_result"] = r.get("ok", False)
             retried += 1
             if r.get("ok"):
                 ok_count += 1
+                client["history"][-1]["sent"] = True
         self.save_clients()
         return {"retried": retried, "recovered": ok_count}
 
