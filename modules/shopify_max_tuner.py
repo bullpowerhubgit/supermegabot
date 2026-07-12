@@ -429,40 +429,52 @@ async def inject_upsell_widgets() -> dict:
 
 # ── 10. SHOPIFY ANALYTICS INTELLIGENCE ───────────────────────────────────────
 
-async def shopify_daily_intelligence() -> dict:
-    """Pull Shopify analytics, generate Telegram briefing."""
+async def shopify_daily_intelligence(notify: bool = True) -> dict:
+    """Pull Shopify analytics; optional Telegram briefing."""
     since_7d = (datetime.utcnow() - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    orders_r = await _shopify_get(
-        "orders.json",
-        f"status=any&created_at_min={since_7d}&limit=250&fields=id,total_price,line_items,created_at"
+    orders_r, count_r = await asyncio.gather(
+        _shopify_get(
+            "orders.json",
+            f"status=any&created_at_min={since_7d}&limit=250&fields=id,total_price,line_items,created_at",
+        ),
+        _shopify_get("products/count.json", ""),
+        return_exceptions=True,
     )
-    orders = orders_r.get("orders", [])
+    if isinstance(orders_r, Exception):
+        orders_r = {}
+    if isinstance(count_r, Exception):
+        count_r = {}
+    orders = orders_r.get("orders", []) if isinstance(orders_r, dict) else []
     revenue_7d = sum(float(o.get("total_price", 0)) for o in orders)
     order_count = len(orders)
     aov = revenue_7d / order_count if order_count else 0
+    products_total = int(count_r.get("count", 0)) if isinstance(count_r, dict) else 0
 
-    # Top products by order count
     product_counts: dict = {}
     for o in orders:
         for li in o.get("line_items", []):
             t = li.get("title", "")
             product_counts[t] = product_counts.get(t, 0) + 1
     top_products = sorted(product_counts.items(), key=lambda x: x[1], reverse=True)[:5]
-    top_str = "\n".join(f"  {i+1}. {t} ({c}x)" for i, (t, c) in enumerate(top_products))
 
-    msg = (
-        f"📊 Shopify Tagesbericht\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"💰 Umsatz (7 Tage): €{revenue_7d:.2f}\n"
-        f"📦 Bestellungen: {order_count}\n"
-        f"🛒 Ø Bestellwert: €{aov:.2f}\n\n"
-        f"🏆 Top Produkte:\n{top_str}\n\n"
-        f"🤖 BullPower Shopify Intelligence"
-    )
-    await _telegram(msg)
+    if notify:
+        top_str = "\n".join(f"  {i+1}. {t} ({c}x)" for i, (t, c) in enumerate(top_products))
+        msg = (
+            f"📊 Shopify Tagesbericht\n"
+            f"━━━━━━━━━━━━━━━━━━━━\n"
+            f"💰 Umsatz (7 Tage): €{revenue_7d:.2f}\n"
+            f"📦 Bestellungen: {order_count}\n"
+            f"🛒 Ø Bestellwert: €{aov:.2f}\n\n"
+            f"🏆 Top Produkte:\n{top_str}\n\n"
+            f"🤖 BullPower Shopify Intelligence"
+        )
+        await _telegram(msg)
     return {
         "revenue_7d": revenue_7d,
+        "revenue_7d_eur": revenue_7d,
         "orders_7d": order_count,
+        "products_total": products_total,
+        "products": products_total,
         "aov": round(aov, 2),
         "top_products": top_products[:3],
     }

@@ -456,7 +456,16 @@ function clrLog(){logs=[];document.getElementById('log').innerHTML=''}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
 function fe(id,v){const e=document.getElementById(id);if(e)e.textContent=v}
 
-async function get(path){try{return await(await fetch(B+path)).json()}catch(e){return null}}
+async function get(path,timeoutMs=20000){
+  try{
+    const ctrl=new AbortController();
+    const t=setTimeout(()=>ctrl.abort(),timeoutMs);
+    const r=await fetch(B+path,{signal:ctrl.signal});
+    clearTimeout(t);
+    if(!r.ok)return null;
+    return await r.json();
+  }catch(e){return null}
+}
 async function ap(path,body={}){
   const method=body===null?'GET':'POST';
   addLog('→ '+method+' '+path,'i');
@@ -530,12 +539,18 @@ async function loadQuantum(){
   sc('py',cats.python_modules);sc('api',cats.api_endpoints);sc('env',cats.env_vars);
   sc('ext',cats.external_services);sc('sched',cats.scheduler_tasks);
   sc('rev',cats.revenue_pipeline);sc('db',cats.databases);sc('fs',cats.filesystem);
-  // Update platform badges from external_services
+  // Quantum aktualisiert nur Kern-Services (dedizierte Loader für DS24/Mailchimp/etc.)
   const ext=cats.external_services||{};
+  const quantumOnly=new Set(['telegram','supabase','shopify','stripe','anthropic']);
   (ext.results||[]).forEach(r=>{
     const n=(r.service||'').toLowerCase();
+    if(!quantumOnly.has(n))return;
     const el=document.getElementById('plt-'+n);
-    if(el){el.className='plt '+(r.ok?'ok':'fail');const s=el.querySelector('.plt-st');if(s)s.textContent=r.ok?'✅ '+(r.detail||'OK'):'❌ '+(r.detail||'Error');}
+    if(el){
+      el.className='plt '+(r.ok?'ok':'fail');
+      const sid='plt-'+n+'-s';
+      fe(sid,r.ok?'✅ '+(r.detail||'OK'):'❌ '+(r.detail||'Error'));
+    }
   });
 }
 
@@ -584,21 +599,29 @@ async function loadRevenue(){
 }
 
 async function loadShopify(){
-  const d=await get('/api/shopify/intelligence');if(!d)return;
-  fe('shop-revenue','€'+(d.revenue_7d_eur||0).toFixed(0));
-  fe('shop-products',(d.products_total||d.products||0)+' Produkte');
-  fe('shop-orders',(d.orders_7d||0)+' Orders');
-  const ok=!d.error;
+  const d=await get('/api/shopify/intelligence?notify=0',25000);if(!d)return;
+  const rev=Number(d.revenue_7d_eur??d.revenue_7d??0);
+  const products=Number(d.products_total??d.products??0);
+  fe('shop-revenue','€'+rev.toFixed(0));
+  fe('shop-products',products+' Produkte');
+  fe('shop-orders',(d.orders_7d??0)+' Orders');
+  const ok=!d.error&&products>=0;
   const plt=document.getElementById('plt-shopify');
   if(plt){plt.className='plt '+(ok?'ok':'fail');fe('plt-shopify-s',ok?'✅ Verbunden':'❌ Fehler');}
 }
 
 async function loadDS24(){
-  let d=await get('/api/digistore24/status');
-  if(!d||(!d.ok&&!d.configured)) d=await get('/api/digistore/status');
+  let d=await get('/api/digistore24/status',25000);
+  if(!d||(!d.ok&&!d.configured)) d=await get('/api/digistore/status',25000);
   if(!d)return;
-  const ok=d.ok||d.configured||d.api_key_set||d.connected;
-  fe('ds24-products',d.products_count||'369');
+  const ok=!!(d.ok||d.configured||d.api_key_set||d.connected);
+  const stats=d.stats||{};
+  const products=d.products_count??d.product_count??0;
+  const orders=stats.orders_total??d.orders_total??0;
+  const revenue=Number(stats.total??d.revenue_total??0);
+  fe('ds24-products',products+'');
+  fe('ds24-orders',orders+'');
+  fe('ds24-revenue','€'+revenue.toFixed(0));
   const badge=document.getElementById('ds24-badge');
   if(badge){badge.textContent=ok?'API AKTIV':'KEIN KEY';badge.style.background=ok?'rgba(16,185,129,.3)':'rgba(239,68,68,.3)';}
   const plt=document.getElementById('plt-ds24');
@@ -607,8 +630,9 @@ async function loadDS24(){
 
 async function loadKlaviyo(){
   const d=await get('/api/klaviyo/status');if(!d)return;
-  const ok=d.connected||d.ok;
-  fe('kl-profiles',(d.profiles_total||d.total_profiles||0)+' Profile');
+  const ok=!!(d.connected||d.ok);
+  const profiles=d.profiles_total??d.total_profiles??d.list_count??0;
+  fe('kl-profiles',profiles+' Profile');
   fe('kl-status',ok?'✅ Verbunden':'⚠️ Key prüfen');
   const badge=document.getElementById('kl-badge');if(badge){badge.textContent=ok?'LIVE':'CHECK';}
   const plt=document.getElementById('plt-klaviyo');
@@ -651,7 +675,7 @@ async function loadPrintful(){
 
 async function loadTikTok(){
   const d=await get('/api/tiktok/analytics');
-  if(d&&(d.configured||d.content_generation)){
+  if(d&&(d.configured||d.content_generation||d.mode==='content_autonomous')){
     const ttlabel=d.shop_connected===false?'✅ Content-Modus':'✅ Verbunden';
     fe('tt-status',ttlabel);fe('tt-revenue','€'+(d.revenue_30d_eur||0).toFixed(0));
     const badge=document.getElementById('tt-badge');if(badge)badge.textContent=d.shop_connected===false?'AUTO':'LIVE';
@@ -702,9 +726,12 @@ async function loadRSS(){
 
 async function loadTasks(){
   const d=await get('/api/scheduler/status');if(!d)return;
-  const total=d.total_tasks||d.task_count||0;
+  const sched=d.tasks&&typeof d.tasks==='object'&&!Array.isArray(d.tasks)?d.tasks:{};
+  const arr=Array.isArray(sched.tasks)?sched.tasks:(Array.isArray(d.tasks)?d.tasks:[]);
+  const total=Number(d.total_tasks??d.task_count??sched.task_count??arr.length??0);
+  const runs=Number(d.total_runs??arr.reduce((s,t)=>s+Number(t.total||0),0));
   fe('sched-total',total+' Tasks');fe('task-count',total+'');
-  fe('sched-runs',(d.total_runs||0)+' gesamt');fe('h-tasks',total+'');
+  fe('sched-runs',runs+' gesamt');fe('h-tasks',total+'');
 }
 
 async function fireAll(){
@@ -726,11 +753,13 @@ function launchSEO(){fire('indexnow','POST','/api/indexnow/blast');fire('seo','P
 
 async function refreshAll(){
   document.getElementById('last-refresh').textContent=new Date().toLocaleTimeString('de-AT');
-  loadHealth();loadRevenue();loadQuantum();loadSystemInfo();
-  loadDS24();loadShopify();loadKlaviyo();loadMailchimp();
-  loadPrintify();loadPrintful();loadStripe();
-  loadTikTok();loadFiverr();loadUpwork();loadEbay();
-  loadTasks();loadRSS();
+  await Promise.allSettled([
+    loadHealth(),loadRevenue(),loadQuantum(),loadSystemInfo(),
+    loadDS24(),loadShopify(),loadKlaviyo(),loadMailchimp(),
+    loadPrintify(),loadPrintful(),loadStripe(),
+    loadTikTok(),loadFiverr(),loadUpwork(),loadEbay(),
+    loadTasks(),loadRSS(),
+  ]);
 }
 
 // INIT
