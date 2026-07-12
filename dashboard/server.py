@@ -2129,41 +2129,73 @@ async def handle_demand_oracle_wishes(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+_ds24_status_cache: dict = {}
+_ds24_status_cache_ts: float = 0.0
+_DS24_STATUS_TTL = 300
+
+
 async def handle_digistore_status(req):
+    global _ds24_status_cache, _ds24_status_cache_ts
     try:
+        import time
         from modules.digistore24_automation import ping, get_sales_stats, get_products, is_configured
         configured = is_configured()
         if not configured:
             return web.json_response({"ok": False, "connected": False, "configured": False, "error": "DS24 nicht konfiguriert"})
-        # Parallel statt sequenziell — spart ~16s
-        ok, stats, products = await asyncio.wait_for(
-            asyncio.gather(ping(), get_sales_stats(), get_products(), return_exceptions=True),
-            timeout=20,
+        if _ds24_status_cache and time.time() - _ds24_status_cache_ts < _DS24_STATUS_TTL:
+            return web.json_response(_ds24_status_cache)
+        ipn_url = "https://supermegabot-production.up.railway.app/api/digistore24/ipn"
+        ok, products = await asyncio.wait_for(
+            asyncio.gather(ping(), get_products(), return_exceptions=True),
+            timeout=18,
         )
         ok = ok if isinstance(ok, bool) else False
-        stats = stats if isinstance(stats, dict) else {}
         products = products if isinstance(products, list) else []
-        ipn_url = "https://supermegabot-production.up.railway.app/api/digistore24/ipn"
-        return web.json_response({
+        stats = _ds24_status_cache.get("stats", {}) if _ds24_status_cache else {}
+        if ok:
+            try:
+                fresh_stats = await asyncio.wait_for(get_sales_stats(), timeout=10)
+                if isinstance(fresh_stats, dict):
+                    stats = fresh_stats
+            except Exception:
+                pass
+        prod_count = int(len(products) or _ds24_status_cache.get("products_count") or 0)
+        payload = {
             "ok": ok or configured,
             "connected": ok,
             "configured": configured,
             "api_key_set": configured,
             "stats": stats,
-            "products_count": len(products),
-            "product_count": len(products),
+            "products_count": prod_count,
+            "product_count": prod_count,
             "revenue_total": stats.get("total", 0),
+            "orders_total": stats.get("orders_total", 0),
             "revenue_note": "€0 = Keine Transaktionen im Konto" if ok and stats.get("total", 0) == 0 else None,
             "ipn_url": ipn_url,
-        })
+        }
+        if ok or products:
+            _ds24_status_cache = payload
+            _ds24_status_cache_ts = time.time()
+        elif _ds24_status_cache:
+            stale = dict(_ds24_status_cache)
+            stale.update({"connected": ok, "ok": configured, "error": "DS24 API timeout — Cache aktiv"})
+            return web.json_response(stale)
+        return web.json_response(payload)
     except asyncio.TimeoutError:
         from modules.digistore24_automation import is_configured as _ds24_cfg
         configured = _ds24_cfg()
+        if _ds24_status_cache:
+            stale = dict(_ds24_status_cache)
+            stale.update({"connected": False, "ok": configured, "error": "DS24 API timeout — Cache aktiv"})
+            return web.json_response(stale)
         return web.json_response({
             "ok": configured,
             "connected": False,
             "configured": configured,
             "api_key_set": configured,
+            "products_count": int(_ds24_status_cache.get("products_count") or 0),
+            "product_count": int(_ds24_status_cache.get("product_count") or 0),
+            "stats": _ds24_status_cache.get("stats", {"total": 0, "orders_total": 0}),
             "error": "DS24 API timeout — Key gesetzt, API langsam",
         })
     except Exception as e:
@@ -6277,7 +6309,8 @@ async def handle_shopify_cart_recover(request: web.Request) -> web.Response:
 async def handle_shopify_intel(request: web.Request) -> web.Response:
     try:
         from modules.shopify_max_tuner import shopify_daily_intelligence
-        r = await shopify_daily_intelligence()
+        notify = request.rel_url.query.get("notify", "0").lower() in ("1", "true", "yes")
+        r = await shopify_daily_intelligence(notify=notify)
         return web.json_response(r)
     except Exception as e:
         return web.json_response({"error": str(e)}, status=500)
@@ -8151,6 +8184,13 @@ async def handle_autonomous_pipeline_status(req):
 async def handle_system_info(req):
     """GET /api/system/info — System info and versions."""
     import platform
+    sched_count = "240+"
+    try:
+        from core.automation_scheduler import get_scheduler_status
+        st = get_scheduler_status()
+        sched_count = str(st.get("task_count", len(st.get("tasks", []))))
+    except Exception:
+        pass
     return web.json_response({
         "ok": True,
         "service": "supermegabot-dashboard",
@@ -8158,7 +8198,7 @@ async def handle_system_info(req):
         "python": platform.python_version(),
         "platform": platform.system(),
         "port": int(os.getenv("PORT", 8888)),
-        "scheduler_tasks": "240+",
+        "scheduler_tasks": sched_count,
         "modules": "quantum_self_repair, autonomous_pipeline, klaviyo, mailchimp, shopify, ds24, tiktok, fiverr, upwork, ebay",
         "revenue_streams": ["shopify", "digistore24", "stripe", "printify", "printful", "klaviyo", "mailchimp", "ebay", "tiktok", "fiverr", "upwork"],
     })
@@ -10828,7 +10868,17 @@ async def handle_scheduler_status(req):
     try:
         from core.automation_scheduler import get_scheduler_status
         status = get_scheduler_status()
-        return web.json_response({"status": "ok", "tasks": status})
+        task_list = status.get("tasks", []) if isinstance(status, dict) else []
+        total_runs = sum(int(t.get("total", 0) or 0) for t in task_list if isinstance(t, dict))
+        task_count = int(status.get("task_count", len(task_list)) if isinstance(status, dict) else len(task_list))
+        return web.json_response({
+            "status": "ok",
+            "tasks": status,
+            "task_count": task_count,
+            "total_tasks": task_count,
+            "total_runs": total_runs,
+            "running": bool(status.get("running")) if isinstance(status, dict) else False,
+        })
     except Exception as e:
         tasks = [
             "shopify_sync", "ds24_revenue_sync", "health_alert", "trend_analysis",
