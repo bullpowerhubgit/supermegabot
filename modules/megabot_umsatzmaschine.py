@@ -796,3 +796,28 @@ async def run_daily_cron_str() -> str:
         f"KI-Leasing {k.get('sent', 0)} Reports | "
         f"Retries {r.get('steps', {}).get('retries', {}).get('recovered', 0)}"
     )
+
+
+if __name__ == "__main__":
+    import sys
+
+    cmd = (sys.argv[1] if len(sys.argv) > 1 else "cycle").lower()
+    bot = get_umsatzmaschine()
+
+    async def _main() -> None:
+        if cmd in ("status", "st"):
+            print(json.dumps(bot.get_status(), indent=2, ensure_ascii=False))
+            return
+        if cmd in ("delivery", "deliver") and len(sys.argv) > 2:
+            r = await bot.trigger_immediate_delivery(sys.argv[2])
+            print(json.dumps(r, indent=2, ensure_ascii=False))
+            return
+        if cmd in ("register", "client") and len(sys.argv) >= 4:
+            cid = bot.register_new_client(sys.argv[2], sys.argv[3])
+            print(json.dumps({"client_id": cid, "email": sys.argv[2], "package": sys.argv[3]}, indent=2))
+            return
+        r = await run_autonomous_cycle()
+        print(json.dumps(r, indent=2, ensure_ascii=False, default=str))
+
+    print("MegaBot Umsatzmaschine — production module (8 Systeme + Stripe + PDF)")
+    asyncio.run(_main())
