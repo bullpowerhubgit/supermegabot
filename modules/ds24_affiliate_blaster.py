@@ -234,8 +234,8 @@ async def blast_all_approved(delay: float = 5.0) -> dict:
     try:
         state_file.parent.mkdir(parents=True, exist_ok=True)
         state_file.write_text(json.dumps({"date": today, "count": sent_today + blasted}))
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     return {
         "ok": True,
@@ -321,8 +321,8 @@ async def blast_own_products(limit: int = 10) -> dict:
             f"{blasted} Produkte geblastet — Affiliate-Links aktiv",
             "https://www.digistore24.com"
         ))
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     return result
 
 

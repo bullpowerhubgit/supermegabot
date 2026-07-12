@@ -163,8 +163,8 @@ async def _notify(msg: str) -> None:
                 json={"chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 async def run_alibaba_cycle(count_per_niche: int = 2) -> dict:
@@ -213,8 +213,8 @@ async def run_alibaba_cycle(count_per_niche: int = 2) -> dict:
             from modules.quantum_self_fixer import log_error
             # Log success as a positive signal (not an error)
             pass
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
 
     log.info("Alibaba cycle done: %d/%d imported", published, imported)
     return {"imported": imported, "published": published, "niches": niches, "errors": errors}

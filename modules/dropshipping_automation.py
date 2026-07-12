@@ -61,8 +61,8 @@ async def _ollama_generate(prompt: str) -> str:
                     text = data.get("response", "")
                     if text:
                         return text
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     # Ollama unavailable — fall back to cloud AI chain
     try:
         from modules.ai_client import ai_complete
@@ -489,8 +489,8 @@ class DropshippingWorkflow:
                     niche=f"dropshipping {niche}",
                     tags=["dropshipping", "neu", niche.replace(" ", "-") if niche else "trending"]
                 )
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Ignored error: %s", e)
 
         return {
             "niche": niche or "allgemein",
@@ -740,12 +740,12 @@ class PrintOnDemandWorkflow:
                     await brutus_fire(
                         title=f"🎨 Neu: {name} — Print on Demand",
                         body=f"Frisch designt und sofort bestellbar: {name}. Individuell bedruckt, direkt zu dir geliefert.",
-                        link=os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx"),
+                        link=os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277"),
                         niche="print on demand geschenke design",
                         tags=["pod", "neu", "geschenk", "printify"]
                     )
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Ignored error: %s", e)
 
         return {
             "processed": success_count,

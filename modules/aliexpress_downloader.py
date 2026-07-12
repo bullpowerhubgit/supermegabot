@@ -229,8 +229,8 @@ async def run_auto_download(keywords: list = None, count: int = 10, markup: floa
                     niche="dropshipping trending gadgets",
                     tags=["neu", "aliexpress", "trending", "dropshipping"]
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Ignored error: %s", e)
 
     return {'total_tried': len(all_imported), 'imported': ok, 'products': all_imported}
 

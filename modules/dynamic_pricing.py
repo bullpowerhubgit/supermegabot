@@ -64,8 +64,8 @@ async def get_pricing_dashboard() -> dict:
         for v in p.get("variants", []):
             try:
                 prices.append(float(v.get("price", 0)))
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning("Ignored error: %s", e)
     avg = sum(prices) / len(prices) if prices else 0
     return {
         "total_products": len(products),

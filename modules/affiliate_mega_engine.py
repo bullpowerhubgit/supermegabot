@@ -57,8 +57,8 @@ async def _track_click(network: str, keyword: str, link: str):
             "link": link[:500],
             "created_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 async def generate_affiliate_content(product: str, network: str, link: str) -> str:
@@ -111,8 +111,8 @@ async def blast_ds24_affiliates(count: int = 3) -> dict:
             from modules.ds24_product_creator import list_ds24_products
             result = await list_ds24_products()
             products = result.get("products", [])[:count]
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
 
         if not products:
             # Fallback: DS24-Affiliate-Link direkt
@@ -197,8 +197,8 @@ async def get_affiliate_stats() -> dict:
         from modules.supabase_client import get_client
         result = get_client().table("affiliate_clicks").select("id", count="exact").execute()
         clicks = result.count or 0
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     return {
         "ok": True,

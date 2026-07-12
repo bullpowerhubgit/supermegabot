@@ -260,8 +260,8 @@ async def _blast_all_channels(idea: dict, urls: dict) -> dict:
                     json={"chat_id": TELEGRAM_CHAT, "text": tg_msg, "parse_mode": "HTML"},
                     timeout=aiohttp.ClientTimeout(total=10),
                 )
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
 
     return results
 

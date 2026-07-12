@@ -56,8 +56,8 @@ async def _tg(msg: str) -> None:
                 json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=10),
             )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 async def check_token(token: str) -> dict:

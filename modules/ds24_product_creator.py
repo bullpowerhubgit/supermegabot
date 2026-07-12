@@ -548,8 +548,8 @@ async def auto_create_products(count: int = 2, fast: bool = False) -> dict:
         from modules.supabase_client import get_client
         rows = get_client().table("ds24_products").select("concept").execute()
         existing_concepts = {r["concept"][:60] for r in rows.data or []}
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     # Bei mehr als 5 → alle Templates nutzen, sonst random sample
     templates = list(PRODUCT_TEMPLATES)
@@ -599,8 +599,8 @@ async def auto_create_products(count: int = 2, fast: bool = False) -> dict:
             if len(created) > 10:
                 lines.append(f"... + {len(created)-10} weitere")
             await notify("\n".join(lines), level="success")
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
 
     # Falls fast-Modus: am Ende einmal BrutusCore für Überblick
     if fast and created:
@@ -663,8 +663,8 @@ async def _create_product_silent(concept: str, price: str,
             "affiliate_link": affiliate_link,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     return {
         "ok": True,

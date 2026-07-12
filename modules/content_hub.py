@@ -125,8 +125,8 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
             choices = d.get("choices", [])
             if choices:
                 return choices[0].get("message", {}).get("content", "")
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Ignored error: %s", e)
     _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
     _templates = [
         f"🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 {_ds24}",
@@ -278,8 +278,8 @@ Antworte NUR mit JSON:
         start, end = raw.find("{"), raw.rfind("}") + 1
         if start >= 0:
             return json.loads(raw[start:end])
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Ignored error: %s", e)
     return {p: f"{article['title']} — {product['url']}" for p in
             ["facebook", "instagram", "tiktok", "reddit", "linkedin", "pinterest"]}
 

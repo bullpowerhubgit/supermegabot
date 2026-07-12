@@ -178,8 +178,8 @@ async def fetch_hn_signals() -> list[dict]:
                                     "url":         f"https://news.ycombinator.com/item?id={cid}",
                                 })
                             await asyncio.sleep(0.1)
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            log.warning("Ignored error: %s", e)
                     break  # found the hiring post, done
     except Exception as e:
         log.debug("HN fetch error: %s", e)
@@ -555,8 +555,8 @@ def save_signals(classified: list[dict]) -> list[dict]:
                     s.get("url", ""), s.get("industry", ""),
                     s.get("size_est", ""), s.get("buy_category", ""), conf,
                 ))
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Ignored error: %s", e)
 
             # Aggregate into leads table
             company = s.get("company", "Unbekannt")

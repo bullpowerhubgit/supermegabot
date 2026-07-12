@@ -213,8 +213,8 @@ async def _tg(msg: str) -> None:
         async with aiohttp.ClientSession() as s:
             await s.post(url, json={"chat_id": TG_CHAT_ID, "text": msg, "parse_mode": "Markdown"},
                          timeout=aiohttp.ClientTimeout(total=10))
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 # ── Main entry point ──────────────────────────────────────────────────────────
@@ -244,8 +244,8 @@ async def check_and_refresh() -> dict:
             exp = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
             days_left = (exp - datetime.now(timezone.utc)).days
             log.info(f"Facebook-Token läuft ab in {days_left} Tagen ({exp.date()})")
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
     else:
         # Kein Ablaufdatum bekannt → via debug_token prüfen
         debug = await _fb_debug_token(current_token)
@@ -330,8 +330,8 @@ async def get_status() -> dict:
         try:
             exp = datetime.fromisoformat(expires_at_str.replace("Z", "+00:00"))
             days_left = (exp - datetime.now(timezone.utc)).days
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
 
     if not days_left and token:
         debug = await _fb_debug_token(token)

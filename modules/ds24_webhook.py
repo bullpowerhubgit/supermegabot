@@ -38,8 +38,8 @@ async def _telegram(msg: str) -> None:
                 json={"chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=8),
             )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 async def _log_to_supabase(data: dict) -> None:
@@ -154,8 +154,8 @@ async def handle_ds24_purchase(data: dict) -> dict:
             f"Preis: {price} {currency} | Order: #{order_id} | Affiliate: {affiliate_id or 'direkt'}",
             channels=["telegram", "slack"],
         )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     return {
         "ok": True,

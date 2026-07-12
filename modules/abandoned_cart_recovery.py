@@ -230,8 +230,8 @@ def _load_state() -> Dict:
     if _STATE_FILE.exists():
         try:
             return json.loads(_STATE_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
     return {"sent": {}}  # token -> {"sent_at": iso, "email": email}
 
 

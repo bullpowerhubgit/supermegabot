@@ -399,8 +399,8 @@ async def _notify(msg: str):
     try:
         from modules.notify_hub import notify
         await notify(msg, level="info")
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 def _build_affiliate_link(product_id: str) -> str:
@@ -634,8 +634,8 @@ async def create_1000_products() -> dict:
         rows = get_client().table("ds24_products").select("concept").execute()
         existing_concepts = {r["concept"][:60] for r in rows.data or []}
         log.info("DS24 Massenanleger: %d bestehende Konzepte übersprungen", len(existing_concepts))
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     # Queue aufbauen: hardcodierte Templates
     queue_items = []

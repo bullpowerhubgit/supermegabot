@@ -143,8 +143,8 @@ def _telegram_alert(service: str, reason: str, error: str) -> None:
                f"Fehler: {error[:100]}\n"
                f"Status: OPEN — Calls werden für {_cfg(service)['cooldown']}s pausiert")
         send_telegram(msg)
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 def get_status() -> dict:

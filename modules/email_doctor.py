@@ -52,8 +52,8 @@ async def _tg(msg: str) -> None:
                 f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage",
                 json={"chat_id": TELEGRAM_CHAT, "text": msg[:4096], "parse_mode": "HTML"},
             )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 async def check_klaviyo(session: aiohttp.ClientSession) -> dict:

@@ -285,8 +285,8 @@ async def send_weekly_newsletter() -> dict:
                 await fire("Klaviyo Newsletter gesendet",
                            f"{len(products)} Produkte featured",
                            channels=["telegram", "slack"])
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Ignored error: %s", e)
         return result
     except Exception as e:
         return {"ok": False, "error": str(e)}
