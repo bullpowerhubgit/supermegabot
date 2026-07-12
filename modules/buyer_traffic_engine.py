@@ -147,7 +147,7 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
         except Exception as e:
             log.warning("Anthropic: %s", e)
 
-    # 2. OpenRouter (kostenlose Modelle: mistralai/mistral-7b-instruct:free)
+    # 2. OpenRouter (kostenlose Modelle: google/gemma-4-31b-it:free)
     if OPENROUTER_KEY:
         try:
             async with aiohttp.ClientSession() as s:
@@ -156,7 +156,7 @@ async def _ai(prompt: str, max_tokens: int = 600) -> str:
                     headers={"Authorization": f"Bearer {OPENROUTER_KEY}",
                              "Content-Type": "application/json",
                              "HTTP-Referer": "https://ineedit.com.co"},
-                    json={"model": "mistralai/mistral-7b-instruct:free",
+                    json={"model": "google/gemma-4-31b-it:free",
                           "max_tokens": max_tokens,
                           "messages": [{"role": "user", "content": prompt}]},
                     timeout=aiohttp.ClientTimeout(total=30),

@@ -286,10 +286,10 @@ async def _try_openrouter_free(prompt: str) -> dict:
     if not api_key:
         raise RuntimeError("no key")
     free_models = [
+        "google/gemma-4-31b-it:free",
+        "google/gemma-4-26b-a4b-it:free",
         "google/gemma-2-9b-it:free",
-        "mistralai/mistral-7b-instruct:free",
-        "microsoft/phi-3-mini-128k-instruct:free",
-        "meta-llama/llama-3.1-8b-instruct:free",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
     ]
     last_err: Exception = RuntimeError("no models tried")
     for model in free_models:
