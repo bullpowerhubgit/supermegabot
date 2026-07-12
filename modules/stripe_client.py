@@ -22,10 +22,34 @@ log = logging.getLogger("stripe_client")
 STRIPE_API_BASE = "https://api.stripe.com/v1"
 
 
-def _stripe_get(path: str, params: dict | None = None) -> dict:
-    key = os.getenv("STRIPE_SECRET_KEY") or os.getenv("STRIPE_API_KEY")
-    if not key:
-        raise RuntimeError("STRIPE_SECRET_KEY nicht gesetzt")
+_STRIPE_KEY_NAMES = (
+    "STRIPE_SECRET_KEY",
+    "STRIPE_SECRET_KEY_AIITEC",
+    "STRIPE_TEST_SECRET_KEY",
+    "STRIPE_TEST_SECRET_KEY_AIITEC",
+    "STRIPE_API_KEY",
+)
+
+
+def _stripe_key_candidates() -> list[tuple[str, str]]:
+    seen: set[str] = set()
+    out: list[tuple[str, str]] = []
+    for name in _STRIPE_KEY_NAMES:
+        val = os.getenv(name, "").strip()
+        if val and val not in seen:
+            seen.add(val)
+            out.append((name, val))
+    return out
+
+
+def _stripe_key() -> str:
+    for _, val in _stripe_key_candidates():
+        return val
+    return ""
+
+
+def _stripe_request(key: str, path: str, params: dict | None = None) -> dict:
+    import base64
 
     url = f"{STRIPE_API_BASE}{path}"
     if params:
@@ -33,17 +57,34 @@ def _stripe_get(path: str, params: dict | None = None) -> dict:
         url = f"{url}?{qs}"
 
     req = urllib.request.Request(url)
-    import base64
     token = base64.b64encode(f"{key}:".encode()).decode()
     req.add_header("Authorization", f"Basic {token}")
     req.add_header("Stripe-Version", "2024-12-18.acacia")
 
-    try:
-        with urllib.request.urlopen(req, timeout=15) as r:
-            return json.loads(r.read())
-    except urllib.error.HTTPError as e:
-        body = e.read().decode()[:300]
-        raise RuntimeError(f"Stripe HTTP {e.code}: {body}") from e
+    with urllib.request.urlopen(req, timeout=5) as r:
+        return json.loads(r.read())
+
+
+def _stripe_get(path: str, params: dict | None = None) -> dict:
+    candidates = _stripe_key_candidates()
+    if not candidates:
+        raise RuntimeError("STRIPE_SECRET_KEY nicht gesetzt")
+
+    errors: list[str] = []
+    for name, key in candidates:
+        try:
+            return _stripe_request(key, path, params)
+        except urllib.error.HTTPError as e:
+            body = e.read().decode()[:300]
+            errors.append(f"{name} HTTP {e.code}: {body}")
+            if e.code in (401, 403):
+                continue
+            raise RuntimeError(f"Stripe HTTP {e.code}: {body}") from e
+        except Exception as exc:
+            errors.append(f"{name}: {exc}")
+            continue
+
+    raise RuntimeError("; ".join(errors[-3:]))
 
 
 def get_todays_charges() -> list[dict]:
@@ -149,7 +190,25 @@ async def get_revenue_stats() -> dict:
 
 
 def is_configured() -> bool:
-    return bool(os.getenv("STRIPE_SECRET_KEY") or os.getenv("STRIPE_API_KEY"))
+    return bool(_stripe_key_candidates())
+
+
+def stripe_key_status() -> dict:
+    """Prüft alle Stripe-Keys — liefert ersten gültigen + Fehler der Live-Keys."""
+    live_errors: list[str] = []
+    for name, key in _stripe_key_candidates():
+        try:
+            _stripe_request(key, "/balance")
+            mode = "test" if "test" in name.lower() or key.startswith("sk_test_") else "live"
+            return {"ok": True, "key_name": name, "mode": mode}
+        except urllib.error.HTTPError as e:
+            body = e.read().decode()[:200]
+            if "test" not in name.lower():
+                live_errors.append(f"{name}: {body[:120]}")
+        except Exception as exc:
+            if "test" not in name.lower():
+                live_errors.append(f"{name}: {exc}")
+    return {"ok": False, "error": "; ".join(live_errors) or "Kein gültiger Stripe-Key"}
 
 
 if __name__ == "__main__":
