@@ -186,6 +186,9 @@ async def _tg_send(text: str) -> bool:
 
 async def run_mass_blast(topics_per_run: int = 5) -> dict:
     """Blast N Topics über alle verfügbaren Kanäle."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("MassContentBlaster: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     # Daily limit check - prevent flooding owner's inbox
     conn = _init_db()
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")

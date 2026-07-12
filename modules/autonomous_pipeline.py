@@ -451,4 +451,7 @@ async def run_full_pipeline(products_per_niche: int = 3) -> dict:
 
 async def run_pipeline_cycle() -> dict:
     """Scheduler-Einstiegspunkt."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("AutonomousPipeline: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     return await run_full_pipeline(products_per_niche=2)

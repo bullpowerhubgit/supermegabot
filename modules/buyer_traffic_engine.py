@@ -675,6 +675,9 @@ async def run_reddit_deal_posts(products: List[Dict]) -> Dict:
 
 async def run_buyer_traffic_cycle() -> Dict:
     """Läuft alle 4 Stunden — vollautonomer Käufer-Traffic."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("BuyerTraffic: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     started = datetime.now().isoformat()
     results = {
         "started": started,
