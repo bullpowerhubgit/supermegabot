@@ -68,6 +68,11 @@ def _tg_chat()    -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _dashboard()  -> str: return os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
 
 
+# ── Bounce-Blacklist (permanent — nach Mailer-Daemon Bounces) ────────────────
+BOUNCED_EMAILS: set = {
+    "info@autoprod.de",  # misconfigured mail server — bounces every time
+}
+
 # ── Branchen-Risikomatrix ─────────────────────────────────────────────────────
 # Quelle: EU AI Act Annex III (Hochrisiko-KI-Systeme)
 BRANCHE_RISIKO = {
@@ -361,11 +366,15 @@ async def run_cycle() -> Dict:
 
         # Email senden wenn Adresse bekannt
         if email:
+            if email.lower() in BOUNCED_EMAILS:
+                log.warning("Email geblockt (Bounce-Liste): %s", email)
+                continue
             subject, body = build_compliance_email(firma, ort, branche, analysis)
             with sqlite3.connect(str(_DB_PATH)) as conn:
+                # Check by email only (not scan_uid) — restarts don't re-send
                 already_sent = conn.execute(
-                    "SELECT id FROM aia_outreach WHERE target_email=? AND scan_uid=?",
-                    (email, uid)
+                    "SELECT id FROM aia_outreach WHERE target_email=?",
+                    (email,)
                 ).fetchone()
             if not already_sent:
                 ok = send_email(email, subject, body)
