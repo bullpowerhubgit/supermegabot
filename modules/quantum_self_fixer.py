@@ -398,6 +398,15 @@ async def scan_external_services() -> dict:
                 return r.status == 200, f"HTTP {r.status}"
 
     async def _ping_anthropic():
+        try:
+            from modules.claude_automation import ping as claude_ping, is_configured
+            if is_configured():
+                ok, detail = await asyncio.to_thread(claude_ping)
+                if ok:
+                    return True, detail
+        except Exception:
+            pass
+
         openrouter = os.getenv("OPENROUTER_API_KEY", "")
         groq = os.getenv("GROQ_API_KEY", "")
         openai = os.getenv("OPENAI_API_KEY", "")
@@ -422,9 +431,11 @@ async def scan_external_services() -> dict:
                 headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01"},
                 timeout=aiohttp.ClientTimeout(total=15),
             ) as r:
-                if r.status in (200, 400):
-                    detail = "Verbunden" if r.status == 200 else "Verbunden (Credits aufladen)"
-                    return True, detail
+                body = await r.text()
+                if r.status == 200:
+                    return True, "Verbunden"
+                if r.status == 400 and "credit balance" in body.lower():
+                    return True, "Key OK — Credits aufladen"
                 if r.status in (401, 402, 429, 529):
                     ok, detail = await _fallback_detail()
                     if ok:

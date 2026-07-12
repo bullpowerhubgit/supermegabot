@@ -8111,6 +8111,58 @@ async def handle_rudiclone_overview(req):
     except Exception as e:
         return web.json_response({"ok": True, "status": "active", "module": "rudiclone", "detail": str(e)})
 
+async def handle_anthropic_status(req):
+    try:
+        from modules.claude_automation import ping, is_configured, MODEL, FAST_MODEL
+        ok, detail = await asyncio.to_thread(ping)
+        return web.json_response({
+            "ok": ok,
+            "configured": is_configured(),
+            "connected": ok,
+            "detail": detail,
+            "model": MODEL,
+            "fast_model": FAST_MODEL,
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "configured": False, "error": str(e)})
+
+
+async def handle_anthropic_ask(req):
+    try:
+        body = await req.json()
+        from modules.claude_automation import ask_async
+        text = await ask_async(
+            body.get("prompt", ""),
+            system=body.get("system", ""),
+            max_tokens=int(body.get("max_tokens", 2000)),
+        )
+        return web.json_response({"ok": True, "text": text})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_anthropic_extract(req):
+    try:
+        body = await req.json()
+        from modules.claude_automation import extract
+        data = await asyncio.to_thread(extract, body.get("text", ""), body.get("schema", {}))
+        return web.json_response({"ok": True, "data": data})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_anthropic_classify(req):
+    try:
+        body = await req.json()
+        from modules.claude_automation import classify
+        label = await asyncio.to_thread(
+            classify, body.get("text", ""), body.get("categories", [])
+        )
+        return web.json_response({"ok": True, "category": label})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_ai_models_list(req):
     return web.json_response({"ok": True, "models": [
         {"id": "claude-haiku-4-5-20251001", "provider": "anthropic", "role": "content"},
@@ -9909,6 +9961,10 @@ async def create_app():
     app.router.add_get( "/api/agents/status",             handle_agents_overview)
     app.router.add_get( "/api/rudiclone/status",          handle_rudiclone_overview)
     app.router.add_get( "/api/ai/models",                 handle_ai_models_list)
+    app.router.add_get( "/api/anthropic/status",          handle_anthropic_status)
+    app.router.add_post("/api/anthropic/ask",             handle_anthropic_ask)
+    app.router.add_post("/api/anthropic/extract",         handle_anthropic_extract)
+    app.router.add_post("/api/anthropic/classify",        handle_anthropic_classify)
     app.router.add_get( "/api/digistore24/stats",         handle_ds24_stats_live)
     app.router.add_get( "/api/digistore24/products",      handle_ds24_product_list)
     app.router.add_get( "/api/digistore24/orders",        handle_digistore_orders)
