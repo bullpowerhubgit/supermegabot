@@ -54,6 +54,28 @@ async def ping() -> tuple[bool, str]:
 
 # ── Profiles ──────────────────────────────────────────────────────────────────
 
+async def get_profile_count(max_pages: int = 5) -> int:
+    """Paginated profile count (capped for dashboard speed)."""
+    total = 0
+    url = f"{_BASE}/profiles/"
+    params: Optional[Dict] = {"page[size]": 100}
+    try:
+        async with _session() as s:
+            for _ in range(max_pages):
+                async with s.get(url, headers=_headers(), params=params) as r:
+                    if r.status != 200:
+                        break
+                    d = await r.json()
+                    total += len(d.get("data", []))
+                    nxt = (d.get("links") or {}).get("next")
+                    if not nxt:
+                        break
+                    url, params = nxt, None
+    except Exception as e:
+        log.error(f"get_profile_count: {e}")
+    return total
+
+
 async def get_profiles(count: int = 100) -> List[Dict]:
     try:
         async with _session() as s:
@@ -385,13 +407,18 @@ async def sync_from_shopify(list_id: str, limit: int = 50) -> int:
 async def get_stats() -> Dict:
     ok, account = await ping()
     if not ok:
-        return {"ok": False, "error": account}
-    profiles  = await get_profiles(count=1)
-    lists     = await get_lists()
-    campaigns = await get_campaigns(limit=5)
+        return {"ok": False, "connected": False, "error": account}
+    profiles_total, lists, campaigns = await asyncio.gather(
+        get_profile_count(max_pages=2),
+        get_lists(),
+        get_campaigns(limit=5),
+    )
     return {
         "ok":             True,
+        "connected":      True,
         "account":        account,
+        "profiles_total": profiles_total,
+        "total_profiles": profiles_total,
         "list_count":     len(lists),
         "campaign_count": len(campaigns),
         "lists":          lists[:5],
