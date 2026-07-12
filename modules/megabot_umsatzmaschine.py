@@ -624,6 +624,11 @@ def get_umsatzmaschine() -> MegaBotUmsatzmaschine:
     global _bot
     if _bot is None:
         _bot = MegaBotUmsatzmaschine()
+        try:
+            from modules.megabot_eu_compliance_engine import add_compliance_to_megabot
+            add_compliance_to_megabot(_bot)
+        except Exception as e:
+            log.warning("EU Compliance Engine nicht geladen: %s", e)
     return _bot
 
 

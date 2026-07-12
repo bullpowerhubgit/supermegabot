@@ -7890,6 +7890,75 @@ async def handle_email_brain_setup(req: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+def _compliance_engine():
+    from modules.megabot_umsatzmaschine import get_umsatzmaschine
+    bot = get_umsatzmaschine()
+    if not getattr(bot, "compliance", None):
+        from modules.megabot_eu_compliance_engine import add_compliance_to_megabot
+        add_compliance_to_megabot(bot)
+    return bot.compliance
+
+
+async def handle_compliance_scan(req: web.Request) -> web.Response:
+    """POST /api/scan — AI-Act Art. 50 Shop-Scan."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    shop_url = body.get("shop_url") or body.get("url") or ""
+    if not shop_url:
+        return web.json_response({"ok": False, "error": "shop_url fehlt"}, status=400)
+    try:
+        return web.json_response({"ok": True, **_compliance_engine().scan_shop(shop_url)})
+    except Exception as e:
+        log.error("compliance_scan: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_compliance_hs_classify(req: web.Request) -> web.Response:
+    """POST /api/hs-classify — HS-Code Klassifizierung."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    title = body.get("title") or body.get("product_title") or ""
+    if not title:
+        return web.json_response({"ok": False, "error": "title fehlt"}, status=400)
+    try:
+        return web.json_response({"ok": True, **_compliance_engine().hs_classify(title, body.get("description", ""))})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_compliance_zvg_leads(req: web.Request) -> web.Response:
+    """GET /api/zvg/leads — ZVG NRW Leads."""
+    try:
+        min_score = int(req.query.get("min_score", "80"))
+    except ValueError:
+        min_score = 80
+    try:
+        leads = _compliance_engine().get_zvg_leads(min_score=min_score)
+        return web.json_response({"ok": True, "count": len(leads), "leads": leads})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_compliance_report(req: web.Request) -> web.Response:
+    """POST /api/compliance/report — vollständiger PDF-Report."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    shop_url = body.get("shop_url") or body.get("url") or ""
+    if not shop_url:
+        return web.json_response({"ok": False, "error": "shop_url fehlt"}, status=400)
+    try:
+        pdf = _compliance_engine().generate_compliance_report(shop_url)
+        return web.json_response({"ok": True, "pdf": pdf, "shop_url": shop_url})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_funding_scan(req: web.Request) -> web.Response:
     """POST /api/funding/scan — täglicher Förder-Opportunity-Scan."""
     try:
@@ -10121,6 +10190,10 @@ async def create_app():
     app.router.add_get( "/api/funding/status",            handle_funding_status)
     app.router.add_post("/api/funding/scan",              handle_funding_scan)
     app.router.add_post("/api/funding/kfw",               handle_funding_kfw)
+    app.router.add_post("/api/scan",                      handle_compliance_scan)
+    app.router.add_post("/api/hs-classify",               handle_compliance_hs_classify)
+    app.router.add_get( "/api/zvg/leads",                 handle_compliance_zvg_leads)
+    app.router.add_post("/api/compliance/report",         handle_compliance_report)
     app.router.add_get( "/api/email/brain/setup",         handle_email_brain_setup)
     app.router.add_post("/api/email/brain/setup",         handle_email_brain_setup)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
