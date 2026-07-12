@@ -942,6 +942,9 @@ async def brutus_run(niche: str = "shopify ecommerce automation", custom_keyword
     Scan → Predict → Swarm → Deploy → Track
     Ein Durchlauf = hunderte Content-Stücke auf allen Kanälen.
     """
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("BRUTUS: SOCIAL_POSTING_PAUSED=true — Posting deaktiviert")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     log.info("=" * 60)
     log.info("BRUTUS START — Nische: %s", niche)
     log.info("=" * 60)
@@ -1097,6 +1100,9 @@ async def run_brutus_swarm(keywords: list = None, max_keywords: int = 3,
                            niche: str = "shopify ecommerce automation",
                            affiliate_url: str = "") -> dict:
     """Alias for brutus_run — backward-compatible with all callers."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("BRUTUS swarm: SOCIAL_POSTING_PAUSED=true — Posting deaktiviert")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     kw_niche = niche
     if keywords:
         kw_niche = " ".join(keywords[:2]) if len(keywords) >= 2 else keywords[0]

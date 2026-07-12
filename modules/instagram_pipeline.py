@@ -175,6 +175,9 @@ async def _tg(msg: str) -> None:
 
 async def run_pipeline() -> dict:
     """Hauptfunktion: generiert Content + postet auf FB + IG."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("instagram_pipeline: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     title, text = await _generate_content()
     image_url   = await _get_shopify_image()
     token       = await _page_token()

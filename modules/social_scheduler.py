@@ -208,6 +208,9 @@ async def post_to_twitter(text: str) -> dict:
 
 async def post_daily_content(force_template_index: int = None) -> dict:
     """Hauptfunktion: postet auf Twitter, fällt auf Telegram zurück."""
+    if os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes"):
+        log.warning("social_scheduler: SOCIAL_POSTING_PAUSED=true — übersprungen")
+        return {"ok": False, "skipped": True, "reason": "SOCIAL_POSTING_PAUSED"}
     idx = force_template_index if force_template_index is not None else _next_template_index()
     template = CONTENT_TEMPLATES[idx]
     text = template["text"]
