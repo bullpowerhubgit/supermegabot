@@ -6444,7 +6444,7 @@ TASKS = [
     ("b2b_intent_radar",    task_b2b_intent_radar_scan, 21600, 280),  # 6h — B2B Intent Radar: HN+Reddit+GitHub→Leads
     ("social_scheduler",     task_social_scheduler,    21600, 1800), # 6h — Twitter + Telegram (30min startup delay)
     ("vorsprung_scan",       task_vorsprung_scan,      21600, 300),  # 6h — VORSPRUNG Intelligence (Bundesanzeiger+EUIPO+DPMA+Reddit)
-    ("viral_window_scan",      task_viral_window_scan,       7200,  55),  # 2h — Viral Window Scanner
+    ("viral_window_scan",      task_viral_window_scan,       7200, 600),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",        task_oos_sniper_scan,         7200,  58),  # 2h — OOS Sniper
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
@@ -6635,7 +6635,7 @@ TASKS = [
     # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────
     ("seo_optimizer",           task_seo_optimizer,           7200,   200),  # 2h
     ("traffic_seo_run",         task_traffic_seo_run,          3600,  210),  # 1h — AI SEO+Traffic (war 6h)
-    ("brutus_run",              task_brutus_run,              21600,    5),   # 6h — BRUTUS alle Kanäle (drosselt Spam)
+    ("brutus_run",              task_brutus_run,              21600, 3600),  # 6h — BRUTUS alle Kanäle (1h startup delay)
     ("dropshipping_scan",       task_dropshipping_scan,       7200,   220),  # 2h
     ("api_keys_health",         task_api_keys_health,         21600,  61),   # 6h
     ("trading_report",          task_trading_report,          21600,  240),  # 6h
@@ -6659,10 +6659,10 @@ TASKS = [
     # ── ContentHub (integriert alle 5 Content-Engines) ────────────────────
     ("content_cycle",           task_content_cycle,            3600,  400),  # 1h — SEO+Social+Twitter+FB (war 6h)
     ("freelance_cycle",         task_freelance_cycle,         14400,  420),  # 4h — Fiverr+Upwork (war 12h)
-    ("mega_auto_post",          task_mega_auto_post,           1800,   16),  # 30 Min — alle Kanäle gleichzeitig
+    # mega_auto_post duplicate removed (kept 6h/2860s version above)
     # ── CRO + Auto Funnel ────────────────────────────────────────────────
     ("cro_run",                 task_cro_run,                 3600,   121),  # hourly — Klaviyo flows + urgency
-    ("auto_funnel",             task_auto_funnel,             1800,    62),  # 30 min — DS24 buyers → funnel
+    # auto_funnel duplicate removed (kept 24h/3300s version above)
     # ── Email Brain ──────────────────────────────────────────────────────
     ("email_check",             task_email_check,              900,    31),  # 15 min — IMAP poll + AI classify + auto-reply
     ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
@@ -6670,7 +6670,7 @@ TASKS = [
     ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
     ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
     ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
-    ("twitter_auto_post",       task_twitter_auto_post,      3600,    21),   # 1h — Auto-Tweet
+    ("twitter_auto_post",       task_twitter_auto_post,      3600,   600),  # 1h — Auto-Tweet
     ("shopify_blog_auto",       task_shopify_blog_auto,      7200,    46),   # 2h — Auto-Blog-Post
     # ── Email Sequences (drip processing) ────────────────────────────────
     ("email_seq_process",       task_email_seq_process,      3600,    55),   # 1h — process due drip emails
@@ -6695,11 +6695,11 @@ TASKS = [
     ("viral_referral_trigger",  task_viral_referral_trigger, 86400,  570),   # daily — Viral Referral Loop
     ("onboarding_seq_trigger",  task_onboarding_sequence_trigger, 43200, 580), # 12h — 7-Day Onboarding
     # ── REVOLUTION v3: 10.000x SEO + Traffic + Backlinks + Revenue ───────────
-    ("seo_dominator",           task_seo_dominator,          7200,    26),   # 2h — Schema.org + IndexNow + Sitemap
-    ("backlink_bomber",         task_backlink_bomber,        7200,    36),   # 2h — IndexNow + RSS XML-RPC pings
-    ("content_velocity",        task_content_velocity,       7200,    56),   # 2h — 10-Format Content überall
+    # seo_dominator duplicate removed (kept 2h/150s version above)
+    # backlink_bomber duplicate removed (kept 2h/180s version above)
+    # content_velocity duplicate removed (kept 6h/2460s version above)
     ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   76),   # 4h — Reddit + Medium + LinkedIn
-    ("revenue_maximizer",       task_revenue_maximizer,      14400,   95),   # 4h — Cart Recovery + Winback
+    # revenue_maximizer duplicate removed (kept 4h/1380s version above)
     ("free_syndication",        task_free_syndication,       21600,  115),   # 6h — Dev.to + Hashnode + Medium + Discord
     ("github_blog",             task_github_blog,            14400,  135),   # 4h — GitHub Pages SEO Blog
     # ── CONTENT FACTORY: AI-powered omnichannel content engine ───────────────
@@ -6761,7 +6761,7 @@ TASKS = [
     ("ultra_indexnow_all",      task_ultra_indexnow_all,      21600, 1140),  # 6h — Alle 14+ Properties IndexNow
     ("ultra_seo_health",        task_ultra_seo_health,        14400, 1150),  # 4h — Property Health Check
     # ── SOCIAL SCHEDULER — Twitter + Telegram Fallback ────────────────────────
-    ("social_scheduler",        task_social_scheduler,        21600, 1200),  # 6h — Twitter post; Telegram fallback
+    # social_scheduler duplicate removed (kept 6h/1800s version above)
     # ── EU COMPLIANCE ENGINE — AI-Act · HS-Code · VAT-OSS · ZVG Leads ────────
     ("eu_compliance_tweet",     task_eu_compliance_tweet,      28800, 1300),  # 8h — Compliance Tweet + Telegram
     ("eu_compliance_lead_scan", task_eu_compliance_lead_scan,  14400, 1310),  # 4h — Shopify AI-Act Violation Scan
