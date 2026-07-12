@@ -9654,6 +9654,7 @@ async def create_app():
     # ── Dashboard Aliases (short names) ────────────────────────────────────────
     app.router.add_post("/api/shopify/sync",             handle_shopify_sync_alias)
     app.router.add_post("/api/email/check",              handle_email_check_alias)
+    app.router.add_get("/api/email/inbox",               handle_email_inbox_check)
     app.router.add_post("/api/ds24/sync",                handle_ds24_sync_alias)
     app.router.add_post("/api/amazon/run",               handle_amazon_run_alias)
     app.router.add_post("/api/ebay/run",                 handle_ebay_run_alias)
@@ -10616,6 +10617,16 @@ async def handle_universal_lead_capture(req):
         return web.json_response({"ok": True, "enrolled": True, "email": email})
     except Exception as e:
         log.error(f"Lead capture error: {e}")
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_email_inbox_check(req):
+    """GET /api/email/inbox — Postfächer prüfen (readonly, kein Auto-Reply)."""
+    try:
+        from modules.reply_monitor import check_inboxes_readonly
+        return web.json_response(await check_inboxes_readonly())
+    except Exception as e:
+        log.error("handle_email_inbox_check: %s", e)
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
