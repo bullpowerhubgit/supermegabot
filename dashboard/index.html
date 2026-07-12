@@ -321,6 +321,35 @@ a{color:inherit;text-decoration:none}
   </div>
 </div>
 
+<!-- GMAIL KONTEN -->
+<div class="sect">📧 GMAIL KONTEN — APP-PASSWORT EINRICHTEN <span class="badge badge-orange" id="gmail-badge">2/8</span></div>
+<div class="card" style="margin-bottom:12px">
+  <div class="card-h"><div class="card-t">🔑 Dein Konto aktivieren</div>
+    <button class="btn btn-green" style="font-size:10px" onclick="checkGmailAccounts()">▶ Alle testen</button>
+  </div>
+  <div style="font-size:10px;color:var(--muted);margin-bottom:8px">
+    Google → <a href="https://myaccount.google.com/apppasswords" target="_blank" style="color:var(--cyan)">App-Passwörter</a>
+    (2FA muss an sein) → 16-stelliges Passwort kopieren
+  </div>
+  <div class="g3" style="gap:8px">
+    <div><label style="font-size:9px;color:var(--muted)">Konto #</label>
+      <select id="gmail-idx" style="width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px">
+        <option value="7">#7 rudolf.sarkany.aiitec@gmail.com</option>
+        <option value="8">#8 rudolfsarkany1984@gmail.com (mein Konto)</option>
+        <option value="1">#1 dragonadnp@gmail.com</option>
+        <option value="2">#2 nikolestimi@gmail.com</option>
+        <option value="4">#4 looopwave@gmail.com</option>
+        <option value="6">#6 rudolf.sarkany@aitec.de</option>
+      </select>
+    </div>
+    <div style="grid-column:span 2"><label style="font-size:9px;color:var(--muted)">App-Passwort (xxxx xxxx xxxx xxxx)</label>
+      <input id="gmail-pwd" type="password" placeholder="16 Zeichen von Google" style="width:100%;padding:8px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px">
+    </div>
+  </div>
+  <button class="btn btn-fire" style="width:100%;margin-top:10px" onclick="saveGmailAccount()">✅ Konto speichern &amp; SMTP testen</button>
+  <div id="gmail-status-list" style="font-size:10px;margin-top:10px;color:var(--muted)">Lädt...</div>
+</div>
+
 <!-- EMAIL + RSS + SMS -->
 <div class="sect">📧 EMAIL MARKETING · RSS · SMS</div>
 <div class="g3">
@@ -868,6 +897,35 @@ async function fireAll(){
 function launchMarketing(){fire('klaviyo','POST','/api/klaviyo/run');fire('mailchimp','POST','/api/mailchimp/run');fire('rss','POST','/api/rss/run');}
 function launchSEO(){fire('indexnow','POST','/api/indexnow/blast');fire('seo','POST','/api/shopify/seo');}
 
+async function checkGmailAccounts(){
+  const d=await get('/api/email/accounts/check');
+  if(!d)return;
+  const badge=document.getElementById('gmail-badge');
+  if(badge)badge.textContent=(d.working||0)+'/'+(d.total||8);
+  const el=document.getElementById('gmail-status-list');
+  if(el){
+    el.innerHTML=(d.accounts||[]).map(a=>{
+      const icon=a.ok?'✅':(a.error==='no_password'?'⏳':'❌');
+      return `<div class="srow"><span>${icon} ${a.email}</span><span>${a.ok?'OK':a.error}</span></div>`;
+    }).join('');
+  }
+  addLog('Gmail: '+(d.working||0)+'/'+(d.total||8)+' Konten OK');
+}
+async function saveGmailAccount(){
+  const idx=parseInt(document.getElementById('gmail-idx').value,10);
+  const pwd=document.getElementById('gmail-pwd').value.trim();
+  if(!pwd){toast('App-Passwort eingeben','err');return;}
+  toast('Teste Konto #'+idx+'...','info');
+  const d=await ap('/api/email/accounts/configure',{index:idx,password:pwd});
+  if(d?.ok){
+    toast('✅ '+d.email+' aktiv!','ok');
+    document.getElementById('gmail-pwd').value='';
+    await checkGmailAccounts();
+  }else{
+    toast('❌ '+(d?.message||d?.error||'Fehler'),'err');
+  }
+}
+
 async function refreshAll(){
   document.getElementById('last-refresh').textContent=new Date().toLocaleTimeString('de-AT');
   await Promise.allSettled([
@@ -875,7 +933,7 @@ async function refreshAll(){
     loadDS24(),loadShopify(),loadKlaviyo(),loadMailchimp(),
     loadPrintify(),loadPrintful(),loadStripe(),
     loadTikTok(),loadFiverr(),loadUpwork(),loadEbay(),
-    loadTasks(),loadRSS(),loadMegaStatus(),
+    loadTasks(),loadRSS(),loadMegaStatus(),checkGmailAccounts(),
   ]);
 }
 

@@ -7890,6 +7890,22 @@ async def handle_email_brain_setup(req: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_email_accounts_configure(req: web.Request) -> web.Response:
+    """POST /api/email/accounts/configure — App-Passwort für Konto 1-8 speichern + testen."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    index = int(body.get("index", 0))
+    password = body.get("password", body.get("app_password", ""))
+    email = body.get("email", "")
+    try:
+        from modules.gmail_accounts import configure_account
+        return web.json_response(configure_account(index, password, email=email))
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_ds24_sync_alias(request: web.Request) -> web.Response:
     return await handle_digistore_autonomy_cycle(request)
 
@@ -10041,6 +10057,7 @@ async def create_app():
     app.router.add_get( "/api/meta/status",               handle_meta_ads_status)
     app.router.add_post("/api/email/test",                handle_email_test_send)
     app.router.add_get( "/api/email/accounts/check",      handle_email_accounts_check)
+    app.router.add_post("/api/email/accounts/configure",  handle_email_accounts_configure)
     app.router.add_get( "/api/email/brain/setup",         handle_email_brain_setup)
     app.router.add_post("/api/email/brain/setup",         handle_email_brain_setup)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
