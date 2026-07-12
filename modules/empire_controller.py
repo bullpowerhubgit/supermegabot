@@ -179,8 +179,8 @@ class AgentProcess:
             except Exception:
                 try:
                     self.proc.kill()
-                except Exception:
-                    pass
+                except Exception as e:
+                    log.warning("Ignored error: %s", e)
         pid_file = self.cfg.get("pid_file", "")
         if pid_file and Path(pid_file).exists():
             Path(pid_file).unlink(missing_ok=True)
@@ -214,8 +214,8 @@ async def _tg(text: str):
 def _tg_sync(text: str):
     try:
         asyncio.get_event_loop().run_until_complete(_tg(text))
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 # ── Health Check ──────────────────────────────────────────────────────────────
@@ -308,8 +308,8 @@ async def _daily_report(agents: List[AgentProcess]):
         ki_mrr     = s.get("mrr_eur", 0)
         ki_clients = s.get("active_clients", 0)
         ki_leads   = s.get("leads_today", 0)
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     # Outreach Stats
     outreach_today = 0
@@ -319,8 +319,8 @@ async def _daily_report(agents: List[AgentProcess]):
             with sqlite3.connect(str(db)) as c:
                 row = c.execute("SELECT COUNT(*) FROM outreach_log WHERE date(sent_at)=date('now')").fetchone()
                 outreach_today = row[0] if row else 0
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     status_lines = ""
     for a in agents:
@@ -494,8 +494,8 @@ def _stop_all():
     try:
         subprocess.run(["pkill", "-f", "dashboard/server.py"], capture_output=True)
         subprocess.run(["pkill", "-f", "empire_controller.py"], capture_output=True)
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     print("Done.")
 
 

@@ -55,8 +55,8 @@ async def _tg(msg: str) -> None:
                 f"https://api.telegram.org/bot{TELEGRAM_BOT}/sendMessage",
                 json={"chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"},
             )
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Ignored error: %s", e)
 
 
 async def _supa_insert(table: str, row: dict) -> bool:
@@ -86,8 +86,8 @@ async def _supa_select(table: str, params: str = "") -> list:
             ) as r:
                 if r.status == 200:
                     return await r.json()
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("Ignored error: %s", e)
     return []
 
 
@@ -434,8 +434,8 @@ async def collect_and_display_social_proof() -> dict:
                             proofs.append(
                                 f"💳 {count} Käufe in den letzten Stunden — €{total:.0f} Umsatz"
                             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Ignored error: %s", e)
 
     # Shopify: order count
     orders = await _shopify_get("orders/count.json?status=any")
@@ -478,8 +478,8 @@ async def daily_revenue_optimization() -> dict:
                     if r.status == 200:
                         d = await r.json()
                         stripe_rev = sum(p["amount"] for p in d.get("data", [])) / 100
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Ignored error: %s", e)
 
     # AI diagnosis and fix suggestions
     analysis = await _claude(

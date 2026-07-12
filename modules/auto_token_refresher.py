@@ -28,8 +28,8 @@ async def _telegram(msg: str) -> None:
                 json={"chat_id": TELEGRAM_CHAT, "text": msg[:4096], "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=8),
             )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 async def _save_token(platform: str, key: str, value: str) -> None:
@@ -57,8 +57,8 @@ async def _load_token(platform: str, key: str) -> str:
             "key", f"token_{platform}_{key}").execute()
         if row.data:
             return row.data[0]["value"]
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     return ""
 
 

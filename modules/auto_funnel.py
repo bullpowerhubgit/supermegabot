@@ -60,8 +60,8 @@ async def _tg(msg: str):
                 json={"chat_id": TELEGRAM_CHAT, "text": msg, "parse_mode": "HTML"},
                 timeout=aiohttp.ClientTimeout(total=8),
             )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 async def _klaviyo_add_profile(email: str, first_name: str = "", properties: dict = None):
@@ -370,8 +370,8 @@ async def create_shopify_discount_for_leads() -> str:
                 if r.status == 403:
                     log.debug("Shopify write_price_rules scope not granted — discount creation skipped")
                     return "skip: write_price_rules scope not granted"
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     expires = (datetime.now(timezone.utc) + timedelta(days=30)).strftime("%Y-%m-%dT%H:%M:%SZ")
 

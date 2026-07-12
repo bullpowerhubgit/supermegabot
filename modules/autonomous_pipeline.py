@@ -106,8 +106,8 @@ async def generate_product_idea(niche: str, product_type: str) -> dict:
         m = re.search(r"\{[^{}]+\}", raw, re.DOTALL)
         if m:
             return json.loads(m.group())
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     return {
         "name": f"{product_type} — {niche} Guide 2026",
         "description": f"Schritt-für-Schritt Anleitung zu {niche}. Sofort umsetzbar.",
@@ -442,8 +442,8 @@ async def run_full_pipeline(products_per_niche: int = 3) -> dict:
             f"Best-Seller skaliert: {scale_result.get('scaled_campaigns', 0)}",
             channels=["telegram"],
         )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     log.info("Pipeline abgeschlossen: %s", stats)
     return {"ok": True, **stats, "scale": scale_result}

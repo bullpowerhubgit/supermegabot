@@ -32,8 +32,8 @@ async def _ai(prompt: str) -> str:
         result = await ai_complete(prompt, max_tokens=350)
         if result:
             return result
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     return "🚀 E-Commerce Automation auf Autopilot — DS24 Affiliate + Shopify + AI!"
 
 

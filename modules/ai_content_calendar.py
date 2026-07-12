@@ -72,8 +72,8 @@ async def generate_daily_calendar(days: int = 7) -> dict:
     result = {"generated_at": today.isoformat(), "calendar": calendar}
     try:
         _CALENDAR_FILE.write_text(json.dumps(result, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
     log.info("Content calendar generated: %d days", len(calendar))
     first = calendar[0] if calendar else {}
@@ -89,8 +89,8 @@ async def get_todays_content() -> dict:
             for entry in data.get("calendar", []):
                 if entry.get("date") == today:
                     return entry
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
     await generate_daily_calendar()
     # Try once more after generation
     try:
@@ -98,8 +98,8 @@ async def get_todays_content() -> dict:
         for entry in data.get("calendar", []):
             if entry.get("date") == today:
                 return entry
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     return {"date": today, "content": {"title": "Fallback", "caption": "eCommerce automatisieren"}}
 
 
@@ -117,5 +117,5 @@ async def mark_posted(date: str, channel: str) -> None:
                 entry["posted_channels"] = posted
                 entry["posted"] = len(posted) >= len(CHANNELS)
         _CALENDAR_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=2))
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)

@@ -27,7 +27,7 @@ TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")     # system alerts only
 TG_CHANNEL     = os.getenv("TELEGRAM_CHANNEL_ID", "")  # marketing posts → public channel
 
 STORE_URL      = "https://ineedit.com.co"
-DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
 
 _IG_STATE_FILE = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "social")) / "ig_last_posted.json"
 
@@ -40,8 +40,8 @@ def _ig_posted_today() -> bool:
         if _IG_STATE_FILE.exists():
             data = json.loads(_IG_STATE_FILE.read_text())
             return data.get("last_date") == today
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     return False
 
 
@@ -86,8 +86,8 @@ async def _generate_content() -> tuple[str, str]:
             title = lines[0][:60].strip("*#- ")
             body  = text.strip()
             return title, body
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     title, body = random.choice(CONTENT_POOL)
     hashtags = "\n\n#KI #Shopify #PassivesEinkommen #OnlineBusiness #Automatisierung #Ecommerce #MakeMoneyOnline #AIitec"
     return title, body + hashtags
@@ -114,8 +114,8 @@ async def _get_shopify_image() -> str:
                 src = imgs[0].get("src", "")
                 if src and src.startswith("https://"):
                     return src
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
     return ""
 
 
@@ -190,8 +190,8 @@ async def _tg(msg: str) -> None:
                 json={"chat_id": chat_id, "text": msg, "parse_mode": "HTML",
                       "disable_web_page_preview": True},
             )
-    except Exception:
-        pass
+    except Exception as e:
+        log.warning("Ignored error: %s", e)
 
 
 async def run_pipeline() -> dict:

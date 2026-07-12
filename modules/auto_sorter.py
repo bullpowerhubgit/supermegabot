@@ -207,8 +207,8 @@ async def create_klaviyo_segments() -> dict:
                 ) as r:
                     if r.status < 400:
                         created += 1
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Ignored error: %s", e)
             await asyncio.sleep(0.5)
 
     return {"ok": True, "segments_created": created}

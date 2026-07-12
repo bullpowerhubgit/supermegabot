@@ -200,8 +200,8 @@ def _load_db() -> dict:
     if p.exists():
         try:
             return json.loads(p.read_text())
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
     return {"enrollments": [], "sent": []}
 
 

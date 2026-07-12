@@ -117,8 +117,8 @@ Format: JSON mit keys: name, description, salespage_html, thankyou_html, price""
             json_match = re.search(r'\{.*\}', ai_response, re.DOTALL)
             if json_match:
                 return json.loads(json_match.group())
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning("Ignored error: %s", e)
 
         # Fallback: Template
         return {

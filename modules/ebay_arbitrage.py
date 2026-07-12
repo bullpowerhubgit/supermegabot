@@ -116,7 +116,7 @@ async def _ebay_token() -> str:
         return ""
     try:
         creds = base64.b64encode(f"{app_id}:{cert}".encode()).decode()
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(
                 "https://api.ebay.com/identity/v1/oauth2/token",
                 headers={"Authorization": f"Basic {creds}",
@@ -138,7 +138,7 @@ async def get_ebay_market_prices(keywords: str, limit: int = 10) -> list[float]:
     if not token:
         return []
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(
                 "https://api.ebay.com/buy/browse/v1/item_summary/search",
                 headers={"Authorization": f"Bearer {token}",
@@ -153,8 +153,8 @@ async def get_ebay_market_prices(keywords: str, limit: int = 10) -> list[float]:
             p = item.get("price", {})
             try:
                 prices.append(float(p.get("value", 0)))
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Ignored error: %s", e)
         return prices
     except Exception as e:
         log.debug("eBay search error for '%s': %s", keywords, e)

@@ -170,8 +170,8 @@ def _record_post(group_id: str, text: str, success: bool) -> None:
     if _LOG_FILE.exists():
         try:
             log_data = json.loads(_LOG_FILE.read_text())
-        except Exception:
-            pass
+        except Exception as e:
+            log.warning("Ignored error: %s", e)
     log_data.append({"group": group_id, "text": text[:100], "ok": success, "ts": int(time.time())})
     log_data = log_data[-200:]
     _LOG_FILE.write_text(json.dumps(log_data, indent=2))
@@ -319,8 +319,8 @@ def _post_to_group_sync(group_id: str, text: str) -> dict:
         except Exception as e:
             try:
                 page.screenshot(path=f"/tmp/fb_group_{group_id}_error.png")
-            except Exception:
-                pass
+            except Exception as e:
+                log.warning("Ignored error: %s", e)
             return {"ok": False, "group": group_id, "error": str(e)[:200]}
         finally:
             browser.close()
