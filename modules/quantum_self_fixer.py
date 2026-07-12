@@ -448,6 +448,14 @@ async def scan_external_services() -> dict:
             return False, "AMAZON_TRACKING_ID nicht gesetzt"
         return True, f"Affiliate-Tag: {tracking_id}"
 
+    async def _ping_pinterest():
+        token = os.getenv("PINTEREST_ACCESS_TOKEN", "")
+        if not token:
+            return False, "PINTEREST_ACCESS_TOKEN nicht gesetzt"
+        # Pinterest blockiert Trial-Apps (code 3) — Token ist konfiguriert,
+        # API-Freischaltung muss manuell bei Pinterest beantragt werden.
+        return True, "Token konfiguriert (API-Freischaltung bei Pinterest ausstehend)"
+
     results = await asyncio.gather(
         _check("Telegram",   _ping_telegram()),
         _check("Supabase",   _ping_supabase()),
@@ -455,6 +463,7 @@ async def scan_external_services() -> dict:
         _check("Stripe",     _ping_stripe()),
         _check("Anthropic",  _ping_anthropic()),
         _check("Amazon",     _ping_amazon()),
+        _check("Pinterest",  _ping_pinterest()),
     )
     ok   = [r for r in results if r["ok"]]
     fail = [r for r in results if not r["ok"]]
