@@ -91,11 +91,11 @@ CONTENT_TEMPLATES = [
     },
     # Gumroad — LIVE, sofort kaufbar
     {
-        "text": "🚀 SuperMegaBot — Shopify Vollautomatisierung\n\nDein Shopify-Shop auf KI-Autopilot:\n✅ 10.500+ Produkte automatisch importiert\n✅ KI findet Bestseller in Echtzeit\n✅ Social Media auf 9 Kanälen gleichzeitig\n✅ Revenue-Tracking vollautomatisch\n\n💶 Einmalig €97 — kein Abo, Lifetime-Zugang\n\n👉 https://tecbuuss.gumroad.com/l/wcqdjx\n\n#Shopify #KI #Automation #ECommerce",
+        "text": "🚀 SuperMegaBot — Shopify auf KI-Autopilot\n\n✅ 10.500+ Produkte auto-importiert\n✅ Bestseller in Echtzeit\n✅ 9 Social-Kanäle automatisch\n✅ Revenue-Tracking vollautomatisch\n\n💶 €97 einmalig — kein Abo\n\n👉 https://tecbuuss.gumroad.com/l/wcqdjx\n\n#Shopify #KI #Automation",
         "telegram_extra": "",
     },
     {
-        "text": "💰 40h/Woche Shopify-Arbeit → 0h manuell.\n\nSuperMegaBot übernimmt alles:\n→ Produktrecherche: 2h → 2min\n→ Beschreibungen: 20min → sofort\n→ Social Media: täglich → automatisch\n→ Emails: manuell → vollautomatisch\n\nEinmalig €97 — dann läuft es alleine.\n\n🔗 https://tecbuuss.gumroad.com/l/wcqdjx\n\n#ShopifyAutomation #PassivesEinkommen",
+        "text": "💰 40h/Woche Shopify → 0h manuell.\n\nSuperMegaBot übernimmt alles:\n→ Produktrecherche: 2h → 2min\n→ Beschreibungen: sofort\n→ Social Media: automatisch\n→ Emails: vollautomatisch\n\n€97 einmalig — läuft alleine.\n\n🔗 https://tecbuuss.gumroad.com/l/wcqdjx\n\n#ShopifyAutomation",
         "telegram_extra": "",
     },
     {
