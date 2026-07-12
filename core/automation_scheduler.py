@@ -6902,7 +6902,8 @@ class AutomationScheduler:
         "klaviyo_cycle", "klaviyo_auto_campaign", "cro_run",
         "buyer_traffic_engine", "email_blast", "ads_monitor", "ads_optimize",
         "stripe_monitor", "digistore_sync", "digistore_autonomy",
-        "umsatzmaschine_daily",
+        "umsatzmaschine_daily", "mega_command_center",
+        "shopify_blog_auto", "social_autoposter", "money_machine_run",
     })
 
     async def _execute(self, name: str, fn: Callable) -> str:
