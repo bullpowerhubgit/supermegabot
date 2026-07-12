@@ -9474,6 +9474,9 @@ async def create_app():
     app.router.add_post("/api/scaling/run",           handle_scaling_run)
     app.router.add_get("/api/revenue/status",         handle_revenue_status)
     app.router.add_post("/api/revenue/run",           handle_revenue_run)
+    app.router.add_get("/api/umsatzmaschine/status",  handle_umsatzmaschine_status)
+    app.router.add_post("/api/umsatzmaschine/run",    handle_umsatzmaschine_run)
+    app.router.add_post("/api/umsatzmaschine/delivery", handle_umsatzmaschine_delivery)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
     app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
@@ -10874,6 +10877,50 @@ async def handle_revenue_run(req):
     try:
         from modules.revenue_engine import run_revenue_cycle
         return web.json_response(await run_revenue_cycle())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_umsatzmaschine_status(req):
+    try:
+        from modules.megabot_umsatzmaschine import get_umsatzmaschine
+        return web.json_response(get_umsatzmaschine().get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_umsatzmaschine_run(req):
+    """POST /api/umsatzmaschine/run — täglicher Delivery-Cron sofort."""
+    try:
+        from modules.megabot_umsatzmaschine import run_daily_cron
+        return web.json_response(await run_daily_cron())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_umsatzmaschine_delivery(req):
+    """POST /api/umsatzmaschine/delivery — sofortige Delivery für client_id oder Test."""
+    try:
+        body = await req.json()
+        from modules.megabot_umsatzmaschine import get_umsatzmaschine, handle_stripe_checkout
+        bot = get_umsatzmaschine()
+
+        if body.get("simulate_checkout"):
+            session = {
+                "customer_email": body.get("email", "test@example.com"),
+                "amount_total": int(float(body.get("amount", 97)) * 100),
+                "metadata": {
+                    "package": body.get("package", "compliance"),
+                    "company_name": body.get("company_name", "Test GmbH"),
+                },
+            }
+            return web.json_response(await handle_stripe_checkout(session))
+
+        client_id = body.get("client_id")
+        if not client_id:
+            return web.json_response({"ok": False, "error": "client_id oder simulate_checkout nötig"}, status=400)
+        result = await bot.trigger_immediate_delivery(client_id)
+        return web.json_response({"ok": True, "client_id": client_id, "result": result})
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
