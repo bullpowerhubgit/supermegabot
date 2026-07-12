@@ -311,7 +311,7 @@ async def _generate_single(session, keyword: str, format_type: str, angle: str =
         "blog_post": f"Schreibe einen SEO-optimierten Blog-Post (400 Wörter, Deutsch) über: '{keyword}'. Angle: {angle}. Mit H1, H2, starker CTA am Ende. Fokus auf Mehrwert und Long-Tail Keywords.",
         "youtube_desc": f"Schreibe eine YouTube Video-Beschreibung (200 Wörter) für: '{keyword}'. Mit Keywords, Timestamps-Vorschlägen, CTA und Tags-Liste.",
         "email_subject_lines": f"Generiere 5 Email-Betreffzeilen für das Thema '{keyword}'. Je 1x Neugier, Dringlichkeit, Nutzen, Frage, Zahl. Auf Deutsch.",
-        "social_post": f"Schreibe 3 Social Media Posts (Deutsch) über '{keyword}': 1x kurz (Twitter-Style), 1x mittel (LinkedIn), 1x mit Hashtags (Instagram). Mit starken Hooks.",
+        "social_post": f"Schreibe EINEN einzigen Social-Media-Post auf DEUTSCH über '{keyword}'. PFLICHT: max. 250 Zeichen, mit 2-3 Emojis, einem Call-to-Action und 2-3 deutschen Hashtags. KEINE Nummerierung, KEIN Englisch, KEINE Listen, KEINE Überschriften.",
         "product_seo": f"Schreibe SEO-optimierten Produkttext (150 Wörter) für ein Produkt zum Thema '{keyword}'. Mit Meta-Title (60 Zeichen), Meta-Description (155 Zeichen), 5 Keywords.",
         "ad_copy": f"Schreibe 3 Facebook/Instagram Ad-Texte für '{keyword}': 1x Problem-Lösung, 1x Social Proof, 1x Dringlichkeit. Je Headline + Body + CTA.",
         "pinterest_pins": f"Erstelle 5 Pinterest Pin-Beschreibungen für '{keyword}'. Keyword-reich, mit Call-to-Action, 150-300 Zeichen je Pin.",
@@ -413,6 +413,38 @@ async def content_swarm(keyword: str, angle: str = "") -> dict:
 # PHASE 4: DEPLOY — Alle Kanäle gleichzeitig bespielen
 # ─────────────────────────────────────────────────────────────────────────────
 
+_BAD_POST_PATTERNS = [
+    r"^\s*\d+\.\s",           # numbered list (1. 2. 3.)
+    r"\*\*[A-Z]",             # markdown bold headers
+    r"\baged \d+",            # "aged 18-35"
+    r"first-time customer",
+    r"keyword planner",
+    r"google keyword",
+    r"target the ads",
+    r"your website",
+    r"your business",
+    r"optimize your",
+    r"identify \d+",
+    r"24 hours",
+    r"flash sale.*email newsletter",
+]
+
+
+def _is_valid_social_post(text: str) -> bool:
+    """Returns True if text is a usable social post, False if it's AI garbage."""
+    import re
+    if not text or len(text) < 20:
+        return False
+    if len(text) > 600:
+        return False
+    t = text.lower()
+    for pattern in _BAD_POST_PATTERNS:
+        if re.search(pattern, t):
+            log.warning("BRUTUS content blocked — bad pattern: %s", pattern)
+            return False
+    return True
+
+
 async def deploy_to_telegram(keyword: str, content: dict):
     """Telegram Channel — sofortige Reichweite (mit URL-Validierung)."""
     if not TELEGRAM_TOKEN or not TELEGRAM_CHAT:
@@ -420,7 +452,10 @@ async def deploy_to_telegram(keyword: str, content: dict):
     try:
         from modules.telegram_safe import tg_send
         import aiohttp
-        social = content.get("social_post", "")[:800]
+        social = content.get("social_post", "")
+        if not _is_valid_social_post(social):
+            social = _fallback_content_swarm(keyword).get("social_post", "")[:400]
+        social = social[:400]
         msg = f"🚀 *BRUTUS Auto-Post*\n\nThema: {keyword}\n\n{social}"
         async with aiohttp.ClientSession() as s:
             sent = await tg_send(s, msg, chat_id=TELEGRAM_CHAT)
@@ -496,11 +531,11 @@ async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
     if not page_token:
         return False
     social = content.get("social_post", "")
+    if not _is_valid_social_post(social):
+        social = _fallback_content_swarm(keyword).get("social_post", "")
     if not social:
         return False
-    # Take the LinkedIn-style part (medium length)
-    lines = [l.strip() for l in social.split("\n") if l.strip()]
-    post_text = "\n".join(lines[:8])[:900]
+    post_text = social[:600]
     try:
         import aiohttp
         async with aiohttp.ClientSession() as s:
@@ -540,12 +575,11 @@ async def deploy_to_instagram(keyword: str, content: dict) -> bool:
         return False
 
     social = content.get("social_post", "")
+    if not _is_valid_social_post(social):
+        social = _fallback_content_swarm(keyword).get("social_post", "")
     if not social:
         return False
-
-    # Pick the Instagram-style section with hashtags
-    lines = [l.strip() for l in social.split("\n") if l.strip()]
-    post_text = "\n".join(lines[:12])[:2200]
+    post_text = social[:2000]
 
     try:
         import aiohttp
