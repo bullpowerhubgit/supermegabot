@@ -33,6 +33,7 @@ AUTONOMOUS_STATE_FILE = DATA_DIR / "umsatzmaschine_autonomous.json"
 REPORTS_DIR = DATA_DIR / "reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
 AUTONOMOUS_INTERVAL_S = int(os.getenv("UMSATZMASCHINE_INTERVAL_S", "7200"))  # 2h
+_CYCLE_LOCK = asyncio.Lock()
 
 # Paket → System-Mapping
 PACKAGE_SYSTEMS = {
@@ -692,6 +693,15 @@ async def run_autonomous_cycle() -> Dict[str, Any]:
     if os.getenv("UMSATZMASCHINE_AUTONOMOUS", "true").lower() in ("false", "0", "off"):
         return {"ok": False, "skipped": True, "reason": "UMSATZMASCHINE_AUTONOMOUS=off"}
 
+    if _CYCLE_LOCK.locked():
+        log.info("Umsatzmaschine: Zyklus läuft bereits — übersprungen")
+        return {"ok": True, "skipped": True, "reason": "cycle_already_running"}
+
+    async with _CYCLE_LOCK:
+        return await _run_autonomous_cycle_inner()
+
+
+async def _run_autonomous_cycle_inner() -> Dict[str, Any]:
     log.info("═══ Umsatzmaschine AUTONOMOUS START ═══")
     bot = get_umsatzmaschine()
     state: Dict[str, Any] = {}
