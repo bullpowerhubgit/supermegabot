@@ -9472,6 +9472,8 @@ async def create_app():
     app.router.add_get("/api/revenue/summary",        handle_revenue_summary)
     app.router.add_get("/api/scaling/status",         handle_scaling_status)
     app.router.add_post("/api/scaling/run",           handle_scaling_run)
+    app.router.add_get("/api/revenue/status",         handle_revenue_status)
+    app.router.add_post("/api/revenue/run",           handle_revenue_run)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
     app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
@@ -10855,6 +10857,24 @@ async def handle_scaling_run(req):
         return web.json_response(result)
     except Exception as e:
         log.error("handle_scaling_run: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_revenue_status(req):
+    """GET /api/revenue/status — Revenue Engine Status."""
+    try:
+        from modules.revenue_engine import get_revenue_status
+        return web.json_response(await get_revenue_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_revenue_run(req):
+    """POST /api/revenue/run — Geld-Zyklus sofort."""
+    try:
+        from modules.revenue_engine import run_revenue_cycle
+        return web.json_response(await run_revenue_cycle())
+    except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
