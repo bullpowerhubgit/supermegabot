@@ -29,8 +29,10 @@ log = logging.getLogger("Umsatzmaschine")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 CLIENTS_FILE = DATA_DIR / "megabot_clients.json"
+AUTONOMOUS_STATE_FILE = DATA_DIR / "umsatzmaschine_autonomous.json"
 REPORTS_DIR = DATA_DIR / "reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+AUTONOMOUS_INTERVAL_S = int(os.getenv("UMSATZMASCHINE_INTERVAL_S", "7200"))  # 2h
 
 # Paket → System-Mapping
 PACKAGE_SYSTEMS = {
@@ -510,17 +512,109 @@ class MegaBotUmsatzmaschine:
         self.save_clients()
         return {"ok": True, "delivered": delivered, "skipped": skipped, "results": results}
 
+    def deactivate_client(self, email: str, reason: str = "cancelled") -> bool:
+        changed = False
+        for cid, c in self.clients.items():
+            if c.get("email", "").lower() == email.lower():
+                c["status"] = "cancelled"
+                c["cancelled_at"] = datetime.now().isoformat()
+                c["cancel_reason"] = reason
+                changed = True
+        if changed:
+            self.save_clients()
+        return changed
+
+    def deactivate_by_subscription(self, subscription_id: str) -> Optional[str]:
+        email = None
+        for c in self.clients.values():
+            if c.get("stripe_subscription_id") == subscription_id:
+                email = c.get("email")
+                c["status"] = "cancelled"
+                c["cancelled_at"] = datetime.now().isoformat()
+        if email:
+            self.save_clients()
+        return email
+
+    async def sync_ki_leasing_clients(self) -> Dict[str, Any]:
+        """KI-Leasing SQLite → megabot_clients.json synchronisieren."""
+        db = DATA_DIR / "ki_leasing.db"
+        if not db.exists():
+            return {"synced": 0, "reason": "no ki_leasing.db"}
+        synced = 0
+        try:
+            from modules.ki_leasing_engine import PACKAGES
+            with sqlite3.connect(str(db)) as conn:
+                rows = conn.execute(
+                    "SELECT email, package, stripe_subscription_id, active FROM clients WHERE active=1"
+                ).fetchall()
+            existing_emails = {c.get("email", "").lower() for c in self.clients.values()}
+            for email, package, sub_id, active in rows:
+                if not active or email.lower() in existing_emails:
+                    continue
+                pkg_label = PACKAGES.get(package, {}).get("label", package)
+                cid = self.register_new_client(
+                    email, f"lead-agent-{package}",
+                    company_name=email.split("@")[0],
+                    amount_paid=PACKAGES.get(package, {}).get("price_cents", 0) / 100,
+                )
+                self.clients[cid]["stripe_subscription_id"] = sub_id
+                self.clients[cid]["source"] = "ki_leasing"
+                self.clients[cid]["package"] = pkg_label
+                if package == "pro":
+                    self.clients[cid]["ai_systems"] = [
+                        "Chatbot", "Recommendation Engine", "Content Generator", "HR Screening",
+                    ]
+                synced += 1
+            self.save_clients()
+        except Exception as e:
+            log.warning("KI-Leasing sync: %s", e)
+            return {"synced": 0, "error": str(e)[:120]}
+        return {"synced": synced}
+
+    async def retry_failed_deliveries(self) -> Dict[str, Any]:
+        """Letzte fehlgeschlagene Deliveries erneut versuchen (max 1x pro Zyklus)."""
+        retried, ok_count = 0, 0
+        for client_id, client in self.clients.items():
+            if client.get("status") != "active":
+                continue
+            history = client.get("history", [])
+            if not history:
+                continue
+            last = history[-1]
+            if last.get("sent") is not False:
+                continue
+            if last.get("retry_attempted"):
+                continue
+            r = await self.trigger_immediate_delivery(client_id)
+            last["retry_attempted"] = True
+            last["retry_result"] = r.get("ok", False)
+            retried += 1
+            if r.get("ok"):
+                ok_count += 1
+        self.save_clients()
+        return {"retried": retried, "recovered": ok_count}
+
     def get_status(self) -> Dict[str, Any]:
         active = sum(1 for c in self.clients.values() if c.get("status") == "active")
         revenue = sum(float(c.get("amount_paid", 0)) for c in self.clients.values())
+        auto_state = {}
+        if AUTONOMOUS_STATE_FILE.exists():
+            try:
+                auto_state = json.loads(AUTONOMOUS_STATE_FILE.read_text(encoding="utf-8"))
+            except Exception:
+                pass
         return {
             "ok": True,
+            "autonomous": os.getenv("UMSATZMASCHINE_AUTONOMOUS", "true").lower() not in ("false", "0", "off"),
+            "interval_hours": AUTONOMOUS_INTERVAL_S / 3600,
             "clients_total": len(self.clients),
             "clients_active": active,
             "revenue_total_eur": round(revenue, 2),
             "clients_file": str(CLIENTS_FILE),
             "reports_dir": str(REPORTS_DIR),
             "systems": list(PACKAGE_SYSTEMS.keys()),
+            "last_autonomous_run": auto_state.get("last_run"),
+            "cycles_total": auto_state.get("cycles_total", 0),
         }
 
 
@@ -540,10 +634,178 @@ async def handle_stripe_checkout(session_data: Dict) -> Dict:
     return await handler.handle_checkout_session_completed_async(session_data)
 
 
+async def refresh_data_sources() -> Dict[str, Any]:
+    """Alle Datenquellen für SYS-01/04/05 im Hintergrund aktualisieren."""
+    results: Dict[str, Any] = {}
+
+    async def _insolvenz():
+        from modules.insolvenz_radar import run_scan
+        return await run_scan(min_score_alert=55)
+
+    async def _zvg():
+        from modules.zvg_radar import run_cycle
+        return await run_cycle()
+
+    async def _ai_act():
+        from modules.ai_act_scanner import run_cycle
+        return await run_cycle()
+
+    async def _handelsregister():
+        from modules.handelsregister_radar import run_cycle
+        return await run_cycle()
+
+    for name, coro in [
+        ("insolvenz", _insolvenz()),
+        ("zvg", _zvg()),
+        ("ai_act", _ai_act()),
+        ("handelsregister", _handelsregister()),
+    ]:
+        try:
+            results[name] = await asyncio.wait_for(coro, timeout=120)
+        except Exception as e:
+            results[name] = {"error": str(e)[:120]}
+
+    return results
+
+
+async def _should_run_ki_leasing_reports(state: Dict) -> bool:
+    """KI-Leasing Reports: 1x täglich (nach 08:00 oder wenn >20h seit letztem Lauf)."""
+    last = state.get("ki_leasing_last_run")
+    now = datetime.now()
+    if now.hour >= 8:
+        if not last:
+            return True
+        try:
+            prev = datetime.fromisoformat(last)
+            return (now - prev).total_seconds() > 20 * 3600
+        except Exception:
+            return True
+    return False
+
+
+async def run_autonomous_cycle() -> Dict[str, Any]:
+    """
+    Vollautonomer Master-Zyklus — kein manueller Eingriff nötig.
+    1. Daten refreshen  2. KI-Leasing sync  3. Deliveries  4. KI-Leasing Reports
+    5. Retries  6. Revenue Engine  7. Telegram
+    """
+    if os.getenv("UMSATZMASCHINE_AUTONOMOUS", "true").lower() in ("false", "0", "off"):
+        return {"ok": False, "skipped": True, "reason": "UMSATZMASCHINE_AUTONOMOUS=off"}
+
+    log.info("═══ Umsatzmaschine AUTONOMOUS START ═══")
+    bot = get_umsatzmaschine()
+    state: Dict[str, Any] = {}
+    if AUTONOMOUS_STATE_FILE.exists():
+        try:
+            state = json.loads(AUTONOMOUS_STATE_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            state = {}
+
+    refresh, sync, deliveries, ki_reports, retries, revenue = await asyncio.gather(
+        refresh_data_sources(),
+        bot.sync_ki_leasing_clients(),
+        bot.run_daily_deliveries(),
+        _run_ki_leasing_if_due(state),
+        bot.retry_failed_deliveries(),
+        _run_revenue_engine_safe(),
+        return_exceptions=True,
+    )
+
+    def _n(r: Any, name: str) -> Dict:
+        return r if isinstance(r, dict) else {"error": str(r)[:120]}
+
+    result = {
+        "ok": True,
+        "timestamp": datetime.now().isoformat(),
+        "mode": "fully_autonomous",
+        "steps": {
+            "data_refresh": _n(refresh, "refresh"),
+            "ki_leasing_sync": _n(sync, "sync"),
+            "deliveries": _n(deliveries, "deliveries"),
+            "ki_leasing_reports": _n(ki_reports, "ki_reports"),
+            "retries": _n(retries, "retries"),
+            "revenue_engine": _n(revenue, "revenue"),
+        },
+    }
+
+    state["last_run"] = result["timestamp"]
+    state["cycles_total"] = int(state.get("cycles_total", 0)) + 1
+    state["last_result"] = {
+        "delivered": _n(deliveries, "d").get("delivered", 0),
+        "ki_sent": _n(ki_reports, "k").get("sent", 0),
+    }
+    if isinstance(ki_reports, dict) and ki_reports.get("sent", 0) > 0:
+        state["ki_leasing_last_run"] = result["timestamp"]
+    AUTONOMOUS_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    AUTONOMOUS_STATE_FILE.write_text(json.dumps(state, indent=2, default=str), encoding="utf-8")
+
+    d = _n(deliveries, "d")
+    k = _n(ki_reports, "k")
+    try:
+        from modules.notify_hub import async_send_telegram
+        await async_send_telegram(
+            f"🤖 Umsatzmaschine AUTO\n"
+            f"Deliveries: {d.get('delivered', 0)} | KI-Leasing: {k.get('sent', 0)} Reports\n"
+            f"Retries recovered: {_n(retries, 'r').get('recovered', 0)}"
+        )
+    except Exception:
+        pass
+
+    log.info("Umsatzmaschine AUTONOMOUS DONE — %d deliveries", d.get("delivered", 0))
+    return result
+
+
+async def _run_ki_leasing_if_due(state: Dict) -> Dict[str, Any]:
+    if not await _should_run_ki_leasing_reports(state):
+        return {"skipped": True, "reason": "not_due"}
+    try:
+        from modules.ki_leasing_engine import send_daily_reports
+        return await send_daily_reports()
+    except Exception as e:
+        return {"error": str(e)[:120]}
+
+
+async def _run_revenue_engine_safe() -> Dict[str, Any]:
+    try:
+        from modules.revenue_engine import run_revenue_cycle
+        return await run_revenue_cycle()
+    except Exception as e:
+        return {"error": str(e)[:120]}
+
+
+async def run_autonomous_loop() -> None:
+    """Endlos-Loop — startet beim Server-Boot."""
+    await asyncio.sleep(int(os.getenv("UMSATZMASCHINE_BOOT_DELAY_S", "90")))
+    log.info("Umsatzmaschine autonomous loop gestartet (alle %ds)", AUTONOMOUS_INTERVAL_S)
+    while True:
+        try:
+            await run_autonomous_cycle()
+        except Exception as e:
+            log.error("Autonomous cycle Fehler: %s", e)
+        await asyncio.sleep(AUTONOMOUS_INTERVAL_S)
+
+
+async def handle_stripe_subscription_event(event_type: str, obj: Dict) -> Optional[str]:
+    """Abo-Kündigung → Client deaktivieren."""
+    bot = get_umsatzmaschine()
+    if event_type in ("customer.subscription.deleted", "customer.subscription.canceled"):
+        sub_id = obj.get("id", "")
+        email = bot.deactivate_by_subscription(sub_id)
+        if email:
+            return f"umsatzmaschine:cancelled:{email}"
+    return None
+
+
 async def run_daily_cron() -> Dict[str, Any]:
-    return await get_umsatzmaschine().run_daily_deliveries()
+    return await run_autonomous_cycle()
 
 
 async def run_daily_cron_str() -> str:
-    r = await run_daily_cron()
-    return f"Umsatzmaschine: {r.get('delivered', 0)} Deliveries | {r.get('skipped', 0)} übersprungen"
+    r = await run_autonomous_cycle()
+    d = r.get("steps", {}).get("deliveries", {})
+    k = r.get("steps", {}).get("ki_leasing_reports", {})
+    return (
+        f"Umsatzmaschine AUTO: {d.get('delivered', 0)} Deliveries | "
+        f"KI-Leasing {k.get('sent', 0)} Reports | "
+        f"Retries {r.get('steps', {}).get('retries', {}).get('recovered', 0)}"
+    )

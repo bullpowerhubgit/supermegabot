@@ -301,6 +301,14 @@ async def _auto_enroll_buyer(email: str, first_name: str, amount: float, sequenc
         log.warning("Klaviyo enroll failed: %s", e)
 
 
+async def _ki_leasing_webhook(event: dict) -> None:
+    try:
+        from modules.ki_leasing_engine import handle_webhook
+        await handle_webhook(event)
+    except Exception as e:
+        log.warning("KI-Leasing webhook: %s", e)
+
+
 async def _umsatzmaschine_delivery(session_data: dict) -> None:
     """Stripe Checkout → MegaBot Umsatzmaschine: Kunde registrieren + Delivery."""
     try:
@@ -346,15 +354,34 @@ async def handle_webhook_event(event: Dict) -> str:
         currency = (data.get("currency") or "eur").upper()
         mode     = data.get("mode", "payment")
         seq      = "saas_onboarding" if mode == "subscription" else "post_purchase"
+        meta     = data.get("metadata") or {}
         await _tg(
             f"🛒 <b>Checkout abgeschlossen</b> ✅\n"
             f"Betrag: <b>{amount:.2f} {currency}</b> ({mode})\n"
             f"Email: {email}"
         )
+        if meta.get("service") == "ki_leasing":
+            asyncio.create_task(_ki_leasing_webhook(event))
         if email and "@" in email:
             asyncio.create_task(_auto_enroll_buyer(email, name, amount, seq))
             asyncio.create_task(_umsatzmaschine_delivery(data))
         return f"checkout.session.completed handled → {seq}"
+
+    if etype in ("customer.subscription.deleted", "customer.subscription.canceled"):
+        customer_email = data.get("customer_email", data.get("customer", "?"))
+        await _tg(f"❌ <b>Abo gekündigt</b> — {customer_email}")
+        try:
+            from modules.megabot_umsatzmaschine import handle_stripe_subscription_event
+            from modules.ki_leasing_engine import handle_webhook as ki_wh
+            await handle_stripe_subscription_event(etype, data)
+            await ki_wh(event)
+        except Exception as e:
+            log.warning("Subscription cancel: %s", e)
+        if customer_email and "@" in str(customer_email):
+            asyncio.create_task(_auto_enroll_buyer(
+                customer_email, str(customer_email).split("@")[0], 0, "winback"
+            ))
+        return f"{etype} handled + winback"
 
     if etype == "customer.subscription.created":
         plan = ""
@@ -386,27 +413,6 @@ async def handle_webhook_event(event: Dict) -> str:
             f"Email: {email}"
         )
         return "charge.refunded handled"
-
-    if etype == "customer.subscription.deleted":
-        customer_id = data.get("customer", "?")
-        items = data.get("items", {}).get("data", [])
-        plan = ""
-        if items:
-            price = items[0].get("price", {})
-            amount = (price.get("unit_amount", 0) or 0) / 100
-            cur    = price.get("currency", "eur").upper()
-            plan   = f"{amount:.2f} {cur}/{price.get('recurring', {}).get('interval', '')}"
-        customer_email = data.get("customer_email", customer_id)
-        await _tg(
-            f"❌ <b>Abo gekündigt</b> — Stripe\n"
-            f"Plan: {plan}\n"
-            f"Email: {customer_email}"
-        )
-        if customer_email and "@" in customer_email:
-            asyncio.create_task(_auto_enroll_buyer(
-                customer_email, customer_email.split("@")[0], 0, "winback"
-            ))
-        return "subscription.deleted handled + winback enrolled"
 
     if etype == "invoice.payment_failed":
         amount   = (data.get("amount_due") or 0) / 100

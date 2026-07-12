@@ -9477,6 +9477,7 @@ async def create_app():
     app.router.add_get("/api/umsatzmaschine/status",  handle_umsatzmaschine_status)
     app.router.add_post("/api/umsatzmaschine/run",    handle_umsatzmaschine_run)
     app.router.add_post("/api/umsatzmaschine/delivery", handle_umsatzmaschine_delivery)
+    app.router.add_post("/api/umsatzmaschine/autonomous", handle_umsatzmaschine_autonomous)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
     app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
@@ -10103,13 +10104,14 @@ async def create_app():
     app.router.add_post("/api/ki-leasing/send-now",     handle_ki_leasing_send_now)
     log.info("KI-Leasing routes registered at /ki-leasing")
 
-    # ── KI-Leasing Daily Report Loop (08:30 täglich) ─────────────────────────
+    # ── Umsatzmaschine Vollautonom (2h Zyklus + KI-Leasing + Revenue Engine) ─
     try:
-        from modules.ki_leasing_engine import run_daily_loop
-        asyncio.create_task(run_daily_loop())
-        log.info("KI-Leasing daily report loop started")
+        from modules.megabot_umsatzmaschine import run_autonomous_loop
+        asyncio.create_task(run_autonomous_loop())
+        log.info("Umsatzmaschine autonomous loop started (interval=%ss)",
+                 os.getenv("UMSATZMASCHINE_INTERVAL_S", "7200"))
     except Exception as _e:
-        log.warning("KI-Leasing daily loop failed: %s", _e)
+        log.warning("Umsatzmaschine autonomous loop failed: %s", _e)
 
     # ── ShopText.ai — KI-Produkttexte SaaS ──────────────────────────────────
     try:
@@ -10890,12 +10892,17 @@ async def handle_umsatzmaschine_status(req):
 
 
 async def handle_umsatzmaschine_run(req):
-    """POST /api/umsatzmaschine/run — täglicher Delivery-Cron sofort."""
+    """POST /api/umsatzmaschine/run — vollautonomer Zyklus sofort."""
     try:
-        from modules.megabot_umsatzmaschine import run_daily_cron
-        return web.json_response(await run_daily_cron())
+        from modules.megabot_umsatzmaschine import run_autonomous_cycle
+        return web.json_response(await run_autonomous_cycle())
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_umsatzmaschine_autonomous(req):
+    """POST /api/umsatzmaschine/autonomous — alias für vollautonomen Zyklus."""
+    return await handle_umsatzmaschine_run(req)
 
 
 async def handle_umsatzmaschine_delivery(req):
