@@ -480,18 +480,8 @@ async def task_railway_health() -> str:
     import aiohttp
     services = {
         "SuperMegaBot":        "https://supermegabot-production.up.railway.app/health",
-        "MetaSocialEngine":    "https://meta-social-engine-production.up.railway.app/health",
-        "SEOTurboTools":       "https://seo-turbo-tools-production.up.railway.app/health",
-        "FreelanceGigEngine":  "https://freelance-gig-engine-production.up.railway.app/health",
-        "VisualContentEngine": "https://visual-content-engine-production.up.railway.app/health",
-        "AdPosterEngine":      "https://adposter-engine-production.up.railway.app/health",
-        "iComeAutoSaaS":       "https://icomeauto-saas-production.up.railway.app/health",
-        "CreatorAIUltra":      "https://creatorai-ultra-production.up.railway.app/health",
-        "RevenueHub":          "https://revenue-hub-notifications-production.up.railway.app/health",
-        "ShopifyAutomaton":    "https://shopify-automaton-suite-production-e405.up.railway.app/api/health",
-        "Steuercockpit":       "https://steuercockpit-production-44c9.up.railway.app/health",
-        "SEOTrafficEngine":    "https://seo-traffic-engine-production.up.railway.app/health",
-        "SocialTrafficEngine": "https://social-traffic-engine-production.up.railway.app/health",
+        "iComeAuto":           "https://icomeauto-production.up.railway.app/health",
+        "Steuercockpit":       "https://steuercockpit-production.up.railway.app/health",
     }
     down, ok = [], []
     try:
@@ -6849,7 +6839,7 @@ class AutomationScheduler:
 
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
     _ALWAYS_RUN = frozenset({
-        "health", "system_health", "railway_health", "github_backup",
+        "health", "system_health", "github_backup",
         "circuit_reset", "shopify_sync", "email_check", "email_daily_summary",
     })
 
