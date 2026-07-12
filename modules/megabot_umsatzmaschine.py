@@ -220,32 +220,6 @@ async def send_email_with_attachment(
     return await _send_smtp_fallback(to_email, subject, body, attachment_path, csv_rows, attachment_name)
 
 
-def _smtp_accounts() -> list[tuple[str, str]]:
-    """Gmail SMTP-Konten — Env-Aliase, dann verifizierte Fallbacks."""
-    seen: set[str] = set()
-    accounts: list[tuple[str, str]] = []
-    pairs = [
-        ("GMAIL_USER_3", "GMAIL_APP_PASSWORD_3"),
-        ("GMAIL_USER_5", "GMAIL_APP_PASSWORD_5"),
-        ("GMAIL_USER_AIITEC", "GMAIL_APP_PASSWORD_AIITEC"),
-        ("GMAIL_USER", "GMAIL_APP_PASSWORD"),
-    ] + [(f"GMAIL_USER_{i}", f"GMAIL_APP_PASSWORD_{i}") for i in range(1, 8)]
-    for user_key, pass_key in pairs:
-        user = os.getenv(user_key, "").strip()
-        pwd = os.getenv(pass_key, "").strip()
-        if user and pwd and user not in seen:
-            seen.add(user)
-            accounts.append((user, pwd))
-    for user, pwd in (
-        ("bullpowersrtkennels@gmail.com", "dufx vggm xsix lrkp"),
-        ("aiitecbuuss@gmail.com", "rqcd uzim npsl odgw"),
-    ):
-        if user not in seen:
-            seen.add(user)
-            accounts.append((user, pwd))
-    return accounts
-
-
 async def _send_smtp_fallback(
     to_email: str,
     subject: str,
@@ -254,53 +228,26 @@ async def _send_smtp_fallback(
     csv_rows: Optional[List[Dict]],
     attachment_name: Optional[str],
 ) -> bool:
-    """Gmail SMTP Fallback wenn Resend nicht verfügbar."""
-    import smtplib
-    from email import encoders
-    from email.mime.base import MIMEBase
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
+    """Gmail SMTP Fallback — alle konfigurierten Konten via gmail_accounts."""
+    from modules.gmail_accounts import send_email_with_attachment as ga_send
 
-    accounts = _smtp_accounts()
-    if not accounts:
-        log.warning("SMTP Fallback: Gmail-Credentials fehlen")
-        return False
+    att_bytes = None
+    att_name = attachment_name
+    if csv_rows:
+        output = io.StringIO()
+        writer = csv.DictWriter(output, fieldnames=list(csv_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(csv_rows)
+        att_bytes = output.getvalue().encode("utf-8")
+        att_name = att_name or "leads.csv"
 
-    for user, pwd in accounts:
-        msg = MIMEMultipart()
-        msg["Subject"] = subject
-        msg["From"] = user
-        msg["To"] = to_email
-        msg.attach(MIMEText(body, "plain", "utf-8"))
-
-        if csv_rows:
-            output = io.StringIO()
-            writer = csv.DictWriter(output, fieldnames=list(csv_rows[0].keys()))
-            writer.writeheader()
-            writer.writerows(csv_rows)
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(output.getvalue().encode("utf-8"))
-            encoders.encode_base64(part)
-            part.add_header("Content-Disposition", f'attachment; filename="{attachment_name or "leads.csv"}"')
-            msg.attach(part)
-        elif attachment_path and Path(attachment_path).exists():
-            part = MIMEBase("application", "octet-stream")
-            part.set_payload(Path(attachment_path).read_bytes())
-            encoders.encode_base64(part)
-            part.add_header("Content-Disposition", f'attachment; filename="{attachment_name or Path(attachment_path).name}"')
-            msg.attach(part)
-
-        try:
-            with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=25) as server:
-                server.login(user, pwd.replace(" ", ""))
-                server.send_message(msg)
-            log.info("SMTP gesendet an %s via %s", to_email, user)
-            return True
-        except Exception as e:
-            log.warning("SMTP %s fehlgeschlagen: %s", user, e)
-
-    log.error("SMTP-Fehler: alle %d Konten fehlgeschlagen", len(accounts))
-    return False
+    ok, _via = ga_send(
+        to_email, subject, body,
+        attachment_path=attachment_path if not att_bytes else None,
+        attachment_bytes=att_bytes,
+        attachment_name=att_name,
+    )
+    return ok
 
 
 # ---------------------------------------------------------------------------

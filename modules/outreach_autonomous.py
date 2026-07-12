@@ -509,32 +509,18 @@ JSON-Antwort:
 # ── Email senden ──────────────────────────────────────────────────────────────
 
 def send_email(to: str, subject: str, body: str) -> bool:
-    user = _gmail_user()
-    pw   = _gmail_pass().replace(" ", "")
-    if not user or not pw:
-        log.warning("Gmail-Zugangsdaten fehlen")
-        return False
-    try:
-        msg             = MIMEMultipart("alternative")
-        msg["Subject"]  = subject
-        msg["From"]     = f"Rudolf Sarkany <{user}>"
-        msg["To"]       = to
-        msg["Reply-To"] = user
-        msg.attach(MIMEText(body, "plain", "utf-8"))
-        html = f"""<html><body style="font-family:Arial,sans-serif;color:#333;max-width:600px">
+    from modules.gmail_accounts import send_email as ga_send
+    html = f"""<html><body style="font-family:Arial,sans-serif;color:#333;max-width:600px">
 <pre style="font-family:inherit;white-space:pre-wrap">{body}</pre>
 <hr style="border:none;border-top:1px solid #eee;margin:20px 0">
 <p style="font-size:11px;color:#aaa">Abmeldung: Antworten Sie mit "Abmeldung"</p>
 </body></html>"""
-        msg.attach(MIMEText(html, "html", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as srv:
-            srv.login(user, pw)
-            srv.sendmail(user, to, msg.as_string())
-        log.info("Email: %s → %s", subject[:50], to)
-        return True
-    except Exception as e:
-        log.warning("Email-Fehler (%s): %s", to, e)
-        return False
+    ok, via = ga_send(to, subject, body, html=html)
+    if ok:
+        log.info("Email: %s → %s via %s", subject[:50], to, via)
+    else:
+        log.warning("Email-Fehler (%s)", to)
+    return ok
 
 
 # ── Telegram ──────────────────────────────────────────────────────────────────

@@ -284,25 +284,11 @@ Abmeldung: Antworten Sie mit "Abmeldung"
 
 
 def send_email(to: str, subject: str, body: str) -> bool:
-    user = _gmail_user()
-    pw   = _gmail_pass().replace(" ", "")
-    if not user or not pw:
-        return False
-    try:
-        msg            = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"]    = f"EU AI Act Compliance <{user}>"
-        msg["To"]      = to
-        msg["Reply-To"] = user
-        msg.attach(MIMEText(body, "plain", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as s:
-            s.login(user, pw)
-            s.sendmail(user, to, msg.as_string())
-        log.info("Email → %s: %s", to, subject[:60])
-        return True
-    except Exception as e:
-        log.warning("Email %s: %s", to, e)
-        return False
+    from modules.gmail_accounts import send_email as ga_send
+    ok, via = ga_send(to, subject, body)
+    if ok:
+        log.info("Email → %s via %s: %s", to, via, subject[:60])
+    return ok
 
 
 # ── Telegram ──────────────────────────────────────────────────────────────────

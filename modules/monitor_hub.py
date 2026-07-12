@@ -26,18 +26,15 @@ log = logging.getLogger("MonitorHub")
 TG_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
 
-GMAIL_ACCOUNTS = [
-    {
-        "label": "aiitecbuuss",
-        "user":  os.getenv("GMAIL_USER_AIITEC",      "aiitecbuuss@gmail.com"),
-        "pwd":   os.getenv("GMAIL_APP_PASSWORD_AIITEC", ""),
-    },
-    {
-        "label": "bullpower",
-        "user":  os.getenv("GMAIL_USER_BULLPOWER",   "bullpowersrtkennels@gmail.com"),
-        "pwd":   os.getenv("GMAIL_APP_PASSWORD_BULLPOWER", ""),
-    },
-]
+def get_gmail_accounts() -> list:
+    from modules.gmail_accounts import list_accounts
+    return [
+        {"label": a.label, "user": a.email, "pwd": a.password}
+        for a in list_accounts() if a.password
+    ]
+
+
+GMAIL_ACCOUNTS = get_gmail_accounts  # callable — GMAIL_ACCOUNTS() für aktuelle Liste
 
 STATE_FILE = Path(__file__).parent.parent / "data" / "monitor_hub_state.json"
 
@@ -296,7 +293,7 @@ async def run_monitor_hub() -> dict:
 
         # 1. Gmail beide Konten
         mail_alerts = []
-        for acc in GMAIL_ACCOUNTS:
+        for acc in get_gmail_accounts():
             mail_alerts.extend(_check_gmail_account(acc, seen_ids))
 
         for alert in mail_alerts:
