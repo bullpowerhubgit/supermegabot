@@ -383,15 +383,26 @@ async def get_analytics_summary() -> Dict:
     r = await graphql(q)
     if "data" not in r:
         return {}
+    from datetime import datetime, timezone
     orders = [e["node"] for e in r["data"].get("orders", {}).get("edges", [])]
     total = sum(float(o["currentTotalPriceSet"]["shopMoney"]["amount"]) for o in orders)
     paid = [o for o in orders if o["displayFinancialStatus"] == "PAID"]
+    month_prefix = datetime.now(timezone.utc).strftime("%Y-%m")
+    month_orders = [
+        o for o in paid
+        if (o.get("createdAt") or "").startswith(month_prefix)
+    ]
+    revenue_month = sum(
+        float(o["currentTotalPriceSet"]["shopMoney"]["amount"]) for o in month_orders
+    )
     return {
         "shop": r["data"].get("shop", {}).get("name", ""),
         "currency": r["data"].get("shop", {}).get("currencyCode", "EUR"),
         "orders_total": len(orders),
         "orders_paid": len(paid),
+        "orders_month": len(month_orders),
         "revenue": round(total, 2),
+        "revenue_month": round(revenue_month, 2),
     }
 
 

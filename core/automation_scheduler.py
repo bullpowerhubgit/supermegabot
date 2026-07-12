@@ -5285,13 +5285,25 @@ async def task_gumroad_cycle() -> str:
 
 
 async def task_ds24_affiliate_blast() -> str:
-    """DS24 Affiliate: tägl. Blast auf alle Kanäle (Telegram, Twitter, LinkedIn, Reddit)."""
+    """DS24: nur eigene Produkte blasten (100% Erlös)."""
     try:
-        from modules.ds24_affiliate_blaster import run_daily_affiliate_blast
-        r = await run_daily_affiliate_blast()
-        return f"DS24 Affiliate: {r.get('products',0)} Produkte | {r.get('posts',0)} Posts | {r.get('channels',[])} Kanäle"
+        from modules.ds24_affiliate_blaster import blast_all_approved
+        r = await blast_all_approved(delay=3.0)
+        return (
+            f"DS24 Own-Blast: {r.get('blasted', 0)} Produkte"
+            f"{'' if not r.get('reason') else ' (' + r['reason'] + ')'}"
+        )
     except Exception as e:
         return f"DS24 Affiliate Blast Fehler: {e}"
+
+
+async def task_revenue_engine() -> str:
+    """Revenue Engine — 2h Geld-Zyklus."""
+    try:
+        from modules.revenue_engine import run_revenue_cycle_str
+        return await run_revenue_cycle_str()
+    except Exception as e:
+        return f"Revenue Engine Fehler: {e}"
 
 
 async def task_fiverr_cycle() -> str:
@@ -6456,7 +6468,8 @@ TASKS = [
     ("viral_window_scan",      task_viral_window_scan,       7200, 600),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",        task_oos_sniper_scan,         7200,  58),  # 2h — OOS Sniper
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
-    ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — €10k Skalierung (5 Strategien)
+    ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
+    ("revenue_engine",         task_revenue_engine,         7200,   69),  # 2h — Geld-Zyklus (DS24+Klaviyo)
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
@@ -6852,7 +6865,26 @@ class AutomationScheduler:
         "circuit_reset", "shopify_sync", "email_check", "email_daily_summary",
     })
 
+    # Revenue-First: nur Tasks die direkt Umsatz bringen
+    _REVENUE_TASKS = frozenset({
+        "health", "system_health", "github_backup", "circuit_reset",
+        "shopify_sync", "shopify_orders_alert", "email_check",
+        "ds24_funnel_sync", "digistore_sync", "ds24_affiliate_blast",
+        "ds24_affiliate_hourly", "ds24_affiliate_daily", "ds24_traffic",
+        "ds24_funnel_auto", "geldmaschine_skalierung", "revenue_engine",
+        "abandoned_cart_recovery", "revenue_fast_track", "revenue_maximizer",
+        "klaviyo_cycle", "klaviyo_auto_campaign", "cro_run",
+        "buyer_traffic_engine", "email_blast", "ads_monitor", "ads_optimize",
+        "stripe_monitor", "digistore_sync", "digistore_autonomy",
+    })
+
     async def _execute(self, name: str, fn: Callable) -> str:
+        if (
+            os.getenv("REVENUE_MODE", "true").lower() not in ("false", "0", "off")
+            and name not in self._REVENUE_TASKS
+        ):
+            log.debug("[%s] REVENUE_MODE — Vanity-Task übersprungen", name)
+            return "REVENUE_SKIP"
         if (
             os.getenv("SOCIAL_POSTING_PAUSED", "").lower() in ("1", "true", "yes")
             and name not in self._ALWAYS_RUN

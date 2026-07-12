@@ -562,7 +562,10 @@ async def run_abandoned_cart_recovery() -> str:
                 first_name = billing.get("first_name", "")
                 total = c.get("total_price", "0.00")
                 currency = c.get("currency", "EUR")
-                recover_url = c.get("abandoned_checkout_url", f"https://ineedit.com.co/cart")
+                shop_url = os.getenv("SHOPIFY_STORE_URL", "") or (
+                    f"https://{domain}" if domain else "https://ineedit.com.co"
+                )
+                recover_url = c.get("abandoned_checkout_url", f"{shop_url.rstrip('/')}/cart")
                 token_key = c.get("token", "")
 
                 line_items = []

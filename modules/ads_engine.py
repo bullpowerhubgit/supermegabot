@@ -27,6 +27,11 @@ PRICE_FLOOR           = float(os.getenv("PRICE_FLOOR_EUR", "0.30"))
 FB_GRAPH = "https://graph.facebook.com/v18.0"
 _HAIKU   = "claude-haiku-4-5-20251001"
 
+
+def _ad_account_id() -> str:
+    aid = (META_AD_ACCOUNT_ID or "").strip()
+    return aid[4:] if aid.startswith("act_") else aid
+
 # ── Helpers ──────────────────────────────────────────────────────────────────
 
 async def _tg(msg: str) -> None:
@@ -111,7 +116,7 @@ async def create_facebook_ad_campaign(product: dict, budget_eur: float = 5.0) ->
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
         # 1. Create Campaign
         async with s.post(
-            f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/campaigns",
+            f"{FB_GRAPH}/act_{_ad_account_id()}/campaigns",
             params={**params,
                     "name": f"SMB_{name}_{int(time.time())}",
                     "objective": "OUTCOME_TRAFFIC",
@@ -126,7 +131,7 @@ async def create_facebook_ad_campaign(product: dict, budget_eur: float = 5.0) ->
 
         # 2. Create AdSet
         async with s.post(
-            f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/adsets",
+            f"{FB_GRAPH}/act_{_ad_account_id()}/adsets",
             params={**params,
                     "campaign_id": camp_id,
                     "name": f"AdSet_{name}",
@@ -149,7 +154,7 @@ async def create_facebook_ad_campaign(product: dict, budget_eur: float = 5.0) ->
         for i, v in enumerate(variants[:3]):
             # Create ad creative
             async with s.post(
-                f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/adcreatives",
+                f"{FB_GRAPH}/act_{_ad_account_id()}/adcreatives",
                 params={**params,
                         "name": f"Creative_{i+1}",
                         "object_story_spec": (
@@ -167,7 +172,7 @@ async def create_facebook_ad_campaign(product: dict, budget_eur: float = 5.0) ->
                 continue
             # Create ad
             async with s.post(
-                f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/ads",
+                f"{FB_GRAPH}/act_{_ad_account_id()}/ads",
                 params={**params,
                         "name": f"Ad_{name}_v{i+1}",
                         "adset_id": adset_id,
@@ -197,7 +202,7 @@ async def optimize_facebook_ads() -> dict:
 
     paused, scaled = [], []
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-        async with s.get(f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/ads",
+        async with s.get(f"{FB_GRAPH}/act_{_ad_account_id()}/ads",
                          params=params) as r:
             data = await r.json()
 
@@ -327,7 +332,7 @@ async def build_lookalike_audience(customer_emails: list) -> dict:
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=60)) as s:
         # Create custom audience
         async with s.post(
-            f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/customaudiences",
+            f"{FB_GRAPH}/act_{_ad_account_id()}/customaudiences",
             params={"access_token": META_ACCESS_TOKEN,
                     "name": f"CustomerList_{int(time.time())}",
                     "subtype": "CUSTOM",
@@ -347,7 +352,7 @@ async def build_lookalike_audience(customer_emails: list) -> dict:
 
         # Create lookalike
         async with s.post(
-            f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/customaudiences",
+            f"{FB_GRAPH}/act_{_ad_account_id()}/customaudiences",
             params={"access_token": META_ACCESS_TOKEN,
                     "name": f"Lookalike_DACH_1pct_{int(time.time())}",
                     "subtype": "LOOKALIKE",
@@ -366,33 +371,40 @@ async def build_lookalike_audience(customer_emails: list) -> dict:
 
 async def create_retargeting_campaign(segment: str = "cart_abandoners") -> dict:
     """
-    Create retargeting campaign for pixel-based audiences.
+    Retargeting → vollständige FB-Kampagne auf DS24-Landing.
     segment: 'visitors' | 'cart_abandoners' | 'product_viewers'
     """
     if not META_AD_ACCOUNT_ID or not META_ACCESS_TOKEN:
-        return {"skipped": True}
+        return {"skipped": True, "reason": "META credentials fehlen"}
 
-    messages = {
-        "visitors": ("Du warst neugierig — jetzt bereit?", "Automatisierung für deinen Shop"),
-        "cart_abandoners": ("Du hast noch etwas in deinem Warenkorb!", "Hol dir deinen Rabatt"),
-        "product_viewers": ("Das Produkt, das du gesehen hast...", "Jetzt kaufen & sparen"),
+    landing = os.getenv(
+        "DS24_AFFILIATE_LINK_2",
+        "https://www.checkout-ds24.com/product/704677",
+    )
+    names = {
+        "visitors": "SuperMegaBot KI-Automation",
+        "cart_abandoners": "SuperMegaBot — Warenkorb",
+        "product_viewers": "SuperMegaBot — Produkt-Viewer",
     }
-    primary, headline = messages.get(segment, messages["visitors"])
-
-    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
-        async with s.post(
-            f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/campaigns",
-            params={"access_token": META_ACCESS_TOKEN,
-                    "name": f"Retarget_{segment}_{int(time.time())}",
-                    "objective": "OUTCOME_SALES",
-                    "status": "PAUSED",
-                    "special_ad_categories": "[]"},
-        ) as r:
-            camp = await r.json()
-
-    result = {"segment": segment, "campaign_id": camp.get("id"),
-              "message": primary, "status": "PAUSED"}
-    await _tg(f"🎯 Retargeting erstellt\nSegment: {segment}")
+    budget = float(os.getenv("META_DAILY_BUDGET_EUR", "5"))
+    result = await create_facebook_ad_campaign(
+        {"name": names.get(segment, "SuperMegaBot"), "url": landing},
+        budget_eur=budget,
+    )
+    result["segment"] = segment
+    if os.getenv("META_ADS_AUTO_ACTIVATE", "").lower() in ("1", "true", "yes"):
+        cid = result.get("campaign_id")
+        if cid:
+            try:
+                async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
+                    await s.post(
+                        f"{FB_GRAPH}/{cid}",
+                        params={"access_token": META_ACCESS_TOKEN, "status": "ACTIVE"},
+                    )
+                result["status"] = "ACTIVE"
+            except Exception as e:
+                result["activate_error"] = str(e)[:120]
+    await _tg(f"🎯 Retargeting {segment}: {result.get('status', 'PAUSED')}")
     return result
 
 
@@ -405,7 +417,7 @@ async def monitor_ad_performance() -> dict:
 
     async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
         async with s.get(
-            f"{FB_GRAPH}/act_{META_AD_ACCOUNT_ID}/insights",
+            f"{FB_GRAPH}/act_{_ad_account_id()}/insights",
             params={"access_token": META_ACCESS_TOKEN,
                     "fields": "spend,ctr,cpc,impressions,clicks,actions",
                     "date_preset": "today", "level": "account"},
