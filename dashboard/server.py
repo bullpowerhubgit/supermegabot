@@ -2426,7 +2426,7 @@ async def handle_mailchimp_send_campaign(req):
 <h1 style="color:#1a1a2e">Shopify auf KI-Autopilot — einmalig €97</h1>
 <p>Hallo,</p>
 <p>SuperMegaBot automatisiert deinen Shopify-Shop vollständig: Produktrecherche, Beschreibungen, Social Media, Emails — alles läuft automatisch. Einmal kaufen, dauerhaft profitieren.</p>
-<p><a href="https://tecbuuss.gumroad.com/l/wcqdjx" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt sichern — €97 Lifetime →</a></p>
+<p><a href="https://www.checkout-ds24.com/product/710277" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt sichern — €97 Lifetime →</a></p>
 <p style="color:#888;font-size:12px">Rudolf Sarkany · BullPower Hub · Wien<br><a href="*|UNSUB|*" style="color:#888">Abmelden</a></p>
 </body></html>""")
     list_id = body.get("list_id", os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0"))
@@ -2446,7 +2446,7 @@ async def handle_klaviyo_send_campaign(req):
 <h1 style="color:#1a1a2e">Shopify auf KI-Autopilot — kein Abo, Lifetime</h1>
 <p>Hallo,</p>
 <p>SuperMegaBot übernimmt deinen Shopify-Shop: 10.500+ Produkte automatisch, Social Media auf 9 Kanälen, Emails vollautomatisch. Einmalig €97 — kein monatliches Abo.</p>
-<p><a href="https://tecbuuss.gumroad.com/l/wcqdjx" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt sichern — €97 Lifetime →</a></p>
+<p><a href="https://www.checkout-ds24.com/product/710277" style="background:#ff6600;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold;display:inline-block;margin:16px 0">Jetzt sichern — €97 Lifetime →</a></p>
 <p style="color:#888;font-size:12px">Rudolf | AIITEC · BullPower Hub</p>
 </body></html>""")
     list_id = body.get("list_id", os.getenv("KLAVIYO_LIST_ID", "Xwxq6V"))
@@ -7721,7 +7721,7 @@ async def handle_affiliate_stats_new(request: web.Request) -> web.Response:
             stats["amazon"] = await get_amazon_stats()
         except Exception:
             stats["amazon"] = {"tag": "bullpowerhub-21", "configured": True}
-        ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+        ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
         stats["ds24"] = {"configured": True, "affiliate_url": ds24_link, "user": "user37405262"}
         return web.json_response({"ok": True, "stats": stats})
     except Exception as e:
@@ -13756,7 +13756,7 @@ def _free_port(port: int) -> None:
         for pid in pids:
             try:
                 os.kill(int(pid), 9)
-                print(f"  Killed PID {pid} on port {port}")
+                log.debug("Killed PID %s on port %s", pid, port)
             except Exception:
                 pass
     except Exception:

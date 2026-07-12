@@ -86,8 +86,8 @@ def _mark_done(job_id: str, status: str = "done"):
     try:
         with _db() as conn:
             conn.execute("UPDATE jobs SET status=? WHERE job_id=?", (status, job_id))
-    except Exception:
-        pass
+    except Exception as e:
+        log.debug("_mark_done failed for %s: %s", job_id, e)
 
 
 def _load_pending() -> list[Job]:
@@ -102,7 +102,8 @@ def _load_pending() -> list[Job]:
                             payload=json.loads(payload or "{}"),
                             retries=retries, created_at=created_at, job_id=job_id))
         return jobs
-    except Exception:
+    except Exception as e:
+        log.debug("_load_pending failed: %s", e)
         return []
 
 
