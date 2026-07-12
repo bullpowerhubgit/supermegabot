@@ -32,10 +32,12 @@ MAILCHIMP_KEY = os.getenv("MAILCHIMP_API_KEY", "")
 MAILCHIMP_DC  = os.getenv("MAILCHIMP_DC", "us7")
 MAILCHIMP_LIST = os.getenv("MAILCHIMP_LIST_ID", "")
 
-SMTP_ACCOUNTS = [
-    {"user": os.getenv("GMAIL_USER_1", ""), "pw": os.getenv("GMAIL_APP_PASSWORD_1", ""), "host": "smtp.gmail.com"},
-    {"user": os.getenv("GMAIL_USER_3", ""), "pw": os.getenv("GMAIL_APP_PASSWORD_3", ""), "host": "smtp.gmail.com"},
-]
+def _smtp_accounts_list() -> list:
+    from modules.gmail_accounts import configured_accounts
+    return [
+        {"user": a.email, "pw": a.password, "host": a.smtp_host}
+        for a in configured_accounts()
+    ]
 
 EMAIL_SUBJECTS = [
     "🔥 Exklusiv für dich: {offer}",
@@ -182,7 +184,7 @@ async def send_via_mailchimp(subject: str, html: str) -> dict:
 
 async def send_via_smtp(subject: str, html: str, to_email: str = "") -> dict:
     """Sendet Email via Gmail SMTP (App-Passwort)."""
-    account = next((a for a in SMTP_ACCOUNTS if a["user"] and a["pw"]), None)
+    account = next((a for a in _smtp_accounts_list() if a["user"] and a["pw"]), None)
     if not account:
         return {"ok": False, "error": "no SMTP credentials"}
     target = to_email or account["user"]
@@ -237,7 +239,7 @@ async def get_email_stats() -> dict:
         "ok": True,
         "klaviyo_configured": bool(KLAVIYO_KEY),
         "mailchimp_configured": bool(MAILCHIMP_KEY and MAILCHIMP_LIST),
-        "smtp_accounts": sum(1 for a in SMTP_ACCOUNTS if a["user"]),
+        "smtp_accounts": len(_smtp_accounts_list()),
         "from_email": FROM_EMAIL,
     }
 

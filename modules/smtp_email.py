@@ -10,43 +10,16 @@ log = logging.getLogger("SMTP")
 
 
 async def send_email(to_email: str, subject: str, html_body: str, from_email: str = "") -> dict:
-    """Send email via SMTP. Supports Gmail (set SMTP_USER + SMTP_PASS env vars)."""
-    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER", os.getenv("GMAIL_USER", ""))
-    smtp_pass = os.getenv("SMTP_PASS", os.getenv("GMAIL_APP_PASSWORD", ""))
-    from_addr = from_email or smtp_user
-
-    if not smtp_user or not smtp_pass:
-        return {"ok": False, "error": "SMTP_USER/SMTP_PASS not configured"}
-
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = from_addr
-        msg["To"] = to_email
-        msg.attach(MIMEText(html_body, "html"))
-
-        with smtplib.SMTP(smtp_host, smtp_port) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(from_addr, to_email, msg.as_string())
-
-        log.info("SMTP email sent to %s — subject: %s", to_email, subject)
-        return {"ok": True, "to": to_email, "subject": subject}
-    except Exception as e:
-        log.error("SMTP error: %s", e)
-        return {"ok": False, "error": str(e)}
+    """Send email via alle konfigurierten Gmail-Konten (Round-Robin + Fallback)."""
+    from modules.gmail_accounts import send_email as ga_send
+    ok, via = ga_send(to_email, subject, "", html=html_body)
+    if ok:
+        log.info("SMTP email sent to %s via %s — subject: %s", to_email, via, subject)
+        return {"ok": True, "to": to_email, "subject": subject, "from": via or from_email}
+    return {"ok": False, "error": "alle Gmail-Konten fehlgeschlagen oder nicht konfiguriert"}
 
 
 async def get_status() -> dict:
-    smtp_user = os.getenv("SMTP_USER", os.getenv("GMAIL_USER", ""))
-    smtp_pass = os.getenv("SMTP_PASS", os.getenv("GMAIL_APP_PASSWORD", ""))
-    configured = bool(smtp_user and smtp_pass)
-    return {
-        "ok": configured,
-        "configured": configured,
-        "host": os.getenv("SMTP_HOST", "smtp.gmail.com"),
-        "port": int(os.getenv("SMTP_PORT", "587")),
-        "user_set": bool(smtp_user),
-    }
+    from modules.gmail_accounts import get_status as ga_status
+    s = ga_status()
+    return {"ok": s["configured"] > 0, "configured": s["configured"], **s}

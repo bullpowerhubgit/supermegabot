@@ -157,8 +157,14 @@ async def auto_repair(issues: list) -> int:
     return fixes
 
 
+def check_gmail_accounts() -> dict:
+    from modules.gmail_accounts import test_all_accounts
+    return test_all_accounts()
+
+
 async def run_email_doctor() -> dict:
     """Diagnose aller E-Mail-Systeme + Auto-Reparatur."""
+    gmail = check_gmail_accounts()
     async with aiohttp.ClientSession() as session:
         kl, mc_ai, mc_dr, sg, rs, tw = await asyncio.gather(
             check_klaviyo(session),
@@ -170,6 +176,12 @@ async def run_email_doctor() -> dict:
         )
 
     issues = []
+    if gmail.get("working", 0) == 0:
+        issues.append({"system": "Gmail-SMTP", "error": f"0/{gmail.get('total', 0)} Konten OK"})
+    for acc in gmail.get("accounts", []):
+        if not acc.get("ok") and acc.get("error") != "no_password":
+            issues.append({"system": f"Gmail:{acc.get('email', '?')}", "error": acc.get("error", "?")})
+
     for label, result in [
         ("Klaviyo", kl), ("Mailchimp-AIITEC", mc_ai), ("Mailchimp-Dragon", mc_dr),
         ("SendGrid", sg), ("Resend", rs), ("Twilio", tw),
@@ -188,7 +200,12 @@ async def run_email_doctor() -> dict:
         kl.get("ok"), mc_ai.get("ok"), mc_dr.get("ok"), sg.get("ok"), rs.get("ok"), tw.get("ok"),
         len(issues), fixes,
     )
+    gmail_ok = f"✅ {gmail.get('working', 0)}/{gmail.get('total', 0)}"
+    if gmail.get("working", 0) == 0:
+        gmail_ok = f"❌ 0/{gmail.get('total', 0)}"
     return {
+        "gmail": gmail_ok,
+        "gmail_accounts": gmail,
         "klaviyo": "✅" if kl.get("ok") else f"❌ {kl.get('error','')}",
         "mailchimp": "✅" if mc_ai.get("ok") else f"❌ {mc_ai.get('error','')}",
         "dragon": "✅" if mc_dr.get("ok") else f"❌ {mc_dr.get('error','')}",

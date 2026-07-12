@@ -584,12 +584,12 @@ async def run_now():
 
 async def check_inboxes_readonly() -> dict:
     """Beide Gmail-Postfächer prüfen — nur lesen, keine Antworten senden."""
-    from modules.monitor_hub import GMAIL_ACCOUNTS, _decode_header, _is_important
+    from modules.monitor_hub import get_gmail_accounts, _decode_header, _is_important
 
     accounts_out = []
     total_unread = 0
 
-    for acc in GMAIL_ACCOUNTS:
+    for acc in get_gmail_accounts():
         pwd = (acc.get("pwd") or "").replace(" ", "")
         entry = {"account": acc["label"], "email": acc["user"], "unread": [], "unread_count": 0, "ok": False}
         if not pwd:
