@@ -127,8 +127,8 @@ async def generate_seo_content(
         except (json.JSONDecodeError, IndexError):
             log.warning("Ollama-Antwort kein valides JSON — Fallback")
 
-    # Fallback: return structured mock with original data
-    log.info("SEO-Generierung: Fallback zu Beispieldaten (Ollama nicht verfügbar)")
+    # Fallback: strukturierte Daten aus echtem Titel/Beschreibung (kein fake content)
+    log.info("SEO-Generierung: Ollama nicht verfügbar — nutze Original-Daten")
     return {
         "title": f"{title} | Bestseller {datetime.now().year}",
         "description": (
@@ -139,7 +139,6 @@ async def generate_seo_content(
         "tags": [title.lower(), platform, "bestseller", "angebot", "kaufen",
                  "qualität", "schnell", "sicher", "günstig", "empfehlung"],
         "meta_description": description[:160],
-        "_demo": True,
     }
 
 
@@ -252,25 +251,8 @@ class DropshippingWorkflow:
         except Exception as e:
             log.warning("Geheimwaffe Fehler: %s — Fallback zu Beispieldaten", e)
 
-        # Mock data fallback
-        niche_label = niche or "E-Commerce"
-        return [
-            {
-                "title": f"{niche_label} Produkt {i + 1}",
-                "niche": niche_label,
-                "trend_score": round(9.5 - i * 0.3, 1),
-                "profit_margin": round(45.0 - i * 2, 1),
-                "competition": "mittel",
-                "price_suggestion_eur": round(29.99 + i * 5, 2),
-                "description": (
-                    f"Hochwertiges {niche_label}-Produkt mit starker Nachfrage. "
-                    f"Ideal für Dropshipping-Shops."
-                ),
-                "supplier": "AliExpress / CJ Dropshipping",
-                "_demo": True,
-            }
-            for i in range(min(limit, 10))
-        ]
+        log.error("Produktrecherche fehlgeschlagen — kein Fallback auf Fake-Daten")
+        return []
 
     async def optimize_product_seo(self, product_data: Dict) -> Dict:
         """
@@ -347,23 +329,11 @@ class DropshippingWorkflow:
             except Exception as e:
                 log.error("Shopify Fehler: %s — Demo-Modus", e)
         else:
-            if not shopify_token:
-                log.info("SHOPIFY_ACCESS_TOKEN fehlt — Demo-Modus (kein echter Upload)")
-            if not shopify_domain:
-                log.info("SHOPIFY_SHOP_DOMAIN fehlt — Demo-Modus")
-
-        # Demo mode
-        mock_id = abs(hash(title)) % 1_000_000
-        return {
-            "success": True,
-            "shopify_product": {
-                "id": mock_id,
-                "title": title,
-                "status": "draft",
-                "admin_url": f"https://{shopify_domain or 'yourstore.myshopify.com'}/admin/products/{mock_id}",
-            },
-            "_demo": True,
-        }
+            missing = []
+            if not shopify_token: missing.append("SHOPIFY_ADMIN_API_TOKEN")
+            if not shopify_domain: missing.append("SHOPIFY_SHOP_DOMAIN")
+            log.error("Shopify nicht konfiguriert — fehlende Vars: %s", ", ".join(missing))
+            return {"success": False, "error": f"Shopify nicht konfiguriert: {', '.join(missing)}"}
 
     async def promote_to_social(self, product_data: Dict) -> Dict[str, Any]:
         """
@@ -605,26 +575,8 @@ class PrintOnDemandWorkflow:
             except Exception as e:
                 log.error("Printify Fehler: %s — Demo-Modus", e)
         else:
-            if not printify_token:
-                log.info(
-                    "PRINTIFY_API_KEY fehlt — Demo-Modus. "
-                    "Zugangsdaten: https://printify.com/app/account/connections"
-                )
-
-        # Demo mode
-        mock_id = f"demo_{abs(hash(design_name)) % 1_000_000}"
-        return {
-            "success": True,
-            "product_id": mock_id,
-            "printify_product": {
-                "id": mock_id,
-                "title": seo.get("title"),
-                "blueprint_id": blueprint_id,
-                "print_provider_id": print_provider_id,
-            },
-            "seo": seo,
-            "_demo": True,
-        }
+            log.error("PRINTIFY_API_KEY fehlt — Produkt kann nicht erstellt werden")
+            return {"success": False, "error": "PRINTIFY_API_KEY nicht konfiguriert"}
 
     async def publish_to_shopify(self, printify_product_id: str) -> Dict[str, Any]:
         """
@@ -639,14 +591,6 @@ class PrintOnDemandWorkflow:
         """
         log.info("[POD 2/3] Veröffentliche Printify Produkt %s auf Shopify", printify_product_id)
 
-        if str(printify_product_id).startswith("demo_"):
-            log.info("Demo-Produkt — echter Shopify-Upload übersprungen")
-            return {
-                "success": True,
-                "message": f"Demo-Modus: Produkt {printify_product_id} würde veröffentlicht",
-                "_demo": True,
-            }
-
         try:
             from modules.printify_automation import publish_product_to_shopify
             result = await publish_product_to_shopify(printify_product_id)
@@ -658,11 +602,7 @@ class PrintOnDemandWorkflow:
             log.error("Printify publish Fehler: %s", e)
             return {"success": False, "error": str(e)}
 
-        return {
-            "success": True,
-            "message": f"Demo-Modus: Produkt {printify_product_id} würde veröffentlicht",
-            "_demo": True,
-        }
+        return {"success": False, "error": "Printify publish fehlgeschlagen"}
 
     async def full_pipeline(self, designs: List[Dict]) -> Dict[str, Any]:
         """

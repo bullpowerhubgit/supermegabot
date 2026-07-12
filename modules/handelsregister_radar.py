@@ -314,30 +314,6 @@ def _parse_bkm_xml(xml_resp: str, bundesland: str, datum: str) -> List[Dict]:
     return entries
 
 
-def _hr_demo() -> List[Dict]:
-    demo = [
-        ("TechVision Solutions GmbH",   "Bayern",    "München", "GmbH"),
-        ("GreenBuild Projektentwicklung GmbH", "NRW", "Köln",   "GmbH"),
-        ("Digital Commerce UG",         "Hamburg",   "Hamburg", "UG"),
-        ("Handwerk Plus GmbH",          "Hessen",    "Frankfurt","GmbH"),
-        ("AutoFlex Logistik GmbH",      "Bayern",    "Nürnberg","GmbH"),
-        ("NordData Systems AG",         "Hamburg",   "Hamburg", "AG"),
-        ("Wellness & Spa Center GmbH",  "Bayern",    "München", "GmbH"),
-        ("KonstruktPro GmbH & Co. KG",  "NRW",       "Düsseldorf","GmbH"),
-    ]
-    entries = []
-    for firma, bl, ort, rf in demo:
-        uid = hashlib.md5(f"{firma}{bl}".encode()).hexdigest()[:16]
-        entries.append({
-            "uid": uid, "firma": firma, "rechtsform": rf,
-            "amtsgericht": f"AG {ort}", "registernr": f"HRB {100000 + len(entries)*7}",
-            "bundesland": bl, "ort": ort,
-            "datum": datetime.now().strftime("%Y-%m-%d"),
-            "scraped_at": int(time.time()),
-        })
-    return entries
-
-
 def _score(entry: Dict) -> int:
     score = 40
     rf = entry.get("rechtsform","").upper()

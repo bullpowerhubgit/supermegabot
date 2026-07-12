@@ -854,7 +854,7 @@ Antworte NUR mit diesem JSON:
             # LoremFlickr fallback — kein API Key, keyword-basiert, kostenlos
             if not image_url:
                 safe_q = img_query.replace(" ", ",")[:60]
-                image_url = f"https://loremflickr.com/640/640/{safe_q}"
+                image_url = ""
 
             # Shopify Produkt erstellen
             product_payload = {
@@ -960,7 +960,7 @@ async def fix_missing_images(limit: int = 30) -> dict:
             # LoremFlickr fallback — immer verfügbar, kein Key
             if not image_url:
                 safe_q = search_q.replace(" ", ",")[:60]
-                image_url = f"https://loremflickr.com/640/640/{safe_q}"
+                image_url = ""
 
             await _post(f"products/{p['id']}/images.json", {
                 "image": {"src": image_url, "alt": title[:200]}
