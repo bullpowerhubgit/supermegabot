@@ -7890,6 +7890,50 @@ async def handle_email_brain_setup(req: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_funding_scan(req: web.Request) -> web.Response:
+    """POST /api/funding/scan — täglicher Förder-Opportunity-Scan."""
+    try:
+        body = await req.json() if req.can_read_body else {}
+    except Exception:
+        body = {}
+    name = body.get("user") or body.get("name") or "Rudolf Sarkany"
+    try:
+        from modules.megabot_funding_intelligence import FundingIntelligenceEngine
+        return web.json_response(FundingIntelligenceEngine().run_daily_funding_scan(name))
+    except Exception as e:
+        log.error("funding_scan: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_funding_kfw(req: web.Request) -> web.Response:
+    """POST /api/funding/kfw — KfW-Antrag-PDF für Nutzer."""
+    try:
+        body = await req.json() if req.can_read_body else {}
+    except Exception:
+        body = {}
+    name = body.get("user") or body.get("name") or "Rudolf Sarkany"
+    amount = body.get("kredit_betrag")
+    try:
+        from modules.megabot_funding_intelligence import FundingIntelligenceEngine
+        pdf = FundingIntelligenceEngine().generate_kfw_antrag_for_user(
+            name, kredit_betrag=int(amount) if amount else None,
+        )
+        return web.json_response({"ok": True, "pdf": pdf, "user": name})
+    except Exception as e:
+        log.error("funding_kfw: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_funding_status(req: web.Request) -> web.Response:
+    """GET /api/funding/status — letzter Scan + Engine-Status."""
+    try:
+        from modules.megabot_funding_intelligence import FundingIntelligenceEngine
+        eng = FundingIntelligenceEngine()
+        return web.json_response({**eng.get_status(), "last_scan_data": eng.last_scan})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_kfw_generate(req: web.Request) -> web.Response:
     """POST /api/kfw/generate — KfW StartGeld Businessplan-PDF mit Live-Daten."""
     try:
@@ -10074,6 +10118,9 @@ async def create_app():
     app.router.add_get( "/api/email/accounts/check",      handle_email_accounts_check)
     app.router.add_post("/api/email/accounts/configure",  handle_email_accounts_configure)
     app.router.add_post("/api/kfw/generate",              handle_kfw_generate)
+    app.router.add_get( "/api/funding/status",            handle_funding_status)
+    app.router.add_post("/api/funding/scan",              handle_funding_scan)
+    app.router.add_post("/api/funding/kfw",               handle_funding_kfw)
     app.router.add_get( "/api/email/brain/setup",         handle_email_brain_setup)
     app.router.add_post("/api/email/brain/setup",         handle_email_brain_setup)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
