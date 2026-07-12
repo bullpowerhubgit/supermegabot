@@ -15,8 +15,23 @@ import aiohttp
 
 log = logging.getLogger("DigistoreAutonomy")
 
-API_KEY = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
-AFFILIATE_ID = "user37405262"  # AIITEC account
+_DEFAULT_PRIMARY = "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N"
+
+
+def _resolve_key(purpose: str = "default") -> str:
+    chains = {
+        "transactions": ("DIGISTORE24_API_KEY_FULL", "DIGISTORE24_API_KEY", "DIGISTORE24_API_KEY_READONLY"),
+        "default": ("DIGISTORE24_API_KEY", "DIGISTORE24_API_KEY_READONLY"),
+    }
+    for k in chains.get(purpose, chains["default"]):
+        v = os.getenv(k, "")
+        if v and "-" in v:
+            return v
+    return os.getenv("DIGISTORE24_API_KEY", _DEFAULT_PRIMARY)
+
+
+API_KEY = _resolve_key("default")
+AFFILIATE_ID = os.getenv("DIGISTORE24_AFFILIATE_ID", os.getenv("DIGISTORE24_USER_ID", "user37405262"))
 BASE = "https://www.digistore24.com/api/call"
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -31,10 +46,10 @@ async def _ai(prompt: str, max_tokens: int = 400) -> str:
         return ""
 
 
-async def _ds24_get(method: str, extra_params: dict = None) -> dict:
+async def _ds24_get(method: str, extra_params: dict = None, purpose: str = "default") -> dict:
     """Call Digistore24 API with correct auth (X-DS-API-KEY header, /JSON/ suffix)."""
     url = f"{BASE}/{method}/JSON/"
-    headers = {"X-DS-API-KEY": API_KEY}
+    headers = {"X-DS-API-KEY": _resolve_key(purpose)}
     try:
         async with aiohttp.ClientSession() as s:
             async with s.get(url, params=extra_params or {}, headers=headers,
@@ -57,7 +72,7 @@ async def get_products() -> list:
 async def get_recent_transactions(days: int = 7) -> list:
     """GET recent Digistore24 transactions."""
     since = (datetime.now(timezone.utc) - timedelta(days=days)).strftime("%Y-%m-%d")
-    data = await _ds24_get("listTransactions", {"from": since})
+    data = await _ds24_get("listTransactions", {"from": since}, purpose="transactions")
     if data.get("result") == "success":
         return data.get("data", {}).get("transactions", [])
     log.warning("DS24 listTransactions: %s", data.get("message", ""))

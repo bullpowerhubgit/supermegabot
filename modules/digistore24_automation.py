@@ -15,11 +15,32 @@ except ImportError:
 log = logging.getLogger("Digistore24")
 
 DS24_BASE = "https://www.digistore24.com/api/call"
-DS24_KEY  = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
 DS24_FORMAT = "JSON"
+_DEFAULT_PRIMARY = "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N"
+
+
+def _resolve_key(purpose: str = "default") -> str:
+    """Primary key for products; full-access key for transactions."""
+    chains = {
+        "transactions": ("DIGISTORE24_API_KEY_FULL", "DIGISTORE24_API_KEY", "DIGISTORE24_API_KEY_READONLY"),
+        "default": ("DIGISTORE24_API_KEY", "DIGISTORE24_API_KEY_READONLY"),
+    }
+    for k in chains.get(purpose, chains["default"]):
+        v = os.getenv(k, "")
+        if v and "-" in v:
+            return v
+    return os.getenv("DIGISTORE24_API_KEY", _DEFAULT_PRIMARY)
+
+
+DS24_KEY = _resolve_key("default")
 
 # DS24 API v1.2: use X-DS-API-KEY header (URL-based key auth deprecated)
-DS24_HEADERS = {"X-DS-API-KEY": DS24_KEY} if DS24_KEY else {}
+def _headers(purpose: str = "default") -> dict:
+    key = _resolve_key(purpose)
+    return {"X-DS-API-KEY": key} if key else {}
+
+
+DS24_HEADERS = _headers("default")
 
 
 def _url(action: str) -> str:
@@ -27,12 +48,13 @@ def _url(action: str) -> str:
 
 
 def is_configured() -> bool:
-    return bool(DS24_KEY)
+    return bool(_resolve_key("default"))
 
 
 async def get_orders(page=1, per_page=50):
     """Fetch orders from Digistore24. Returns list of order dicts."""
-    if not DS24_KEY:
+    key = _resolve_key("transactions")
+    if not key:
         log.warning("DIGISTORE24_API_KEY not set — returning empty (set key to enable)")
         return []
 
@@ -48,7 +70,7 @@ async def get_orders(page=1, per_page=50):
         "from": (now - timedelta(days=365)).strftime("%Y-%m-%d"),
         "to": now.strftime("%Y-%m-%d"),
     }
-    headers = {"X-DS-API-KEY": DS24_KEY}
+    headers = _headers("transactions")
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, params=params, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
@@ -65,7 +87,7 @@ async def get_orders(page=1, per_page=50):
 
 async def get_products():
     """Fetch products from Digistore24. Returns list of product dicts."""
-    if not DS24_KEY:
+    if not _resolve_key("default"):
         log.warning("DIGISTORE24_API_KEY not set — returning empty")
         return []
 
@@ -74,7 +96,7 @@ async def get_products():
         return []
 
     url = _url("listProducts")
-    headers = {"X-DS-API-KEY": DS24_KEY}
+    headers = _headers("default")
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
