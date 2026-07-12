@@ -424,33 +424,9 @@ class FiverrConnector:
             }
 
     async def get_gigs(self) -> List[Dict]:
-        """
-        Return gigs (mock data — Fiverr has no public gig listing API).
-
-        Fiverr's API does not expose seller gig data publicly. This returns
-        sample structure so the rest of the workflow can continue in demo mode.
-        """
-        log.info("Fiverr hat keine öffentliche Gig-API — Beispieldaten werden zurückgegeben")
-        return [
-            {
-                "id": "mock_gig_1",
-                "title": "I will create a professional logo design",
-                "price_usd": 50,
-                "category": "Graphics & Design",
-                "rating": 4.9,
-                "orders_in_queue": 3,
-                "note": "Beispieldaten — Fiverr Gig-API nicht öffentlich verfügbar",
-            },
-            {
-                "id": "mock_gig_2",
-                "title": "I will develop a Shopify store",
-                "price_usd": 150,
-                "category": "Programming & Tech",
-                "rating": 5.0,
-                "orders_in_queue": 1,
-                "note": "Beispieldaten — Fiverr Gig-API nicht öffentlich verfügbar",
-            },
-        ]
+        """Return gigs — Fiverr has no public gig listing API."""
+        log.warning("Fiverr hat keine öffentliche Gig-API — keine Daten verfügbar")
+        return []
 
 
 # ---------------------------------------------------------------------------

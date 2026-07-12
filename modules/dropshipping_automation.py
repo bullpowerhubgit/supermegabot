@@ -231,8 +231,7 @@ class DropshippingWorkflow:
         """
         Find trending/winning products using the Geheimwaffe module.
 
-        Falls back to structured mock data if Geheimwaffe isn't available
-        or APIs aren't configured.
+        Returns empty list if Geheimwaffe isn't available or APIs aren't configured.
 
         Args:
             niche: product category/niche to focus on (empty = all niches)
@@ -247,9 +246,9 @@ class DropshippingWorkflow:
                 log.info("Geheimwaffe: %d Produkte gefunden", len(products))
                 return products[:limit]
         except ImportError:
-            log.warning("Geheimwaffe-Modul nicht verfügbar — Beispieldaten")
+            log.warning("Geheimwaffe-Modul nicht verfügbar")
         except Exception as e:
-            log.warning("Geheimwaffe Fehler: %s — Fallback zu Beispieldaten", e)
+            log.warning("Geheimwaffe Fehler: %s", e)
 
         log.error("Produktrecherche fehlgeschlagen — kein Fallback auf Fake-Daten")
         return []
