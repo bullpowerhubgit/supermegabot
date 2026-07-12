@@ -204,6 +204,6 @@ async def get_customers(limit: int = 50) -> list:
             ) as r:
                 if r.status == 200:
                     return (await r.json()).get("customers", [])
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
     return []

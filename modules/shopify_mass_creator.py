@@ -422,8 +422,8 @@ async def _notify(msg: str):
     try:
         from modules.notify_hub import notify
         await notify(msg, level="info")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def generate_seo_description(template: dict) -> str:
@@ -490,8 +490,8 @@ async def create_shopify_product(template: dict) -> dict:
             "url": url, "handle": handle,
             "created_at": datetime.now(timezone.utc).isoformat(),
         }).execute()
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     return {"ok": True, "product_id": pid, "title": title,
             "url": url, "price": template.get("price")}
@@ -534,8 +534,8 @@ Antworte NUR mit JSON-Array:
                 import json
                 batch = json.loads(raw[start:end])
                 extras.extend(batch[:per_niche])
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
         await asyncio.sleep(1)
     return extras
 
@@ -548,8 +548,8 @@ async def mass_create_shopify_products(count: int = 1000, workers: int = 5) -> d
         from modules.supabase_client import get_client
         rows = get_client().table("shopify_mass_products").select("title").execute()
         existing_titles = {r["title"] for r in rows.data or []}
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     templates = [t for t in SHOPIFY_PRODUCT_TEMPLATES if t["title"] not in existing_titles]
     random.shuffle(templates)
@@ -608,8 +608,8 @@ async def blast_shopify_products(limit: int = 10) -> dict:
         from modules.supabase_client import get_client
         rows = get_client().table("shopify_mass_products").select("*").limit(limit).execute()
         products = rows.data or []
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     if not products:
         return {"ok": False, "blasted": 0, "error": "no products in supabase"}

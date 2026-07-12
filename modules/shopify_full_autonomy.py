@@ -497,8 +497,8 @@ async def _add_to_collection(collection_id: str, product_id: str):
         await _post("collects.json", {
             "collect": {"collection_id": int(collection_id), "product_id": int(product_id)}
         })
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
 
 async def run_auto_collections() -> dict:
@@ -761,8 +761,8 @@ async def auto_restock_trending(count: int = 5) -> dict:
             t = item.find("title")
             if t is not None and t.text:
                 trending_keywords.append(t.text.strip())
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     # Kombiniere: Google Trends + eigene Nischen
     pool = trending_keywords + TRENDING_PRODUCT_NICHES
@@ -793,8 +793,8 @@ Antworte NUR mit diesem JSON:
                     start, end = raw.find("{"), raw.rfind("}") + 1
                     if start != -1:
                         data = json.loads(raw[start:end])
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
             # Template fallback when AI offline — pick unused preset
             if not data:
                 avail = [p for p in _PRODUCT_PRESETS if p["title"] not in used_presets]
@@ -830,8 +830,8 @@ Antworte NUR mit diesem JSON:
                     photos = pd.get("photos", [])
                     if photos:
                         image_url = photos[0]["src"]["medium"]
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
 
             if not image_url:
                 unsplash_key = os.getenv("UNSPLASH_ACCESS_KEY", "")
@@ -848,8 +848,8 @@ Antworte NUR mit diesem JSON:
                         results = ud.get("results", [])
                         if results:
                             image_url = results[0]["urls"]["small"]
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        log.debug("skipped: %s", _e)
 
             # LoremFlickr fallback — kein API Key, keyword-basiert, kostenlos
             if not image_url:
@@ -891,8 +891,8 @@ Antworte NUR mit diesem JSON:
                         link=shop_url,
                         channels=["telegram", "twitter", "slack", "linkedin", "shopify_blog"]
                     )
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
 
             await asyncio.sleep(1)
         except Exception as e:
@@ -938,8 +938,8 @@ async def fix_missing_images(limit: int = 30) -> dict:
                     photos = pd.get("photos", [])
                     if photos:
                         image_url = photos[0]["src"]["medium"]
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
 
             if not image_url and unsplash_key:
                 try:
@@ -954,8 +954,8 @@ async def fix_missing_images(limit: int = 30) -> dict:
                     results = ud.get("results", [])
                     if results:
                         image_url = results[0]["urls"]["small"]
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
 
             # LoremFlickr fallback — immer verfügbar, kein Key
             if not image_url:
@@ -1014,8 +1014,8 @@ Gib zurück als JSON:
                     data = json.loads(raw[start:end])
                     new_title = data.get("title", "")
                     new_desc = data.get("body_html", "")
-                except Exception:
-                    pass
+                except Exception as _e:
+                    log.debug("skipped: %s", _e)
             # Template fallback when AI offline
             if not new_title:
                 if title.isupper():
@@ -1243,8 +1243,8 @@ async def fix_product_gmc_metafields(batch_size: int = 30, since_id: int = 0) ->
                         )
                         if result.get("metafield", {}).get("id"):
                             product_updated = True
-                    except Exception:
-                        pass
+                    except Exception as _e:
+                        log.debug("skipped: %s", _e)
                     await asyncio.sleep(0.3)
 
             if product_updated:
@@ -1345,8 +1345,8 @@ async def run_full_autonomy_cycle(quick: bool = False, restock: bool = True) -> 
             f"Neue Trending-Produkte: {results.get('restock',{}).get('created',0)}"
         )
         notify("Shopify Full Autonomy", summary, "success")
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
 
     cycle_result = {"ok": True, "mode": "full", "steps_ok": ok_count, **results}
     try:
@@ -1358,8 +1358,8 @@ async def run_full_autonomy_cycle(quick: bool = False, restock: bool = True) -> 
             f"{ok_count} Schritte erfolgreich — Store vollautomatisch aktualisiert",
             "https://autopilot-store-suite-fmbka.myshopify.com"
         ))
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("skipped: %s", _e)
     return cycle_result
 
 

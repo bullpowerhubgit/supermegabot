@@ -20,7 +20,7 @@ log = logging.getLogger("TrafficMegaV2")
 
 SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 SHOP_URL = f"https://{SHOP_DOMAIN}"
-DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
 AMAZON_TAG = os.getenv("AMAZON_AFFILIATE_TAG", "bullpowerhub-21")
 DEVTO_API_KEY = os.getenv("DEVTO_API_KEY", "")
 HASHNODE_TOKEN = os.getenv("HASHNODE_TOKEN", "")

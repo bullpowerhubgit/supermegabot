@@ -127,7 +127,7 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
                 return choices[0].get("message", {}).get("content", "")
         except Exception as e:
             logger.warning("Ignored error: %s", e)
-    _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+    _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
     _templates = [
         f"🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 {_ds24}",
         f"💰 Online Geld verdienen 2026: KI-Tools automatisieren dein Business komplett. {_ds24}",

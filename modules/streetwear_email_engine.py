@@ -41,7 +41,7 @@ async def get_latest_printify_products(limit: int = 12) -> List[Dict]:
     }
     headers = {"X-Shopify-Access-Token": SHOPIFY_TOKEN}
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(url, headers=headers, params=params, timeout=aiohttp.ClientTimeout(total=15)) as r:
                 if r.status != 200:
                     return []
@@ -182,7 +182,7 @@ async def send_mailchimp_campaign(subject: str, html: str, list_id: str = "") ->
     headers = {"Authorization": f"Basic {auth}", "Content-Type": "application/json"}
 
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             # 1. Create campaign
             payload = {
                 "type": "regular",
@@ -241,7 +241,7 @@ async def send_klaviyo_campaign(subject: str, html: str, list_id: str = "") -> D
     base = "https://a.klaviyo.com/api"
 
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             # 1. Create campaign
             now_str = datetime.now().strftime("%Y-%m-%d %H:%M")
             payload = {

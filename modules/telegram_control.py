@@ -414,8 +414,8 @@ def _clean_logs() -> str:
                 tail_bytes = b"\n".join(result[-keep_lines:])
                 logfile.write_bytes(tail_bytes)
                 cleaned.append(f"{logfile.name} ({size//1024//1024}MB → 5k Zeilen)")
-        except Exception:
-            pass
+        except Exception as _e:
+            log.debug("skipped: %s", _e)
     if cleaned:
         return "🧹 Logs bereinigt:\n" + "\n".join(cleaned)
     return "🧹 Keine Logs > 10MB gefunden"

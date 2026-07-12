@@ -218,8 +218,8 @@ Nur HTML body content."""
                 await fire("Mailchimp Weekly Digest gesendet",
                            f"{shopify.get('orders',0)} Orders diese Woche",
                            channels=["telegram", "slack"])
-            except Exception:
-                pass
+            except Exception as _e:
+                log.debug("skipped: %s", _e)
         return result
     except Exception as e:
         return {"ok": False, "error": str(e)}
@@ -322,7 +322,7 @@ async def run_dragon_campaign(topic: str = "") -> dict:
     if os.getenv("MAILCHIMP_AUTOMATION_ENABLED", "true").lower() in ("false", "0", "off"):
         return {"ok": False, "error": "Mailchimp automation disabled — TOS violation fix pending"}
     try:
-        ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://tecbuuss.gumroad.com/l/wcqdjx")
+        ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
         shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
         shop_url = f"https://{shop}"
         subject_topic = topic or "KI-Business Automatisierung 2026"

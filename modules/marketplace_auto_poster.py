@@ -40,7 +40,7 @@ async def _tg(text: str) -> bool:
     if not TG_TOKEN or not TG_CHAT:
         return False
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.post(
                 f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
                 json={"chat_id": TG_CHAT, "text": text,
@@ -60,7 +60,7 @@ async def _get_printify_products(limit: int = 5) -> List[Dict]:
     if not SHOP_DOMAIN or not SHOPIFY_TOKEN:
         return []
     try:
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(
                 f"https://{SHOP_DOMAIN}/admin/api/2024-10/products.json",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
@@ -142,7 +142,7 @@ async def _ebay_search(keyword: str, count: int = 3) -> List[Dict]:
             "sortOrder": "BestMatch",
             "GLOBAL-ID": "EBAY-DE",
         }
-        async with aiohttp.ClientSession() as s:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
             async with s.get(
                 "https://svcs.ebay.com/services/search/FindingService/v1",
                 params=params,

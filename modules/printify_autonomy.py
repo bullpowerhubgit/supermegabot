@@ -38,7 +38,7 @@ async def _ai(prompt: str, max_tokens: int = 400) -> str:
 async def _get(path: str) -> dict:
     if not TOKEN:
         return {}
-    async with aiohttp.ClientSession() as s:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
         async with s.get(f"{BASE}{path}", headers=AUTH(),
                          timeout=aiohttp.ClientTimeout(total=20)) as r:
             return await r.json() if r.status < 400 else {"error": await r.text()}
@@ -47,7 +47,7 @@ async def _get(path: str) -> dict:
 async def _post(path: str, data: dict) -> dict:
     if not TOKEN:
         return {"error": "no PRINTIFY_API_TOKEN"}
-    async with aiohttp.ClientSession() as s:
+    async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=30)) as s:
         async with s.post(f"{BASE}{path}", headers=AUTH(), json=data,
                           timeout=aiohttp.ClientTimeout(total=30)) as r:
             return await r.json() if r.status < 400 else {"error": await r.text()}
@@ -216,8 +216,8 @@ Antworte mit JSON-Array:
         if start != -1:
             import json
             concepts = json.loads(raw[start:end])
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("suppressed: %s", _e)
 
     if not concepts:
         concepts = [
@@ -259,8 +259,8 @@ Antworte mit JSON-Array:
             f"{created} neue POD-Produkte erstellt und zu Shopify publiziert",
             f"https://autopilot-store-suite-fmbka.myshopify.com"
         ))
-    except Exception:
-        pass
+    except Exception as _e:
+        log.debug("suppressed: %s", _e)
     return result
 
 
