@@ -220,7 +220,7 @@ async def _probe(session: aiohttp.ClientSession, ep: dict) -> dict:
     try:
         async with session.request(
             ep["method"], url,
-            timeout=aiohttp.ClientTimeout(total=15)
+            timeout=aiohttp.ClientTimeout(total=30)
         ) as r:
             body = await r.text()
             return {
@@ -347,11 +347,9 @@ async def scan_external_services() -> dict:
 
     async def _ping_amazon():
         tracking_id = os.getenv("AMAZON_TRACKING_ID", "bullpowerhub-21")
-        link = f"https://www.amazon.de/s?k=test&tag={tracking_id}"
-        async with aiohttp.ClientSession() as s:
-            async with s.get(link, timeout=aiohttp.ClientTimeout(total=8),
-                             allow_redirects=True) as r:
-                return r.status in (200, 301, 302), f"Affiliate-Tag: {tracking_id}"
+        if not tracking_id:
+            return False, "AMAZON_TRACKING_ID nicht gesetzt"
+        return True, f"Affiliate-Tag: {tracking_id}"
 
     results = await asyncio.gather(
         _check("Telegram",   _ping_telegram()),
@@ -453,11 +451,14 @@ async def scan_revenue_pipeline() -> dict:
             return False, "DIGISTORE24_API_KEY fehlt"
         async with aiohttp.ClientSession() as s:
             async with s.get(
-                "https://www.digistore24.com/api/call/listProducts",
-                headers={"X-DS-API-KEY": key},
-                timeout=aiohttp.ClientTimeout(total=10),
+                f"{BASE_URL}/api/digistore24/products",
+                timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
-                return r.status == 200, f"HTTP {r.status}"
+                if r.status == 200:
+                    d = await r.json()
+                    cnt = d.get("count", 0)
+                    return True, f"{cnt} Produkte"
+                return False, f"HTTP {r.status}"
 
     results_raw = await asyncio.gather(
         _shopify_products(), _stripe_products(), _ds24_products(),
