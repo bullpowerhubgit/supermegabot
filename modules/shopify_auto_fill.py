@@ -407,6 +407,8 @@ Erstelle:
 
 async def run_shopify_auto_fill(fix_existing: bool = True, add_new: int = 3) -> dict:
     """Entry point für den Scheduler"""
+    if os.getenv("SHOPIFY_AUTO_FILL_ENABLED", "true").lower() in ("false", "0", "off"):
+        return {"ok": True, "skipped": True, "reason": "SHOPIFY_AUTO_FILL_ENABLED=false (Qualitäts-Modus)"}
     engine = ShopifyAutoFill()
     return await engine.run(fix_existing=fix_existing, add_new=add_new)
 

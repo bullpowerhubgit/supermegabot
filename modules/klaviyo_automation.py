@@ -399,24 +399,134 @@ async def get_stats() -> Dict:
     }
 
 
-def _default_html(subject: str) -> str:
-    return f"""<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px">
-<h1 style="color:#2c3e50">{subject}</h1>
-<p>Hallo,</p>
-<p>entdecke jetzt die neueste KI-Einkommens-Strategie von AIITEC — vollautomatisiert, skalierbar und bewährt.</p>
-<p style="margin:24px 0"><a href="{os.getenv('DS24_AFFILIATE_LINK', 'https://tecbuuss.gumroad.com/l/wcqdjx')}" style="background:#e74c3c;color:#fff;padding:14px 28px;text-decoration:none;border-radius:6px;font-weight:bold">👉 Jetzt starten</a></p>
-<p>Bis bald,<br><strong>Rudolf | AIITEC</strong></p>
-<hr style="border:none;border-top:1px solid #eee;margin:30px 0">
-<p style="font-size:11px;color:#999">AIITEC — KI-Automatisierung für dein Business | <a href="{{{{ unsubscribe_url }}}}">Abmelden</a></p>
+CHECKOUT_METRIC = "Checkout Ready"
+LEGACY_DEALS_METRIC = "Weekly Deals"
+
+_FLOW_BUTTON_HINT = (
+    "Klaviyo Flow Button-URL: {{ event.checkout_url }} "
+    "| Text: {{ event.checkout_primary }} ({{ event.checkout_price }})"
+)
+
+
+def _fallback_checkout_url() -> str:
+    for key in (
+        "STRIPE_PAYMENT_LINK_PRO", "STRIPE_LINK_PRO",
+        "STRIPE_PAYMENT_LINK_DS24_PRO_NEW", "DS24_AFFILIATE_LINK",
+    ):
+        val = os.getenv(key, "")
+        if val:
+            return val
+    return "https://ineedit.com.co"
+
+
+def checkout_email_html(primary: Dict, offers: List[Dict]) -> str:
+    checkout_url = primary.get("url") or primary.get("checkout_url") or _fallback_checkout_url()
+    name = primary.get("name", "Dein Angebot")
+    price = primary.get("price", "")
+    offer_rows = "".join(
+        f'<tr><td style="padding:8px 0;border-bottom:1px solid #eee">'
+        f'<a href="{o.get("url", o.get("checkout_url", ""))}" style="color:#2563eb;text-decoration:none">'
+        f'{o.get("name", "")}</a> <span style="color:#666">({o.get("price", "")})</span></td></tr>'
+        for o in offers[:5]
+    )
+    return f"""<!DOCTYPE html><html><body style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:20px;background:#f8fafc">
+<div style="background:#fff;border-radius:12px;padding:28px;border:1px solid #e2e8f0">
+<h1 style="color:#0f172a;font-size:22px;margin:0 0 12px">{name}</h1>
+<p style="color:#475569;font-size:15px;line-height:1.5">Direkt zum Checkout — kein Umweg, sofort starten.</p>
+<p style="font-size:28px;font-weight:700;color:#16a34a;margin:16px 0">{price}</p>
+<p style="margin:28px 0;text-align:center">
+  <a href="{checkout_url}" style="background:#16a34a;color:#fff;padding:16px 32px;text-decoration:none;border-radius:8px;font-weight:bold;font-size:16px;display:inline-block">Jetzt kaufen →</a>
+</p>
+<table style="width:100%;font-size:14px;margin-top:20px">{offer_rows}</table>
+</div>
+<p style="font-size:11px;color:#94a3b8;text-align:center;margin-top:20px">
+  Rudolf | AIITEC · <a href="{{{{ unsubscribe_url }}}}" style="color:#94a3b8">Abmelden</a>
+</p>
 </body></html>"""
 
 
-async def send_campaign(subject: str, html_body: str = "", list_id: str = "") -> dict:
+def _default_html(subject: str, checkout_url: str = "") -> str:
+    url = checkout_url or _fallback_checkout_url()
+    return checkout_email_html({"name": subject, "price": "", "url": url}, [{"name": subject, "price": "", "url": url}])
+
+
+async def _fire_metric_event(profile_id: str, email: str, metric_name: str, properties: Dict) -> bool:
+    body = {"data": {"type": "event", "attributes": {
+        "metric": {"data": {"type": "metric", "attributes": {"name": metric_name}}},
+        "profile": {"data": {"type": "profile", "id": profile_id, "attributes": {"email": email}}},
+        "properties": properties,
+        "time": datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+    }}}
+    try:
+        async with _session() as s:
+            async with s.post(f"{_BASE}/events/", headers=_headers(), json=body) as r:
+                return r.status in (200, 201, 202)
+    except Exception as e:
+        log.warning("fire_metric_event %s: %s", metric_name, e)
+        return False
+
+
+async def fire_checkout_event(profile_id: str, email: str, offers: List[Dict]) -> bool:
+    if not offers:
+        return False
+    primary = offers[0]
+    checkout_url = primary.get("url") or primary.get("checkout_url") or _fallback_checkout_url()
+    props = {
+        "checkout_url": checkout_url,
+        "checkout_primary": primary.get("name", ""),
+        "checkout_price": primary.get("price", ""),
+        "checkout_type": primary.get("type", ""),
+        "cta_text": f"Jetzt kaufen: {primary.get('name', '')}",
+        "shop_url": os.getenv("SHOP_URL", "https://ineedit.com.co"),
+        "products": [{"title": o.get("name", ""), "price": o.get("price", ""), "url": o.get("url", ""),
+                      "checkout_url": o.get("url", o.get("checkout_url", "")), "type": o.get("type", "")}
+                     for o in offers[:5]],
+        "subject": f"{primary.get('name', 'Deal')} — {primary.get('price', '')}",
+    }
+    ok_new = await _fire_metric_event(profile_id, email, CHECKOUT_METRIC, props)
+    ok_legacy = await _fire_metric_event(profile_id, email, LEGACY_DEALS_METRIC, props)
+    return ok_new or ok_legacy
+
+
+async def send_checkout_flow(offers: List[Dict], list_id: str = "", max_profiles: int = 50, send_email: bool = True) -> Dict:
+    key = os.getenv("KLAVIYO_API_KEY", "")
+    if not key:
+        return {"ok": False, "error": "KLAVIYO_API_KEY nicht gesetzt"}
+    if not offers:
+        return {"ok": False, "error": "keine offers"}
+    _list_id = list_id or os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+    primary = offers[0]
+    checkout_url = primary.get("url") or _fallback_checkout_url()
+    results: Dict = {"ok": False, "events_sent": 0, "checkout_url": checkout_url,
+                     "checkout_primary": primary.get("name", ""), "flow_button_url": "{{ event.checkout_url }}",
+                     "flow_hint": _FLOW_BUTTON_HINT, "errors": []}
+    try:
+        async with _session(total=60) as s:
+            async with s.get(f"{_BASE}/lists/{_list_id}/profiles/", headers=_headers(),
+                             params={"page[size]": min(max_profiles, 100)}) as r:
+                profiles = (await r.json()).get("data", []) if r.status == 200 else []
+        for profile in profiles[:max_profiles]:
+            pid, email = profile.get("id", ""), profile.get("attributes", {}).get("email", "")
+            if pid and email and await fire_checkout_event(pid, email, offers):
+                results["events_sent"] += 1
+        if send_email and results["events_sent"] > 0:
+            subject = f"{primary.get('name', 'Deal')} — {primary.get('price', '')} · Jetzt kaufen"
+            camp = await send_campaign(subject=subject, html_body=checkout_email_html(primary, offers), list_id=_list_id)
+            results["campaign"] = camp
+            results["email_sent"] = camp.get("ok", False)
+        results["ok"] = results["events_sent"] > 0
+        results["campaigns_sent"] = 1 if results.get("email_sent") else 0
+    except Exception as e:
+        results["errors"].append(str(e)[:200])
+    return results
+
+
+async def send_campaign(subject: str, html_body: str = "", list_id: str = "", checkout_url: str = "") -> dict:
     """One-step: create + send Klaviyo campaign. Returns {ok, campaign_id, error}."""
     _list_id = list_id or os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
     from_email = os.getenv("KLAVIYO_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
     from_name  = os.getenv("KLAVIYO_FROM_NAME", "Rudolf | AIITEC")
-    _html = html_body or _default_html(subject)
+    _html = html_body or _default_html(subject, checkout_url=checkout_url)
     result = await create_and_send_campaign(
         list_id=_list_id,
         subject=subject,
