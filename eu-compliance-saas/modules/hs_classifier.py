@@ -19,7 +19,7 @@ HS_QUICK_MAP = {
     "drucker": "8443.32", "printer": "8443.32",
     "router": "8517.62", "wifi": "8517.62",
     "solarpanel": "8541.40", "solar": "8541.40", "solarmodul": "8541.40",
-    "powerstation": "8507.60", "akku": "8507.60", "battery": "8507.60",
+    "powerstation": "8507.60", "power station": "8507.60", "akku": "8507.60", "battery": "8507.60",
     "kleidung": "6211.43", "clothing": "6110.20", "shirt": "6110.20",
     "schuhe": "6404.11", "shoes": "6404.11", "sneaker": "6404.19",
     "spielzeug": "9503.00", "toy": "9503.00", "toys": "9503.00",
