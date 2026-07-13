@@ -137,10 +137,7 @@ async def run_cold_outreach(limit: int = 5) -> Dict:
     sent = 0
     skipped = 0
 
-    targets = [
-        "factoring@beispiel.de",
-        "info@inkasso-firma.de",
-    ]
+    targets: list = []  # Fake-Adressen entfernt — wird über Supabase mpo_companies befüllt
 
     for target in targets[:limit]:
         already_contacted = any(e.get("email") == target for e in log_data)
