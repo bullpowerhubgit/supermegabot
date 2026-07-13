@@ -9541,6 +9541,43 @@ async def handle_bpi_sys18_preview(req: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_bpi_compliance_webhook(req: web.Request) -> web.Response:
+    """BPI Compliance Tools Webhook: Stripe Zahlung → automatische E-Mail-Lieferung."""
+    try:
+        payload = await req.read()
+        event   = json.loads(payload)
+        from modules.bpi_compliance_engine import handle_stripe_event
+        result = await handle_stripe_event(event)
+        return web.json_response(result)
+    except Exception as e:
+        log.error("BPI compliance webhook: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bpi_compliance_outreach(req: web.Request) -> web.Response:
+    """B2B Outreach an Zielgruppe senden. Body: {target_type, targets: [{email, company, name}]}"""
+    try:
+        body = await req.json()
+        from modules.bpi_compliance_engine import run_b2b_outreach
+        result = await run_b2b_outreach(
+            target_type=body.get("target_type", "alle"),
+            targets=body.get("targets", []),
+            max_emails=body.get("max_emails", 50),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bpi_compliance_status(req: web.Request) -> web.Response:
+    """Status aller BPI Compliance Tools."""
+    try:
+        from modules.bpi_compliance_engine import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_bpi_stripe_webhook(req: web.Request) -> web.Response:
     """BPI Stripe Webhook: Zahlung → KI-Generierung → Email-Lieferung in 48h."""
     try:
@@ -10705,8 +10742,11 @@ async def create_app():
     app.router.add_post("/api/bpi/delivery/order",   handle_bpi_delivery_order)
     app.router.add_get( "/api/bpi/delivery/stats",   handle_bpi_delivery_stats)
     app.router.add_get( "/api/bpi/sys18/preview",    handle_bpi_sys18_preview)
-    app.router.add_post("/api/bpi/stripe/webhook",   handle_bpi_stripe_webhook)
-    log.info("BPI Extension routes registered (SYS-10/13/18 + Delivery)")
+    app.router.add_post("/api/bpi/stripe/webhook",       handle_bpi_stripe_webhook)
+    app.router.add_post("/api/bpi/compliance/webhook",   handle_bpi_compliance_webhook)
+    app.router.add_post("/api/bpi/compliance/outreach",  handle_bpi_compliance_outreach)
+    app.router.add_get( "/api/bpi/compliance/status",    handle_bpi_compliance_status)
+    log.info("BPI Extension routes registered (SYS-10/13/18 + Delivery + Compliance Engine)")
     # ── END BPI 8 SYSTEMS ───────────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task

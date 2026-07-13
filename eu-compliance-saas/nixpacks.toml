@@ -2,8 +2,7 @@
 nixPkgs = ["python311", "gcc"]
 
 [phases.install]
-cmds = ["python -m pip install -r requirements.txt"]
+cmds = ["pip install -r requirements.txt"]
 
 [start]
 cmd = "python server.py"
-
