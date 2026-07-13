@@ -10338,6 +10338,8 @@ async def create_app():
     app.router.add_post("/api/shopify/sync",             handle_shopify_sync_alias)
     app.router.add_post("/api/email/check",              handle_email_check_alias)
     app.router.add_get("/api/email/inbox",               handle_email_inbox_check)
+    app.router.add_get("/api/email/auto-responder",      handle_auto_responder_log)
+    app.router.add_post("/api/email/scan",               handle_inbox_monitor_run)
     app.router.add_post("/api/ds24/sync",                handle_ds24_sync_alias)
     app.router.add_post("/api/amazon/run",               handle_amazon_run_alias)
     app.router.add_post("/api/ebay/run",                 handle_ebay_run_alias)
@@ -11411,6 +11413,29 @@ async def handle_email_inbox_check(req):
         return web.json_response(await check_inboxes_readonly())
     except Exception as e:
         log.error("handle_email_inbox_check: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_auto_responder_log(req):
+    """GET /api/email/auto-responder — Log aller automatischen E-Mail-Antworten."""
+    try:
+        limit = int(req.rel_url.query.get("limit", 50))
+        from modules.email_auto_responder import get_responder_log
+        rows = await get_responder_log(limit)
+        return web.json_response({"ok": True, "entries": rows, "count": len(rows)})
+    except Exception as e:
+        log.error("handle_auto_responder_log: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_inbox_monitor_run(req):
+    """POST /api/email/scan — Inbox sofort scannen + Auto-Responder ausführen."""
+    try:
+        from modules.email_inbox_monitor import run_inbox_monitor
+        result = await run_inbox_monitor()
+        return web.json_response(result)
+    except Exception as e:
+        log.error("handle_inbox_monitor_run: %s", e)
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 

@@ -180,7 +180,7 @@ async def _tg_alert(emails: List[Dict], session: aiohttp.ClientSession):
 
 
 async def run_inbox_monitor() -> Dict:
-    """Scannt alle Gmail-Postfächer auf neue Emails, schickt Telegram-Alert."""
+    """Scannt alle Gmail-Postfächer auf neue Emails, schickt Telegram-Alert + Auto-Reply."""
     conn     = _db()
     accounts = _imap_accounts()
     if not accounts:
@@ -200,6 +200,15 @@ async def run_inbox_monitor() -> Dict:
         async with aiohttp.ClientSession() as session:
             await _tg_alert(alert_emails, session)
 
+    # Auto-Responder für Geschäftsmails
+    responder_result: Dict = {}
+    if all_new:
+        try:
+            from modules.email_auto_responder import run_auto_responder
+            responder_result = await run_auto_responder(all_new)
+        except Exception as e:
+            log.error("Auto-Responder Fehler: %s", e)
+
     log.info(
         "Inbox Monitor: %d Konten, %d neu (%d Alerts)",
         len(accounts), len(all_new), len(alert_emails)
@@ -209,6 +218,7 @@ async def run_inbox_monitor() -> Dict:
         "accounts":   len(accounts),
         "new_total":  len(all_new),
         "alerted":    len(alert_emails),
+        "auto_replied": responder_result.get("replied", 0),
         "by_category": {
             cat: sum(1 for e in all_new if e["category"] == cat)
             for cat in set(e["category"] for e in all_new)
