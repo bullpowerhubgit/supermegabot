@@ -5691,7 +5691,7 @@ async def handle_tiktok_content_auth(req):
     import urllib.parse
     params = urllib.parse.urlencode({
         "client_key": client_key,
-        "scope": "video.publish,video.upload,user.info.basic",
+        "scope": "user.info.basic,video.list,video.publish",
         "response_type": "code",
         "redirect_uri": redirect_uri,
         "state": "smb_content_posting",
@@ -5712,9 +5712,8 @@ async def handle_tiktok_content_callback(req):
     if not code:
         return web.json_response({"ok": False, "error": "No code received"})
 
-    # Sandbox-OAuth benutzt den Sandbox-Key (nicht den Production-Key)
-    client_key = os.getenv("TIKTOK_SANDBOX_CLIENT_KEY", os.getenv("TIKTOK_CLIENT_KEY", ""))
-    client_secret = os.getenv("TIKTOK_SANDBOX_CLIENT_SECRET", os.getenv("TIKTOK_CLIENT_SECRET", ""))
+    client_key = os.getenv("TIKTOK_CLIENT_KEY", "")
+    client_secret = os.getenv("TIKTOK_CLIENT_SECRET", "")
     redirect_uri = os.getenv(
         "TIKTOK_REDIRECT_URI",
         "https://supermegabot-production.up.railway.app/api/tiktok/content/callback",
