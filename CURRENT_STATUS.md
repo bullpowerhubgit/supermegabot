@@ -1,5 +1,24 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v17 — BULLPOWER MCC · DEEP-SCAN · 7 RAILWAY-CRASHES GEFIXT · TASKGUARD +2**
+**Stand: 2026-07-13 v18 — EMAIL-SPAM-FIX · UNSUBSCRIBE-LINKS · AUTO-RESPONDER AUS · SOCIAL-GUARDS**
+
+## ✅ FIXES (2026-07-13 v18, commits eee8eb73 + 8efc8962)
+
+### Email-Fehler komplett behoben
+- `${{unsubscribe_link}}` war gebrochener Literal-Text → jetzt `{{ unsubscribe_link }}` (Klaviyo) / `*|UNSUB|*` (Mailchimp) — in 4 Dateien gefixt:
+  - `automation_scheduler.py` (task_klaviyo_daily_campaign, task_mailing_promo_blitz)
+  - `modules/super_revenue_blitz.py` (announce_new_products)
+  - `modules/ds24_traffic_engine.py`
+- **Email-Spam verhindert**: 6 Tasks haben jetzt 24h-Guards:
+  - `task_email_blast_engine` — war 4×/Tag (alle 6h!) → max 1×/Tag
+  - `task_klaviyo_auto_campaign` → max 1×/Tag
+  - `task_mailchimp_auto_campaign` → max 1×/Tag
+  - `task_mailchimp_autonomy` — war 2×/Tag → max 1×/Tag
+  - `task_klaviyo_mass_daily` → max 1×/Tag
+  - `task_mailchimp_mass_daily` → max 1×/Tag
+- **Email-Autoresponder DEAKTIVIERT** (`email_inbox_monitor.py`) — auf Rudolfs Wunsch
+- **Social-Post-Spam verhindert**:
+  - `task_social_autoposter`: 4h-Guard (war stündlich!)
+  - `task_viral_promo_poster`: 12h-Guard (war alle 6h)
 
 ## ✅ FIXES (2026-07-13 v17, commit b0692c1b)
 
