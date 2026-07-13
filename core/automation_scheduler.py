@@ -6780,6 +6780,39 @@ async def task_bpi_compliance_cycle() -> str:
         return f"BPI Compliance Fehler: {e}"
 
 
+async def task_ai_act_art50_cycle() -> str:
+    """EU AI Act Art. 50 — Shops auf fehlende Disclosure scannen. Deadline: 2026-08-02."""
+    try:
+        from modules.ai_act_art50_engine import run_art50_cycle
+        result = await run_art50_cycle()
+        shops  = result.get("shops", 0)
+        alerts = result.get("alerts", 0)
+        days   = result.get("days", 0)
+        return f"AI Act Art.50: {shops} Shops geprüft, {alerts} Alerts, {days}d bis Deadline"
+    except Exception as e:
+        return f"AI Act Art.50 Fehler: {e}"
+
+
+async def task_hs_code_cycle() -> str:
+    """HS-Code SaaS — Status-Report für EU-Zollreform VO EU 2026/382."""
+    try:
+        from modules.hs_code_saas import run_hs_code_saas_cycle
+        result = await run_hs_code_saas_cycle()
+        return f"HS-Code SaaS: {result.get('classified', 0)} klassifiziert, Reform: {result.get('reform_date')}"
+    except Exception as e:
+        return f"HS-Code SaaS Fehler: {e}"
+
+
+async def task_vat_oss_cycle() -> str:
+    """Non-EU VAT/OSS — MwSt-Status alle 27 EU-Länder."""
+    try:
+        from modules.non_eu_vat_oss import run_vat_oss_cycle
+        result = await run_vat_oss_cycle()
+        return f"VAT/OSS: {result.get('transactions', 0)} Transaktionen, MwSt: €{result.get('total_vat', 0):.2f}"
+    except Exception as e:
+        return f"VAT/OSS Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7156,6 +7189,9 @@ TASKS = [
     ("revenue_snapshot",          task_revenue_snapshot,               3600, 8002),  # stündl. — Stripe+DS24+Shopify Aggregat
     ("platform_auto_fix",         task_platform_auto_fix,              1800, 8003),  # alle 30min — Webhooks+Keys Auto-Fix
     ("bpi_compliance_cycle",      task_bpi_compliance_cycle,          86400, 8004),  # täglich — BPI Compliance Pages prüfen
+    ("ai_act_art50_cycle",        task_ai_act_art50_cycle,            21600, 8005),  # alle 6h — EU AI Act Art.50 Scan (Deadline 2026-08-02)
+    ("hs_code_cycle",             task_hs_code_cycle,                 86400, 8006),  # täglich — HS-Code SaaS Status (VO EU 2026/382)
+    ("vat_oss_cycle",             task_vat_oss_cycle,                 86400, 8007),  # täglich — Non-EU VAT/OSS Status
 ]
 
 
