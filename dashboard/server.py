@@ -11286,6 +11286,27 @@ async def create_app():
     app.router.add_get("/api/social/autopilot-status", handle_social_status)
     log.info("Social Autopilot routes registered (/api/social/*)")
 
+    # ── YouTube Autopilot ──────────────────────────────────────────────────
+    async def handle_yt_create(request):
+        try:
+            from modules.youtube_autopilot import create_and_upload_video
+            result = await create_and_upload_video()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_yt_stats(request):
+        try:
+            from modules.youtube_autopilot import get_youtube_stats
+            result = await get_youtube_stats()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_post("/api/youtube/create-video", handle_yt_create)
+    app.router.add_get("/api/youtube/stats",         handle_yt_stats)
+    log.info("YouTube Autopilot routes registered (/api/youtube/*)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
