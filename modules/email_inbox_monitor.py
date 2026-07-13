@@ -200,14 +200,8 @@ async def run_inbox_monitor() -> Dict:
         async with aiohttp.ClientSession() as session:
             await _tg_alert(alert_emails, session)
 
-    # Auto-Responder für Geschäftsmails
+    # Auto-Responder DEAKTIVIERT (per Rudolf Sarkany, 2026-07-13)
     responder_result: Dict = {}
-    if all_new:
-        try:
-            from modules.email_auto_responder import run_auto_responder
-            responder_result = await run_auto_responder(all_new)
-        except Exception as e:
-            log.error("Auto-Responder Fehler: %s", e)
 
     log.info(
         "Inbox Monitor: %d Konten, %d neu (%d Alerts)",
