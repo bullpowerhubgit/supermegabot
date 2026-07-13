@@ -22,7 +22,7 @@ log = logging.getLogger("MegaSEOEngine")
 
 SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 SHOP_URL = f"https://{SHOP_DOMAIN}"
-DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
+DS24_URL = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 INDEXNOW_KEY = os.getenv("INDEXNOW_KEY", "bullpowerhub2026seo")
 DATA_DIR = os.getenv("DATA_DIR", "/tmp/seo_mega")
 

@@ -19,7 +19,7 @@ import aiohttp
 log = logging.getLogger("MassContentBlaster")
 
 DB_PATH = Path(os.getenv("DATA_DIR", "/tmp/supermegabot")) / "mass_content.db"
-DS24_LINK = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
+DS24_LINK = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'autopilot-store-suite-fmbka.myshopify.com')}")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL    = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → must be public channel
@@ -30,9 +30,9 @@ TELEGRAM_CHAT  = _TG_CHANNEL if _TG_CHANNEL and _TG_CHANNEL.startswith("-100") e
 # 668035 = AI Income Machine 90-Day Blueprint (OUR product, €37, proven converter!)
 APPROVED_LINKS = [
     "https://www.checkout-ds24.com/product/668035",
-    "https://www.checkout-ds24.com/product/704677",
-    "https://www.checkout-ds24.com/product/710277",
-    "https://www.checkout-ds24.com/product/710277",
+    "https://www.checkout-ds24.com/product/668035",
+    "https://www.checkout-ds24.com/product/668035",
+    "https://www.checkout-ds24.com/product/668035",
 ]
 if "669750" in DS24_LINK or "576000" in DS24_LINK or "578000" in DS24_LINK:
     DS24_LINK = APPROVED_LINKS[0]  # override unapproved/wrong product

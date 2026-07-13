@@ -1738,7 +1738,7 @@ class CommandRouter:
             r = await g.ping()
             return f"Gumroad: {'✅ ' + str(r) if r.get('connected') else '❌ ' + r.get('error','?')}"
         except Exception as e:
-            return f"Gumroad: 🔗 {os.getenv('DS24_AFFILIATE_LINK','https://www.checkout-ds24.com/product/710277')}"
+            return f"Gumroad: 🔗 {os.getenv('DS24_AFFILIATE_LINK','https://www.checkout-ds24.com/product/668035')}"
 
     async def _cmd_paypal_status(self, text: str, session_id: str) -> str:
         """PayPal Status."""
