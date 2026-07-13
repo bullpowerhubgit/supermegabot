@@ -80,12 +80,13 @@ hospital-wage-calculator-vercel · gistore · gumroad-discord · telegram-bot ·
 | ✅ Reddit | u/i_want_that_i_need_i — REDDIT_TOKEN_V2 | |
 | ✅ YouTube | Rudolf Sarkany — Data API aktiv | |
 | ✅ Discord | Gateway connected | |
-| ❌ TikTok | @aiitec — ALLE 3 Client-Keys ungültig | Rudolf: TikTok Dev Portal → neue App → OAuth |
+| ✅ TikTok | @aiitec AIITEC — Token gültig, display_name=AIITEC | Sandbox App sbaw5uysvdzyc9p5me, scope: user.info.basic,video.list,video.publish |
 | ⏳ Pinterest | PINTEREST_ACCESS_TOKEN fehlt | Trial-Mode, multi-day Approval |
 
-**TikTok-Problem:** Tokens `act.hr9y5Fd4yrp...` wurden mit unbekannter 4. App generiert.
-Getestet: TIKTOK_CLIENT_KEY, TIKTOK_SANDBOX_CLIENT_KEY, TIKTOK_APP_KEY → alle: "invalid_client"
-→ **Fix: developer.tiktok.com → neue App erstellen → OAuth durchlaufen → neuen CLIENT_KEY/SECRET in .env**
+**TikTok ✅ GELÖST (2026-07-13):** Sandbox App "~4672" = sbaw5uysvdzyc9p5me
+→ Token via Refresh erneuert: `act.hr9y5Fd4yrp...SOzh...!4672.e1` (gültig 24h, auto-refresh via TIKTOK_REFRESH_TOKEN)
+→ TIKTOK_CLIENT_KEY + TIKTOK_CLIENT_SECRET in Railway auf Sandbox-App-Werte gesetzt
+→ API-Test: display_name=AIITEC, open_id=-000z3jxi7oiYBNg4A3dxgsM7d640JUnvPJH ✅
 
 ## ✅ API-CREDENTIALS (Stand 2026-07-13)
 
@@ -106,7 +107,7 @@ Getestet: TIKTOK_CLIENT_KEY, TIKTOK_SANDBOX_CLIENT_KEY, TIKTOK_APP_KEY → alle:
 ## ⏳ OFFENE PUNKTE
 
 1. **PRIO: Anthropic Credits** → console.anthropic.com aufladen (/api/seo/social-drafts → 503)
-2. **TikTok OAuth** → developer.tiktok.com → neue App → OAuth → neuen CLIENT_KEY/SECRET in .env eintragen
+2. **TikTok** ✅ GELÖST — Token refreshed, AIITEC verbunden, Railway/env updated
 3. **Pinterest OAuth**: PINTEREST_ACCESS_TOKEN (Trial-Mode — multi-day Approval, nicht automatisierbar)
 4. **Instagram FACEBOOK_IG_ACCESS_TOKEN**: In Railway prüfen ob gesetzt; falls nicht → IG Business API → User Token holen
 5. **Reddit Contributor**: Earnings nach ~7 Tagen auf reddit.com/premium/contributor
