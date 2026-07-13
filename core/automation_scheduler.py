@@ -6697,6 +6697,17 @@ async def task_aiitec_b2b_outreach() -> str:
         return f"AIITEC Outreach Fehler: {ex}"
 
 
+async def task_multi_product_outreach() -> str:
+    """Universal Multi-Product Outreach: tägl. 10:00 — 40 Emails für AIITEC/EU-Compliance/Insolvenz-Radar/Viral-Scanner."""
+    try:
+        from modules.multi_product_outreach import MultiProductOutreach
+        engine = MultiProductOutreach()
+        stats = await engine.run_daily()
+        return f"Multi-Product Outreach: {stats['sent']} Emails ✅ — {stats.get('products', {})}"
+    except Exception as ex:
+        return f"Multi-Product Outreach Fehler: {ex}"
+
+
 async def task_bpi_sys10_bulk_outreach() -> str:
     """SYS-10: Täglich 100 Kalt-Emails an Multiplikatoren (Berater, Agenturen, Verbände) — 30% Provision-Pitch."""
     try:
@@ -7222,6 +7233,7 @@ TASKS = [
     ("bpi_sys08_intelligence",  task_bpi_sys08_intelligence_broker,  86400, 7360),  # tägl. 09:30 — Intelligence Broker
     # ── SYS-10: Bulk Outreach 1000 Multiplier-Firmen ─────────────────────────
     ("aiitec_b2b_outreach",      task_aiitec_b2b_outreach,            86400, 7390),  # tägl. 09:30 — 30 personalisierte B2B Emails DACH
+    ("multi_product_outreach",   task_multi_product_outreach,         86400, 7395),  # tägl. 10:00 — alle 4 Produkte an 40 neue Firmen
     ("bpi_sys10_bulk_outreach",  task_bpi_sys10_bulk_outreach,        86400, 7400),  # tägl. 09:00 — 100 Emails an Multiplikatoren
     # ── SYS-13: Partner Channel / Reseller CRM ───────────────────────────────
     ("bpi_sys13_partner_channel", task_bpi_sys13_partner_channel,      3600, 7500),  # stündl. — Reply-Scan + Onboarding
