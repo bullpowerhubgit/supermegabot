@@ -9675,7 +9675,8 @@ async def create_app():
     app.router.add_post("/api/circuit-breaker/reset-all", handle_circuit_breaker_reset_all)
     app.router.add_post("/api/seo/ultra",              handle_ultra_seo)
     app.router.add_post("/api/seo/indexnow",          handle_ultra_indexnow)
-    app.router.add_get( "/bullpower2026indexnow.txt", handle_indexnow_key)
+    app.router.add_get( "/bullpower2026indexnow.txt",                   handle_indexnow_key)
+    app.router.add_get( "/tiktokZkDblqcx5ixmxCEuDg2a6PzhC8qm7qN2.txt", handle_tiktok_verify_file)
     app.router.add_get( "/sitemap.xml",               handle_sitemap_xml)
     app.router.add_get( "/robots.txt",                handle_robots_txt)
     app.router.add_post("/api/seo/dominator",         handle_seo_dominator)
@@ -11878,6 +11879,11 @@ async def handle_ultra_indexnow(req):
 async def handle_indexnow_key(req):
     """GET /bullpower2026indexnow.txt — IndexNow key verification file."""
     return web.Response(text="bullpower2026indexnow", content_type="text/plain")
+
+
+async def handle_tiktok_verify_file(req):
+    """GET /tiktokZkDblqcx5ixmxCEuDg2a6PzhC8qm7qN2.txt — TikTok domain verification."""
+    return web.Response(text="tiktokZkDblqcx5ixmxCEuDg2a6PzhC8qm7qN2", content_type="text/plain")
 
 
 async def handle_sitemap_xml(req):
