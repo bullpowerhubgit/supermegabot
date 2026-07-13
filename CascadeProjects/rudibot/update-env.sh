@@ -18,7 +18,7 @@ if [ ! -z "$SHOPIFY_TOKEN" ]; then
 fi
 
 # Shopify Client Secret (neu gefunden)
-SHOPIFY_SECRET=$(grep -o '***REDACTED_SHOPIFY_SECRET***' "$ENV_NEW" | head -1)
+SHOPIFY_SECRET=$(grep -o 'shpss_[a-zA-Z0-9]*' "$ENV_NEW" | head -1)
 if [ ! -z "$SHOPIFY_SECRET" ]; then
     sed -i.bak "s|SHOPIFY_CLIENT_SECRET=.*|SHOPIFY_CLIENT_SECRET=$SHOPIFY_SECRET|" "$ENV_FILE"
     echo "✅ SHOPIFY_CLIENT_SECRET aktualisiert"

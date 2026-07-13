@@ -1,0 +1,17 @@
+{
+  "name": "supermegabot-agents",
+  "version": "1.0.0",
+  "description": "Agenten-Orchestrator: Inventory / Classification / Reporting / SYS-08 Intelligence Broker",
+  "type": "module",
+  "main": "orchestrator.js",
+  "scripts": {
+    "start": "node orchestrator.js",
+    "cli": "node cli.js"
+  },
+  "dependencies": {
+    "fast-xml-parser": "^4.5.0"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
