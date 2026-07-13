@@ -371,11 +371,55 @@ async def _find_email_for_domain(
         return f"info@{domain}"
     return ""
 
+_GS_SKIP_DOMAINS = {
+    "wipe.de", "consentmanager.net", "adfarm1.adition.com", "adition.com",
+    "google.com", "googleapis.com", "gstatic.com", "googletagmanager.com",
+    "facebook.com", "twitter.com", "linkedin.com", "youtube.com", "instagram.com",
+    "tiktok.com", "pinterest.com", "xing.com",
+    "apple.com", "microsoft.com", "amazon.com", "adobe.com", "cloudflare.com",
+    "gelbeseiten.de", "mapsapi.gelbeseiten.de", "11880.com", "cylex.de",
+    "meinestadt.de", "golocal.de", "herold.at", "local.ch",
+    "wp-stat.com", "w3.org", "schema.org", "openstreetmap.org",
+    "maps.google.com", "maps.apple.com",
+}
+
+async def _gelbeseiten_detail(session: aiohttp.ClientSession,
+                               detail_url: str, company: str, city: str,
+                               industry: str) -> Optional[Dict]:
+    """Fetch GS detail page → extract email or website → find email."""
+    html = await _fetch(session, detail_url, timeout=10)
+    if not html:
+        return None
+    # 1. Direct mailto on detail page (most reliable)
+    email_m = re.search(r'mailto:([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})', html)
+    if email_m:
+        email = email_m.group(1).lower().split("?")[0]
+        if _valid_email(email):
+            return {"email": email, "company": company, "city": city,
+                    "industry": industry, "source": "gelbeseiten_detail"}
+    # 2. External website URL → Impressum scraping
+    ext_links = re.findall(r'href="(https?://[^"]{5,120})"', html)
+    for link in ext_links:
+        domain = _extract_domain_from_url(link)
+        if not domain:
+            continue
+        # Skip known non-company domains
+        if any(domain.endswith(skip) or domain == skip for skip in _GS_SKIP_DOMAINS):
+            continue
+        if len(domain) < 4:
+            continue
+        email = await _find_email_for_domain(session, domain, company)
+        if email and _valid_email(email):
+            return {"email": email, "company": company, "city": city,
+                    "industry": industry, "source": "gelbeseiten", "domain": domain}
+    return None
+
 async def research_gelbeseiten(session: aiohttp.ClientSession,
                                 category: str, city: str) -> List[Dict]:
     """
-    Gelbe Seiten: extrahiert Domains aus Listings, dann Impressum-Scraping.
-    Gelbe Seiten zeigt selten mailto:// — aber immer Website-Links.
+    Gelbe Seiten 2-Stufen-Scraping:
+    1. Listing-Seite → Company-Name + Detail-URL
+    2. Detail-Seite → Email oder Website → Impressum-Scraping
     """
     leads = []
     url = f"https://www.gelbeseiten.de/suche/{quote_plus(category)}/{quote_plus(city)}"
@@ -386,38 +430,29 @@ async def research_gelbeseiten(session: aiohttp.ClientSession,
         r'<article[^>]*class="[^"]*mod-Treffer[^"]*"[^>]*>(.*?)</article>',
         html, re.S
     )
+    if not entries:
+        return leads
     industry = _map_industry(category)
-    sem = asyncio.Semaphore(4)
+    sem = asyncio.Semaphore(5)
     async def _process(entry: str):
         async with sem:
-            company_m = re.search(r'data-company="([^"]+)"', entry)
+            company_m = re.search(r'<h2[^>]*class="[^"]*mod-Treffer__name[^"]*"[^>]*>([^<]+)<', entry)
             if not company_m:
                 company_m = re.search(r'<h2[^>]*>([^<]+)<', entry)
             company = re.sub(r'<[^>]+>', '', company_m.group(1)).strip() if company_m else ""
-            city_m   = re.search(r'<span[^>]*class="[^"]*locality[^"]*"[^>]*>([^<]+)<', entry)
-            city_n   = city_m.group(1).strip() if city_m else city
-            # Direct mailto (rare but take it)
-            email_m  = re.search(r'href="mailto:([^"&]+)"', entry)
-            if email_m:
-                email = email_m.group(1).strip().lower()
-                if _valid_email(email):
-                    return {"email": email, "company": company, "city": city_n,
-                            "industry": industry, "source": "gelbeseiten_direct"}
-            # Website URL → Impressum scraping
-            web_m = re.search(r'data-web="([^"]+)"', entry)
-            if not web_m:
-                web_m = re.search(r'href="(https?://(?!www\.gelbeseiten)[^"]+)"', entry)
-            if web_m:
-                domain = _extract_domain_from_url(web_m.group(1))
-                if domain:
-                    await asyncio.sleep(0.3)
-                    email = await _find_email_for_domain(session, domain, company)
-                    if email and _valid_email(email):
-                        return {"email": email, "company": company, "city": city_n,
-                                "industry": industry, "source": "gelbeseiten",
-                                "domain": domain}
-            return None
-    tasks = [_process(e) for e in entries[:25]]
+            # Detail page link
+            detail_m = re.search(r'href="(https://www\.gelbeseiten\.de/gsbiz/[^"]+)"', entry)
+            if not detail_m:
+                detail_m = re.search(r'href="(/gsbiz/[^"]+)"', entry)
+            if not detail_m:
+                return None
+            detail_url = detail_m.group(1)
+            if detail_url.startswith("/"):
+                detail_url = "https://www.gelbeseiten.de" + detail_url
+            await asyncio.sleep(0.4)
+            return await _gelbeseiten_detail(session, detail_url, company, city, industry)
+
+    tasks = [_process(e) for e in entries[:20]]
     results = await asyncio.gather(*tasks, return_exceptions=True)
     for r in results:
         if isinstance(r, dict):
