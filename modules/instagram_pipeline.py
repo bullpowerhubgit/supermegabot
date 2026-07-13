@@ -160,7 +160,18 @@ async def post_to_instagram(caption: str, image_url: str, page_token: str) -> di
                 err = media_resp.get("error", {})
                 return {"ok": False, "error": f"media create: {err.get('message', str(media_resp))[:120]}"}
 
-            await asyncio.sleep(3)
+            # Warten bis Instagram Media fertig verarbeitet ist (FINISHED)
+            for _attempt in range(6):
+                await asyncio.sleep(10)
+                async with s.get(
+                    f"{FB_BASE}/{creation_id}",
+                    params={"fields": "status_code", "access_token": page_token},
+                ) as r:
+                    st = await r.json(content_type=None)
+                if st.get("status_code") == "FINISHED":
+                    break
+                if st.get("status_code") == "ERROR":
+                    return {"ok": False, "error": f"media processing error: {st}"}
 
             # Schritt 2: Veröffentlichen
             async with s.post(
