@@ -32,7 +32,7 @@ def _e(key: str, default: str = "") -> str:
 
 
 def _reload_env() -> None:
-    load_dotenv("/Users/rudolfsarkany/supermegabot/.env", override=True)
+    load_dotenv(Path(__file__).parent.parent / ".env", override=True)
 
 
 # ── individual check builders ─────────────────────────────────────────────────

@@ -7412,7 +7412,7 @@ class AutomationScheduler:
 
     async def _execute(self, name: str, fn: Callable) -> str:
         if (
-            os.getenv("REVENUE_MODE", "true").lower() not in ("false", "0", "off")
+            os.getenv("REVENUE_MODE", "false").lower() in ("true", "1", "on")
             and name not in self._REVENUE_TASKS
         ):
             log.debug("[%s] REVENUE_MODE — Vanity-Task übersprungen", name)
