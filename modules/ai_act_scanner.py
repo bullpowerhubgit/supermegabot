@@ -2,13 +2,13 @@
 """
 EU AI Act Compliance Scanner — Vollautomatischer B2B-Revenue-Agent
 =================================================================
-Pflicht ab 2. August 2026. Bußgelder bis €35 Mio. oder 7% Jahresumsatz.
+Pflicht ab 2. August 2026. Bußgelder bis €15 Mio. oder 3% Jahresumsatz (Art. 99 Abs. 4).
 3,5 Mio. KMU in DE nutzen irgendeine KI — 99% wissen nicht ob sie betroffen sind.
 
 Was dieser Agent tut (täglich 10:00 Uhr):
   1. Findet KMU aus Handelsregister-DB (oder eigener Ziel-Liste)
   2. Claude Haiku analysiert Branche + Rechtsform → Risiko-Assessment
-  3. Sendet personalisierte Email: "Ihr Risiko-Score: HOCH — Bußgeld bis €35 Mio."
+  3. Sendet personalisierte Email: "Ihr Risiko-Score: HOCH — Bußgeld bis €15 Mio."
   4. Bietet kostenlosen Quick-Check + €299 Full-Report
   5. Telegram-Report an Rudolf
 
@@ -102,10 +102,10 @@ BRANCHE_RISIKO = {
 }
 
 RISIKO_BUSSGELDER = {
-    "HOCH":      ("bis €35 Mio.", "oder 7% des Jahresumsatzes"),
+    "HOCH":      ("bis €15 Mio.", "oder 3% des weltweiten Jahresumsatzes"),
     "MITTEL":    ("bis €15 Mio.", "oder 3% des Jahresumsatzes"),
     "NIEDRIG":   ("bis €7,5 Mio.", "oder 1,5% des Jahresumsatzes"),
-    "UNBEKANNT": ("bis €35 Mio.", "je nach Einstufung durch Behörden"),
+    "UNBEKANNT": ("bis €15 Mio.", "je nach Einstufung durch Behörden"),
 }
 
 # ── Ziel-Firmen ───────────────────────────────────────────────────────────────
@@ -246,43 +246,36 @@ def build_compliance_email(firma: str, ort: str, branche: str, analysis: Dict) -
 
     risiko_emoji = {"HOCH": "🔴", "MITTEL": "🟡", "NIEDRIG": "🟢"}.get(risiko, "⚪")
 
-    subject = f"EU AI Act 2026: Ihr Unternehmen riskiert {bussgelder} Bußgeld — Kostenloser Check"
+    subject = f"EU AI Act: {risiko_emoji} {firma} — Risikoklasse {risiko} ab 2. August 2026"
 
     body = f"""Guten Tag,
 
-mein KI-System hat {firma} in {ort} als potenziell vom EU AI Act betroffenes Unternehmen identifiziert.
+ab dem 2. August 2026 gilt die Transparenzpflicht nach EU AI Act Art. 50 verbindlich.
+Unternehmen Ihrer Branche ({branche}) die KI-Chatbots, automatisierte Empfehlungen
+oder KI-gestützte Entscheidungssysteme einsetzen, müssen dies künftig kennzeichnen.
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-RISIKO-EINSCHÄTZUNG: {risiko_emoji} {risiko}
-Branche: {branche}
-Mögliches Bußgeld: {bussgelder}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Unsere Branchenanalyse für {firma} ergibt:
+
+  Risikoklasse:    {risiko_emoji} {risiko}
+  Bußgeldkategorie: bis {bussgelder} (Art. 99 Abs. 4 EU AI Act)
+  Frist:           2. August 2026 — in weniger als 3 Wochen
 
 {summary}
 
-Der EU AI Act ist seit August 2026 in Kraft. Unternehmen die KI-Tools nutzen
-(Chatbots, Empfehlungssysteme, automatisierte Entscheidungen, HR-Software)
-können ohne Compliance-Nachweis Bußgelder bis {bussgelder} riskieren.
+Hinweis: Dies ist eine automatisierte Risikoindikation auf Basis öffentlicher
+Branchendaten — keine Rechtsberatung. Für verbindliche Compliance-Einschätzung
+wenden Sie sich bitte an einen Rechtsanwalt.
 
-Was Sie jetzt tun sollten:
-✅ Kostenloser 5-Minuten Quick-Check: Sind Sie betroffen?
-✅ Vollständiger Compliance-Report: €299 (einmalig)
-✅ Laufendes Monitoring: €99/Monat
-
-Kostenloser Quick-Check (keine Kreditkarte):
-{dashboard}/ai-act-check?firma={firma.replace(' ', '+')}
-
-Fragen? Antworten Sie einfach auf diese Email.
+Was Sie kostenfrei tun können:
+→ 5-Minuten Risiko-Check (keine Registrierung): {dashboard}/ai-act
+→ Detailierter Risikobericht (€199, sofort verfügbar): {dashboard}/ai-act#report
 
 Mit freundlichen Grüßen,
 Rudolf Sarkany
-AiiteC — EU AI Act Compliance Solutions
-aiitecbuuss@gmail.com
+AiiteC — EU AI Act Risiko-Radar
+aiitecbuuss@gmail.com | {dashboard}/ai-act
 
-P.S. Über 3,5 Millionen KMU in Deutschland sind potenziell betroffen.
-Die meisten wissen es noch nicht.
-
-Abmeldung: Antworten Sie mit "Abmeldung"
+Abmeldung: Antworten Sie mit "Abmeldung" — wir entfernen Sie sofort.
 """
     return subject, body
 
