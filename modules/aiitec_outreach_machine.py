@@ -817,6 +817,45 @@ async def daemon() -> None:
             log.error("Lauf-Fehler: %s", e)
             await _tg(f"⚠️ AIITEC Outreach Fehler: {e}")
 
+# ── Klasse für Scheduler-Integration ─────────────────────────────────────────
+
+class AiitecOutreachMachine:
+    """Wrapper für Scheduler-Integration (task_aiitec_b2b_outreach)."""
+
+    async def run_daily_outreach(self) -> dict:
+        await init_db()
+        stats = await run_outreach()
+        await _report(stats)
+        return stats
+
+    async def get_stats(self) -> dict:
+        sb_url = _SB_URL()
+        sb_key = _SB_KEY()
+        if not sb_url or not sb_key:
+            return {"ok": False, "error": "no Supabase credentials"}
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.get(
+                    f"{sb_url}/rest/v1/aiitec_campaigns",
+                    headers={"apikey": sb_key, "Authorization": f"Bearer {sb_key}"},
+                    params={"select": "id,status,stage,sent_at", "limit": "1000"}
+                ) as r:
+                    rows = await r.json()
+                    if not isinstance(rows, list):
+                        return {"ok": False, "error": str(rows)}
+                    total   = len(rows)
+                    sent    = sum(1 for r in rows if r.get("status") == "sent")
+                    replied = sum(1 for r in rows if r.get("status") == "replied")
+                    failed  = sum(1 for r in rows if r.get("status") == "failed")
+                    from datetime import date
+                    today_s = str(date.today())
+                    today   = sum(1 for r in rows if (r.get("sent_at") or "")[:10] == today_s)
+                    return {"ok": True, "total": total, "sent": sent, "replied": replied,
+                            "failed": failed, "today": today}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+
 # ── Main ──────────────────────────────────────────────────────────────────────
 
 async def main() -> None:
