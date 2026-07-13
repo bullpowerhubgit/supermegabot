@@ -73,7 +73,7 @@ def _smtp_pool() -> List[Dict]:
         ("GMAIL_USER_6",         "GMAIL_APP_PASSWORD_6"),
         ("GMAIL_USER_7",         "GMAIL_APP_PASSWORD_7"),
         ("GMAIL_USER_8",         "GMAIL_APP_PASSWORD_8"),
-        ("GMAIL_USER_8",         "GMAIL_APP_PASSWORD_8"),
+        ("GMAIL_USER_PERSONAL",  "GMAIL_APP_PASSWORD_PERSONAL"),
     ]
     for user_key, pass_key in pairs:
         user = _e(user_key)

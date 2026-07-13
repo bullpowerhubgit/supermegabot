@@ -76,6 +76,8 @@ def _smtp_pool() -> List[Dict]:
         ("GMAIL_USER_5",    "GMAIL_APP_PASSWORD_5"),
         ("GMAIL_USER_6",    "GMAIL_APP_PASSWORD_6"),
         ("GMAIL_USER_7",    "GMAIL_APP_PASSWORD_7"),
+        ("GMAIL_USER_8",         "GMAIL_APP_PASSWORD_8"),
+        ("GMAIL_USER_PERSONAL",  "GMAIL_APP_PASSWORD_PERSONAL"),
         ("GMAIL_USER_AIITEC",    "GMAIL_APP_PASSWORD_AIITEC"),
         ("GMAIL_USER_BULLPOWER", "GMAIL_APP_PASSWORD_BULLPOWER"),
     ]
@@ -85,8 +87,11 @@ def _smtp_pool() -> List[Dict]:
         p = os.getenv(pk, "")
         if u and p and "@" in u:
             accounts.append({"user": u, "password": p, "sent_today": 0, "limit": 150})
+    # Deduplizieren (aiitecbuuss doppelt via USER_5 + USER_AIITEC)
+    seen_users = set()
+    accounts = [a for a in accounts if a["user"] not in seen_users and not seen_users.add(a["user"])]
     # SendGrid Fallback
-    sg = os.getenv("SENDGRID_API_KEY", "")
+    sg = os.getenv("SENDGRID_API_KEY_AIITEC", "") or os.getenv("SENDGRID_API_KEY", "")
     if sg:
         accounts.append({"type": "sendgrid", "key": sg, "from": os.getenv("SENDGRID_FROM_EMAIL", "noreply@aiitec.de"), "sent_today": 0, "limit": 500})
     return accounts
