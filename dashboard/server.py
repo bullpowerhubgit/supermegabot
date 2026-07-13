@@ -9578,6 +9578,148 @@ async def handle_bpi_compliance_status(req: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── EU AI Act Art. 50 ────────────────────────────────────────────────────────
+
+async def handle_ai_act_banner(req: web.Request) -> web.Response:
+    """Generiert Art.-50-konformes Disclosure-Banner HTML."""
+    try:
+        from modules.ai_act_art50_engine import generate_disclosure_banner
+        params = req.rel_url.query
+        result = await generate_disclosure_banner(
+            shop_url     = params.get("shop_url", ""),
+            chatbot_type = params.get("chatbot_type", "generic"),
+            language     = params.get("language", "de"),
+            style        = params.get("style", "full"),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ai_act_scan(req: web.Request) -> web.Response:
+    """Scannt eine URL auf AI-Chatbots + fehlende Art.-50-Disclosures."""
+    try:
+        from modules.ai_act_art50_engine import scan_website_for_ai_content
+        data = await req.json() if req.content_type == "application/json" else {}
+        url  = data.get("url") or req.rel_url.query.get("url", "")
+        if not url:
+            return web.json_response({"ok": False, "error": "url erforderlich"}, status=400)
+        result = await scan_website_for_ai_content(url)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ai_act_report(req: web.Request) -> web.Response:
+    """Vollständiger Art.-50-Compliance-Report für einen Shop."""
+    try:
+        from modules.ai_act_art50_engine import generate_compliance_report
+        data   = await req.json() if req.content_type == "application/json" else {}
+        domain = data.get("domain") or req.rel_url.query.get("domain", "")
+        if not domain:
+            return web.json_response({"ok": False, "error": "domain erforderlich"}, status=400)
+        result = await generate_compliance_report(domain)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_ai_act_status(req: web.Request) -> web.Response:
+    """Status des AI Act Art. 50 Systems."""
+    try:
+        from modules.ai_act_art50_engine import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── HS-Code SaaS ─────────────────────────────────────────────────────────────
+
+async def handle_hs_classify(req: web.Request) -> web.Response:
+    """HS-Code-Klassifizierung für ein Produkt."""
+    try:
+        from modules.hs_code_saas import classify_hs_code_local, classify_hs_code_ai, calculate_customs_cost
+        data   = await req.json() if req.content_type == "application/json" else {}
+        name   = data.get("name", data.get("title", ""))
+        desc   = data.get("description", "")
+        use_ai = data.get("use_ai", False)
+        if not name:
+            return web.json_response({"ok": False, "error": "name erforderlich"}, status=400)
+        if use_ai:
+            hs, cat, conf = await classify_hs_code_ai(name, desc)
+        else:
+            hs, cat, conf = classify_hs_code_local(name, desc)
+        cost = calculate_customs_cost([hs])
+        return web.json_response({"ok": True, "hs_code": hs, "category": cat, "confidence": conf, "customs": cost})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_hs_batch(req: web.Request) -> web.Response:
+    """Batch-Klassifizierung eines Produktkatalogs."""
+    try:
+        from modules.hs_code_saas import classify_product_catalog
+        data     = await req.json()
+        products = data.get("products", [])
+        if not products:
+            return web.json_response({"ok": False, "error": "products erforderlich"}, status=400)
+        results = await classify_product_catalog(products[:500], use_ai=data.get("use_ai", False))
+        return web.json_response({"ok": True, "count": len(results), "results": results})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_hs_status(req: web.Request) -> web.Response:
+    """Status des HS-Code SaaS Systems."""
+    try:
+        from modules.hs_code_saas import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── Non-EU VAT/OSS ───────────────────────────────────────────────────────────
+
+async def handle_vat_calculate(req: web.Request) -> web.Response:
+    """MwSt-Berechnung für eine EU-Bestellung."""
+    try:
+        from modules.non_eu_vat_oss import calculate_vat
+        data = await req.json() if req.content_type == "application/json" else {}
+        amount  = float(data.get("amount", 0))
+        country = data.get("country", "DE")
+        ptype   = data.get("type", "digital")
+        b2b     = bool(data.get("b2b", False))
+        if not amount:
+            return web.json_response({"ok": False, "error": "amount erforderlich"}, status=400)
+        result = calculate_vat(amount, country, ptype, b2b)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_vat_oss_report(req: web.Request) -> web.Response:
+    """OSS-Quartalsbericht generieren."""
+    try:
+        from modules.non_eu_vat_oss import generate_oss_quarterly_report
+        data         = await req.json()
+        transactions = data.get("transactions", [])
+        quarter      = data.get("quarter", "Q3")
+        year         = int(data.get("year", 2026))
+        result = generate_oss_quarterly_report(transactions, quarter, year)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_vat_oss_status(req: web.Request) -> web.Response:
+    """Status des VAT/OSS Systems."""
+    try:
+        from modules.non_eu_vat_oss import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_bpi_stripe_webhook(req: web.Request) -> web.Response:
     """BPI Stripe Webhook: Zahlung → KI-Generierung → Email-Lieferung in 48h."""
     try:
@@ -10746,7 +10888,20 @@ async def create_app():
     app.router.add_post("/api/bpi/compliance/webhook",   handle_bpi_compliance_webhook)
     app.router.add_post("/api/bpi/compliance/outreach",  handle_bpi_compliance_outreach)
     app.router.add_get( "/api/bpi/compliance/status",    handle_bpi_compliance_status)
-    log.info("BPI Extension routes registered (SYS-10/13/18 + Delivery + Compliance Engine)")
+    # ── EU AI Act Art. 50 ──────────────────────────────────────────────────────
+    app.router.add_get( "/api/ai-act/banner",            handle_ai_act_banner)
+    app.router.add_post("/api/ai-act/scan",              handle_ai_act_scan)
+    app.router.add_post("/api/ai-act/report",            handle_ai_act_report)
+    app.router.add_get( "/api/ai-act/status",            handle_ai_act_status)
+    # ── HS-Code SaaS ──────────────────────────────────────────────────────────
+    app.router.add_post("/api/hs-code/classify",         handle_hs_classify)
+    app.router.add_post("/api/hs-code/batch",            handle_hs_batch)
+    app.router.add_get( "/api/hs-code/status",           handle_hs_status)
+    # ── Non-EU VAT/OSS ────────────────────────────────────────────────────────
+    app.router.add_post("/api/vat/calculate",            handle_vat_calculate)
+    app.router.add_post("/api/vat/oss-report",           handle_vat_oss_report)
+    app.router.add_get( "/api/vat/status",               handle_vat_oss_status)
+    log.info("BPI Extension routes registered (SYS-10/13/18 + Delivery + Compliance Engine + AI Act + HS-Code + VAT/OSS)")
     # ── END BPI 8 SYSTEMS ───────────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
