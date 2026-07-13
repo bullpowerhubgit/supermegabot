@@ -1,7 +1,13 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v12 — AIITEC B2B OUTREACH MACHINE LIVE · 284 TASKS AKTIV**
+**Stand: 2026-07-13 v13 — POSTS/INSTAGRAM GEFIXED · HEADLINES-FILTER · 284 TASKS**
 
-## ✅ SYSTEM-STATUS (2026-07-13 ~20:15 UTC)
+## ✅ FIXES (2026-07-13 v13, commit 5e9d278a)
+- `viral_window_scanner.py` — `_is_valid_product()` filtert News-Headlines aus Posts (Apple Vision Pro Artikel, Windows hospitals, etc.)
+- `viral_promo_poster.py` — `_pick_safe_product()` prüft Keywords, 8 kuratierte Fallbacks statt "Portable Blender"
+- `post_instagram()` — Container-Status-Polling statt 2s-Sleep → behebt "Media ID is not available"
+- Circuit Breakers facebook/instagram/linkedin reset ✅
+
+## ✅ SYSTEM-STATUS (2026-07-13 ~20:30 UTC)
 
 | System | Status | Details |
 |--------|--------|---------|
