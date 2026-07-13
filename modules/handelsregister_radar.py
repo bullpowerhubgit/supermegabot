@@ -67,12 +67,11 @@ def _tg_chat()    -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 
 # ── Subscriber-Liste (wer kauft unsere Leads) ─────────────────────────────────
 LEAD_BUYERS = [
-    {"name": "Steuerberater Netzwerk DE",     "email": "kontakt@stbv.de",              "type": "Steuerberater",   "preis": 20},
-    {"name": "DATEV Vertrieb",                "email": "vertrieb@datev.de",             "type": "Buchh-SaaS",      "preis": 15},
-    {"name": "Lexware Partnervertrieb",       "email": "partner@lexware.de",            "type": "Buchh-SaaS",      "preis": 15},
+    # kontakt@stbv.de ENTFERNT — Bounce 2026-07-13
+    # vertrieb@datev.de ENTFERNT — Bounce 2026-07-13
+    # partner@lexware.de ENTFERNT — Bounce 2026-07-13
     {"name": "SevDesk Partnerteam",           "email": "partner@sevdesk.de",            "type": "Buchh-SaaS",      "preis": 12},
-    {"name": "HDI Gewerbeversicherung",       "email": "gewerbe@hdi.de",               "type": "Versicherung",    "preis": 25},
-    {"name": "Allianz Geschäftskunden",       "email": "geschaeftskunden@allianz.de",   "type": "Versicherung",    "preis": 25},
+    # HDI/Allianz generische Adressen oft nicht zustellbar — deaktiviert
     {"name": "Jimdo Geschäftskunden",         "email": "business@jimdo.com",            "type": "Website/SaaS",    "preis": 10},
     {"name": "Wix Partner Deutschland",       "email": "partner@wix.com",               "type": "Website/SaaS",    "preis": 10},
 ]

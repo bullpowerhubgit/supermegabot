@@ -92,6 +92,26 @@ def _db() -> sqlite3.Connection:
     conn.row_factory = sqlite3.Row
     return conn
 
+def mark_bounced(email_addr: str) -> bool:
+    """Markiert eine E-Mail-Adresse als gebounced — wird nie mehr kontaktiert."""
+    import time
+    try:
+        with _db() as c:
+            c.execute(
+                "UPDATE bo_companies SET bounced=1, bounced_at=? WHERE email=?",
+                (int(time.time()), email_addr.lower().strip()),
+            )
+            c.execute(
+                "UPDATE bo_outreach SET status='bounced' WHERE email=?",
+                (email_addr.lower().strip(),),
+            )
+        log.info("Bounce markiert: %s", email_addr)
+        return True
+    except Exception as e:
+        log.warning("mark_bounced Fehler: %s", e)
+        return False
+
+
 def init_db():
     _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
     with _db() as c:
@@ -105,8 +125,13 @@ def init_db():
             service_fit TEXT,
             city        TEXT,
             source      TEXT DEFAULT 'seed',
-            added_at    INTEGER
+            added_at    INTEGER,
+            bounced     INTEGER DEFAULT 0,
+            bounced_at  INTEGER
         );
+        -- Migration: Spalte nachrüsten falls DB älter
+        CREATE TABLE IF NOT EXISTS _migrations (key TEXT PRIMARY KEY);
+
 
         CREATE TABLE IF NOT EXISTS bo_outreach (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -724,12 +749,21 @@ async def run_outreach(daily_limit: int = 100) -> Dict:
     errors = 0
     sender_idx = 0
 
+    # Migration: bounced-Spalte nachrüsten falls alte DB
+    with _db() as c:
+        try:
+            c.execute("ALTER TABLE bo_companies ADD COLUMN bounced INTEGER DEFAULT 0")
+            c.execute("ALTER TABLE bo_companies ADD COLUMN bounced_at INTEGER")
+        except Exception:
+            pass
+
     with _db() as c:
         companies = c.execute("""
             SELECT co.id, co.name, co.email, co.segment, co.service_fit
             FROM bo_companies co
-            LEFT JOIN bo_outreach out ON out.email = co.email AND out.status = 'sent'
+            LEFT JOIN bo_outreach out ON out.email = co.email AND out.status IN ('sent','bounced')
             WHERE out.email IS NULL
+              AND (co.bounced IS NULL OR co.bounced = 0)
             ORDER BY RANDOM()
             LIMIT ?
         """, (daily_limit,)).fetchall()
