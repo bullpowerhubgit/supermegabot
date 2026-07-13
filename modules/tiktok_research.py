@@ -29,11 +29,20 @@ async def _brutus_fire(message: str, channels: list = None):
 
 
 def _app_key() -> str:
-    return os.getenv("TIKTOK_RESEARCH_APP_KEY", os.getenv("TIKTOK_APP_KEY", ""))
+    # Sandbox-Key funktioniert für client_credentials (getestet 2026-07-13)
+    return (
+        os.getenv("TIKTOK_RESEARCH_APP_KEY")
+        or os.getenv("TIKTOK_SANDBOX_CLIENT_KEY")
+        or os.getenv("TIKTOK_APP_KEY", "")
+    )
 
 
 def _app_secret() -> str:
-    return os.getenv("TIKTOK_RESEARCH_APP_SECRET", os.getenv("TIKTOK_APP_SECRET", ""))
+    return (
+        os.getenv("TIKTOK_RESEARCH_APP_SECRET")
+        or os.getenv("TIKTOK_SANDBOX_CLIENT_SECRET")
+        or os.getenv("TIKTOK_APP_SECRET", "")
+    )
 
 
 async def _get_client_token() -> str:
