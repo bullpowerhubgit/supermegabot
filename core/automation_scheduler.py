@@ -6686,6 +6686,17 @@ async def task_bpi_sys08_intelligence_broker() -> str:
         return f"BPI SYS-08 Fehler: {ex}"
 
 
+async def task_aiitec_b2b_outreach() -> str:
+    """AIITEC B2B Outreach: tägl. 09:30 — 30 personalisierte Emails an DACH-Großunternehmen (DAX, MDAX, Hidden Champions)."""
+    try:
+        from modules.aiitec_outreach_machine import AiitecOutreachMachine
+        machine = AiitecOutreachMachine()
+        await machine.run_daily_outreach()
+        return "AIITEC Outreach: 30 Emails versendet"
+    except Exception as ex:
+        return f"AIITEC Outreach Fehler: {ex}"
+
+
 async def task_bpi_sys10_bulk_outreach() -> str:
     """SYS-10: Täglich 100 Kalt-Emails an Multiplikatoren (Berater, Agenturen, Verbände) — 30% Provision-Pitch."""
     try:
@@ -7210,6 +7221,7 @@ TASKS = [
     ("bpi_sys07_ai_citation",   task_bpi_sys07_ai_citation_seo,      21600, 7350),  # alle 6h — AI Citation SEO
     ("bpi_sys08_intelligence",  task_bpi_sys08_intelligence_broker,  86400, 7360),  # tägl. 09:30 — Intelligence Broker
     # ── SYS-10: Bulk Outreach 1000 Multiplier-Firmen ─────────────────────────
+    ("aiitec_b2b_outreach",      task_aiitec_b2b_outreach,            86400, 7390),  # tägl. 09:30 — 30 personalisierte B2B Emails DACH
     ("bpi_sys10_bulk_outreach",  task_bpi_sys10_bulk_outreach,        86400, 7400),  # tägl. 09:00 — 100 Emails an Multiplikatoren
     # ── SYS-13: Partner Channel / Reseller CRM ───────────────────────────────
     ("bpi_sys13_partner_channel", task_bpi_sys13_partner_channel,      3600, 7500),  # stündl. — Reply-Scan + Onboarding
