@@ -32,6 +32,9 @@ RAILWAY_URL = os.getenv(
     "RAILWAY_PUBLIC_DOMAIN",
     "https://supermegabot-production.up.railway.app",
 )
+# Self-calls (healing, scheduler checks) müssen intern via localhost gehen —
+# Railway kann sich nicht selbst via Public-Domain aufrufen.
+_INTERNAL_URL = f"http://localhost:{os.getenv('PORT', os.getenv('DASHBOARD_PORT', '8888'))}"
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
@@ -196,8 +199,8 @@ async def run_platform_checks() -> Dict[str, Dict]:
 # ── Self-Healing ──────────────────────────────────────────────────────────────
 
 async def heal_circuit_breakers() -> Dict:
-    """Reset alle offenen Circuit-Breakers via Railway API."""
-    status, body = await _get(f"{RAILWAY_URL}/health")
+    """Reset alle offenen Circuit-Breakers via interne API."""
+    status, body = await _get(f"{_INTERNAL_URL}/health")
     if not isinstance(body, dict):
         return {"ok": False, "error": "health check failed"}
     circuits = body.get("circuits_open", [])
@@ -207,7 +210,7 @@ async def heal_circuit_breakers() -> Dict:
     async with aiohttp.ClientSession() as s:
         for cb in circuits:
             try:
-                async with s.post(f"{RAILWAY_URL}/api/circuit-breaker/reset", json={"name": cb}, timeout=aiohttp.ClientTimeout(total=5)) as r:
+                async with s.post(f"{_INTERNAL_URL}/api/circuit-breaker/reset", json={"name": cb}, timeout=aiohttp.ClientTimeout(total=5)) as r:
                     if r.status in (200, 204):
                         reset_count += 1
             except Exception:
@@ -217,7 +220,7 @@ async def heal_circuit_breakers() -> Dict:
 
 async def heal_scheduler_failures() -> Dict:
     """Prüft Scheduler-Tasks mit Fehler und versucht Restart."""
-    status, body = await _get(f"{RAILWAY_URL}/api/scheduler/status")
+    status, body = await _get(f"{_INTERNAL_URL}/api/scheduler/status")
     if not isinstance(body, dict):
         return {"ok": False, "error": "scheduler unreachable"}
     tasks = body.get("tasks", {}).get("tasks", [])
@@ -231,7 +234,7 @@ async def heal_scheduler_failures() -> Dict:
             if not name:
                 continue
             try:
-                async with s.post(f"{RAILWAY_URL}/api/scheduler/run-task", json={"task": name}, timeout=aiohttp.ClientTimeout(total=10)) as r:
+                async with s.post(f"{_INTERNAL_URL}/api/scheduler/run-task", json={"task": name}, timeout=aiohttp.ClientTimeout(total=10)) as r:
                     if r.status == 200:
                         restarted += 1
             except Exception:
@@ -280,8 +283,8 @@ async def optimize_roas() -> Dict:
         return {"ok": False, "skipped": True, "reason": "META credentials fehlen"}
 
     try:
-        from modules.roas_optimizer import run_roas_optimizer
-        r = await run_roas_optimizer()
+        from modules.roas_optimizer import run_roas_cycle
+        r = await run_roas_cycle()
         return {"ok": True, **r}
     except Exception as e:
         return {"ok": False, "error": str(e)[:120]}
