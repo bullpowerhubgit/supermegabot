@@ -344,14 +344,22 @@ _TWITTER_BEARER = (
 _TWITTER_GQL_URL = "https://x.com/i/api/graphql/SoVnbfCycZ7fERGCwpZkYA/CreateTweet"
 
 async def _twitter_cookies_dict() -> Optional[dict]:
-    if not _TWITTER_COOKIES.exists():
-        return None
-    try:
-        import json
-        with open(_TWITTER_COOKIES) as f:
-            return json.load(f)
-    except Exception:
-        return None
+    import json
+    # Priorität 1: Datei lokal
+    if _TWITTER_COOKIES.exists():
+        try:
+            with open(_TWITTER_COOKIES) as f:
+                return json.load(f)
+        except Exception:
+            pass
+    # Priorität 2: Railway Env-Var TWITTER_COOKIES_JSON
+    env_json = os.getenv("TWITTER_COOKIES_JSON", "")
+    if env_json:
+        try:
+            return json.loads(env_json)
+        except Exception:
+            pass
+    return None
 
 async def post_twitter(text: str) -> Dict:
     text = text[:280]
