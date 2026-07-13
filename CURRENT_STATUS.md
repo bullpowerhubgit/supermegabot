@@ -1,18 +1,46 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v20 — SHOPIFY PRODUKTSICHTBARKEIT · DS24-KEY-FIX · BLOG-SEO · GMC-FEED**
+**Stand: 2026-07-13 v21 — EMAIL-POPUP · WELCOME-FLOW · GMC-FEED-600 · DUPLIKAT-COLLECTIONS**
+
+## ✅ FIXES (2026-07-13 v21 — Email Capture + Conversion Engine)
+
+### Klaviyo Email-Popup live auf ineedit.com.co ✅
+- **Snippet**: `snippets/klaviyo-popup.liquid` (8.9KB) — Dark Theme, Exit-Intent + 15s Timer
+- **Angebot**: 10% Rabatt Code WILLKOMMEN10 — sofort auf dem Screen nach Signup sichtbar
+- **company_id**: VaCYq3 (korrektes Konto mit Liste Xwxq6V — Bug X7HUrZ≠VaCYq3 behoben)
+- **Tracking**: GA4 `newsletter_signup` + Meta Pixel `Lead` Event bei Signup
+- **Klaviyo.js**: `https://static.klaviyo.com/onsite/js/klaviyo.js?company_id=VaCYq3` in `<head>`
+
+### WILLKOMMEN10 Discount Code erstellt ✅
+- **Shopify Price Rule**: 10% auf alle Produkte, alle Kunden, einmalig pro Kunde
+- **Price Rule ID**: 2377246638467 | **Code**: `WILLKOMMEN10`
+
+### Klaviyo Welcome-Email-Flow ✅
+- **Modul**: `modules/klaviyo_welcome_sender.py` — sendet WILLKOMMEN10-Email an neue Subscriber
+- **Scheduler**: `klaviyo_welcome_subs` (3600s, delay 75s) — stündlich nach neuen Subscribern
+- **Tracking**: `data/klaviyo_welcomed.json` — verhindert doppelte Welcome-Mails
+
+### GMC Feed 300 → 600 Produkte ✅
+- **server.py**: `max_products = 600` (war 300) → 2× mehr Google Shopping Coverage
+- **Status**: 2,916+ aktive Produkte, Feed wird bei nächstem Cache-Ablauf (2h) refreshed
+
+### ⚠️ OFFENER PUNKT: 250 Custom Collections — Duplikate (NUR MIT ERLAUBNIS!)
+- **Problem**: 35 Collection-Namen kommen mehrfach vor: "Fitness & Gesundheit" × 19, "Gesundheit & Fitness Bundle" × 16, "Business & Geld Bundle" × 15, etc.
+- **Ursache**: DS24-Produkt-Import hat pro Batch neue identische Collections angelegt
+- **Auswirkung**: Navigation-Chaos, SEO-Duplikate, verwirrend für Kunden
+- **AKTION NÖTIG**: `git commit` enthält keine Lösch-Logik — Rudolf muss explizit "JA" sagen
+- **Was würde gelöscht**: Alle Duplikate (jeweils N-1 Collections gleichen Namens behalten)
+- **Smart Collections (50)**: NICHT betroffen — korrekt + einzigartig
 
 ## ✅ FIXES (2026-07-13 v20 — Shopify Bulk-Aktivator + Revenue-Fixes)
 
-### KRITISCHER BUG BEHOBEN: 17.452 Produkte waren archiviert ✅
-- **Ursache**: Import hat Produkte als `archived` gespeichert — nie publiziert
-- **Realität**: Nur 2.112 / 19.573 Produkte waren `active` → erklärt 1 Gesamtbestellung
-- **Fix**: `shopify_bulk_activator.py` — 200 Produkte/Stunde aktivieren
-- **Scheduler**: `shopify_bulk_activate` (3600s Interval, delay 60s)
-- **ETA**: ~87h bis alle 17.452 Produkte sichtbar (Telegram-Updates alle 500)
+### LAUFEND: 17.452 Produkte aktivieren (14.9% fertig)
+- **Stand**: 2.916 aktiv / 16.696 archiviert / 9 draft (19.621 gesamt)
+- **ETA**: ~27h bei 600 Produkten/h (Scheduler: alle 30 min, 300 pro Run)
+- **Scheduler**: `shopify_bulk_activate` (1800s, delay 60s) — API: POST `/api/shopify/bulk-activate`
 - **DS24 API-Key**: `_resolve_key` sucht jetzt auch `DS24_API_KEY_FULL` (Railway-Variante)
 - **Blog-Themen**: T-Shirts → Smart Home / AI-Gadgets (50 keyword-reiche Topics)
 - **Shopify SEO**: Korrektes `metafields_global_title_tag` Feld (war namespace-seo-metafield)
-- **GMC Feed**: 50er-Batches + 2h Cache → generiert jetzt korrekt 300 Produkte
+- **GMC Feed**: 50er-Batches + 2h Cache → jetzt 600 Produkte
 - **Circuit Breakers**: facebook/instagram/linkedin state=closed ✅
 
 ## ✅ FIXES (2026-07-13 v19 — Supabase REST komplett gefixt)
