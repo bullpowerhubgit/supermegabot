@@ -62,10 +62,84 @@ async def _load_token(platform: str, key: str) -> str:
     return ""
 
 
+async def _railway_upsert_env(key: str, value: str) -> bool:
+    """Aktualisiert eine Env-Variable in Railway via GraphQL API."""
+    railway_token   = os.getenv("RAILWAY_TOKEN", "")
+    railway_project = os.getenv("RAILWAY_PROJECT_ID", "")
+    railway_env_id  = os.getenv("RAILWAY_ENVIRONMENT_ID", "production")
+    railway_service = os.getenv("RAILWAY_SERVICE_ID", "")
+    if not railway_token or not railway_project:
+        log.debug("RAILWAY_TOKEN/PROJECT_ID nicht gesetzt — Railway-Update übersprungen")
+        return False
+    try:
+        query = """
+        mutation VariableUpsert($input: VariableUpsertInput!) {
+          variableUpsert(input: $input)
+        }
+        """
+        variables = {"input": {
+            "projectId":     railway_project,
+            "environmentId": railway_env_id,
+            "serviceId":     railway_service,
+            "name":          key,
+            "value":         value,
+        }}
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://backboard.railway.app/graphql/v2",
+                json={"query": query, "variables": variables},
+                headers={"Authorization": f"Bearer {railway_token}",
+                         "Content-Type": "application/json"},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                resp = await r.json()
+        if resp.get("errors"):
+            log.warning("Railway upsert error für %s: %s", key, resp["errors"])
+            return False
+        log.info("Railway env %s erfolgreich aktualisiert", key)
+        return True
+    except Exception as e:
+        log.warning("Railway API upsert fehlgeschlagen: %s", e)
+        return False
+
+
+def _update_local_env(key: str, value: str) -> None:
+    """Aktualisiert eine Env-Variable in der lokalen .env Datei."""
+    from pathlib import Path
+    env_path = Path(__file__).parent.parent / ".env"
+    os.environ[key] = value
+    try:
+        content = env_path.read_text() if env_path.exists() else ""
+        lines = content.splitlines()
+        new_lines, updated = [], False
+        for line in lines:
+            if line.startswith(f"{key}="):
+                new_lines.append(f"{key}={value}")
+                updated = True
+            else:
+                new_lines.append(line)
+        if not updated:
+            new_lines.append(f"{key}={value}")
+        env_path.write_text("\n".join(new_lines) + "\n")
+    except Exception as e:
+        log.debug("local .env update für %s: %s", key, e)
+
+
+async def _persist_token(key: str, value: str, platform: str = "tiktok") -> None:
+    """Speichert Token überall: os.environ + .env + Supabase + Railway."""
+    _update_local_env(key, value)
+    await _save_token(platform, key.replace(f"{platform.upper()}_", "").lower(), value)
+    await _railway_upsert_env(key, value)
+
+
 async def refresh_tiktok_token() -> dict:
-    """Refresht TikTok Access Token via API v2. Hinweis: benötigt passende Client-Credentials."""
-    refresh_token = await _load_token("tiktok", "refresh_token")
-    # Alle verfügbaren Client-Key-Paare versuchen
+    """Refresht TikTok Access Token via API v2 und persistiert neue Tokens überall."""
+    # Supabase hat ggf. neueren Refresh-Token als .env (bei rotierenden Tokens)
+    refresh_token_env = os.getenv("TIKTOK_REFRESH_TOKEN", "")
+    refresh_token_db  = await _load_token("tiktok", "refresh_token")
+    # Supabase-Wert bevorzugen wenn vorhanden (rotiert bei jedem Refresh)
+    refresh_token = refresh_token_db or refresh_token_env
+
     cred_pairs = [
         (os.getenv("TIKTOK_CLIENT_KEY", ""), os.getenv("TIKTOK_CLIENT_SECRET", "")),
         (os.getenv("TIKTOK_SANDBOX_CLIENT_KEY", ""), os.getenv("TIKTOK_SANDBOX_CLIENT_SECRET", "")),
@@ -91,18 +165,45 @@ async def refresh_tiktok_token() -> dict:
                 ) as r:
                     data = await r.json()
 
-            if data.get("access_token"):
-                new_token   = data["access_token"]
-                new_refresh = data.get("refresh_token", refresh_token)
-                await _save_token("tiktok", "access_token",  new_token)
-                await _save_token("tiktok", "refresh_token", new_refresh)
-                log.info("TikTok token refreshed with client_key=%s", app_key[:10])
-                return {"ok": True, "platform": "tiktok", "refreshed": True}
-        except Exception as e:
-            log.debug("TikTok refresh attempt failed (key=%s): %s", app_key[:10], e)
+            # TikTok v2 antwortet mit data.data.access_token (nicht data.access_token)
+            token_data  = data.get("data") or {}
+            new_token   = token_data.get("access_token", "")
+            new_refresh = token_data.get("refresh_token", "")
+            err_code    = (data.get("error") or {}).get("code", "")
 
-    log.warning("TikTok: alle Refresh-Versuche fehlgeschlagen — neue OAuth-Credentials nötig")
-    return {"ok": False, "platform": "tiktok", "reason": "invalid_client — fresh OAuth required"}
+            if new_token:
+                await _persist_token("TIKTOK_ACCESS_TOKEN",  new_token)
+                if new_refresh:
+                    await _persist_token("TIKTOK_REFRESH_TOKEN", new_refresh)
+                expires_in = token_data.get("expires_in", 86400)
+                log.info(
+                    "TikTok token refreshed — key=%s expires_in=%s",
+                    app_key[:10], expires_in,
+                )
+                await _telegram(
+                    f"✅ <b>TikTok Token erneuert</b>\n"
+                    f"App-Key: {app_key[:12]}...\n"
+                    f"Gültig: {expires_in // 3600}h\n"
+                    f"Railway + .env + Supabase aktualisiert ✓"
+                )
+                return {
+                    "ok": True, "platform": "tiktok", "refreshed": True,
+                    "expires_in": expires_in, "app_key": app_key[:12],
+                }
+            log.debug(
+                "TikTok refresh kein Token (key=%s): error=%s raw=%s",
+                app_key[:10], err_code, str(data)[:200],
+            )
+        except Exception as e:
+            log.debug("TikTok refresh Versuch fehlgeschlagen (key=%s): %s", app_key[:10], e)
+
+    log.warning("TikTok: alle Refresh-Versuche fehlgeschlagen")
+    await _telegram(
+        "⚠️ <b>TikTok Token-Refresh fehlgeschlagen</b>\n"
+        "Alle 3 Client-Key-Paare ungültig.\n"
+        "Bitte TIKTOK_REFRESH_TOKEN in Railway prüfen."
+    )
+    return {"ok": False, "platform": "tiktok", "reason": "all_pairs_failed"}
 
 
 async def check_meta_tokens() -> dict:
