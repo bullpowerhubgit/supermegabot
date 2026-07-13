@@ -734,20 +734,19 @@ async def handle_gmc_feed(req):
                             f"https://{shopify_domain}/admin/api/{shopify_ver}/products.json",
                             headers={"X-Shopify-Access-Token": shopify_token},
                             params={"limit": 50, "since_id": last_id,
+                                    "status": "active",
                                     "fields": "id,title,body_html,handle,images,variants,product_type,status"},
                             timeout=_aio.ClientTimeout(total=12),
                         ) as r:
                             if r.status != 200:
                                 log.warning("GMC feed Shopify API status=%s", r.status)
                                 break
-                            raw_products = (await r.json(content_type=None)).get("products", [])
-                            batch = [p for p in raw_products if p.get("status") == "active"]
-                            if not raw_products:
+                            batch = (await r.json(content_type=None)).get("products", [])
+                            if not batch:
                                 break
                             products.extend(batch)
-                            if raw_products:
-                                last_id = raw_products[-1]["id"]
-                            if len(raw_products) < 50:
+                            last_id = batch[-1]["id"]
+                            if len(batch) < 50:
                                 break
                     except Exception as _fe:
                         log.warning("GMC feed fetch page error: %s", _fe)
