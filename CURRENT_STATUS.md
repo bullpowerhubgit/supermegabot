@@ -1,16 +1,39 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v15 — TWITTER RAILWAY-FIX · YOUTUBE KEY · 287 TASKS**
+**Stand: 2026-07-13 v16 — BUG-SCAN KOMPLETT · SUPABASE PROBLEM DOKUMENTIERT · MPO FALLBACK**
+
+## ✅ FIXES (2026-07-13 v16, commit 5b36b4a0)
+
+### Vollständiger Bug-Scan + Supabase-Fallback
+- `lead_subscriber_engine.py` — Fake-Adressen entfernt (beispiel.de, inkasso-firma.de)
+- `social_connectors.py` — TWITTER_ACCESS_SECRET → Fallback auf TWITTER_ACCESS_TOKEN_SECRET
+- `twilio_sms.py` — localhost:8888 → RAILWAY_PUBLIC_DOMAIN
+- `empire_controller.py` — Dashboard-URL → RAILWAY_PUBLIC_DOMAIN
+- `multi_product_outreach.py` — SQLite-Fallback wenn Supabase PostgREST (PGRST205) eingefroren
+- Circuit Breakers facebook/instagram/linkedin resettet
+
+## ⚠️ SUPABASE INFRASTRUCTURE PROBLEM (Prio 1 — Rudolf muss manuell fixen!)
+**PostgREST Schema-Cache eingefroren — nur `seo_content` per REST sichtbar**
+
+**Ursache**: Tabellen per `execute_sql` erstellt → kein Schema-Reload ausgelöst
+
+**Fix (1 Minute, selbst machen):**
+1. https://supabase.com/dashboard/project/qyrjeckzacjaazkpvnjk
+2. Settings → General → **Pause Project**
+3. 30 Sekunden warten → **Resume Project**
+4. PostgREST startet neu → alle 60+ Tabellen wieder per REST sichtbar
+
+**Workaround bis dahin:**
+- MPO-Outreach nutzt lokale SQLite-Deduplication + lokale Firmenliste
+- AIITEC-Stats zeigen Fehler, aber Emails gehen per SMTP raus
 
 ## ✅ FIXES (2026-07-13 v15, commit d38e52eb)
 
 ### Twitter Cookie-Auth für Railway persistiert
-- **TWITTER_COOKIES_JSON** env-var in Railway gesetzt (351 chars)
-- `viral_promo_poster._twitter_cookies_dict()` liest jetzt Datei → TWITTER_COOKIES_JSON Fallback
-- Twitter Posts überleben Railway-Restarts ohne Datei-System
+- **TWITTER_COOKIES_JSON** env-var in Railway gesetzt
+- Twitter Posts überleben Railway-Restarts
 
 ### YouTube API Key aktualisiert
-- Alter Key `AIzaSyC6obw...` → 403 auf Railway
-- Neuer Key `AIzaSyCYPIx...` in Railway + .env gesetzt → YouTube ✅
+- Neuer Key in Railway + .env gesetzt
 
 ## ✅ FIXES (2026-07-13 v14, commits 73ad547e..b4014120)
 
