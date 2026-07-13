@@ -7096,6 +7096,18 @@ async def task_env_validator() -> str:
         return f"EnvValidator Fehler: {e}"
 
 
+async def task_full_revenue_expansion() -> str:
+    """Full Revenue Expansion Cycle: alle Kanäle autonom skalieren (alle 8h)."""
+    try:
+        from modules.full_revenue_expansion import run_full_expansion_cycle
+        r = await run_full_expansion_cycle()
+        actions = r.get("actions_taken", 0)
+        reach   = r.get("estimated_daily_reach", 0)
+        return f"ExpansionCycle: {actions} Aktionen, ~{reach} Personen erreicht"
+    except Exception as e:
+        return f"ExpansionCycle error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7500,6 +7512,7 @@ TASKS = [
     ("zvg_hourly",                task_zvg_hourly,                     3600, 9003),  # stündl. — ZVG Radar: neue Leads (hourly scan)
     ("roas_optimizer",            task_roas_optimizer,                14400, 9100),  # alle 4h — Meta/Google ROAS Auto-Pause/Scale
     ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
+    ("full_expansion",            task_full_revenue_expansion,        28800,  150),  # 8h — Alle Revenue-Kanäle autonom
 ]
 
 

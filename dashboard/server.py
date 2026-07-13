@@ -11307,6 +11307,45 @@ async def create_app():
     app.router.add_get("/api/youtube/stats",         handle_yt_stats)
     log.info("YouTube Autopilot routes registered (/api/youtube/*)")
 
+    # ── Full Revenue Expansion Engine ─────────────────────────────────────────
+    async def handle_full_expansion(request):
+        try:
+            from modules.full_revenue_expansion import run_full_expansion_cycle
+            result = await run_full_expansion_cycle()
+            return web.json_response({"ok": True, **result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_promo_blast(request):
+        try:
+            from modules.full_revenue_expansion import run_product_promo_blast
+            result = await run_product_promo_blast()
+            return web.json_response({"ok": True, **result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_revenue_daily_report_expansion(request):
+        try:
+            from modules.full_revenue_expansion import generate_daily_revenue_report
+            result = await generate_daily_revenue_report()
+            return web.json_response({"ok": True, **result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_revenue_dashboard_stats(request):
+        try:
+            from modules.revenue_dashboard_data import get_all_revenue_stats
+            result = await get_all_revenue_stats()
+            return web.json_response({"ok": True, **result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_post("/api/revenue/full-expansion",    handle_full_expansion)
+    app.router.add_post("/api/revenue/promo-blast",       handle_promo_blast)
+    app.router.add_get( "/api/revenue/daily-report",      handle_revenue_daily_report_expansion)
+    app.router.add_get( "/api/revenue/dashboard-stats",   handle_revenue_dashboard_stats)
+    log.info("Full Revenue Expansion Engine routes registered (/api/revenue/full-expansion, /promo-blast, /daily-report, /dashboard-stats)")
+
     # ── Shop Scaling Engine ────────────────────────────────────────────────────
     async def handle_scaling_stats(request):
         try:
