@@ -1323,6 +1323,22 @@ async def task_shopify_seo_auto() -> str:
         return f"ShopifySEO Fehler: {e}"
 
 
+async def task_shopify_bulk_activate() -> str:
+    """Aktiviert archivierte Shopify-Produkte (200/Stunde bis alle 17k aktiv)."""
+    try:
+        from modules.shopify_bulk_activator import run_activation_batch, get_status
+        status = await get_status()
+        if status.get("state", {}).get("done"):
+            counts = status.get("counts", {})
+            return f"BulkActivator: fertig ✅ | active={counts.get('active',0)} archived={counts.get('archived',0)}"
+        result = await run_activation_batch(max_per_run=200)
+        return (f"BulkActivator: +{result.get('activated_this_run',0)} aktiviert | "
+                f"total={result.get('total_activated',0)} | errors={result.get('errors',0)} | "
+                f"done={result.get('done',False)}")
+    except Exception as e:
+        return f"BulkActivator Fehler: {e}"
+
+
 async def task_klaviyo_auto_campaign() -> str:
     """Tägliche Klaviyo Kampagne mit neuem AI-Content."""
     try:
@@ -7167,6 +7183,7 @@ TASKS = [
     ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
     ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
     ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
+    ("shopify_bulk_activate",   task_shopify_bulk_activate,   3600,    60),  # 1h — 200 archivierte → active bis fertig
     ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
     ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
     ("twitter_auto_post",       task_twitter_auto_post,      3600,   600),  # 1h — Auto-Tweet
