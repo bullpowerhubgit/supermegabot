@@ -62,7 +62,7 @@ const SOCIAL_CHANNELS = [
 
 const PRODUCTS = [
   { name: 'AI Income Machine Blueprint', price: '€37', id: '668035', commission: '€18,50' },
-  { name: 'SuperMegaBot System', price: '€97', id: '704677', commission: '€48,50' },
+  { name: 'SuperMegaBot System', price: '€97', id: '668035', commission: '€48,50' },
 ];
 
 const TODOS = [
@@ -485,7 +485,7 @@ td a{color:var(--purple)}
   <div class="card cv-green">
     <div class="card-label">DS24 Umsatz (Gesamt)</div>
     <div class="card-value">€${ds24.total.toFixed ? ds24.total.toFixed(0) : ds24.total}</div>
-    <div class="card-sub">${ds24.count} Verkäufe · Blueprint #668035 + SMB #704677</div>
+    <div class="card-sub">${ds24.count} Verkäufe · Blueprint #668035 + SMB #668035</div>
   </div>
   <div class="card cv-amber">
     <div class="card-label">Shopify Revenue (Monat)</div>
@@ -531,7 +531,7 @@ td a{color:var(--purple)}
     <a class="btn" href="https://autoincome-ai.vercel.app/blog" target="_blank">📝 Blog</a>
     <a class="btn" href="https://autoincome-ai.vercel.app/rechner" target="_blank">🧮 KI-Rechner</a>
     <a class="btn" href="https://www.checkout-ds24.com/product/668035" target="_blank">🔗 Blueprint kaufen</a>
-    <a class="btn" href="https://www.checkout-ds24.com/product/704677" target="_blank">🤖 SuperMegaBot kaufen</a>
+    <a class="btn" href="https://www.checkout-ds24.com/product/668035" target="_blank">🤖 SuperMegaBot kaufen</a>
     <a class="btn btn-red" href="/api/meta-poster?action=fb-auth&secret=${CRON_SECRET}" target="_blank">🔑 FB Token erneuern</a>
     <a class="btn btn-red" href="/api/reddit-poster?action=oauth-start&secret=${CRON_SECRET}" target="_blank">🔑 Reddit OAuth</a>
     <a class="btn btn-red" href="/api/shopify?type=webhook&secret=${CRON_SECRET}" target="_blank">🔗 Shopify Webhook</a>

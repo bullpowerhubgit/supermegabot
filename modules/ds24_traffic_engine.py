@@ -51,15 +51,7 @@ DS24_KNOWN_PRODUCTS = [
         "emoji": "🤖",
         "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
     },
-    {
-        "id": "704677",
-        "name": "SuperMegaBot KI-Automation System",
-        "commission_pct": 100,
-        "price": "97",
-        "niche": "shopify",
-        "emoji": "🚀",
-        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/668035")
-    },
+    # 704677 DEAKTIVIERT — DS24 Genehmigung ausstehend
     {
         "id": "561822",
         "name": "ChatGPT & KI Masterclass",

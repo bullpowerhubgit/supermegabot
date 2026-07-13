@@ -18,7 +18,7 @@ const TWITTER_ACCESS_SECRET = process.env.TWITTER_ACCESS_SECRET;
 const TELEGRAM_BOT = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT = process.env.TELEGRAM_CHAT_ID;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
-const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
+const UPSELL_URL = 'https://www.checkout-ds24.com/product/668035';
 const AFFILIATE_URL = 'https://autoincome-ai.vercel.app/affiliate.html';
 const BLOG_URL = 'https://autoincome-ai.vercel.app/blog';
 

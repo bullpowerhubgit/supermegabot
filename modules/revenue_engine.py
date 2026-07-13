@@ -28,13 +28,7 @@ OWN_PRODUCTS: List[Dict[str, str]] = [
         "price": "€37",
         "niche": "ai",
     },
-    {
-        "id": "704677",
-        "name": "SuperMegaBot KI-Automation System",
-        "url": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/668035"),
-        "price": "€97",
-        "niche": "ai",
-    },
+    # 704677 DEAKTIVIERT — DS24 Genehmigung ausstehend
 ]
 
 META_BUDGET_EUR = float(os.getenv("META_DAILY_BUDGET_EUR", "5"))
