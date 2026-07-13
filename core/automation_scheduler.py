@@ -1339,6 +1339,17 @@ async def task_shopify_bulk_activate() -> str:
         return f"BulkActivator Fehler: {e}"
 
 
+async def task_klaviyo_welcome_new_subs() -> str:
+    """Stündlich: Welcome-Email mit WILLKOMMEN10-Code an neue Klaviyo-Subscriber."""
+    try:
+        from modules.klaviyo_welcome_sender import run_welcome_batch
+        r = await run_welcome_batch()
+        return (f"KlaviyoWelcome: {r['new_found']} neue Subscriber, "
+                f"{r['welcomed']} begrüßt, {r['skipped']} übersprungen")
+    except Exception as e:
+        return f"KlaviyoWelcome Fehler: {e}"
+
+
 async def task_klaviyo_auto_campaign() -> str:
     """Tägliche Klaviyo Kampagne mit neuem AI-Content."""
     try:
@@ -7184,6 +7195,7 @@ TASKS = [
     ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
     ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
     ("shopify_bulk_activate",   task_shopify_bulk_activate,   1800,    60),  # 30min — 300 archivierte → active bis fertig
+    ("klaviyo_welcome_subs",    task_klaviyo_welcome_new_subs, 3600,   75),  # 1h — Welcome-Email + Code an neue Subscriber
     ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
     ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
     ("twitter_auto_post",       task_twitter_auto_post,      3600,   600),  # 1h — Auto-Tweet
