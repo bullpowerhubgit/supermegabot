@@ -6898,7 +6898,7 @@ async def handle_shopify_bulk_activate(req):
         if status.get("state", {}).get("done"):
             return web.json_response({"ok": True, "msg": "Bereits abgeschlossen", **status})
 
-        max_per_run = int(data.get("max", 200))
+        max_per_run = int(data.get("max", data.get("max_per_run", 300)))
 
         async def _run_bg():
             try:
