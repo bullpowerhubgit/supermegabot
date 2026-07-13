@@ -6813,6 +6813,34 @@ async def task_vat_oss_cycle() -> str:
         return f"VAT/OSS Fehler: {e}"
 
 
+async def task_vat_oss_engine_cycle() -> str:
+    """VAT OSS Engine — EU-Schwellenwert-Prüfung + Stripe-Revenue + TG-Alert."""
+    try:
+        from modules.vat_oss_engine import run_vat_oss_cycle
+        r = await run_vat_oss_cycle()
+        return f"VAT OSS: {r.get('status','ok')} | Threshold: {r.get('threshold_pct',0):.0f}%"
+    except Exception as e:
+        return f"VAT OSS Engine Fehler: {e}"
+
+async def task_gpsr_scan() -> str:
+    """GPSR Compliance Engine — Shopify-Produkte auf EU 2023/988 prüfen."""
+    try:
+        from modules.gpsr_compliance import run_gpsr_cycle
+        r = await run_gpsr_cycle()
+        return f"GPSR: {r.get('scanned',0)} Produkte geprüft, {r.get('issues',0)} Issues"
+    except Exception as e:
+        return f"GPSR Fehler: {e}"
+
+async def task_zvg_hourly() -> str:
+    """ZVG Radar (stündlich) — Zwangsversteigerungen NRW → neue Leads."""
+    try:
+        from modules.zvg_radar import run_zvg_cycle
+        r = await run_zvg_cycle()
+        return f"ZVG: {r.get('new_leads',0)} neue Leads | {r.get('total_scanned',0)} geprüft"
+    except Exception as e:
+        return f"ZVG Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7192,6 +7220,9 @@ TASKS = [
     ("ai_act_art50_cycle",        task_ai_act_art50_cycle,            21600, 8005),  # alle 6h — EU AI Act Art.50 Scan (Deadline 2026-08-02)
     ("hs_code_cycle",             task_hs_code_cycle,                 86400, 8006),  # täglich — HS-Code SaaS Status (VO EU 2026/382)
     ("vat_oss_cycle",             task_vat_oss_cycle,                 86400, 8007),  # täglich — Non-EU VAT/OSS Status
+    ("vat_oss_engine",            task_vat_oss_engine_cycle,          86400, 9001),  # täglich — VAT OSS Engine: Schwellenwert + TG-Alert
+    ("gpsr_scan",                 task_gpsr_scan,                     43200, 9002),  # alle 12h — GPSR Compliance: Shopify-Produkte prüfen
+    ("zvg_hourly",                task_zvg_hourly,                     3600, 9003),  # stündl. — ZVG Radar: neue Leads (hourly scan)
 ]
 
 
