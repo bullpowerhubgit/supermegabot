@@ -9861,6 +9861,7 @@ async def create_app():
     app.router.add_post("/api/content/velocity",      handle_content_velocity)
     app.router.add_post("/api/viral/traffic",         handle_viral_traffic)
     app.router.add_post("/api/revenue/maximize",      handle_revenue_maximizer_run)
+    app.router.add_post("/api/monetization/launch",   handle_monetization_launch)
     app.router.add_post("/api/watchdog/run",           handle_mac_watchdog)
     app.router.add_post("/api/monitor/run",            handle_monitor_hub)
     app.router.add_post("/api/content-loop/run",      handle_content_loop)
@@ -12150,6 +12151,32 @@ async def handle_revenue_maximizer_run(req):
             logging.getLogger("RevMax").error("BG error: %s", exc)
     asyncio.ensure_future(_bg())
     return web.json_response({"status": "started", "message": "RevenueMaximizer läuft — Cart Recovery + Winback + Urgency"})
+
+
+async def handle_monetization_launch(req):
+    """POST /api/monetization/launch — BPI Blast + Email Outreach + Shopify + Revenue Report."""
+    async def _bg():
+        try:
+            from modules.monetization_engine import launch_monetization
+            body = {}
+            try:
+                body = await req.json()
+            except Exception:
+                pass
+            await launch_monetization(
+                bpi=body.get("bpi", True),
+                email=body.get("email", True),
+                shopify=body.get("shopify", True),
+                tiktok=body.get("tiktok", True),
+                report=body.get("report", True),
+            )
+        except Exception as exc:
+            logging.getLogger("Monetization").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({
+        "status": "started",
+        "message": "Monetization Engine läuft — BPI Blast + Email Outreach + Shopify Traffic + Revenue Report",
+    })
 
 
 async def handle_mac_watchdog(req):

@@ -6310,6 +6310,24 @@ async def task_tiktok_token_refresh() -> str:
     except Exception as e:
         return f"TikTok Token-Refresh Fehler: {e}"
 
+async def task_monetization_launch() -> str:
+    """Monetization Engine — BPI Blast + Email Outreach + Shopify Traffic + Revenue Report."""
+    try:
+        from modules.monetization_engine import run_monetization_cycle
+        r = await run_monetization_cycle()
+        bpi   = r.get("results", {}).get("bpi", {})
+        email = r.get("results", {}).get("email", {})
+        rev   = r.get("results", {}).get("revenue", {})
+        return (
+            f"Monetization ✅ — "
+            f"BPI: {bpi.get('services_posted', 0)} Services, "
+            f"Emails: {email.get('emails_sent', 0)}, "
+            f"7T Revenue: €{rev.get('week_revenue_eur', 0):.2f}"
+        )
+    except Exception as e:
+        return f"Monetization Fehler: {e}"
+
+
 async def task_telegram_services_check() -> str:
     try:
         from modules.telegram_master_dashboard import check_all_services
@@ -6793,6 +6811,7 @@ TASKS = [
     ("quantum_repair",         task_quantum_self_repair,    43200, 3540),  # 12h — Fehler auto-erkennen+reparieren
     ("token_refresher",        task_auto_token_refresher,   43200, 3580),  # 12h — API-Tokens prüfen+erneuern
     ("tiktok_token_refresh",   task_tiktok_token_refresh,   28800,  420),  # 8h  — TikTok Token erneuern+Railway sync
+    ("monetization_launch",    task_monetization_launch,    28800,  480),  # 8h  — BPI Blast+Email+Shopify+Revenue Report
     # ── VOLLAUTONOME AGENTEN ──────────────────────────────────────────────────
     ("rudiclone_agent",        task_rudiclone_agent,        86400, 3610),  # 24h — RudiClone Business Strategist
     ("outreach_auto",          task_outreach_auto,          43200, 3630),  # 12h — Autonomer B2B Outreach Cycle
