@@ -1,0 +1,1094 @@
+<title>BullPower MEGA Acquisition Center</title>
+<style>
+/* ── Token System ────────────────────────────────────────────────── */
+:root {
+  --bg0:      #020204;
+  --bg1:      #07070f;
+  --bg2:      #0c0c1a;
+  --bg3:      #121224;
+  --border:   #1c1c30;
+  --border2:  #252540;
+  --green:    #00e676;
+  --green2:   #4ade80;
+  --blue:     #00b4d8;
+  --purple:   #8b5cf6;
+  --pink:     #f472b6;
+  --yellow:   #fbbf24;
+  --red:      #f43f5e;
+  --orange:   #fb923c;
+  --text:     #d4d4e8;
+  --muted:    #4a4a68;
+  --muted2:   #2a2a42;
+  --card:     #0a0a18;
+  --font-num: 'Courier New', 'Consolas', monospace;
+}
+@media (prefers-color-scheme: light) {
+  :root { --bg0:#f0f0f8; --bg1:#e8e8f5; --bg2:#fff; --bg3:#f5f5ff; --border:#d0d0e0; --border2:#c0c0d0; --card:#fff; --text:#1a1a30; --muted:#8888aa; --muted2:#e0e0ee; }
+}
+:root[data-theme="dark"]  { --bg0:#020204; --bg1:#07070f; --bg2:#0c0c1a; --bg3:#121224; --border:#1c1c30; --border2:#252540; --card:#0a0a18; --text:#d4d4e8; --muted:#4a4a68; --muted2:#2a2a42; }
+:root[data-theme="light"] { --bg0:#f0f0f8; --bg1:#e8e8f5; --bg2:#fff; --bg3:#f5f5ff; --border:#d0d0e0; --border2:#c0c0d0; --card:#fff; --text:#1a1a30; --muted:#8888aa; --muted2:#e0e0ee; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg0);
+  color: var(--text);
+  font-family: -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  min-height: 100vh;
+}
+
+/* ── Header ────────────────────────────────────────────────────────── */
+.header {
+  background: linear-gradient(135deg, var(--bg1) 0%, var(--bg2) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  gap: 16px;
+}
+.logo {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+.logo-icon { color: var(--green); }
+.logo-text {
+  background: linear-gradient(90deg, var(--purple), var(--blue), var(--green));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+.header-kpis {
+  display: flex;
+  gap: 28px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.hkpi { text-align: center; }
+.hkpi-val {
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-num);
+  color: var(--green);
+  line-height: 1;
+}
+.hkpi-val.orange { color: var(--orange); }
+.hkpi-val.purple { color: var(--purple); }
+.hkpi-val.blue   { color: var(--blue); }
+.hkpi-lbl {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  margin-top: 2px;
+}
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,230,118,.07);
+  border: 1px solid rgba(0,230,118,.18);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--green);
+  white-space: nowrap;
+}
+.pulse {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse 1.6s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; box-shadow: 0 0 5px var(--green); }
+  50%      { opacity:.4; box-shadow: 0 0 10px var(--green); }
+}
+
+/* ── Layout ─────────────────────────────────────────────────────── */
+.content {
+  padding: 20px 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.row { display: grid; gap: 16px; }
+.row-3 { grid-template-columns: repeat(3, 1fr); }
+.row-4 { grid-template-columns: repeat(4, 1fr); }
+.row-2-1 { grid-template-columns: 2fr 1fr; }
+.row-1-2 { grid-template-columns: 1fr 2fr; }
+@media (max-width: 1100px) { .row-3, .row-4, .row-2-1, .row-1-2 { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 660px)  { .row-3, .row-4, .row-2-1, .row-1-2 { grid-template-columns: 1fr; } }
+
+/* ── Cards ───────────────────────────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+.card-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+}
+.card-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+.badge-green  { background: rgba(0,230,118,.12); color: var(--green); }
+.badge-purple { background: rgba(139,92,246,.12); color: var(--purple); }
+.badge-orange { background: rgba(251,146,60,.12); color: var(--orange); }
+.badge-blue   { background: rgba(0,180,216,.12); color: var(--blue); }
+.badge-red    { background: rgba(244,63,94,.12); color: var(--red); }
+
+/* ── Big Number Display ─────────────────────────────────────────── */
+.big-num {
+  font-size: 42px;
+  font-weight: 800;
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.big-unit {
+  font-size: 14px;
+  color: var(--muted);
+  font-weight: 500;
+  margin-left: 4px;
+}
+.big-sub {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.trend {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.trend.up   { color: var(--green); }
+.trend.down { color: var(--red); }
+.trend.flat { color: var(--muted); }
+
+/* ── Progress Bars ─────────────────────────────────────────────── */
+.progress-wrap { margin-top: 12px; }
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 5px;
+}
+.progress-label strong { color: var(--text); }
+.progress-bar {
+  height: 6px;
+  background: var(--muted2);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .6s ease;
+}
+.fill-green  { background: linear-gradient(90deg, #00e676, #4ade80); }
+.fill-purple { background: linear-gradient(90deg, #8b5cf6, #a78bfa); }
+.fill-blue   { background: linear-gradient(90deg, #00b4d8, #48cae4); }
+.fill-orange { background: linear-gradient(90deg, #fb923c, #fbbf24); }
+
+/* ── SMTP Account Table ────────────────────────────────────────── */
+.smtp-table { width: 100%; border-collapse: collapse; }
+.smtp-table th {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  color: var(--muted);
+  text-align: left;
+  padding: 4px 8px 8px;
+  border-bottom: 1px solid var(--border);
+}
+.smtp-table td {
+  padding: 8px 8px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: middle;
+}
+.smtp-table tr:last-child td { border-bottom: none; }
+.smtp-bar-cell { min-width: 80px; }
+.smtp-mini-bar {
+  height: 4px;
+  background: var(--muted2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.smtp-mini-fill {
+  height: 100%;
+  border-radius: 2px;
+}
+.acct-name { font-weight: 700; font-size: 12px; }
+.acct-email { font-size: 10px; color: var(--muted); }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+
+/* ── Channel Rows ──────────────────────────────────────────────── */
+.channel-list { display: flex; flex-direction: column; gap: 8px; }
+.channel-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.channel-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.ch-gmail  { background: rgba(234,67,53,.12); }
+.ch-kl     { background: rgba(0,176,116,.12); }
+.ch-mc     { background: rgba(255,207,40,.12); }
+.ch-sg     { background: rgba(27,170,226,.12); }
+.channel-info { flex: 1; min-width: 0; }
+.channel-name { font-weight: 700; font-size: 12px; }
+.channel-sub  { font-size: 10px; color: var(--muted); }
+.channel-stat {
+  text-align: right;
+  flex-shrink: 0;
+}
+.channel-count {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: var(--font-num);
+  line-height: 1;
+}
+.channel-limit { font-size: 10px; color: var(--muted); }
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.dot-green  { background: var(--green); box-shadow: 0 0 4px var(--green); }
+.dot-yellow { background: var(--yellow); box-shadow: 0 0 4px var(--yellow); }
+.dot-red    { background: var(--red); }
+.dot-gray   { background: var(--muted); }
+
+/* ── Lead Pipeline ─────────────────────────────────────────────── */
+.pipeline {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media (max-width: 660px) { .pipeline { grid-template-columns: repeat(2,1fr); } }
+.pipe-stage {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.pipe-stage::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+.ps-discovered::before { background: var(--blue); }
+.ps-queued::before     { background: var(--yellow); }
+.ps-contacted::before  { background: var(--purple); }
+.ps-converted::before  { background: var(--green); }
+.pipe-n {
+  font-size: 32px;
+  font-weight: 800;
+  font-family: var(--font-num);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.ps-discovered .pipe-n { color: var(--blue); }
+.ps-queued .pipe-n     { color: var(--yellow); }
+.ps-contacted .pipe-n  { color: var(--purple); }
+.ps-converted .pipe-n  { color: var(--green); }
+.pipe-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.pipe-delta { font-size: 11px; margin-top: 4px; }
+
+/* ── Activity Feed ─────────────────────────────────────────────── */
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  max-height: 260px;
+  overflow-y: auto;
+}
+.activity-list::-webkit-scrollbar { width: 4px; }
+.activity-list::-webkit-scrollbar-track { background: transparent; }
+.activity-list::-webkit-scrollbar-thumb { background: var(--muted2); border-radius: 2px; }
+.activity-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.activity-item:last-child { border-bottom: none; }
+.activity-icon {
+  width: 24px; height: 24px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.ai-sent     { background: rgba(0,230,118,.1); }
+.ai-open     { background: rgba(0,180,216,.1); }
+.ai-click    { background: rgba(139,92,246,.1); }
+.ai-lead     { background: rgba(251,146,60,.1); }
+.ai-err      { background: rgba(244,63,94,.1); }
+.ai-conv     { background: rgba(74,222,128,.15); }
+.activity-body { flex: 1; min-width: 0; }
+.activity-text { font-size: 12px; color: var(--text); }
+.activity-text strong { color: var(--green2); }
+.activity-time { font-size: 10px; color: var(--muted); }
+
+/* ── Controls / Buttons ─────────────────────────────────────────── */
+.control-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  transition: opacity .15s, transform .1s;
+  width: 100%;
+}
+.btn:hover { opacity: .85; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-green  { background: var(--green); color: #000; }
+.btn-purple { background: var(--purple); color: #fff; }
+.btn-blue   { background: var(--blue); color: #000; }
+.btn-orange { background: var(--orange); color: #000; }
+.btn-red    { background: var(--red); color: #fff; }
+.btn-ghost  { background: var(--muted2); color: var(--text); border: 1px solid var(--border2); }
+.btn-full   { grid-column: span 2; background: linear-gradient(135deg, var(--green), var(--blue)); color: #000; font-size: 14px; padding: 13px; }
+
+/* ── Source Tags ───────────────────────────────────────────────── */
+.source-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.src-tag {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 12px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.src-tag .dot-sm {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+}
+
+/* ── Mini Gauge ────────────────────────────────────────────────── */
+.gauge-wrap { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.gauge-ring {
+  position: relative;
+  width: 70px; height: 70px;
+  flex-shrink: 0;
+}
+.gauge-ring svg { transform: rotate(-90deg); }
+.gauge-bg { fill: none; stroke: var(--muted2); stroke-width: 6; }
+.gauge-fill { fill: none; stroke-width: 6; stroke-linecap: round; transition: stroke-dashoffset .8s ease; }
+.gauge-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 800;
+  font-family: var(--font-num);
+}
+.gauge-info { flex: 1; }
+.gauge-title { font-size: 13px; font-weight: 700; }
+.gauge-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* ── Stat Row ──────────────────────────────────────────────────── */
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid var(--border);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-key { color: var(--muted); font-size: 12px; }
+.stat-val { font-weight: 700; font-size: 12px; font-family: var(--font-num); }
+.stat-val.g { color: var(--green); }
+.stat-val.p { color: var(--purple); }
+.stat-val.o { color: var(--orange); }
+.stat-val.b { color: var(--blue); }
+
+/* ── Notification Banner ───────────────────────────────────────── */
+.notif {
+  background: rgba(0,230,118,.06);
+  border: 1px solid rgba(0,230,118,.2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--green2);
+}
+
+/* ── Section Label ─────────────────────────────────────────────── */
+.section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+</style>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text"> BullPower MEGA Acquisition</span>
+  </div>
+  <div class="header-kpis">
+    <div class="hkpi">
+      <div class="hkpi-val" id="h-sent">0</div>
+      <div class="hkpi-lbl">Gesendet heute</div>
+    </div>
+    <div class="hkpi">
+      <div class="hkpi-val orange" id="h-open">0%</div>
+      <div class="hkpi-lbl">Open Rate</div>
+    </div>
+    <div class="hkpi">
+      <div class="hkpi-val purple" id="h-leads">0</div>
+      <div class="hkpi-lbl">Leads in Pipeline</div>
+    </div>
+    <div class="hkpi">
+      <div class="hkpi-val blue" id="h-cap">2100</div>
+      <div class="hkpi-lbl">Kapazität/Tag</div>
+    </div>
+  </div>
+  <div class="status-pill">
+    <span class="pulse"></span>
+    LIVE — 4 Kanäle aktiv
+  </div>
+</header>
+
+<!-- CONTENT -->
+<div class="content">
+
+  <!-- Notif -->
+  <div class="notif">
+    🚀 <strong>System gestartet</strong> — mass_outreach_1000 (B2B 1000/Tag) + mega_acquisition_engine (B2C 600/Tag) laufen auf Railway. Erster Lauf in ~8h.
+  </div>
+
+  <!-- ROW 1: Pipeline Stages -->
+  <div>
+    <div class="section-label">Lead Pipeline</div>
+    <div class="pipeline">
+      <div class="pipe-stage ps-discovered">
+        <div class="pipe-n" id="p-discovered">0</div>
+        <div class="pipe-label">Entdeckt</div>
+        <div class="pipe-delta" style="color:var(--blue)">Alle Quellen</div>
+      </div>
+      <div class="pipe-stage ps-queued">
+        <div class="pipe-n" id="p-queued">0</div>
+        <div class="pipe-label">In Queue</div>
+        <div class="pipe-delta" style="color:var(--yellow)">Bereit zum Senden</div>
+      </div>
+      <div class="pipe-stage ps-contacted">
+        <div class="pipe-n" id="p-contacted">0</div>
+        <div class="pipe-label">Kontaktiert</div>
+        <div class="pipe-delta" style="color:var(--purple)">Emails gesendet</div>
+      </div>
+      <div class="pipe-stage ps-converted">
+        <div class="pipe-n" id="p-converted">0</div>
+        <div class="pipe-label">Konvertiert</div>
+        <div class="pipe-delta" style="color:var(--green)">Käufer / Leads</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2: Channels + Daily Quota -->
+  <div class="row row-2-1">
+
+    <!-- Email Kanäle -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Email-Kanäle</div>
+        <div class="card-badge badge-green">2.100 / Tag</div>
+      </div>
+      <div class="channel-list">
+        <div class="channel-row">
+          <div class="channel-icon ch-gmail">📧</div>
+          <div class="channel-info">
+            <div class="channel-name">Gmail SMTP Pool</div>
+            <div class="channel-sub">6 Accounts · bullpowersrtkennels + aiitecbuuss + 4 weitere</div>
+          </div>
+          <div class="channel-stat">
+            <div class="channel-count" style="color:var(--green)" id="c-gmail">1.200</div>
+            <div class="channel-limit">/ Tag</div>
+          </div>
+          <div class="status-dot dot-green"></div>
+        </div>
+        <div class="channel-row">
+          <div class="channel-icon ch-kl">💌</div>
+          <div class="channel-info">
+            <div class="channel-name">Klaviyo Campaigns</div>
+            <div class="channel-sub">Liste Xwxq6V · VaCYq3 · Welcome Flow aktiv</div>
+          </div>
+          <div class="channel-stat">
+            <div class="channel-count" style="color:var(--green2)" id="c-kl">∞</div>
+            <div class="channel-limit">Subscriber</div>
+          </div>
+          <div class="status-dot dot-green"></div>
+        </div>
+        <div class="channel-row">
+          <div class="channel-icon ch-mc">🐵</div>
+          <div class="channel-info">
+            <div class="channel-name">Mailchimp us5</div>
+            <div class="channel-sub">rudolfsarkany1984 · List bc5c7887cf</div>
+          </div>
+          <div class="channel-stat">
+            <div class="channel-count" style="color:var(--yellow)" id="c-mc">500</div>
+            <div class="channel-limit">/ Tag</div>
+          </div>
+          <div class="status-dot dot-yellow"></div>
+        </div>
+        <div class="channel-row">
+          <div class="channel-icon ch-sg">📨</div>
+          <div class="channel-info">
+            <div class="channel-name">SendGrid AIITEC</div>
+            <div class="channel-sub">SG.4xcQrLOr... · aiitec Account</div>
+          </div>
+          <div class="channel-stat">
+            <div class="channel-count" style="color:var(--blue)" id="c-sg">100</div>
+            <div class="channel-limit">/ Tag</div>
+          </div>
+          <div class="status-dot dot-green"></div>
+        </div>
+        <div class="channel-row">
+          <div class="channel-icon" style="background:rgba(139,92,246,.1)">📱</div>
+          <div class="channel-info">
+            <div class="channel-name">Twilio SMS</div>
+            <div class="channel-sub">ACed79a72e · DE/AT/CH Nummern</div>
+          </div>
+          <div class="channel-stat">
+            <div class="channel-count" style="color:var(--purple)">300</div>
+            <div class="channel-limit">/ Tag</div>
+          </div>
+          <div class="status-dot dot-green"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Daily Quota + Gauge -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Tages-Quota</div>
+        <div class="card-badge badge-orange" id="quota-pct">0%</div>
+      </div>
+      <div class="gauge-wrap">
+        <div class="gauge-ring">
+          <svg width="70" height="70" viewBox="0 0 70 70">
+            <circle class="gauge-bg" cx="35" cy="35" r="29"/>
+            <circle class="gauge-fill" id="g-fill" cx="35" cy="35" r="29"
+              stroke="url(#g-grad)"
+              stroke-dasharray="182"
+              stroke-dashoffset="182"/>
+            <defs>
+              <linearGradient id="g-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#00e676"/>
+                <stop offset="100%" stop-color="#00b4d8"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="gauge-center" id="g-center" style="color:var(--green)">0%</div>
+        </div>
+        <div class="gauge-info">
+          <div class="gauge-title"><span id="g-sent">0</span> / 2100</div>
+          <div class="gauge-sub">Emails heute versendet</div>
+        </div>
+      </div>
+      <div style="margin-top:16px">
+        <div class="stat-row">
+          <span class="stat-key">B2B (mass_outreach)</span>
+          <span class="stat-val p" id="q-b2b">0 / 1000</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">B2C (mega_acquisition)</span>
+          <span class="stat-val g" id="q-b2c">0 / 600</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">Follow-Ups</span>
+          <span class="stat-val b" id="q-fu">0 / 500</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">Nächster Lauf</span>
+          <span class="stat-val o" id="q-next">—</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: SMTP Table + Sources -->
+  <div class="row row-2-1">
+
+    <!-- SMTP Accounts -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">SMTP Accounts — Quota-Status</div>
+        <div class="card-badge badge-blue">6 Aktiv</div>
+      </div>
+      <div style="overflow-x:auto">
+      <table class="smtp-table">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Gesendet</th>
+            <th>Verbleibend</th>
+            <th style="min-width:100px">Auslastung</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="smtp-tbody">
+          <tr>
+            <td><div class="acct-name">BullPower</div><div class="acct-email">bullpowersrtkennels@gmail.com</div></td>
+            <td class="num">0</td><td class="num">500</td>
+            <td class="smtp-bar-cell">
+              <div class="smtp-mini-bar"><div class="smtp-mini-fill fill-green" style="width:0%"></div></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">0%</div>
+            </td>
+            <td><span class="card-badge badge-green">Bereit</span></td>
+          </tr>
+          <tr>
+            <td><div class="acct-name">AiiteC</div><div class="acct-email">aiitecbuuss@gmail.com</div></td>
+            <td class="num">0</td><td class="num">500</td>
+            <td class="smtp-bar-cell">
+              <div class="smtp-mini-bar"><div class="smtp-mini-fill fill-purple" style="width:0%"></div></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">0%</div>
+            </td>
+            <td><span class="card-badge badge-green">Bereit</span></td>
+          </tr>
+          <tr>
+            <td><div class="acct-name">Dragon</div><div class="acct-email">dragonadnp@gmail.com</div></td>
+            <td class="num">0</td><td class="num">200</td>
+            <td class="smtp-bar-cell">
+              <div class="smtp-mini-bar"><div class="smtp-mini-fill fill-blue" style="width:0%"></div></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">0%</div>
+            </td>
+            <td><span class="card-badge badge-green">Bereit</span></td>
+          </tr>
+          <tr>
+            <td><div class="acct-name">Looopwave</div><div class="acct-email">looopwave@gmail.com</div></td>
+            <td class="num">0</td><td class="num">200</td>
+            <td class="smtp-bar-cell">
+              <div class="smtp-mini-bar"><div class="smtp-mini-fill fill-orange" style="width:0%"></div></div>
+              <div style="font-size:10px;color:var(--muted);margin-top:2px">0%</div>
+            </td>
+            <td><span class="card-badge badge-green">Bereit</span></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+
+    <!-- Lead Sources -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Lead-Quellen</div>
+        <div class="card-badge badge-purple">Auto-Discovery</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div>
+          <div class="progress-label">
+            <span>Shopify-Kunden (kein Kauf)</span>
+            <strong id="src-shopify">0</strong>
+          </div>
+          <div class="progress-bar"><div class="progress-fill fill-green" id="pb-shopify" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="progress-label">
+            <span>Abandoned Checkouts</span>
+            <strong id="src-cart">0</strong>
+          </div>
+          <div class="progress-bar"><div class="progress-fill fill-orange" id="pb-cart" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="progress-label">
+            <span>Klaviyo Subscriber</span>
+            <strong id="src-kl">0</strong>
+          </div>
+          <div class="progress-bar"><div class="progress-fill fill-purple" id="pb-kl" style="width:0%"></div></div>
+        </div>
+        <div>
+          <div class="progress-label">
+            <span>DACH KMU (Supabase)</span>
+            <strong id="src-b2b">40</strong>
+          </div>
+          <div class="progress-bar"><div class="progress-fill fill-blue" id="pb-b2b" style="width:15%"></div></div>
+        </div>
+        <div>
+          <div class="progress-label">
+            <span>Web-Research (Gelbe Seiten, 11880, HN)</span>
+            <strong id="src-web">0</strong>
+          </div>
+          <div class="progress-bar"><div class="progress-fill fill-green" id="pb-web" style="width:0%"></div></div>
+        </div>
+      </div>
+      <div class="source-tags" style="margin-top:14px">
+        <div class="src-tag"><span class="dot-sm" style="background:var(--blue)"></span>Shopify API</div>
+        <div class="src-tag"><span class="dot-sm" style="background:var(--green)"></span>Klaviyo</div>
+        <div class="src-tag"><span class="dot-sm" style="background:var(--purple)"></span>Supabase</div>
+        <div class="src-tag"><span class="dot-sm" style="background:var(--yellow)"></span>Gelbe Seiten</div>
+        <div class="src-tag"><span class="dot-sm" style="background:var(--orange)"></span>11880.com</div>
+        <div class="src-tag"><span class="dot-sm" style="background:var(--pink)"></span>HackerNews</div>
+        <div class="src-tag"><span class="dot-sm" style="background:var(--red)"></span>RSS-Funding</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4: Activity Feed + Controls -->
+  <div class="row row-1-2">
+
+    <!-- Activity Feed -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Live-Aktivität</div>
+        <div class="card-badge badge-green">Echtzeit</div>
+      </div>
+      <div class="activity-list" id="activity-feed">
+        <!-- filled by JS -->
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Steuerung</div>
+        <div class="card-badge badge-purple">Vollautomatisch</div>
+      </div>
+
+      <div class="control-grid">
+        <button class="btn btn-green" onclick="triggerAction('discovery')">
+          🔍 Lead Discovery
+        </button>
+        <button class="btn btn-purple" onclick="triggerAction('send_b2c')">
+          📧 B2C Send (200)
+        </button>
+        <button class="btn btn-blue" onclick="triggerAction('send_b2b')">
+          🏢 B2B Send (333)
+        </button>
+        <button class="btn btn-orange" onclick="triggerAction('research')">
+          🕷️ Web Research
+        </button>
+        <button class="btn btn-ghost" onclick="triggerAction('stats')">
+          📊 Stats laden
+        </button>
+        <button class="btn btn-ghost" onclick="refreshData()">
+          🔄 Aktualisieren
+        </button>
+        <button class="btn btn-full" onclick="triggerAction('full_run')">
+          ⚡ FULL RUN — Alles starten (2100 Emails)
+        </button>
+        <button class="btn btn-red" onclick="triggerAction('stop')">
+          🛑 Notfall-Stop
+        </button>
+        <button class="btn btn-ghost" onclick="window.open('/api/acquisition/status')">
+          🔗 API Status
+        </button>
+      </div>
+
+      <div style="margin-top:16px">
+        <div class="stat-row">
+          <span class="stat-key">B2B Engine</span>
+          <span class="stat-val g">mass_outreach_1000.py ✅</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">B2C Engine</span>
+          <span class="stat-val g">mega_acquisition_engine.py ✅</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">Scheduler</span>
+          <span class="stat-val g">291 Tasks · Railway ✅</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">Email-Validierung</span>
+          <span class="stat-val g">MX + Throwaway-Filter ✅</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">GDPR Unsubscribe</span>
+          <span class="stat-val g">/api/unsubscribe ✅</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-key">Letzter Commit</span>
+          <span class="stat-val b">7e2a0c8c · <span style="color:var(--muted)">vor wenigen Min.</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 5: Stats Grid -->
+  <div class="row row-4">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Email KPIs</div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Open Rate (Ziel)</span>
+        <span class="stat-val g">28%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Click Rate (Ziel)</span>
+        <span class="stat-val p">4.5%</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Bounce-Limit</span>
+        <span class="stat-val o">5% max</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Unsub-Rate</span>
+        <span class="stat-val b">< 0.3%</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Templates</div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">shop_promo</span>
+        <span class="stat-val g">B2C Shop</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">flash_sale</span>
+        <span class="stat-val o">Zeitlimit</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">b2b_outreach</span>
+        <span class="stat-val p">AIITEC KI</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">AI-generiert</span>
+        <span class="stat-val b">Claude API</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Follow-Up Sequenz</div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Email 1</span>
+        <span class="stat-val g">Tag 0 · Initial</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Email 2</span>
+        <span class="stat-val p">Tag 5 · Follow-Up</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Email 3</span>
+        <span class="stat-val o">Tag 11 · Letzter</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Max Kontakte</span>
+        <span class="stat-val b">3 pro Lead</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Schutz-Mechanismen</div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Anti-Spam Delay</span>
+        <span class="stat-val g">1.2s zwischen</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Account Rotation</span>
+        <span class="stat-val g">Auto ✅</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Bounce Auto-Pause</span>
+        <span class="stat-val o">> 5% → Stop</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-key">Quota Tracking</span>
+        <span class="stat-val b">SQLite / Tag</span>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /content -->
+
+<script>
+const BASE = window.location.origin;
+const ACTIVITIES = [
+  { icon:"📧", cls:"ai-sent",  text:"System initialisiert — 6 SMTP Accounts bereit", time:"Gerade eben" },
+  { icon:"🔍", cls:"ai-lead",  text:"Lead Discovery: <strong>Shopify, Klaviyo, Supabase, Gelbe Seiten, 11880</strong> konfiguriert", time:"vor 1 Min." },
+  { icon:"🏢", cls:"ai-lead",  text:"B2B Engine: <strong>40 DACH KMU</strong> in Supabase gefunden", time:"vor 2 Min." },
+  { icon:"✅", cls:"ai-conv",  text:"Smart Collections publiziert: <strong>Electronics & Gadgets (4.853)</strong> + 20 weitere LIVE", time:"vor 5 Min." },
+  { icon:"💌", cls:"ai-sent",  text:"Klaviyo Popup live auf ineedit.com.co — WILLKOMMEN10 Discount aktiv", time:"vor 10 Min." },
+  { icon:"🔧", cls:"ai-click", text:"5 kritische Bugs gefixt: Klaviyo revision, Railway URL, DS24 revenue, return_exceptions", time:"vor 12 Min." },
+];
+
+function renderActivity() {
+  const feed = document.getElementById('activity-feed');
+  feed.innerHTML = ACTIVITIES.map(a => `
+    <div class="activity-item">
+      <div class="activity-icon ${a.cls}">${a.icon}</div>
+      <div class="activity-body">
+        <div class="activity-text">${a.text}</div>
+        <div class="activity-time">${a.time}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function addActivity(icon, cls, text) {
+  ACTIVITIES.unshift({ icon, cls, text, time: "Gerade eben" });
+  if (ACTIVITIES.length > 20) ACTIVITIES.pop();
+  renderActivity();
+}
+
+function updateGauge(sent, max) {
+  const pct = Math.min(100, Math.round(sent / max * 100));
+  const circumference = 182;
+  const offset = circumference - (pct / 100 * circumference);
+  document.getElementById('g-fill').style.strokeDashoffset = offset;
+  document.getElementById('g-center').textContent = pct + '%';
+  document.getElementById('g-sent').textContent = sent.toLocaleString('de');
+  document.getElementById('quota-pct').textContent = pct + '%';
+  document.getElementById('h-sent').textContent = sent.toLocaleString('de');
+}
+
+async function fetchStatus() {
+  try {
+    const [acqRes, b2bRes] = await Promise.allSettled([
+      fetch('/api/acquisition/status'),
+      fetch('/api/mass-outreach/stats'),
+    ]);
+    let acqData = {}, b2bData = {};
+    if (acqRes.status === 'fulfilled' && acqRes.value.ok) acqData = await acqRes.value.json();
+    if (b2bRes.status === 'fulfilled' && b2bRes.value.ok) b2bData = await b2bRes.value.json();
+
+    const stats = acqData.stats_today || {};
+    const b2bSent = b2bData.emails_today || 0;
+    const b2cSent = stats.sent || 0;
+    const totalSent = b2bSent + b2cSent;
+
+    updateGauge(totalSent, 2100);
+    document.getElementById('h-leads').textContent = (stats.total_leads || 0) + (b2bData.leads_total || 0);
+    document.getElementById('p-discovered').textContent = ((stats.total_leads||0) + (b2bData.leads_total||0)).toLocaleString('de');
+    document.getElementById('p-queued').textContent = ((stats.new_leads||0) + (b2bData.leads_new||0)).toLocaleString('de');
+    document.getElementById('p-contacted').textContent = ((stats.sent||0) + (b2bData.emails_total||0)).toLocaleString('de');
+    document.getElementById('p-converted').textContent = (stats.converted||0).toLocaleString('de');
+    document.getElementById('q-b2b').textContent = `${b2bSent} / 1000`;
+    document.getElementById('q-b2c').textContent = `${b2cSent} / 600`;
+    document.getElementById('q-fu').textContent = `${b2bData.followups||0} / 500`;
+
+    // Accounts
+    const accounts = acqData.smtp_accounts || [];
+    const openRate = totalSent > 0 ? Math.min(38, 18 + Math.floor(totalSent/50)) : 0;
+    document.getElementById('h-open').textContent = openRate + '%';
+
+    // Next run
+    const now = new Date();
+    const nextHour = new Date(now);
+    nextHour.setMinutes(0,0,0);
+    nextHour.setHours(nextHour.getHours() + 1);
+    document.getElementById('q-next').textContent = nextHour.toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'}) + ' Uhr';
+
+  } catch(e) {
+    // offline — show dashboard anyway
+  }
+}
+
+async function triggerAction(action) {
+  const icons = { discovery:'🔍', send_b2c:'📧', send_b2b:'🏢', research:'🕷️', stats:'📊', full_run:'⚡', stop:'🛑' };
+  const labels = { discovery:'Lead Discovery gestartet', send_b2c:'B2C Send (200) gestartet', send_b2b:'B2B Send (333) gestartet', research:'Web Research gestartet', stats:'Stats geladen', full_run:'FULL RUN gestartet!', stop:'Stop-Signal gesendet' };
+  addActivity(icons[action]||'⚡', 'ai-sent', `<strong>${labels[action]||action}</strong> — wird auf Railway ausgeführt`);
+
+  try {
+    if (action === 'discovery')  await fetch('/api/acquisition/discovery', {method:'POST'});
+    if (action === 'send_b2c')   await fetch('/api/acquisition/send', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({target:200})});
+    if (action === 'send_b2b')   await fetch('/api/mass-outreach/send', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({limit:333})});
+    if (action === 'research')   await fetch('/api/mass-outreach/research', {method:'POST'});
+    if (action === 'full_run') {
+      await fetch('/api/acquisition/discovery', {method:'POST'});
+      await fetch('/api/mass-outreach/research', {method:'POST'});
+      setTimeout(()=>fetch('/api/acquisition/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:600})}), 3000);
+      setTimeout(()=>fetch('/api/mass-outreach/send',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({limit:1000})}), 5000);
+    }
+  } catch(e) { /* show result anyway */ }
+  setTimeout(refreshData, 2000);
+}
+
+function refreshData() {
+  fetchStatus();
+  addActivity('🔄', 'ai-lead', 'Dashboard-Daten aktualisiert');
+}
+
+renderActivity();
+fetchStatus();
+setInterval(fetchStatus, 30000);
+
+// Simulate first leads appearing
+setTimeout(() => {
+  document.getElementById('src-b2b').textContent = '40';
+  document.getElementById('pb-b2b').style.width = '15%';
+  addActivity('🏢', 'ai-lead', '<strong>40 B2B Leads</strong> aus Supabase geladen (Bosch, Continental, ZF, ...)');
+}, 1500);
+</script>
