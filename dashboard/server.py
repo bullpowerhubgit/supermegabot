@@ -11211,6 +11211,60 @@ async def create_app():
     app.router.add_post("/api/acquisition/send",      handle_mega_acq_send)
     log.info("Mega Acquisition Engine routes registered (/api/acquisition/*)")
 
+    # Stripe Payment Links
+    from modules.stripe_payment_links import handle_stripe_links
+    async def handle_stripe_create_links(req):
+        try:
+            from modules.stripe_payment_links import create_payment_links_for_all_products
+            result = await create_payment_links_for_all_products()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+    app.router.add_get("/api/stripe/payment-links", handle_stripe_links)
+    app.router.add_post("/api/stripe/create-links", handle_stripe_create_links)
+    log.info("Stripe Payment Links routes registered (/api/stripe/*)")
+
+    # Klaviyo Flows
+    async def handle_klaviyo_setup(req):
+        try:
+            from modules.klaviyo_flows_builder import setup_all_flows
+            result = await setup_all_flows()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+    app.router.add_post("/api/klaviyo/setup-flows", handle_klaviyo_setup)
+    log.info("Klaviyo Flows route registered (/api/klaviyo/setup-flows)")
+
+    # WhatsApp Cart Recovery
+    async def handle_wa_cart(req):
+        try:
+            from modules.whatsapp_abandoned_cart import run_recovery_campaign
+            result = await run_recovery_campaign()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+    app.router.add_post("/api/whatsapp/cart-recovery", handle_wa_cart)
+    log.info("WhatsApp Cart Recovery route registered (/api/whatsapp/cart-recovery)")
+
+    # Affiliate System
+    async def handle_affiliate_status(req):
+        try:
+            from modules.affiliate_system import get_status
+            return web.json_response(get_status())
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+    async def handle_affiliate_invite(req):
+        try:
+            body = await req.json()
+            from modules.affiliate_system import send_affiliate_invite
+            result = await send_affiliate_invite(body.get("email", ""), body.get("name", "Partner"))
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+    app.router.add_get("/api/affiliate/status", handle_affiliate_status)
+    app.router.add_post("/api/affiliate/invite", handle_affiliate_invite)
+    log.info("Affiliate System routes registered (/api/affiliate/*)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
