@@ -23,7 +23,7 @@ SHOPIFY_VERSION   = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 DATA_DIR          = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 SYNC_STATE_FILE   = DATA_DIR / "tiktok_sync_state.json"
 
-TT_BASE = "https://open-api.tiktok.com/api/v1"
+TT_BASE = "https://open-api.tiktok-shops.com/api/v1"
 
 
 def _load_sync_state() -> dict:

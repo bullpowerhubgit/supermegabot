@@ -95,7 +95,7 @@ async def sync_products_to_tiktok() -> dict:
                 }
                 async with aiohttp.ClientSession() as s:
                     async with s.post(
-                        f"https://open-api.tiktok.com/api/shop/{TIKTOK_SHOP}/products/",
+                        f"https://open-api.tiktok-shops.com/api/v1/products",
                         headers={"x-tts-access-token": TIKTOK_TOKEN,
                                  "Content-Type": "application/json"},
                         json=payload,
