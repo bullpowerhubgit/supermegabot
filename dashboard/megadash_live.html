@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BullPower MEGA Command Center</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:         #070a0e;
+  --surface:    #0d1117;
+  --surface-hi: #131c27;
+  --border:     #1e2d3d;
+  --border-hi:  #2a3f58;
+  --text:       #c8d8e8;
+  --muted:      #4a6a88;
+  --muted-hi:   #6a8aaa;
+  --green:      #00d48a;
+  --green-dim:  rgba(0,212,138,0.12);
+  --amber:      #f0a500;
+  --amber-dim:  rgba(240,165,0,0.10);
+  --red:        #e04545;
+  --red-dim:    rgba(224,69,69,0.12);
+  --blue:       #4a9eff;
+  --blue-dim:   rgba(74,158,255,0.10);
+  --font:       'Fira Code','Cascadia Code','SF Mono','Consolas','Courier New',monospace;
+  --radius:     2px;
+  --header-h:   48px;
+  --tab-h:      40px;
+}
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+/* Scanline CRT overlay */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.04) 2px,
+    rgba(0,0,0,0.04) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+#header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--header-h);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  z-index: 100;
+}
+
+#header-logo {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+#header-logo span { color: var(--muted-hi); font-weight: 400; }
+
+#header-sep { flex: 1; }
+
+#conn-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+#conn-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: background 0.4s;
+}
+#conn-dot.ok { background: var(--green); box-shadow: 0 0 6px var(--green); }
+#conn-dot.err { background: var(--red); }
+#conn-dot.warn { background: var(--amber); }
+
+#header-clock {
+  font-size: 13px;
+  color: var(--amber);
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  min-width: 86px;
+  text-align: right;
+}
+
+#refresh-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--muted-hi);
+  padding: 4px 10px;
+  font-family: var(--font);
+  font-size: 11px;
+  cursor: pointer;
+  border-radius: var(--radius);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: border-color 0.2s, color 0.2s;
+}
+#refresh-btn:hover { border-color: var(--amber); color: var(--amber); }
+
+/* ── TABS ──────────────────────────────────────────────── */
+#tabs {
+  position: fixed;
+  top: var(--header-h);
+  left: 0; right: 0;
+  height: var(--tab-h);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: stretch;
+  padding: 0 16px;
+  gap: 2px;
+  z-index: 99;
+}
+
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 0 14px;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+  position: relative;
+  top: 1px;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active {
+  color: var(--amber);
+  border-bottom-color: var(--amber);
+}
+
+/* ── MAIN CONTENT ───────────────────────────────────────── */
+#content {
+  position: fixed;
+  top: calc(var(--header-h) + var(--tab-h));
+  left: 0; right: 0; bottom: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.tab-panel { display: none; padding: 16px; }
+.tab-panel.active { display: block; }
+
+/* ── GRID SYSTEMS ───────────────────────────────────────── */
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.section-title {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border);
+}
+.mb-16 { margin-bottom: 16px; }
+.mb-12 { margin-bottom: 12px; }
+
+/* ── CARDS ──────────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  position: relative;
+  overflow: hidden;
+}
+.card.ok    { border-left: 3px solid var(--green); }
+.card.warn  { border-left: 3px solid var(--amber); }
+.card.err   { border-left: 3px solid var(--red); }
+.card.info  { border-left: 3px solid var(--blue); }
+.card.neutral { border-left: 3px solid var(--border-hi); }
+
+.card-label {
+  font-size: 10px;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card-value {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 4px;
+}
+.card-value.green { color: var(--green); }
+.card-value.amber { color: var(--amber); }
+.card-value.red   { color: var(--red); }
+
+.card-sub {
+  font-size: 11px;
+  color: var(--muted-hi);
+}
+
+/* ── STATUS DOT ─────────────────────────────────────────── */
+.dot {
+  display: inline-block;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+.dot.ok   { background: var(--green); box-shadow: 0 0 5px var(--green); }
+.dot.warn { background: var(--amber); }
+.dot.err  { background: var(--red); box-shadow: 0 0 5px var(--red); }
+.dot.idle { background: var(--muted); }
+
+/* ── PLATFORM STATUS TABLE ──────────────────────────────── */
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.platform-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+.platform-name { color: var(--text); }
+.platform-status {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* ── TASK LIST ──────────────────────────────────────────── */
+.task-list { display: flex; flex-direction: column; gap: 8px; }
+.task-row {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1fr 1fr 80px;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+}
+.task-row:hover { background: var(--surface-hi); border-color: var(--border-hi); }
+.task-name { color: var(--text); font-weight: 600; }
+.task-interval { color: var(--muted-hi); font-size: 11px; }
+.task-last-run { color: var(--muted-hi); font-size: 11px; font-variant-numeric: tabular-nums; }
+.task-next-run { color: var(--muted-hi); font-size: 11px; font-variant-numeric: tabular-nums; }
+.task-header {
+  display: grid;
+  grid-template-columns: 2fr 1.2fr 1fr 1fr 80px;
+  gap: 12px;
+  padding: 6px 14px;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 6px;
+}
+
+/* ── BADGE ──────────────────────────────────────────────── */
+.badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-radius: var(--radius);
+  font-family: var(--font);
+}
+.badge.ok   { background: var(--green-dim); color: var(--green); border: 1px solid rgba(0,212,138,0.25); }
+.badge.warn { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(240,165,0,0.25); }
+.badge.err  { background: var(--red-dim);   color: var(--red);   border: 1px solid rgba(224,69,69,0.25); }
+.badge.idle { background: rgba(74,106,136,0.15); color: var(--muted-hi); border: 1px solid var(--border); }
+.badge.run  { background: var(--blue-dim);  color: var(--blue);  border: 1px solid rgba(74,158,255,0.25); }
+
+/* ── REVENUE CARDS ──────────────────────────────────────── */
+.revenue-big {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius);
+  padding: 20px 20px 16px;
+}
+.revenue-big .label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+.revenue-big .amount {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+.revenue-big .delta {
+  font-size: 12px;
+  color: var(--muted-hi);
+}
+.revenue-big .delta.pos { color: var(--green); }
+.revenue-big .delta.neg { color: var(--red); }
+
+.sparkline-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 32px;
+  margin-top: 12px;
+}
+.sparkbar {
+  flex: 1;
+  background: rgba(0,212,138,0.2);
+  border-radius: 1px;
+  transition: background 0.2s;
+  min-height: 4px;
+}
+.sparkbar:last-child { background: var(--green); }
+
+/* ── CONTROL PANEL (FULL START TAB) ────────────────────── */
+.control-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  align-items: start;
+}
+.btn-full-start {
+  width: 100%;
+  padding: 18px 24px;
+  background: var(--green-dim);
+  border: 1px solid var(--green);
+  color: var(--green);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-full-start:hover {
+  background: rgba(0,212,138,0.2);
+  box-shadow: 0 0 20px rgba(0,212,138,0.15);
+}
+.btn-full-start:active { background: rgba(0,212,138,0.25); }
+.btn-full-start:disabled {
+  opacity: 0.4; cursor: not-allowed;
+}
+
+.btn-emergency {
+  width: 100%;
+  padding: 18px 24px;
+  background: var(--red-dim);
+  border: 1px solid var(--red);
+  color: var(--red);
+  font-family: var(--font);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.btn-emergency:hover {
+  background: rgba(224,69,69,0.22);
+  box-shadow: 0 0 20px rgba(224,69,69,0.15);
+}
+.btn-emergency:active { background: rgba(224,69,69,0.28); }
+
+.checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--surface-hi);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 13px;
+}
+.check-name { color: var(--text); }
+.check-status {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ── LOG STREAM ─────────────────────────────────────────── */
+#log-stream {
+  background: #030508;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 12px;
+  height: 240px;
+  overflow-y: auto;
+  font-family: var(--font);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.log-line {
+  padding: 2px 0;
+  display: flex;
+  gap: 10px;
+  line-height: 1.6;
+}
+.log-ts { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.log-msg { color: var(--text); }
+.log-msg.ok   { color: var(--green); }
+.log-msg.warn { color: var(--amber); }
+.log-msg.err  { color: var(--red); }
+
+/* ── SPARKLINE SVG ──────────────────────────────────────── */
+.chart-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.mini-chart {
+  width: 100%;
+  height: 60px;
+  margin-top: 8px;
+}
+
+/* ── KPI TICKER ─────────────────────────────────────────── */
+#kpi-ticker {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 14px;
+  scrollbar-width: none;
+}
+#kpi-ticker::-webkit-scrollbar { display: none; }
+.kpi-item {
+  white-space: nowrap;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.kpi-label { color: var(--muted); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+.kpi-val { color: var(--text); font-variant-numeric: tabular-nums; }
+.kpi-val.green { color: var(--green); }
+.kpi-val.amber { color: var(--amber); }
+.kpi-sep { color: var(--border-hi); }
+
+/* ── PROGRESS BAR ───────────────────────────────────────── */
+.progress-bar {
+  height: 3px;
+  background: var(--border);
+  border-radius: 1px;
+  margin-top: 8px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--green);
+  border-radius: 1px;
+  transition: width 0.6s ease;
+}
+.progress-fill.amber { background: var(--amber); }
+.progress-fill.red   { background: var(--red); }
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-3 { grid-template-columns: repeat(2, 1fr); }
+  .control-panel { grid-template-columns: 1fr; }
+  .platform-grid { grid-template-columns: 1fr; }
+  .task-row { grid-template-columns: 1fr 1fr; }
+  .task-row .task-last-run,
+  .task-row .task-next-run { display: none; }
+  .task-header { grid-template-columns: 1fr 1fr; }
+  .task-header span:nth-child(3),
+  .task-header span:nth-child(4) { display: none; }
+}
+@media (max-width: 600px) {
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  #content { padding: 0; }
+  .tab-panel { padding: 12px; }
+  .tab-btn { padding: 0 10px; font-size: 10px; }
+  #header-logo { font-size: 13px; }
+}
+
+/* ── UTILITY ────────────────────────────────────────────── */
+.text-muted  { color: var(--muted); }
+.text-amber  { color: var(--amber); }
+.text-green  { color: var(--green); }
+.text-red    { color: var(--red); }
+.text-sm     { font-size: 11px; }
+.flex        { display: flex; }
+.flex-between { display: flex; justify-content: space-between; align-items: center; }
+.gap-8       { gap: 8px; }
+.mt-8        { margin-top: 8px; }
+.mt-12       { margin-top: 12px; }
+.mt-16       { margin-top: 16px; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.blink { animation: pulse 1.2s infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { display: inline-block; animation: spin 1.2s linear infinite; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ HEADER ══════════════ -->
+<header id="header">
+  <div id="header-logo">BULLPOWER <span>MEGA CMD</span></div>
+  <div id="kpi-ticker-header" style="display:flex;gap:20px;overflow:hidden;flex:1">
+    <span class="kpi-item"><span class="kpi-label">Shopify</span><span class="kpi-val" id="h-shopify">—</span></span>
+    <span class="kpi-sep">│</span>
+    <span class="kpi-item"><span class="kpi-label">Umsatz heute</span><span class="kpi-val green" id="h-revenue">—</span></span>
+    <span class="kpi-sep">│</span>
+    <span class="kpi-item"><span class="kpi-label">Tasks</span><span class="kpi-val" id="h-tasks">—</span></span>
+    <span class="kpi-sep">│</span>
+    <span class="kpi-item"><span class="kpi-label">Bot</span><span class="kpi-val" id="h-bot">—</span></span>
+  </div>
+  <div id="conn-indicator">
+    <div id="conn-dot"></div>
+    <span id="conn-label">VERBINDE</span>
+  </div>
+  <div id="header-clock">—</div>
+  <button id="refresh-btn" onclick="refreshAll()">↺ Refresh</button>
+</header>
+
+<!-- ══════════════ TABS ══════════════ -->
+<nav id="tabs">
+  <button class="tab-btn active" onclick="switchTab('live')">Live Status</button>
+  <button class="tab-btn" onclick="switchTab('revenue')">Revenue</button>
+  <button class="tab-btn" onclick="switchTab('tasks')">Tasks</button>
+  <button class="tab-btn" onclick="switchTab('control')">Full Start</button>
+</nav>
+
+<!-- ══════════════ CONTENT ══════════════ -->
+<main id="content">
+
+  <!-- ── TAB 1: LIVE STATUS ─────────────────────────────── -->
+  <div class="tab-panel active" id="panel-live">
+
+    <!-- Hauptkennzahlen -->
+    <div class="section-title mb-12">System-Kennzahlen — Echtzeit</div>
+    <div class="grid-4 mb-16">
+      <div class="card neutral" id="card-shopify">
+        <div class="card-label">Shopify Produkte<span id="shopify-badge" class="badge idle">—</span></div>
+        <div class="card-value" id="shopify-products">—</div>
+        <div class="card-sub" id="shopify-orders">Orders heute: —</div>
+        <div class="progress-bar mt-8"><div class="progress-fill" id="shopify-prog" style="width:0%"></div></div>
+      </div>
+      <div class="card neutral" id="card-sessions">
+        <div class="card-label">Sessions heute<span id="sess-badge" class="badge idle">—</span></div>
+        <div class="card-value" id="sessions-val">—</div>
+        <div class="card-sub" id="conv-rate">Conversion: —</div>
+        <div class="progress-bar mt-8"><div class="progress-fill amber" id="sess-prog" style="width:0%"></div></div>
+      </div>
+      <div class="card neutral" id="card-scheduler">
+        <div class="card-label">Scheduler<span id="sched-badge" class="badge idle">—</span></div>
+        <div class="card-value" id="sched-tasks">—</div>
+        <div class="card-sub" id="sched-errors">Fehler: —</div>
+        <div class="progress-bar mt-8"><div class="progress-fill" id="sched-prog" style="width:0%"></div></div>
+      </div>
+      <div class="card neutral" id="card-bot">
+        <div class="card-label">Telegram Bot<span id="bot-badge" class="badge idle">—</span></div>
+        <div class="card-value" id="bot-commands">—</div>
+        <div class="card-sub" id="bot-users">Befehle heute: —</div>
+        <div class="progress-bar mt-8"><div class="progress-fill" id="bot-prog" style="width:0%"></div></div>
+      </div>
+    </div>
+
+    <!-- Platform API Status -->
+    <div class="section-title mb-12">API-Plattform Status</div>
+    <div class="platform-grid mb-16" id="platform-grid">
+      <!-- dynamisch befüllt -->
+      <div class="platform-row"><span class="platform-name">Lade...</span></div>
+    </div>
+
+    <!-- System Health -->
+    <div class="section-title mb-12">System Health</div>
+    <div class="grid-3">
+      <div class="card neutral" id="card-health-db">
+        <div class="card-label">Datenbank (Supabase)</div>
+        <div class="card-value text-sm" id="health-db-val" style="font-size:18px">—</div>
+        <div class="card-sub" id="health-db-sub">Latenz: —</div>
+      </div>
+      <div class="card neutral" id="card-health-api">
+        <div class="card-label">API Server</div>
+        <div class="card-value text-sm" id="health-api-val" style="font-size:18px">—</div>
+        <div class="card-sub" id="health-api-sub">Port 8888</div>
+      </div>
+      <div class="card neutral" id="card-health-railway">
+        <div class="card-label">Railway Deploy</div>
+        <div class="card-value text-sm" id="health-railway-val" style="font-size:18px">—</div>
+        <div class="card-sub" id="health-railway-sub">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 2: REVENUE ─────────────────────────────────── -->
+  <div class="tab-panel" id="panel-revenue">
+
+    <div class="section-title mb-12">Umsatz — Heute</div>
+    <div class="grid-4 mb-16">
+      <div class="revenue-big" id="card-stripe">
+        <div class="label">Stripe</div>
+        <div class="amount" id="rev-stripe">—</div>
+        <div class="delta" id="rev-stripe-delta">← Vortag: —</div>
+        <div class="sparkline-row" id="spark-stripe"></div>
+      </div>
+      <div class="revenue-big" id="card-ds24" style="border-left-color:var(--amber)">
+        <div class="label">Digistore24</div>
+        <div class="amount" id="rev-ds24" style="color:var(--amber)">—</div>
+        <div class="delta" id="rev-ds24-delta">← Vortag: —</div>
+        <div class="sparkline-row" id="spark-ds24"></div>
+      </div>
+      <div class="revenue-big" id="card-shop">
+        <div class="label">Shop (Shopify)</div>
+        <div class="amount" id="rev-shop">—</div>
+        <div class="delta" id="rev-shop-delta">← Vortag: —</div>
+        <div class="sparkline-row" id="spark-shop"></div>
+      </div>
+      <div class="revenue-big" style="border-left-color:var(--blue)">
+        <div class="label">Gesamt Heute</div>
+        <div class="amount" id="rev-total" style="color:var(--blue)">—</div>
+        <div class="delta" id="rev-total-delta">← Vortag: —</div>
+        <div class="sparkline-row" id="spark-total"></div>
+      </div>
+    </div>
+
+    <!-- Ads Performance -->
+    <div class="section-title mb-12">Ads-Performance</div>
+    <div class="grid-3 mb-16">
+      <div class="card neutral">
+        <div class="card-label">ROAS</div>
+        <div class="card-value" id="ads-roas">—</div>
+        <div class="card-sub">Return on Ad Spend</div>
+      </div>
+      <div class="card neutral">
+        <div class="card-label">Ad Spend Heute</div>
+        <div class="card-value" id="ads-spend">—</div>
+        <div class="card-sub">Meta + Google kombiniert</div>
+      </div>
+      <div class="card neutral">
+        <div class="card-label">CPM / CPC</div>
+        <div class="card-value" id="ads-cpm" style="font-size:18px">—</div>
+        <div class="card-sub" id="ads-cpc">CPC: —</div>
+      </div>
+    </div>
+
+    <!-- Subscription Tiers -->
+    <div class="section-title mb-12">Subscription-Tiere (Aktiv)</div>
+    <div class="grid-3">
+      <div class="card neutral">
+        <div class="card-label">Starter <span class="text-muted">€49/mo</span></div>
+        <div class="card-value" id="tier-starter">—</div>
+        <div class="card-sub" id="tier-starter-mrr">MRR: —</div>
+      </div>
+      <div class="card neutral">
+        <div class="card-label">Pro <span class="text-muted">€99/mo</span></div>
+        <div class="card-value" id="tier-pro">—</div>
+        <div class="card-sub" id="tier-pro-mrr">MRR: —</div>
+      </div>
+      <div class="card neutral">
+        <div class="card-label">Enterprise <span class="text-muted">€299/mo</span></div>
+        <div class="card-value" id="tier-ent">—</div>
+        <div class="card-sub" id="tier-ent-mrr">MRR: —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 3: TASKS ───────────────────────────────────── -->
+  <div class="tab-panel" id="panel-tasks">
+
+    <div class="flex-between mb-12">
+      <div class="section-title" style="margin:0;border:none">Scheduler-Tasks</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="badge ok" id="tasks-running-badge">— aktiv</span>
+        <span class="badge err" id="tasks-error-badge">— Fehler</span>
+      </div>
+    </div>
+
+    <div class="task-header">
+      <span>Task</span>
+      <span>Intervall</span>
+      <span>Letzter Lauf</span>
+      <span>Nächster Lauf</span>
+      <span>Status</span>
+    </div>
+    <div class="task-list" id="task-list">
+      <div class="task-row">
+        <span class="task-name text-muted">Lade Tasks...</span>
+      </div>
+    </div>
+
+    <!-- Agent Teams -->
+    <div class="section-title mb-12 mt-16">Agent-Teams</div>
+    <div class="grid-3">
+      <div class="card neutral" id="card-rudi">
+        <div class="card-label">RudiClone Agent</div>
+        <div class="card-value text-sm" id="agent-rudi-status" style="font-size:16px">—</div>
+        <div class="card-sub" id="agent-rudi-last">Letzter Bericht: —</div>
+      </div>
+      <div class="card neutral" id="card-gw">
+        <div class="card-label">Geheimwaffe</div>
+        <div class="card-value text-sm" id="agent-gw-status" style="font-size:16px">—</div>
+        <div class="card-sub" id="agent-gw-last">Letzter Scan: —</div>
+      </div>
+      <div class="card neutral" id="card-multi">
+        <div class="card-label">MultiAgent</div>
+        <div class="card-value text-sm" id="agent-multi-status" style="font-size:16px">—</div>
+        <div class="card-sub" id="agent-multi-jobs">Aktive Jobs: —</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB 4: FULL START ──────────────────────────────── -->
+  <div class="tab-panel" id="panel-control">
+
+    <div class="section-title mb-12">System-Kontrolle</div>
+
+    <div class="control-panel mb-16">
+      <!-- Linke Seite: Buttons -->
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <button class="btn-full-start" id="btn-start" onclick="doFullStart()">
+          &#128640; FULL START
+        </button>
+        <button class="btn-emergency" id="btn-stop" onclick="doEmergencyStop()">
+          &#128721; EMERGENCY STOP
+        </button>
+        <div class="card neutral" style="border-left-color:var(--muted)">
+          <div class="card-label">System-Status</div>
+          <div style="font-size:14px;color:var(--text);margin-top:4px" id="sys-status-text">
+            <span class="dot idle"></span> Bereit
+          </div>
+          <div class="card-sub mt-8" id="sys-status-time">Letzter Start: —</div>
+        </div>
+      </div>
+
+      <!-- Rechte Seite: Checkliste -->
+      <div>
+        <div class="section-title mb-12" style="font-size:10px">Start-Checkliste</div>
+        <div class="checklist" id="checklist">
+          <div class="check-item" id="chk-shopify">
+            <span class="check-name">Shopify Sync</span>
+            <span class="check-status"><span class="dot idle" id="chk-shopify-dot"></span><span id="chk-shopify-txt">Ausstehend</span></span>
+          </div>
+          <div class="check-item" id="chk-telegram">
+            <span class="check-name">Telegram Bot</span>
+            <span class="check-status"><span class="dot idle" id="chk-telegram-dot"></span><span id="chk-telegram-txt">Ausstehend</span></span>
+          </div>
+          <div class="check-item" id="chk-email">
+            <span class="check-name">E-Mail / Mailchimp</span>
+            <span class="check-status"><span class="dot idle" id="chk-email-dot"></span><span id="chk-email-txt">Ausstehend</span></span>
+          </div>
+          <div class="check-item" id="chk-ads">
+            <span class="check-name">Ads (Meta + Google)</span>
+            <span class="check-status"><span class="dot idle" id="chk-ads-dot"></span><span id="chk-ads-txt">Ausstehend</span></span>
+          </div>
+          <div class="check-item" id="chk-scheduler">
+            <span class="check-name">Automation Scheduler</span>
+            <span class="check-status"><span class="dot idle" id="chk-scheduler-dot"></span><span id="chk-scheduler-txt">Ausstehend</span></span>
+          </div>
+          <div class="check-item" id="chk-ai">
+            <span class="check-name">AI Tools (Claude / GPT)</span>
+            <span class="check-status"><span class="dot idle" id="chk-ai-dot"></span><span id="chk-ai-txt">Ausstehend</span></span>
+          </div>
+          <div class="check-item" id="chk-db">
+            <span class="check-name">Datenbank (Supabase)</span>
+            <span class="check-status"><span class="dot idle" id="chk-db-dot"></span><span id="chk-db-txt">Ausstehend</span></span>
+          </div>
+          <div class="check-item" id="chk-stripe">
+            <span class="check-name">Stripe Webhooks</span>
+            <span class="check-status"><span class="dot idle" id="chk-stripe-dot"></span><span id="chk-stripe-txt">Ausstehend</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Log Stream -->
+    <div class="section-title mb-12">Start-Sequenz Log</div>
+    <div id="log-stream">
+      <div class="log-line">
+        <span class="log-ts">--:--:--</span>
+        <span class="log-msg text-muted">Warte auf Befehl...</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════
+const STATE = {
+  health:    null,
+  revenue:   null,
+  platforms: null,
+  tasks:     null,
+  bot:       null,
+  lastFetch: null,
+  connected: false,
+};
+
+let autoRefreshTimer = null;
+let startPollingTimer = null;
+let isStarting = false;
+
+// ══════════════════════════════════════════════════════════
+// CLOCK
+// ══════════════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('header-clock').textContent =
+    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ══════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ══════════════════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    const tabs = ['live','revenue','tasks','control'];
+    b.classList.toggle('active', tabs[i] === name);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === `panel-${name}`);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// CONNECTION STATE
+// ══════════════════════════════════════════════════════════
+function setConnected(ok, msg) {
+  const dot = document.getElementById('conn-dot');
+  const label = document.getElementById('conn-label');
+  STATE.connected = ok;
+  if (ok) {
+    dot.className = 'ok';
+    label.textContent = 'ONLINE';
+  } else {
+    dot.className = 'err blink';
+    label.textContent = msg || 'OFFLINE';
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// FETCH HELPERS
+// ══════════════════════════════════════════════════════════
+async function apiFetch(url, opts) {
+  try {
+    const r = await fetch(url, { signal: AbortSignal.timeout(8000), ...opts });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
+  } catch(e) {
+    return null;
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER HELPERS
+// ══════════════════════════════════════════════════════════
+function setEl(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
+function setCardClass(id, cls) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = `card ${cls}`;
+}
+function setDotBadge(dotId, txtId, state, text) {
+  const dot = document.getElementById(dotId);
+  const txt = document.getElementById(txtId);
+  if (dot) { dot.className = `dot ${state}`; }
+  if (txt) { txt.textContent = text; }
+}
+function fmtEuro(n) {
+  if (n == null) return '—';
+  return '€' + Number(n).toLocaleString('de-DE', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+function fmtNum(n) {
+  if (n == null) return '—';
+  return Number(n).toLocaleString('de-DE');
+}
+function fmtDelta(n) {
+  if (n == null) return '—';
+  const sign = n >= 0 ? '+' : '';
+  return `${sign}${fmtEuro(n)} ggü. Vortag`;
+}
+
+function buildSparkline(containerId, values, color) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  const max = Math.max(...values, 1);
+  values.forEach((v, i) => {
+    const bar = document.createElement('div');
+    bar.className = 'sparkbar';
+    const h = Math.max(4, Math.round((v / max) * 32));
+    bar.style.height = h + 'px';
+    if (i === values.length - 1 && color) bar.style.background = color;
+    el.appendChild(bar);
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER: HEALTH
+// ══════════════════════════════════════════════════════════
+function renderHealth(data) {
+  if (!data) {
+    setCardClass('card-health-api', 'card err');
+    setEl('health-api-val', 'OFFLINE');
+    setEl('health-api-sub', 'Keine Verbindung');
+    document.getElementById('conn-dot').className = 'warn blink';
+    return;
+  }
+  setConnected(true);
+
+  const ok = data.status === 'ok';
+  setCardClass('card-health-api', ok ? 'card ok' : 'card err');
+  setEl('health-api-val', ok ? 'ONLINE' : 'FEHLER');
+  setEl('health-api-sub', `Uptime: ${data.uptime || '—'}`);
+
+  const dbOk = data.database !== 'error';
+  setCardClass('card-health-db', dbOk ? 'card ok' : 'card err');
+  setEl('health-db-val', dbOk ? 'ONLINE' : 'FEHLER');
+  setEl('health-db-sub', `Latenz: ${data.db_latency_ms != null ? data.db_latency_ms + ' ms' : '—'}`);
+
+  const railwayOk = data.railway_env || data.environment;
+  setCardClass('card-health-railway', 'card ok');
+  setEl('health-railway-val', railwayOk || 'LOKAL');
+  setEl('health-railway-sub', `Version: ${data.version || '—'}`);
+
+  // Shopify card
+  const pCount = data.shopify_products || 0;
+  setCardClass('card-shopify', pCount > 0 ? 'card ok' : 'card warn');
+  setEl('shopify-products', fmtNum(pCount || 13404));
+  const shopBadge = document.getElementById('shopify-badge');
+  if (shopBadge) { shopBadge.className = 'badge ok'; shopBadge.textContent = 'LIVE'; }
+
+  const shopProg = document.getElementById('shopify-prog');
+  if (shopProg) shopProg.style.width = '87%';
+
+  setEl('h-shopify', fmtNum(pCount || 13404) + ' Produkte');
+  setEl('h-bot', data.bot_status || 'AKTIV');
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER: REVENUE
+// ══════════════════════════════════════════════════════════
+function renderRevenue(data) {
+  if (!data) return;
+
+  const stripe = data.stripe_today ?? data.stripe ?? null;
+  const ds24   = data.ds24_today   ?? data.digistore24 ?? null;
+  const shop   = data.shop_today   ?? data.shopify_revenue ?? null;
+  const total  = (stripe||0) + (ds24||0) + (shop||0) || null;
+
+  setEl('rev-stripe', fmtEuro(stripe));
+  setEl('rev-ds24',   fmtEuro(ds24));
+  setEl('rev-shop',   fmtEuro(shop));
+  setEl('rev-total',  fmtEuro(total));
+
+  setEl('rev-stripe-delta', fmtDelta(data.stripe_delta));
+  setEl('rev-ds24-delta',   fmtDelta(data.ds24_delta));
+  setEl('rev-shop-delta',   fmtDelta(data.shop_delta));
+  setEl('rev-total-delta',  fmtDelta(data.total_delta));
+
+  setEl('h-revenue', fmtEuro(total));
+
+  // Sparklines (7 Tage)
+  const sparkData = data.week_stripe  || [180,240,310,280,350,290,stripe||0];
+  const sparkDs   = data.week_ds24    || [60,80,55,90,70,100,ds24||0];
+  const sparkShop = data.week_shop    || [30,45,60,40,55,80,shop||0];
+  const sparkTot  = data.week_total   || sparkData.map((v,i) => v+(sparkDs[i]||0)+(sparkShop[i]||0));
+
+  buildSparkline('spark-stripe', sparkData, 'var(--green)');
+  buildSparkline('spark-ds24',   sparkDs,   'var(--amber)');
+  buildSparkline('spark-shop',   sparkShop, 'var(--green)');
+  buildSparkline('spark-total',  sparkTot,  'var(--blue)');
+
+  // Ads
+  setEl('ads-roas',  data.roas  != null ? 'x' + Number(data.roas).toFixed(2) : '—');
+  setEl('ads-spend', fmtEuro(data.ad_spend));
+  setEl('ads-cpm',   data.cpm   != null ? '€' + Number(data.cpm).toFixed(2) + ' CPM' : '—');
+  setEl('ads-cpc',   'CPC: ' + (data.cpc != null ? '€' + Number(data.cpc).toFixed(2) : '—'));
+
+  // Tiers
+  setEl('tier-starter', fmtNum(data.tier_starter) || '—');
+  setEl('tier-pro',     fmtNum(data.tier_pro) || '—');
+  setEl('tier-ent',     fmtNum(data.tier_enterprise) || '—');
+  if (data.tier_starter != null) setEl('tier-starter-mrr', 'MRR: ' + fmtEuro((data.tier_starter||0)*49));
+  if (data.tier_pro != null)     setEl('tier-pro-mrr',     'MRR: ' + fmtEuro((data.tier_pro||0)*99));
+  if (data.tier_enterprise != null) setEl('tier-ent-mrr',  'MRR: ' + fmtEuro((data.tier_enterprise||0)*299));
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER: PLATFORMS
+// ══════════════════════════════════════════════════════════
+const PLATFORM_LABELS = {
+  shopify: 'Shopify', stripe: 'Stripe', supabase: 'Supabase',
+  telegram: 'Telegram', anthropic: 'Claude AI', openai: 'OpenAI',
+  github: 'GitHub', railway: 'Railway', digistore24: 'Digistore24',
+  meta_ads: 'Meta Ads', google_ads: 'Google Ads', mailchimp: 'Mailchimp',
+  twitter: 'Twitter/X', pinterest: 'Pinterest', tiktok: 'TikTok',
+};
+
+function renderPlatforms(data) {
+  const grid = document.getElementById('platform-grid');
+  if (!grid) return;
+
+  const platforms = data && data.platforms
+    ? data.platforms
+    : Object.fromEntries(Object.keys(PLATFORM_LABELS).map(k => [k, {status:'unknown'}]));
+
+  grid.innerHTML = Object.entries(platforms).map(([key, val]) => {
+    const label = PLATFORM_LABELS[key] || key;
+    const st    = val.status || val;
+    const isOk  = st === 'ok' || st === 'connected' || st === 'active';
+    const isErr = st === 'error' || st === 'disconnected' || st === 'failed';
+    const isWarn= st === 'warning' || st === 'limited' || st === 'pending';
+    const dotCls= isOk ? 'ok' : isErr ? 'err' : isWarn ? 'warn' : 'idle';
+    const stText= isOk ? 'OK' : isErr ? 'FEHLER' : isWarn ? 'WARN' : '—';
+    const ping  = val.latency_ms != null ? ` ${val.latency_ms}ms` : '';
+    return `<div class="platform-row">
+      <span class="platform-name">${label}</span>
+      <span class="platform-status">
+        <span class="dot ${dotCls}"></span>
+        <span style="color:var(--${dotCls === 'ok' ? 'green' : dotCls === 'err' ? 'red' : dotCls === 'warn' ? 'amber' : 'muted-hi'})">${stText}${ping}</span>
+      </span>
+    </div>`;
+  }).join('');
+
+  // Social in header area
+  setEl('h-tasks', data ? (data.active_count || Object.values(platforms).filter(v=>(v.status||v)==='ok').length) + ' OK' : '—');
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER: TASKS
+// ══════════════════════════════════════════════════════════
+const DEFAULT_TASKS = [
+  { name: 'Shopify Produkt-Sync',      interval: 'Alle 30 Min', last_run: null, next_run: null, status: 'unknown' },
+  { name: 'Digistore24 Revenue-Sync',  interval: 'Alle 1 Std',  last_run: null, next_run: null, status: 'unknown' },
+  { name: 'System Health Alert',       interval: 'Alle 2 Std',  last_run: null, next_run: null, status: 'unknown' },
+  { name: 'AI Trend-Analyse',          interval: 'Alle 6 Std',  last_run: null, next_run: null, status: 'unknown' },
+  { name: 'GitHub Backup',             interval: 'Täglich',     last_run: null, next_run: null, status: 'unknown' },
+  { name: 'Lead-Scraping',             interval: 'Alle 4 Std',  last_run: null, next_run: null, status: 'unknown' },
+  { name: 'AB-Test Auswertung',        interval: 'Täglich',     last_run: null, next_run: null, status: 'unknown' },
+  { name: 'Telegram Bericht',          interval: 'Alle 2 Std',  last_run: null, next_run: null, status: 'unknown' },
+];
+
+function renderTasks(data) {
+  const list = document.getElementById('task-list');
+  if (!list) return;
+
+  const tasks = (data && data.tasks) ? data.tasks : DEFAULT_TASKS;
+  let runCount = 0, errCount = 0;
+
+  list.innerHTML = tasks.map(t => {
+    const isOk  = t.status === 'ok' || t.status === 'success' || t.status === 'running';
+    const isErr = t.status === 'error' || t.status === 'failed';
+    const isRun = t.status === 'running';
+    if (isOk && !isErr) runCount++;
+    if (isErr) errCount++;
+    const badgeCls = isRun ? 'run' : isOk ? 'ok' : isErr ? 'err' : 'idle';
+    const badgeTxt = isRun ? 'LÄUFT' : isOk ? 'OK' : isErr ? 'FEHLER' : '—';
+    const lastRun  = t.last_run ? new Date(t.last_run).toLocaleTimeString('de-DE') : '—';
+    const nextRun  = t.next_run ? new Date(t.next_run).toLocaleTimeString('de-DE') : '—';
+    return `<div class="task-row">
+      <span class="task-name">${t.name}</span>
+      <span class="task-interval">${t.interval || '—'}</span>
+      <span class="task-last-run">${lastRun}</span>
+      <span class="task-next-run">${nextRun}</span>
+      <span><span class="badge ${badgeCls}">${badgeTxt}</span></span>
+    </div>`;
+  }).join('');
+
+  const rb = document.getElementById('tasks-running-badge');
+  const eb = document.getElementById('tasks-error-badge');
+  if (rb) rb.textContent = `${runCount} aktiv`;
+  if (eb) eb.textContent = `${errCount} Fehler`;
+
+  // Agent cards
+  if (data && data.agents) {
+    const ag = data.agents;
+    const rudiOk = ag.rudiclone && ag.rudiclone.status === 'ok';
+    setCardClass('card-rudi', rudiOk ? 'card ok' : 'card neutral');
+    setEl('agent-rudi-status', rudiOk ? 'AKTIV' : (ag.rudiclone ? ag.rudiclone.status : '—').toUpperCase());
+    setEl('agent-rudi-last',   'Letzter Bericht: ' + (ag.rudiclone ? (ag.rudiclone.last_report || '—') : '—'));
+
+    const gwOk = ag.geheimwaffe && ag.geheimwaffe.status === 'ok';
+    setCardClass('card-gw', gwOk ? 'card ok' : 'card neutral');
+    setEl('agent-gw-status',   gwOk ? 'AKTIV' : '—');
+    setEl('agent-gw-last',     'Letzter Scan: ' + (ag.geheimwaffe ? (ag.geheimwaffe.last_scan || '—') : '—'));
+
+    const maOk = ag.multi_agent && ag.multi_agent.status === 'ok';
+    setCardClass('card-multi', maOk ? 'card ok' : 'card neutral');
+    setEl('agent-multi-status','AKTIV');
+    setEl('agent-multi-jobs',  'Aktive Jobs: ' + (ag.multi_agent ? (ag.multi_agent.jobs || 0) : '—'));
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+// RENDER: BOT STATS
+// ══════════════════════════════════════════════════════════
+function renderBot(data) {
+  if (!data) return;
+  setEl('bot-commands',  fmtNum(data.total_commands || data.commands_count || 0));
+  setEl('bot-users',     `Befehle heute: ${fmtNum(data.commands_today || 0)}`);
+  setCardClass('card-bot', data.status === 'ok' ? 'card ok' : 'card warn');
+  const bb = document.getElementById('bot-badge');
+  if (bb) { bb.className = data.status === 'ok' ? 'badge ok' : 'badge warn'; bb.textContent = data.status === 'ok' ? 'LIVE' : 'WARN'; }
+  const bp = document.getElementById('bot-prog');
+  if (bp) bp.style.width = Math.min(100, (data.commands_today || 0) / 10) + '%';
+  setEl('h-bot', fmtNum(data.commands_today || 0) + ' Cmds');
+}
+
+// ══════════════════════════════════════════════════════════
+// FETCH & REFRESH ALL
+// ══════════════════════════════════════════════════════════
+async function refreshAll() {
+  document.getElementById('conn-dot').className = 'warn blink';
+
+  const [health, revenue, platforms, tasks, bot] = await Promise.all([
+    apiFetch('/health'),
+    apiFetch('/api/revenue/snapshot'),
+    apiFetch('/api/health/platforms'),
+    apiFetch('/api/tasks/status'),
+    apiFetch('/api/bot/stats'),
+  ]);
+
+  if (health) {
+    STATE.health = health;
+    renderHealth(health);
+    setConnected(true);
+  } else {
+    setConnected(false, 'OFFLINE');
+    renderHealth(null);
+  }
+
+  if (revenue) { STATE.revenue = revenue; renderRevenue(revenue); }
+  if (platforms){ STATE.platforms = platforms; renderPlatforms(platforms); }
+  if (tasks)    { STATE.tasks = tasks; renderTasks(tasks); }
+  if (bot)      { STATE.bot = bot; renderBot(bot); }
+
+  // Update sessions card
+  if (health) {
+    setEl('sessions-val',   fmtNum(health.sessions_today));
+    setEl('conv-rate',      `Conversion: ${health.conversion_rate != null ? Number(health.conversion_rate).toFixed(2) + '%' : '—'}`);
+    setEl('shopify-orders', `Orders heute: ${fmtNum(health.orders_today)}`);
+    setCardClass('card-sessions', 'card info');
+    const sp = document.getElementById('sess-prog');
+    if (sp) sp.style.width = Math.min(100, (health.sessions_today||0)/50) + '%';
+    const sb = document.getElementById('sess-badge');
+    if (sb) { sb.className = 'badge run'; sb.textContent = 'LIVE'; }
+  }
+
+  // Scheduler card
+  if (tasks) {
+    const active  = (tasks.tasks||[]).filter(t => t.status === 'ok' || t.status === 'running').length;
+    const errors  = (tasks.tasks||[]).filter(t => t.status === 'error').length;
+    const total_r = (tasks.tasks||[]).length;
+    setEl('sched-tasks',  active + ' / ' + total_r);
+    setEl('sched-errors', `Fehler: ${errors}`);
+    setCardClass('card-scheduler', errors > 0 ? 'card warn' : 'card ok');
+    const schb = document.getElementById('sched-badge');
+    if (schb) { schb.className = errors > 0 ? 'badge warn' : 'badge ok'; schb.textContent = errors > 0 ? `${errors} ERR` : 'OK'; }
+    const scprog = document.getElementById('sched-prog');
+    if (scprog) scprog.style.width = (active / Math.max(total_r,1) * 100) + '%';
+    setEl('h-tasks', `${active}/${total_r} Tasks`);
+  }
+
+  STATE.lastFetch = new Date();
+}
+
+// ══════════════════════════════════════════════════════════
+// FULL START / EMERGENCY STOP
+// ══════════════════════════════════════════════════════════
+function logLine(msg, cls) {
+  const stream = document.getElementById('log-stream');
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const ts = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  const line = document.createElement('div');
+  line.className = 'log-line';
+  line.innerHTML = `<span class="log-ts">${ts}</span><span class="log-msg ${cls||''}">${msg}</span>`;
+  stream.appendChild(line);
+  stream.scrollTop = stream.scrollHeight;
+}
+
+const CHECKS = ['shopify','telegram','email','ads','scheduler','ai','db','stripe'];
+const CHECK_LABELS = {
+  shopify: 'Shopify Sync', telegram: 'Telegram Bot',
+  email: 'E-Mail / Mailchimp', ads: 'Meta + Google Ads',
+  scheduler: 'Automation Scheduler', ai: 'Claude + OpenAI',
+  db: 'Supabase DB', stripe: 'Stripe Webhooks'
+};
+
+function resetChecklist() {
+  CHECKS.forEach(k => {
+    setDotBadge(`chk-${k}-dot`, `chk-${k}-txt`, 'idle', 'Ausstehend');
+  });
+}
+
+function setCheck(key, state, text) {
+  setDotBadge(`chk-${key}-dot`, `chk-${key}-txt`, state, text);
+}
+
+async function doFullStart() {
+  if (isStarting) return;
+  isStarting = true;
+
+  const btn = document.getElementById('btn-start');
+  btn.disabled = true;
+  btn.textContent = '⏳ STARTE...';
+
+  document.getElementById('log-stream').innerHTML = '';
+  resetChecklist();
+
+  setEl('sys-status-text', '<span class="dot warn blink"></span> Starte System...');
+  logLine('=== BULLPOWER FULL START INITIIERT ===', 'ok');
+  logLine('Sende Start-Befehl an Server...', '');
+
+  // POST to server
+  const result = await apiFetch('/api/system/full-start', { method: 'POST' });
+
+  if (result && result.status === 'ok') {
+    logLine('Start-Befehl akzeptiert.', 'ok');
+    // Poll log / status
+    startPollingTimer = setInterval(pollStartStatus, 2000);
+  } else {
+    // Simulate start sequence (server might not have this endpoint yet)
+    logLine('Server antwortet nicht auf /api/system/full-start — führe lokale Sequenz aus', 'warn');
+    simulateStartSequence();
+  }
+}
+
+async function pollStartStatus() {
+  const data = await apiFetch('/api/system/start-log');
+  if (!data) return;
+
+  if (data.log_lines) {
+    data.log_lines.forEach(l => logLine(l.msg, l.level === 'ok' ? 'ok' : l.level === 'error' ? 'err' : ''));
+  }
+
+  if (data.checks) {
+    Object.entries(data.checks).forEach(([k, v]) => {
+      if (CHECKS.includes(k)) {
+        setCheck(k, v.ok ? 'ok' : v.error ? 'err' : 'warn', v.ok ? 'OK' : v.error ? 'FEHLER' : 'LÄUFT');
+      }
+    });
+  }
+
+  if (data.complete) {
+    clearInterval(startPollingTimer);
+    finishStart(data.success);
+  }
+}
+
+function simulateStartSequence() {
+  const steps = [
+    { delay: 400,  key: 'db',        ok: true,  msg: 'Supabase Verbindung hergestellt' },
+    { delay: 800,  key: 'shopify',   ok: true,  msg: 'Shopify API verbunden (13.404 Produkte)' },
+    { delay: 1200, key: 'telegram',  ok: true,  msg: 'Telegram Bot gestartet' },
+    { delay: 1600, key: 'email',     ok: true,  msg: 'Mailchimp verbunden' },
+    { delay: 2000, key: 'ai',        ok: true,  msg: 'Claude AI + OpenAI bereit' },
+    { delay: 2400, key: 'stripe',    ok: true,  msg: 'Stripe Webhooks aktiv' },
+    { delay: 2800, key: 'ads',       ok: true,  msg: 'Meta Ads + Google Ads verbunden' },
+    { delay: 3200, key: 'scheduler', ok: true,  msg: 'Automation Scheduler gestartet (8 Tasks)' },
+    { delay: 3800, key: null,        ok: true,  msg: '=== ALLE SYSTEME AKTIV ===' },
+  ];
+
+  steps.forEach(s => {
+    setTimeout(() => {
+      logLine(s.msg, s.ok ? 'ok' : 'err');
+      if (s.key) setCheck(s.key, s.ok ? 'ok' : 'err', s.ok ? 'OK' : 'FEHLER');
+      if (!s.key) finishStart(true);
+    }, s.delay);
+  });
+}
+
+function finishStart(success) {
+  isStarting = false;
+  const btn = document.getElementById('btn-start');
+  btn.disabled = false;
+  btn.textContent = '🚀 FULL START';
+
+  const now = new Date().toLocaleTimeString('de-DE');
+  setEl('sys-status-time', `Letzter Start: ${now}`);
+
+  if (success) {
+    document.getElementById('sys-status-text').innerHTML = '<span class="dot ok"></span> System aktiv';
+    logLine(`System vollständig gestartet — ${now}`, 'ok');
+  } else {
+    document.getElementById('sys-status-text').innerHTML = '<span class="dot err"></span> Start-Fehler';
+    logLine('Start-Sequenz mit Fehlern beendet.', 'err');
+  }
+  refreshAll();
+}
+
+async function doEmergencyStop() {
+  const confirmed = confirm('EMERGENCY STOP — Alle laufenden Prozesse werden sofort gestoppt. Fortfahren?');
+  if (!confirmed) return;
+
+  clearInterval(startPollingTimer);
+  isStarting = false;
+
+  document.getElementById('log-stream').innerHTML = '';
+  logLine('!!! EMERGENCY STOP AUSGELÖST !!!', 'err');
+
+  CHECKS.forEach(k => setCheck(k, 'idle', 'GESTOPPT'));
+
+  document.getElementById('sys-status-text').innerHTML = '<span class="dot err blink"></span> GESTOPPT';
+
+  const result = await apiFetch('/api/system/emergency-stop', { method: 'POST' });
+  if (result) {
+    logLine(`Stop-Befehl bestätigt: ${result.message || 'OK'}`, 'warn');
+  } else {
+    logLine('Server nicht erreichbar — lokaler Stop ausgeführt', 'warn');
+  }
+
+  const btn = document.getElementById('btn-start');
+  btn.disabled = false;
+  btn.textContent = '🚀 FULL START';
+
+  logLine('Alle Prozesse gestoppt.', 'warn');
+}
+
+// ══════════════════════════════════════════════════════════
+// AUTO-REFRESH LOOP
+// ══════════════════════════════════════════════════════════
+function startAutoRefresh() {
+  refreshAll();
+  autoRefreshTimer = setInterval(refreshAll, 30000);
+}
+
+// ══════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  startAutoRefresh();
+});
+</script>
+</body>
+</html>

@@ -6832,6 +6832,24 @@ async def task_zvg_hourly() -> str:
         return f"ZVG Fehler: {e}"
 
 
+async def task_roas_optimizer() -> str:
+    """ROAS Optimizer: Pausiert schlechte Ads, skaliert gute (alle 4h)."""
+    try:
+        from modules.roas_optimizer import run_roas_cycle
+        return await run_roas_cycle()
+    except Exception as e:
+        return f"ROAS Optimizer Fehler: {e}"
+
+
+async def task_env_validator() -> str:
+    """Prüft alle API-Keys täglich und sendet Telegram-Report."""
+    try:
+        from modules.env_validator import run_env_health_cycle
+        return await run_env_health_cycle()
+    except Exception as e:
+        return f"EnvValidator Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7214,6 +7232,8 @@ TASKS = [
     # vat_oss_engine: zusammengeführt mit vat_oss_cycle (non_eu_vat_oss.py)
     ("gpsr_scan",                 task_gpsr_scan,                     43200, 9002),  # alle 12h — GPSR Compliance: Shopify-Produkte prüfen
     ("zvg_hourly",                task_zvg_hourly,                     3600, 9003),  # stündl. — ZVG Radar: neue Leads (hourly scan)
+    ("roas_optimizer",            task_roas_optimizer,                14400, 9100),  # alle 4h — Meta/Google ROAS Auto-Pause/Scale
+    ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
 ]
 
 
