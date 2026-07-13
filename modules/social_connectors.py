@@ -585,7 +585,7 @@ class TwitterConnector:
         self.api_key = _env("TWITTER_API_KEY")
         self.api_secret = _env("TWITTER_API_SECRET")
         self.access_token = _env("TWITTER_ACCESS_TOKEN")
-        self.access_secret = _env("TWITTER_ACCESS_SECRET")
+        self.access_secret = _env("TWITTER_ACCESS_SECRET") or _env("TWITTER_ACCESS_TOKEN_SECRET")
 
     def is_configured(self) -> bool:
         return bool(self.bearer_token or (self.api_key and self.access_token))

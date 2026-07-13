@@ -89,7 +89,10 @@ async def run_daily_revenue_sms() -> dict:
     revenue_text = ""
     try:
         async with aiohttp.ClientSession() as s:
-            async with s.get("http://localhost:8888/api/revenue/summary",
+            base_url = os.getenv("RAILWAY_PUBLIC_DOMAIN", "http://localhost:8888")
+            if not base_url.startswith("http"):
+                base_url = f"https://{base_url}"
+            async with s.get(f"{base_url}/api/revenue/summary",
                              timeout=aiohttp.ClientTimeout(total=5)) as r:
                 if r.status == 200:
                     data = await r.json()

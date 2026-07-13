@@ -395,7 +395,7 @@ async def run_empire():
 
     await _tg(
         f"✅ <b>Alle {len(agents)} Agenten gestartet</b>\n"
-        f"🔗 Dashboard: <code>http://localhost:8888</code>\n"
+        f"🔗 Dashboard: <code>{os.getenv('RAILWAY_PUBLIC_DOMAIN', 'http://localhost:8888')}</code>\n"
         f"🔁 Watchdog: alle 60s"
     )
 
