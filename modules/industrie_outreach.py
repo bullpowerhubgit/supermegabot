@@ -217,20 +217,71 @@ def _db() -> sqlite3.Connection:
 
 # ── Email senden ──────────────────────────────────────────────────────────────
 
+_SMTP_POOL = [
+    (lambda: os.getenv("GMAIL_USER_AIITEC","aiitecbuuss@gmail.com"),
+     lambda: os.getenv("GMAIL_APP_PASSWORD_AIITEC","").replace(" ","")),
+    (lambda: os.getenv("GMAIL_USER_BULLPOWER","rudolf.sarkany.aiitec@gmail.com"),
+     lambda: os.getenv("GMAIL_APP_PASSWORD_7","").replace(" ","")),
+    (lambda: os.getenv("GMAIL_USER_1","dragonadnp@gmail.com"),
+     lambda: os.getenv("GMAIL_APP_PASSWORD_1","").replace(" ","")),
+    (lambda: os.getenv("GMAIL_USER_4","looopwave@gmail.com"),
+     lambda: os.getenv("GMAIL_APP_PASSWORD_4","").replace(" ","")),
+    (lambda: os.getenv("GMAIL_USER_5","aiitecbuuss@gmail.com"),
+     lambda: os.getenv("GMAIL_APP_PASSWORD_5","").replace(" ","")),
+]
+_smtp_idx = 0
+
 def _send_email(to_email: str, subject: str, body: str) -> bool:
-    try:
-        msg = MIMEMultipart()
-        msg["From"]    = _GMAIL_USER()
-        msg["To"]      = to_email
-        msg["Subject"] = subject
-        msg.attach(MIMEText(body, "plain", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as s:
-            s.login(_GMAIL_USER(), _GMAIL_PASS().replace(" ", ""))
-            s.send_message(msg)
-        return True
-    except Exception as e:
-        log.warning("Email Fehler → %s: %s", to_email, e)
-        return False
+    global _smtp_idx
+    # Try SendGrid first (best deliverability for B2B)
+    sg_key = os.getenv("SENDGRID_API_KEY","")
+    if sg_key:
+        try:
+            import json as _json
+            import urllib.request as _ur, urllib.parse as _up
+            payload = _json.dumps({
+                "personalizations": [{"to": [{"email": to_email}]}],
+                "from": {"email": os.getenv("GMAIL_USER_AIITEC","aiitecbuuss@gmail.com"),
+                         "name": "AiiteC Business"},
+                "subject": subject,
+                "content": [{"type": "text/plain", "value": body}],
+            }).encode()
+            req = _ur.Request("https://api.sendgrid.com/v3/mail/send", data=payload,
+                headers={"Authorization": f"Bearer {sg_key}", "Content-Type": "application/json"})
+            with _ur.urlopen(req, timeout=15) as r:
+                if r.status in (200, 202):
+                    return True
+        except Exception as sg_e:
+            log.debug("SendGrid fallback to Gmail: %s", sg_e)
+    # Rotate through Gmail pool
+    for _ in range(len(_SMTP_POOL)):
+        user_fn, pass_fn = _SMTP_POOL[_smtp_idx % len(_SMTP_POOL)]
+        user, pw = user_fn(), pass_fn()
+        _smtp_idx += 1
+        if not user or not pw:
+            continue
+        try:
+            msg = MIMEMultipart()
+            msg["From"]    = user
+            msg["To"]      = to_email
+            msg["Subject"] = subject
+            msg.attach(MIMEText(body, "plain", "utf-8"))
+            with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as s:
+                s.starttls()
+                s.login(user, pw)
+                s.send_message(msg)
+            return True
+        except smtplib.SMTPException as smtp_e:
+            if "limit exceeded" in str(smtp_e).lower() or "550" in str(smtp_e):
+                log.debug("Gmail limit %s, rotating pool", user)
+                continue
+            log.warning("Email Fehler → %s: %s", to_email, smtp_e)
+            return False
+        except Exception as e:
+            log.warning("Email Fehler → %s: %s", to_email, e)
+            return False
+    log.error("Alle SMTP-Accounts limitiert für %s", to_email)
+    return False
 
 
 def mark_bounced(email: str) -> bool:
