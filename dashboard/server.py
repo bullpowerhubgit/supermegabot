@@ -11145,6 +11145,38 @@ async def create_app():
     app.router.add_get( "/api/unsubscribe",            handle_unsubscribe)
     log.info("Mass Outreach 1000/Tag routes registered")
 
+    # Mega Acquisition Engine B2C
+    async def handle_mega_acq_status(req):
+        try:
+            from modules.mega_acquisition_engine import get_status
+            return web.json_response(await get_status())
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_mega_acq_discovery(req):
+        try:
+            from modules.mega_acquisition_engine import run_lead_discovery
+            asyncio.create_task(run_lead_discovery())
+            return web.json_response({"status": "discovery_started"})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_mega_acq_send(req):
+        try:
+            body = await req.json() if req.content_length else {}
+            target = int(body.get("target", 200))
+            template = body.get("template", "auto")
+            from modules.mega_acquisition_engine import run_daily_acquisition
+            asyncio.create_task(run_daily_acquisition(target=target, template=template))
+            return web.json_response({"status": "send_started", "target": target})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_get( "/api/acquisition/status",    handle_mega_acq_status)
+    app.router.add_post("/api/acquisition/discovery", handle_mega_acq_discovery)
+    app.router.add_post("/api/acquisition/send",      handle_mega_acq_send)
+    log.info("Mega Acquisition Engine routes registered (/api/acquisition/*)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")

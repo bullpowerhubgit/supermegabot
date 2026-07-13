@@ -6406,6 +6406,28 @@ async def task_outreach_engine_batch() -> str:
     except Exception as e:
         return f"Outreach Engine Fehler: {e}"
 
+async def task_mega_acquisition_discovery() -> str:
+    """Täglich: Lead-Discovery aus Shopify, Klaviyo, Supabase → Acquisition-DB."""
+    try:
+        from modules.mega_acquisition_engine import run_lead_discovery
+        result = await run_lead_discovery()
+        return (f"MegaAcquisition Discovery: {result.get('total_found',0)} gefunden, "
+                f"+{result.get('new_added',0)} neu in DB")
+    except Exception as e:
+        return f"MegaAcquisition Discovery Fehler: {e}"
+
+
+async def task_mega_acquisition_send() -> str:
+    """3× täglich: 200 personalisierte Shop-Emails versenden."""
+    try:
+        from modules.mega_acquisition_engine import run_daily_acquisition
+        result = await run_daily_acquisition(target=200, template="auto")
+        return (f"MegaAcquisition Send: {result.get('sent',0)} gesendet | "
+                f"leads={result.get('total_leads',0)} | errors={result.get('errors',0)}")
+    except Exception as e:
+        return f"MegaAcquisition Send Fehler: {e}"
+
+
 async def task_mass_outreach_research() -> str:
     """Täglich einmal: Lead-Research (Gelbe Seiten + 11880 + HN + RSS) → DB."""
     try:
@@ -6429,6 +6451,39 @@ async def task_mass_outreach_batch() -> str:
         return f"Mass Outreach: {sent} gesendet, {fu} Follow-Ups | Heute: {today}/1000 ✅"
     except Exception as e:
         return f"Mass Outreach Batch Fehler: {e}"
+
+async def task_ultra_acquisition_research() -> str:
+    """Ultra Acquisition: Multi-Source Lead Research (10+ Quellen)."""
+    try:
+        from modules.ultra_acquisition_engine import run_research_only, init_db
+        init_db()
+        r = await run_research_only()
+        return (f"Ultra Acquisition Research: {r.get('found',0)} gefunden, "
+                f"{r.get('new_in_db',0)} neu in DB ✅")
+    except Exception as e:
+        return f"Ultra Acquisition Research Fehler: {e}"
+
+
+async def task_ultra_acquisition_send() -> str:
+    """Ultra Acquisition: Emails versenden (initial + followups)."""
+    from modules.task_guard import task_ran_recently, record_task_run
+    if await task_ran_recently("ultra_acquisition_send", min_interval_hours=7):
+        return "Ultra Acquisition Send: übersprungen (lief vor <7h)"
+    try:
+        from modules.ultra_acquisition_engine import run_send_batch, run_all_followups, init_db, get_stats
+        init_db()
+        initial = await run_send_batch()
+        followups = await run_all_followups()
+        await record_task_run("ultra_acquisition_send")
+        stats = get_stats()
+        total = initial.get("sent",0) + followups.get("followup_1",{}).get("sent",0) + followups.get("followup_2",{}).get("sent",0)
+        return (f"Ultra Acquisition: {total} Emails | Initial={initial.get('sent',0)} "
+                f"FU1={followups.get('followup_1',{}).get('sent',0)} "
+                f"FU2={followups.get('followup_2',{}).get('sent',0)} | "
+                f"DB: {stats.get('leads_total',0)} Leads ✅")
+    except Exception as e:
+        return f"Ultra Acquisition Send Fehler: {e}"
+
 
 async def task_industrie_outreach() -> str:
     from modules.task_guard import task_ran_recently, record_task_run
@@ -7184,6 +7239,13 @@ TASKS = [
     # ── MASS OUTREACH 1000/TAG ────────────────────────────────────────────────
     ("mass_outreach_research", task_mass_outreach_research, 86400, 3915),  # 24h — Lead-Research: Gelbe Seiten+11880+HN+RSS
     ("mass_outreach_morning",  task_mass_outreach_batch,    28800, 3920),  # 8h  — 333 Emails Batch (09:00 + 17:00 + 01:00)
+    # ── MEGA ACQUISITION B2C + SHOP ──────────────────────────────────────────
+    ("mega_acq_discovery",    task_mega_acquisition_discovery, 43200, 3925),  # 12h — Lead-Discovery alle Quellen
+    ("mega_acq_send",         task_mega_acquisition_send,      28800, 3930),  # 8h  — 200 Shop-Emails (3×/Tag)
+    # ── ULTRA ACQUISITION ENGINE ──────────────────────────────────────────────
+    ("ultra_acq_research",     task_ultra_acquisition_research, 86400, 3925),  # 24h — Multi-Source Lead Research
+    ("ultra_acq_morning",      task_ultra_acquisition_send,     28800, 3928),  # 8h  — 333 Emails (3 Batches/Tag)
+    ("ultra_acq_afternoon",    task_ultra_acquisition_send,     28800, 3932),  # 8h  — Nachmittags-Batch
     ("industrie_outreach",     task_industrie_outreach,      86400,  620),  # 24h — Fabrik/Industrie 20 E-Mails täglich
     ("agent_teams_health",     task_agent_teams_health,      86400, 3930),  # 24h — Alle Agent-Teams Health Check
     ("tiktok_status",          task_tiktok_status_check,     21600, 3950),  # 6h  — TikTok Ads + Pixel Status
