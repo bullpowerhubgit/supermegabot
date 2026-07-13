@@ -6885,6 +6885,31 @@ async def handle_shopify_discount_blast(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_shopify_bulk_activate(req):
+    """POST /api/shopify/bulk-activate — Aktiviert batch archivierter Produkte."""
+    data = {}
+    try:
+        data = await req.json()
+    except Exception:
+        pass
+    try:
+        from modules.shopify_bulk_activator import run_activation_batch
+        max_per_run = int(data.get("max", 200))
+        result = await run_activation_batch(max_per_run=max_per_run)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_shopify_bulk_activate_status(req):
+    """GET /api/shopify/bulk-activate/status — Status des Bulk Activators."""
+    try:
+        from modules.shopify_bulk_activator import get_status
+        return web.json_response(await get_status())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ── Product Generator handlers ───────────────────────────────────────────────
 
 async def handle_product_generate(req):
@@ -10454,6 +10479,8 @@ async def create_app():
     app.router.add_post("/api/shopify/cleanup-collections", handle_shopify_cleanup_collections)
     app.router.add_post("/api/shopify/gmc-meta",          handle_shopify_gmc_meta)
     app.router.add_post("/api/shopify/discount-blast",    handle_shopify_discount_blast)
+    app.router.add_post("/api/shopify/bulk-activate",     handle_shopify_bulk_activate)
+    app.router.add_get( "/api/shopify/bulk-activate/status", handle_shopify_bulk_activate_status)
 
     # Product Generator routes
     app.router.add_post("/api/products/generate",         handle_product_generate)
