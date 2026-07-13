@@ -22,8 +22,13 @@ _DEFAULT_PRIMARY = ""
 def _resolve_key(purpose: str = "default") -> str:
     """Primary key for products; full-access key for transactions."""
     chains = {
-        "transactions": ("DIGISTORE24_API_KEY_FULL", "DIGISTORE24_API_KEY", "DIGISTORE24_API_KEY_READONLY"),
-        "default": ("DIGISTORE24_API_KEY", "DIGISTORE24_API_KEY_READONLY"),
+        # DS24_API_KEY_FULL / DS24_API_KEY variants are used on Railway
+        "transactions": (
+            "DIGISTORE24_API_KEY_FULL", "DS24_API_KEY_FULL",
+            "DIGISTORE24_API_KEY", "DS24_API_KEY",
+            "DIGISTORE24_API_KEY_READONLY",
+        ),
+        "default": ("DIGISTORE24_API_KEY", "DS24_API_KEY", "DIGISTORE24_API_KEY_READONLY"),
     }
     for k in chains.get(purpose, chains["default"]):
         v = os.getenv(k, "")
