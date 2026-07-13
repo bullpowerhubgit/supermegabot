@@ -925,6 +925,34 @@ async def run_scan() -> Dict:
 
 # ── Shopify Auto-Import ───────────────────────────────────────────────────────
 
+_NEWS_SIGNALS = [
+    "year later", "years later", "owners say", "owners said", "says study",
+    "according to", "report says", "collecting dust", "collect dust",
+    "have been", "you've probably", "you probably", "without realizing",
+    "running trains", "running hospitals", "running printers", "expert says",
+    "regret buying", "decades-old", "still running", "tastenkürzel",
+    "umschalttaste", "ein-/ausblenden", "ein/ausblenden", "keyboard shortcut",
+    "shortcut", "people say", "they say", "study says", "scientists say",
+]
+
+def _is_valid_product(keyword: str) -> bool:
+    """Gibt True zurück wenn keyword ein echtes Produkt-Name ist (kein News-Artikel)."""
+    if not keyword or len(keyword) > 80:
+        return False
+    if "|" in keyword:
+        return False
+    kw_lower = keyword.lower()
+    if any(sig in kw_lower for sig in _NEWS_SIGNALS):
+        return False
+    # Zu viele Wörter = wahrscheinlich ein Satz / Headline
+    if len(keyword.split()) > 7:
+        return False
+    # Anführungszeichen am Anfang deutet auf Zitat/Headline hin
+    if keyword.startswith('"') or keyword.startswith("'"):
+        return False
+    return True
+
+
 def _clean_product_title(raw: str) -> str:
     """Bereinigt News-Artikel-Titel zu echten Produkt-Titeln."""
     # Alles nach | entfernen (Artikel-Subheadlines wie "Apple Vision Pro | It's collecting dust")
@@ -1353,9 +1381,10 @@ async def get_status() -> Dict:
         imported      = conn.execute(
             "SELECT COUNT(*) FROM viral_signals WHERE imported=1"
         ).fetchone()[0]
-        top5 = conn.execute(
-            "SELECT keyword, score, sources FROM viral_signals ORDER BY score DESC LIMIT 5"
+        top5_raw = conn.execute(
+            "SELECT keyword, score, sources FROM viral_signals ORDER BY score DESC LIMIT 30"
         ).fetchall()
+        top5 = [r for r in top5_raw if _is_valid_product(r["keyword"])][:5]
         last_alert = conn.execute(
             "SELECT keyword, score, sent_at FROM viral_alerts ORDER BY sent_at DESC LIMIT 1"
         ).fetchone()

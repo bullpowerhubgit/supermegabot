@@ -117,7 +117,7 @@ class MigrationRush:
     async def _alert_kit_launch(self, pk: str, cfg: dict):
         msg = (
             f"⚡ SOFORT-AKTION: {cfg['name']} Krise!\n"
-            f"Emergency Kit €{cfg['kit']} auf DS24 aktivieren → Produkt 704677\n"
+            f"Emergency Kit €{cfg['kit']} auf DS24 aktivieren → Produkt 668035\n"
             f"Migration-Service €{cfg['svc']} als Upsell · Zeitfenster: 48h!"
         )
         await self._send_tg(msg)

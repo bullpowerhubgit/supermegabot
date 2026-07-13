@@ -85,13 +85,7 @@ def _price_watch()   -> str: return os.getenv("IB_PRICE_WATCH",       "price_1Tj
 def _price_enterprise() -> str: return os.getenv("IB_PRICE_ENTERPRISE", "price_1TjodpRJECiV6vSmFVtPj8yb")
 
 # Outreach-Zielgruppen (B2B: Banken, Factoring, Kreditversicherer)
-OUTREACH_TARGETS = [
-    {"email": "kredite@sparkasse-beispiel.de",    "firma": "Sparkasse",         "typ": "Bank"},
-    {"email": "risiko@volksbank-beispiel.de",      "firma": "Volksbank",         "typ": "Bank"},
-    {"email": "factoring@biltra-beispiel.de",      "firma": "Biltra Factoring",  "typ": "Factoring"},
-    {"email": "underwriting@euler-beispiel.de",    "firma": "Euler Hermes",      "typ": "Kreditversicherung"},
-    {"email": "credit@atradius-beispiel.de",       "firma": "Atradius",          "typ": "Kreditversicherung"},
-]
+OUTREACH_TARGETS: list = []  # Echte Adressen über Dashboard /api/intelligence/outreach/add eintragen
 
 RISIKO_SCHWELLE_ALERT = 20   # Punkte Anstieg → Watchlist-Alert
 
