@@ -7959,6 +7959,110 @@ async def handle_compliance_report(req: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_aiact_health(req: web.Request) -> web.Response:
+    """GET /api/aiact-pro/health — Verbindungsstatus zu lokalem AIACT-Pro."""
+    try:
+        from modules.aiact_pro_bridge import health
+        result = await health()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e), "offline": True})
+
+
+async def handle_aiact_scan(req: web.Request) -> web.Response:
+    """POST /api/aiact-pro/scan — AI-Act Art.50 Scan via lokalem AIACT-Pro."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    shop_url = body.get("shop_url") or body.get("url") or ""
+    if not shop_url:
+        return web.json_response({"ok": False, "error": "shop_url fehlt"}, status=400)
+    try:
+        from modules.aiact_pro_bridge import scan_ai_act
+        result = await scan_ai_act(shop_url)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_aiact_hs_classify(req: web.Request) -> web.Response:
+    """POST /api/aiact-pro/hs-classify — HS-Code Klassifizierung via AIACT-Pro."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    title = body.get("title") or body.get("product_title") or ""
+    if not title:
+        return web.json_response({"ok": False, "error": "title fehlt"}, status=400)
+    try:
+        from modules.aiact_pro_bridge import classify_hs_code
+        result = await classify_hs_code(title, body.get("description", ""))
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_aiact_vat_risk(req: web.Request) -> web.Response:
+    """POST /api/aiact-pro/vat-risk — EU VAT OSS Risiko-Assessment via AIACT-Pro."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    try:
+        from modules.aiact_pro_bridge import vat_risk
+        result = await vat_risk(
+            body.get("country", "DE"),
+            float(body.get("revenue_eur", 0))
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_aiact_zvg_leads(req: web.Request) -> web.Response:
+    """GET /api/aiact-pro/zvg-leads — ZVG NRW Leads via AIACT-Pro."""
+    try:
+        min_score = int(req.query.get("min_score", "80"))
+        limit     = int(req.query.get("limit", "20"))
+        from modules.aiact_pro_bridge import zvg_leads
+        result = await zvg_leads(min_score=min_score, limit=limit)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_aiact_report(req: web.Request) -> web.Response:
+    """POST /api/aiact-pro/report — Vollständiger Compliance PDF-Report."""
+    try:
+        body = await req.json()
+    except Exception:
+        body = {}
+    shop_url = body.get("shop_url") or body.get("url") or ""
+    if not shop_url:
+        return web.json_response({"ok": False, "error": "shop_url fehlt"}, status=400)
+    try:
+        from modules.aiact_pro_bridge import generate_compliance_report
+        result = await generate_compliance_report(
+            shop_url,
+            plan=body.get("plan", "pro"),
+            recipient_email=body.get("email", ""),
+        )
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_priority_cluster_run(req: web.Request) -> web.Response:
+    """POST /api/priority-cluster/run — SYS-18+SYS-23+SYS-37 manuell triggern."""
+    try:
+        from modules.megabot_umsatzmaschine import run_priority_cluster
+        result = await run_priority_cluster(daily_limit=10)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_funding_scan(req: web.Request) -> web.Response:
     """POST /api/funding/scan — täglicher Förder-Opportunity-Scan."""
     try:
@@ -10375,6 +10479,14 @@ async def create_app():
     app.router.add_post("/api/hs-classify",               handle_compliance_hs_classify)
     app.router.add_get( "/api/zvg/leads",                 handle_compliance_zvg_leads)
     app.router.add_post("/api/compliance/report",         handle_compliance_report)
+    # ── AIACT-Pro Bridge (lokaler Port 8770) ─────────────────────────────────
+    app.router.add_get( "/api/aiact-pro/health",          handle_aiact_health)
+    app.router.add_post("/api/aiact-pro/scan",            handle_aiact_scan)
+    app.router.add_post("/api/aiact-pro/hs-classify",     handle_aiact_hs_classify)
+    app.router.add_post("/api/aiact-pro/vat-risk",        handle_aiact_vat_risk)
+    app.router.add_get( "/api/aiact-pro/zvg-leads",       handle_aiact_zvg_leads)
+    app.router.add_post("/api/aiact-pro/report",          handle_aiact_report)
+    app.router.add_post("/api/priority-cluster/run",      handle_priority_cluster_run)
     app.router.add_get( "/api/email/brain/setup",         handle_email_brain_setup)
     app.router.add_post("/api/email/brain/setup",         handle_email_brain_setup)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────

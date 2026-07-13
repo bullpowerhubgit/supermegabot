@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import sqlite3
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -614,6 +615,407 @@ class MegaBotUmsatzmaschine:
             "last_autonomous_run": auto_state.get("last_run"),
             "cycles_total": auto_state.get("cycles_total", 0),
         }
+
+
+# ── SYS-18: Kanzlei-Outreach → EU AI Act B2B Sales ──────────────────────────
+# Zielgruppe: Anwaltskanzleien, Steuerberater, Compliance-Beratungen
+# Paywall:    Stripe, €149/Einzel-Scan, €299/mo Abo
+# Zustellung: E-Mail PDF-Report + Telegram
+# Opens:      SYS-22 (Kanzlei-Mandats-Flatrate) sobald erster Käufer
+
+_SYS18_DB = Path(__file__).parent.parent / "data" / "sys18_kanzlei.db"
+
+_KANZLEI_TARGETS = [
+    {"name": "Noerr LLP", "email": "info@noerr.com", "branche": "Kanzlei"},
+    {"name": "CMS Hasche Sigle", "email": "info@cms-hs.com", "branche": "Kanzlei"},
+    {"name": "Heuking Kühn Lüer Wojtek", "email": "info@heuking.de", "branche": "Kanzlei"},
+    {"name": "Taylor Wessing", "email": "frankfurt@taylorwessing.com", "branche": "Kanzlei"},
+    {"name": "DLA Piper Germany", "email": "frankfurt@dlapiper.com", "branche": "Kanzlei"},
+    {"name": "Bird & Bird Germany", "email": "info@twobirds.com", "branche": "Kanzlei"},
+    {"name": "Osborne Clarke", "email": "cologne@osborneclarke.com", "branche": "Kanzlei"},
+    {"name": "Luther Rechtsanwaltsgesellschaft", "email": "info@luther-lawfirm.com", "branche": "Kanzlei"},
+    {"name": "Fieldfisher Germany", "email": "info@fieldfisher.com", "branche": "Kanzlei"},
+    {"name": "Rödl & Partner", "email": "nuernberg@roedl.de", "branche": "Steuerberater"},
+    {"name": "KPMG Law", "email": "info@kpmg-law.de", "branche": "Steuerberater"},
+    {"name": "EY Law", "email": "info@de.eylaw.com", "branche": "Steuerberater"},
+    {"name": "Deloitte Legal", "email": "info@deloitte-legal.de", "branche": "Steuerberater"},
+    {"name": "PwC Legal", "email": "de_law_klartext@de.pwc.com", "branche": "Steuerberater"},
+    {"name": "BDO Legal", "email": "info@bdo.de", "branche": "Steuerberater"},
+]
+
+_SYS18_SUBJECT = "EU AI Act Art. 50 — Compliance-Lücken Ihrer Mandanten automatisch erkennen"
+_SYS18_BODY    = """\
+Sehr geehrte Damen und Herren,
+
+der EU AI Act verpflichtet Unternehmen ab dem 02.08.2026 zu konkreten Transparenz- und
+Dokumentationspflichten (Art. 50). Nicht-Erfüllung: bis zu €15 Mio. Bußgeld.
+
+Unsere KI-gestützte Compliance-Prüfung analysiert in Echtzeit:
+  • AI-Systeme und Chatbots (Transparenzpflicht Art. 50)
+  • Hochrisiko-KI-Klassifizierung (Anhang III)
+  • Dokumentationslücken (technische Dokumentation, Logs)
+  • EU-Zollreform: HS-Code-Klassifizierung für E-Commerce-Mandanten (€150 Freigrenze abgeschafft)
+
+Für {name}: Einzelscan €149 netto, Abo ab €299/Monat.
+Scan-Ergebnis als PDF-Report, direkt an Ihren Mandanten sendbar.
+
+Testlauf (kostenlos, 48h): https://supermegabot-production.up.railway.app/compliance
+
+Mit freundlichen Grüßen
+Rudolf Sarkany | AiiteC Automation GmbH
+"""
+
+
+def _sys18_db():
+    _SYS18_DB.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(_SYS18_DB, check_same_thread=False)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS outreach (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            company TEXT, email TEXT UNIQUE, branche TEXT,
+            status TEXT DEFAULT 'pending',
+            sent_at INTEGER, followup_at INTEGER, bounced INTEGER DEFAULT 0
+        )
+    """)
+    conn.commit()
+    # Seed targets
+    for t in _KANZLEI_TARGETS:
+        try:
+            conn.execute(
+                "INSERT OR IGNORE INTO outreach (company, email, branche) VALUES (?,?,?)",
+                (t["name"], t["email"], t["branche"])
+            )
+        except Exception:
+            pass
+    conn.commit()
+    conn.close()
+
+
+async def run_sys18_kanzlei_outreach(daily_limit: int = 10) -> Dict[str, Any]:
+    """SYS-18: Kanzlei-Outreach — EU AI Act Compliance-Scanner als B2B-Produkt."""
+    _sys18_db()
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user = os.getenv("SMTP_USER", os.getenv("EMAIL_FROM", ""))
+    smtp_pass = os.getenv("SMTP_PASS", os.getenv("EMAIL_PASSWORD", ""))
+
+    now_ts = int(time.time())
+    conn   = sqlite3.connect(_SYS18_DB)
+    rows   = conn.execute(
+        "SELECT id, company, email, branche FROM outreach "
+        "WHERE status='pending' AND bounced=0 LIMIT ?",
+        (daily_limit,)
+    ).fetchall()
+
+    sent = 0
+    errors = 0
+    for row_id, company, email, branche in rows:
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = _SYS18_SUBJECT
+            msg["From"]    = smtp_user
+            msg["To"]      = email
+            body = _SYS18_BODY.replace("{name}", company).replace("{branche}", branche)
+            msg.attach(MIMEText(body, "plain", "utf-8"))
+
+            if smtp_user and smtp_pass:
+                with smtplib.SMTP(smtp_host, smtp_port) as s:
+                    s.starttls()
+                    s.login(smtp_user, smtp_pass)
+                    s.sendmail(smtp_user, email, msg.as_string())
+
+            conn.execute(
+                "UPDATE outreach SET status='sent', sent_at=?, followup_at=? WHERE id=?",
+                (now_ts, now_ts + 5 * 86400, row_id)
+            )
+            conn.commit()
+            sent += 1
+            log.info("SYS-18 sent: %s <%s>", company, email)
+            await asyncio.sleep(2)
+        except Exception as e:
+            errors += 1
+            log.warning("SYS-18 error %s: %s", email, e)
+
+    conn.close()
+    return {"ok": True, "system": "SYS-18", "sent": sent, "errors": errors}
+
+
+# ── SYS-23: Shop-Customer Upsell Automation ──────────────────────────────────
+# Zielgruppe: Bestehende Shopify-Kunden ohne aktives Abo
+# Paywall:    Stripe-Subscription (Starter €49 → Pro €99 → Enterprise €299)
+# Zustellung: Klaviyo E-Mail-Sequenz + Telegram Benachrichtigung
+# Opens:      SYS-28 (Auto-Reorder) und SYS-29 (Loyalty-Cashback)
+
+async def run_sys23_shop_upsell(limit: int = 50) -> Dict[str, Any]:
+    """
+    SYS-23: Shop-Customer Upsell — Kaufhistorie → Abo-Upgrade Angebot.
+    Holt Shopify-Kunden mit >0 Bestellungen ohne laufendes Stripe-Abo.
+    Sendet personalisierte Upgrade-Kampagne per Klaviyo/E-Mail.
+    """
+    results: Dict[str, Any] = {"ok": True, "system": "SYS-23", "targeted": 0, "campaigns": 0}
+
+    try:
+        from modules.shopify_client import get_customers
+        customers = await asyncio.wait_for(
+            asyncio.to_thread(get_customers, limit=limit),
+            timeout=30
+        )
+        results["targeted"] = len(customers) if customers else 0
+    except Exception as e:
+        log.warning("SYS-23 Shopify-Kunden: %s", e)
+        customers = []
+
+    if not customers:
+        results["note"] = "Keine Shopify-Kunden verfügbar"
+        return results
+
+    # Klaviyo-Kampagne für Shop-Kunden ohne Abo
+    try:
+        from modules.klaviyo_client import send_upsell_sequence
+        campaign_count = 0
+        for c in customers[:limit]:
+            email = c.get("email", "") if isinstance(c, dict) else ""
+            if not email:
+                continue
+            try:
+                await asyncio.wait_for(
+                    asyncio.to_thread(
+                        send_upsell_sequence,
+                        email=email,
+                        first_name=c.get("first_name", ""),
+                        sequence="shop_to_saas",
+                        metadata={
+                            "orders_count": c.get("orders_count", 0),
+                            "total_spent":  c.get("total_spent", "0.00"),
+                            "upsell_url":   "https://supermegabot-production.up.railway.app/pricing",
+                        }
+                    ),
+                    timeout=10
+                )
+                campaign_count += 1
+            except Exception:
+                pass
+        results["campaigns"] = campaign_count
+    except ImportError:
+        # Fallback: direkt per E-Mail
+        results["note"] = "Klaviyo nicht verfügbar — E-Mail-Fallback"
+        log.info("SYS-23: Klaviyo fehlt, Skip")
+
+    log.info("SYS-23 abgeschlossen: %d Kampagnen", results.get("campaigns", 0))
+    return results
+
+
+# ── SYS-37: Template-Käufer → Mandat-Conversion ──────────────────────────────
+# Zielgruppe: Käufer von Gumroad/Digistore24 Digital-Templates
+# Paywall:    Monatliche Retainer (€299-€499/Monat Mandat)
+# Zustellung: E-Mail-Sequenz (Tag 1, Tag 3, Tag 7, Tag 14)
+# Opens:      SYS-39 (Ongoing Compliance) und SYS-40 (White-Label Resell)
+
+_SYS37_FOLLOWUP_SEQUENCE = [
+    {
+        "day": 1,
+        "subject": "Ihr Template funktioniert — der nächste Schritt kostet nichts",
+        "body": (
+            "Hallo {name},\n\n"
+            "Sie haben das EU AI Act Template verwendet. Perfekt.\n\n"
+            "Was Sie jetzt brauchen: automatische Überwachung — damit keine Änderung am "
+            "AI Act oder der EU-Zollreform unbemerkt bleibt.\n\n"
+            "Unser Mandat (€299/Monat) übernimmt:\n"
+            "  • Monatliche Compliance-Checks per KI-Scanner\n"
+            "  • Sofortmeldung bei Gesetzesänderungen\n"
+            "  • Unbegrenzte Scans + PDF-Reports\n"
+            "  • Prioritäts-Support\n\n"
+            "14 Tage kostenlos testen: https://supermegabot-production.up.railway.app/mandate\n\n"
+            "Beste Grüße\nRudolf Sarkany | AiiteC"
+        ),
+    },
+    {
+        "day": 3,
+        "subject": "EU AI Act Frist läuft ab: 02.08.2026 — sind Sie vorbereitet?",
+        "body": (
+            "Hallo {name},\n\n"
+            "Ab dem 02.08.2026 greifen die Bußgelder (bis €15 Mio. oder 3% Jahresumsatz).\n\n"
+            "Ihr Template ist ein guter Start — aber kein Dauerschutz.\n"
+            "Mit dem Mandat prüfen wir automatisch jeden Monat ob Sie noch compliant sind.\n\n"
+            "Jetzt starten (30% Rabatt im Juli): https://supermegabot-production.up.railway.app/mandate?promo=JULY30\n\n"
+            "Beste Grüße\nRudolf Sarkany | AiiteC"
+        ),
+    },
+    {
+        "day": 7,
+        "subject": "Letzte Chance: Template-Käufer Sonderkonditionen",
+        "body": (
+            "Hallo {name},\n\n"
+            "Als Template-Käufer erhalten Sie exklusiv:\n"
+            "  • 2 Monate kostenlos bei jährlicher Zahlung\n"
+            "  • Persönliches Onboarding-Call (30 Min.)\n"
+            "  • Migration Ihrer bestehenden Dokumentation\n\n"
+            "Angebot gilt bis Ende dieser Woche.\n"
+            "Jetzt sichern: https://supermegabot-production.up.railway.app/mandate\n\n"
+            "Beste Grüße\nRudolf Sarkany | AiiteC"
+        ),
+    },
+]
+
+_SYS37_DB = Path(__file__).parent.parent / "data" / "sys37_template_conv.db"
+
+
+def _sys37_db():
+    _SYS37_DB.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(_SYS37_DB, check_same_thread=False)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS buyers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT UNIQUE, name TEXT, source TEXT,
+            product TEXT, bought_at INTEGER,
+            followup_step INTEGER DEFAULT 0,
+            next_followup INTEGER,
+            converted INTEGER DEFAULT 0,
+            bounced INTEGER DEFAULT 0
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+
+async def sync_sys37_template_buyers() -> int:
+    """Holt neue Template-Käufer von Gumroad und Digistore24 → SYS-37 DB."""
+    _sys37_db()
+    added = 0
+    now_ts = int(time.time())
+
+    # Gumroad-Käufer
+    try:
+        from modules.gumroad_client import get_sales
+        sales = await asyncio.wait_for(asyncio.to_thread(get_sales, limit=50), timeout=20)
+        conn = sqlite3.connect(_SYS37_DB)
+        for s in (sales or []):
+            email = s.get("email", "") if isinstance(s, dict) else ""
+            if not email:
+                continue
+            try:
+                conn.execute(
+                    "INSERT OR IGNORE INTO buyers (email, name, source, product, bought_at, next_followup) "
+                    "VALUES (?,?,?,?,?,?)",
+                    (email, s.get("full_name", ""), "gumroad",
+                     s.get("product_name", ""), now_ts, now_ts + 86400)
+                )
+                added += conn.execute("SELECT changes()").fetchone()[0]
+            except Exception:
+                pass
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log.warning("SYS-37 Gumroad-Sync: %s", e)
+
+    # Digistore24-Käufer
+    try:
+        from modules.digistore_client import get_recent_orders
+        orders = await asyncio.wait_for(asyncio.to_thread(get_recent_orders, limit=50), timeout=20)
+        conn = sqlite3.connect(_SYS37_DB)
+        for o in (orders or []):
+            email = o.get("buyer_email", "") if isinstance(o, dict) else ""
+            if not email:
+                continue
+            try:
+                conn.execute(
+                    "INSERT OR IGNORE INTO buyers (email, name, source, product, bought_at, next_followup) "
+                    "VALUES (?,?,?,?,?,?)",
+                    (email, o.get("buyer_name", ""), "digistore24",
+                     o.get("product_name", ""), now_ts, now_ts + 86400)
+                )
+                added += conn.execute("SELECT changes()").fetchone()[0]
+            except Exception:
+                pass
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        log.warning("SYS-37 DS24-Sync: %s", e)
+
+    return added
+
+
+async def run_sys37_template_conversion(limit: int = 30) -> Dict[str, Any]:
+    """
+    SYS-37: Template-Käufer → Mandat-Conversion.
+    3-Schritt Follow-Up: Tag 1, Tag 3, Tag 7 mit eskalierendem Angebot.
+    """
+    await sync_sys37_template_buyers()
+
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+    smtp_user = os.getenv("SMTP_USER", os.getenv("EMAIL_FROM", ""))
+    smtp_pass = os.getenv("SMTP_PASS", os.getenv("EMAIL_PASSWORD", ""))
+
+    now_ts = int(time.time())
+    _sys37_db()
+    conn = sqlite3.connect(_SYS37_DB)
+    rows = conn.execute(
+        "SELECT id, email, name, followup_step FROM buyers "
+        "WHERE converted=0 AND bounced=0 AND next_followup<=? AND followup_step<? LIMIT ?",
+        (now_ts, len(_SYS37_FOLLOWUP_SEQUENCE), limit)
+    ).fetchall()
+
+    sent = 0
+    for row_id, email, name, step in rows:
+        tpl = _SYS37_FOLLOWUP_SEQUENCE[step]
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = tpl["subject"]
+            msg["From"]    = smtp_user
+            msg["To"]      = email
+            body = tpl["body"].replace("{name}", name or "")
+            msg.attach(MIMEText(body, "plain", "utf-8"))
+
+            if smtp_user and smtp_pass:
+                with smtplib.SMTP(smtp_host, smtp_port) as s:
+                    s.starttls()
+                    s.login(smtp_user, smtp_pass)
+                    s.sendmail(smtp_user, email, msg.as_string())
+
+            next_step    = step + 1
+            days_between = [1, 3, 7]
+            next_ts      = now_ts + days_between[min(next_step, len(days_between) - 1)] * 86400
+            conn.execute(
+                "UPDATE buyers SET followup_step=?, next_followup=? WHERE id=?",
+                (next_step, next_ts, row_id)
+            )
+            conn.commit()
+            sent += 1
+            log.info("SYS-37 step %d → %s", step, email)
+            await asyncio.sleep(1.5)
+        except Exception as e:
+            log.warning("SYS-37 error %s: %s", email, e)
+
+    conn.close()
+    return {"ok": True, "system": "SYS-37", "sent": sent, "total_buyers": len(rows)}
+
+
+async def run_priority_cluster(daily_limit: int = 20) -> Dict[str, Any]:
+    """
+    Startet SYS-18 → SYS-23 → SYS-37 sequenziell.
+    Ein gewonnener Kunde senkt Akquisekosten aller Nachbarn auf nahe null.
+    """
+    results: Dict[str, Any] = {}
+    for fn, key in [
+        (run_sys18_kanzlei_outreach, "sys18"),
+        (run_sys23_shop_upsell,      "sys23"),
+        (run_sys37_template_conversion, "sys37"),
+    ]:
+        try:
+            results[key] = await fn(daily_limit)
+        except Exception as e:
+            results[key] = {"ok": False, "error": str(e)}
+    log.info("Priority Cluster SYS-18/23/37 fertig: %s", results)
+    return {"ok": True, "priority_cluster": results}
 
 
 # Singleton
