@@ -17,7 +17,7 @@ _OPENROUTER = lambda: os.getenv("OPENROUTER_API_KEY", "")
 _PERPLEXITY = lambda: os.getenv("PERPLEXITY_API_KEY", "")
 _GEMINI     = lambda: os.getenv("GEMINI_API_KEY", "") or os.getenv("GCP_API_KEY", "")
 
-_OPENROUTER_MODEL   = "liquid/lfm-2.5-1.2b-instruct:free"
+_OPENROUTER_MODEL   = "google/gemma-4-26b-a4b-it:free"   # verified working 2026-07-14
 _GROQ_MODEL         = "llama-3.1-8b-instant"
 _OPENROUTER_REFERER = "https://supermegabot-production.up.railway.app"
 _GEMINI_URLS        = [
@@ -88,6 +88,26 @@ async def ai_complete(prompt: str, system: str = "", model_hint: str = "fast", m
                         log.debug("Anthropic %s", r.status)
         except Exception as e:
             log.debug("Anthropic error: %s", e)
+
+    # 1b. OpenRouter — PRIORITY FALLBACK (when Anthropic/OpenAI have no credits)
+    if _OPENROUTER():
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=25)) as s:
+                async with s.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {_OPENROUTER()}", "Content-Type": "application/json",
+                             "HTTP-Referer": _OPENROUTER_REFERER},
+                    json={"model": _OPENROUTER_MODEL, "max_tokens": max_tokens, "messages": messages},
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json(content_type=None)
+                        content = d.get("choices", [{}])[0].get("message", {}).get("content")
+                        if content:
+                            log.debug("OpenRouter OK model=%s", _OPENROUTER_MODEL)
+                            return content
+                    log.debug("OpenRouter %s", r.status)
+        except Exception as e:
+            log.debug("OpenRouter error: %s", e)
 
     # 2. OpenAI (primary when AI_PROVIDER_PRIMARY=openai)
     if _OPENAI() and primary in ("", "openai"):
