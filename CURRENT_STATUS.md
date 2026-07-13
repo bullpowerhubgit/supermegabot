@@ -1,5 +1,25 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v16 — BUG-SCAN KOMPLETT · SUPABASE PROBLEM DOKUMENTIERT · MPO FALLBACK**
+**Stand: 2026-07-13 v17 — BULLPOWER MCC · DEEP-SCAN · 7 RAILWAY-CRASHES GEFIXT · TASKGUARD +2**
+
+## ✅ FIXES (2026-07-13 v17, commit b0692c1b)
+
+### BullPower MEGA Command Center (NEU)
+- `modules/bullpower_mcc.py` — Self-Healing, Platform-Checks (8 APIs), Revenue, ROAS-Optimizer
+- `/api/mcc/status` + `/api/mcc/run` + `/api/mcc/platforms` — 3 neue Dashboard-Endpunkte
+- Scheduler-Task `mega_command_center` → nutzt jetzt bullpower_mcc (mit Fallback)
+
+### Deep-Scan Railway-Crash-Fixes (7 Module)
+- `abandoned_cart_recovery, conversion_engine, env_validator, mega_health_checker, platform_auto_fixer, revenue_tracker, roas_optimizer`
+- Alle hatten `load_dotenv("/Users/rudolfsarkany/supermegabot/.env")` hardcoded → Railway crash!
+- Fix: `Path(__file__).parent.parent / ".env"` — relativ, überall funktionsfähig
+
+### TaskGuard +2 neue Tasks
+- `compliance_outreach_all` — 20h-Schutz (OTTO, Zalando, MediaMarkt etc.)
+- `industrie_outreach` — 20h-Schutz (Festo, Trumpf, Krones etc.)
+- Jetzt gesamt 6 Tasks mit TaskGuard-Bounce-Schutz
+
+### monitor_hub.py
+- `localhost:8888` → `RAILWAY_PUBLIC_DOMAIN` env-var (kein Fehler-Spam mehr auf Railway)
 
 ## ✅ FIXES (2026-07-13 v16, commit 5b36b4a0)
 
