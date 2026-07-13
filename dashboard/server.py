@@ -9471,6 +9471,28 @@ async def handle_bpi_outreach_run(req: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_aiitec_outreach_stats(req: web.Request) -> web.Response:
+    """GET /api/aiitec-outreach/stats — AIITEC B2B Outreach Statistik."""
+    try:
+        from modules.aiitec_outreach_machine import AiitecOutreachMachine
+        machine = AiitecOutreachMachine()
+        stats = await machine.get_stats()
+        return web.json_response(stats)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_aiitec_outreach_run(req: web.Request) -> web.Response:
+    """POST /api/aiitec-outreach/run — AIITEC Outreach sofort starten."""
+    try:
+        from modules.aiitec_outreach_machine import AiitecOutreachMachine
+        machine = AiitecOutreachMachine()
+        stats = await machine.run_daily_outreach()
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_bpi_partners(req: web.Request) -> web.Response:
     try:
         import sqlite3
@@ -10876,6 +10898,10 @@ async def create_app():
     app.router.add_post("/api/intelligence-broker/report",        handle_intelligence_broker_report)
     app.router.add_get( "/api/intelligence-broker/watchlist",     handle_intelligence_broker_watchlist)
     log.info("BPI 8 Systems routes registered (SYS-01..SYS-08)")
+
+    # AIITEC B2B Outreach Machine
+    app.router.add_get( "/api/aiitec-outreach/stats", handle_aiitec_outreach_stats)
+    app.router.add_post("/api/aiitec-outreach/run",   handle_aiitec_outreach_run)
 
     # SYS-10 Bulk Outreach + SYS-13 Partner Channel + SYS-18 Newsletter KI + Delivery
     app.router.add_get( "/api/bpi/outreach/stats",   handle_bpi_outreach_stats)
