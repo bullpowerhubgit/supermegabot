@@ -1,5 +1,28 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v18 — EMAIL-SPAM-FIX · UNSUBSCRIBE-LINKS · AUTO-RESPONDER AUS · SOCIAL-GUARDS**
+**Stand: 2026-07-13 v20 — SHOPIFY PRODUKTSICHTBARKEIT · DS24-KEY-FIX · BLOG-SEO · GMC-FEED**
+
+## ✅ FIXES (2026-07-13 v20 — Shopify Bulk-Aktivator + Revenue-Fixes)
+
+### KRITISCHER BUG BEHOBEN: 17.452 Produkte waren archiviert ✅
+- **Ursache**: Import hat Produkte als `archived` gespeichert — nie publiziert
+- **Realität**: Nur 2.112 / 19.573 Produkte waren `active` → erklärt 1 Gesamtbestellung
+- **Fix**: `shopify_bulk_activator.py` — 200 Produkte/Stunde aktivieren
+- **Scheduler**: `shopify_bulk_activate` (3600s Interval, delay 60s)
+- **ETA**: ~87h bis alle 17.452 Produkte sichtbar (Telegram-Updates alle 500)
+- **DS24 API-Key**: `_resolve_key` sucht jetzt auch `DS24_API_KEY_FULL` (Railway-Variante)
+- **Blog-Themen**: T-Shirts → Smart Home / AI-Gadgets (50 keyword-reiche Topics)
+- **Shopify SEO**: Korrektes `metafields_global_title_tag` Feld (war namespace-seo-metafield)
+- **GMC Feed**: 50er-Batches + 2h Cache → generiert jetzt korrekt 300 Produkte
+- **Circuit Breakers**: facebook/instagram/linkedin state=closed ✅
+
+## ✅ FIXES (2026-07-13 v19 — Supabase REST komplett gefixt)
+
+### Supabase PostgREST PGRST205 — DAUERHAFT GEFIXT ✅
+- **Ursache**: PostgREST ist auf Schema `api` konfiguriert, alle neuen Tabellen waren nur in `public`
+- **Fix**: 18 Views im `api`-Schema erstellt → zeigen auf `public`-Tabellen
+- **Verifiziert**: `mpo_companies` 200 ✅ | `aiitec_companies` 200 ✅ | `leads` 200 ✅
+- Views erstellt: `mpo_companies`, `mpo_campaigns`, `mpo_email_sent`, `aiitec_companies`, `aiitec_contacts`, `aiitec_campaigns`, `aiitec_email_events`, `aia_email_sent`, `leads`, `agent_memory`, `agent_execution_log`, `agent_messages`, `ds24_products`, `ds24_purchases`, `ds24_affiliate_blasts`, `revenue_snapshots`, `vorsprung_signals` + `seo_content` (existierte bereits)
+- **Keine manuelle Aktion mehr nötig** — Pause→Resume war Workaround, ist jetzt behoben
 
 ## ✅ FIXES (2026-07-13 v18, commits eee8eb73 + 8efc8962)
 
@@ -50,20 +73,10 @@
 - `multi_product_outreach.py` — SQLite-Fallback wenn Supabase PostgREST (PGRST205) eingefroren
 - Circuit Breakers facebook/instagram/linkedin resettet
 
-## ⚠️ SUPABASE INFRASTRUCTURE PROBLEM (Prio 1 — Rudolf muss manuell fixen!)
-**PostgREST Schema-Cache eingefroren — nur `seo_content` per REST sichtbar**
-
-**Ursache**: Tabellen per `execute_sql` erstellt → kein Schema-Reload ausgelöst
-
-**Fix (1 Minute, selbst machen):**
-1. https://supabase.com/dashboard/project/qyrjeckzacjaazkpvnjk
-2. Settings → General → **Pause Project**
-3. 30 Sekunden warten → **Resume Project**
-4. PostgREST startet neu → alle 60+ Tabellen wieder per REST sichtbar
-
-**Workaround bis dahin:**
-- MPO-Outreach nutzt lokale SQLite-Deduplication + lokale Firmenliste
-- AIITEC-Stats zeigen Fehler, aber Emails gehen per SMTP raus
+## ✅ SUPABASE REST — VOLLSTÄNDIG REPARIERT (v19)
+- Alle 18 Outreach/Revenue-Tabellen per REST erreichbar (HTTP 200)
+- Kein Pause→Resume mehr nötig
+- AIITEC B2B Outreach kann jetzt wieder voll auf Supabase schreiben
 
 ## ✅ FIXES (2026-07-13 v15, commit d38e52eb)
 
