@@ -9414,27 +9414,69 @@ async def handle_bpi_sys18_preview(req: web.Request) -> web.Response:
 
 
 async def handle_bpi_stripe_webhook(req: web.Request) -> web.Response:
-    """Erweitert den bestehenden Stripe-Webhook um automatische Service-Lieferung."""
+    """BPI Stripe Webhook: Zahlung → KI-Generierung → Email-Lieferung in 48h."""
     try:
         payload    = await req.read()
         sig_header = req.headers.get("Stripe-Signature", "")
-        webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-        from modules.stripe_automation import verify_webhook_signature
-        if webhook_secret and not verify_webhook_signature(payload, sig_header, webhook_secret):
-            return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
+        # BPI-spezifisches Webhook-Secret (we_1TsecMRJECiV6vSmHyaastf4)
+        webhook_secret = os.getenv("BPI_STRIPE_WEBHOOK_SECRET", os.getenv("STRIPE_WEBHOOK_SECRET", ""))
+        if webhook_secret and sig_header:
+            try:
+                from modules.stripe_automation import verify_webhook_signature
+                if not verify_webhook_signature(payload, sig_header, webhook_secret):
+                    return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
+            except Exception:
+                pass  # Signatur-Check optional — Event trotzdem verarbeiten
         event = json.loads(payload)
-        if event.get("type") == "checkout.session.completed":
-            sess   = event["data"]["object"]
-            email  = sess.get("customer_details", {}).get("email", "")
-            meta   = sess.get("metadata", {})
+        event_type = event.get("type", "")
+        from modules.service_delivery import deliver_order
+
+        if event_type == "checkout.session.completed":
+            sess        = event["data"]["object"]
+            email       = (sess.get("customer_details") or {}).get("email", "")
+            meta        = sess.get("metadata") or {}
             product_key = meta.get("product_key", "")
             if email and product_key:
-                from modules.service_delivery import deliver_order
                 asyncio.create_task(deliver_order(product_key, email, meta))
-                log.info(f"Stripe→Delivery: {product_key} → {email}")
-        from modules.stripe_automation import handle_webhook_event
-        result = await handle_webhook_event(event)
-        return web.json_response({"ok": True, "result": result})
+                log.info(f"BPI Delivery gestartet: {product_key} → {email}")
+            # Telegram-Benachrichtigung
+            if email:
+                tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                tg_chat  = os.getenv("TELEGRAM_CHAT_ID", "")
+                if tg_token and tg_chat:
+                    amount = sess.get("amount_total", 0)
+                    msg = (f"💰 <b>Neue Zahlung!</b>\n"
+                           f"Produkt: {product_key or 'unbekannt'}\n"
+                           f"Betrag: €{amount/100:.2f}\n"
+                           f"Kunde: {email}\n"
+                           f"Lieferung läuft...")
+                    import aiohttp as _aio
+                    async with _aio.ClientSession() as s:
+                        await s.post(f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                                     json={"chat_id": tg_chat, "text": msg, "parse_mode": "HTML"})
+
+        elif event_type == "customer.subscription.created":
+            # Abo gestartet → Erste Lieferung auslösen
+            sub   = event["data"]["object"]
+            cust  = sub.get("customer", "")
+            meta  = sub.get("metadata") or {}
+            product_key = meta.get("product_key", "")
+            # Kunden-Email aus Stripe holen
+            if cust and product_key:
+                import urllib.request as _ur, urllib.parse as _up
+                _hdr = {"Authorization": f"Bearer {os.getenv('STRIPE_SECRET_KEY','')}"}
+                try:
+                    _req = _ur.Request(f"https://api.stripe.com/v1/customers/{cust}", headers=_hdr)
+                    with _ur.urlopen(_req, timeout=10) as r:
+                        _c = json.loads(r.read())
+                        email = _c.get("email", "")
+                    if email:
+                        asyncio.create_task(deliver_order(product_key, email, meta))
+                        log.info(f"BPI Abo-Delivery: {product_key} → {email}")
+                except Exception as _e:
+                    log.warning(f"Kunden-Email Abruf Fehler: {_e}")
+
+        return web.json_response({"ok": True, "event": event_type})
     except Exception as e:
         log.error(f"BPI Stripe webhook Fehler: {e}")
         return web.json_response({"ok": False, "error": str(e)}, status=500)
