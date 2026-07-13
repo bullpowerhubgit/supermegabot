@@ -3245,6 +3245,21 @@ async def task_social_media_autopilot() -> str:
         return f"SocialAutopilot error: {e}"
 
 
+async def task_youtube_autopilot() -> str:
+    """YouTube Autopilot — Erstellt Produkt-Video + lädt auf YouTube hoch."""
+    try:
+        from modules.youtube_autopilot import create_and_upload_video
+        result = await create_and_upload_video()
+        status   = result.get("status", "error")
+        product  = result.get("product", "?")
+        video_id = result.get("video_id", "")
+        if video_id:
+            return f"YouTube: Video hochgeladen — {product} → youtu.be/{video_id}"
+        return f"YouTube: Video erstellt (kein Upload) — {product} | {status}"
+    except Exception as e:
+        return f"YouTube Autopilot error: {e}"
+
+
 async def task_buyer_traffic_engine() -> str:
     """Buyer Traffic Engine — 5 kostenlose Käufer-Traffic-Kanäle vollautomatisch."""
     try:
@@ -7113,6 +7128,7 @@ TASKS = [
     ("content_loop_engine",  task_content_loop_engine, 28800, 600),  # 8h  — SEO-Artikel + IndexNow + Telegram + LinkedIn
     # shopify_seo_blog (T-Shirt) deaktiviert — ersetzt durch content_loop_engine (Smart Home)
     # ── Backup ───────────────────────────────────────────────────────────────
+    ("youtube_autopilot",    task_youtube_autopilot,    86400, 920),  # täglich — Produkt-Video erstellen + YouTube-Upload
     ("youtube_shorts",       task_youtube_shorts,       86400, 900),  # täglich — Shopify Produkt als YouTube Short
     # ── eBay / Amazon / AliExpress Affiliate + Auto-Fill (DeepScan Fix) ──────
     ("ebay_auto_fill",        task_ebay_auto_fill,      14400, 210),  # 4h — eBay → Shopify import
