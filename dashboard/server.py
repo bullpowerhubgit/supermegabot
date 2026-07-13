@@ -11074,6 +11074,62 @@ async def create_app():
             return web.Response(text=html_file.read_text(), content_type="text/html")
         return web.Response(text="<h1>MCC Dashboard not found</h1>", content_type="text/html")
 
+    async def handle_mass_outreach_stats(req):
+        """GET /api/mass-outreach/stats"""
+        try:
+            from modules.mass_outreach_1000 import get_stats, init_db
+            init_db()
+            return web.json_response(get_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_mass_outreach_research(req):
+        """POST /api/mass-outreach/research — Lead-Research anstoßen"""
+        try:
+            from modules.mass_outreach_1000 import run_research, init_db
+            init_db()
+            asyncio.create_task(run_research(session_limit=500))
+            return web.json_response({"status": "research_started"})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_mass_outreach_send(req):
+        """POST /api/mass-outreach/send — Versand-Batch anstoßen"""
+        try:
+            body = await req.json() if req.content_length else {}
+            limit = int(body.get("limit", 333))
+            from modules.mass_outreach_1000 import run_batch_only, init_db
+            init_db()
+            asyncio.create_task(run_batch_only(batch_limit=limit))
+            return web.json_response({"status": "batch_started", "limit": limit})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_unsubscribe(req):
+        """GET /api/unsubscribe?email=xxx — GDPR Abmeldung"""
+        email = req.rel_url.query.get("email", "").strip()
+        if not email:
+            return web.Response(text="E-Mail fehlt.", content_type="text/html")
+        try:
+            from modules.mass_outreach_1000 import handle_unsubscribe as do_unsub
+            do_unsub(email)
+        except Exception:
+            pass
+        html = (
+            "<!DOCTYPE html><html><head><meta charset='utf-8'>"
+            "<title>Abgemeldet</title>"
+            "<style>body{background:#111;color:#eee;font-family:sans-serif;"
+            "display:flex;align-items:center;justify-content:center;height:100vh;margin:0}"
+            ".box{text-align:center;padding:40px;background:#1a1a1a;border-radius:12px}"
+            "h1{color:#4ade80}p{color:#aaa}</style></head>"
+            "<body><div class='box'>"
+            "<h1>✅ Erfolgreich abgemeldet</h1>"
+            f"<p><b>{email}</b> wird keine weiteren Emails erhalten.</p>"
+            "<p style='margin-top:20px;font-size:13px;color:#666'>"
+            "AiiteC | Rudolf Sarkany</p></div></body></html>"
+        )
+        return web.Response(text=html, content_type="text/html")
+
     app.router.add_get( "/api/mcc/status",    handle_mcc_status)
     app.router.add_post("/api/mcc/run",        handle_mcc_run)
     app.router.add_get( "/api/mcc/platforms",  handle_mcc_platforms)
@@ -11081,6 +11137,13 @@ async def create_app():
     app.router.add_get( "/api/mcc/shopify",    handle_mcc_shopify_metrics)
     app.router.add_get( "/mcc",               handle_mcc_v2_dashboard)
     log.info("BullPower MCC routes registered (/api/mcc/*, /mcc)")
+
+    # Mass Outreach 1000/Tag
+    app.router.add_get( "/api/mass-outreach/stats",    handle_mass_outreach_stats)
+    app.router.add_post("/api/mass-outreach/research", handle_mass_outreach_research)
+    app.router.add_post("/api/mass-outreach/send",     handle_mass_outreach_send)
+    app.router.add_get( "/api/unsubscribe",            handle_unsubscribe)
+    log.info("Mass Outreach 1000/Tag routes registered")
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())

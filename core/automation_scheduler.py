@@ -6406,6 +6406,30 @@ async def task_outreach_engine_batch() -> str:
     except Exception as e:
         return f"Outreach Engine Fehler: {e}"
 
+async def task_mass_outreach_research() -> str:
+    """Täglich einmal: Lead-Research (Gelbe Seiten + 11880 + HN + RSS) → DB."""
+    try:
+        from modules.mass_outreach_1000 import run_research, init_db
+        init_db()
+        result = await run_research(session_limit=500)
+        return (f"Mass Outreach Research: {result['gathered']} gesammelt, "
+                f"{result['saved']} gespeichert ✅")
+    except Exception as e:
+        return f"Mass Outreach Research Fehler: {e}"
+
+async def task_mass_outreach_batch() -> str:
+    """3× täglich: 333 Emails aus Lead-Queue versenden (Ziel 1000/Tag)."""
+    try:
+        from modules.mass_outreach_1000 import run_batch_only, init_db
+        init_db()
+        result = await run_batch_only(batch_limit=333)
+        sent = result.get("sent", 0)
+        fu   = result.get("followups_sent", 0)
+        today = result.get("total_today", 0)
+        return f"Mass Outreach: {sent} gesendet, {fu} Follow-Ups | Heute: {today}/1000 ✅"
+    except Exception as e:
+        return f"Mass Outreach Batch Fehler: {e}"
+
 async def task_industrie_outreach() -> str:
     from modules.task_guard import task_ran_recently, record_task_run
     if await task_ran_recently("industrie_outreach", min_interval_hours=20):
@@ -7157,6 +7181,9 @@ TASKS = [
     ("ki_leasing_reports",     task_ki_leasing_daily_reports, 86400, 3870),  # 24h — KI-Leasing Kunden-Reports per Email
     ("gumroad_brutus",         task_gumroad_brutus_traffic,  43200, 3890),  # 12h — Gumroad Stats + Traffic Swarm
     ("outreach_batch",         task_outreach_engine_batch,   43200, 3910),  # 12h — B2B Outreach 10 Nachrichten
+    # ── MASS OUTREACH 1000/TAG ────────────────────────────────────────────────
+    ("mass_outreach_research", task_mass_outreach_research, 86400, 3915),  # 24h — Lead-Research: Gelbe Seiten+11880+HN+RSS
+    ("mass_outreach_morning",  task_mass_outreach_batch,    28800, 3920),  # 8h  — 333 Emails Batch (09:00 + 17:00 + 01:00)
     ("industrie_outreach",     task_industrie_outreach,      86400,  620),  # 24h — Fabrik/Industrie 20 E-Mails täglich
     ("agent_teams_health",     task_agent_teams_health,      86400, 3930),  # 24h — Alle Agent-Teams Health Check
     ("tiktok_status",          task_tiktok_status_check,     21600, 3950),  # 6h  — TikTok Ads + Pixel Status
