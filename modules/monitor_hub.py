@@ -219,10 +219,9 @@ async def _check_scheduler_health(session: aiohttp.ClientSession) -> list:
     Bei Fehlern: auto-retry via /api/scheduler/run-task.
     """
     issues = []
-    base_urls = [
-        "https://supermegabot-production.up.railway.app",
-        "http://localhost:8888",
-    ]
+    railway_url = os.getenv("RAILWAY_PUBLIC_DOMAIN", "https://supermegabot-production.up.railway.app")
+    local_url = f"http://localhost:{os.getenv('PORT', '8888')}"
+    base_urls = [railway_url, local_url]
     for base in base_urls:
         try:
             async with session.get(f"{base}/api/scheduler/status",

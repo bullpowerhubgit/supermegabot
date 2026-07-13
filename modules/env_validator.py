@@ -21,7 +21,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-ENV_PATH = "/Users/rudolfsarkany/supermegabot/.env"
+ENV_PATH = str(Path(__file__).parent.parent / ".env")
 
 # ─── Key-Kategorien ───────────────────────────────────────────────────────────
 

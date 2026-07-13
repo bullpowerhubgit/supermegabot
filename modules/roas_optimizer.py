@@ -17,7 +17,7 @@ from typing import Optional
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv("/Users/rudolfsarkany/supermegabot/.env")
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 META_BASE = "https://graph.facebook.com/v19.0"
-STATE_FILE = Path("/Users/rudolfsarkany/supermegabot/data/roas_optimizer.json")
+STATE_FILE = Path(__file__).parent.parent / "data" / "roas_optimizer.json"
 
 ROAS_PAUSE_THRESHOLD = 1.2
 ROAS_SCALE_THRESHOLD = 3.0

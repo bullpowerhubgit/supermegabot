@@ -10953,6 +10953,35 @@ async def create_app():
     log.info("BPI Extension routes registered (SYS-10/13/18 + Delivery + Compliance Engine + AI Act + HS-Code + VAT/OSS)")
     # ── END BPI 8 SYSTEMS ───────────────────────────────────────────────────────
 
+    # ── BullPower MEGA Command Center ────────────────────────────────────────────
+    async def handle_mcc_status(req):
+        try:
+            from modules.bullpower_mcc import get_status
+            return web.json_response(await get_status())
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_mcc_run(req):
+        try:
+            from modules.bullpower_mcc import run_full_cycle
+            r = await run_full_cycle()
+            return web.json_response(r)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_mcc_platforms(req):
+        try:
+            from modules.bullpower_mcc import run_platform_checks
+            r = await run_platform_checks()
+            return web.json_response({"ok": True, "platforms": r})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_get( "/api/mcc/status",    handle_mcc_status)
+    app.router.add_post("/api/mcc/run",        handle_mcc_run)
+    app.router.add_get( "/api/mcc/platforms",  handle_mcc_platforms)
+    log.info("BullPower MCC routes registered (/api/mcc/*)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")

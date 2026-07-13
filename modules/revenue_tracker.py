@@ -18,7 +18,7 @@ from typing import Any
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv("/Users/rudolfsarkany/supermegabot/.env")
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 log = logging.getLogger("RevenueTracker")
 

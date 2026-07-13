@@ -22,12 +22,12 @@ import aiohttp
 from dotenv import load_dotenv
 
 # ── Umgebung laden ────────────────────────────────────────────────────────────
-load_dotenv("/Users/rudolfsarkany/supermegabot/.env")
+load_dotenv(Path(__file__).parent.parent / ".env")
 
 log = logging.getLogger("ConversionEngine")
 
 # ── Pfade ─────────────────────────────────────────────────────────────────────
-_BASE_DIR = Path("/Users/rudolfsarkany/supermegabot")
+_BASE_DIR = Path(__file__).parent.parent
 _DATA_DIR = _BASE_DIR / "data"
 _DATA_DIR.mkdir(parents=True, exist_ok=True)
 _STATE_FILE = _DATA_DIR / "conversion_engine.json"
