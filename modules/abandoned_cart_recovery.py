@@ -1,665 +1,793 @@
 #!/usr/bin/env python3
 """
 Abandoned Cart Recovery — ineedit.com.co
-Polls Shopify every hour, sends professional German recovery email via Klaviyo.
-Tracks sent emails in local JSON state file to avoid duplicates.
-Fires Klaviyo "Abandoned Cart" event for flow/CRM tracking.
+3-stufige E-Mail-Sequenz: sofort / +1h / +24h mit Rabattcode.
+State-Tracking in SQLite: data/abandoned_cart.db
+E-Mail-Versand via GMAIL_USER_5 / GMAIL_APP_PASSWORD_5 (aiitecbuuss@gmail.com).
+Telegram-Alerts nach jedem Lauf.
 """
 
 import asyncio
-import json
 import logging
 import os
+import smtplib
+import sqlite3
 from datetime import datetime, timezone, timedelta
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import aiohttp
 
-log = logging.getLogger("AbandonedCart")
+# Env-Datei laden (muss vor os.getenv-Aufrufen stehen)
+try:
+    from dotenv import load_dotenv
+    load_dotenv("/Users/rudolfsarkany/supermegabot/.env")
+except ImportError:
+    pass  # dotenv optional — Railway liefert Vars direkt
 
-_DATA_DIR = Path(os.getenv("DATA_DIR", "/tmp/supermegabot"))
-_STATE_FILE = _DATA_DIR / "abandoned_cart_emails.json"
-_KLAVIYO_BASE = "https://a.klaviyo.com/api"
-_KLAVIYO_REVISION = "2024-10-15"
+log = logging.getLogger("AbandonedCartRecovery")
 
-# How long after checkout creation to send the email (default: 1 hour)
-SEND_AFTER_MINUTES = int(os.getenv("ABANDONED_CART_DELAY_MINUTES", "60"))
-# Don't re-email carts older than this many hours
-MAX_AGE_HOURS = int(os.getenv("ABANDONED_CART_MAX_AGE_HOURS", "48"))
+# ── Konstanten ────────────────────────────────────────────────────────────────
+_DB_PATH = Path(os.getenv("DATA_DIR", "/Users/rudolfsarkany/supermegabot/data")) / "abandoned_cart.db"
+_SHOP_NAME = "I Want That! I Need It!"
+_SHOP_DOMAIN = "ineedit.com.co"
+_DISCOUNT_CODE = "RESCUE10"
+
+# Mindest-Alter eines Warenkorbs bevor Stage-1 gesendet wird (Standard: 60 Min.)
+_STAGE1_DELAY_MIN  = int(os.getenv("CART_STAGE1_DELAY_MIN", "60"))
+# Stage-2 nach X Minuten nach Stage-1
+_STAGE2_DELAY_MIN  = int(os.getenv("CART_STAGE2_DELAY_MIN", "60"))
+# Stage-3 nach X Minuten nach Stage-1
+_STAGE3_DELAY_MIN  = int(os.getenv("CART_STAGE3_DELAY_MIN", "1440"))  # 24h
+# Carts älter als X Stunden werden nicht mehr verarbeitet
+_MAX_AGE_HOURS     = int(os.getenv("CART_MAX_AGE_HOURS", "72"))
 
 
-# ── HTML Email Template ───────────────────────────────────────────────────────
+# ── SQLite DB ─────────────────────────────────────────────────────────────────
 
-def build_email_html(
-    first_name: str,
-    items: List[Dict],
-    total: str,
-    currency: str,
-    recover_url: str,
-    shop_name: str = "I Want That! I Need It!",
-    shop_domain: str = "ineedit.com.co",
-) -> str:
-    """Build professional German abandoned cart recovery email."""
-    greeting = f"Hallo {first_name}," if first_name else "Hallo,"
+def _get_db() -> sqlite3.Connection:
+    _DB_PATH.parent.mkdir(parents=True, exist_ok=True)
+    conn = sqlite3.connect(str(_DB_PATH))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS cart_recoveries (
+            checkout_token  TEXT PRIMARY KEY,
+            email           TEXT NOT NULL,
+            first_name      TEXT DEFAULT '',
+            total_price     TEXT DEFAULT '0.00',
+            currency        TEXT DEFAULT 'EUR',
+            recover_url     TEXT DEFAULT '',
+            items_json      TEXT DEFAULT '[]',
+            cart_created_at TEXT NOT NULL,
+            stage1_sent_at  TEXT,
+            stage2_sent_at  TEXT,
+            stage3_sent_at  TEXT,
+            is_completed    INTEGER DEFAULT 0,
+            inserted_at     TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ','now'))
+        )
+    """)
+    conn.commit()
+    return conn
 
-    # Build items list HTML
-    items_html = ""
-    for item in items[:5]:  # max 5 items shown
-        title = item.get("title", "Produkt")
-        qty = item.get("quantity", 1)
-        price = item.get("price", "")
-        img = item.get("image", "")
-        item_html = f"""
-        <tr>
-          <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
-            {"<img src='" + img + "' width='60' style='vertical-align:middle;border-radius:4px;margin-right:12px;' alt='" + title + "'>" if img else ""}
-            <strong style="color:#1a1a1a;">{title}</strong>
-            <span style="color:#666;font-size:13px;"> &times; {qty}</span>
-            {"<br><span style='color:#2563eb;font-weight:600;'>" + currency + " " + price + "</span>" if price else ""}
-          </td>
-        </tr>"""
-        items_html += item_html
+
+def _upsert_cart(conn: sqlite3.Connection, checkout_token: str, email: str,
+                 first_name: str, total_price: str, currency: str,
+                 recover_url: str, items_json: str, cart_created_at: str) -> None:
+    conn.execute("""
+        INSERT INTO cart_recoveries
+            (checkout_token, email, first_name, total_price, currency,
+             recover_url, items_json, cart_created_at)
+        VALUES (?,?,?,?,?,?,?,?)
+        ON CONFLICT(checkout_token) DO NOTHING
+    """, (checkout_token, email, first_name, total_price, currency,
+          recover_url, items_json, cart_created_at))
+    conn.commit()
+
+
+def _mark_stage(conn: sqlite3.Connection, checkout_token: str, stage: int) -> None:
+    col = {1: "stage1_sent_at", 2: "stage2_sent_at", 3: "stage3_sent_at"}.get(stage)
+    if not col:
+        return
+    now_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    conn.execute(f"UPDATE cart_recoveries SET {col}=? WHERE checkout_token=?",
+                 (now_iso, checkout_token))
+    conn.commit()
+
+
+def _mark_completed(conn: sqlite3.Connection, checkout_token: str) -> None:
+    conn.execute("UPDATE cart_recoveries SET is_completed=1 WHERE checkout_token=?",
+                 (checkout_token,))
+    conn.commit()
+
+
+def _get_total_db_count(conn: sqlite3.Connection) -> int:
+    row = conn.execute("SELECT COUNT(*) FROM cart_recoveries").fetchone()
+    return row[0] if row else 0
+
+
+def _get_pending_stage2(conn: sqlite3.Connection, now: datetime) -> List[sqlite3.Row]:
+    cutoff = (now - timedelta(minutes=_STAGE2_DELAY_MIN)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return conn.execute("""
+        SELECT * FROM cart_recoveries
+        WHERE is_completed=0
+          AND stage1_sent_at IS NOT NULL
+          AND stage2_sent_at IS NULL
+          AND stage1_sent_at <= ?
+    """, (cutoff,)).fetchall()
+
+
+def _get_pending_stage3(conn: sqlite3.Connection, now: datetime) -> List[sqlite3.Row]:
+    cutoff = (now - timedelta(minutes=_STAGE3_DELAY_MIN)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return conn.execute("""
+        SELECT * FROM cart_recoveries
+        WHERE is_completed=0
+          AND stage1_sent_at IS NOT NULL
+          AND stage3_sent_at IS NULL
+          AND stage1_sent_at <= ?
+    """, (cutoff,)).fetchall()
+
+
+# ── E-Mail-Templates ──────────────────────────────────────────────────────────
+
+def _subject_stage1() -> str:
+    return f"Dein Warenkorb wartet auf dich! \U0001F6D2 {_SHOP_NAME}"
+
+def _subject_stage2() -> str:
+    return f"Nur noch wenige auf Lager! ⚠️ {_SHOP_NAME}"
+
+def _subject_stage3() -> str:
+    return f"10% Rabatt nur fuer dich: {_DISCOUNT_CODE} \U0001F381 {_SHOP_NAME}"
+
+
+def _html_base(header_title: str, header_sub: str, greeting: str,
+               intro_html: str, items_html: str, total: str, currency: str,
+               cta_url: str, cta_label: str, badge_html: str,
+               note_html: str) -> str:
+    total_row = ""
+    try:
+        if float(total or "0") > 0:
+            total_row = f"""
+            <tr>
+              <td style="padding:16px 40px 0;">
+                <p style="color:#1a1a1a;font-size:16px;font-weight:700;margin:0;">
+                  Gesamtbetrag: {currency}&nbsp;{total}
+                </p>
+              </td>
+            </tr>"""
+    except ValueError:
+        pass
 
     return f"""<!DOCTYPE html>
 <html lang="de">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Du hast etwas vergessen! - {shop_name}</title>
+  <title>{header_title} - {_SHOP_NAME}</title>
 </head>
-<body style="margin:0;padding:0;background:#f5f5f5;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f5f5f5;padding:30px 0;">
-    <tr><td align="center">
-      <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+<body style="margin:0;padding:0;background:#f5f5f5;
+             font-family:'Helvetica Neue',Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0"
+       style="background:#f5f5f5;padding:30px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0"
+           style="background:#fff;border-radius:12px;overflow:hidden;
+                  box-shadow:0 2px 12px rgba(0,0,0,.08);">
 
-        <!-- Header -->
-        <tr>
-          <td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:36px 40px;text-align:center;">
-            <h1 style="color:#ffffff;margin:0;font-size:26px;font-weight:700;letter-spacing:-0.5px;">
-              {shop_name}
-            </h1>
-            <p style="color:rgba(255,255,255,0.7);margin:6px 0 0;font-size:14px;">
-              Smart & Modern Shopping
-            </p>
-          </td>
-        </tr>
+      <!-- Header -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,
+                   #0f3460 100%);padding:36px 40px;text-align:center;">
+          <h1 style="color:#fff;margin:0;font-size:26px;font-weight:700;
+                     letter-spacing:-.5px;">{_SHOP_NAME}</h1>
+          <p style="color:rgba(255,255,255,.7);margin:6px 0 0;font-size:14px;">
+            Smart &amp; Modern Shopping
+          </p>
+        </td>
+      </tr>
 
-        <!-- Cart emoji banner -->
-        <tr>
-          <td style="background:#fff8e7;padding:20px 40px;text-align:center;border-bottom:2px solid #ffd700;">
-            <p style="margin:0;font-size:32px;">&#x1F6D2;</p>
-            <h2 style="margin:8px 0 0;color:#1a1a1a;font-size:22px;font-weight:700;">
-              Du hast etwas vergessen!
-            </h2>
-            <p style="margin:6px 0 0;color:#555;font-size:15px;">
-              Dein Warenkorb wartet noch auf dich.
-            </p>
-          </td>
-        </tr>
+      <!-- Banner -->
+      <tr>
+        <td style="background:#fff8e7;padding:20px 40px;text-align:center;
+                   border-bottom:2px solid #ffd700;">
+          <h2 style="margin:8px 0 0;color:#1a1a1a;font-size:22px;
+                     font-weight:700;">{header_title}</h2>
+          <p style="margin:6px 0 0;color:#555;font-size:15px;">{header_sub}</p>
+        </td>
+      </tr>
 
-        <!-- Greeting + intro -->
-        <tr>
-          <td style="padding:30px 40px 10px;">
-            <p style="color:#1a1a1a;font-size:16px;line-height:1.6;margin:0 0 16px;">
-              {greeting}
-            </p>
-            <p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 20px;">
-              Du hast deinen Einkauf bei <strong>{shop_name}</strong> noch nicht abgeschlossen.
-              Kein Problem — dein Warenkorb wurde gespeichert und wartet auf dich!
-            </p>
-          </td>
-        </tr>
+      <!-- Greeting -->
+      <tr>
+        <td style="padding:30px 40px 10px;">
+          <p style="color:#1a1a1a;font-size:16px;line-height:1.6;margin:0 0 16px;">
+            {greeting}
+          </p>
+          {intro_html}
+        </td>
+      </tr>
 
-        <!-- Cart items -->
-        <tr>
-          <td style="padding:0 40px;">
-            <table width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="padding-bottom:8px;">
-                  <strong style="color:#1a1a1a;font-size:15px;">Deine Artikel:</strong>
-                </td>
-              </tr>
-              {items_html}
-            </table>
-          </td>
-        </tr>
+      <!-- Items -->
+      <tr>
+        <td style="padding:0 40px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding-bottom:8px;">
+                <strong style="color:#1a1a1a;font-size:15px;">Deine Artikel:</strong>
+              </td>
+            </tr>
+            {items_html}
+          </table>
+        </td>
+      </tr>
 
-        <!-- Total -->
-        {"<tr><td style='padding:16px 40px 0;'><p style='color:#1a1a1a;font-size:16px;font-weight:700;margin:0;'>Gesamtbetrag: " + currency + " " + total + "</p></td></tr>" if total and float(total or 0) > 0 else ""}
+      <!-- Total -->
+      {total_row}
 
-        <!-- CTA Button -->
-        <tr>
-          <td style="padding:28px 40px;">
-            <table cellpadding="0" cellspacing="0" width="100%">
-              <tr>
-                <td align="center">
-                  <a href="{recover_url}"
-                     style="display:inline-block;background:linear-gradient(135deg,#2563eb,#1d4ed8);
-                            color:#ffffff;font-size:17px;font-weight:700;
-                            text-decoration:none;padding:16px 48px;border-radius:8px;
-                            letter-spacing:0.3px;box-shadow:0 4px 14px rgba(37,99,235,0.4);">
-                    &#x1F6D2;&nbsp; Warenkorb ansehen
-                  </a>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
+      <!-- CTA -->
+      <tr>
+        <td style="padding:28px 40px;">
+          <table cellpadding="0" cellspacing="0" width="100%">
+            <tr>
+              <td align="center">
+                <a href="{cta_url}"
+                   style="display:inline-block;
+                          background:linear-gradient(135deg,#2563eb,#1d4ed8);
+                          color:#fff;font-size:17px;font-weight:700;
+                          text-decoration:none;padding:16px 48px;
+                          border-radius:8px;letter-spacing:.3px;
+                          box-shadow:0 4px 14px rgba(37,99,235,.4);">
+                  {cta_label}
+                </a>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
 
-        <!-- Trust badges -->
-        <tr>
-          <td style="padding:0 40px 28px;">
-            <table width="100%" cellpadding="0" cellspacing="0">
-              <tr>
-                <td style="background:#f8faff;border-radius:8px;padding:16px 20px;">
-                  <table width="100%" cellpadding="0" cellspacing="0">
-                    <tr>
-                      <td width="33%" align="center" style="padding:0 8px;">
-                        <p style="margin:0;font-size:20px;">&#x1F6E1;&#xFE0F;</p>
-                        <p style="margin:4px 0 0;font-size:12px;color:#444;font-weight:600;">Sichere Zahlung</p>
-                        <p style="margin:2px 0 0;font-size:11px;color:#777;">SSL-verschlüsselt</p>
-                      </td>
-                      <td width="33%" align="center" style="padding:0 8px;border-left:1px solid #e0e7ff;border-right:1px solid #e0e7ff;">
-                        <p style="margin:0;font-size:20px;">&#x1F4E6;</p>
-                        <p style="margin:4px 0 0;font-size:12px;color:#444;font-weight:600;">Gratis Versand</p>
-                        <p style="margin:2px 0 0;font-size:11px;color:#777;">ab €49 Bestellwert</p>
-                      </td>
-                      <td width="33%" align="center" style="padding:0 8px;">
-                        <p style="margin:0;font-size:20px;">&#x1F504;</p>
-                        <p style="margin:4px 0 0;font-size:12px;color:#444;font-weight:600;">14 Tage Rückgabe</p>
-                        <p style="margin:2px 0 0;font-size:11px;color:#777;">Kein Risiko</p>
-                      </td>
-                    </tr>
-                  </table>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
+      <!-- Badge / Promo -->
+      {badge_html}
 
-        <!-- Urgency note -->
-        <tr>
-          <td style="padding:0 40px 24px;">
-            <p style="color:#888;font-size:13px;line-height:1.6;margin:0;text-align:center;
-                       background:#fff8f0;border-radius:6px;padding:12px 16px;border-left:3px solid #f59e0b;">
-              &#x23F0; Dein Warenkorb ist nur begrenzte Zeit reserviert.
-              Jetzt kaufen und dir deine Lieblingsartikel sichern!
-            </p>
-          </td>
-        </tr>
+      <!-- Note -->
+      {note_html}
 
-        <!-- Secondary CTA -->
-        <tr>
-          <td style="padding:0 40px 32px;text-align:center;">
-            <a href="https://{shop_domain}"
-               style="color:#2563eb;font-size:14px;text-decoration:none;">
-              Weiter einkaufen auf {shop_domain} &rarr;
-            </a>
-          </td>
-        </tr>
+      <!-- Footer link -->
+      <tr>
+        <td style="padding:0 40px 32px;text-align:center;">
+          <a href="https://{_SHOP_DOMAIN}"
+             style="color:#2563eb;font-size:14px;text-decoration:none;">
+            Weiter einkaufen auf {_SHOP_DOMAIN} &rarr;
+          </a>
+        </td>
+      </tr>
 
-        <!-- Footer -->
-        <tr>
-          <td style="background:#1a1a2e;padding:24px 40px;text-align:center;">
-            <p style="color:rgba(255,255,255,0.5);font-size:12px;margin:0;line-height:1.8;">
-              {shop_name} &bull; {shop_domain}<br>
-              Du erhältst diese E-Mail, weil du einen Kauf begonnen hast.<br>
-              <a href="https://{shop_domain}" style="color:rgba(255,255,255,0.4);text-decoration:none;">
-                Abmelden
-              </a>
-            </p>
-          </td>
-        </tr>
+      <!-- Footer -->
+      <tr>
+        <td style="background:#1a1a2e;padding:24px 40px;text-align:center;">
+          <p style="color:rgba(255,255,255,.5);font-size:12px;
+                    margin:0;line-height:1.8;">
+            {_SHOP_NAME} &bull; {_SHOP_DOMAIN}<br>
+            Du erhaeltst diese E-Mail, weil du einen Kauf begonnen hast.
+          </p>
+        </td>
+      </tr>
 
-      </table>
-    </td></tr>
-  </table>
+    </table>
+  </td></tr>
+</table>
 </body>
 </html>"""
 
 
-def build_email_subject(shop_name: str = "I Want That! I Need It!") -> str:
-    return f"Du hast etwas vergessen! \U0001F6D2 {shop_name}"
+def _build_items_rows(items: List[Dict]) -> str:
+    rows = ""
+    for item in items[:5]:
+        title = item.get("title", "Produkt")
+        qty   = item.get("quantity", 1)
+        price = item.get("price", "")
+        img   = item.get("image", "")
+        img_tag = (f"<img src='{img}' width='60' alt='{title}' "
+                   "style='vertical-align:middle;border-radius:4px;"
+                   "margin-right:12px;'>") if img else ""
+        price_tag = (f"<br><span style='color:#2563eb;font-weight:600;'>"
+                     f"{price}</span>") if price else ""
+        rows += f"""
+        <tr>
+          <td style="padding:10px 0;border-bottom:1px solid #f0f0f0;">
+            {img_tag}
+            <strong style="color:#1a1a1a;">{title}</strong>
+            <span style="color:#666;font-size:13px;"> &times; {qty}</span>
+            {price_tag}
+          </td>
+        </tr>"""
+    return rows
 
 
-# ── State Management ──────────────────────────────────────────────────────────
-
-def _load_state() -> Dict:
-    _DATA_DIR.mkdir(parents=True, exist_ok=True)
-    if _STATE_FILE.exists():
-        try:
-            return json.loads(_STATE_FILE.read_text())
-        except Exception as e:
-            log.warning("Ignored error: %s", e)
-    return {"sent": {}}  # token -> {"sent_at": iso, "email": email}
-
-
-def _save_state(state: Dict) -> None:
-    _DATA_DIR.mkdir(parents=True, exist_ok=True)
-    _STATE_FILE.write_text(json.dumps(state, indent=2))
-
-
-def _already_sent(state: Dict, token: str) -> bool:
-    return token in state.get("sent", {})
-
-
-def _mark_sent(state: Dict, token: str, email: str) -> None:
-    state.setdefault("sent", {})[token] = {
-        "sent_at": datetime.now(timezone.utc).isoformat(),
-        "email": email,
-    }
-
-
-def _prune_old(state: Dict, max_hours: int = 72) -> Dict:
-    """Remove entries older than max_hours to keep state file lean."""
-    cutoff = datetime.now(timezone.utc) - timedelta(hours=max_hours)
-    sent = state.get("sent", {})
-    pruned = {
-        t: v for t, v in sent.items()
-        if datetime.fromisoformat(v.get("sent_at", "2000-01-01T00:00:00+00:00")) > cutoff
-    }
-    state["sent"] = pruned
-    return state
-
-
-# ── Klaviyo Event Tracking ────────────────────────────────────────────────────
-
-async def _klaviyo_track_abandoned_cart(
-    session: aiohttp.ClientSession,
-    email: str,
-    first_name: str,
-    items: List[Dict],
-    total: str,
-    recover_url: str,
-    checkout_token: str,
-) -> bool:
-    """Fire 'Abandoned Cart' event in Klaviyo for CRM tracking and flow triggers."""
-    key = os.getenv("KLAVIYO_API_KEY", "")
-    if not key:
-        log.warning("KLAVIYO_API_KEY not set — skipping Klaviyo event")
-        return False
-
-    headers = {
-        "Authorization": f"Klaviyo-API-Key {key}",
-        "revision": _KLAVIYO_REVISION,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
-
-    payload = {
-        "data": {
-            "type": "event",
-            "attributes": {
-                "metric": {
-                    "data": {
-                        "type": "metric",
-                        "attributes": {"name": "Abandoned Cart"}
-                    }
-                },
-                "profile": {
-                    "data": {
-                        "type": "profile",
-                        "attributes": {
-                            "email": email,
-                            "first_name": first_name,
-                            "properties": {
-                                "checkout_token": checkout_token,
-                                "recover_url": recover_url,
-                            }
-                        }
-                    }
-                },
-                "properties": {
-                    "checkout_token": checkout_token,
-                    "Items": [
-                        {
-                            "ProductName": i.get("title", ""),
-                            "Quantity":    i.get("quantity", 1),
-                            "ItemPrice":   i.get("price", "0.00"),
-                            "ImageURL":    i.get("image", ""),
-                        }
-                        for i in items[:10]
-                    ],
-                    "ItemNames":   [i.get("title", "") for i in items],
-                    "CheckoutURL": recover_url,
-                    "Value":       float(total or 0),
-                },
-                "value": float(total or 0),
-                "unique_id": f"abandoned_cart_{checkout_token}",
-            }
-        }
-    }
-
-    try:
-        async with session.post(
-            f"{_KLAVIYO_BASE}/events/",
-            headers=headers,
-            json=payload,
-        ) as r:
-            ok = r.status in (200, 201, 202)
-            if ok:
-                log.info("Klaviyo 'Abandoned Cart' event fired for %s", email)
-            else:
-                body = await r.text()
-                log.warning("Klaviyo event failed HTTP %s: %s", r.status, body[:200])
-            return ok
-    except Exception as e:
-        log.error("Klaviyo event error: %s", e)
-        return False
+def _trust_badges() -> str:
+    return """
+    <tr>
+      <td style="padding:0 40px 28px;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="background:#f8faff;border-radius:8px;padding:16px 20px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="33%" align="center" style="padding:0 8px;">
+                    <p style="margin:0;font-size:20px;">&#x1F6E1;&#xFE0F;</p>
+                    <p style="margin:4px 0 0;font-size:12px;color:#444;
+                               font-weight:600;">Sichere Zahlung</p>
+                    <p style="margin:2px 0 0;font-size:11px;color:#777;">
+                      SSL-verschluesselt</p>
+                  </td>
+                  <td width="33%" align="center"
+                      style="padding:0 8px;border-left:1px solid #e0e7ff;
+                             border-right:1px solid #e0e7ff;">
+                    <p style="margin:0;font-size:20px;">&#x1F4E6;</p>
+                    <p style="margin:4px 0 0;font-size:12px;color:#444;
+                               font-weight:600;">Gratis Versand</p>
+                    <p style="margin:2px 0 0;font-size:11px;color:#777;">
+                      ab &euro;49 Bestellwert</p>
+                  </td>
+                  <td width="33%" align="center" style="padding:0 8px;">
+                    <p style="margin:0;font-size:20px;">&#x1F504;</p>
+                    <p style="margin:4px 0 0;font-size:12px;color:#444;
+                               font-weight:600;">14 Tage Rueckgabe</p>
+                    <p style="margin:2px 0 0;font-size:11px;color:#777;">
+                      Kein Risiko</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>"""
 
 
-# ── Email Sending ─────────────────────────────────────────────────────────────
-
-async def _send_via_smtp(
-    session: aiohttp.ClientSession,
-    to_email: str,
-    subject: str,
-    html_body: str,
-) -> bool:
-    """Send email via SMTP (smtplib - sync, run in executor)."""
-    import asyncio
-    import smtplib
-    from email.mime.multipart import MIMEMultipart
-    from email.mime.text import MIMEText
-
-    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
-    smtp_port = int(os.getenv("SMTP_PORT", "587"))
-    smtp_user = os.getenv("SMTP_USER", os.getenv("GMAIL_USER", ""))
-    smtp_pass = os.getenv("SMTP_PASS", os.getenv("GMAIL_APP_PASSWORD", ""))
-    from_addr = smtp_user or "noreply@ineedit.com.co"
-
-    if not smtp_user or not smtp_pass:
-        log.warning("SMTP not configured (SMTP_USER/SMTP_PASS missing)")
-        return False
-
-    def _send_sync():
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"] = f"I Want That! I Need It! <{from_addr}>"
-        msg["To"] = to_email
-        msg["Reply-To"] = "support@ineedit.com.co"
-        msg.attach(MIMEText(html_body, "html", "utf-8"))
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-            server.starttls()
-            server.login(smtp_user, smtp_pass)
-            server.sendmail(from_addr, to_email, msg.as_string())
-
-    try:
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, _send_sync)
-        log.info("SMTP email sent to %s", to_email)
-        return True
-    except Exception as e:
-        log.error("SMTP send failed: %s", e)
-        return False
-
-
-async def _send_via_mailchimp_transactional(
-    session: aiohttp.ClientSession,
-    to_email: str,
-    to_name: str,
-    subject: str,
-    html_body: str,
-) -> bool:
-    """Send via Mailchimp Mandrill transactional (if configured)."""
-    api_key = os.getenv("MAILCHIMP_API_KEY", "")
-    if not api_key or "mandrill" not in os.getenv("MAILCHIMP_TRANSACTIONAL", ""):
-        return False  # Not configured
-
-    payload = {
-        "key": api_key,
-        "message": {
-            "html":       html_body,
-            "subject":    subject,
-            "from_email": "support@ineedit.com.co",
-            "from_name":  "I Want That! I Need It!",
-            "to": [{"email": to_email, "name": to_name, "type": "to"}],
-        }
-    }
-
-    try:
-        async with session.post(
-            "https://mandrillapp.com/api/1.0/messages/send.json",
-            json=payload,
-        ) as r:
-            ok = r.status == 200
-            if ok:
-                log.info("Mandrill email sent to %s", to_email)
-            return ok
-    except Exception as e:
-        log.error("Mandrill error: %s", e)
-        return False
-
-
-async def send_abandoned_cart_email(
-    session: aiohttp.ClientSession,
-    email: str,
-    first_name: str,
-    items: List[Dict],
-    total: str,
-    currency: str,
-    recover_url: str,
-    checkout_token: str,
-) -> bool:
-    """
-    Send abandoned cart recovery email via best available channel.
-    Priority: SMTP → Mandrill → (Klaviyo flow handles it via event)
-    Also always fires Klaviyo event for CRM tracking.
-    """
-    subject = build_email_subject()
-    html = build_email_html(
-        first_name=first_name,
-        items=items,
+def _build_stage1_email(first_name: str, items: List[Dict], total: str,
+                         currency: str, recover_url: str) -> str:
+    greeting = f"Hallo {first_name}," if first_name else "Hallo,"
+    intro = """<p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 20px;">
+      Du hast deinen Einkauf bei <strong>I Want That! I Need It!</strong>
+      noch nicht abgeschlossen. Kein Problem &mdash; dein Warenkorb wurde
+      gespeichert und wartet auf dich!
+    </p>"""
+    note = """<tr>
+      <td style="padding:0 40px 24px;">
+        <p style="color:#888;font-size:13px;line-height:1.6;margin:0;
+                   text-align:center;background:#fff8f0;border-radius:6px;
+                   padding:12px 16px;border-left:3px solid #f59e0b;">
+          &#x23F0; Dein Warenkorb ist nur begrenzt reserviert &mdash;
+          jetzt kaufen und Lieblingsartikel sichern!
+        </p>
+      </td>
+    </tr>"""
+    return _html_base(
+        header_title="Dein Warenkorb wartet!",
+        header_sub="Du hast deinen Einkauf noch nicht abgeschlossen.",
+        greeting=greeting,
+        intro_html=intro,
+        items_html=_build_items_rows(items),
         total=total,
         currency=currency,
-        recover_url=recover_url,
+        cta_url=recover_url,
+        cta_label="&#x1F6D2;&nbsp; Warenkorb ansehen",
+        badge_html=_trust_badges(),
+        note_html=note,
     )
 
-    # Always track in Klaviyo (for CRM + flow triggers)
-    asyncio.create_task(
-        _klaviyo_track_abandoned_cart(
-            session, email, first_name, items, total, recover_url, checkout_token
-        )
+
+def _build_stage2_email(first_name: str, items: List[Dict], total: str,
+                         currency: str, recover_url: str) -> str:
+    greeting = f"Hallo {first_name}," if first_name else "Hallo,"
+    intro = """<p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 20px;">
+      Wir wollten dich noch einmal daran erinnern: Einige Artikel in deinem
+      Warenkorb sind sehr beliebt und koennen bald ausverkauft sein.
+      Sicher dir deine Produkte jetzt!
+    </p>"""
+    note = """<tr>
+      <td style="padding:0 40px 24px;">
+        <p style="color:#888;font-size:13px;line-height:1.6;margin:0;
+                   text-align:center;background:#fff0f0;border-radius:6px;
+                   padding:12px 16px;border-left:3px solid #ef4444;">
+          &#x26A0;&#xFE0F; Hohe Nachfrage! Nur noch wenige Stueck auf Lager &mdash;
+          nicht verpassen!
+        </p>
+      </td>
+    </tr>"""
+    return _html_base(
+        header_title="Nur noch wenige auf Lager!",
+        header_sub="Deine Artikel sind sehr beliebt &mdash; schnell sichern!",
+        greeting=greeting,
+        intro_html=intro,
+        items_html=_build_items_rows(items),
+        total=total,
+        currency=currency,
+        cta_url=recover_url,
+        cta_label="&#x26A0;&#xFE0F;&nbsp; Jetzt sichern",
+        badge_html=_trust_badges(),
+        note_html=note,
     )
 
-    # Try to send actual email
-    if await _send_via_mailchimp_transactional(session, email, first_name, subject, html):
+
+def _build_stage3_email(first_name: str, items: List[Dict], total: str,
+                         currency: str, recover_url: str) -> str:
+    greeting = f"Hallo {first_name}," if first_name else "Hallo,"
+    intro = f"""<p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 16px;">
+      Als kleines Dankeschoen haben wir exklusiv fuer dich einen
+      <strong>10&nbsp;% Rabattcode</strong> vorbereitet:
+    </p>
+    <div style="background:#f0fdf4;border:2px dashed #22c55e;border-radius:10px;
+                padding:20px;text-align:center;margin:0 0 20px;">
+      <p style="margin:0;font-size:13px;color:#555;font-weight:600;
+                letter-spacing:.5px;text-transform:uppercase;">Dein Rabattcode</p>
+      <p style="margin:8px 0 0;font-size:32px;font-weight:900;color:#16a34a;
+                letter-spacing:4px;">{_DISCOUNT_CODE}</p>
+      <p style="margin:6px 0 0;font-size:13px;color:#777;">
+        10&nbsp;% auf deinen gesamten Warenkorb &bull; einmalig gueltig
+      </p>
+    </div>
+    <p style="color:#444;font-size:15px;line-height:1.7;margin:0 0 20px;">
+      Gib den Code einfach an der Kasse ein. Das Angebot gilt nur fuer
+      kurze Zeit!
+    </p>"""
+    note = """<tr>
+      <td style="padding:0 40px 24px;">
+        <p style="color:#888;font-size:13px;line-height:1.6;margin:0;
+                   text-align:center;background:#f0fdf4;border-radius:6px;
+                   padding:12px 16px;border-left:3px solid #22c55e;">
+          &#x1F381; Dein exklusiver Rabatt laeuft bald ab &mdash;
+          jetzt einloesen und sparen!
+        </p>
+      </td>
+    </tr>"""
+    return _html_base(
+        header_title="10 % Rabatt nur fuer dich!",
+        header_sub=f"Exklusiver Code: {_DISCOUNT_CODE}",
+        greeting=greeting,
+        intro_html=intro,
+        items_html=_build_items_rows(items),
+        total=total,
+        currency=currency,
+        cta_url=recover_url,
+        cta_label=f"&#x1F381;&nbsp; Code {_DISCOUNT_CODE} einloesen",
+        badge_html=_trust_badges(),
+        note_html=note,
+    )
+
+
+# ── SMTP E-Mail-Versand ───────────────────────────────────────────────────────
+
+def _send_smtp_sync(to_email: str, subject: str, html_body: str) -> bool:
+    """Synchroner SMTP-Versand (wird im Executor ausgeführt)."""
+    smtp_user = os.getenv("GMAIL_USER_5", os.getenv("GMAIL_USER", ""))
+    smtp_pass = os.getenv("GMAIL_APP_PASSWORD_5", os.getenv("GMAIL_APP_PASSWORD", ""))
+    smtp_host = os.getenv("SMTP_HOST", "smtp.gmail.com")
+    smtp_port = int(os.getenv("SMTP_PORT", "587"))
+
+    if not smtp_user or not smtp_pass:
+        log.warning("GMAIL_USER_5 / GMAIL_APP_PASSWORD_5 nicht konfiguriert")
+        return False
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = subject
+    msg["From"]    = f"{_SHOP_NAME} <{smtp_user}>"
+    msg["To"]      = to_email
+    msg["Reply-To"] = f"support@{_SHOP_DOMAIN}"
+    msg.attach(MIMEText(html_body, "html", "utf-8"))
+
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=15) as srv:
+            srv.starttls()
+            srv.login(smtp_user, smtp_pass)
+            srv.sendmail(smtp_user, to_email, msg.as_string())
+        log.info("SMTP E-Mail gesendet an %s (Betreff: %s)", to_email, subject[:60])
         return True
-
-    if await _send_via_smtp(session, email, subject, html):
-        return True
-
-    # If neither channel works, Klaviyo flow should handle sending via its automation
-    log.info(
-        "Direct email channels unavailable for %s — relying on Klaviyo flow (event fired)",
-        email,
-    )
-    return True  # Event was fired, flow will handle it
+    except smtplib.SMTPAuthenticationError as exc:
+        log.error("SMTP-Authentifizierung fehlgeschlagen: %s", exc)
+        return False
+    except Exception as exc:
+        log.error("SMTP-Fehler bei %s: %s", to_email, exc)
+        return False
 
 
-# ── Main Recovery Task ────────────────────────────────────────────────────────
+async def _send_email(to_email: str, subject: str, html_body: str) -> bool:
+    loop = asyncio.get_event_loop()
+    return await loop.run_in_executor(None, _send_smtp_sync, to_email, subject, html_body)
+
+
+# ── Telegram-Alert ────────────────────────────────────────────────────────────
+
+async def _telegram_alert(session: aiohttp.ClientSession, message: str) -> None:
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    chat_id   = os.getenv("TELEGRAM_CHAT_ID", "")
+    if not bot_token or not chat_id:
+        return
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    try:
+        async with session.post(url, json={"chat_id": chat_id,
+                                           "text": message,
+                                           "parse_mode": "HTML"}) as r:
+            if r.status != 200:
+                body = await r.text()
+                log.warning("Telegram-Alert HTTP %s: %s", r.status, body[:100])
+    except Exception as exc:
+        log.warning("Telegram-Alert Fehler: %s", exc)
+
+
+# ── Shopify: Abandoned Checkouts abrufen ──────────────────────────────────────
+
+async def _fetch_shopify_checkouts(session: aiohttp.ClientSession) -> List[Dict]:
+    token  = (os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or
+              os.getenv("SHOPIFY_ACCESS_TOKEN", ""))
+    domain = (os.getenv("SHOPIFY_SHOP_DOMAIN", "") or
+              os.getenv("SHOPIFY_STORE_DOMAIN", ""))
+    ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+
+    if not token or not domain:
+        log.error("SHOPIFY_ADMIN_API_TOKEN / SHOPIFY_SHOP_DOMAIN fehlen")
+        return []
+
+    base     = domain if domain.startswith("http") else f"https://{domain}"
+    headers  = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
+    since    = (datetime.now(timezone.utc) - timedelta(hours=_MAX_AGE_HOURS)).strftime(
+                "%Y-%m-%dT%H:%M:%SZ")
+
+    url = (f"{base}/admin/api/{ver}/checkouts.json"
+           f"?updated_at_min={since}&status=open&limit=250")
+
+    try:
+        async with session.get(url, headers=headers) as r:
+            if r.status == 200:
+                data = await r.json(content_type=None)
+                carts = data.get("checkouts", [])
+                log.info("Shopify: %d offene Warenkörbe gefunden", len(carts))
+                return carts
+            body = await r.text()
+            log.error("Shopify checkouts HTTP %s: %s", r.status, body[:200])
+            return []
+    except Exception as exc:
+        log.error("Shopify fetch Fehler: %s", exc)
+        return []
+
+
+# ── Cart-zu-Items konvertieren ────────────────────────────────────────────────
+
+import json as _json
+
+def _parse_line_items(checkout: Dict) -> Tuple[List[Dict], str]:
+    items = []
+    for li in checkout.get("line_items", []):
+        img_src = ""
+        fi = li.get("featured_image")
+        if fi and isinstance(fi, dict):
+            img_src = fi.get("url", "")
+        items.append({
+            "title":    li.get("title", "Produkt"),
+            "quantity": li.get("quantity", 1),
+            "price":    li.get("price", ""),
+            "image":    img_src,
+        })
+    return items, _json.dumps(items, ensure_ascii=False)
+
+
+def _recover_url(checkout: Dict) -> str:
+    domain = (os.getenv("SHOPIFY_SHOP_DOMAIN", "") or
+              os.getenv("SHOPIFY_STORE_DOMAIN", "") or _SHOP_DOMAIN)
+    shop_base = domain if domain.startswith("http") else f"https://{domain}"
+    return checkout.get("abandoned_checkout_url",
+                        f"{shop_base.rstrip('/')}/cart")
+
+
+# ── Haupt-Funktion ────────────────────────────────────────────────────────────
 
 async def run_abandoned_cart_recovery() -> str:
     """
-    Main task: poll Shopify for abandoned checkouts, send email to each new one.
-    Returns summary string for scheduler logging.
+    Hauptfunktion: Shopify-Warenkörbe holen, 3-stufige E-Mail-Sequenz ausführen.
+    Gibt einen Zusammenfassungs-String zurück.
     """
-    token = os.getenv("SHOPIFY_ACCESS_TOKEN", "") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-    domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "") or os.getenv("SHOPIFY_STORE_DOMAIN", "")
-    if not token or not domain:
-        return "Shopify nicht konfiguriert"
+    conn = _get_db()
+    now  = datetime.now(timezone.utc)
 
-    base = f"https://{domain}" if not domain.startswith("http") else domain
-    ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
-    headers = {"X-Shopify-Access-Token": token, "Content-Type": "application/json"}
-
-    state = _load_state()
-    state = _prune_old(state)
-
-    now = datetime.now(timezone.utc)
-    cutoff_early = now - timedelta(minutes=SEND_AFTER_MINUTES)
-    cutoff_old   = now - timedelta(hours=MAX_AGE_HOURS)
-
-    sent_count = 0
-    skipped = 0
-    errors = 0
+    recovered_new  = 0  # Neue Carts (Stage 1 gesendet)
+    emails_sent    = 0
+    stage2_sent    = 0
+    stage3_sent    = 0
+    errors         = 0
 
     try:
-        timeout = aiohttp.ClientTimeout(total=20)
+        timeout = aiohttp.ClientTimeout(total=30)
         async with aiohttp.ClientSession(timeout=timeout) as session:
-            async with session.get(
-                f"{base}/admin/api/{ver}/checkouts.json?limit=50",
-                headers=headers,
-            ) as r:
-                if r.status != 200:
-                    return f"Shopify checkouts HTTP {r.status}"
-                data = await r.json(content_type=None)
 
-            checkouts = data.get("checkouts", [])
-            candidates = []
+            # ── 1. Shopify: offene Checkouts holen ──────────────────────────
+            checkouts = await _fetch_shopify_checkouts(session)
+
+            stage1_cutoff = now - timedelta(minutes=_STAGE1_DELAY_MIN)
+            old_cutoff    = now - timedelta(hours=_MAX_AGE_HOURS)
+
             for c in checkouts:
                 email = c.get("email", "")
                 completed = c.get("completed_at")
                 token_key = c.get("token", "")
+
+                if not email or not token_key or completed:
+                    continue
+
+                # Erstellungsdatum parsen
                 created_raw = c.get("created_at", "")
-
-                if not email or completed or not token_key:
-                    skipped += 1
-                    continue
-
-                if _already_sent(state, token_key):
-                    skipped += 1
-                    continue
-
-                # Parse creation time
                 try:
-                    created_at = datetime.fromisoformat(created_raw.replace("Z", "+00:00"))
+                    created_at = datetime.fromisoformat(
+                        created_raw.replace("Z", "+00:00"))
                 except Exception:
-                    skipped += 1
                     continue
 
-                # Only send if checkout is old enough (>=SEND_AFTER_MINUTES)
-                # and not too old (<=MAX_AGE_HOURS)
-                if created_at > cutoff_early:
-                    skipped += 1  # Too fresh, wait
-                    continue
-                if created_at < cutoff_old:
-                    skipped += 1  # Too old, skip
-                    _mark_sent(state, token_key, email)  # Prevent future re-checks
+                # Zu alt?
+                if created_at < old_cutoff:
                     continue
 
-                candidates.append(c)
+                # Noch zu frisch?
+                if created_at > stage1_cutoff:
+                    continue
 
-            log.info(
-                "Abandoned cart recovery: %d candidates, %d skipped",
-                len(candidates), skipped,
-            )
-
-            for c in candidates:
-                email = c.get("email", "")
-                billing = c.get("billing_address") or {}
+                # Checkout-Daten extrahieren
+                billing    = c.get("billing_address") or {}
                 first_name = billing.get("first_name", "")
-                total = c.get("total_price", "0.00")
-                currency = c.get("currency", "EUR")
-                shop_url = os.getenv("SHOPIFY_STORE_URL", "") or (
-                    f"https://{domain}" if domain else "https://ineedit.com.co"
-                )
-                recover_url = c.get("abandoned_checkout_url", f"{shop_url.rstrip('/')}/cart")
-                token_key = c.get("token", "")
+                total      = c.get("total_price", "0.00")
+                currency   = c.get("currency", "EUR")
+                rec_url    = _recover_url(c)
+                items, items_json = _parse_line_items(c)
 
-                line_items = []
-                for li in c.get("line_items", []):
-                    img_src = ""
-                    if li.get("featured_image") and li["featured_image"].get("url"):
-                        img_src = li["featured_image"]["url"]
-                    line_items.append({
-                        "title":    li.get("title", "Produkt"),
-                        "quantity": li.get("quantity", 1),
-                        "price":    li.get("price", ""),
-                        "image":    img_src,
-                    })
+                cart_created_str = created_at.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-                try:
-                    ok = await send_abandoned_cart_email(
-                        session=session,
-                        email=email,
-                        first_name=first_name,
-                        items=line_items,
-                        total=total,
-                        currency=currency,
-                        recover_url=recover_url,
-                        checkout_token=token_key,
-                    )
+                # In DB eintragen (ON CONFLICT DO NOTHING)
+                _upsert_cart(conn, token_key, email, first_name,
+                             total, currency, rec_url, items_json,
+                             cart_created_str)
+
+                # Stage-1 noch nicht gesendet?
+                row = conn.execute(
+                    "SELECT stage1_sent_at FROM cart_recoveries WHERE checkout_token=?",
+                    (token_key,)).fetchone()
+
+                if row and row["stage1_sent_at"] is None:
+                    subject = _subject_stage1()
+                    html    = _build_stage1_email(first_name, items, total, currency, rec_url)
+                    ok = await _send_email(email, subject, html)
                     if ok:
-                        _mark_sent(state, token_key, email)
-                        sent_count += 1
-                        log.info("Recovery email sent to %s (cart total: %s %s)", email, total, currency)
+                        _mark_stage(conn, token_key, 1)
+                        recovered_new += 1
+                        emails_sent   += 1
+                        log.info("Stage-1 gesendet an %s (Token: %s)", email, token_key[:12])
                     else:
                         errors += 1
-                except Exception as e:
-                    log.error("Error processing cart %s: %s", token_key, e)
+
+                await asyncio.sleep(0.5)  # Rate-Limiting
+
+            # ── 2. Stage-2 (+ 1h nach Stage-1) ─────────────────────────────
+            pending2 = _get_pending_stage2(conn, now)
+            log.info("%d Carts für Stage-2 bereit", len(pending2))
+            for row in pending2:
+                items = _json.loads(row["items_json"] or "[]")
+                subject = _subject_stage2()
+                html    = _build_stage2_email(
+                    row["first_name"], items, row["total_price"],
+                    row["currency"], row["recover_url"])
+                ok = await _send_email(row["email"], subject, html)
+                if ok:
+                    _mark_stage(conn, row["checkout_token"], 2)
+                    stage2_sent += 1
+                    emails_sent += 1
+                    log.info("Stage-2 gesendet an %s", row["email"])
+                else:
                     errors += 1
+                await asyncio.sleep(0.5)
 
-                await asyncio.sleep(1)  # Rate limit
+            # ── 3. Stage-3 (+ 24h nach Stage-1, Rabattcode) ─────────────────
+            pending3 = _get_pending_stage3(conn, now)
+            log.info("%d Carts für Stage-3 bereit", len(pending3))
+            for row in pending3:
+                items = _json.loads(row["items_json"] or "[]")
+                subject = _subject_stage3()
+                html    = _build_stage3_email(
+                    row["first_name"], items, row["total_price"],
+                    row["currency"], row["recover_url"])
+                ok = await _send_email(row["email"], subject, html)
+                if ok:
+                    _mark_stage(conn, row["checkout_token"], 3)
+                    stage3_sent += 1
+                    emails_sent += 1
+                    log.info("Stage-3 (Rabatt) gesendet an %s", row["email"])
+                else:
+                    errors += 1
+                await asyncio.sleep(0.5)
 
-        _save_state(state)
+            # ── 4. DB-Gesamtcount ────────────────────────────────────────────
+            total_db = _get_total_db_count(conn)
 
-        if sent_count > 0:
-            return f"Abandoned Cart: {sent_count} Recovery-E-Mail(s) gesendet | {skipped} übersprungen | {errors} Fehler"
-        return f"Abandoned Cart: keine neuen Carts | {len(checkouts)} gesamt, {skipped} übersprungen"
+            # ── 5. Telegram-Alert ────────────────────────────────────────────
+            summary = (
+                f"\U0001F6D2 <b>Abandoned Cart Recovery</b>\n"
+                f"Neue Carts (Stage 1): {recovered_new}\n"
+                f"Stage-2 (1h): {stage2_sent}\n"
+                f"Stage-3 (24h / Rabatt): {stage3_sent}\n"
+                f"Emails gesamt: {emails_sent}\n"
+                f"Fehler: {errors}\n"
+                f"DB-Eintraege: {total_db}"
+            )
+            if emails_sent > 0:
+                await _telegram_alert(session, summary)
 
-    except Exception as e:
-        log.error("run_abandoned_cart_recovery error: %s", e)
-        return f"Abandoned Cart Fehler: {e}"
+        result = (
+            f"Recovered: {recovered_new} Karts | "
+            f"Emails: {emails_sent} versendet | "
+            f"DB: {total_db} gesamt"
+        )
+        log.info("run_abandoned_cart_recovery: %s", result)
+        return result
+
+    except Exception as exc:
+        log.error("run_abandoned_cart_recovery Fehler: %s", exc, exc_info=True)
+        return f"Abandoned Cart Fehler: {exc}"
+    finally:
+        conn.close()
 
 
-# ── Webhook Handler (called from dashboard/server.py) ────────────────────────
+# ── Webhook-Handler (kompatibel mit dashboard/server.py) ─────────────────────
 
 async def handle_checkout_webhook(payload: Dict, event_type: str = "create") -> Dict:
     """
-    Handle Shopify checkout/create or checkout/update webhook.
-    Stores the checkout token so we can track it.
-    For update events, if checkout is completed, mark it as handled.
+    Shopify checkout/create oder checkout/update Webhook.
+    Markiert abgeschlossene Checkouts in der DB.
     """
     token_key = payload.get("token", "")
-    email = payload.get("email", "")
+    email     = payload.get("email", "")
     completed = payload.get("completed_at")
 
     if not token_key:
         return {"ok": True, "msg": "no token"}
 
-    state = _load_state()
+    try:
+        conn = _get_db()
+        if completed:
+            _mark_completed(conn, token_key)
+            log.info("Checkout %s abgeschlossen — als completed markiert", token_key[:12])
+        elif event_type == "create" and email:
+            log.info("Neuer Checkout: token=%s email=%s", token_key[:12], email)
+        conn.close()
+    except Exception as exc:
+        log.error("handle_checkout_webhook Fehler: %s", exc)
 
-    if completed and token_key in state.get("sent", {}):
-        # Cart was completed — remove from sent so we don't count it as abandoned
-        state["sent"].pop(token_key, None)
-        _save_state(state)
-        log.info("Checkout %s completed — removed from abandoned state", token_key)
-        return {"ok": True, "msg": "checkout completed"}
-
-    if event_type == "create" and email:
-        log.info("New checkout created: token=%s email=%s", token_key, email)
-
-    return {"ok": True, "msg": f"{event_type} processed"}
+    return {"ok": True, "msg": f"{event_type} verarbeitet"}
 
 
 async def handle_order_webhook(payload: Dict) -> Dict:
     """
-    Handle Shopify orders/create webhook.
-    Mark the checkout as completed so we don't send an abandoned cart email.
+    Shopify orders/create Webhook.
+    Markiert den zugehörigen Checkout als abgeschlossen.
     """
     checkout_token = payload.get("checkout_token", "")
-    order_number = payload.get("order_number", "?")
+    order_number   = payload.get("order_number", "?")
 
     if checkout_token:
-        state = _load_state()
-        if checkout_token in state.get("sent", {}):
-            state["sent"].pop(checkout_token, None)
-        else:
-            # Pre-emptively mark it so we don't email it
-            _mark_sent(state, checkout_token, payload.get("email", "completed"))
-        _save_state(state)
-        log.info("Order #%s placed — checkout %s marked as completed", order_number, checkout_token)
+        try:
+            conn = _get_db()
+            _mark_completed(conn, checkout_token)
+            conn.close()
+            log.info("Bestellung #%s — Checkout %s als completed markiert",
+                     order_number, checkout_token[:12])
+        except Exception as exc:
+            log.error("handle_order_webhook Fehler: %s", exc)
 
     return {"ok": True, "order": order_number}
+
+
+# ── Standalone-Test ───────────────────────────────────────────────────────────
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(name)s %(levelname)s %(message)s",
+    )
+    result = asyncio.run(run_abandoned_cart_recovery())
+    print(result)
