@@ -1,10 +1,19 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v13 — POSTS/INSTAGRAM GEFIXED · HEADLINES-FILTER · 284 TASKS**
+**Stand: 2026-07-13 v14 — EMAIL-BOUNCES GESTOPPT · TASKGUARD · 286 TASKS**
 
-## ✅ FIXES (2026-07-13 v13, commit 5e9d278a)
-- `viral_window_scanner.py` — `_is_valid_product()` filtert News-Headlines aus Posts (Apple Vision Pro Artikel, Windows hospitals, etc.)
-- `viral_promo_poster.py` — `_pick_safe_product()` prüft Keywords, 8 kuratierte Fallbacks statt "Portable Blender"
-- `post_instagram()` — Container-Status-Polling statt 2s-Sleep → behebt "Media ID is not available"
+## ✅ FIXES (2026-07-13 v14, commits 73ad547e..b4014120)
+
+### Email-Bounce-Krise behoben
+- **Ursache**: HR-Radar + AI-Act Scanner feuerten nach jedem Railway-Restart neu (SQLite ephemer)
+- **43+ Bounces** heute an: lexware.de, stbv.de, datev.de, autoprod.de → Gmail-Reputation gefährdet
+- **Fix 1**: Fake-Adressen aus intelligence_broker OUTREACH_TARGETS entfernt (5 beispiel.de)
+- **Fix 2**: OWN_PRODUCTS[1] IndexError in revenue_engine.py behoben (704677 war deaktiviert)
+- **Fix 3**: modules/task_guard.py — Supabase-persistente Deduplication, überlebt Railway-Restarts
+- **Fix 4**: HR-Radar, AI-Act, Intelligence Broker, ZVG Radar alle mit 20h-TaskGuard gesichert
+
+### Posts-Fixes (v13, 5e9d278a)
+- `viral_window_scanner.py` — `_is_valid_product()` filtert News-Headlines aus Posts
+- `post_instagram()` — Container-Status-Polling → behebt "Media ID is not available"
 - Circuit Breakers facebook/instagram/linkedin reset ✅
 
 ## ✅ SYSTEM-STATUS (2026-07-13 ~20:30 UTC)
@@ -82,6 +91,7 @@
 - GMAIL aiitecbuuss: rqcd uzim npsl odgw
 - GMAIL bullpowersrtkennels: dufx vggm xsix lrkp
 
-## SYSTEM (2026-07-13)
+## SYSTEM (2026-07-13 v14)
 - Railway: https://supermegabot-production.up.railway.app/health OK
-- Letzter Commit: 94d9e370 (AIITEC B2B Outreach im Scheduler)
+- Letzter Commit: b4014120 (TaskGuard ZVG Radar — Bounce-Schutz komplett)
+- TaskGuard aktiv für: handelsregister_radar, ai_act_scanner, intelligence_broker, zvg_radar
