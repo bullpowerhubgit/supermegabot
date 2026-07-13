@@ -332,6 +332,110 @@ async def _tg_alert(session: aiohttp.ClientSession, event: dict, fix_result: str
         log.debug("Telegram skip: %s", e)
 
 
+# ── Bounce-Scanner ────────────────────────────────────────────────────────────
+
+def _scan_bounces(account: dict, conn: sqlite3.Connection) -> list:
+    """
+    Liest Bounce-Mails (Mailer-Daemon) und gibt fehlgeschlagene Adressen zurück.
+    Markiert sie sofort in bo_companies als bounced.
+    """
+    bounced = []
+    try:
+        mail = imaplib.IMAP4_SSL("imap.gmail.com", 993)
+        mail.login(account["email"], account["password"].replace(" ", ""))
+        mail.select("INBOX")
+
+        # Suche nach Bounce-Mails seit 30 Tagen
+        _, data = mail.search(None, "FROM", "mailer-daemon", "SINCE", "01-Jun-2026")
+        ids = (data[0].split() if data[0] else [])[-100:]
+
+        for uid in ids:
+            uid_str = uid.decode()
+            already = conn.execute(
+                "SELECT 1 FROM scanned_ids WHERE mail_id=?", (f"bounce_{uid_str}",)
+            ).fetchone()
+            if already:
+                continue
+
+            _, msg_data = mail.fetch(uid, "(RFC822)")
+            if not msg_data or not msg_data[0]:
+                continue
+
+            msg  = email.message_from_bytes(msg_data[0][1])
+            body = ""
+            if msg.is_multipart():
+                for part in msg.walk():
+                    if part.get_content_type() in ("text/plain", "message/delivery-status"):
+                        try:
+                            body += part.get_payload(decode=True).decode("utf-8", errors="replace")
+                        except Exception:
+                            pass
+            else:
+                try:
+                    body = msg.get_payload(decode=True).decode("utf-8", errors="replace")
+                except Exception:
+                    pass
+
+            # Extrahiere fehlgeschlagene Adressen
+            failed = re.findall(
+                r"(?:Final-Recipient|Original-Recipient|To):[^\n]*?([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})",
+                body,
+            )
+            # Auch aus dem Subject und Body direkt
+            failed += re.findall(r"[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}", body)
+
+            conn.execute(
+                "INSERT OR IGNORE INTO scanned_ids (mail_id,account,scanned_at) VALUES (?,?,?)",
+                (f"bounce_{uid_str}", account["email"], datetime.now(timezone.utc).isoformat()),
+            )
+            conn.commit()
+
+            for addr in set(failed):
+                addr = addr.lower().strip()
+                # Eigene Adressen und bekannte valide Adressen überspringen
+                if any(own in addr for own in ["gmail.com", "googlemail.com", "aiitec", "bullpower"]):
+                    continue
+                bounced.append(addr)
+
+        mail.logout()
+    except Exception as e:
+        log.warning("Bounce-Scan %s: %s", account.get("email", "?"), e)
+    return bounced
+
+
+async def process_bounces(bounced_addrs: list, session: aiohttp.ClientSession) -> int:
+    """Blacklistet gebounced Adressen in email_outreach_bulk DB."""
+    if not bounced_addrs:
+        return 0
+    fixed = 0
+    try:
+        from modules.email_outreach_bulk import mark_bounced
+        for addr in set(bounced_addrs):
+            if mark_bounced(addr):
+                fixed += 1
+                log.info("Bounce-Blacklist: %s", addr)
+    except Exception as e:
+        log.warning("process_bounces: %s", e)
+
+    if fixed > 0:
+        msg = (
+            f"🚫 <b>Bounce Auto-Blacklist</b>\n"
+            f"{fixed} Adressen als ungültig markiert:\n"
+            + "\n".join(f"  • {a}" for a in list(set(bounced_addrs))[:10])
+            + "\nWerden nie mehr kontaktiert."
+        )
+        try:
+            async with session.post(
+                f"https://api.telegram.org/bot{_TG_TOKEN}/sendMessage",
+                json={"chat_id": _TG_CHAT, "text": msg, "parse_mode": "HTML"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                pass
+        except Exception:
+            pass
+    return fixed
+
+
 # ── Hauptfunktion ──────────────────────────────────────────────────────────────
 
 async def run_mail_error_guard() -> dict:
@@ -373,20 +477,32 @@ async def run_mail_error_guard() -> dict:
                 await _tg_alert(session, ev, fix_result)
                 alerted_count += 1
 
+    # Bounce-Scan: tote Adressen automatisch blacklisten
+    all_bounced: list = []
+    for acc in accounts:
+        bounced = _scan_bounces(acc, conn)
+        all_bounced.extend(bounced)
+
     conn.close()
 
+    bounces_fixed = 0
+    if all_bounced:
+        async with aiohttp.ClientSession() as session:
+            bounces_fixed = await process_bounces(all_bounced, session)
+
     log.info(
-        "MailErrorGuard: %d Konten, %d Fehler, %d gefixt, %d Alerts",
-        len(accounts), len(all_events), fixed_count, alerted_count,
+        "MailErrorGuard: %d Konten, %d Fehler, %d gefixt, %d Alerts, %d Bounces blacklisted",
+        len(accounts), len(all_events), fixed_count, alerted_count, bounces_fixed,
     )
     return {
-        "ok":            True,
-        "accounts":      len(accounts),
-        "errors_found":  len(all_events),
-        "new_errors":    sum(1 for e in all_events if e["new"]),
-        "repeated":      sum(1 for e in all_events if not e["new"]),
-        "auto_fixed":    fixed_count,
-        "alerts_sent":   alerted_count,
+        "ok":              True,
+        "accounts":        len(accounts),
+        "errors_found":    len(all_events),
+        "new_errors":      sum(1 for e in all_events if e["new"]),
+        "repeated":        sum(1 for e in all_events if not e["new"]),
+        "auto_fixed":      fixed_count,
+        "alerts_sent":     alerted_count,
+        "bounces_blocked": bounces_fixed,
     }
 
 
