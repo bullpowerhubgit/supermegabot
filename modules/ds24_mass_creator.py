@@ -27,7 +27,7 @@ import aiohttp
 
 log = logging.getLogger("DS24MassCreator")
 
-DS24_KEY     = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
+DS24_KEY     = os.getenv("DIGISTORE24_API_KEY", "")
 AFFILIATE_ID = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 DS24_BASE    = "https://www.digistore24.com/api/call"
 SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")

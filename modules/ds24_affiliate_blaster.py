@@ -16,7 +16,7 @@ from datetime import datetime, timezone
 log = logging.getLogger("DS24AffiliateBlaster")
 
 AFFILIATE_ID = os.getenv("DS24_AFFILIATE_ID", "user37405262")
-DS24_API_KEY = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
+DS24_API_KEY = os.getenv("DIGISTORE24_API_KEY", "")
 
 # ─── Eigene Produkte (AIITEC) + Affiliate-Produkte (DS24, 2026-06-23) ──────────
 # WICHTIG: 668035 und 704677 sind UNSERE eigenen Produkte (100% Umsatz)!

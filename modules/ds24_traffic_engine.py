@@ -11,7 +11,7 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-DS24_KEY         = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
+DS24_KEY         = os.getenv("DIGISTORE24_API_KEY", "")
 DS24_AFFILIATE_ID = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 DS24_AIITEC_LINK  = lambda pid: f"https://www.digistore24.com/redir/{pid}/{DS24_AFFILIATE_ID}/"
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
