@@ -3260,6 +3260,23 @@ async def task_youtube_autopilot() -> str:
         return f"YouTube Autopilot error: {e}"
 
 
+async def task_shop_scaling_cycle() -> str:
+    """Shop Scaling Engine — vollautonome Skalierung (Email+SEO+Social+Conversion)."""
+    try:
+        from modules.shop_scaling_engine import run_daily_scaling_cycle
+        r = await run_daily_scaling_cycle()
+        sent = r.get("results", {}).get("emails_sent", 0)
+        optimized = r.get("results", {}).get("products_optimized", 0)
+        seo_ok = bool(r.get("results", {}).get("seo_article", {}).get("article_id"))
+        platforms = r.get("results", {}).get("social_post", {}).get("platforms_posted", [])
+        return (
+            f"ScalingCycle: {optimized} Produkte optimiert, {sent} Emails gesendet, "
+            f"SEO={'✅' if seo_ok else '❌'}, Social={','.join(platforms) or '–'}"
+        )
+    except Exception as e:
+        return f"ScalingCycle error: {e}"
+
+
 async def task_buyer_traffic_engine() -> str:
     """Buyer Traffic Engine — 5 kostenlose Käufer-Traffic-Kanäle vollautomatisch."""
     try:
@@ -7129,6 +7146,7 @@ TASKS = [
     # shopify_seo_blog (T-Shirt) deaktiviert — ersetzt durch content_loop_engine (Smart Home)
     # ── Backup ───────────────────────────────────────────────────────────────
     ("youtube_autopilot",    task_youtube_autopilot,    86400, 920),  # täglich — Produkt-Video erstellen + YouTube-Upload
+    ("shop_scaling",         task_shop_scaling_cycle,   43200, 100),  # 12h — Vollautonome Skalierung (Email+SEO+Social+Conversion)
     ("youtube_shorts",       task_youtube_shorts,       86400, 900),  # täglich — Shopify Produkt als YouTube Short
     # ── eBay / Amazon / AliExpress Affiliate + Auto-Fill (DeepScan Fix) ──────
     ("ebay_auto_fill",        task_ebay_auto_fill,      14400, 210),  # 4h — eBay → Shopify import
