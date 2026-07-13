@@ -285,7 +285,9 @@ async def optimize_roas() -> Dict:
     try:
         from modules.roas_optimizer import run_roas_cycle
         r = await run_roas_cycle()
-        return {"ok": True, **r}
+        if isinstance(r, dict):
+            return {"ok": True, **r}
+        return {"ok": True, "summary": str(r)}
     except Exception as e:
         return {"ok": False, "error": str(e)[:120]}
 
