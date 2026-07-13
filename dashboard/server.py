@@ -4510,11 +4510,17 @@ async def handle_stripe_webhook(req):
     try:
         payload = await req.read()
         sig_header = req.headers.get("Stripe-Signature", "")
-        webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 
         from modules.stripe_automation import verify_webhook_signature, handle_webhook_event
-        if webhook_secret and not verify_webhook_signature(payload, sig_header, webhook_secret):
-            return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
+
+        # Live- und Test-Secret beide prüfen (Test-Account hat eigenes Secret)
+        live_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+        test_secret = os.getenv("STRIPE_TEST_WEBHOOK_SECRET", "")
+        secrets = [s for s in [live_secret, test_secret] if s]
+        if secrets:
+            verified = any(verify_webhook_signature(payload, sig_header, s) for s in secrets)
+            if not verified:
+                return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
 
         event = json.loads(payload)
         result = await handle_webhook_event(event)
