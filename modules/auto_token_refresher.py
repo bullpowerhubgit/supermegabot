@@ -63,40 +63,58 @@ async def _load_token(platform: str, key: str) -> str:
 
 
 async def refresh_tiktok_token() -> dict:
-    """Refresht TikTok Access Token via Refresh Token."""
+    """Refresht TikTok Access Token via API v2. Hinweis: benötigt passende Client-Credentials."""
     refresh_token = await _load_token("tiktok", "refresh_token")
-    app_key       = os.getenv("TIKTOK_APP_KEY", "")
-    app_secret    = os.getenv("TIKTOK_APP_SECRET", "")
+    # Alle verfügbaren Client-Key-Paare versuchen
+    cred_pairs = [
+        (os.getenv("TIKTOK_CLIENT_KEY", ""), os.getenv("TIKTOK_CLIENT_SECRET", "")),
+        (os.getenv("TIKTOK_SANDBOX_CLIENT_KEY", ""), os.getenv("TIKTOK_SANDBOX_CLIENT_SECRET", "")),
+        (os.getenv("TIKTOK_APP_KEY", ""), os.getenv("TIKTOK_APP_SECRET", "")),
+    ]
 
-    if not refresh_token or not app_key or not app_secret:
-        return {"ok": False, "platform": "tiktok", "reason": "missing credentials"}
+    if not refresh_token:
+        return {"ok": False, "platform": "tiktok", "reason": "no refresh_token"}
 
+    for app_key, app_secret in cred_pairs:
+        if not app_key or not app_secret:
+            continue
+        try:
+            async with aiohttp.ClientSession() as s:
+                async with s.post(
+                    "https://open.tiktokapis.com/v2/oauth/token/",
+                    headers={"Content-Type": "application/x-www-form-urlencoded"},
+                    data=(
+                        f"client_key={app_key}&client_secret={app_secret}"
+                        f"&grant_type=refresh_token&refresh_token={refresh_token}"
+                    ),
+                    timeout=aiohttp.ClientTimeout(total=15),
+                ) as r:
+                    data = await r.json()
+
+            if data.get("access_token"):
+                new_token   = data["access_token"]
+                new_refresh = data.get("refresh_token", refresh_token)
+                await _save_token("tiktok", "access_token",  new_token)
+                await _save_token("tiktok", "refresh_token", new_refresh)
+                log.info("TikTok token refreshed with client_key=%s", app_key[:10])
+                return {"ok": True, "platform": "tiktok", "refreshed": True}
+        except Exception as e:
+            log.debug("TikTok refresh attempt failed (key=%s): %s", app_key[:10], e)
+
+    log.warning("TikTok: alle Refresh-Versuche fehlgeschlagen — neue OAuth-Credentials nötig")
+    return {"ok": False, "platform": "tiktok", "reason": "invalid_client — fresh OAuth required"}
+
+
+async def check_meta_tokens() -> dict:
+    """Prüft Facebook Page Token und versucht User-Token-Verlängerung."""
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://open-api.tiktok.com/oauth/refresh_token/",
-                data={
-                    "client_key":    app_key,
-                    "client_secret": app_secret,
-                    "grant_type":    "refresh_token",
-                    "refresh_token": refresh_token,
-                },
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                data = await r.json()
-
-        if data.get("data", {}).get("access_token"):
-            new_token   = data["data"]["access_token"]
-            new_refresh = data["data"].get("refresh_token", refresh_token)
-            await _save_token("tiktok", "access_token",  new_token)
-            await _save_token("tiktok", "refresh_token", new_refresh)
-            log.info("TikTok token refreshed successfully")
-            return {"ok": True, "platform": "tiktok", "refreshed": True}
-        else:
-            err = str(data)[:200]
-            return {"ok": False, "platform": "tiktok", "error": err}
+        from modules.instagram_token_refresh import check_and_refresh_all
+        result = await check_and_refresh_all()
+        errors = result.get("errors", [])
+        ok     = not errors
+        return {"ok": True, "platform": "meta", "valid": ok, "errors": errors}
     except Exception as e:
-        return {"ok": False, "platform": "tiktok", "error": str(e)}
+        return {"ok": False, "platform": "meta", "error": str(e)}
 
 
 async def validate_klaviyo() -> dict:
@@ -205,10 +223,11 @@ async def run_token_health_check() -> dict:
         validate_stripe(),
         validate_telegram(),
         refresh_tiktok_token(),
+        check_meta_tokens(),
         return_exceptions=True,
     )
 
-    labels   = ["klaviyo", "shopify", "mailchimp", "stripe", "telegram", "tiktok"]
+    labels   = ["klaviyo", "shopify", "mailchimp", "stripe", "telegram", "tiktok", "meta"]
     statuses = {}
     failed   = []
     ok_count = 0
@@ -222,7 +241,7 @@ async def run_token_health_check() -> dict:
             is_ok = r.get("ok") and r.get("valid", True)
             if is_ok:
                 ok_count += 1
-            elif label != "tiktok":
+            elif label not in ("tiktok",):
                 failed.append(label)
         else:
             statuses[label] = {"ok": False}
