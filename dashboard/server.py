@@ -5712,8 +5712,9 @@ async def handle_tiktok_content_callback(req):
     if not code:
         return web.json_response({"ok": False, "error": "No code received"})
 
-    client_key = os.getenv("TIKTOK_CLIENT_KEY", "")
-    client_secret = os.getenv("TIKTOK_CLIENT_SECRET", "")
+    # Sandbox-OAuth benutzt den Sandbox-Key (nicht den Production-Key)
+    client_key = os.getenv("TIKTOK_SANDBOX_CLIENT_KEY", os.getenv("TIKTOK_CLIENT_KEY", ""))
+    client_secret = os.getenv("TIKTOK_SANDBOX_CLIENT_SECRET", os.getenv("TIKTOK_CLIENT_SECRET", ""))
     redirect_uri = os.getenv(
         "TIKTOK_REDIRECT_URI",
         "https://supermegabot-production.up.railway.app/api/tiktok/content/callback",
@@ -9305,6 +9306,141 @@ async def handle_fb_token_refresh(req: web.Request) -> web.Response:
 
 # ── END FACEBOOK TOKEN AUTO-REFRESH ──────────────────────────────────────────
 
+# ── SYS-10 / SYS-13 / SYS-18 / SERVICE DELIVERY (BPI Extension) ──────────────
+
+async def handle_bpi_outreach_stats(req: web.Request) -> web.Response:
+    try:
+        import sqlite3
+        db = Path(__file__).parent.parent / "data" / "bulk_outreach.db"
+        if not db.exists():
+            return web.json_response({"ok": True, "status": "no_data", "sent": 0, "partners": 0})
+        with sqlite3.connect(str(db)) as c:
+            c.row_factory = sqlite3.Row
+            sent       = c.execute("SELECT COUNT(*) FROM bo_outreach WHERE status IN ('sent','followup_sent','replied')").fetchone()[0]
+            replies    = c.execute("SELECT COUNT(*) FROM bo_outreach WHERE replied_at IS NOT NULL").fetchone()[0]
+            partners   = c.execute("SELECT COUNT(*) FROM bo_partners WHERE status='onboarded'").fetchone()[0]
+            companies  = c.execute("SELECT COUNT(*) FROM bo_companies").fetchone()[0]
+            unsub      = c.execute("SELECT COUNT(*) FROM bo_outreach WHERE status='unsubscribed'").fetchone()[0]
+        return web.json_response({
+            "ok": True, "companies": companies, "sent": sent,
+            "replies": replies, "partners": partners, "unsubscribed": unsub,
+            "reply_rate_pct": round(replies / max(sent, 1) * 100, 1),
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bpi_outreach_run(req: web.Request) -> web.Response:
+    try:
+        from modules.email_outreach_bulk import run_outreach, run_followup, init_db, _seed_companies
+        init_db(); _seed_companies()
+        result    = await run_outreach(daily_limit=100)
+        followup  = await run_followup(daily_limit=30)
+        return web.json_response({"ok": True, "sent": result.get("sent", 0),
+                                  "errors": result.get("errors", 0),
+                                  "followup_sent": followup.get("followup_sent", 0)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bpi_partners(req: web.Request) -> web.Response:
+    try:
+        import sqlite3
+        db = Path(__file__).parent.parent / "data" / "bulk_outreach.db"
+        if not db.exists():
+            return web.json_response({"ok": True, "partners": []})
+        with sqlite3.connect(str(db)) as c:
+            c.row_factory = sqlite3.Row
+            rows = c.execute(
+                "SELECT p.email, p.status, p.commission_pct, p.total_referrals, p.total_earned, "
+                "p.onboarded_at, co.name FROM bo_partners p "
+                "LEFT JOIN bo_companies co ON p.company_id=co.id ORDER BY p.onboarded_at DESC LIMIT 100"
+            ).fetchall()
+        return web.json_response({"ok": True, "partners": [dict(r) for r in rows]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bpi_delivery_order(req: web.Request) -> web.Response:
+    try:
+        body = await req.json()
+        product_key    = body.get("product_key", "")
+        customer_email = body.get("customer_email", "")
+        customer_data  = body.get("customer_data", {})
+        if not product_key or not customer_email:
+            return web.json_response({"ok": False, "error": "product_key + customer_email required"}, status=400)
+        from modules.service_delivery import deliver_order
+        result = await deliver_order(product_key, customer_email, customer_data)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bpi_delivery_stats(req: web.Request) -> web.Response:
+    try:
+        import sqlite3
+        db = Path(__file__).parent.parent / "data" / "deliveries.db"
+        if not db.exists():
+            return web.json_response({"ok": True, "total": 0, "delivered": 0, "pending": 0, "failed": 0})
+        with sqlite3.connect(str(db)) as c:
+            total     = c.execute("SELECT COUNT(*) FROM deliveries").fetchone()[0]
+            delivered = c.execute("SELECT COUNT(*) FROM deliveries WHERE status='delivered'").fetchone()[0]
+            pending   = c.execute("SELECT COUNT(*) FROM deliveries WHERE status='pending'").fetchone()[0]
+            failed    = c.execute("SELECT COUNT(*) FROM deliveries WHERE status='failed'").fetchone()[0]
+            by_product = c.execute(
+                "SELECT product_key, COUNT(*) as cnt FROM deliveries WHERE status='delivered' GROUP BY product_key"
+            ).fetchall()
+        return web.json_response({
+            "ok": True, "total": total, "delivered": delivered,
+            "pending": pending, "failed": failed,
+            "by_product": [{"product": r[0], "count": r[1]} for r in by_product],
+        })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bpi_sys18_preview(req: web.Request) -> web.Response:
+    try:
+        from modules.sys18_newsletter_ki import generate_newsletter
+        params = req.rel_url.query
+        result = await generate_newsletter(
+            kanzlei_name=params.get("kanzlei", "Mustermann Steuerberatung"),
+            kanzlei_ort=params.get("ort", "München"),
+            mandanten_typ=params.get("typ", "gemischt"),
+        )
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_bpi_stripe_webhook(req: web.Request) -> web.Response:
+    """Erweitert den bestehenden Stripe-Webhook um automatische Service-Lieferung."""
+    try:
+        payload    = await req.read()
+        sig_header = req.headers.get("Stripe-Signature", "")
+        webhook_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+        from modules.stripe_automation import verify_webhook_signature
+        if webhook_secret and not verify_webhook_signature(payload, sig_header, webhook_secret):
+            return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
+        event = json.loads(payload)
+        if event.get("type") == "checkout.session.completed":
+            sess   = event["data"]["object"]
+            email  = sess.get("customer_details", {}).get("email", "")
+            meta   = sess.get("metadata", {})
+            product_key = meta.get("product_key", "")
+            if email and product_key:
+                from modules.service_delivery import deliver_order
+                asyncio.create_task(deliver_order(product_key, email, meta))
+                log.info(f"Stripe→Delivery: {product_key} → {email}")
+        from modules.stripe_automation import handle_webhook_event
+        result = await handle_webhook_event(event)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        log.error(f"BPI Stripe webhook Fehler: {e}")
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+# ── END BPI EXTENSION ─────────────────────────────────────────────────────────
+
 
 async def create_app():
     try:
@@ -10356,6 +10492,16 @@ async def create_app():
     app.router.add_post("/api/intelligence-broker/report",        handle_intelligence_broker_report)
     app.router.add_get( "/api/intelligence-broker/watchlist",     handle_intelligence_broker_watchlist)
     log.info("BPI 8 Systems routes registered (SYS-01..SYS-08)")
+
+    # SYS-10 Bulk Outreach + SYS-13 Partner Channel + SYS-18 Newsletter KI + Delivery
+    app.router.add_get( "/api/bpi/outreach/stats",   handle_bpi_outreach_stats)
+    app.router.add_post("/api/bpi/outreach/run",     handle_bpi_outreach_run)
+    app.router.add_get( "/api/bpi/partners",         handle_bpi_partners)
+    app.router.add_post("/api/bpi/delivery/order",   handle_bpi_delivery_order)
+    app.router.add_get( "/api/bpi/delivery/stats",   handle_bpi_delivery_stats)
+    app.router.add_get( "/api/bpi/sys18/preview",    handle_bpi_sys18_preview)
+    app.router.add_post("/api/bpi/stripe/webhook",   handle_bpi_stripe_webhook)
+    log.info("BPI Extension routes registered (SYS-10/13/18 + Delivery)")
     # ── END BPI 8 SYSTEMS ───────────────────────────────────────────────────────
 
     # Start hourly lead follow-up reminder background task
