@@ -14,6 +14,37 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
+# ── Rate-Limit State (in-memory + file) ───────────────────────────────────────
+import time as _time
+from pathlib import Path as _Path
+
+_RATE_STATE_FILE = _Path(__file__).parent.parent / "data" / "brutus_rate_state.json"
+
+def _load_rate_state() -> dict:
+    try:
+        import json
+        return json.loads(_RATE_STATE_FILE.read_text())
+    except Exception:
+        return {}
+
+def _save_rate_state(s: dict) -> None:
+    import json
+    _RATE_STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    _RATE_STATE_FILE.write_text(json.dumps(s))
+
+def _rate_gate(key: str, min_interval_s: int) -> bool:
+    """Returns True if allowed to post, False if rate-limited."""
+    state = _load_rate_state()
+    last = state.get(key, 0)
+    now = _time.time()
+    if now - last < min_interval_s:
+        remaining = int(min_interval_s - (now - last))
+        logger.info("Rate gate %s: throttled — %ds remaining", key, remaining)
+        return False
+    state[key] = now
+    _save_rate_state(state)
+    return True
+
 TELEGRAM_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
@@ -128,6 +159,9 @@ async def _shopify_blog(title: str, body: str, tags: list, session: aiohttp.Clie
 
 async def _linkedin(text: str, session: aiohttp.ClientSession) -> bool:
     if not LINKEDIN_TOKEN:
+        return False
+    # Max 1 LinkedIn post per 2 hours (429 prevention)
+    if not _rate_gate("linkedin", 7200):
         return False
     try:
         async with session.post(

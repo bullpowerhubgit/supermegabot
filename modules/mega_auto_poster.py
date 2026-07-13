@@ -191,6 +191,20 @@ async def _post_instagram(content: dict) -> bool:
             container_id = container.get("id", "")
             if not container_id:
                 return False
+            # Instagram braucht Zeit für Medien-Processing — warten bis status=FINISHED
+            for attempt in range(6):
+                await asyncio.sleep(10)
+                async with s.get(
+                    f"https://graph.facebook.com/v19.0/{container_id}",
+                    params={"fields": "status_code", "access_token": token},
+                    timeout=aiohttp.ClientTimeout(total=10),
+                ) as r:
+                    status_data = await r.json(content_type=None)
+                if status_data.get("status_code") == "FINISHED":
+                    break
+                if status_data.get("status_code") == "ERROR":
+                    log.warning("Instagram container error: %s", status_data)
+                    return False
             async with s.post(
                 f"https://graph.facebook.com/v19.0/{IG_ACCOUNT_ID}/media_publish",
                 data={"creation_id": container_id, "access_token": token},
