@@ -1,791 +1,1042 @@
 #!/usr/bin/env python3
 """
-KI-Telefonassistentin "Sofia" — Vollautomatische Sales-Demos per Telefon
-=========================================================================
-Vollautomatisch: kein Mensch nötig. Sofia führt das Gespräch, bucht Demos,
-sendet Links per SMS, trackt alles in Supabase.
+KI-Telefon-Verkaufsassistent "Max" — Vollautomatisch via OpenAI Realtime API
+=============================================================================
+Architektur: Twilio Voice → WebSocket → OpenAI Realtime API → WebSocket → Twilio Voice
+
+Max führt vollautomatische Verkaufsgespräche auf Deutsch.
+Keine menschliche Beteiligung nötig — KI übernimmt komplett.
 
 Flow Inbound (Kunde ruft an):
-  Anruf → Twilio → /api/phone/incoming → TwiML → WebSocket /ws/phone
-  → Whisper STT → Claude Haiku (Sales-Script) → OpenAI TTS → Twilio Audio
+  Anruf → Twilio → POST /api/phone/incoming → TwiML → WS /ws/phone
+  → PhoneAIBridge → OpenAI Realtime API (gpt-4o-realtime-preview) → Audio zurück
 
-Flow Outbound (Sofia ruft Leads an):
-  Lead aus mass_outreach DB → Twilio API: Anruf initiieren
-  → gleicher Audio-Pipeline → Demo-Link per SMS bei Interesse
-
-Stimme: OpenAI TTS "nova" (weiblich, natürlich klingendes Deutsch)
-STT:    OpenAI Whisper (€0.006/min)
-KI:     Claude Haiku (schnell, <500ms)
-TTS:    OpenAI TTS nova (€0.015/1000 Zeichen)
-
-Setup:
-  1. Twilio-Nummer kaufen: python3 modules/phone_ai_assistant.py --buy-number +49
-  2. Webhook setzen:       python3 modules/phone_ai_assistant.py --setup-webhook
-  3. Test-Anruf:           python3 modules/phone_ai_assistant.py --test-call +49XXXXXXXXXX
-  4. Outbound-Kampagne:    python3 modules/phone_ai_assistant.py --outbound 10
+Flow Outbound (Max ruft Leads an):
+  POST /api/phone/outbound → Twilio REST API → Anruf → gleicher Flow
 
 API-Routen (in dashboard/server.py registriert):
   POST /api/phone/incoming     — Twilio Webhook (eingehend)
   POST /api/phone/status       — Twilio Call-Status Updates
   GET  /api/phone/stats        — Statistiken
+  POST /api/phone/outbound     — Outbound-Anruf starten
   WS   /ws/phone               — Twilio Media Stream WebSocket
+
+Setup:
+  1. TWILIO_PHONE_NUMBER in .env setzen (Twilio-Nummer kaufen)
+  2. Webhook auf /api/phone/incoming setzen
+  3. Testen: python3 modules/phone_ai_assistant.py --test-call +49XXXXXXXXXX
 """
 from __future__ import annotations
 
 import asyncio
 import base64
-import io
+import contextlib
 import json
 import logging
 import os
 import sqlite3
 import struct
 import sys
-import tempfile
 import time
-import wave
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import aiohttp
 from aiohttp import web
+import websockets
+import websockets.exceptions
 
 log = logging.getLogger("PhoneAI")
 
+# ── Paths ─────────────────────────────────────────────────────────────────────
 _BASE = Path(__file__).parent.parent
-_DB   = _BASE / "data" / "phone_ai.db"
+_DB   = _BASE / "data" / "phone_calls.db"
 
-# ── Env ───────────────────────────────────────────────────────────────────────
-def _e(k: str, d: str = "") -> str: return os.getenv(k, d)
+# ── Environment ───────────────────────────────────────────────────────────────
+def _e(k: str, d: str = "") -> str:
+    return os.getenv(k, d)
 
-TWILIO_SID      = lambda: _e("TWILIO_ACCOUNT_SID")
-TWILIO_TOKEN    = lambda: _e("TWILIO_AUTH_TOKEN")
-TWILIO_NUMBER   = lambda: _e("TWILIO_PHONE_NUMBER", "")
-OPENAI_KEY      = lambda: _e("OPENAI_API_KEY")
-ANTHROPIC_KEY   = lambda: _e("ANTHROPIC_API_KEY")
-TG_TOKEN        = lambda: _e("TELEGRAM_BOT_TOKEN")
-TG_CHAT         = lambda: _e("TELEGRAM_CHAT_ID")
-PUBLIC_URL      = lambda: _e("RAILWAY_PUBLIC_DOMAIN",
-                              "supermegabot-production.up.railway.app")
-DEMO_URL        = "https://bullpower-hub.vercel.app"
+def TWILIO_SID()    -> str: return _e("TWILIO_ACCOUNT_SID")
+def TWILIO_TOKEN()  -> str: return _e("TWILIO_AUTH_TOKEN")
+def TWILIO_NUMBER() -> str: return _e("TWILIO_PHONE_NUMBER", "")
+def OPENAI_KEY()    -> str: return _e("OPENAI_API_KEY")
+def TG_TOKEN()      -> str: return _e("TELEGRAM_BOT_TOKEN")
+def TG_CHAT()       -> str: return _e("TELEGRAM_CHAT_ID")
+def PUBLIC_URL()    -> str:
+    return _e("RAILWAY_PUBLIC_DOMAIN", "supermegabot-production.up.railway.app")
 
-# ── DB ────────────────────────────────────────────────────────────────────────
+# ── Active bridges (call_sid → PhoneAIBridge) ─────────────────────────────────
+_active_bridges: Dict[str, "PhoneAIBridge"] = {}
+
+# ── Product contexts ──────────────────────────────────────────────────────────
+_MAX_BASE = (
+    "Du bist Max, ein freundlicher KI-Verkaufsassistent von BullPower. "
+    "Du sprichst lebhaft, natürlich und überzeugend auf Deutsch. "
+    "Dein Ziel ist es, den Anrufer von unserer Lösung zu begeistern, "
+    "seine Schmerzpunkte zu verstehen und eine Demo oder ein Folgegespräch zu vereinbaren. "
+    "\n\nGesprächsstruktur:\n"
+    "1. Begrüße dich freundlich und stell dich als Max von BullPower vor.\n"
+    "2. Erkläre kurz warum du anrufst oder was du anbieten kannst.\n"
+    "3. Stelle eine offene Frage zu den aktuellen Herausforderungen des Anrufers.\n"
+    "4. Höre aktiv zu und gehe auf die genannten Probleme ein.\n"
+    "5. Präsentiere die passende Lösung in 2-3 Sätzen — konkret und nutzenorientiert.\n"
+    "6. Behandle Einwände professionell und empathisch.\n"
+    "7. Schließe mit einem konkreten nächsten Schritt ab (Demo, Termin, Rückruf).\n"
+    "\nRegeln:\n"
+    "- Maximal 3-4 Sätze pro Antwort (Telefon = kurz!)\n"
+    "- Immer natürlich und menschlich klingen — kein Roboter-Tonfall\n"
+    "- Bei klar gezeigtem Desinteresse: höflich verabschieden\n"
+    "- Preise nur auf Nachfrage nennen\n"
+    "- Niemals lügen oder übertreiben — Vertrauen ist wichtiger als der Abschluss\n"
+)
+
+PRODUCT_CONTEXTS: Dict[str, str] = {
+    "general": (
+        _MAX_BASE +
+        "\nProdukt-Kontext: BullPower KI-Tools — Automatisierungslösungen für E-Commerce.\n"
+        "Wir helfen Online-Händlern und Unternehmern, mit KI-Automatisierung Zeit zu sparen, "
+        "Umsatz zu steigern und Prozesse zu optimieren. Von Shopify-Automatisierung bis hin zu "
+        "KI-gestützten Marketing-Kampagnen.\n"
+        "USPs: Sofort einsatzbereit, keine technischen Kenntnisse nötig, "
+        "messbare Ergebnisse in 30 Tagen, persönlicher Support.\n"
+        "Nächster Schritt: Kostenlose 30-Minuten-Demo vereinbaren."
+    ),
+    "shopify": (
+        _MAX_BASE +
+        "\nProdukt-Kontext: BullPower Shopify Automatisierungs-SaaS\n"
+        "Wir automatisieren den kompletten Shopify-Betrieb: Produktpflege, Bestellverarbeitung, "
+        "Kundensegmentierung, Preisoptimierung und Marketing — alles KI-gesteuert.\n"
+        "Preise: Starter €49/Monat (bis 500 Produkte), Pro €99/Monat (bis 5.000 Produkte), "
+        "Enterprise €299/Monat (unbegrenzt + White-Label).\n"
+        "Typische Kundenergebnisse: 60% weniger manueller Aufwand, +25% Conversion Rate, "
+        "3x mehr Produkte im Sortiment ohne mehr Arbeit.\n"
+        "USP: Als einzige Lösung verbindet BullPower KI-Produkterstellung, "
+        "automatisches SEO und Preisoptimierung in einem System.\n"
+        "Nächster Schritt: 14-Tage-Gratis-Test starten."
+    ),
+    "digistore": (
+        _MAX_BASE +
+        "\nProdukt-Kontext: BullPower DigiStore24 Optimierungs-Suite\n"
+        "Wir maximieren die Einnahmen von DigiStore24-Vendoren und Affiliates durch "
+        "KI-optimierte Produktbeschreibungen, automatische Affiliate-Akquise und "
+        "datengesteuerte Umsatzprognosen.\n"
+        "Typische Ergebnisse: +40% Conversion Rate, 3x mehr aktive Affiliates, "
+        "automatisches Tracking und Optimierung in Echtzeit.\n"
+        "Für wen: DigiStore24-Vendor mit mindestens einem digitalen Produkt, "
+        "der mehr Umsatz will ohne mehr Arbeit.\n"
+        "Nächster Schritt: Kostenlose Analyse des bestehenden DigiStore24-Accounts."
+    ),
+    "ai_tools": (
+        _MAX_BASE +
+        "\nProdukt-Kontext: BullPower KI-API-Zugang\n"
+        "Wir bieten KI-API-Zugänge zu Claude, GPT-4o und Gemini — gebündelt, "
+        "abgerechnet und mit eigenem Billing-System für Weiterverkauf.\n"
+        "Perfekt für: Agenturen, SaaS-Entwickler und Tech-Unternehmen die KI-Features "
+        "einbauen wollen ohne selbst bei Anthropic/OpenAI zu integrieren.\n"
+        "Preisstufen: Micro (€29/Mo, 100k Tokens), Standard (€99/Mo, 1M Tokens), "
+        "Pro (€299/Mo, 10M Tokens) — alles ohne Einzelabrechnung.\n"
+        "USP: Einheitliche API, ein Vertrag, eine Rechnung — egal ob Claude oder GPT-4o.\n"
+        "Nächster Schritt: API-Key für 7 Tage kostenlos testen."
+    ),
+    "telegram": (
+        _MAX_BASE +
+        "\nProdukt-Kontext: BullPower Telegram Subscription-Bot\n"
+        "Wir bauen und betreiben Telegram-Bots mit Abo-Modell für Influencer, "
+        "Communities und Content-Creator — komplett automatisiert.\n"
+        "Der Bot übernimmt: Zahlungsabwicklung (Stripe/PayPal), Mitglieder-Management, "
+        "Premium-Content-Verteilung, automatische Kündigung und Mahnungen.\n"
+        "Typische Creator verdienen: €500-5.000/Monat passiv mit 100-1.000 Abonnenten.\n"
+        "Preise: Setup ab €299 einmalig, dann 5% Revenue-Share (kein Monatsabo).\n"
+        "USP: Einzige Lösung mit vollautomatischer Aboverwaltung und "
+        "eingebautem Anti-Churn-System.\n"
+        "Nächster Schritt: Kostenlosen Setup-Call vereinbaren."
+    ),
+}
+
+# ── Database ──────────────────────────────────────────────────────────────────
 def _db() -> sqlite3.Connection:
-    _DB.parent.mkdir(exist_ok=True)
+    _DB.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(_DB))
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode=WAL")
     return conn
 
+
 def init_db() -> None:
+    """Erstellt phone_calls.db mit calls- und appointments-Tabellen."""
     with _db() as conn:
         conn.executescript("""
         CREATE TABLE IF NOT EXISTS calls (
             id           INTEGER PRIMARY KEY AUTOINCREMENT,
             call_sid     TEXT UNIQUE,
             direction    TEXT DEFAULT 'inbound',
-            from_number  TEXT,
-            to_number    TEXT,
+            to_number    TEXT DEFAULT '',
+            from_number  TEXT DEFAULT '',
+            product_id   TEXT DEFAULT 'general',
             status       TEXT DEFAULT 'initiated',
-            outcome      TEXT,
-            duration_sec INTEGER DEFAULT 0,
-            transcript   TEXT,
-            interest     INTEGER DEFAULT 0,
-            demo_sent    INTEGER DEFAULT 0,
             started_at   TEXT DEFAULT (datetime('now')),
-            ended_at     TEXT
+            ended_at     TEXT,
+            duration_sec INTEGER DEFAULT 0
         );
-        CREATE TABLE IF NOT EXISTS outbound_queue (
-            id           INTEGER PRIMARY KEY AUTOINCREMENT,
-            phone        TEXT UNIQUE,
-            company      TEXT,
-            industry     TEXT DEFAULT 'Default',
-            lead_email   TEXT,
-            status       TEXT DEFAULT 'pending',
-            attempts     INTEGER DEFAULT 0,
-            scheduled_at TEXT DEFAULT (datetime('now')),
-            called_at    TEXT
+        CREATE TABLE IF NOT EXISTS appointments (
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            call_sid      TEXT,
+            contact_name  TEXT DEFAULT '',
+            contact_email TEXT DEFAULT '',
+            contact_phone TEXT DEFAULT '',
+            product_id    TEXT DEFAULT 'general',
+            scheduled_at  TEXT,
+            notes         TEXT DEFAULT '',
+            created_at    TEXT DEFAULT (datetime('now'))
         );
+        CREATE INDEX IF NOT EXISTS idx_calls_sid  ON calls (call_sid);
+        CREATE INDEX IF NOT EXISTS idx_calls_date ON calls (started_at);
+        CREATE INDEX IF NOT EXISTS idx_appt_sid   ON appointments (call_sid);
         """)
+    log.info("phone_calls.db initialisiert: %s", _DB)
 
-# ── Audio: μ-law ↔ PCM (Twilio sendet 8kHz μ-law) ────────────────────────────
-def _ulaw_to_pcm(ulaw_bytes: bytes) -> bytes:
-    """Konvertiert μ-law 8kHz zu PCM 16-bit."""
-    pcm = []
-    for byte in ulaw_bytes:
-        byte = ~byte & 0xFF
-        sign = byte & 0x80
-        exp  = (byte >> 4) & 0x07
-        mant = byte & 0x0F
-        sample = ((mant << 1) + 33) << exp
-        if sign:
-            sample = -sample
-        pcm.append(max(-32768, min(32767, sample)))
-    return struct.pack(f"<{len(pcm)}h", *pcm)
 
-def _pcm_to_ulaw(pcm_bytes: bytes) -> bytes:
-    """Konvertiert PCM 16-bit zu μ-law 8kHz für Twilio."""
-    result = []
-    samples = struct.unpack(f"<{len(pcm_bytes)//2}h", pcm_bytes)
-    for sample in samples:
-        if sample < 0:
-            sample = -sample
-            sign = 0x80
-        else:
-            sign = 0
-        sample = min(sample + 33, 32767)
-        exp = 7
-        for i in range(7, -1, -1):
-            if sample >= (1 << (i + 5)):
-                exp = i
-                break
-        mant = (sample >> (exp + 1)) & 0x0F
-        ulaw = ~(sign | (exp << 4) | mant) & 0xFF
-        result.append(ulaw)
-    return bytes(result)
+# ── Audio conversion helpers ──────────────────────────────────────────────────
+def _build_mulaw_decode_table() -> List[int]:
+    """Erstellt die 256-Eintrags-Lookup-Tabelle für μ-law → PCM16 Dekodierung."""
+    table: List[int] = []
+    for i in range(256):
+        u = ~i & 0xFF           # Bits invertieren (G.711 μ-law ist bit-invertiert gespeichert)
+        sign = u >> 7           # Bit 7: Vorzeichen (1 = negativ)
+        exp  = (u >> 4) & 0x07  # Bits 6-4: Exponent
+        mant = u & 0x0F         # Bits 3-0: Mantisse
+        # Magnitude berechnen, auf 16-Bit skalieren (<<exp+2 statt <<exp)
+        mag = ((mant << 1) + 33) << (exp + 2)
+        sample = -mag if sign else mag
+        # Auf 16-Bit-Bereich begrenzen
+        table.append(max(-32768, min(32767, sample)))
+    return table
 
-def _build_wav(pcm_data: bytes, sample_rate: int = 8000) -> bytes:
-    """PCM → WAV für Whisper."""
-    buf = io.BytesIO()
-    with wave.open(buf, "wb") as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(sample_rate)
-        wf.writeframes(pcm_data)
-    return buf.getvalue()
 
-# ── STT: OpenAI Whisper ───────────────────────────────────────────────────────
-async def _transcribe(audio_wav: bytes) -> str:
-    """Whisper transkribiert deutschen Anruf-Audio."""
-    if not OPENAI_KEY():
-        return ""
-    try:
-        data = aiohttp.FormData()
-        data.add_field("file", audio_wav, filename="audio.wav",
-                       content_type="audio/wav")
-        data.add_field("model", "whisper-1")
-        data.add_field("language", "de")
-        data.add_field("prompt",
-                       "Geschäftsgespräch auf Deutsch über KI-Automatisierung und Shopify.")
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.openai.com/v1/audio/transcriptions",
-                headers={"Authorization": f"Bearer {OPENAI_KEY()}"},
-                data=data,
-                timeout=aiohttp.ClientTimeout(total=20)
-            ) as r:
-                if r.status == 200:
-                    j = await r.json()
-                    return j.get("text", "").strip()
-    except Exception as e:
-        log.warning("Whisper error: %s", e)
-    return ""
+_MULAW_DECODE_TABLE: List[int] = _build_mulaw_decode_table()
 
-# ── TTS: OpenAI nova (Deutsch) ────────────────────────────────────────────────
-async def _synthesize(text: str) -> bytes:
-    """OpenAI TTS 'nova' → μ-law Audio für Twilio."""
-    if not OPENAI_KEY():
+
+def _mulaw_to_pcm24k(data: bytes) -> bytes:
+    """Konvertiert μ-law 8kHz-Bytes zu PCM 16-Bit 24kHz (für OpenAI Realtime API).
+
+    Schritt 1: μ-law → PCM 16-Bit bei 8kHz (Lookup-Tabelle)
+    Schritt 2: Lineares Upsampling 8kHz → 24kHz (Faktor 3, Interpolation)
+    """
+    if not data:
         return b""
-    try:
-        payload = {
-            "model": "tts-1",
-            "input": text[:4096],
-            "voice": "nova",
-            "response_format": "wav",
-            "speed": 0.95,
+
+    # Schritt 1: μ-law → PCM 8kHz
+    pcm8: List[int] = [_MULAW_DECODE_TABLE[b] for b in data]
+    n = len(pcm8)
+
+    # Schritt 2: Lineare Interpolation 8kHz → 24kHz (3 Ausgabesamples pro Eingang)
+    pcm24: List[int] = []
+    for i in range(n):
+        s0 = pcm8[i]
+        s1 = pcm8[i + 1] if i + 1 < n else s0
+        d  = s1 - s0
+        pcm24.append(max(-32768, min(32767, s0)))
+        pcm24.append(max(-32768, min(32767, s0 + d // 3)))
+        pcm24.append(max(-32768, min(32767, s0 + (d * 2) // 3)))
+
+    return struct.pack(f"<{len(pcm24)}h", *pcm24)
+
+
+def _encode_mulaw_sample(sample: int) -> int:
+    """Kodiert einen einzelnen PCM 16-Bit Sample zu einem μ-law Byte."""
+    if sample < 0:
+        sample = -sample
+        sign = 0x80
+    else:
+        sign = 0
+    sample = min(sample + 33, 32767)  # Bias addieren
+    # Exponent bestimmen (höchstes gesetztes Bit im Bereich bit5..bit12)
+    exp = 7
+    for i in range(7, -1, -1):
+        if sample >= (1 << (i + 5)):
+            exp = i
+            break
+    mant = (sample >> (exp + 1)) & 0x0F
+    return ~(sign | (exp << 4) | mant) & 0xFF
+
+
+def _pcm24k_to_mulaw(data: bytes) -> bytes:
+    """Konvertiert PCM 16-Bit 24kHz (von OpenAI) zu μ-law 8kHz (für Twilio).
+
+    Schritt 1: Dezimierung 24kHz → 8kHz (jeden 3. Sample behalten)
+    Schritt 2: PCM 16-Bit → μ-law kodieren
+    """
+    if not data:
+        return b""
+    n = len(data) // 2
+    if n == 0:
+        return b""
+    samples = struct.unpack(f"<{n}h", data[: n * 2])
+    # Dezimierung: jeden 3. Sample nehmen
+    decimated = samples[::3]
+    return bytes(_encode_mulaw_sample(s) for s in decimated)
+
+
+# ── TwiML Generator ───────────────────────────────────────────────────────────
+def generate_inbound_twiml(call_sid: str, product_id: str = "general") -> str:
+    """Erzeugt TwiML-String für eingehenden Anruf.
+
+    Verbindet Twilio Media Streams mit unserem WebSocket-Bridge-Endpoint.
+    Max begrüßt den Anrufer nach WebSocket-Verbindungsaufbau.
+    """
+    domain = PUBLIC_URL()
+    ws_url = f"wss://{domain}/ws/phone?call_sid={call_sid}&product={product_id}"
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        "<Response>\n"
+        "  <Connect>\n"
+        f'    <Stream url="{ws_url}">\n'
+        f'      <Parameter name="callSid"   value="{call_sid}"/>\n'
+        f'      <Parameter name="productId" value="{product_id}"/>\n'
+        "    </Stream>\n"
+        "  </Connect>\n"
+        "</Response>"
+    )
+
+
+# ── WebSocket Bridge: Twilio ↔ OpenAI Realtime API ───────────────────────────
+_OPENAI_REALTIME_URL = "wss://api.openai.com/v1/realtime?model=gpt-4o-realtime-preview"
+
+
+class PhoneAIBridge:
+    """Bridges Twilio Media Streams WebSocket ↔ OpenAI Realtime API.
+
+    Twilio sendet μ-law 8kHz Audio, OpenAI erwartet PCM 16-Bit 24kHz.
+    OpenAI antwortet mit PCM 16-Bit 24kHz, Twilio erwartet μ-law 8kHz.
+    """
+
+    def __init__(
+        self,
+        call_sid: str,
+        product_id: str,
+        ws_client: web.WebSocketResponse,
+    ) -> None:
+        self.call_sid   = call_sid
+        self.product_id = product_id
+        self.ws_twilio  = ws_client  # aiohttp WebSocketResponse (Server-Seite)
+        self.stream_sid = ""
+        self._started   = datetime.now(timezone.utc)
+        self._done      = asyncio.Event()
+
+    # ── Session-Konfiguration für OpenAI ──────────────────────────────────────
+    def _build_session_config(self) -> Dict[str, Any]:
+        prompt = PRODUCT_CONTEXTS.get(self.product_id, PRODUCT_CONTEXTS["general"])
+        return {
+            "type": "session.update",
+            "session": {
+                "turn_detection": {
+                    "type": "server_vad",
+                    "threshold": 0.5,
+                    "prefix_padding_ms": 300,
+                    "silence_duration_ms": 600,
+                },
+                "input_audio_format":  "pcm16",
+                "output_audio_format": "pcm16",
+                "voice": "alloy",
+                "instructions": prompt,
+                "modalities": ["text", "audio"],
+                "temperature": 0.8,
+                "input_audio_transcription": {
+                    "model": "whisper-1",
+                },
+            },
         }
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.openai.com/v1/audio/speech",
-                json=payload,
-                headers={"Authorization": f"Bearer {OPENAI_KEY()}"},
-                timeout=aiohttp.ClientTimeout(total=30)
-            ) as r:
-                if r.status == 200:
-                    return await r.read()
-    except Exception as e:
-        log.warning("TTS error: %s", e)
-    return b""
 
-# ── KI-Gehirn: Claude Haiku Sales-Agent ──────────────────────────────────────
-SOFIA_SYSTEM = """Du bist Sofia, eine professionelle KI-Vertriebsassistentin von AiiteC.
-Du führst telefonische Demo-Gespräche auf Deutsch.
+    # ── Main Run Loop ──────────────────────────────────────────────────────────
+    async def run(self) -> None:
+        """Verbindet Twilio ↔ OpenAI Realtime und bridged Audio bidirektional."""
+        if not OPENAI_KEY():
+            log.error("[%s] OPENAI_API_KEY fehlt — Bridge abgebrochen", self.call_sid)
+            return
 
-Dein Ziel: Interesse wecken → Demo-Link per SMS senden → Termin vereinbaren.
-
-Gesprächsstruktur:
-1. Begrüßung + kurze Erklärung warum du anrufst
-2. Eine offene Frage zum aktuellen Problem des Unternehmens
-3. Kurze Lösung präsentieren (max 2 Sätze)
-4. Demo-Link per SMS anbieten
-5. Freundlich verabschieden
-
-Regeln:
-- Maximal 2-3 Sätze pro Antwort (Telefon = kurz!)
-- Wenn der Angerufene kein Interesse hat: höflich bedanken und auflegen
-- Wenn Interesse: Demo-Link erwähnen und SMS anbieten
-- Nie aufdringlich, immer professionell
-- Auf Einwände eingehen, nicht ignorieren
-
-Branchen-spezifische Hooks:
-- E-Commerce/Shopify: "Automatisierung von Produktlisten und Bestellungen"
-- IT-Dienstleister: "KI-Agenten als White-Label für Ihre Kunden"
-- Marketing-Agentur: "5x mehr Content in der Hälfte der Zeit"
-- Steuerberater: "EU AI Act Compliance-Tool für Ihre Mandanten"
-- Handwerk: "Automatische Neukundengewinnung in Ihrer Region"
-
-Erkenne wenn jemand:
-- INTERESSIERT ist → sage "Demo-Link"
-- KEIN INTERESSE hat → sage "Auf Wiederhören"
-- TERMIN will → sage "Kalender-Link"
-"""
-
-class SofiaConversation:
-    """Zustandsbehaftete Telefon-Konversation mit Sofia."""
-
-    def __init__(self, call_sid: str, from_number: str,
-                 industry: str = "Default", company: str = ""):
-        self.call_sid    = call_sid
-        self.from_number = from_number
-        self.industry    = industry
-        self.company     = company
-        self.history: List[Dict] = []
-        self.interest    = False
-        self.ended       = False
-        self.transcript  = []
-
-    def _greeting(self) -> str:
-        hooks = {
-            "E-Commerce":       "Shopify-Automatisierung",
-            "IT-Dienstleister": "KI-Mitarbeiter für Ihre Kunden",
-            "Marketing-Agentur":"KI-Content-Erstellung",
-            "Steuerberater":    "EU AI Act Compliance",
-            "Handwerk":         "automatische Neukundengewinnung",
-            "Default":          "KI-Automatisierung",
+        headers = {
+            "Authorization": f"Bearer {OPENAI_KEY()}",
+            "OpenAI-Beta":   "realtime=v1",
         }
-        topic = hooks.get(self.industry, hooks["Default"])
-        name  = self.company or "Ihr Unternehmen"
-        return (
-            f"Guten Tag! Mein Name ist Sofia, ich rufe von AiiteC an. "
-            f"Wir hatten Ihnen eine Email zur {topic} geschickt. "
-            f"Haben Sie kurz zwei Minuten?"
-        )
-
-    async def respond(self, user_text: str) -> str:
-        """Generiert nächste Antwort von Sofia via Claude Haiku."""
-        self.transcript.append(f"Kunde: {user_text}")
-        if not user_text.strip():
-            return "Hallo? Können Sie mich hören?"
-
-        self.history.append({"role": "user", "content": user_text})
-
-        # Keyword-Erkennung
-        low = user_text.lower()
-        if any(w in low for w in ["kein interesse", "nein danke", "nicht interessiert",
-                                   "kein bedarf", "aufhören", "bitte nicht mehr"]):
-            self.ended = True
-            return "Verstehe, danke für Ihre Zeit. Auf Wiederhören und einen schönen Tag!"
-
-        if any(w in low for w in ["ja", "gerne", "interessant", "erzählen",
-                                    "schicken", "sms", "demo", "link"]):
-            self.interest = True
-
         try:
-            async with aiohttp.ClientSession() as s:
-                payload = {
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 150,
-                    "system": SOFIA_SYSTEM,
-                    "messages": self.history[-8:],
-                }
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    json=payload,
-                    headers={"x-api-key": ANTHROPIC_KEY(),
-                              "anthropic-version": "2023-06-01"},
-                    timeout=aiohttp.ClientTimeout(total=10)
-                ) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        reply = data["content"][0]["text"].strip()
-                    else:
-                        reply = "Könnten Sie das bitte wiederholen?"
+            async with websockets.connect(
+                _OPENAI_REALTIME_URL,
+                additional_headers=headers,
+                open_timeout=10,
+                ping_interval=20,
+                ping_timeout=10,
+                max_size=10 * 1024 * 1024,  # 10 MB
+            ) as openai_ws:
+                log.info("[%s] OpenAI Realtime verbunden", self.call_sid)
+
+                # Session konfigurieren
+                await openai_ws.send(json.dumps(self._build_session_config()))
+
+                # Bidirektionale Bridge starten
+                t1 = asyncio.create_task(
+                    self._twilio_to_openai(openai_ws), name=f"t2o-{self.call_sid}"
+                )
+                t2 = asyncio.create_task(
+                    self._openai_to_twilio(openai_ws), name=f"o2t-{self.call_sid}"
+                )
+
+                done, pending = await asyncio.wait(
+                    [t1, t2], return_when=asyncio.FIRST_COMPLETED
+                )
+
+                # Verbleibende Tasks abbrechen
+                for task in pending:
+                    task.cancel()
+                    with contextlib.suppress(asyncio.CancelledError, Exception):
+                        await task
+
+                # Exceptions aus fertigen Tasks loggen
+                for task in done:
+                    if not task.cancelled() and task.exception():
+                        log.warning(
+                            "[%s] Bridge-Task-Fehler: %s",
+                            self.call_sid, task.exception()
+                        )
+
+        except websockets.exceptions.InvalidURI as e:
+            log.error("[%s] Ungültige WebSocket-URI: %s", self.call_sid, e)
+        except websockets.exceptions.ConnectionClosedError as e:
+            log.warning("[%s] OpenAI WS geschlossen: %s", self.call_sid, e)
+        except OSError as e:
+            log.error("[%s] Netzwerkfehler zu OpenAI: %s", self.call_sid, e)
         except Exception as e:
-            log.warning("Claude error: %s", e)
-            reply = "Einen Moment bitte, ich bin gleich wieder da."
+            log.error("[%s] Bridge-Fehler: %s", self.call_sid, e)
+        finally:
+            self._done.set()
+            log.info("[%s] Bridge beendet", self.call_sid)
 
-        # Ende erkennen
-        if any(w in reply.lower() for w in ["auf wiederhören", "wiedersehen",
-                                              "schönen tag", "tschüss"]):
-            self.ended = True
+    # ── Twilio → OpenAI (Audio weitersenden) ──────────────────────────────────
+    async def _twilio_to_openai(self, openai_ws: Any) -> None:
+        """Liest Audio von Twilio (μ-law 8kHz), konvertiert und sendet an OpenAI."""
+        greeting_sent = False
+        try:
+            async for msg in self.ws_twilio:
+                if msg.type == web.WSMsgType.TEXT:
+                    try:
+                        data  = json.loads(msg.data)
+                        event = data.get("event", "")
 
-        if "demo-link" in reply.lower() or "sms" in reply.lower():
-            self.interest = True
+                        if event == "connected":
+                            log.info("[%s] Twilio Media Stream verbunden", self.call_sid)
 
-        self.history.append({"role": "assistant", "content": reply})
-        self.transcript.append(f"Sofia: {reply}")
-        return reply
+                        elif event == "start":
+                            start_data     = data.get("start", {})
+                            self.stream_sid = start_data.get("streamSid", "")
+                            # CallSid aus Twilio-Event extrahieren (falls nicht in URL)
+                            if not self.call_sid or self.call_sid.startswith("ws_"):
+                                self.call_sid = start_data.get("callSid", self.call_sid)
+                            log.info(
+                                "[%s] Stream gestartet (streamSid=%s)",
+                                self.call_sid, self.stream_sid
+                            )
 
-# Aktive WebSocket-Verbindungen (call_sid → SofiaConversation)
-_active_calls: Dict[str, SofiaConversation] = {}
-_audio_buffers: Dict[str, bytearray] = {}
+                            # Begrüßung triggern (einmalig)
+                            if not greeting_sent:
+                                greeting_sent = True
+                                await asyncio.sleep(0.3)  # kurze Pause für Verbindungsaufbau
+                                await openai_ws.send(json.dumps({
+                                    "type": "conversation.item.create",
+                                    "item": {
+                                        "type": "message",
+                                        "role": "user",
+                                        "content": [{
+                                            "type": "input_text",
+                                            "text": "Bitte beginne das Gespräch jetzt mit deiner Begrüßung auf Deutsch."
+                                        }]
+                                    }
+                                }))
+                                await openai_ws.send(json.dumps({"type": "response.create"}))
 
-# ── WebSocket Handler (Twilio Media Streams) ──────────────────────────────────
+                        elif event == "media":
+                            payload = data.get("media", {}).get("payload", "")
+                            if payload:
+                                mulaw = base64.b64decode(payload)
+                                pcm   = _mulaw_to_pcm24k(mulaw)
+                                await openai_ws.send(json.dumps({
+                                    "type":  "input_audio_buffer.append",
+                                    "audio": base64.b64encode(pcm).decode(),
+                                }))
+
+                        elif event == "stop":
+                            log.info("[%s] Twilio Stream gestoppt", self.call_sid)
+                            break
+
+                    except json.JSONDecodeError:
+                        log.debug("[%s] Kein JSON: %s", self.call_sid, msg.data[:80])
+                    except Exception as e:
+                        log.warning("[%s] Twilio→OpenAI Fehler: %s", self.call_sid, e)
+
+                elif msg.type in (web.WSMsgType.ERROR, web.WSMsgType.CLOSE):
+                    break
+
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            log.error("[%s] _twilio_to_openai Ausnahme: %s", self.call_sid, e)
+        finally:
+            # Signalisiere OpenAI-Seite ebenfalls zu beenden
+            self._done.set()
+
+    # ── OpenAI → Twilio (Audio zurücksenden) ──────────────────────────────────
+    async def _openai_to_twilio(self, openai_ws: Any) -> None:
+        """Empfängt Audio von OpenAI Realtime, konvertiert und sendet an Twilio."""
+        try:
+            async for raw_msg in openai_ws:
+                if self._done.is_set():
+                    break
+                try:
+                    data       = json.loads(raw_msg if isinstance(raw_msg, str) else raw_msg.decode())
+                    event_type = data.get("type", "")
+
+                    if event_type == "response.audio.delta":
+                        # PCM 24kHz → μ-law 8kHz → Twilio
+                        delta = data.get("delta", "")
+                        if delta and self.stream_sid:
+                            pcm   = base64.b64decode(delta)
+                            mulaw = _pcm24k_to_mulaw(pcm)
+                            b64   = base64.b64encode(mulaw).decode()
+                            await self.ws_twilio.send_str(json.dumps({
+                                "event":     "media",
+                                "streamSid": self.stream_sid,
+                                "media":     {"payload": b64},
+                            }))
+
+                    elif event_type == "response.audio.done":
+                        # Ende-Markierung an Twilio senden
+                        if self.stream_sid and not self.ws_twilio.closed:
+                            with contextlib.suppress(Exception):
+                                await self.ws_twilio.send_str(json.dumps({
+                                    "event":     "mark",
+                                    "streamSid": self.stream_sid,
+                                    "mark":      {"name": "response_end"},
+                                }))
+
+                    elif event_type == "session.updated":
+                        log.debug("[%s] OpenAI Session aktualisiert", self.call_sid)
+
+                    elif event_type == "conversation.item.input_audio_transcription.completed":
+                        transcript = data.get("transcript", "")
+                        if transcript:
+                            log.info("[%s] Kunde: %s", self.call_sid, transcript)
+
+                    elif event_type == "response.text.done":
+                        text = data.get("text", "")
+                        if text:
+                            log.info("[%s] Max: %s", self.call_sid, text[:120])
+
+                    elif event_type == "error":
+                        err = data.get("error", {})
+                        log.error(
+                            "[%s] OpenAI Fehler: %s — %s",
+                            self.call_sid, err.get("code"), err.get("message")
+                        )
+
+                except json.JSONDecodeError:
+                    pass
+                except Exception as e:
+                    log.warning("[%s] OpenAI→Twilio Fehler: %s", self.call_sid, e)
+
+        except websockets.exceptions.ConnectionClosed:
+            log.info("[%s] OpenAI WS geschlossen", self.call_sid)
+        except asyncio.CancelledError:
+            raise
+        except Exception as e:
+            log.error("[%s] _openai_to_twilio Ausnahme: %s", self.call_sid, e)
+
+
+# ── Outbound Call ─────────────────────────────────────────────────────────────
+async def trigger_outbound_call(
+    to_number: str,
+    product_id: str = "general",
+    contact_name: str = "",
+) -> str:
+    """Initiiert einen ausgehenden Twilio-Anruf.
+
+    Returns:
+        call_sid wenn erfolgreich, '' bei Fehler.
+    """
+    from_num = TWILIO_NUMBER()
+    if not from_num:
+        log.error("TWILIO_PHONE_NUMBER nicht gesetzt — Outbound-Anruf abgebrochen")
+        return ""
+    if not TWILIO_SID() or not TWILIO_TOKEN():
+        log.error("Twilio-Credentials fehlen")
+        return ""
+
+    webhook_url = f"https://{PUBLIC_URL()}/api/phone/incoming?product={product_id}"
+    status_url  = f"https://{PUBLIC_URL()}/api/phone/status"
+
+    payload = {
+        "From":                  from_num,
+        "To":                    to_number,
+        "Url":                   webhook_url,
+        "StatusCallback":        status_url,
+        "StatusCallbackMethod":  "POST",
+        "MachineDetection":      "Enable",
+        "MachineDetectionTimeout": "5",
+    }
+    try:
+        result = await _twilio_api("POST", "/Calls.json", payload)
+        call_sid = result.get("sid", "")
+        if call_sid:
+            # In DB erfassen
+            _record_call(
+                call_sid=call_sid,
+                direction="outbound",
+                from_number=from_num,
+                to_number=to_number,
+                product_id=product_id,
+                status="initiated",
+            )
+            log.info(
+                "Outbound-Anruf initiiert: %s → %s (product=%s)",
+                call_sid, to_number, product_id
+            )
+        return call_sid
+    except Exception as e:
+        log.error("Outbound-Anruf fehlgeschlagen (%s): %s", to_number, e)
+        return ""
+
+
+# ── Status & Stats ────────────────────────────────────────────────────────────
+def get_status() -> Dict[str, Any]:
+    """Gibt aktuellen System-Status zurück.
+
+    Returns:
+        Dict mit active_calls, calls_today, appointments_booked, avg_duration_sec
+    """
+    try:
+        with _db() as conn:
+            active_calls = len(_active_bridges)
+            calls_today  = conn.execute(
+                "SELECT COUNT(*) FROM calls WHERE started_at >= date('now')"
+            ).fetchone()[0]
+            appointments = conn.execute(
+                "SELECT COUNT(*) FROM appointments WHERE created_at >= date('now', '-30 days')"
+            ).fetchone()[0]
+            avg_row = conn.execute(
+                "SELECT AVG(duration_sec) FROM calls WHERE duration_sec > 0"
+            ).fetchone()
+            avg_dur = round(float(avg_row[0] or 0), 1)
+
+        return {
+            "active_calls":       active_calls,
+            "calls_today":        calls_today,
+            "appointments_booked": appointments,
+            "avg_duration_sec":   avg_dur,
+        }
+    except Exception as e:
+        log.warning("get_status Fehler: %s", e)
+        return {
+            "active_calls":       len(_active_bridges),
+            "calls_today":        0,
+            "appointments_booked": 0,
+            "avg_duration_sec":   0.0,
+        }
+
+
+# ── aiohttp Route Handlers ────────────────────────────────────────────────────
+async def handle_phone_incoming(request: web.Request) -> web.Response:
+    """POST /api/phone/incoming — Twilio Webhook bei eingehendem Anruf.
+
+    Gibt TwiML zurück, das Twilio anweist einen Media Stream WebSocket zu öffnen.
+    """
+    try:
+        body = await request.post()
+    except Exception:
+        body = {}  # type: ignore[assignment]
+
+    call_sid    = body.get("CallSid", f"sid_{int(time.time())}")
+    from_number = body.get("From",    "")
+    to_number   = body.get("To",      "")
+
+    # product_id aus Query-Parameter (kann beim Outbound-Anruf gesetzt sein)
+    product_id = request.rel_url.query.get("product", "general")
+    if product_id not in PRODUCT_CONTEXTS:
+        product_id = "general"
+
+    # Anruf in DB erfassen
+    _record_call(
+        call_sid=call_sid,
+        direction="inbound",
+        from_number=from_number,
+        to_number=to_number,
+        product_id=product_id,
+        status="ringing",
+    )
+
+    twiml = generate_inbound_twiml(call_sid, product_id)
+    log.info(
+        "Eingehender Anruf: %s von %s (product=%s)", call_sid, from_number, product_id
+    )
+    return web.Response(text=twiml, content_type="text/xml")
+
+
+async def handle_phone_status(request: web.Request) -> web.Response:
+    """POST /api/phone/status — Twilio Call-Status-Callback."""
+    try:
+        body = await request.post()
+    except Exception:
+        body = {}  # type: ignore[assignment]
+
+    call_sid = body.get("CallSid",      "")
+    status   = body.get("CallStatus",   "")
+    duration = int(body.get("CallDuration", 0) or 0)
+
+    if call_sid:
+        try:
+            with _db() as conn:
+                conn.execute(
+                    "UPDATE calls SET status=?, duration_sec=?, ended_at=datetime('now') "
+                    "WHERE call_sid=?",
+                    (status, duration, call_sid),
+                )
+        except Exception as e:
+            log.warning("Status-Update Fehler: %s", e)
+
+        if status == "completed":
+            _active_bridges.pop(call_sid, None)
+            asyncio.create_task(_notify_telegram(call_sid, duration, status))
+            log.info("Anruf beendet: %s (Dauer: %ds)", call_sid, duration)
+
+    return web.Response(text="OK")
+
+
+async def handle_phone_stats(request: web.Request) -> web.Response:
+    """GET /api/phone/stats — Statistiken und aktive Anrufe."""
+    try:
+        with _db() as conn:
+            total = conn.execute("SELECT COUNT(*) FROM calls").fetchone()[0]
+            today = conn.execute(
+                "SELECT COUNT(*) FROM calls WHERE started_at >= date('now')"
+            ).fetchone()[0]
+            appts = conn.execute(
+                "SELECT COUNT(*) FROM appointments"
+            ).fetchone()[0]
+            avg_row = conn.execute(
+                "SELECT AVG(duration_sec) FROM calls WHERE duration_sec > 0"
+            ).fetchone()
+            avg_dur = round(float(avg_row[0] or 0), 1)
+            recent = conn.execute(
+                "SELECT call_sid, direction, from_number, to_number, product_id, "
+                "status, duration_sec, started_at "
+                "FROM calls ORDER BY started_at DESC LIMIT 10"
+            ).fetchall()
+
+        return web.json_response({
+            "ok":              True,
+            "total_calls":     total,
+            "calls_today":     today,
+            "appointments":    appts,
+            "avg_duration_sec": avg_dur,
+            "active_now":      len(_active_bridges),
+            "active_call_sids": list(_active_bridges.keys()),
+            "twilio_number":   TWILIO_NUMBER() or "nicht konfiguriert",
+            "recent":          [dict(r) for r in recent],
+        })
+    except Exception as e:
+        log.error("handle_phone_stats Fehler: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_outbound_trigger(request: web.Request) -> web.Response:
+    """POST /api/phone/outbound — Outbound-Anruf auslösen.
+
+    Body (JSON):
+        to_number:    Zielrufnummer (E.164)
+        product_id:   Produktkontext (optional)
+        contact_name: Name des Kontakts (optional)
+    """
+    try:
+        body = await request.json()
+    except Exception:
+        body = {}
+
+    to_number    = body.get("to_number", body.get("phone", ""))
+    product_id   = body.get("product_id", body.get("product", "general"))
+    contact_name = body.get("contact_name", body.get("name", ""))
+
+    if not to_number:
+        return web.json_response(
+            {"ok": False, "error": "to_number fehlt"}, status=400
+        )
+    if product_id not in PRODUCT_CONTEXTS:
+        product_id = "general"
+
+    call_sid = await trigger_outbound_call(to_number, product_id, contact_name)
+    if call_sid:
+        return web.json_response({"ok": True, "call_sid": call_sid, "to": to_number})
+    return web.json_response(
+        {"ok": False, "error": "Anruf konnte nicht initiiert werden"}, status=500
+    )
+
+
 async def handle_phone_ws(request: web.Request) -> web.WebSocketResponse:
-    """WebSocket /ws/phone — Twilio sendet Audio, Sofia antwortet."""
+    """GET /ws/phone — Twilio Media Stream WebSocket Handler.
+
+    Twilio verbindet sich hier nach TwiML-Anweisung.
+    PhoneAIBridge übernimmt die bidirektionale Audio-Bridge zu OpenAI.
+    """
     ws = web.WebSocketResponse()
     await ws.prepare(request)
 
-    call_sid      = None
-    stream_sid    = None
-    conversation  = None
-    audio_buf     = bytearray()
-    last_speech   = time.time()
-    silence_threshold = 1.5  # Sekunden Stille → verarbeiten
+    # call_sid aus Query-Parameter oder wird aus Twilio "start"-Event befüllt
+    query      = request.rel_url.query
+    call_sid   = query.get("call_sid", f"ws_{int(time.time())}")
+    product_id = query.get("product", "general")
+    if product_id not in PRODUCT_CONTEXTS:
+        product_id = "general"
 
-    log.info("Neue WebSocket-Verbindung von Twilio")
+    log.info("WS-Verbindung: call_sid=%s product=%s", call_sid, product_id)
 
-    async def _send_audio(text: str) -> None:
-        """TTS → base64 μ-law → Twilio."""
-        wav = await _synthesize(text)
-        if not wav or not stream_sid:
-            return
-        # WAV → PCM extrahieren
-        try:
-            buf = io.BytesIO(wav)
-            with wave.open(buf, "rb") as wf:
-                pcm = wf.readframes(wf.getnframes())
-        except Exception:
-            pcm = wav[44:]  # WAV-Header überspringen
-        ulaw = _pcm_to_ulaw(pcm)
-        b64  = base64.b64encode(ulaw).decode()
-        msg  = json.dumps({
-            "event": "media",
-            "streamSid": stream_sid,
-            "media": {"payload": b64}
-        })
-        await ws.send_str(msg)
-        # Mark = Ende des Audio-Streams signalisieren
-        await ws.send_str(json.dumps({
-            "event": "mark",
-            "streamSid": stream_sid,
-            "mark": {"name": "response_end"}
-        }))
+    bridge = PhoneAIBridge(call_sid, product_id, ws)
+    _active_bridges[call_sid] = bridge
 
-    async for msg in ws:
-        if msg.type == web.WSMsgType.TEXT:
-            try:
-                data = json.loads(msg.data)
-                event = data.get("event")
-
-                if event == "connected":
-                    log.info("Twilio Media Stream verbunden")
-
-                elif event == "start":
-                    call_sid   = data.get("start", {}).get("callSid", "")
-                    stream_sid = data.get("start", {}).get("streamSid", "")
-                    log.info("Anruf gestartet: %s", call_sid)
-                    # Gespeicherte Konversation holen oder neue erstellen
-                    conversation = _active_calls.get(call_sid)
-                    if not conversation:
-                        conversation = SofiaConversation(call_sid, "unknown")
-                        _active_calls[call_sid] = conversation
-                    greeting = conversation._greeting()
-                    await asyncio.sleep(0.5)
-                    await _send_audio(greeting)
-                    conversation.history.append({
-                        "role": "assistant", "content": greeting
-                    })
-                    conversation.transcript.append(f"Sofia: {greeting}")
-
-                elif event == "media":
-                    payload = data.get("media", {}).get("payload", "")
-                    if payload:
-                        ulaw = base64.b64decode(payload)
-                        pcm  = _ulaw_to_pcm(ulaw)
-                        audio_buf.extend(pcm)
-                        last_speech = time.time()
-
-                elif event == "mark":
-                    pass  # Sofia hat fertig gesprochen
-
-                elif event == "stop":
-                    log.info("Anruf beendet: %s", call_sid)
-                    break
-
-            except Exception as e:
-                log.error("WebSocket error: %s", e)
-
-        elif msg.type == web.WSMsgType.ERROR:
-            break
-
-        # Stille erkennen → Transkribieren + Antworten
-        if audio_buf and (time.time() - last_speech) > silence_threshold:
-            chunk = bytes(audio_buf)
-            audio_buf.clear()
-            wav_data = _build_wav(chunk)
-
-            if len(chunk) > 4000:  # min ~0.25 Sekunden Audio
-                text = await _transcribe(wav_data)
-                if text and conversation:
-                    log.info("[%s] Kunde: %s", call_sid, text)
-                    reply = await conversation.respond(text)
-                    log.info("[%s] Sofia: %s", call_sid, reply)
-                    await _send_audio(reply)
-
-                    if conversation.ended:
-                        await asyncio.sleep(2)
-                        # Anruf beenden via Twilio API
-                        asyncio.create_task(_end_call(call_sid))
-                        break
-
-                    if conversation.interest:
-                        # SMS mit Demo-Link senden
-                        asyncio.create_task(
-                            _send_sms(conversation.from_number,
-                                       f"Hallo! Hier ist Sofia von AiiteC. "
-                                       f"Ihr persönlicher Demo-Zugang: {DEMO_URL}\n"
-                                       f"14 Tage kostenlos testen!")
-                        )
-                        conversation.interest = False  # einmalig senden
-
-    # Anruf-Daten speichern
-    if call_sid and conversation:
-        _save_call(call_sid, conversation)
+    try:
+        await bridge.run()
+    except Exception as e:
+        log.error("WS-Handler Fehler [%s]: %s", call_sid, e)
+    finally:
+        # Aufräumen: Bridge entfernen
+        _active_bridges.pop(call_sid, None)
+        # Falls Bridge call_sid aktualisiert hat (aus Twilio "start" event)
+        _active_bridges.pop(bridge.call_sid, None)
 
     return ws
 
-# ── Twilio API Helpers ────────────────────────────────────────────────────────
-async def _twilio_api(method: str, path: str, data: Dict = None) -> Dict:
+
+# ── Twilio REST API Helper ────────────────────────────────────────────────────
+async def _twilio_api(method: str, path: str, data: Optional[Dict] = None) -> Dict:
+    """Sendet einen Request an die Twilio REST API."""
     sid   = TWILIO_SID()
     token = TWILIO_TOKEN()
-    url   = f"https://api.twilio.com/2010-04-01/Accounts/{sid}{path}"
-    auth  = aiohttp.BasicAuth(sid, token)
-    async with aiohttp.ClientSession() as s:
+    if not sid or not token:
+        raise ValueError("Twilio-Credentials (SID/TOKEN) nicht konfiguriert")
+    url  = f"https://api.twilio.com/2010-04-01/Accounts/{sid}{path}"
+    auth = aiohttp.BasicAuth(sid, token)
+    async with aiohttp.ClientSession() as session:
         if method == "POST":
-            async with s.post(url, data=data, auth=auth,
-                               timeout=aiohttp.ClientTimeout(total=15)) as r:
-                return await r.json()
+            async with session.post(
+                url, data=data, auth=auth,
+                timeout=aiohttp.ClientTimeout(total=15)
+            ) as resp:
+                return await resp.json()
         else:
-            async with s.get(url, auth=auth,
-                              timeout=aiohttp.ClientTimeout(total=15)) as r:
-                return await r.json()
+            async with session.get(
+                url, auth=auth,
+                timeout=aiohttp.ClientTimeout(total=15)
+            ) as resp:
+                return await resp.json()
 
-async def _end_call(call_sid: str) -> None:
-    await _twilio_api("POST", f"/Calls/{call_sid}.json", {"Status": "completed"})
-
-async def _send_sms(to: str, body: str) -> None:
-    if not TWILIO_NUMBER():
-        return
-    await _twilio_api("POST", "/Messages.json", {
-        "From": TWILIO_NUMBER(),
-        "To":   to,
-        "Body": body,
-    })
-
-async def _make_outbound_call(to: str, industry: str = "Default",
-                               company: str = "") -> str:
-    """Initiiert ausgehenden Anruf — Sofia ruft Lead an."""
-    from_num = TWILIO_NUMBER()
-    if not from_num:
-        raise ValueError("TWILIO_PHONE_NUMBER nicht gesetzt")
-    webhook = f"https://{PUBLIC_URL()}/api/phone/incoming"
-    result  = await _twilio_api("POST", "/Calls.json", {
-        "From": from_num,
-        "To":   to,
-        "Url":  webhook,
-        "StatusCallback": f"https://{PUBLIC_URL()}/api/phone/status",
-        "StatusCallbackMethod": "POST",
-        "MachineDetection": "Enable",
-        "MachineDetectionTimeout": "5",
-    })
-    call_sid = result.get("sid", "")
-    if call_sid:
-        conv = SofiaConversation(call_sid, to, industry, company)
-        _active_calls[call_sid] = conv
-        with _db() as db:
-            db.execute(
-                "INSERT OR IGNORE INTO calls (call_sid, direction, from_number, to_number, status) "
-                "VALUES (?,?,?,?,?)",
-                (call_sid, "outbound", from_num, to, "initiated")
-            )
-    return call_sid
 
 # ── DB Helpers ────────────────────────────────────────────────────────────────
-def _save_call(call_sid: str, conv: SofiaConversation) -> None:
-    transcript = "\n".join(conv.transcript)
-    with _db() as db:
-        db.execute("""
-            INSERT OR REPLACE INTO calls
-            (call_sid, direction, from_number, status, outcome, transcript, interest, ended_at)
-            VALUES (?,?,?,?,?,?,?,datetime('now'))
-        """, (
-            call_sid, "inbound", conv.from_number,
-            "completed",
-            "interested" if conv.interest else "no_interest",
-            transcript, int(conv.interest)
-        ))
-    _active_calls.pop(call_sid, None)
-
-# ── TwiML Webhook Handler ─────────────────────────────────────────────────────
-async def handle_phone_incoming(request: web.Request) -> web.Response:
-    """POST /api/phone/incoming — Twilio ruft diesen Webhook bei eingehendem Anruf."""
-    body = await request.post()
-    call_sid    = body.get("CallSid", "")
-    from_number = body.get("From", "")
-    industry    = "Default"
-
-    # Konversation vorbereiten
-    conv = SofiaConversation(call_sid, from_number, industry)
-    _active_calls[call_sid] = conv
-
-    ws_url = f"wss://{PUBLIC_URL()}/ws/phone"
-    twiml  = f"""<?xml version="1.0" encoding="UTF-8"?>
-<Response>
-  <Connect>
-    <Stream url="{ws_url}">
-      <Parameter name="callSid" value="{call_sid}"/>
-    </Stream>
-  </Connect>
-</Response>"""
-    return web.Response(text=twiml, content_type="text/xml")
-
-async def handle_phone_status(request: web.Request) -> web.Response:
-    """POST /api/phone/status — Twilio Call-Status Updates."""
-    body = await request.post()
-    call_sid = body.get("CallSid", "")
-    status   = body.get("CallStatus", "")
-    duration = int(body.get("CallDuration", 0))
-    with _db() as db:
-        db.execute(
-            "UPDATE calls SET status=?, duration_sec=?, ended_at=datetime('now') WHERE call_sid=?",
-            (status, duration, call_sid)
-        )
-    if status == "completed":
-        conv = _active_calls.pop(call_sid, None)
-        if conv:
-            _save_call(call_sid, conv)
-        await _telegram_report(call_sid, duration)
-    return web.Response(text="OK")
-
-async def handle_phone_stats(request: web.Request) -> web.Response:
-    """GET /api/phone/stats"""
-    with _db() as db:
-        total    = db.execute("SELECT COUNT(*) FROM calls").fetchone()[0]
-        today    = db.execute(
-            "SELECT COUNT(*) FROM calls WHERE started_at > date('now')"
-        ).fetchone()[0]
-        interest = db.execute(
-            "SELECT COUNT(*) FROM calls WHERE interest=1"
-        ).fetchone()[0]
-        demos    = db.execute(
-            "SELECT COUNT(*) FROM calls WHERE demo_sent=1"
-        ).fetchone()[0]
-        recent   = db.execute(
-            "SELECT call_sid, direction, from_number, status, outcome, duration_sec, started_at "
-            "FROM calls ORDER BY started_at DESC LIMIT 10"
-        ).fetchall()
-    return web.json_response({
-        "total_calls": total, "calls_today": today,
-        "interested": interest, "demos_sent": demos,
-        "active_now": len(_active_calls),
-        "recent": [dict(r) for r in recent],
-        "twilio_number": TWILIO_NUMBER(),
-    })
-
-async def handle_outbound_trigger(request: web.Request) -> web.Response:
-    """POST /api/phone/outbound — Outbound-Kampagne starten."""
-    body = await request.json() if request.content_length else {}
-    count = int(body.get("count", 5))
-    results = await run_outbound_batch(count)
-    return web.json_response(results)
-
-# ── Telegram Report ───────────────────────────────────────────────────────────
-async def _telegram_report(call_sid: str, duration: int) -> None:
-    with _db() as db:
-        row = db.execute(
-            "SELECT * FROM calls WHERE call_sid=?", (call_sid,)
-        ).fetchone()
-    if not row:
-        return
-    icon = "🟢" if row["interest"] else "🔴"
-    msg  = (
-        f"{icon} <b>Anruf beendet</b>\n"
-        f"Von: {row['from_number']}\n"
-        f"Dauer: {duration}s\n"
-        f"Ergebnis: <b>{row['outcome'] or 'unbekannt'}</b>\n"
-        f"Demo-Link gesendet: {'✅' if row['demo_sent'] else '❌'}"
-    )
+def _record_call(
+    call_sid: str,
+    direction: str = "inbound",
+    from_number: str = "",
+    to_number: str = "",
+    product_id: str = "general",
+    status: str = "initiated",
+) -> None:
+    """Speichert oder aktualisiert einen Anruf in der DB."""
     try:
+        with _db() as conn:
+            conn.execute(
+                "INSERT OR IGNORE INTO calls "
+                "(call_sid, direction, from_number, to_number, product_id, status) "
+                "VALUES (?,?,?,?,?,?)",
+                (call_sid, direction, from_number, to_number, product_id, status),
+            )
+    except Exception as e:
+        log.warning("_record_call Fehler: %s", e)
+
+
+def record_appointment(
+    call_sid: str,
+    contact_name: str = "",
+    contact_email: str = "",
+    contact_phone: str = "",
+    product_id: str = "general",
+    scheduled_at: str = "",
+    notes: str = "",
+) -> int:
+    """Speichert einen gebuchten Termin in der DB. Gibt die Zeilen-ID zurück."""
+    try:
+        with _db() as conn:
+            cursor = conn.execute(
+                "INSERT INTO appointments "
+                "(call_sid, contact_name, contact_email, contact_phone, "
+                "product_id, scheduled_at, notes) VALUES (?,?,?,?,?,?,?)",
+                (call_sid, contact_name, contact_email, contact_phone,
+                 product_id, scheduled_at, notes),
+            )
+            return cursor.lastrowid or 0
+    except Exception as e:
+        log.warning("record_appointment Fehler: %s", e)
+        return 0
+
+
+# ── Telegram-Benachrichtigung ─────────────────────────────────────────────────
+async def _notify_telegram(call_sid: str, duration: int, status: str) -> None:
+    """Sendet einen kurzen Anrufbericht an Telegram."""
+    token = TG_TOKEN()
+    chat  = TG_CHAT()
+    if not token or not chat:
+        return
+    try:
+        with _db() as conn:
+            row = conn.execute(
+                "SELECT direction, from_number, to_number, product_id "
+                "FROM calls WHERE call_sid=?",
+                (call_sid,)
+            ).fetchone()
+        if not row:
+            return
+        direction = row["direction"]
+        number    = row["to_number"] if direction == "outbound" else row["from_number"]
+        product   = row["product_id"]
+        appts     = conn.execute(
+            "SELECT COUNT(*) FROM appointments WHERE call_sid=?", (call_sid,)
+        ).fetchone()[0]
+
+        icon = "📞" if direction == "inbound" else "📲"
+        msg  = (
+            f"{icon} <b>Anruf beendet</b>\n"
+            f"SID: <code>{call_sid[:20]}</code>\n"
+            f"Nummer: {number}\n"
+            f"Produkt: {product}\n"
+            f"Dauer: {duration}s\n"
+            f"Status: {status}\n"
+            f"Termine gebucht: {'✅ ' + str(appts) if appts else '❌ keine'}"
+        )
         async with aiohttp.ClientSession() as s:
             await s.post(
-                f"https://api.telegram.org/bot{TG_TOKEN()}/sendMessage",
-                json={"chat_id": TG_CHAT(), "text": msg, "parse_mode": "HTML"},
-                timeout=aiohttp.ClientTimeout(total=8)
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat, "text": msg, "parse_mode": "HTML"},
+                timeout=aiohttp.ClientTimeout(total=8),
             )
-    except Exception:
-        pass
+    except Exception as e:
+        log.debug("Telegram-Benachrichtigung fehlgeschlagen: %s", e)
 
-# ── Outbound-Kampagne ─────────────────────────────────────────────────────────
-async def run_outbound_batch(count: int = 10) -> Dict:
-    """Ruft N Leads aus der Queue automatisch an."""
-    init_db()
-    with _db() as db:
-        leads = db.execute("""
-            SELECT id, phone, company, industry FROM outbound_queue
-            WHERE status='pending' AND attempts < 2
-              AND (scheduled_at IS NULL OR scheduled_at <= datetime('now'))
-            ORDER BY id ASC LIMIT ?
-        """, (count,)).fetchall()
 
-    called = 0
-    errors = 0
-    for lead in leads:
-        try:
-            call_sid = await _make_outbound_call(
-                lead["phone"], lead["industry"], lead["company"]
-            )
-            with _db() as db:
-                db.execute(
-                    "UPDATE outbound_queue SET status='called', attempts=attempts+1, "
-                    "called_at=datetime('now') WHERE id=?", (lead["id"],)
-                )
-            called += 1
-            await asyncio.sleep(5)  # 5s zwischen Anrufen
-        except Exception as e:
-            errors += 1
-            log.error("Outbound call error (%s): %s", lead["phone"], e)
-            with _db() as db:
-                db.execute(
-                    "UPDATE outbound_queue SET attempts=attempts+1 WHERE id=?",
-                    (lead["id"],)
-                )
-    return {"called": called, "errors": errors}
+# ── Twilio Nummer kaufen (einmaliges Setup) ───────────────────────────────────
+async def buy_phone_number(country_code: str = "DE") -> str:
+    """Kauft eine neue Twilio-Nummer für das angegebene Land.
 
-def add_to_outbound_queue(phone: str, company: str = "",
-                           industry: str = "Default", email: str = "") -> bool:
-    """Fügt Lead zur Outbound-Queue hinzu."""
-    if not phone or len(phone) < 8:
-        return False
-    init_db()
-    try:
-        with _db() as db:
-            db.execute(
-                "INSERT OR IGNORE INTO outbound_queue (phone, company, industry, lead_email) "
-                "VALUES (?,?,?,?)", (phone, company, industry, email)
-            )
-        return True
-    except Exception:
-        return False
+    Args:
+        country_code: ISO-3166 Ländercode (z.B. 'DE', 'US', 'GB')
 
-# ── Twilio Setup ──────────────────────────────────────────────────────────────
-async def buy_phone_number(country: str = "DE") -> str:
-    """Kauft eine Twilio-Nummer (einmalig ~€1/Monat)."""
-    sid   = TWILIO_SID()
-    token = TWILIO_TOKEN()
-    async with aiohttp.ClientSession() as s:
+    Returns:
+        Gekaufte Rufnummer (E.164) oder '' bei Fehler.
+    """
+    sid    = TWILIO_SID()
+    token  = TWILIO_TOKEN()
+    domain = PUBLIC_URL()
+
+    async with aiohttp.ClientSession() as session:
         # Verfügbare Nummern suchen
-        async with s.get(
+        async with session.get(
             f"https://api.twilio.com/2010-04-01/Accounts/{sid}"
-            f"/AvailablePhoneNumbers/{country}/Local.json?VoiceEnabled=true&SmsEnabled=true",
-            auth=aiohttp.BasicAuth(sid, token)
-        ) as r:
-            data = await r.json()
+            f"/AvailablePhoneNumbers/{country_code}/Local.json"
+            "?VoiceEnabled=true&SmsEnabled=true",
+            auth=aiohttp.BasicAuth(sid, token),
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as resp:
+            data = await resp.json()
+
         numbers = data.get("available_phone_numbers", [])
         if not numbers:
-            raise ValueError(f"Keine Nummern in {country} verfügbar")
-        number = numbers[0]["phone_number"]
-        webhook = f"https://{PUBLIC_URL()}/api/phone/incoming"
-        async with s.post(
+            raise ValueError(f"Keine Nummern in {country_code} verfügbar")
+
+        phone_number = numbers[0]["phone_number"]
+        webhook_url  = f"https://{domain}/api/phone/incoming"
+
+        # Nummer kaufen und Webhook setzen
+        async with session.post(
             f"https://api.twilio.com/2010-04-01/Accounts/{sid}/IncomingPhoneNumbers.json",
             data={
-                "PhoneNumber": number,
-                "VoiceUrl": webhook,
-                "VoiceMethod": "POST",
-                "SmsUrl": webhook,
-                "StatusCallback": f"https://{PUBLIC_URL()}/api/phone/status",
+                "PhoneNumber":           phone_number,
+                "VoiceUrl":              webhook_url,
+                "VoiceMethod":           "POST",
+                "StatusCallback":        f"https://{domain}/api/phone/status",
+                "StatusCallbackMethod":  "POST",
             },
-            auth=aiohttp.BasicAuth(sid, token)
-        ) as r2:
-            result = await r2.json()
-    purchased = result.get("phone_number", number)
-    log.info("Neue Twilio-Nummer: %s", purchased)
+            auth=aiohttp.BasicAuth(sid, token),
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as resp2:
+            result = await resp2.json()
+
+    purchased = result.get("phone_number", phone_number)
+    log.info("Neue Twilio-Nummer gekauft: %s", purchased)
     return purchased
 
-async def setup_webhook() -> None:
-    """Setzt Webhook-URL auf bestehende Twilio-Nummer."""
-    sid     = TWILIO_SID()
-    token   = TWILIO_TOKEN()
-    webhook = f"https://{PUBLIC_URL()}/api/phone/incoming"
-    async with aiohttp.ClientSession() as s:
-        async with s.get(
-            f"https://api.twilio.com/2010-04-01/Accounts/{sid}/IncomingPhoneNumbers.json",
-            auth=aiohttp.BasicAuth(sid, token)
-        ) as r:
-            data = await r.json()
-        numbers = data.get("incoming_phone_numbers", [])
-        for num in numbers:
-            num_sid = num["sid"]
-            async with s.post(
-                f"https://api.twilio.com/2010-04-01/Accounts/{sid}"
-                f"/IncomingPhoneNumbers/{num_sid}.json",
-                data={"VoiceUrl": webhook, "VoiceMethod": "POST"},
-                auth=aiohttp.BasicAuth(sid, token)
-            ) as r2:
-                log.info("Webhook gesetzt für %s: %s", num["phone_number"], webhook)
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
-    def _load_env():
+    def _load_env() -> None:
         ef = _BASE / ".env"
         if ef.exists():
-            for line in ef.read_text().splitlines():
+            for line in ef.read_text(encoding="utf-8").splitlines():
                 line = line.strip()
                 if line and not line.startswith("#") and "=" in line:
                     k, _, v = line.partition("=")
-                    os.environ.setdefault(k.strip(), v.strip().strip('"').strip("'"))
-    _load_env()
+                    os.environ.setdefault(
+                        k.strip(), v.strip().strip('"').strip("'")
+                    )
 
-    logging.basicConfig(level=logging.INFO,
-                        format="%(asctime)s [PhoneAI] %(message)s")
+    _load_env()
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [PhoneAI] %(levelname)s %(message)s",
+    )
+
     args = sys.argv[1:]
 
     if "--init-db" in args:
-        init_db(); print("DB OK")
+        init_db()
+        print(f"DB initialisiert: {_DB}")
 
     elif "--buy-number" in args:
-        idx = args.index("--buy-number")
-        country = args[idx+1] if idx+1 < len(args) else "DE"
-        num = asyncio.run(buy_phone_number(country))
-        print(f"Gekaufte Nummer: {num}")
-        print(f"→ TWILIO_PHONE_NUMBER={num} in .env eintragen!")
-
-    elif "--setup-webhook" in args:
-        asyncio.run(setup_webhook())
-        print("Webhook gesetzt.")
+        idx     = args.index("--buy-number")
+        country = args[idx + 1] if idx + 1 < len(args) else "DE"
+        number  = asyncio.run(buy_phone_number(country))
+        print(f"Gekaufte Nummer: {number}")
+        print(f"→ In .env eintragen: TWILIO_PHONE_NUMBER={number}")
 
     elif "--test-call" in args:
         idx = args.index("--test-call")
-        to = args[idx+1] if idx+1 < len(args) else ""
+        to  = args[idx + 1] if idx + 1 < len(args) else ""
         if not to:
-            print("Verwendung: --test-call +49XXXXXXXXXX")
+            print("Verwendung: --test-call +49XXXXXXXXXX [product_id]")
         else:
-            sid = asyncio.run(_make_outbound_call(to, "E-Commerce", "Testfirma"))
-            print(f"Anruf initiiert: {sid}")
+            product = args[idx + 2] if idx + 2 < len(args) else "shopify"
+            sid     = asyncio.run(trigger_outbound_call(to, product, "Test-Kontakt"))
+            print(f"Anruf initiiert: {sid}" if sid else "Fehler beim Anruf")
 
-    elif "--outbound" in args:
-        idx = args.index("--outbound")
-        n = int(args[idx+1]) if idx+1 < len(args) and args[idx+1].isdigit() else 5
-        result = asyncio.run(run_outbound_batch(n))
-        print(f"Outbound: {result}")
+    elif "--status" in args:
+        init_db()
+        status = get_status()
+        for k, v in status.items():
+            print(f"  {k}: {v}")
 
     elif "--stats" in args:
         init_db()
-        with _db() as db:
-            total = db.execute("SELECT COUNT(*) FROM calls").fetchone()[0]
-            interest = db.execute("SELECT COUNT(*) FROM calls WHERE interest=1").fetchone()[0]
-        print(f"Anrufe gesamt: {total} | Interessiert: {interest}")
+        with _db() as conn:
+            total = conn.execute("SELECT COUNT(*) FROM calls").fetchone()[0]
+            appts = conn.execute("SELECT COUNT(*) FROM appointments").fetchone()[0]
+        print(f"Anrufe gesamt: {total} | Termine gebucht: {appts}")
 
     else:
         print(__doc__)
+        print("\nBefehle:")
+        print("  --init-db              DB-Tabellen erstellen")
+        print("  --buy-number [DE]      Twilio-Nummer kaufen")
+        print("  --test-call +49...     Test-Outbound-Anruf")
+        print("  --status               System-Status anzeigen")
+        print("  --stats                Anruf-Statistiken anzeigen")
