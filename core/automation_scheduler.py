@@ -6002,8 +6002,12 @@ async def task_upwork_proposal_auto() -> str:
 async def task_handelsregister_radar() -> str:
     """Handelsregister Radar: neue GmbHs scrapen → B2B-Leads (tägl.)."""
     try:
+        from modules.task_guard import task_ran_recently, record_task_run
+        if await task_ran_recently("handelsregister_radar", min_interval_hours=20):
+            return "HR Radar: übersprungen (lief vor <20h — Bounce-Schutz)"
         from modules.handelsregister_radar import run_cycle
         r = await run_cycle()
+        await record_task_run("handelsregister_radar")
         return f"HR Radar: {r}"
     except Exception as e:
         return f"HR Radar Fehler: {e}"
@@ -6022,8 +6026,12 @@ async def task_zvg_radar() -> str:
 async def task_ai_act_scanner() -> str:
     """AI Act Scanner: KMU EU AI Act Risiko → €299 Reports (tägl.)."""
     try:
+        from modules.task_guard import task_ran_recently, record_task_run
+        if await task_ran_recently("ai_act_scanner", min_interval_hours=20):
+            return "AI Act: übersprungen (lief vor <20h — Bounce-Schutz)"
         from modules.ai_act_scanner import run_cycle
         r = await run_cycle()
+        await record_task_run("ai_act_scanner")
         return f"AI Act: {r}"
     except Exception as e:
         return f"AI Act Fehler: {e}"
@@ -6675,12 +6683,16 @@ async def task_bpi_sys07_ai_citation_seo() -> str:
 async def task_bpi_sys08_intelligence_broker() -> str:
     """BPI SYS-08: Intelligence Broker Watchlist + Daily Outreach (tägl. 09:30)."""
     try:
+        from modules.task_guard import task_ran_recently, record_task_run
+        if await task_ran_recently("intelligence_broker", min_interval_hours=20):
+            return "BPI SYS-08: übersprungen (lief vor <20h — Bounce-Schutz)"
         import aiohttp
         async with aiohttp.ClientSession() as session:
             from modules.intelligence_broker import IntelligenceBroker
             b = IntelligenceBroker(session)
             await b.check_watchlist()
             await b.daily_outreach()
+        await record_task_run("intelligence_broker")
         return "BPI SYS-08: Intelligence Broker abgeschlossen ✅"
     except Exception as ex:
         return f"BPI SYS-08 Fehler: {ex}"
