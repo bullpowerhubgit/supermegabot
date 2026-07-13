@@ -107,12 +107,48 @@ def _build_smtp_pool() -> List[Dict]:
             "sent_today": 0,
             "last_reset": "",
         })
-    # Account 4: rudolfsarkany1984 / LinkedIn Gmail (500/day)
+    # Account 4: rudolfsarkany1984 (500/day)
     if _e("GMAIL_APP_PASSWORD_8"):
         accounts.append({
             "name":     "RudolfPersonal",
             "user":     _e("GMAIL_USER_8", "rudolfsarkany1984@gmail.com"),
             "password": _e("GMAIL_APP_PASSWORD_8",""),
+            "host":     "smtp.gmail.com",
+            "port":     587,
+            "daily_limit": 500,
+            "sent_today": 0,
+            "last_reset": "",
+        })
+    # Account 5: dragonadnp@gmail.com (500/day)
+    if _e("GMAIL_APP_PASSWORD_1"):
+        accounts.append({
+            "name":     "Dragon",
+            "user":     _e("GMAIL_USER_1", "dragonadnp@gmail.com"),
+            "password": _e("GMAIL_APP_PASSWORD_1",""),
+            "host":     "smtp.gmail.com",
+            "port":     587,
+            "daily_limit": 500,
+            "sent_today": 0,
+            "last_reset": "",
+        })
+    # Account 6: looopwave@gmail.com (500/day)
+    if _e("GMAIL_APP_PASSWORD_4"):
+        accounts.append({
+            "name":     "Looopwave",
+            "user":     _e("GMAIL_USER_4", "looopwave@gmail.com"),
+            "password": _e("GMAIL_APP_PASSWORD_4",""),
+            "host":     "smtp.gmail.com",
+            "port":     587,
+            "daily_limit": 500,
+            "sent_today": 0,
+            "last_reset": "",
+        })
+    # Account 7: rudolf.sarkany.aiitec@gmail.com (500/day)
+    if _e("GMAIL_APP_PASSWORD_7"):
+        accounts.append({
+            "name":     "AiiteCGmail",
+            "user":     _e("GMAIL_USER_7", "rudolf.sarkany.aiitec@gmail.com"),
+            "password": _e("GMAIL_APP_PASSWORD_7",""),
             "host":     "smtp.gmail.com",
             "port":     587,
             "daily_limit": 500,
