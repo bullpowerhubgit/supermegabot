@@ -117,10 +117,9 @@ async def update_shopify_product(product_id: int, seo: dict) -> bool:
                 "id": product_id,
                 "body_html": seo.get("body_html", ""),
                 "tags": seo.get("tags", ""),
-                "metafields": [
-                    {"namespace": "seo", "key": "title",       "value": seo.get("seo_title", ""),       "type": "single_line_text_field"},
-                    {"namespace": "seo", "key": "description", "value": seo.get("meta_description", ""), "type": "single_line_text_field"},
-                ],
+                # Echte Shopify SEO-Felder (erscheinen in Google-Suchergebnissen)
+                "metafields_global_title_tag": seo.get("seo_title", "")[:70],
+                "metafields_global_description_tag": seo.get("meta_description", "")[:155],
             }
         }
         async with aiohttp.ClientSession() as s:
