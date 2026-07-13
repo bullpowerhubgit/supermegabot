@@ -3773,7 +3773,7 @@ async def handle_telegram_webhook(req):
         if text in ("/leads",):
             try:
                 async with aiohttp.ClientSession() as _s:
-                    async with _s.get("http://localhost:8888/api/leads") as _r:
+                    async with _s.get(f"http://localhost:{os.getenv('PORT', '8888')}/api/leads") as _r:
                         _d = await _r.json()
                 leads = _d.get("leads", [])
                 if leads:
@@ -3792,7 +3792,7 @@ async def handle_telegram_webhook(req):
             await _tg_send(bot_token, chat_id, "⏳ Generiere SEO-Artikel… (dauert ~30s)")
             try:
                 async with aiohttp.ClientSession() as _s:
-                    async with _s.post("http://localhost:8888/api/seo/generate") as _r:
+                    async with _s.post(f"http://localhost:{os.getenv('PORT', '8888')}/api/seo/generate") as _r:
                         _d = await _r.json()
                 url = _d.get("url", "?")
                 reply = f"✅ <b>Artikel deployed!</b>\n🔗 {url}\nKeyword: {_d.get('keyword','?')}"
@@ -3805,7 +3805,7 @@ async def handle_telegram_webhook(req):
             await _tg_send(bot_token, chat_id, "⏳ Generiere Social Drafts… (dauert ~20s)")
             try:
                 async with aiohttp.ClientSession() as _s:
-                    async with _s.get("http://localhost:8888/api/seo/social-drafts") as _r:
+                    async with _s.get(f"http://localhost:{os.getenv('PORT', '8888')}/api/seo/social-drafts") as _r:
                         _d = await _r.json()
                 drafts = _d.get("drafts", {})
                 lines = ["📣 <b>Social Drafts bereit:</b>", ""]
@@ -3822,7 +3822,7 @@ async def handle_telegram_webhook(req):
         if text in ("/ping",):
             try:
                 async with aiohttp.ClientSession() as _s:
-                    async with _s.post("http://localhost:8888/api/seo/ping-sitemaps") as _r:
+                    async with _s.post(f"http://localhost:{os.getenv('PORT', '8888')}/api/seo/ping-sitemaps") as _r:
                         _d = await _r.json()
                 reply = f"🏓 <b>Sitemap Pings:</b> {_d.get('pinged', 0)} gesendet\nFehler: {len(_d.get('errors', []))}"
             except Exception as _e:
