@@ -1,7 +1,7 @@
 """
 Revenue Engine — nur Aktionen die Geld bringen.
 
-Fokus: Eigene DS24-Produkte (668035 €37, 704677 €97) → Traffic → Klaviyo → Kauf.
+Fokus: Eigene DS24-Produkte (668035 €37) → Traffic → Klaviyo → Kauf.
 Kein SEO-Spam, kein 19k-Produkt-Import, kein Vanity-Posting.
 """
 from __future__ import annotations
@@ -146,7 +146,7 @@ async def _step_meta_ads() -> Dict[str, Any]:
         return {"ok": False, "skipped": True, "reason": "META credentials fehlen"}
 
     from modules.ads_engine import create_facebook_ad_campaign
-    product = OWN_PRODUCTS[1]  # SuperMegaBot €97 — höherer AOV
+    product = OWN_PRODUCTS[0]  # AI Income Machine €37 — einziges aktives Produkt
     r = await create_facebook_ad_campaign(
         {"name": product["name"], "url": product["url"]},
         budget_eur=META_BUDGET_EUR,
