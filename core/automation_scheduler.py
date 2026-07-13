@@ -6813,15 +6813,6 @@ async def task_vat_oss_cycle() -> str:
         return f"VAT/OSS Fehler: {e}"
 
 
-async def task_vat_oss_engine_cycle() -> str:
-    """VAT OSS Engine — EU-Schwellenwert-Prüfung + Stripe-Revenue + TG-Alert."""
-    try:
-        from modules.vat_oss_engine import run_vat_oss_cycle
-        r = await run_vat_oss_cycle()
-        return f"VAT OSS: {r.get('status','ok')} | Threshold: {r.get('threshold_pct',0):.0f}%"
-    except Exception as e:
-        return f"VAT OSS Engine Fehler: {e}"
-
 async def task_gpsr_scan() -> str:
     """GPSR Compliance Engine — Shopify-Produkte auf EU 2023/988 prüfen."""
     try:
@@ -7220,7 +7211,7 @@ TASKS = [
     ("ai_act_art50_cycle",        task_ai_act_art50_cycle,            21600, 8005),  # alle 6h — EU AI Act Art.50 Scan (Deadline 2026-08-02)
     ("hs_code_cycle",             task_hs_code_cycle,                 86400, 8006),  # täglich — HS-Code SaaS Status (VO EU 2026/382)
     ("vat_oss_cycle",             task_vat_oss_cycle,                 86400, 8007),  # täglich — Non-EU VAT/OSS Status
-    ("vat_oss_engine",            task_vat_oss_engine_cycle,          86400, 9001),  # täglich — VAT OSS Engine: Schwellenwert + TG-Alert
+    # vat_oss_engine: zusammengeführt mit vat_oss_cycle (non_eu_vat_oss.py)
     ("gpsr_scan",                 task_gpsr_scan,                     43200, 9002),  # alle 12h — GPSR Compliance: Shopify-Produkte prüfen
     ("zvg_hourly",                task_zvg_hourly,                     3600, 9003),  # stündl. — ZVG Radar: neue Leads (hourly scan)
 ]
