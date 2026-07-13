@@ -11,7 +11,7 @@ cp "$ENV_FILE" "$ENV_FILE.backup.$(date +%Y%m%d_%H%M%S)"
 echo "✅ Backup erstellt: $ENV_FILE.backup.$(date +%Y%m%d_%H%M%S)"
 
 # Shopify Admin Token (neu gefunden)
-SHOPIFY_TOKEN=$(grep -o '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' "$ENV_NEW" | head -1)
+SHOPIFY_TOKEN=$(grep -o 'shpat_REDACTED' "$ENV_NEW" | head -1)
 if [ ! -z "$SHOPIFY_TOKEN" ]; then
     sed -i.bak "s|SHOPIFY_ADMIN_TOKEN=.*|SHOPIFY_ADMIN_TOKEN=$SHOPIFY_TOKEN|" "$ENV_FILE"
     echo "✅ SHOPIFY_ADMIN_TOKEN aktualisiert"

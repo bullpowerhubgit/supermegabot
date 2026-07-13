@@ -49,3 +49,10 @@ rudibot-army/shared/army_state.json
 CascadeProjects/**/.env*
 **/.env.new
 **/.env.production
+
+# Windsurf MCP configs (contain API keys)
+**/.windsurf/mcp_config.json
+.windsurf/mcp_config.json
+
+# CascadeProjects sensitive scripts
+CascadeProjects/tools/sync_env.py

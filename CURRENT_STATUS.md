@@ -83,6 +83,8 @@ hospital-wage-calculator-vercel · gistore · gumroad-discord · telegram-bot ·
 | ✅ TikTok | @aiitec AIITEC — Token gültig, display_name=AIITEC | Sandbox App sbaw5uysvdzyc9p5me, scope: user.info.basic,video.list,video.publish |
 | ⏳ Pinterest | PINTEREST_ACCESS_TOKEN fehlt | Trial-Mode, multi-day Approval |
 
+**DS24-Posts ✅ GELÖST (2026-07-13):** 710277+704677 (nicht genehmigt) → 668035 (AI Income Machine, genehmigt). 43 Dateien bereinigt, SOCIAL_POSTING_PAUSED wieder auf 0.
+
 **TikTok ✅ GELÖST (2026-07-13):** Sandbox App "~4672" = sbaw5uysvdzyc9p5me
 → Token via Refresh erneuert: `act.hr9y5Fd4yrp...SOzh...!4672.e1` (gültig 24h, auto-refresh via TIKTOK_REFRESH_TOKEN)
 → TIKTOK_CLIENT_KEY + TIKTOK_CLIENT_SECRET in Railway auf Sandbox-App-Werte gesetzt

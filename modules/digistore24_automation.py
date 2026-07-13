@@ -16,7 +16,7 @@ log = logging.getLogger("Digistore24")
 
 DS24_BASE = "https://www.digistore24.com/api/call"
 DS24_FORMAT = "JSON"
-_DEFAULT_PRIMARY = "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N"
+_DEFAULT_PRIMARY = ""
 
 
 def _resolve_key(purpose: str = "default") -> str:
