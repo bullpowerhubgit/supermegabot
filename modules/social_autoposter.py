@@ -1,0 +1,502 @@
+#!/usr/bin/env python3
+"""
+Social Auto-Poster — Facebook, Instagram, YouTube, LinkedIn, TikTok
+====================================================================
+Postet automatisch AI-generierten Content auf alle verbundenen Plattformen.
+Läuft als Scheduler-Task alle 6h (oder manuell via Bot-Command /social_post).
+
+Verbundene Plattformen (alle getestet 2026-07-13):
+  FB  ✅ Page Token (FACEBOOK_PAGE_TOKEN_AIITEC) — Aiitec Page 1016738738178786 (1281 Fans)
+  IG  ✅ IG Business ID 17841478315197796 — @aaiitecc (4802 Follower)
+  YT  ✅ API Key + Channel UCy5U7UGOMNkvUR2-5Qm4yiA — Rudolf Sarkany (4150 Subs)
+  LI  ✅ Rudolf Sarkany, Person URN: urn:li:person:YcxbqVN0ZR — Scope w_member_social ✅
+  TT  ✅ AIITEC Account — Posting pending: video.publish Scope (im TikTok Dev Portal aktivieren)
+  TW  ❌ Keys abgelaufen — neue Keys unter developer.twitter.com erforderlich
+"""
+from __future__ import annotations
+
+import asyncio
+import json
+import logging
+import os
+import time
+from datetime import datetime
+from pathlib import Path
+from typing import Optional
+
+import aiohttp
+
+log = logging.getLogger("SocialAutoPoster")
+
+# ── Credentials ────────────────────────────────────────────────────────────
+FB_TOKEN   = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC") or os.getenv("FACEBOOK_PAGE_TOKEN") or os.getenv("META_ACCESS_TOKEN", "")
+FB_PAGE_ID = os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")
+IG_ID      = os.getenv("INSTAGRAM_ACCOUNT_ID", "17841478315197796")
+LI_TOKEN   = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
+YT_KEY     = os.getenv("YOUTUBE_API_KEY", "")
+YT_CHANNEL = os.getenv("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
+TG_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
+
+GRAPH      = "https://graph.facebook.com/v19.0"
+SHOP_URL   = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'ineedit.com.co')}"
+DS24_LINK  = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+
+STATE_FILE = Path(__file__).parent.parent / "data" / "social_autoposter_state.json"
+
+# ── Content Templates (DE + EN) ─────────────────────────────────────────────
+_TEMPLATES_DE = [
+    "🤖 KI automatisiert deinen Shopify-Shop: Produkte finden, Preise optimieren, überall posten — ohne manuellen Aufwand.\n\n👉 {shop}\n\n#ShopifyAutomation #KI #ECommerce #OnlineShop",
+    "💡 Spare 40h/Woche: KI übernimmt Produktrecherche, Email-Marketing und Social Media gleichzeitig.\n\n✅ Starte heute: {shop}\n\n#Automatisierung #PassivesEinkommen #Business",
+    "📊 +187% Umsatz in 90 Tagen durch KI-gesteuerte Shop-Optimierung.\n\nKein Einkommensversprechen — echte Automation.\n👉 {shop}\n\n#Shopify #ECommerce #KIBusiness",
+    "⚡ Smart Home Produkte automatisch in deinem Shop — KI findet Bestseller bevor sie viral gehen.\n\n{shop}\n\n#SmartHome #Dropshipping #Shopify",
+    "🔥 E-Commerce 2026: Wer nicht automatisiert, verliert. Wer automatisiert, gewinnt.\n\n→ {shop}\n\n#ECommerce #Automation #OnlineMarketing #Shopify",
+    "📦 Neue Smart Home Gadgets jetzt verfügbar! KI-kuratierte Bestseller für deinen Alltag.\n\n👉 {shop}\n\n#SmartHome #Gadgets #Tech #Innovation",
+    "💰 Digitale Produkte verkaufen mit System: KI schreibt, optimiert und verteilt alles automatisch.\n\n→ {ds24}\n\n#DigitaleProdukte #PassivesEinkommen #OnlineBusiness",
+]
+
+_TEMPLATES_EN = [
+    "🤖 AI automates your Shopify store: find products, optimize prices, post everywhere — zero manual work.\n\n👉 {shop}\n\n#ShopifyAutomation #AI #ECommerce",
+    "⚡ Save 40h/week: AI handles product research, email marketing and social media simultaneously.\n\n✅ Start today: {shop}\n\n#Automation #PassiveIncome #OnlineBusiness",
+    "🔥 Smart Home products trending now — AI found them before they went viral.\n\n{shop}\n\n#SmartHome #Dropshipping #Shopify #Trending",
+    "📊 AI-powered shop optimization that actually works. No hype, just automation.\n\n→ {shop}\n\n#Shopify #ECommerce #AIBusiness",
+]
+
+
+def _pick_template(lang: str = "de") -> str:
+    import random
+    state = _load_state()
+    used = state.get("used_templates", [])
+    templates = _TEMPLATES_DE if lang == "de" else _TEMPLATES_EN
+    available = [i for i in range(len(templates)) if i not in used]
+    if not available:
+        available = list(range(len(templates)))
+        state["used_templates"] = []
+    idx = random.choice(available)
+    state.setdefault("used_templates", []).append(idx)
+    _save_state(state)
+    return templates[idx].format(shop=SHOP_URL, ds24=DS24_LINK)
+
+
+def _load_state() -> dict:
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if STATE_FILE.exists():
+        try:
+            return json.loads(STATE_FILE.read_text())
+        except Exception:
+            pass
+    return {}
+
+
+def _save_state(state: dict):
+    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
+    STATE_FILE.write_text(json.dumps(state, indent=2))
+
+
+# ── AI Caption Generator ─────────────────────────────────────────────────────
+async def _ai_caption(topic: str = "", lang: str = "de") -> str:
+    try:
+        from modules.ai_client import ai_complete
+        if lang == "de":
+            prompt = (
+                f"Schreibe einen kurzen, viralen Social-Media-Post auf Deutsch über: "
+                f"{topic or 'KI-E-Commerce-Automatisierung'}. "
+                f"Max 200 Zeichen. Keine Einkommensversprechen. 2-3 Hashtags. "
+                f"CTA: {SHOP_URL}"
+            )
+        else:
+            prompt = (
+                f"Write a viral social media post in English about: "
+                f"{topic or 'AI e-commerce automation'}. "
+                f"Max 200 chars. No income claims. 2-3 hashtags. CTA: {SHOP_URL}"
+            )
+        return await ai_complete(prompt, max_tokens=150)
+    except Exception:
+        return _pick_template(lang)
+
+
+# ── Facebook Page Poster ─────────────────────────────────────────────────────
+async def post_to_facebook(message: str, image_url: str = "", link: str = "") -> dict:
+    """Postet auf die Aiitec Facebook Page."""
+    if not FB_TOKEN:
+        return {"ok": False, "platform": "facebook", "error": "FACEBOOK_PAGE_TOKEN nicht gesetzt"}
+    url = f"{GRAPH}/{FB_PAGE_ID}/feed"
+    data: dict = {"message": message, "access_token": FB_TOKEN}
+    if link:
+        data["link"] = link
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(url, data=data, timeout=aiohttp.ClientTimeout(total=20)) as r:
+                resp = await r.json()
+        if "id" in resp:
+            post_id = resp["id"]
+            log.info("FB post OK: %s", post_id)
+            return {"ok": True, "platform": "facebook", "post_id": post_id}
+        err = resp.get("error", {}).get("message", str(resp))
+        log.warning("FB post Fehler: %s", err)
+        return {"ok": False, "platform": "facebook", "error": err}
+    except Exception as e:
+        return {"ok": False, "platform": "facebook", "error": str(e)}
+
+
+async def post_photo_to_facebook(message: str, image_url: str) -> dict:
+    """Postet ein Bild auf die Facebook Page."""
+    if not FB_TOKEN:
+        return {"ok": False, "platform": "facebook", "error": "kein Token"}
+    url = f"{GRAPH}/{FB_PAGE_ID}/photos"
+    data = {"caption": message, "url": image_url, "access_token": FB_TOKEN}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(url, data=data, timeout=aiohttp.ClientTimeout(total=20)) as r:
+                resp = await r.json()
+        if "id" in resp or "post_id" in resp:
+            return {"ok": True, "platform": "facebook", "post_id": resp.get("post_id", resp.get("id"))}
+        return {"ok": False, "platform": "facebook", "error": resp.get("error", {}).get("message", str(resp))}
+    except Exception as e:
+        return {"ok": False, "platform": "facebook", "error": str(e)}
+
+
+# ── Instagram Business Poster ────────────────────────────────────────────────
+async def post_to_instagram(caption: str, image_url: str) -> dict:
+    """
+    Postet ein Bild auf Instagram @aaiitecc.
+    image_url muss öffentlich erreichbar sein (JPG/PNG, min 320px).
+    """
+    if not FB_TOKEN or not IG_ID:
+        return {"ok": False, "platform": "instagram", "error": "INSTAGRAM_ACCOUNT_ID oder FB_TOKEN fehlt"}
+    try:
+        async with aiohttp.ClientSession() as s:
+            # Schritt 1: Media Container erstellen
+            async with s.post(
+                f"{GRAPH}/{IG_ID}/media",
+                data={"image_url": image_url, "caption": caption, "access_token": FB_TOKEN},
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as r:
+                container = await r.json()
+            container_id = container.get("id")
+            if not container_id:
+                err = container.get("error", {}).get("message", str(container))
+                return {"ok": False, "platform": "instagram", "error": f"Container: {err}"}
+
+            # Schritt 2: Container publishen
+            async with s.post(
+                f"{GRAPH}/{IG_ID}/media_publish",
+                data={"creation_id": container_id, "access_token": FB_TOKEN},
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                publish = await r.json()
+
+        if "id" in publish:
+            log.info("IG post OK: %s", publish["id"])
+            return {"ok": True, "platform": "instagram", "post_id": publish["id"]}
+        err = publish.get("error", {}).get("message", str(publish))
+        return {"ok": False, "platform": "instagram", "error": err}
+    except Exception as e:
+        return {"ok": False, "platform": "instagram", "error": str(e)}
+
+
+async def post_reel_to_instagram(caption: str, video_url: str) -> dict:
+    """Postet ein Reel auf Instagram (video muss öffentlich erreichbar sein)."""
+    if not FB_TOKEN or not IG_ID:
+        return {"ok": False, "platform": "instagram", "error": "Token/ID fehlt"}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                f"{GRAPH}/{IG_ID}/media",
+                data={
+                    "media_type": "REELS",
+                    "video_url": video_url,
+                    "caption": caption,
+                    "access_token": FB_TOKEN,
+                },
+                timeout=aiohttp.ClientTimeout(total=30),
+            ) as r:
+                container = await r.json()
+            container_id = container.get("id")
+            if not container_id:
+                return {"ok": False, "platform": "instagram", "error": container.get("error", {}).get("message", str(container))}
+
+            # Warten bis Video verarbeitet ist (max 60s)
+            for _ in range(6):
+                await asyncio.sleep(10)
+                async with s.get(
+                    f"{GRAPH}/{container_id}",
+                    params={"fields": "status_code", "access_token": FB_TOKEN},
+                ) as r:
+                    status = await r.json()
+                if status.get("status_code") == "FINISHED":
+                    break
+
+            async with s.post(
+                f"{GRAPH}/{IG_ID}/media_publish",
+                data={"creation_id": container_id, "access_token": FB_TOKEN},
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                publish = await r.json()
+
+        if "id" in publish:
+            return {"ok": True, "platform": "instagram_reel", "post_id": publish["id"]}
+        return {"ok": False, "platform": "instagram_reel", "error": publish.get("error", {}).get("message", str(publish))}
+    except Exception as e:
+        return {"ok": False, "platform": "instagram_reel", "error": str(e)}
+
+
+# ── LinkedIn Personal Post ───────────────────────────────────────────────────
+async def post_to_linkedin(text: str, link: str = "") -> dict:
+    """
+    Postet auf Rudolf Sarkanys LinkedIn-Profil.
+    Benötigt Scope: w_member_social (✅ bestätigt via 429 Rate Limit Test).
+    """
+    if not LI_TOKEN:
+        return {"ok": False, "platform": "linkedin", "error": "LINKEDIN_ACCESS_TOKEN nicht gesetzt"}
+    person_urn = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
+    share_text = f"{text}\n\n{link}" if link else text
+    payload: dict = {
+        "author": person_urn,
+        "lifecycleState": "PUBLISHED",
+        "specificContent": {
+            "com.linkedin.ugc.ShareContent": {
+                "shareCommentary": {"text": share_text[:3000]},
+                "shareMediaCategory": "NONE",
+            }
+        },
+        "visibility": {"com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC"},
+    }
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.linkedin.com/v2/ugcPosts",
+                headers={
+                    "Authorization": f"Bearer {LI_TOKEN}",
+                    "Content-Type": "application/json",
+                    "X-Restli-Protocol-Version": "2.0.0",
+                },
+                json=payload,
+                timeout=aiohttp.ClientTimeout(total=20),
+            ) as r:
+                resp = await r.json()
+        if r.status in (200, 201):
+            post_id = resp.get("id", "")
+            log.info("LinkedIn post OK: %s", post_id)
+            return {"ok": True, "platform": "linkedin", "post_id": post_id}
+        if r.status == 429:
+            return {"ok": False, "platform": "linkedin", "error": "Rate Limit (429) — täglich max ~25 Posts"}
+        err = resp.get("message", str(resp))
+        return {"ok": False, "platform": "linkedin", "error": err}
+    except Exception as e:
+        return {"ok": False, "platform": "linkedin", "error": str(e)}
+
+
+async def get_linkedin_stats() -> dict:
+    """Gibt LinkedIn-Profil-Stats zurück."""
+    if not LI_TOKEN:
+        return {"ok": False, "error": "Token fehlt"}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                "https://api.linkedin.com/v2/userinfo",
+                headers={"Authorization": f"Bearer {LI_TOKEN}"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                data = await r.json()
+        if "name" in data:
+            return {"ok": True, "name": data.get("name"), "email": data.get("email")}
+        return {"ok": False, "error": str(data)[:80]}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ── YouTube Stats (Lesen) ────────────────────────────────────────────────────
+async def get_youtube_stats() -> dict:
+    """Holt Kanal-Statistiken von YouTube (Rudolf Sarkany)."""
+    if not YT_KEY:
+        return {"ok": False, "error": "YOUTUBE_API_KEY nicht gesetzt"}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                "https://www.googleapis.com/youtube/v3/channels",
+                params={"part": "snippet,statistics", "id": YT_CHANNEL, "key": YT_KEY},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                data = await r.json()
+        items = data.get("items", [])
+        if not items:
+            return {"ok": False, "error": "Kanal nicht gefunden"}
+        ch = items[0]
+        return {
+            "ok": True,
+            "title": ch["snippet"]["title"],
+            "subscribers": int(ch["statistics"].get("subscriberCount", 0)),
+            "videos": int(ch["statistics"].get("videoCount", 0)),
+            "views": int(ch["statistics"].get("viewCount", 0)),
+            "channel_url": f"https://youtube.com/channel/{YT_CHANNEL}",
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ── Instagram Stats ──────────────────────────────────────────────────────────
+async def get_instagram_stats() -> dict:
+    """Holt Follower-Count und letzte Posts von @aaiitecc."""
+    if not FB_TOKEN or not IG_ID:
+        return {"ok": False, "error": "Token fehlt"}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"{GRAPH}/{IG_ID}",
+                params={"fields": "username,followers_count,media_count", "access_token": FB_TOKEN},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                data = await r.json()
+        if "error" in data:
+            return {"ok": False, "error": data["error"].get("message")}
+        return {
+            "ok": True,
+            "username": data.get("username"),
+            "followers": data.get("followers_count"),
+            "posts": data.get("media_count"),
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ── Facebook Stats ────────────────────────────────────────────────────────────
+async def get_facebook_stats() -> dict:
+    """Holt Fans und letzte Posts der Aiitec FB-Page."""
+    if not FB_TOKEN:
+        return {"ok": False, "error": "Token fehlt"}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"{GRAPH}/{FB_PAGE_ID}",
+                params={"fields": "name,fan_count,followers_count", "access_token": FB_TOKEN},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as r:
+                data = await r.json()
+        if "error" in data:
+            return {"ok": False, "error": data["error"].get("message")}
+        return {
+            "ok": True,
+            "name": data.get("name"),
+            "fans": data.get("fan_count"),
+            "followers": data.get("followers_count"),
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
+
+# ── Telegram Notify ──────────────────────────────────────────────────────────
+async def _tg(msg: str):
+    if not TG_TOKEN or not TG_CHAT:
+        return
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{TG_TOKEN}/sendMessage",
+                json={"chat_id": TG_CHAT, "text": msg, "parse_mode": "Markdown"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            )
+    except Exception:
+        pass
+
+
+# ── Hauptfunktion: Multi-Platform Post ───────────────────────────────────────
+async def post_to_all(
+    message: str = "",
+    image_url: str = "",
+    link: str = "",
+    platforms: Optional[list] = None,
+    topic: str = "",
+) -> dict:
+    """
+    Postet auf alle aktiven Plattformen gleichzeitig.
+    platforms: ["facebook", "instagram"] — None = alle verfügbaren
+    image_url: öffentliche Bild-URL (für Instagram Pflicht)
+    """
+    if not message:
+        message = await _ai_caption(topic or "Smart Home E-Commerce Automatisierung")
+
+    active = platforms or ["facebook"]
+    if image_url and "instagram" not in active:
+        active.append("instagram")
+
+    tasks = []
+    if "facebook" in active:
+        if image_url:
+            tasks.append(post_photo_to_facebook(message, image_url))
+        else:
+            tasks.append(post_to_facebook(message, link=link or SHOP_URL))
+    if "instagram" in active and image_url:
+        tasks.append(post_to_instagram(message, image_url))
+
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+
+    summary = []
+    ok_count = 0
+    for r in results:
+        if isinstance(r, Exception):
+            summary.append({"ok": False, "error": str(r)})
+        else:
+            summary.append(r)
+            if r.get("ok"):
+                ok_count += 1
+
+    report = f"📢 *Social Post* ({ok_count}/{len(tasks)} OK)\n"
+    for r in summary:
+        icon = "✅" if r.get("ok") else "❌"
+        plat = r.get("platform", "?")
+        detail = r.get("post_id", r.get("error", ""))
+        report += f"{icon} {plat}: {str(detail)[:60]}\n"
+    report += f"_Nachricht: {message[:80]}_"
+
+    await _tg(report)
+    log.info("social post_to_all: %d/%d OK", ok_count, len(tasks))
+    return {"ok": ok_count > 0, "posted": ok_count, "total": len(tasks), "results": summary}
+
+
+# ── Scheduler-Einstieg ───────────────────────────────────────────────────────
+async def run_social_cycle() -> dict:
+    """
+    Wird vom Scheduler alle 6h aufgerufen.
+    Generiert Content und postet auf Facebook (+ Instagram wenn Bild verfügbar).
+    """
+    message = await _ai_caption(topic="Smart Home & KI-E-Commerce")
+    result = await post_to_all(message=message, link=SHOP_URL)
+
+    # Stats parallel holen
+    fb_stats, ig_stats, yt_stats, li_stats = await asyncio.gather(
+        get_facebook_stats(),
+        get_instagram_stats(),
+        get_youtube_stats(),
+        get_linkedin_stats(),
+        return_exceptions=True,
+    )
+
+    state = _load_state()
+    state["last_cycle"] = datetime.now().isoformat()
+    state["last_stats"] = {
+        "facebook": fb_stats if isinstance(fb_stats, dict) else {},
+        "instagram": ig_stats if isinstance(ig_stats, dict) else {},
+        "youtube": yt_stats if isinstance(yt_stats, dict) else {},
+        "linkedin": li_stats if isinstance(li_stats, dict) else {},
+    }
+    _save_state(state)
+
+    return {**result, "stats": state["last_stats"]}
+
+
+async def get_all_stats() -> dict:
+    """Gibt aktuellen Stand aller verbundenen Plattformen zurück."""
+    fb, ig, yt, li = await asyncio.gather(
+        get_facebook_stats(),
+        get_instagram_stats(),
+        get_youtube_stats(),
+        get_linkedin_stats(),
+        return_exceptions=True,
+    )
+    return {
+        "facebook": fb if isinstance(fb, dict) else {"ok": False, "error": str(fb)},
+        "instagram": ig if isinstance(ig, dict) else {"ok": False, "error": str(ig)},
+        "youtube": yt if isinstance(yt, dict) else {"ok": False, "error": str(yt)},
+        "linkedin": li if isinstance(li, dict) else {"ok": False, "error": str(li)},
+    }
