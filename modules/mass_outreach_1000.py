@@ -40,7 +40,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-from urllib.parse import urlencode, quote_plus
+from urllib.parse import urlencode, quote_plus, urlparse
 
 import aiohttp
 
@@ -73,12 +73,13 @@ def _smtp_pool() -> List[Dict]:
         ("GMAIL_USER_6",         "GMAIL_APP_PASSWORD_6"),
         ("GMAIL_USER_7",         "GMAIL_APP_PASSWORD_7"),
         ("GMAIL_USER_8",         "GMAIL_APP_PASSWORD_8"),
-        ("GMAIL_USER_PERSONAL",  "GMAIL_APP_PASSWORD_PERSONAL"),
     ]
+    seen_users = set()
     for user_key, pass_key in pairs:
         user = _e(user_key)
         pw   = _e(pass_key)
-        if user and pw:
+        if user and pw and user not in seen_users:
+            seen_users.add(user)
             accounts.append({"type": "gmail", "user": user, "pass": pw})
     sg_key = _e("SENDGRID_API_KEY_AIITEC") or _e("SENDGRID_API_KEY")
     sg_from = _e("SENDGRID_FROM_EMAIL", "")
@@ -193,11 +194,21 @@ def init_db() -> None:
 
 # ── Email Validierung ─────────────────────────────────────────────────────────
 def _valid_email(email: str) -> bool:
-    if not email or "@" not in email:
+    if not email or "@" not in email or len(email) > 254:
         return False
-    if re.search(r'(example|test|placeholder|noreply|no-reply|mailer-daemon)', email, re.I):
+    if not re.match(r'^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$', email):
         return False
-    domain = email.split("@")[-1]
+    if re.search(
+        r'(example|test|placeholder|noreply|no-reply|mailer-daemon|donotreply|do-not-reply|'
+        r'abuse|postmaster|bounce|spam|unsubscribe@|admin@google|support@microsoft)',
+        email, re.I
+    ):
+        return False
+    domain = email.split("@")[-1].lower()
+    if domain in _THROWAWAY:
+        return False
+    if domain.count(".") == 0:
+        return False
     try:
         socket.getaddrinfo(domain, None)
         return True
@@ -237,23 +248,135 @@ def _upsert_lead(email: str, company: str = "", domain: str = "",
 # ── Lead Research ─────────────────────────────────────────────────────────────
 
 _HEADERS = {
-    "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+                  "(KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
     "Accept-Language": "de-DE,de;q=0.9,en;q=0.8",
+    "Accept-Encoding": "gzip, deflate, br",
+}
+
+_THROWAWAY = {
+    "mailinator.com","guerrillamail.com","tempmail.com","throwaway.email",
+    "sharklasers.com","guerrillamailblock.com","grr.la","spam4.me",
+    "yopmail.com","trashmail.com","maildrop.cc","dispostable.com",
+    "fakeinbox.com","10minutemail.com","mailnull.com","spamgourmet.com",
 }
 
 async def _fetch(session: aiohttp.ClientSession, url: str, timeout: int = 15) -> str:
     try:
-        async with session.get(url, headers=_HEADERS, timeout=aiohttp.ClientTimeout(total=timeout)) as r:
+        async with session.get(
+            url, headers=_HEADERS,
+            timeout=aiohttp.ClientTimeout(total=timeout),
+            allow_redirects=True,
+            ssl=False,
+        ) as r:
             if r.status == 200:
                 return await r.text(errors="replace")
     except Exception as e:
         log.debug("Fetch error %s: %s", url, e)
     return ""
 
+def _mx_valid(domain: str) -> bool:
+    """Check domain has MX record (real mail server)."""
+    try:
+        import dns.resolver
+        dns.resolver.resolve(domain, "MX")
+        return True
+    except Exception:
+        pass
+    try:
+        socket.getaddrinfo(domain, None)
+        return True
+    except Exception:
+        return False
+
+def _extract_emails_from_html(html: str, own_domain: str = "") -> List[str]:
+    """Extract and filter all email addresses from HTML."""
+    raw = re.findall(
+        r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}',
+        html
+    )
+    seen = set()
+    result = []
+    for e in raw:
+        e = e.lower().strip()
+        if e in seen:
+            continue
+        seen.add(e)
+        domain = e.split("@")[-1]
+        if domain in _THROWAWAY:
+            continue
+        if re.search(r'(example|test|placeholder|noreply|no-reply|mailer-daemon|bounce|donotreply|unsubscribe|abuse@|postmaster@|spam@|admin@|support@microsoft|support@apple|support@google)', e, re.I):
+            continue
+        if re.match(r'^[0-9]', e):
+            continue
+        result.append(e)
+    return result
+
+def _extract_domain_from_url(url: str) -> str:
+    """Extract clean domain from a URL."""
+    try:
+        parsed = urlparse(url if "://" in url else "https://" + url)
+        host = parsed.netloc or parsed.path
+        host = host.lower().strip("/").replace("www.", "")
+        return host.split("/")[0]
+    except Exception:
+        return ""
+
+def _guess_emails(domain: str) -> List[str]:
+    """Standard-Email-Muster für DACH-Unternehmen — Impressum ist Pflicht!"""
+    return [
+        f"info@{domain}",
+        f"kontakt@{domain}",
+        f"hello@{domain}",
+        f"hallo@{domain}",
+        f"service@{domain}",
+        f"mail@{domain}",
+        f"office@{domain}",
+        f"buero@{domain}",
+    ]
+
+async def _find_email_for_domain(
+    session: aiohttp.ClientSession,
+    domain: str,
+    company: str = "",
+    timeout: int = 8,
+) -> str:
+    """
+    Impressum-First Email-Finding:
+    1. Fetch /impressum (German law = always has contact info)
+    2. Fetch /kontakt, /contact, /about
+    3. Fallback: guess info@/kontakt@ + return best guess
+    """
+    if not domain or "." not in domain:
+        return ""
+    paths = ["/impressum", "/kontakt", "/contact", "/about", "/ueber-uns",
+             "/impressum.html", "/kontakt.html", ""]
+    for path in paths:
+        url = f"https://{domain}{path}"
+        html = await _fetch(session, url, timeout=timeout)
+        if not html:
+            url = f"http://{domain}{path}"
+            html = await _fetch(session, url, timeout=timeout)
+        if html:
+            emails = _extract_emails_from_html(html, domain)
+            for e in emails:
+                ed = e.split("@")[-1]
+                if ed == domain or ed.endswith("." + domain.split(".", 1)[-1] if "." in domain else domain):
+                    return e
+            if emails:
+                return emails[0]
+    # Fallback: guess info@ + validate domain resolves
+    if _mx_valid(domain):
+        return f"info@{domain}"
+    return ""
+
 async def research_gelbeseiten(session: aiohttp.ClientSession,
                                 category: str, city: str) -> List[Dict]:
-    """Gelbe Seiten DACH — öffentliche Geschäftsverzeichnis."""
+    """
+    Gelbe Seiten: extrahiert Domains aus Listings, dann Impressum-Scraping.
+    Gelbe Seiten zeigt selten mailto:// — aber immer Website-Links.
+    """
     leads = []
     url = f"https://www.gelbeseiten.de/suche/{quote_plus(category)}/{quote_plus(city)}"
     html = await _fetch(session, url)
@@ -263,63 +386,154 @@ async def research_gelbeseiten(session: aiohttp.ClientSession,
         r'<article[^>]*class="[^"]*mod-Treffer[^"]*"[^>]*>(.*?)</article>',
         html, re.S
     )
-    for entry in entries[:20]:
-        company_m = re.search(r'data-company="([^"]+)"', entry)
-        email_m   = re.search(r'href="mailto:([^"]+)"', entry)
-        city_m    = re.search(r'<span[^>]*class="[^"]*locality[^"]*"[^>]*>([^<]+)<', entry)
-        if not company_m:
-            company_m = re.search(r'<h2[^>]*>([^<]+)<', entry)
-        company = company_m.group(1).strip() if company_m else ""
-        email   = email_m.group(1).strip() if email_m else ""
-        city_n  = city_m.group(1).strip() if city_m else city
-        if email:
-            leads.append({"email": email, "company": company, "city": city_n,
-                           "industry": _map_industry(category), "source": "gelbeseiten"})
+    industry = _map_industry(category)
+    sem = asyncio.Semaphore(4)
+    async def _process(entry: str):
+        async with sem:
+            company_m = re.search(r'data-company="([^"]+)"', entry)
+            if not company_m:
+                company_m = re.search(r'<h2[^>]*>([^<]+)<', entry)
+            company = re.sub(r'<[^>]+>', '', company_m.group(1)).strip() if company_m else ""
+            city_m   = re.search(r'<span[^>]*class="[^"]*locality[^"]*"[^>]*>([^<]+)<', entry)
+            city_n   = city_m.group(1).strip() if city_m else city
+            # Direct mailto (rare but take it)
+            email_m  = re.search(r'href="mailto:([^"&]+)"', entry)
+            if email_m:
+                email = email_m.group(1).strip().lower()
+                if _valid_email(email):
+                    return {"email": email, "company": company, "city": city_n,
+                            "industry": industry, "source": "gelbeseiten_direct"}
+            # Website URL → Impressum scraping
+            web_m = re.search(r'data-web="([^"]+)"', entry)
+            if not web_m:
+                web_m = re.search(r'href="(https?://(?!www\.gelbeseiten)[^"]+)"', entry)
+            if web_m:
+                domain = _extract_domain_from_url(web_m.group(1))
+                if domain:
+                    await asyncio.sleep(0.3)
+                    email = await _find_email_for_domain(session, domain, company)
+                    if email and _valid_email(email):
+                        return {"email": email, "company": company, "city": city_n,
+                                "industry": industry, "source": "gelbeseiten",
+                                "domain": domain}
+            return None
+    tasks = [_process(e) for e in entries[:25]]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    for r in results:
+        if isinstance(r, dict):
+            leads.append(r)
     return leads
 
 async def research_11880(session: aiohttp.ClientSession,
                           category: str, city: str) -> List[Dict]:
-    """11880.com — Deutsches Branchenverzeichnis."""
+    """11880.com: domains + Impressum-Scraping."""
     leads = []
     url = f"https://www.11880.com/suche/{quote_plus(category)}/{quote_plus(city)}.html"
     html = await _fetch(session, url)
     if not html:
         return leads
-    blocks = re.findall(r'<div[^>]*class="[^"]*result[^"]*"[^>]*>(.*?)</div>\s*</div>',
-                         html, re.S)
-    for block in blocks[:20]:
-        company_m = re.search(r'<h2[^>]*>([^<]+)<', block)
-        email_m   = re.search(r'href="mailto:([^"]+)"', block)
-        company = company_m.group(1).strip() if company_m else ""
-        email   = email_m.group(1).strip() if email_m else ""
-        if email:
-            leads.append({"email": email, "company": company, "city": city,
-                           "industry": _map_industry(category), "source": "11880"})
+    industry = _map_industry(category)
+    # Extract result blocks
+    blocks = re.findall(
+        r'<(?:div|article)[^>]*class="[^"]*(?:result|entry|listing)[^"]*"[^>]*>(.*?)</(?:div|article)>',
+        html, re.S
+    )
+    if not blocks:
+        blocks = re.findall(r'<li[^>]*class="[^"]*result[^"]*"[^>]*>(.*?)</li>', html, re.S)
+    sem = asyncio.Semaphore(3)
+    async def _process(block: str):
+        async with sem:
+            company_m = re.search(r'<h2[^>]*>([^<]+)<', block)
+            company = re.sub(r'<[^>]+>', '', company_m.group(1)).strip() if company_m else ""
+            email_m  = re.search(r'href="mailto:([^"&]+)"', block)
+            if email_m:
+                email = email_m.group(1).strip().lower()
+                if _valid_email(email):
+                    return {"email": email, "company": company, "city": city,
+                            "industry": industry, "source": "11880_direct"}
+            web_m = re.search(r'href="(https?://(?!www\.11880)[^"]+)"', block)
+            if web_m:
+                domain = _extract_domain_from_url(web_m.group(1))
+                if domain:
+                    await asyncio.sleep(0.3)
+                    email = await _find_email_for_domain(session, domain, company)
+                    if email and _valid_email(email):
+                        return {"email": email, "company": company, "city": city,
+                                "industry": industry, "source": "11880", "domain": domain}
+            return None
+    tasks = [_process(b) for b in blocks[:20]]
+    results = await asyncio.gather(*tasks, return_exceptions=True)
+    for r in results:
+        if isinstance(r, dict):
+            leads.append(r)
+    return leads
+
+async def research_cylex(session: aiohttp.ClientSession,
+                          category: str, city: str) -> List[Dict]:
+    """cylex.de — Deutsches Branchenverzeichnis, oft mit direkten Emails."""
+    leads = []
+    url = f"https://www.cylex.de/city-search/{quote_plus(city)}/{quote_plus(category)}.html"
+    html = await _fetch(session, url)
+    if not html:
+        return leads
+    industry = _map_industry(category)
+    entries = re.findall(r'<div[^>]*class="[^"]*company-result[^"]*"[^>]*>(.*?)</div>\s*</div>',
+                          html, re.S)
+    for entry in entries[:15]:
+        company_m = re.search(r'<h2[^>]*>([^<]+)<', entry)
+        email_m   = re.search(r'href="mailto:([^"&]+)"', entry)
+        web_m     = re.search(r'href="(https?://(?!www\.cylex)[^"]+)"', entry)
+        company = re.sub(r'<[^>]+>', '', company_m.group(1)).strip() if company_m else ""
+        if email_m:
+            email = email_m.group(1).strip().lower()
+            if _valid_email(email):
+                leads.append({"email": email, "company": company, "city": city,
+                              "industry": industry, "source": "cylex_direct"})
+        elif web_m:
+            domain = _extract_domain_from_url(web_m.group(1))
+            if domain:
+                email = await _find_email_for_domain(session, domain, company)
+                if email and _valid_email(email):
+                    leads.append({"email": email, "company": company, "city": city,
+                                  "industry": industry, "source": "cylex", "domain": domain})
+    return leads
+
+async def research_meinestadt(session: aiohttp.ClientSession,
+                               category: str, city: str) -> List[Dict]:
+    """meinestadt.de — Lokale Branchensuche mit Website-Links."""
+    leads = []
+    slug_city = city.lower().replace(" ", "-").replace("ü","ue").replace("ä","ae").replace("ö","oe")
+    slug_cat  = category.lower().replace(" ", "-")
+    url = f"https://www.meinestadt.de/{slug_city}/firmen/{slug_cat}"
+    html = await _fetch(session, url)
+    if not html:
+        return leads
+    industry = _map_industry(category)
+    entries = re.findall(r'<div[^>]*class="[^"]*result[^"]*"[^>]*>(.*?)</div>', html, re.S)
+    for entry in entries[:15]:
+        company_m = re.search(r'<(?:h2|h3|strong)[^>]*>([^<]+)<', entry)
+        email_m   = re.search(r'href="mailto:([^"&]+)"', entry)
+        web_m     = re.search(r'href="(https?://(?!www\.meinestadt)[^"]+)"', entry)
+        company = re.sub(r'<[^>]+>', '', company_m.group(1)).strip() if company_m else ""
+        if email_m:
+            email = email_m.group(1).strip().lower()
+            if _valid_email(email):
+                leads.append({"email": email, "company": company, "city": city,
+                              "industry": industry, "source": "meinestadt_direct"})
+        elif web_m:
+            domain = _extract_domain_from_url(web_m.group(1))
+            if domain:
+                email = await _find_email_for_domain(session, domain, company)
+                if email and _valid_email(email):
+                    leads.append({"email": email, "company": company, "city": city,
+                                  "industry": industry, "source": "meinestadt", "domain": domain})
     return leads
 
 async def research_contact_page(session: aiohttp.ClientSession,
                                  domain: str, company: str = "") -> List[str]:
-    """Versucht Email aus Kontaktseite eines Unternehmens zu extrahieren."""
-    emails = set()
-    for path in ["", "/kontakt", "/contact", "/impressum", "/about", "/ueber-uns"]:
-        url = f"https://{domain}{path}"
-        html = await _fetch(session, url, timeout=10)
-        if html:
-            found = re.findall(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}', html)
-            for e in found:
-                if _valid_email(e) and not re.search(r'(example|test|placeholder)', e, re.I):
-                    emails.add(e.lower())
-    return list(emails)[:3]
-
-def _guess_emails(domain: str) -> List[str]:
-    """Standard-Email-Muster für DACH-Unternehmen."""
-    return [
-        f"info@{domain}",
-        f"kontakt@{domain}",
-        f"hello@{domain}",
-        f"hallo@{domain}",
-        f"service@{domain}",
-    ]
+    """Wrapper around _find_email_for_domain for backwards compatibility."""
+    email = await _find_email_for_domain(session, domain, company)
+    return [email] if email else []
 
 async def research_hn_companies(session: aiohttp.ClientSession) -> List[Dict]:
     """HackerNews 'Who is Hiring' → Tech-Startups."""
@@ -436,40 +650,86 @@ def _map_industry(category: str) -> str:
             return industry
     return "Default"
 
-# Research-Konfiguration: Branchen × Städte
+# Research-Konfiguration: Branchen × Städte (ALLE — kein Limit!)
 _CATEGORIES = [
     "Online-Shop", "IT-Dienstleister", "Webdesign Agentur",
     "Marketing Agentur", "SEO Agentur", "E-Commerce",
     "Software Entwicklung", "Digitalagentur", "Unternehmensberatung",
-    "Steuerberater", "Handelsunternehmen",
+    "Steuerberater", "Handelsunternehmen", "Werbeagentur",
+    "App Entwicklung", "Shopify Agentur", "Social Media Agentur",
+    "Buchhaltung", "Elektriker", "Installateur", "Malermeister",
+    "Bäckerei", "Restaurant", "Physiotherapie", "Zahnarzt",
 ]
 _CITIES_DACH = [
+    # Deutschland — Top 30
     "Berlin", "Hamburg", "München", "Köln", "Frankfurt", "Stuttgart",
     "Düsseldorf", "Dortmund", "Essen", "Leipzig", "Bremen", "Dresden",
-    "Hannover", "Nürnberg", "Wien", "Zürich", "Bern", "Basel",
-    "Linz", "Graz", "Innsbruck", "Salzburg",
+    "Hannover", "Nürnberg", "Duisburg", "Bochum", "Wuppertal",
+    "Bielefeld", "Bonn", "Münster", "Karlsruhe", "Mannheim",
+    "Augsburg", "Wiesbaden", "Gelsenkirchen", "Mönchengladbach",
+    "Braunschweig", "Kiel", "Aachen", "Magdeburg",
+    # Österreich
+    "Wien", "Graz", "Linz", "Salzburg", "Innsbruck",
+    # Schweiz
+    "Zürich", "Bern", "Basel", "Genf", "Lausanne",
 ]
 
-async def run_research(session_limit: int = 200) -> Dict:
-    """Komplette Lead-Research: Verzeichnisse + HN + RSS → DB."""
+async def run_research(session_limit: int = 2000) -> Dict:
+    """
+    Vollautomatische Multi-Source Lead-Research:
+    Gelbe Seiten + 11880 + Cylex + MeineStadt + HN + RSS
+    → Impressum-Scraping → Pattern-Guessing → MX-Validierung → DB
+    """
     gathered: List[Dict] = []
-    async with aiohttp.ClientSession() as session:
-        tasks = []
-        for cat in _CATEGORIES[:5]:
-            for city in _CITIES_DACH[:8]:
-                tasks.append(research_gelbeseiten(session, cat, city))
-                tasks.append(research_11880(session, cat, city))
-        tasks.append(research_hn_companies(session))
-        tasks.append(research_rss_funding(session))
-        existing_task = asyncio.create_task(import_from_existing_modules())
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-        for r in results:
+    connector = aiohttp.TCPConnector(limit=30, ssl=False)
+    async with aiohttp.ClientSession(connector=connector) as session:
+        # Phase 1: Alle Directory-Quellen parallel (je 10 Städte pro Batch)
+        log.info("Research Phase 1: Verzeichnis-Scraping (%d Kategorien × %d Städte)",
+                 len(_CATEGORIES), len(_CITIES_DACH))
+        dir_tasks = []
+        for cat in _CATEGORIES:
+            for city in _CITIES_DACH:
+                dir_tasks.append(research_gelbeseiten(session, cat, city))
+                dir_tasks.append(research_11880(session, cat, city))
+                dir_tasks.append(research_cylex(session, cat, city))
+                dir_tasks.append(research_meinestadt(session, cat, city))
+
+        # Run in batches of 40 to avoid overwhelming
+        BATCH = 40
+        for i in range(0, len(dir_tasks), BATCH):
+            batch_results = await asyncio.gather(*dir_tasks[i:i+BATCH], return_exceptions=True)
+            for r in batch_results:
+                if isinstance(r, list):
+                    gathered.extend(r)
+            log.info("Research: %d/%d tasks — %d Leads bisher", i+BATCH, len(dir_tasks), len(gathered))
+            await asyncio.sleep(1.0)  # Rate limit courtesy pause
+
+        # Phase 2: HackerNews + RSS Funding
+        log.info("Research Phase 2: HN + RSS Funding")
+        extra = await asyncio.gather(
+            research_hn_companies(session),
+            research_rss_funding(session),
+            import_from_existing_modules(),
+            return_exceptions=True,
+        )
+        for r in extra:
             if isinstance(r, list):
                 gathered.extend(r)
-        existing = await existing_task
-        gathered.extend(existing)
+
+    # Deduplicate by email
+    seen_emails: set = set()
+    deduped: List[Dict] = []
+    for lead in gathered:
+        e = (lead.get("email") or "").lower().strip()
+        if e and e not in seen_emails:
+            seen_emails.add(e)
+            deduped.append(lead)
+
+    log.info("Research: %d total gathered, %d unique emails", len(gathered), len(deduped))
+
+    # Save to DB
     saved = 0
-    for lead in gathered[:session_limit]:
+    for lead in deduped[:session_limit]:
         lid = _upsert_lead(
             email=lead.get("email", ""),
             company=lead.get("company", ""),
@@ -480,13 +740,14 @@ async def run_research(session_limit: int = 200) -> Dict:
         )
         if lid:
             saved += 1
+
     with _db() as conn:
         conn.execute(
             "INSERT INTO research_log (source, leads_found) VALUES (?,?)",
             ("full_research", saved)
         )
-    log.info("Research abgeschlossen: %d Leads gespeichert", saved)
-    return {"gathered": len(gathered), "saved": saved}
+    log.info("Research abgeschlossen: %d/%d Leads in DB gespeichert", saved, len(deduped))
+    return {"gathered": len(gathered), "unique": len(deduped), "saved": saved}
 
 # ── AI Email Writer ───────────────────────────────────────────────────────────
 async def _ai_personalize(company: str, industry: str, city: str,
