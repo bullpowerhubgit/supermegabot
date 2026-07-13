@@ -1478,7 +1478,7 @@ async def task_facebook_token_check() -> str:
 
 
 async def task_email_check() -> str:
-    """IMAP poll + AI-classify + auto-reply for incoming emails."""
+    """IMAP poll alle 5 Min — wichtige Mails → Telegram-Alert."""
     try:
         from modules.email_brain import check_and_process_emails
         result = await check_and_process_emails()
@@ -1486,9 +1486,21 @@ async def task_email_check() -> str:
         replied = result.get("replied", 0)
         return f"EmailBrain: {checked} emails checked, {replied} auto-replied"
     except ImportError:
-        return "EmailBrain: module not available (skipped)"
+        pass
     except Exception as e:
-        return f"EmailBrain Fehler: {e}"
+        log.warning("EmailBrain Fehler: %s", e)
+
+    # Fallback: email_monitor (Telegram-Alert bei wichtigen Mails)
+    try:
+        from modules.email_monitor import check_emails_once
+        result = await check_emails_once()
+        important = result.get("important", 0)
+        checked   = result.get("checked", 0)
+        alerts    = result.get("alerts", [])
+        detail = " | ".join(alerts[:3]) if alerts else "keine neuen"
+        return f"EmailMonitor: {checked} geprüft, {important} wichtig — {detail}"
+    except Exception as e:
+        return f"EmailMonitor Fehler: {e}"
 
 
 async def task_email_daily_summary() -> str:
@@ -6957,7 +6969,7 @@ TASKS = [
     ("cro_run",                 task_cro_run,                 3600,   121),  # hourly — Klaviyo flows + urgency
     # auto_funnel duplicate removed (kept 24h/3300s version above)
     # ── Email Brain ──────────────────────────────────────────────────────
-    ("email_check",             task_email_check,              900,    31),  # 15 min — IMAP poll + AI classify + auto-reply
+    ("email_check",             task_email_check,              300,    31),  # 5 min — IMAP poll + AI classify + auto-reply
     ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
     ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
     ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
