@@ -49,7 +49,7 @@ KNOWN_FIXES = {
     "LINKEDIN_ACCESS_TOKEN fehlt": "Token vorhanden — prüfe Railway ENV LINKEDIN_ACCESS_TOKEN",
     "META_ACCESS_TOKEN": "Facebook/Instagram Token erneuern via Meta Business Suite",
     "PINTEREST_ACCESS_TOKEN not set": "Pinterest Token via pinterest_autonomy.py holen",
-    "DS24_API_KEY": "DS24 Key: 1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N (aiitec)",
+    "DS24_API_KEY": "DS24 Key (aiitec-Konto) aus Railway-ENV DS24_API_KEY holen",
     "MAILCHIMP_DRAGON_API_KEY": "Neuen Mailchimp Key generieren: mailchimp.com/account/api",
     "Reddit.*web app": "Reddit App-Typ zu 'script' ändern: reddit.com/prefs/apps → rodbot",
     "402": "Credits kaufen: Twitter/DeepSeek/Amazon PA-API",

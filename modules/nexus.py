@@ -47,7 +47,7 @@ SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT        = _TG_CHANNEL or ""
-DS24_KEY       = os.getenv("DIGISTORE24_API_KEY", "1581233-eOOUB4qRJJybjVb9z4q5tO68wtEQmt9h9l8t3s1N")
+DS24_KEY       = os.getenv("DIGISTORE24_API_KEY", "")
 SMB_URL        = os.getenv("SUPERMEGABOT_URL", "http://localhost:8888")
 
 # ── Datenbank ────────────────────────────────────────────────────────────────

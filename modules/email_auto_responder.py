@@ -46,6 +46,12 @@ _SKIP_SENDERS = [
     "@ebay", "@amazon", "@etoro", "@kraken", "@paypal", "@stripe",
     "@trustpilot", "@tor-project", "@postman", "@lists.", "digest@",
     "service@faircollect",  # Inkasso separat behandelt
+    # Support-Systeme — niemals auf System-Antworten auto-replyen
+    "support@", "help@", "billing@", "ticket@", "helpdesk@",
+    "team@", "hello@windsurf", "hello@codeium", "reply@",
+    "zendesk", "customercare", "mailer@", "ecosystem-governance",
+    "message@adobe", "customercare-support@adobe", "customercare-responserequest",
+    "hello@notify.", "@notify.", "no-reply@",
 ]
 
 # Signale die auf eine echte Geschäfts-E-Mail hindeuten
