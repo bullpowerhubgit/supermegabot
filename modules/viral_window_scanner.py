@@ -925,6 +925,34 @@ async def run_scan() -> Dict:
 
 # ── Shopify Auto-Import ───────────────────────────────────────────────────────
 
+def _clean_product_title(raw: str) -> str:
+    """Bereinigt News-Artikel-Titel zu echten Produkt-Titeln."""
+    # Alles nach | entfernen (Artikel-Subheadlines wie "Apple Vision Pro | It's collecting dust")
+    title = raw.split("|")[0].strip()
+    # Anführungszeichen entfernen
+    title = title.strip('"\'')
+    # Mehrfache Leerzeichen normalisieren
+    title = " ".join(title.split())
+    # Zu lange Titel kürzen (echte Produktnamen sind kurz)
+    if len(title) > 80:
+        # Versuche am letzten Wort innerhalb 80 Zeichen zu kürzen
+        title = title[:80].rsplit(" ", 1)[0]
+    # News-typische Muster erkennen und ablehnen → Fallback auf kw[:60]
+    news_signals = ["years later", "year later", "running trains", "running hospitals",
+                    "have been", "owners say", "you've probably", "you probably",
+                    "without realizing", "collect dust", "collecting dust",
+                    "says study", "report says", "according to", "expert says"]
+    if any(sig in title.lower() for sig in news_signals):
+        # Das ist eindeutig kein Produktname → rohen Keyword als Stichwort nehmen
+        # Nehme erstes relevantes Substantiv aus dem keyword
+        words = [w for w in raw.split() if len(w) > 3 and w[0].isupper()]
+        if words:
+            title = " ".join(words[:4])
+        else:
+            title = raw[:60]
+    return title.strip() or raw[:60]
+
+
 async def _shopify_import(item: Dict) -> Optional[str]:
     token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
     domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
@@ -979,9 +1007,11 @@ async def _shopify_import(item: Dict) -> Optional[str]:
     if vk <= 0:
         vk = round(29.99 + (score / 100) * 50, 2)
 
+    product_title = _clean_product_title(kw)
+
     payload = {
         "product": {
-            "title": kw,
+            "title": product_title,
             "body_html": body,
             "vendor": "Viral Window Scanner",
             "product_type": "Trending Product",
