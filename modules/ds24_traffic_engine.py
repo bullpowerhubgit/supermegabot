@@ -229,8 +229,8 @@ JSON Format:
             f"<p>{content.get('email_body','').replace(chr(10),'<br>')}</p>"
             f"<p><a href='{link}' style='background:#7c3aed;color:#fff;padding:12px 24px;"
             f"text-decoration:none;border-radius:6px'>👉 Jetzt ansehen</a></p>"
-            f"<hr><p><small>Rudolf | AIITEC | <a href='${{unsubscribe_link}}'>Abmelden</a></small></p>"
-            f"</body></html>"
+            "<hr><p><small>Rudolf | AIITEC | <a href='{{ unsubscribe_link }}'>Abmelden</a></small></p>"
+            "</body></html>"
         )
         try:
             # Create campaign

@@ -442,22 +442,23 @@ async def announce_new_products(products: list) -> dict:
         f"<li>{p.get('title', p.get('name', 'Produkt'))[:60]}</li>"
         for p in products[:5]
     )
-    html = (
+    _html_base = (
         f"<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>"
         f"<h2>🛒 Neue Produkte jetzt verfügbar!</h2>"
         f"<p>Wir haben gerade <b>{len(products)} neue Produkte</b> in den Shop geladen:</p>"
         f"<ul>{items_html}</ul>"
         f"<p><a href='{link}' style='background:#7c3aed;color:#fff;padding:12px 24px;"
         f"text-decoration:none;border-radius:6px'>👉 Jetzt entdecken</a></p>"
-        f"<hr><p><small>Rudolf | AIITEC | <a href='${{unsubscribe_link}}'>Abmelden</a></small></p>"
-        f"</body></html>"
+        f"<hr><p><small>Rudolf | AIITEC | "
     )
+    html_klaviyo = _html_base + "<a href='{{ unsubscribe_link }}'>Abmelden</a></small></p></body></html>"
+    html_mc      = _html_base + "<a href='*|UNSUB|*'>Abmelden</a></small></p></body></html>"
     subject = f"🛒 {len(products)} neue Produkte — jetzt im Shop!"
 
     tg, kl, mc, idx = await asyncio.gather(
         _tg_send(tg_text),
-        send_klaviyo_campaign(subject, html, f"NewProducts {datetime.now().strftime('%m-%d')}"),
-        send_mailchimp_campaign(subject, html),
+        send_klaviyo_campaign(subject, html_klaviyo, f"NewProducts {datetime.now().strftime('%m-%d')}"),
+        send_mailchimp_campaign(subject, html_mc),
         _indexnow(),
         return_exceptions=True,
     )

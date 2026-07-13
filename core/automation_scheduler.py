@@ -1323,6 +1323,8 @@ async def task_shopify_seo_auto() -> str:
 async def task_klaviyo_auto_campaign() -> str:
     """Tägliche Klaviyo Kampagne mit neuem AI-Content."""
     try:
+        if await task_ran_recently("klaviyo_auto_campaign", min_interval_hours=24):
+            return "Klaviyo AutoCampaign: bereits heute gesendet — überspringe"
         import os, aiohttp, json
         from datetime import datetime
         klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
@@ -1400,6 +1402,8 @@ Nur JSON, kein anderer Text."""
 async def task_mailchimp_auto_campaign() -> str:
     """Tägliche Mailchimp Kampagne mit AI-Content."""
     try:
+        if await task_ran_recently("mailchimp_auto_campaign", min_interval_hours=24):
+            return "Mailchimp AutoCampaign: bereits heute gesendet — überspringe"
         import os, aiohttp, json, base64
         from datetime import datetime
         mc_key = os.getenv("MAILCHIMP_API_KEY", "")
@@ -3391,8 +3395,8 @@ async def task_klaviyo_daily_campaign() -> str:
             f"<p style='text-align:center;margin:30px 0'>"
             f"<a href='{link}' style='background:#7c3aed;color:#fff;padding:14px 28px;"
             f"text-decoration:none;border-radius:8px;font-weight:bold'>🚀 Jetzt starten</a></p>"
-            f"<hr><p><small>Rudolf | AIITEC | <a href='${{unsubscribe_link}}'>Abmelden</a></small></p>"
-            f"</body></html>"
+            "<hr><p><small>Rudolf | AIITEC | <a href='{{ unsubscribe_link }}'>Abmelden</a></small></p>"
+            "</body></html>"
         )
         ok = await send_klaviyo_campaign(subject, html, f"AutoPromo {datetime.now().strftime('%Y-%m-%d')}")
         return f"Klaviyo Daily: {'sent' if ok else 'failed'} — {subject[:40]}"
@@ -3412,17 +3416,18 @@ async def task_mailing_promo_blitz() -> str:
             "🚀 AI Income Machine — limitiertes Angebot",
         ]
         subject = random.choice(subjects)
-        html = (
+        _body = (
             f"<html><body style='font-family:Arial;max-width:600px;margin:0 auto;padding:20px'>"
             f"<h2>{subject}</h2><p>Vollautomatisch. 24/7. Passives Einkommen.</p>"
             f"<p><a href='{link}' style='background:#e74c3c;color:#fff;padding:12px 24px;"
             f"text-decoration:none;border-radius:4px'>👉 Jetzt ansehen</a></p>"
-            f"<hr><p><small>Rudolf | AIITEC | <a href='${{unsubscribe_link}}'>Abmelden</a></small></p>"
-            f"</body></html>"
+            f"<hr><p><small>Rudolf | AIITEC | "
         )
+        html_klaviyo = _body + "<a href='{{ unsubscribe_link }}'>Abmelden</a></small></p></body></html>"
+        html_mc      = _body + "<a href='*|UNSUB|*'>Abmelden</a></small></p></body></html>"
         kl, mc, tg, li = await asyncio.gather(
-            send_klaviyo_campaign(subject, html, f"PromoBlitz {datetime.now().strftime('%m-%d')}"),
-            send_mailchimp_campaign(subject, html),
+            send_klaviyo_campaign(subject, html_klaviyo, f"PromoBlitz {datetime.now().strftime('%m-%d')}"),
+            send_mailchimp_campaign(subject, html_mc),
             _tg_send(f"📧 <b>{subject}</b>\n\n{link}"),
             _linkedin_post(f"{subject}\n\n{link}\n\n#PassivesEinkommen #AIITEC #OnlineBusiness"),
             return_exceptions=True,
@@ -4926,6 +4931,8 @@ async def task_shopify_mass_cycle() -> str:
 
 async def task_klaviyo_mass_daily() -> str:
     try:
+        if await task_ran_recently("klaviyo_mass", min_interval_hours=24):
+            return "KlaviyoMass: bereits heute gesendet — überspringe"
         from modules.klaviyo_mass_campaigns import run_daily_klaviyo_campaigns
         r = await run_daily_klaviyo_campaigns(count=3)
         return f"KlaviyoMass: created={r.get('created',0)} failed={r.get('failed',0)}"
@@ -4935,6 +4942,8 @@ async def task_klaviyo_mass_daily() -> str:
 
 async def task_mailchimp_mass_daily() -> str:
     try:
+        if await task_ran_recently("mailchimp_mass", min_interval_hours=24):
+            return "MailchimpMass: bereits heute gesendet — überspringe"
         from modules.mailchimp_mass_campaigns import run_daily_mailchimp_campaigns
         r = await run_daily_mailchimp_campaigns(count=2)
         return f"MailchimpMass: created={r.get('created',0)} failed={r.get('failed',0)}"
@@ -5708,6 +5717,8 @@ async def task_email_daily_summary() -> str:
 async def task_email_blast_engine() -> str:
     """Email Blast Engine: alle Email-Listen täglich mit Revenue-Content bespielen (alle 6h)."""
     try:
+        if await task_ran_recently("email_blast", min_interval_hours=24):
+            return "Email Blast: bereits heute gesendet — überspringe"
         from modules.email_blast_engine import run_email_cycle
         r = await run_email_cycle()
         return f"Email Blast: {r}"
@@ -5728,6 +5739,8 @@ async def task_email_sequence_engine() -> str:
 async def task_mailchimp_autonomy() -> str:
     """Mailchimp Autonomy: Kampagnen + Welcome-Sequenzen vollautomatisch (alle 12h)."""
     try:
+        if await task_ran_recently("mailchimp_autonomy", min_interval_hours=24):
+            return "Mailchimp Autonomy: bereits heute gelaufen — überspringe"
         from modules.mailchimp_autonomy import run_mailchimp_cycle
         r = await run_mailchimp_cycle()
         return f"Mailchimp: {r}"
