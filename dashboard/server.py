@@ -11265,6 +11265,27 @@ async def create_app():
     app.router.add_post("/api/affiliate/invite", handle_affiliate_invite)
     log.info("Affiliate System routes registered (/api/affiliate/*)")
 
+    # ── Social Media Autopilot ─────────────────────────────────────────────
+    async def handle_social_post_now(request):
+        try:
+            from modules.social_media_autopilot import run_autopilot_cycle
+            result = await run_autopilot_cycle()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_social_status(request):
+        try:
+            from modules.social_media_autopilot import get_status
+            result = await get_status()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_post("/api/social/post-now", handle_social_post_now)
+    app.router.add_get("/api/social/autopilot-status", handle_social_status)
+    log.info("Social Autopilot routes registered (/api/social/*)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")

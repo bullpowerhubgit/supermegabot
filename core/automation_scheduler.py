@@ -3233,6 +3233,18 @@ async def task_viral_promo_poster() -> str:
         return f"Promo error: {e}"
 
 
+async def task_social_media_autopilot() -> str:
+    """Social Media Autopilot — postet echte Shopify-Produkte auf FB/IG/Twitter/Pinterest."""
+    try:
+        from modules.social_media_autopilot import run_autopilot_cycle
+        result = await run_autopilot_cycle()
+        posted = result.get("posted", 0)
+        product = result.get("product", "?")
+        return f"SocialAutopilot: {posted}/4 Plattformen — Produkt: {product}"
+    except Exception as e:
+        return f"SocialAutopilot error: {e}"
+
+
 async def task_buyer_traffic_engine() -> str:
     """Buyer Traffic Engine — 5 kostenlose Käufer-Traffic-Kanäle vollautomatisch."""
     try:
@@ -7086,6 +7098,7 @@ TASKS = [
     ("product_hub",         task_product_intelligence_hub, 14400, 60),  # 4h — Unified Hub (alle 3 Tools)
     ("viral_promo",         task_viral_promo_poster,       21600, 2100), # 6h — Multi-Channel Promo (35min startup delay)
     ("multiplatform_post",   task_multiplatform_autopost, 21600, 2400), # 6h — FB+IG+TG+LI+Reddit+Discord (40min startup delay)
+    ("social_autopilot",     task_social_media_autopilot, 28800, 2460), # 8h — Produkt-Post FB+IG+TW+Pinterest (41min startup delay)
     ("daily_trend_upload",   task_daily_trend_upload,  86400, 135),  # täglich — Trend-Produkte via eBay → Shopify
     ("seo_dominator",        task_seo_dominator,        7200, 150),  # 2h — IndexNow + Sitemap
     ("backlink_bomber",      task_backlink_bomber,      7200, 180),  # 2h — Ping Google/Bing
