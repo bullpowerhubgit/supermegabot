@@ -154,6 +154,29 @@ BPI_SERVICES = [
     },
 ]
 
+# ── Amazon Affiliate Produkte ──────────────────────────────────────────────────
+
+AMAZON_TAG = "bullpowerhub-21"
+
+AMAZON_PRODUCTS = [
+    {
+        "key":      "ai_income_machine",
+        "name":     "AI Income Machine – 90-Day Blueprint",
+        "emoji":    "🤖",
+        "category": "KI & Passives Einkommen",
+        "hook":     "In 90 Tagen mit KI zum passiven Einkommen — der konkrete Blueprint",
+        "target":   "Online-Unternehmer, Freelancer, alle die mit KI Geld verdienen wollen",
+        "bullets": [
+            "Schritt-für-Schritt Blueprint: 90 Tage, Tag für Tag",
+            "KI-Tools die wirklich Geld bringen (keine Hype-Listen)",
+            "Passive Income Streams die im Schlaf laufen",
+            "Von Anfängern bis Profis — direkt umsetzbar",
+        ],
+        "link":     f"https://www.amazon.de/s?k=AI+Income+Machine+90-Day+Blueprint&tag={AMAZON_TAG}",
+        "channels": ["telegram", "twitter", "linkedin", "tiktok", "discord"],
+    },
+]
+
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 async def _tg(msg: str) -> None:
@@ -265,6 +288,66 @@ async def run_bpi_daily_blast(limit: int = 4) -> dict:
         "services_posted": len(batch),
         "channels_hit": hits,
         "services": [s["name"] for s in batch],
+    }
+
+
+async def blast_amazon_product(prod: dict, variant: int = 0) -> dict:
+    """Postet ein Amazon-Affiliate-Produkt auf allen Kanälen."""
+    name     = prod["name"]
+    emoji    = prod["emoji"]
+    hook     = prod["hook"]
+    bullets  = prod["bullets"]
+    link     = prod["link"]
+    channels = prod.get("channels", ["telegram", "twitter"])
+
+    bullet_str = "\n".join(f"✅ {b}" for b in bullets)
+
+    # 3 Textvarianten — verhindert Shadow-Ban durch identische Posts
+    variants = [
+        (
+            f"{emoji} <b>{name}</b>\n\n"
+            f"{hook}\n\n"
+            f"{bullet_str}\n\n"
+            f"👉 Auf Amazon: {link}"
+        ),
+        (
+            f"📚 Buchtipp: <b>{name}</b>\n\n"
+            f"Warum lesen?\n{bullet_str}\n\n"
+            f"💰 Amazon Bestseller → {link}"
+        ),
+        (
+            f"🔥 {hook}\n\n"
+            f"<b>{name}</b>\n{bullet_str}\n\n"
+            f"➡️ Jetzt auf Amazon: {link}"
+        ),
+    ]
+
+    body   = variants[variant % len(variants)]
+    result = await _brutus(f"{emoji} {name}", body, link, channels)
+    log.info("Amazon affiliate blast: %s → channels=%s", name, channels)
+    return {
+        "ok": True,
+        "product": name,
+        "link": link,
+        "channels_hit": result.get("channels_hit", 0),
+    }
+
+
+async def run_amazon_affiliate_blast() -> dict:
+    """Blast alle Amazon Affiliate Produkte auf allen Kanälen."""
+    hour    = datetime.now(timezone.utc).hour
+    results = []
+    for i, prod in enumerate(AMAZON_PRODUCTS):
+        r = await blast_amazon_product(prod, variant=hour + i)
+        results.append(r)
+        if i < len(AMAZON_PRODUCTS) - 1:
+            await asyncio.sleep(2)
+    hits = sum(r.get("channels_hit", 0) for r in results)
+    return {
+        "ok": True,
+        "products_blasted": len(results),
+        "channels_hit": hits,
+        "products": [r["product"] for r in results],
     }
 
 
@@ -413,8 +496,10 @@ async def launch_monetization(
         coros.append(_run("shopify", run_shopify_traffic_blast()))
     if tiktok:
         coros.append(_run("tiktok", run_tiktok_content_blast()))
+    # Amazon Affiliate immer mitlaufen lassen
+    coros.append(_run("amazon", run_amazon_affiliate_blast()))
 
-    # Parallel: BPI + Shopify + TikTok
+    # Parallel: BPI + Shopify + TikTok + Amazon
     await asyncio.gather(*coros)
 
     # Sequential: Email (rate-limited) + Revenue Report
@@ -423,13 +508,15 @@ async def launch_monetization(
     if report:
         await _run("revenue", run_revenue_report())
 
-    bpi_r    = tasks.get("bpi", {})
-    email_r  = tasks.get("email", {})
+    bpi_r     = tasks.get("bpi", {})
+    email_r   = tasks.get("email", {})
     shopify_r = tasks.get("shopify", {})
+    amazon_r  = tasks.get("amazon", {})
 
     summary = (
         f"✅ <b>Monetization Launch abgeschlossen</b>\n\n"
         f"📣 BPI Services gepostet: {bpi_r.get('services_posted', 0)}\n"
+        f"🤖 Amazon Affiliate: {amazon_r.get('products_blasted', 0)} Produkte → {amazon_r.get('channels_hit', 0)} Kanäle\n"
         f"📧 Emails versendet: {email_r.get('emails_sent', 0)}\n"
         f"🛒 Shopify Blast: {'OK' if shopify_r.get('ok') else 'skip'}\n"
         f"💰 7T Revenue: €{tasks.get('revenue', {}).get('week_revenue_eur', 0):.2f}"
