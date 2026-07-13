@@ -6016,8 +6016,12 @@ async def task_handelsregister_radar() -> str:
 async def task_zvg_radar() -> str:
     """ZVG Radar: Zwangsversteigerungen → Bank/Anwalt Leads (tägl.)."""
     try:
+        from modules.task_guard import task_ran_recently, record_task_run
+        if await task_ran_recently("zvg_radar", min_interval_hours=20):
+            return "ZVG Radar: übersprungen (lief vor <20h — Bounce-Schutz)"
         from modules.zvg_radar import run_cycle
         r = await run_cycle()
+        await record_task_run("zvg_radar")
         return f"ZVG Radar: {r}"
     except Exception as e:
         return f"ZVG Radar Fehler: {e}"
