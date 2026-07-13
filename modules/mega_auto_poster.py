@@ -599,13 +599,13 @@ async def auto_post_ds24_product() -> dict:
         if not products:
             content = await generate_product_post(
                 "AI Income Machine – 90-Day Blueprint", 37.0,
-                os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
+                os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
             )
         else:
             p = products[0]
             name  = p.get("name", p.get("title", "AI Income Machine"))
             price = float(p.get("price", p.get("net_price", 37.0)) or 37.0)
-            url   = p.get("checkout_url") or os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
+            url   = p.get("checkout_url") or os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
             content = await generate_product_post(name, price, url)
         return await post_to_all_channels(content)
     except Exception as exc:

@@ -18,7 +18,7 @@ ACCESS_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN", "")
 ADVERTISER_ID = os.getenv("TIKTOK_ADVERTISER_ID", "")
 OPEN_API = "https://open-api.tiktok.com"
 BASE = "https://open.tiktokapis.com/v2"
-DS24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
+DS24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 
 

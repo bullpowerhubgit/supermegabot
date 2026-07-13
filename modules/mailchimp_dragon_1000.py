@@ -24,7 +24,7 @@ DRAGON_LIST   = os.getenv("MAILCHIMP_DRAGON_LIST_ID", "0e84a22a44")
 DRAGON_SERVER = os.getenv("MAILCHIMP_DRAGON_SERVER", "us18")
 DRAGON_BASE   = f"https://{DRAGON_SERVER}.api.mailchimp.com/3.0"
 DRAGON_FROM   = os.getenv("MAILCHIMP_DRAGON_EMAIL", "dragonadnp@gmail.com")
-DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
+DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 SHOP_URL      = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'autopilot-store-suite-fmbka.myshopify.com')}"
 
 DB_PATH = Path(os.getenv("DATA_DIR", "/tmp/supermegabot")) / "dragon_articles.db"
