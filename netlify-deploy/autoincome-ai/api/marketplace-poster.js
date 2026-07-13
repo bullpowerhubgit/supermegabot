@@ -14,7 +14,7 @@ const EBAY_CAMPAIGN_ID = process.env.EBAY_CAMPAIGN_ID || '';
 const LINKEDIN_TOKEN = process.env.LINKEDIN_ACCESS_TOKEN;
 const LINKEDIN_AUTHOR = process.env.LINKEDIN_PERSON_URN;
 const PRODUCT_URL_37 = 'https://www.checkout-ds24.com/product/668035';
-const PRODUCT_URL_97 = 'https://www.checkout-ds24.com/product/704677';
+const PRODUCT_URL_97 = 'https://www.checkout-ds24.com/product/668035';
 
 const GUMROAD_PRODUCTS = [
   {

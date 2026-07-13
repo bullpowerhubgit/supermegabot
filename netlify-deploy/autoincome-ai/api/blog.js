@@ -6,7 +6,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://qyrjeckzacjaazkpvnjk.supabase.co';
 const SUPABASE_ANON = process.env.SUPABASE_ANON_KEY;
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
-const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
+const UPSELL_URL = 'https://www.checkout-ds24.com/product/668035';
 const KLAVIYO_LIST_ID = 'Xwxq6V';
 const KLAVIYO_ACCOUNT_ID = 'VaCYq3';
 

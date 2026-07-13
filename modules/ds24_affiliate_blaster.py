@@ -26,10 +26,8 @@ DS24_APPROVED_PRODUCTS = [
      "link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"),
      "niche": "ai", "category": "Digital", "title": "AI Income Machine – 90-Day Blueprint",
      "own_product": True, "price": "37"},
-    {"id": "704677", "seller": "aiitec",
-     "link": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/668035"),
-     "niche": "ai", "category": "Digital", "title": "SuperMegaBot KI-Automation System",
-     "own_product": True, "price": "97"},
+    # 704677 DEAKTIVIERT — DS24 Genehmigung ausstehend
+    # {"id": "704677", ...} — reaktivieren sobald DS24 genehmigt
     {"id": "576000", "seller": "wildghosts",
      "link": "https://www.checkout-ds24.com/redir/576000/user37405262/",
      "niche": "lifestyle", "category": "Digital"},

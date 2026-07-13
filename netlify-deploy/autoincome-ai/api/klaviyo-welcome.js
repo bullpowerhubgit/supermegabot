@@ -12,7 +12,7 @@ const LIST_ID = 'Xwxq6V';
 const AFFILIATE_LIST_ID = 'WdgMfp';
 const CRON_SECRET = process.env.CRON_SECRET || 'bullpower2026';
 const PRODUCT_URL = 'https://www.checkout-ds24.com/product/668035';
-const UPSELL_URL = 'https://www.checkout-ds24.com/product/704677';
+const UPSELL_URL = 'https://www.checkout-ds24.com/product/668035';
 const DS24_IPN_PASSPHRASE = process.env.DS24_IPN_PASSPHRASE || '';
 const BUYER_LIST_ID = process.env.KLAVIYO_BUYER_LIST_ID || 'Xwxq6V';
 
