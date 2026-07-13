@@ -16,7 +16,7 @@ log = logging.getLogger("ShopifySEO")
 
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 ANTHROPIC       = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
@@ -227,7 +227,7 @@ async def auto_publish_blog_post(keyword: str, shop_domain: str = "") -> dict:
         body_html = f"<h2>{title}</h2>{body_html}<p><a href='{affiliate}'>Jetzt einkaufen →</a></p>"
     
     import aiohttp
-    version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+    version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     url = f"https://{domain}/admin/api/{version}/blogs/{{blog_id}}/articles.json"
     
     # Get first blog ID

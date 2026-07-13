@@ -19,7 +19,7 @@ def _store_domain() -> str:
     return os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 
 def _api_version() -> str:
-    return os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    return os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 def _store_url() -> str:
     return f"https://{_store_domain()}"

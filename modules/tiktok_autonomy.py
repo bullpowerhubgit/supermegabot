@@ -21,7 +21,7 @@ TIKTOK_TOKEN  = os.getenv("TIKTOK_ACCESS_TOKEN", "")
 TIKTOK_SHOP   = os.getenv("TIKTOK_SHOP_ID", "")
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
 
 TRENDING_HASHTAGS_DE = [

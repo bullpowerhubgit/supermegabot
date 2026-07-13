@@ -236,7 +236,7 @@ async def get_revenue_status() -> Dict[str, Any]:
         "revenue": revenue,
         "own_products": OWN_PRODUCTS,
         "automation": {
-            "enabled": os.getenv("REVENUE_MODE", "true").lower() not in ("false", "0", "off"),
+            "enabled": os.getenv("REVENUE_MODE", "false").lower() in ("true", "1", "on"),
             "interval_hours": 2,
             "cycles_total": state.get("cycles_total", 0),
             "last_run": state.get("last_run"),
@@ -249,8 +249,8 @@ async def get_revenue_status() -> Dict[str, Any]:
 
 
 async def run_revenue_cycle_str() -> str:
-    if os.getenv("REVENUE_MODE", "true").lower() in ("false", "0", "off"):
-        return "Revenue Engine: deaktiviert"
+    if os.getenv("REVENUE_MODE", "false").lower() not in ("true", "1", "on"):
+        return "Revenue Engine: deaktiviert (REVENUE_MODE nicht gesetzt)"
     r = await run_revenue_cycle()
     rev = r.get("revenue", {})
     blast = r.get("steps", {}).get("2_blast_own", {})

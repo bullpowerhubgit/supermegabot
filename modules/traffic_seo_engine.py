@@ -94,7 +94,7 @@ async def optimize_shopify_seo_auto() -> dict:
     """AI-optimize Shopify product titles, descriptions, tags automatically."""
     shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
     shop_token  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-    api_ver     = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    api_ver     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
     if not shop_domain or not shop_token:
         return {"error": "Shopify not configured"}

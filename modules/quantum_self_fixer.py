@@ -377,7 +377,7 @@ async def scan_external_services() -> dict:
     async def _ping_shopify():
         if not (SHOPIFY_DOM and SHOPIFY_TOK):
             return False, "SHOPIFY_SHOP_DOMAIN/TOKEN nicht gesetzt"
-        ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        ver = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         async with aiohttp.ClientSession() as s:
             async with s.get(
                 f"https://{SHOPIFY_DOM}/admin/api/{ver}/shop.json",
@@ -525,7 +525,7 @@ async def scan_revenue_pipeline() -> dict:
     async def _shopify_products():
         if not (SHOPIFY_DOM and SHOPIFY_TOK):
             return False, "Shopify-Credentials fehlen"
-        ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        ver = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         async with aiohttp.ClientSession() as s:
             async with s.get(
                 f"https://{SHOPIFY_DOM}/admin/api/{ver}/products/count.json",

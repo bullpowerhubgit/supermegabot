@@ -18,7 +18,7 @@ PINTEREST_TOKEN = os.getenv("PINTEREST_ACCESS_TOKEN", "")
 PINTEREST_BOARD = os.getenv("PINTEREST_BOARD_ID", "")
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
 
 PINTEREST_BASE = "https://api.pinterest.com/v5"

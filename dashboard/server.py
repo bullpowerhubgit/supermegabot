@@ -11052,10 +11052,35 @@ async def create_app():
         except Exception as e:
             return web.json_response({"ok": False, "error": str(e)}, status=500)
 
+    async def handle_mcc_dashboard_data(req):
+        try:
+            from modules.bullpower_mcc import get_full_dashboard_data
+            r = await get_full_dashboard_data()
+            return web.json_response(r)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_mcc_shopify_metrics(req):
+        try:
+            from modules.bullpower_mcc import get_shopify_metrics
+            r = await get_shopify_metrics()
+            return web.json_response(r)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_mcc_v2_dashboard(req):
+        html_file = Path(__file__).parent / "mcc_dashboard.html"
+        if html_file.exists():
+            return web.Response(text=html_file.read_text(), content_type="text/html")
+        return web.Response(text="<h1>MCC Dashboard not found</h1>", content_type="text/html")
+
     app.router.add_get( "/api/mcc/status",    handle_mcc_status)
     app.router.add_post("/api/mcc/run",        handle_mcc_run)
     app.router.add_get( "/api/mcc/platforms",  handle_mcc_platforms)
-    log.info("BullPower MCC routes registered (/api/mcc/*)")
+    app.router.add_get( "/api/mcc/dashboard",  handle_mcc_dashboard_data)
+    app.router.add_get( "/api/mcc/shopify",    handle_mcc_shopify_metrics)
+    app.router.add_get( "/mcc",               handle_mcc_v2_dashboard)
+    log.info("BullPower MCC routes registered (/api/mcc/*, /mcc)")
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())

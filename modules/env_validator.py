@@ -145,7 +145,7 @@ async def _test_shopify() -> dict:
 
     token = _resolve_value({"name": "SHOPIFY_ADMIN_API_TOKEN", "aliases": ["SHOPIFY_ACCESS_TOKEN"]})
     domain = _resolve_value({"name": "SHOPIFY_SHOP_DOMAIN", "aliases": []})
-    api_version = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    api_version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
     if not token or not domain:
         return {"ok": False, "error": "Token oder Domain fehlt"}

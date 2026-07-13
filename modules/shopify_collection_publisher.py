@@ -12,7 +12,7 @@ log = logging.getLogger("CollectionPublisher")
 
 SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOP_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 
 def _base() -> str:

@@ -18,7 +18,7 @@ TIKTOK_ACCESS_TOKEN = os.getenv("TIKTOK_ACCESS_TOKEN", "")
 TIKTOK_SHOP_ID    = os.getenv("TIKTOK_SHOP_ID", "")
 SHOPIFY_DOMAIN    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN     = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-SHOPIFY_VERSION   = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+SHOPIFY_VERSION   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 DATA_DIR          = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 SYNC_STATE_FILE   = DATA_DIR / "tiktok_sync_state.json"

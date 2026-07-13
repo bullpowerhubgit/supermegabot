@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", os.getenv("SHOPIFY_ACCESS_TOKEN", ""))
-SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_BOT = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT = os.getenv("TELEGRAM_CHAT_ID", "")

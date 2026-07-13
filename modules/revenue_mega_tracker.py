@@ -27,7 +27,7 @@ log = logging.getLogger("RevenueMegaTracker")
 # Credentials
 SHOPIFY_SHOP    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-SHOPIFY_VER     = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+SHOPIFY_VER     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 DS24_KEY        = os.getenv("DIGISTORE24_API_KEY", "")
 DS24_BASE       = "https://www.digistore24.com/api/call"
 STRIPE_KEY      = os.getenv("STRIPE_SECRET_KEY", "")

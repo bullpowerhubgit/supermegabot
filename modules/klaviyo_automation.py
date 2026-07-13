@@ -372,7 +372,7 @@ async def sync_from_shopify(list_id: str, limit: int = 50) -> int:
     if not token or not domain:
         return 0
     base    = f"https://{domain}" if not domain.startswith("http") else domain
-    api_ver = _os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    api_ver = _os.getenv("SHOPIFY_API_VERSION", "2026-04")
     headers = {"X-Shopify-Access-Token": token}
     synced  = 0
     try:

@@ -21,7 +21,7 @@ def _shop_token() -> str:
     return os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 
 def _shop_ver() -> str:
-    return os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    return os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 # Klaviyo aiitec
 KLAVIYO_LIST_ID = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
