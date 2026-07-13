@@ -1,5 +1,16 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v14 — EMAIL-BOUNCES GESTOPPT · TASKGUARD · 286 TASKS**
+**Stand: 2026-07-13 v15 — TWITTER RAILWAY-FIX · YOUTUBE KEY · 287 TASKS**
+
+## ✅ FIXES (2026-07-13 v15, commit d38e52eb)
+
+### Twitter Cookie-Auth für Railway persistiert
+- **TWITTER_COOKIES_JSON** env-var in Railway gesetzt (351 chars)
+- `viral_promo_poster._twitter_cookies_dict()` liest jetzt Datei → TWITTER_COOKIES_JSON Fallback
+- Twitter Posts überleben Railway-Restarts ohne Datei-System
+
+### YouTube API Key aktualisiert
+- Alter Key `AIzaSyC6obw...` → 403 auf Railway
+- Neuer Key `AIzaSyCYPIx...` in Railway + .env gesetzt → YouTube ✅
 
 ## ✅ FIXES (2026-07-13 v14, commits 73ad547e..b4014120)
 
@@ -33,7 +44,7 @@
 | Facebook/Instagram | ✅ | Permanenter Page Token (AiiteC 1016738738178786) |
 | LinkedIn | ✅ | Rudolf Sarkany — token verifiziert |
 | Reddit | ✅ | u/Upper-Competition505 (REDDIT_TOKEN_V2) |
-| Twitter | ✅ | Cookie-Auth @rudibot84 (letzter Post 12. Juli) |
+| Twitter | ✅ | Cookie-Auth @rudibot84 — TWITTER_COOKIES_JSON auf Railway persistiert |
 | Discord | ✅ | Gateway connected |
 | Pinterest | ❌ | Trial-Mode — manueller Pinterest-Review nötig |
 
@@ -44,7 +55,8 @@
 | Shopify | ✅ | 13k+ Produkte, ineedit.com.co |
 | DS24 | ✅ | Produkt 668035 (AI Income Machine) — genehmigt |
 | Stripe | ✅ | sk_live_...quA — verifiziert |
-| Klaviyo | ✅ | pk_VaCYq3_... — 5 Listen |
+| Klaviyo | ✅ | pk_VaCYq3_... — 5 Listen (KLAVIYO_API_KEY) |
+| YouTube | ✅ | Rudolf Sarkany — neuer Key AIzaSyCYPIx... |
 | Mailchimp | ✅ | us5 Account, a734f3f... |
 
 ## 🆕 NEUE MODULE (2026-07-13)
@@ -91,7 +103,9 @@
 - GMAIL aiitecbuuss: rqcd uzim npsl odgw
 - GMAIL bullpowersrtkennels: dufx vggm xsix lrkp
 
-## SYSTEM (2026-07-13 v14)
+## SYSTEM (2026-07-13 v15)
 - Railway: https://supermegabot-production.up.railway.app/health OK
-- Letzter Commit: b4014120 (TaskGuard ZVG Radar — Bounce-Schutz komplett)
+- 287 Tasks aktiv (286 Python-Dateien: 0 Syntax-Fehler)
+- Letzter Commit: d38e52eb (Twitter TWITTER_COOKIES_JSON Railway-Fix)
+- Social: TikTok✅ Meta✅ Twitter✅ Reddit✅ YouTube✅ Discord✅ Pinterest❌(Review)
 - TaskGuard aktiv für: handelsregister_radar, ai_act_scanner, intelligence_broker, zvg_radar
