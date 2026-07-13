@@ -6335,6 +6335,22 @@ async def task_tiktok_token_refresh() -> str:
     except Exception as e:
         return f"TikTok Token-Refresh Fehler: {e}"
 
+async def task_email_inbox_monitor() -> str:
+    """Gmail Postfächer alle 5 Min auf neue Emails prüfen — Bestellung/Anfrage → Telegram."""
+    try:
+        from modules.email_inbox_monitor import run_inbox_monitor
+        r = await run_inbox_monitor()
+        new = r.get("new_total", 0)
+        alerted = r.get("alerted", 0)
+        if new == 0:
+            return f"Inbox Monitor ✅ — {r.get('accounts',0)} Konten, keine neuen Emails"
+        by_cat = r.get("by_category", {})
+        cats   = ", ".join(f"{k}:{v}" for k, v in by_cat.items())
+        return f"Inbox Monitor 📬 — {new} neu ({cats}), {alerted} Alerts gesendet"
+    except Exception as e:
+        return f"Inbox Monitor Fehler: {e}"
+
+
 async def task_mail_error_guard() -> str:
     """Gmail scannen — Fehler-Muster erkennen, Auto-Fix, Wiederholungen blockieren."""
     try:
@@ -6687,7 +6703,8 @@ TASKS = [
     # ── Monitoring (kostenlos) ────────────────────────────────────────────────
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
     ("monitor_hub",          task_monitor_hub,          1800,   60),  # 30 min — Gmail + Telegram + Scheduler
-    ("mail_error_guard",     task_mail_error_guard,      900,   90),  # 15 min — Gmail Fehler-Muster + Auto-Fix
+    ("email_inbox_monitor",  task_email_inbox_monitor,   300,   85),  # 5 min  — Gmail Eingang: Bestellungen/Anfragen → Telegram
+    ("mail_error_guard",     task_mail_error_guard,      300,   90),  # 5 min  — Gmail Fehler-Muster + Auto-Fix + Bounce
     ("abandoned_cart_recovery", task_abandoned_cart_recovery, 3600, 120),  # 1h — Abandoned Cart E-Mail Recovery
     # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
