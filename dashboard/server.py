@@ -11159,6 +11159,26 @@ async def create_app():
     app.router.add_get( "/ws/phone",            handle_phone_ws)
     log.info("KI-Telefonassistentin Sofia routes registered (/api/phone/*, /ws/phone)")
 
+    # Email Conversation AI — beantwortet alle Inbox-Emails automatisch
+    async def handle_email_ai_stats(req):
+        try:
+            from modules.email_ai_conversations import get_stats
+            return web.json_response(get_stats())
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_email_ai_cycle(req):
+        try:
+            from modules.email_ai_conversations import run_email_ai_cycle
+            asyncio.create_task(run_email_ai_cycle())
+            return web.json_response({"status": "email_ai_cycle_started"})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_get( "/api/email-ai/stats",  handle_email_ai_stats)
+    app.router.add_post("/api/email-ai/cycle",  handle_email_ai_cycle)
+    log.info("Email AI Conversations routes registered (/api/email-ai/*)")
+
     # Mega Acquisition Engine B2C
     async def handle_mega_acq_status(req):
         try:
