@@ -99,7 +99,7 @@ async def blast_best_products(count: int = 3) -> dict:
             {"product_id": "668035", "name": "AI Income Machine – 90-Day Blueprint", "price": "37",
              "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")},
             {"product_id": "704677", "name": "SuperMegaBot KI-Automation System", "price": "97",
-             "affiliate_link": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/704677")},
+             "affiliate_link": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/668035")},
         ]
 
     # Sort by EPC if available, else random

@@ -27,7 +27,7 @@ TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")     # system alerts only
 TG_CHANNEL     = os.getenv("TELEGRAM_CHANNEL_ID", "")  # marketing posts → public channel
 
 STORE_URL      = "https://ineedit.com.co"
-DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
+DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 
 _IG_STATE_FILE = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "social")) / "ig_last_posted.json"
 

@@ -58,7 +58,7 @@ DS24_KNOWN_PRODUCTS = [
         "price": "97",
         "niche": "shopify",
         "emoji": "🚀",
-        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/704677")
+        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK_2", "https://www.checkout-ds24.com/product/668035")
     },
     {
         "id": "561822",

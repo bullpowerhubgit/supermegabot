@@ -32,7 +32,7 @@ _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT      = _TG_CHANNEL or ""
 INDEXNOW_KEY = "bullpower2026indexnow"
 BASE_URL     = f"https://{GITHUB_USER}.github.io/{GITHUB_REPO}"
-DS24_URL     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/710277")
+DS24_URL     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 PRODUCT_NAME = os.getenv("DS24_PRODUCT_NAME", "KI Business Blueprint")
 
 DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
