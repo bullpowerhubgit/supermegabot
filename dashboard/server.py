@@ -10316,6 +10316,47 @@ async def create_app():
     except Exception as _e:
         log.warning("ShopText.ai routes failed to register: %s", _e)
 
+    # ─── BPI 8 SYSTEMS ──────────────────────────────────────────────────────────
+    # SYS-01 KI-Leasing (page + checkout already registered above)
+    app.router.add_get( "/api/ki-leasing/stats",                  handle_ki_leasing_stats)
+
+    # SYS-02 Trend Velocity
+    app.router.add_get( "/trend-velocity",                        handle_trend_velocity_page)
+    app.router.add_post("/api/trend-velocity/run",                handle_trend_velocity_run)
+    app.router.add_get( "/api/trend-velocity/stats",              handle_trend_velocity_stats)
+
+    # SYS-03 Ghost Vendor Network
+    app.router.add_get( "/ghost-vendor",                          handle_ghost_vendor_page)
+    app.router.add_post("/api/ghost-vendor/run",                  handle_ghost_vendor_run)
+    app.router.add_get( "/api/ghost-vendor/clients",              handle_ghost_vendor_clients)
+
+    # SYS-04 EU AI Act
+    app.router.add_get( "/ai-act",                                handle_ai_act_page)
+    app.router.add_post("/api/ai-act/quick-check",                handle_ai_act_quick_check)
+    app.router.add_post("/api/ai-act/checkout",                   handle_ai_act_checkout)
+
+    # SYS-05 Insolvenz Arbitrage
+    app.router.add_get( "/insolvenz-arbitrage",                   handle_insolvenz_arbitrage_page)
+    app.router.add_post("/api/insolvenz-arbitrage/run",           handle_insolvenz_arbitrage_run)
+    app.router.add_get( "/api/insolvenz-arbitrage/opportunities", handle_insolvenz_arbitrage_opps)
+
+    # SYS-06 Migration Rush
+    app.router.add_get( "/migration-rush",                        handle_migration_rush_page)
+    app.router.add_post("/api/migration-rush/run",                handle_migration_rush_run)
+    app.router.add_get( "/api/migration-rush/signals",            handle_migration_rush_signals)
+
+    # SYS-07 AI Citation SEO
+    app.router.add_get( "/ai-citation-seo",                       handle_ai_citation_seo_page)
+    app.router.add_post("/api/ai-citation-seo/run",               handle_ai_citation_seo_run)
+    app.router.add_get( "/api/ai-citation-seo/stats",             handle_ai_citation_seo_stats)
+
+    # SYS-08 Intelligence Broker
+    app.router.add_get( "/intelligence-broker",                   handle_intelligence_broker_page)
+    app.router.add_post("/api/intelligence-broker/report",        handle_intelligence_broker_report)
+    app.router.add_get( "/api/intelligence-broker/watchlist",     handle_intelligence_broker_watchlist)
+    log.info("BPI 8 Systems routes registered (SYS-01..SYS-08)")
+    # ── END BPI 8 SYSTEMS ───────────────────────────────────────────────────────
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
@@ -14363,6 +14404,303 @@ async def handle_promo_stats(req):
         return web.json_response(await get_promo_stats())
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+# ── BPI 8 Systems — Helper + Handler-Funktionen ───────────────────────────────
+
+def _render_bpi_page(title, sys_id, stats, packages):
+    pkg_html = ""
+    for name, price, desc in packages:
+        pkg_html += (
+            f'<div class="pkg-card"><h3>{name}</h3>'
+            f'<div class="price">{price}</div><p>{desc}</p></div>'
+        )
+    stats_html = "".join(
+        f'<div class="stat"><span>{k}</span><strong>{v}</strong></div>'
+        for k, v in (stats or {}).items()
+    )
+    return f"""<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="utf-8"><title>{title} — BPI</title>
+<style>
+  body{{background:#0a0a0f;color:#e0e0e0;font-family:system-ui;margin:0;padding:2rem}}
+  h1{{color:#7c3aed;font-size:2rem}}
+  .sys-badge{{background:#1a1a2e;color:#7c3aed;padding:4px 12px;border-radius:20px;font-size:.8rem}}
+  .pkg-card{{background:#12121e;border:1px solid #2a2a4a;border-radius:12px;padding:1.5rem;margin:.5rem;display:inline-block;min-width:200px;vertical-align:top}}
+  .price{{color:#10b981;font-size:1.5rem;font-weight:bold;margin:.5rem 0}}
+  .stat{{background:#0d0d1a;padding:.75rem 1rem;border-radius:8px;margin:.3rem;display:inline-block}}
+  .stat span{{color:#666;font-size:.8rem;display:block}}
+  .stat strong{{color:#e0e0e0;font-size:1.1rem}}
+  .btn{{background:#7c3aed;color:#fff;border:none;padding:.75rem 2rem;border-radius:8px;cursor:pointer;font-size:1rem;margin-top:1rem}}
+  a{{color:#7c3aed}}
+</style></head>
+<body>
+<a href="/">← Dashboard</a>
+<h1>{title} <span class="sys-badge">{sys_id}</span></h1>
+<div style="margin:1rem 0">{stats_html}</div>
+<h2 style="color:#999;font-size:1rem;margin-top:2rem">PAKETE</h2>
+<div>{pkg_html}</div>
+</body></html>"""
+
+
+# SYS-01 KI-Leasing — zusaetzlicher Stats-Handler (page+checkout schon oben registriert)
+async def handle_ki_leasing_stats(request):
+    try:
+        from modules.ki_leasing_engine import get_stats
+        stats = get_stats()
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# SYS-02 Trend Velocity
+async def handle_trend_velocity_page(request):
+    try:
+        from modules.trend_velocity_engine import TrendVelocityEngine
+        engine = TrendVelocityEngine()
+        stats = await engine.get_stats()
+    except Exception:
+        stats = {}
+    html = _render_bpi_page("Trend Velocity Radar", "SYS-02", stats, [
+        ("Starter",     "299/mo",    "Top-10 Trends taeglich"),
+        ("Pro",         "599/mo",    "Real-Time Alerts + API"),
+        ("Enterprise",  "1.299/mo",  "Unlimitiert + Slack"),
+    ])
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_trend_velocity_run(request):
+    try:
+        data = await request.json()
+        from modules.trend_velocity_engine import run_scan
+        result = await run_scan(data.get("category", "all"))
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_trend_velocity_stats(request):
+    try:
+        from modules.trend_velocity_engine import get_stats
+        return web.json_response({"ok": True, **await get_stats()})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# SYS-03 Ghost Vendor Network
+async def handle_ghost_vendor_page(request):
+    try:
+        from modules.ghost_vendor_network import GhostVendorNetwork
+        engine = GhostVendorNetwork()
+        stats = await engine.get_stats()
+    except Exception:
+        stats = {}
+    html = _render_bpi_page("Ghost Vendor Network", "SYS-03", stats, [
+        ("Basic",       "199/mo",   "5 Vendor-Slots"),
+        ("Pro",         "499/mo",   "20 Slots + Automation"),
+        ("Enterprise",  "999/mo",   "Unlimitiert + White-Label"),
+    ])
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_ghost_vendor_run(request):
+    try:
+        data = await request.json()
+        from modules.ghost_vendor_network import run_cycle
+        result = await run_cycle(data.get("vendor_id", ""))
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_ghost_vendor_clients(request):
+    try:
+        from modules.ghost_vendor_network import get_clients
+        return web.json_response({"ok": True, "clients": await get_clients()})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# SYS-04 EU AI Act
+async def handle_ai_act_page(request):
+    try:
+        from modules.ai_act_compliance import AIActCompliance
+        engine = AIActCompliance()
+        stats = await engine.get_stats()
+    except Exception:
+        stats = {}
+    html = _render_bpi_page("EU AI Act Compliance", "SYS-04", stats, [
+        ("Quick Check",  "99 einmalig",   "Basis-Compliance-Analyse"),
+        ("Full Audit",   "499 einmalig",  "Vollstaendiger Report + Plan"),
+        ("Ongoing",      "299/mo",        "Kontinuierliches Monitoring"),
+    ])
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_ai_act_quick_check(request):
+    try:
+        data = await request.json()
+        from modules.ai_act_compliance import run_quick_check
+        result = await run_quick_check(
+            data.get("company", ""), data.get("use_case", "")
+        )
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_ai_act_checkout(request):
+    try:
+        data = await request.json()
+        from modules.ai_act_stripe_portal import create_checkout
+        url = await create_checkout(
+            data.get("package", "quick_check"), data.get("email", "")
+        )
+        return web.json_response({"checkout_url": url})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# SYS-05 Insolvenz Arbitrage
+async def handle_insolvenz_arbitrage_page(request):
+    try:
+        from modules.insolvenz_arbitrage import InsolvenzArbitrage
+        engine = InsolvenzArbitrage()
+        stats = await engine.get_stats()
+    except Exception:
+        stats = {}
+    html = _render_bpi_page("Insolvenz Arbitrage", "SYS-05", stats, [
+        ("Scout",  "149/mo",  "10 Alerts/Tag"),
+        ("Trader", "399/mo",  "Unlimitiert + Bewertung"),
+        ("Pro",    "799/mo",  "+ Rechtscheck + API"),
+    ])
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_insolvenz_arbitrage_run(request):
+    try:
+        data = await request.json()
+        from modules.insolvenz_arbitrage import run_scan
+        result = await run_scan(data.get("region", "DE"))
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_insolvenz_arbitrage_opps(request):
+    try:
+        from modules.insolvenz_arbitrage import get_opportunities
+        return web.json_response({"ok": True, "opportunities": await get_opportunities()})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# SYS-06 Migration Rush
+async def handle_migration_rush_page(request):
+    try:
+        from modules.migration_rush_engine import MigrationRushEngine
+        engine = MigrationRushEngine()
+        stats = await engine.get_stats()
+    except Exception:
+        stats = {}
+    html = _render_bpi_page("Migration Rush Intelligence", "SYS-06", stats, [
+        ("Signal", "199/mo",  "Woechentliche Signale"),
+        ("Stream", "449/mo",  "Taeglich + Geo-Filter"),
+        ("Alpha",  "899/mo",  "Real-Time + API"),
+    ])
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_migration_rush_run(request):
+    try:
+        data = await request.json()
+        from modules.migration_rush_engine import run_scan
+        result = await run_scan(data.get("region", "EU"))
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_migration_rush_signals(request):
+    try:
+        from modules.migration_rush_engine import get_signals
+        return web.json_response({"ok": True, "signals": await get_signals()})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# SYS-07 AI Citation SEO
+async def handle_ai_citation_seo_page(request):
+    try:
+        from modules.ai_citation_seo import AICitationSEO
+        engine = AICitationSEO()
+        stats = await engine.get_stats()
+    except Exception:
+        stats = {}
+    html = _render_bpi_page("AI Citation SEO", "SYS-07", stats, [
+        ("Starter",   "249/mo",    "5 Keywords optimiert"),
+        ("Growth",    "599/mo",    "25 Keywords + Reports"),
+        ("Authority", "1.199/mo",  "Unlimitiert + Backlinks"),
+    ])
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_ai_citation_seo_run(request):
+    try:
+        data = await request.json()
+        from modules.ai_citation_seo import run_optimization
+        result = await run_optimization(
+            data.get("url", ""), data.get("keywords", [])
+        )
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_ai_citation_seo_stats(request):
+    try:
+        from modules.ai_citation_seo import get_stats
+        return web.json_response({"ok": True, **await get_stats()})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+# SYS-08 Intelligence Broker
+async def handle_intelligence_broker_page(request):
+    try:
+        from modules.intelligence_broker import IntelligenceBroker
+        engine = IntelligenceBroker()
+        stats = await engine.get_stats()
+    except Exception:
+        stats = {}
+    html = _render_bpi_page("Intelligence Broker", "SYS-08", stats, [
+        ("Report",   "499 einmalig",  "Markt-Dossier auf Anfrage"),
+        ("Retainer", "1.499/mo",      "4 Reports/Monat + Calls"),
+        ("Premium",  "2.999/mo",      "Woechentlich + Dedicated Analyst"),
+    ])
+    return web.Response(text=html, content_type="text/html")
+
+
+async def handle_intelligence_broker_report(request):
+    try:
+        data = await request.json()
+        from modules.intelligence_broker import generate_report
+        result = await generate_report(
+            data.get("topic", ""),
+            data.get("depth", "standard"),
+            data.get("email", ""),
+        )
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_intelligence_broker_watchlist(request):
+    try:
+        from modules.intelligence_broker import get_watchlist
+        return web.json_response({"ok": True, "watchlist": await get_watchlist()})
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
 
 
 if __name__ == "__main__":
