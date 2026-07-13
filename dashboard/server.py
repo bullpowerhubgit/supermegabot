@@ -6886,17 +6886,32 @@ async def handle_shopify_discount_blast(req):
 
 
 async def handle_shopify_bulk_activate(req):
-    """POST /api/shopify/bulk-activate — Aktiviert batch archivierter Produkte."""
+    """POST /api/shopify/bulk-activate — Startet Aktivierung im Background (202 sofort)."""
     data = {}
     try:
         data = await req.json()
     except Exception:
         pass
     try:
-        from modules.shopify_bulk_activator import run_activation_batch
+        from modules.shopify_bulk_activator import run_activation_batch, get_status
+        status = await get_status()
+        if status.get("state", {}).get("done"):
+            return web.json_response({"ok": True, "msg": "Bereits abgeschlossen", **status})
+
         max_per_run = int(data.get("max", 200))
-        result = await run_activation_batch(max_per_run=max_per_run)
-        return web.json_response(result)
+
+        async def _run_bg():
+            try:
+                await run_activation_batch(max_per_run=max_per_run)
+            except Exception as e:
+                log.error("BulkActivator background: %s", e)
+
+        asyncio.ensure_future(_run_bg())
+        return web.json_response({
+            "ok": True,
+            "msg": f"Bulk Activator gestartet (max {max_per_run} Produkte im Background)",
+            "current_counts": status.get("counts", {}),
+        })
     except Exception as e:
         return web.json_response({"ok": False, "error": str(e)})
 
