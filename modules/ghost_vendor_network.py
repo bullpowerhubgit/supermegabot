@@ -53,7 +53,7 @@ MARGIN_MAP = {
 }
 DEFAULT_MARGIN = 1.25
 
-SHOPIFY_API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+SHOPIFY_API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 
 # ---------------------------------------------------------------------------

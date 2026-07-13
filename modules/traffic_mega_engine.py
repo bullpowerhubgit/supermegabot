@@ -99,7 +99,7 @@ async def blast_medium_ghost(title: str, content: str) -> dict:
     try:
         # Shopify Blog Post
         SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-        VER = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         if SHOP and SHOPIFY_TOKEN:
             async with aiohttp.ClientSession() as s:
                 # Erst Blog-ID holen

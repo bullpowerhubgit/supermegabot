@@ -83,7 +83,7 @@ class TrendVelocityPipeline:
         self.session = session
         self.shopify_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         self.shopify_token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-        self.shopify_api_version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+        self.shopify_api_version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         self.telegram_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
         self.telegram_chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
         self.meta_access_token = os.getenv("META_ACCESS_TOKEN", "")

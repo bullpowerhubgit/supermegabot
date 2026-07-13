@@ -413,7 +413,7 @@ async def run_revenue_report() -> dict:
     try:
         shop   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-        ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        ver    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         if shop and token:
             from datetime import timedelta
             since = (datetime.now(timezone.utc) - timedelta(days=7)).strftime("%Y-%m-%dT%H:%M:%SZ")

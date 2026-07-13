@@ -984,7 +984,7 @@ def _clean_product_title(raw: str) -> str:
 async def _shopify_import(item: Dict) -> Optional[str]:
     token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
     domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-    version = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not token or not domain:
         log.warning("Shopify credentials fehlen")
         return None

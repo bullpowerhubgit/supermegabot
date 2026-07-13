@@ -31,9 +31,9 @@ log = logging.getLogger("AbandonedCartRecovery")
 
 # ── Konstanten ────────────────────────────────────────────────────────────────
 _DB_PATH = Path(os.getenv("DATA_DIR", str(Path(__file__).parent.parent / "data"))) / "abandoned_cart.db"
-_SHOP_NAME = "I Want That! I Need It!"
-_SHOP_DOMAIN = "ineedit.com.co"
-_DISCOUNT_CODE = "RESCUE10"
+_SHOP_NAME     = os.getenv("SHOP_NAME", "I Want That! I Need It!")
+_SHOP_DOMAIN   = os.getenv("SHOP_CUSTOM_DOMAIN", os.getenv("SHOPIFY_CUSTOM_DOMAIN", "ineedit.com.co"))
+_DISCOUNT_CODE = os.getenv("CART_RECOVERY_DISCOUNT", "RESCUE10")
 
 # Mindest-Alter eines Warenkorbs bevor Stage-1 gesendet wird (Standard: 60 Min.)
 _STAGE1_DELAY_MIN  = int(os.getenv("CART_STAGE1_DELAY_MIN", "60"))

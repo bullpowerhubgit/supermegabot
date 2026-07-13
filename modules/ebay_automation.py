@@ -24,7 +24,7 @@ EBAY_CUSTOM_ID     = os.getenv("EBAY_CUSTOM_ID", "supermegabot")
 EBAY_SITE_ID       = os.getenv("EBAY_SITE_ID", "77")  # 77=DE, 3=UK, 0=US
 SHOPIFY_DOMAIN     = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN      = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-SHOPIFY_VERSION    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+SHOPIFY_VERSION    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 ANTHROPIC_KEY      = os.getenv("ANTHROPIC_API_KEY", "")
 
 EBAY_FINDING_URL   = "https://svcs.ebay.com/services/search/FindingService/v1"

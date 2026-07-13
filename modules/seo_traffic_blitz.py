@@ -16,7 +16,7 @@ log = logging.getLogger("SEOBlitz")
 
 SHOP_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 SHOP_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-SHOP_VER     = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+SHOP_VER     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 TG_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT      = _TG_CHANNEL or ""

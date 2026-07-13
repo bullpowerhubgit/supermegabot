@@ -17,7 +17,7 @@ log = logging.getLogger("MegaAutoPoster")
 DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "auto_poster"))
 HASH_FILE  = DATA_DIR / "posted_hashes.json"
 IG_PIXEL   = "https://bullpowerhubgit.github.io/bullpower-legal/brutus_pixel.png"
-SHOPIFY_VER = "2024-01"
+SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 # ── Env vars ──────────────────────────────────────────────────────────────────
 FB_TOKEN_IWIN   = os.getenv("FACEBOOK_PAGE_TOKEN_IWIN", "")

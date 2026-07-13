@@ -112,21 +112,35 @@ async def _fetch_etsy() -> Dict:
 
 
 async def _fetch_digistore() -> Dict:
-    """Fetch orders total from Digistore24."""
-    from modules.digistore24_automation import is_configured as ds24_configured, get_orders  # type: ignore
-    if not ds24_configured():
+    """Fetch orders total from Digistore24 via REST API."""
+    api_key = (os.getenv("DIGISTORE24_API_KEY") or os.getenv("DIGISTORE24_API_KEY_FULL") or "")
+    if not api_key:
         return {"revenue": 0.0, "orders": 0, "currency": "EUR",
                 "ok": False, "status": "not_configured",
                 "error": "DIGISTORE24_API_KEY not set"}
     try:
-        orders_list = await get_orders(page=1, per_page=100)
-        total   = sum(float(o.get("amount", 0)) for o in orders_list)
-        currency = (orders_list[0].get("currency", "EUR") if orders_list else "EUR")
-        return {"revenue": round(total, 2), "orders": len(orders_list),
+        from datetime import date
+        today = date.today().isoformat()
+        async with aiohttp.ClientSession() as s:
+            url = "https://www.digistore24.com/api/call/listTransactions/JSON/"
+            async with s.get(url, headers={"X-DS24-API-KEY": api_key},
+                             params={"date_from": today, "date_to": today},
+                             timeout=aiohttp.ClientTimeout(total=15)) as r:
+                d = await r.json(content_type=None)
+        if d.get("result") != "success":
+            return {"revenue": 0.0, "orders": 0, "currency": "EUR",
+                    "ok": False, "error": d.get("message", "DS24 API error")[:80]}
+        data = d.get("data", {})
+        transactions = data.get("transactions", [])
+        if isinstance(transactions, dict):
+            transactions = list(transactions.values())
+        total = sum(float(t.get("amount", 0)) for t in transactions)
+        currency = transactions[0].get("currency", "EUR") if transactions else "EUR"
+        return {"revenue": round(total, 2), "orders": len(transactions),
                 "currency": currency, "ok": True}
     except Exception as exc:
         log.warning("Digistore24 revenue fetch failed: %s", exc)
-        return {"revenue": 0.0, "orders": 0, "currency": "EUR", "ok": False, "error": str(exc)}
+        return {"revenue": 0.0, "orders": 0, "currency": "EUR", "ok": False, "error": str(exc)[:80]}
 
 
 async def _fetch_paypal() -> Dict:
@@ -223,6 +237,7 @@ async def get_platform_revenue() -> Dict:
           "timestamp": "2026-05-29T...",
         }
     """
+    _err = lambda e: {"revenue": 0.0, "orders": 0, "currency": "EUR", "ok": False, "error": str(e)[:80]}
     results = await asyncio.gather(
         _fetch_shopify(),
         _fetch_gumroad(),
@@ -231,16 +246,16 @@ async def get_platform_revenue() -> Dict:
         _fetch_printify(),
         _fetch_paypal(),
         _fetch_stripe(),
-        return_exceptions=False,
+        return_exceptions=True,
     )
     platforms = {
-        "shopify":   results[0],
-        "gumroad":   results[1],
-        "etsy":      results[2],
-        "digistore": results[3],
-        "printify":  results[4],
-        "paypal":    results[5],
-        "stripe":    results[6],
+        "shopify":   results[0] if not isinstance(results[0], Exception) else _err(results[0]),
+        "gumroad":   results[1] if not isinstance(results[1], Exception) else _err(results[1]),
+        "etsy":      results[2] if not isinstance(results[2], Exception) else _err(results[2]),
+        "digistore": results[3] if not isinstance(results[3], Exception) else _err(results[3]),
+        "printify":  results[4] if not isinstance(results[4], Exception) else _err(results[4]),
+        "paypal":    results[5] if not isinstance(results[5], Exception) else _err(results[5]),
+        "stripe":    results[6] if not isinstance(results[6], Exception) else _err(results[6]),
     }
     total_eur = sum(
         _to_eur(v["revenue"], v["currency"])

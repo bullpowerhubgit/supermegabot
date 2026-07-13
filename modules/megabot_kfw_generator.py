@@ -174,7 +174,7 @@ async def fetch_live_antrag_data() -> Dict[str, Any]:
         import aiohttp
         shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         tok = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-        ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+        ver = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         if shop and tok:
             async with aiohttp.ClientSession() as s:
                 async with s.get(

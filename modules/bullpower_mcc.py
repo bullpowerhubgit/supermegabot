@@ -28,10 +28,8 @@ _BASE = Path(__file__).parent.parent
 DATA_DIR = _BASE / "data"
 STATE_FILE = DATA_DIR / "bullpower_mcc.json"
 
-RAILWAY_URL = os.getenv(
-    "RAILWAY_PUBLIC_DOMAIN",
-    "https://supermegabot-production.up.railway.app",
-)
+_raw_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "https://supermegabot-production.up.railway.app")
+RAILWAY_URL = _raw_domain if _raw_domain.startswith("http") else f"https://{_raw_domain}"
 # Self-calls (healing, scheduler checks) müssen intern via localhost gehen —
 # Railway kann sich nicht selbst via Public-Domain aufrufen.
 _INTERNAL_URL = f"http://localhost:{os.getenv('PORT', os.getenv('DASHBOARD_PORT', '8888'))}"
@@ -80,10 +78,13 @@ async def _get(url: str, headers: Optional[Dict] = None, timeout: int = 8) -> Tu
 # ── Platform Health Checks ────────────────────────────────────────────────────
 
 async def check_railway() -> Dict:
-    status, body = await _get(f"{RAILWAY_URL}/health")
+    # Immer intern prüfen — Railway kann sich nicht via public domain selbst aufrufen
+    status, body = await _get(f"{_INTERNAL_URL}/health")
     ok = status == 200 and isinstance(body, dict) and body.get("status") == "ok"
     circuits = body.get("circuits_open", []) if isinstance(body, dict) else []
-    return {"platform": "railway", "ok": ok, "status": status, "circuits_open": circuits}
+    uptime = body.get("uptime_seconds", 0) if isinstance(body, dict) else 0
+    return {"platform": "railway", "ok": ok, "status": status,
+            "circuits_open": circuits, "uptime_seconds": uptime}
 
 
 async def check_shopify() -> Dict:
@@ -264,8 +265,9 @@ async def run_self_healing() -> Dict:
 # ── Revenue Aggregation ───────────────────────────────────────────────────────
 
 async def get_revenue_snapshot() -> Dict:
+    # Intern aufrufen — Railway public domain kann nicht von Railway selbst erreicht werden
     try:
-        status, body = await _get(f"{RAILWAY_URL}/api/revenue/status")
+        status, body = await _get(f"{_INTERNAL_URL}/api/revenue/status")
         if status == 200 and isinstance(body, dict):
             return body
     except Exception:
@@ -357,12 +359,159 @@ async def run_full_cycle() -> Dict:
     return result
 
 
+async def get_shopify_metrics() -> Dict:
+    """Holt Shopify Store-Metriken für das Dashboard."""
+    domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
+    if not domain or not token:
+        return {"ok": False, "error": "credentials missing"}
+    h = {"X-Shopify-Access-Token": token}
+    base = f"https://{domain}/admin/api/{version}"
+    try:
+        async with aiohttp.ClientSession() as s:
+            # Active + archived counts in parallel
+            async def _count(params):
+                async with s.get(f"{base}/products/count.json", headers=h, params=params,
+                                 timeout=aiohttp.ClientTimeout(total=10)) as r:
+                    return (await r.json(content_type=None)).get("count", 0) if r.status == 200 else 0
+
+            active, archived = await asyncio.gather(_count({"status": "active"}), _count({"status": "archived"}))
+
+            # Orders today
+            from datetime import date
+            today_str = date.today().isoformat() + "T00:00:00Z"
+            async with s.get(f"{base}/orders/count.json", headers=h,
+                             params={"created_at_min": today_str, "financial_status": "paid"},
+                             timeout=aiohttp.ClientTimeout(total=10)) as r2:
+                orders_today = (await r2.json(content_type=None)).get("count", 0) if r2.status == 200 else 0
+
+        return {"ok": True, "active": active, "archived": archived,
+                "total": active + archived, "orders_today": orders_today}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+
+
+async def get_klaviyo_metrics() -> Dict:
+    """Holt Klaviyo Subscriber-Zahlen."""
+    key = os.getenv("KLAVIYO_API_KEY", "")
+    list_id = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+    if not key:
+        return {"ok": False, "error": "key missing"}
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://a.klaviyo.com/api/lists/{list_id}/",
+                headers={"Authorization": f"Klaviyo-API-Key {key}", "revision": "2024-10-15"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                d = await r.json(content_type=None)
+        if r.status != 200:
+            return {"ok": False, "error": f"HTTP {r.status}"}
+        attrs = d.get("data", {}).get("attributes", {})
+        return {"ok": True, "list_id": list_id,
+                "name": attrs.get("name", "?"),
+                "subscriber_count": attrs.get("profile_count", 0)}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80]}
+
+
+async def get_bulk_activator_status() -> Dict:
+    """Holt Status des Shopify Bulk Aktivators."""
+    try:
+        from modules.shopify_bulk_activator import get_status as ba_status  # type: ignore
+        return await ba_status()
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:60]}
+
+
+async def get_title_germanizer_status() -> Dict:
+    """Holt Status des Titel-Germanizers."""
+    try:
+        from modules.shopify_title_germanizer import get_status as tg_status  # type: ignore
+        return await tg_status()
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:60]}
+
+
+async def get_collection_status() -> Dict:
+    """Holt Smart Collection Statistiken."""
+    domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
+    if not domain or not token:
+        return {"ok": False, "total": 0, "published": 0}
+    try:
+        import re
+        async with aiohttp.ClientSession() as s:
+            h = {"X-Shopify-Access-Token": token}
+            base = f"https://{domain}/admin/api/{version}"
+            all_sc = []
+            page_info = None
+            while True:
+                params = {"limit": 250}
+                if page_info:
+                    params["page_info"] = page_info
+                async with s.get(f"{base}/smart_collections.json", headers=h, params=params,
+                                 timeout=aiohttp.ClientTimeout(total=15)) as r:
+                    sc = (await r.json(content_type=None)).get("smart_collections", [])
+                    all_sc.extend(sc)
+                    link = r.headers.get("Link", "")
+                    if 'rel="next"' in link:
+                        m = re.search(r'page_info=([^>&"]+).*?rel="next"', link)
+                        page_info = m.group(1) if m else None
+                    else:
+                        break
+                await asyncio.sleep(0.5)
+        published = sum(1 for c in all_sc if c.get("published_at"))
+        return {"ok": True, "total": len(all_sc), "published": published,
+                "unpublished": len(all_sc) - published}
+    except Exception as e:
+        return {"ok": False, "error": str(e)[:80], "total": 0, "published": 0}
+
+
+async def get_full_dashboard_data() -> Dict:
+    """Vollständiges Dashboard-Daten-Paket für das MCC HTML-Dashboard."""
+    ts = datetime.now(timezone.utc).isoformat()
+    # Alle Checks parallel
+    platforms, shopify_m, klaviyo_m, bulk_act, title_ger, collections = await asyncio.gather(
+        run_platform_checks(),
+        get_shopify_metrics(),
+        get_klaviyo_metrics(),
+        get_bulk_activator_status(),
+        get_title_germanizer_status(),
+        get_collection_status(),
+        return_exceptions=True,
+    )
+    def _s(r): return r if not isinstance(r, Exception) else {"ok": False, "error": str(r)[:60]}
+    platforms = _s(platforms)
+    shopify_m = _s(shopify_m)
+    klaviyo_m = _s(klaviyo_m)
+    bulk_act  = _s(bulk_act)
+    title_ger = _s(title_ger)
+    collections = _s(collections)
+
+    failed_platforms = [p for p, v in (platforms.items() if isinstance(platforms, dict) else {}.items()) if not v.get("ok")]
+
+    return {
+        "ok": True,
+        "timestamp": ts,
+        "platforms": platforms,
+        "failed_platforms": failed_platforms,
+        "shopify": shopify_m,
+        "klaviyo": klaviyo_m,
+        "bulk_activator": bulk_act,
+        "title_germanizer": title_ger,
+        "collections": collections,
+    }
+
+
 async def get_status() -> Dict:
     state = _load_state()
     return {
         "ok": True,
         "module": "BullPower MEGA Command Center",
-        "version": "1.0",
+        "version": "2.0",
         "cycles_total": state.get("cycles_total", 0),
         "last_cycle": state.get("last_cycle"),
         "railway_url": RAILWAY_URL,
