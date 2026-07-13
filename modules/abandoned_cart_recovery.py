@@ -30,7 +30,7 @@ except ImportError:
 log = logging.getLogger("AbandonedCartRecovery")
 
 # ── Konstanten ────────────────────────────────────────────────────────────────
-_DB_PATH = Path(os.getenv("DATA_DIR", "/Users/rudolfsarkany/supermegabot/data")) / "abandoned_cart.db"
+_DB_PATH = Path(os.getenv("DATA_DIR", str(Path(__file__).parent.parent / "data"))) / "abandoned_cart.db"
 _SHOP_NAME = "I Want That! I Need It!"
 _SHOP_DOMAIN = "ineedit.com.co"
 _DISCOUNT_CODE = "RESCUE10"
