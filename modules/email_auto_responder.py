@@ -39,19 +39,64 @@ SHOP_URL  = os.getenv("SHOP_URL", "https://ineedit.com.co")
 
 # ── Was ist ein Geschäfts-E-Mail? ─────────────────────────────────────────────
 
-# Sender-Domains/Muster die NIEMALS auto-beantwortet werden
-_SKIP_SENDERS = [
+# Marker den wir in JEDE Auto-Antwort einfügen — verhindert Endlos-Loops
+_LOOP_MARKER = "X-AutoReply-AiiteC: 1"
+
+# Bekannte SaaS/Service-Domains — NIEMALS auto-antworten
+_SKIP_DOMAINS: set = {
+    # Hosting & Infra
+    "railway.app", "railway.com", "netlify.com", "netlify.app",
+    "vercel.com", "heroku.com", "render.com",
+    # Shop & Payments
+    "shopify.com", "myshopify.com", "shopify.dev",
+    "stripe.com", "paddle.com", "lemonsqueezy.com",
+    "paypal.com", "paypalcorp.com",
+    "ebay.com", "amazon.com", "amazon.de", "etsy.com",
+    # E-Mail-Marketing
+    "mailchimp.com", "brevo.com", "sendinblue.com",
+    "klaviyo.com", "sendgrid.com", "sendcloud.com",
+    "activecampaign.com", "constantcontact.com",
+    # Dev Tools
+    "github.com", "githubusercontent.com", "gitlab.com",
+    "cursor.com", "windsurf.com", "codeium.com",
+    "docker.com", "perplexity.ai",
+    # Design & Media
+    "adobe.com", "adobe.io", "figma.com", "canva.com",
+    "fliki.ai", "invideo.io", "midjourney.com",
+    # Support-Systeme
+    "zendesk.com", "freshdesk.com", "intercom.com",
+    "helpscout.com", "helpscout.net", "desk.com",
+    # Cloud & SaaS
+    "microsoft.com", "microsoftonline.com", "office365.com",
+    "google.com", "googlemail.com", "gmail.com",
+    "notion.com", "slack.com", "discord.com", "zoom.us",
+    "linkedin.com", "twitter.com", "x.com", "facebook.com",
+    "supabase.com", "supabase.io",
+    "twilio.com", "vonage.com",
+    # Antivirus / Software
+    "avg.com", "avast.com", "norton.com", "nortonlifelock.com", "gen.com",
+    "xtool.com", "xtool.cn",
+    # Hosting DE
+    "1und1.de", "ionos.com", "ionos.de", "hetzner.com",
+    # Inkasso / Legal
+    "faircollect.de", "compay.de", "creditreform.de", "inkasso.de",
+    # E-Commerce Tools
+    "billbee.io", "digistore24.com", "digistore24.net",
+    "trustpilot.com", "spocket.co",
+    # Andere bekannte Automations
+    "webcatalog.io", "deepseek.com", "deepseek.ai",
+    "ollama.com", "anthropic.com", "openai.com",
+}
+
+# Sender-Prefixes die NIEMALS auto-beantwortet werden
+_SKIP_PREFIXES = [
     "noreply", "no-reply", "mailer-daemon", "newsletter", "donotreply",
-    "notifications@github", "notify@", "alerts@", "automated@",
-    "@ebay", "@amazon", "@etoro", "@kraken", "@paypal", "@stripe",
-    "@trustpilot", "@tor-project", "@postman", "@lists.", "digest@",
-    "service@faircollect",  # Inkasso separat behandelt
-    # Support-Systeme — niemals auf System-Antworten auto-replyen
+    "notifications@", "notify@", "alerts@", "automated@", "auto@",
+    "digest@", "bounce@", "reply@", "postmaster@", "listserv@",
     "support@", "help@", "billing@", "ticket@", "helpdesk@",
-    "team@", "hello@windsurf", "hello@codeium", "reply@",
-    "zendesk", "customercare", "mailer@", "ecosystem-governance",
-    "message@adobe", "customercare-support@adobe", "customercare-responserequest",
-    "hello@notify.", "@notify.", "no-reply@",
+    "team@", "info@", "hello@", "mailer@", "admin@", "webmaster@",
+    "customercare", "ecosystem-governance", "zendesk", "freshdesk",
+    "@lists.", "@groups.", "@bounce.", "@em.", "@send.",
 ]
 
 # Signale die auf eine echte Geschäfts-E-Mail hindeuten
@@ -112,11 +157,30 @@ def _db() -> sqlite3.Connection:
 
 # ── Klassifizierung ───────────────────────────────────────────────────────────
 
+def _extract_domain(sender: str) -> str:
+    """Extrahiert die Domain aus einer E-Mail-Adresse."""
+    m = re.search(r"@([\w.-]+\.\w+)", sender.lower())
+    return m.group(1) if m else ""
+
+
 def _is_business_email(sender: str, subject: str) -> bool:
-    """Prüft ob eine E-Mail überhaupt eine Geschäfts-E-Mail ist."""
+    """Prüft ob eine E-Mail überhaupt eine echte Geschäfts-E-Mail ist."""
     sender_l = sender.lower()
-    if any(skip in sender_l for skip in _SKIP_SENDERS):
+
+    # 1. Bekannte Service-Domains sofort ablehnen
+    domain = _extract_domain(sender_l)
+    for skip_dom in _SKIP_DOMAINS:
+        if domain == skip_dom or domain.endswith("." + skip_dom):
+            return False
+
+    # 2. Sender-Prefix-Muster ablehnen
+    if any(skip in sender_l for skip in _SKIP_PREFIXES):
         return False
+
+    # 3. Muss eine erkennbare E-Mail-Adresse sein
+    if not re.search(r"[\w.+-]+@[\w.-]+\.\w+", sender):
+        return False
+
     text = (sender + " " + subject).lower()
     return any(
         any(sig in text for sig in signals)
@@ -125,10 +189,21 @@ def _is_business_email(sender: str, subject: str) -> bool:
 
 
 def _classify(sender: str, subject: str, snippet: str = "") -> Optional[str]:
-    """Gibt die Business-Kategorie zurück oder None wenn nicht Geschäftlich."""
+    """Gibt die Business-Kategorie zurück oder None wenn nicht geschäftlich."""
     if not _is_business_email(sender, subject):
         return None
     text = (sender + " " + subject + " " + snippet).lower()
+
+    # "outreach_reply" braucht mehr als nur "re:" — muss echte Reaktion sein
+    if any(sig in text for sig in _BUSINESS_SIGNALS["outreach_reply"]):
+        re_signals = ["re:", "aw:", "antw:", "re :"]
+        extra_signals = ["danke", "thank", "bezüglich", "regarding", "interesse",
+                         "angebot", "termin", "zusammenarbeit", "kooperation"]
+        has_re = any(s in subject.lower() for s in re_signals)
+        has_extra = any(s in text for s in extra_signals)
+        if has_re and not has_extra:
+            return None  # nur "re:" ohne weiteren Kontext → ignorieren
+
     for cat, signals in _BUSINESS_SIGNALS.items():
         if any(sig in text for sig in signals):
             return cat
@@ -146,13 +221,14 @@ def _send_reply(to_email: str, subject: str, body: str,
         return False
 
     reply_subj = reply_subject or (
-        f"Re: {subject}" if not subject.startswith("Re:") else subject
+        f"Re: {subject}" if not subject.lower().startswith("re:") else subject
     )
 
     msg = MIMEMultipart("alternative")
     msg["From"]    = f"AiiteC Support <{smtp_user}>"
     msg["To"]      = to_email
     msg["Subject"] = reply_subj
+    msg[_LOOP_MARKER.split(":")[0]] = _LOOP_MARKER.split(":")[1].strip()
 
     msg.attach(MIMEText(body, "plain", "utf-8"))
 
@@ -165,6 +241,17 @@ def _send_reply(to_email: str, subject: str, body: str,
     except Exception as e:
         log.error("SMTP Auto-Reply Fehler: %s", e)
         return False
+
+
+def _already_replied_recently(conn: sqlite3.Connection, to_addr: str,
+                               hours: int = 24) -> bool:
+    """Prüft ob wir diesem Absender in den letzten X Stunden bereits geantwortet haben."""
+    cutoff = int(time.time()) - hours * 3600
+    row = conn.execute(
+        "SELECT id FROM auto_responses WHERE sender LIKE ? AND action='replied' AND processed_at > ?",
+        (f"%{to_addr}%", cutoff)
+    ).fetchone()
+    return row is not None
 
 
 # ── Telegram Alert ────────────────────────────────────────────────────────────
@@ -367,6 +454,12 @@ async def run_auto_responder(emails: List[Dict]) -> Dict:
                 skipped += 1
                 continue
             to_addr = m.group(0)
+
+            # 24h-Cooldown: kein Doppel-Reply an denselben Absender
+            if _already_replied_recently(conn, to_addr, hours=24):
+                log.info("Cooldown aktiv — kein Auto-Reply an %s", to_addr)
+                skipped += 1
+                continue
 
             ok = _send_reply(to_addr, subject, body)
             action = "replied" if ok else "reply_failed"
