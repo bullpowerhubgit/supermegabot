@@ -726,8 +726,8 @@ async def handle_gmc_feed(req):
 
             async with _aio.ClientSession() as s:
                 last_id = 0
-                # Kleine Batches (50) → schnelle API-Calls, max 300 Produkte gesamt
-                max_products = 300
+                # Kleine Batches (50) → schnelle API-Calls, max 600 Produkte gesamt
+                max_products = 600
                 while len(products) < max_products:
                     try:
                         async with s.get(
