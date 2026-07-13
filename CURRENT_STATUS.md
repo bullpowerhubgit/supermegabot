@@ -1,5 +1,14 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v21 — EMAIL-POPUP · WELCOME-FLOW · GMC-FEED-600 · DUPLIKAT-COLLECTIONS**
+**Stand: 2026-07-14 v22 — SMART-COLLECTIONS-FIX · EMAIL-POPUP · WELCOME-FLOW · GMC-600**
+
+## ✅ FIXES (2026-07-14 v22 — Smart Collections LIVE)
+
+### 21 Smart Collections publiziert — KRITISCHER FIX ✅
+- **Ursache**: Alle Smart Collections hatten `published_at: None` (Draft-Status) — für Kunden unsichtbar
+- **Produkte vorhanden** (intern): Electronics & Gadgets 4.853 | Angebote unter €30 2.268 | etc.
+- **Fix**: Alle 21 unpublizierten Collections via API publiziert → sofort live auf ineedit.com.co
+- **Auto-Publisher**: `modules/shopify_collection_publisher.py` + Scheduler-Task `shopify_collection_pub` (alle 6h)
+- **Commit**: c8292b3a
 
 ## ✅ FIXES (2026-07-13 v21 — Email Capture + Conversion Engine)
 
