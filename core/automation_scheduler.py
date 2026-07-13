@@ -1323,6 +1323,17 @@ async def task_shopify_seo_auto() -> str:
         return f"ShopifySEO Fehler: {e}"
 
 
+async def task_shopify_collection_publisher() -> str:
+    """Publiziert alle unpublizierten Smart Collections automatisch."""
+    try:
+        from modules.shopify_collection_publisher import publish_all_smart_collections
+        result = await publish_all_smart_collections()
+        return (f"CollectionPublisher: {result.get('newly_published',0)} neu publiziert | "
+                f"total={result.get('total_smart_collections',0)} | already={result.get('already_published',0)}")
+    except Exception as e:
+        return f"CollectionPublisher Fehler: {e}"
+
+
 async def task_shopify_bulk_activate() -> str:
     """Aktiviert archivierte Shopify-Produkte (200/Stunde bis alle 17k aktiv)."""
     try:
@@ -7206,6 +7217,7 @@ TASKS = [
     ("email_daily_summary",     task_email_daily_summary,    86400,   350),  # daily — Telegram summary
     ("facebook_token_check",    task_facebook_token_check,   43200,   370),  # 12h — check FB token validity
     ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
+    ("shopify_collection_pub",  task_shopify_collection_publisher, 21600, 58),  # 6h — auto-publish unpublished smart collections
     ("shopify_bulk_activate",   task_shopify_bulk_activate,   1800,    60),  # 30min — 300 archivierte → active bis fertig
     ("klaviyo_welcome_subs",    task_klaviyo_welcome_new_subs, 3600,   75),  # 1h — Welcome-Email + Code an neue Subscriber
     ("shopify_title_de",        task_shopify_title_germanizer, 1800,  62),   # 30min — 50 englische Titel → Deutsch
