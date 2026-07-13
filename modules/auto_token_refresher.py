@@ -134,11 +134,14 @@ async def _persist_token(key: str, value: str, platform: str = "tiktok") -> None
 
 async def refresh_tiktok_token() -> dict:
     """Refresht TikTok Access Token via API v2 und persistiert neue Tokens überall."""
-    # Supabase hat ggf. neueren Refresh-Token als .env (bei rotierenden Tokens)
+    # .env-Wert hat Priorität (Supabase kann veralteten Token haben)
     refresh_token_env = os.getenv("TIKTOK_REFRESH_TOKEN", "")
-    refresh_token_db  = await _load_token("tiktok", "refresh_token")
-    # Supabase-Wert bevorzugen wenn vorhanden (rotiert bei jedem Refresh)
-    refresh_token = refresh_token_db or refresh_token_env
+    try:
+        refresh_token_db = await _load_token("tiktok", "refresh_token")
+    except Exception:
+        refresh_token_db = ""
+    # .env bevorzugen — Supabase nur als Fallback wenn .env leer
+    refresh_token = refresh_token_env or refresh_token_db
 
     cred_pairs = [
         (os.getenv("TIKTOK_CLIENT_KEY", ""), os.getenv("TIKTOK_CLIENT_SECRET", "")),
@@ -166,7 +169,8 @@ async def refresh_tiktok_token() -> dict:
                     data = await r.json()
 
             # TikTok v2 antwortet mit data.data.access_token (nicht data.access_token)
-            token_data  = data.get("data") or {}
+            # TikTok v2: manchmal flat, manchmal data.data
+            token_data  = data.get("data") or data
             new_token   = token_data.get("access_token", "")
             new_refresh = token_data.get("refresh_token", "")
             err_code    = (data.get("error") or {}).get("code", "")
