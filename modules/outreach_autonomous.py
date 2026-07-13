@@ -126,19 +126,65 @@ def init_db():
 
 # ── Feste Target-Liste ────────────────────────────────────────────────────────
 TARGETS = [
-    # Factoring
-    {"name": "BFS finance GmbH",              "email": "info@bfs-finance.de",           "type": "Factoring"},
-    {"name": "Deutsche Factoring Bank",        "email": "info@deutsche-factoring.de",    "type": "Factoring"},
-    {"name": "Bibby Financial Services DE",   "email": "info@bibbyfinancialservices.de", "type": "Factoring"},
-    {"name": "Grenke Factoring",               "email": "factoring@grenke.de",           "type": "Factoring"},
-    {"name": "Coface Deutschland",             "email": "info@coface.de",                "type": "Kreditversicherung"},
-    # Inkasso/Auskunft
-    {"name": "Arvato Financial Solutions",     "email": "kontakt@arvato-financial.de",   "type": "Inkasso"},
-    {"name": "EOS Gruppe",                     "email": "info@eos-solutions.de",         "type": "Inkasso"},
-    {"name": "Creditreform",                   "email": "info@creditreform.de",          "type": "Kredit-Auskunft"},
-    # M&A
-    {"name": "GFKL Financial Services",       "email": "info@gfkl.com",                 "type": "M&A"},
-    {"name": "Atradius Kreditversicherung",   "email": "info@atradius.de",              "type": "Kreditversicherung"},
+    # ── Factoring Deutschland ─────────────────────────────────────────────────
+    {"name": "BFS finance GmbH",                  "email": "info@bfs-finance.de",                "type": "Factoring"},
+    {"name": "Deutsche Factoring Bank",            "email": "info@deutsche-factoring.de",         "type": "Factoring"},
+    {"name": "Bibby Financial Services DE",        "email": "info@bibbyfinancialservices.de",     "type": "Factoring"},
+    {"name": "Grenke Factoring",                   "email": "factoring@grenke.de",               "type": "Factoring"},
+    {"name": "abcfinance GmbH",                    "email": "info@abcfinance.de",                "type": "Factoring"},
+    {"name": "Eurofactor AG",                      "email": "info@eurofactor.de",                "type": "Factoring"},
+    {"name": "Dresdner Factoring AG",              "email": "info@dresdner-factoring.de",        "type": "Factoring"},
+    {"name": "GE Capital Factoring",               "email": "info@gecapital.de",                 "type": "Factoring"},
+    {"name": "TARGO Commercial Finance",           "email": "info@targo-cf.de",                  "type": "Factoring"},
+    {"name": "Volksbank Factoring GmbH",           "email": "factoring@volksbank.de",            "type": "Factoring"},
+    {"name": "Axa Factoring",                      "email": "kontakt@axa-factoring.de",          "type": "Factoring"},
+    {"name": "SüdFactoring GmbH",                  "email": "info@suedfactoring.de",             "type": "Factoring"},
+    {"name": "Coface Deutschland",                 "email": "info@coface.de",                    "type": "Kreditversicherung"},
+    {"name": "Euler Hermes Deutschland",           "email": "info@eulerhermes.de",               "type": "Kreditversicherung"},
+    {"name": "Atradius Kreditversicherung",        "email": "info@atradius.de",                  "type": "Kreditversicherung"},
+    {"name": "R+V Kreditversicherung",             "email": "kreditversicherung@ruv.de",         "type": "Kreditversicherung"},
+    {"name": "HDI Global SE",                      "email": "info@hdi.global",                   "type": "Kreditversicherung"},
+    # ── Inkasso / Forderungsmanagement ───────────────────────────────────────
+    {"name": "Arvato Financial Solutions",         "email": "kontakt@arvato-financial.de",       "type": "Inkasso"},
+    {"name": "EOS Gruppe",                         "email": "info@eos-solutions.de",             "type": "Inkasso"},
+    {"name": "Creditreform",                       "email": "info@creditreform.de",              "type": "Kredit-Auskunft"},
+    {"name": "SCHUFA Holding AG",                  "email": "info@schufa.de",                    "type": "Kredit-Auskunft"},
+    {"name": "Boniversum GmbH",                    "email": "info@boniversum.de",                "type": "Kredit-Auskunft"},
+    {"name": "CRIF Bürgel GmbH",                   "email": "info@crifbuergel.de",               "type": "Kredit-Auskunft"},
+    {"name": "Intrum GmbH",                        "email": "info@intrum.de",                    "type": "Inkasso"},
+    {"name": "Lowell Financial Services",          "email": "info@lowell.de",                    "type": "Inkasso"},
+    {"name": "Hoist Finance Germany",              "email": "info@hoistfinance.de",              "type": "Inkasso"},
+    {"name": "PRA Group Deutschland",              "email": "info@pragroup.de",                  "type": "Inkasso"},
+    {"name": "PAIR Finance GmbH",                  "email": "hello@pairfinance.com",             "type": "Inkasso"},
+    {"name": "Riverty Group GmbH",                 "email": "info@riverty.com",                  "type": "Inkasso"},
+    # ── Insolvenzverwalter / Restrukturierung ────────────────────────────────
+    {"name": "Pluta Rechtsanwalts GmbH",           "email": "info@pluta.net",                    "type": "Insolvenzverwalter"},
+    {"name": "Anchor Rechtsanwälte",               "email": "info@anchor.de",                    "type": "Insolvenzverwalter"},
+    {"name": "Schultze & Braun GmbH",              "email": "info@schultze-braun.de",            "type": "Insolvenzverwalter"},
+    {"name": "Görg Partnerschaft",                 "email": "info@goerg.de",                     "type": "Insolvenzverwalter"},
+    {"name": "hww Unternehmensberatung",            "email": "info@hww-unternehmensberatung.de",  "type": "Restrukturierung"},
+    {"name": "Roland Berger GmbH",                 "email": "munich@rolandberger.com",           "type": "Restrukturierung"},
+    {"name": "FTI-Andersch AG",                    "email": "info@fti-andersch.com",             "type": "Restrukturierung"},
+    {"name": "Alvarez & Marsal Germany",           "email": "frankfurt@alvarezandmarsal.com",    "type": "Restrukturierung"},
+    {"name": "Buchalik Brömmekamp",               "email": "info@buchalik-broemmekamp.de",       "type": "Insolvenzverwalter"},
+    {"name": "Jaffé Rechtsanwälte",               "email": "muenchen@jaffe.de",                  "type": "Insolvenzverwalter"},
+    # ── M&A / Distress-Investoren ────────────────────────────────────────────
+    {"name": "GFKL Financial Services",            "email": "info@gfkl.com",                     "type": "M&A"},
+    {"name": "Deutsche Beteiligungs AG",           "email": "info@dbag.de",                      "type": "M&A"},
+    {"name": "Mutares SE & Co. KGaA",             "email": "ir@mutares.de",                      "type": "M&A"},
+    {"name": "Aurelius Equity Opportunities",      "email": "info@aurelius-group.com",           "type": "M&A"},
+    {"name": "Triton Partners",                    "email": "info@triton-partners.com",          "type": "M&A"},
+    {"name": "Silverfleet Capital",               "email": "info@silverfleetcapital.com",        "type": "M&A"},
+    {"name": "IK Partners GmbH",                  "email": "germany@ikpartners.com",            "type": "M&A"},
+    # ── Steuerberater mit Insolvenz-Fokus ────────────────────────────────────
+    {"name": "Rödl & Partner GmbH",               "email": "info@roedl.de",                     "type": "Steuerberatung"},
+    {"name": "PKF Deutschland GmbH",              "email": "info@pkf.de",                       "type": "Steuerberatung"},
+    {"name": "TPA Gruppe",                        "email": "deutschland@tpa-group.com",         "type": "Steuerberatung"},
+    {"name": "Ebner Stolz GmbH",                  "email": "info@ebnerstolz.de",               "type": "Steuerberatung"},
+    {"name": "Baker Tilly GmbH",                  "email": "info@bakertilly.de",               "type": "Steuerberatung"},
+    {"name": "Mazars GmbH",                       "email": "info@mazars.de",                   "type": "Steuerberatung"},
+    {"name": "Forvis Mazars Germany",             "email": "kontakt@forvismazars.com",         "type": "Steuerberatung"},
+    {"name": "Warth & Klein Grant Thornton",      "email": "info@wkgt.com",                    "type": "Steuerberatung"},
 ]
 
 
