@@ -6471,6 +6471,98 @@ async def task_eu_compliance_zvg() -> str:
         return f"ZVGRadar Fehler: {e}"
 
 
+# ── BPI System Tasks ─────────────────────────────────────────────────────────
+
+async def task_bpi_sys01_ki_leasing_report() -> str:
+    """BPI SYS-01: KI-Leasing Tagesbericht (tägl. 08:30)."""
+    try:
+        from modules.ki_leasing_engine import KILeasingEngine
+        e = KILeasingEngine()
+        await e.send_daily_reports()
+        return "BPI SYS-01: KI-Leasing Reports gesendet ✅"
+    except Exception as ex:
+        return f"BPI SYS-01 Fehler: {ex}"
+
+
+async def task_bpi_sys02_trend_velocity() -> str:
+    """BPI SYS-02: Trend Velocity Pipeline (alle 2h)."""
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            from modules.trend_velocity_pipeline import TrendVelocityPipeline
+            p = TrendVelocityPipeline(session)
+            result = await p.run_cycle()
+        return f"BPI SYS-02: Trend Velocity Scan abgeschlossen — {str(result)[:120]}"
+    except Exception as ex:
+        return f"BPI SYS-02 Fehler: {ex}"
+
+
+async def task_bpi_sys03_ghost_vendor() -> str:
+    """BPI SYS-03: Ghost Vendor Network Daily Run (tägl. 06:00)."""
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            from modules.ghost_vendor_network import GhostVendorNetwork
+            n = GhostVendorNetwork(session)
+            result = await n.daily_run()
+        return f"BPI SYS-03: Ghost Vendor Daily abgeschlossen — {str(result)[:120]}"
+    except Exception as ex:
+        return f"BPI SYS-03 Fehler: {ex}"
+
+
+async def task_bpi_sys05_insolvenz_arbitrage() -> str:
+    """BPI SYS-05: Insolvenz Arbitrage Opportunity Scan (tägl. 09:30)."""
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            from modules.insolvenz_arbitrage import InsolvenzArbitrage
+            a = InsolvenzArbitrage(session)
+            result = await a.scan_opportunities()
+        return f"BPI SYS-05: Insolvenz Arbitrage abgeschlossen — {str(result)[:120]}"
+    except Exception as ex:
+        return f"BPI SYS-05 Fehler: {ex}"
+
+
+async def task_bpi_sys06_migration_rush() -> str:
+    """BPI SYS-06: Migration Rush Platform Monitor (alle 4h)."""
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            from modules.migration_rush import MigrationRush
+            m = MigrationRush(session)
+            result = await m.monitor_platforms()
+        return f"BPI SYS-06: Migration Rush Monitor abgeschlossen — {str(result)[:120]}"
+    except Exception as ex:
+        return f"BPI SYS-06 Fehler: {ex}"
+
+
+async def task_bpi_sys07_ai_citation_seo() -> str:
+    """BPI SYS-07: AI Citation SEO Cycle (alle 6h)."""
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            from modules.ai_citation_seo import AICitationSEO
+            s = AICitationSEO(session)
+            result = await s.run_cycle()
+        return f"BPI SYS-07: AI Citation SEO abgeschlossen — {str(result)[:120]}"
+    except Exception as ex:
+        return f"BPI SYS-07 Fehler: {ex}"
+
+
+async def task_bpi_sys08_intelligence_broker() -> str:
+    """BPI SYS-08: Intelligence Broker Watchlist + Daily Outreach (tägl. 09:30)."""
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            from modules.intelligence_broker import IntelligenceBroker
+            b = IntelligenceBroker(session)
+            await b.check_watchlist()
+            await b.daily_outreach()
+        return "BPI SYS-08: Intelligence Broker abgeschlossen ✅"
+    except Exception as ex:
+        return f"BPI SYS-08 Fehler: {ex}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -6814,6 +6906,15 @@ TASKS = [
     ("eu_compliance_tweet",     task_eu_compliance_tweet,      28800, 1300),  # 8h — Compliance Tweet + Telegram
     ("eu_compliance_lead_scan", task_eu_compliance_lead_scan,  14400, 1310),  # 4h — Shopify AI-Act Violation Scan
     ("eu_compliance_zvg",       task_eu_compliance_zvg,        14400, 1320),  # 4h — ZVG NRW Lead-Radar Update
+    # ── BPI System Tasks ─────────────────────────────────────────────────────
+    ("bpi_sys01_ki_leasing",    task_bpi_sys01_ki_leasing_report,   86400, 7300),  # tägl. 08:30 — KI-Leasing Reports
+    ("bpi_sys02_trend_velocity",task_bpi_sys02_trend_velocity,        7200, 7310),  # alle 2h — Trend Velocity Scan
+    ("bpi_sys03_ghost_vendor",  task_bpi_sys03_ghost_vendor,         86400, 7320),  # tägl. 06:00 — Ghost Vendor Network
+    # BPI SYS-04 AI Act Scanner → bereits registriert als ("ai_act", task_ai_act_scanner, 86400, 3140)
+    ("bpi_sys05_insolvenz",     task_bpi_sys05_insolvenz_arbitrage,  86400, 7330),  # tägl. 09:30 — Insolvenz Arbitrage
+    ("bpi_sys06_migration_rush",task_bpi_sys06_migration_rush,       14400, 7340),  # alle 4h — Migration Rush Monitor
+    ("bpi_sys07_ai_citation",   task_bpi_sys07_ai_citation_seo,      21600, 7350),  # alle 6h — AI Citation SEO
+    ("bpi_sys08_intelligence",  task_bpi_sys08_intelligence_broker,  86400, 7360),  # tägl. 09:30 — Intelligence Broker
 ]
 
 
