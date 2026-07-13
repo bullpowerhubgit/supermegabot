@@ -604,6 +604,9 @@ async def task_content_calendar() -> str:
 async def task_social_autoposter() -> str:
     """Auto-post zu FB, IG, LinkedIn, YouTube, Reddit via social_autoposter.py."""
     try:
+        from modules.task_guard import task_ran_recently
+        if await task_ran_recently("social_autoposter", min_interval_hours=4):
+            return "Social AutoPost: bereits in den letzten 4h gepostet — überspringe"
         from modules.social_autoposter import run_social_cycle
         result = await run_social_cycle()
         posted  = result.get("posted", 0)
@@ -3168,6 +3171,9 @@ async def task_viral_window_scan() -> str:
 async def task_viral_promo_poster() -> str:
     """Viral Promo Poster — Multi-Channel Marketing für den Viral Window Scanner."""
     try:
+        from modules.task_guard import task_ran_recently
+        if await task_ran_recently("viral_promo", min_interval_hours=12):
+            return "ViralPromo: bereits in den letzten 12h gelaufen — überspringe"
         from modules.viral_promo_poster import run_promo_cycle
         result = await run_promo_cycle()
         count  = result.get("posted_count", 0)
