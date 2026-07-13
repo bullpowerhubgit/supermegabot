@@ -71,6 +71,7 @@ SCAN_CATEGORIES: list[tuple[str, list[str]]] = [
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _db() -> sqlite3.Connection:
+    Path(_DB).parent.mkdir(parents=True, exist_ok=True)
     con = sqlite3.connect(str(_DB))
     con.row_factory = sqlite3.Row
     return con
