@@ -110,7 +110,7 @@ LEGAL_REFERENCES = [
     ("Art. 49", "CE-Kennzeichnung und Konformitaetserklaerung"),
     ("Art. 72", "Marktuberwachung und Kontrolle"),
     ("Anhang III", "Liste der Hochrisiko-KI-Systeme"),
-    ("Art. 99", "Sanktionen — bis zu 35 Mio. EUR oder 7% des Jahresumsatzes"),
+    ("Art. 99", "Sanktionen — bis zu 15 Mio. EUR oder 3% des Jahresumsatzes"),
 ]
 
 # ---------------------------------------------------------------------------
@@ -548,7 +548,7 @@ footer{{background:var(--card);border-top:1px solid var(--border);padding:2rem 0
 {notice}
 <div class="hero">
   <h1>EU AI Act Compliance<br><span style="color:#6366f1;">Jetzt handeln, nicht warten</span></h1>
-  <p>Ab 2025 gilt der EU AI Act verbindlich. Hochrisiko-KI-Systeme muessen dokumentiert, geprueft und zertifiziert sein &#8212; oder drohen Bussen bis zu <strong>35 Mio. EUR</strong>.</p>
+  <p>Ab 2025 gilt der EU AI Act verbindlich. Hochrisiko-KI-Systeme muessen dokumentiert, geprueft und zertifiziert sein &#8212; oder drohen Bussen bis zu <strong>15 Mio. EUR</strong>.</p>
 </div>
 
 <div class="quick-check">
