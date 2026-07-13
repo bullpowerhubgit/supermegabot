@@ -6563,6 +6563,48 @@ async def task_bpi_sys08_intelligence_broker() -> str:
         return f"BPI SYS-08 Fehler: {ex}"
 
 
+async def task_bpi_sys10_bulk_outreach() -> str:
+    """SYS-10: Täglich 100 Kalt-Emails an Multiplikatoren (Berater, Agenturen, Verbände) — 30% Provision-Pitch."""
+    try:
+        from modules.email_outreach_bulk import run_outreach, run_followup, init_db, _seed_companies
+        init_db()
+        _seed_companies()
+        result = await run_outreach(daily_limit=100)
+        followup = await run_followup(daily_limit=30)
+        return f"SYS-10 Bulk Outreach: {result['sent']} Emails ✅, Fehler: {result['errors']}, Follow-Ups: {followup['followup_sent']}"
+    except Exception as ex:
+        return f"SYS-10 Fehler: {ex}"
+
+
+async def task_bpi_sys13_partner_channel() -> str:
+    """SYS-13: Stündlicher Reply-Scan — Interessenten → Partner-Kit → Provision-Tracking."""
+    try:
+        from modules.partner_channel import run_reply_scanner
+        result = await run_reply_scanner()
+        return f"SYS-13 Partner Channel: {result['new_partners']} neue Partner, {result['unsubscribes']} Abmeldungen ✅"
+    except Exception as ex:
+        return f"SYS-13 Fehler: {ex}"
+
+
+async def task_bpi_sys18_newsletter() -> str:
+    """SYS-18: Monatliche Mandanten-Newsletter für Steuerberater-Abonnenten generieren + versenden."""
+    try:
+        from modules.sys18_newsletter_ki import task_sys18_monthly_newsletters
+        return await task_sys18_monthly_newsletters()
+    except Exception as ex:
+        return f"SYS-18 Fehler: {ex}"
+
+
+async def task_bpi_delivery_pending() -> str:
+    """Service-Delivery: Alle offenen Bestellungen (status='pending') automatisch abarbeiten."""
+    try:
+        from modules.service_delivery import process_pending_orders
+        result = await process_pending_orders()
+        return f"Delivery: {result['delivered']} geliefert, {result['failed']} Fehler ✅"
+    except Exception as ex:
+        return f"Delivery Fehler: {ex}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -6915,6 +6957,18 @@ TASKS = [
     ("bpi_sys06_migration_rush",task_bpi_sys06_migration_rush,       14400, 7340),  # alle 4h — Migration Rush Monitor
     ("bpi_sys07_ai_citation",   task_bpi_sys07_ai_citation_seo,      21600, 7350),  # alle 6h — AI Citation SEO
     ("bpi_sys08_intelligence",  task_bpi_sys08_intelligence_broker,  86400, 7360),  # tägl. 09:30 — Intelligence Broker
+    # ── SYS-10: Bulk Outreach 1000 Multiplier-Firmen ─────────────────────────
+    ("bpi_sys10_bulk_outreach",  task_bpi_sys10_bulk_outreach,        86400, 7400),  # tägl. 09:00 — 100 Emails an Multiplikatoren
+    # ── SYS-13: Partner Channel / Reseller CRM ───────────────────────────────
+    ("bpi_sys13_partner_channel", task_bpi_sys13_partner_channel,      3600, 7500),  # stündl. — Reply-Scan + Onboarding
+    # ── SYS-18: Steuerberater Newsletter KI (€149/Monat) ─────────────────────
+    ("bpi_sys18_newsletter",      task_bpi_sys18_newsletter,        2592000, 7600),  # monatl. — Newsletter an Abonnenten
+    # ── Service Delivery: Pending Orders abarbeiten ───────────────────────────
+    ("bpi_delivery_pending",      task_bpi_delivery_pending,           1800, 7700),  # alle 30min — offene Bestellungen
+    # ── SYS-23: Unternehmensverkauf-Exposé KI (€499 einmalig) ────────────────
+    # Nur Delivery-Pipeline — kein Scheduler-Task (on-demand via Stripe-Webhook)
+    # ── SYS-37: Wohnungswirtschaft Mieterbrief KI (€249/Monat) ──────────────
+    # Monatsreport an Abonnenten (on-demand via sys37_mieterbrief_ki.py)
 ]
 
 

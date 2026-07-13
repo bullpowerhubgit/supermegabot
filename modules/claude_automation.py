@@ -6,24 +6,25 @@ Setup:
     pip install anthropic
     export ANTHROPIC_API_KEY="sk-ant-..."      # Key von console.anthropic.com
 
-Import ist immer sicher — der Client wird lazy erzeugt. Fehlt der Key,
+Import ist immer sicher – der Client wird lazy erzeugt. Fehlt der Key,
 schlägt erst der erste Funktionsaufruf fehl (RuntimeError), nicht der Import.
 """
-from __future__ import annotations
 
-import base64
-import json
-import logging
 import os
+import json
+import base64
+import logging
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Optional
+
+from anthropic import Anthropic
 
 log = logging.getLogger(__name__)
 
-MODEL = os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-6")       # schnell + stark
-FAST_MODEL = os.getenv("ANTHROPIC_FAST_MODEL", "claude-haiku-4-5-20251001")  # billig, Massen-Tasks
+MODEL = "claude-sonnet-5"                    # schnell + stark; Alternative: "claude-opus-4-8"
+FAST_MODEL = "claude-haiku-4-5-20251001"     # billig, für Massen-Tasks
 
-_CLIENT: Optional[Any] = None
+_CLIENT: Optional[Anthropic] = None
 
 
 # ---------------------------------------------------------------------------
@@ -31,45 +32,22 @@ _CLIENT: Optional[Any] = None
 # ---------------------------------------------------------------------------
 def is_configured() -> bool:
     """True, wenn ein API-Key gesetzt ist. Für den Dashboard-Health-Check."""
-    key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
-    return bool(key) and not key.startswith("your_")
+    return bool(os.environ.get("ANTHROPIC_API_KEY"))
 
 
-def _client():
+def _client() -> Anthropic:
     """Lazy Singleton. Erzeugt den Client erst beim ersten Aufruf."""
     global _CLIENT
     if _CLIENT is None:
-        key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+        key = os.environ.get("ANTHROPIC_API_KEY")
         if not key:
             raise RuntimeError(
                 "ANTHROPIC_API_KEY ist nicht gesetzt. "
                 "Key auf console.anthropic.com erzeugen und als Umgebungsvariable setzen."
             )
-        from anthropic import Anthropic
         log.debug("Anthropic-Client wird initialisiert (Modell: %s)", MODEL)
         _CLIENT = Anthropic(api_key=key)
     return _CLIENT
-
-
-def ping() -> Tuple[bool, str]:
-    """Health-Check: Key gültig? Credits vorhanden?"""
-    if not is_configured():
-        return False, "ANTHROPIC_API_KEY nicht gesetzt"
-    try:
-        _client().messages.create(
-            model=FAST_MODEL,
-            max_tokens=1,
-            messages=[{"role": "user", "content": "ping"}],
-        )
-        return True, "Verbunden"
-    except Exception as exc:
-        msg = str(exc)
-        if "credit balance is too low" in msg.lower():
-            return True, "Key OK — Credits aufladen (console.anthropic.com)"
-        if "401" in msg or "authentication" in msg.lower():
-            return False, "Key ungültig"
-        log.warning("Anthropic ping fehlgeschlagen: %s", msg[:120])
-        return False, msg[:120]
 
 
 # ---------------------------------------------------------------------------
@@ -86,18 +64,6 @@ def ask(prompt: str, system: str = "", model: str = MODEL, max_tokens: int = 200
     return resp.content[0].text
 
 
-async def ask_async(prompt: str, system: str = "", max_tokens: int = 2000) -> str:
-    """Wie ask(), mit Fallback auf ai_client wenn Anthropic-Credits leer."""
-    try:
-        return ask(prompt, system=system, max_tokens=max_tokens)
-    except Exception as exc:
-        if "credit balance is too low" not in str(exc).lower():
-            raise
-        log.info("Anthropic-Credits leer — Fallback auf ai_client")
-        from modules.ai_client import ai_complete
-        return await ai_complete(prompt, system=system, max_tokens=max_tokens)
-
-
 # ---------------------------------------------------------------------------
 # 2. Strukturierte Daten extrahieren (garantiertes JSON)
 #    -> Rechnungen, E-Mails, Formulare, Produktdaten ...
@@ -112,15 +78,10 @@ def extract(text: str, schema: dict) -> dict:
             "description": "Gib die extrahierten Daten zurück.",
             "input_schema": {"type": "object", "properties": schema, "required": list(schema)},
         }],
-        tool_choice={"type": "tool", "name": "ergebnis"},
+        tool_choice={"type": "tool", "name": "ergebnis"},   # erzwingt strukturierte Ausgabe
         messages=[{"role": "user", "content": f"Extrahiere die Daten aus diesem Text:\n\n{text}"}],
     )
-    for block in resp.content:
-        if getattr(block, "type", None) == "tool_use":
-            return block.input
-    if resp.content and hasattr(resp.content[0], "input"):
-        return resp.content[0].input
-    return {}
+    return resp.content[0].input
 
 
 # ---------------------------------------------------------------------------
@@ -207,9 +168,6 @@ if __name__ == "__main__":
     if not is_configured():
         log.error("ANTHROPIC_API_KEY fehlt – bitte setzen.")
         raise SystemExit(1)
-
-    ok, detail = ping()
-    log.info("Ping: %s — %s", "OK" if ok else "FAIL", detail)
 
     # (a) Einfache Frage
     log.info(ask("Schreibe eine kurze, freundliche Terminbestätigung per E-Mail."))
