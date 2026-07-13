@@ -602,18 +602,25 @@ async def task_content_calendar() -> str:
 
 
 async def task_social_autoposter() -> str:
-    """Auto-post latest Shopify products to all social platforms."""
+    """Auto-post zu FB, IG, LinkedIn, YouTube, Reddit via social_autoposter.py."""
     try:
-        from modules.dropshipping_automation import DropshippingWorkflow
-        wf = DropshippingWorkflow()
-        products = await wf.find_trending_products(limit=3)
-        posted = 0
-        for p in products[:2]:
-            result = await wf.promote_to_social(p)
-            posted += sum(1 for v in result.values() if v.get("ok"))
-        return f"Social Auto-Post: {posted} Posts veröffentlicht"
+        from modules.social_autoposter import run_social_cycle
+        result = await run_social_cycle()
+        posted  = result.get("posted", 0)
+        failed  = result.get("failed", 0)
+        platforms = result.get("platforms", [])
+        return f"Social Auto-Post: {posted} Posts ✅ | {failed} Fehler | Plattformen: {', '.join(platforms)}"
+    except ImportError:
+        # Fallback: direkt posten
+        try:
+            from modules.social_autoposter import post_to_all
+            result = await post_to_all("🚀 SuperMegaBot — KI-Business-Automatisierung. Jetzt starten: https://ineedit.com.co #KI #Shopify #ECommerce")
+            ok = sum(1 for v in result.values() if isinstance(v, dict) and v.get("ok"))
+            return f"Social Post (Fallback): {ok}/{len(result)} Plattformen erfolgreich"
+        except Exception as e2:
+            return f"Social Autoposter Fallback Fehler: {e2}"
     except Exception as e:
-        return f"Fehler: {e}"
+        return f"Social Autoposter Fehler: {e}"
 
 
 async def task_etsy_sync() -> str:
@@ -6721,6 +6728,58 @@ async def task_bpi_delivery_pending() -> str:
         return f"Delivery Fehler: {ex}"
 
 
+async def task_mega_health_check() -> str:
+    """MEGA Command Center: 14 Plattformen parallel auf Gesundheit prüfen."""
+    try:
+        from modules.mega_health_checker import run_all_checks
+        result = await run_all_checks()
+        healthy = result.get("healthy", 0)
+        total   = result.get("total", 0)
+        issues  = result.get("issues", [])
+        detail  = " | ".join(issues[:3]) if issues else "alle OK"
+        return f"Health: {healthy}/{total} OK — {detail}"
+    except Exception as e:
+        return f"MegaHealth Fehler: {e}"
+
+
+async def task_revenue_snapshot() -> str:
+    """MEGA Command Center: Revenue-Snapshot von Stripe + DS24 + Shopify."""
+    try:
+        from modules.revenue_tracker import get_all_revenue
+        rev = await get_all_revenue()
+        total = rev.get("total_eur", 0.0)
+        stripe_rev = rev.get("stripe_eur", 0.0)
+        ds24_rev   = rev.get("ds24_eur", 0.0)
+        shop_rev   = rev.get("shopify_eur", 0.0)
+        return f"Revenue: €{total:.2f} heute (Stripe €{stripe_rev:.2f} | DS24 €{ds24_rev:.2f} | Shop €{shop_rev:.2f})"
+    except Exception as e:
+        return f"Revenue Fehler: {e}"
+
+
+async def task_platform_auto_fix() -> str:
+    """MEGA Command Center: Fehlende Webhooks/Tokens automatisch reparieren."""
+    try:
+        from modules.platform_auto_fixer import run_all_fixes
+        result = await run_all_fixes()
+        fixed  = result.get("fixed_count", 0)
+        checks = result.get("checks", 0)
+        return f"AutoFix: {checks} Checks, {fixed} Probleme behoben ✅"
+    except Exception as e:
+        return f"AutoFix Fehler: {e}"
+
+
+async def task_bpi_compliance_cycle() -> str:
+    """BPI Compliance Engine: Landing Pages prüfen + Stripe Health."""
+    try:
+        from modules.bpi_compliance_engine import run_bpi_compliance_cycle
+        result = await run_bpi_compliance_cycle()
+        ok    = result.get("pages_ok", 0)
+        total = result.get("total", 0)
+        return f"BPI Compliance: {ok}/{total} Landing Pages online ✅"
+    except Exception as e:
+        return f"BPI Compliance Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7092,6 +7151,11 @@ TASKS = [
     # Nur Delivery-Pipeline — kein Scheduler-Task (on-demand via Stripe-Webhook)
     # ── SYS-37: Wohnungswirtschaft Mieterbrief KI (€249/Monat) ──────────────
     # Monatsreport an Abonnenten (on-demand via sys37_mieterbrief_ki.py)
+    # ── MEGA COMMAND CENTER ───────────────────────────────────────────────────
+    ("mega_health_check",         task_mega_health_check,              7200, 8001),  # alle 2h — 14 Plattformen parallel
+    ("revenue_snapshot",          task_revenue_snapshot,               3600, 8002),  # stündl. — Stripe+DS24+Shopify Aggregat
+    ("platform_auto_fix",         task_platform_auto_fix,              1800, 8003),  # alle 30min — Webhooks+Keys Auto-Fix
+    ("bpi_compliance_cycle",      task_bpi_compliance_cycle,          86400, 8004),  # täglich — BPI Compliance Pages prüfen
 ]
 
 
