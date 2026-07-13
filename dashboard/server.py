@@ -11307,6 +11307,42 @@ async def create_app():
     app.router.add_get("/api/youtube/stats",         handle_yt_stats)
     log.info("YouTube Autopilot routes registered (/api/youtube/*)")
 
+    # ── Shop Scaling Engine ────────────────────────────────────────────────────
+    async def handle_scaling_stats(request):
+        try:
+            from modules.shop_scaling_engine import get_scaling_stats
+            result = await get_scaling_stats()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_scaling_run_cycle(request):
+        try:
+            from modules.shop_scaling_engine import run_daily_scaling_cycle
+            result = await run_daily_scaling_cycle()
+            return web.json_response({"ok": True, **result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_scaling_blast_leads(request):
+        try:
+            from modules.shop_scaling_engine import blast_all_queued_leads
+            body = {}
+            try:
+                body = await request.json()
+            except Exception:
+                pass
+            max_per_run = int(body.get("max_per_run", 100))
+            result = await blast_all_queued_leads(max_per_run=max_per_run)
+            return web.json_response({"ok": True, **result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_get( "/api/scaling/stats",      handle_scaling_stats)
+    app.router.add_post("/api/scaling/run-cycle",  handle_scaling_run_cycle)
+    app.router.add_post("/api/scaling/blast-leads", handle_scaling_blast_leads)
+    log.info("Shop Scaling Engine routes registered (/api/scaling/*)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
