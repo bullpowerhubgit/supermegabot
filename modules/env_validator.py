@@ -6,6 +6,7 @@ Wird als erstes Modul beim Start geladen.
 import os
 import logging
 import asyncio
+from pathlib import Path
 from typing import Optional
 
 try:

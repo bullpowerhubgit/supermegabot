@@ -11,6 +11,7 @@ Token: FACEBOOK_PAGE_TOKEN_AIITEC (gesetzt nach OAuth-Klick)
 from __future__ import annotations
 import asyncio, logging, os, random
 from datetime import datetime
+from pathlib import Path
 
 import aiohttp
 
@@ -26,7 +27,9 @@ TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9sw
 TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")     # system alerts only
 TG_CHANNEL     = os.getenv("TELEGRAM_CHANNEL_ID", "")  # marketing posts → public channel
 
-STORE_URL      = "https://ineedit.com.co"
+STORE_URL      = os.getenv("SHOP_CUSTOM_DOMAIN", os.getenv("SHOPIFY_CUSTOM_DOMAIN", "https://ineedit.com.co"))
+if not STORE_URL.startswith("http"):
+    STORE_URL = "https://" + STORE_URL
 DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 
 _IG_STATE_FILE = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "social")) / "ig_last_posted.json"

@@ -443,7 +443,8 @@ def _fallback_checkout_url() -> str:
         val = os.getenv(key, "")
         if val:
             return val
-    return "https://ineedit.com.co"
+    domain = os.getenv("SHOPIFY_CUSTOM_DOMAIN", os.getenv("SHOP_CUSTOM_DOMAIN", "ineedit.com.co"))
+    return "https://" + domain if not domain.startswith("http") else domain
 
 
 def checkout_email_html(primary: Dict, offers: List[Dict]) -> str:
