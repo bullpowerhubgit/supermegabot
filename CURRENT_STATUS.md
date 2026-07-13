@@ -1,135 +1,81 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-13 v11 — MEGA COMMAND CENTER · MEGADASH LIVE · FULL START SCRIPT**
+**Stand: 2026-07-13 v12 — AIITEC B2B OUTREACH MACHINE LIVE · 284 TASKS AKTIV**
 
-## ✅ BPI 8-SYSTEME LIVE (2026-07-13)
+## ✅ SYSTEM-STATUS (2026-07-13 ~20:15 UTC)
 
-| System | Modul | Status | Potenzial |
-|--------|-------|--------|-----------|
-| SYS-01 KI-Mitarbeiter-Leasing | ki_leasing_engine.py + ki_leasing_stripe_portal.py | ✅ LIVE | €85k/mo |
-| SYS-02 Trend Velocity Pipeline | trend_velocity_pipeline.py | ✅ LIVE | €30k/event |
-| SYS-03 Ghost Vendor Network | ghost_vendor_network.py | ✅ LIVE | €20k/mo |
-| SYS-04 EU AI Act Compliance | ai_act_scanner.py + ai_act_stripe_reports.py | ✅ LIVE | €60k/mo |
-| SYS-05 Insolvenz Arbitrage | insolvenz_arbitrage.py | ✅ LIVE | €28k/batch |
-| SYS-06 Platform Migration Rush | migration_rush.py | ✅ BEREIT | €150k/event |
-| SYS-07 AI-Citation SEO | ai_citation_seo.py | ✅ LIVE | €40k/mo |
-| SYS-08 Intelligence Broker | intelligence_broker.py | ✅ LIVE | €18k/mo |
+| System | Status | Details |
+|--------|--------|---------|
+| Railway Health | ✅ OK | circuits_open: [] |
+| GitHub Actions | ✅ All green | Deploy + Autopost |
+| Scheduler Tasks | ✅ 284 Tasks | 29 aktiv laufend |
+| Supabase | ✅ Free Plan | 27MB / 500MB |
 
-**Theoretisches Maximum: €375.000/Monat**
+## ✅ SOCIAL MEDIA (alle aktiv)
 
-## ✅ BPI EXTENSION — VOLLAUTOMATISCHE SERVICE-DELIVERY (2026-07-13)
+| Platform | Status | Details |
+|----------|--------|---------|
+| TikTok | ✅ | AIITEC (@aiitec) — Sandbox OAuth, auto-refresh alle 8h |
+| Facebook/Instagram | ✅ | Permanenter Page Token (AiiteC 1016738738178786) |
+| LinkedIn | ✅ | Rudolf Sarkany — token verifiziert |
+| Reddit | ✅ | u/Upper-Competition505 (REDDIT_TOKEN_V2) |
+| Twitter | ✅ | Cookie-Auth @rudibot84 (letzter Post 12. Juli) |
+| Discord | ✅ | Gateway connected |
+| Pinterest | ❌ | Trial-Mode — manueller Pinterest-Review nötig |
 
-| System | Beschreibung | Preis | Stripe Link |
-|--------|-------------|-------|-------------|
-| SYS-10 | Bulk-Outreach (100 E-Mails/Tag an Multiplikatoren) | intern | SQLite: bulk_outreach.db |
-| SYS-13 | Reply-Scanner → Auto-Partner-Onboarding (30% Provision) | intern | stündlich |
-| SYS-18 | Steuerberater Mandanten-Newsletter KI | €149/mo | buy.stripe.com/dRm6oJgM23HIe2YgNg4F33L |
-| SYS-23 | Unternehmensverkauf-Exposé KI (5 M&A-Dokumente) | €499 | buy.stripe.com/4gMfZjgM27XYcYU1Sm4F33I |
-| SYS-37 | Wohnungswirtschaft Mieterbrief KI (unbegrenzt) | €249/mo | buy.stripe.com/6oUeVf8fw5PQ5wsfJc4F33M |
+## ✅ REVENUE PIPELINE
 
-**12 weitere Stripe Payment Links live:**
-- Shopify KI-Texte €79 · Stellenanzeigen €99 · Gastro Texte €149 · Kfz-Texte €99
-- Handwerker-KI €79 · Makler-KI €129 · Rechtstexte €49
-- Fitness Content €69/mo · Social Kalender €69/mo
+| System | Status | Details |
+|--------|--------|---------|
+| Shopify | ✅ | 13k+ Produkte, ineedit.com.co |
+| DS24 | ✅ | Produkt 668035 (AI Income Machine) — genehmigt |
+| Stripe | ✅ | sk_live_...quA — verifiziert |
+| Klaviyo | ✅ | pk_VaCYq3_... — 5 Listen |
+| Mailchimp | ✅ | us5 Account, a734f3f... |
 
-**Vercel Landing Pages (alle deployed):**
-etsy-gumroad-8zig · digifabrikos · digifabrikk · hospital-wage-calculator-vercel-zzdj
-hospital-wage-calculator-vercel · gistore · gumroad-discord · telegram-bot · lead-capture
+## 🆕 NEUE MODULE (2026-07-13)
 
-**Stripe Webhook registriert:** whsec_5YjaeusZm1XCZhflT6DpqkK9ZJMtHDOL
-→ checkout.session.completed / customer.subscription.created / payment_intent.succeeded
-→ handle_bpi_stripe_webhook() → deliver_order() → Gmail SMTP Lieferung in 48h
+### AIITEC B2B Outreach Machine (modules/aiitec_outreach_machine.py)
+- 118 DACH-Großunternehmen in Supabase (DAX, MDAX, Hidden Champions)
+- 30 personalisierte Emails/Tag tägl. 09:30 Uhr via Gmail (aiitecbuuss@gmail.com)
+- 3 Tracks: A=Corporate-IT, B=Compliance/EU-AI-Act, C=Finance/Factoring
+- 9 Templates (Initial + Follow-up 5d + Follow-up 10d)
+- Im Scheduler registriert: aiitec_b2b_outreach (86400s, Delay 7390s)
+- Supabase-Tabellen: aiitec_companies (118), aiitec_campaigns, aiitec_contacts, aiitec_email_events
 
-## ✅ SCHEDULER (alle Systeme eingeplant)
+### Weitere neue Module (1becc41f):
+- modules/abandoned_cart_recovery.py: 3-Stufen Abandoned-Cart Email-Sequenz
+- modules/conversion_engine.py: Shopify Conversion-Scan + Funnel-Analyse
+- modules/roas_optimizer.py: Meta/Google Ads ROAS Auto-Pause (<1.2x) + Scale (>3x)
+- modules/env_validator.py: Fail-Fast API-Key-Validierung alle 24h
 
-| Zeit | Task |
-|------|------|
-| 08:30 | KI-Leasing Daily Report |
-| 09:00 | SYS-10 Bulk Outreach (100 E-Mails) |
-| Alle 2h | Trend Velocity Scan |
-| 06:00 | Ghost Vendor Daily |
-| 09:30 | Insolvenz Arbitrage + Intelligence Broker |
-| Alle 4h | Migration Rush Monitor |
-| Alle 6h | AI Citation SEO |
-| 30min | BPI Service Delivery (pending orders) |
-| Monatl. | SYS-18 Newsletter an Abonnenten |
-| 12h | Token Health Check (Klaviyo, Shopify, Stripe, Telegram, Meta) |
+### BPI SYS-06 + Revenue-Module (71ab2e3f / e4fa2b42):
+- Migration Rush Monitor (alle 4h), VAT OSS Engine, GPSR Compliance, ZVG Hourly, HS-Code SaaS
 
-## ✅ FINAL SYSTEM TEST (2026-07-09 ~15:45 UTC)
+## ⏳ OFFENE PUNKTE (manuell nötig)
 
-| Test | Ergebnis |
-|------|----------|
-| Python Dateien | **0 Syntax-Fehler** ✅ |
-| Scheduler | **140 Tasks · 18 gelaufen · 0 Fehler** ✅ |
-| Circuit Breakers | **0 offen** ✅ |
-| insolvenz_radar_scan | **8 echte GmbH-Leads** ✅ (Google News RSS) |
-| handelsregister | **✅ 100% OK** (JSF 3-Step-Flow) |
-| zvg_radar | **✅ 100% OK** (0 Leads = keine Zwangsversteigerungen) |
-| ai_act | **✅ 100% OK** |
-| outreach_auto | **✅ 100% OK** |
-| Demo-Daten | **ALLE ENTFERNT** ✅ |
-| Railway | **auto-deploy aktiv** ✅ |
-| Shopify | **13.404 Produkte live** ✅ |
-| DS24 | **€111 · 3 Bestellungen** ✅ |
+| Prio | Task | Aktion |
+|------|------|--------|
+| 1 | Anthropic Credits | console.anthropic.com aufladen — social-drafts 503 |
+| 2 | DS24 Produkt 704677 | digistore24.com → Vendor → Produkte → 704677 → Zur Freigabe einreichen |
+| 3 | TikTok Shop Antrag | seller.tiktok.com → Ausweis hochladen + neu einreichen |
+| 4 | Pinterest OAuth | developers.pinterest.com → Standard-Zugang beantragen |
 
-## ✅ SOCIAL MEDIA (5/7 aktiv)
+## SECURITY FIXES (2026-07-13)
+- 13 Dateien mit Credentials aus git entfernt
+- shpat_49c97 von Shopify revoked (war in git history)
+- .gitignore erweitert
 
-| Plattform | Status | Hinweis |
-|-----------|--------|---------|
-| ✅ Twitter | @rudibot84 — Cookie-Auth tägl. auto-refresh | |
-| ✅ Meta/Instagram | @aaiitecc — PAGE_TOKEN_AIITEC (nie ablaufend) | Auto-Refresh-Modul aktiv |
-| ✅ Reddit | u/i_want_that_i_need_i — REDDIT_TOKEN_V2 | |
-| ✅ YouTube | Rudolf Sarkany — Data API aktiv | |
-| ✅ Discord | Gateway connected | |
-| ✅ TikTok | @aiitec AIITEC — Token gültig, display_name=AIITEC | Sandbox App sbaw5uysvdzyc9p5me, scope: user.info.basic,video.list,video.publish |
-| ⏳ Pinterest | PINTEREST_ACCESS_TOKEN fehlt | Trial-Mode, multi-day Approval |
+## GUELTIGE CREDENTIALS (Stand 2026-07-13)
+- STRIPE_SECRET_KEY: sk_live_...quA
+- FACEBOOK_PAGE_TOKEN_AIITEC: permanent (AiiteC Page 1016738738178786)
+- FACEBOOK_IG_ACCESS_TOKEN: bis 2026-09-06 (@aaiitecc)
+- LINKEDIN_ACCESS_TOKEN: gueltig
+- TIKTOK_SANDBOX_CLIENT_KEY: sbaw5uysvdzyc9p5me (auto-refresh alle 8h)
+- REDDIT_TOKEN_V2: u/Upper-Competition505
+- Twitter: Cookie-Auth @rudibot84
+- GMAIL aiitecbuuss: rqcd uzim npsl odgw
+- GMAIL bullpowersrtkennels: dufx vggm xsix lrkp
 
-**DS24-Posts ✅ GELÖST (2026-07-13):** 710277+704677 (nicht genehmigt) → 668035 (AI Income Machine, genehmigt). 43 Dateien bereinigt, SOCIAL_POSTING_PAUSED wieder auf 0.
-
-**TikTok ✅ GELÖST (2026-07-13):** Sandbox App "~4672" = sbaw5uysvdzyc9p5me
-→ Token via Refresh erneuert: `act.hr9y5Fd4yrp...SOzh...!4672.e1` (gültig 24h, auto-refresh via TIKTOK_REFRESH_TOKEN)
-→ TIKTOK_CLIENT_KEY + TIKTOK_CLIENT_SECRET in Railway auf Sandbox-App-Werte gesetzt
-→ API-Test: display_name=AIITEC, open_id=-000z3jxi7oiYBNg4A3dxgsM7d640JUnvPJH ✅
-
-## ✅ API-CREDENTIALS (Stand 2026-07-13)
-
-| Credential | Status |
-|-----------|--------|
-| FACEBOOK_PAGE_TOKEN_AIITEC | ✅ PAGE, nie ablaufend, gültig |
-| META_USER_TOKEN | ❌ expired (467 — user logged out) — nicht für Posting benötigt |
-| FACEBOOK_IG_ACCESS_TOKEN | ❌ nicht in .env — evtl. nur in Railway gesetzt |
-| Twitter Cookie-Auth @rudibot84 | ✅ täglich auto-refresh |
-| Reddit REDDIT_TOKEN_V2 | ✅ in Railway |
-| LINKEDIN_ACCESS_TOKEN | ✅ gültig (2026-07-13 verifiziert) |
-| TELEGRAM_BOT_TOKEN @DudiRudibot | ✅ |
-| ANTHROPIC_API_KEY | ⚠️ CREDITS AUFLADEN (social-drafts → 503) |
-| GMAIL aiitecbuuss | ✅ rqcd uzim npsl odgw |
-| GMAIL bullpowersrtkennels | ✅ dufx vggm xsix lrkp |
-| Railway | ✅ bezahlt · auto-deploy |
-
-## ✅ MEGA COMMAND CENTER (2026-07-13 v11)
-
-| Modul | Datei | Status |
-|-------|-------|--------|
-| Health Checker | modules/mega_health_checker.py | ✅ 14 Plattformen parallel |
-| Revenue Tracker | modules/revenue_tracker.py | ✅ Stripe+DS24+Shopify |
-| Platform Auto-Fixer | modules/platform_auto_fixer.py | ✅ Auto-Fix Webhooks/Keys |
-| Social Autoposter | modules/social_autoposter.py | ✅ FB+IG+YT+LI+TT+Reddit |
-| MegaDash Artifact | claude.ai/code/artifact/ed49c90e | ✅ LIVE Dark-Theme Dashboard |
-| Full-Start Script | scripts/full_start.py | ✅ One-Click System Start |
-
-**MegaDash URL:** https://claude.ai/code/artifact/ed49c90e-33d5-40b3-9c18-da24e5ffa6f8
-**Full Start:** `python3 scripts/full_start.py`
-
-## ⏳ OFFENE PUNKTE
-
-1. **PRIO: Anthropic Credits** → console.anthropic.com aufladen (/api/seo/social-drafts → 503)
-2. **Twitter/X Keys** → developer.twitter.com → neue Keys holen (alle 5 expired: API_KEY, API_SECRET, BEARER, ACCESS_TOKEN, ACCESS_TOKEN_SECRET) → .env + Railway setzen
-3. **Pinterest OAuth**: PINTEREST_ACCESS_TOKEN (Trial-Mode — multi-day Approval, nicht automatisierbar)
-4. **Instagram FACEBOOK_IG_ACCESS_TOKEN**: In Railway prüfen ob gesetzt; falls nicht → IG Business API → User Token holen
-5. **TikTok video.publish Scope**: developers.tiktok.com → Sandbox App → "+ Add products" → Content Posting API → Apply changes → neues OAuth-Token
-6. **Reddit Contributor**: Earnings nach ~7 Tagen auf reddit.com/premium/contributor
-
-## 🔧 SYSTEM
-- Railway: https://supermegabot-production.up.railway.app/health ✅ · 140 Tasks
-- Shopify: 13.404 Produkte · autopilot-store-suite-fmbka.myshopify.com
-- GitHub: bullpowerhubgit/supermegabot · auto-deploy aktiv
+## SYSTEM (2026-07-13)
+- Railway: https://supermegabot-production.up.railway.app/health OK
+- Letzter Commit: 94d9e370 (AIITEC B2B Outreach im Scheduler)
