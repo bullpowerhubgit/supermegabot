@@ -33,6 +33,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Any
 
 import aiohttp
+import sqlite3
 
 log = logging.getLogger("MultiProductOutreach")
 logging.basicConfig(level=logging.INFO,
@@ -41,6 +42,30 @@ logging.basicConfig(level=logging.INFO,
                     handlers=[logging.StreamHandler(sys.stdout)])
 
 _BASE = Path(__file__).parent.parent
+_LOCAL_DB = _BASE / "data" / "mpo_sent.db"
+
+def _init_local_db() -> None:
+    _LOCAL_DB.parent.mkdir(parents=True, exist_ok=True)
+    con = sqlite3.connect(_LOCAL_DB)
+    con.execute("CREATE TABLE IF NOT EXISTS sent (email TEXT, product_key TEXT, sent_at TEXT, PRIMARY KEY(email, product_key))")
+    con.commit(); con.close()
+
+def _local_already_sent(email: str, product_key: str) -> bool:
+    try:
+        _init_local_db()
+        con = sqlite3.connect(_LOCAL_DB)
+        row = con.execute("SELECT 1 FROM sent WHERE email=? AND product_key=?", (email, product_key)).fetchone()
+        con.close(); return bool(row)
+    except Exception: return False
+
+def _local_mark_sent(email: str, product_key: str) -> None:
+    try:
+        _init_local_db()
+        con = sqlite3.connect(_LOCAL_DB)
+        con.execute("INSERT OR IGNORE INTO sent(email,product_key,sent_at) VALUES(?,?,?)",
+                    (email, product_key, datetime.now(timezone.utc).isoformat()))
+        con.commit(); con.close()
+    except Exception: pass
 
 def _load_env():
     ef = _BASE / ".env"
@@ -457,25 +482,46 @@ async def seed_companies() -> int:
     return count
 
 
+_LOCAL_COMPANIES_LIST: List[dict] = []
+for _c in _EXTRA_COMPANIES:
+    _c2 = dict(_c)
+    _c2.setdefault("product_key", _best_product(_c2.get("branche", "")))
+    _LOCAL_COMPANIES_LIST.append(_c2)
+
 async def _get_queue(limit: int) -> List[dict]:
-    """Nächste N Unternehmen aus mpo_companies (status='new')."""
+    """Nächste N Unternehmen aus mpo_companies (status='new'). Fallback: lokale Liste."""
     r = await _sb("GET", "/rest/v1/mpo_companies",
                   params={"status": "eq.new", "order": "id.asc",
                           "limit": str(limit), "select": "*"})
-    return r or []
+    if r is not None:
+        return r
+    # Supabase PostgREST nicht verfügbar — nutze lokale Liste
+    log.warning("Supabase REST nicht verfügbar — nutze lokale Unternehmensliste (%d Einträge)", len(_LOCAL_COMPANIES_LIST))
+    queue = []
+    for c in _LOCAL_COMPANIES_LIST:
+        email = c.get("email", "")
+        pk    = c.get("product_key", "")
+        if email and not _local_already_sent(email, pk):
+            queue.append({**c, "id": hash(email) & 0x7FFFFFFF})
+        if len(queue) >= limit:
+            break
+    return queue
 
 
 async def _already_sent(email: str, product_key: str) -> bool:
     r = await _sb("GET", "/rest/v1/mpo_email_sent",
                   params={"email": f"eq.{email}", "product_key": f"eq.{product_key}",
                           "select": "id", "limit": "1"})
-    return bool(r)
+    if r is not None:
+        return bool(r)
+    return _local_already_sent(email, product_key)
 
 
 async def _mark_sent(email: str, product_key: str) -> None:
-    await _sb("POST", "/rest/v1/mpo_email_sent",
-              body={"email": email, "product_key": product_key},
-              params={"on_conflict": "email,product_key"})
+    r = await _sb("POST", "/rest/v1/mpo_email_sent",
+                  body={"email": email, "product_key": product_key},
+                  params={"on_conflict": "email,product_key"})
+    _local_mark_sent(email, product_key)
 
 
 async def _mark_company_done(company_id: int) -> None:
