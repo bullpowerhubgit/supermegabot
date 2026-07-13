@@ -10432,11 +10432,11 @@ async def check_followup_leads() -> None:
         "Content-Type": "application/json",
     }
 
-    # Fetch leads created between 25h and 23h ago with followed_up = false (or missing)
+    # Fetch leads created between 25h and 23h ago that have not been followed up yet
     params = (
         f"created_at=gte.{ts_from}"
         f"&created_at=lte.{ts_to}"
-        f"&followed_up=is.false"
+        f"&followed_up_at=is.null"
     )
     try:
         async with _aio.ClientSession() as s:
@@ -10445,14 +10445,6 @@ async def check_followup_leads() -> None:
                 headers=headers,
                 timeout=_aio.ClientTimeout(total=10),
             )
-            if r.status == 400:
-                # Column may not exist — fall back to time-only filter
-                params_fallback = f"created_at=gte.{ts_from}&created_at=lte.{ts_to}"
-                r = await s.get(
-                    f"{sb_url}/rest/v1/leads?{params_fallback}",
-                    headers=headers,
-                    timeout=_aio.ClientTimeout(total=10),
-                )
             leads = await r.json()
     except Exception as e:
         log.error("check_followup_leads: fetch error: %s", e)
@@ -10481,13 +10473,13 @@ async def check_followup_leads() -> None:
         await _tg_notify(msg)
         log.info("Follow-up reminder sent for lead: %s", email)
 
-        # Mark as followed_up if the column exists and we have an id
+        # Mark as followed_up_at with current timestamp
         if lead_id:
             try:
                 async with _aio.ClientSession() as s:
                     await s.patch(
                         f"{sb_url}/rest/v1/leads?id=eq.{lead_id}",
-                        json={"followed_up": True},
+                        json={"followed_up_at": now.isoformat()},
                         headers={
                             **headers,
                             "Prefer": "return=minimal",
