@@ -6310,6 +6310,24 @@ async def task_tiktok_token_refresh() -> str:
     except Exception as e:
         return f"TikTok Token-Refresh Fehler: {e}"
 
+async def task_mail_error_guard() -> str:
+    """Gmail scannen — Fehler-Muster erkennen, Auto-Fix, Wiederholungen blockieren."""
+    try:
+        from modules.mail_error_guard import run_mail_error_guard
+        r = await run_mail_error_guard()
+        new  = r.get("new_errors", 0)
+        rep  = r.get("repeated", 0)
+        fix  = r.get("auto_fixed", 0)
+        if new == 0 and rep == 0:
+            return f"Mail Guard ✅ — keine Fehler in {r.get('accounts',0)} Konten"
+        return (
+            f"Mail Guard ⚠️ — {new} neue Fehler, {rep} Wiederholungen, "
+            f"{fix} auto-gefixt — Telegram-Alert gesendet"
+        )
+    except Exception as e:
+        return f"Mail Error Guard Fehler: {e}"
+
+
 async def task_monetization_launch() -> str:
     """Monetization Engine — BPI Blast + Email Outreach + Shopify Traffic + Revenue Report."""
     try:
@@ -6644,6 +6662,7 @@ TASKS = [
     # ── Monitoring (kostenlos) ────────────────────────────────────────────────
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
     ("monitor_hub",          task_monitor_hub,          1800,   60),  # 30 min — Gmail + Telegram + Scheduler
+    ("mail_error_guard",     task_mail_error_guard,      900,   90),  # 15 min — Gmail Fehler-Muster + Auto-Fix
     ("abandoned_cart_recovery", task_abandoned_cart_recovery, 3600, 120),  # 1h — Abandoned Cart E-Mail Recovery
     # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
