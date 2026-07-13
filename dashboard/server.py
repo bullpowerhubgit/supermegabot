@@ -11100,7 +11100,7 @@ async def create_app():
             limit = int(body.get("limit", 333))
             from modules.mass_outreach_1000 import run_batch_only, init_db
             init_db()
-            asyncio.create_task(run_batch_only(batch_limit=limit))
+            asyncio.create_task(run_batch_only(batch_size=limit))
             return web.json_response({"status": "batch_started", "limit": limit})
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
