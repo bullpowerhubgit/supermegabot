@@ -9862,6 +9862,8 @@ async def create_app():
     app.router.add_post("/api/viral/traffic",         handle_viral_traffic)
     app.router.add_post("/api/revenue/maximize",      handle_revenue_maximizer_run)
     app.router.add_post("/api/monetization/launch",   handle_monetization_launch)
+    app.router.add_post("/api/mail/error-guard",      handle_mail_error_guard)
+    app.router.add_get( "/api/mail/errors",           handle_mail_error_summary)
     app.router.add_post("/api/watchdog/run",           handle_mac_watchdog)
     app.router.add_post("/api/monitor/run",            handle_monitor_hub)
     app.router.add_post("/api/content-loop/run",      handle_content_loop)
@@ -12151,6 +12153,28 @@ async def handle_revenue_maximizer_run(req):
             logging.getLogger("RevMax").error("BG error: %s", exc)
     asyncio.ensure_future(_bg())
     return web.json_response({"status": "started", "message": "RevenueMaximizer läuft — Cart Recovery + Winback + Urgency"})
+
+
+async def handle_mail_error_guard(req):
+    """POST /api/mail/error-guard — Gmail scannen + Fehler-Muster + Auto-Fix."""
+    async def _bg():
+        try:
+            from modules.mail_error_guard import run_mail_error_guard
+            await run_mail_error_guard()
+        except Exception as exc:
+            logging.getLogger("MailGuard").error("BG error: %s", exc)
+    asyncio.ensure_future(_bg())
+    return web.json_response({"status": "started", "message": "Mail Error Guard läuft — Gmail scan + Fehler-Fingerprint + Auto-Fix"})
+
+
+async def handle_mail_error_summary(req):
+    """GET /api/mail/errors — alle offenen Fehler aus DB."""
+    try:
+        from modules.mail_error_guard import get_error_summary
+        r = await get_error_summary()
+        return web.json_response({"ok": True, **r})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
 
 
 async def handle_monetization_launch(req):
