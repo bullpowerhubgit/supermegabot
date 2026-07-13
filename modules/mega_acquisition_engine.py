@@ -107,6 +107,18 @@ def _build_smtp_pool() -> List[Dict]:
             "sent_today": 0,
             "last_reset": "",
         })
+    # Account 4: rudolfsarkany1984 / LinkedIn Gmail (500/day)
+    if _e("GMAIL_APP_PASSWORD_8"):
+        accounts.append({
+            "name":     "RudolfPersonal",
+            "user":     _e("GMAIL_USER_8", "rudolfsarkany1984@gmail.com"),
+            "password": _e("GMAIL_APP_PASSWORD_8",""),
+            "host":     "smtp.gmail.com",
+            "port":     587,
+            "daily_limit": 500,
+            "sent_today": 0,
+            "last_reset": "",
+        })
     return accounts
 
 # ── SQLite State DB ───────────────────────────────────────────────────────────
