@@ -30,7 +30,7 @@ _DB   = _BASE / "data" / "ebay_arbitrage.db"
 
 SHOPIFY_DOMAIN  = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
 SHOPIFY_TOKEN   = lambda: os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-SHOPIFY_VERSION = lambda: os.getenv("SHOPIFY_API_VERSION", "2024-01")
+SHOPIFY_VERSION = lambda: os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SHOPIFY_STORE   = lambda: os.getenv("SHOPIFY_STORE_URL", "https://ineedit.com.co")
 TELEGRAM_TOKEN  = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT   = lambda: os.getenv("TELEGRAM_CHAT_ID", "")

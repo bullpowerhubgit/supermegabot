@@ -44,7 +44,7 @@ def _shopify_cfg() -> Tuple[str, str, str]:
         os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         or os.getenv("SHOPIFY_STORE_DOMAIN", "")
     )
-    version = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not token or not domain:
         raise ValueError(
             "SHOPIFY_ADMIN_API_TOKEN (oder SHOPIFY_ACCESS_TOKEN) "

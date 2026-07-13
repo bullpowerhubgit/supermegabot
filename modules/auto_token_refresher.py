@@ -247,7 +247,7 @@ async def validate_shopify() -> dict:
     """Prüft Shopify Admin API Token."""
     shop  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
     token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-    ver   = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    ver   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not shop or not token:
         return {"ok": False, "platform": "shopify", "reason": "no credentials"}
     try:

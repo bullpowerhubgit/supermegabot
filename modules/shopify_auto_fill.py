@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 PEXELS_KEY      = os.getenv("PEXELS_API_KEY", "")
 UNSPLASH_KEY    = os.getenv("UNSPLASH_ACCESS_KEY", "")
 ALIEX_KEY       = os.getenv("ALIEXPRESS_APP_KEY", "536860")
