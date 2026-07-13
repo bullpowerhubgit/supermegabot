@@ -187,6 +187,13 @@ async def post_to_facebook(text: str) -> dict:
     """Postet auf AiiteC Facebook Page (1016738738178786) mit URL-Validierung."""
     if not FB_PAGE_TOKEN:
         return {"ok": False, "error": "FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
+    # Rate gate: max 1 Facebook post per 3 hours — verhindert Spam-Sperre
+    try:
+        from modules.brutus_core import _rate_gate
+        if not _rate_gate("facebook", 10800):
+            return {"ok": False, "error": "rate_limited — next post in >3h"}
+    except Exception:
+        pass
 
     dead_url = await _check_urls_in_text(text)
     if dead_url:
