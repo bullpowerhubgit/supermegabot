@@ -5315,6 +5315,20 @@ async def task_umsatzmaschine_daily() -> str:
         return f"Umsatzmaschine Fehler: {e}"
 
 
+async def task_priority_cluster() -> str:
+    """SYS-18 Kanzlei-Outreach + SYS-23 Shop-Upsell + SYS-37 Template→Mandat."""
+    try:
+        from modules.megabot_umsatzmaschine import run_priority_cluster
+        r = await run_priority_cluster(daily_limit=15)
+        cluster = r.get("priority_cluster", {})
+        s18  = cluster.get("sys18",  {}).get("sent", 0)
+        s23  = cluster.get("sys23",  {}).get("campaigns", 0)
+        s37  = cluster.get("sys37",  {}).get("sent", 0)
+        return f"Priority Cluster: SYS-18={s18} Mails, SYS-23={s23} Kampagnen, SYS-37={s37} Follow-ups ✅"
+    except Exception as e:
+        return f"Priority Cluster Fehler: {e}"
+
+
 async def task_mega_command_center() -> str:
     """BullPower MEGA Command Center — alle Revenue-Systeme parallel."""
     try:
@@ -6274,6 +6288,17 @@ async def task_outreach_engine_batch() -> str:
     except Exception as e:
         return f"Outreach Engine Fehler: {e}"
 
+async def task_industrie_outreach() -> str:
+    try:
+        from modules.industrie_outreach import run_industrie_outreach
+        result = await run_industrie_outreach(daily_limit=20)
+        sent = result.get("sent", 0) if isinstance(result, dict) else 0
+        fu   = result.get("followup", 0) if isinstance(result, dict) else 0
+        return f"Industrie-Outreach: {sent} neu, {fu} Follow-ups ✅"
+    except Exception as e:
+        return f"Industrie-Outreach Fehler: {e}"
+
+
 async def task_agent_teams_health() -> str:
     try:
         from modules.agent_teams import run_all_teams_health_check
@@ -6679,6 +6704,7 @@ TASKS = [
     ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
     ("revenue_engine",         task_revenue_engine,         7200,   69),  # 2h — Geld-Zyklus (DS24+Klaviyo)
     ("umsatzmaschine_daily",   task_umsatzmaschine_daily,   7200,   71),  # 2h — Vollautonom (Backup zum Boot-Loop)
+    ("priority_cluster",       task_priority_cluster,       43200,  580),  # 12h — SYS-18 Kanzlei+SYS-23 Shop+SYS-37 Mandate
     ("mega_command_center",    task_mega_command_center,    14400,  72),  # 4h — MEGA Geldmaschine (alle Systeme)
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
@@ -6843,6 +6869,7 @@ TASKS = [
     ("ki_leasing_reports",     task_ki_leasing_daily_reports, 86400, 3870),  # 24h — KI-Leasing Kunden-Reports per Email
     ("gumroad_brutus",         task_gumroad_brutus_traffic,  43200, 3890),  # 12h — Gumroad Stats + Traffic Swarm
     ("outreach_batch",         task_outreach_engine_batch,   43200, 3910),  # 12h — B2B Outreach 10 Nachrichten
+    ("industrie_outreach",     task_industrie_outreach,      86400,  620),  # 24h — Fabrik/Industrie 20 E-Mails täglich
     ("agent_teams_health",     task_agent_teams_health,      86400, 3930),  # 24h — Alle Agent-Teams Health Check
     ("tiktok_status",          task_tiktok_status_check,     21600, 3950),  # 6h  — TikTok Ads + Pixel Status
     ("telegram_svc_check",     task_telegram_services_check,  7200, 3970),  # 2h  — Telegram Service Monitoring
