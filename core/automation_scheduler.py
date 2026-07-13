@@ -5315,6 +5315,20 @@ async def task_umsatzmaschine_daily() -> str:
         return f"Umsatzmaschine Fehler: {e}"
 
 
+async def task_compliance_outreach_all() -> str:
+    """Vollautomatischer Outreach für alle 11 Compliance-Tools — täglich 15 Emails/Tool."""
+    try:
+        from modules.compliance_outreach_all import run_compliance_outreach_all
+        r = await run_compliance_outreach_all(per_tool_limit=15)
+        total = r.get("total_sent", 0)
+        by    = r.get("by_tool", {})
+        top   = sorted(by.items(), key=lambda x: x[1].get("sent", 0), reverse=True)[:3]
+        top_s = ", ".join(f"{k}:{v['sent']}" for k, v in top)
+        return f"Compliance Outreach ✅ — {total} Emails gesamt | Top: {top_s}"
+    except Exception as e:
+        return f"Compliance Outreach Fehler: {e}"
+
+
 async def task_priority_cluster() -> str:
     """SYS-18 Kanzlei-Outreach + SYS-23 Shop-Upsell + SYS-37 Template→Mandat."""
     try:
@@ -6722,6 +6736,7 @@ TASKS = [
     ("revenue_engine",         task_revenue_engine,         7200,   69),  # 2h — Geld-Zyklus (DS24+Klaviyo)
     ("umsatzmaschine_daily",   task_umsatzmaschine_daily,   7200,   71),  # 2h — Vollautonom (Backup zum Boot-Loop)
     ("priority_cluster",       task_priority_cluster,       43200,  580),  # 12h — SYS-18 Kanzlei+SYS-23 Shop+SYS-37 Mandate
+    ("compliance_outreach",    task_compliance_outreach_all, 86400, 640),  # 24h — 11 Compliance-Tools: je 15 Emails/Tag
     ("mega_command_center",    task_mega_command_center,    14400,  72),  # 4h — MEGA Geldmaschine (alle Systeme)
     ("insolvenz_radar_scan",   task_insolvenz_radar_scan,   43200,  70),  # 12h — Insolvenz Radar (tägl. 2x)
     ("insolvenz_autopost",     task_insolvenz_radar_autopost, 86400, 75), # 24h — Täglicher Top-Lead Autopost
