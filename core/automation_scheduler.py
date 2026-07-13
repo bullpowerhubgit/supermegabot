@@ -1350,6 +1350,18 @@ async def task_klaviyo_welcome_new_subs() -> str:
         return f"KlaviyoWelcome Fehler: {e}"
 
 
+async def task_shopify_title_germanizer() -> str:
+    """Alle 30min: 50 englische Produkttitel → Deutsch übersetzen (AI-basiert)."""
+    try:
+        from modules.shopify_title_germanizer import run_translation_batch
+        r = await run_translation_batch(max_per_run=50)
+        return (f"TitleDE: +{r.get('translated_this_run',0)} übersetzt | "
+                f"gesamt={r.get('total_translated',0)} | "
+                f"fehler={r.get('errors',0)}")
+    except Exception as e:
+        return f"TitleDE Fehler: {e}"
+
+
 async def task_klaviyo_auto_campaign() -> str:
     """Tägliche Klaviyo Kampagne mit neuem AI-Content."""
     try:
@@ -7196,6 +7208,7 @@ TASKS = [
     ("shopify_seo_auto",        task_shopify_seo_auto,       43200,   380),  # 12h — AI SEO für Shopify Produkte
     ("shopify_bulk_activate",   task_shopify_bulk_activate,   1800,    60),  # 30min — 300 archivierte → active bis fertig
     ("klaviyo_welcome_subs",    task_klaviyo_welcome_new_subs, 3600,   75),  # 1h — Welcome-Email + Code an neue Subscriber
+    ("shopify_title_de",        task_shopify_title_germanizer, 1800,  62),   # 30min — 50 englische Titel → Deutsch
     ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
     ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
     ("twitter_auto_post",       task_twitter_auto_post,      3600,   600),  # 1h — Auto-Tweet
