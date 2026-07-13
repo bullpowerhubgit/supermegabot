@@ -187,9 +187,33 @@ Gib NUR den fertigen Post-Text zurück, keine Erklärungen."""
         return _fallback_content(platform, angle, top_products)
 
 
+_SAFE_FALLBACK_PRODUCTS = [
+    ("Solar Powerstation", 90), ("Magnetic Car Phone Holder", 88),
+    ("Wireless Earbuds", 85), ("Smartwatch Fitness Tracker", 83),
+    ("Laptop Stand Adjustable", 82), ("LED Schreibtischlampe", 80),
+    ("Massage Pistole", 80), ("E-Bike Zubehör", 80),
+]
+
+def _pick_safe_product(top_products: List[Dict]) -> tuple:
+    """Wählt ein echtes Produkt-Keyword — filtert Artikel-Headlines heraus."""
+    news_signals = [
+        "year later", "years later", "owners say", "regret", "collecting dust",
+        "running trains", "running hospitals", "according to", "study says",
+        "tastenkürzel", "umschalttaste", "keyboard shortcut",
+    ]
+    for p in top_products:
+        kw = p.get("keyword", "")
+        if not kw or len(kw) > 80 or "|" in kw or len(kw.split()) > 7:
+            continue
+        if any(sig in kw.lower() for sig in news_signals):
+            continue
+        return kw, int(p.get("score", 80))
+    import random
+    fb = random.choice(_SAFE_FALLBACK_PRODUCTS)
+    return fb[0], fb[1]
+
 def _fallback_content(platform: str, angle: str, top_products: List[Dict]) -> str:
-    kw = top_products[0].get("keyword", "Portable Blender") if top_products else "Portable Blender"
-    sc = int(top_products[0].get("score", 78)) if top_products else 78
+    kw, sc = _pick_safe_product(top_products)
     if platform == "twitter":
         return f"🔥 Found '{kw}' trending (AI Score {sc}/100) 48h before it hit Amazon. Automated alerts + Shopify import. {SUBSCRIBE_URL} #dropshipping #ecommerce"
     if platform == "telegram":
@@ -507,10 +531,10 @@ async def post_instagram(caption: str, image_url: str = "") -> Dict:
         image_url = "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1080&q=80"
     try:
         async with _session() as s:
-            # Step 1: Create media container
+            # Step 1: Create media container (form data, not JSON)
             async with s.post(
                 f"https://graph.facebook.com/v25.0/{ig_id}/media",
-                json={"image_url": image_url, "caption": caption[:2200], "access_token": token}
+                data={"image_url": image_url, "caption": caption[:2200], "access_token": token}
             ) as r:
                 data = await r.json()
                 if "error" in data:
@@ -518,11 +542,23 @@ async def post_instagram(caption: str, image_url: str = "") -> Dict:
                 container_id = data.get("id")
             if not container_id:
                 return {"ok": False, "error": "no container_id returned"}
-            # Step 2: Publish
-            await asyncio.sleep(2)
+            # Step 2: Poll container status until FINISHED (max 30s)
+            for _ in range(6):
+                await asyncio.sleep(5)
+                async with s.get(
+                    f"https://graph.facebook.com/v25.0/{container_id}",
+                    params={"fields": "status_code", "access_token": token}
+                ) as r:
+                    status_data = await r.json()
+                    status_code = status_data.get("status_code", "")
+                    if status_code == "FINISHED":
+                        break
+                    if status_code == "ERROR":
+                        return {"ok": False, "error": f"Container processing failed: {status_data}"}
+            # Step 3: Publish
             async with s.post(
                 f"https://graph.facebook.com/v25.0/{ig_id}/media_publish",
-                json={"creation_id": container_id, "access_token": token}
+                data={"creation_id": container_id, "access_token": token}
             ) as r:
                 data = await r.json()
                 if "error" in data:
