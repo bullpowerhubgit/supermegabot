@@ -5336,6 +5336,9 @@ async def task_umsatzmaschine_daily() -> str:
 
 async def task_compliance_outreach_all() -> str:
     """Vollautomatischer Outreach für alle 11 Compliance-Tools — täglich 15 Emails/Tool."""
+    from modules.task_guard import task_ran_recently, record_task_run
+    if await task_ran_recently("compliance_outreach_all", min_interval_hours=20):
+        return "Compliance Outreach: übersprungen (lief vor <20h — Bounce-Schutz)"
     try:
         from modules.compliance_outreach_all import run_compliance_outreach_all
         r = await run_compliance_outreach_all(per_tool_limit=15)
@@ -5343,6 +5346,7 @@ async def task_compliance_outreach_all() -> str:
         by    = r.get("by_tool", {})
         top   = sorted(by.items(), key=lambda x: x[1].get("sent", 0), reverse=True)[:3]
         top_s = ", ".join(f"{k}:{v['sent']}" for k, v in top)
+        await record_task_run("compliance_outreach_all")
         return f"Compliance Outreach ✅ — {total} Emails gesamt | Top: {top_s}"
     except Exception as e:
         return f"Compliance Outreach Fehler: {e}"
@@ -5363,18 +5367,18 @@ async def task_priority_cluster() -> str:
 
 
 async def task_mega_command_center() -> str:
-    """BullPower MEGA Command Center — alle Revenue-Systeme parallel."""
+    """BullPower MEGA Command Center — Self-Healing + Revenue + Platform Checks."""
     try:
-        from modules.mega_command_center import run_mega_cycle
-        r = await run_mega_cycle()
-        if r.get("skipped"):
-            return f"MEGA skipped: {r.get('reason', '?')}"
-        return (
-            f"MEGA: {r.get('steps_ok', 0)}/{r.get('steps_total', 0)} OK | "
-            f"€{r.get('revenue', {}).get('month_eur', 0):.0f}/Monat"
-        )
+        from modules.bullpower_mcc import run_full_cycle_str
+        return await run_full_cycle_str()
     except Exception as e:
-        return f"MEGA Command Center Fehler: {e}"
+        # Fallback auf altes Modul
+        try:
+            from modules.mega_command_center import run_mega_cycle
+            r = await run_mega_cycle()
+            return f"MEGA (alt): {r.get('steps_ok', 0)}/{r.get('steps_total', 0)} OK"
+        except Exception:
+            return f"MEGA Command Center Fehler: {e}"
 
 
 async def task_fiverr_cycle() -> str:
@@ -6334,11 +6338,15 @@ async def task_outreach_engine_batch() -> str:
         return f"Outreach Engine Fehler: {e}"
 
 async def task_industrie_outreach() -> str:
+    from modules.task_guard import task_ran_recently, record_task_run
+    if await task_ran_recently("industrie_outreach", min_interval_hours=20):
+        return "Industrie-Outreach: übersprungen (lief vor <20h — Bounce-Schutz)"
     try:
         from modules.industrie_outreach import run_industrie_outreach
         result = await run_industrie_outreach(daily_limit=20)
         sent = result.get("sent", 0) if isinstance(result, dict) else 0
         fu   = result.get("followup", 0) if isinstance(result, dict) else 0
+        await record_task_run("industrie_outreach")
         return f"Industrie-Outreach: {sent} neu, {fu} Follow-ups ✅"
     except Exception as e:
         return f"Industrie-Outreach Fehler: {e}"

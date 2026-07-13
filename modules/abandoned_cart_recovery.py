@@ -23,7 +23,7 @@ import aiohttp
 # Env-Datei laden (muss vor os.getenv-Aufrufen stehen)
 try:
     from dotenv import load_dotenv
-    load_dotenv("/Users/rudolfsarkany/supermegabot/.env")
+    load_dotenv(Path(__file__).parent.parent / ".env")
 except ImportError:
     pass  # dotenv optional — Railway liefert Vars direkt
 

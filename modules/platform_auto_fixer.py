@@ -16,10 +16,10 @@ from typing import Optional
 import aiohttp
 from dotenv import load_dotenv
 
-load_dotenv('/Users/rudolfsarkany/supermegabot/.env')
+load_dotenv(Path(__file__).parent.parent / '.env')
 log = logging.getLogger("PlatformAutoFixer")
 
-STATE = Path('/Users/rudolfsarkany/supermegabot/data/platform_fix_state.json')
+STATE = Path(__file__).parent.parent / 'data' / 'platform_fix_state.json'
 
 # ── Credentials ──────────────────────────────────────────────────────────────
 FB_TOKEN    = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC") or os.getenv("META_ACCESS_TOKEN", "")
