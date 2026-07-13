@@ -9471,6 +9471,26 @@ async def handle_bpi_outreach_run(req: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_mpo_stats(req: web.Request) -> web.Response:
+    """GET /api/mpo/stats — Multi-Product Outreach Statistik."""
+    try:
+        from modules.multi_product_outreach import get_stats
+        return web.json_response(await get_stats())
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_mpo_run(req: web.Request) -> web.Response:
+    """POST /api/mpo/run — Multi-Product Outreach sofort starten."""
+    try:
+        from modules.multi_product_outreach import run_outreach, _report
+        stats = await run_outreach()
+        await _report(stats)
+        return web.json_response({"ok": True, **stats})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_aiitec_outreach_stats(req: web.Request) -> web.Response:
     """GET /api/aiitec-outreach/stats — AIITEC B2B Outreach Statistik."""
     try:
@@ -10899,6 +10919,9 @@ async def create_app():
     app.router.add_get( "/api/intelligence-broker/watchlist",     handle_intelligence_broker_watchlist)
     log.info("BPI 8 Systems routes registered (SYS-01..SYS-08)")
 
+    # Multi-Product Outreach (alle 4 Produkte)
+    app.router.add_get( "/api/mpo/stats", handle_mpo_stats)
+    app.router.add_post("/api/mpo/run",   handle_mpo_run)
     # AIITEC B2B Outreach Machine
     app.router.add_get( "/api/aiitec-outreach/stats", handle_aiitec_outreach_stats)
     app.router.add_post("/api/aiitec-outreach/run",   handle_aiitec_outreach_run)
