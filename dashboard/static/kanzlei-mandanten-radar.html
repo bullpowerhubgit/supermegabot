@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Kanzlei-Mandanten-Radar</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@700&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0C10;--panel:#12151C;--panel2:#0D1016;--line:#232936;--red:#FF4D4D;--red-dim:#7a2828;
+--amber:#F5A524;--amber-dim:#8a5f14;--green:#3ECF8E;--steel:#8B93A7;--text:#EDEFF4;
+--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--disp:'IBM Plex Sans Condensed',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;font-size:16px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 22px}
+a{color:var(--amber)}
+.hero{padding:60px 0 40px;text-align:center;border-bottom:1px solid var(--line)}
+.badge{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+color:var(--red);border:1px solid var(--red-dim);background:rgba(255,77,77,.06);padding:6px 14px;border-radius:999px;margin-bottom:22px}
+.hero h1{font-family:var(--disp);font-weight:700;font-size:clamp(34px,5.6vw,62px);line-height:1.05;max-width:22ch;margin:0 auto}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero .sub{margin:18px auto 0;max-width:60ch;color:var(--steel);font-size:17px}
+.cta-row{margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{font-family:var(--sans);font-weight:600;font-size:15px;padding:13px 26px;border-radius:8px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--red);color:#fff}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.count-label{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:34px 0 12px}
+.count{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.count .cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:86px}
+.count .n{font-family:var(--disp);font-weight:700;font-size:34px;color:var(--red)}
+.count .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel)}
+.section{padding:56px 0;border-bottom:1px solid var(--line)}
+.sec-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.sec-h{font-family:var(--disp);font-weight:700;font-size:clamp(26px,3.6vw,40px);margin-bottom:8px}
+.sec-sub{color:var(--steel);max-width:64ch;margin-bottom:28px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:820px){.cards{grid-template-columns:1fr}}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px}
+.pcard .tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;margin-bottom:10px;display:inline-block;padding:4px 9px;border-radius:4px}
+.tag.warn{color:var(--red);border:1px solid var(--red-dim);background:rgba(255,77,77,.06)}
+.tag.ok{color:var(--green);border:1px solid #1f5c42;background:rgba(62,207,142,.06)}
+.tag.info{color:var(--amber);border:1px solid var(--amber-dim);background:rgba(245,165,36,.06)}
+.pcard h3{font-family:var(--disp);font-size:20px;margin-bottom:8px}
+.pcard p{color:var(--steel);font-size:14.5px;margin-bottom:12px}
+.pcard .fine{font-family:var(--disp);font-weight:700;font-size:22px;color:var(--red)}
+.pcard .basis{font-family:var(--mono);font-size:11px;color:var(--steel);margin-top:8px;display:block}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;text-align:center}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat .n{font-family:var(--disp);font-weight:700;font-size:30px;color:var(--amber)}
+.stat .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-top:4px}
+.calc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px;max-width:680px;margin:0 auto}
+.calc label{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);display:block;margin-bottom:8px}
+.calc input[type=number]{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);
+font-family:var(--mono);font-size:18px;padding:12px 14px;margin-bottom:18px}
+.toggle{display:flex;gap:10px;margin-bottom:18px}
+.toggle button{flex:1;padding:11px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--steel);font-family:var(--sans);font-weight:600;cursor:pointer}
+.toggle button.active{border-color:var(--red);color:#fff;background:rgba(255,77,77,.1)}
+.calc .rows{border-top:1px solid var(--line);padding-top:16px}
+.calc .row{display:flex;justify-content:space-between;padding:7px 0;font-size:15px}
+.calc .row .k{color:var(--steel)}
+.calc .row .v{font-family:var(--mono)}
+.calc .row.big .v{color:var(--red);font-weight:600;font-size:17px}
+.calc .row.save .v{color:var(--green);font-weight:600;font-size:17px}
+.calc .note{font-family:var(--mono);font-size:11.5px;color:var(--steel);margin-top:14px}
+.calc .alert{margin-top:16px;font-size:14px;color:var(--red);border:1px dashed var(--red-dim);border-radius:8px;padding:10px 14px;display:none}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:900px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px;display:flex;flex-direction:column}
+.plan.rec{border-color:var(--red)}
+.plan .rec-badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.plan h3{font-family:var(--disp);font-size:22px}
+.plan .price{font-family:var(--disp);font-weight:700;font-size:34px;margin:10px 0 4px}
+.plan .price small{font-size:15px;color:var(--steel);font-weight:400}
+.plan .pd{color:var(--steel);font-size:14px;margin-bottom:16px}
+.plan ul{list-style:none;margin-bottom:20px}
+.plan ul li{position:relative;padding-left:20px;font-size:14px;margin-bottom:7px;color:#c9cfdb}
+.plan ul li::before{content:"✓";position:absolute;left:0;color:var(--green)}
+.plan .btn{margin-top:auto;text-align:center}
+.api-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:820px){.api-grid{grid-template-columns:1fr}}
+.endpoint{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.endpoint .head{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.method{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px}
+.method.post{color:var(--amber);border:1px solid var(--amber-dim)}
+.method.get{color:var(--green);border:1px solid #1f5c42}
+.endpoint .path{font-family:var(--mono);font-size:13px}
+.endpoint pre{padding:16px;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#c9cfdb;overflow-x:auto;background:var(--panel2)}
+footer{padding:28px 0 44px;font-family:var(--mono);font-size:12px;color:var(--steel);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style></head><body>
+
+<header class="hero"><div class="wrap">
+  <span class="badge">Täglich neue Verfahren — wer zuerst anruft, gewinnt</span>
+  <h1>Das Mandat bekommt,<br><em>wer am Eröffnungstag anruft.</em></h1>
+  <p class="sub">Insolvenzverfahren werden öffentlich bekannt gemacht — aber wer sie manuell durchsucht, ist zu spät. Der Radar scannt Bekanntmachungen täglich, scort nach Mandats-Potenzial und liefert dir deine Region exklusiv aufs Handy. Vor deinem Wettbewerber.</p>
+  <div class="cta-row">
+    <a class="btn primary" href="#plans">Region sichern — ab €290/mo</a>
+    <a class="btn ghost" href="#calc">Mandatswert berechnen</a>
+  </div>
+  <div class="count-label">Unternehmensinsolvenzen in Deutschland (Größenordnung p.a.)</div>
+  <div class="count"><div class="cell"><div class="n">20.000+</div><div class="l">Verfahren / Jahr</div></div></div>
+</div></header>
+
+<section class="section"><div class="wrap">
+  <div class="sec-eyebrow">4 Gründe</div>
+  <h2 class="sec-h">Warum Geschwindigkeit das Mandat entscheidet.</h2>
+  <div class="cards">
+    <article class="pcard">
+      <span class="tag warn">⚠ Zeitfenster</span>
+      <h3>48-Stunden-Regel</h3>
+      <p>Geschäftsführer entscheiden in den ersten Tagen nach Eröffnung, wer sie vertritt — danach ist verteilt.</p>
+      <div class="fine">Mandat weg</div>
+      <span class="basis">Grundlage: Praxiserfahrung Restrukturierung</span>
+    </article>
+<article class="pcard">
+      <span class="tag ok">✓ Öffentliche Daten</span>
+      <h3>Bekanntmachungen als Quelle</h3>
+      <p>Alle Verfahren werden öffentlich bekannt gemacht — legal, vollständig, nur eben unlesbar verteilt. Der Radar macht sie nutzbar.</p>
+      <div class="fine">€0 Datenkosten</div>
+      <span class="basis">Grundlage: § 9 InsO (öffentliche Bekanntmachung)</span>
+    </article>
+<article class="pcard">
+      <span class="tag info">📍 Exklusivität</span>
+      <h3>Eine Kanzlei pro PLZ-Gebiet</h3>
+      <p>Dein Gebiet gehört dir allein — der Radar verkauft dieselbe Region kein zweites Mal.</p>
+      <div class="fine">Preismacht statt Preiskampf</div>
+      <span class="basis">Grundlage: Vertragsmodell</span>
+    </article>
+<article class="pcard">
+      <span class="tag info">📍 Mehr als InsO</span>
+      <h3>Auch für Factoring & Inkasso</h3>
+      <p>Dieselben Signale sind Gold für Factoring-Gesellschaften, Kreditversicherer und Inkasso — andere Ansprache, gleicher Feed.</p>
+      <div class="fine">3 Zielgruppen, 1 Radar</div>
+      <span class="basis">Grundlage: Feed-Konfiguration</span>
+    </article>
+  </div>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <div class="stats">
+    <div class="stat"><div class="n">20k+</div><div class="l">Verfahren / Jahr (DE)</div></div>
+<div class="stat"><div class="n">Tgl. 06:00</div><div class="l">Feed-Zustellung</div></div>
+<div class="stat"><div class="n">1</div><div class="l">Kanzlei pro Gebiet</div></div>
+<div class="stat"><div class="n">≥80</div><div class="l">Lead-Score-Schwelle</div></div>
+<div class="stat"><div class="n">48h</div><div class="l">entscheidendes Fenster</div></div>
+  </div>
+</div></section>
+
+<section class="section" id="calc"><div class="wrap">
+  <div class="sec-eyebrow">Mandats-Rechner</div>
+  <h2 class="sec-h">Was ist ein Lead-Feed wert?</h2>
+  <p class="sec-sub">Wie viele Mandate pro Monat gewinnst du realistisch aus dem Feed? Wir rechnen konservativ.</p>
+  <div class="calc">
+    <label for="rev">Gewonnene Mandate pro Monat</label>
+    <input type="number" id="rev" value="2" min="0" step="1">
+    <div class="rows">
+      <div class="row"><span class="k">Mandate / Monat</span><span class="v" id="r0">–</span></div>
+      <div class="row"><span class="k">Ø Wert pro Mandat (Ø Honorarwert, konservativ)</span><span class="v">€4.000</span></div>
+      <div class="row big"><span class="k">Umsatzpotenzial / Monat</span><span class="v" id="r1">–</span></div>
+      <div class="row"><span class="k">Regional Pro / Monat</span><span class="v" id="r2">–</span></div>
+      <div class="row save"><span class="k">Deckungsbeitrag / Monat</span><span class="v" id="r3">–</span></div>
+    </div>
+    <div class="note">Grundlage: Annahme Ø €4.000 Honorarvolumen pro gewonnenem Mandat — je nach Verfahren deutlich höher. Potenzialrechnung mit Annahmewerten — keine Umsatzgarantie.</div>
+  </div>
+  <script>(function(){function f(n){return '€'+Math.round(n).toLocaleString('de-DE')}
+  var el=function(i){return document.getElementById(i)};
+  function calc(){var n=+el('rev').value||0;var pot=n*4000;var tool=490;
+  el('r0').textContent=n.toLocaleString('de-DE');el('r1').textContent=f(pot);
+  el('r2').textContent=f(tool);el('r3').textContent=f(Math.max(pot-tool,0));}
+  el('rev').addEventListener('input',calc);calc();})();</script>
+</div></section>
+
+<section class="section" id="plans"><div class="wrap">
+  <div class="sec-eyebrow">Pläne</div>
+  <h2 class="sec-h">Wähle deinen Schutzlevel</h2>
+  <p class="sec-sub">Monatlich kündbar. Keine Einrichtungsgebühr. Sofort nach Zahlung aktiv.</p>
+  <div class="plans">
+    <div class="plan">
+      
+      <h3>Regional</h3>
+      <div class="price">€290 <small>/ Monat</small></div>
+      <p class="pd">Ein PLZ-Gebiet exklusiv, täglicher Feed.</p>
+      <ul><li>Tages-Feed per E-Mail + Telegram</li><li>1 PLZ-Gebiet exklusiv</li><li>Lead-Score & Firmendaten</li><li>Verfahrens-Historie</li><li>E-Mail-Support</li></ul>
+      <a class="btn ghost" href="#">Regional wählen</a>
+    </div>
+<div class="plan rec">
+      <div class="rec-badge">Empfohlen</div>
+      <h3>Regional Pro</h3>
+      <div class="price">€490 <small>/ Monat</small></div>
+      <p class="pd">Gebiet exklusiv + angereicherte Dossiers pro Fall.</p>
+      <ul><li>Alles in Regional</li><li>360°-Firmendossier pro Lead</li><li>Geschäftsführer-Kontaktdaten (soweit öffentlich)</li><li>Ansprache-Vorlagen</li><li>Prioritäts-Support</li></ul>
+      <a class="btn primary" href="#">Regional Pro wählen</a>
+    </div>
+<div class="plan">
+      
+      <h3>Landesweit</h3>
+      <div class="price">€1490 <small>/ Monat</small></div>
+      <p class="pd">Ganzes Bundesland + API für die eigene Kanzlei-Software.</p>
+      <ul><li>Alles in Pro</li><li>Bundesland-Feed</li><li>REST API-Zugang</li><li>CSV/CRM-Export</li><li>Dedicated Account Manager</li></ul>
+      <a class="btn ghost" href="#">Landesweit wählen</a>
+    </div>
+  </div>
+</div></section>
+
+<section class="section"><div class="wrap">
+  <div class="sec-eyebrow">API-Referenz</div>
+  <h2 class="sec-h">Bau es in deinen Stack ein</h2>
+  <p class="sec-sub">Alle Module via REST. Python, Node, cURL — was auch immer läuft.</p>
+  <div class="api-grid">
+    <div class="endpoint">
+      <div class="head"><span class="method get">GET</span><span class="path">/api/inso/leads?region=40xxx&min_score=80</span></div>
+      <pre>// Antwort
+{
+  "total": 6,
+  "leads": [{
+    "company":   "Muster Metallbau GmbH",
+    "court":     "AG Düsseldorf",
+    "opened":    "2026-07-13",
+    "lead_score": 91
+  }]
+}</pre>
+    </div>
+<div class="endpoint">
+      <div class="head"><span class="method post">POST</span><span class="path">/api/inso/dossier</span></div>
+      <pre>{
+  "company_id": "HRB-88123-D"
+}
+
+// Antwort
+{
+  "employees_est":   45,
+  "register_changes": 3,
+  "related_cases":    1,
+  "pdf": "/dl/dossier-88123.pdf"
+}</pre>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;width:100%">
+  <span>Kanzlei-Mandanten-Radar · Powered by SuperMegaBot</span>
+  <span>Konzept-Landing-Page · Alle Zahlen: Schätzungen, keine Rechtsberatung</span>
+</div></footer>
+</body></html>

@@ -157,6 +157,31 @@ async def handle_money_machines(req):
     return web.Response(text=html, content_type="text/html")
 
 
+# ── Compliance Tool Landing Pages (SYS-17 bis SYS-42) ────────────────────────
+_COMPLIANCE_STATIC = Path(__file__).parent / "static"
+
+def _serve_static(filename: str):
+    async def _handler(req):
+        try:
+            html = (_COMPLIANCE_STATIC / filename).read_text(encoding="utf-8")
+        except Exception:
+            html = f"<h1>{filename} nicht gefunden</h1>"
+        return web.Response(text=html, content_type="text/html")
+    return _handler
+
+handle_compliance_index        = _serve_static("index.html")
+handle_gpsr_shield             = _serve_static("gpsr-shop-shield.html")
+handle_ppwr_radar              = _serve_static("ppwr-verpackungs-radar.html")
+handle_erechnung_autopilot     = _serve_static("e-rechnung-autopilot.html")
+handle_cra_waechter            = _serve_static("cra-melde-waechter.html")
+handle_nis2_check              = _serve_static("nis2-kmu-check.html")
+handle_kanzlei_radar           = _serve_static("kanzlei-mandanten-radar.html")
+handle_eudr_pass               = _serve_static("eudr-lieferketten-pass.html")
+handle_hr_ki_audit             = _serve_static("hr-ki-hochrisiko-audit.html")
+handle_bfsg_scanner            = _serve_static("bfsg-barriere-scanner.html")
+handle_zvg_expose              = _serve_static("zvg-expose-engine.html")
+
+
 async def handle_index(req):
     try:
         html = _INDEX_HTML.read_text(encoding="utf-8")
@@ -10489,6 +10514,28 @@ async def create_app():
     app.router.add_post("/api/priority-cluster/run",      handle_priority_cluster_run)
     app.router.add_get( "/api/email/brain/setup",         handle_email_brain_setup)
     app.router.add_post("/api/email/brain/setup",         handle_email_brain_setup)
+    # ── COMPLIANCE TOOL LANDING PAGES (SYS-17 bis SYS-42) ────────────────────
+    app.router.add_get( "/compliance",                    handle_compliance_index)
+    app.router.add_get( "/gpsr",                          handle_gpsr_shield)
+    app.router.add_get( "/gpsr-shop-shield",              handle_gpsr_shield)
+    app.router.add_get( "/ppwr",                          handle_ppwr_radar)
+    app.router.add_get( "/ppwr-verpackung",               handle_ppwr_radar)
+    app.router.add_get( "/e-rechnung",                    handle_erechnung_autopilot)
+    app.router.add_get( "/erechnung",                     handle_erechnung_autopilot)
+    app.router.add_get( "/cra",                           handle_cra_waechter)
+    app.router.add_get( "/cra-melde-waechter",            handle_cra_waechter)
+    app.router.add_get( "/nis2",                          handle_nis2_check)
+    app.router.add_get( "/nis2-kmu",                      handle_nis2_check)
+    app.router.add_get( "/kanzlei-radar",                 handle_kanzlei_radar)
+    app.router.add_get( "/kanzlei-mandanten-radar",       handle_kanzlei_radar)
+    app.router.add_get( "/eudr",                          handle_eudr_pass)
+    app.router.add_get( "/eudr-lieferkette",              handle_eudr_pass)
+    app.router.add_get( "/hr-ki-audit",                   handle_hr_ki_audit)
+    app.router.add_get( "/hr-ki-hochrisiko",              handle_hr_ki_audit)
+    app.router.add_get( "/bfsg",                          handle_bfsg_scanner)
+    app.router.add_get( "/bfsg-scanner",                  handle_bfsg_scanner)
+    app.router.add_get( "/zvg",                           handle_zvg_expose)
+    app.router.add_get( "/zvg-expose",                    handle_zvg_expose)
     # ── END MISSING ROUTES ───────────────────────────────────────────────────
 
     # ── MONEY MACHINE ────────────────────────────────────────────────────────

@@ -1,0 +1,114 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>10 Landing Pages · Übersicht</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+Condensed:wght@700&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0A0C10;--panel:#12151C;--panel2:#0D1016;--line:#232936;--red:#FF4D4D;--red-dim:#7a2828;
+--amber:#F5A524;--amber-dim:#8a5f14;--green:#3ECF8E;--steel:#8B93A7;--text:#EDEFF4;
+--mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;--disp:'IBM Plex Sans Condensed',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);line-height:1.55;font-size:16px}
+.wrap{max-width:1100px;margin:0 auto;padding:0 22px}
+a{color:var(--amber)}
+.hero{padding:60px 0 40px;text-align:center;border-bottom:1px solid var(--line)}
+.badge{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;
+color:var(--red);border:1px solid var(--red-dim);background:rgba(255,77,77,.06);padding:6px 14px;border-radius:999px;margin-bottom:22px}
+.hero h1{font-family:var(--disp);font-weight:700;font-size:clamp(34px,5.6vw,62px);line-height:1.05;max-width:22ch;margin:0 auto}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero .sub{margin:18px auto 0;max-width:60ch;color:var(--steel);font-size:17px}
+.cta-row{margin-top:26px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{font-family:var(--sans);font-weight:600;font-size:15px;padding:13px 26px;border-radius:8px;border:0;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.primary{background:var(--red);color:#fff}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.count-label{font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--steel);margin:34px 0 12px}
+.count{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+.count .cell{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 18px;min-width:86px}
+.count .n{font-family:var(--disp);font-weight:700;font-size:34px;color:var(--red)}
+.count .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--steel)}
+.section{padding:56px 0;border-bottom:1px solid var(--line)}
+.sec-eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.sec-h{font-family:var(--disp);font-weight:700;font-size:clamp(26px,3.6vw,40px);margin-bottom:8px}
+.sec-sub{color:var(--steel);max-width:64ch;margin-bottom:28px}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:820px){.cards{grid-template-columns:1fr}}
+.pcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:22px}
+.pcard .tag{font-family:var(--mono);font-size:11px;letter-spacing:.1em;margin-bottom:10px;display:inline-block;padding:4px 9px;border-radius:4px}
+.tag.warn{color:var(--red);border:1px solid var(--red-dim);background:rgba(255,77,77,.06)}
+.tag.ok{color:var(--green);border:1px solid #1f5c42;background:rgba(62,207,142,.06)}
+.tag.info{color:var(--amber);border:1px solid var(--amber-dim);background:rgba(245,165,36,.06)}
+.pcard h3{font-family:var(--disp);font-size:20px;margin-bottom:8px}
+.pcard p{color:var(--steel);font-size:14.5px;margin-bottom:12px}
+.pcard .fine{font-family:var(--disp);font-weight:700;font-size:22px;color:var(--red)}
+.pcard .basis{font-family:var(--mono);font-size:11px;color:var(--steel);margin-top:8px;display:block}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;text-align:center}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,1fr)}}
+.stat .n{font-family:var(--disp);font-weight:700;font-size:30px;color:var(--amber)}
+.stat .l{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);margin-top:4px}
+.calc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:28px;max-width:680px;margin:0 auto}
+.calc label{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--steel);display:block;margin-bottom:8px}
+.calc input[type=number]{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:8px;color:var(--text);
+font-family:var(--mono);font-size:18px;padding:12px 14px;margin-bottom:18px}
+.toggle{display:flex;gap:10px;margin-bottom:18px}
+.toggle button{flex:1;padding:11px;border-radius:8px;border:1px solid var(--line);background:var(--panel2);color:var(--steel);font-family:var(--sans);font-weight:600;cursor:pointer}
+.toggle button.active{border-color:var(--red);color:#fff;background:rgba(255,77,77,.1)}
+.calc .rows{border-top:1px solid var(--line);padding-top:16px}
+.calc .row{display:flex;justify-content:space-between;padding:7px 0;font-size:15px}
+.calc .row .k{color:var(--steel)}
+.calc .row .v{font-family:var(--mono)}
+.calc .row.big .v{color:var(--red);font-weight:600;font-size:17px}
+.calc .row.save .v{color:var(--green);font-weight:600;font-size:17px}
+.calc .note{font-family:var(--mono);font-size:11.5px;color:var(--steel);margin-top:14px}
+.calc .alert{margin-top:16px;font-size:14px;color:var(--red);border:1px dashed var(--red-dim);border-radius:8px;padding:10px 14px;display:none}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:900px){.plans{grid-template-columns:1fr}}
+.plan{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:26px;display:flex;flex-direction:column}
+.plan.rec{border-color:var(--red)}
+.plan .rec-badge{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:8px}
+.plan h3{font-family:var(--disp);font-size:22px}
+.plan .price{font-family:var(--disp);font-weight:700;font-size:34px;margin:10px 0 4px}
+.plan .price small{font-size:15px;color:var(--steel);font-weight:400}
+.plan .pd{color:var(--steel);font-size:14px;margin-bottom:16px}
+.plan ul{list-style:none;margin-bottom:20px}
+.plan ul li{position:relative;padding-left:20px;font-size:14px;margin-bottom:7px;color:#c9cfdb}
+.plan ul li::before{content:"✓";position:absolute;left:0;color:var(--green)}
+.plan .btn{margin-top:auto;text-align:center}
+.api-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+@media(max-width:820px){.api-grid{grid-template-columns:1fr}}
+.endpoint{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.endpoint .head{display:flex;gap:10px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line)}
+.method{font-family:var(--mono);font-size:11px;font-weight:600;padding:3px 8px;border-radius:4px}
+.method.post{color:var(--amber);border:1px solid var(--amber-dim)}
+.method.get{color:var(--green);border:1px solid #1f5c42}
+.endpoint .path{font-family:var(--mono);font-size:13px}
+.endpoint pre{padding:16px;font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#c9cfdb;overflow-x:auto;background:var(--panel2)}
+footer{padding:28px 0 44px;font-family:var(--mono);font-size:12px;color:var(--steel);display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.idx{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;padding:48px 0}
+@media(max-width:820px){.idx{grid-template-columns:1fr}}
+.idx a{display:block;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px;text-decoration:none;color:var(--text);transition:border-color .15s}
+.idx a:hover{border-color:var(--red)}
+.idx .nm{font-family:var(--disp);font-weight:700;font-size:19px;margin-bottom:4px}
+.idx .bd{font-family:var(--mono);font-size:11.5px;color:var(--red);margin-bottom:8px;display:block}
+.idx .ds{color:var(--steel);font-size:13.5px}
+</style></head><body>
+<header class="hero"><div class="wrap">
+<span class="badge">10 Landing Pages · EU-Compliance & Lead-Gen</span>
+<h1>Zehn Produkte.<br><em>Ein Muster.</em></h1>
+<p class="sub">Jede Seite folgt der EU-Compliance-Revenue-Engine-Struktur: Urgency-Hook + Countdown, Pflicht-Karten mit Rechtsgrundlage, interaktiver Rechner, 3 Pläne, API-Referenz. Alle Fristen und Rechtsgrundlagen real — alle Umsatz-/Risikozahlen als Annahmen gekennzeichnet.</p>
+</div></header>
+<main class="wrap"><div class="idx">
+<a href="gpsr-shop-shield.html"><span class="bd">GPSR seit 13.12.2024 in Kraft — Abmahnungen laufen</span><div class="nm">GPSR Shop-Shield</div><div class="ds">Die Produktsicherheitsverordnung verlangt für jedes Produkt Hersteller-Angaben, verantwortliche EU-Person und Warnhinweise. Unser Scanner pr…</div></a>
+<a href="ppwr-verpackungs-radar.html"><span class="bd">PPWR-Anwendung: 12. August 2026</span><div class="nm">PPWR Verpackungs-Radar</div><div class="ds">Die neue EU-Verpackungsverordnung gilt ab 12.08.2026 unmittelbar in jedem Mitgliedstaat — Rezyklat-Quoten, Leerraum-Grenzen, Kennzeichnung. …</div></a>
+<a href="e-rechnung-autopilot.html"><span class="bd">Ausstellungspflicht: 1. Januar 2027</span><div class="nm">E-Rechnungs-Autopilot</div><div class="ds">Seit 2025 musst du E-Rechnungen empfangen können — ab 01.01.2027 musst du sie im B2B-Geschäft auch ausstellen (Vorjahresumsatz > €800k, ab 2…</div></a>
+<a href="cra-melde-waechter.html"><span class="bd">CRA-Meldepflichten: 11. September 2026</span><div class="nm">CRA Melde-Wächter</div><div class="ds">Der Cyber Resilience Act verpflichtet Hersteller von Produkten mit digitalen Elementen ab 11.09.2026, aktiv ausgenutzte Schwachstellen binne…</div></a>
+<a href="nis2-kmu-check.html"><span class="bd">NIS2-Umsetzung läuft — Registrierungspflicht aktiv</span><div class="nm">NIS2 KMU-Check</div><div class="ds">NIS2 erfasst 18 Sektoren und zehntausende deutsche Mittelständler, die es nicht wissen. Der Check klärt in 5 Minuten: bist du 'wesentliche' …</div></a>
+<a href="kanzlei-mandanten-radar.html"><span class="bd">Täglich neue Verfahren — wer zuerst anruft, gewinnt</span><div class="nm">Kanzlei-Mandanten-Radar</div><div class="ds">Insolvenzverfahren werden öffentlich bekannt gemacht — aber wer sie manuell durchsucht, ist zu spät. Der Radar scannt Bekanntmachungen tägli…</div></a>
+<a href="eudr-lieferketten-pass.html"><span class="bd">EUDR für KMU: seit 30.06.2026 anwendbar</span><div class="nm">EUDR Lieferketten-Pass</div><div class="ds">Die EU-Entwaldungsverordnung gilt jetzt auch für kleine Unternehmen: Wer erfasste Rohstoffe oder daraus gefertigte Produkte handelt, braucht…</div></a>
+<a href="hr-ki-hochrisiko-audit.html"><span class="bd">Hochrisiko-Pflichten: 2. August 2026</span><div class="nm">HR-KI Hochrisiko-Audit</div><div class="ds">KI im Bewerber-Screening, Ranking oder in Beförderungsentscheidungen ist nach Anhang III Hochrisiko — mit Betreiberpflichten ab 02.08.2026: …</div></a>
+<a href="bfsg-barriere-scanner.html"><span class="bd">BFSG in Kraft seit 28.06.2025 — E-Commerce ist erfasst</span><div class="nm">BFSG Barriere-Scanner</div><div class="ds">Das Barrierefreiheitsstärkungsgesetz gilt für Online-Shops seit Juni 2025. Marktüberwachung und Verbandsklagen laufen an — und nebenbei verl…</div></a>
+<a href="zvg-expose-engine.html"><span class="bd">Bundesweit — Amtsgerichts-Daten in verkaufsfertige Dossiers</span><div class="nm">ZVG Exposé-Engine</div><div class="ds">Zwangsversteigerungen sind der intransparenteste Immobilienmarkt Deutschlands: Verkehrswertgutachten mit 80 Seiten, Termine in Behörden-Port…</div></a>
+</div></main>
+<footer><div class="wrap" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;width:100%">
+<span>Landing-Page-Serie · Powered by SuperMegaBot</span><span>Juli 2026 · Keine Rechtsberatung</span>
+</div></footer></body></html>
