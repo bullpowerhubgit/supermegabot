@@ -68,6 +68,20 @@ def _tg_chat()    -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _dashboard()  -> str: return os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
 
 
+# ── Bounce-Blacklist (permanent — nach Mailer-Daemon Bounces) ────────────────
+BOUNCED_EMAILS: set = {
+    "info@autoprod.de",   # misconfigured mail server — bounces every time
+    "info@muster-hr.de",  # domain not found — fake placeholder company
+    "info@fintech-solutions.de",
+    "info@medai.de",
+    "info@logiroute.de",
+    "info@shopmax.de",
+    "info@datamarketing.de",
+    "info@cloudcode.de",
+    "info@edulearn.de",
+    "info@insureai.de",
+}
+
 # ── Branchen-Risikomatrix ─────────────────────────────────────────────────────
 # Quelle: EU AI Act Annex III (Hochrisiko-KI-Systeme)
 BRANCHE_RISIKO = {
@@ -95,19 +109,9 @@ RISIKO_BUSSGELDER = {
 }
 
 # ── Ziel-Firmen ───────────────────────────────────────────────────────────────
-# Wir nehmen Firmen aus handelsregister_radar.db ODER dieser festen Liste
-DEFAULT_TARGETS = [
-    {"firma": "Muster Personalberatung GmbH",    "branche": "Personalrekrutierung", "ort": "München",     "email": "info@muster-hr.de"},
-    {"firma": "FinTech Solutions AG",             "branche": "Kreditwesen/Banken",   "ort": "Frankfurt",   "email": "info@fintech-solutions.de"},
-    {"firma": "MedAI Diagnostics GmbH",          "branche": "Gesundheit/Medizin",   "ort": "Berlin",      "email": "info@medai.de"},
-    {"firma": "LogiRoute GmbH",                  "branche": "Logistik/Transport",   "ort": "Hamburg",     "email": "info@logiroute.de"},
-    {"firma": "ShopMax E-Commerce GmbH",         "branche": "E-Commerce/Handel",    "ort": "Köln",        "email": "info@shopmax.de"},
-    {"firma": "DataMarketing Solutions UG",      "branche": "Marketing/Werbung",    "ort": "Stuttgart",   "email": "info@datamarketing.de"},
-    {"firma": "AutoProd Industrie GmbH",         "branche": "Produktion/Industrie", "ort": "Augsburg",    "email": "info@autoprod.de"},
-    {"firma": "CloudCode Systems GmbH",          "branche": "IT/Software",          "ort": "München",     "email": "info@cloudcode.de"},
-    {"firma": "EduLearn Platform GmbH",          "branche": "Bildung",              "ot": "Berlin",       "email": "info@edulearn.de"},
-    {"firma": "InsureAI GmbH",                   "branche": "Versicherungen",       "ort": "Hamburg",     "email": "info@insureai.de"},
-]
+# Nur echte Firmen aus handelsregister_radar.db — KEINE Fake-Platzhalter!
+# Wenn DB leer → 0 Emails (besser als Spam an nicht-existente Adressen)
+DEFAULT_TARGETS: list = []
 
 
 # ── DB ────────────────────────────────────────────────────────────────────────
@@ -291,6 +295,49 @@ def send_email(to: str, subject: str, body: str) -> bool:
     return ok
 
 
+async def _supabase_email_sent(email: str) -> bool:
+    """Prüft Supabase ob diese Email schon gesendet wurde (Railway-Restart-sicher)."""
+    sb_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    sb_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not sb_url or not sb_key:
+        return False
+    try:
+        async with aiohttp.ClientSession() as s:
+            r = await s.get(
+                f"{sb_url}/rest/v1/aia_email_sent?target_email=eq.{email}&select=id",
+                headers={"apikey": sb_key, "Authorization": f"Bearer {sb_key}"},
+                timeout=aiohttp.ClientTimeout(total=5),
+            )
+            if r.status == 200:
+                data = await r.json()
+                return bool(data)
+    except Exception:
+        pass
+    return False
+
+
+async def _supabase_mark_sent(email: str, firma: str) -> None:
+    """Speichert gesendete Email in Supabase (überlebt Railway-Restarts)."""
+    sb_url = os.getenv("SUPABASE_URL", "").rstrip("/")
+    sb_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_SERVICE_KEY", "")
+    if not sb_url or not sb_key:
+        return
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                f"{sb_url}/rest/v1/aia_email_sent",
+                json={"target_email": email, "firma": firma},
+                headers={
+                    "apikey": sb_key,
+                    "Authorization": f"Bearer {sb_key}",
+                    "Prefer": "return=minimal",
+                },
+                timeout=aiohttp.ClientTimeout(total=5),
+            )
+    except Exception:
+        pass
+
+
 # ── Telegram ──────────────────────────────────────────────────────────────────
 
 async def tg(msg: str):
@@ -361,12 +408,19 @@ async def run_cycle() -> Dict:
 
         # Email senden wenn Adresse bekannt
         if email:
+            if email.lower() in BOUNCED_EMAILS:
+                log.warning("Email geblockt (Bounce-Liste): %s", email)
+                continue
             subject, body = build_compliance_email(firma, ort, branche, analysis)
+            # Dedup: erst SQLite prüfen, dann Supabase (überlebt Railway-Restarts)
+            already_sent = False
             with sqlite3.connect(str(_DB_PATH)) as conn:
-                already_sent = conn.execute(
-                    "SELECT id FROM aia_outreach WHERE target_email=? AND scan_uid=?",
-                    (email, uid)
-                ).fetchone()
+                already_sent = bool(conn.execute(
+                    "SELECT id FROM aia_outreach WHERE target_email=?",
+                    (email,)
+                ).fetchone())
+            if not already_sent:
+                already_sent = await _supabase_email_sent(email)
             if not already_sent:
                 ok = send_email(email, subject, body)
                 if ok:
@@ -376,6 +430,7 @@ async def run_cycle() -> Dict:
                             "INSERT OR IGNORE INTO aia_outreach (scan_uid,firma,target_email,status,sent_at,created_at) VALUES (?,?,?,?,?,?)",
                             (uid, firma, email, "sent", now, now)
                         )
+                    await _supabase_mark_sent(email, firma)
                 await asyncio.sleep(5)
 
     duration = round(time.time() - start, 1)
