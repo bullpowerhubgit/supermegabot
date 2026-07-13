@@ -726,25 +726,28 @@ async def handle_gmc_feed(req):
 
             async with _aio.ClientSession() as s:
                 last_id = 0
-                # Erstes Mal max 500 Produkte (schnell), danach mehr per Hintergrund-Refresh
-                max_products = 500
+                # Kleine Batches (50) → schnelle API-Calls, max 300 Produkte gesamt
+                max_products = 300
                 while len(products) < max_products:
                     try:
                         async with s.get(
                             f"https://{shopify_domain}/admin/api/{shopify_ver}/products.json",
                             headers={"X-Shopify-Access-Token": shopify_token},
-                            params={"limit": 250, "since_id": last_id,
+                            params={"limit": 50, "since_id": last_id,
                                     "fields": "id,title,body_html,handle,images,variants,product_type,status"},
-                            timeout=_aio.ClientTimeout(total=25),
+                            timeout=_aio.ClientTimeout(total=12),
                         ) as r:
                             if r.status != 200:
+                                log.warning("GMC feed Shopify API status=%s", r.status)
                                 break
-                            batch = [p for p in (await r.json(content_type=None)).get("products", []) if p.get("status") == "active"]
-                            if not batch:
+                            raw_products = (await r.json(content_type=None)).get("products", [])
+                            batch = [p for p in raw_products if p.get("status") == "active"]
+                            if not raw_products:
                                 break
                             products.extend(batch)
-                            last_id = batch[-1]["id"]
-                            if len(batch) < 250:
+                            if raw_products:
+                                last_id = raw_products[-1]["id"]
+                            if len(raw_products) < 50:
                                 break
                     except Exception as _fe:
                         log.warning("GMC feed fetch page error: %s", _fe)
