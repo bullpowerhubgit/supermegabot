@@ -361,6 +361,66 @@ body {
   to   { transform: translateX(0);    opacity: 1; }
 }
 
+/* ── BPI SERVICE CARDS ── */
+.bpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+@media(max-width:1100px) { .bpi-grid { grid-template-columns: repeat(3, 1fr); } }
+@media(max-width:750px)  { .bpi-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(max-width:480px)  { .bpi-grid { grid-template-columns: 1fr; } }
+.bpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 14px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color .2s, transform .15s;
+  position: relative;
+  overflow: hidden;
+}
+.bpi-card:hover { border-color: rgba(155,93,229,.5); transform: translateY(-2px); }
+.bpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--bpi-accent, linear-gradient(90deg, #7c3aed, #00bfff));
+}
+.bpi-icon   { font-size: 22px; line-height: 1; }
+.bpi-name   { font-size: 12px; font-weight: 700; color: var(--text); line-height: 1.3; }
+.bpi-desc   { font-size: 10px; color: var(--muted); line-height: 1.4; flex: 1; }
+.bpi-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+.bpi-price  {
+  font-size: 16px; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--green);
+}
+.bpi-price.abo { color: var(--blue); }
+.bpi-abo-badge {
+  font-size: 8px; font-weight: 700; letter-spacing: .08em;
+  background: rgba(0,191,255,.15); color: var(--blue);
+  border: 1px solid rgba(0,191,255,.3);
+  border-radius: 20px; padding: 1px 6px;
+  margin-left: 4px; vertical-align: middle;
+}
+.bpi-btns   { display: flex; gap: 5px; margin-top: 6px; }
+.bpi-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 3px;
+  padding: 6px 4px;
+  border: none; border-radius: 7px;
+  font-size: 10px; font-weight: 700;
+  cursor: pointer; text-decoration: none;
+  transition: filter .15s, transform .1s;
+}
+.bpi-btn:hover  { filter: brightness(1.2); transform: translateY(-1px); }
+.bpi-btn:active { transform: scale(.96); }
+.bpi-btn-stripe { background: linear-gradient(135deg, #635bff, #7c6cf8); color: #fff; }
+.bpi-btn-page   { background: rgba(255,255,255,.07); color: var(--text); border: 1px solid var(--border); }
+
 /* ── OVERVIEW ROW ── */
 .overview-row {
   display: grid;
@@ -559,6 +619,196 @@ body {
           <span class="btn-sub">Classic View</span>
         </span>
       </button>
+    </div>
+  </div>
+
+  <!-- ── BPI EXTENSION SERVICES ── -->
+  <div class="section">
+    <div class="section-title">💶 BPI Services — Klick zum Öffnen</div>
+    <div class="bpi-grid">
+
+      <!-- 1 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#96bf48,#00ff88)">
+        <div class="bpi-icon">🛍️</div>
+        <div class="bpi-name">Shopify KI-Texte</div>
+        <div class="bpi-desc">50 SEO-optimierte Produktbeschreibungen in 48h</div>
+        <div class="bpi-footer">
+          <div class="bpi-price">€79</div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/fZu00lgM2a660c8eF84F33B" target="_blank">💳 Kaufen</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://monetization-hub-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 2 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#7c3aed,#9b5de5)">
+        <div class="bpi-icon">💼</div>
+        <div class="bpi-name">Stellenanzeigen KI</div>
+        <div class="bpi-desc">10 professionelle Stellenanzeigen für jede Branche</div>
+        <div class="bpi-footer">
+          <div class="bpi-price">€99</div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/3cIcN7cvMfqqcYU40u4F33C" target="_blank">💳 Kaufen</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://digifabrikos-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 3 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#c2410c,#ff9f43)">
+        <div class="bpi-icon">🍽️</div>
+        <div class="bpi-name">Hotel &amp; Gastro Texte</div>
+        <div class="bpi-desc">Website, Zimmer, Menü + 10 Bewertungsantworten</div>
+        <div class="bpi-footer">
+          <div class="bpi-price">€149</div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/dRm5kF0N4cee7EAaoS4F33D" target="_blank">💳 Kaufen</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://etsy-gumroad-8zig-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 4 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#065f46,#00ff88)">
+        <div class="bpi-icon">🚗</div>
+        <div class="bpi-name">Kfz-Händler Texte</div>
+        <div class="bpi-desc">50 Fahrzeugbeschreibungen mit Ausstattung &amp; USP</div>
+        <div class="bpi-footer">
+          <div class="bpi-price">€99</div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/4gMfZj7bs5PQ7EA2Wq4F33E" target="_blank">💳 Kaufen</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://digifabrikk-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 5 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#92400e,#fee440)">
+        <div class="bpi-icon">🔨</div>
+        <div class="bpi-name">Handwerker Angebots-KI</div>
+        <div class="bpi-desc">30 professionelle Angebote für Aufträge aller Art</div>
+        <div class="bpi-footer">
+          <div class="bpi-price">€79</div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/00w6oJanE5PQgb68gK4F33F" target="_blank">💳 Kaufen</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://hospital-wage-calculator-kpeb-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 6 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#134e4a,#06b6d4)">
+        <div class="bpi-icon">🏡</div>
+        <div class="bpi-name">Makler Angebots-KI</div>
+        <div class="bpi-desc">20 Versicherungsangebote + 10 Nachfass-E-Mails</div>
+        <div class="bpi-footer">
+          <div class="bpi-price">€129</div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/bJe5kF2VcguuaQM0Oi4F33G" target="_blank">💳 Kaufen</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://hospital-wage-calculator-vercel-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 7 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#1e3a5f,#00bfff)">
+        <div class="bpi-icon">⚖️</div>
+        <div class="bpi-name">Rechtstexte KI</div>
+        <div class="bpi-desc">Impressum + AGB + Datenschutzerklärung DSGVO-konform</div>
+        <div class="bpi-footer">
+          <div class="bpi-price">€49</div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/5kQdRb9jA5PQ9MI1Sm4F33H" target="_blank">💳 Kaufen</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://steuercockpit-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 8 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#7f1d1d,#ff4757)">
+        <div class="bpi-icon">🏢</div>
+        <div class="bpi-name">Unternehmensverkauf-Exposé</div>
+        <div class="bpi-desc">5 M&amp;A-Dokumente: Teaser, Executive Summary, Profil…</div>
+        <div class="bpi-footer">
+          <div class="bpi-price">€499</div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/4gMfZjgM27XYcYU1Sm4F33I" target="_blank">💳 Kaufen</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://gistore-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 9 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#9d174d,#f15bb5)">
+        <div class="bpi-icon">💪</div>
+        <div class="bpi-name">Fitness Content KI</div>
+        <div class="bpi-desc">30 Social Posts + Newsletter pro Monat</div>
+        <div class="bpi-footer">
+          <div class="bpi-price abo">€69<span class="bpi-abo-badge">ABO</span></div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/7sY9AVbrIguuaQM2Wq4F33J" target="_blank">💳 Abo</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://hospital-wage-calculator-vercel-zzdj-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 10 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#1e1b4b,#818cf8)">
+        <div class="bpi-icon">📅</div>
+        <div class="bpi-name">Social Kalender KI</div>
+        <div class="bpi-desc">30-Tage Content-Kalender für alle Plattformen</div>
+        <div class="bpi-footer">
+          <div class="bpi-price abo">€69<span class="bpi-abo-badge">ABO</span></div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/5kQ7sN9jA4LMe2YaoS4F33K" target="_blank">💳 Abo</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://desktop-tutorial-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 11 — SYS-18 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#14532d,#4ade80)">
+        <div class="bpi-icon">📰</div>
+        <div class="bpi-name">Steuerberater Newsletter</div>
+        <div class="bpi-desc">Monatlicher Mandanten-Newsletter KI-generiert</div>
+        <div class="bpi-footer">
+          <div class="bpi-price abo">€149<span class="bpi-abo-badge">ABO</span></div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/dRm6oJgM23HIe2YgNg4F33L" target="_blank">💳 Abo</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://telegram-bot-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- 12 — SYS-37 -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#0c4a6e,#38bdf8)">
+        <div class="bpi-icon">🏘️</div>
+        <div class="bpi-name">Mieterbrief KI</div>
+        <div class="bpi-desc">Unbegrenzte Mieterbriefe (12 Typen) für Verwalter</div>
+        <div class="bpi-footer">
+          <div class="bpi-price abo">€249<span class="bpi-abo-badge">ABO</span></div>
+        </div>
+        <div class="bpi-btns">
+          <a class="bpi-btn bpi-btn-stripe" href="https://buy.stripe.com/6oUeVf8fw5PQ5wsfJc4F33M" target="_blank">💳 Abo</a>
+          <a class="bpi-btn bpi-btn-page"   href="https://gumroad-discord-bullpowerhubgits-projects.vercel.app" target="_blank">🌐 Page</a>
+        </div>
+      </div>
+
+      <!-- Intake Form (full width) -->
+      <div class="bpi-card" style="--bpi-accent: linear-gradient(90deg,#4a044e,#e879f9); grid-column: span 2;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="bpi-icon">📋</div>
+          <div>
+            <div class="bpi-name">Kunden-Intake Formular</div>
+            <div class="bpi-desc">Für alle 12 Services — Kundendaten sammeln, dann Stripe-Weiterleitung</div>
+          </div>
+        </div>
+        <div class="bpi-btns" style="margin-top:10px;">
+          <a class="bpi-btn bpi-btn-stripe" style="flex:none;padding:8px 20px;font-size:12px;" href="https://lead-capture-bullpowerhubgits-projects.vercel.app" target="_blank">📋 Formular öffnen</a>
+        </div>
+      </div>
+
     </div>
   </div>
 
