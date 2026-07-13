@@ -712,23 +712,43 @@ async def handle_gmc_feed(req):
         products = []
         if shopify_token:
             import aiohttp as _aio
+            # Feed-Cache: 2h gültig um wiederholte API-Calls zu vermeiden
+            _feed_cache_key = "gmc_feed_cache"
+            _feed_cache_ts  = "gmc_feed_cache_ts"
+            import time as _time
+            _now = _time.time()
+            _cached_xml = req.app.get(_feed_cache_key)
+            _cached_ts  = req.app.get(_feed_cache_ts, 0)
+            if _cached_xml and (_now - _cached_ts) < 7200:
+                return web.Response(text=_cached_xml, content_type="application/xml",
+                                    headers={"Content-Disposition": "inline; filename=feed.xml",
+                                             "X-Cache": "HIT"})
+
             async with _aio.ClientSession() as s:
                 last_id = 0
-                while len(products) < 2000:
-                    async with s.get(
-                        f"https://{shopify_domain}/admin/api/{shopify_ver}/products.json",
-                        headers={"X-Shopify-Access-Token": shopify_token},
-                        params={"limit": 250, "since_id": last_id,
-                                "fields": "id,title,body_html,handle,images,variants,product_type,status"},
-                        timeout=_aio.ClientTimeout(total=30),
-                    ) as r:
-                        batch = [p for p in (await r.json(content_type=None)).get("products", []) if p.get("status") == "active"]
-                        if not batch:
-                            break
-                        products.extend(batch)
-                        last_id = batch[-1]["id"]
-                        if len(batch) < 250:
-                            break
+                # Erstes Mal max 500 Produkte (schnell), danach mehr per Hintergrund-Refresh
+                max_products = 500
+                while len(products) < max_products:
+                    try:
+                        async with s.get(
+                            f"https://{shopify_domain}/admin/api/{shopify_ver}/products.json",
+                            headers={"X-Shopify-Access-Token": shopify_token},
+                            params={"limit": 250, "since_id": last_id,
+                                    "fields": "id,title,body_html,handle,images,variants,product_type,status"},
+                            timeout=_aio.ClientTimeout(total=25),
+                        ) as r:
+                            if r.status != 200:
+                                break
+                            batch = [p for p in (await r.json(content_type=None)).get("products", []) if p.get("status") == "active"]
+                            if not batch:
+                                break
+                            products.extend(batch)
+                            last_id = batch[-1]["id"]
+                            if len(batch) < 250:
+                                break
+                    except Exception as _fe:
+                        log.warning("GMC feed fetch page error: %s", _fe)
+                        break
 
         items = []
         for p in products:
@@ -775,9 +795,14 @@ async def handle_gmc_feed(req):
 {chr(10).join(items)}
 </channel>
 </rss>"""
+        # Cache befüllen
+        req.app[_feed_cache_key] = xml
+        req.app[_feed_cache_ts]  = _now
         return web.Response(text=xml, content_type="application/xml",
-                            headers={"Content-Disposition": "inline; filename=feed.xml"})
+                            headers={"Content-Disposition": "inline; filename=feed.xml",
+                                     "X-Products": str(len(items))})
     except Exception as e:
+        log.error("GMC feed error: %s", e)
         return web.Response(text=f"<!-- feed error: {e} -->", content_type="application/xml", status=500)
 
 
