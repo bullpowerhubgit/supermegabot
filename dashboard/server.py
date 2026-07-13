@@ -11145,6 +11145,20 @@ async def create_app():
     app.router.add_get( "/api/unsubscribe",            handle_unsubscribe)
     log.info("Mass Outreach 1000/Tag routes registered")
 
+    # KI-Telefonassistentin Sofia
+    from modules.phone_ai_assistant import (
+        handle_phone_incoming, handle_phone_status,
+        handle_phone_stats, handle_outbound_trigger,
+        handle_phone_ws, init_db as phone_init_db
+    )
+    phone_init_db()
+    app.router.add_post("/api/phone/incoming",  handle_phone_incoming)
+    app.router.add_post("/api/phone/status",    handle_phone_status)
+    app.router.add_get( "/api/phone/stats",     handle_phone_stats)
+    app.router.add_post("/api/phone/outbound",  handle_outbound_trigger)
+    app.router.add_get( "/ws/phone",            handle_phone_ws)
+    log.info("KI-Telefonassistentin Sofia routes registered (/api/phone/*, /ws/phone)")
+
     # Mega Acquisition Engine B2C
     async def handle_mega_acq_status(req):
         try:
