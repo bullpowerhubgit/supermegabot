@@ -423,6 +423,36 @@ async def run_cycle() -> Dict:
     return results
 
 
+# ── run_zvg_cycle: Wrapper mit normiertem Rückgabe-Dict ───────────────────────
+
+async def run_zvg_cycle() -> dict:
+    """
+    Normierter Wrapper um run_cycle() — gibt standardisiertes Dict zurück
+    für den Scheduler-Task task_zvg_radar.
+
+    Returns:
+        {new_leads, total_scanned, high_value, emails_sent, status}
+    """
+    try:
+        result = await run_cycle()
+        return {
+            "new_leads":     result.get("leads_found", 0),
+            "total_scanned": result.get("leads_found", 0),
+            "high_value":    result.get("high_value", 0),
+            "emails_sent":   result.get("emails_sent", 0),
+            "status":        "ok",
+        }
+    except Exception as exc:
+        log.error("run_zvg_cycle: %s", exc)
+        return {
+            "new_leads":     0,
+            "total_scanned": 0,
+            "high_value":    0,
+            "emails_sent":   0,
+            "status":        f"error: {exc}",
+        }
+
+
 # ── Scheduler ─────────────────────────────────────────────────────────────────
 
 async def scheduler_loop():
