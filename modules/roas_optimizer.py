@@ -93,7 +93,7 @@ async def _get_shopify_revenue_facebook(session: aiohttp.ClientSession) -> float
     """Gibt den Umsatz (EUR/USD) der letzten 24 h aus Facebook-Traffic zurück."""
     shop = os.getenv("SHOPIFY_SHOP_DOMAIN")
     token = os.getenv("SHOPIFY_ADMIN_API_TOKEN")
-    api_version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+    api_version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not shop or not token:
         logger.warning("Shopify nicht konfiguriert — Revenue auf 0 gesetzt")
         return 0.0

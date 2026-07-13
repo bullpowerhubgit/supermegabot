@@ -523,7 +523,7 @@ async def _fetch_shopify_checkouts(session: aiohttp.ClientSession) -> List[Dict]
               os.getenv("SHOPIFY_ACCESS_TOKEN", ""))
     domain = (os.getenv("SHOPIFY_SHOP_DOMAIN", "") or
               os.getenv("SHOPIFY_STORE_DOMAIN", ""))
-    ver    = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    ver    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
     if not token or not domain:
         log.error("SHOPIFY_ADMIN_API_TOKEN / SHOPIFY_SHOP_DOMAIN fehlen")

@@ -69,7 +69,7 @@ class BrutusClone:
                 html = f"<h2>{title}</h2><p>{content}</p>"
                 if link:
                     html += f'<p><a href="{link}">Mehr erfahren →</a></p>'
-                ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+                ver = os.getenv("SHOPIFY_API_VERSION", "2026-04")
                 blog_id = os.getenv("SHOPIFY_BLOG_ID", "127011258755")
                 async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=20)) as s:
                     async with s.post(

@@ -89,7 +89,7 @@ async def check_railway() -> Dict:
 async def check_shopify() -> Dict:
     domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
     token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-    version = os.getenv("SHOPIFY_API_VERSION", "2024-01")
+    version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not domain or not token:
         return {"platform": "shopify", "ok": False, "error": "credentials missing"}
     status, body = await _get(
@@ -123,7 +123,7 @@ async def check_klaviyo() -> Dict:
         return {"platform": "klaviyo", "ok": False, "error": "key missing"}
     status, body = await _get(
         "https://a.klaviyo.com/api/lists/",
-        headers={"Authorization": f"Klaviyo-API-Key {key}", "revision": "2024-02-15"},
+        headers={"Authorization": f"Klaviyo-API-Key {key}", "revision": "2024-10-15"},
     )
     ok = status == 200
     n_lists = len(body.get("data", [])) if ok and isinstance(body, dict) else 0

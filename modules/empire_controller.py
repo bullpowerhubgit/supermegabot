@@ -71,7 +71,7 @@ AGENTS = [
         "cmd":          [PYTHON, "dashboard/server.py"],
         "pid_file":     "/tmp/empire_server.pid",
         "log_file":     "/tmp/empire_server.log",
-        "health_url":   "http://localhost:8888/health",
+        "health_url":   os.getenv("SUPERMEGABOT_INTERNAL_URL", "http://localhost:8888") + "/health",
         "critical":     True,
         "startup_wait": 8,
         "env":          {"PORT": "8888", "DASHBOARD_PORT": "8888"},

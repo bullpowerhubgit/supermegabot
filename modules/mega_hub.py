@@ -44,7 +44,7 @@ PATHS = {
 
 # ── PM2-Prozesse (aus ecosystem.config.js) ────────────────────────────────────
 PM2_APPS = [
-    {"name": "supermegabot",        "port": 8888,  "url": "http://localhost:8888/health"},
+    {"name": "supermegabot",        "port": 8888,  "url": os.getenv("SUPERMEGABOT_INTERNAL_URL", "http://localhost:8888") + "/health"},
     {"name": "telegram-bot",        "port": 3200,  "url": "http://localhost:3200/api/status"},
     {"name": "cratorhub",           "port": 3000,  "url": "http://localhost:3000"},
     {"name": "windsurf-shopify",    "port": 3001,  "url": "http://localhost:3001"},
@@ -176,7 +176,7 @@ class SystemStatus:
         # 1. HTTP-Services
         lines.append("<b>Services:</b>")
         checks = [
-            ("SuperMegaBot Dashboard", "http://localhost:8888/health"),
+            ("SuperMegaBot Dashboard", os.getenv("SUPERMEGABOT_INTERNAL_URL", "http://localhost:8888") + "/health"),
             ("Telegram Bot (Node)",    "http://localhost:3200/api/status"),
             ("Password-Sync",          "http://localhost:3005/health"),
             ("Windsurf Autoheal",      "http://localhost:9000/health"),

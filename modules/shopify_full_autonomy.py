@@ -31,7 +31,7 @@ log = logging.getLogger("ShopifyFullAuto")
 
 SHOP    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
-VER     = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+VER     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 BASE    = lambda path: f"https://{SHOP}/admin/api/{VER}/{path}"
 HEADERS = {"X-Shopify-Access-Token": TOKEN, "Content-Type": "application/json"}
 
