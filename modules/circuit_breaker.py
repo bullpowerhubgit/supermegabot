@@ -24,12 +24,77 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
+import sqlite3
 import time
 from collections import defaultdict
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Callable, Any
 
 log = logging.getLogger("CircuitBreaker")
+
+# ── SQLite Persistenz (überlebt Deploys) ──────────────────────────────────────
+_DB_PATH = Path(__file__).parent.parent / "data" / "circuit_breaker.db"
+
+def _db() -> sqlite3.Connection:
+    _DB_PATH.parent.mkdir(exist_ok=True)
+    conn = sqlite3.connect(str(_DB_PATH))
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA journal_mode=WAL")
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS cb_state (
+            service         TEXT PRIMARY KEY,
+            state           TEXT DEFAULT 'closed',
+            failures        INTEGER DEFAULT 0,
+            opened_at       REAL DEFAULT 0,
+            last_error      TEXT DEFAULT '',
+            total_calls     INTEGER DEFAULT 0,
+            total_failures  INTEGER DEFAULT 0,
+            manual_reset_at REAL DEFAULT 0
+        )
+    """)
+    conn.commit()
+    return conn
+
+def _save(service: str, s: dict) -> None:
+    try:
+        with _db() as conn:
+            conn.execute("""
+                INSERT INTO cb_state
+                  (service, state, failures, opened_at, last_error,
+                   total_calls, total_failures, manual_reset_at)
+                VALUES (?,?,?,?,?,?,?,?)
+                ON CONFLICT(service) DO UPDATE SET
+                  state=excluded.state, failures=excluded.failures,
+                  opened_at=excluded.opened_at, last_error=excluded.last_error,
+                  total_calls=excluded.total_calls,
+                  total_failures=excluded.total_failures,
+                  manual_reset_at=excluded.manual_reset_at
+            """, (service, s["state"], s["failures"], s["opened_at"],
+                  s["last_error"], s["total_calls"], s["total_failures"],
+                  s.get("manual_reset_at", 0)))
+    except Exception as e:
+        log.debug("CB save error: %s", e)
+
+def _load_all() -> dict:
+    """Lädt gespeicherten State beim Start — Cooldowns werden berücksichtigt."""
+    loaded = {}
+    try:
+        with _db() as conn:
+            rows = conn.execute("SELECT * FROM cb_state").fetchall()
+        for row in rows:
+            s = dict(row)
+            # Cooldown abgelaufen? → automatisch closed
+            if s["state"] == "open":
+                cfg = _CONFIGS.get(s["service"], _CONFIGS["default"])
+                elapsed = time.time() - s["opened_at"]
+                if elapsed >= cfg["cooldown"]:
+                    s["state"] = "closed"
+                    s["failures"] = 0
+            loaded[s["service"]] = s
+    except Exception as e:
+        log.debug("CB load error: %s", e)
+    return loaded
 
 # ── Config per service ────────────────────────────────────────────────────────
 _CONFIGS: dict[str, dict] = {
@@ -48,14 +113,21 @@ _CONFIGS: dict[str, dict] = {
     "default":    {"threshold": 5, "cooldown": 300,  "half_open_after": 60},
 }
 
-_STATE: dict[str, dict] = defaultdict(lambda: {
-    "failures": 0,
-    "state": "closed",   # closed | open | half_open
-    "opened_at": 0.0,
-    "last_error": "",
-    "total_calls": 0,
-    "total_failures": 0,
-})
+def _default_state() -> dict:
+    return {
+        "failures": 0,
+        "state": "closed",
+        "opened_at": 0.0,
+        "last_error": "",
+        "total_calls": 0,
+        "total_failures": 0,
+        "manual_reset_at": 0.0,
+    }
+
+# State beim Modulstart aus DB laden
+_STATE: dict[str, dict] = defaultdict(_default_state)
+_STATE.update(_load_all())
+log.debug("CircuitBreaker: %d States aus DB geladen", len(_STATE))
 
 
 def _cfg(service: str) -> dict:
@@ -99,6 +171,7 @@ def success(service: str) -> None:
         log.info("Circuit %s → closed (recovered)", service)
     s["failures"] = 0
     s["state"] = "closed"
+    _save(service, s)
 
 
 def failure(service: str, error: str = "", http_status: int = 0) -> None:
@@ -108,6 +181,13 @@ def failure(service: str, error: str = "", http_status: int = 0) -> None:
     s["total_failures"] += 1
     s["last_error"] = error[:120]
 
+    # Manuell zurückgesetzt? → Fehler ignorieren für 6h
+    manual_protect = s.get("manual_reset_at", 0)
+    if manual_protect and (time.time() - manual_protect) < 21600:
+        log.info("Circuit %s: failure ignored (manual_reset protection)", service)
+        _save(service, s)
+        return
+
     # 429 / rate-limit: open immediately with long cooldown
     if http_status == 429 or "rate" in error.lower() or "429" in error:
         s["state"] = "open"
@@ -115,6 +195,7 @@ def failure(service: str, error: str = "", http_status: int = 0) -> None:
         s["failures"] = _cfg(service)["threshold"]
         log.warning("Circuit %s → open (rate_limit)", service)
         _telegram_alert(service, "rate_limit_429", error)
+        _save(service, s)
         return
 
     # permission / auth errors: open immediately, no point retrying
@@ -124,6 +205,7 @@ def failure(service: str, error: str = "", http_status: int = 0) -> None:
         s["failures"] = _cfg(service)["threshold"]
         log.warning("Circuit %s → open (auth/permission)", service)
         _telegram_alert(service, "auth_error", error)
+        _save(service, s)
         return
 
     s["failures"] += 1
@@ -133,6 +215,7 @@ def failure(service: str, error: str = "", http_status: int = 0) -> None:
         s["opened_at"] = time.time()
         log.warning("Circuit %s → open after %d failures", service, s["failures"])
         _telegram_alert(service, "threshold_reached", error)
+    _save(service, s)
 
 
 def _telegram_alert(service: str, reason: str, error: str) -> None:
@@ -168,25 +251,27 @@ def get_status() -> dict:
 
 
 def reset(service: str) -> None:
-    """Manually reset a circuit to closed."""
-    _STATE[service]["state"] = "closed"
-    _STATE[service]["failures"] = 0
-    log.info("Circuit %s manually reset → closed", service)
+    """Manually reset a circuit to closed. Sets manual_reset_at to suppress re-opening for 6h."""
+    s = _STATE[service]
+    s["state"] = "closed"
+    s["failures"] = 0
+    s["manual_reset_at"] = time.time()
+    log.info("Circuit %s manually reset → closed (protected 6h)", service)
+    _save(service, s)
 
 
 def reset_all() -> list:
-    """Reset ALL open/half_open circuits to closed. Returns list of reset service names."""
+    """Reset ALL circuits to closed. Returns list of reset service names."""
     reset_names = []
+    # Force-reset all known social channels regardless of current state
+    for svc in ("facebook", "instagram", "linkedin", "twitter", "pinterest"):
+        reset(svc)
+        reset_names.append(svc)
+    # Also reset anything else currently open
     for name in list(_STATE.keys()):
-        if _STATE[name]["state"] != "closed":
+        if name not in reset_names and _STATE[name]["state"] != "closed":
             reset(name)
             reset_names.append(name)
-    # Also force-reset known social channels that may not have state entries yet
-    for svc in ("facebook", "instagram", "linkedin", "twitter", "pinterest"):
-        if svc not in _STATE or _STATE[svc]["state"] != "closed":
-            reset(svc)
-            if svc not in reset_names:
-                reset_names.append(svc)
     log.info("reset_all: %d circuits reset → closed: %s", len(reset_names), reset_names)
     return reset_names
 
