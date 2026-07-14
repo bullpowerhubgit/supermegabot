@@ -227,7 +227,8 @@ async def blast_klaviyo_list(subject: str, html: str) -> Dict:
         attrs = profile.get("attributes", {})
         email = attrs.get("email", "").strip()
         name = attrs.get("first_name", "") or ""
-        if not email or "@" not in email:
+        _demo_domains = {"klaviyo-demo.com", "example.com", "mailinator.com", "test.com"}
+        if not email or "@" not in email or email.split("@")[-1] in _demo_domains:
             return False
         async with sem:
             r = await send_single(email, name, subject, html)

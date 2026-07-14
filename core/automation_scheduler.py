@@ -5797,10 +5797,10 @@ async def task_seo_keyword_discover() -> str:
 
 
 async def task_seo_content_factory() -> str:
-    """SEO Content Factory: generiert 5 Shopify-Blog-Artikel (alle 2h)."""
+    """SEO Content Factory: generiert 2 Shopify-Blog-Artikel (alle 2h) — 24/Tag."""
     try:
         from modules.seo_mega_engine import run_content_factory
-        r = await run_content_factory(batch_size=5)
+        r = await run_content_factory(batch_size=2)
         return f"ContentFactory: {r.get('generated',0)} Artikel | Shopify: {r.get('published_shopify',0)}"
     except Exception as e:
         return f"ContentFactory Fehler: {e}"
