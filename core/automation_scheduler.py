@@ -7659,7 +7659,7 @@ TASKS = [
     # vat_oss_engine: zusammengeführt mit vat_oss_cycle (non_eu_vat_oss.py)
     ("gpsr_scan",                 task_gpsr_scan,                     43200, 9002),  # alle 12h — GPSR Compliance: Shopify-Produkte prüfen
     ("zvg_hourly",                task_zvg_hourly,                     3600, 9003),  # stündl. — ZVG Radar: neue Leads (hourly scan)
-    ("roas_optimizer",            task_roas_optimizer,                14400, 9100),  # alle 4h — Meta/Google ROAS Auto-Pause/Scale
+    ("roas_optimizer",            task_roas_optimizer,                 3600, 9100),  # stündl. — Meta ROAS Live-Pull, Auto-Scale/Pause
     ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
     ("meta_ads_optimize",         task_meta_ads_optimize,            86400, 9195),  # 24h — Meta Ads CTR/CPC Auto-Optimize
     ("free_api_hunter",           task_free_api_hunter,              43200, 9200),  # 12h — Suche + Cache kostenlose APIs
