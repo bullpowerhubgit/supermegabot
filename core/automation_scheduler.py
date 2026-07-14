@@ -5820,14 +5820,14 @@ async def task_meta_ads_cycle() -> str:
         return f"MetaAds Fehler: {e}"
 
 
-async def task_pinterest_cycle() -> str:
-    """Pinterest: pinne Shopify-Produkte auf relevante Boards (alle 2h)."""
+async def task_pinterest_traffic_cycle() -> str:
+    """Pinterest Traffic: pinne Shopify-Produkte auf relevante Smart-Home-Boards (alle 2h)."""
     try:
         from modules.pinterest_traffic import run_pinterest_posting_cycle
         r = await run_pinterest_posting_cycle(pins_per_run=10)
-        return f"Pinterest: {r.get('pinned', 0)} Pins | Gesamt: {r.get('total_posted_ever', 0)}"
+        return f"PinterestTraffic: {r.get('pinned', 0)} Pins | Gesamt: {r.get('total_posted_ever', 0)}"
     except Exception as e:
-        return f"Pinterest Fehler: {e}"
+        return f"PinterestTraffic Fehler: {e}"
 
 
 async def task_sendgrid_daily() -> str:
@@ -7513,7 +7513,12 @@ TASKS = [
     # ── Klaviyo Email Automation ──────────────────────────────────────────────
     ("klaviyo_cycle",          task_klaviyo_cycle,          28800, 820),   # 8h — Klaviyo Kampagnen
     # ── Pinterest Traffic ─────────────────────────────────────────────────────
-    ("pinterest_cycle",        task_pinterest_cycle,        14400, 860),   # 4h — Pinterest Pins → Shop Traffic
+    ("pinterest_cycle",          task_pinterest_cycle,          14400,  860),  # 4h — Pinterest autonomy
+    ("pinterest_traffic",        task_pinterest_traffic_cycle,   7200,  870),  # 2h — Smart Home Pins ineedit.com.co
+    # ── Meta Ads Engine ───────────────────────────────────────────────────────
+    ("meta_ads",                 task_meta_ads_cycle,           14400,  300),  # 4h — Facebook/Instagram Kampagnen
+    # ── SendGrid Revenue Email ────────────────────────────────────────────────
+    ("sendgrid_daily",           task_sendgrid_daily,           86400,  120),  # täglich — Revenue-Email via SendGrid
     # ── TikTok Shop Sync ──────────────────────────────────────────────────────
     ("tiktok_cycle",           task_tiktok_cycle,           14400, 900),   # 4h — TikTok Shop + Videos
     # ── Affiliate Mega Engine ─────────────────────────────────────────────────

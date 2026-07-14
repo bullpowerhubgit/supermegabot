@@ -2881,6 +2881,68 @@ async def handle_tiktok_ads_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_meta_ads_status(req):
+    """GET /api/meta/status — Meta Ads Kampagnen-Übersicht."""
+    try:
+        from modules.meta_ads_engine import get_meta_status
+        result = await get_meta_status()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_meta_ads_run(req):
+    """POST /api/meta/run — Meta Ads Zyklus manuell starten."""
+    try:
+        from modules.meta_ads_engine import run_meta_campaign_cycle
+        result = await run_meta_campaign_cycle()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_pinterest_run(req):
+    """POST /api/pinterest/run — Pinterest Pins manuell posten."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        pins = int(data.get("pins_per_run", 10))
+        from modules.pinterest_traffic import run_pinterest_posting_cycle
+        result = await run_pinterest_posting_cycle(pins_per_run=pins)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_pinterest_status(req):
+    """GET /api/pinterest/status — Pinterest Boards + Pins Status."""
+    try:
+        from modules.pinterest_traffic import get_pinterest_status
+        result = await get_pinterest_status()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_sendgrid_blast(req):
+    """POST /api/email/sendgrid-blast — Revenue Email sofort senden."""
+    try:
+        from modules.sendgrid_blast import run_daily_revenue_email
+        result = await run_daily_revenue_email()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_sendgrid_status(req):
+    """GET /api/email/sendgrid-status — SendGrid Stats."""
+    try:
+        from modules.sendgrid_blast import get_sendgrid_status
+        result = await get_sendgrid_status()
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_seo_status(req):
     """SEO score for all Shopify products."""
     try:
@@ -10306,6 +10368,16 @@ async def create_app():
     app.router.add_get("/api/revenue/status",         handle_revenue_status)
     app.router.add_get("/api/revenue/report",         handle_revenue_report)
 
+    # ── SEO Autopilot ─────────────────────────────────────────────────────────
+    # ── Meta Ads ──────────────────────────────────────────────────────────────
+    app.router.add_get("/api/meta/status",            handle_meta_ads_status)
+    app.router.add_post("/api/meta/run",              handle_meta_ads_run)
+    # ── Pinterest ─────────────────────────────────────────────────────────────
+    app.router.add_get("/api/pinterest/status",       handle_pinterest_status)
+    app.router.add_post("/api/pinterest/run",         handle_pinterest_run)
+    # ── SendGrid Email ────────────────────────────────────────────────────────
+    app.router.add_get("/api/email/sendgrid-status",  handle_sendgrid_status)
+    app.router.add_post("/api/email/sendgrid-blast",  handle_sendgrid_blast)
     # ── SEO Autopilot ─────────────────────────────────────────────────────────
     app.router.add_get("/api/seo/status",             handle_seo_status)
     app.router.add_post("/api/seo/run",               handle_seo_run)
