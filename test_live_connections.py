@@ -239,10 +239,17 @@ def test_supabase():
     if not url:  fail("URL",      "SUPABASE_URL fehlt"); return
     if not anon: fail("Anon Key", "SUPABASE_ANON_KEY fehlt"); return
     ok("URL", url[:40] + "…")
-    c, d, ms = _get(f"{url}/rest/v1/",
-                    {"apikey": anon, "Authorization": f"Bearer {anon}"})
-    if c in (200, 400, 404):
-        ok("REST API", f"{ms}ms")
+    # Test mit Service Key gegen echte Tabelle (anon key hat keine Schema-Introspection)
+    test_key = svc if svc else anon
+    c, d, ms = _get(f"{url}/rest/v1/agent_memory?limit=1",
+                    {"apikey": test_key, "Authorization": f"Bearer {test_key}"})
+    if c == 200:
+        ok("REST API", f"{ms}ms | agent_memory erreichbar")
+    elif c == 401:
+        # Anon key hat keine Berechtigung — Supabase selbst antwortet aber
+        warn("REST API", f"401 — Service Key nötig für RLS-geschützte Tabellen")
+    elif c in (400, 404):
+        ok("REST API", f"{ms}ms (Tabelle leer oder nicht gefunden)")
     else:
         fail("REST API", f"HTTP {c}")
     if svc:

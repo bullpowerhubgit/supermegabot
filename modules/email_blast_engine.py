@@ -25,7 +25,7 @@ SHOP        = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOK = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
-KLAVIYO_KEY = os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_242945f7521ac82039ed5dbf7ff8e6cf1c")
+KLAVIYO_KEY = os.getenv("KLAVIYO_API_KEY", "")
 KLAVIYO_LIST = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 
 MAILCHIMP_KEY = os.getenv("MAILCHIMP_API_KEY", "")
@@ -125,12 +125,8 @@ async def send_via_klaviyo(subject: str, html: str) -> dict:
     if not KLAVIYO_KEY:
         return {"ok": False, "error": "no KLAVIYO_API_KEY"}
     try:
-        from modules.klaviyo_autonomy import create_campaign
-        result = await create_campaign(
-            name=f"Email Blast {datetime.now().strftime('%Y-%m-%d %H:%M')}",
-            subject=subject,
-            html_content=html
-        )
+        from modules.klaviyo_automation import send_campaign
+        result = await send_campaign(subject=subject, html_body=html)
         return result
     except Exception as e:
         return {"ok": False, "error": str(e)}

@@ -900,7 +900,7 @@ async def send_email(to_email: str, subject: str, body: str) -> Tuple[bool, str]
         if account["type"] == "gmail":
             ok = _send_via_gmail(account["user"], account["pass"], to_email, subject, body)
         else:
-            ok = await _send_via_sendgrid(account["key"], account["from"], to_email, subject, body)
+            ok = await _send_via_sendgrid(account["key"], account["from"], to_email, subject, body.replace("{email}", to_email))
         if ok:
             _account_sends[daily_key] = _account_sends.get(daily_key, 0) + 1
             return True, acct_key
@@ -995,9 +995,6 @@ async def run_followups() -> Dict:
             if ok:
                 sent += 1
                 with _db() as conn:
-                    conn.execute(
-                        "SELECT id FROM leads WHERE email=?", (row["email"],)
-                    )
                     lid = conn.execute(
                         "SELECT id FROM leads WHERE email=?", (row["email"],)
                     ).fetchone()

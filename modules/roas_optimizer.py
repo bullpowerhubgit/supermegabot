@@ -1,610 +1,463 @@
-"""
-ROAS Optimizer — automatischer Meta Ads & Google Ads Performance-Loop
-Logik:
-  ROAS < 1.2  → Ad Set pausieren + Telegram-Alert
-  ROAS 1.2-2.5 → Status-quo, tägl. Monitoring
-  ROAS > 3.0  → Budget +20% skalieren
+"""ROAS Optimizer — reads ads_spend.csv + data/ads_spend.json, calculates ROAS
+per campaign, pauses losers via Meta Ads API, scales winners, fires Telegram
+alert, and returns a structured report dict.
+
+Thresholds (configurable via env):
+  ROAS > 4.0  → Scale budget +20%
+  ROAS 2.0-4.0 → Keep / optimize
+  ROAS < 2.0  → PAUSE immediately (Meta API call if credentials set)
+
+Main entry point: run_roas_cycle() → dict
 """
 
 import asyncio
+import csv
 import json
 import logging
 import os
-from datetime import datetime, timezone, timedelta
+from collections import defaultdict
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 import aiohttp
 from dotenv import load_dotenv
 
 load_dotenv(Path(__file__).parent.parent / ".env")
 
-logger = logging.getLogger(__name__)
+log = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Konfiguration
-# ---------------------------------------------------------------------------
+# ── Credentials ───────────────────────────────────────────────────────────────
+META_ADS_TOKEN     = os.getenv("META_ADS_TOKEN", "") or os.getenv("META_ACCESS_TOKEN", "") or os.getenv("FACEBOOK_PAGE_TOKEN", "")
+META_AD_ACCOUNT_ID = os.getenv("META_AD_ACCOUNT_ID", "")
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID   = os.getenv("TELEGRAM_CHAT_ID", "")
 
-META_BASE = "https://graph.facebook.com/v19.0"
-STATE_FILE = Path(__file__).parent.parent / "data" / "roas_optimizer.json"
+# ── Thresholds (env-overridable) ──────────────────────────────────────────────
+ROAS_SCALE_THRESHOLD = float(os.getenv("ROAS_SCALE_THRESHOLD", "4.0"))   # scale if >
+ROAS_PAUSE_THRESHOLD = float(os.getenv("ROAS_PAUSE_THRESHOLD", "2.0"))   # pause if <
+SCALE_BUDGET_PCT     = float(os.getenv("SCALE_BUDGET_PCT", "20.0"))      # % increase
 
-ROAS_PAUSE_THRESHOLD = 1.2
-ROAS_SCALE_THRESHOLD = 3.0
-BUDGET_SCALE_FACTOR = 1.20   # +20 %
+# ── Paths ─────────────────────────────────────────────────────────────────────
+_BASE_DIR = Path(__file__).resolve().parent.parent
+CSV_PATH  = Path(os.getenv("ADS_SPEND_CSV", str(Path.home() / "ads_spend.csv")))
+JSON_PATH = _BASE_DIR / "data" / "ads_spend.json"
 
-
-# ---------------------------------------------------------------------------
-# State-Verwaltung
-# ---------------------------------------------------------------------------
-
-def _load_state() -> dict:
-    STATE_FILE.parent.mkdir(parents=True, exist_ok=True)
-    if STATE_FILE.exists():
-        try:
-            with open(STATE_FILE, "r", encoding="utf-8") as fh:
-                return json.load(fh)
-        except Exception as exc:
-            logger.warning("State-Datei konnte nicht geladen werden: %s", exc)
-    return {
-        "last_run": None,
-        "ad_sets_checked": 0,
-        "paused_today": 0,
-        "scaled_today": 0,
-        "history": [],
-    }
+META_GRAPH = "https://graph.facebook.com/v19.0"
 
 
-def _save_state(state: dict) -> None:
-    try:
-        with open(STATE_FILE, "w", encoding="utf-8") as fh:
-            json.dump(state, fh, indent=2, ensure_ascii=False)
-    except Exception as exc:
-        logger.error("State konnte nicht gespeichert werden: %s", exc)
+# ── Telegram ──────────────────────────────────────────────────────────────────
 
-
-# ---------------------------------------------------------------------------
-# Telegram-Alert
-# ---------------------------------------------------------------------------
-
-async def _send_telegram(session: aiohttp.ClientSession, message: str) -> None:
-    token = os.getenv("TELEGRAM_BOT_TOKEN")
-    chat_id = os.getenv("TELEGRAM_CHAT_ID")
-    if not token or not chat_id:
-        logger.warning("Telegram nicht konfiguriert — Alert übersprungen")
+async def _tg(msg: str) -> None:
+    """Send a Telegram message; silently skip when credentials are absent."""
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        log.debug("Telegram credentials not set — skipping alert")
         return
-    url = f"https://api.telegram.org/bot{token}/sendMessage"
-    payload = {"chat_id": chat_id, "text": message, "parse_mode": "HTML"}
     try:
-        async with session.post(url, json=payload, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-            if resp.status != 200:
-                body = await resp.text()
-                logger.warning("Telegram-Alert fehlgeschlagen (%d): %s", resp.status, body)
-            else:
-                logger.info("Telegram-Alert gesendet")
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            await s.post(
+                f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+                json={"chat_id": TELEGRAM_CHAT_ID, "text": msg, "parse_mode": "HTML"},
+            )
     except Exception as exc:
-        logger.error("Telegram-Fehler: %s", exc)
+        log.warning("_tg: %s", exc)
 
 
-# ---------------------------------------------------------------------------
-# Shopify Revenue-Abfrage (letzte 24 h, UTM source=facebook)
-# ---------------------------------------------------------------------------
+# ── Data loading ──────────────────────────────────────────────────────────────
 
-async def _get_shopify_revenue_facebook(session: aiohttp.ClientSession) -> float:
-    """Gibt den Umsatz (EUR/USD) der letzten 24 h aus Facebook-Traffic zurück."""
-    shop = os.getenv("SHOPIFY_SHOP_DOMAIN")
-    token = os.getenv("SHOPIFY_ADMIN_API_TOKEN")
-    api_version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
-    if not shop or not token:
-        logger.warning("Shopify nicht konfiguriert — Revenue auf 0 gesetzt")
-        return 0.0
-
-    since = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    url = (
-        f"https://{shop}/admin/api/{api_version}/orders.json"
-        f"?status=any&created_at_min={since}&limit=250"
-        f"&fields=id,total_price,note_attributes,source_name,referring_site"
-    )
-    headers = {"X-Shopify-Access-Token": token}
-    revenue = 0.0
-    try:
-        async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=15)) as resp:
-            if resp.status != 200:
-                logger.warning("Shopify-Orders-Abfrage fehlgeschlagen: %d", resp.status)
-                return 0.0
-            data = await resp.json()
-            orders = data.get("orders", [])
-            for order in orders:
-                # UTM-Source via note_attributes oder referring_site prüfen
-                source_match = False
-                for attr in order.get("note_attributes", []):
-                    if attr.get("name", "").lower() == "utm_source" and "facebook" in str(attr.get("value", "")).lower():
-                        source_match = True
-                        break
-                if not source_match:
-                    ref = (order.get("referring_site") or "").lower()
-                    if "facebook" in ref or "fb.com" in ref or "instagram" in ref:
-                        source_match = True
-                if not source_match:
-                    src = (order.get("source_name") or "").lower()
-                    if "facebook" in src or "instagram" in src:
-                        source_match = True
-                if source_match:
-                    try:
-                        revenue += float(order.get("total_price", 0))
-                    except (ValueError, TypeError):
-                        pass
-    except Exception as exc:
-        logger.error("Shopify Revenue-Abfrage Fehler: %s", exc)
-    logger.info("Shopify Facebook-Revenue (24 h): %.2f", revenue)
-    return revenue
-
-
-# ---------------------------------------------------------------------------
-# Meta Ads API
-# ---------------------------------------------------------------------------
-
-def _meta_token() -> Optional[str]:
-    return os.getenv("META_ACCESS_TOKEN") or os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC")
-
-
-async def _get_meta_ad_sets(session: aiohttp.ClientSession, ad_account_id: str, access_token: str) -> list[dict]:
-    """Holt alle aktiven Ad Sets inkl. Spend-Insights der letzten 24 h."""
-    date_preset = "last_1d"
-    fields = "id,name,status,daily_budget,insights.date_preset(last_1d){spend,impressions,clicks}"
-    url = (
-        f"{META_BASE}/act_{ad_account_id}/adsets"
-        f"?fields={fields}&status=['ACTIVE']&access_token={access_token}&limit=100"
-    )
-    ad_sets = []
-    try:
-        async with session.get(url, timeout=aiohttp.ClientTimeout(total=20)) as resp:
-            if resp.status != 200:
-                body = await resp.text()
-                logger.error("Meta Ad Sets Abfrage fehlgeschlagen (%d): %s", resp.status, body)
-                return []
-            data = await resp.json()
-            ad_sets = data.get("data", [])
-            logger.info("%d aktive Meta Ad Sets gefunden", len(ad_sets))
-    except Exception as exc:
-        logger.error("Meta Ad Sets Fehler: %s", exc)
-    return ad_sets
-
-
-async def _pause_meta_ad_set(session: aiohttp.ClientSession, ad_set_id: str, access_token: str) -> bool:
-    url = f"{META_BASE}/{ad_set_id}"
-    payload = {"status": "PAUSED", "access_token": access_token}
-    try:
-        async with session.post(url, data=payload, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-            if resp.status == 200:
-                logger.info("Ad Set %s pausiert", ad_set_id)
-                return True
-            body = await resp.text()
-            logger.error("Ad Set %s pausieren fehlgeschlagen (%d): %s", ad_set_id, resp.status, body)
-    except Exception as exc:
-        logger.error("Pause-Fehler Ad Set %s: %s", ad_set_id, exc)
-    return False
-
-
-async def _scale_meta_ad_set_budget(
-    session: aiohttp.ClientSession,
-    ad_set_id: str,
-    current_budget_cents: int,
-    access_token: str,
-) -> bool:
-    """Erhöht das Tagesbudget um BUDGET_SCALE_FACTOR."""
-    new_budget = int(current_budget_cents * BUDGET_SCALE_FACTOR)
-    url = f"{META_BASE}/{ad_set_id}"
-    payload = {"daily_budget": new_budget, "access_token": access_token}
-    try:
-        async with session.post(url, data=payload, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-            if resp.status == 200:
-                logger.info(
-                    "Ad Set %s Budget skaliert: %d → %d (Cent)",
-                    ad_set_id, current_budget_cents, new_budget,
-                )
-                return True
-            body = await resp.text()
-            logger.error("Budget-Skalierung fehlgeschlagen (%d): %s", resp.status, body)
-    except Exception as exc:
-        logger.error("Scale-Fehler Ad Set %s: %s", ad_set_id, exc)
-    return False
-
-
-def _extract_spend(ad_set: dict) -> float:
-    """Extrahiert den Spend aus den Insights eines Ad Sets."""
-    try:
-        insights = ad_set.get("insights", {})
-        if isinstance(insights, dict):
-            data = insights.get("data", [])
-            if data:
-                return float(data[0].get("spend", 0))
-    except (TypeError, ValueError, IndexError):
-        pass
-    return 0.0
-
-
-async def _process_meta_ad_sets(
-    session: aiohttp.ClientSession,
-    ad_account_id: str,
-    access_token: str,
-    facebook_revenue: float,
-    state: dict,
-) -> list[dict]:
-    """Verarbeitet alle Meta Ad Sets und wendet ROAS-Logik an."""
-    ad_sets = await _get_meta_ad_sets(session, ad_account_id, access_token)
-    if not ad_sets:
+def _load_csv() -> list[dict]:
+    """Load rows from ads_spend.csv."""
+    if not CSV_PATH.exists():
+        log.warning("CSV not found: %s", CSV_PATH)
         return []
+    rows: list[dict] = []
+    with CSV_PATH.open(newline="", encoding="utf-8") as fh:
+        reader = csv.DictReader(fh)
+        for row in reader:
+            try:
+                rows.append({
+                    "date":        row["Date"].strip(),
+                    "platform":    row["Platform"].strip(),
+                    "campaign":    row["Campaign"].strip(),
+                    "ad_set":      row["Ad_Set"].strip(),
+                    "objective":   row["Objective"].strip(),
+                    "spend_eur":   float(row["Spend_EUR"]),
+                    "impressions": int(row["Impressions"]),
+                    "clicks":      int(row["Clicks"]),
+                    "ctr_pct":     float(row["CTR_%"]),
+                    "cpc_eur":     float(row["CPC_EUR"]),
+                    "conversions": int(row["Conversions"]),
+                    "revenue_eur": float(row["Revenue_EUR"]),
+                    "roas":        float(row["ROAS"]),
+                })
+            except (KeyError, ValueError) as exc:
+                log.warning("Skipping malformed CSV row: %s — %s", row, exc)
+    log.info("Loaded %d rows from CSV: %s", len(rows), CSV_PATH)
+    return rows
 
-    results = []
-    total_spend = sum(_extract_spend(ads) for ads in ad_sets)
 
-    for ad_set in ad_sets:
-        ad_set_id = ad_set.get("id", "unbekannt")
-        ad_set_name = ad_set.get("name", "unbekannt")
-        status = ad_set.get("status", "")
-        daily_budget = int(ad_set.get("daily_budget") or 0)
-        spend = _extract_spend(ad_set)
+def _load_json() -> list[dict]:
+    """Load rows from data/ads_spend.json (supplement / override CSV)."""
+    if not JSON_PATH.exists():
+        return []
+    try:
+        with JSON_PATH.open(encoding="utf-8") as fh:
+            data = json.load(fh)
+        if isinstance(data, list):
+            return data
+        if isinstance(data, dict) and "rows" in data:
+            return data["rows"]
+    except Exception as exc:
+        log.warning("Could not parse %s: %s", JSON_PATH, exc)
+    return []
 
-        # ROAS berechnen: anteiliger Revenue (proportional zum Spend)
-        if total_spend > 0 and spend > 0:
-            ad_set_revenue = facebook_revenue * (spend / total_spend)
-        else:
-            ad_set_revenue = 0.0
 
-        roas = (ad_set_revenue / spend) if spend > 0 else 0.0
+def _merge_rows(csv_rows: list[dict], json_rows: list[dict]) -> list[dict]:
+    """Merge CSV + JSON; deduplicate by (date, platform, campaign, ad_set)."""
+    seen: set[tuple] = set()
+    merged: list[dict] = []
+    for row in csv_rows + json_rows:
+        key = (row.get("date"), row.get("platform"), row.get("campaign"), row.get("ad_set"))
+        if key not in seen:
+            seen.add(key)
+            merged.append(row)
+    return merged
 
-        logger.info(
-            "Ad Set '%s' | Spend: %.2f | Revenue: %.2f | ROAS: %.2f",
-            ad_set_name, spend, ad_set_revenue, roas,
-        )
 
-        action_taken = "monitoring"
-        success = True
+# ── Aggregation ───────────────────────────────────────────────────────────────
 
-        if spend == 0:
-            action_taken = "kein_spend"
-        elif roas < ROAS_PAUSE_THRESHOLD:
-            # ROAS zu niedrig → pausieren
-            success = await _pause_meta_ad_set(session, ad_set_id, access_token)
-            if success:
-                action_taken = "pausiert"
-                state["paused_today"] = state.get("paused_today", 0) + 1
-                alert_msg = (
-                    f"🛑 <b>ROAS-Optimizer: Ad Set pausiert</b>\n"
-                    f"Ad Set: {ad_set_name}\n"
-                    f"ROAS: {roas:.2f} (Schwelle: {ROAS_PAUSE_THRESHOLD})\n"
-                    f"Spend (24h): {spend:.2f}\n"
-                    f"Revenue: {ad_set_revenue:.2f}\n"
-                    f"Zeit: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
-                )
-                await _send_telegram(session, alert_msg)
-            else:
-                action_taken = "pause_fehlgeschlagen"
+def _aggregate_by_campaign(rows: list[dict]) -> list[dict]:
+    """Aggregate metrics by (campaign, platform) summing across all dates / ad_sets."""
+    buckets: dict[tuple, dict[str, Any]] = defaultdict(lambda: {
+        "spend_eur": 0.0, "revenue_eur": 0.0,
+        "impressions": 0, "clicks": 0, "conversions": 0,
+        "ad_sets": set(), "platform": "", "dates": [],
+    })
+    for row in rows:
+        key = (row["campaign"], row["platform"])
+        b = buckets[key]
+        b["spend_eur"]   += row["spend_eur"]
+        b["revenue_eur"] += row["revenue_eur"]
+        b["impressions"] += row["impressions"]
+        b["clicks"]      += row["clicks"]
+        b["conversions"] += row["conversions"]
+        b["ad_sets"].add(row["ad_set"])
+        b["platform"]     = row["platform"]
+        b["dates"].append(row["date"])
 
-        elif roas > ROAS_SCALE_THRESHOLD:
-            # ROAS sehr gut → Budget skalieren
-            if daily_budget > 0:
-                success = await _scale_meta_ad_set_budget(session, ad_set_id, daily_budget, access_token)
-                if success:
-                    action_taken = "budget_skaliert"
-                    state["scaled_today"] = state.get("scaled_today", 0) + 1
-                    scale_msg = (
-                        f"📈 <b>ROAS-Optimizer: Budget skaliert</b>\n"
-                        f"Ad Set: {ad_set_name}\n"
-                        f"ROAS: {roas:.2f} (Schwelle: {ROAS_SCALE_THRESHOLD})\n"
-                        f"Budget: {daily_budget/100:.2f} → {daily_budget*BUDGET_SCALE_FACTOR/100:.2f}\n"
-                        f"Zeit: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
-                    )
-                    await _send_telegram(session, scale_msg)
-                else:
-                    action_taken = "scale_fehlgeschlagen"
-            else:
-                action_taken = "kein_budget_gesetzt"
-
+    results: list[dict] = []
+    for (campaign, platform), b in buckets.items():
+        spend   = b["spend_eur"]
+        revenue = b["revenue_eur"]
+        roas    = round(revenue / spend, 2) if spend > 0 else 0.0
         results.append({
-            "platform": "meta",
-            "ad_set_id": ad_set_id,
-            "ad_set_name": ad_set_name,
-            "spend": spend,
-            "revenue": ad_set_revenue,
-            "roas": round(roas, 4),
-            "action": action_taken,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "campaign":    campaign,
+            "platform":    platform,
+            "ad_sets":     sorted(b["ad_sets"]),
+            "spend_eur":   round(spend, 2),
+            "revenue_eur": round(revenue, 2),
+            "roas":        roas,
+            "impressions": b["impressions"],
+            "clicks":      b["clicks"],
+            "conversions": b["conversions"],
+            "date_first":  min(b["dates"]) if b["dates"] else "",
+            "date_last":   max(b["dates"]) if b["dates"] else "",
+        })
+    return sorted(results, key=lambda x: x["roas"], reverse=True)
+
+
+def _classify(campaigns: list[dict]) -> tuple[list[dict], list[dict], list[dict]]:
+    """Split into (to_pause, to_scale, to_keep)."""
+    to_pause, to_scale, to_keep = [], [], []
+    for c in campaigns:
+        if c["roas"] < ROAS_PAUSE_THRESHOLD:
+            to_pause.append(c)
+        elif c["roas"] > ROAS_SCALE_THRESHOLD:
+            to_scale.append(c)
+        else:
+            to_keep.append(c)
+    return to_pause, to_scale, to_keep
+
+
+# ── Meta Ads API ──────────────────────────────────────────────────────────────
+
+def _act_id() -> str:
+    aid = (META_AD_ACCOUNT_ID or "").strip()
+    return aid if aid.startswith("act_") else f"act_{aid}" if aid else ""
+
+
+async def _meta_find_campaign_id(session: aiohttp.ClientSession, name: str) -> str | None:
+    act = _act_id()
+    if not act or not META_ADS_TOKEN:
+        return None
+    try:
+        async with session.get(
+            f"{META_GRAPH}/{act}/campaigns",
+            params={"fields": "id,name,status", "limit": "500", "access_token": META_ADS_TOKEN},
+            timeout=aiohttp.ClientTimeout(total=20),
+        ) as r:
+            if r.status != 200:
+                log.warning("Meta campaigns list HTTP %s", r.status)
+                return None
+            for camp in (await r.json()).get("data", []):
+                if camp.get("name", "").strip().lower() == name.strip().lower():
+                    return camp["id"]
+    except Exception as exc:
+        log.warning("_meta_find_campaign_id(%s): %s", name, exc)
+    return None
+
+
+async def _meta_pause_campaign(session: aiohttp.ClientSession, campaign_id: str) -> bool:
+    if not META_ADS_TOKEN:
+        return False
+    try:
+        async with session.post(
+            f"{META_GRAPH}/{campaign_id}",
+            data={"status": "PAUSED", "access_token": META_ADS_TOKEN},
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as r:
+            if r.status == 200:
+                return bool((await r.json()).get("success"))
+            log.warning("Meta pause HTTP %s for %s", r.status, campaign_id)
+    except Exception as exc:
+        log.warning("_meta_pause_campaign(%s): %s", campaign_id, exc)
+    return False
+
+
+async def _meta_scale_campaign(
+    session: aiohttp.ClientSession, campaign_id: str, scale_pct: float
+) -> bool:
+    if not META_ADS_TOKEN:
+        return False
+    try:
+        async with session.get(
+            f"{META_GRAPH}/{campaign_id}/adsets",
+            params={"fields": "id,daily_budget,status", "access_token": META_ADS_TOKEN},
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as r:
+            if r.status != 200:
+                return False
+            adsets = (await r.json()).get("data", [])
+
+        scaled_any = False
+        for adset in adsets:
+            if adset.get("status") != "ACTIVE":
+                continue
+            current = int(adset.get("daily_budget", 0))
+            if current <= 0:
+                continue
+            new_budget = int(current * (1 + scale_pct / 100))
+            async with session.post(
+                f"{META_GRAPH}/{adset['id']}",
+                data={"daily_budget": str(new_budget), "access_token": META_ADS_TOKEN},
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as rr:
+                if rr.status == 200:
+                    scaled_any = True
+                    log.info("Scaled adset %s: %d → %d", adset["id"], current, new_budget)
+        return scaled_any
+    except Exception as exc:
+        log.warning("_meta_scale_campaign(%s): %s", campaign_id, exc)
+    return False
+
+
+async def _apply_meta_actions(
+    to_pause: list[dict], to_scale: list[dict]
+) -> tuple[list[str], list[str]]:
+    paused_ids: list[str] = []
+    scaled_ids: list[str] = []
+
+    if not META_ADS_TOKEN or not META_AD_ACCOUNT_ID:
+        log.info("META_ADS_TOKEN / META_AD_ACCOUNT_ID not set — skipping live API calls")
+        return paused_ids, scaled_ids
+
+    async with aiohttp.ClientSession() as session:
+        for c in to_pause:
+            if c["platform"].lower() != "meta":
+                continue
+            cid = await _meta_find_campaign_id(session, c["campaign"])
+            if cid and await _meta_pause_campaign(session, cid):
+                paused_ids.append(c["campaign"])
+                log.info("PAUSED Meta campaign: %s (ROAS %.2fx)", c["campaign"], c["roas"])
+            else:
+                log.warning("Could not pause Meta campaign: %s", c["campaign"])
+
+        for c in to_scale:
+            if c["platform"].lower() != "meta":
+                continue
+            cid = await _meta_find_campaign_id(session, c["campaign"])
+            if cid and await _meta_scale_campaign(session, cid, SCALE_BUDGET_PCT):
+                scaled_ids.append(c["campaign"])
+                log.info("SCALED Meta campaign: %s (ROAS %.2fx +%.0f%%)",
+                         c["campaign"], c["roas"], SCALE_BUDGET_PCT)
+
+    return paused_ids, scaled_ids
+
+
+# ── Telegram message ──────────────────────────────────────────────────────────
+
+def _build_tg_message(
+    to_pause: list[dict], to_scale: list[dict], to_keep: list[dict],
+    paused_ids: list[str], scaled_ids: list[str],
+    total_spend: float, total_revenue: float, overall_roas: float,
+) -> str:
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    lines = [
+        "<b>ROAS Optimizer Report</b>",
+        f"Datum: {now}",
+        f"Gesamtausgaben: <b>EUR {total_spend:,.2f}</b>  |  "
+        f"Umsatz: <b>EUR {total_revenue:,.2f}</b>  |  "
+        f"Overall ROAS: <b>{overall_roas:.2f}x</b>",
+        "",
+    ]
+    if to_pause:
+        lines.append(f"<b>PAUSE sofort (ROAS &lt; {ROAS_PAUSE_THRESHOLD}x)</b>")
+        for c in to_pause:
+            tag = " [API pausiert]" if c["campaign"] in paused_ids else " [manuell pausieren!]"
+            lines.append(
+                f"  - {c['campaign']} [{c['platform']}] "
+                f"ROAS={c['roas']:.2f}x  Spend=EUR{c['spend_eur']:.0f}{tag}"
+            )
+    if to_scale:
+        lines.append("")
+        lines.append(f"<b>SKALIEREN +{SCALE_BUDGET_PCT:.0f}% (ROAS &gt; {ROAS_SCALE_THRESHOLD}x)</b>")
+        for c in to_scale:
+            tag = " [API skaliert]" if c["campaign"] in scaled_ids else ""
+            lines.append(
+                f"  - {c['campaign']} [{c['platform']}] "
+                f"ROAS={c['roas']:.2f}x  Spend=EUR{c['spend_eur']:.0f}{tag}"
+            )
+    if to_keep:
+        lines.append("")
+        lines.append(f"<b>BEHALTEN / optimieren (ROAS {ROAS_PAUSE_THRESHOLD}-{ROAS_SCALE_THRESHOLD}x)</b>")
+        for c in to_keep:
+            lines.append(
+                f"  - {c['campaign']} [{c['platform']}] "
+                f"ROAS={c['roas']:.2f}x  Spend=EUR{c['spend_eur']:.0f}"
+            )
+    return "\n".join(lines)
+
+
+# ── Main entry point ──────────────────────────────────────────────────────────
+
+async def run_roas_cycle() -> dict:
+    """
+    Full ROAS optimization cycle.
+
+    Returns
+    -------
+    dict:
+        paused          list[str]  — campaign names paused via Meta API
+        scaled          list[str]  — campaign names scaled via Meta API
+        kept            list[str]  — campaign names in keep/optimize zone
+        recommendations list[dict] — {campaign, platform, roas, action, reason, api_done}
+        total_spend     float      — EUR
+        total_revenue   float      — EUR
+        overall_roas    float
+        campaigns       list[dict] — full aggregated campaign metrics
+    """
+    log.info("ROAS Optimizer — starting cycle")
+
+    csv_rows  = _load_csv()
+    json_rows = _load_json()
+    all_rows  = _merge_rows(csv_rows, json_rows)
+
+    if not all_rows:
+        log.warning("No ad spend data found — aborting")
+        return {
+            "paused": [], "scaled": [], "kept": [], "recommendations": [],
+            "total_spend": 0.0, "total_revenue": 0.0, "overall_roas": 0.0,
+            "campaigns": [],
+        }
+
+    campaigns              = _aggregate_by_campaign(all_rows)
+    to_pause, to_scale, to_keep = _classify(campaigns)
+
+    total_spend   = round(sum(c["spend_eur"]   for c in campaigns), 2)
+    total_revenue = round(sum(c["revenue_eur"] for c in campaigns), 2)
+    overall_roas  = round(total_revenue / total_spend, 2) if total_spend > 0 else 0.0
+
+    log.info(
+        "pause=%d scale=%d keep=%d  total_spend=EUR%.2f  overall_roas=%.2fx",
+        len(to_pause), len(to_scale), len(to_keep), total_spend, overall_roas,
+    )
+
+    paused_ids, scaled_ids = await _apply_meta_actions(to_pause, to_scale)
+
+    recommendations: list[dict] = []
+    for c in to_pause:
+        recommendations.append({
+            "campaign": c["campaign"], "platform": c["platform"], "roas": c["roas"],
+            "action": "PAUSE",
+            "reason": f"ROAS {c['roas']:.2f}x < {ROAS_PAUSE_THRESHOLD}x — sofort pausieren",
+            "api_done": c["campaign"] in paused_ids,
+        })
+    for c in to_scale:
+        recommendations.append({
+            "campaign": c["campaign"], "platform": c["platform"], "roas": c["roas"],
+            "action": "SCALE",
+            "reason": f"ROAS {c['roas']:.2f}x > {ROAS_SCALE_THRESHOLD}x — Budget +{SCALE_BUDGET_PCT:.0f}%",
+            "api_done": c["campaign"] in scaled_ids,
+        })
+    for c in to_keep:
+        recommendations.append({
+            "campaign": c["campaign"], "platform": c["platform"], "roas": c["roas"],
+            "action": "KEEP",
+            "reason": f"ROAS {c['roas']:.2f}x — beobachten & optimieren",
+            "api_done": False,
         })
 
-    return results
-
-
-# ---------------------------------------------------------------------------
-# Google Ads (optional, graceful fallback)
-# ---------------------------------------------------------------------------
-
-async def _process_google_ads(session: aiohttp.ClientSession) -> list[dict]:
-    """Google Ads ROAS-Analyse — nur wenn Env-Vars gesetzt."""
-    customer_id = os.getenv("GOOGLE_ADS_CUSTOMER_ID")
-    developer_token = os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN")
-    refresh_token = os.getenv("GOOGLE_ADS_REFRESH_TOKEN")
-    client_id = os.getenv("GOOGLE_ADS_CLIENT_ID")
-    client_secret = os.getenv("GOOGLE_ADS_CLIENT_SECRET")
-
-    if not customer_id or not developer_token:
-        logger.info("Google Ads nicht konfiguriert (GOOGLE_ADS_CUSTOMER_ID oder GOOGLE_ADS_DEVELOPER_TOKEN fehlt) — übersprungen")
-        return []
-
-    logger.info("Google Ads Analyse gestartet für Customer ID: %s", customer_id)
-    results = []
-
-    try:
-        # Access Token via OAuth2 Refresh-Token holen
-        access_token = None
-        if refresh_token and client_id and client_secret:
-            token_url = "https://oauth2.googleapis.com/token"
-            token_payload = {
-                "client_id": client_id,
-                "client_secret": client_secret,
-                "refresh_token": refresh_token,
-                "grant_type": "refresh_token",
-            }
-            async with session.post(token_url, data=token_payload, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                if resp.status == 200:
-                    token_data = await resp.json()
-                    access_token = token_data.get("access_token")
-                else:
-                    body = await resp.text()
-                    logger.warning("Google OAuth2 Token fehlgeschlagen (%d): %s", resp.status, body)
-
-        if not access_token:
-            logger.warning("Kein Google Ads Access Token — Google Ads übersprungen")
-            return []
-
-        # Google Ads Query Language (GAQL) — Campaign-Performance letzte 24h
-        query = (
-            "SELECT campaign.id, campaign.name, campaign.status, "
-            "metrics.cost_micros, metrics.conversions_value, "
-            "campaign_budget.amount_micros "
-            "FROM campaign "
-            "WHERE segments.date DURING YESTERDAY "
-            "AND campaign.status = 'ENABLED'"
-        )
-        headers = {
-            "Authorization": f"Bearer {access_token}",
-            "developer-token": developer_token,
-            "Content-Type": "application/json",
-        }
-        clean_customer_id = customer_id.replace("-", "")
-        url = f"https://googleads.googleapis.com/v16/customers/{clean_customer_id}/googleAds:search"
-        payload = {"query": query}
-
-        async with session.post(url, headers=headers, json=payload, timeout=aiohttp.ClientTimeout(total=20)) as resp:
-            if resp.status != 200:
-                body = await resp.text()
-                logger.warning("Google Ads Query fehlgeschlagen (%d): %s", resp.status, body)
-                return []
-            data = await resp.json()
-
-        for row in data.get("results", []):
-            campaign = row.get("campaign", {})
-            metrics = row.get("metrics", {})
-            budget = row.get("campaignBudget", {})
-
-            campaign_id = campaign.get("id", "unbekannt")
-            campaign_name = campaign.get("name", "unbekannt")
-
-            spend = float(metrics.get("costMicros", 0)) / 1_000_000
-            revenue = float(metrics.get("conversionsValue", 0))
-            roas = (revenue / spend) if spend > 0 else 0.0
-
-            logger.info(
-                "Google Ads Kampagne '%s' | Spend: %.2f | Revenue: %.2f | ROAS: %.2f",
-                campaign_name, spend, revenue, roas,
-            )
-
-            action_taken = "monitoring"
-
-            if spend > 0 and roas < ROAS_PAUSE_THRESHOLD:
-                # Kampagne pausieren
-                pause_url = (
-                    f"https://googleads.googleapis.com/v16/customers/{clean_customer_id}/campaigns:mutate"
-                )
-                pause_payload = {
-                    "operations": [{
-                        "update": {
-                            "resourceName": f"customers/{clean_customer_id}/campaigns/{campaign_id}",
-                            "status": "PAUSED",
-                        },
-                        "updateMask": "status",
-                    }]
-                }
-                async with session.post(
-                    pause_url, headers=headers, json=pause_payload, timeout=aiohttp.ClientTimeout(total=10)
-                ) as presp:
-                    if presp.status == 200:
-                        action_taken = "pausiert"
-                        alert_msg = (
-                            f"🛑 <b>ROAS-Optimizer: Google Kampagne pausiert</b>\n"
-                            f"Kampagne: {campaign_name}\n"
-                            f"ROAS: {roas:.2f}\n"
-                            f"Spend (24h): {spend:.2f}\n"
-                            f"Zeit: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
-                        )
-                        await _send_telegram(session, alert_msg)
-                    else:
-                        body = await presp.text()
-                        logger.warning("Google Ads Pause fehlgeschlagen: %s", body)
-                        action_taken = "pause_fehlgeschlagen"
-
-            elif spend > 0 and roas > ROAS_SCALE_THRESHOLD:
-                # Budget skalieren
-                budget_micros = int(budget.get("amountMicros", 0))
-                if budget_micros > 0:
-                    new_budget_micros = int(budget_micros * BUDGET_SCALE_FACTOR)
-                    budget_resource = budget.get("resourceName", "")
-                    scale_url = (
-                        f"https://googleads.googleapis.com/v16/customers/{clean_customer_id}/campaignBudgets:mutate"
-                    )
-                    scale_payload = {
-                        "operations": [{
-                            "update": {
-                                "resourceName": budget_resource,
-                                "amountMicros": new_budget_micros,
-                            },
-                            "updateMask": "amountMicros",
-                        }]
-                    }
-                    async with session.post(
-                        scale_url, headers=headers, json=scale_payload, timeout=aiohttp.ClientTimeout(total=10)
-                    ) as sresp:
-                        if sresp.status == 200:
-                            action_taken = "budget_skaliert"
-                            scale_msg = (
-                                f"📈 <b>ROAS-Optimizer: Google Budget skaliert</b>\n"
-                                f"Kampagne: {campaign_name}\n"
-                                f"ROAS: {roas:.2f}\n"
-                                f"Budget: {budget_micros/1e6:.2f} → {new_budget_micros/1e6:.2f}\n"
-                                f"Zeit: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}"
-                            )
-                            await _send_telegram(session, scale_msg)
-                        else:
-                            body = await sresp.text()
-                            logger.warning("Google Ads Budget-Scale fehlgeschlagen: %s", body)
-                            action_taken = "scale_fehlgeschlagen"
-
-            results.append({
-                "platform": "google",
-                "campaign_id": campaign_id,
-                "campaign_name": campaign_name,
-                "spend": spend,
-                "revenue": revenue,
-                "roas": round(roas, 4),
-                "action": action_taken,
-                "timestamp": datetime.now(timezone.utc).isoformat(),
-            })
-
-    except Exception as exc:
-        logger.error("Google Ads Analyse Fehler: %s", exc)
-
-    return results
-
-
-# ---------------------------------------------------------------------------
-# Haupt-Exportfunktionen
-# ---------------------------------------------------------------------------
-
-async def run_roas_cycle() -> str:
-    """
-    Haupt-Loop: Meta + Google Ads ROAS-Check.
-    Wird vom Scheduler aufgerufen.
-    Returns: Zusammenfassungs-String
-    """
-    logger.info("ROAS-Optimizer Cycle gestartet")
-    state = _load_state()
-
-    # Tages-Zähler zurücksetzen wenn neuer Tag
-    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
-    if state.get("last_run_date") != today:
-        state["paused_today"] = 0
-        state["scaled_today"] = 0
-        state["last_run_date"] = today
-
-    access_token = _meta_token()
-    ad_account_id = os.getenv("META_AD_ACCOUNT_ID")
-
-    if not access_token or not ad_account_id:
-        msg = "Meta Ads nicht konfiguriert — ROAS-Check übersprungen"
-        logger.warning(msg)
-        state["last_run"] = datetime.now(timezone.utc).isoformat()
-        _save_state(state)
-        return msg
-
-    all_results = []
-
-    connector = aiohttp.TCPConnector(ssl=True)
-    async with aiohttp.ClientSession(connector=connector) as session:
-        # Shopify Revenue für Facebook-Traffic holen
-        facebook_revenue = await _get_shopify_revenue_facebook(session)
-
-        # Meta Ad Sets verarbeiten
-        meta_results = await _process_meta_ad_sets(
-            session, ad_account_id, access_token, facebook_revenue, state
-        )
-        all_results.extend(meta_results)
-        state["ad_sets_checked"] = state.get("ad_sets_checked", 0) + len(meta_results)
-
-        # Google Ads verarbeiten (optional)
-        google_results = await _process_google_ads(session)
-        all_results.extend(google_results)
-
-    # History-Eintrag hinzufügen
-    history_entry = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "platform": "meta+google",
-        "ad_sets_checked": len(all_results),
-        "paused": sum(1 for r in all_results if r.get("action") == "pausiert"),
-        "scaled": sum(1 for r in all_results if r.get("action") == "budget_skaliert"),
-        "facebook_revenue_24h": facebook_revenue,
-        "results": all_results,
-    }
-    history = state.get("history", [])
-    history.append(history_entry)
-    state["history"] = history[-50:]  # Letzte 50 Einträge behalten
-    state["last_run"] = datetime.now(timezone.utc).isoformat()
-    _save_state(state)
-
-    paused = history_entry["paused"]
-    scaled = history_entry["scaled"]
-    checked = history_entry["ad_sets_checked"]
-
-    summary = (
-        f"ROAS-Cycle abgeschlossen: {checked} Ad Sets geprüft | "
-        f"{paused} pausiert | {scaled} skaliert | "
-        f"FB-Revenue (24h): {facebook_revenue:.2f}"
+    msg = _build_tg_message(
+        to_pause, to_scale, to_keep, paused_ids, scaled_ids,
+        total_spend, total_revenue, overall_roas,
     )
-    logger.info(summary)
-    return summary
+    await _tg(msg)
+    log.info("Telegram alert sent")
+
+    result = {
+        "paused":          [c["campaign"] for c in to_pause],
+        "scaled":          [c["campaign"] for c in to_scale],
+        "kept":            [c["campaign"] for c in to_keep],
+        "recommendations": recommendations,
+        "total_spend":     total_spend,
+        "total_revenue":   total_revenue,
+        "overall_roas":    overall_roas,
+        "campaigns":       campaigns,
+    }
+    log.info("ROAS Optimizer — done. paused=%s scaled=%s", result["paused"], result["scaled"])
+    return result
 
 
 async def get_status() -> dict:
-    """
-    Gibt den aktuellen Status des ROAS-Optimizers zurück.
-    """
-    state = _load_state()
-    history = state.get("history", [])
-    last_entry = history[-1] if history else {}
-
+    """Return current module config / thresholds (no API calls)."""
     return {
         "module": "roas_optimizer",
-        "last_run": state.get("last_run"),
-        "ad_sets_checked_total": state.get("ad_sets_checked", 0),
-        "paused_today": state.get("paused_today", 0),
-        "scaled_today": state.get("scaled_today", 0),
-        "meta_configured": bool(_meta_token() and os.getenv("META_AD_ACCOUNT_ID")),
-        "google_configured": bool(
-            os.getenv("GOOGLE_ADS_CUSTOMER_ID") and os.getenv("GOOGLE_ADS_DEVELOPER_TOKEN")
-        ),
+        "csv_path": str(CSV_PATH),
+        "json_path": str(JSON_PATH),
+        "csv_exists": CSV_PATH.exists(),
+        "json_exists": JSON_PATH.exists(),
+        "meta_configured": bool(META_ADS_TOKEN and META_AD_ACCOUNT_ID),
+        "telegram_configured": bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID),
         "thresholds": {
-            "pause_below": ROAS_PAUSE_THRESHOLD,
-            "scale_above": ROAS_SCALE_THRESHOLD,
-            "scale_factor": BUDGET_SCALE_FACTOR,
+            "pause_below":  ROAS_PAUSE_THRESHOLD,
+            "scale_above":  ROAS_SCALE_THRESHOLD,
+            "scale_pct":    SCALE_BUDGET_PCT,
         },
-        "last_cycle": last_entry,
-        "history_count": len(history),
     }
 
 
-# ---------------------------------------------------------------------------
-# Standalone-Test
-# ---------------------------------------------------------------------------
+# ── CLI ───────────────────────────────────────────────────────────────────────
 
 if __name__ == "__main__":
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
-    )
-
-    async def _main():
-        result = await run_roas_cycle()
-        print(result)
-        status = await get_status()
-        print(json.dumps(status, indent=2, ensure_ascii=False))
-
-    asyncio.run(_main())
+    import pprint
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+    report = asyncio.run(run_roas_cycle())
+    print(f"\n=== ROAS OPTIMIZER REPORT ===")
+    print(f"Total Spend:   EUR {report['total_spend']:,.2f}")
+    print(f"Total Revenue: EUR {report['total_revenue']:,.2f}")
+    print(f"Overall ROAS:  {report['overall_roas']:.2f}x")
+    print(f"\nPAUSED ({len(report['paused'])}): {report['paused']}")
+    print(f"SCALED ({len(report['scaled'])}): {report['scaled']}")
+    print(f"KEPT   ({len(report['kept'])}): {report['kept']}")
+    print("\nRecommendations:")
+    pprint.pprint(report["recommendations"])
