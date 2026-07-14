@@ -11256,6 +11256,17 @@ async def create_app():
     app.router.add_post("/api/klaviyo/setup-flows", handle_klaviyo_setup)
     log.info("Klaviyo Flows route registered (/api/klaviyo/setup-flows)")
 
+    # Shopify Conversion Booster
+    async def handle_conversion_boost(req):
+        try:
+            from modules.shopify_conversion_booster import run_conversion_boost
+            result = await run_conversion_boost()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+    app.router.add_post("/api/shopify/conversion-boost", handle_conversion_boost)
+    log.info("Shopify Conversion Booster route registered (/api/shopify/conversion-boost)")
+
     # WhatsApp Cart Recovery
     async def handle_wa_cart(req):
         try:
@@ -11525,6 +11536,50 @@ async def create_app():
     app.router.add_post("/api/scaling/run-cycle",  handle_scaling_run_cycle)
     app.router.add_post("/api/scaling/blast-leads", handle_scaling_blast_leads)
     log.info("Shop Scaling Engine routes registered (/api/scaling/*)")
+
+    # Free API Hunter routes
+    async def handle_free_apis_registry(request):
+        """GET /api/free-apis — Zeigt gecachte kostenlose APIs."""
+        try:
+            registry_file = Path("data/free_api_registry.json")
+            if registry_file.exists():
+                data = json.loads(registry_file.read_text())
+                total = sum(len(v) for v in data.get("working", {}).values())
+                return web.json_response({"ok": True, "total_working": total,
+                                          "last_scan": data.get("last_scan"), "registry": data})
+            return web.json_response({"ok": True, "total_working": 0, "registry": {}})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_free_apis_scan(request):
+        """POST /api/free-apis/scan — Scannt jetzt alle kostenlosen APIs."""
+        try:
+            from modules.free_api_hunter import hunt_all_free_apis
+            results = await hunt_all_free_apis()
+            total = sum(len(v) for v in results.values())
+            return web.json_response({"ok": True, "total_found": total, "results": {
+                k: [a["name"] for a in v] for k, v in results.items()
+            }})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_free_apis_best_ai(request):
+        """GET /api/free-apis/best-ai — Bester verfügbarer Free AI Client."""
+        try:
+            from modules.free_api_hunter import get_hunter
+            hunter = get_hunter()
+            best = hunter.get_free_ai_client()
+            if best:
+                safe = {k: v for k, v in best.items() if k != "key"}
+                return web.json_response({"ok": True, "best_ai": safe})
+            return web.json_response({"ok": False, "error": "Kein free AI gefunden"})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_get("/api/free-apis",         handle_free_apis_registry)
+    app.router.add_post("/api/free-apis/scan",   handle_free_apis_scan)
+    app.router.add_get("/api/free-apis/best-ai", handle_free_apis_best_ai)
+    log.info("Free API Hunter routes registered (/api/free-apis/*)")
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())

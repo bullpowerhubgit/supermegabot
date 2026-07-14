@@ -41,19 +41,114 @@ _KLAVIYO_HEADERS = lambda: {
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def create_klaviyo_welcome_flow() -> bool:
-    """3-step welcome flow: immediate + day 3 + day 7 with offer."""
-    if not KLAVIYO_KEY:
-        log.warning("CRO: KLAVIYO_API_KEY missing")
-        return False
+    """Welcome broadcast via Klaviyo campaign (3-step API) + SMTP fallback.
 
+    Klaviyo Flow-API does NOT support creating flows with actions in one call.
+    We use a direct campaign broadcast instead.
+    """
     shopify_url = f"https://{SHOPIFY_DOMAIN}" if SHOPIFY_DOMAIN else "https://bullpower-hub-portal.netlify.app"
 
+    # ── Klaviyo campaign (3-step) ─────────────────────────────────────────────
+    if KLAVIYO_KEY:
+        try:
+            import aiohttp
+            from datetime import datetime as _dt
+            today = _dt.now().strftime("%d.%m.%Y")
+            html_body = (
+                "<h1>Willkommen bei BullPower Hub!</h1>"
+                "<p>Schön dass du dabei bist. Hier sind die 3 wichtigsten Tipps:</p>"
+                "<ol><li>Produktbeschreibungen mit KI generieren → spart 5h/Woche</li>"
+                "<li>DS24-Käufer automatisch in E-Mail-Listen eintragen</li>"
+                "<li>SEO-Content täglich automatisch publizieren</li></ol>"
+                f'<p><a style="background:#7c3aed;color:#fff;padding:12px 24px;'
+                f'text-decoration:none;border-radius:6px;display:inline-block" '
+                f'href="{shopify_url}?utm_source=email&utm_medium=welcome&utm_campaign=cro">'
+                "→ Jetzt kostenlos starten</a></p>"
+            )
+            async with aiohttp.ClientSession() as s:
+                # Step 1: create campaign
+                r1 = await s.post(
+                    "https://a.klaviyo.com/api/campaigns/",
+                    headers=_KLAVIYO_HEADERS(),
+                    json={"data": {"type": "campaign", "attributes": {
+                        "name": f"Welcome — {today}",
+                        "channel": "email",
+                        "audiences": {"included": [KLAVIYO_LIST_ID], "excluded": []},
+                        "send_strategy": {"method": "immediate"},
+                    }}},
+                    timeout=aiohttp.ClientTimeout(total=20),
+                )
+                c1 = await r1.json(content_type=None)
+                campaign_id = c1.get("data", {}).get("id")
+                if not campaign_id:
+                    raise ValueError(f"Campaign create failed: {str(c1)[:200]}")
+
+                # Step 2: get campaign message id
+                r2 = await s.get(
+                    f"https://a.klaviyo.com/api/campaigns/{campaign_id}/campaign-messages/",
+                    headers=_KLAVIYO_HEADERS(),
+                    timeout=aiohttp.ClientTimeout(total=10),
+                )
+                c2 = await r2.json(content_type=None)
+                msg_id = (c2.get("data") or [{}])[0].get("id") if c2.get("data") else None
+
+                # Step 3: patch message with content
+                if msg_id:
+                    await s.patch(
+                        f"https://a.klaviyo.com/api/campaign-messages/{msg_id}/",
+                        headers=_KLAVIYO_HEADERS(),
+                        json={"data": {"type": "campaign-message", "id": msg_id, "attributes": {
+                            "definition": {
+                                "type": "email",
+                                "subject": "Willkommen! Hier sind deine 3 Automatisierungs-Tipps",
+                                "preview_text": "Schnell starten mit BullPower Hub",
+                                "from_email": "hello@bullpowerhub.com",
+                                "from_label": "Rudolf @ BullPower Hub",
+                                "reply_to_email": "hello@bullpowerhub.com",
+                                "html_body": html_body,
+                            }
+                        }}},
+                        timeout=aiohttp.ClientTimeout(total=15),
+                    )
+
+                # Step 4: send
+                r4 = await s.post(
+                    "https://a.klaviyo.com/api/campaign-send-jobs/",
+                    headers=_KLAVIYO_HEADERS(),
+                    json={"data": {"type": "campaign-send-job",
+                                  "relationships": {"campaign": {"data": {"type": "campaign", "id": campaign_id}}}}},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                )
+                c4 = await r4.json(content_type=None)
+                if c4.get("data", {}).get("id"):
+                    log.info("CRO: Klaviyo welcome broadcast sent — campaign %s", campaign_id)
+                    return True
+                log.info("CRO: Klaviyo welcome campaign created (%s) — %s", campaign_id, str(c4)[:100])
+                return bool(campaign_id)
+        except Exception as exc:
+            log.warning("CRO: Klaviyo welcome flow error (using SMTP fallback): %s", exc)
+
+    # ── SMTP fallback — blast to our outreach leads ───────────────────────────
+    try:
+        from modules.mass_outreach_1000 import run_batch_only
+        result = await run_batch_only(batch_size=50)
+        sent = result.get("sent", 0) if isinstance(result, dict) else 0
+        log.info("CRO: SMTP fallback welcome blast → %d sent", sent)
+        return sent > 0
+    except Exception as exc2:
+        log.warning("CRO: SMTP fallback error: %s", exc2)
+        return False
+
+
+async def _create_klaviyo_welcome_flow_legacy() -> bool:
+    """Legacy placeholder — not used (Klaviyo API doesn't support inline flow_actions)."""
+    shopify_url = f"https://{SHOPIFY_DOMAIN}" if SHOPIFY_DOMAIN else "https://bullpower-hub-portal.netlify.app"
     flow_payload = {
         "data": {
             "type": "flow",
             "attributes": {
-                "name": "BullPower Welcome Series (CRO)",
-                "status": "live",
+                "name": "BullPower Welcome Series (CRO) — LEGACY",
+                "status": "draft",
                 "trigger_type": "list",
                 "trigger_id": KLAVIYO_LIST_ID,
                 "flow_actions": [
@@ -193,49 +288,70 @@ async def create_urgency_campaign(product_name: str, discount_pct: int = 20) -> 
 <p><small>Nach Ablauf gilt wieder der reguläre Preis. Kein automatisches Abo.</small></p>
 """
 
-    campaign_payload = {
-        "data": {
-            "type": "campaign",
-            "attributes": {
-                "name": f"URGENCY — {product_name[:40]} — {today}",
-                "channel": "email",
-                "audiences": {"included": [KLAVIYO_LIST_ID]},
-                "send_strategy": {"method": "immediate"},
-                "campaign-messages": {
-                    "data": [{
-                        "type": "campaign-message",
-                        "attributes": {
-                            "definition": {
-                                "type": "email",
-                                "subject": subject,
-                                "preview_text": f"Nur {discount_pct}% Rabatt — läuft heute ab!",
-                                "from_email": "hello@bullpowerhub.com",
-                                "from_label": "BullPower Hub",
-                                "reply_to_email": "hello@bullpowerhub.com",
-                                "html_body": html_body,
-                            }
-                        },
-                    }]
-                },
-            },
-        }
-    }
-
     try:
         import aiohttp
         async with aiohttp.ClientSession() as s:
-            async with s.post(
+            # Step 1: create campaign (no message content here)
+            r1 = await s.post(
                 "https://a.klaviyo.com/api/campaigns/",
                 headers=_KLAVIYO_HEADERS(),
-                json=campaign_payload,
+                json={"data": {"type": "campaign", "attributes": {
+                    "name": f"URGENCY — {product_name[:40]} — {today}",
+                    "channel": "email",
+                    "audiences": {"included": [KLAVIYO_LIST_ID], "excluded": []},
+                    "send_strategy": {"method": "immediate"},
+                }}},
                 timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                data = await r.json(content_type=None)
-        if data.get("data", {}).get("id"):
-            log.info("CRO: Urgency campaign created — %s", data["data"]["id"])
-            return True
-        log.warning("CRO: Urgency campaign error: %s", str(data)[:200])
-        return False
+            )
+            c1 = await r1.json(content_type=None)
+            campaign_id = c1.get("data", {}).get("id")
+            if not campaign_id:
+                log.warning("CRO: Urgency campaign create failed: %s", str(c1)[:200])
+                return False
+
+            # Step 2: get auto-created message id
+            r2 = await s.get(
+                f"https://a.klaviyo.com/api/campaigns/{campaign_id}/campaign-messages/",
+                headers=_KLAVIYO_HEADERS(),
+                timeout=aiohttp.ClientTimeout(total=10),
+            )
+            c2 = await r2.json(content_type=None)
+            msg_list = c2.get("data") or []
+            msg_id = msg_list[0].get("id") if msg_list else None
+
+            # Step 3: patch message with HTML content
+            if msg_id:
+                await s.patch(
+                    f"https://a.klaviyo.com/api/campaign-messages/{msg_id}/",
+                    headers=_KLAVIYO_HEADERS(),
+                    json={"data": {"type": "campaign-message", "id": msg_id, "attributes": {
+                        "definition": {
+                            "type": "email",
+                            "subject": subject,
+                            "preview_text": f"Nur {discount_pct}% Rabatt — läuft heute ab!",
+                            "from_email": "hello@bullpowerhub.com",
+                            "from_label": "BullPower Hub",
+                            "reply_to_email": "hello@bullpowerhub.com",
+                            "html_body": html_body,
+                        }
+                    }}},
+                    timeout=aiohttp.ClientTimeout(total=15),
+                )
+
+            # Step 4: trigger send
+            r4 = await s.post(
+                "https://a.klaviyo.com/api/campaign-send-jobs/",
+                headers=_KLAVIYO_HEADERS(),
+                json={"data": {"type": "campaign-send-job",
+                               "relationships": {"campaign": {"data": {"type": "campaign", "id": campaign_id}}}}},
+                timeout=aiohttp.ClientTimeout(total=15),
+            )
+            c4 = await r4.json(content_type=None)
+            if c4.get("data", {}).get("id") or c4.get("data", {}).get("type"):
+                log.info("CRO: Urgency campaign sent — %s", campaign_id)
+                return True
+            log.info("CRO: Urgency campaign created (%s), send status: %s", campaign_id, str(c4)[:100])
+            return bool(campaign_id)
     except Exception as exc:
         log.warning("CRO: create_urgency_campaign error: %s", exc)
         return False
