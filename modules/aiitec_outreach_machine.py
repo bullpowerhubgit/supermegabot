@@ -655,9 +655,201 @@ async def seed_companies() -> int:
     return inserted
 
 async def _get_queue(limit: int = EMAILS_PER_DAY) -> List[dict]:
+    # Hole 4× mehr, mische zufällig — jeder Lauf wählt andere Firmen
+    fetch = min(limit * 4, 300)
     data = await _sb("GET", "/rest/v1/aiitec_companies",
-                     params={"status": "eq.new", "limit": limit, "order": "id.asc"})
-    return data or []
+                     params={"status": "eq.new", "limit": str(fetch), "order": "id.asc"})
+    if not data:
+        return []
+    random.shuffle(data)
+    return data[:limit]
+
+# ── Auto-Discovery: neue Käufer finden ───────────────────────────────────────
+
+DISCOVERY_QUERIES = [
+    ("Versicherung AG", "Versicherung", "de"),
+    ("Factoring GmbH", "Factoring", "de"),
+    ("Rechtsanwaltskanzlei", "Kanzlei", "de"),
+    ("Softwareentwicklung GmbH", "IT/Software", "de"),
+    ("Logistik GmbH", "Logistik", "de"),
+    ("Immobilien AG", "Immobilien", "de"),
+    ("Pharma GmbH", "Pharma", "de"),
+    ("Maschinenbau GmbH", "Maschinenbau", "de"),
+    ("Energieversorger GmbH", "Energie", "de"),
+    ("E-Commerce GmbH", "E-Commerce", "de"),
+    ("Unternehmensberatung GmbH", "Beratung", "de"),
+    ("Marketing Agentur GmbH", "Marketing/Agentur", "de"),
+    ("Wirtschaftsprüfung GmbH", "Wirtschaftsprüfung", "de"),
+    ("Insolvenzverwaltung", "Insolvenz", "de"),
+    ("Holding AG", "IT/Software", "at"),
+    ("Bank AG", "Bank", "de"),
+    ("Medienunternehmen", "Medien", "de"),
+    ("Chemie AG", "Chemie", "de"),
+    ("Automotive GmbH", "Automotive", "de"),
+    ("Handel GmbH", "Handel", "de"),
+]
+
+_EMAIL_PREFIXES = ["info", "kontakt", "contact", "office", "mail"]
+
+def _name_to_domain(name: str) -> str:
+    import re
+    clean = re.sub(
+        r'\s*(GmbH & Co\. KGaA|GmbH & Co\. KG|GmbH|AG|SE|KGaA|KG|mbH|e\.V\.|eG|'
+        r'Holding|Group|Deutschland|Germany|International|& Co\.)\s*',
+        ' ', name, flags=re.IGNORECASE
+    ).strip()
+    clean = clean.replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue')
+    clean = clean.replace('ß', 'ss')
+    clean = re.sub(r'[^a-zA-Z0-9\s]', '', clean).lower().strip()
+    clean = re.sub(r'\s+', '-', clean)
+    clean = re.sub(r'-+', '-', clean).strip('-')
+    return f"{clean}.de" if clean else ""
+
+async def _validate_email_fast(email: str) -> bool:
+    """Prüft ob E-Mail-Domain existiert via Disify."""
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                f"https://api.disify.com/api/email/{email}",
+                timeout=aiohttp.ClientTimeout(total=5)
+            ) as r:
+                if r.status == 200:
+                    data = await r.json()
+                    return (data.get("format", False)
+                            and not data.get("disposable", True)
+                            and data.get("dns", False))
+    except Exception:
+        pass
+    return False
+
+async def _find_company_email(domain: str) -> Optional[str]:
+    for prefix in _EMAIL_PREFIXES:
+        email = f"{prefix}@{domain}"
+        if await _validate_email_fast(email):
+            return email
+    return None
+
+async def discover_new_companies(count: int = 60) -> int:
+    """Findet neue DACH-Unternehmen via OpenCorporates → validiert Email → Supabase."""
+    log.info("[DISCOVER] Starte Auto-Discovery — Ziel: %d neue Firmen", count)
+    found = 0
+    queries = list(DISCOVERY_QUERIES)
+    random.shuffle(queries)
+
+    for search_term, branche, jurisdiction in queries:
+        if found >= count:
+            break
+        try:
+            page = random.randint(1, 30)
+            url = (f"https://api.opencorporates.com/v0.4/companies/search"
+                   f"?q={urllib.request.quote(search_term)}"
+                   f"&jurisdiction_code={jurisdiction}&per_page=20&page={page}"
+                   f"&inactive=false")
+            async with aiohttp.ClientSession() as s:
+                async with s.get(url, timeout=aiohttp.ClientTimeout(total=12)) as r:
+                    if r.status != 200:
+                        continue
+                    data = await r.json()
+
+            companies_raw = data.get("results", {}).get("companies", [])
+            random.shuffle(companies_raw)
+
+            for item in companies_raw:
+                if found >= count:
+                    break
+                comp = item.get("company", {})
+                name = comp.get("name", "").strip()
+                if not name or len(name) < 6:
+                    continue
+
+                domain = _name_to_domain(name)
+                if not domain or len(domain) < 5:
+                    continue
+
+                email = await _find_company_email(domain)
+                if not email:
+                    domain_com = domain.replace(".de", ".com")
+                    email = await _find_company_email(domain_com)
+                    if email:
+                        domain = domain_com
+
+                if not email:
+                    continue
+
+                track = _get_track(branche)
+                product = _get_product(track, branche)
+                prod_key = [k for k, v in PRODUCTS.items() if v == product][0]
+
+                row = {
+                    "name": name,
+                    "domain": domain,
+                    "email": email,
+                    "branche": branche,
+                    "umsatzklasse": "M",
+                    "land": jurisdiction.upper(),
+                    "track": track,
+                    "product_key": prod_key,
+                    "status": "new",
+                }
+                res = await _sb("POST", "/rest/v1/aiitec_companies",
+                                body=row, params={"on_conflict": "email"})
+                if res:
+                    found += 1
+                    log.info("[DISCOVER] +%s → %s", name[:45], email)
+                await asyncio.sleep(0.5)
+
+        except Exception as e:
+            log.warning("[DISCOVER] Fehler '%s': %s", search_term, e)
+        await asyncio.sleep(2)
+
+    log.info("[DISCOVER] Abgeschlossen — %d neue Firmen gefunden", found)
+    await _tg(f"🔍 *AIITEC Discovery* — {found} neue Unternehmen gefunden und zur Queue hinzugefügt")
+    return found
+
+
+# ── Selbstreparatur / Health-Check ────────────────────────────────────────────
+
+async def health_check() -> dict:
+    """Prüft alle Systemkomponenten. Repariert automatisch was möglich ist."""
+    status = {"ok": True, "issues": [], "repairs": [], "queue_size": 0}
+
+    # 1. Supabase-Konnektivität
+    try:
+        res = await _sb("GET", "/rest/v1/aiitec_companies", params={"limit": "1"})
+        if res is None:
+            status["ok"] = False
+            status["issues"].append("Supabase REST nicht erreichbar")
+    except Exception as e:
+        status["ok"] = False
+        status["issues"].append(f"Supabase-Fehler: {e}")
+
+    # 2. Queue-Größe — zu klein → Auto-Discovery
+    try:
+        q = await _sb("GET", "/rest/v1/aiitec_companies",
+                      params={"status": "eq.new", "select": "count", "count": "exact"})
+        q_size = int(q[0].get("count", 0)) if q and isinstance(q, list) else 0
+        status["queue_size"] = q_size
+        if q_size < 25:
+            log.info("[SELF-REPAIR] Queue niedrig (%d) — starte Auto-Discovery", q_size)
+            new = await discover_new_companies(count=80)
+            status["repairs"].append(f"Auto-Discovery: +{new} Firmen zur Queue")
+    except Exception as e:
+        status["issues"].append(f"Queue-Check-Fehler: {e}")
+
+    # 3. SMTP-Pool-Status
+    _reset_smtp_if_new_day()
+    pool = _get_smtp_pool()
+    blocked = len(_smtp_blocked_today)
+    status["smtp_total"] = len(pool)
+    status["smtp_blocked"] = blocked
+    status["smtp_available"] = len(pool) - blocked
+    if pool and blocked == len(pool):
+        status["issues"].append(
+            f"Alle {len(pool)} Gmail-Accounts heute geblockt — SendGrid übernimmt"
+        )
+
+    return status
+
 
 async def _get_followup_queue() -> List[dict]:
     now = datetime.now(timezone.utc)
@@ -894,7 +1086,18 @@ async def _report(stats: dict) -> None:
 async def daemon() -> None:
     log.info("AIITEC Outreach Machine gestartet — täglich %02d:%02d Uhr",
              DAILY_HOUR, DAILY_MINUTE)
-    await _tg(f"🚀 *AIITEC Outreach Machine* gestartet\nLäuft täglich {DAILY_HOUR:02d}:{DAILY_MINUTE:02d} Uhr\nTool: {_TOOL_URL}")
+    await _tg(
+        f"🚀 *AIITEC Outreach Machine* gestartet\n"
+        f"Läuft täglich {DAILY_HOUR:02d}:{DAILY_MINUTE:02d} Uhr\n"
+        f"SMTP-Pool: {len(_get_smtp_pool())} Accounts\n"
+        f"Tool: {_TOOL_URL}"
+    )
+
+    # Initiale Health-Check + Discovery bei Start
+    hc = await health_check()
+    if hc["repairs"]:
+        log.info("[START] Reparaturen: %s", hc["repairs"])
+
     while True:
         now = datetime.now()
         target = now.replace(hour=DAILY_HOUR, minute=DAILY_MINUTE, second=0, microsecond=0)
@@ -903,6 +1106,15 @@ async def daemon() -> None:
         wait = (target - now).total_seconds()
         log.info("Nächster Lauf: %s (in %.0f Min.)", target.strftime("%d.%m %H:%M"), wait / 60)
         await asyncio.sleep(wait)
+
+        # Tages-Reset + Health-Check vor jedem Lauf
+        _reset_smtp_if_new_day()
+        hc = await health_check()
+        if not hc["ok"]:
+            issues = " | ".join(hc["issues"])
+            log.warning("[SELF-REPAIR] Probleme erkannt: %s", issues)
+            await _tg(f"⚠️ *AIITEC Self-Repair*\n{issues}")
+
         try:
             stats = await run_outreach()
             await _report(stats)
@@ -962,6 +1174,18 @@ async def main() -> None:
         await _report(stats)
     elif "--stats" in args:
         await show_stats()
+    elif "--discover" in args:
+        n = await discover_new_companies(count=80)
+        print(f"\n✅ {n} neue Unternehmen entdeckt und zur Queue hinzugefügt")
+    elif "--health" in args:
+        hc = await health_check()
+        print(json.dumps(hc, indent=2, ensure_ascii=False))
+    elif "--smtp-pool" in args:
+        pool = _get_smtp_pool()
+        print(f"\nSMTP-Pool: {len(pool)} Accounts")
+        for u, _ in pool:
+            blocked = "⛔ GEBLOCKT" if u in _smtp_blocked_today else "✅ OK"
+            print(f"  {u} [{blocked}]")
     else:
         await daemon()
 
