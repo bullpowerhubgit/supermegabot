@@ -21,9 +21,9 @@ _OPENROUTER_MODEL   = "google/gemma-4-26b-a4b-it:free"   # verified working 2026
 _GROQ_MODEL         = "llama-3.1-8b-instant"
 _OPENROUTER_REFERER = "https://supermegabot-production.up.railway.app"
 _GEMINI_URLS        = [
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent",
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent",
-    "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-8b:generateContent",
+    "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent",
 ]
 _OLLAMA_BASE        = lambda: os.getenv("OLLAMA_BASE", "http://localhost:11434")
 _OLLAMA_MODEL       = lambda: os.getenv("OLLAMA_CLAW_MODEL", "llama3.2:latest")
