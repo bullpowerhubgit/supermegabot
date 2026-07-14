@@ -523,7 +523,7 @@ async def deploy_to_shopify_blog(keyword: str, content: dict) -> bool:
 
 
 async def deploy_to_facebook_page(keyword: str, content: dict) -> bool:
-    """Facebook Page IWIN — automatisch posten."""
+    """Facebook Page AiiteC — automatisch posten."""
     if is_open("facebook"):
         return False
     page_token = os.getenv("FACEBOOK_PAGE_TOKEN", "")

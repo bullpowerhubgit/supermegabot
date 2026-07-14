@@ -38,7 +38,7 @@ _DB   = _BASE / "data" / "autonomous_engine.db"
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOP_URL       = "https://ineedit.com.co"
-LOCAL_API      = "http://localhost:8888"
+LOCAL_API      = os.getenv("SUPERMEGABOT_INTERNAL_URL", "http://localhost:8888")
 
 
 # ── State-Datenbank ───────────────────────────────────────────────────────────

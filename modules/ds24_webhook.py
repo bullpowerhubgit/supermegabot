@@ -45,14 +45,17 @@ async def _telegram(msg: str) -> None:
 async def _log_to_supabase(data: dict) -> None:
     try:
         from modules.supabase_client import get_client
-        # ds24_purchases table does not exist in schema — redirect to lead_events
-        get_client().table("lead_events").insert({
+        from modules.distributed_lock import make_dedup_hash
+        order_id = data.get("order_id", "") or data.get("transaction_id", "")
+        dedup = make_dedup_hash("ds24_purchase", order_id)
+        get_client().table("lead_events").upsert({
             "event_type":     "ds24_purchase",
             "email":          data.get("buyer_email", ""),
             "name":           data.get("buyer_name", ""),
             "source":         "digistore24",
+            "dedup_hash":     dedup,
             "metadata":       {
-                "order_id":       data.get("order_id", ""),
+                "order_id":       order_id,
                 "product_id":     data.get("product_id", ""),
                 "product_name":   data.get("product_name", "")[:200],
                 "price":          float(data.get("price", 0) or 0),
@@ -61,7 +64,7 @@ async def _log_to_supabase(data: dict) -> None:
                 "transaction_id": data.get("transaction_id", ""),
             },
             "created_at":     datetime.now(timezone.utc).isoformat(),
-        }).execute()
+        }, on_conflict="dedup_hash").execute()
     except Exception as e:
         log.warning("Supabase log failed: %s", e)
 

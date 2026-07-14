@@ -740,6 +740,15 @@ async def scrape_more_companies(limit: int = 200):
 # ── Hauptlauf ─────────────────────────────────────────────────────────────────
 
 async def run_outreach(daily_limit: int = 100) -> Dict:
+    from modules.distributed_lock import acquire_lock
+    async with acquire_lock("email_outreach_bulk", ttl=90 * 60) as locked:
+        if not locked:
+            log.info("Email Outreach läuft bereits in anderem Terminal — übersprungen")
+            return {"sent": 0, "errors": 0, "skipped": True, "reason": "locked"}
+        return await _run_outreach_inner(daily_limit)
+
+
+async def _run_outreach_inner(daily_limit: int = 100) -> Dict:
     t0 = time.time()
     init_db()
     _seed_companies()
