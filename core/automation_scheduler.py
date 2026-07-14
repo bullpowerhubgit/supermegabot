@@ -6974,10 +6974,10 @@ async def task_zvg_hourly() -> str:
 
 
 async def task_roas_optimizer() -> str:
-    """ROAS Optimizer: Pausiert schlechte Ads, skaliert gute (alle 4h)."""
+    """ROAS Optimizer: Live Meta Insights, Auto-Pause/Scale (alle 4h)."""
     try:
-        from modules.roas_optimizer import run_roas_cycle
-        return await run_roas_cycle()
+        from modules.meta_roas_max import run_roas_max
+        return await run_roas_max()
     except Exception as e:
         return f"ROAS Optimizer Fehler: {e}"
 
@@ -7235,19 +7235,12 @@ async def task_traffic_maximizer() -> str:
     except Exception as e:
         return f"TrafficMaximizer error: {e}"
 
-async def task_meta_ads_optimize() -> str:
-    try:
-        from modules.meta_ads_engine import run_auto_optimize
-        result = await run_auto_optimize()
-        return f"MetaAds: {result}"
-    except Exception as e:
-        return f"MetaAds error: {e}"
-
 async def task_meta_ads_launch() -> str:
+    """GaN Charger ROAS-Kampagne erstellen (1×/Woche)."""
     try:
-        from modules.meta_ads_engine import launch_retargeting_campaign
-        result = await launch_retargeting_campaign()
-        return f"MetaAds launch: {result}"
+        from modules.meta_roas_max import create_gan_charger_campaign
+        result = await create_gan_charger_campaign()
+        return f"MetaAds launch: {result.get('message', result)}"
     except Exception as e:
         return f"MetaAds launch error: {e}"
 
