@@ -12122,6 +12122,51 @@ async def create_app():
     app.router.add_post("/api/aiact/scan",       handle_aiact_scan)
     log.info("AIACT-Pro Bridge routes registered (/api/aiact/*)")
 
+    # ── Meta ROAS Max — GaN Charger Campaign ──────────────────────────────────
+
+    async def handle_roas_stats(req: web.Request) -> web.Response:
+        """GET /api/roas/stats — Live ROAS aus Meta Insights + DB-Log."""
+        try:
+            from modules.meta_roas_max import get_roas_stats, get_live_roas
+            stats = get_roas_stats()
+            live  = await get_live_roas(days=7)
+            return web.json_response({"ok": True, "stats": stats, "live_roas": live})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_roas_launch(req: web.Request) -> web.Response:
+        """POST /api/roas/launch — GaN Charger Kampagne erstellen (PAUSED)."""
+        try:
+            from modules.meta_roas_max import create_gan_charger_campaign
+            result = await create_gan_charger_campaign()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_roas_optimize(req: web.Request) -> web.Response:
+        """POST /api/roas/optimize — Live ROAS prüfen + Auto-Pause/Scale."""
+        try:
+            from modules.meta_roas_max import optimize_campaigns
+            result = await optimize_campaigns()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_roas_run(req: web.Request) -> web.Response:
+        """POST /api/roas/run — Hauptzyklus: erstelle oder optimiere."""
+        try:
+            from modules.meta_roas_max import run_roas_max
+            msg = await run_roas_max()
+            return web.json_response({"ok": True, "result": msg})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_get( "/api/roas/stats",    handle_roas_stats)
+    app.router.add_post("/api/roas/launch",   handle_roas_launch)
+    app.router.add_post("/api/roas/optimize", handle_roas_optimize)
+    app.router.add_post("/api/roas/run",      handle_roas_run)
+    log.info("Meta ROAS Max routes registered (/api/roas/*)")
+
     # ── LinkedIn DM Outreach ───────────────────────────────────────────────────
     async def handle_linkedin_outreach(request):
         """POST /api/linkedin/outreach — 50 LinkedIn DMs an DACH E-Commerce Entscheider."""
@@ -12207,6 +12252,45 @@ async def create_app():
     app.router.add_get( "/api/pilot/status", handle_pilot_status)
     app.router.add_post("/api/pilot/run",    handle_pilot_run)
     log.info("Autonomous Pilot routes registered (/api/pilot/*, /api/linkedin/*, /api/affiliate/*, /api/traffic/*)")
+
+    # ── Agent Coordinator ──────────────────────────────────────────────────
+    async def handle_coordinator_status(request):
+        """GET /api/agents/coordinator — laufende Tasks + letzte Ergebnisse."""
+        try:
+            from modules.agent_coordinator import get_status
+            return web.json_response(get_status())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_coordinator_messages(request):
+        """GET /api/agents/messages?agent=X — Nachrichten für Agenten."""
+        agent = request.rel_url.query.get("agent", "all")
+        try:
+            from modules.agent_coordinator import read_messages
+            msgs = read_messages(agent, unread_only=False)
+            return web.json_response({"agent": agent, "messages": msgs[:20]})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_coordinator_broadcast(request):
+        """POST /api/agents/broadcast — Nachricht an alle Agenten."""
+        try:
+            body = await request.json()
+            from modules.agent_coordinator import send_message
+            send_message(
+                from_agent=body.get("from", "dashboard"),
+                payload=body.get("payload", {}),
+                to_agent=body.get("to", "all"),
+                msg_type=body.get("type", "command"),
+            )
+            return web.json_response({"ok": True})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_get( "/api/agents/coordinator", handle_coordinator_status)
+    app.router.add_get( "/api/agents/messages",    handle_coordinator_messages)
+    app.router.add_post("/api/agents/broadcast",   handle_coordinator_broadcast)
+    log.info("Agent Coordinator routes registered (/api/agents/coordinator, /api/agents/messages, /api/agents/broadcast)")
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
