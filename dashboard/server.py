@@ -12503,6 +12503,52 @@ async def create_app():
     app.router.add_post("/api/agents/broadcast",   handle_coordinator_broadcast)
     log.info("Agent Coordinator routes registered (/api/agents/coordinator, /api/agents/messages, /api/agents/broadcast)")
 
+    # ── Mega Status ────────────────────────────────────────────────────────────
+    async def handle_mega_status(request):
+        import json as _json
+        from pathlib import Path as _Path
+        results = {}
+        # Load health stats if available
+        health_file = _Path("data/health_stats.json")
+        if health_file.exists():
+            try:
+                results["health"] = _json.loads(health_file.read_text())
+            except Exception:
+                results["health"] = {}
+        # Load watchdog stats
+        try:
+            from modules.revenue_watchdog import get_watchdog_stats
+            results["watchdog"] = get_watchdog_stats()
+        except Exception as e:
+            results["watchdog"] = {"error": str(e)}
+        # Load ROAS stats
+        try:
+            from modules.meta_roas_max import get_roas_stats
+            results["meta_roas"] = get_roas_stats()
+        except Exception as e:
+            results["meta_roas"] = {"error": str(e)}
+        # Load cart stats
+        try:
+            from modules.abandoned_cart_emails import get_cart_stats
+            results["abandoned_cart"] = get_cart_stats()
+        except Exception as e:
+            results["abandoned_cart"] = {"error": str(e)}
+        # Load drip stats
+        try:
+            from modules.email_drip_followup import get_drip_stats
+            results["email_drip"] = get_drip_stats()
+        except Exception as e:
+            results["email_drip"] = {"error": str(e)}
+        results["ok"] = True
+        results["system"] = "BullPower MEGA Command Center"
+        return web.Response(
+            text=_json.dumps(results, default=str),
+            content_type="application/json"
+        )
+
+    app.router.add_get("/api/mega-status", handle_mega_status)
+    log.info("Mega Status route registered (/api/mega-status)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")

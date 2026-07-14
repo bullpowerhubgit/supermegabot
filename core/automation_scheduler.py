@@ -7420,6 +7420,21 @@ async def task_roas_cycle() -> str:
         return f"roas_cycle error: {e}"
 
 
+async def task_webhook_registration():
+    try:
+        from modules.shopify_webhook_registrar import run_webhook_registration
+        return await run_webhook_registration()
+    except Exception as e:
+        log.warning("task_webhook_registration: %s", e)
+
+async def task_conversion_optimizer():
+    try:
+        from modules.conversion_optimizer import run_conversion_cycle
+        return await run_conversion_cycle()
+    except Exception as e:
+        log.warning("task_conversion_optimizer: %s", e)
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7877,6 +7892,8 @@ TASKS = [
     # ── REVENUE MAX ENGINE — TikTok + Orchestrator ────────────────────────────
     ("tiktok_ads_engine",        task_tiktok_ads_cycle,            14400,  360),  # 4h   — TikTok Ads Kampagnen + Insights
     ("revenue_orchestrator",     task_revenue_orchestrator_cycle,  21600,  420),  # 6h   — ROAS + Budget-Optimierung + Report
+    ("webhook_registration", task_webhook_registration, 86400, 120),   # daily
+    ("conversion_optimizer", task_conversion_optimizer, 21600, 200),   # 6h
 ]
 
 
