@@ -574,3 +574,41 @@ async def _telegram_alert(msg: str) -> None:
             )
     except Exception:
         pass
+
+
+# ── Scheduler entry points ────────────────────────────────────────────────────
+
+async def run_meta_campaign_cycle() -> dict:
+    """Main orchestrator called by scheduler every 4h: activate + optimize campaigns."""
+    results: dict = {}
+    try:
+        results["activate"] = await activate_campaigns()
+    except Exception as e:
+        results["activate"] = {"error": str(e)}
+    try:
+        results["optimize"] = await run_auto_optimize()
+    except Exception as e:
+        results["optimize"] = {"error": str(e)}
+    try:
+        results["stats"] = await get_all_stats()
+    except Exception as e:
+        results["stats"] = {"error": str(e)}
+    results["ok"] = True
+    return results
+
+
+async def get_meta_status() -> dict:
+    """Status summary for dashboard API."""
+    try:
+        stats = await get_all_stats()
+        return {
+            "ok": True,
+            "configured": bool(_cfg().get("token")),
+            "ad_account": _cfg().get("ad_account", ""),
+            "active_campaigns": stats.get("active_count", 0),
+            "total_spend_eur": stats.get("total_spend_eur", 0),
+            "total_conversions": stats.get("total_conversions", 0),
+            "campaigns": stats.get("campaigns", []),
+        }
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
