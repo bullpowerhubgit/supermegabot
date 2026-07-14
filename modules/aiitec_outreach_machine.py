@@ -32,9 +32,11 @@ import asyncio
 import json
 import logging
 import os
+import random
 import smtplib
 import sys
 import time
+import urllib.request
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -67,11 +69,73 @@ def _load_env():
 _load_env()
 
 _GMAIL_USER = lambda: os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
-_GMAIL_PASS = lambda: os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
+_GMAIL_PASS = lambda: os.getenv("GMAIL_APP_PASSWORD_AIITEC", "")
 _TG_TOKEN   = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHAT    = lambda: os.getenv("TELEGRAM_CHAT_ID", "")
 _SB_URL     = lambda: os.getenv("SUPABASE_URL", "")
 _SB_KEY     = lambda: os.getenv("SUPABASE_SERVICE_KEY", os.getenv("SUPABASE_ANON_KEY", ""))
+
+# ── SMTP-Pool (Round-Robin über alle Gmail-Accounts) ──────────────────────────
+
+_smtp_pool_cache:   List[tuple] = []
+_smtp_pool_idx:     int = 0
+_smtp_blocked_today: set = set()
+_smtp_blocked_date:  str = ""
+
+def _get_smtp_pool() -> List[tuple]:
+    """Baut den SMTP-Pool einmalig aus Env-Vars auf."""
+    global _smtp_pool_cache
+    if _smtp_pool_cache:
+        return _smtp_pool_cache
+    for suffix in ["_1", "_3", "_4", "_5", "_7", "_8"]:
+        u = os.getenv(f"GMAIL_USER{suffix}", "")
+        p = os.getenv(f"GMAIL_APP_PASSWORD{suffix}", "")
+        if u and p:
+            _smtp_pool_cache.append((u, p))
+    if not _smtp_pool_cache:
+        # Fallback auf AIITEC-Account
+        u = _GMAIL_USER()
+        p = _GMAIL_PASS()
+        if u and p:
+            _smtp_pool_cache.append((u, p))
+    log.info("SMTP-Pool: %d Accounts geladen", len(_smtp_pool_cache))
+    return _smtp_pool_cache
+
+def _reset_smtp_if_new_day() -> None:
+    global _smtp_blocked_today, _smtp_blocked_date
+    today = datetime.now().strftime("%Y-%m-%d")
+    if _smtp_blocked_date != today:
+        if _smtp_blocked_today:
+            log.info("[SMTP] Neuer Tag — %d blockierte Accounts freigegeben", len(_smtp_blocked_today))
+        _smtp_blocked_today = set()
+        _smtp_blocked_date = today
+
+def _send_via_sendgrid(to: str, subject: str, body: str) -> bool:
+    """SendGrid REST-API als Fallback wenn alle Gmail-Limits erreicht."""
+    api_key = os.getenv("SENDGRID_API_KEY_AIITEC", "")
+    if not api_key:
+        return False
+    try:
+        payload = json.dumps({
+            "personalizations": [{"to": [{"email": to}]}],
+            "from": {"email": "aiitecbuuss@gmail.com", "name": _FROM_NAME},
+            "reply_to": {"email": "aiitecbuuss@gmail.com"},
+            "subject": subject,
+            "content": [{"type": "text/plain", "value": body}],
+        }).encode()
+        req = urllib.request.Request(
+            "https://api.sendgrid.com/v3/mail/send",
+            data=payload,
+            headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            if resp.status in (200, 202):
+                log.info("  ✉  [SendGrid] Gesendet → %s", to)
+                return True
+    except Exception as e:
+        log.error("  ✗  SendGrid → %s: %s", to, e)
+    return False
 
 EMAILS_PER_DAY    = 30
 FOLLOWUP_DAYS_1   = 5
@@ -647,21 +711,50 @@ async def _log_event(campaign_id: int, event_type: str, detail: str = "") -> Non
 # ── Email Senden ──────────────────────────────────────────────────────────────
 
 def _send_email(to: str, subject: str, body: str) -> bool:
-    try:
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = subject
-        msg["From"]    = f"{_FROM_NAME} <{_GMAIL_USER()}>"
-        msg["To"]      = to
-        msg["Reply-To"] = _GMAIL_USER()
-        msg.attach(MIMEText(body, "plain", "utf-8"))
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
-            s.login(_GMAIL_USER(), _GMAIL_PASS())
-            s.sendmail(_GMAIL_USER(), [to], msg.as_string())
-        log.info("  ✉  Gesendet → %s | %s", to, subject[:60])
-        return True
-    except Exception as e:
-        log.error("  ✗  Fehler → %s: %s", to, e)
+    """Sendet Email via SMTP-Pool (Round-Robin). Bei 550-Limit → nächster Account → SendGrid."""
+    global _smtp_pool_idx
+    _reset_smtp_if_new_day()
+    pool = _get_smtp_pool()
+
+    if not pool:
+        log.error("  ✗  Kein SMTP-Account konfiguriert!")
         return False
+
+    tried = 0
+    while tried < len(pool):
+        idx = _smtp_pool_idx % len(pool)
+        _smtp_pool_idx += 1
+        user, pwd = pool[idx]
+
+        if user in _smtp_blocked_today:
+            tried += 1
+            continue
+
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = subject
+            msg["From"]    = f"{_FROM_NAME} <{user}>"
+            msg["To"]      = to
+            msg["Reply-To"] = "aiitecbuuss@gmail.com"
+            msg.attach(MIMEText(body, "plain", "utf-8"))
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
+                s.login(user, pwd)
+                s.sendmail(user, [to], msg.as_string())
+            log.info("  ✉  Gesendet → %s [via %s]", to, user.split("@")[0])
+            return True
+        except Exception as e:
+            err = str(e)
+            if "550" in err and "limit" in err.lower():
+                log.warning("  ⚠  Tageslimit erreicht für %s — weiter", user.split("@")[0])
+                _smtp_blocked_today.add(user)
+                tried += 1
+                continue
+            log.error("  ✗  Fehler → %s: %s", to, e)
+            return False
+
+    # Alle Gmail-Accounts geblockt → SendGrid-Fallback
+    log.warning("  ↪  Alle Gmail-Accounts geblockt — Fallback auf SendGrid")
+    return _send_via_sendgrid(to, subject, body)
 
 # ── Personalisierung ──────────────────────────────────────────────────────────
 
