@@ -29,12 +29,12 @@ DATA_DIR   = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 DEDUP_FILE = DATA_DIR / "viral_posted.json"
 
 DEFAULT_SUBREDDITS = [
-    "shopify", "entrepreneur", "passive_income",
-    "ecommerce", "dropshipping", "SideProject",
+    "smarthome", "homeautomation", "SolarDIY",
+    "frugalmalefashion", "deals", "germany",
 ]
 
-PRODUCT_NAME = os.getenv("DS24_PRODUCT_NAME", "AI Income Machine")
-PRODUCT_URL  = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+PRODUCT_NAME = os.getenv("SHOP_PRODUCT_NAME", "ineedit Smart Home Shop")
+PRODUCT_URL  = os.getenv("SHOP_URL", "https://ineedit.com.co")
 
 
 # ── Dedup ─────────────────────────────────────────────────────────────────────
@@ -97,16 +97,16 @@ async def generate_viral_content(topic: str, product_name: str = PRODUCT_NAME,
     """Generate viral multi-platform content via AI fallback chain."""
     try:
         from modules.ai_client import ai_complete
-        prompt = f"""Du bist ein viraler Content-Spezialist. Erstelle Content für das Thema: "{topic}"
-Produkt: {product_name} (Link: {product_url}, Preis: €37)
+        prompt = f"""Du bist ein viraler Content-Spezialist für Smart Home & Technik. Erstelle Content für: "{topic}"
+Shop: {product_name} ({product_url}) — verkauft Smart Home Gadgets, Solar, E-Bikes
 
-Gib NUR valides JSON zurück:
+Gib NUR valides JSON zurück (keine Markdown-Blöcke, nur reines JSON):
 {{
-  "title": "Klickstarker Artikel-Titel (max 80 Zeichen, neugierig machend)",
-  "body": "Ein 800-Wort informativer Artikel auf Deutsch mit echtem Mehrwert. HTML-Formatierung mit <h2> Überschriften. Am Ende natürliche Erwähnung von {product_name} mit Link.",
-  "reddit_post": "Kurzer Reddit-Post (max 300 Zeichen): echten Mehrwert liefern, am Ende Link. Kein reines Spam.",
-  "linkedin_post": "Professioneller LinkedIn-Post (max 200 Zeichen) auf Deutsch, mit 2-3 relevanten Hashtags.",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"]
+  "title": "Klickstarker Artikel-Titel (max 80 Zeichen)",
+  "body": "800-Wort informativer Artikel auf Deutsch. HTML mit <h2>. Am Ende Link zu {product_url}/collections/all",
+  "reddit_post": "Reddit-Post (max 300 Zeichen): hilfreicher Tipp mit Link. Kein Spam.",
+  "linkedin_post": "LinkedIn-Post (max 200 Zeichen) auf Deutsch, 2-3 Hashtags (#SmartHome #Technik #Deutschland).",
+  "tags": ["smart-home", "technik", "gadgets", "deutschland", "solar"]
 }}"""
         raw = await ai_complete(prompt, max_tokens=1500)
         if not raw:

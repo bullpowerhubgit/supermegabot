@@ -2859,6 +2859,28 @@ async def handle_seo_run(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_seo_discover_keywords(req):
+    """POST /api/seo/discover-keywords — befüllt Keyword-Cache (Supabase + Disk)."""
+    try:
+        from modules.seo_mega_engine import discover_all_keywords
+        kws = await discover_all_keywords()
+        return web.json_response({"ok": True, "keywords_found": len(kws), "sample": [k.get("keyword","") for k in kws[:5]]})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_seo_run_factory(req):
+    """POST /api/seo/run-factory — generiert SEO-Blog-Artikel und published auf Shopify."""
+    try:
+        data = await req.json() if req.can_read_body else {}
+        batch = int(data.get("batch_size", 5))
+        from modules.seo_mega_engine import run_content_factory
+        result = await run_content_factory(batch_size=batch)
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 # ---------------------------------------------------------------------------
 # SEO: Sitemap ping — Google + Bing indexing for all BullPower Hub Netlify sites
 # ---------------------------------------------------------------------------
@@ -10243,6 +10265,8 @@ async def create_app():
     # ── SEO Autopilot ─────────────────────────────────────────────────────────
     app.router.add_get("/api/seo/status",             handle_seo_status)
     app.router.add_post("/api/seo/run",               handle_seo_run)
+    app.router.add_post("/api/seo/discover-keywords", handle_seo_discover_keywords)
+    app.router.add_post("/api/seo/run-factory",       handle_seo_run_factory)
     app.router.add_post("/api/seo/ping-sitemaps",     handle_ping_sitemaps)
     app.router.add_post("/api/seo/generate",          handle_seo_generate)
     app.router.add_get("/api/seo/social-drafts",      handle_social_drafts)

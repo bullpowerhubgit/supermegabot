@@ -28,7 +28,7 @@ SUPABASE_KEY    = os.getenv("SUPABASE_SERVICE_KEY", "") or os.getenv("SUPABASE_A
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT         = _TG_CHANNEL or ""
-SITE_URL        = os.getenv("SITE_URL", "https://supermegabot-production.up.railway.app")
+SITE_URL        = os.getenv("SITE_URL", "https://ineedit.com.co")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
@@ -38,17 +38,30 @@ DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "s
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 NICHES = [
-    "Shopify E-Commerce Automatisierung",
-    "KI-Tools für Online-Händler",
-    "Dropshipping Deutschland",
-    "Telegram Bot Monetarisierung",
-    "Digistore24 Affiliate Marketing",
+    "Smart Home Geräte Deutschland",
+    "Solar Powerstation Balkonkraftwerk",
+    "Smart Home Gadgets kaufen",
+    "Smarte Haushaltsgeräte Technik",
+    "E-Bike Elektrofahrrad Deutschland",
+]
+
+SEED_KEYWORDS = [
+    {"keyword": "smart home starter set Deutschland", "intent": "commercial", "difficulty": "low", "content_angle": "Welche Smart-Home-Geräte man als Einsteiger braucht"},
+    {"keyword": "balkonkraftwerk kaufen 2026", "intent": "transactional", "difficulty": "medium", "content_angle": "Vergleich der besten Balkonkraftwerke mit Speicher"},
+    {"keyword": "powerstation solar camping", "intent": "commercial", "difficulty": "low", "content_angle": "Portable Solargeneratoren für Camping und Notfälle"},
+    {"keyword": "smart home lampen alexa kompatibel", "intent": "commercial", "difficulty": "low", "content_angle": "Smart-Lampen die mit Alexa und Google Home funktionieren"},
+    {"keyword": "e-bike kaufen günstig 2026", "intent": "transactional", "difficulty": "medium", "content_angle": "Günstige E-Bikes unter 1500 Euro im Vergleich"},
+    {"keyword": "smart home sicherheitskamera outdoor", "intent": "commercial", "difficulty": "low", "content_angle": "Outdoor Überwachungskameras fürs Smart Home"},
+    {"keyword": "solar powerstation 1000w test", "intent": "informational", "difficulty": "low", "content_angle": "Test und Vergleich von 1000W Powerstations"},
+    {"keyword": "smart home thermostat heizung sparen", "intent": "commercial", "difficulty": "low", "content_angle": "Smarte Thermostate die Heizkosten reduzieren"},
+    {"keyword": "roboter staubsauger test 2026", "intent": "informational", "difficulty": "medium", "content_angle": "Beste Saugroboter im aktuellen Vergleich"},
+    {"keyword": "smart home anfänger deutschland", "intent": "informational", "difficulty": "low", "content_angle": "Einstieg ins Smart Home: Was braucht man wirklich?"},
 ]
 
 COMPETITOR_URLS = [
-    "https://www.shopify.com/blog",
-    "https://www.oberlo.com/blog",
-    "https://digistore24.com/blog",
+    "https://www.idealo.de/ratgeber/smart-home",
+    "https://www.chip.de/ratgeber/smart-home",
+    "https://www.techbook.de/smarthome",
 ]
 
 
@@ -59,12 +72,52 @@ COMPETITOR_URLS = [
 async def _claude(prompt: str, max_tokens: int = 2000) -> str:
     try:
         from modules.ai_client import ai_complete
-        r = await ai_complete(prompt, max_tokens=1200)
+        r = await ai_complete(prompt, max_tokens=max_tokens)
         return r if r else ""
     except Exception as e:
-        import logging
-        logging.getLogger(__name__).warning(f"ai_complete fallback: {e}")
+        log.warning("ai_complete error: %s", e)
         return ""
+
+
+async def _supa_save_keywords(keywords: list) -> None:
+    if not SUPABASE_URL or not SUPABASE_KEY or not keywords:
+        return
+    try:
+        payload = {
+            "key": "seo_keywords_cache",
+            "value": json.dumps(keywords, ensure_ascii=False),
+            "agent_id": "seo_mega_engine",
+            "memory_type": "cache",
+        }
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            await s.post(
+                f"{SUPABASE_URL}/rest/v1/agent_memory",
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+                         "Content-Type": "application/json",
+                         "Prefer": "resolution=merge-duplicates,return=minimal"},
+                json=payload,
+            )
+    except Exception as e:
+        log.warning("Supabase keyword save: %s", e)
+
+
+async def _supa_load_keywords() -> list:
+    if not SUPABASE_URL or not SUPABASE_KEY:
+        return []
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            async with s.get(
+                f"{SUPABASE_URL}/rest/v1/agent_memory",
+                headers={"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"},
+                params={"key": "eq.seo_keywords_cache", "agent_id": "eq.seo_mega_engine", "limit": "1"},
+            ) as r:
+                if r.status == 200:
+                    rows = await r.json()
+                    if rows:
+                        return json.loads(rows[0].get("value", "[]"))
+    except Exception as e:
+        log.warning("Supabase keyword load: %s", e)
+    return []
 
 async def _supa_post(table: str, payload: dict) -> dict:
     if not SUPABASE_URL or not SUPABASE_KEY:
@@ -140,14 +193,19 @@ async def discover_keywords(niche: str, count: int = 100) -> list[dict]:
 
 
 async def discover_all_keywords() -> list[dict]:
-    """Run keyword discovery for all niches."""
+    """Run keyword discovery for all niches. Saves to disk + Supabase."""
     all_kws = []
     for niche in NICHES:
         kws = await discover_keywords(niche, count=20)
         all_kws.extend(kws)
-    # Cache to disk
+    if not all_kws:
+        log.warning("AI keyword discovery returned 0 — using seed keywords")
+        all_kws = list(SEED_KEYWORDS)
+    # Cache to disk + Supabase (persists across redeploys)
     cache = DATA_DIR / "keywords.json"
     cache.write_text(json.dumps(all_kws, ensure_ascii=False, indent=2))
+    await _supa_save_keywords(all_kws)
+    log.info("Keywords cached: %d (disk + Supabase)", len(all_kws))
     return all_kws
 
 
@@ -155,10 +213,25 @@ def _load_cached_keywords() -> list[dict]:
     cache = DATA_DIR / "keywords.json"
     if cache.exists():
         try:
-            return json.loads(cache.read_text())
+            data = json.loads(cache.read_text())
+            if data:
+                return data
         except Exception:
             pass
     return []
+
+
+async def _load_keywords_with_fallback() -> list[dict]:
+    """Load keywords: disk → Supabase → seed."""
+    kws = _load_cached_keywords()
+    if kws:
+        return kws
+    kws = await _supa_load_keywords()
+    if kws:
+        log.info("Keywords loaded from Supabase: %d", len(kws))
+        return kws
+    log.warning("No keywords found — using seed keywords")
+    return list(SEED_KEYWORDS)
 
 
 # ─────────────────────────────────────────────────────────────
@@ -183,7 +256,7 @@ async def generate_seo_article(keyword: str, language: str = "de") -> dict:
         f"- H1 (keyword-optimiert)\n"
         f"- Mindestens 6 H2-Abschnitte mit je 200-250 Wörtern\n"
         f"- FAQ-Sektion mit 5 Fragen und Antworten\n"
-        f"- CTA am Ende: Link zu https://bullpower-hub-portal.netlify.app\n"
+        f"- CTA am Ende: Link zu {SITE_URL}/collections/all mit Text 'Jetzt auf ineedit.com.co kaufen'\n"
         f"- Integriere das Keyword natürlich 8-12 mal\n"
         f"- Professioneller, vertrauenswürdiger Ton\n\n"
         f"Antworte NUR mit JSON:\n"
@@ -266,7 +339,7 @@ async def run_content_factory(batch_size: int = 5) -> dict:
     Generate batch_size articles, save to Supabase + Shopify blog.
     Run every 2h with batch_size=5 → 60 articles/day.
     """
-    keywords = _load_cached_keywords()
+    keywords = await _load_keywords_with_fallback()
     if not keywords:
         keywords = await discover_all_keywords()
 
@@ -280,7 +353,7 @@ async def run_content_factory(batch_size: int = 5) -> dict:
     ][:batch_size]
 
     if not candidates:
-        # Re-discover keywords
+        # Re-discover keywords and reset published filter
         keywords = await discover_all_keywords()
         candidates = keywords[:batch_size]
 

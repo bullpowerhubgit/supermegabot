@@ -5764,6 +5764,26 @@ async def task_seo_mega_engine() -> str:
         return f"SEO Mega Fehler: {e}"
 
 
+async def task_seo_keyword_discover() -> str:
+    """Keyword Discovery: befüllt Supabase-Cache mit 100 Smart-Home-Keywords (täglich)."""
+    try:
+        from modules.seo_mega_engine import discover_all_keywords
+        kws = await discover_all_keywords()
+        return f"KeywordDiscover: {len(kws)} Keywords in Cache"
+    except Exception as e:
+        return f"KeywordDiscover Fehler: {e}"
+
+
+async def task_seo_content_factory() -> str:
+    """SEO Content Factory: generiert 5 Shopify-Blog-Artikel (alle 2h)."""
+    try:
+        from modules.seo_mega_engine import run_content_factory
+        r = await run_content_factory(batch_size=5)
+        return f"ContentFactory: {r.get('generated',0)} Artikel | Shopify: {r.get('published_shopify',0)}"
+    except Exception as e:
+        return f"ContentFactory Fehler: {e}"
+
+
 async def task_seo_traffic_blitz() -> str:
     """SEO Traffic Blitz: Sitemap + Keywords + Backlinks + Schema + Internal Links (alle 8h)."""
     try:
@@ -7372,6 +7392,8 @@ TASKS = [
     ("traffic_mega",           task_traffic_mega_engine,    21600, 2060),  # 6h  — Viral+Backlinks+Social
     ("traffic_swarm",          task_traffic_swarm,          28800, 2100),  # 8h  — Multi-Channel Traffic-Schwarm
     ("seo_mega",               task_seo_mega_engine,        21600, 2140),  # 6h  — Content-Factory+SEO-Zyklus
+    ("seo_kw_discover",       task_seo_keyword_discover,   86400,   90),  # daily — befüllt Supabase-Keyword-Cache (1.5min startup)
+    ("seo_content_factory",   task_seo_content_factory,     7200,  180),  # 2h   — 5 Shopify-Blog-Artikel (3min startup)
     ("seo_traffic_blitz",      task_seo_traffic_blitz,      28800, 2180),  # 8h  — Sitemap+Keywords+Backlinks
     ("ultra_seo",              task_ultra_seo_arsenal,      28800, 2220),  # 8h  — Ultra SEO alle Seiten
     ("omega_traffic",          task_omega_traffic_engine,   21600, 2260),  # 6h  — Multi-Channel viral traffic
