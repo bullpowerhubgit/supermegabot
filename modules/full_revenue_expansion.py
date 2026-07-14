@@ -258,11 +258,34 @@ def _send_smtp(to_email: str, subject: str, html_body: str) -> bool:
 
 
 async def _send_brevo(to_email: str, subject: str, html_body: str, from_name: str = "AiiteC") -> bool:
-    """Send via Brevo API (ersetzt SendGrid — 300/Tag kostenlos)."""
+    """Send via Brevo SMTP (primär) → Brevo REST API (fallback)."""
+    from_email = os.getenv("BREVO_FROM_EMAIL", _FROM_EMAIL())
+
+    # ── Brevo SMTP (zuverlässiger, umgeht IP-API-Whitelist) ──────────────────
+    smtp_user = os.getenv("BREVO_SMTP_USER", "")
+    smtp_pass = os.getenv("BREVO_SMTP_PASS", "")
+    if smtp_user and smtp_pass:
+        import smtplib
+        from email.mime.multipart import MIMEMultipart as _MIME
+        from email.mime.text import MIMEText as _Text
+        try:
+            msg = _MIME("alternative")
+            msg["Subject"] = subject
+            msg["From"]    = f"{from_name} <{from_email}>"
+            msg["To"]      = to_email
+            msg.attach(_Text(html_body, "html", "utf-8"))
+            with smtplib.SMTP("smtp-relay.brevo.com", 587, timeout=15) as s:
+                s.ehlo(); s.starttls(); s.login(smtp_user, smtp_pass)
+                s.sendmail(from_email, [to_email], msg.as_string())
+            log.info("Brevo SMTP ✅ → %s", to_email)
+            return True
+        except Exception as e:
+            log.warning("Brevo SMTP failed: %s", e)
+
+    # ── Brevo REST API Fallback ───────────────────────────────────────────────
     key = os.getenv("BREVO_API_KEY", "")
     if not key:
         return False
-    from_email = os.getenv("BREVO_FROM_EMAIL", _FROM_EMAIL())
     payload = {
         "sender":      {"email": from_email, "name": from_name},
         "to":          [{"email": to_email}],
@@ -280,10 +303,10 @@ async def _send_brevo(to_email: str, subject: str, html_body: str, from_name: st
                 if r.status in (200, 201):
                     return True
                 body = await r.text()
-                log.warning("Brevo failed %s: %s", r.status, body[:100])
+                log.warning("Brevo REST failed %s: %s", r.status, body[:100])
                 return False
     except Exception as e:
-        log.warning("Brevo exception: %s", e)
+        log.warning("Brevo REST exception: %s", e)
         return False
 
 
