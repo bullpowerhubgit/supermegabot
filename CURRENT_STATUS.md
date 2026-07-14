@@ -3,6 +3,28 @@
 
 ---
 
+## ✅ NEU (2026-07-14 v29) — VOLLAUTOMATISCH + DESKTOP-ICON + FREE API HUNT
+
+### Desktop Ein-Klick-Start ✅
+- **App**: `~/Desktop/SuperMegaBot.app` — Doppelklick startet alles
+- **Script**: `supermegabot/start_supermegabot.sh` — triggert Railway + lokalen Server
+- **LaunchAgent**: `~/Library/LaunchAgents/com.supermegabot.autostart.plist` — startet bei jedem Mac-Login automatisch (alle 6h)
+- **Dashboard Artifact**: https://claude.ai/code/artifact/9a834a07-9758-41cf-ad8e-7ea4b38cf081
+
+### Free API Hunter ✅ (bereits vorhanden + erweitert)
+- **20+ kostenlose APIs** in 10 Kategorien: ai_text, ai_image, email_lookup, web_search, product_data, currency, seo_analytics, social_data, b2b_company, b2b_news
+- **FreeAPIToolkit**: `ai_complete()` (Groq→OpenRouter→Gemini), `find_email()` (Hunter), `validate_email()` (Disify), `get_company_news()` (NewsAPI), `enrich_company()` (OpenCorporates)
+- **Auto-Hunt**: Scheduler alle 12h → testet alle APIs → cached in `data/free_api_registry.json`
+- **Pollinations.ai**: Kostenlose KI-Bilder ohne Key → `FreeAPIHunter.get_free_image_url(prompt)`
+- **Frankfurter**: Wechselkurse ohne Key → `get_free_currency_rate('EUR','USD')`
+- **DuckDuckGo**: Websuche ohne Key → `duckduckgo_search(query)`
+
+### LIVE getriggert (2026-07-14 ~16:47):
+- ⚡ Circuit Breaker: alle closed ✅
+- 🔧 Auto-Repair: gestartet ✅
+- 🔍 Research: research_started ✅
+- 📧 Batch: batch_started (limit: 333) ✅
+
 ## ✅ NEU (2026-07-14 v28) — DAUERHAFTER CIRCUIT BREAKER FIX
 
 ### Circuit Breaker SQLite-Persistenz ✅ (`modules/circuit_breaker.py`)
