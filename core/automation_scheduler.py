@@ -18,6 +18,21 @@ from typing import Callable, Dict, List, Optional
 
 log = logging.getLogger("AutoScheduler")
 
+# Lazy-loaded task_guard helpers (available module-wide)
+async def task_ran_recently(name: str, min_interval_hours: float = 24) -> bool:
+    try:
+        from modules.task_guard import task_ran_recently as _trr
+        return await _trr(name, min_interval_hours=min_interval_hours)
+    except Exception:
+        return False
+
+async def record_task_run(name: str) -> None:
+    try:
+        from modules.task_guard import record_task_run as _rtr
+        await _rtr(name)
+    except Exception:
+        pass
+
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 DATA_DIR.mkdir(exist_ok=True)
@@ -5651,6 +5666,7 @@ async def task_email_daily_summary() -> str:
 async def task_email_blast_engine() -> str:
     """Email Blast Engine: alle Email-Listen täglich mit Revenue-Content bespielen (alle 6h)."""
     try:
+        from modules.task_guard import task_ran_recently, record_task_run
         if await task_ran_recently("email_blast", min_interval_hours=24):
             return "Email Blast: bereits heute gesendet — überspringe"
         from modules.email_blast_engine import run_email_cycle
