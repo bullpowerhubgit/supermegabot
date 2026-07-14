@@ -9105,7 +9105,7 @@ async def handle_shopify_oauth_callback(req: web.Request) -> web.Response:
         shop  = req.rel_url.query.get("shop","autopilot-store-suite-fmbka.myshopify.com")
         if not code:
             return web.Response(text="Missing code", status=400)
-        client_id     = "65d04d461e18f4661429ab02ce3418a0"
+        client_id     = os.getenv("SHOPIFY_API_KEY", "65d04d461e18f4661429ab02ce3418a0")
         client_secret = os.getenv("SHOPIFY_CLIENT_SECRET","")
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
             r = await s.post(f"https://{shop}/admin/oauth/access_token",
@@ -9146,10 +9146,14 @@ async def handle_shopify_oauth_start(req: web.Request) -> web.Response:
               "read_orders,write_orders,read_content,write_content,"
               "read_price_rules,write_price_rules,read_inventory,write_inventory,"
               "read_locations,write_script_tags,read_analytics")
-    url = ("https://autopilot-store-suite-fmbka.myshopify.com/admin/oauth/authorize"
-           "?client_id=65d04d461e18f4661429ab02ce3418a0"
+    _shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+    _client_id   = os.getenv("SHOPIFY_API_KEY", "65d04d461e18f4661429ab02ce3418a0")
+    _base_url    = os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/")
+    _redirect    = urllib.parse.quote(f"{_base_url}/api/shopify/callback")
+    url = (f"https://{_shop_domain}/admin/oauth/authorize"
+           f"?client_id={_client_id}"
            f"&scope={urllib.parse.quote(scopes)}"
-           "&redirect_uri=https%3A//supermegabot-production.up.railway.app/api/shopify/callback"
+           f"&redirect_uri={_redirect}"
            "&state=aiitec2026")
     raise web.HTTPFound(url)
 
@@ -9918,9 +9922,13 @@ async def create_app():
     except Exception as e:
         log.warning("Env-Alias-Normalisierung: %s", e)
 
-    from core.mega_orchestrator import MegaOrchestrator
-    bot = MegaOrchestrator()
-    await bot.start()
+    try:
+        from core.mega_orchestrator import MegaOrchestrator
+        bot = MegaOrchestrator()
+        await bot.start()
+    except Exception as e:
+        log.warning("MegaOrchestrator start failed (non-fatal): %s", e)
+        bot = None
 
     # Start Hermes Job Queue
     try:
@@ -11153,18 +11161,21 @@ async def create_app():
     log.info("Mass Outreach 1000/Tag routes registered")
 
     # KI-Telefonassistentin Sofia
-    from modules.phone_ai_assistant import (
-        handle_phone_incoming, handle_phone_status,
-        handle_phone_stats, handle_outbound_trigger,
-        handle_phone_ws, init_db as phone_init_db
-    )
-    phone_init_db()
-    app.router.add_post("/api/phone/incoming",  handle_phone_incoming)
-    app.router.add_post("/api/phone/status",    handle_phone_status)
-    app.router.add_get( "/api/phone/stats",     handle_phone_stats)
-    app.router.add_post("/api/phone/outbound",  handle_outbound_trigger)
-    app.router.add_get( "/ws/phone",            handle_phone_ws)
-    log.info("KI-Telefonassistentin Sofia routes registered (/api/phone/*, /ws/phone)")
+    try:
+        from modules.phone_ai_assistant import (
+            handle_phone_incoming, handle_phone_status,
+            handle_phone_stats, handle_outbound_trigger,
+            handle_phone_ws, init_db as phone_init_db
+        )
+        phone_init_db()
+        app.router.add_post("/api/phone/incoming",  handle_phone_incoming)
+        app.router.add_post("/api/phone/status",    handle_phone_status)
+        app.router.add_get( "/api/phone/stats",     handle_phone_stats)
+        app.router.add_post("/api/phone/outbound",  handle_outbound_trigger)
+        app.router.add_get( "/ws/phone",            handle_phone_ws)
+        log.info("KI-Telefonassistentin Sofia routes registered (/api/phone/*, /ws/phone)")
+    except Exception as e:
+        log.warning("phone_ai_assistant unavailable (non-fatal): %s", e)
 
     # Email Conversation AI — beantwortet alle Inbox-Emails automatisch
     async def handle_email_ai_stats(req):
@@ -11219,17 +11230,20 @@ async def create_app():
     log.info("Mega Acquisition Engine routes registered (/api/acquisition/*)")
 
     # Stripe Payment Links
-    from modules.stripe_payment_links import handle_stripe_links
-    async def handle_stripe_create_links(req):
-        try:
-            from modules.stripe_payment_links import create_payment_links_for_all_products
-            result = await create_payment_links_for_all_products()
-            return web.json_response(result)
-        except Exception as e:
-            return web.json_response({"ok": False, "error": str(e)}, status=500)
-    app.router.add_get("/api/stripe/payment-links", handle_stripe_links)
-    app.router.add_post("/api/stripe/create-links", handle_stripe_create_links)
-    log.info("Stripe Payment Links routes registered (/api/stripe/*)")
+    try:
+        from modules.stripe_payment_links import handle_stripe_links
+        async def handle_stripe_create_links(req):
+            try:
+                from modules.stripe_payment_links import create_payment_links_for_all_products
+                result = await create_payment_links_for_all_products()
+                return web.json_response(result)
+            except Exception as e:
+                return web.json_response({"ok": False, "error": str(e)}, status=500)
+        app.router.add_get("/api/stripe/payment-links", handle_stripe_links)
+        app.router.add_post("/api/stripe/create-links", handle_stripe_create_links)
+        log.info("Stripe Payment Links routes registered (/api/stripe/*)")
+    except Exception as e:
+        log.warning("stripe_payment_links unavailable (non-fatal): %s", e)
 
     # Klaviyo Flows
     async def handle_klaviyo_setup(req):

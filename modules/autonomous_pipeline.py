@@ -315,7 +315,7 @@ async def create_stripe_payment_link(product: dict) -> dict:
                     "line_items[0][quantity]": "1",
                     "after_completion[type]": "redirect",
                     "after_completion[redirect][url]": (
-                        "https://supermegabot-production.up.railway.app/api/ds24/dankeseite"
+                        os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/") + "/api/ds24/dankeseite"
                     ),
                 },
                 timeout=aiohttp.ClientTimeout(total=15),
