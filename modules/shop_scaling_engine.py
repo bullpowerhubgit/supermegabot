@@ -216,7 +216,6 @@ def _build_smtp_pool() -> List[Dict]:
     accounts = []
     pairs = [
         ("GMAIL_USER_1", "GMAIL_APP_PASSWORD_1", "dragonadnp@gmail.com"),
-        ("GMAIL_USER_4", "GMAIL_APP_PASSWORD_4", "looopwave@gmail.com"),
         ("GMAIL_USER_5", "GMAIL_APP_PASSWORD_5", "aiitecbuuss@gmail.com"),
         ("GMAIL_USER_7", "GMAIL_APP_PASSWORD_7", "rudolf.sarkany.aiitec@gmail.com"),
         ("GMAIL_USER_3", "GMAIL_APP_PASSWORD_3", "bullpowersrtkennels@gmail.com"),

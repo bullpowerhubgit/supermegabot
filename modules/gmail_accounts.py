@@ -21,7 +21,6 @@ SECRETS_FILE = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")
 DEFAULT_EMAILS: Dict[int, str] = {
     1: "dragonadnp@gmail.com",
     3: "bullpowersrtkennels@gmail.com",
-    4: "looopwave@gmail.com",
     5: "aiitecbuuss@gmail.com",
     7: "rudolf.sarkany.aiitec@gmail.com",
     8: "rudolfsarkany1984@gmail.com",

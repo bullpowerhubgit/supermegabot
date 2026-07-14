@@ -224,8 +224,6 @@ _SMTP_POOL = [
      lambda: os.getenv("GMAIL_APP_PASSWORD_7","").replace(" ","")),
     (lambda: os.getenv("GMAIL_USER_1","dragonadnp@gmail.com"),
      lambda: os.getenv("GMAIL_APP_PASSWORD_1","").replace(" ","")),
-    (lambda: os.getenv("GMAIL_USER_4","looopwave@gmail.com"),
-     lambda: os.getenv("GMAIL_APP_PASSWORD_4","").replace(" ","")),
     (lambda: os.getenv("GMAIL_USER_5","aiitecbuuss@gmail.com"),
      lambda: os.getenv("GMAIL_APP_PASSWORD_5","").replace(" ","")),
 ]

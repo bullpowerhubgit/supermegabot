@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # Config
 # ---------------------------------------------------------------------------
-CACHE_PATH = Path("/Users/rudolfsarkany/supermegabot/data/google_shopping_feed.xml")
+CACHE_PATH = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")) / "google_shopping_feed.xml"
 CACHE_TTL_SECONDS = 6 * 3600  # 6 hours
 MAX_PRODUCTS = 250            # feed cap
 PAGE_SIZE = 50                # Shopify pagination limit per request
