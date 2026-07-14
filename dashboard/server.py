@@ -12203,7 +12203,7 @@ async def create_app():
     log.info("Trust & Conversion routes registered (/api/trust/run, /trust-badge.js)")
 
     # ── AIACT-Pro Bridge routes ───────────────────────────────────────────────
-    async def handle_aiact_health(request):
+    async def _handle_aiact_bridge_health(request):
         """GET /api/aiact/health — AIACT-Pro Verbindungsstatus."""
         try:
             from modules.aiact_pro_bridge import health
@@ -12227,7 +12227,7 @@ async def create_app():
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
-    async def handle_aiact_scan(request):
+    async def _handle_aiact_bridge_scan(request):
         """POST /api/aiact/scan — AI-Act Compliance-Scan für eine URL."""
         try:
             body = await request.json()
@@ -12236,10 +12236,10 @@ async def create_app():
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
-    app.router.add_get( "/api/aiact/health",     handle_aiact_health)
+    app.router.add_get( "/api/aiact/health",     _handle_aiact_bridge_health)
     app.router.add_get( "/api/aiact/compliance", handle_aiact_compliance)
     app.router.add_post("/api/aiact/sync",       handle_aiact_sync)
-    app.router.add_post("/api/aiact/scan",       handle_aiact_scan)
+    app.router.add_post("/api/aiact/scan",       _handle_aiact_bridge_scan)
     log.info("AIACT-Pro Bridge routes registered (/api/aiact/*)")
 
     # ── Meta ROAS Max — GaN Charger Campaign ──────────────────────────────────
