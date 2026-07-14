@@ -200,6 +200,11 @@ def _build_xml(products: list[dict], shop_domain: str) -> str:
         product_url = f"https://{shop_domain}/products/{handle}"
         category = _map_category(product_type)
 
+        # Skip products without image — GMC requires g:image_link
+        if not image_link:
+            log.debug("Skipping product %s (no image)", product_id)
+            continue
+
         for variant in variants:
             variant_id = variant.get("id")
             price = variant.get("price")
