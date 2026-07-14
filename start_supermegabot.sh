@@ -86,8 +86,8 @@ log "📊 LIVE REVENUE CHECK..."
 python3 -c "
 import sys; sys.path.insert(0,'$DIR')
 import asyncio, os
-os.environ.setdefault('STRIPE_SECRET_KEY', '$STRIPE_SECRET_KEY')
-os.environ.setdefault('DS24_API_KEY', '$DS24_API_KEY')
+os.environ.setdefault('STRIPE_SECRET_KEY', '${STRIPE_SECRET_KEY:-}')
+os.environ.setdefault('DS24_API_KEY', '${DS24_API_KEY:-}')
 
 async def check():
     try:
