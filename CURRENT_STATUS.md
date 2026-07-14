@@ -1,5 +1,19 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 23:05 CEST**
+**Stand: 2026-07-15 00:20 CEST**
+
+## ✅ v43 — CRITICAL FIX: asyncio.run() + Meta Ads Live + Feed Clean
+
+### Deployed: 6a635392 (via railway up, ~00:20 CEST)
+
+**Fixes diese Session (2026-07-15):**
+1. ✅ **CRITICAL**: `asyncio.run(_main())` war innerhalb `handle_revenue_summary()` — Server startete nie (rc=0 sofort). Verschoben zu `if __name__ == '__main__':` am Dateiende.
+2. ✅ meta_ads.py: `activate_campaign()` + `activate_all_campaigns()` — alle 10 Kampagnen AKTIV, €20/Tag Budget gesetzt
+3. ✅ google_shopping_feed.py: JSON-LD aus Beschreibungen entfernt, `ineedit.com.co` URLs, saubere Feeds bestätigt
+4. ✅ phone_ai_assistant.py: SMS-Webhook `/api/sms/incoming` hinzugefügt (92feb83d)
+5. ✅ gmc_feed_submitter.py: GMC Feed Auto-Submitter via Service Account JWT (1e16c8a2)
+6. ✅ bullpower_revenue_engine.py: Shopify GET Requests mit explicit 60s Timeout
+
+**Health:** `/health` ✅ ok | uptime ~250s nach letztem Deploy
 
 ## ✅ v42 — CRASH FIX: UnboundLocalError handle_mega_status
 
@@ -98,21 +112,28 @@
 
 ---
 
-## ⚠️ OFFENE PUNKTE
+## ⚠️ OFFENE PUNKTE (manuell erforderlich)
 
-### GitHub Actions RAILWAY_TOKEN abgelaufen
-- Automatische Deploys via GitHub Actions funktionieren nicht
+### 1. Twilio Console Webhook-URL setzen (manuell)
+- Voice: `https://supermegabot-production.up.railway.app/api/phone/incoming`
+- SMS: `https://supermegabot-production.up.railway.app/api/sms/incoming`
+- Wo: Twilio Console → Phone Numbers → +17625685298 → Voice/Messaging
+
+### 2. Google Merchant Center Feed einreichen (manuell)
+- URL: `https://supermegabot-production.up.railway.app/feed/google-shopping.xml`
+- Wo: merchants.google.com → Feeds → Neue Datenquelle
+
+### 3. GitHub Actions RAILWAY_TOKEN abgelaufen (manuell)
 - **Workaround**: `railway up --detach --service supermegabot` (lokal, funktioniert)
-- **Fix**: Neues Token unter railway.com → Project Settings → Tokens erstellen → GitHub Secret `RAILWAY_TOKEN` updaten
+- **Fix**: Neues Token unter railway.com → Project Settings → Tokens → GitHub Secret `RAILWAY_TOKEN` updaten
 
-### Facebook Rate Limited
-- "Zu viele Posts" Schutz aktiv
+### Facebook Rate Limited (temporär, kein Handlungsbedarf)
 - Viral Traffic Machine: Reddit/Medium/LinkedIn funktionieren
-- Instagram/Facebook: temporär geblockt
+- Instagram/Facebook: temporär geblockt (erholt sich automatisch)
 
-### Anthropic API Credits erschöpft
+### Anthropic API Credits erschöpft (kein Handlungsbedarf)
 - OpenRouter (Gemma) als Fallback aktiv
-- SEO-Artikel werden trotzdem generiert (langsamere Modelle)
+- SEO-Artikel werden generiert (langsamere Modelle)
 
 ---
 
