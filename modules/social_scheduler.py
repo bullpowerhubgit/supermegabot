@@ -184,7 +184,17 @@ async def post_to_telegram(text: str, extra_html: str = "") -> dict:
 
 
 async def post_to_facebook(text: str) -> dict:
-    """Postet auf AiiteC Facebook Page (1016738738178786) mit URL-Validierung."""
+    """Postet auf AiiteC Facebook Page (1016738738178786) mit URL-Validierung + Post-Wächter."""
+    try:
+        from modules.post_watchdog import validate_post, record_sent, record_blocked
+        ok, issues = await validate_post(text, platform="facebook")
+        if not ok:
+            log.warning("PostWatchdog [facebook] — BLOCKIERT: %s", "; ".join(issues))
+            record_blocked(text, "facebook", issues)
+            return {"ok": False, "blocked": True, "reasons": issues}
+        record_sent(text, "facebook")
+    except Exception:
+        pass
     if not FB_PAGE_TOKEN:
         return {"ok": False, "error": "FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
     # Rate gate: max 1 Facebook post per 3 hours — verhindert Spam-Sperre
@@ -220,7 +230,17 @@ async def post_to_facebook(text: str) -> dict:
 
 
 async def post_to_twitter(text: str) -> dict:
-    """Versucht Tweet über internen Webhook mit URL-Validierung."""
+    """Versucht Tweet über internen Webhook mit URL-Validierung + Post-Wächter."""
+    try:
+        from modules.post_watchdog import validate_post, record_sent, record_blocked
+        ok, issues = await validate_post(text, platform="twitter")
+        if not ok:
+            log.warning("PostWatchdog [twitter] — BLOCKIERT: %s", "; ".join(issues))
+            record_blocked(text, "twitter", issues)
+            return {"ok": False, "blocked": True, "reasons": issues}
+        record_sent(text, "twitter")
+    except Exception:
+        pass
     dead_url = await _check_urls_in_text(text)
     if dead_url:
         log.error("post_to_twitter: URL_DEAD=%s — Post abgebrochen", dead_url)
