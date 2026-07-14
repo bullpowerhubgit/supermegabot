@@ -416,6 +416,17 @@ async def post_reddit(
 
 async def run_full_traffic_blast() -> dict:
     """Generiert Content und postet auf alle Kanäle. 3× täglich aufgerufen."""
+    from modules.agent_coordinator import run as coord_run
+    async with coord_run("traffic_blast", "traffic_maximizer", ttl=900, reuse_result_age=600) as ctx:
+        if ctx.already_running:
+            log.info("Traffic Blast läuft bereits oder zu frisch — übersprungen")
+            return ctx.last_result.get("result", {"skipped": True}) if ctx.last_result else {"skipped": True}
+        result = await _run_traffic_blast_inner()
+        ctx.result = result
+        return result
+
+
+async def _run_traffic_blast_inner() -> dict:
     posts_ok = 0
     platforms_ok = []
 
