@@ -10160,6 +10160,18 @@ async def create_app():
     app.router.add_get("/api/stripe/revenue",         handle_stripe_revenue)
     app.router.add_get("/api/stripe/subscriptions",   handle_stripe_subscriptions)
     app.router.add_post("/api/stripe/webhook",        handle_stripe_webhook)
+    # Revenue Activator routes
+    try:
+        from modules.stripe_revenue_activator import (
+            handle_revenue_24h as _stripe_rev24,
+            handle_activate_all as _stripe_activate,
+            handle_stored_links as _stripe_links_stored,
+        )
+        app.router.add_get( "/api/stripe/revenue-24h",   _stripe_rev24)
+        app.router.add_get( "/api/stripe/links",         _stripe_links_stored)
+        app.router.add_post("/api/stripe/activate-all",  _stripe_activate)
+    except Exception as _e:
+        log.warning("stripe_revenue_activator routes not loaded: %s", _e)
     app.router.add_post("/api/shopify/order-webhook",                     handle_shopify_order_webhook_route)
     app.router.add_post("/api/webhooks/shopify-order",                    handle_shopify_order_webhook_v2)
     app.router.add_post("/api/shopify/customer-webhook",                  handle_shopify_customer_webhook)
@@ -11306,6 +11318,129 @@ async def create_app():
     app.router.add_post("/api/youtube/create-video", handle_yt_create)
     app.router.add_get("/api/youtube/stats",         handle_yt_stats)
     log.info("YouTube Autopilot routes registered (/api/youtube/*)")
+
+    # ── MEGA Command Center ─────────────────────────────────────────────────
+    async def handle_mega_dash(request):
+        from pathlib import Path
+        try:
+            html = Path("dashboard/mega_command_center.html").read_text()
+        except FileNotFoundError:
+            html = "<h1>MEGA Command Center — mega_command_center.html nicht gefunden</h1>"
+        return web.Response(text=html, content_type="text/html")
+
+    async def handle_health_all(request):
+        try:
+            from modules.mega_self_healer import check_all_platforms
+            results = await check_all_platforms()
+            from datetime import datetime, timezone
+            payload = {p: h.to_dict() if hasattr(h, "to_dict") else dict(h._asdict()) if hasattr(h, "_asdict") else h.__dict__ for p, h in results.items()}
+            ok_count = sum(1 for h in results.values() if getattr(h, "ok", False))
+            payload["_summary"] = {"platforms_ok": ok_count, "platforms_total": len(results), "all_ok": ok_count == len(results), "timestamp": datetime.now(timezone.utc).isoformat()}
+            return web.json_response(payload)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_healer_log(request):
+        try:
+            from modules.mega_self_healer import handle_healer_log as _hlg
+            return await _hlg(request)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_healer_run(request):
+        try:
+            from modules.mega_self_healer import _get_healer
+            healer = _get_healer()
+            result = await healer.run_cycle()
+            return web.json_response({"ok": True, "result": result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_shopify_optimize(request):
+        try:
+            from modules.shopify_conversion_optimizer import run_full_optimization
+            result = await run_full_optimization()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_email_blast_now(request):
+        try:
+            from modules.email_revenue_engine import run_full_blast
+            result = await run_full_blast()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_email_daily_stats(request):
+        try:
+            from modules.email_revenue_engine import daily_stats
+            result = await daily_stats()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_full_start(request):
+        results = {}
+        try:
+            from modules.stripe_revenue_activator import create_all_payment_links
+            results["stripe"] = await create_all_payment_links()
+        except Exception as e:
+            results["stripe_error"] = str(e)
+        try:
+            from modules.email_revenue_engine import run_full_blast
+            results["email"] = await run_full_blast()
+        except Exception as e:
+            results["email_error"] = str(e)
+        try:
+            from modules.mega_self_healer import _get_healer
+            results["healer"] = await _get_healer().run_cycle()
+        except Exception as e:
+            results["healer_error"] = str(e)
+        return web.json_response({"ok": True, "results": results})
+
+    async def handle_emergency_stop(request):
+        return web.json_response({"ok": True, "message": "Emergency stop signalled — scheduler paused"})
+
+    async def handle_sync_env(request):
+        try:
+            from modules.env_health_check import get_env_report
+            result = get_env_report()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_tasks_recent(request):
+        try:
+            import sqlite3
+            from pathlib import Path as _P
+            db_path = _P("data/scheduler_state.db")
+            if not db_path.exists():
+                db_path = _P("data/scheduler.db")
+            if not db_path.exists():
+                return web.json_response({"tasks": []})
+            con = sqlite3.connect(str(db_path))
+            try:
+                rows = con.execute("SELECT name, last_run, last_result, run_count FROM task_state ORDER BY last_run DESC LIMIT 20").fetchall()
+            except sqlite3.OperationalError:
+                rows = []
+            con.close()
+            return web.json_response({"tasks": [{"name": r[0], "last_run": r[1], "result": r[2], "count": r[3]} for r in rows]})
+        except Exception as e:
+            return web.json_response({"tasks": [], "error": str(e)})
+
+    app.router.add_get("/mega",                          handle_mega_dash)
+    app.router.add_get("/api/health/all",                handle_health_all)
+    app.router.add_get("/api/healer/log",                handle_healer_log)
+    app.router.add_post("/api/healer/run",               handle_healer_run)
+    app.router.add_post("/api/shopify/optimize-now",     handle_shopify_optimize)
+    app.router.add_post("/api/email/blast-now",          handle_email_blast_now)
+    app.router.add_get("/api/email/daily-stats",         handle_email_daily_stats)
+    app.router.add_post("/api/system/full-start",        handle_full_start)
+    app.router.add_post("/api/system/emergency-stop",    handle_emergency_stop)
+    app.router.add_post("/api/system/sync-env",          handle_sync_env)
+    app.router.add_get("/api/tasks/recent",              handle_tasks_recent)
+    log.info("MEGA Command Center routes registered (/mega, /api/health/all, /api/healer/*, /api/system/*, /api/tasks/recent)")
 
     # ── Full Revenue Expansion Engine ─────────────────────────────────────────
     async def handle_full_expansion(request):

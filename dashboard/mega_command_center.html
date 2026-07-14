@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="de" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MEGA Command Center — SuperMegaBot</title>
+<style>
+/* ── Reset + Base ────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; -webkit-font-smoothing: antialiased; }
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ── Color tokens ────────────────────────────────────────────────────── */
+:root {
+  --bg:        #0b0f14;
+  --surface:   #141a21;
+  --surface2:  #1a2230;
+  --border:    #1d2631;
+  --text:      #e2e8f0;
+  --muted:     #6b7b8d;
+  --accent:    #22c55e;
+  --accent-dim:#16532d;
+  --danger:    #ef4444;
+  --danger-dim:#4c1515;
+  --warn:      #f59e0b;
+  --warn-dim:  #4a2d00;
+  --info:      #3b82f6;
+  --info-dim:  #1a3360;
+  --mono: 'JetBrains Mono', 'Cascadia Code', 'SF Mono', ui-monospace, monospace;
+}
+
+/* ── Layout shell ────────────────────────────────────────────────────── */
+.shell {
+  display: grid;
+  grid-template-rows: auto auto 1fr;
+  min-height: 100vh;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────── */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 1.5rem;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+}
+.logo span { color: var(--muted); font-weight: 400; }
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.status-badge {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  padding: 3px 10px;
+  border-radius: 3px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.status-badge.warn { background: var(--warn-dim); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 30%, transparent); }
+.status-badge.danger { background: var(--danger-dim); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, transparent); }
+.last-updated {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+/* ── Main content ────────────────────────────────────────────────────── */
+main {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* ── Section labels ──────────────────────────────────────────────────── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ── KPI strip ───────────────────────────────────────────────────────── */
+.kpi-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+@media (max-width: 700px) { .kpi-strip { grid-template-columns: 1fr 1fr; } }
+.kpi {
+  background: var(--surface);
+  padding: 1.1rem 1.3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+.kpi-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.kpi-value {
+  font-family: var(--mono);
+  font-size: 1.8rem;
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.kpi-value.green { color: var(--accent); }
+.kpi-value.red   { color: var(--danger); }
+.kpi-value.amber { color: var(--warn); }
+.kpi-sub {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Two-column mid section ──────────────────────────────────────────── */
+.mid-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 900px) { .mid-grid { grid-template-columns: 1fr; } }
+
+/* ── Platform health grid ────────────────────────────────────────────── */
+.health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+@media (max-width: 600px) { .health-grid { grid-template-columns: 1fr 1fr; } }
+
+.platform-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.65rem 0.85rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: default;
+  transition: border-color 0.15s;
+}
+.platform-card:hover { border-color: var(--muted); }
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--muted);
+}
+.dot.ok     { background: var(--accent); box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent); }
+.dot.error  { background: var(--danger); box-shadow: 0 0 6px color-mix(in srgb, var(--danger) 50%, transparent); }
+.dot.warn   { background: var(--warn); }
+.dot.pending { background: var(--muted); animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+.platform-name {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--text);
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.platform-latency {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Action panel ────────────────────────────────────────────────────── */
+.action-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.btn {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+.btn:active { transform: scale(0.98); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-indicator {
+  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
+}
+.btn-primary {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface2));
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 20%, var(--surface2)); }
+.btn-info {
+  background: color-mix(in srgb, var(--info) 10%, var(--surface2));
+  color: var(--info);
+  border-color: color-mix(in srgb, var(--info) 30%, transparent);
+}
+.btn-info:hover:not(:disabled) { background: color-mix(in srgb, var(--info) 18%, var(--surface2)); }
+.btn-warn {
+  background: color-mix(in srgb, var(--warn) 10%, var(--surface2));
+  color: var(--warn);
+  border-color: color-mix(in srgb, var(--warn) 30%, transparent);
+}
+.btn-warn:hover:not(:disabled) { background: color-mix(in srgb, var(--warn) 18%, var(--surface2)); }
+.btn-danger {
+  background: color-mix(in srgb, var(--danger) 10%, var(--surface2));
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+}
+.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 18%, var(--surface2)); }
+.btn-muted {
+  background: var(--surface2);
+  color: var(--muted);
+  border-color: var(--border);
+}
+.btn-muted:hover:not(:disabled) { color: var(--text); border-color: var(--muted); }
+
+/* ── Revenue row ─────────────────────────────────────────────────────── */
+.revenue-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+@media (max-width: 700px) { .revenue-grid { grid-template-columns: 1fr 1fr; } }
+.rev-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.85rem 1rem;
+}
+.rev-source {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+.rev-amount {
+  font-family: var(--mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.rev-amount.positive { color: var(--accent); }
+.rev-detail {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+/* ── Bottom grid ─────────────────────────────────────────────────────── */
+.bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+@media (max-width: 900px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+/* ── Log / table panels ──────────────────────────────────────────────── */
+.log-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.log-header {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.log-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.log-scroll::-webkit-scrollbar { width: 4px; }
+.log-scroll::-webkit-scrollbar-track { background: transparent; }
+.log-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+.log-row {
+  display: grid;
+  grid-template-columns: 100px 1fr 80px;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  align-items: center;
+}
+.log-row:last-child { border-bottom: none; }
+.log-row:hover { background: var(--surface2); }
+.log-time { color: var(--muted); font-variant-numeric: tabular-nums; }
+.log-name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.log-status {
+  text-align: right;
+  font-size: 0.62rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  justify-self: end;
+}
+.log-status.ok { background: var(--accent-dim); color: var(--accent); }
+.log-status.err { background: var(--danger-dim); color: var(--danger); }
+.log-status.run { background: var(--info-dim); color: var(--info); }
+
+/* ── Toast ───────────────────────────────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  pointer-events: none;
+}
+.toast {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  padding: 0.6rem 1rem;
+  border-radius: 4px;
+  border-left: 3px solid var(--accent);
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  animation: slide-in 0.2s ease, fade-out 0.4s ease 3.6s forwards;
+  pointer-events: auto;
+  max-width: 320px;
+}
+.toast.err { border-color: var(--danger); }
+.toast.warn { border-color: var(--warn); }
+@keyframes slide-in { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes fade-out { from { opacity: 1; } to { opacity: 0; pointer-events: none; } }
+
+/* ── Empty / loading states ──────────────────────────────────────────── */
+.empty {
+  padding: 2rem;
+  text-align: center;
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.spinner {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.4rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Env health pills ────────────────────────────────────────────────── */
+.env-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.75rem 1rem;
+}
+.env-pill {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  padding: 2px 8px;
+  border-radius: 3px;
+  border: 1px solid transparent;
+}
+.env-pill.ok { background: var(--accent-dim); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
+.env-pill.missing { background: var(--danger-dim); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 25%, transparent); }
+.env-pill.warn { background: var(--warn-dim); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 25%, transparent); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ── Header ─────────────────────────────────────────────────────────── -->
+<header>
+  <div class="logo">MEGA<span>/</span>CMD &nbsp;<span>supermegabot</span></div>
+  <div class="header-right">
+    <span id="global-status" class="status-badge"><span class="spinner"></span>Laden…</span>
+    <span id="last-updated" class="last-updated">—</span>
+    <button class="btn btn-muted" style="width:auto;padding:4px 10px;font-size:0.65rem;" onclick="refreshAll()" title="Jetzt aktualisieren">↻ Refresh</button>
+  </div>
+</header>
+
+<!-- ── Main ────────────────────────────────────────────────────────────── -->
+<main>
+
+  <!-- KPI strip -->
+  <div>
+    <div class="section-label">System-Übersicht</div>
+    <div class="kpi-strip">
+      <div class="kpi">
+        <div class="kpi-label">APIs gesund</div>
+        <div class="kpi-value green" id="kpi-apis">—</div>
+        <div class="kpi-sub" id="kpi-apis-sub">von 15 Plattformen</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Revenue 24h</div>
+        <div class="kpi-value" id="kpi-revenue">—</div>
+        <div class="kpi-sub" id="kpi-revenue-sub">Stripe + DS24 + Shopify</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Emails heute</div>
+        <div class="kpi-value" id="kpi-emails">—</div>
+        <div class="kpi-sub" id="kpi-emails-sub">SMTP-Pool gesamt</div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Stripe Links</div>
+        <div class="kpi-value" id="kpi-stripe">—</div>
+        <div class="kpi-sub">Payment Links aktiv</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mid: Health + Actions -->
+  <div class="mid-grid">
+    <!-- Platform health grid -->
+    <div>
+      <div class="section-label">Plattform-Health</div>
+      <div class="health-grid" id="health-grid">
+        <!-- Placeholder cards -->
+        <script>
+          const PLATFORMS = ['Shopify','Stripe','Anthropic','OpenAI','Klaviyo','Supabase','Telegram','Meta','LinkedIn','Twilio','SendGrid','Printify','YouTube','DS24','Dashboard'];
+          document.write(PLATFORMS.map(p => `
+            <div class="platform-card" id="pc-${p.toLowerCase()}" title="${p}">
+              <div class="dot pending" id="dot-${p.toLowerCase()}"></div>
+              <div class="platform-name">${p}</div>
+              <div class="platform-latency" id="lat-${p.toLowerCase()}">…</div>
+            </div>`).join(''));
+        </script>
+      </div>
+    </div>
+
+    <!-- Action panel -->
+    <div>
+      <div class="section-label">Aktionen</div>
+      <div class="action-panel">
+        <button class="btn btn-primary" onclick="runAction('/api/system/full-start','POST','Full-Start')">
+          <div class="btn-indicator" style="background:var(--accent)"></div> ▶ Vollstart (Stripe+Email+Healer)
+        </button>
+        <button class="btn btn-info" onclick="runAction('/api/healer/run','POST','Healer-Zyklus')">
+          <div class="btn-indicator" style="background:var(--info)"></div> ⚕ Self-Healer ausführen
+        </button>
+        <button class="btn btn-info" onclick="runAction('/api/shopify/optimize-now','POST','Shopify-Optimize')">
+          <div class="btn-indicator" style="background:var(--info)"></div> ⚡ Shopify Conversion optimieren
+        </button>
+        <button class="btn btn-info" onclick="runAction('/api/email/blast-now','POST','Email-Blast')">
+          <div class="btn-indicator" style="background:var(--info)"></div> ✉ Email-Blast starten
+        </button>
+        <button class="btn btn-warn" onclick="runAction('/api/stripe/activate-all','POST','Stripe-Links')">
+          <div class="btn-indicator" style="background:var(--warn)"></div> 💳 Stripe Payment Links erstellen
+        </button>
+        <button class="btn btn-muted" onclick="runAction('/api/system/sync-env','POST','Env-Sync')">
+          <div class="btn-indicator" style="background:var(--muted)"></div> 🔑 ENV validieren + sync
+        </button>
+        <button class="btn btn-muted" onclick="refreshAll()">
+          <div class="btn-indicator" style="background:var(--muted)"></div> ↻ Dashboard aktualisieren
+        </button>
+        <div style="height:1px;background:var(--border);margin:0.25rem 0"></div>
+        <button class="btn btn-danger" onclick="runAction('/api/system/emergency-stop','POST','Emergency-Stop')">
+          <div class="btn-indicator" style="background:var(--danger)"></div> ⛔ Emergency Stop
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue row -->
+  <div>
+    <div class="section-label">Revenue-Quellen</div>
+    <div class="revenue-grid" id="revenue-grid">
+      <div class="rev-card"><div class="rev-source">Stripe</div><div class="rev-amount" id="rev-stripe">—</div><div class="rev-detail" id="rev-stripe-d">wird geladen…</div></div>
+      <div class="rev-card"><div class="rev-source">Digistore24</div><div class="rev-amount" id="rev-ds24">—</div><div class="rev-detail" id="rev-ds24-d">wird geladen…</div></div>
+      <div class="rev-card"><div class="rev-source">Shopify</div><div class="rev-amount" id="rev-shopify">—</div><div class="rev-detail" id="rev-shopify-d">wird geladen…</div></div>
+      <div class="rev-card"><div class="rev-source">Klaviyo</div><div class="rev-amount" id="rev-klaviyo">—</div><div class="rev-detail" id="rev-klaviyo-d">wird geladen…</div></div>
+    </div>
+  </div>
+
+  <!-- Bottom: Tasks + Healer log -->
+  <div class="bottom-grid">
+
+    <!-- Recent tasks -->
+    <div>
+      <div class="section-label">Letzte Scheduler-Tasks</div>
+      <div class="log-panel">
+        <div class="log-header">
+          Task-Name
+          <span id="task-count" style="color:var(--muted)">lädt…</span>
+        </div>
+        <div class="log-scroll" id="task-log">
+          <div class="empty"><span class="spinner"></span>Lade Tasks…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Healer log -->
+    <div>
+      <div class="section-label">Healer-Protokoll</div>
+      <div class="log-panel">
+        <div class="log-header">
+          Auto-Fix-Aktionen
+          <span id="healer-count" style="color:var(--muted)">lädt…</span>
+        </div>
+        <div class="log-scroll" id="healer-log">
+          <div class="empty"><span class="spinner"></span>Lade Log…</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ENV health strip -->
+  <div>
+    <div class="section-label">ENV-Keys</div>
+    <div class="log-panel">
+      <div class="log-header">
+        Validierung
+        <span id="env-summary" style="color:var(--muted)">lädt…</span>
+      </div>
+      <div class="env-strip" id="env-strip">
+        <span class="env-pill warn">Lädt…</span>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div><!-- .shell -->
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<script>
+/* ── Utilities ──────────────────────────────────────────────────────── */
+function toast(msg, type = 'ok') {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type === 'error' ? 'err' : type === 'warn' ? 'warn' : '');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => t.remove(), 4500);
+}
+
+function setKpi(id, val, cls = '') {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = val;
+  if (cls) { el.className = 'kpi-value ' + cls; }
+}
+
+function fmt(n, decimals = 2) {
+  if (n === undefined || n === null || n === '') return '—';
+  const num = parseFloat(n);
+  if (isNaN(num)) return '—';
+  return '€' + num.toLocaleString('de-DE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+}
+
+/* ── Health check ───────────────────────────────────────────────────── */
+async function loadHealth() {
+  try {
+    const r = await fetch('/api/health/all');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const summary = d['_summary'] || {};
+    const ok = summary.platforms_ok ?? 0;
+    const total = summary.platforms_total ?? 15;
+
+    setKpi('kpi-apis', `${ok}/${total}`, ok === total ? 'green' : ok > total * 0.6 ? 'amber' : 'red');
+    document.getElementById('kpi-apis-sub').textContent = ok === total ? 'alle Plattformen gesund' : `${total - ok} Plattform(en) offline`;
+
+    const statusBadge = document.getElementById('global-status');
+    if (ok === total) {
+      statusBadge.textContent = '● ONLINE';
+      statusBadge.className = 'status-badge';
+    } else if (ok > total * 0.5) {
+      statusBadge.textContent = `● TEILWEISE ONLINE (${ok}/${total})`;
+      statusBadge.className = 'status-badge warn';
+    } else {
+      statusBadge.textContent = `● DEGRADIERT (${ok}/${total})`;
+      statusBadge.className = 'status-badge danger';
+    }
+
+    for (const [platform, health] of Object.entries(d)) {
+      if (platform === '_summary') continue;
+      const key = platform.toLowerCase().replace(/[^a-z0-9]/g,'');
+      const dot = document.getElementById('dot-' + key);
+      const lat = document.getElementById('lat-' + key);
+      if (dot) {
+        dot.className = 'dot ' + (health.ok ? 'ok' : health.error === '_creds_missing' ? 'warn' : 'error');
+      }
+      if (lat && health.latency_ms !== undefined) {
+        lat.textContent = health.ok ? Math.round(health.latency_ms) + 'ms' : (health.error === '_creds_missing' ? 'no key' : 'ERR');
+      }
+    }
+  } catch (e) {
+    document.getElementById('global-status').textContent = '● FEHLER';
+    document.getElementById('global-status').className = 'status-badge danger';
+  }
+}
+
+/* ── Revenue ─────────────────────────────────────────────────────────── */
+async function loadRevenue() {
+  try {
+    const r = await fetch('/api/revenue/summary');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+
+    // Stripe
+    const stripe = d.stripe || {};
+    const stripeTotal = stripe.total_eur ?? stripe.available_eur ?? 0;
+    document.getElementById('rev-stripe').textContent = fmt(stripeTotal);
+    document.getElementById('rev-stripe').className = 'rev-amount' + (stripeTotal > 0 ? ' positive' : '');
+    document.getElementById('rev-stripe-d').textContent = `${stripe.charges_24h ?? 0} Charges 24h`;
+
+    // DS24
+    const ds24 = d.digistore24 || d.ds24 || {};
+    const ds24Total = ds24.total_eur ?? ds24.revenue_eur ?? 0;
+    document.getElementById('rev-ds24').textContent = fmt(ds24Total);
+    document.getElementById('rev-ds24').className = 'rev-amount' + (ds24Total > 0 ? ' positive' : '');
+    document.getElementById('rev-ds24-d').textContent = `${ds24.order_count ?? 0} Bestellungen`;
+
+    // Shopify
+    const shopify = d.shopify || {};
+    const shopifyTotal = shopify.total_eur ?? shopify.revenue_24h ?? 0;
+    document.getElementById('rev-shopify').textContent = fmt(shopifyTotal);
+    document.getElementById('rev-shopify').className = 'rev-amount' + (shopifyTotal > 0 ? ' positive' : '');
+    document.getElementById('rev-shopify-d').textContent = `${shopify.orders_24h ?? 0} Orders`;
+
+    // Klaviyo
+    const klv = d.klaviyo || {};
+    document.getElementById('rev-klaviyo').textContent = `${klv.campaigns_sent ?? 0}`;
+    document.getElementById('rev-klaviyo-d').textContent = `${klv.campaigns_draft ?? 0} Drafts`;
+
+    // KPI total
+    const total = stripeTotal + ds24Total + shopifyTotal;
+    setKpi('kpi-revenue', fmt(total, 0), total > 0 ? 'green' : '');
+    document.getElementById('kpi-revenue-sub').textContent = 'Stripe + DS24 + Shopify';
+
+  } catch(e) {
+    ['stripe','ds24','shopify','klaviyo'].forEach(k => {
+      const el = document.getElementById('rev-' + k);
+      if (el) el.textContent = 'ERR';
+    });
+  }
+}
+
+/* ── Email stats ─────────────────────────────────────────────────────── */
+async function loadEmailStats() {
+  try {
+    const r = await fetch('/api/email/stats');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const sent = d.emails_sent_today ?? d.sent_today ?? 0;
+    setKpi('kpi-emails', sent.toString(), sent > 100 ? 'green' : '');
+    document.getElementById('kpi-emails-sub').textContent = `SMTP-Pool: ${d.smtp_pool_size ?? '?'} Konten`;
+  } catch(e) {
+    setKpi('kpi-emails', 'ERR', 'red');
+  }
+}
+
+/* ── Stripe KPI ──────────────────────────────────────────────────────── */
+async function loadStripeLinks() {
+  try {
+    const r = await fetch('/api/stripe/links');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const count = Array.isArray(d) ? d.length : (d.count ?? d.total ?? 0);
+    setKpi('kpi-stripe', count.toString(), count > 100 ? 'green' : count > 0 ? 'amber' : '');
+  } catch(e) {
+    setKpi('kpi-stripe', '—');
+  }
+}
+
+/* ── Recent tasks ────────────────────────────────────────────────────── */
+async function loadTasks() {
+  const container = document.getElementById('task-log');
+  try {
+    const r = await fetch('/api/tasks/recent');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const tasks = d.tasks || [];
+    document.getElementById('task-count').textContent = tasks.length + ' Tasks';
+    if (!tasks.length) {
+      container.innerHTML = '<div class="empty">Keine Tasks gefunden</div>';
+      return;
+    }
+    container.innerHTML = tasks.map(t => {
+      const ts = t.last_run ? new Date(t.last_run * 1000).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'}) : '—';
+      const ok = t.result && !t.result.toLowerCase().includes('error') && !t.result.toLowerCase().includes('err');
+      return `<div class="log-row">
+        <div class="log-time">${ts}</div>
+        <div class="log-name" title="${escHtml(t.result || '')}">${escHtml(t.name)}</div>
+        <span class="log-status ${ok ? 'ok' : 'err'}">${ok ? 'OK' : 'ERR'}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="empty">Fehler beim Laden</div>';
+  }
+}
+
+/* ── Healer log ──────────────────────────────────────────────────────── */
+async function loadHealerLog() {
+  const container = document.getElementById('healer-log');
+  try {
+    const r = await fetch('/api/healer/log');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const entries = d.entries || [];
+    document.getElementById('healer-count').textContent = entries.length + ' Einträge';
+    if (!entries.length) {
+      container.innerHTML = '<div class="empty">Keine Auto-Fix-Aktionen</div>';
+      return;
+    }
+    container.innerHTML = entries.slice(0, 20).map(e => {
+      const ts = e.timestamp ? new Date(e.timestamp).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'}) : '—';
+      const ok = e.success ?? true;
+      return `<div class="log-row">
+        <div class="log-time">${ts}</div>
+        <div class="log-name" title="${escHtml(e.detail || '')}">${escHtml(e.action || e.type || '—')}</div>
+        <span class="log-status ${ok ? 'ok' : 'err'}">${ok ? 'FIXED' : 'FAIL'}</span>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    container.innerHTML = '<div class="empty">Fehler beim Laden</div>';
+  }
+}
+
+/* ── ENV health ──────────────────────────────────────────────────────── */
+async function loadEnvHealth() {
+  try {
+    const r = await fetch('/api/system/sync-env');
+    if (!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    const strip = document.getElementById('env-strip');
+    const summary = document.getElementById('env-summary');
+    const validation = d.validation || d;
+
+    const missing = validation.missing || [];
+    const invalid = validation.invalid || [];
+    const ok_count = (validation.ok_count ?? (19 - missing.length - invalid.length));
+
+    summary.textContent = `${ok_count}/19 OK`;
+    summary.style.color = missing.length > 0 ? 'var(--danger)' : invalid.length > 0 ? 'var(--warn)' : 'var(--accent)';
+
+    const pills = [];
+    const allKeys = validation.all_keys || [];
+    if (allKeys.length) {
+      allKeys.forEach(k => {
+        const cls = missing.includes(k) ? 'missing' : invalid.includes(k) ? 'warn' : 'ok';
+        pills.push(`<span class="env-pill ${cls}" title="${k}">${k.replace(/_/g,'_​')}</span>`);
+      });
+    } else if (missing.length) {
+      missing.forEach(k => pills.push(`<span class="env-pill missing">${k}</span>`));
+      pills.unshift(`<span class="env-pill ok">${ok_count} OK</span>`);
+    } else {
+      pills.push(`<span class="env-pill ok">Alle ${ok_count} Keys gesetzt</span>`);
+    }
+    strip.innerHTML = pills.join('');
+  } catch(e) {
+    document.getElementById('env-strip').innerHTML = '<span class="env-pill warn">ENV-Check fehlgeschlagen</span>';
+  }
+}
+
+/* ── Action runner ────────────────────────────────────────────────────── */
+async function runAction(endpoint, method = 'POST', label = 'Aktion') {
+  toast(`${label} gestartet…`, 'ok');
+  try {
+    const r = await fetch(endpoint, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: method === 'POST' ? '{}' : undefined,
+    });
+    const d = await r.json().catch(() => ({}));
+    if (r.ok) {
+      toast(`✓ ${label} abgeschlossen`, 'ok');
+      // Reload relevant data
+      setTimeout(refreshAll, 1000);
+    } else {
+      toast(`✗ ${label}: ${d.error || r.status}`, 'error');
+    }
+  } catch (e) {
+    toast(`✗ ${label}: Netzwerkfehler`, 'error');
+  }
+}
+
+/* ── Helpers ─────────────────────────────────────────────────────────── */
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── Main refresh ────────────────────────────────────────────────────── */
+async function refreshAll() {
+  document.getElementById('last-updated').textContent = 'aktualisiert ' + new Date().toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  await Promise.allSettled([
+    loadHealth(),
+    loadRevenue(),
+    loadEmailStats(),
+    loadStripeLinks(),
+    loadTasks(),
+    loadHealerLog(),
+    loadEnvHealth(),
+  ]);
+}
+
+/* ── Boot ────────────────────────────────────────────────────────────── */
+refreshAll();
+setInterval(refreshAll, 60_000);
+</script>
+</body>
+</html>
