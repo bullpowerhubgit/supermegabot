@@ -34,13 +34,14 @@ TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 # Schwellenwerte
-SWAP_WARN_PCT      = 75   # % Swap belegt → Warnung
-SWAP_CRIT_PCT      = 88   # % Swap belegt → kritisch + auto-kill
-RAM_WARN_PCT       = 85   # % RAM belegt → Warnung
+SWAP_WARN_PCT      = 70   # % Swap belegt → Warnung + kill
+SWAP_CRIT_PCT      = 85   # % Swap belegt → kritisch + kill + alert
+RAM_WARN_PCT       = 80   # % RAM belegt → Warnung + kill
 DISK_CLEAN_GB      = 20   # GB frei → Disk-Cleaner triggern
 DISK_CRIT_GB       = 10   # GB frei → TM-Snapshots löschen
-COMET_MAX_PROCS    = 20   # Comet-Prozesse: über diesem Limit → killen
-CHROME_MAX_PROCS   = 25   # Chrome/Brave Renderer über Limit → killen
+COMET_MAX_PROCS    = 12   # Comet-Prozesse max (aggressiver)
+CHROME_MAX_PROCS   = 15   # Chrome Renderer max
+BRAVE_MAX_PROCS    = 15   # Brave Renderer max
 ALERT_COOLDOWN_MIN = 20   # Minuten zwischen gleichen Alerts
 
 
@@ -191,9 +192,17 @@ def kill_runaway_processes() -> dict:
         killed["Chrome"] = n
 
     # Brave Renderer
-    n = _count_and_kill_runaway("Brave Browser", CHROME_MAX_PROCS)
+    n = _count_and_kill_runaway("Brave Browser", BRAVE_MAX_PROCS)
     if n > 0:
         killed["Brave"] = n
+
+    # Speicher-Purge wenn viel gekillt wurde
+    if sum(killed.values()) > 10:
+        try:
+            subprocess.run(["purge"], timeout=30, capture_output=True)
+            log.info("purge ausgeführt nach %d kills", sum(killed.values()))
+        except Exception:
+            pass
 
     return killed
 
@@ -323,14 +332,17 @@ def run_ram_watchdog() -> dict:
     # ── 4. Prozess-Watchdog (IMMER, kein Cooldown fürs Killen) ─────────────
     comet_count = sum(1 for p in psutil.process_iter(["cmdline"])
                       if any("Comet" in (c or "") for c in (p.info.get("cmdline") or [])))
-    if comet_count > COMET_MAX_PROCS:
+    # Brave separat prüfen
+    brave_count = sum(1 for p in psutil.process_iter(["cmdline"])
+                      if any("Brave Browser" in (c or "") for c in (p.info.get("cmdline") or [])))
+    if comet_count > COMET_MAX_PROCS or brave_count > BRAVE_MAX_PROCS:
         extra_killed = kill_runaway_processes()
         if extra_killed:
             result["actions"].append(f"proc_kill: {extra_killed}")
             if _cooldown_ok(state, "proc_kill", 15):
                 kill_txt = ", ".join(f"{k}: {v}" for k, v in extra_killed.items())
                 _tg(f"🤖 *Runaway-Prozesse gekillt*\n{kill_txt}\n"
-                    f"(Comet hatte {comet_count} Prozesse)")
+                    f"(Comet: {comet_count}, Brave: {brave_count})")
                 _mark_alerted(state, "proc_kill")
 
     state["last_run"] = now
