@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 v33 — CODE AUF GITHUB, RAILWAY DEPLOY MANUELL NÖTIG**
+**Stand: 2026-07-14 v34 — META ADS VOLLSTÄNDIG VERBUNDEN ✅**
 
 ## 🔴 RAILWAY DEPLOY MANUELL STARTEN (1x)
 
@@ -18,6 +18,32 @@ Railway läuft noch auf altem Stand (vor traffic_accelerator, trust_and_conversi
 
 **Problem**: Der aktuelle RAILWAY_TOKEN in .env ist ein Personal API Token (UUID-Format).
 `railway up` braucht aber einen Project Service Token. → Option A ist schneller!
+
+---
+
+## ✅ NEU (2026-07-14 v34) — META ADS + ALLE KONTEN VERBUNDEN
+
+### Meta / Facebook — Vollständig verbunden ✅
+- **Long-Lived Token** (208 chars, ~60 Tage): In .env als META_ADS_TOKEN, META_ACCESS_TOKEN, FACEBOOK_ACCESS_TOKEN, INSTAGRAM_ACCESS_TOKEN, INSTAGRAM_TOKEN_AIITEC
+- **Page Access Token** (224 chars, never expires): FACEBOOK_PAGE_TOKEN, FACEBOOK_PAGE_TOKEN_AIITEC, FACEBOOK_PAGE_ACCESS_TOKEN
+- **Berechtigungen**: ads_management, ads_read, business_management, instagram_basic, instagram_content_publish, pages_read_engagement, pages_manage_posts ✅
+- **Facebook Page**: Aiitec (ID=1016738738178786) ✅
+- **Instagram**: @aaiitecc (ID=17841478315197796) | 4.799 Follower | 622 Posts ✅
+
+### Ad Accounts (alle status=1 AKTIV, EUR) ✅
+- act_807576585207198 → META_AD_ACCOUNT_ID_807
+- act_2215713609248740 → META_AD_ACCOUNT_ID_INEEDIT (www.ineedit.com.co)
+- act_878505274898620 → META_AD_ACCOUNT_ID_AIITEC (primary)
+- FACEBOOK_BUSINESS_ACCOUNT_IDS: alle 3 in .env gespeichert
+
+### .env aktualisiert ✅
+- 7 Token-Felder auf neuen Long-Lived Token
+- 2 Page-Token-Felder auf Page Access Token (never expires)
+- 4 neue Ad-Account-ID Einträge hinzugefügt
+
+### Noch offen
+- Railway Deploy nötig damit neue .env live geht in Production
+- Meta Ads Kampagne erstellen (Budget, Zielgruppe, Creative für Bestseller-Produkt)
 
 ---
 
