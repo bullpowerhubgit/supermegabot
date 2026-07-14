@@ -1,5 +1,23 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 22:00 CEST**
+**Stand: 2026-07-14 23:05 CEST**
+
+## ✅ v41 — DESKTOP ICON + START-SCRIPT FERTIG
+
+### Deployed: a2862ccf (23:05 CEST)
+
+**Fixes diese Session:**
+1. ✅ start_supermegabot.sh: macOS-kompatibles .env-Laden (`set -a` + `source` statt `xargs -d '\n'`)
+2. ✅ start_supermegabot.sh: Railway Timeout 10→20s (Railway antwortet manchmal langsamer)
+3. ✅ start_supermegabot.sh: Alle 10 Income-Triggers parallel (statt seriell — 10x schneller, Laufzeit ~25s)
+4. ✅ start_supermegabot.sh: `${KEY:-}` defaults — kein "unbound variable" mehr
+5. ✅ Desktop App Launcher: absoluter `cd` Pfad gefixt → funktioniert aus beliebigem Verzeichnis
+
+**Ein-Klick Desktop Start:**
+- Doppelklick `~/Desktop/SuperMegaBot.app`
+- Öffnet Terminal → startet alles in ~25s
+- Git push + Railway health + alle Revenue-Streams + Browser öffnet sich
+
+---
 
 ## ✅ v40 — MEGA COMMAND CENTER + CONVERSION OPTIMIZER
 
