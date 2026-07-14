@@ -1,42 +1,33 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 v24 — GELDGENERIERUNG · CONVERSION BOOSTER LIVE · 64+ EMAILS GESENDET**
+**Stand: 2026-07-14 v25 — DEEP SCAN COMPLETE · 140+ MODULE GEFIXT · FREE API HUNTER LIVE**
 
 ---
 
-## 🚀 NEU (2026-07-14 v24) — FOKUS: GELDGENERIERUNG
+## 🚀 NEU (2026-07-14 v25) — DEEP SCAN + FREE APIS
 
-### Shopify Conversion Booster ✅ LIVE
-- **Script injiziert**: `modules/shopify_conversion_booster.py`
-- **Theme**: Horizon | **ScriptTag ID**: 367516516739
-- **Asset URL**: `https://cdn.shopify.com/s/files/.../assets/bp-conversion-booster.js`
-- **Features aktiv**:
-  - 🚚 Free-Shipping Bar (ab €49, sticky oben)
-  - ✅ Trust Badges (SSL, Returns, Rating) auf Produktseiten
-  - 🔴 Urgency Counter ("Nur noch X auf Lager")
-  - 🛍️ Social Proof Notifications (alle 12s)
-  - 🎁 Exit-Intent Popup → Code WELCOME10 (10%)
-  - 📱 Sticky Add-to-Cart (mobile)
-- **Discount Code**: RESCUE10 (10%) + WELCOME10 (10%) aktiv
-- **Route**: `POST /api/shopify/conversion-boost`
+### Deep Scan abgeschlossen ✅ (0 Syntax-Fehler in 306 Modulen)
+**Fixes in 140+ Dateien (2 Commits):**
 
-### E-Mail-Outreach läuft ✅
-- **64+ Emails gesendet** in ersten 30 Minuten
-- **502 Leads** in DB | 21+ kontaktiert | 1 Unsubscribe
-- **6 SMTP-Accounts** | 1.200/Tag Kapazität
-- Batches: `POST /api/mass-outreach/send {"limit": 200}`
+| Fix | Betroffene Dateien | Problem |
+|-----|-------------------|---------|
+| `SHOPIFY_ACCESS_TOKEN` | 83 Module | Falsche Env-Var `SHOPIFY_ADMIN_API_TOKEN` → leer |
+| Shopify Domain Fallback | 46 Module | `autopilot-store-suite-fmbka` → `ineedit.com.co` |
+| Railway URL | 6 Module | Hardcoded → `os.getenv("RAILWAY_PUBLIC_DOMAIN", ...)` |
+| `import os` | 5 Module | Missing + `from __future__` Reihenfolge fixiert |
+| Supabase Test | test_live_connections | `/rest/v1/` → `/rest/v1/agent_memory?limit=1` |
+| DS24 Test | test_live_connections | Falsches Endpoint → korrekte URL |
 
-### CRO Engine Fix ✅ (war: always False)
-- **Problem**: Klaviyo Flow-API unterstützt KEINE `flow_actions` in einem Call
-- **Fix**: 3-Step Campaign (POST campaign → GET message-id → PATCH content → POST send-job)
-- **SMTP Fallback**: wenn Klaviyo fehlt → 50 Leads direkt via SMTP
-- `create_klaviyo_welcome_flow()` — jetzt korrekt
-- `create_urgency_campaign()` — 3-Step API fix
+### Free API Hunter ✅ LIVE (`modules/free_api_hunter.py`)
+- **50+ kostenlose APIs** in 8 Kategorien cached
+- **Kein API-Key nötig**: Pollinations (∞ Bilder), DuckDuckGo (∞ Suche), Frankfurter (∞ Währung)
+- **Free AI Fallback**: Groq → Gemini Flash → OpenRouter/DeepSeek → Ollama
+- **Scheduler**: alle 12h automatischer Scan (`task_free_api_hunter`)
+- **Dashboard**: `/api/free-apis/*` (GET registry, POST scan, GET best-ai)
 
-### Revenue Tasks laufen (2026-07-14 13:xx UTC)
-- `ds24_traffic` — DS24 Affiliate alle Kanäle ✅
-- `ultra_acq_research` — neue Leads suchen ✅
-- `b2b_intent_radar` — B2B Intent Radar ✅
-- `money_machine_run` — alle 5 Revenue Engines ✅
+### ROAS Optimizer ✅ (`modules/roas_optimizer.py`)
+- **Auto-Pause** ROAS < 2x: Creative Test Video (0.87x), Generic Broad (1.49x)
+- **Auto-Scale** ROAS > 4x: Cart Abandoners (17-23x), Brand Search (20-24x)
+- Läuft alle 4h via Scheduler
 
 ---
 
@@ -44,56 +35,60 @@
 
 | Was | Wo | Priorität |
 |-----|-----|-----------|
-| Twilio Nummer kaufen | Twilio Dashboard | MITTEL |
 | Anthropic Credits aufladen | console.anthropic.com | HOCH (AI-Content 503) |
 | DS24 Produkt 704677 manuell einreichen | DS24 Dashboard | HOCH |
+| Twilio Nummer kaufen | Twilio Dashboard | MITTEL |
+| Klaviyo echte Subscribers aufbauen | Klaviyo Dashboard | MITTEL |
 | Pinterest Standard Access | developers.pinterest.com | NIEDRIG |
 | TikTok Production Access | App Review | NIEDRIG |
 | Instagram Token (läuft ab 2026-09-06) | Meta Dashboard | NIEDRIG |
-| 8.098 Shopify Produkte archiviert | Bulk Activator läuft (200/h) | AUTO |
-| Klaviyo: nur ~10 Test-Profile | Echte Subscribers aufbauen | MITTEL |
 
 ---
 
 ## 💰 REVENUE STATUS
 
-| Kanal | Status | Emails heute |
-|-------|--------|--------------|
-| Outreach SMTP (502 Leads) | ✅ 64+ gesendet | 64+ |
-| DS24 Affiliate | ✅ läuft | — |
-| Shopify Store | ✅ 11.828 Produkte aktiv | — |
-| Klaviyo Email | ⚠️ nur ~10 Test-Profile | 0 |
-| Abandoned Cart | ✅ läuft (1h) | — |
+| Kanal | Status | Tägl. Kapazität |
+|-------|--------|----------------|
+| SMTP Outreach (502+ Leads) | ✅ 64+ gesendet | 1.200/Tag |
+| DS24 Affiliate | ✅ alle 3h | — |
+| Shopify Store | ✅ 11.828 Produkte | — |
+| Abandoned Cart | ✅ alle 1h | — |
+| ROAS Optimizer | ✅ alle 4h | Auto |
+| Free API Hunter | ✅ alle 12h | 50+ free APIs |
 
 ---
 
-## ✅ LANGZEIT-FIXES (v23 — alle korrekt)
+## ✅ ALLE LANGZEIT-FIXES
 
-- Email-Akquisition: 2.100 Emails/Tag ✅
-- Sofia Phone AI: bereit (wartet auf Twilio-Nummer)
-- Email Conversation AI: alle 15min aktiv
-- Revenue-Module: Stripe, Klaviyo, WhatsApp, Affiliate
-- SMTP Pool: 6 unique Accounts (GMAIL_USER_8 = rudolfsarkany1984@gmail.com)
-- DS24 Key: IMMER 1581233-... (aiitec) — NIEMALS 1682000-...
-- AiiteC Primary: FB 1016738738178786, IG @aaiitecc
+- Shopify Token: SHOPIFY_ACCESS_TOKEN überall korrekt ✅
+- Shopify Domain: ineedit.com.co als Fallback überall ✅
+- Railway URL: env-basiert (RAILWAY_PUBLIC_DOMAIN) ✅
+- DS24 Key: IMMER 1581233-... (aiitec) — self_fixer warnt bei 1682000 ✅
+- AiiteC: FB 1016738738178786, IG @aaiitecc ✅
+- SMTP Pool: 8 Gmail-Accounts (1.600/Tag) ✅
+- 5 duplicate GET routes in server.py behoben (startup-crash) ✅
+- 12 duplicate functions in scheduler bereinigt ✅
+- self_healer: high_cpu + zombie_processes actions real ✅
+- 0 Syntax-Fehler in allen 306 Modulen ✅
 
 ---
 
-## 📋 SESSION-FORTSETZUNG: Was als nächstes tun
+## 📋 SESSION-FORTSETZUNG
 
 ```bash
-# 1. Outreach-Stats prüfen
-curl -s https://supermegabot-production.up.railway.app/api/mass-outreach/stats
+# 1. System Health
+curl -s https://supermegabot-production.up.railway.app/health
 
-# 2. Mehr Emails senden (wenn <400 kontaktiert)
-curl -s -X POST https://supermegabot-production.up.railway.app/api/mass-outreach/send \
-  -H "Content-Type: application/json" -d '{"limit": 200}'
+# 2. Free APIs scannen
+curl -s -X POST http://localhost:8888/api/free-apis/scan
 
-# 3. Revenue Report triggern
-curl -s -X POST https://supermegabot-production.up.railway.app/api/scheduler/trigger \
-  -H "Content-Type: application/json" -d '{"task":"cro_run"}'
+# 3. ROAS-Zyklus triggern
+curl -s -X POST http://localhost:8888/api/scheduler/trigger \
+  -H "Content-Type: application/json" -d '{"task":"roas_optimizer"}'
 
-# 4. DS24 Revenue prüfen
-curl -s -X POST https://supermegabot-production.up.railway.app/api/scheduler/trigger \
-  -H "Content-Type: application/json" -d '{"task":"ds24_traffic"}'
+# 4. Revenue Status
+curl -s http://localhost:8888/api/revenue/summary
+
+# 5. Deep Scan Status
+python3 test_live_connections.py
 ```
