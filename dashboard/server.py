@@ -36,7 +36,7 @@ LOGS_DIR = BASE_DIR / "logs"
 # Load .env
 try:
     from dotenv import load_dotenv
-    load_dotenv(BASE_DIR / ".env")
+    load_dotenv(BASE_DIR / ".env", override=True)
 except ImportError:
     # fallback: manual parse
     _env_file = BASE_DIR / ".env"
@@ -1697,7 +1697,7 @@ async def _validate_key(session: aiohttp.ClientSession, key: str, val: str) -> s
         elif key == "SUPABASE_URL" and os.environ.get("SUPABASE_ANON_KEY"):
             async with session.get(
                 f"{val}/rest/v1/",
-                headers={"apikey": os.environ["SUPABASE_ANON_KEY"]},
+                headers={"apikey": os.getenv("SUPABASE_ANON_KEY", "")},
                 timeout=timeout
             ) as r:
                 return "valid" if r.status < 500 else "present"
@@ -2759,10 +2759,29 @@ async def handle_gumroad_callback(req):
         os.environ["GUMROAD_TOKEN"] = access_token
         if refresh_token:
             os.environ["GUMROAD_REFRESH_TOKEN"] = refresh_token
+        # Persist to Railway so token survives restarts
+        import subprocess
+        try:
+            subprocess.run(
+                ["railway", "variables", "set",
+                 f"GUMROAD_ACCESS_TOKEN={access_token}",
+                 f"GUMROAD_TOKEN={access_token}",
+                 "--service", "supermegabot"],
+                capture_output=True, timeout=30,
+            )
+            if refresh_token:
+                subprocess.run(
+                    ["railway", "variables", "set",
+                     f"GUMROAD_REFRESH_TOKEN={refresh_token}",
+                     "--service", "supermegabot"],
+                    capture_output=True, timeout=30,
+                )
+        except Exception as _e:
+            log.warning("Gumroad Railway vars set failed: %s", _e)
         log.info("Gumroad OAuth callback: access_token=%s...", access_token[:12])
         return web.Response(content_type="text/html", text=(
             "<h2>✅ Gumroad verbunden!</h2>"
-            "<p>Access Token dauerhaft gesetzt. Gumroad-API ab jetzt vollautomatisch.</p>"
+            "<p>Access Token dauerhaft in Railway gesetzt. Gumroad-API ab jetzt vollautomatisch.</p>"
             f"<p>Token: {access_token[:20]}...</p>"
             f"<p>Scopes: {d.get('scope', '?')}</p>"
         ))
@@ -4421,6 +4440,107 @@ async def handle_shopify_order_create_for_cart(req):
     except Exception as e:
         log.error("Order-create webhook error: %s", e)
         return web.Response(status=200)
+
+
+async def handle_shopify_orders_paid_webhook(req):
+    """POST /api/webhooks/shopify/orders-paid — fires when Shopify payment is confirmed.
+
+    Triggered by Shopify topic: orders/paid
+    Differs from orders/create (which includes unpaid orders).
+    """
+    try:
+        data = await req.json()
+        order_id    = data.get("id", "?")
+        order_name  = data.get("name", "?")
+        total_price = data.get("total_price", "0.00")
+        currency    = data.get("currency", "EUR")
+        email       = data.get("email", "")
+        customer    = data.get("customer") or {}
+        first_name  = customer.get("first_name", "")
+
+        log.info("orders/paid: %s %s %s %s", order_name, total_price, currency, email)
+
+        # 1. Cancel abandoned cart recovery for this email
+        if email:
+            try:
+                from modules.abandoned_cart_recovery import cancel_recovery_for_email
+                await cancel_recovery_for_email(email)
+            except Exception:
+                pass
+
+        # 2. Trigger Klaviyo post-purchase sequence
+        if email:
+            try:
+                from modules.klaviyo_client import track_event
+                await track_event(
+                    email=email,
+                    event="Order Paid",
+                    properties={
+                        "order_id":    str(order_id),
+                        "order_name":  order_name,
+                        "total_price": float(total_price),
+                        "currency":    currency,
+                        "first_name":  first_name,
+                    },
+                )
+            except Exception as _e:
+                log.debug("Klaviyo order-paid track failed: %s", _e)
+
+        # 3. Update revenue tracking (Supabase)
+        try:
+            from modules.revenue_dashboard_data import record_paid_order
+            await record_paid_order(order_id=str(order_id), amount=float(total_price), currency=currency)
+        except Exception:
+            pass
+
+        # 4. Shopify order webhook (inventory + DS24 sync)
+        asyncio.create_task(_safe_task(
+            "orders_paid_shopify_webhook",
+            _import_and_call("modules.shopify_automation", "handle_shopify_order_webhook", data),
+        ))
+
+        # 5. Telegram notification on real sales
+        try:
+            token   = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+            if token and chat_id and float(total_price) > 0:
+                import aiohttp as _ah
+                msg = f"💰 Verkauf bestätigt!\n{order_name} · {total_price} {currency}\n👤 {email or 'anonym'}"
+                asyncio.create_task(_safe_post_telegram(token, chat_id, msg))
+        except Exception:
+            pass
+
+        return web.Response(status=200)
+    except Exception as e:
+        log.error("orders/paid webhook error: %s", e)
+        return web.Response(status=200)
+
+
+async def _safe_task(name: str, coro):
+    try:
+        await coro
+    except Exception as e:
+        log.debug("safe_task[%s]: %s", name, e)
+
+
+async def _import_and_call(module_path: str, fn_name: str, *args, **kwargs):
+    import importlib
+    mod = importlib.import_module(module_path)
+    fn  = getattr(mod, fn_name)
+    return await fn(*args, **kwargs)
+
+
+async def _safe_post_telegram(token: str, chat_id: str, text: str):
+    try:
+        import aiohttp as _ah
+        async with _ah.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{token}/sendMessage",
+                json={"chat_id": chat_id, "text": text, "disable_notification": False},
+                timeout=_ah.ClientTimeout(total=8),
+            )
+    except Exception:
+        pass
 
 
 async def handle_abandoned_cart_manual_run(req):
@@ -10187,6 +10307,7 @@ async def create_app():
     app.router.add_post("/api/webhooks/shopify/checkout-create",          handle_shopify_checkout_create_webhook)
     app.router.add_post("/api/webhooks/shopify/checkout-update",          handle_shopify_checkout_update_webhook)
     app.router.add_post("/api/webhooks/shopify/order-create",             handle_shopify_order_create_for_cart)
+    app.router.add_post("/api/webhooks/shopify/orders-paid",              handle_shopify_orders_paid_webhook)
     app.router.add_post("/api/abandoned-cart/run",                        handle_abandoned_cart_manual_run)
     app.router.add_post("/api/discord/interactions",      handle_discord_interactions)
     app.router.add_get("/api/discord/oauth/callback",     handle_discord_oauth_callback)
