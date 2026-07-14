@@ -7038,6 +7038,45 @@ async def task_traffic_turbo() -> str:
         return f"TrafficTurbo Fehler: {e}"
 
 
+async def task_trust_conversion() -> str:
+    """Trust + Conversion: Trust-Elemente + Bestseller-Kampagne täglich."""
+    try:
+        from modules.trust_and_conversion import run_trust_cycle
+        result = await run_trust_cycle()
+        ok = sum(1 for v in result.values() if isinstance(v, dict) and not v.get("skipped") and not v.get("error"))
+        return f"TrustConversion: {ok} Aktionen | {list(result.keys())}"
+    except Exception as e:
+        return f"TrustConversion Fehler: {e}"
+
+
+async def task_outreach_blast_morning() -> str:
+    """Outreach Blast Morgen (08:00): Reset + Research + 333 Emails."""
+    try:
+        from modules.mass_outreach_1000 import _db, init_db, run_smart_batch
+        init_db()
+        with _db() as conn:
+            new_leads = conn.execute("SELECT COUNT(*) FROM leads WHERE status='new'").fetchone()[0]
+        if new_leads < 50:
+            from modules.mass_outreach_1000 import run_research
+            await run_research(session_limit=500)
+        result = await run_smart_batch(batch_size=333)
+        sent = result.get("sent", 0)
+        return f"OutreachMorgen: {sent} Emails gesendet (leads_new={new_leads})"
+    except Exception as e:
+        return f"OutreachMorgen Fehler: {e}"
+
+
+async def task_outreach_blast_evening() -> str:
+    """Outreach Blast Abend (18:00): 333 Emails aus vorhandenem Lead-Pool."""
+    try:
+        from modules.mass_outreach_1000 import run_smart_batch
+        result = await run_smart_batch(batch_size=333)
+        sent = result.get("sent", 0)
+        return f"OutreachAbend: {sent} Emails gesendet"
+    except Exception as e:
+        return f"OutreachAbend Fehler: {e}"
+
+
 async def task_aiact_compliance_check() -> str:
     """AIACT-Pro EU AI Act Compliance Check für alle SuperMegaBot-Systeme (alle 6h)."""
     try:
@@ -7198,7 +7237,7 @@ TASKS = [
     ("monitor_hub",          task_monitor_hub,          1800,   60),  # 30 min — Gmail + Telegram + Scheduler
     ("email_inbox_monitor",  task_email_inbox_monitor,   300,   85),  # 5 min  — Gmail Eingang: Bestellungen/Anfragen → Telegram
     ("mail_error_guard",     task_mail_error_guard,      300,   90),  # 5 min  — Gmail Fehler-Muster + Auto-Fix + Bounce
-    ("abandoned_cart_recovery", task_abandoned_cart_recovery, 3600, 120),  # 1h — Abandoned Cart E-Mail Recovery
+    ("abandoned_cart_recovery", task_abandoned_cart_recovery, 900, 120),   # 15min — Abandoned Cart E-Mail Recovery (Maximum)
     # ── Freie Traffic-Kanäle ──────────────────────────────────────────────────
     ("github_blog",          task_github_blog,         14400,  60),  # 4h — GitHub SEO Blog Posts
     ("ds24_traffic",         task_ds24_traffic,        10800,  90),  # 3h — DS24 Affiliate alle Kanäle
@@ -7610,9 +7649,13 @@ TASKS = [
     ("meta_ads_launch",           task_meta_ads_launch,             604800, 1800),  # 1×/Woche — Meta Retargeting Kampagne starten
     ("meta_ads_optimize",         task_meta_ads_optimize,            14400, 2400),  # 4h   — Meta Ads: CTR prüfen + Budget anpassen
     # ── TRAFFIC ACCELERATOR + AUTONOMOUS ENGINE ───────────────────────────────
-    ("traffic_accelerator",       task_traffic_accelerator,           7200,   60),  # 2h  — Alle Traffic-Quellen auf Maximum
-    ("autonomous_engine",         task_autonomous_engine,             7200,  120),  # 2h  — Autonome KPI-Analyse + Handlung
+    ("traffic_accelerator",       task_traffic_accelerator,           7200,   60),  # 2h   — Alle Traffic-Quellen auf Maximum
+    ("autonomous_engine",         task_autonomous_engine,             7200,  120),  # 2h   — Autonome KPI-Analyse + Handlung
     ("traffic_turbo_daily",       task_traffic_turbo,                86400,  180),  # tägl. — Turbo Wave 1 zum Tagesstart
+    # ── TRUST + CONVERSION + OUTREACH MAXIMUM ─────────────────────────────────
+    ("trust_conversion",          task_trust_conversion,             86400,  240),  # 24h  — Trust-Badges + Bestseller täglich
+    ("outreach_morning",          task_outreach_blast_morning,       28800,  300),  # 8h   — 333 Emails Morgen (08:00/16:00/00:00)
+    ("outreach_evening",          task_outreach_blast_evening,       28800, 4200),  # 8h   — 333 Emails Abend (+1h Versatz)
     # ── AIACT-PRO BRIDGE — Compliance Automation ─────────────────────────────
     ("aiact_compliance_check",    task_aiact_compliance_check,       21600, 9500),  # 6h — EU AI Act Compliance Check
 ]

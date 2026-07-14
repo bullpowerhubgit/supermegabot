@@ -11277,11 +11277,52 @@ async def create_app():
     app.router.add_get( "/mcc",               handle_mcc_v2_dashboard)
     log.info("BullPower MCC routes registered (/api/mcc/*, /mcc)")
 
+    async def handle_mass_outreach_reset_combos(req):
+        """POST /api/mass-outreach/reset-combos — Löscht searched_combos → Research findet neue Firmen"""
+        try:
+            from modules.mass_outreach_1000 import _db, init_db
+            init_db()
+            with _db() as conn:
+                deleted = conn.execute("DELETE FROM searched_combos").rowcount
+                # Also reset leads that errored back to 'new' so they can be retried
+                reactivated = conn.execute(
+                    "UPDATE leads SET status='new' WHERE status='error'"
+                ).rowcount
+            return web.json_response({
+                "ok": True,
+                "combos_cleared": deleted,
+                "leads_reactivated": reactivated,
+                "message": "Research startet beim nächsten Batch wieder von vorne",
+            })
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_mass_outreach_blast(req):
+        """POST /api/mass-outreach/blast — Reset + sofort Research + Send (maximale Leistung)"""
+        try:
+            from modules.mass_outreach_1000 import _db, init_db, run_research, run_send_batch
+            init_db()
+            # 1. Reset
+            with _db() as conn:
+                conn.execute("DELETE FROM searched_combos")
+                conn.execute("UPDATE leads SET status='new' WHERE status='error'")
+            # 2. Research + Send async
+            async def _blast():
+                await run_research(session_limit=1000)
+                await run_send_batch(batch_limit=500)
+            asyncio.create_task(_blast())
+            return web.json_response({"ok": True, "status": "blast_started",
+                                      "message": "Reset + Research (1000) + Send (500) läuft"})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
     # Mass Outreach 1000/Tag
-    app.router.add_get( "/api/mass-outreach/stats",    handle_mass_outreach_stats)
-    app.router.add_post("/api/mass-outreach/research", handle_mass_outreach_research)
-    app.router.add_post("/api/mass-outreach/send",     handle_mass_outreach_send)
-    app.router.add_get( "/api/unsubscribe",            handle_unsubscribe)
+    app.router.add_get( "/api/mass-outreach/stats",          handle_mass_outreach_stats)
+    app.router.add_post("/api/mass-outreach/research",        handle_mass_outreach_research)
+    app.router.add_post("/api/mass-outreach/send",            handle_mass_outreach_send)
+    app.router.add_post("/api/mass-outreach/reset-combos",    handle_mass_outreach_reset_combos)
+    app.router.add_post("/api/mass-outreach/blast",           handle_mass_outreach_blast)
+    app.router.add_get( "/api/unsubscribe",                   handle_unsubscribe)
     log.info("Mass Outreach 1000/Tag routes registered")
 
     # KI-Telefonassistentin Sofia
@@ -11987,6 +12028,35 @@ async def create_app():
     app.router.add_post("/api/autonomous/run",   handle_autonomous_run)
     app.router.add_get( "/api/autonomous/stats", handle_autonomous_stats)
     log.info("Autonomous Engine routes registered (/api/autonomous/*)")
+
+    # ── Trust & Conversion routes ─────────────────────────────────────────────
+    async def handle_trust_run(req):
+        """POST /api/trust/run — Trust-Elemente + Bestseller-Kampagne ausführen."""
+        try:
+            from modules.trust_and_conversion import run_trust_cycle
+            result = await run_trust_cycle()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_trust_badge_js(req):
+        """GET /trust-badge.js — Inline Trust-Badge JS für Shopify ScriptTag."""
+        try:
+            from modules.trust_and_conversion import TRUST_JS
+            return web.Response(
+                text=TRUST_JS,
+                content_type="application/javascript",
+                headers={
+                    "Cache-Control": "public, max-age=3600",
+                    "Access-Control-Allow-Origin": "*",
+                },
+            )
+        except Exception as e:
+            return web.Response(text=f"// error: {e}", content_type="application/javascript")
+
+    app.router.add_post("/api/trust/run",    handle_trust_run)
+    app.router.add_get( "/trust-badge.js",  handle_trust_badge_js)
+    log.info("Trust & Conversion routes registered (/api/trust/run, /trust-badge.js)")
 
     # ── AIACT-Pro Bridge routes ───────────────────────────────────────────────
     async def handle_aiact_health(request):
