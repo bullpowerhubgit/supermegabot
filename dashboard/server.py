@@ -11718,6 +11718,28 @@ async def create_app():
     app.router.add_post("/api/repair/run",    handle_repair_run)
     log.info("Auto-Repair Engine routes registered (/api/repair/*)")
 
+    # ── Autonomous Pilot routes ───────────────────────────────────────────────
+    async def handle_pilot_stats(request):
+        """GET /api/pilot/stats — KPI-Historie + letzte Aktionen."""
+        try:
+            from modules.autonomous_pilot import get_pilot_stats
+            return web.json_response(get_pilot_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_pilot_run(request):
+        """POST /api/pilot/run — Einen autonomen Zyklus sofort ausführen."""
+        try:
+            from modules.autonomous_pilot import run_pilot_cycle
+            result = await run_pilot_cycle()
+            return web.json_response({"status": "ok", "result": result})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_get( "/api/pilot/stats", handle_pilot_stats)
+    app.router.add_post("/api/pilot/run",   handle_pilot_run)
+    log.info("Autonomous Pilot routes registered (/api/pilot/*)")
+
     # ── Test-Verkauf & Inbound-Test routes ───────────────────────────────────
     async def handle_test_purchase_run(request):
         """POST /api/test-purchase/run — Vollständiger Funnel-Test."""
