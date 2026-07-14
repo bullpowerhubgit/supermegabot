@@ -17146,4 +17146,6 @@ async def handle_revenue_summary(req: web.Request) -> web.Response:
                 "error": str(e2)[:100],
             })
 
+
+if __name__ == '__main__':
     asyncio.run(_main())
