@@ -11810,6 +11810,103 @@ async def create_app():
     app.router.add_get( "/api/post-guardian/blocked", handle_post_guardian_blocked)
     log.info("Post-Guardian routes registered (/api/post-guardian/*)")
 
+    # ── Traffic Accelerator routes ────────────────────────────────────────────
+    async def handle_traffic_accelerate(request):
+        """POST /api/traffic/accelerate — Maximale Leistung: alle Traffic-Quellen parallel."""
+        try:
+            from modules.traffic_accelerator import run_traffic_cycle
+            result = await run_traffic_cycle()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_traffic_turbo(request):
+        """POST /api/traffic/turbo — Turbo-Modus alias für run_traffic_cycle."""
+        try:
+            from modules.traffic_accelerator import run_traffic_cycle
+            result = await run_traffic_cycle()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_traffic_status(request):
+        """GET /api/traffic/status — Traffic-Statistiken."""
+        try:
+            from modules.traffic_accelerator import get_stats
+            return web.json_response(get_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/traffic/accelerate", handle_traffic_accelerate)
+    app.router.add_post("/api/traffic/turbo",      handle_traffic_turbo)
+    app.router.add_get( "/api/traffic/status",     handle_traffic_status)
+    log.info("Traffic Accelerator routes registered (/api/traffic/*)")
+
+    # ── Autonomous Engine routes ──────────────────────────────────────────────
+    async def handle_autonomous_run(request):
+        """POST /api/autonomous/run — Autonomen Entscheidungszyklus sofort ausführen."""
+        try:
+            from modules.autonomous_engine import run_autonomous_cycle
+            result = await run_autonomous_cycle()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_autonomous_stats(request):
+        """GET /api/autonomous/stats — Statistiken + letzte Entscheidungen."""
+        try:
+            from modules.autonomous_engine import get_engine_stats, get_decision_log
+            return web.json_response({
+                "stats": get_engine_stats(),
+                "last_decisions": get_decision_log(10),
+            })
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/autonomous/run",   handle_autonomous_run)
+    app.router.add_get( "/api/autonomous/stats", handle_autonomous_stats)
+    log.info("Autonomous Engine routes registered (/api/autonomous/*)")
+
+    # ── AIACT-Pro Bridge routes ───────────────────────────────────────────────
+    async def handle_aiact_health(request):
+        """GET /api/aiact/health — AIACT-Pro Verbindungsstatus."""
+        try:
+            from modules.aiact_pro_bridge import health
+            return web.json_response(await health())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_aiact_compliance(request):
+        """GET /api/aiact/compliance — Compliance-Status aller KI-Systeme."""
+        try:
+            from modules.aiact_pro_bridge import get_compliance_status
+            return web.json_response(await get_compliance_status())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_aiact_sync(request):
+        """POST /api/aiact/sync — Synchronisiert SuperMegaBot-Systeme mit AIACT-Pro."""
+        try:
+            from modules.aiact_pro_bridge import run_compliance_check
+            return web.json_response(await run_compliance_check())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_aiact_scan(request):
+        """POST /api/aiact/scan — AI-Act Compliance-Scan für eine URL."""
+        try:
+            body = await request.json()
+            from modules.aiact_pro_bridge import scan_ai_act
+            return web.json_response(await scan_ai_act(body.get("url", "https://ineedit.com.co")))
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_get( "/api/aiact/health",     handle_aiact_health)
+    app.router.add_get( "/api/aiact/compliance", handle_aiact_compliance)
+    app.router.add_post("/api/aiact/sync",       handle_aiact_sync)
+    app.router.add_post("/api/aiact/scan",       handle_aiact_scan)
+    log.info("AIACT-Pro Bridge routes registered (/api/aiact/*)")
+
     # ── LinkedIn DM Outreach ───────────────────────────────────────────────────
     async def handle_linkedin_outreach(request):
         """POST /api/linkedin/outreach — 50 LinkedIn DMs an DACH E-Commerce Entscheider."""
