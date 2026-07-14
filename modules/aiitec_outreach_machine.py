@@ -840,6 +840,135 @@ EXTENDED_COMPANIES_DB = [
     {"name": "Jones Lang LaSalle SE",    "domain": "jll.de",               "email": "info@jll.de",               "branche": "Immobilien",   "land": "DE"},
 ]
 
+# ── SMB-Zieldatenbank: Kleinere DACH-Firmen die Gmail NICHT blocken ───────────
+# Shopify-Shops, Agenturen, SaaS-Startups, Coaches — verwenden Standard-Hosting
+SMB_COMPANIES_DB = [
+    # ── Online-Shops / E-Commerce SMB ────────────────────────────────────────
+    {"name": "Spreadshirt AG",              "domain": "spreadshirt.de",       "email": "service@spreadshirt.de",        "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Weltbild GmbH",               "domain": "weltbild.de",          "email": "info@weltbild.de",              "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Posterxxl GmbH",              "domain": "posterxxl.de",         "email": "info@posterxxl.de",             "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Flyeralarm GmbH",             "domain": "flyeralarm.de",        "email": "info@flyeralarm.de",            "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Mifcom AG",                   "domain": "mifcom.de",            "email": "info@mifcom.de",                "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Baur Versand GmbH",           "domain": "baur.de",              "email": "info@baur.de",                  "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Limango GmbH",                "domain": "limango.de",           "email": "info@limango.de",               "branche": "E-Commerce",      "land": "DE"},
+    {"name": "ManoMano GmbH",               "domain": "manomano.de",          "email": "info@manomano.de",              "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Alternate GmbH",              "domain": "alternate.de",         "email": "info@alternate.de",             "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Notebooksbilliger.de AG",     "domain": "notebooksbilliger.de", "email": "info@notebooksbilliger.de",     "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Medion AG",                   "domain": "medion.com",           "email": "service@medion.de",             "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Pearl GmbH",                  "domain": "pearl.de",             "email": "info@pearl.de",                 "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Printful GmbH",               "domain": "printful.com",         "email": "hello@printful.com",            "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Contorion GmbH",              "domain": "contorion.de",         "email": "info@contorion.de",             "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Witt-Gruppe GmbH",            "domain": "witt-group.com",       "email": "info@witt-group.com",           "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Shopware AG",                 "domain": "shopware.com",         "email": "info@shopware.com",             "branche": "IT/Software",     "land": "DE"},
+    {"name": "JTL-Software GmbH",          "domain": "jtl-software.de",      "email": "info@jtl-software.de",          "branche": "IT/Software",     "land": "DE"},
+    {"name": "Pickware GmbH",               "domain": "pickware.com",         "email": "info@pickware.com",             "branche": "IT/Software",     "land": "DE"},
+    {"name": "plentymarkets GmbH",          "domain": "plentymarkets.com",    "email": "info@plentymarkets.com",        "branche": "IT/Software",     "land": "DE"},
+    {"name": "Billbee GmbH",                "domain": "billbee.io",           "email": "info@billbee.io",               "branche": "IT/Software",     "land": "DE"},
+    {"name": "Sendcloud GmbH",              "domain": "sendcloud.de",         "email": "hello@sendcloud.de",            "branche": "IT/Software",     "land": "DE"},
+    {"name": "Parcellab GmbH",              "domain": "parcellab.com",        "email": "hello@parcellab.com",           "branche": "IT/Software",     "land": "DE"},
+    {"name": "afterbuy GmbH",               "domain": "afterbuy.de",          "email": "info@afterbuy.de",              "branche": "IT/Software",     "land": "DE"},
+    {"name": "Channable BV",                "domain": "channable.com",        "email": "support@channable.com",         "branche": "IT/Software",     "land": "DE"},
+    {"name": "Lengow SAS",                  "domain": "lengow.com",           "email": "contact@lengow.com",            "branche": "IT/Software",     "land": "DE"},
+    # ── Digital-/Performance-Agenturen ────────────────────────────────────────
+    {"name": "Claneo GmbH",                 "domain": "claneo.com",           "email": "info@claneo.com",               "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Bloofusion Germany GmbH",     "domain": "bloofusion.de",        "email": "info@bloofusion.de",            "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Rocket Beans Entertainment", "domain": "rocketbeans.tv",        "email": "info@rocketbeans.tv",           "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Dept Agency GmbH",            "domain": "deptagency.com",       "email": "info@deptagency.com",           "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Xpose360 GmbH",              "domain": "xpose360.de",           "email": "info@xpose360.de",              "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Aufgesang GmbH",              "domain": "aufgesang.de",         "email": "info@aufgesang.de",             "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Webwirkung GmbH",             "domain": "webwirkung.de",        "email": "info@webwirkung.de",            "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "addviseo GmbH",               "domain": "addviseo.de",          "email": "info@addviseo.de",              "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "crealytics GmbH",             "domain": "crealytics.com",       "email": "hello@crealytics.com",          "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Adference GmbH",              "domain": "adference.com",        "email": "info@adference.com",            "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Projecter GmbH",              "domain": "projecter.de",         "email": "info@projecter.de",             "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Suchhelden GmbH",             "domain": "suchhelden.de",        "email": "info@suchhelden.de",            "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Digital Kitchen GmbH",        "domain": "digital-kitchen.de",   "email": "info@digital-kitchen.de",       "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Netshops Commerce AG",        "domain": "netshops.de",          "email": "info@netshops.de",              "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "eology GmbH",                 "domain": "eology.de",            "email": "info@eology.de",                "branche": "Marketing/Agentur","land": "DE"},
+    # ── SaaS / Tech-Startups DACH ──────────────────────────────────────────────
+    {"name": "Personio GmbH",               "domain": "personio.de",          "email": "info@personio.de",              "branche": "IT/Software",     "land": "DE"},
+    {"name": "Weclapp SE",                  "domain": "weclapp.com",          "email": "info@weclapp.com",              "branche": "IT/Software",     "land": "DE"},
+    {"name": "Scopevisio AG",               "domain": "scopevisio.com",       "email": "info@scopevisio.com",           "branche": "IT/Software",     "land": "DE"},
+    {"name": "Lexware GmbH",                "domain": "lexware.de",           "email": "info@lexware.de",               "branche": "IT/Software",     "land": "DE"},
+    {"name": "Sevdesk GmbH",                "domain": "sevdesk.de",           "email": "info@sevdesk.de",               "branche": "IT/Software",     "land": "DE"},
+    {"name": "FastBill GmbH",               "domain": "fastbill.com",         "email": "info@fastbill.com",             "branche": "IT/Software",     "land": "DE"},
+    {"name": "Invoiz GmbH",                 "domain": "invoiz.de",            "email": "info@invoiz.de",                "branche": "IT/Software",     "land": "DE"},
+    {"name": "GetMyInvoices GmbH",          "domain": "getmyinvoices.com",    "email": "info@getmyinvoices.com",        "branche": "IT/Software",     "land": "DE"},
+    {"name": "Tidely GmbH",                 "domain": "tidely.com",           "email": "hello@tidely.com",              "branche": "IT/Software",     "land": "DE"},
+    {"name": "Candis GmbH",                 "domain": "candis.io",            "email": "info@candis.io",                "branche": "IT/Software",     "land": "DE"},
+    {"name": "Pleo Technologies GmbH",      "domain": "pleo.io",              "email": "info@pleo.io",                  "branche": "IT/Software",     "land": "DE"},
+    {"name": "Spendesk GmbH",               "domain": "spendesk.com",         "email": "contact@spendesk.com",          "branche": "IT/Software",     "land": "DE"},
+    {"name": "Agicap GmbH",                 "domain": "agicap.com",           "email": "contact@agicap.com",            "branche": "IT/Software",     "land": "DE"},
+    {"name": "Haufe-Lexware GmbH",          "domain": "haufe.de",             "email": "info@haufe.de",                 "branche": "IT/Software",     "land": "DE"},
+    {"name": "Sage GmbH Deutschland",       "domain": "sage.com",             "email": "info@sage.de",                  "branche": "IT/Software",     "land": "DE"},
+    {"name": "Sumup GmbH",                  "domain": "sumup.de",             "email": "service@sumup.de",              "branche": "IT/Software",     "land": "DE"},
+    {"name": "Mollie B.V.",                 "domain": "mollie.com",           "email": "info@mollie.com",               "branche": "IT/Software",     "land": "DE"},
+    {"name": "Klarna GmbH",                 "domain": "klarna.de",            "email": "info@klarna.de",                "branche": "IT/Software",     "land": "DE"},
+    {"name": "Unzer GmbH",                  "domain": "unzer.com",            "email": "info@unzer.com",                "branche": "IT/Software",     "land": "DE"},
+    {"name": "Payoneer GmbH",               "domain": "payoneer.com",         "email": "support@payoneer.com",          "branche": "IT/Software",     "land": "DE"},
+    {"name": "Wirecard Settlements",        "domain": "wirecard.com",         "email": "info@wirecard.de",              "branche": "IT/Software",     "land": "DE"},
+    # ── Logistik / Fulfillment SMB ────────────────────────────────────────────
+    {"name": "Byrd Technologies GmbH",      "domain": "getbyrd.com",          "email": "hello@getbyrd.com",             "branche": "Logistik",        "land": "DE"},
+    {"name": "Hive Technologies GmbH",      "domain": "hive.app",             "email": "info@hive.app",                 "branche": "Logistik",        "land": "DE"},
+    {"name": "Redstorage GmbH",             "domain": "redstorage.de",        "email": "info@redstorage.de",            "branche": "Logistik",        "land": "DE"},
+    {"name": "Spryker Systems GmbH",        "domain": "spryker.com",          "email": "info@spryker.com",              "branche": "IT/Software",     "land": "DE"},
+    {"name": "OSIsoft LLC",                 "domain": "osisoft.com",          "email": "info@osisoft.com",              "branche": "IT/Software",     "land": "DE"},
+    {"name": "Logsta GmbH",                 "domain": "logsta.de",            "email": "info@logsta.de",                "branche": "Logistik",        "land": "DE"},
+    {"name": "EffectConnect BV",            "domain": "effectconnect.com",    "email": "info@effectconnect.com",        "branche": "IT/Software",     "land": "DE"},
+    {"name": "Shipwire Germany",            "domain": "shipwire.com",         "email": "hello@shipwire.com",            "branche": "Logistik",        "land": "DE"},
+    # ── Coaches / Berater / Online-Business ───────────────────────────────────
+    {"name": "Digistore24 GmbH",            "domain": "digistore24.com",      "email": "support@digistore24.com",       "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Klick-Tipp GmbH",             "domain": "klick-tipp.com",       "email": "info@klick-tipp.com",           "branche": "IT/Software",     "land": "DE"},
+    {"name": "ActiveCampaign GmbH",         "domain": "activecampaign.com",   "email": "info@activecampaign.com",       "branche": "IT/Software",     "land": "DE"},
+    {"name": "Brevo GmbH",                  "domain": "brevo.com",            "email": "info@brevo.com",                "branche": "IT/Software",     "land": "DE"},
+    {"name": "Quentn GmbH",                 "domain": "quentn.com",           "email": "info@quentn.com",               "branche": "IT/Software",     "land": "DE"},
+    {"name": "CopeCart GmbH",               "domain": "copecart.com",         "email": "info@copecart.com",             "branche": "IT/Software",     "land": "DE"},
+    {"name": "Elopage GmbH",                "domain": "elopage.com",          "email": "info@elopage.com",              "branche": "IT/Software",     "land": "DE"},
+    {"name": "Coachy GmbH",                 "domain": "coachy.net",           "email": "info@coachy.net",               "branche": "IT/Software",     "land": "DE"},
+    {"name": "Thinkific Labs GmbH",         "domain": "thinkific.com",        "email": "info@thinkific.com",            "branche": "IT/Software",     "land": "DE"},
+    {"name": "Kajabi GmbH",                 "domain": "kajabi.com",           "email": "support@kajabi.com",            "branche": "IT/Software",     "land": "DE"},
+    {"name": "Podia GmbH",                  "domain": "podia.com",            "email": "hello@podia.com",               "branche": "IT/Software",     "land": "DE"},
+    {"name": "Gumroad GmbH",                "domain": "gumroad.com",          "email": "hi@gumroad.com",                "branche": "IT/Software",     "land": "DE"},
+    # ── Kreative / Design / Druck ─────────────────────────────────────────────
+    {"name": "Vistaprint GmbH",             "domain": "vistaprint.de",        "email": "info@vistaprint.de",            "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Mymuesli GmbH",               "domain": "mymuesli.com",         "email": "info@mymuesli.com",             "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Kapten & Son GmbH",           "domain": "kapten-son.com",       "email": "hello@kapten-son.com",          "branche": "E-Commerce",      "land": "DE"},
+    {"name": "About Vintage GmbH",          "domain": "aboutvintage.de",      "email": "info@aboutvintage.de",          "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Snocks GmbH",                 "domain": "snocks.com",           "email": "hello@snocks.com",              "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Recup GmbH",                  "domain": "recup.de",             "email": "info@recup.de",                 "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Ankerkraut GmbH",             "domain": "ankerkraut.de",        "email": "info@ankerkraut.de",            "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Bearforce GmbH",              "domain": "bearforce.de",         "email": "info@bearforce.de",             "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Holzeis GmbH",                "domain": "holzeis.com",          "email": "info@holzeis.com",              "branche": "E-Commerce",      "land": "DE"},
+    {"name": "The Dude GmbH",               "domain": "thedude.cc",           "email": "info@thedude.cc",               "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Purelei GmbH",                "domain": "purelei.com",          "email": "hello@purelei.com",             "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Juniqe GmbH",                 "domain": "juniqe.de",            "email": "info@juniqe.de",                "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Mango (DACH)",                "domain": "mango.com",            "email": "info@mango.com",                "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Calida AG",                   "domain": "calida.com",           "email": "info@calida.com",               "branche": "E-Commerce",      "land": "CH"},
+    {"name": "Blackroll AG",                "domain": "blackroll.com",        "email": "info@blackroll.com",            "branche": "E-Commerce",      "land": "CH"},
+    # ── Österreich / Schweiz SMB ───────────────────────────────────────────────
+    {"name": "Shöpping GmbH",               "domain": "shoepping.at",         "email": "info@shoepping.at",             "branche": "E-Commerce",      "land": "AT"},
+    {"name": "Reifen.at GmbH",              "domain": "reifen.at",            "email": "info@reifen.at",                "branche": "E-Commerce",      "land": "AT"},
+    {"name": "Schuhmeister GmbH",           "domain": "schuhmeister.com",     "email": "info@schuhmeister.com",         "branche": "IT/Software",     "land": "AT"},
+    {"name": "Greentube GmbH",              "domain": "greentube.com",        "email": "info@greentube.com",            "branche": "IT/Software",     "land": "AT"},
+    {"name": "Findologic GmbH",             "domain": "findologic.com",       "email": "info@findologic.com",           "branche": "IT/Software",     "land": "AT"},
+    {"name": "Storyclash GmbH",             "domain": "storyclash.com",       "email": "hello@storyclash.com",          "branche": "Marketing/Agentur","land": "AT"},
+    {"name": "Usersnap GmbH",               "domain": "usersnap.com",         "email": "hello@usersnap.com",            "branche": "IT/Software",     "land": "AT"},
+    {"name": "Refurbed GmbH",               "domain": "refurbed.de",          "email": "info@refurbed.de",              "branche": "E-Commerce",      "land": "AT"},
+    {"name": "Shpock GmbH",                 "domain": "shpock.com",           "email": "info@shpock.com",               "branche": "E-Commerce",      "land": "AT"},
+    {"name": "Holzrichter Berlin GmbH",     "domain": "holzrichter-berlin.de","email": "info@holzrichter-berlin.de",    "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Fahrrad.de GmbH",             "domain": "fahrrad.de",           "email": "info@fahrrad.de",               "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Rose Bikes GmbH",             "domain": "rosebikes.de",         "email": "info@rosebikes.de",             "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Flaconi GmbH",                "domain": "flaconi.de",           "email": "info@flaconi.de",               "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Westwing Group AG",           "domain": "westwing.de",          "email": "pr@westwing.de",                "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Home24 SE",                   "domain": "home24.de",            "email": "presse@home24.de",              "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Mytoys Group GmbH",           "domain": "mytoys.de",            "email": "info@mytoys.de",                "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Windeln.de SE",               "domain": "windeln.de",           "email": "info@windeln.de",               "branche": "E-Commerce",      "land": "DE"},
+    {"name": "Babymarkt.de GmbH",           "domain": "babymarkt.de",         "email": "info@babymarkt.de",             "branche": "E-Commerce",      "land": "DE"},
+]
+
+# Kombinierte DB = Enterprises + SMBs (SMBs zuerst für bessere Delivery-Rate)
+EXTENDED_COMPANIES_DB = SMB_COMPANIES_DB + EXTENDED_COMPANIES_DB
+
 
 async def discover_new_companies(count: int = 60) -> int:
     """Findet neue DACH-Unternehmen aus interner DB → fügt sie der Supabase-Queue hinzu.
@@ -1312,3 +1441,7 @@ async def main() -> None:
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+# Alias für Scheduler-Kompatibilität
+async def run_outreach_cycle() -> dict:
+    return await run_outreach()

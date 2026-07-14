@@ -184,9 +184,43 @@ PRIVATE_DOMAINS = {
     "protonmail.com", "proton.me", "posteo.de", "tutanota.com",
 }
 
+# Absender-Prefixes die NIEMALS automatisch beantwortet werden
+_NO_AUTO_REPLY_PREFIXES = (
+    "noreply", "no-reply", "donotreply", "do-not-reply",
+    "mailer-daemon", "postmaster", "bounce", "bounces",
+    "newsletter", "marketing", "info-", "bulk", "auto-",
+    "notifications", "alerts", "system", "admin", "support",
+)
+
+# Eigene AIITEC-Adressen nie antworten
+_OWN_EMAILS = {"aiitecbuuss@gmail.com", "dragonadnp@gmail.com",
+               "bullpowersrtkennels@gmail.com", "looopwave@gmail.com",
+               "rudolf.sarkany.aiitec@gmail.com", "rudolfsarkany1984@gmail.com"}
+
 def _is_private_email(email_addr: str) -> bool:
-    domain = email_addr.split("@")[-1].lower() if "@" in email_addr else ""
-    return domain in PRIVATE_DOMAINS
+    if not email_addr or "@" not in email_addr:
+        return True
+    local, _, domain = email_addr.lower().partition("@")
+    # Private Domains
+    if domain in PRIVATE_DOMAINS:
+        return True
+    # Eigene Accounts
+    if email_addr.lower() in _OWN_EMAILS:
+        return True
+    # System/Newsletter-Prefixes
+    if any(local.startswith(p) for p in _NO_AUTO_REPLY_PREFIXES):
+        return True
+    return False
+
+def _is_safe_to_auto_reply(email_addr: str) -> bool:
+    """Nur B2B-Unternehmensemails bekommen Auto-Antworten."""
+    if _is_private_email(email_addr):
+        return False
+    local = email_addr.lower().split("@")[0]
+    # Zusätzliche Sicherheit: generische Unternehmens-Infos nicht auto-antworten
+    if local in ("info", "kontakt", "contact", "hello", "hallo"):
+        return False
+    return True
 
 CATEGORY_EMOJI = {
     "interest":    "🔥",
@@ -250,6 +284,60 @@ def _get_body(msg) -> str:
 def _extract_email_addr(raw: str) -> str:
     m = re.search(r"[\w.+-]+@[\w.-]+\.\w+", raw or "")
     return m.group(0).lower() if m else (raw or "").lower()
+
+async def _send_auto_response(to_email: str, company_name: str, checkout_url: str) -> bool:
+    """Sendet automatische Antwort mit Stripe-Checkout an interessierte Leads."""
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+
+    subject = "Re: AIITEC Lead-Agent — Ihr nächster Schritt"
+    body = f"""Hallo,
+
+vielen Dank für Ihr Interesse an AIITEC!
+
+Ich freue mich sehr über Ihre Rückmeldung. Wie besprochen möchte ich Ihnen
+ermöglichen, direkt loszulegen:
+
+👉 Jetzt AIITEC Lead-Agent freischalten:
+{checkout_url}
+
+Was Sie erhalten:
+• 10 vorqualifizierte B2B-Leads täglich — vollautomatisch
+• KI-gestützte Zielgruppen-Analyse für DACH-Markt
+• Monatlich kündbar ab €500/Monat
+• Setup in unter 24 Stunden
+
+Bei Fragen stehe ich jederzeit zur Verfügung.
+
+Mit freundlichen Grüßen,
+Rudolf Sarkany
+AIITEC — AI Business Automation
+https://dist-pi-jet-78.vercel.app/
+"""
+
+    # Sende über aiitecbuuss@gmail.com
+    gmail_user = os.getenv("GMAIL_USER_4", "aiitecbuuss@gmail.com")
+    gmail_pwd  = os.getenv("GMAIL_APP_PASSWORD_4", "")
+    if not gmail_pwd:
+        log.warning("[AUTO-RESPONDER] Kein Gmail-Passwort für %s", gmail_user)
+        return False
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"]  = subject
+        msg["From"]     = f"Rudolf Sarkany — AIITEC <{gmail_user}>"
+        msg["To"]       = to_email
+        msg["Reply-To"] = gmail_user
+        msg.attach(MIMEText(body, "plain", "utf-8"))
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=15) as s:
+            s.login(gmail_user, gmail_pwd)
+            s.sendmail(gmail_user, [to_email], msg.as_string())
+        log.info("[AUTO-RESPONDER] ✉ Gesendet → %s", to_email)
+        return True
+    except Exception as e:
+        log.error("[AUTO-RESPONDER] Fehler → %s: %s", to_email, e)
+        return False
+
 
 # ── Haupt-Scan ────────────────────────────────────────────────────────────────
 
@@ -322,7 +410,18 @@ async def scan_inbox() -> dict:
                     if snippet:
                         tg_msg += f"*Inhalt:* _{snippet[:200]}_\n"
                     if category == "interest":
-                        tg_msg += "\n🎯 *HOT LEAD — sofort anrufen/antworten!*"
+                        checkout_url = "https://buy.stripe.com/7sYeVf53k5PQ7EA2Wq4F203"
+                        # Auto-Responder NUR an echte B2B-Adressen
+                        if _is_safe_to_auto_reply(sender_addr):
+                            tg_msg += (
+                                f"\n🎯 *HOT LEAD — Auto-Responder gesendet!*\n"
+                                f"💳 Checkout: {checkout_url}"
+                            )
+                            asyncio.create_task(
+                                _send_auto_response(sender_addr, company_name, checkout_url)
+                            )
+                        else:
+                            tg_msg += "\n🎯 *HOT LEAD — Bitte manuell antworten!*"
                     elif category == "bounce":
                         tg_msg += "\n_→ Firma als 'bounced' markiert_"
                     elif category == "unsubscribe":
