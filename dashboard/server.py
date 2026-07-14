@@ -11579,10 +11579,73 @@ async def create_app():
         except Exception as e:
             return web.json_response({"ok": False, "error": str(e)}, status=500)
 
-    app.router.add_get("/api/free-apis",         handle_free_apis_registry)
-    app.router.add_post("/api/free-apis/scan",   handle_free_apis_scan)
-    app.router.add_get("/api/free-apis/best-ai", handle_free_apis_best_ai)
+    async def handle_free_apis_discover(request):
+        """POST /api/free-apis/discover — Auto-Discovery: Neue Free APIs aus dem Internet."""
+        try:
+            from modules.free_api_hunter import auto_discover_new_apis
+            limit = int((await request.json()).get("test_limit", 40)) if request.can_read_body else 40
+            result = await auto_discover_new_apis(test_limit=limit)
+            return web.json_response({"ok": True, "result": result})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_free_apis_discovery_stats(request):
+        """GET /api/free-apis/discovery-stats — Letzte Discovery-Ergebnisse."""
+        try:
+            from modules.free_api_hunter import get_discovery_stats
+            return web.json_response(get_discovery_stats())
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_get("/api/free-apis",                  handle_free_apis_registry)
+    app.router.add_post("/api/free-apis/scan",            handle_free_apis_scan)
+    app.router.add_get("/api/free-apis/best-ai",          handle_free_apis_best_ai)
+    app.router.add_post("/api/free-apis/discover",        handle_free_apis_discover)
+    app.router.add_get("/api/free-apis/discovery-stats",  handle_free_apis_discovery_stats)
     log.info("Free API Hunter routes registered (/api/free-apis/*)")
+
+    # ── Meta Ads Engine routes ─────────────────────────────────────────────────
+    async def handle_meta_ads_launch(request):
+        """POST /api/meta-ads/launch — Erstellt Retargeting + Lookalike Kampagnen."""
+        try:
+            from modules.meta_ads_engine import launch_retargeting_campaign
+            result = await launch_retargeting_campaign()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_meta_ads_activate(request):
+        """POST /api/meta-ads/activate — Aktiviert alle PAUSED Kampagnen."""
+        try:
+            from modules.meta_ads_engine import activate_campaigns
+            result = await activate_campaigns()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_meta_ads_stats(request):
+        """GET /api/meta-ads/stats — Alle Kampagnen + Spend-Übersicht."""
+        try:
+            from modules.meta_ads_engine import get_all_stats
+            result = await get_all_stats()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_meta_ads_optimize(request):
+        """POST /api/meta-ads/optimize — Manueller Auto-Optimize-Lauf."""
+        try:
+            from modules.meta_ads_engine import run_auto_optimize
+            result = await run_auto_optimize()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/meta-ads/launch",   handle_meta_ads_launch)
+    app.router.add_post("/api/meta-ads/activate", handle_meta_ads_activate)
+    app.router.add_get( "/api/meta-ads/stats",    handle_meta_ads_stats)
+    app.router.add_post("/api/meta-ads/optimize", handle_meta_ads_optimize)
+    log.info("Meta Ads Engine routes registered (/api/meta-ads/*)")
 
     # Rotating Buyer Prospector routes
     async def handle_prospector_run(request):
