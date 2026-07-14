@@ -593,7 +593,7 @@ class CommandRouter:
             "/alle dienste": self._cmd_alle_dienste,
             "/seo_push": self._cmd_seo_push,
             "/agent_status": self._cmd_agent_status,
-            "/agenten": self._cmd_agent_status,
+            "/agenten_status": self._cmd_agent_status,
             "/deploy_status": self._cmd_deploy_status,
             "/revenue": self._cmd_revenue,
             "dashboard": self._cmd_master_dashboard,

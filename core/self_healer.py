@@ -90,9 +90,13 @@ if Path(_TELEGRAM_BOT_DIR).exists():
 
 
 def _free_ram():
-    """Plattform-sicheres RAM freigeben."""
+    """Plattform-sicheres RAM freigeben: Page-Cache droppen (Linux) oder GC (macOS)."""
+    import gc
+    gc.collect()
     try:
-        subprocess.run(["sync"], timeout=5)
+        # Linux: drop pagecache/dentries/inodes (requires root — no-op if not root)
+        with open("/proc/sys/vm/drop_caches", "w") as f:
+            f.write("3\n")
     except Exception:
         pass
 
@@ -262,11 +266,14 @@ class SelfHealer:
 
     async def run_auto_fixes(self) -> List[str]:
         applied = []
+        loop = asyncio.get_event_loop()
         for fix_name, fix_def in AUTO_FIXES.items():
             try:
-                if fix_def["detect"]():
-                    log.warning(f"🔴 Problem: {fix_name}")
-                    fix_def["fix_fn"]()
+                # Run blocking detect + fix_fn in executor to avoid blocking event loop
+                detected = await loop.run_in_executor(None, fix_def["detect"])
+                if detected:
+                    log.warning(f"Problem: {fix_name}")
+                    await loop.run_in_executor(None, fix_def["fix_fn"])
                     applied.append(fix_def["description"])
                     self._record_fix("system", fix_name, fix_name, True)
             except Exception as e:

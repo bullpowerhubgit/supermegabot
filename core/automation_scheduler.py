@@ -7495,12 +7495,12 @@ class AutomationScheduler:
     # Tasks die IMMER laufen dürfen (auch wenn SOCIAL_POSTING_PAUSED=true)
     _ALWAYS_RUN = frozenset({
         "health", "system_health", "github_backup",
-        "circuit_reset", "shopify_sync", "email_check", "email_daily_summary",
+        "shopify_sync", "email_check", "email_daily_summary",
     })
 
     # Revenue-First: nur Tasks die direkt Umsatz bringen
     _REVENUE_TASKS = frozenset({
-        "health", "system_health", "github_backup", "circuit_reset",
+        "health", "system_health", "github_backup",
         "shopify_sync", "shopify_orders_alert", "email_check",
         "ds24_funnel_sync", "digistore_sync", "ds24_affiliate_blast",
         "ds24_affiliate_hourly", "ds24_affiliate_daily", "ds24_traffic",

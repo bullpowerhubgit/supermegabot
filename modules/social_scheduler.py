@@ -17,7 +17,7 @@ import aiohttp
 
 log = logging.getLogger("SocialScheduler")
 
-TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
+TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel only
 TELEGRAM_ALERT   = os.getenv("TELEGRAM_CHAT_ID", "")       # system alerts → private chat
 TELEGRAM_CHAT    = TELEGRAM_CHANNEL or TELEGRAM_ALERT or "" # fall back to private chat if no channel

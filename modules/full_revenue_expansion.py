@@ -1481,13 +1481,14 @@ async def generate_daily_revenue_report() -> Dict:
     try:
         stripe_key = _STRIPE_KEY()
         if stripe_key:
-            import urllib.request, urllib.parse, base64
+            import base64
             since = int((datetime.now(timezone.utc) - timedelta(hours=24)).timestamp())
             url   = f"https://api.stripe.com/v1/charges?created[gte]={since}&limit=100"
-            req   = urllib.request.Request(url)
-            req.add_header("Authorization", "Basic " + base64.b64encode(f"{stripe_key}:".encode()).decode())
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                data = json.loads(resp.read().decode())
+            auth  = "Basic " + base64.b64encode(f"{stripe_key}:".encode()).decode()
+            async with aiohttp.ClientSession() as _s:
+                async with _s.get(url, headers={"Authorization": auth},
+                                  timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    data = await resp.json(content_type=None)
             charges = data.get("data", [])
             report["stripe"] = round(
                 sum(

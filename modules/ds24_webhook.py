@@ -45,16 +45,21 @@ async def _telegram(msg: str) -> None:
 async def _log_to_supabase(data: dict) -> None:
     try:
         from modules.supabase_client import get_client
-        get_client().table("ds24_purchases").insert({
-            "order_id":       data.get("order_id", ""),
-            "product_id":     data.get("product_id", ""),
-            "product_name":   data.get("product_name", "")[:200],
-            "buyer_email":    data.get("buyer_email", ""),
-            "buyer_name":     data.get("buyer_name", ""),
-            "price":          float(data.get("price", 0) or 0),
-            "currency":       data.get("currency", "EUR"),
-            "affiliate_id":   data.get("affiliate_id", ""),
-            "transaction_id": data.get("transaction_id", ""),
+        # ds24_purchases table does not exist in schema — redirect to lead_events
+        get_client().table("lead_events").insert({
+            "event_type":     "ds24_purchase",
+            "email":          data.get("buyer_email", ""),
+            "name":           data.get("buyer_name", ""),
+            "source":         "digistore24",
+            "metadata":       {
+                "order_id":       data.get("order_id", ""),
+                "product_id":     data.get("product_id", ""),
+                "product_name":   data.get("product_name", "")[:200],
+                "price":          float(data.get("price", 0) or 0),
+                "currency":       data.get("currency", "EUR"),
+                "affiliate_id":   data.get("affiliate_id", ""),
+                "transaction_id": data.get("transaction_id", ""),
+            },
             "created_at":     datetime.now(timezone.utc).isoformat(),
         }).execute()
     except Exception as e:
@@ -88,7 +93,7 @@ async def _trigger_klaviyo_event(buyer_email: str, data: dict) -> None:
     if not buyer_email:
         return
     try:
-        from modules.klaviyo_autonomy import track_event
+        from modules.klaviyo_automation import track_event
         await track_event(
             email=buyer_email,
             event_name="DS24 Purchase",
@@ -168,23 +173,26 @@ async def handle_ds24_purchase(data: dict) -> dict:
 
 
 async def get_ds24_purchase_stats() -> dict:
-    """Alle DS24-Käufe aus Supabase."""
+    """Alle DS24-Käufe aus Supabase (lead_events mit event_type=ds24_purchase)."""
     try:
         from modules.supabase_client import get_client
-        rows = get_client().table("ds24_purchases").select("*").order(
+        rows = get_client().table("lead_events").select("*").eq(
+            "event_type", "ds24_purchase").order(
             "created_at", desc=True).limit(100).execute()
         data = rows.data or []
-        total_revenue = sum(float(r.get("price", 0) or 0) for r in data)
+        total_revenue = sum(
+            float((r.get("metadata") or {}).get("price", 0) or 0) for r in data
+        )
         return {
             "ok": True,
             "total_purchases": len(data),
             "total_revenue_eur": round(total_revenue, 2),
             "recent": [
                 {
-                    "order_id": r.get("order_id"),
-                    "product": r.get("product_name", "")[:50],
-                    "price": r.get("price"),
-                    "buyer": r.get("buyer_email", "")[:30],
+                    "order_id": (r.get("metadata") or {}).get("order_id"),
+                    "product": ((r.get("metadata") or {}).get("product_name", "") or "")[:50],
+                    "price": (r.get("metadata") or {}).get("price"),
+                    "buyer": (r.get("email", "") or "")[:30],
                     "date": r.get("created_at", "")[:10],
                 }
                 for r in data[:10]

@@ -403,10 +403,11 @@ async def optimize_product_catalog() -> Dict:
                 else:
                     skipped += 1
 
-            # Pagination via Link header / next page_info
+            # Pagination via since_id — update cursor to last product ID
+            since_id = products[-1].get("id") if products else None
             if len(products) < 50:
                 break
-            # Einfaches Limit — nach 500 Produkten stoppen
+            # Safety cap — stop after 500 products
             if len(processed_ids) >= 500:
                 break
             page += 1
