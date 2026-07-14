@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 v36 — VOLLAUTONOMES INCOME-SYSTEM LIVE!**
+**Stand: 2026-07-14 20:30
 
 ## ✅ v36 — VOLLAUTONOMES INCOME-SYSTEM LIVE
 
@@ -333,3 +333,28 @@ curl -s https://supermegabot-production.up.railway.app/health
 - DS24 Key: IMMER 1581233-... (aiitec) ✅
 - AiiteC: FB 1016738738178786, IG @aaiitecc ✅
 - SMTP Pool: 6 unique Accounts ✅
+
+
+## ✅ FIXES SESSION 2026-07-14 (Teil 2)
+- run_outreach_cycle Alias → money_cycle Email-Trigger LIVE
+- FACEBOOK_PAGE_ACCESS_TOKEN Kommentar-Bug behoben (Token war malformed)
+- FB Rate-Limit: vorübergehend — Token funktioniert (confirmed clean)
+- LinkedIn: Rudolf Sarkany YcxbqVN0ZR ✅ verifiziert
+- Railway deployed: uptime seit 18:26 UTC ✅
+- task_affiliate_blast alle 2h im Scheduler aktiv
+- Alle Python-Syntax sauber (0 Fehler)
+
+## 🔥 LIVE SYSTEM STATUS
+- money_cycle: läuft alle 30min ✅
+- roas_optimizer: Live Meta API Pull, alle 1h ✅
+- affiliate_blast (DS24): alle 2h ✅
+- email_drip: alle 1h ✅
+- lead_capture: alle 2h ✅
+- Meta Ads: act_878505274898620 AKTIV, PURCHASE-Kampagne live
+- Shopify: 10k+ Produkte, Smart Home/Gadgets
+
+## ⚠️ RESTPROBLEME
+- FB Post Rate-Limit: vorübergehend (Meta Spam-Schutz) — next retry auto
+- Google Shopping Feed: Smart-Home-Filter noch ausstehend
+- DS24 revenue attribution: nur 1 echte Order (€40.94, März 2026)
+- WhatsApp Token: ABGELAUFEN (seit 2026-06-14) — bei Gelegenheit erneuern
