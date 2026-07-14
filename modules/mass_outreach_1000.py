@@ -186,6 +186,10 @@ def init_db() -> None:
             leads_found INTEGER DEFAULT 0,
             ran_at      TEXT DEFAULT (datetime('now'))
         );
+        CREATE TABLE IF NOT EXISTS searched_combos (
+            combo       TEXT PRIMARY KEY,
+            searched_at TEXT DEFAULT (datetime('now'))
+        );
         CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
         CREATE INDEX IF NOT EXISTS idx_leads_industry ON leads(industry);
         CREATE INDEX IF NOT EXISTS idx_sends_email ON sends(email);
@@ -1082,9 +1086,169 @@ async def run_full_daily() -> Dict:
     await _telegram(report)
     return {**send, **followup, **research, "stats": stats}
 
-async def run_batch_only(batch_size: int = BATCH_SIZE) -> Dict:
-    """Nur Versand ohne Research — für 3x/Tag Scheduler."""
+async def run_mini_research(categories: List[str], cities: List[str],
+                           limit: int = 50) -> int:
+    """Schnelle Mini-Research für 2-3 Kategorien × 3-5 Städte.
+
+    Speichert welche Kategorie×Stadt-Kombis schon gesucht wurden
+    damit jeder Batch andere Unternehmen findet.
+    """
     init_db()
+    gathered: List[Dict] = []
+    with _db() as conn:
+        already = {r[0] for r in conn.execute(
+            "SELECT combo FROM searched_combos"
+        ).fetchall()}
+
+    async with aiohttp.ClientSession(
+        headers={"User-Agent": "Mozilla/5.0 (compatible; BullPowerBot/1.0)"},
+        connector=aiohttp.TCPConnector(ssl=False),
+        timeout=aiohttp.ClientTimeout(total=15),
+    ) as session:
+        for cat in categories:
+            for city in cities:
+                combo = f"{cat}|{city}"
+                if combo in already:
+                    continue
+                # Gelbe Seiten
+                try:
+                    url = f"https://www.gelbeseiten.de/suche/{quote_plus(cat)}/{quote_plus(city)}"
+                    async with session.get(url, timeout=aiohttp.ClientTimeout(total=8)) as r:
+                        html = await r.text(errors="ignore")
+                    # E-Mail Pattern-Extraktion
+                    emails_found = re.findall(
+                        r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}', html
+                    )
+                    company_names = re.findall(
+                        r'(?:data-name|itemprop="name")[^>]*>([^<]{3,60})<', html
+                    )
+                    for i, em in enumerate(emails_found[:5]):
+                        if _valid_email(em):
+                            gathered.append({
+                                "email": em.lower(),
+                                "company": company_names[i] if i < len(company_names) else cat,
+                                "industry": cat,
+                                "city": city,
+                                "source": "gs_mini",
+                                "confidence": 0.6,
+                            })
+                except Exception:
+                    pass
+                # 11880.com
+                try:
+                    url2 = f"https://www.11880.com/suche/{quote_plus(cat)}/{quote_plus(city)}"
+                    async with session.get(url2, timeout=aiohttp.ClientTimeout(total=8)) as r2:
+                        h2 = await r2.text(errors="ignore")
+                    for em in re.findall(r'[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}', h2)[:5]:
+                        if _valid_email(em):
+                            gathered.append({
+                                "email": em.lower(),
+                                "company": cat,
+                                "industry": cat,
+                                "city": city,
+                                "source": "11880_mini",
+                                "confidence": 0.55,
+                            })
+                except Exception:
+                    pass
+                # Mark combo as searched
+                with _db() as conn:
+                    conn.execute(
+                        "INSERT OR IGNORE INTO searched_combos (combo) VALUES (?)",
+                        (combo,)
+                    )
+                if len(gathered) >= limit:
+                    break
+            if len(gathered) >= limit:
+                break
+
+    # Domain pattern guessing for companies without email
+    # (kept light for speed)
+    inserted = 0
+    with _db() as conn:
+        for lead in gathered:
+            try:
+                conn.execute(
+                    """INSERT OR IGNORE INTO leads
+                       (email, company, industry, city, source, confidence)
+                       VALUES (?,?,?,?,?,?)""",
+                    (lead["email"], lead.get("company",""), lead.get("industry","Default"),
+                     lead.get("city",""), lead.get("source","mini"), lead.get("confidence",0.5))
+                )
+                inserted += conn.rowcount
+            except Exception:
+                pass
+    log.info("Mini-Research: %d neue Leads (aus %d gefunden)", inserted, len(gathered))
+    return inserted
+
+
+async def _get_next_search_combos(n_cats: int = 3, n_cities: int = 5) -> Tuple[List[str], List[str]]:
+    """Wählt Kategorie/Stadt-Kombis die noch NICHT gesucht wurden.
+    Rotiert durch alle Möglichkeiten und startet von vorne wenn alles durch."""
+    import random
+    with _db() as conn:
+        already = {r[0] for r in conn.execute(
+            "SELECT combo FROM searched_combos"
+        ).fetchall()}
+
+    # Find unsearched combos
+    all_combos = [(c, ci) for c in _CATEGORIES for ci in _CITIES_DACH]
+    unsearched = [(c, ci) for c, ci in all_combos if f"{c}|{ci}" not in already]
+
+    if len(unsearched) < n_cats * n_cities:
+        # Reset — alle Kombis wieder verfügbar
+        with _db() as conn:
+            conn.execute("DELETE FROM searched_combos")
+        unsearched = all_combos
+        log.info("Outreach: Alle Kombis durchsucht — Reset für nächste Runde")
+
+    # Pick random unsearched combos
+    chosen = random.sample(unsearched, min(n_cats * n_cities, len(unsearched)))
+    cats  = list({c for c, _ in chosen})[:n_cats]
+    cities = list({ci for _, ci in chosen})[:n_cities]
+    return cats, cities
+
+
+async def run_smart_batch(batch_size: int = BATCH_SIZE) -> Dict:
+    """Research + Send in einem Lauf — jedes Mal andere Unternehmen.
+
+    1. Wählt Kategorie/Stadt-Kombis die noch nicht gesucht wurden
+    2. Mini-Research → neue Leads in DB
+    3. Sofort senden an alle neuen Leads
+    4. Follow-Up-Emails für ältere Leads
+    """
+    init_db()
+
+    # Step 1: Mini-Research mit frischen Kombis
+    cats, cities = await _get_next_search_combos(n_cats=3, n_cities=5)
+    log.info("Smart Batch Research: %s × %s", cats, cities)
+    new_leads = await run_mini_research(cats, cities, limit=batch_size)
+
+    # Step 2: Versand
+    send = await run_send_batch(batch_size)
+    followup = await run_followups()
+    stats = get_stats()
+
+    report = (
+        f"🔄 <b>Smart Outreach</b>: +{new_leads} neue Leads | "
+        f"{send['sent']} gesendet | {followup['followups_sent']} Follow-Ups | "
+        f"Heute: {stats['emails_today']}/{stats['daily_limit']}"
+    )
+    await _telegram(report)
+    log.info("Smart Batch: %d researched, %d sent", new_leads, send.get("sent", 0))
+    return {"new_leads": new_leads, **send, **followup}
+
+
+async def run_batch_only(batch_size: int = BATCH_SIZE) -> Dict:
+    """Versand + Mini-Research wenn wenige neue Leads — für 3x/Tag Scheduler."""
+    init_db()
+    stats_before = get_stats()
+    # Auto-Research wenn weniger als 50 neue Leads in DB
+    new_leads = 0
+    if stats_before.get("leads_new", 0) < 50:
+        cats, cities = await _get_next_search_combos(n_cats=3, n_cities=5)
+        new_leads = await run_mini_research(cats, cities, limit=100)
+        log.info("Auto-Research (low leads): +%d", new_leads)
     send = await run_send_batch(batch_size)
     followup = await run_followups()
     stats = get_stats()
@@ -1094,7 +1258,7 @@ async def run_batch_only(batch_size: int = BATCH_SIZE) -> Dict:
         f"Heute gesamt: {stats['emails_today']}/{stats['daily_limit']}"
     )
     await _telegram(report)
-    return {**send, **followup}
+    return {"new_leads": new_leads, **send, **followup}
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
