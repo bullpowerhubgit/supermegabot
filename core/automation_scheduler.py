@@ -6334,15 +6334,16 @@ async def task_mass_outreach_research() -> str:
         return f"Mass Outreach Research Fehler: {e}"
 
 async def task_mass_outreach_batch() -> str:
-    """3× täglich: 333 Emails aus Lead-Queue versenden (Ziel 1000/Tag)."""
+    """3× täglich: Research frische Firmen + 333 Emails (Smart-Mode)."""
     try:
-        from modules.mass_outreach_1000 import run_batch_only, init_db
+        from modules.mass_outreach_1000 import run_smart_batch, init_db
         init_db()
-        result = await run_batch_only(batch_size=333)
+        result = await run_smart_batch(batch_size=333)
         sent = result.get("sent", 0)
         fu   = result.get("followups_sent", 0)
+        new  = result.get("new_leads", 0)
         today = result.get("total_today", 0)
-        return f"Mass Outreach: {sent} gesendet, {fu} Follow-Ups | Heute: {today}/1000 ✅"
+        return f"Mass Outreach: +{new} neue Leads | {sent} gesendet, {fu} Follow-Ups | Heute: {today}/1000 ✅"
     except Exception as e:
         return f"Mass Outreach Batch Fehler: {e}"
 
@@ -6958,6 +6959,18 @@ async def task_free_api_hunter() -> str:
         return f"FreeAPIHunter Fehler: {e}"
 
 
+async def task_rotating_buyer_prospector() -> str:
+    """Rotating Buyer Prospector: jeder Lauf andere Nische, sucht Firmen + sendet Emails."""
+    try:
+        from modules.rotating_buyer_prospector import run_prospecting_cycle
+        r = await run_prospecting_cycle(emails_per_run=20, search_results_per_source=12)
+        return (f"Prospector [{r['niche_de']}]: "
+                f"{r['found']} gefunden, {r['new_companies']} neu, "
+                f"{r['emailed']} Emails gesendet")
+    except Exception as e:
+        return f"Prospector Fehler: {e}"
+
+
 async def task_full_revenue_expansion() -> str:
     """Full Revenue Expansion Cycle: alle Kanäle autonom skalieren (alle 8h)."""
     try:
@@ -7416,6 +7429,7 @@ TASKS = [
     ("roas_optimizer",            task_roas_optimizer,                14400, 9100),  # alle 4h — Meta/Google ROAS Auto-Pause/Scale
     ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
     ("free_api_hunter",           task_free_api_hunter,              43200, 9200),  # 12h — Suche + Cache kostenlose APIs
+    ("rotating_prospector",       task_rotating_buyer_prospector,     3600, 9300),  # 1h  — Andere Branche pro Lauf, Emails senden
     ("full_expansion",            task_full_revenue_expansion,        28800,  150),  # 8h — Alle Revenue-Kanäle autonom
     # ── MEGA Command Center Scheduler-Tasks ────────────────────────────────────
     ("mega_self_healing",         task_mega_self_healing,              3600,   10),  # 1h — API Health + Revenue Alert
