@@ -1,7 +1,6 @@
-#!/usr/bin/env python3
 """
-Money Machine — Unified Orchestrator (5 Engines in 1)
-======================================================
+Money Machine — Unified Orchestrator (5 Engines in 1) + Live Revenue Cycle
+===========================================================================
 Kombiniert alle 5 Revenue-Engines:
   1. Viral Window Scanner  — Echtzeit-Trendprodukte
   2. OOS Sniper            — Konkurrenz Out-of-Stock abfangen
@@ -17,15 +16,18 @@ Stripe: LIVE Preise bereits vorhanden (Telegram-Tiers):
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import os
+import sqlite3
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
 
 import aiohttp
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).parent.parent / ".env", override=True)
 
 log = logging.getLogger("MoneyMachine")
 
@@ -255,3 +257,232 @@ async def create_mm_checkout(email: str, tier: str = "alert") -> Dict:
                 }
     except Exception as e:
         return {"error": str(e)}
+
+
+# ── Live Revenue Cycle (30-min autonomous orchestrator) ───────────────────────
+
+_META_TOKEN  = lambda: (os.getenv("META_ADS_TOKEN") or os.getenv("META_ACCESS_TOKEN", "")).strip()
+_PAGE_TOKEN  = lambda: (os.getenv("FACEBOOK_PAGE_ACCESS_TOKEN") or _META_TOKEN()).strip()
+_AD_ACCOUNT  = lambda: os.getenv("META_AD_ACCOUNT_ID", "act_878505274898620").strip()
+_IG_ACCT     = lambda: os.getenv("INSTAGRAM_ACCOUNT_ID", "17841478315197796").strip()
+_SHOP_DOMAIN = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com").strip()
+_SHOP_TOKEN  = lambda: os.getenv("SHOPIFY_ADMIN_API_TOKEN", "").strip()
+_GRAPH       = "https://graph.facebook.com/v25.0"
+_SCALE_TO    = 2000   # cents — €20/day target
+
+
+async def _g(s: aiohttp.ClientSession, path: str, p: dict) -> dict:
+    p["access_token"] = _META_TOKEN()
+    try:
+        async with s.get(f"{_GRAPH}/{path}", params=p,
+                         timeout=aiohttp.ClientTimeout(total=15)) as r:
+            d = await r.json()
+            return d if "error" not in d else {}
+    except Exception as e:
+        log.warning("meta_get %s: %s", path, e)
+        return {}
+
+
+async def _p(s: aiohttp.ClientSession, path: str, data: dict) -> dict:
+    data["access_token"] = _META_TOKEN()
+    try:
+        async with s.post(f"{_GRAPH}/{path}", data=data,
+                          timeout=aiohttp.ClientTimeout(total=20)) as r:
+            return await r.json()
+    except Exception as e:
+        log.warning("meta_post %s: %s", path, e)
+        return {}
+
+
+async def _live_ads(s: aiohttp.ClientSession) -> dict:
+    act = _AD_ACCOUNT()
+    if not act.startswith("act_"):
+        act = f"act_{act}"
+    ins = await _g(s, f"{act}/insights", {"fields": "spend,actions,action_values", "date_preset": "today"})
+    row = (ins.get("data") or [{}])[0]
+    spend   = float(row.get("spend", 0))
+    revenue = next((float(a["value"]) for a in row.get("action_values", [])
+                    if a["action_type"] == "purchase"), 0.0)
+    roas    = round(revenue / spend, 2) if spend > 0 else 0.0
+    scaled  = False
+    if roas > 0:
+        adsets = await _g(s, f"{act}/adsets", {"fields": "id,daily_budget,status", "limit": "50"})
+        for a in adsets.get("data", []):
+            if a.get("status") == "ACTIVE" and 0 < int(a.get("daily_budget", 0)) < _SCALE_TO:
+                r = await _p(s, a["id"], {"daily_budget": str(_SCALE_TO)})
+                if r.get("success"):
+                    scaled = True
+    return {"spend": spend, "revenue": revenue, "roas": roas, "scaled": scaled}
+
+
+def _emails_today() -> int:
+    today = datetime.now().strftime("%Y-%m-%d")
+    base  = _BASE
+    for db in ["bulk_outreach.db", "outreach_autonomous.db", "compliance_outreach.db"]:
+        p = base / "data" / db
+        if not p.exists():
+            continue
+        try:
+            conn = sqlite3.connect(str(p))
+            for col in ("sent_at", "created_at", "timestamp"):
+                try:
+                    n = conn.execute(
+                        f"SELECT COUNT(*) FROM emails WHERE {col} LIKE ? AND status='sent'",
+                        (f"{today}%",)).fetchone()[0]
+                    conn.close()
+                    return n
+                except sqlite3.OperationalError:
+                    continue
+            conn.close()
+        except Exception:
+            continue
+    return 0
+
+
+async def _live_shopify(s: aiohttp.ClientSession) -> dict:
+    token = _SHOP_TOKEN()
+    if not token:
+        return {"orders": -1, "triggered": False}
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%dT00:00:00Z")
+    try:
+        async with s.get(
+            f"https://{_SHOP_DOMAIN()}/admin/api/2026-04/orders.json",
+            params={"created_at_min": today, "status": "any", "limit": "250", "fields": "id"},
+            headers={"X-Shopify-Access-Token": token},
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as r:
+            orders = len((await r.json()).get("orders", []))
+    except Exception as e:
+        log.warning("shopify orders: %s", e)
+        return {"orders": -1, "triggered": False}
+    triggered = False
+    if orders == 0 and datetime.now().hour >= 12:
+        try:
+            from modules.traffic_accelerator import run_traffic_cycle
+            asyncio.create_task(run_traffic_cycle())
+            triggered = True
+        except Exception as e:
+            log.warning("traffic trigger: %s", e)
+    return {"orders": orders, "triggered": triggered}
+
+
+async def _top_shopify_product(s: aiohttp.ClientSession) -> dict | None:
+    token = _SHOP_TOKEN()
+    if not token:
+        return None
+    try:
+        async with s.get(
+            f"https://{_SHOP_DOMAIN()}/admin/api/2026-04/products.json",
+            params={"limit": "50", "status": "active", "fields": "id,title,variants,images"},
+            headers={"X-Shopify-Access-Token": token},
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as r:
+            prods = [p for p in (await r.json()).get("products", []) if p.get("images")]
+        if not prods:
+            return None
+        return max(prods, key=lambda p: float((p.get("variants") or [{}])[0].get("price", 0)))
+    except Exception as e:
+        log.warning("shopify products: %s", e)
+        return None
+
+
+async def _ig_post(s: aiohttp.ClientSession) -> dict:
+    ig = _IG_ACCT()
+    # check last post age
+    media = await _g(s, f"{ig}/media", {"fields": "timestamp", "limit": "1", "access_token": _META_TOKEN()})
+    age_h = 999.0
+    if media.get("data"):
+        try:
+            ts = media["data"][0]["timestamp"]
+            dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+            age_h = (datetime.now(timezone.utc) - dt).total_seconds() / 3600
+        except Exception:
+            pass
+    if age_h < 24:
+        return {"posted": False, "age_h": round(age_h, 1)}
+
+    product = await _top_shopify_product(s)
+    if not product or not product.get("images"):
+        return {"posted": False, "reason": "no_product"}
+
+    title     = product.get("title", "Top Produkt")
+    price_str = ""
+    try:
+        price_str = f"€{float(product['variants'][0]['price']):.2f}"
+    except Exception:
+        pass
+    img_url = product["images"][0].get("src", "")
+    if not img_url:
+        return {"posted": False, "reason": "no_image"}
+
+    caption = (
+        f"🔥 {title}\n"
+        + (f"💶 {price_str}\n" if price_str else "")
+        + "👉 jetzt shoppen: https://ineedit.com.co\n\n"
+        "#SmartHome #Tech #OnlineShop #Gadgets #Deutschland #Österreich"
+    )
+    create = await _p(s, f"{ig}/media", {"image_url": img_url, "caption": caption})
+    cid = create.get("id")
+    if not cid:
+        return {"posted": False, "reason": create.get("error", {}).get("message", "create_failed")}
+    await asyncio.sleep(3)
+    pub = await _p(s, f"{ig}/media_publish", {"creation_id": cid})
+    if pub.get("id"):
+        return {"posted": True, "media_id": pub["id"], "product": title}
+    return {"posted": False, "reason": pub.get("error", {}).get("message", "publish_failed")}
+
+
+async def run_money_cycle() -> dict:
+    """30-min autonomous revenue cycle: Meta Ads + Email + Shopify + Instagram."""
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    log.info("MoneyMachine live cycle — %s", now)
+
+    async with aiohttp.ClientSession() as s:
+        ads, shopify, ig = await asyncio.gather(
+            _live_ads(s), _live_shopify(s), _ig_post(s),
+            return_exceptions=True,
+        )
+
+    def safe(r, d): return r if isinstance(r, dict) else d
+    ads     = safe(ads,     {"spend": 0, "roas": 0, "scaled": False})
+    shopify = safe(shopify, {"orders": -1, "triggered": False})
+    ig      = safe(ig,      {"posted": False})
+
+    emails  = _emails_today()
+    email_triggered = False
+    if emails < 100:
+        try:
+            from modules.aiitec_outreach_machine import run_outreach_cycle
+            asyncio.ensure_future(run_outreach_cycle())
+            email_triggered = True
+        except Exception as e:
+            log.warning("email trigger: %s", e)
+
+    # Telegram report
+    lines = [
+        "🤖 <b>MoneyMachine</b>",
+        f"🕐 {now}",
+        f"📊 Ads: €{ads['spend']:.2f} spend | ROAS {ads['roas']:.2f}x" +
+        (" 🚀 skaliert!" if ads.get("scaled") else ""),
+        f"📧 Emails: {emails}/Tag" + (" ▶️ getriggert" if email_triggered else ""),
+        f"🛒 Orders: {shopify['orders'] if shopify['orders'] >= 0 else 'n/a'}" +
+        (" ▶️ Traffic" if shopify.get("triggered") else ""),
+        "📸 IG: " + ("✅ gepostet" if ig.get("posted") else f"letzte {ig.get('age_h','?')}h")
+    ]
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+            await s.post(
+                f"https://api.telegram.org/bot{_tg_token()}/sendMessage",
+                json={"chat_id": _tg_chat(), "text": "\n".join(lines), "parse_mode": "HTML"},
+            )
+    except Exception:
+        pass
+
+    return {
+        "status": "ok", "timestamp": now,
+        "roas": ads["roas"], "spend_today": ads["spend"],
+        "revenue_today": ads.get("revenue", 0), "ads_scaled": ads.get("scaled"),
+        "emails_today": emails, "email_triggered": email_triggered,
+        "orders_today": shopify["orders"], "traffic_triggered": shopify.get("triggered"),
+        "ig_posted": ig.get("posted"),
+    }

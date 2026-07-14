@@ -27,14 +27,19 @@ load_dotenv(Path(__file__).parent.parent / ".env", override=True)
 
 log = logging.getLogger(__name__)
 
+# ── Live Campaign IDs (created 2026-07-14) ────────────────────────────────────
+LIVE_CAMPAIGN_ID = "23858745481070790"
+LIVE_ADSET_ID    = "23858745531500790"
+LIVE_AD_ID       = "23858745541190790"
+
 # ── Credentials ───────────────────────────────────────────────────────────────
 _TOKEN    = (os.getenv("META_ADS_TOKEN") or os.getenv("META_ACCESS_TOKEN") or "").strip()
 _ACC      = (os.getenv("META_AD_ACCOUNT_ID") or "act_878505274898620").strip()
 _ACC_INEEDIT = "act_2215713609248740"
-_PIXEL    = "4215456142051261"
+_PIXEL    = (os.getenv("FACEBOOK_PIXEL_ID") or "4215456142051261").strip()
 _TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
-_API      = "https://graph.facebook.com/v25.0"
+_API      = "https://graph.facebook.com/v20.0"
 
 # ── Thresholds ────────────────────────────────────────────────────────────────
 ROAS_SCALE   = float(os.getenv("ROAS_SCALE_THRESHOLD", "3.5"))   # scale if >
@@ -356,6 +361,59 @@ async def get_status() -> dict:
             "max_daily_cents": MAX_DAILY,
         },
     }
+
+
+async def get_todays_performance() -> dict:
+    """Return today's spend, impressions, clicks, CTR across all active ad sets."""
+    if not _TOKEN:
+        return {"status": "no_token"}
+    async with aiohttp.ClientSession() as session:
+        data = await _get(session, f"{_act(_ACC)}/adsets", {
+            "fields": "id,name,status",
+            "limit": "200",
+        })
+        adsets = [a for a in data.get("data", []) if a.get("status") == "ACTIVE"]
+        totals = {"impressions": 0, "clicks": 0, "spend": 0.0, "ctr": 0.0}
+        for adset in adsets:
+            ins = await _get(session, f"{adset['id']}/insights", {
+                "fields": "spend,impressions,clicks,ctr",
+                "date_preset": "today",
+            })
+            row = ins.get("data", [{}])[0] if ins.get("data") else {}
+            totals["impressions"] += int(row.get("impressions", 0))
+            totals["clicks"]      += int(row.get("clicks", 0))
+            totals["spend"]       += float(row.get("spend", 0))
+        if totals["impressions"] > 0:
+            totals["ctr"] = round(totals["clicks"] / totals["impressions"] * 100, 2)
+        totals["spend"] = round(totals["spend"], 2)
+        totals["adsets_active"] = len(adsets)
+        return totals
+
+
+async def auto_create_new_ad(adset: dict) -> dict | None:
+    """Duplicate a high-ROAS ad set with +20% budget as new scaling vehicle."""
+    if adset.get("roas", 0) < ROAS_SCALE:
+        return None
+    current_budget = adset.get("daily_budget_cents", 0)
+    if current_budget <= 0:
+        return None
+    new_budget = min(int(current_budget * 1.2), MAX_DAILY)
+    async with aiohttp.ClientSession() as session:
+        result = await _post(session, f"{_act(_ACC)}/adsets", {
+            "name": f"{adset['name']} | Scale-Clone {datetime.now(timezone.utc).strftime('%m%d-%H%M')}",
+            "campaign_id": adset.get("campaign_id", LIVE_CAMPAIGN_ID),
+            "billing_event": "IMPRESSIONS",
+            "optimization_goal": "LINK_CLICKS",
+            "bid_amount": "100",
+            "daily_budget": str(new_budget),
+            "targeting": '{"geo_locations":{"countries":["DE","AT","CH"]},"age_min":25,"age_max":55,"targeting_automation":{"advantage_audience":0}}',
+            "status": "ACTIVE",
+            "is_adset_budget_sharing_enabled": "False",
+        })
+        if "id" in result:
+            log.info("auto_create_new_ad: cloned %s → %s budget=%d", adset["name"], result["id"], new_budget)
+            return result
+        return None
 
 
 if __name__ == "__main__":

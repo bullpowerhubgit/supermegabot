@@ -3126,6 +3126,18 @@ async def task_oos_sniper_scan() -> str:
         return f"OOSSniper error: {e}"
 
 
+async def task_money_cycle() -> str:
+    """30-min autonomer Revenue-Zyklus: Ads+Email+Shopify+Instagram"""
+    try:
+        from modules.money_machine import run_money_cycle
+        r = await run_money_cycle()
+        return (f"MoneyMachine: orders={r.get('orders_today',0)} "
+                f"ROAS={r.get('roas',0):.2f}x emails={r.get('emails_today',0)} "
+                f"ig={'✅' if r.get('ig_posted') else '—'}")
+    except Exception as e:
+        return f"MoneyMachine error: {e}"
+
+
 async def task_money_machine_run() -> str:
     """Money Machine — alle Engines in einem Run"""
     try:
@@ -7269,6 +7281,7 @@ TASKS = [
     ("vorsprung_scan",       task_vorsprung_scan,      21600, 300),  # 6h — VORSPRUNG Intelligence (Bundesanzeiger+EUIPO+DPMA+Reddit)
     ("viral_window_scan",      task_viral_window_scan,       7200, 600),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",        task_oos_sniper_scan,         7200,  58),  # 2h — OOS Sniper
+    ("money_cycle",            task_money_cycle,             1800,   60),  # 30min — Live Revenue: Ads+Email+Shopify+IG
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
     ("revenue_engine",         task_revenue_engine,         7200,   69),  # 2h — Geld-Zyklus (DS24+Klaviyo)
