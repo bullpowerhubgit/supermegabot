@@ -416,6 +416,16 @@ def get_stats() -> Dict:
         return {"error": str(e)}
 
 
+async def run_traffic_turbo() -> Dict:
+    """Alias für run_traffic_cycle (Wave-1 Turbo-Modus)."""
+    return await run_traffic_cycle()
+
+
+async def run_full_acceleration() -> Dict:
+    """Alias für run_traffic_cycle (vollständiger Beschleuniger-Modus)."""
+    return await run_traffic_cycle()
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     result = asyncio.run(run_traffic_cycle())

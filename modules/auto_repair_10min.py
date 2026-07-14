@@ -329,4 +329,18 @@ async def run_repair_cycle() -> Dict:
     else:
         log.debug("Auto-Repair: Alles OK (%.1fs)", elapsed)
 
+    # Infrastruktur-Deep-Check (APIs, DB, Module, Env-Vars, Disk)
+    try:
+        from modules.auto_repair_engine import run_repair_cycle as _engine_cycle
+        engine_result = await _engine_cycle()
+        engine_repairs = engine_result.get("repairs", 0)
+        engine_ok = engine_result.get("checks_ok", 0)
+        engine_total = engine_result.get("checks_total", 0)
+        result["engine_checks"] = f"{engine_ok}/{engine_total}"
+        result["engine_repairs"] = engine_repairs
+        if engine_repairs:
+            fixes.append(f"Infra-Engine: {engine_repairs} Reparaturen bei {engine_total} Checks")
+    except Exception as e:
+        log.debug("Engine-Check Fehler (non-critical): %s", e)
+
     return result
