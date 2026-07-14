@@ -7552,6 +7552,7 @@ TASKS = [
     ("linkedin_dm",               task_linkedin_dm,                  21600,  600),  # 6h   — LinkedIn DMs: 50 Verbindungen/Tag
     ("affiliate_recruiter",       task_affiliate_recruiter,          86400, 1200),  # 24h  — Affiliate Pitches: 15 neue/Tag
     ("traffic_maximizer_am",      task_traffic_maximizer,            28800,  900),  # 8h   — Traffic: LinkedIn+FB+Shopify Blog 3×/Tag
+    ("traffic_maximizer_pm",      task_traffic_maximizer,            28800, 4500),  # 8h+offset — zweiter täglicher Slot (Nachmittag)
     ("meta_ads_launch",           task_meta_ads_launch,             604800, 1800),  # 1×/Woche — Meta Retargeting Kampagne starten
     ("meta_ads_optimize",         task_meta_ads_optimize,            14400, 2400),  # 4h   — Meta Ads: CTR prüfen + Budget anpassen
 ]
