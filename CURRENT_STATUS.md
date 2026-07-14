@@ -1,5 +1,25 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 v32 — VOLLSYSTEM-SCAN + ALLE MODULE STABIL**
+**Stand: 2026-07-14 v33 — CODE AUF GITHUB, RAILWAY DEPLOY MANUELL NÖTIG**
+
+## 🔴 RAILWAY DEPLOY MANUELL STARTEN (1x)
+
+Railway läuft noch auf altem Stand (vor traffic_accelerator, trust_and_conversion etc.).
+**Der Code ist auf GitHub** — Railway muss nur einmal neu deployen:
+
+### Option A — Railway Dashboard (empfohlen)
+1. https://railway.app → Projekt öffnen → supermegabot Service
+2. "Deploy" Button → "Redeploy" klicken
+3. Fertig! Railway baut aus dem aktuellen GitHub-Stand
+
+### Option B — GitHub Secret RAILWAY_TOKEN erneuern
+1. https://railway.app → Projekt → Settings → Tokens → "New Token"
+2. Token kopieren → https://github.com/bullpowerhubgit/supermegabot → Settings → Secrets → RAILWAY_TOKEN aktualisieren
+3. Danach: jeder Push deployt automatisch
+
+**Problem**: Der aktuelle RAILWAY_TOKEN in .env ist ein Personal API Token (UUID-Format).
+`railway up` braucht aber einen Project Service Token. → Option A ist schneller!
+
+---
 
 ## ✅ NEU (2026-07-14 v32) — VOLLSYSTEM-SCAN ABGESCHLOSSEN
 
