@@ -252,6 +252,11 @@ async def run_roas_cycle() -> dict:
         log.warning("META_ADS_TOKEN not set — skipping ROAS cycle")
         return {"status": "no_token", "paused": [], "scaled": [], "revenue_7d": 0, "spend_7d": 0, "roas": 0}
 
+    from modules.distributed_lock import acquire_lock
+    async with acquire_lock("roas_cycle", ttl=50 * 60) as locked:
+        if not locked:
+            return {"status": "skipped", "reason": "Läuft bereits in anderem Terminal"}
+
     log.info("ROAS Optimizer — live cycle start")
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 

@@ -434,6 +434,10 @@ async def _ig_post(s: aiohttp.ClientSession) -> dict:
 
 async def run_money_cycle() -> dict:
     """30-min autonomous revenue cycle: Meta Ads + Email + Shopify + Instagram."""
+    from modules.distributed_lock import acquire_lock, already_done, mark_done
+    async with acquire_lock("money_cycle", ttl=25 * 60) as locked:
+        if not locked:
+            return {"skipped": True, "reason": "Läuft bereits in anderem Terminal/Agenten"}
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
     log.info("MoneyMachine live cycle — %s", now)
 
