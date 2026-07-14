@@ -23,8 +23,11 @@ def _shop_token() -> str:
 def _shop_ver() -> str:
     return os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
-# Klaviyo aiitec
-KLAVIYO_LIST_ID = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+# Klaviyo aiitec — sanitize list ID (env may store as dict-string)
+import re as _re_ce
+_raw_kl_id = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+_m_kl = _re_ce.search(r"'id':\s*'([A-Za-z0-9]+)'", str(_raw_kl_id))
+KLAVIYO_LIST_ID = _m_kl.group(1) if _m_kl else (str(_raw_kl_id).strip().strip("'\"") if len(str(_raw_kl_id)) < 20 else "Xwxq6V")
 KLAVIYO_KEY     = os.getenv("KLAVIYO_API_KEY", "")
 
 # Mailchimp Dragon/aiitec

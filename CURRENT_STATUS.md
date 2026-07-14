@@ -57,11 +57,6 @@
 ### Syntax Check
 - **0 Fehler** in 329 Python-Dateien ✅
 
-## ⚠️ OFFEN (Manuelle Aktion nötig)
-- **GMAIL_APP_PASSWORD_2**: nikolestimi@gmail.com hat kein App-Passwort (kein Gmail 2FA?)
-  → Rudolf: Gmail-Konto öffnen → 2-Faktor → App-Passwort erstellen → in .env eintragen
-  → Oder: Konto aus SMTP-Pool entfernen (bereits aus aktivem Pool ausgeschlossen!)
-
 ## 🚀 NÄCHSTE RAILWAY-DEPLOY ENTHÄLT:
 - Alle v31 Fixes (nach expliziter Rudolf-Erlaubnis deployen)
 

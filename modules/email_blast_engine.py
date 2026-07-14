@@ -29,7 +29,13 @@ KLAVIYO_KEY = os.getenv("KLAVIYO_API_KEY", "")
 KLAVIYO_LIST = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 
 MAILCHIMP_KEY = os.getenv("MAILCHIMP_API_KEY", "")
-MAILCHIMP_DC  = os.getenv("MAILCHIMP_DC", "us7")
+# Auto-detect DC from API key suffix (e.g. "xxxxx-us21" → "us21")
+def _mc_dc() -> str:
+    key = MAILCHIMP_KEY
+    if key and "-" in key:
+        return key.rsplit("-", 1)[-1]
+    return os.getenv("MAILCHIMP_DC", "us7")
+MAILCHIMP_DC  = _mc_dc()
 MAILCHIMP_LIST = os.getenv("MAILCHIMP_LIST_ID", "")
 
 def _smtp_accounts_list() -> list:
