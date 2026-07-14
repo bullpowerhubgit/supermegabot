@@ -209,7 +209,14 @@ def _save_db(db: dict) -> None:
     _db_path().write_text(json.dumps(db, indent=2, default=str))
 
 
+_FAKE_DOMAINS = {"example.com", "test.com", "mailinator.com", "klaviyo-demo.com",
+                 "test-ds24.com", "supermegabot.example.com"}
+
 async def enroll(email: str, sequence: str, first_name: str = "", metadata: dict | None = None) -> dict:
+    if not email or "@" not in email:
+        return {"ok": False, "error": "invalid email"}
+    if email.split("@")[-1] in _FAKE_DOMAINS:
+        return {"ok": False, "error": "demo/test domain filtered"}
     if sequence not in SEQUENCES:
         return {"ok": False, "error": f"Unknown sequence: {sequence}"}
     db = _load_db()
