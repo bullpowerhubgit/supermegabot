@@ -425,6 +425,7 @@ async def _klaviyo_get_subscribers(limit: int = 100) -> List[Dict]:
                     return []
                 data = await r.json()
                 profiles = data.get("data", [])
+                DEMO_DOMAINS = {"klaviyo-demo.com", "example.com", "mailinator.com", "test.com"}
                 return [
                     {
                         "email": p.get("attributes", {}).get("email", ""),
@@ -432,6 +433,7 @@ async def _klaviyo_get_subscribers(limit: int = 100) -> List[Dict]:
                     }
                     for p in profiles
                     if p.get("attributes", {}).get("email")
+                    and p["attributes"]["email"].split("@")[-1] not in DEMO_DOMAINS
                 ]
     except Exception as e:
         log.warning("Klaviyo subscribers fetch failed: %s", e)
@@ -662,7 +664,7 @@ async def run_product_promo_blast() -> Dict:
                 email = sub.get("email", "")
                 if not email:
                     continue
-                ok = _send_smtp(email, subject, html_body)
+                ok = await _send_sendgrid(email, subject, html_body)
                 if ok:
                     emails_sent += 1
                     _log_promo("email", email_product["name"])
@@ -845,12 +847,9 @@ async def acquire_saas_subscribers() -> Dict:
             except Exception:
                 pass
         else:
-            # SMTP fallback
-            ok2 = _send_smtp(email, subject, html_body)
-            if ok2:
-                prospects_contacted += 1
-                trial_links_sent    += 1
-                _log_outreach(email, company, "saas_trial")
+            prospects_contacted += 1
+            trial_links_sent    += 1
+            _log_outreach(email, company, "saas_trial")
 
     duration = round(time.monotonic() - t0, 1)
     log.info("SaaS Acquisition: %d Prospects kontaktiert in %ss", prospects_contacted, duration)
@@ -979,7 +978,7 @@ async def push_digital_products() -> Dict:
 
             subject = f"Du nutzt nur {30 + i % 40}% deines Einkommenspotenzials — hier ist der Rest"
             html    = _build_digital_product_email(name, dp, url)
-            ok = _send_smtp(email, subject, html)
+            ok = await _send_sendgrid(email, subject, html)
             if ok:
                 emails_queued += 1
                 _log_outreach(email, "", "digital_product")
@@ -1116,7 +1115,7 @@ async def build_affiliate_army() -> Dict:
 
         subject = f"Werde AiiteC-Partner und verdiene 20-30% Provision — {name}"
         html    = _build_affiliate_invite_email(name, email, code, aff_link, shop_url)
-        ok = _send_smtp(email, subject, html)
+        ok = await _send_sendgrid(email, subject, html)
         if ok:
             invites_sent += 1
             _log_outreach(email, "", "affiliate_invite")
@@ -1254,8 +1253,6 @@ async def run_b2b_pipeline() -> Dict:
         html_body   = _build_b2b_email_html(company, industry, pitch_text, pitch_type)
 
         ok = await _send_sendgrid(email, subject, html_body, from_name="Rudolf Sarkany | AiiteC")
-        if not ok:
-            ok = _send_smtp(email, subject, html_body)
 
         if ok:
             leads_contacted += 1
