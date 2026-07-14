@@ -12438,16 +12438,8 @@ async def create_app():
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
-    async def handle_traffic_stats(request):
-        """GET /api/traffic/stats — Traffic Maximizer Statistiken."""
-        try:
-            from modules.traffic_maximizer import get_traffic_stats
-            return web.json_response(get_traffic_stats())
-        except Exception as e:
-            return web.json_response({"error": str(e)}, status=500)
-
     app.router.add_post("/api/traffic/blast", handle_traffic_blast)
-    app.router.add_get( "/api/traffic/stats", handle_traffic_stats)
+    # handle_traffic_stats bereits als module-level Funktion registriert (Zeile 8111 + 10749)
 
     # ── Autonomous Pilot ───────────────────────────────────────────────────────
     async def handle_pilot_status(request):
