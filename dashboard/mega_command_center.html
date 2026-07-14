@@ -1,880 +1,872 @@
-<!DOCTYPE html>
-<html lang="de" data-theme="dark">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MEGA Command Center — SuperMegaBot</title>
+<title>BullPower MEGA Command Center</title>
 <style>
-/* ── Reset + Base ────────────────────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 14px; -webkit-font-smoothing: antialiased; }
-body {
-  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg:       #080a0e;
+    --surface:  #10131a;
+    --surface2: #181c26;
+    --surface3: #1e2333;
+    --border:   rgba(255,255,255,0.07);
+    --g:        #00d084;
+    --g-dim:    rgba(0,208,132,0.15);
+    --g-glow:   0 0 18px rgba(0,208,132,0.35);
+    --amber:    #f59e0b;
+    --red:      #ef4444;
+    --blue:     #60a5fa;
+    --violet:   #a78bfa;
+    --text:     #e2e8f0;
+    --dim:      #94a3b8;
+    --muted:    #475569;
+    --mono:     "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+    --sans:     -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --r:        8px;
+    --r2:       12px;
+  }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; }
+  body { display: flex; overflow: hidden; }
 
-/* ── Color tokens ────────────────────────────────────────────────────── */
-:root {
-  --bg:        #0b0f14;
-  --surface:   #141a21;
-  --surface2:  #1a2230;
-  --border:    #1d2631;
-  --text:      #e2e8f0;
-  --muted:     #6b7b8d;
-  --accent:    #22c55e;
-  --accent-dim:#16532d;
-  --danger:    #ef4444;
-  --danger-dim:#4c1515;
-  --warn:      #f59e0b;
-  --warn-dim:  #4a2d00;
-  --info:      #3b82f6;
-  --info-dim:  #1a3360;
-  --mono: 'JetBrains Mono', 'Cascadia Code', 'SF Mono', ui-monospace, monospace;
-}
+  /* SIDEBAR */
+  aside {
+    width: 220px; flex-shrink: 0;
+    background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; height: 100vh; overflow-y: auto;
+  }
+  .logo {
+    padding: 20px 16px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo-mark {
+    font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--g); font-family: var(--mono);
+  }
+  .logo-name { font-size: 18px; font-weight: 800; color: var(--text); line-height: 1.1; margin-top: 4px; }
+  .logo-sub { font-size: 10px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-top: 2px; }
 
-/* ── Layout shell ────────────────────────────────────────────────────── */
-.shell {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  min-height: 100vh;
-}
+  .nav { padding: 12px 8px; flex: 1; }
+  .nav-section { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .1em; padding: 12px 8px 6px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: var(--r); cursor: pointer;
+    color: var(--dim); font-size: 13px; transition: background .15s, color .15s;
+    margin-bottom: 1px;
+  }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--g-dim); color: var(--g); }
+  .nav-icon { width: 16px; text-align: center; font-size: 14px; }
+  .nav-badge {
+    margin-left: auto; font-size: 10px; font-family: var(--mono);
+    background: var(--surface3); color: var(--dim); padding: 1px 6px; border-radius: 20px;
+  }
+  .nav-badge.live { background: var(--g-dim); color: var(--g); }
+  .nav-badge.warn { background: rgba(245,158,11,0.15); color: var(--amber); }
+  .nav-badge.err  { background: rgba(239,68,68,0.15);  color: var(--red); }
 
-/* ── Header ──────────────────────────────────────────────────────────── */
-header {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 0 1.5rem;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.logo {
-  font-family: var(--mono);
-  font-size: 0.95rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--accent);
-}
-.logo span { color: var(--muted); font-weight: 400; }
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-.status-badge {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  padding: 3px 10px;
-  border-radius: 3px;
-  background: var(--accent-dim);
-  color: var(--accent);
-  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
-}
-.status-badge.warn { background: var(--warn-dim); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 30%, transparent); }
-.status-badge.danger { background: var(--danger-dim); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 30%, transparent); }
-.last-updated {
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  color: var(--muted);
-}
+  .sidebar-status {
+    padding: 12px 12px 16px; border-top: 1px solid var(--border);
+    font-size: 11px;
+  }
+  .status-dot {
+    display: inline-flex; align-items: center; gap: 6px;
+    margin-bottom: 6px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .dot.green { background: var(--g); box-shadow: var(--g-glow); animation: pulse-dot 2s ease-in-out infinite; }
+  .dot.amber { background: var(--amber); }
+  .dot.red   { background: var(--red); }
+  @keyframes pulse-dot { 0%,100%{ opacity:1; } 50%{ opacity:.4; } }
+  .status-label { color: var(--dim); }
 
-/* ── Main content ────────────────────────────────────────────────────── */
-main {
-  padding: 1.5rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
-  max-width: 1400px;
-  width: 100%;
-  margin: 0 auto;
-}
+  /* MAIN */
+  main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 
-/* ── Section labels ──────────────────────────────────────────────────── */
-.section-label {
-  font-family: var(--mono);
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.section-label::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
+  /* TOP BAR */
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 24px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; z-index: 10;
+  }
+  .topbar-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .clock { font-family: var(--mono); font-size: 13px; color: var(--dim); }
+  .refresh-btn {
+    background: var(--surface2); border: 1px solid var(--border); color: var(--dim);
+    padding: 5px 12px; border-radius: 6px; cursor: pointer; font-size: 12px;
+    transition: all .15s;
+  }
+  .refresh-btn:hover { border-color: var(--g); color: var(--g); }
+  .spinning { animation: spin .6s linear infinite; display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── KPI strip ───────────────────────────────────────────────────────── */
-.kpi-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--border);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-@media (max-width: 700px) { .kpi-strip { grid-template-columns: 1fr 1fr; } }
-.kpi {
-  background: var(--surface);
-  padding: 1.1rem 1.3rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-}
-.kpi-label {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.kpi-value {
-  font-family: var(--mono);
-  font-size: 1.8rem;
-  font-weight: 700;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-.kpi-value.green { color: var(--accent); }
-.kpi-value.red   { color: var(--danger); }
-.kpi-value.amber { color: var(--warn); }
-.kpi-sub {
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
+  /* CONTENT */
+  .content { padding: 24px; display: flex; flex-direction: column; gap: 24px; flex: 1; }
 
-/* ── Two-column mid section ──────────────────────────────────────────── */
-.mid-grid {
-  display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 1.5rem;
-  align-items: start;
-}
-@media (max-width: 900px) { .mid-grid { grid-template-columns: 1fr; } }
+  /* REVENUE HERO */
+  .section-head { font-size: 11px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .section-head::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
-/* ── Platform health grid ────────────────────────────────────────────── */
-.health-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px;
-}
-@media (max-width: 600px) { .health-grid { grid-template-columns: 1fr 1fr; } }
+  .revenue-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  .rev-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2);
+    padding: 18px; position: relative; overflow: hidden;
+    transition: border-color .2s;
+  }
+  .rev-card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--card-color, var(--muted));
+  }
+  .rev-card:hover { border-color: var(--card-color, var(--border)); }
+  .rev-card-label { font-size: 10px; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); }
+  .rev-card-value { font-size: 28px; font-weight: 800; font-family: var(--mono); color: var(--text); margin: 6px 0 4px; letter-spacing: -.02em; }
+  .rev-card-sub { font-size: 11px; color: var(--dim); display: flex; align-items: center; gap: 4px; }
+  .delta { font-size: 10px; padding: 1px 5px; border-radius: 3px; font-family: var(--mono); }
+  .delta.up { background: var(--g-dim); color: var(--g); }
+  .delta.down { background: rgba(239,68,68,.15); color: var(--red); }
+  .delta.flat { background: var(--surface2); color: var(--muted); }
+  .rev-icon { position: absolute; right: 14px; top: 14px; font-size: 22px; opacity: .25; }
 
-.platform-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.65rem 0.85rem;
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  cursor: default;
-  transition: border-color 0.15s;
-}
-.platform-card:hover { border-color: var(--muted); }
-.dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: var(--muted);
-}
-.dot.ok     { background: var(--accent); box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent); }
-.dot.error  { background: var(--danger); box-shadow: 0 0 6px color-mix(in srgb, var(--danger) 50%, transparent); }
-.dot.warn   { background: var(--warn); }
-.dot.pending { background: var(--muted); animation: pulse 1.4s ease-in-out infinite; }
-@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
-.platform-name {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: var(--text);
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.platform-latency {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-  font-variant-numeric: tabular-nums;
-}
+  /* QUICK ACTIONS */
+  .actions-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 7px;
+    padding: 9px 16px; border-radius: var(--r); font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none; transition: all .15s; white-space: nowrap;
+  }
+  .btn-green  { background: var(--g); color: #000; }
+  .btn-green:hover  { background: #00f59a; box-shadow: var(--g-glow); }
+  .btn-red    { background: rgba(239,68,68,.15); color: var(--red); border: 1px solid rgba(239,68,68,.3); }
+  .btn-red:hover    { background: var(--red); color: #fff; }
+  .btn-blue   { background: rgba(96,165,250,.12); color: var(--blue); border: 1px solid rgba(96,165,250,.3); }
+  .btn-blue:hover   { background: var(--blue); color: #000; }
+  .btn-ghost  { background: var(--surface2); color: var(--dim); border: 1px solid var(--border); }
+  .btn-ghost:hover  { border-color: var(--g); color: var(--g); }
+  .btn-amber  { background: rgba(245,158,11,.12); color: var(--amber); border: 1px solid rgba(245,158,11,.3); }
+  .btn-amber:hover  { background: var(--amber); color: #000; }
+  .btn[disabled] { opacity: .5; cursor: not-allowed; }
 
-/* ── Action panel ────────────────────────────────────────────────────── */
-.action-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1.1rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
+  /* TWO-COL GRID */
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
-.btn {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  padding: 0.6rem 1rem;
-  border-radius: 4px;
-  border: 1px solid transparent;
-  cursor: pointer;
-  transition: opacity 0.15s, transform 0.1s;
-  text-align: left;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100%;
-}
-.btn:active { transform: scale(0.98); }
-.btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.btn-indicator {
-  width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0;
-}
-.btn-primary {
-  background: color-mix(in srgb, var(--accent) 12%, var(--surface2));
-  color: var(--accent);
-  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
-}
-.btn-primary:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 20%, var(--surface2)); }
-.btn-info {
-  background: color-mix(in srgb, var(--info) 10%, var(--surface2));
-  color: var(--info);
-  border-color: color-mix(in srgb, var(--info) 30%, transparent);
-}
-.btn-info:hover:not(:disabled) { background: color-mix(in srgb, var(--info) 18%, var(--surface2)); }
-.btn-warn {
-  background: color-mix(in srgb, var(--warn) 10%, var(--surface2));
-  color: var(--warn);
-  border-color: color-mix(in srgb, var(--warn) 30%, transparent);
-}
-.btn-warn:hover:not(:disabled) { background: color-mix(in srgb, var(--warn) 18%, var(--surface2)); }
-.btn-danger {
-  background: color-mix(in srgb, var(--danger) 10%, var(--surface2));
-  color: var(--danger);
-  border-color: color-mix(in srgb, var(--danger) 30%, transparent);
-}
-.btn-danger:hover:not(:disabled) { background: color-mix(in srgb, var(--danger) 18%, var(--surface2)); }
-.btn-muted {
-  background: var(--surface2);
-  color: var(--muted);
-  border-color: var(--border);
-}
-.btn-muted:hover:not(:disabled) { color: var(--text); border-color: var(--muted); }
+  /* CARD */
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .card-title { font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .card-action { font-size: 11px; color: var(--g); cursor: pointer; }
+  .card-body { padding: 14px 18px; }
 
-/* ── Revenue row ─────────────────────────────────────────────────────── */
-.revenue-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-@media (max-width: 700px) { .revenue-grid { grid-template-columns: 1fr 1fr; } }
-.rev-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  padding: 0.85rem 1rem;
-}
-.rev-source {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 0.4rem;
-}
-.rev-amount {
-  font-family: var(--mono);
-  font-size: 1.35rem;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-.rev-amount.positive { color: var(--accent); }
-.rev-detail {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  color: var(--muted);
-  margin-top: 0.25rem;
-}
+  /* TASK TABLE */
+  .task-list { display: flex; flex-direction: column; gap: 0; }
+  .task-row {
+    display: grid; grid-template-columns: 1fr 60px 50px 80px;
+    align-items: center; gap: 8px;
+    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12px;
+  }
+  .task-row:last-child { border-bottom: none; }
+  .task-name { font-family: var(--mono); color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .task-runs { font-family: var(--mono); color: var(--dim); text-align: right; }
+  .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 10px; padding: 2px 7px; border-radius: 4px; font-weight: 600; white-space: nowrap;
+  }
+  .badge-ok  { background: var(--g-dim); color: var(--g); }
+  .badge-err { background: rgba(239,68,68,.15); color: var(--red); }
+  .badge-run { background: rgba(96,165,250,.15); color: var(--blue); }
+  .badge-idle{ background: var(--surface2); color: var(--muted); }
+  .task-last { font-size: 10px; color: var(--muted); font-family: var(--mono); }
 
-/* ── Bottom grid ─────────────────────────────────────────────────────── */
-.bottom-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
-}
-@media (max-width: 900px) { .bottom-grid { grid-template-columns: 1fr; } }
+  /* API HEALTH GRID */
+  .api-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .api-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px; background: var(--surface2); border-radius: var(--r);
+    border: 1px solid var(--border);
+  }
+  .api-icon { font-size: 18px; width: 28px; text-align: center; }
+  .api-name { font-size: 12px; font-weight: 600; flex: 1; }
+  .api-status { font-size: 10px; font-family: var(--mono); display: flex; align-items: center; gap: 4px; }
+  .api-status .dot { width: 6px; height: 6px; flex-shrink: 0; }
 
-/* ── Log / table panels ──────────────────────────────────────────────── */
-.log-panel {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  overflow: hidden;
-}
-.log-header {
-  padding: 0.7rem 1rem;
-  border-bottom: 1px solid var(--border);
-  font-family: var(--mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.log-scroll {
-  max-height: 320px;
-  overflow-y: auto;
-}
-.log-scroll::-webkit-scrollbar { width: 4px; }
-.log-scroll::-webkit-scrollbar-track { background: transparent; }
-.log-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.log-row {
-  display: grid;
-  grid-template-columns: 100px 1fr 80px;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-bottom: 1px solid var(--border);
-  font-family: var(--mono);
-  font-size: 0.68rem;
-  align-items: center;
-}
-.log-row:last-child { border-bottom: none; }
-.log-row:hover { background: var(--surface2); }
-.log-time { color: var(--muted); font-variant-numeric: tabular-nums; }
-.log-name { color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.log-status {
-  text-align: right;
-  font-size: 0.62rem;
-  padding: 2px 6px;
-  border-radius: 3px;
-  justify-self: end;
-}
-.log-status.ok { background: var(--accent-dim); color: var(--accent); }
-.log-status.err { background: var(--danger-dim); color: var(--danger); }
-.log-status.run { background: var(--info-dim); color: var(--info); }
+  /* HEALER LOG */
+  .log-box {
+    background: var(--surface2); border-radius: var(--r); padding: 12px;
+    font-family: var(--mono); font-size: 11px; line-height: 1.7;
+    max-height: 200px; overflow-y: auto;
+    border: 1px solid var(--border);
+  }
+  .log-line { display: flex; gap: 10px; }
+  .log-time { color: var(--muted); flex-shrink: 0; }
+  .log-ok  { color: var(--g); }
+  .log-err { color: var(--red); }
+  .log-info{ color: var(--blue); }
+  .log-warn{ color: var(--amber); }
 
-/* ── Toast ───────────────────────────────────────────────────────────── */
-#toast-container {
-  position: fixed;
-  bottom: 1.5rem;
-  right: 1.5rem;
-  z-index: 999;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  pointer-events: none;
-}
-.toast {
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  padding: 0.6rem 1rem;
-  border-radius: 4px;
-  border-left: 3px solid var(--accent);
-  background: var(--surface);
-  color: var(--text);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
-  animation: slide-in 0.2s ease, fade-out 0.4s ease 3.6s forwards;
-  pointer-events: auto;
-  max-width: 320px;
-}
-.toast.err { border-color: var(--danger); }
-.toast.warn { border-color: var(--warn); }
-@keyframes slide-in { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-@keyframes fade-out { from { opacity: 1; } to { opacity: 0; pointer-events: none; } }
+  /* FULL REVENUE TABLE */
+  .rtable { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .rtable th { text-align: left; padding: 8px 12px; color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; border-bottom: 1px solid var(--border); font-weight: 500; }
+  .rtable td { padding: 9px 12px; border-bottom: 1px solid var(--border); }
+  .rtable tr:last-child td { border-bottom: none; }
+  .rtable tr:hover td { background: var(--surface2); }
+  .money { font-family: var(--mono); font-weight: 700; }
+  .green-text { color: var(--g); }
+  .red-text   { color: var(--red); }
+  .dim-text   { color: var(--dim); }
 
-/* ── Empty / loading states ──────────────────────────────────────────── */
-.empty {
-  padding: 2rem;
-  text-align: center;
-  font-family: var(--mono);
-  font-size: 0.72rem;
-  color: var(--muted);
-}
-.spinner {
-  display: inline-block;
-  width: 10px; height: 10px;
-  border: 2px solid var(--border);
-  border-top-color: var(--accent);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  vertical-align: middle;
-  margin-right: 0.4rem;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+  /* ALERT BANNER */
+  .alert-bar {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 24px; font-size: 12px; border-bottom: 1px solid var(--border);
+    background: rgba(245,158,11,0.07); color: var(--amber);
+    display: none;
+  }
+  .alert-bar.visible { display: flex; }
 
-/* ── Env health pills ────────────────────────────────────────────────── */
-.env-strip {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  padding: 0.75rem 1rem;
-}
-.env-pill {
-  font-family: var(--mono);
-  font-size: 0.62rem;
-  padding: 2px 8px;
-  border-radius: 3px;
-  border: 1px solid transparent;
-}
-.env-pill.ok { background: var(--accent-dim); color: var(--accent); border-color: color-mix(in srgb, var(--accent) 25%, transparent); }
-.env-pill.missing { background: var(--danger-dim); color: var(--danger); border-color: color-mix(in srgb, var(--danger) 25%, transparent); }
-.env-pill.warn { background: var(--warn-dim); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 25%, transparent); }
+  /* SPARKLINE */
+  .spark { display: inline-block; vertical-align: middle; }
+
+  /* TOAST */
+  .toast-container {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    display: flex; flex-direction: column; gap: 8px; pointer-events: none;
+  }
+  .toast {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 12px 16px; font-size: 13px;
+    box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    pointer-events: auto; animation: toast-in .25s ease;
+    max-width: 320px;
+  }
+  @keyframes toast-in { from { opacity:0; transform: translateY(12px); } }
+  .toast.ok  { border-left: 3px solid var(--g); }
+  .toast.err { border-left: 3px solid var(--red); }
+  .toast.info{ border-left: 3px solid var(--blue); }
+
+  /* MODAL */
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 100;
+    display: none; align-items: center; justify-content: center;
+  }
+  .modal-backdrop.open { display: flex; }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--r2);
+    padding: 28px; max-width: 480px; width: 90%; box-shadow: 0 24px 64px rgba(0,0,0,.5);
+  }
+  .modal-title { font-size: 17px; font-weight: 800; margin-bottom: 12px; }
+  .modal-body { color: var(--dim); font-size: 13px; line-height: 1.6; margin-bottom: 20px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* RESPONSIVE */
+  @media (max-width: 1100px) {
+    .revenue-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 700px) {
+    aside { display: none; }
+    .revenue-grid { grid-template-columns: 1fr 1fr; }
+  }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 </style>
-</head>
-<body>
-<div class="shell">
 
-<!-- ── Header ─────────────────────────────────────────────────────────── -->
-<header>
-  <div class="logo">MEGA<span>/</span>CMD &nbsp;<span>supermegabot</span></div>
-  <div class="header-right">
-    <span id="global-status" class="status-badge"><span class="spinner"></span>Laden…</span>
-    <span id="last-updated" class="last-updated">—</span>
-    <button class="btn btn-muted" style="width:auto;padding:4px 10px;font-size:0.65rem;" onclick="refreshAll()" title="Jetzt aktualisieren">↻ Refresh</button>
+<!-- SIDEBAR -->
+<aside>
+  <div class="logo">
+    <div class="logo-mark">BullPower</div>
+    <div class="logo-name">MEGA<br>Command</div>
+    <div class="logo-sub">Center v3</div>
   </div>
-</header>
+  <nav class="nav">
+    <div class="nav-section">Revenue</div>
+    <div class="nav-item active" onclick="scrollTo('revenue')">
+      <span class="nav-icon">💰</span> Umsatz Live
+      <span class="nav-badge live" id="total-badge">€0</span>
+    </div>
+    <div class="nav-item" onclick="scrollTo('actions')">
+      <span class="nav-icon">⚡</span> Quick Actions
+    </div>
+    <div class="nav-section">System</div>
+    <div class="nav-item" onclick="scrollTo('tasks')">
+      <span class="nav-icon">⚙️</span> Task Monitor
+      <span class="nav-badge live" id="task-count-badge">0</span>
+    </div>
+    <div class="nav-item" onclick="scrollTo('health')">
+      <span class="nav-icon">🔬</span> API Health
+      <span class="nav-badge" id="health-badge">—</span>
+    </div>
+    <div class="nav-item" onclick="scrollTo('healer')">
+      <span class="nav-icon">🔧</span> Self-Healer
+    </div>
+    <div class="nav-section">Channels</div>
+    <div class="nav-item" onclick="window.open('https://ineedit.com.co','_blank')">
+      <span class="nav-icon">🛒</span> Shopify Store ↗
+    </div>
+    <div class="nav-item" onclick="window.open('https://supermegabot-production.up.railway.app/dashboard','_blank')">
+      <span class="nav-icon">📊</span> Live Dashboard ↗
+    </div>
+  </nav>
+  <div class="sidebar-status">
+    <div class="status-dot">
+      <div class="dot green"></div>
+      <span class="status-label" id="sys-status">System Online</span>
+    </div>
+    <div style="color: var(--muted); font-size: 10px;" id="last-refresh">Updating…</div>
+  </div>
+</aside>
 
-<!-- ── Main ────────────────────────────────────────────────────────────── -->
+<!-- MAIN -->
 <main>
+  <!-- ALERT BAR -->
+  <div class="alert-bar" id="alert-bar">
+    <span>⚠️</span>
+    <span id="alert-msg">Checking system…</span>
+    <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;margin-left:auto;" onclick="dismissAlert()">Dismiss</button>
+  </div>
 
-  <!-- KPI strip -->
-  <div>
-    <div class="section-label">System-Übersicht</div>
-    <div class="kpi-strip">
-      <div class="kpi">
-        <div class="kpi-label">APIs gesund</div>
-        <div class="kpi-value green" id="kpi-apis">—</div>
-        <div class="kpi-sub" id="kpi-apis-sub">von 15 Plattformen</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Revenue 24h</div>
-        <div class="kpi-value" id="kpi-revenue">—</div>
-        <div class="kpi-sub" id="kpi-revenue-sub">Stripe + DS24 + Shopify</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Emails heute</div>
-        <div class="kpi-value" id="kpi-emails">—</div>
-        <div class="kpi-sub" id="kpi-emails-sub">SMTP-Pool gesamt</div>
-      </div>
-      <div class="kpi">
-        <div class="kpi-label">Stripe Links</div>
-        <div class="kpi-value" id="kpi-stripe">—</div>
-        <div class="kpi-sub">Payment Links aktiv</div>
-      </div>
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-title">
+      <span>🚀</span> BullPower MEGA Command Center
+      <span class="badge badge-ok">LIVE</span>
+    </div>
+    <div class="topbar-right">
+      <span class="clock" id="clock">--:--:--</span>
+      <button class="refresh-btn" onclick="refreshAll()" id="refresh-btn">↻ Refresh</button>
+      <button class="btn btn-green" onclick="triggerFullStart()" style="font-size:12px;padding:7px 14px;">
+        ⚡ Full Start
+      </button>
+      <button class="btn btn-red" onclick="triggerEmergencyStop()" style="font-size:12px;padding:7px 14px;">
+        🛑 Stop
+      </button>
     </div>
   </div>
 
-  <!-- Mid: Health + Actions -->
-  <div class="mid-grid">
-    <!-- Platform health grid -->
-    <div>
-      <div class="section-label">Plattform-Health</div>
-      <div class="health-grid" id="health-grid">
-        <!-- Placeholder cards -->
-        <script>
-          const PLATFORMS = ['Shopify','Stripe','Anthropic','OpenAI','Klaviyo','Supabase','Telegram','Meta','LinkedIn','Twilio','SendGrid','Printify','YouTube','DS24','Dashboard'];
-          document.write(PLATFORMS.map(p => `
-            <div class="platform-card" id="pc-${p.toLowerCase()}" title="${p}">
-              <div class="dot pending" id="dot-${p.toLowerCase()}"></div>
-              <div class="platform-name">${p}</div>
-              <div class="platform-latency" id="lat-${p.toLowerCase()}">…</div>
-            </div>`).join(''));
-        </script>
-      </div>
-    </div>
+  <div class="content">
 
-    <!-- Action panel -->
-    <div>
-      <div class="section-label">Aktionen</div>
-      <div class="action-panel">
-        <button class="btn btn-primary" onclick="runAction('/api/system/full-start','POST','Full-Start')">
-          <div class="btn-indicator" style="background:var(--accent)"></div> ▶ Vollstart (Stripe+Email+Healer)
-        </button>
-        <button class="btn btn-info" onclick="runAction('/api/healer/run','POST','Healer-Zyklus')">
-          <div class="btn-indicator" style="background:var(--info)"></div> ⚕ Self-Healer ausführen
-        </button>
-        <button class="btn btn-info" onclick="runAction('/api/shopify/optimize-now','POST','Shopify-Optimize')">
-          <div class="btn-indicator" style="background:var(--info)"></div> ⚡ Shopify Conversion optimieren
-        </button>
-        <button class="btn btn-info" onclick="runAction('/api/email/blast-now','POST','Email-Blast')">
-          <div class="btn-indicator" style="background:var(--info)"></div> ✉ Email-Blast starten
-        </button>
-        <button class="btn btn-warn" onclick="runAction('/api/stripe/activate-all','POST','Stripe-Links')">
-          <div class="btn-indicator" style="background:var(--warn)"></div> 💳 Stripe Payment Links erstellen
-        </button>
-        <button class="btn btn-muted" onclick="runAction('/api/system/sync-env','POST','Env-Sync')">
-          <div class="btn-indicator" style="background:var(--muted)"></div> 🔑 ENV validieren + sync
-        </button>
-        <button class="btn btn-muted" onclick="refreshAll()">
-          <div class="btn-indicator" style="background:var(--muted)"></div> ↻ Dashboard aktualisieren
-        </button>
-        <div style="height:1px;background:var(--border);margin:0.25rem 0"></div>
-        <button class="btn btn-danger" onclick="runAction('/api/system/emergency-stop','POST','Emergency-Stop')">
-          <div class="btn-indicator" style="background:var(--danger)"></div> ⛔ Emergency Stop
-        </button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Revenue row -->
-  <div>
-    <div class="section-label">Revenue-Quellen</div>
-    <div class="revenue-grid" id="revenue-grid">
-      <div class="rev-card"><div class="rev-source">Stripe</div><div class="rev-amount" id="rev-stripe">—</div><div class="rev-detail" id="rev-stripe-d">wird geladen…</div></div>
-      <div class="rev-card"><div class="rev-source">Digistore24</div><div class="rev-amount" id="rev-ds24">—</div><div class="rev-detail" id="rev-ds24-d">wird geladen…</div></div>
-      <div class="rev-card"><div class="rev-source">Shopify</div><div class="rev-amount" id="rev-shopify">—</div><div class="rev-detail" id="rev-shopify-d">wird geladen…</div></div>
-      <div class="rev-card"><div class="rev-source">Klaviyo</div><div class="rev-amount" id="rev-klaviyo">—</div><div class="rev-detail" id="rev-klaviyo-d">wird geladen…</div></div>
-    </div>
-  </div>
-
-  <!-- Bottom: Tasks + Healer log -->
-  <div class="bottom-grid">
-
-    <!-- Recent tasks -->
-    <div>
-      <div class="section-label">Letzte Scheduler-Tasks</div>
-      <div class="log-panel">
-        <div class="log-header">
-          Task-Name
-          <span id="task-count" style="color:var(--muted)">lädt…</span>
+    <!-- REVENUE HERO -->
+    <section id="revenue">
+      <div class="section-head">Live Umsatz &amp; Metriken</div>
+      <div class="revenue-grid">
+        <div class="rev-card" style="--card-color: var(--g)">
+          <span class="rev-icon">💳</span>
+          <div class="rev-card-label">Stripe Revenue</div>
+          <div class="rev-card-value" id="stripe-rev">€—</div>
+          <div class="rev-card-sub">
+            <span id="stripe-orders">— orders</span>
+            <span class="delta flat" id="stripe-delta">live</span>
+          </div>
         </div>
-        <div class="log-scroll" id="task-log">
-          <div class="empty"><span class="spinner"></span>Lade Tasks…</div>
+        <div class="rev-card" style="--card-color: var(--blue)">
+          <span class="rev-icon">🛒</span>
+          <div class="rev-card-label">Shopify Orders</div>
+          <div class="rev-card-value" id="shopify-rev">€—</div>
+          <div class="rev-card-sub">
+            <span id="shopify-orders">— orders</span>
+            <span class="delta flat" id="shopify-delta">30 Tage</span>
+          </div>
+        </div>
+        <div class="rev-card" style="--card-color: var(--amber)">
+          <span class="rev-icon">📦</span>
+          <div class="rev-card-label">DS24 Affiliate</div>
+          <div class="rev-card-value" id="ds24-rev">€—</div>
+          <div class="rev-card-sub">
+            <span id="ds24-orders">— sales</span>
+            <span class="delta flat" id="ds24-delta">aiitec</span>
+          </div>
+        </div>
+        <div class="rev-card" style="--card-color: var(--violet)">
+          <span class="rev-icon">📊</span>
+          <div class="rev-card-label">Gesamt Revenue</div>
+          <div class="rev-card-value" id="total-rev">€—</div>
+          <div class="rev-card-sub">
+            <span id="total-sub">alle Kanäle</span>
+            <span class="delta flat" id="total-delta">—</span>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- Healer log -->
-    <div>
-      <div class="section-label">Healer-Protokoll</div>
-      <div class="log-panel">
-        <div class="log-header">
-          Auto-Fix-Aktionen
-          <span id="healer-count" style="color:var(--muted)">lädt…</span>
+      <!-- SHOPIFY STATS ROW -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px;">
+        <div class="card" style="padding:14px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Aktive Produkte</div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);margin-top:4px" id="stat-products">—</div>
         </div>
-        <div class="log-scroll" id="healer-log">
-          <div class="empty"><span class="spinner"></span>Lade Log…</div>
+        <div class="card" style="padding:14px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Kunden</div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);margin-top:4px" id="stat-customers">—</div>
+        </div>
+        <div class="card" style="padding:14px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Tasks Heute</div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);margin-top:4px;color:var(--g)" id="stat-tasks">—</div>
+        </div>
+        <div class="card" style="padding:14px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Abgebr. Carts</div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);margin-top:4px;color:var(--amber)" id="stat-carts">—</div>
+        </div>
+        <div class="card" style="padding:14px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Email Leads</div>
+          <div style="font-size:22px;font-weight:800;font-family:var(--mono);margin-top:4px;color:var(--blue)" id="stat-leads">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- QUICK ACTIONS -->
+    <section id="actions">
+      <div class="section-head">Sofort-Aktionen — Geld generieren</div>
+      <div class="actions-row">
+        <button class="btn btn-green" onclick="runAction('email-blast','📧 Email Blast läuft…')">
+          📧 Email Blast
+        </button>
+        <button class="btn btn-green" onclick="runAction('cart-recovery','🛒 Cart Recovery…')">
+          🛒 Cart Recovery
+        </button>
+        <button class="btn btn-blue" onclick="runAction('shopify-optimize','🔧 Shopify Optimize…')">
+          🔧 Shop Optimieren
+        </button>
+        <button class="btn btn-blue" onclick="runAction('klaviyo-campaign','📨 Klaviyo…')">
+          📨 Klaviyo Kampagne
+        </button>
+        <button class="btn btn-amber" onclick="runAction('ds24-sync','💰 DS24 Sync…')">
+          💰 DS24 Sync
+        </button>
+        <button class="btn btn-amber" onclick="runAction('seo-cycle','🔍 SEO…')">
+          🔍 SEO Zyklus
+        </button>
+        <button class="btn btn-ghost" onclick="runAction('sync-env','🔑 ENV Sync…')">
+          🔑 ENV Sync
+        </button>
+        <button class="btn btn-ghost" onclick="runAction('full-expansion','🚀 Expansion…')">
+          🚀 Full Expansion
+        </button>
+      </div>
+    </section>
+
+    <!-- TASK MONITOR + API HEALTH -->
+    <div class="two-col" id="tasks">
+      <!-- TASK MONITOR -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">⚙️ Task Monitor <span class="badge badge-ok">Live</span></div>
+          <span class="card-action" onclick="loadTasks()">↻ Reload</span>
+        </div>
+        <div class="card-body" style="padding:0;">
+          <div style="padding:10px 18px;display:grid;grid-template-columns:1fr 60px 50px 80px;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border)">
+            <span>Task</span><span style="text-align:right">Runs</span><span>Status</span><span>Zuletzt</span>
+          </div>
+          <div class="task-list" id="task-list" style="max-height:360px;overflow-y:auto;padding:0 0 4px;">
+            <div style="padding:20px;text-align:center;color:var(--muted)">Lade Tasks…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- API HEALTH -->
+      <div class="card" id="health">
+        <div class="card-header">
+          <div class="card-title">🔬 API Health <span class="badge badge-ok" id="health-ok-badge">OK</span></div>
+          <span class="card-action" onclick="loadHealth()">↻ Reload</span>
+        </div>
+        <div class="card-body">
+          <div class="api-grid" id="api-grid">
+            <div style="padding:20px;text-align:center;color:var(--muted);grid-column:span 2">Prüfe APIs…</div>
+          </div>
         </div>
       </div>
     </div>
 
-  </div>
-
-  <!-- ENV health strip -->
-  <div>
-    <div class="section-label">ENV-Keys</div>
-    <div class="log-panel">
-      <div class="log-header">
-        Validierung
-        <span id="env-summary" style="color:var(--muted)">lädt…</span>
+    <!-- SELF-HEALER -->
+    <section id="healer">
+      <div class="section-head">🔧 Self-Healing Engine</div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Healer Log <span class="badge badge-ok">Auto-Repair</span></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-ghost" style="font-size:11px;padding:5px 10px" onclick="runHealer()">▶ Jetzt heilen</button>
+            <span class="card-action" onclick="loadHealerLog()">↻</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="log-box" id="healer-log">
+            <div class="log-line"><span class="log-time">—</span><span class="log-info">Starte Self-Healer…</span></div>
+          </div>
+        </div>
       </div>
-      <div class="env-strip" id="env-strip">
-        <span class="env-pill warn">Lädt…</span>
-      </div>
-    </div>
-  </div>
+    </section>
 
+    <!-- REVENUE DETAILS TABLE -->
+    <section>
+      <div class="section-head">Shopify Letzte Orders</div>
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📋 Order History</div>
+          <span class="card-action" onclick="loadOrders()">↻ Reload</span>
+        </div>
+        <div class="card-body" style="padding:0;overflow-x:auto">
+          <table class="rtable" id="order-table">
+            <thead><tr>
+              <th>Order #</th><th>Datum</th><th>Produkte</th><th>Betrag</th><th>Status</th>
+            </tr></thead>
+            <tbody id="order-body">
+              <tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Lade Orders…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /content -->
 </main>
-</div><!-- .shell -->
 
-<!-- Toast container -->
-<div id="toast-container"></div>
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toasts"></div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-backdrop" id="confirm-modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Bestätigung</div>
+    <div class="modal-body" id="modal-body">Sicher?</div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Abbrechen</button>
+      <button class="btn btn-red" id="modal-confirm-btn">Bestätigen</button>
+    </div>
+  </div>
+</div>
 
 <script>
-/* ── Utilities ──────────────────────────────────────────────────────── */
-function toast(msg, type = 'ok') {
-  const c = document.getElementById('toast-container');
-  const t = document.createElement('div');
-  t.className = 'toast ' + (type === 'error' ? 'err' : type === 'warn' ? 'warn' : '');
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(() => t.remove(), 4500);
+// ==================== CONFIG ====================
+const API_BASE = window.location.origin; // points to same server
+const REFRESH_INTERVAL = 30000; // 30s auto-refresh
+
+// ==================== STATE ====================
+let refreshTimer = null;
+let modalCallback = null;
+
+// ==================== CLOCK ====================
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent = now.toLocaleTimeString('de-DE');
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ==================== TOAST ====================
+function toast(msg, type = 'info', duration = 4000) {
+  const container = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), duration);
 }
 
-function setKpi(id, val, cls = '') {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.textContent = val;
-  if (cls) { el.className = 'kpi-value ' + cls; }
+// ==================== ALERT ====================
+function showAlert(msg) {
+  const bar = document.getElementById('alert-bar');
+  document.getElementById('alert-msg').textContent = msg;
+  bar.classList.add('visible');
+}
+function dismissAlert() {
+  document.getElementById('alert-bar').classList.remove('visible');
 }
 
-function fmt(n, decimals = 2) {
-  if (n === undefined || n === null || n === '') return '—';
-  const num = parseFloat(n);
-  if (isNaN(num)) return '—';
-  return '€' + num.toLocaleString('de-DE', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+// ==================== MODAL ====================
+function confirmAction(title, body, cb) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').textContent = body;
+  document.getElementById('modal-confirm-btn').onclick = () => { closeModal(); cb(); };
+  document.getElementById('confirm-modal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('confirm-modal').classList.remove('open');
 }
 
-/* ── Health check ───────────────────────────────────────────────────── */
-async function loadHealth() {
+// ==================== FETCH HELPER ====================
+async function apiFetch(path, options = {}) {
   try {
-    const r = await fetch('/api/health/all');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const summary = d['_summary'] || {};
-    const ok = summary.platforms_ok ?? 0;
-    const total = summary.platforms_total ?? 15;
-
-    setKpi('kpi-apis', `${ok}/${total}`, ok === total ? 'green' : ok > total * 0.6 ? 'amber' : 'red');
-    document.getElementById('kpi-apis-sub').textContent = ok === total ? 'alle Plattformen gesund' : `${total - ok} Plattform(en) offline`;
-
-    const statusBadge = document.getElementById('global-status');
-    if (ok === total) {
-      statusBadge.textContent = '● ONLINE';
-      statusBadge.className = 'status-badge';
-    } else if (ok > total * 0.5) {
-      statusBadge.textContent = `● TEILWEISE ONLINE (${ok}/${total})`;
-      statusBadge.className = 'status-badge warn';
-    } else {
-      statusBadge.textContent = `● DEGRADIERT (${ok}/${total})`;
-      statusBadge.className = 'status-badge danger';
-    }
-
-    for (const [platform, health] of Object.entries(d)) {
-      if (platform === '_summary') continue;
-      const key = platform.toLowerCase().replace(/[^a-z0-9]/g,'');
-      const dot = document.getElementById('dot-' + key);
-      const lat = document.getElementById('lat-' + key);
-      if (dot) {
-        dot.className = 'dot ' + (health.ok ? 'ok' : health.error === '_creds_missing' ? 'warn' : 'error');
-      }
-      if (lat && health.latency_ms !== undefined) {
-        lat.textContent = health.ok ? Math.round(health.latency_ms) + 'ms' : (health.error === '_creds_missing' ? 'no key' : 'ERR');
-      }
-    }
+    const r = await fetch(API_BASE + path, { ...options, signal: AbortSignal.timeout(12000) });
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return await r.json();
   } catch (e) {
-    document.getElementById('global-status').textContent = '● FEHLER';
-    document.getElementById('global-status').className = 'status-badge danger';
+    console.warn('API error', path, e.message);
+    return null;
   }
 }
 
-/* ── Revenue ─────────────────────────────────────────────────────────── */
+// ==================== REVENUE ====================
 async function loadRevenue() {
-  try {
-    const r = await fetch('/api/revenue/summary');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
+  // Try multiple revenue endpoints
+  let stripe = 0, shopifyRev = 0, shopifyOrders = 0, ds24 = 0;
 
-    // Stripe
-    const stripe = d.stripe || {};
-    const stripeTotal = stripe.total_eur ?? stripe.available_eur ?? 0;
-    document.getElementById('rev-stripe').textContent = fmt(stripeTotal);
-    document.getElementById('rev-stripe').className = 'rev-amount' + (stripeTotal > 0 ? ' positive' : '');
-    document.getElementById('rev-stripe-d').textContent = `${stripe.charges_24h ?? 0} Charges 24h`;
-
-    // DS24
-    const ds24 = d.digistore24 || d.ds24 || {};
-    const ds24Total = ds24.total_eur ?? ds24.revenue_eur ?? 0;
-    document.getElementById('rev-ds24').textContent = fmt(ds24Total);
-    document.getElementById('rev-ds24').className = 'rev-amount' + (ds24Total > 0 ? ' positive' : '');
-    document.getElementById('rev-ds24-d').textContent = `${ds24.order_count ?? 0} Bestellungen`;
-
-    // Shopify
-    const shopify = d.shopify || {};
-    const shopifyTotal = shopify.total_eur ?? shopify.revenue_24h ?? 0;
-    document.getElementById('rev-shopify').textContent = fmt(shopifyTotal);
-    document.getElementById('rev-shopify').className = 'rev-amount' + (shopifyTotal > 0 ? ' positive' : '');
-    document.getElementById('rev-shopify-d').textContent = `${shopify.orders_24h ?? 0} Orders`;
-
-    // Klaviyo
-    const klv = d.klaviyo || {};
-    document.getElementById('rev-klaviyo').textContent = `${klv.campaigns_sent ?? 0}`;
-    document.getElementById('rev-klaviyo-d').textContent = `${klv.campaigns_draft ?? 0} Drafts`;
-
-    // KPI total
-    const total = stripeTotal + ds24Total + shopifyTotal;
-    setKpi('kpi-revenue', fmt(total, 0), total > 0 ? 'green' : '');
-    document.getElementById('kpi-revenue-sub').textContent = 'Stripe + DS24 + Shopify';
-
-  } catch(e) {
-    ['stripe','ds24','shopify','klaviyo'].forEach(k => {
-      const el = document.getElementById('rev-' + k);
-      if (el) el.textContent = 'ERR';
-    });
+  // Stripe balance
+  const stripeData = await apiFetch('/api/revenue/summary');
+  if (stripeData) {
+    stripe = stripeData.stripe?.balance ?? stripeData.stripe?.total ?? 0;
+    shopifyRev = stripeData.shopify?.revenue ?? stripeData.shopify?.total ?? 0;
+    shopifyOrders = stripeData.shopify?.orders ?? 0;
+    ds24 = stripeData.ds24?.total ?? stripeData.digistore?.total ?? 0;
   }
+
+  // Shopify stats
+  const shopData = await apiFetch('/api/shopify/stats');
+  if (shopData) {
+    if (!shopifyOrders) shopifyOrders = shopData.orders_30d ?? shopData.total_orders ?? 0;
+    if (!shopifyRev) shopifyRev = shopData.revenue_30d ?? shopData.total_revenue ?? 0;
+    document.getElementById('stat-products').textContent = (shopData.active_products ?? shopData.products ?? '—').toLocaleString('de-DE');
+    document.getElementById('stat-customers').textContent = (shopData.customers ?? '—').toLocaleString('de-DE');
+    document.getElementById('stat-carts').textContent = shopData.abandoned_carts ?? '—';
+  }
+
+  // Scheduler stats
+  const schedData = await apiFetch('/api/scheduler/stats');
+  if (schedData) {
+    document.getElementById('stat-tasks').textContent = (schedData.runs_today ?? schedData.total_runs ?? '—').toLocaleString('de-DE');
+  }
+
+  // Email stats
+  const emailData = await apiFetch('/api/email/stats');
+  if (emailData) {
+    document.getElementById('stat-leads').textContent = (emailData.total_leads ?? emailData.subscribers ?? '—').toLocaleString('de-DE');
+  }
+
+  const total = stripe + shopifyRev + ds24;
+
+  // Update UI
+  document.getElementById('stripe-rev').textContent = `€${stripe.toFixed(2)}`;
+  document.getElementById('stripe-orders').textContent = stripeData?.stripe?.count ? `${stripeData.stripe.count} charges` : 'live';
+  document.getElementById('stripe-delta').className = `delta ${stripe > 0 ? 'up' : 'flat'}`;
+  document.getElementById('stripe-delta').textContent = stripe > 0 ? `+€${stripe.toFixed(2)}` : 'live';
+
+  document.getElementById('shopify-rev').textContent = `€${shopifyRev.toFixed(2)}`;
+  document.getElementById('shopify-orders').textContent = `${shopifyOrders} orders`;
+  document.getElementById('shopify-delta').textContent = '30 Tage';
+
+  document.getElementById('ds24-rev').textContent = `€${ds24.toFixed(2)}`;
+  document.getElementById('ds24-orders').textContent = stripeData?.ds24?.count ? `${stripeData.ds24.count} sales` : 'aiitec';
+
+  document.getElementById('total-rev').textContent = `€${total.toFixed(2)}`;
+  document.getElementById('total-sub').textContent = 'alle Kanäle';
+  document.getElementById('total-delta').className = `delta ${total > 0 ? 'up' : 'flat'}`;
+  document.getElementById('total-delta').textContent = total > 0 ? `+€${total.toFixed(2)}` : '€0';
+  document.getElementById('total-badge').textContent = `€${total.toFixed(0)}`;
+  document.getElementById('total-badge').className = `nav-badge ${total > 0 ? 'live' : ''}`;
 }
 
-/* ── Email stats ─────────────────────────────────────────────────────── */
-async function loadEmailStats() {
-  try {
-    const r = await fetch('/api/email/stats');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const sent = d.emails_sent_today ?? d.sent_today ?? 0;
-    setKpi('kpi-emails', sent.toString(), sent > 100 ? 'green' : '');
-    document.getElementById('kpi-emails-sub').textContent = `SMTP-Pool: ${d.smtp_pool_size ?? '?'} Konten`;
-  } catch(e) {
-    setKpi('kpi-emails', 'ERR', 'red');
-  }
-}
-
-/* ── Stripe KPI ──────────────────────────────────────────────────────── */
-async function loadStripeLinks() {
-  try {
-    const r = await fetch('/api/stripe/links');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const count = Array.isArray(d) ? d.length : (d.count ?? d.total ?? 0);
-    setKpi('kpi-stripe', count.toString(), count > 100 ? 'green' : count > 0 ? 'amber' : '');
-  } catch(e) {
-    setKpi('kpi-stripe', '—');
-  }
-}
-
-/* ── Recent tasks ────────────────────────────────────────────────────── */
+// ==================== TASKS ====================
 async function loadTasks() {
-  const container = document.getElementById('task-log');
-  try {
-    const r = await fetch('/api/tasks/recent');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const tasks = d.tasks || [];
-    document.getElementById('task-count').textContent = tasks.length + ' Tasks';
-    if (!tasks.length) {
-      container.innerHTML = '<div class="empty">Keine Tasks gefunden</div>';
-      return;
-    }
-    container.innerHTML = tasks.map(t => {
-      const ts = t.last_run ? new Date(t.last_run * 1000).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'}) : '—';
-      const ok = t.result && !t.result.toLowerCase().includes('error') && !t.result.toLowerCase().includes('err');
-      return `<div class="log-row">
-        <div class="log-time">${ts}</div>
-        <div class="log-name" title="${escHtml(t.result || '')}">${escHtml(t.name)}</div>
-        <span class="log-status ${ok ? 'ok' : 'err'}">${ok ? 'OK' : 'ERR'}</span>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    container.innerHTML = '<div class="empty">Fehler beim Laden</div>';
+  const data = await apiFetch('/api/tasks/recent');
+  const list = document.getElementById('task-list');
+  if (!data || !Array.isArray(data.tasks ?? data)) {
+    list.innerHTML = '<div style="padding:16px;text-align:center;color:var(--muted)">Keine Task-Daten</div>';
+    return;
+  }
+  const tasks = (data.tasks ?? data).slice(0, 18);
+  document.getElementById('task-count-badge').textContent = tasks.length;
+  list.innerHTML = tasks.map(t => {
+    const ok = t.success !== false && t.status !== 'error';
+    const last = (t.last_run ?? t.ran_at ?? '').substring(11, 16) || '—';
+    const runs = t.runs ?? t.total_runs ?? '—';
+    return `<div class="task-row">
+      <div class="task-name" title="${t.task_name ?? t.name ?? ''}">${t.task_name ?? t.name ?? '—'}</div>
+      <div class="task-runs">${runs}</div>
+      <div><span class="badge ${ok ? 'badge-ok' : 'badge-err'}">${ok ? 'OK' : 'ERR'}</span></div>
+      <div class="task-last">${last}</div>
+    </div>`;
+  }).join('');
+}
+
+// ==================== API HEALTH ====================
+async function loadHealth() {
+  const data = await apiFetch('/api/health/all');
+  const grid = document.getElementById('api-grid');
+  if (!data) {
+    grid.innerHTML = '<div style="padding:16px;color:var(--muted);grid-column:span 2">Health check fehlgeschlagen</div>';
+    return;
+  }
+  const platforms = {
+    Shopify: { icon: '🛒', key: 'shopify' },
+    Stripe:  { icon: '💳', key: 'stripe' },
+    Klaviyo: { icon: '📧', key: 'klaviyo' },
+    DS24:    { icon: '📦', key: 'digistore24' },
+    Telegram:{ icon: '✈️', key: 'telegram' },
+    Supabase:{ icon: '🗄️', key: 'supabase' },
+    Groq:    { icon: '🤖', key: 'groq' },
+    OpenRouter:{ icon: '🧠', key: 'openrouter' },
+    Gemini:  { icon: '♊', key: 'gemini' },
+    Printify:{ icon: '👕', key: 'printify' },
+    Railway: { icon: '🚂', key: 'railway' },
+    GitHub:  { icon: '🐱', key: 'github' },
+  };
+  let okCount = 0, total = 0;
+  grid.innerHTML = Object.entries(platforms).map(([name, {icon, key}]) => {
+    const entry = data[key] ?? data[name.toLowerCase()];
+    const ok = entry?.ok ?? entry?.status === 'ok' ?? entry?.healthy ?? false;
+    const lat = entry?.latency_ms ? `${entry.latency_ms}ms` : '';
+    if (ok) okCount++;
+    total++;
+    return `<div class="api-item">
+      <div class="api-icon">${icon}</div>
+      <div>
+        <div class="api-name">${name}</div>
+        <div class="api-status">
+          <div class="dot ${ok ? 'green' : 'red'}"></div>
+          <span style="color:var(${ok ? '--g' : '--red'})">${ok ? 'Online' : 'Offline'}</span>
+          ${lat ? `<span style="color:var(--muted)">${lat}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  document.getElementById('health-badge').textContent = `${okCount}/${total}`;
+  document.getElementById('health-badge').className = `nav-badge ${okCount === total ? 'live' : okCount > total/2 ? 'warn' : 'err'}`;
+  document.getElementById('health-ok-badge').textContent = okCount === total ? 'Alle OK' : `${okCount}/${total} OK`;
+  document.getElementById('health-ok-badge').className = `badge ${okCount === total ? 'badge-ok' : 'badge-err'}`;
+
+  if (okCount < total) {
+    showAlert(`⚠️ ${total - okCount} APIs offline — Self-Healer aktiv`);
   }
 }
 
-/* ── Healer log ──────────────────────────────────────────────────────── */
+// ==================== HEALER LOG ====================
 async function loadHealerLog() {
-  const container = document.getElementById('healer-log');
-  try {
-    const r = await fetch('/api/healer/log');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const entries = d.entries || [];
-    document.getElementById('healer-count').textContent = entries.length + ' Einträge';
-    if (!entries.length) {
-      container.innerHTML = '<div class="empty">Keine Auto-Fix-Aktionen</div>';
-      return;
-    }
-    container.innerHTML = entries.slice(0, 20).map(e => {
-      const ts = e.timestamp ? new Date(e.timestamp).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'}) : '—';
-      const ok = e.success ?? true;
-      return `<div class="log-row">
-        <div class="log-time">${ts}</div>
-        <div class="log-name" title="${escHtml(e.detail || '')}">${escHtml(e.action || e.type || '—')}</div>
-        <span class="log-status ${ok ? 'ok' : 'err'}">${ok ? 'FIXED' : 'FAIL'}</span>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    container.innerHTML = '<div class="empty">Fehler beim Laden</div>';
+  const data = await apiFetch('/api/healer/log');
+  const box = document.getElementById('healer-log');
+  if (!data || !data.log) {
+    box.innerHTML = '<div class="log-line"><span class="log-time">' + new Date().toLocaleTimeString('de-DE') + '</span><span class="log-info">Kein Log verfügbar</span></div>';
+    return;
+  }
+  const lines = Array.isArray(data.log) ? data.log : data.log.split('\n').filter(Boolean);
+  box.innerHTML = lines.slice(-30).map(line => {
+    const isErr = /error|fail|FAIL|ERR/.test(line);
+    const isOk = /ok|success|✓|OK|SUCCESS/.test(line);
+    const isWarn = /warn|WARN|slow/.test(line);
+    const cls = isErr ? 'log-err' : isOk ? 'log-ok' : isWarn ? 'log-warn' : 'log-info';
+    const time = new Date().toLocaleTimeString('de-DE');
+    return `<div class="log-line"><span class="log-time">${time}</span><span class="${cls}">${line.trim()}</span></div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+async function runHealer() {
+  toast('🔧 Self-Healer wird gestartet…', 'info');
+  const r = await apiFetch('/api/healer/run', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+  if (r) {
+    toast('✅ Healer-Zyklus abgeschlossen', 'ok');
+    loadHealerLog();
+  } else {
+    toast('❌ Healer-Fehler', 'err');
   }
 }
 
-/* ── ENV health ──────────────────────────────────────────────────────── */
-async function loadEnvHealth() {
-  try {
-    const r = await fetch('/api/system/sync-env');
-    if (!r.ok) throw new Error(r.status);
-    const d = await r.json();
-    const strip = document.getElementById('env-strip');
-    const summary = document.getElementById('env-summary');
-    const validation = d.validation || d;
+// ==================== ORDERS ====================
+async function loadOrders() {
+  const data = await apiFetch('/api/shopify/orders-recent');
+  const tbody = document.getElementById('order-body');
+  if (!data || !data.orders) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Keine Order-Daten</td></tr>';
+    return;
+  }
+  if (!data.orders.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;color:var(--muted)">Noch keine Bestellungen</td></tr>';
+    return;
+  }
+  tbody.innerHTML = data.orders.slice(0, 15).map(o => {
+    const paid = o.financial_status === 'paid';
+    const date = (o.created_at ?? '').substring(0, 10);
+    const items = o.line_items?.length ?? o.items ?? '—';
+    const total = parseFloat(o.total_price ?? 0).toFixed(2);
+    return `<tr>
+      <td class="dim-text" style="font-family:var(--mono)">${o.name ?? o.order_number ?? '—'}</td>
+      <td class="dim-text">${date}</td>
+      <td class="dim-text">${items} Artikel</td>
+      <td class="money ${paid ? 'green-text' : ''}">${total} ${o.currency ?? 'EUR'}</td>
+      <td><span class="badge ${paid ? 'badge-ok' : 'badge-idle'}">${o.financial_status ?? '—'}</span></td>
+    </tr>`;
+  }).join('');
+}
 
-    const missing = validation.missing || [];
-    const invalid = validation.invalid || [];
-    const ok_count = (validation.ok_count ?? (19 - missing.length - invalid.length));
+// ==================== QUICK ACTIONS ====================
+const ACTION_MAP = {
+  'email-blast':      '/api/email/blast-now',
+  'cart-recovery':    '/api/shopify/cart-recovery',
+  'shopify-optimize': '/api/shopify/optimize-now',
+  'klaviyo-campaign': '/api/klaviyo/mass-campaign',
+  'ds24-sync':        '/api/digistore24/sync',
+  'seo-cycle':        '/api/seo/mega-cycle',
+  'sync-env':         '/api/system/sync-env',
+  'full-expansion':   '/api/revenue/full-expansion',
+};
 
-    summary.textContent = `${ok_count}/19 OK`;
-    summary.style.color = missing.length > 0 ? 'var(--danger)' : invalid.length > 0 ? 'var(--warn)' : 'var(--accent)';
-
-    const pills = [];
-    const allKeys = validation.all_keys || [];
-    if (allKeys.length) {
-      allKeys.forEach(k => {
-        const cls = missing.includes(k) ? 'missing' : invalid.includes(k) ? 'warn' : 'ok';
-        pills.push(`<span class="env-pill ${cls}" title="${k}">${k.replace(/_/g,'_​')}</span>`);
-      });
-    } else if (missing.length) {
-      missing.forEach(k => pills.push(`<span class="env-pill missing">${k}</span>`));
-      pills.unshift(`<span class="env-pill ok">${ok_count} OK</span>`);
-    } else {
-      pills.push(`<span class="env-pill ok">Alle ${ok_count} Keys gesetzt</span>`);
-    }
-    strip.innerHTML = pills.join('');
-  } catch(e) {
-    document.getElementById('env-strip').innerHTML = '<span class="env-pill warn">ENV-Check fehlgeschlagen</span>';
+async function runAction(id, label) {
+  const path = ACTION_MAP[id];
+  if (!path) return;
+  toast(`⏳ ${label}`, 'info', 2000);
+  // Disable the button briefly
+  const btn = document.querySelector(`[onclick="runAction('${id}','${label}')"]`);
+  if (btn) btn.disabled = true;
+  const r = await apiFetch(path, { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+  if (btn) btn.disabled = false;
+  if (r && (r.ok || r.success || r.sent || r.status === 'ok')) {
+    toast(`✅ ${label.replace('…','')} — Erfolg!`, 'ok');
+    setTimeout(loadRevenue, 3000);
+  } else {
+    toast(`⚠️ ${label.replace('…','')} — ${r?.error ?? 'kein Ergebnis'}`, 'err');
   }
 }
 
-/* ── Action runner ────────────────────────────────────────────────────── */
-async function runAction(endpoint, method = 'POST', label = 'Aktion') {
-  toast(`${label} gestartet…`, 'ok');
-  try {
-    const r = await fetch(endpoint, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: method === 'POST' ? '{}' : undefined,
-    });
-    const d = await r.json().catch(() => ({}));
-    if (r.ok) {
-      toast(`✓ ${label} abgeschlossen`, 'ok');
-      // Reload relevant data
-      setTimeout(refreshAll, 1000);
-    } else {
-      toast(`✗ ${label}: ${d.error || r.status}`, 'error');
-    }
-  } catch (e) {
-    toast(`✗ ${label}: Netzwerkfehler`, 'error');
-  }
+// ==================== FULL START ====================
+async function triggerFullStart() {
+  confirmAction('⚡ Full Start', 'Alle Revenue-Engines starten: Email Blast, Cart Recovery, Shopify Optimize, Klaviyo, DS24 Sync, SEO-Zyklus — alle parallel?', async () => {
+    toast('🚀 Full Start gestartet…', 'info', 2000);
+    const actions = ['email-blast', 'cart-recovery', 'shopify-optimize', 'klaviyo-campaign', 'ds24-sync', 'seo-cycle'];
+    await Promise.allSettled(actions.map(id => apiFetch(ACTION_MAP[id], { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' })));
+    toast('✅ Alle Engines gestartet!', 'ok');
+    setTimeout(refreshAll, 5000);
+  });
 }
 
-/* ── Helpers ─────────────────────────────────────────────────────────── */
-function escHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+// ==================== EMERGENCY STOP ====================
+async function triggerEmergencyStop() {
+  confirmAction('🛑 Emergency Stop', 'Alle laufenden Tasks stoppen und Scheduler pausieren?', async () => {
+    const r = await apiFetch('/api/system/emergency-stop', { method:'POST', headers:{'Content-Type':'application/json'}, body:'{}' });
+    toast(r?.ok ? '🛑 System gestoppt' : '❌ Stop fehlgeschlagen', r?.ok ? 'err' : 'err');
+  });
 }
 
-/* ── Main refresh ────────────────────────────────────────────────────── */
+// ==================== SCROLL NAV ====================
+function scrollTo(id) {
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ==================== REFRESH ALL ====================
 async function refreshAll() {
-  document.getElementById('last-updated').textContent = 'aktualisiert ' + new Date().toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const btn = document.getElementById('refresh-btn');
+  btn.innerHTML = '<span class="spinning">↻</span> Laden…';
+  document.getElementById('last-refresh').textContent = `Update: ${new Date().toLocaleTimeString('de-DE')}`;
   await Promise.allSettled([
-    loadHealth(),
     loadRevenue(),
-    loadEmailStats(),
-    loadStripeLinks(),
     loadTasks(),
+    loadHealth(),
     loadHealerLog(),
-    loadEnvHealth(),
+    loadOrders(),
   ]);
+  btn.textContent = '↻ Refresh';
 }
 
-/* ── Boot ────────────────────────────────────────────────────────────── */
-refreshAll();
-setInterval(refreshAll, 60_000);
+// ==================== AUTO REFRESH ====================
+function startAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+  refreshTimer = setInterval(refreshAll, REFRESH_INTERVAL);
+}
+
+// ==================== INIT ====================
+(async function init() {
+  await refreshAll();
+  startAutoRefresh();
+  toast('🚀 MEGA Command Center bereit', 'ok', 3000);
+})();
 </script>
-</body>
-</html>

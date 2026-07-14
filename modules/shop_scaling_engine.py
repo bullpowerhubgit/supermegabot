@@ -642,8 +642,8 @@ async def run_abandoned_cart_recovery() -> Dict:
                     age_hours = (datetime.now(timezone.utc) - updated_dt).total_seconds() / 3600
                     if age_hours < 2:
                         continue
-                except Exception:
-                    pass
+                except Exception as e:
+                    log.debug("age parse skip: %s", e)
 
                 # DB-Check: bereits Email gesendet?
                 conn = _db()

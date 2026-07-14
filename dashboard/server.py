@@ -10211,7 +10211,7 @@ async def create_app():
     # ── YouTube OAuth ─────────────────────────────────────────────────────────
     app.router.add_get("/api/youtube/auth",           handle_youtube_auth)
     app.router.add_get("/api/youtube/callback",       handle_google_callback)
-    app.router.add_get("/api/youtube/status",         handle_youtube_status)
+    app.router.add_get("/api/youtube/status",         handle_youtube_status_new)
     app.router.add_post("/api/youtube/refresh",       handle_google_refresh)
 
     # ── Google Drive ──────────────────────────────────────────────────────────
@@ -10247,7 +10247,6 @@ async def create_app():
     app.router.add_get("/api/revenue/summary",        handle_revenue_summary)
     app.router.add_get("/api/scaling/status",         handle_scaling_status)
     app.router.add_post("/api/scaling/run",           handle_scaling_run)
-    app.router.add_get("/api/revenue/status",         handle_revenue_status)
     app.router.add_post("/api/revenue/run",           handle_revenue_run)
     app.router.add_get("/api/umsatzmaschine/status",  handle_umsatzmaschine_status)
     app.router.add_post("/api/umsatzmaschine/run",    handle_umsatzmaschine_run)
@@ -10598,11 +10597,9 @@ async def create_app():
     # ── Fiverr ────────────────────────────────────────────────────────────────
     app.router.add_post("/api/fiverr/promote",           handle_fiverr_promote)
     app.router.add_post("/api/fiverr/cycle",             handle_fiverr_cycle)
-    app.router.add_get( "/api/fiverr/status",            handle_fiverr_status)
     # ── Upwork ────────────────────────────────────────────────────────────────
     app.router.add_post("/api/upwork/search",            handle_upwork_search)
     app.router.add_post("/api/upwork/promote",           handle_upwork_promote)
-    app.router.add_get( "/api/upwork/status",            handle_upwork_status)
     # ── TikTok Autonomy (sync-products registered above at line 7633) ────────
     app.router.add_post("/api/tiktok/scripts",           handle_tiktok_scripts)
     app.router.add_get( "/api/tiktok/trends",            handle_tiktok_trends_hashtags)
@@ -10617,7 +10614,6 @@ async def create_app():
     # ── YouTube ───────────────────────────────────────────────────────────────
     app.router.add_post("/api/youtube/trends",           handle_youtube_trends)
     app.router.add_post("/api/youtube/scripts",          handle_youtube_scripts)
-    app.router.add_get( "/api/youtube/status",           handle_youtube_status_new)
     # ── Email Blast Engine ────────────────────────────────────────────────────
     app.router.add_post("/api/email/blast",              handle_email_blast)
     app.router.add_post("/api/email/daily-blast",        handle_email_daily_blast)
@@ -10630,7 +10626,6 @@ async def create_app():
     app.router.add_get( "/api/affiliate/stats",          handle_affiliate_stats_new)
     # ── MEGA START — alles auf einmal ─────────────────────────────────────────
     app.router.add_post("/api/mega/start",               handle_mega_autonomy_start)
-    app.router.add_get( "/api/mega/status",              handle_mega_status)
     # ── Mega SEO Engine ────────────────────────────────────────────────────────
     app.router.add_post("/api/seo/mega-cycle",           handle_mega_seo_cycle)
     app.router.add_get( "/api/seo/mega-status",          handle_mega_seo_status)
