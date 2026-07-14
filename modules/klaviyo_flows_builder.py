@@ -12,7 +12,8 @@ log = logging.getLogger(__name__)
 KLAVIYO_API_KEY  = os.getenv("KLAVIYO_API_KEY", "")
 KLAVIYO_BASE     = "https://a.klaviyo.com/api"
 KLAVIYO_REVISION = "2024-10-15"
-SHOP_URL         = "https://ineedit.com.co"
+_raw_domain = os.getenv("SHOPIFY_CUSTOM_DOMAIN", os.getenv("SHOP_CUSTOM_DOMAIN", "ineedit.com.co"))
+SHOP_URL     = _raw_domain if _raw_domain.startswith("http") else f"https://{_raw_domain}"
 
 
 def _headers() -> dict:

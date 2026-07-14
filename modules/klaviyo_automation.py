@@ -217,7 +217,7 @@ async def create_and_send_campaign(
             "attributes": {
                 "name": name,
                 "audiences": {
-                    "included": [list_id],
+                    "included": [{"type": "list", "id": list_id}],
                     "excluded": [],
                 },
                 "send_strategy": {"method": "immediate"},
@@ -367,7 +367,7 @@ async def sync_from_digistore(list_id: str) -> int:
 async def sync_from_shopify(list_id: str, limit: int = 50) -> int:
     """Sync Shopify customer emails into a Klaviyo list."""
     import os as _os
-    token  = _os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    token  = _os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
     domain = _os.getenv("SHOPIFY_SHOP_DOMAIN", "")
     if not token or not domain:
         return 0

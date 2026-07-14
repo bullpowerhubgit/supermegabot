@@ -6946,6 +6946,18 @@ async def task_env_validator() -> str:
         return f"EnvValidator Fehler: {e}"
 
 
+async def task_free_api_hunter() -> str:
+    """Scannt und cached alle kostenlosen API-Alternativen (alle 12h)."""
+    try:
+        from modules.free_api_hunter import hunt_all_free_apis
+        results = await hunt_all_free_apis()
+        total = sum(len(v) for v in results.values())
+        cats  = sum(1 for v in results.values() if v)
+        return f"FreeAPIHunter: {total} kostenlose APIs in {cats} Kategorien gecacht"
+    except Exception as e:
+        return f"FreeAPIHunter Fehler: {e}"
+
+
 async def task_full_revenue_expansion() -> str:
     """Full Revenue Expansion Cycle: alle Kanäle autonom skalieren (alle 8h)."""
     try:
@@ -7403,6 +7415,7 @@ TASKS = [
     ("zvg_hourly",                task_zvg_hourly,                     3600, 9003),  # stündl. — ZVG Radar: neue Leads (hourly scan)
     ("roas_optimizer",            task_roas_optimizer,                14400, 9100),  # alle 4h — Meta/Google ROAS Auto-Pause/Scale
     ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
+    ("free_api_hunter",           task_free_api_hunter,              43200, 9200),  # 12h — Suche + Cache kostenlose APIs
     ("full_expansion",            task_full_revenue_expansion,        28800,  150),  # 8h — Alle Revenue-Kanäle autonom
     # ── MEGA Command Center Scheduler-Tasks ────────────────────────────────────
     ("mega_self_healing",         task_mega_self_healing,              3600,   10),  # 1h — API Health + Revenue Alert

@@ -23,7 +23,7 @@ import aiohttp
 
 log = logging.getLogger("KlaviyoMassCampaigns")
 
-API_KEY  = os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_242945f7521ac82039ed5dbf7ff8e6cf1c")
+API_KEY  = os.getenv("KLAVIYO_API_KEY", "")
 LIST_ID  = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 BASE     = "https://a.klaviyo.com/api"
 REVISION = "2024-02-15"
