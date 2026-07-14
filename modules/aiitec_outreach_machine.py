@@ -87,7 +87,7 @@ def _get_smtp_pool() -> List[tuple]:
     global _smtp_pool_cache
     if _smtp_pool_cache:
         return _smtp_pool_cache
-    for suffix in ["_1", "_3", "_4", "_5", "_7", "_8"]:
+    for suffix in ["_1", "_3", "_5", "_7", "_8"]:
         u = os.getenv(f"GMAIL_USER{suffix}", "")
         p = os.getenv(f"GMAIL_APP_PASSWORD{suffix}", "")
         if u and p:

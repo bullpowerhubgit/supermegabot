@@ -1,11 +1,15 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 21:00 CEST**
+**Stand: 2026-07-14 22:00 CEST**
 
-## ✅ v38 — VOLLAUTONOMES INCOME-SYSTEM LIVE (5 Fixes)
+## ✅ v39 — EMAIL-FILTER + ACCOUNT-CLEANUP
 
-### Deployed: 4a603d09 (21:00 CEST)
+### Deployed: 6648e5cd (22:00 CEST)
 
 **Fixes diese Session:**
+1. ✅ email_ai_conversations.py: System/Notification-Domains + noreply-Prefixes blockiert (github, stripe, shopify, sendgrid etc.)
+2. ✅ gmail_accounts.py: nikolestimi@gmail.com (#2) + rudolf.sarkany@aitec.de (#6) entfernt (inaktiv)
+
+**v38 Fixes (21:00 CEST):**
 1. ✅ Gmail SMTP → SendGrid: `full_revenue_expansion.py` alle async callers auf `await _send_sendgrid()`
 2. ✅ Demo-Emails gefiltert: @klaviyo-demo.com, @example.com, @test-ds24.com werden überall blockiert
 3. ✅ SEO ContentFactory timeout: batch_size 5→2 (verhindert Railway 300s-Timeout)
