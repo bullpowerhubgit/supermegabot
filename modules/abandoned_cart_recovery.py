@@ -534,6 +534,7 @@ async def _fetch_shopify_checkouts(session: aiohttp.ClientSession) -> List[Dict]
     since    = (datetime.now(timezone.utc) - timedelta(hours=_MAX_AGE_HOURS)).strftime(
                 "%Y-%m-%dT%H:%M:%SZ")
 
+    # Try REST checkouts.json first (works on older plans), fall back to GraphQL
     url = (f"{base}/admin/api/{ver}/checkouts.json"
            f"?updated_at_min={since}&status=open&limit=250")
 
@@ -543,10 +544,57 @@ async def _fetch_shopify_checkouts(session: aiohttp.ClientSession) -> List[Dict]
                 data = await r.json(content_type=None)
                 carts = data.get("checkouts", [])
                 log.info("Shopify: %d offene Warenkörbe gefunden", len(carts))
+                if carts:
+                    return carts
+            elif r.status == 403:
+                log.info("checkouts.json nicht verfügbar (403) — versuche GraphQL")
+            else:
+                body = await r.text()
+                log.warning("Shopify checkouts HTTP %s: %s", r.status, body[:100])
+    except Exception as exc:
+        log.warning("checkouts.json fetch: %s", exc)
+
+    # GraphQL fallback: abandonedCheckouts query
+    gql_url = f"{base}/admin/api/{ver}/graphql.json"
+    gql_query = """
+    {
+      abandonedCheckouts(first: 50, query: "updated_at:>""" + since[:10] + """") {
+        edges { node {
+          id token email updatedAt totalPrice { amount currencyCode }
+          lineItems(first: 5) { edges { node { title quantity variant { price { amount } } } } }
+          webUrl
+        } }
+      }
+    }"""
+    try:
+        async with session.post(gql_url, headers=headers, json={"query": gql_query}) as r2:
+            if r2.status == 200:
+                gql_data = await r2.json(content_type=None)
+                edges = gql_data.get("data", {}).get("abandonedCheckouts", {}).get("edges", [])
+                carts = []
+                for edge in edges:
+                    node = edge.get("node", {})
+                    if not node.get("email"):
+                        continue
+                    # Normalise to REST shape
+                    carts.append({
+                        "token": node.get("token", node.get("id", "")),
+                        "email": node.get("email", ""),
+                        "created_at": node.get("updatedAt", ""),
+                        "total_price": node.get("totalPrice", {}).get("amount", "0"),
+                        "currency": node.get("totalPrice", {}).get("currencyCode", "EUR"),
+                        "abandoned_checkout_url": node.get("webUrl", ""),
+                        "line_items": [
+                            {
+                                "title": li["node"]["title"],
+                                "quantity": li["node"]["quantity"],
+                                "price": li["node"].get("variant", {}).get("price", {}).get("amount", "0"),
+                            }
+                            for li in node.get("lineItems", {}).get("edges", [])
+                        ],
+                    })
+                log.info("GraphQL: %d abandoned checkouts", len(carts))
                 return carts
-            body = await r.text()
-            log.error("Shopify checkouts HTTP %s: %s", r.status, body[:200])
-            return []
     except Exception as exc:
         log.error("Shopify fetch Fehler: %s", exc)
         return []
