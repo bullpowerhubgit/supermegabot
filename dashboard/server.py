@@ -11109,14 +11109,17 @@ async def create_app():
             return web.json_response({"error": str(e)}, status=500)
 
     async def handle_mass_outreach_send(req):
-        """POST /api/mass-outreach/send — Versand-Batch anstoßen"""
+        """POST /api/mass-outreach/send — Smart Batch: Research neue Firmen + Versand"""
         try:
             body = await req.json() if req.content_length else {}
             limit = int(body.get("limit", 333))
-            from modules.mass_outreach_1000 import run_batch_only, init_db
+            smart = body.get("smart", True)
+            from modules.mass_outreach_1000 import run_smart_batch, run_batch_only, init_db
             init_db()
-            asyncio.create_task(run_batch_only(batch_size=limit))
-            return web.json_response({"status": "batch_started", "limit": limit})
+            fn = run_smart_batch if smart else run_batch_only
+            asyncio.create_task(fn(batch_size=limit))
+            return web.json_response({"status": "batch_started", "limit": limit,
+                                      "mode": "smart_research+send" if smart else "send_only"})
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
