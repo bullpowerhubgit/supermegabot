@@ -21,27 +21,18 @@ TG_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 
 def _token() -> str:
-    # dragonadnp@gmail.com token (expires 2027-06-19) — fallback if PRINTIFY_API_KEY not set
-    _DRAGON_TOKEN = (
-        "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiIzN2Q0YmQzMDM1ZmUxMWU5YTgwM2FiN2VlYjNjY2M5NyIsImp0"
-        "aSI6ImUxZTNlMzU4ODE1YzkwYjE5OGNlNjk0ZDliMjk4Njk2YTVhOTljMmIyNDhlM2Q0N2I5Y2Y2ZTBiZjI2ODVhYjE0MjIyMTA"
-        "1ODFiMDk4MWY4IiwiaWF0IjoxNzgxODY4ODI5Ljk0OTEzMywibmJmIjoxNzgxODY4ODI5Ljk0OTEzNSwiZXhwIjoxODEzNDA0OD"
-        "I5Ljk0MjY5NCwic3ViIjoiMjc2NTA5MjYiLCJzY29wZXMiOlsic2hvcHMubWFuYWdlIiwic2hvcHMucmVhZCIsImNhdGFsb2cucm"
-        "VhZCIsIm9yZGVycy5yZWFkIiwib3JkZXJzLndyaXRlIiwicHJvZHVjdHMucmVhZCIsInByb2R1Y3RzLndyaXRlIiwid2ViaG9va3"
-        "MucmVhZCIsIndlYmhvb2tzLndyaXRlIiwidXBsb2Fkcy5yZWFkIiwidXBsb2Fkcy53cml0ZSIsInByaW50X3Byb3ZpZGVycy5yZW"
-        "FkIiwidXNlci5pbmZvIl19.Q2sE05qdiBSrb67mZcIf0MoxXIhdmrebxRH-GUBOraGK_DzDQveN25cQKn0Em7Tja8wmGAOx6jOm3"
-        "A44vSmSOGlBHYJSQHmpeDluPWbmhFb2IUKH4oKYZJsk4tGDfzDiLZQPfoYwQFpkEoyUDjg0gaSlKUQvPv6fgtiGSb5XHHWjJdgt"
-        "XRdgh36sY6wLyq9B3xM6Kvika8Xb4NYEBujZsJjNRFbvHP6tycdS4T_DKmn0Ej3H2f-m0YTr2Eo_t37WDhx8qHjG1Xdwbuo5ab"
-        "GRB8r2A_qyomRWQIjx-SI5Fig8yhmTlQiP6yxy3FkMHujsrixODlSokOqra0_HiJEaUiRAaF5iOOOOHjup-4N452w7dLZ8A6JkT"
-        "0p0LEPJPFVNrlPGXBXUUty-9KxEmWFP7CE711i2BhVzqIuXm26BzeGO4YS0_rApMIY3uW0Y8d7H6tcjA2gAuk9OFTBguIbEHnb4"
-        "LCZUd8unXuzKsskhjgffDayEQCZrSO8aLn7goGHOkpVJ2SUPNOX-AAkMNyDwGAtG0P6sN53yziWqFUaINe9b_0uu11rk0FRpw3k"
-        "5m7IDG75Ileln_bWIX8Ei03p-vv7mKnPzCOjHTkBqmbNI9fgkyxj-xZnmRj67csQ8_S-EVBGNOlmDsYLCwbpMnXiiEwW7Y7zsra"
-        "zsrilFLyiwKeQ"
+    tok = (
+        os.getenv("PRINTIFY_API_KEY")
+        or os.getenv("PRINTIFY_TOKEN")
+        or os.getenv("PRINTIFY_API_TOKEN")
+        or ""
     )
-    return os.getenv(
-        "PRINTIFY_API_KEY",
-        os.getenv("PRINTIFY_TOKEN", os.getenv("PRINTIFY_API_TOKEN", _DRAGON_TOKEN)),
-    )
+    if not tok:
+        raise ValueError(
+            "PRINTIFY_API_KEY is not set. "
+            "Set the environment variable to a valid Printify API token."
+        )
+    return tok
 
 
 _UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36"
