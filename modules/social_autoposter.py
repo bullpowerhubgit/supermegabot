@@ -118,6 +118,11 @@ async def _ai_caption(topic: str = "", lang: str = "de") -> str:
 # ── Facebook Page Poster ─────────────────────────────────────────────────────
 async def post_to_facebook(message: str, image_url: str = "", link: str = "") -> dict:
     """Postet auf die Aiitec Facebook Page."""
+    from modules.post_guardian import validate_post, register_posted
+    ok, errors = validate_post(message, "facebook", image_url)
+    if not ok:
+        log.warning("Post Guardian blockiert FB-Post: %s", errors)
+        return {"ok": False, "platform": "facebook", "blocked": True, "errors": errors}
     if not FB_TOKEN:
         return {"ok": False, "platform": "facebook", "error": "FACEBOOK_PAGE_TOKEN nicht gesetzt"}
     url = f"{GRAPH}/{FB_PAGE_ID}/feed"
@@ -160,8 +165,14 @@ async def post_photo_to_facebook(message: str, image_url: str) -> dict:
 async def post_to_instagram(caption: str, image_url: str) -> dict:
     """
     Postet ein Bild auf Instagram @aaiitecc.
+    Post Guardian prüft vor dem Posten.
     image_url muss öffentlich erreichbar sein (JPG/PNG, min 320px).
     """
+    from modules.post_guardian import validate_post, register_posted
+    ok, errors = validate_post(caption, "instagram", image_url)
+    if not ok:
+        log.warning("Post Guardian blockiert IG-Post: %s", errors)
+        return {"ok": False, "platform": "instagram", "blocked": True, "errors": errors}
     if not FB_TOKEN or not IG_ID:
         return {"ok": False, "platform": "instagram", "error": "INSTAGRAM_ACCOUNT_ID oder FB_TOKEN fehlt"}
     try:
@@ -243,10 +254,15 @@ async def post_reel_to_instagram(caption: str, video_url: str) -> dict:
 
 # ── LinkedIn Personal Post ───────────────────────────────────────────────────
 async def post_to_linkedin(text: str, link: str = "") -> dict:
-    """
+    """Post Guardian prüft vor dem Posten.
     Postet auf Rudolf Sarkanys LinkedIn-Profil.
     Benötigt Scope: w_member_social (✅ bestätigt via 429 Rate Limit Test).
     """
+    from modules.post_guardian import validate_post, register_posted
+    ok_check, errors = validate_post(text, "linkedin")
+    if not ok_check:
+        log.warning("Post Guardian blockiert LI-Post: %s", errors)
+        return {"ok": False, "platform": "linkedin", "blocked": True, "errors": errors}
     if not LI_TOKEN:
         return {"ok": False, "platform": "linkedin", "error": "LINKEDIN_ACCESS_TOKEN nicht gesetzt"}
     person_urn = os.getenv("LINKEDIN_PERSON_URN", "urn:li:person:YcxbqVN0ZR")
