@@ -338,12 +338,17 @@ def _fetch_inbox_replies(account: Dict, since_hours: int = 1) -> List[Dict]:
             # Eigene Emails überspringen
             if any(acc["user"] in from_email for acc in GMAIL_ACCOUNTS):
                 continue
-            # System/Notification-Domains und Prefixes blockieren
+            # ── NUR echte persönliche Antworten beantworten ──────────────
+            # REGEL: Nur antworten wenn ECHTE Person schreibt
+            # NICHT antworten: Newsletter, System, Marketing, Bestätigungen
             _dom = from_email.split("@")[-1] if "@" in from_email else ""
             _loc = from_email.split("@")[0]  if "@" in from_email else ""
+
+            # Blockierte Domains (Systeme, Automations, Plattformen)
             _BLOCK_DOMAINS = {
+                # Plattform-Systeme
                 "github.com", "github.io", "noreply.github.com",
-                "facebookmail.com", "accounts.google.com",
+                "facebookmail.com", "accounts.google.com", "google.com",
                 "bounce.twitter.com", "smtp.linkedin.com",
                 "stripe.com", "shopify.com", "shopifyemail.com",
                 "klaviyo.com", "sendgrid.net", "mailchimp.com",
@@ -352,18 +357,69 @@ def _fetch_inbox_replies(account: Dict, since_hours: int = 1) -> List[Dict]:
                 "bounces.amazon.com", "amazonses.com",
                 "railway.app", "vercel.com", "netlify.com",
                 "joonix.net", "storebotmail.joonix.net",
+                # Marketing & Massen-Dienste
+                "mailjet.com", "sparkpost.com", "postmarkapp.com",
+                "sendpulse.com", "activecampaign.com", "getresponse.com",
+                "aweber.com", "constantcontact.com", "hubspot.com",
+                "intercom.io", "zendesk.com", "freshdesk.com",
+                "salesforce.com", "mailerlite.com", "brevo.com",
+                # Digistore/Affiliate
+                "digistore24.com", "checkout-ds24.com", "ds24.com",
+                "clickbank.com", "jvzoo.com", "warrior.com",
+                # Payment-Benachrichtigungen
+                "paypal.com", "payoneer.com", "wise.com", "klarna.com",
             }
+
+            # Blockierte Absender-Prefixes (automatische Adressen)
             _BLOCK_PREFIXES = (
-                "noreply", "no-reply", "donotreply", "do-not-reply",
-                "mailer-daemon", "postmaster", "bounce", "bounces",
-                "newsletter", "notifications", "notification",
-                "alerts", "alert", "system", "daemon", "robot",
-                "bulk", "auto-", "auto_", "automated",
-                "support", "help", "info", "service",
-                "marketing", "promo", "news", "updates",
+                "noreply", "no-reply", "no.reply", "donotreply", "do-not-reply",
+                "do_not_reply", "not-reply",
+                "mailer-daemon", "postmaster", "bounce", "bounces", "bounce+",
+                "notification", "notifications", "notify",
+                "newsletter", "news", "updates", "update",
+                "alert", "alerts", "alarm",
+                "system", "daemon", "robot", "bot", "auto",
+                "bulk", "automated", "automation",
+                "marketing", "promo", "promotion", "sales-",
+                "billing", "invoice", "receipt", "order",
+                "confirmation", "confirm", "verify", "verification",
+                "welcome", "onboarding", "signup",
+                "unsubscribe", "optout",
+                "admin@", "webmaster", "hostmaster",
+                "delivery", "tracking", "shipping",
             )
+
+            # Subject-Keywords die auf Auto-Mails hinweisen (NICHT antworten)
+            _BLOCK_SUBJECTS = (
+                "unsubscribe", "newsletter", "automated", "do not reply",
+                "autoresponder", "out of office", "vacation", "abwesenheit",
+                "delivery failed", "delivery status", "bounced",
+                "invoice", "rechnung", "order confirmation", "bestellbestätigung",
+                "receipt", "quittung", "payment confirmation", "zahlung",
+                "welcome to", "willkommen bei", "account created",
+                "password reset", "passwort", "verify your",
+                "your subscription", "trial", "upgrade your",
+                "security alert", "login attempt", "new sign",
+            )
+
+            _subj_lower = subject.lower()
+            if any(kw in _subj_lower for kw in _BLOCK_SUBJECTS):
+                log.debug("  [SKIP-SUBJECT] %s | %s", from_email, subject[:50])
+                continue
+
             if _dom in _BLOCK_DOMAINS or any(_loc.startswith(p) for p in _BLOCK_PREFIXES):
                 log.debug("  [SKIP-SYSTEM] %s", from_email)
+                continue
+
+            # X-Mailer / List-Unsubscribe Header → Massen-Email → nicht antworten
+            if msg.get("List-Unsubscribe") or msg.get("List-ID"):
+                log.debug("  [SKIP-BULK] %s (List-* header)", from_email)
+                continue
+            if msg.get("X-Mailer", "").lower() in (
+                "mailchimp", "klaviyo", "sendgrid", "hubspot",
+                "activecampaign", "brevo", "mailerlite",
+            ):
+                log.debug("  [SKIP-MAILER] %s", from_email)
                 continue
             replies.append({
                 "account":    user,
@@ -560,14 +616,49 @@ def get_stats() -> Dict:
         "converted": converted, "by_intent": by_intent,
     }
 
+# ── Watchdog: Fehler-Erkennung + Telegram-Alert ───────────────────────────────
+async def _watchdog_alert(error_msg: str) -> None:
+    """Sendet Alarm via Telegram wenn etwas schief läuft."""
+    msg = (
+        f"⚠️ <b>Email-KI Fehler</b>\n"
+        f"{error_msg}\n\n"
+        f"Bitte prüfen: railway logs oder IMAP-Verbindung."
+    )
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{TG_TOKEN()}/sendMessage",
+                json={"chat_id": TG_CHAT(), "text": msg, "parse_mode": "HTML"},
+                timeout=aiohttp.ClientTimeout(total=8)
+            )
+    except Exception:
+        pass
+
 # ── Scheduler-Task ────────────────────────────────────────────────────────────
 async def run_email_ai_cycle() -> str:
-    result = await process_all_inboxes(since_hours=1)
-    return (
-        f"Email-KI: {result['replies_found']} Antworten gefunden, "
-        f"{result['answered']} beantwortet, "
-        f"{result['unsubscribes']} abgemeldet ✅"
-    )
+    """Läuft alle 10 Minuten. Beantwortet nur echte persönliche Emails."""
+    try:
+        result = await process_all_inboxes(since_hours=1)
+        answered = result['answered']
+        found    = result['replies_found']
+
+        # Watchdog: wenn viele gefunden aber nichts beantwortet → Alarm
+        if found > 5 and answered == 0:
+            await _watchdog_alert(
+                f"⚠️ {found} Emails gefunden aber 0 beantwortet!\n"
+                f"Möglicher Fehler: Gmail App-Passwort abgelaufen oder KI-API nicht erreichbar."
+            )
+
+        return (
+            f"Email-KI: {found} Antworten gefunden, "
+            f"{answered} beantwortet, "
+            f"{result['unsubscribes']} abgemeldet ✅"
+        )
+    except Exception as e:
+        err = f"Email-KI Crash: {e}"
+        log.error(err)
+        await _watchdog_alert(err)
+        return f"❌ {err}"
 
 # ── CLI ───────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":

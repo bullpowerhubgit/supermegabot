@@ -7645,7 +7645,7 @@ TASKS = [
     # ── MASS OUTREACH 1000/TAG ────────────────────────────────────────────────
     ("mass_outreach_research", task_mass_outreach_research, 86400, 3915),  # 24h — Lead-Research: Gelbe Seiten+11880+HN+RSS
     ("mass_outreach_morning",  task_mass_outreach_batch,    28800, 3920),  # 8h  — 333 Emails Batch (09:00 + 17:00 + 01:00)
-    ("email_ai_inbox",        task_email_ai_conversations,   900, 3925),  # 15min — KI beantwortet alle Inbox-Replies
+    ("email_ai_inbox",        task_email_ai_conversations,   600, 3925),  # 10min — KI beantwortet alle Inbox-Replies
     # ── MEGA ACQUISITION B2C + SHOP ──────────────────────────────────────────
     ("mega_acq_discovery",    task_mega_acquisition_discovery, 43200, 3925),  # 12h — Lead-Discovery alle Quellen
     ("mega_acq_send",         task_mega_acquisition_send,      28800, 3930),  # 8h  — 200 Shop-Emails (3×/Tag)
