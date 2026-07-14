@@ -2837,6 +2837,50 @@ async def handle_revenue_report(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_revenue_orchestrator_status(req):
+    """GET /api/revenue/orchestrator — ROAS + alle Channel-Stats."""
+    try:
+        from modules.revenue_orchestrator import get_revenue_status
+        status = await get_revenue_status()
+        return web.json_response(status)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_revenue_orchestrator_run(req):
+    """POST /api/revenue/orchestrator/run — Revenue-Optimierungszyklus starten."""
+    try:
+        from modules.revenue_orchestrator import run_revenue_optimization_cycle
+        result = await run_revenue_optimization_cycle()
+        return web.json_response({"ok": True, "result": {
+            "revenue_7d": result.get("stats", {}).get("shopify", {}).get("revenue", 0),
+            "roas": result.get("roas", {}).get("overall_roas", 0),
+            "report_sent": result.get("report_sent", False),
+        }})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_tiktok_ads_status(req):
+    """GET /api/tiktok/status — TikTok Ads Status + Insights."""
+    try:
+        from modules.tiktok_ads_engine import get_tiktok_status
+        status = await get_tiktok_status()
+        return web.json_response(status)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
+async def handle_tiktok_ads_run(req):
+    """POST /api/tiktok/run — TikTok Ads Zyklus manuell starten."""
+    try:
+        from modules.tiktok_ads_engine import run_tiktok_ads_cycle
+        result = await run_tiktok_ads_cycle()
+        return web.json_response({"ok": True, "result": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_seo_status(req):
     """SEO score for all Shopify products."""
     try:
@@ -10854,6 +10898,10 @@ async def create_app():
     app.router.add_post("/api/revenue/weekly-report",    handle_revenue_weekly_report)
     app.router.add_get( "/api/revenue/snapshot",         handle_revenue_snapshot)
     app.router.add_get( "/api/revenue/stats",            handle_revenue_stats)
+    app.router.add_get( "/api/revenue/orchestrator",     handle_revenue_orchestrator_status)
+    app.router.add_post("/api/revenue/orchestrator/run", handle_revenue_orchestrator_run)
+    app.router.add_get( "/api/tiktok/status",            handle_tiktok_ads_status)
+    app.router.add_post("/api/tiktok/run",               handle_tiktok_ads_run)
 
     # ── Product Bundle Engine ─────────────────────────────────────────────────
     app.router.add_post("/api/bundles/create",           handle_bundles_create)

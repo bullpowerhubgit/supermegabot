@@ -3126,6 +3126,16 @@ async def task_oos_sniper_scan() -> str:
         return f"OOSSniper error: {e}"
 
 
+async def task_affiliate_blast() -> str:
+    """DS24 Affiliate-Links sofort auf alle Kanäle pushen"""
+    try:
+        from modules.ds24_income_blaster import run_affiliate_blast_now
+        r = await run_affiliate_blast_now()
+        return f"AffiliateBlast: {r.get('total_posted',0)} Posts"
+    except Exception as e:
+        return f"AffiliateBlast error: {e}"
+
+
 async def task_money_cycle() -> str:
     """30-min autonomer Revenue-Zyklus: Ads+Email+Shopify+Instagram"""
     try:
@@ -5796,6 +5806,41 @@ async def task_seo_content_factory() -> str:
         return f"ContentFactory Fehler: {e}"
 
 
+async def task_meta_ads_cycle() -> str:
+    """Meta Ads: activate + optimize Facebook/Instagram campaigns (alle 4h)."""
+    try:
+        from modules.meta_ads_engine import run_meta_campaign_cycle
+        r = await run_meta_campaign_cycle()
+        stats = r.get("stats", {})
+        insights = r.get("insights", {})
+        spend = insights.get("spend_eur", stats.get("total_spend_eur", 0))
+        active = r.get("active_campaigns", stats.get("active_count", 0))
+        return f"MetaAds: {active} aktive Kampagnen | Spend: €{spend}"
+    except Exception as e:
+        return f"MetaAds Fehler: {e}"
+
+
+async def task_pinterest_cycle() -> str:
+    """Pinterest: pinne Shopify-Produkte auf relevante Boards (alle 2h)."""
+    try:
+        from modules.pinterest_traffic import run_pinterest_posting_cycle
+        r = await run_pinterest_posting_cycle(pins_per_run=10)
+        return f"Pinterest: {r.get('pinned', 0)} Pins | Gesamt: {r.get('total_posted_ever', 0)}"
+    except Exception as e:
+        return f"Pinterest Fehler: {e}"
+
+
+async def task_sendgrid_daily() -> str:
+    """SendGrid: tägliche Revenue-Email an alle Klaviyo-Profile (täglich)."""
+    try:
+        from modules.sendgrid_blast import run_daily_revenue_email
+        r = await run_daily_revenue_email()
+        blast = r.get("blast", {})
+        return f"SendGrid: {blast.get('sent', 0)} gesendet | {blast.get('failed', 0)} Fehler | Betreff: {r.get('subject','')[:40]}"
+    except Exception as e:
+        return f"SendGrid Fehler: {e}"
+
+
 async def task_seo_traffic_blitz() -> str:
     """SEO Traffic Blitz: Sitemap + Keywords + Backlinks + Schema + Internal Links (alle 8h)."""
     try:
@@ -5804,6 +5849,29 @@ async def task_seo_traffic_blitz() -> str:
         return f"SEO Blitz: {r}"
     except Exception as e:
         return f"SEO Traffic Blitz Fehler: {e}"
+
+
+async def task_tiktok_ads_cycle() -> str:
+    """TikTok Ads Engine: Kampagnen prüfen, erstellen, Insights holen (alle 4h)."""
+    try:
+        from modules.tiktok_ads_engine import run_tiktok_ads_cycle
+        r = await run_tiktok_ads_cycle()
+        return (f"TikTok Ads: {r.get('active_campaigns',0)} aktiv | "
+                f"€{r.get('insights',{}).get('total_spend',0)} Spend (7T)")
+    except Exception as e:
+        return f"TikTok Ads Fehler: {e}"
+
+
+async def task_revenue_orchestrator_cycle() -> str:
+    """Revenue Orchestrator: alle Kanäle aggregieren + ROAS + Budget-Optimierung (alle 6h)."""
+    try:
+        from modules.revenue_orchestrator import run_revenue_optimization_cycle
+        r = await run_revenue_optimization_cycle()
+        roas = r.get("roas", {}).get("overall_roas", 0)
+        revenue = r.get("stats", {}).get("shopify", {}).get("revenue", 0)
+        return f"Revenue: €{revenue:.2f} (7T) | ROAS {roas}x | Report: {'✅' if r.get('report_sent') else '❌'}"
+    except Exception as e:
+        return f"Revenue Orchestrator Fehler: {e}"
 
 
 async def task_ultra_seo_arsenal() -> str:
@@ -7376,7 +7444,8 @@ TASKS = [
     ("vorsprung_scan",       task_vorsprung_scan,      21600, 300),  # 6h — VORSPRUNG Intelligence (Bundesanzeiger+EUIPO+DPMA+Reddit)
     ("viral_window_scan",      task_viral_window_scan,       7200, 600),  # 2h — Viral Window Scanner
     ("oos_sniper_scan",        task_oos_sniper_scan,         7200,  58),  # 2h — OOS Sniper
-    ("money_cycle",            task_money_cycle,             1800,   60),  # 30min — Live Revenue: Ads+Email+Shopify+IG
+    ("money_cycle",            task_money_cycle,             1800,   60),
+    ("affiliate_blast",        task_affiliate_blast,         7200,   75),  # 2h — DS24 Affiliate auf alle Kanäle  # 30min — Live Revenue: Ads+Email+Shopify+IG
     ("money_machine_run",      task_money_machine_run,      14400,  65),  # 4h — Money Machine (alle 5 Engines)
     ("geldmaschine_skalierung", task_geldmaschine_skalierung, 14400,  68),  # 4h — Revenue Engine
     ("revenue_engine",         task_revenue_engine,         7200,   69),  # 2h — Geld-Zyklus (DS24+Klaviyo)
@@ -7800,6 +7869,9 @@ TASKS = [
     ("sales_funnel",             task_sales_funnel,                  1800,   55),  # 30min — Stripe Onboarding + Email Queue
     ("ds24_income_blast",        task_ds24_income_blast,             3600,   58),  # 1h   — DS24 Affiliate Blast alle Kanäle
     ("roas_cycle",               task_roas_cycle,                    3600,   62),  # 1h   — Meta ROAS: scale winners, pause losers
+    # ── REVENUE MAX ENGINE — TikTok + Orchestrator ────────────────────────────
+    ("tiktok_ads_engine",        task_tiktok_ads_cycle,            14400,  360),  # 4h   — TikTok Ads Kampagnen + Insights
+    ("revenue_orchestrator",     task_revenue_orchestrator_cycle,  21600,  420),  # 6h   — ROAS + Budget-Optimierung + Report
 ]
 
 
