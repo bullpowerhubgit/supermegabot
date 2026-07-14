@@ -11507,6 +11507,69 @@ async def create_app():
     except Exception as e:
         log.warning("phone_ai_assistant unavailable (non-fatal): %s", e)
 
+    # ── SMS Incoming Handler — KI antwortet auf eingehende SMS ───────────────
+    async def handle_sms_incoming(req: web.Request) -> web.Response:
+        """Twilio SMS Webhook — empfängt eingehende SMS und antwortet via KI."""
+        try:
+            data = await req.post()
+            from_num = data.get("From", "")
+            body     = data.get("Body", "").strip()
+            log.info("SMS eingehend von %s: %s", from_num, body[:80])
+
+            # KI-Antwort generieren (kurz, für SMS geeignet)
+            reply_text = "Danke für Ihre Nachricht! Ich bin Rudolf Sarkanys KI-Assistent. Wie kann ich helfen? Demo: bullpower-hub.vercel.app | Termin: cal.com/aiitec"
+            try:
+                import aiohttp as _ahttp
+                anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+                if anthropic_key:
+                    prompt = (
+                        f"Du bist ein freundlicher KI-Assistent von AiiteC/BullPower. "
+                        f"Beantworte diese SMS kurz auf Deutsch (max 160 Zeichen): '{body}'\n"
+                        f"Produkte: Shopify-Automation Starter €49/Mo, Pro €99/Mo. Demo: bullpower-hub.vercel.app"
+                    )
+                    async with _ahttp.ClientSession() as s:
+                        r = await s.post(
+                            "https://api.anthropic.com/v1/messages",
+                            headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+                            json={"model": "claude-haiku-4-5-20251001", "max_tokens": 80,
+                                  "messages": [{"role": "user", "content": prompt}]},
+                            timeout=_ahttp.ClientTimeout(total=10)
+                        )
+                        if r.status == 200:
+                            rd = await r.json()
+                            reply_text = rd["content"][0]["text"].strip()[:160]
+            except Exception as ai_err:
+                log.warning("SMS KI-Antwort Fehler: %s", ai_err)
+
+            # TwiML Antwort zurück an Twilio
+            twiml = f'<?xml version="1.0" encoding="UTF-8"?><Response><Message>{reply_text}</Message></Response>'
+
+            # Telegram-Benachrichtigung
+            try:
+                tg_tok = os.getenv("TELEGRAM_BOT_TOKEN", "")
+                tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+                if tg_tok and tg_chat:
+                    import aiohttp as _ah2
+                    async with _ah2.ClientSession() as s:
+                        await s.post(
+                            f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                            json={"chat_id": tg_chat, "text":
+                                  f"📱 <b>SMS eingehend</b>\nVon: {from_num}\n💬 {body[:100]}\n\n🤖 Antwort: {reply_text[:100]}",
+                                  "parse_mode": "HTML"},
+                            timeout=_ah2.ClientTimeout(total=5)
+                        )
+            except Exception:
+                pass
+
+            return web.Response(text=twiml, content_type="application/xml")
+        except Exception as e:
+            log.error("handle_sms_incoming: %s", e)
+            twiml = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
+            return web.Response(text=twiml, content_type="application/xml")
+
+    app.router.add_post("/api/sms/incoming", handle_sms_incoming)
+    log.info("SMS Incoming Handler registriert (/api/sms/incoming)")
+
     # Email Conversation AI — beantwortet alle Inbox-Emails automatisch
     async def handle_email_ai_stats(req):
         try:
