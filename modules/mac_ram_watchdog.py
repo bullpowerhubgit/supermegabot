@@ -263,49 +263,32 @@ def run_ram_watchdog() -> dict:
              ram["pct"], disk_gb)
 
     # ── 1. Swap-Überwachung ──────────────────────────────────────────────────
+    # Prozesse IMMER killen wenn Schwelle überschritten (kein Cooldown fürs Killen!)
+    if swap["pct"] >= SWAP_WARN_PCT or ram["pct"] >= RAM_WARN_PCT:
+        killed = kill_runaway_processes()
+        if killed:
+            result["actions"].append(f"Prozesse gekillt: {killed}")
+            log.info("Auto-Kill: %s", killed)
+
     if swap["pct"] >= SWAP_CRIT_PCT:
         result["ok"] = False
-
         if _cooldown_ok(state, "swap_crit", 30):
-            # Prozesse killen
-            killed = kill_runaway_processes()
-            if killed:
-                kill_txt = ", ".join(f"{k}: {v} Prozesse gekillt" for k, v in killed.items())
-                msg = (f"🔴 *Swap Kritisch: {swap['pct']:.0f}%* "
-                       f"({swap['used_gb']:.1f}/{swap['total_gb']:.1f} GB)\n"
-                       f"Auto-Fix:\n{kill_txt}")
-                result["actions"].append(f"Prozesse gekillt: {killed}")
-            else:
-                msg = (f"🔴 *Swap Kritisch: {swap['pct']:.0f}%* "
-                       f"({swap['used_gb']:.1f}/{swap['total_gb']:.1f} GB)\n"
-                       f"⚠️ Comet / Chrome schließen!")
-
-            _tg(msg)
+            killed_txt = ", ".join(f"{k}: {v}" for k, v in (killed if 'killed' in dir() else {}).items()) or "keine"
+            _tg(f"🔴 *Swap Kritisch: {swap['pct']:.0f}%* "
+                f"({swap['used_gb']:.1f}/{swap['total_gb']:.1f} GB)\n"
+                f"Prozesse gekillt: {killed_txt}")
             _mark_alerted(state, "swap_crit")
             result["alerts"].append(f"swap_crit:{swap['pct']:.0f}%")
 
     elif swap["pct"] >= SWAP_WARN_PCT:
         if _cooldown_ok(state, "swap_warn", 60):
-            killed = kill_runaway_processes()
-            if killed:
-                kill_txt = ", ".join(f"{k}: {v} gekillt" for k, v in killed.items())
-                _tg(f"⚠️ *Swap {swap['pct']:.0f}%* ({swap['used_gb']:.1f} GB) — {kill_txt}")
-                result["actions"].append(f"Prozesse gekillt: {killed}")
-            else:
-                _tg(f"⚠️ *Swap {swap['pct']:.0f}%* — Bitte Comet/Chrome schließen")
+            _tg(f"⚠️ *Swap {swap['pct']:.0f}%* ({swap['used_gb']:.1f} GB) — Prozesse reduziert")
             _mark_alerted(state, "swap_warn")
             result["alerts"].append(f"swap_warn:{swap['pct']:.0f}%")
 
     # ── 2. RAM-Überwachung ───────────────────────────────────────────────────
     if ram["pct"] >= RAM_WARN_PCT and _cooldown_ok(state, "ram_warn", 45):
-        killed = kill_runaway_processes()
-        msg = (f"⚠️ *RAM {ram['pct']:.0f}%* "
-               f"({ram['used_gb']:.1f}/{ram['total_gb']:.1f} GB)")
-        if killed:
-            kill_txt = ", ".join(f"{k}: {v}" for k, v in killed.items())
-            msg += f"\nAuto-Fix: {kill_txt}"
-            result["actions"].append(f"RAM-Fix Prozesse gekillt: {killed}")
-        _tg(msg)
+        _tg(f"⚠️ *RAM {ram['pct']:.0f}%* ({ram['used_gb']:.1f}/{ram['total_gb']:.1f} GB) — Auto-Kill aktiv")
         _mark_alerted(state, "ram_warn")
         result["alerts"].append(f"ram:{ram['pct']:.0f}%")
 
@@ -337,17 +320,18 @@ def run_ram_watchdog() -> dict:
                 _mark_alerted(state, "disk_clean")
                 result["actions"].append(f"disk_cleanup: {freed:.0f}MB")
 
-    # ── 4. Prozess-Watchdog (immer, kein Cooldown für Count-Checks) ─────────
+    # ── 4. Prozess-Watchdog (IMMER, kein Cooldown fürs Killen) ─────────────
     comet_count = sum(1 for p in psutil.process_iter(["cmdline"])
                       if any("Comet" in (c or "") for c in (p.info.get("cmdline") or [])))
-    if comet_count > COMET_MAX_PROCS * 2:
-        killed = kill_runaway_processes()
-        if killed and _cooldown_ok(state, "proc_kill", 15):
-            kill_txt = ", ".join(f"{k}: {v}" for k, v in killed.items())
-            _tg(f"🤖 *Runaway-Prozesse gekillt*\n{kill_txt}\n"
-                f"(Comet hatte {comet_count} Prozesse)")
-            _mark_alerted(state, "proc_kill")
-            result["actions"].append(f"proc_kill: {killed}")
+    if comet_count > COMET_MAX_PROCS:
+        extra_killed = kill_runaway_processes()
+        if extra_killed:
+            result["actions"].append(f"proc_kill: {extra_killed}")
+            if _cooldown_ok(state, "proc_kill", 15):
+                kill_txt = ", ".join(f"{k}: {v}" for k, v in extra_killed.items())
+                _tg(f"🤖 *Runaway-Prozesse gekillt*\n{kill_txt}\n"
+                    f"(Comet hatte {comet_count} Prozesse)")
+                _mark_alerted(state, "proc_kill")
 
     state["last_run"] = now
     state.setdefault("actions", [])
