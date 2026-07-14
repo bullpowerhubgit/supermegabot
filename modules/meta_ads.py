@@ -87,6 +87,42 @@ async def list_campaigns() -> list:
     return d.get("data", [])
 
 
+async def activate_campaign(campaign_id: str, daily_budget_eur: float | None = None) -> dict:
+    """Set campaign status to ACTIVE and optionally update daily budget."""
+    import aiohttp
+    token = _token()
+    if not token:
+        return {"ok": False, "error": "META_ADS_TOKEN not set"}
+    data: dict[str, Any] = {"status": "ACTIVE", "access_token": token}
+    if daily_budget_eur is not None:
+        data["daily_budget"] = int(daily_budget_eur * 100)
+    async with aiohttp.ClientSession() as s:
+        async with s.post(f"{_API}/{campaign_id}", data=data) as r:
+            resp = await r.json()
+    if resp.get("success"):
+        log.info("Campaign %s activated (budget: %s EUR/day)", campaign_id,
+                 daily_budget_eur or "unchanged")
+        return {"ok": True, "campaign_id": campaign_id, "daily_budget_eur": daily_budget_eur}
+    log.error("activate_campaign error: %s", resp)
+    return {"ok": False, "error": resp.get("error", {}).get("message", str(resp))}
+
+
+async def activate_all_campaigns(daily_budget_eur: float = 20.0) -> dict:
+    """Activate ALL paused campaigns in the ad account and set budget."""
+    campaigns = await list_campaigns()
+    if not campaigns:
+        return {"ok": False, "error": "No campaigns found or API error"}
+    results = []
+    for c in campaigns:
+        if c.get("status") == "PAUSED":
+            r = await activate_campaign(c["id"], daily_budget_eur)
+            results.append({"name": c["name"], "id": c["id"], **r})
+        else:
+            results.append({"name": c["name"], "id": c["id"], "ok": True, "status": c["status"]})
+    activated = sum(1 for r in results if r.get("ok") and r.get("status") != "ACTIVE")
+    return {"ok": True, "activated": activated, "total": len(results), "results": results}
+
+
 async def create_campaign(
     name: str,
     objective: str = "OUTCOME_SALES",

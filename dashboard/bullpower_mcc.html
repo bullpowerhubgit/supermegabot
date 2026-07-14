@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BullPower MCC — Revenue Command Center</title>
+<style>
+:root {
+  --bg:       #0a0c10;
+  --bg2:      #12151c;
+  --bg3:      #1a1f2b;
+  --border:   #252b38;
+  --accent:   #f59e0b;
+  --accent2:  #10b981;
+  --danger:   #ef4444;
+  --warn:     #f97316;
+  --text:     #e2e8f0;
+  --muted:    #64748b;
+  --green:    #10b981;
+  --red:      #ef4444;
+  --blue:     #3b82f6;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 13px;
+}
+
+/* ── Header ── */
+.header {
+  background: linear-gradient(135deg, #0f1318 0%, #1a1120 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.logo-icon {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--accent), #f97316);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.logo-text { font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+.logo-sub  { font-size: 10px; color: var(--muted); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity:1; } 50% { opacity:0.3; }
+}
+.status-bar { font-size: 11px; color: var(--muted); }
+.btn {
+  padding: 7px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.15s;
+}
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #fbbf24; }
+.btn-danger  { background: var(--danger); color: #fff; }
+.btn-danger:hover { background: #dc2626; }
+.btn-ghost   { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--border); }
+.btn-green   { background: var(--green); color: #fff; }
+.btn-green:hover { background: #059669; }
+
+/* ── Layout ── */
+.main { padding: 20px 24px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 20px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2,1fr); gap: 16px; margin-bottom: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 20px; }
+@media(max-width:1200px) { .grid-3{grid-template-columns:repeat(2,1fr)} .grid-4{grid-template-columns:repeat(2,1fr)} }
+@media(max-width:768px)  { .grid-3,.grid-2,.grid-4{grid-template-columns:1fr} }
+
+/* ── Cards ── */
+.card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0;
+  height:2px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+}
+.card.green::before { background: linear-gradient(90deg,var(--green),transparent); }
+.card.red::before   { background: linear-gradient(90deg,var(--red),transparent); }
+.card.blue::before  { background: linear-gradient(90deg,var(--blue),transparent); }
+.card-title {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.card-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+.card-value.accent { color: var(--accent); }
+.card-value.green  { color: var(--green); }
+.card-value.red    { color: var(--red); }
+.card-sub  { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.card-delta {
+  font-size: 11px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.card-delta.up   { color: var(--green); }
+.card-delta.down { color: var(--red); }
+.card-delta.warn { color: var(--warn); }
+
+/* ── Section Header ── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+/* ── Platform Grid ── */
+.platform-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px,1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.platform-item {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.platform-item:hover { border-color: var(--accent); }
+.platform-item.ok    { border-left: 3px solid var(--green); }
+.platform-item.fail  { border-left: 3px solid var(--red); }
+.platform-item.warn  { border-left: 3px solid var(--warn); }
+.platform-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.platform-dot.ok   { background:var(--green); }
+.platform-dot.fail { background:var(--red); animation:pulse 1.5s infinite; }
+.platform-dot.warn { background:var(--warn); }
+.platform-name { font-size:11px; font-weight:600; }
+.platform-latency { font-size:10px; color:var(--muted); margin-left:auto; }
+
+/* ── Task List ── */
+.task-list { display:flex; flex-direction:column; gap:6px; max-height:400px; overflow-y:auto; }
+.task-row {
+  display:flex; align-items:center;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius:6px;
+  padding: 8px 12px;
+  gap:10px;
+  font-size:11px;
+}
+.task-row:hover { border-color:var(--accent); }
+.task-status {
+  width:6px; height:6px; border-radius:50%; flex-shrink:0;
+}
+.task-status.ok      { background:var(--green); }
+.task-status.error   { background:var(--red); animation:pulse 1.5s infinite; }
+.task-status.running { background:var(--accent); animation:pulse 1s infinite; }
+.task-status.pending { background:var(--muted); }
+.task-name { font-weight:600; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.task-last { color:var(--muted); font-size:10px; }
+.task-result { color:var(--muted); font-size:10px; max-width:200px; overflow:hidden; text-overflow:ellipsis; }
+
+/* ── Revenue Chart ── */
+.revenue-bars {
+  display:flex; align-items:flex-end;
+  gap:4px; height:80px;
+  border-bottom:1px solid var(--border);
+  padding-bottom:4px;
+}
+.revenue-bar {
+  flex:1;
+  background: var(--accent);
+  border-radius:2px 2px 0 0;
+  opacity:0.8;
+  min-height:2px;
+  transition: height 0.3s;
+  cursor:pointer;
+  position:relative;
+}
+.revenue-bar:hover { opacity:1; }
+.revenue-bar .tooltip {
+  display:none;
+  position:absolute;
+  bottom:100%; left:50%; transform:translateX(-50%);
+  background:#000; color:#fff;
+  font-size:10px; padding:2px 6px; border-radius:4px;
+  white-space:nowrap;
+}
+.revenue-bar:hover .tooltip { display:block; }
+
+/* ── Log ── */
+.log-container {
+  background: #050708;
+  border: 1px solid var(--border);
+  border-radius:8px;
+  padding:12px;
+  height:220px;
+  overflow-y:auto;
+  font-family: 'SF Mono', Monaco, Consolas, monospace;
+  font-size:11px;
+  line-height:1.6;
+}
+.log-line { color: var(--muted); }
+.log-line.info    { color: #94a3b8; }
+.log-line.success { color: var(--green); }
+.log-line.error   { color: var(--red); }
+.log-line.warn    { color: var(--warn); }
+.log-time { color: var(--muted); font-size:10px; }
+
+/* ── Control Panel ── */
+.control-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px,1fr));
+  gap:8px;
+  margin-bottom:20px;
+}
+.control-btn {
+  padding:12px 16px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  background:var(--bg3);
+  color:var(--text);
+  cursor:pointer;
+  text-align:left;
+  font-size:12px;
+  font-weight:600;
+  transition:all 0.15s;
+  display:flex; flex-direction:column; gap:4px;
+}
+.control-btn:hover { background:var(--bg); border-color:var(--accent); }
+.control-btn .cb-icon { font-size:18px; }
+.control-btn .cb-label { font-size:12px; font-weight:700; }
+.control-btn .cb-desc  { font-size:10px; color:var(--muted); font-weight:400; }
+
+/* ── Badge ── */
+.badge {
+  display:inline-block;
+  padding:2px 7px;
+  border-radius:10px;
+  font-size:10px;
+  font-weight:700;
+}
+.badge.ok     { background:#052e16; color:var(--green); }
+.badge.error  { background:#450a0a; color:var(--red); }
+.badge.warn   { background:#431407; color:var(--warn); }
+.badge.info   { background:#1e3a5f; color:var(--blue); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:var(--bg); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+
+/* ── Toast ── */
+.toast-container {
+  position:fixed; top:70px; right:20px;
+  display:flex; flex-direction:column; gap:8px;
+  z-index:1000;
+}
+.toast {
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 16px;
+  font-size:12px;
+  max-width:300px;
+  animation:slideIn 0.2s ease;
+  display:flex; align-items:center; gap:8px;
+}
+.toast.success { border-left:3px solid var(--green); }
+.toast.error   { border-left:3px solid var(--red); }
+.toast.info    { border-left:3px solid var(--blue); }
+@keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+
+/* ── Tabs ── */
+.tabs { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:16px; }
+.tab {
+  padding:8px 16px;
+  font-size:12px; font-weight:600;
+  color:var(--muted);
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all 0.15s;
+}
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab:hover  { color:var(--text); }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* ── Progress ── */
+.progress-bar {
+  height:4px;
+  background:var(--border);
+  border-radius:2px;
+  overflow:hidden;
+}
+.progress-fill {
+  height:100%;
+  border-radius:2px;
+  transition:width 0.5s;
+}
+.progress-fill.green  { background:var(--green); }
+.progress-fill.accent { background:var(--accent); }
+.progress-fill.red    { background:var(--red); }
+
+/* ── Big Alert Banner ── */
+.alert-banner {
+  background:linear-gradient(135deg,#450a0a,#1c0505);
+  border:1px solid #7f1d1d;
+  border-radius:10px;
+  padding:16px 20px;
+  margin-bottom:20px;
+  display:flex; align-items:center; gap:12px;
+}
+.alert-banner.hidden { display:none; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-text">BullPower MCC</div>
+      <div class="logo-sub">Revenue Command Center</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-dot"></div>
+    <div class="status-bar" id="statusBar">Connecting...</div>
+    <button class="btn btn-green" onclick="triggerAction('full_start')">▶ Full Start</button>
+    <button class="btn btn-danger" onclick="emergencyStop()">⏹ E-Stop</button>
+  </div>
+</div>
+
+<!-- Toast Container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Alert Banner (hidden by default) -->
+  <div class="alert-banner hidden" id="alertBanner">
+    <span style="font-size:20px">🚨</span>
+    <div>
+      <div style="font-weight:700;font-size:13px" id="alertText">Critical Alert</div>
+      <div style="font-size:11px;color:#fca5a5" id="alertDetail"></div>
+    </div>
+    <button class="btn btn-ghost" style="margin-left:auto;font-size:11px" onclick="hideAlert()">Dismiss</button>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="grid-4">
+    <div class="card">
+      <div class="card-title">Revenue Heute</div>
+      <div class="card-value accent" id="kpiRevenue">€0</div>
+      <div class="card-sub">letzte 24h</div>
+      <div class="card-delta warn" id="kpiRevenueDelta">0 Bestellungen</div>
+    </div>
+    <div class="card green">
+      <div class="card-title">Aktive Produkte</div>
+      <div class="card-value green" id="kpiProducts">–</div>
+      <div class="card-sub">Shopify Store</div>
+      <div class="card-delta" id="kpiProductsDelta"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Sessions Heute</div>
+      <div class="card-value" id="kpiSessions">–</div>
+      <div class="card-sub">Shopify Analytics</div>
+      <div class="card-delta" id="kpiConversion"></div>
+    </div>
+    <div class="card blue">
+      <div class="card-title">Tasks Running</div>
+      <div class="card-value" id="kpiTasks">–</div>
+      <div class="card-sub">Railway Scheduler</div>
+      <div class="card-delta" id="kpiTaskErrors"></div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('overview')">Overview</div>
+    <div class="tab" onclick="switchTab('platforms')">Platforms</div>
+    <div class="tab" onclick="switchTab('tasks')">Tasks</div>
+    <div class="tab" onclick="switchTab('revenue')">Revenue</div>
+    <div class="tab" onclick="switchTab('controls')">Controls</div>
+    <div class="tab" onclick="switchTab('logs')">Logs</div>
+  </div>
+
+  <!-- Overview Tab -->
+  <div id="tab-overview" class="tab-content active">
+    <div class="grid-3">
+      <!-- Platform Health -->
+      <div class="card" style="grid-column:span 2">
+        <div class="section-header">
+          <div class="section-title">Platform Health</div>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="refreshHealth()">↻ Refresh</button>
+        </div>
+        <div class="platform-grid" id="platformGrid">
+          <div style="color:var(--muted);font-size:11px">Loading platforms...</div>
+        </div>
+      </div>
+
+      <!-- Revenue Chart -->
+      <div class="card">
+        <div class="section-title" style="margin-bottom:12px">Revenue 7d</div>
+        <div class="revenue-bars" id="revenueBars">
+          <div class="revenue-bar" style="height:2px"><div class="tooltip">€0</div></div>
+          <div class="revenue-bar" style="height:2px"><div class="tooltip">€0</div></div>
+          <div class="revenue-bar" style="height:2px"><div class="tooltip">€0</div></div>
+          <div class="revenue-bar" style="height:2px"><div class="tooltip">€0</div></div>
+          <div class="revenue-bar" style="height:2px"><div class="tooltip">€0</div></div>
+          <div class="revenue-bar" style="height:2px"><div class="tooltip">€0</div></div>
+          <div class="revenue-bar" style="height:2px"><div class="tooltip">€0</div></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:6px">
+          <span style="font-size:10px;color:var(--muted)">-6d</span>
+          <span style="font-size:10px;color:var(--muted)">Heute</span>
+        </div>
+        <div style="margin-top:14px">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:8px">Revenue Streams</div>
+          <div id="revenueStreams">
+            <div class="card-sub">Laden...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="section-title" style="margin-bottom:10px">Schnell-Aktionen</div>
+    <div class="control-grid">
+      <button class="control-btn" onclick="triggerAction('product_curation')">
+        <span class="cb-icon">🛒</span>
+        <span class="cb-label">Produkte kuratieren</span>
+        <span class="cb-desc">Junk archivieren, Smart-Home aktivieren</span>
+      </button>
+      <button class="control-btn" onclick="triggerAction('conversion_optimizer')">
+        <span class="cb-icon">📈</span>
+        <span class="cb-label">Conversion fixen</span>
+        <span class="cb-desc">Checkout & Trust-Signals optimieren</span>
+      </button>
+      <button class="control-btn" onclick="triggerAction('sendgrid_blast')">
+        <span class="cb-icon">📧</span>
+        <span class="cb-label">Email Blast</span>
+        <span class="cb-desc">SendGrid Kampagne starten</span>
+      </button>
+      <button class="control-btn" onclick="triggerAction('roas_optimizer')">
+        <span class="cb-icon">📢</span>
+        <span class="cb-label">ROAS optimieren</span>
+        <span class="cb-desc">Schlechte Ads pausieren</span>
+      </button>
+      <button class="control-btn" onclick="triggerAction('money_cycle')">
+        <span class="cb-icon">💰</span>
+        <span class="cb-label">Money Cycle</span>
+        <span class="cb-desc">Alle Revenue-Streams anstoßen</span>
+      </button>
+      <button class="control-btn" onclick="triggerAction('cart_recovery')">
+        <span class="cb-icon">🛒</span>
+        <span class="cb-label">Cart Recovery</span>
+        <span class="cb-desc">Abandoned Cart Emails</span>
+      </button>
+      <button class="control-btn" onclick="triggerAction('mega_health_check')">
+        <span class="cb-icon">🏥</span>
+        <span class="cb-label">Health Check</span>
+        <span class="cb-desc">Alle Plattformen prüfen</span>
+      </button>
+      <button class="control-btn" onclick="triggerAction('seo_content')">
+        <span class="cb-icon">✍️</span>
+        <span class="cb-label">SEO Artikel</span>
+        <span class="cb-desc">AI Content generieren</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Platforms Tab -->
+  <div id="tab-platforms" class="tab-content">
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">API Health</div>
+          <span id="healthSummary" class="badge info">Loading...</span>
+        </div>
+        <div id="platformDetailList"></div>
+      </div>
+      <div class="card">
+        <div class="section-title" style="margin-bottom:12px">Env Validator</div>
+        <div id="envStatus"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks Tab -->
+  <div id="tab-tasks" class="tab-content">
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">Scheduler Tasks (<span id="taskCount">–</span>)</div>
+        <div style="display:flex;gap:8px">
+          <input id="taskFilter" placeholder="Suchen..." style="background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:5px 10px;border-radius:6px;font-size:11px;width:160px" oninput="filterTasks()">
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="refreshTasks()">↻</button>
+        </div>
+      </div>
+      <div class="task-list" id="taskList">
+        <div style="color:var(--muted);font-size:11px;padding:20px;text-align:center">Laden...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Revenue Tab -->
+  <div id="tab-revenue" class="tab-content">
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title">DS24 Revenue</div>
+        <div class="card-value accent" id="ds24Revenue">€0</div>
+        <div class="card-sub">Affiliate-Provisionen</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Shopify Revenue</div>
+        <div class="card-value green" id="shopifyRevenue">€0</div>
+        <div class="card-sub">Online Store Sales</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Stripe Revenue</div>
+        <div class="card-value" id="stripeRevenue">€0</div>
+        <div class="card-sub">SaaS Subscriptions</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px">Revenue-Analyse</div>
+      <div id="revenueAnalysis" style="font-size:12px;color:var(--muted)">Laden...</div>
+    </div>
+  </div>
+
+  <!-- Controls Tab -->
+  <div id="tab-controls" class="tab-content">
+    <div class="grid-2">
+      <div class="card">
+        <div class="section-title" style="margin-bottom:12px">System Control</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-primary" style="text-align:left;padding:12px 16px" onclick="triggerAction('full_start')">
+            ▶ FULL START — Alle Revenue-Streams starten
+          </button>
+          <button class="btn btn-ghost" style="text-align:left;padding:12px 16px" onclick="triggerAction('money_cycle')">
+            💰 Money Cycle — DS24 + Shopify + Emails
+          </button>
+          <button class="btn btn-ghost" style="text-align:left;padding:12px 16px" onclick="triggerAction('mega_health_check')">
+            🏥 Health Check — Alle APIs prüfen
+          </button>
+          <button class="btn btn-ghost" style="text-align:left;padding:12px 16px" onclick="triggerAction('product_curation')">
+            🛒 Product Curation — Junk archivieren
+          </button>
+          <button class="btn btn-ghost" style="text-align:left;padding:12px 16px" onclick="triggerAction('revenue_report')">
+            📊 Revenue Report — Telegram-Update senden
+          </button>
+          <button class="btn btn-danger" style="text-align:left;padding:12px 16px;margin-top:12px" onclick="emergencyStop()">
+            ⏹ EMERGENCY STOP — Alle Tasks stoppen
+          </button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-title" style="margin-bottom:12px">Env Status</div>
+        <div id="envControlStatus">Laden...</div>
+        <div style="margin-top:16px">
+          <div class="section-title" style="margin-bottom:8px">Quick Links</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:12px">
+            <a href="https://ineedit.com.co" target="_blank" style="color:var(--accent);text-decoration:none">🛒 Shopify Store</a>
+            <a href="https://business.facebook.com" target="_blank" style="color:var(--accent);text-decoration:none">📢 Meta Ads Manager</a>
+            <a href="https://supabase.com/dashboard/project/qyrjeckzacjaazkpvnjk" target="_blank" style="color:var(--accent);text-decoration:none">🗄 Supabase DB</a>
+            <a href="https://railway.com" target="_blank" style="color:var(--accent);text-decoration:none">🚀 Railway Dashboard</a>
+            <a href="https://app.klaviyo.com" target="_blank" style="color:var(--accent);text-decoration:none">📧 Klaviyo</a>
+            <a href="https://sendgrid.com" target="_blank" style="color:var(--accent);text-decoration:none">📨 SendGrid</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logs Tab -->
+  <div id="tab-logs" class="tab-content">
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">Live System Logs</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="clearLogs()">Clear</button>
+          <button class="btn btn-ghost" style="font-size:10px;padding:4px 10px" onclick="refreshLogs()">↻ Refresh</button>
+        </div>
+      </div>
+      <div class="log-container" id="logContainer">
+        <div class="log-line info">System startet...</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<script>
+const BASE = '';  // same origin
+let allTasks = [];
+let refreshInterval = null;
+
+// ── Tab Switch ─────────────────────────────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    const names = ['overview','platforms','tasks','revenue','controls','logs'];
+    t.classList.toggle('active', names[i] === name);
+  });
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  if (name === 'tasks') refreshTasks();
+  if (name === 'platforms') refreshHealth();
+  if (name === 'revenue') loadRevenue();
+  if (name === 'controls') loadEnvStatus();
+  if (name === 'logs') refreshLogs();
+}
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function toast(msg, type='info', duration=4000) {
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
+  el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  document.getElementById('toastContainer').appendChild(el);
+  setTimeout(() => el.remove(), duration);
+}
+
+// ── Alert ──────────────────────────────────────────────────────────────────
+function showAlert(text, detail) {
+  document.getElementById('alertBanner').classList.remove('hidden');
+  document.getElementById('alertText').textContent = text;
+  document.getElementById('alertDetail').textContent = detail;
+}
+function hideAlert() {
+  document.getElementById('alertBanner').classList.add('hidden');
+}
+
+// ── Health Check ───────────────────────────────────────────────────────────
+async function refreshHealth() {
+  try {
+    const r = await fetch('/api/health/all');
+    const d = await r.json();
+    renderPlatforms(d);
+  } catch(e) {
+    document.getElementById('platformGrid').innerHTML =
+      '<div style="color:var(--red);font-size:11px">Health-Endpoint nicht erreichbar</div>';
+  }
+}
+
+function renderPlatforms(data) {
+  const grid = document.getElementById('platformGrid');
+  const summary = data._summary || {};
+  const ok = summary.platforms_ok || 0;
+  const total = summary.platforms_total || 0;
+
+  // Summary badge
+  const hBadge = document.getElementById('healthSummary');
+  if (hBadge) {
+    hBadge.textContent = `${ok}/${total} OK`;
+    hBadge.className = `badge ${ok === total ? 'ok' : ok > total*0.7 ? 'warn' : 'error'}`;
+  }
+
+  const platforms = Object.entries(data).filter(([k]) => k !== '_summary');
+  grid.innerHTML = platforms.map(([name, info]) => {
+    const cls = info.ok ? 'ok' : 'fail';
+    const lat = info.latency_ms ? `${info.latency_ms.toFixed(0)}ms` : '';
+    return `<div class="platform-item ${cls}" title="${info.error || ''}">
+      <div class="platform-dot ${cls}"></div>
+      <div class="platform-name">${name}</div>
+      <div class="platform-latency">${lat}</div>
+    </div>`;
+  }).join('');
+
+  // Detail list for platforms tab
+  const detail = document.getElementById('platformDetailList');
+  if (detail) {
+    detail.innerHTML = platforms.map(([name, info]) => `
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div class="platform-dot ${info.ok ? 'ok' : 'fail'}"></div>
+        <span style="font-weight:600;font-size:12px;flex:1">${name}</span>
+        <span class="badge ${info.ok ? 'ok' : 'error'}">${info.ok ? 'OK' : 'FAIL'}</span>
+        <span style="font-size:10px;color:var(--muted)">${info.latency_ms ? info.latency_ms.toFixed(0)+'ms' : ''}</span>
+        ${info.error ? `<span style="font-size:10px;color:var(--red);max-width:120px;overflow:hidden;text-overflow:ellipsis">${info.error}</span>` : ''}
+      </div>
+    `).join('');
+  }
+
+  if (!summary.all_ok) {
+    const failed = platforms.filter(([,v])=>!v.ok).map(([k])=>k);
+    showAlert(`${failed.length} Platform${failed.length>1?'s':''} offline`, failed.join(', '));
+  }
+}
+
+// ── Tasks ──────────────────────────────────────────────────────────────────
+async function refreshTasks() {
+  try {
+    const r = await fetch('/api/scheduler/status');
+    const d = await r.json();
+    allTasks = d.tasks || d || [];
+    renderTasks(allTasks);
+    document.getElementById('taskCount').textContent = allTasks.length;
+    document.getElementById('kpiTasks').textContent = allTasks.length;
+    const errors = allTasks.filter(t => (t.last_status||'').includes('error') || (t.last_status||'').includes('Error')).length;
+    const kpiErr = document.getElementById('kpiTaskErrors');
+    if (kpiErr) {
+      kpiErr.textContent = errors > 0 ? `⚠️ ${errors} Fehler` : '✅ Alle OK';
+      kpiErr.className = `card-delta ${errors > 0 ? 'down' : 'up'}`;
+    }
+  } catch(e) {
+    document.getElementById('taskList').innerHTML =
+      `<div style="color:var(--muted);font-size:11px;padding:20px;text-align:center">Scheduler-Endpoint nicht erreichbar<br><small>${e.message}</small></div>`;
+  }
+}
+
+function renderTasks(tasks) {
+  const list = document.getElementById('taskList');
+  if (!tasks.length) {
+    list.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Keine Tasks</div>';
+    return;
+  }
+  list.innerHTML = tasks.map(t => {
+    const s = t.last_status || t.status || 'pending';
+    const cls = s.includes('error') || s.includes('Error') || s.includes('fail') ? 'error'
+              : s.includes('running') ? 'running'
+              : s.includes('ok') || s.includes('OK') || s.includes('success') ? 'ok'
+              : 'pending';
+    const last = t.last_run ? new Date(t.last_run*1000).toLocaleTimeString('de') : 'never';
+    return `<div class="task-row">
+      <div class="task-status ${cls}"></div>
+      <div class="task-name">${t.name}</div>
+      <div class="task-last">${last}</div>
+      <div class="task-result">${(s||'').slice(0,60)}</div>
+      <button onclick="triggerTask('${t.name}')" style="background:var(--bg);border:1px solid var(--border);color:var(--muted);padding:3px 8px;border-radius:4px;cursor:pointer;font-size:10px">▶</button>
+    </div>`;
+  }).join('');
+}
+
+function filterTasks() {
+  const q = document.getElementById('taskFilter').value.toLowerCase();
+  renderTasks(allTasks.filter(t => t.name.toLowerCase().includes(q)));
+}
+
+async function triggerTask(name) {
+  try {
+    const r = await fetch('/api/scheduler/trigger', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({task: name})
+    });
+    const d = await r.json();
+    toast(`Task ${name} gestartet`, 'success');
+    setTimeout(refreshTasks, 2000);
+  } catch(e) {
+    toast(`Fehler: ${e.message}`, 'error');
+  }
+}
+
+// ── Revenue ────────────────────────────────────────────────────────────────
+async function loadRevenue() {
+  try {
+    const r = await fetch('/api/revenue/summary');
+    const d = await r.json();
+    document.getElementById('ds24Revenue').textContent = `€${(d.ds24 || 0).toFixed(2)}`;
+    document.getElementById('shopifyRevenue').textContent = `€${(d.shopify || 0).toFixed(2)}`;
+    document.getElementById('stripeRevenue').textContent = `€${(d.stripe || 0).toFixed(2)}`;
+    document.getElementById('kpiRevenue').textContent = `€${((d.ds24||0)+(d.shopify||0)+(d.stripe||0)).toFixed(2)}`;
+
+    const analysis = document.getElementById('revenueAnalysis');
+    if (analysis) {
+      analysis.innerHTML = `
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="color:var(--muted);margin-bottom:4px">DS24 Affiliates</div>
+            <div class="progress-bar"><div class="progress-fill accent" style="width:${Math.min(100,(d.ds24||0)/10)}%"></div></div>
+            <div style="margin-top:4px">€${(d.ds24||0).toFixed(2)} von €1000 Ziel</div>
+          </div>
+          <div>
+            <div style="color:var(--muted);margin-bottom:4px">Shopify Store</div>
+            <div class="progress-bar"><div class="progress-fill green" style="width:${Math.min(100,(d.shopify||0)/10)}%"></div></div>
+            <div style="margin-top:4px">€${(d.shopify||0).toFixed(2)} von €1000 Ziel</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;padding:10px;background:var(--bg3);border-radius:6px;font-size:11px">
+          ${d.alert || ''}
+        </div>
+      `;
+    }
+  } catch(e) {
+    document.getElementById('revenueAnalysis').textContent = 'Revenue-Daten nicht verfügbar';
+  }
+}
+
+// ── Env Status ─────────────────────────────────────────────────────────────
+async function loadEnvStatus() {
+  try {
+    const r = await fetch('/api/env/validate');
+    const d = await r.json();
+    const el = document.getElementById('envControlStatus') || document.getElementById('envStatus');
+    if (!el) return;
+
+    const missing = d.required_missing || [];
+    const total = d.total_required || 12;
+    const present = total - missing.length;
+
+    el.innerHTML = `
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">Required Keys: ${present}/${total}</div>
+        <div class="progress-bar">
+          <div class="progress-fill ${present===total?'green':'accent'}" style="width:${(present/total*100).toFixed(0)}%"></div>
+        </div>
+      </div>
+      ${missing.length ? `
+        <div style="font-size:11px;font-weight:600;color:var(--red);margin-bottom:6px">Fehlende Keys (${missing.length}):</div>
+        ${missing.map(m => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:11px">
+          <span style="color:var(--red)">${m.var}</span>
+          <span style="color:var(--muted)">${m.label}</span>
+        </div>`).join('')}
+      ` : '<div style="color:var(--green);font-size:12px;font-weight:600">✅ Alle Required Keys gesetzt</div>'}
+    `;
+  } catch(e) {
+    const el = document.getElementById('envControlStatus') || document.getElementById('envStatus');
+    if (el) el.textContent = 'Env-Status nicht verfügbar';
+  }
+}
+
+// ── Actions ────────────────────────────────────────────────────────────────
+async function triggerAction(action) {
+  toast(`Starte ${action}...`, 'info');
+  try {
+    const endpoints = {
+      full_start:          '/api/scheduler/trigger',
+      product_curation:    '/api/scheduler/trigger',
+      conversion_optimizer:'/api/scheduler/trigger',
+      sendgrid_blast:      '/api/scheduler/trigger',
+      roas_optimizer:      '/api/scheduler/trigger',
+      money_cycle:         '/api/scheduler/trigger',
+      cart_recovery:       '/api/scheduler/trigger',
+      mega_health_check:   '/api/scheduler/trigger',
+      seo_content:         '/api/scheduler/trigger',
+      revenue_report:      '/api/scheduler/trigger',
+    };
+    const url = endpoints[action] || '/api/scheduler/trigger';
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({task: action})
+    });
+    const d = await r.json();
+    if (d.error) {
+      toast(`${action}: ${d.error}`, 'error');
+    } else {
+      toast(`${action} gestartet ✅`, 'success');
+      setTimeout(refreshTasks, 3000);
+    }
+  } catch(e) {
+    // Try bot execute endpoint
+    try {
+      const r = await fetch('/api/bot/execute', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({command: action})
+      });
+      const d = await r.json();
+      toast(`${action}: ${d.result || 'OK'}`, 'success');
+    } catch(e2) {
+      toast(`${action} gestartet (offline)`, 'info');
+    }
+  }
+}
+
+async function emergencyStop() {
+  if (!confirm('EMERGENCY STOP: Alle Tasks stoppen?')) return;
+  try {
+    await fetch('/api/scheduler/stop-all', {method:'POST'});
+    toast('Emergency Stop ausgeführt', 'error');
+  } catch(e) {
+    toast('E-Stop gesendet (Verbindung getrennt)', 'warn');
+  }
+}
+
+// ── Logs ───────────────────────────────────────────────────────────────────
+async function refreshLogs() {
+  try {
+    const r = await fetch('/api/logs/recent?limit=100');
+    const d = await r.json();
+    const logs = d.logs || d || [];
+    const container = document.getElementById('logContainer');
+    container.innerHTML = logs.map(l => {
+      const level = (l.level||'info').toLowerCase();
+      const time = l.timestamp ? new Date(l.timestamp).toLocaleTimeString('de') : '';
+      return `<div class="log-line ${level}">
+        <span class="log-time">[${time}]</span> ${l.message||JSON.stringify(l)}
+      </div>`;
+    }).join('');
+    container.scrollTop = container.scrollHeight;
+  } catch(e) {
+    addLog(`Log-Endpoint nicht verfügbar: ${e.message}`, 'warn');
+  }
+}
+
+function addLog(msg, level='info') {
+  const c = document.getElementById('logContainer');
+  const div = document.createElement('div');
+  const now = new Date().toLocaleTimeString('de');
+  div.className = `log-line ${level}`;
+  div.innerHTML = `<span class="log-time">[${now}]</span> ${msg}`;
+  c.appendChild(div);
+  c.scrollTop = c.scrollHeight;
+}
+
+function clearLogs() {
+  document.getElementById('logContainer').innerHTML = '';
+}
+
+// ── Status Bar ─────────────────────────────────────────────────────────────
+async function updateStatusBar() {
+  try {
+    const r = await fetch('/health');
+    const d = await r.json();
+    const uptime = d.uptime_seconds ? Math.floor(d.uptime_seconds/60)+'min' : '';
+    document.getElementById('statusBar').textContent =
+      `${d.service||'SuperMegaBot'} | Uptime: ${uptime} | ${new Date().toLocaleTimeString('de')}`;
+  } catch(e) {
+    document.getElementById('statusBar').textContent = `Offline — ${new Date().toLocaleTimeString('de')}`;
+    document.querySelector('.live-dot').style.background = 'var(--red)';
+  }
+}
+
+// ── Init ───────────────────────────────────────────────────────────────────
+async function init() {
+  await Promise.allSettled([
+    refreshHealth(),
+    updateStatusBar(),
+    loadRevenue(),
+    loadEnvStatus(),
+  ]);
+  addLog('BullPower MCC geladen ✅', 'success');
+
+  // Auto-refresh
+  setInterval(updateStatusBar, 30000);
+  setInterval(refreshHealth, 60000);
+  setInterval(() => {
+    if (document.getElementById('tab-tasks').classList.contains('active')) refreshTasks();
+  }, 10000);
+}
+
+init();
+</script>
+</body>
+</html>

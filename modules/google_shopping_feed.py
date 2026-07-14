@@ -47,13 +47,17 @@ DEFAULT_CATEGORY = "Electronics > Consumer Electronics"
 # ---------------------------------------------------------------------------
 
 def _strip_html(html: str) -> str:
-    """Remove HTML tags and normalise whitespace."""
+    """Remove HTML tags, JSON-LD blocks, promo suffixes and normalise whitespace."""
     text = re.sub(r"<[^>]+>", " ", html or "")
     text = re.sub(r"&nbsp;", " ", text)
     text = re.sub(r"&amp;", "&", text)
     text = re.sub(r"&lt;", "<", text)
     text = re.sub(r"&gt;", ">", text)
     text = re.sub(r"&quot;", '"', text)
+    # Remove JSON-LD blocks Shopify appends to body_html
+    text = re.sub(r'\{"\s*@context".*', "", text, flags=re.DOTALL)
+    # Remove promotional suffixes (emoji-led promo lines)
+    text = re.sub(r"[\U00010000-\U0010ffff🎁💡🛍️✅👉🔥⚡]+.*$", "", text, flags=re.DOTALL)
     text = re.sub(r"\s+", " ", text).strip()
     return text[:5000]
 
@@ -262,17 +266,18 @@ async def generate_feed() -> str:
         log.info("Returning cached Google Shopping feed from %s", CACHE_PATH)
         return CACHE_PATH.read_text(encoding="utf-8")
 
-    shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
+    # Use custom storefront domain for product URLs (not internal myshopify domain)
+    storefront_domain = os.getenv("SHOPIFY_STOREFRONT_DOMAIN", "ineedit.com.co")
 
     async with aiohttp.ClientSession() as session:
         products = await _fetch_shopify_products(session)
 
     if not products:
         log.warning("Shopify returned 0 products — returning empty feed (no fake data)")
-        xml_str = _build_xml([], shop_domain)
+        xml_str = _build_xml([], storefront_domain)
     else:
         log.info("Generating Google Shopping feed for %d products", len(products))
-        xml_str = _build_xml(products, shop_domain)
+        xml_str = _build_xml(products, storefront_domain)
 
     # Persist cache
     try:

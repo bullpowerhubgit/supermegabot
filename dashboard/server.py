@@ -6155,6 +6155,22 @@ async def handle_meta_campaigns(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+async def handle_meta_campaign_activate(req):
+    """POST /api/meta/campaign/activate — activate all paused campaigns with €20/day budget."""
+    try:
+        from modules.meta_ads import activate_all_campaigns
+        body = {}
+        try:
+            body = await req.json()
+        except Exception:
+            pass
+        budget = float(body.get("daily_budget_eur", 20.0))
+        result = await activate_all_campaigns(daily_budget_eur=budget)
+        return web.json_response(result)
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 async def handle_meta_campaign_create(req):
     try:
         from modules.meta_ads import create_campaign
@@ -10522,9 +10538,13 @@ async def create_app():
     app.router.add_post("/api/umsatzmaschine/delivery", handle_umsatzmaschine_delivery)
     app.router.add_post("/api/umsatzmaschine/autonomous", handle_umsatzmaschine_autonomous)
     app.router.add_get("/api/mega/status",           handle_mega_status)
+    app.router.add_get("/api/mega/center-status",   handle_mega_center_status)
     app.router.add_post("/api/mega/run",             handle_mega_run)
     app.router.add_post("/api/mega/autonomous",      handle_mega_autonomous)
     app.router.add_post("/api/mega/daily",           handle_mega_run)
+    app.router.add_get("/bullpower",                 handle_bullpower_mcc)
+    app.router.add_get("/api/env/validate",          handle_env_validate)
+    app.router.add_get("/api/revenue/summary",       handle_revenue_summary)
     app.router.add_get("/api/scheduler/status",       handle_scheduler_status)
     app.router.add_post("/api/scheduler/trigger",     handle_scheduler_trigger)
     app.router.add_post("/api/broadcast/trigger",     handle_broadcast_trigger)
@@ -10696,6 +10716,7 @@ async def create_app():
     app.router.add_get( "/api/meta/campaigns",           handle_meta_campaigns)
     app.router.add_post("/api/meta/campaign/create",     handle_meta_campaign_create)
     app.router.add_post("/api/meta/campaign/launch",     handle_meta_campaign_launch)
+    app.router.add_post("/api/meta/campaign/activate",   handle_meta_campaign_activate)
     app.router.add_post("/api/meta/saas-campaign",       handle_meta_saas_campaign)
     app.router.add_get( "/api/meta/pixel/stats",         handle_meta_pixel_stats)
     app.router.add_get( "/api/meta/oauth-url",           handle_meta_oauth_url)
@@ -13340,7 +13361,7 @@ async def handle_umsatzmaschine_autonomous(req):
     return await handle_umsatzmaschine_run(req)
 
 
-async def handle_mega_status(req):
+async def handle_mega_center_status(req):
     """GET /api/mega/status — BullPower MEGA Command Center Status."""
     try:
         from modules.mega_command_center import get_status
@@ -17007,5 +17028,59 @@ if __name__ == "__main__":
             await asyncio.Event().wait()
         finally:
             await runner.cleanup()
+
+
+# ── BullPower MCC Routes ─────────────────────────────────────────────────────
+
+async def handle_bullpower_mcc(req: web.Request) -> web.Response:
+    """GET /bullpower — BullPower Mega Command Center Dashboard."""
+    try:
+        mcc_path = Path(__file__).parent / "bullpower_mcc.html"
+        if mcc_path.exists():
+            return web.Response(text=mcc_path.read_text(encoding="utf-8"), content_type="text/html")
+        return web.Response(text="<h1>BullPower MCC</h1><p>Dashboard nicht gefunden.</p>", content_type="text/html")
+    except Exception as e:
+        return web.json_response({"error": str(e)}, status=500)
+
+
+async def handle_env_validate(req: web.Request) -> web.Response:
+    """GET /api/env/validate — Env Variables Validation."""
+    try:
+        from modules.bullpower_revenue_engine import validate_env
+        return web.json_response(validate_env())
+    except Exception as e:
+        # Fallback: basic check
+        required = [
+            "SHOPIFY_SHOP_DOMAIN", "SHOPIFY_ADMIN_API_TOKEN", "TELEGRAM_BOT_TOKEN",
+            "SUPABASE_URL", "SUPABASE_SERVICE_KEY", "SENDGRID_API_KEY",
+            "KLAVIYO_API_KEY", "STRIPE_SECRET_KEY", "META_ACCESS_TOKEN",
+            "DS24_API_KEY", "ANTHROPIC_API_KEY",
+        ]
+        missing = [{"var": v, "label": v} for v in required if not os.getenv(v, "")]
+        return web.json_response({
+            "ok": len(missing) == 0,
+            "required_present": len(required) - len(missing),
+            "required_missing": missing,
+            "total_required": len(required),
+        })
+
+
+async def handle_revenue_summary(req: web.Request) -> web.Response:
+    """GET /api/revenue/summary — Combined revenue from all streams."""
+    try:
+        from modules.revenue_aggregator import get_summary
+        return web.json_response(await get_summary())
+    except Exception:
+        try:
+            from modules.revenue_tracker import get_daily_summary
+            data = get_daily_summary()
+            return web.json_response(data)
+        except Exception as e2:
+            return web.json_response({
+                "ds24": 0, "shopify": 0, "stripe": 0,
+                "total": 0,
+                "alert": "Revenue-Daten werden geladen...",
+                "error": str(e2)[:100],
+            })
 
     asyncio.run(_main())
