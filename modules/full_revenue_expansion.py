@@ -257,8 +257,42 @@ def _send_smtp(to_email: str, subject: str, html_body: str) -> bool:
         return False
 
 
+async def _send_brevo(to_email: str, subject: str, html_body: str, from_name: str = "AiiteC") -> bool:
+    """Send via Brevo API (ersetzt SendGrid — 300/Tag kostenlos)."""
+    key = os.getenv("BREVO_API_KEY", "")
+    if not key:
+        return False
+    from_email = os.getenv("BREVO_FROM_EMAIL", _FROM_EMAIL())
+    payload = {
+        "sender":      {"email": from_email, "name": from_name},
+        "to":          [{"email": to_email}],
+        "subject":     subject,
+        "htmlContent": html_body,
+    }
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.post(
+                "https://api.brevo.com/v3/smtp/email",
+                json=payload,
+                headers={"api-key": key, "Content-Type": "application/json"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                if r.status in (200, 201):
+                    return True
+                body = await r.text()
+                log.warning("Brevo failed %s: %s", r.status, body[:100])
+                return False
+    except Exception as e:
+        log.warning("Brevo exception: %s", e)
+        return False
+
+
 async def _send_sendgrid(to_email: str, subject: str, html_body: str, from_name: str = "AiiteC") -> bool:
-    """Send via SendGrid API (better deliverability for B2B)."""
+    """Send via Brevo (primär) → SendGrid (Fallback) → SMTP (letzter Ausweg)."""
+    # Brevo zuerst (SendGrid hat 0 Credits)
+    if await _send_brevo(to_email, subject, html_body, from_name):
+        return True
+    # SendGrid Fallback
     key = _SG_KEY()
     if not key:
         return _send_smtp(to_email, subject, html_body)
@@ -279,7 +313,7 @@ async def _send_sendgrid(to_email: str, subject: str, html_body: str, from_name:
                 return r.status in (200, 202)
     except Exception as e:
         log.warning("SendGrid failed: %s", e)
-        return False
+        return _send_smtp(to_email, subject, html_body)
 
 
 # ── Shopify products helper ────────────────────────────────────────────────────
