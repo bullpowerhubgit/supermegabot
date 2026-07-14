@@ -6964,6 +6964,17 @@ async def task_env_validator() -> str:
         return f"EnvValidator Fehler: {e}"
 
 
+async def task_meta_ads_optimize() -> str:
+    """Meta Ads Auto-Optimierung: CTR/CPC prüfen, Budget anpassen (täglich)."""
+    try:
+        from modules.meta_ads_engine import run_auto_optimize
+        result = await run_auto_optimize()
+        n = len(result.get("optimizations", []))
+        return f"MetaAds Optimize: {result['campaigns_checked']} Kampagnen geprüft, {n} Änderungen"
+    except Exception as e:
+        return f"MetaAds Optimize Fehler: {e}"
+
+
 async def task_free_api_hunter() -> str:
     """Scannt und cached alle kostenlosen API-Alternativen (alle 12h)."""
     try:
@@ -6976,6 +6987,18 @@ async def task_free_api_hunter() -> str:
         return f"FreeAPIHunter Fehler: {e}"
 
 
+async def task_free_api_discovery() -> str:
+    """Auto-Discovery: Findet NEUE kostenlose APIs aus publicapis.org + GitHub (alle 24h)."""
+    try:
+        from modules.free_api_hunter import auto_discover_new_apis
+        result = await auto_discover_new_apis(test_limit=50)
+        working = result.get("working_count", len(result.get("working", [])))
+        novel   = result.get("total_novel", 0)
+        return f"FreeAPI-Discovery: {working} neue funktionierende APIs (von {novel} entdeckt)"
+    except Exception as e:
+        return f"FreeAPI-Discovery Fehler: {e}"
+
+
 async def task_rotating_buyer_prospector() -> str:
     """Rotating Buyer Prospector: jeder Lauf andere Nische, sucht Firmen + sendet Emails."""
     try:
@@ -6986,6 +7009,19 @@ async def task_rotating_buyer_prospector() -> str:
                 f"{r['emailed']} Emails gesendet")
     except Exception as e:
         return f"Prospector Fehler: {e}"
+
+
+async def task_test_purchase() -> str:
+    """Alle 6h: vollständiger Funnel-Test (Stripe + Shopify + Webhooks + DS24 + Email)."""
+    try:
+        from modules.test_purchase_engine import run_test_purchase
+        result = await run_test_purchase()
+        passed = result.get("passed", 0)
+        total  = result.get("total", 0)
+        dur    = result.get("duration_s", 0)
+        return f"Test-Verkauf: {passed}/{total} OK ({dur}s)"
+    except Exception as e:
+        return f"Test-Verkauf Fehler: {e}"
 
 
 async def task_full_revenue_expansion() -> str:
@@ -7041,6 +7077,61 @@ async def task_shopify_conversion_boost() -> str:
         return f"Shopify boost error: {e}"
 
 
+# ── Autonomous Pilot Tasks ────────────────────────────────────────────────────
+
+async def task_autonomous_pilot() -> str:
+    try:
+        from modules.autonomous_pilot import run_pilot_cycle
+        result = await run_pilot_cycle()
+        return f"AutonomousPilot: {result}"
+    except Exception as e:
+        return f"AutonomousPilot error: {e}"
+
+async def task_linkedin_dm() -> str:
+    try:
+        from modules.linkedin_dm_outreach import run_daily_outreach
+        result = await run_daily_outreach(limit=50)
+        sent = result.get("sent", 0) if isinstance(result, dict) else 0
+        return f"LinkedInDM: {sent} Nachrichten gesendet"
+    except Exception as e:
+        return f"LinkedInDM error: {e}"
+
+async def task_affiliate_recruiter() -> str:
+    try:
+        from modules.affiliate_recruiter import run_affiliate_campaign
+        result = await run_affiliate_campaign(limit=15)
+        sent = result.get("sent", 0) if isinstance(result, dict) else 0
+        return f"AffiliateRecruiter: {sent} Pitches gesendet"
+    except Exception as e:
+        return f"AffiliateRecruiter error: {e}"
+
+async def task_traffic_maximizer() -> str:
+    try:
+        from modules.traffic_maximizer import run_full_traffic_blast
+        result = await run_full_traffic_blast()
+        posts = result.get("posts_sent", 0) if isinstance(result, dict) else 0
+        platforms = result.get("platforms", []) if isinstance(result, dict) else []
+        return f"TrafficMaximizer: {posts} Posts auf {platforms}"
+    except Exception as e:
+        return f"TrafficMaximizer error: {e}"
+
+async def task_meta_ads_optimize() -> str:
+    try:
+        from modules.meta_ads_engine import run_auto_optimize
+        result = await run_auto_optimize()
+        return f"MetaAds: {result}"
+    except Exception as e:
+        return f"MetaAds error: {e}"
+
+async def task_meta_ads_launch() -> str:
+    try:
+        from modules.meta_ads_engine import launch_retargeting_campaign
+        result = await launch_retargeting_campaign()
+        return f"MetaAds launch: {result}"
+    except Exception as e:
+        return f"MetaAds launch error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7048,6 +7139,7 @@ TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Monitoring & Self-Repair ──────────────────────────────────────────────
     ("auto_repair",          task_auto_repair_10min,     600,   45),  # 10 min — AUTO-REPAIR: alles prüfen + reparieren
+    ("test_purchase",        task_test_purchase,        21600, 300),  # 6h — Funnel-Test: Stripe+Shopify+DS24+Email
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
     ("monitor_hub",          task_monitor_hub,          1800,   60),  # 30 min — Gmail + Telegram + Scheduler
     ("email_inbox_monitor",  task_email_inbox_monitor,   300,   85),  # 5 min  — Gmail Eingang: Bestellungen/Anfragen → Telegram
@@ -7446,13 +7538,22 @@ TASKS = [
     ("zvg_hourly",                task_zvg_hourly,                     3600, 9003),  # stündl. — ZVG Radar: neue Leads (hourly scan)
     ("roas_optimizer",            task_roas_optimizer,                14400, 9100),  # alle 4h — Meta/Google ROAS Auto-Pause/Scale
     ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
+    ("meta_ads_optimize",         task_meta_ads_optimize,            86400, 9195),  # 24h — Meta Ads CTR/CPC Auto-Optimize
     ("free_api_hunter",           task_free_api_hunter,              43200, 9200),  # 12h — Suche + Cache kostenlose APIs
+    ("free_api_discovery",        task_free_api_discovery,           86400, 9250),  # 24h — Auto-Discovery neuer Free APIs
     ("rotating_prospector",       task_rotating_buyer_prospector,     3600, 9300),  # 1h  — Andere Branche pro Lauf, Emails senden
     ("full_expansion",            task_full_revenue_expansion,        28800,  150),  # 8h — Alle Revenue-Kanäle autonom
     # ── MEGA Command Center Scheduler-Tasks ────────────────────────────────────
     ("mega_self_healing",         task_mega_self_healing,              3600,   10),  # 1h — API Health + Revenue Alert
     ("stripe_revenue",            task_stripe_revenue_check,          21600,   50),  # 6h — Stripe Links + Revenue
     ("shopify_boost",             task_shopify_conversion_boost,      43200,   80),  # 12h — Conversion Optimizer
+    # ── AUTONOMER VOLLPILOT — 24/7 selbstständig ──────────────────────────────
+    ("autonomous_pilot",          task_autonomous_pilot,               300,   20),  # 5min — Masterpilot: alle KPIs prüfen + autonom handeln
+    ("linkedin_dm",               task_linkedin_dm,                  21600,  600),  # 6h   — LinkedIn DMs: 50 Verbindungen/Tag
+    ("affiliate_recruiter",       task_affiliate_recruiter,          86400, 1200),  # 24h  — Affiliate Pitches: 15 neue/Tag
+    ("traffic_maximizer_am",      task_traffic_maximizer,            28800,  900),  # 8h   — Traffic: LinkedIn+FB+Shopify Blog 3×/Tag
+    ("meta_ads_launch",           task_meta_ads_launch,             604800, 1800),  # 1×/Woche — Meta Retargeting Kampagne starten
+    ("meta_ads_optimize",         task_meta_ads_optimize,            14400, 2400),  # 4h   — Meta Ads: CTR prüfen + Budget anpassen
 ]
 
 
