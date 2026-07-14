@@ -338,6 +338,33 @@ def _fetch_inbox_replies(account: Dict, since_hours: int = 1) -> List[Dict]:
             # Eigene Emails überspringen
             if any(acc["user"] in from_email for acc in GMAIL_ACCOUNTS):
                 continue
+            # System/Notification-Domains und Prefixes blockieren
+            _dom = from_email.split("@")[-1] if "@" in from_email else ""
+            _loc = from_email.split("@")[0]  if "@" in from_email else ""
+            _BLOCK_DOMAINS = {
+                "github.com", "github.io", "noreply.github.com",
+                "facebookmail.com", "accounts.google.com",
+                "bounce.twitter.com", "smtp.linkedin.com",
+                "stripe.com", "shopify.com", "shopifyemail.com",
+                "klaviyo.com", "sendgrid.net", "mailchimp.com",
+                "beehiiv.com", "substack.com", "convertkit.com",
+                "googlemail.com", "googlegroups.com",
+                "bounces.amazon.com", "amazonses.com",
+                "railway.app", "vercel.com", "netlify.com",
+                "joonix.net", "storebotmail.joonix.net",
+            }
+            _BLOCK_PREFIXES = (
+                "noreply", "no-reply", "donotreply", "do-not-reply",
+                "mailer-daemon", "postmaster", "bounce", "bounces",
+                "newsletter", "notifications", "notification",
+                "alerts", "alert", "system", "daemon", "robot",
+                "bulk", "auto-", "auto_", "automated",
+                "support", "help", "info", "service",
+                "marketing", "promo", "news", "updates",
+            )
+            if _dom in _BLOCK_DOMAINS or any(_loc.startswith(p) for p in _BLOCK_PREFIXES):
+                log.debug("  [SKIP-SYSTEM] %s", from_email)
+                continue
             replies.append({
                 "account":    user,
                 "from_email": from_email,
