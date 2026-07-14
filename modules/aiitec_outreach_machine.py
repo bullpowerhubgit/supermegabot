@@ -149,11 +149,11 @@ def _send_via_sendgrid(to: str, subject: str, body: str) -> bool:
         log.debug("  SendGrid Fehler: %s", e)
     return False
 
-EMAILS_PER_DAY    = 60   # 6 Gmail-Accounts × ~10/Account = 60/Lauf (3 Läufe/Tag möglich)
-FOLLOWUP_DAYS_1   = 4    # Schnellere Follow-Up-Kadenz
-FOLLOWUP_DAYS_2   = 8
-# Vollautonomer Multi-Run: 3x täglich (Morgen + Mittag + Abend)
-DAILY_RUNS        = [(8, 0), (13, 0), (18, 0)]  # Uhrzeit (Stunde, Minute)
+EMAILS_PER_DAY    = 450  # 6 Gmail-Accounts × 75/Account = 450/Lauf (Maximum-Modus)
+FOLLOWUP_DAYS_1   = 3    # Schnellere Follow-Up-Kadenz
+FOLLOWUP_DAYS_2   = 7
+# Vollautonomer Multi-Run: 4x täglich (Maximum)
+DAILY_RUNS        = [(7, 0), (10, 0), (14, 0), (18, 0)]  # 4 Läufe/Tag
 
 # ── Produkte ──────────────────────────────────────────────────────────────────
 
@@ -667,14 +667,24 @@ async def seed_companies() -> int:
     return inserted
 
 async def _get_queue(limit: int = EMAILS_PER_DAY) -> List[dict]:
-    # Hole 4× mehr, mische zufällig — jeder Lauf wählt andere Firmen
-    fetch = min(limit * 4, 300)
+    # Primär: Supabase-Queue
+    fetch = min(limit * 4, 600)
     data = await _sb("GET", "/rest/v1/aiitec_companies",
                      params={"status": "eq.new", "limit": str(fetch), "order": "id.asc"})
-    if not data:
-        return []
-    random.shuffle(data)
-    return data[:limit]
+    if data:
+        random.shuffle(data)
+        return data[:limit]
+    # Fallback: EXTENDED_COMPANIES_DB direkt (wenn Supabase offline)
+    log.warning("[QUEUE] Supabase offline — nutze EXTENDED_COMPANIES_DB als Fallback")
+    pool = list(EXTENDED_COMPANIES_DB)
+    random.shuffle(pool)
+    return [
+        {"id": i, "email": c["email"], "name": c["name"], "company": c["name"],
+         "branche": c.get("branche","IT"), "industry": c.get("branche","IT"),
+         "city": c.get("land","DE"), "contact": "", "confidence": 80,
+         "track": "A", "product_key": "lead_agent"}
+        for i, c in enumerate(pool[:limit])
+    ]
 
 # ── Auto-Discovery: neue Käufer finden ───────────────────────────────────────
 

@@ -551,7 +551,11 @@ async def send_checkout_flow(offers: List[Dict], list_id: str = "", max_profiles
 
 async def send_campaign(subject: str, html_body: str = "", list_id: str = "", checkout_url: str = "") -> dict:
     """One-step: create + send Klaviyo campaign. Returns {ok, campaign_id, error}."""
-    _list_id = list_id or os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+    raw_id = list_id or os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+    # Sanitize: env var might be stored as "{'type': 'list', 'id': 'Xwxq6V'}" — extract bare ID
+    import re as _re
+    _m = _re.search(r"'id':\s*'([A-Za-z0-9]+)'", str(raw_id))
+    _list_id = _m.group(1) if _m else str(raw_id).strip().strip("'\"") if len(str(raw_id)) < 20 else "Xwxq6V"
     from_email = os.getenv("KLAVIYO_FROM_EMAIL", "bullpowersrtkennels@gmail.com")
     from_name  = os.getenv("KLAVIYO_FROM_NAME", "Rudolf | AIITEC")
     _html = html_body or _default_html(subject, checkout_url=checkout_url)

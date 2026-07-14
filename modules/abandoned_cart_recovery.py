@@ -36,13 +36,13 @@ _SHOP_DOMAIN   = os.getenv("SHOP_CUSTOM_DOMAIN", os.getenv("SHOPIFY_CUSTOM_DOMAI
 _DISCOUNT_CODE = os.getenv("CART_RECOVERY_DISCOUNT", "RESCUE10")
 
 # Mindest-Alter eines Warenkorbs bevor Stage-1 gesendet wird (Standard: 60 Min.)
-_STAGE1_DELAY_MIN  = int(os.getenv("CART_STAGE1_DELAY_MIN", "60"))
+_STAGE1_DELAY_MIN  = int(os.getenv("CART_STAGE1_DELAY_MIN", "15"))   # 15min (Maximum: sofort)
 # Stage-2 nach X Minuten nach Stage-1
-_STAGE2_DELAY_MIN  = int(os.getenv("CART_STAGE2_DELAY_MIN", "60"))
+_STAGE2_DELAY_MIN  = int(os.getenv("CART_STAGE2_DELAY_MIN", "45"))   # 45min
 # Stage-3 nach X Minuten nach Stage-1
-_STAGE3_DELAY_MIN  = int(os.getenv("CART_STAGE3_DELAY_MIN", "1440"))  # 24h
+_STAGE3_DELAY_MIN  = int(os.getenv("CART_STAGE3_DELAY_MIN", "720"))   # 12h (vorher 24h)
 # Carts älter als X Stunden werden nicht mehr verarbeitet
-_MAX_AGE_HOURS     = int(os.getenv("CART_MAX_AGE_HOURS", "72"))
+_MAX_AGE_HOURS     = int(os.getenv("CART_MAX_AGE_HOURS", "96"))
 
 
 # ── SQLite DB ─────────────────────────────────────────────────────────────────

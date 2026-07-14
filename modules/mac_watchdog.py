@@ -23,6 +23,16 @@ import psutil
 from datetime import datetime, timezone
 from pathlib import Path
 
+try:
+    from modules.mac_disk_cleaner import run_full_cleanup, get_disk_free_gb
+except ImportError:
+    try:
+        sys.path.insert(0, str(Path(__file__).parent.parent))
+        from modules.mac_disk_cleaner import run_full_cleanup, get_disk_free_gb
+    except ImportError:
+        run_full_cleanup = None
+        get_disk_free_gb = None
+
 log = logging.getLogger("MacWatchdog")
 
 TG_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
@@ -50,8 +60,9 @@ RAILWAY_SERVICES = [
 # Thresholds
 CPU_WARN    = 85   # %
 RAM_WARN    = 88   # %
-DISK_WARN   = 90   # %  von belegt
-DISK_MIN_GB = 5    # GB frei minimum
+DISK_WARN      = 85   # %  von belegt → Alert
+DISK_MIN_GB    = 5    # GB frei → kritischer Alert
+DISK_CLEAN_GB  = 20   # GB frei → auto-cleanup starten
 
 
 # ── State ────────────────────────────────────────────────────────────────────
@@ -364,7 +375,32 @@ async def run_mac_watchdog() -> dict:
                 result["alerts"] += 1
         result["issues"].extend(apis["issues"])
 
-        # 5. Tages-Report
+        # 5. Auto Disk Cleanup (wenn < DISK_CLEAN_GB frei)
+        if run_full_cleanup and get_disk_free_gb:
+            free_gb = get_disk_free_gb()
+            if free_gb < DISK_CLEAN_GB:
+                if _cooldown_ok(state, "disk_cleanup", 120):
+                    log.warning("Nur %.1f GB frei — starte Auto-Cleanup", free_gb)
+                    try:
+                        cleanup = run_full_cleanup(force=False)
+                        if not cleanup.get("skipped"):
+                            freed = cleanup.get("freed_mb", 0)
+                            after = cleanup.get("free_after_gb", free_gb)
+                            msg = (
+                                f"🧹 *Auto Disk Cleanup abgeschlossen*\n"
+                                f"War: {free_gb:.1f} GB frei\n"
+                                f"Jetzt: {after:.1f} GB frei\n"
+                                f"Befreit: {freed:.0f} MB\n\n"
+                                f"Details:\n" +
+                                "\n".join(f"  • {k}: {v} MB" for k, v in cleanup.get("steps", {}).items() if v > 0)
+                            )
+                            await _tg(session, msg)
+                            _mark_alerted(state, "disk_cleanup")
+                            result["repaired"].append(f"disk_cleanup: +{freed:.0f}MB")
+                    except Exception as e:
+                        log.error("Auto Disk Cleanup Fehler: %s", e)
+
+        # 6. Tages-Report
         await send_daily_report(session, state, mac, railway)
 
     if result["issues"]:
