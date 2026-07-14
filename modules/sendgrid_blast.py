@@ -157,14 +157,47 @@ def build_welcome_html(first_name: str) -> Tuple[str, str]:
 
 # ── Core send ─────────────────────────────────────────────────────────────────
 
+async def _send_brevo_smtp(to_email: str, to_name: str, subject: str, html: str,
+                           from_email: Optional[str] = None) -> bool:
+    """Brevo SMTP — primärer Sender (SendGrid hat 0 Credits)."""
+    smtp_user = os.getenv("BREVO_SMTP_USER", "")
+    smtp_pass = os.getenv("BREVO_SMTP_PASS", "")
+    if not smtp_user or not smtp_pass:
+        return False
+    sender = from_email or os.getenv("BREVO_FROM_EMAIL", SG_FROM_EMAIL)
+    import smtplib
+    from email.mime.multipart import MIMEMultipart
+    from email.mime.text import MIMEText
+    try:
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = subject
+        msg["From"]    = f"{SG_FROM_NAME} <{sender}>"
+        msg["To"]      = f"{to_name} <{to_email}>" if to_name else to_email
+        msg.attach(MIMEText(html, "html", "utf-8"))
+        with smtplib.SMTP("smtp-relay.brevo.com", 587, timeout=15) as s:
+            s.ehlo(); s.starttls()
+            s.login(smtp_user, smtp_pass)
+            s.sendmail(sender, [to_email], msg.as_string())
+        log.info("Brevo SMTP ✅ → %s", to_email)
+        return True
+    except Exception as e:
+        log.warning("Brevo SMTP %s: %s", to_email, e)
+        return False
+
+
 async def send_single(to_email: str, to_name: str, subject: str, html: str,
                       from_email: Optional[str] = None) -> Dict:
-    """Send one email via SendGrid v3 API."""
-    if not SG_KEY:
-        return {"ok": False, "error": "no SENDGRID_API_KEY"}
+    """Send via Brevo SMTP (primär) → SendGrid (fallback)."""
     if not to_email or "@" not in to_email:
         return {"ok": False, "error": "invalid to_email"}
 
+    # Brevo SMTP zuerst
+    if await _send_brevo_smtp(to_email, to_name, subject, html, from_email):
+        return {"ok": True, "to": to_email, "via": "brevo"}
+
+    # SendGrid Fallback
+    if not SG_KEY:
+        return {"ok": False, "error": "no sender configured"}
     payload = {
         "personalizations": [{"to": [{"email": to_email, "name": to_name or ""}]}],
         "from": {"email": from_email or SG_FROM_EMAIL, "name": SG_FROM_NAME},
@@ -179,8 +212,7 @@ async def send_single(to_email: str, to_name: str, subject: str, html: str,
         async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
             async with s.post(f"{SG_BASE}/mail/send", headers=_sg_headers(), json=payload) as r:
                 if r.status in (200, 202):
-                    log.debug("SendGrid sent to %s", to_email)
-                    return {"ok": True, "to": to_email}
+                    return {"ok": True, "to": to_email, "via": "sendgrid"}
                 body = await r.text()
                 log.warning("SendGrid %s: %s %s", to_email, r.status, body[:200])
                 return {"ok": False, "status": r.status, "error": body[:200]}
