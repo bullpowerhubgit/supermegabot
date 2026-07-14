@@ -27,7 +27,7 @@ _OUTREACH_DB = _BASE / "data" / "mass_outreach.db"
 _CART_DB    = _BASE / "data" / "abandoned_cart.db"
 _ROAS_DB    = _BASE / "data" / "meta_roas_max.db"
 
-_DASHBOARD  = "http://localhost:8888"
+_DASHBOARD  = os.getenv("SUPERMEGABOT_INTERNAL_URL", "http://localhost:8888")
 
 # ---------------------------------------------------------------------------
 # DB bootstrap
