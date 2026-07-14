@@ -1,94 +1,98 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 v25 — DEEP SCAN COMPLETE · 140+ MODULE GEFIXT · FREE API HUNTER LIVE**
+**Stand: 2026-07-14 v26 — AUTO-REPAIR WÄCHTER · SMART BATCH · CONVERSION BOOSTER LIVE**
 
 ---
 
-## 🚀 NEU (2026-07-14 v25) — DEEP SCAN + FREE APIS
+## 🔧 NEU (2026-07-14 v26) — SELBSTREPARATUR
 
-### Deep Scan abgeschlossen ✅ (0 Syntax-Fehler in 306 Modulen)
-**Fixes in 140+ Dateien (2 Commits):**
+### Auto-Repair Wächter ✅ (alle 10 Minuten)
+- **Modul**: `modules/auto_repair_10min.py`
+- **Scheduler**: `("auto_repair", task_auto_repair_10min, 600, 45)` — Start 45s nach Deploy
+- **Was er prüft & repariert**:
+  1. 📧 **Outreach-Emails** — zu wenig → Batch (200 Emails) sofort starten
+  2. 🛍️ **Shopify Booster** — ScriptTag fehlt → automatisch neu injizieren
+  3. ⚡ **Circuit Breaker** — offen >15min → resetten (außer Facebook)
+  4. 🔍 **Lead-Queue** — <30 Leads → Mini-Research starten
+  5. ▶️ **Revenue-Tasks** — DS24/CRO/GitHub Blog überfällig → neu triggern
+  6. 💾 **DB-Gesundheit** — SQLite-Integrität prüfen
+  7. 📡 **SMTP-Pool** — Accounts vorhanden?
+  8. 📊 **Tages-Target** — Abend-Warnung wenn <200 Emails
+- **Zustand**: `data/auto_repair_state.json` (verhindert zu häufige Re-Triggers)
+- **Telegram**: Report NUR wenn etwas repariert wurde
 
-| Fix | Betroffene Dateien | Problem |
-|-----|-------------------|---------|
-| `SHOPIFY_ACCESS_TOKEN` | 83 Module | Falsche Env-Var `SHOPIFY_ADMIN_API_TOKEN` → leer |
-| Shopify Domain Fallback | 46 Module | `autopilot-store-suite-fmbka` → `ineedit.com.co` |
-| Railway URL | 6 Module | Hardcoded → `os.getenv("RAILWAY_PUBLIC_DOMAIN", ...)` |
-| `import os` | 5 Module | Missing + `from __future__` Reihenfolge fixiert |
-| Supabase Test | test_live_connections | `/rest/v1/` → `/rest/v1/agent_memory?limit=1` |
-| DS24 Test | test_live_connections | Falsches Endpoint → korrekte URL |
+### Smart Research-then-Send ✅ (jeder Batch)
+- `run_smart_batch()` in `mass_outreach_1000.py`
+- Recherchiert vor jeder Batch **3 neue Kategorien × 5 neue Städte**
+- `searched_combos` DB-Tabelle — NIEMALS dieselbe Kombination zweimal
+- Nach vollständiger Rotation (23×40=920 Kombis): automatischer Reset
+- Scheduler: 3× täglich `task_mass_outreach_batch` → Smart Batch
 
-### Free API Hunter ✅ LIVE (`modules/free_api_hunter.py`)
-- **50+ kostenlose APIs** in 8 Kategorien cached
-- **Kein API-Key nötig**: Pollinations (∞ Bilder), DuckDuckGo (∞ Suche), Frankfurter (∞ Währung)
-- **Free AI Fallback**: Groq → Gemini Flash → OpenRouter/DeepSeek → Ollama
-- **Scheduler**: alle 12h automatischer Scan (`task_free_api_hunter`)
-- **Dashboard**: `/api/free-apis/*` (GET registry, POST scan, GET best-ai)
+### Shopify Conversion Booster ✅ LIVE
+- **ScriptTag ID**: 367516516739 | Theme: Horizon
+- Free-Shipping-Bar, Trust-Badges, Urgency, Social-Proof, Exit-Popup, Sticky ATC
+- Discount Codes: WELCOME10 (10%) + RESCUE10 (10%)
+- Auto-Repair prüft alle 60min ob ScriptTag noch da ist
 
-### ROAS Optimizer ✅ (`modules/roas_optimizer.py`)
-- **Auto-Pause** ROAS < 2x: Creative Test Video (0.87x), Generic Broad (1.49x)
-- **Auto-Scale** ROAS > 4x: Cart Abandoners (17-23x), Brand Search (20-24x)
-- Läuft alle 4h via Scheduler
+### CRO Engine (Fix deployed)
+- `create_klaviyo_welcome_flow()` → 3-Step Klaviyo API + SMTP-Fallback
+- `create_urgency_campaign()` → 3-Step Klaviyo API (POST + GET msg-id + PATCH + send-job)
 
 ---
 
-## ⚠️ NOCH OFFEN
+## ⚠️ NOCH OFFEN (manuell nötig)
 
 | Was | Wo | Priorität |
 |-----|-----|-----------|
-| Anthropic Credits aufladen | console.anthropic.com | HOCH (AI-Content 503) |
-| DS24 Produkt 704677 manuell einreichen | DS24 Dashboard | HOCH |
-| Twilio Nummer kaufen | Twilio Dashboard | MITTEL |
-| Klaviyo echte Subscribers aufbauen | Klaviyo Dashboard | MITTEL |
-| Pinterest Standard Access | developers.pinterest.com | NIEDRIG |
-| TikTok Production Access | App Review | NIEDRIG |
-| Instagram Token (läuft ab 2026-09-06) | Meta Dashboard | NIEDRIG |
+| **Anthropic Credits aufladen** | console.anthropic.com | 🔴 HOCH (AI 503) |
+| **DS24 Produkt 704677 einreichen** | DS24 Dashboard | 🔴 HOCH |
+| Twilio Nummer kaufen | Twilio Dashboard | 🟡 MITTEL |
+| Klaviyo echte Subscribers | Klaviyo Dashboard | 🟡 MITTEL |
+| Pinterest Standard Access | developers.pinterest.com | 🟢 NIEDRIG |
+| TikTok Production Access | App Review | 🟢 NIEDRIG |
+| Instagram Token (läuft ab 2026-09-06) | Meta Dashboard | 🟢 NIEDRIG |
 
 ---
 
-## 💰 REVENUE STATUS
+## 💰 REVENUE STATUS (Stand 2026-07-14 ~16:20)
 
-| Kanal | Status | Tägl. Kapazität |
-|-------|--------|----------------|
-| SMTP Outreach (502+ Leads) | ✅ 64+ gesendet | 1.200/Tag |
-| DS24 Affiliate | ✅ alle 3h | — |
+| Kanal | Status | Heute |
+|-------|--------|-------|
+| SMTP Outreach | ✅ 209+ Emails | 209/1.000 |
+| DS24 Affiliate | ✅ alle 3h | aktiv |
 | Shopify Store | ✅ 11.828 Produkte | — |
 | Abandoned Cart | ✅ alle 1h | — |
-| ROAS Optimizer | ✅ alle 4h | Auto |
-| Free API Hunter | ✅ alle 12h | 50+ free APIs |
-
----
-
-## ✅ ALLE LANGZEIT-FIXES
-
-- Shopify Token: SHOPIFY_ACCESS_TOKEN überall korrekt ✅
-- Shopify Domain: ineedit.com.co als Fallback überall ✅
-- Railway URL: env-basiert (RAILWAY_PUBLIC_DOMAIN) ✅
-- DS24 Key: IMMER 1581233-... (aiitec) — self_fixer warnt bei 1682000 ✅
-- AiiteC: FB 1016738738178786, IG @aaiitecc ✅
-- SMTP Pool: 8 Gmail-Accounts (1.600/Tag) ✅
-- 5 duplicate GET routes in server.py behoben (startup-crash) ✅
-- 12 duplicate functions in scheduler bereinigt ✅
-- self_healer: high_cpu + zombie_processes actions real ✅
-- 0 Syntax-Fehler in allen 306 Modulen ✅
+| Auto-Repair | ✅ alle 10min | aktiv |
+| Smart Batch | ✅ jeder Lauf | neue Firmen |
 
 ---
 
 ## 📋 SESSION-FORTSETZUNG
 
 ```bash
-# 1. System Health
+# 1. Auto-Repair manuell triggern (nach Deploy)
+curl -s -X POST https://supermegabot-production.up.railway.app/api/scheduler/trigger \
+  -H "Content-Type: application/json" -d '{"task":"auto_repair"}'
+
+# 2. Outreach Stats
+curl -s https://supermegabot-production.up.railway.app/api/mass-outreach/stats
+
+# 3. Smart Batch starten
+curl -s -X POST https://supermegabot-production.up.railway.app/api/mass-outreach/send \
+  -H "Content-Type: application/json" -d '{"limit": 300, "smart": true}'
+
+# 4. Health check
 curl -s https://supermegabot-production.up.railway.app/health
-
-# 2. Free APIs scannen
-curl -s -X POST http://localhost:8888/api/free-apis/scan
-
-# 3. ROAS-Zyklus triggern
-curl -s -X POST http://localhost:8888/api/scheduler/trigger \
-  -H "Content-Type: application/json" -d '{"task":"roas_optimizer"}'
-
-# 4. Revenue Status
-curl -s http://localhost:8888/api/revenue/summary
-
-# 5. Deep Scan Status
-python3 test_live_connections.py
 ```
+
+---
+
+## ✅ ALLE FIXES (v26 + v25 + v24)
+
+- Auto-Repair Wächter (alle 10min) ✅
+- Smart Research-then-Send (niemals dieselbe Firma zweimal) ✅
+- Shopify Conversion Booster live ✅
+- CRO Engine Klaviyo 3-Step API Fix ✅
+- Deep Scan: 140+ Module bereinigt (Shopify Token, Railway URL) ✅
+- DS24 Key: IMMER 1581233-... (aiitec) ✅
+- AiiteC: FB 1016738738178786, IG @aaiitecc ✅
+- SMTP Pool: 6 unique Accounts ✅
