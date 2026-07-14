@@ -297,6 +297,76 @@ FREE_API_CATALOG: dict[str, list[dict]] = {
             "auth_header": None,
         },
     ],
+
+    # B2B-spezifisch: Company-Enrichment + News (für AIITEC Outreach)
+    "b2b_company": [
+        {
+            "name": "OpenCorporates (kein Key, 50k/mo)",
+            "url": "https://api.opencorporates.com/v0.4/companies/search",
+            "env_key": None,
+            "free_limit": "50.000 req/Monat ohne Key",
+            "auth_header": None,
+            "test_endpoint": "https://api.opencorporates.com/v0.4/companies/search?q=Allianz&jurisdiction_code=de&format=json",
+            "usage": "GET ?q={company_name}&jurisdiction_code=de&format=json",
+        },
+        {
+            "name": "Clearbit Enrichment (50/mo free)",
+            "url": "https://company.clearbit.com/v2/companies/find",
+            "env_key": "CLEARBIT_API_KEY",
+            "free_limit": "50 req/Monat",
+            "auth_header": "Authorization",
+            "auth_prefix": "Bearer ",
+            "test_endpoint": "https://company.clearbit.com/v2/companies/find?domain=stripe.com",
+        },
+        {
+            "name": "Disify Email Validation (kein Key)",
+            "url": "https://www.disify.com/api/email/",
+            "env_key": None,
+            "free_limit": "∞ kostenlos",
+            "auth_header": None,
+            "test_endpoint": "https://www.disify.com/api/email/test@gmail.com",
+            "usage": "GET https://www.disify.com/api/email/{email}",
+        },
+        {
+            "name": "Abstract Email Validation (100/mo)",
+            "url": "https://emailvalidation.abstractapi.com/v1/",
+            "env_key": "ABSTRACT_API_KEY",
+            "free_limit": "100 req/Monat",
+            "auth_mode": "query_param",
+            "auth_param": "api_key",
+            "test_endpoint": "https://emailvalidation.abstractapi.com/v1/?api_key={key}&email=test@gmail.com",
+        },
+    ],
+
+    "b2b_news": [
+        {
+            "name": "NewsAPI (100/Tag free)",
+            "url": "https://newsapi.org/v2/everything",
+            "env_key": "NEWSAPI_KEY",
+            "free_limit": "100 Anfragen/Tag",
+            "auth_mode": "query_param",
+            "auth_param": "apiKey",
+            "test_endpoint": "https://newsapi.org/v2/top-headlines?country=de&apiKey={key}&pageSize=1",
+        },
+        {
+            "name": "GNews (100/Tag free)",
+            "url": "https://gnews.io/api/v4/search",
+            "env_key": "GNEWS_API_KEY",
+            "free_limit": "100 Anfragen/Tag",
+            "auth_mode": "query_param",
+            "auth_param": "token",
+            "test_endpoint": "https://gnews.io/api/v4/top-headlines?lang=de&max=1&token={key}",
+        },
+        {
+            "name": "Currents API (600/Tag free)",
+            "url": "https://api.currentsapi.services/v1/search",
+            "env_key": "CURRENTS_API_KEY",
+            "free_limit": "600 Anfragen/Tag",
+            "auth_mode": "query_param",
+            "auth_param": "apiKey",
+            "test_endpoint": "https://api.currentsapi.services/v1/latest-news?language=de&apiKey={key}&page_size=1",
+        },
+    ],
 }
 
 
@@ -540,6 +610,168 @@ async def hunt_all_free_apis() -> dict:
         log.debug("Telegram notify failed: %s", e)
 
     return results
+
+
+# ── FreeAPIToolkit — direkt nutzbar für AIITEC Outreach ───────────────────────
+
+class FreeAPIToolkit:
+    """
+    Einheitliche Schnittstelle für die besten Free APIs.
+    Nutzung:
+        async with FreeAPIToolkit() as kit:
+            text  = await kit.ai_complete("Schreib eine Email...")
+            email = await kit.find_email("allianz.de")
+            news  = await kit.get_company_news("Allianz")
+            co    = await kit.enrich_company("Allianz SE", "allianz.de")
+    """
+
+    def __init__(self):
+        self._session = None
+
+    async def __aenter__(self):
+        import aiohttp
+        self._session = aiohttp.ClientSession(
+            timeout=aiohttp.ClientTimeout(total=15)
+        )
+        return self
+
+    async def __aexit__(self, *args):
+        if self._session:
+            await self._session.close()
+
+    async def ai_complete(self, prompt: str, system: str = "", max_tokens: int = 800) -> str:
+        """Groq (free) → OpenRouter → Gemini → leer."""
+        import aiohttp
+        key = os.getenv("GROQ_API_KEY", "")
+        if key:
+            try:
+                msgs = []
+                if system:
+                    msgs.append({"role": "system", "content": system})
+                msgs.append({"role": "user", "content": prompt})
+                async with self._session.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                    json={"model": "llama-3.1-70b-versatile", "messages": msgs,
+                          "max_tokens": max_tokens},
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        return d["choices"][0]["message"]["content"].strip()
+            except Exception:
+                pass
+        # OpenRouter fallback
+        or_key = os.getenv("OPENROUTER_API_KEY", "")
+        if or_key:
+            try:
+                msgs = []
+                if system:
+                    msgs.append({"role": "system", "content": system})
+                msgs.append({"role": "user", "content": prompt})
+                async with self._session.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {or_key}", "Content-Type": "application/json",
+                             "HTTP-Referer": "https://supermegabot-production.up.railway.app"},
+                    json={"model": "google/gemma-4-26b-a4b-it:free", "messages": msgs,
+                          "max_tokens": max_tokens},
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        return d["choices"][0]["message"]["content"].strip()
+            except Exception:
+                pass
+        return ""
+
+    async def find_email(self, domain: str, department: str = "") -> str:
+        """Hunter.io — findet echte Kontakt-Emails per Domain (25/Monat free)."""
+        key = os.getenv("HUNTER_API_KEY", "")
+        if not key:
+            return ""
+        try:
+            params = {"domain": domain, "api_key": key}
+            if department:
+                params["department"] = department
+            async with self._session.get(
+                "https://api.hunter.io/v2/domain-search", params=params
+            ) as r:
+                if r.status == 200:
+                    d = await r.json()
+                    emails = d.get("data", {}).get("emails", [])
+                    if emails:
+                        best = max(emails, key=lambda e: e.get("confidence", 0))
+                        return best.get("value", "")
+        except Exception as e:
+            log.debug("Hunter Fehler: %s", e)
+        return ""
+
+    async def validate_email(self, email_addr: str) -> bool:
+        """Disify — Email-Validierung ohne Key (∞ free)."""
+        try:
+            async with self._session.get(
+                f"https://www.disify.com/api/email/{email_addr}"
+            ) as r:
+                if r.status == 200:
+                    d = await r.json(content_type=None)
+                    return bool(d.get("format")) and not d.get("disposable", True)
+        except Exception:
+            pass
+        return True
+
+    async def get_company_news(self, company: str, max_results: int = 3) -> list:
+        """NewsAPI → GNews → [] — aktuelle News für Email-Personalisierung."""
+        news_key = os.getenv("NEWSAPI_KEY", os.getenv("NEWS_API_KEY", ""))
+        if news_key:
+            try:
+                async with self._session.get(
+                    "https://newsapi.org/v2/everything",
+                    params={"q": company, "language": "de", "pageSize": max_results,
+                            "sortBy": "publishedAt", "apiKey": news_key}
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        titles = [a.get("title", "") for a in d.get("articles", [])]
+                        if titles:
+                            return titles
+            except Exception:
+                pass
+        gnews_key = os.getenv("GNEWS_API_KEY", "")
+        if gnews_key:
+            try:
+                async with self._session.get(
+                    "https://gnews.io/api/v4/search",
+                    params={"q": company, "lang": "de", "max": max_results, "token": gnews_key}
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        return [a.get("title", "") for a in d.get("articles", [])]
+            except Exception:
+                pass
+        return []
+
+    async def enrich_company(self, name: str, domain: str = "") -> dict:
+        """OpenCorporates — Handelsregister-Daten ohne Key (50k/Monat free)."""
+        result = {"name": name, "domain": domain}
+        try:
+            async with self._session.get(
+                "https://api.opencorporates.com/v0.4/companies/search",
+                params={"q": name, "jurisdiction_code": "de", "format": "json"},
+                headers={"User-Agent": "SuperMegaBot/1.0"},
+            ) as r:
+                if r.status == 200:
+                    d = await r.json(content_type=None)
+                    companies = d.get("results", {}).get("companies", [])
+                    if companies:
+                        c = companies[0].get("company", {})
+                        result.update({
+                            "registered_address": c.get("registered_address_in_full", ""),
+                            "company_number": c.get("company_number", ""),
+                            "incorporation_date": c.get("incorporation_date", ""),
+                            "company_type": c.get("company_type", ""),
+                            "status": c.get("current_status", ""),
+                        })
+        except Exception as e:
+            log.debug("OpenCorporates Fehler: %s", e)
+        return result
 
 
 if __name__ == "__main__":
