@@ -18,7 +18,7 @@ def _shop_domain() -> str:
     return os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 
 def _shop_token() -> str:
-    return os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    return os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 
 def _shop_ver() -> str:
     return os.getenv("SHOPIFY_API_VERSION", "2026-04")

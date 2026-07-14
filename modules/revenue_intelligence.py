@@ -17,7 +17,7 @@ SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_ADMIN_API_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_ADMIN_API_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 _AI_MODEL = "claude-haiku-4-5-20251001"
@@ -330,7 +330,7 @@ async def revenue_autopilot() -> dict:
     if not new_subs:
         try:
             ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
-            shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+            shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
             promos = [
                 f"💰 Passives Einkommen mit KI-Automation? Starte jetzt → {ds24_link}",
                 f"🚀 Shopify-Shop vollautomatisch betreiben — so geht's: {ds24_link}",

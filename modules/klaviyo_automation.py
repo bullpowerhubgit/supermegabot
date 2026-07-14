@@ -367,7 +367,7 @@ async def sync_from_digistore(list_id: str) -> int:
 async def sync_from_shopify(list_id: str, limit: int = 50) -> int:
     """Sync Shopify customer emails into a Klaviyo list."""
     import os as _os
-    token  = _os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    token  = _os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
     domain = _os.getenv("SHOPIFY_SHOP_DOMAIN", "")
     if not token or not domain:
         return 0

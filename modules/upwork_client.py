@@ -8,7 +8,7 @@ from typing import Dict, List
 log = logging.getLogger("UpworkClient")
 
 _BASE     = "https://www.upwork.com/api"
-_REDIRECT = "https://supermegabot-production.up.railway.app/api/upwork/callback"
+_REDIRECT = os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/") + "/api/upwork/callback"
 
 
 def _access_token() -> str:

@@ -16,7 +16,7 @@ log = logging.getLogger("FiverrAutonomy")
 
 FIVERR_KEY  = os.getenv("FIVERR_API_KEY", "")
 FIVERR_USER = os.getenv("FIVERR_USERNAME", "bullpowerhub")
-SHOP_URL    = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL    = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 
 FIVERR_PROFILE = f"https://www.fiverr.com/{FIVERR_USER}"
 

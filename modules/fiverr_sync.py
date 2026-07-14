@@ -17,7 +17,7 @@ log = logging.getLogger("FiverrSync")
 API_KEY = os.getenv("FIVERR_API_KEY", "")
 SELLER_NAME = os.getenv("FIVERR_SELLER_NAME", "bullpowerhub")
 DS24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
-SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
 
 
 async def get_status() -> dict:

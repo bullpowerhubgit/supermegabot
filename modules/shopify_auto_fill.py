@@ -17,7 +17,7 @@ from datetime import datetime
 logger = logging.getLogger(__name__)
 
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 PEXELS_KEY      = os.getenv("PEXELS_API_KEY", "")
 UNSPLASH_KEY    = os.getenv("UNSPLASH_ACCESS_KEY", "")
@@ -373,7 +373,7 @@ Erstelle:
                             fire_result = await brutus_fire(
                                 title=f"🆕 NEU: {created.get('title', niche)[:50]}",
                                 body=f"Frisch im Shop — {created.get('title')}. Jetzt bestellen, solange der Vorrat reicht!",
-                                link=f"https://autopilot-store-suite-fmbka.myshopify.com/products/{created.get('handle','')}",
+                                link=f"https://ineedit.com.co/products/{created.get('handle','')}",
                                 niche=niche,
                                 tags=["neu", "trending", niche.replace(" ", "-")]
                             )
@@ -466,7 +466,7 @@ Antworte NUR als JSON-Array (kein anderer Text):
             from modules.brutus_traffic_engine import brutus_blast_for_tool
             await brutus_blast_for_tool(
                 "Shopify Trending",
-                "https://autopilot-store-suite-fmbka.myshopify.com/",
+                "https://ineedit.com.co/",
                 keywords=[p["title"] for p in created] + ["online shop 2026", "trending produkte"],
             )
         except Exception as _e:

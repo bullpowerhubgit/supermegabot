@@ -34,7 +34,7 @@ log = logging.getLogger("GpsrCompliance")
 TG_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT      = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_DOM  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOK  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOK  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER  = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 GPSR_PRICE   = os.getenv("GPSR_PRICE_ID", "")
 

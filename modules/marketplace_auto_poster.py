@@ -16,7 +16,7 @@ import aiohttp
 log = logging.getLogger("MarketplacePoster")
 
 SHOP_DOMAIN   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 TG_TOKEN      = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT       = os.getenv("TELEGRAM_CHAT_ID", "")
 EBAY_APP_ID   = os.getenv("EBAY_CLIENT_ID", "IRV7wFsqtKC76676391G2237LhVpgNCRZ1")

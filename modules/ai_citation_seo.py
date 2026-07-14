@@ -55,7 +55,7 @@ log = logging.getLogger("AICitationSEO")
 # Konfiguration (aus .env)
 # ---------------------------------------------------------------------------
 SHOPIFY_DOMAIN: str = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN: str = os.getenv("SHOPIFY_ACCESS_TOKEN", os.getenv("SHOPIFY_ADMIN_API_TOKEN", ""))
+SHOPIFY_TOKEN: str = os.getenv("SHOPIFY_ACCESS_TOKEN", os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", ""))
 SHOPIFY_API_VERSION: str = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 STORE_URL: str = os.getenv("SHOPIFY_STORE_URL", f"https://{SHOPIFY_DOMAIN}")
 PUBLIC_STORE_URL: str = "https://ineedit.com.co"          # öffentliche Domain

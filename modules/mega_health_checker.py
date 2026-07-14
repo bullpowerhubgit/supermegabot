@@ -81,7 +81,7 @@ def _result(platform: str, ok: bool, latency_ms: int, detail: str) -> dict:
 # ── platform checks ───────────────────────────────────────────────────────────
 async def _check_shopify(session: aiohttp.ClientSession) -> dict:
     t0 = time.monotonic()
-    domain = _e("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+    domain = _e("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
     token = _e("SHOPIFY_ADMIN_API_TOKEN") or _e("SHOPIFY_ACCESS_TOKEN")
     url = f"https://{domain}/admin/api/2026-04/shop.json"
     status, body = await _get(session, url, headers={"X-Shopify-Access-Token": token})
@@ -231,7 +231,7 @@ async def _check_printify(session: aiohttp.ClientSession) -> dict:
 async def _check_railway(session: aiohttp.ClientSession) -> dict:
     t0 = time.monotonic()
     status, body = await _get(session,
-        "https://supermegabot-production.up.railway.app/health", timeout=15)
+        os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/") + "/health", timeout=15)
     ok = status == 200 and (
         (isinstance(body, dict) and body.get("status") == "ok") or
         (isinstance(body, str) and "ok" in body.lower())

@@ -19,7 +19,7 @@ log = logging.getLogger("AlibabaAutonomy")
 APP_KEY    = os.getenv("ALIEXPRESS_APP_KEY", "536860")
 APP_SECRET = os.getenv("ALIEXPRESS_APP_SECRET", "mmKF9pO8NZrEzdjpl6j0lXFoHhv213uN")
 SHOPIFY    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
@@ -197,7 +197,7 @@ async def run_alibaba_cycle(count_per_niche: int = 2) -> dict:
     if published > 0:
         try:
             from modules.brutus_core import fire
-            shop_url = f"https://{SHOPIFY}" if SHOPIFY else "https://autopilot-store-suite-fmbka.myshopify.com"
+            shop_url = f"https://{SHOPIFY}" if SHOPIFY else "https://ineedit.com.co"
             await fire(
                 f"🏭 {published} neue Alibaba-Produkte im Shop!",
                 f"Trending Dropship-Produkte aus {', '.join(niches)} — jetzt verfügbar. "

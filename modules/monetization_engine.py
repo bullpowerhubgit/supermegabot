@@ -26,7 +26,7 @@ log = logging.getLogger("MonetizationEngine")
 
 _TG_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
-_SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+_SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 _STRIPE_SK = os.getenv("STRIPE_SECRET_KEY", "")
 
 # ── BPI Service Katalog ────────────────────────────────────────────────────────
@@ -412,7 +412,7 @@ async def run_revenue_report() -> dict:
     shopify_revenue = 0.0
     try:
         shop   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-        token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        token  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
         ver    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         if shop and token:
             from datetime import timedelta

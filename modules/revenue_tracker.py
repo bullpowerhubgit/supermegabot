@@ -111,7 +111,7 @@ async def _ds24_revenue(session: aiohttp.ClientSession) -> dict:
 
 # ── Shopify ───────────────────────────────────────────────────────────────────
 async def _shopify_revenue(session: aiohttp.ClientSession) -> dict:
-    domain = _e("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+    domain = _e("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
     token = _e("SHOPIFY_ADMIN_API_TOKEN") or _e("SHOPIFY_ACCESS_TOKEN")
     if not token:
         return {"today": 0.0, "count": 0, "last_order": None, "error": "no token"}

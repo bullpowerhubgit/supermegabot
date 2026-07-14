@@ -11,7 +11,7 @@ except ImportError:
 
 log = logging.getLogger("ShopifyToken")
 
-SHOP   = os.getenv("SHOPIFY_SHOP", "autopilot-store-suite-fmbka")
+SHOP   = os.getenv("SHOPIFY_SHOP", "ineedit.com.co")
 CID    = os.getenv("SHOPIFY_CREDENTIALS_CLIENT_ID", "")
 CSEC   = os.getenv("SHOPIFY_CREDENTIALS_CLIENT_SECRET", "")
 

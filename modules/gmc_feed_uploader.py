@@ -6,6 +6,7 @@ Registriert den Shopping Feed als Scheduled Fetch via Content API v2.1.
 Authentifizierung: Service Account (GCP_SERVICE_ACCOUNT_KEY_B64) oder User OAuth Token.
 """
 from __future__ import annotations
+import os
 import asyncio, base64, json, logging, os, time
 from typing import Optional
 

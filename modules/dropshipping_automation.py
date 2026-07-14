@@ -454,7 +454,7 @@ class DropshippingWorkflow:
                 await brutus_fire(
                     title=f"🛒 {success_count} neue Dropshipping-Produkte live!",
                     body=f"Frisch importiert in der Nische '{niche or 'Trending'}' — direkt verfügbar im Shop.",
-                    link="https://autopilot-store-suite-fmbka.myshopify.com/collections/trending-now",
+                    link="https://ineedit.com.co/collections/trending-now",
                     niche=f"dropshipping {niche}",
                     tags=["dropshipping", "neu", niche.replace(" ", "-") if niche else "trending"]
                 )
@@ -717,7 +717,7 @@ async def run_with_brutus_traffic(niche: str = "trending", count: int = 3) -> di
                 await brutus_fire(
                     title=f"Neu: {title}",
                     body=f"Frisch importiert — direkt verfuegbar im Shop.",
-                    link="https://autopilot-store-suite-fmbka.myshopify.com/collections/trending-now",
+                    link="https://ineedit.com.co/collections/trending-now",
                     niche=f"dropshipping {niche}",
                     tags=["dropshipping", "neu", niche.replace(" ", "-")]
                 )

@@ -19,7 +19,7 @@ ASSOCIATE_TAG = os.getenv("AMAZON_ASSOCIATE_TAG", "bullpowerhub-21")
 FINDING_URL = "https://svcs.ebay.com/services/search/FindingService/v1"
 
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SHOPIFY_HEADERS = {"X-Shopify-Access-Token": SHOPIFY_TOKEN, "Content-Type": "application/json"}
 

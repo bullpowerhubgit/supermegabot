@@ -11,7 +11,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", os.getenv("SHOPIFY_ACCESS_TOKEN", ""))
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
@@ -317,7 +317,7 @@ async def recover_abandoned_checkouts() -> dict:
                 f"Gesamtbetrag: €{total}\n\n"
                 "Schließe deinen Kauf ab und spare 5% mit Code: COMEBACK5\n"
                 "(Gültig für 2 Stunden)\n\n"
-                "➡️ Zum Warenkorb: https://autopilot-store-suite-fmbka.myshopify.com/cart\n\n"
+                "➡️ Zum Warenkorb: https://ineedit.com.co/cart\n\n"
                 "BullPower Hub Team"
             )
             await send_email(to=email, subject=subject, html=body)

@@ -519,7 +519,7 @@ async def _telegram_alert(session: aiohttp.ClientSession, message: str) -> None:
 # ── Shopify: Abandoned Checkouts abrufen ──────────────────────────────────────
 
 async def _fetch_shopify_checkouts(session: aiohttp.ClientSession) -> List[Dict]:
-    token  = (os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or
+    token  = (os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or
               os.getenv("SHOPIFY_ACCESS_TOKEN", ""))
     domain = (os.getenv("SHOPIFY_SHOP_DOMAIN", "") or
               os.getenv("SHOPIFY_STORE_DOMAIN", ""))

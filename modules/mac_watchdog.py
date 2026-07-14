@@ -29,7 +29,7 @@ TG_TOKEN  = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT   = os.getenv("TELEGRAM_CHAT_ID", "")
 
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 STRIPE_KEY     = os.getenv("STRIPE_SECRET_KEY", "")
 SUPABASE_URL   = os.getenv("SUPABASE_URL", "")
 SUPABASE_KEY   = os.getenv("SUPABASE_SERVICE_KEY", "")

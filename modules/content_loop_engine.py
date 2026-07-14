@@ -22,7 +22,7 @@ from pathlib import Path
 log = logging.getLogger("ContentLoopEngine")
 
 SHOP_DOMAIN    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOP_TOKEN     = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOP_TOKEN     = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 API_VER        = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "")

@@ -309,10 +309,10 @@ async def optimize_product_catalog() -> Dict:
     log.info("Produkt-Optimierung gestartet…")
 
     async with aiohttp.ClientSession() as session:
-        page_info = None
+        since_id = None
         while True:
-            if page_info:
-                ep = f"products.json?limit=50&page_info={page_info}&fields=id,title,body_html,vendor,tags,images,variants"
+            if since_id:
+                ep = f"products.json?limit=50&since_id={since_id}&fields=id,title,body_html,vendor,tags,images,variants&status=active"
             else:
                 ep = f"products.json?limit=50&fields=id,title,body_html,vendor,tags,images,variants&status=active"
 

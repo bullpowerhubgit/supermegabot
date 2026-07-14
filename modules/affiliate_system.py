@@ -26,7 +26,7 @@ SMTP_USER = os.getenv("SMTP_USER") or os.getenv("EMAIL_USER", "")
 SMTP_PASS = os.getenv("SMTP_PASS") or os.getenv("EMAIL_PASS") or os.getenv("GMAIL_APP_PASSWORD", "")
 
 SHOPIFY_SHOP_DOMAIN     = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_ADMIN_API_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_ADMIN_API_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_API_VERSION     = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 
 SUPABASE_URL         = os.getenv("SUPABASE_URL", "")

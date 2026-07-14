@@ -43,7 +43,7 @@ YT_SA_CREDS       = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "credentials/yt-
 OPENAI_KEY        = os.getenv("OPENAI_API_KEY", "")
 ANTHROPIC_KEY     = os.getenv("ANTHROPIC_API_KEY", "")
 SHOPIFY_DOMAIN    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN     = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN     = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VERSION   = os.getenv("SHOPIFY_API_VERSION", "2024-10")
 SHOP_STORE_URL    = os.getenv("SHOPIFY_STORE_URL", "https://ineedit.com.co")
 

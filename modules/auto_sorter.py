@@ -16,7 +16,7 @@ import aiohttp
 log = logging.getLogger("AutoSorter")
 
 SHOP        = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOK = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOK = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 KLAVIYO_KEY = os.getenv("KLAVIYO_API_KEY", "pk_VaCYq3_242945f7521ac82039ed5dbf7ff8e6cf1c")
 DS24_KEY    = os.getenv("DS24_API_KEY", "")

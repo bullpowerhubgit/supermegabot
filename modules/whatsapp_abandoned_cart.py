@@ -21,7 +21,7 @@ WHATSAPP_ACCESS_TOKEN    = (
     or os.getenv("FACEBOOK_ACCESS_TOKEN", "")
 )
 SHOPIFY_SHOP_DOMAIN      = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_ADMIN_API_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_ADMIN_API_TOKEN  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_API_VERSION      = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 
 DB_PATH = "data/whatsapp_carts.db"

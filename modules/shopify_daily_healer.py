@@ -27,8 +27,8 @@ log = logging.getLogger("ShopifyHealer")
 # ── API Config ─────────────────────────────────────────────────────────────────
 
 def _creds() -> Tuple[str, str, str]:
-    domain  = os.getenv("SHOPIFY_SHOP_DOMAIN",       "autopilot-store-suite-fmbka.myshopify.com")
-    token   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    domain  = os.getenv("SHOPIFY_SHOP_DOMAIN",       "ineedit.com.co")
+    token   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
     version = os.getenv("SHOPIFY_API_VERSION",        "2026-04")
     return domain, token, version
 

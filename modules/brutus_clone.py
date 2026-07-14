@@ -10,6 +10,7 @@ Jedes Modul das BrutusClone importiert:
   - Kann sich bei Fehlern selbst heilen
 """
 from __future__ import annotations
+import os
 import asyncio, logging, os, time
 from typing import Any
 
@@ -61,7 +62,7 @@ class BrutusClone:
                 pass
 
         # 3. AI-Content generieren und in Shopify Blog posten (wenn verfügbar)
-        shopify_token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        shopify_token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
         shopify_shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         if shopify_token and shopify_shop and content:
             try:

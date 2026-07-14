@@ -31,7 +31,7 @@ log = logging.getLogger("DS24ProductCreator")
 DS24_KEY     = os.getenv("DIGISTORE24_API_KEY", "")
 AFFILIATE_ID = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 DS24_BASE    = "https://www.digistore24.com/api/call"
-SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 
 # Vordefinierte Produkt-Vorlagen für autonome Erstellung (100 Konzepte)
 PRODUCT_TEMPLATES = [

@@ -18,7 +18,7 @@ import aiohttp
 log = logging.getLogger("TrafficMegaEngine")
 
 SHOP     = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", f"https://{SHOP}" if SHOP else "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", f"https://{SHOP}" if SHOP else "https://ineedit.com.co")
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")
 GITHUB_USER  = os.getenv("GITHUB_USER", "bullpowerhubgit")
 INDEXNOW_KEY = os.getenv("INDEXNOW_KEY", "supermegabot2026")
@@ -98,7 +98,7 @@ async def blast_medium_ghost(title: str, content: str) -> dict:
     """Poste Artikel via GitHub Pages Blog oder Shopify Blog."""
     try:
         # Shopify Blog Post
-        SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
         VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         if SHOP and SHOPIFY_TOKEN:
             async with aiohttp.ClientSession() as s:

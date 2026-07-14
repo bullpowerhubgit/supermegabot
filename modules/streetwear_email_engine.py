@@ -16,14 +16,14 @@ import aiohttp
 log = logging.getLogger("StreetEmail")
 
 SHOP_DOMAIN     = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 MC_API_KEY      = os.getenv("MAILCHIMP_API_KEY", "")
 MC_LIST_ID      = os.getenv("MAILCHIMP_LIST_ID", "606e45a6b0")
 MC_SERVER       = os.getenv("MAILCHIMP_SERVER_PREFIX", "us7")
 KL_API_KEY      = os.getenv("KLAVIYO_API_KEY", "")
 KL_LIST_ID      = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 DS24_AFFILIATE  = os.getenv("DS24_AFFILIATE_ID", "user37405262")
-STORE_URL       = f"https://{SHOP_DOMAIN}" if SHOP_DOMAIN else "https://autopilot-store-suite-fmbka.myshopify.com"
+STORE_URL       = f"https://{SHOP_DOMAIN}" if SHOP_DOMAIN else "https://ineedit.com.co"
 
 
 # ── Shopify: fetch latest Printify products ───────────────────────────────────

@@ -15,7 +15,7 @@ import aiohttp
 log = logging.getLogger("GumroadAutonomy")
 
 GUMROAD_TOKEN = os.getenv("GUMROAD_ACCESS_TOKEN", "")
-SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 GUMROAD_BASE  = "https://api.gumroad.com/v2"
 
 DIGITAL_PRODUCTS = [

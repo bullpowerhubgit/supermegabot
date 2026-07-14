@@ -235,7 +235,7 @@ class JobLock:
 class ShopifyClient:
     def __init__(self):
         self.shop            = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-        self.token           = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ADMIN_TOKEN", "")
+        self.token           = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ADMIN_TOKEN", "")
         self.api_version     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         self.webhook_secret  = os.getenv("SHOPIFY_WEBHOOK_SECRET", os.getenv("SHOPIFY_SHARED_SECRET", ""))
         self.location_id     = os.getenv("SHOPIFY_LOCATION_ID", "")
