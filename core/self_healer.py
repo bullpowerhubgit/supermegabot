@@ -133,8 +133,11 @@ AUTO_FIXES = {
     },
     "high_cpu": {
         "detect": _detect_high_cpu,
-        "fix_fn": lambda: None,
-        "description": "CPU überlastet (>95%) — kein automatischer Kill",
+        "fix_fn": lambda: subprocess.run(
+            ["sh", "-c", "ps aux --sort=-%cpu | head -6 >> /tmp/high_cpu_report.txt"],
+            timeout=10
+        ),
+        "description": "CPU überlastet (>95%) → Top-Prozesse in /tmp/high_cpu_report.txt geloggt",
     },
     "high_ram": {
         "detect": _detect_high_ram,
@@ -143,8 +146,11 @@ AUTO_FIXES = {
     },
     "zombie_processes": {
         "detect": _detect_zombies,
-        "fix_fn": lambda: None,
-        "description": "Zombie-Prozesse erkannt (manuelles Kill erforderlich)",
+        "fix_fn": lambda: subprocess.run(
+            ["sh", "-c", "kill -s SIGCHLD $(ps -A -ostat,ppid | awk '/[Zz]/{print $2}' | sort -u) 2>/dev/null || true"],
+            timeout=10
+        ),
+        "description": "Zombie-Prozesse erkannt → SIGCHLD an Eltern-Prozesse gesendet",
     },
 }
 
