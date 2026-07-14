@@ -194,8 +194,7 @@ _NO_AUTO_REPLY_PREFIXES = (
 
 # Eigene AIITEC-Adressen nie antworten
 _OWN_EMAILS = {"aiitecbuuss@gmail.com", "dragonadnp@gmail.com",
-               "bullpowersrtkennels@gmail.com", "looopwave@gmail.com",
-               "rudolf.sarkany.aiitec@gmail.com", "rudolfsarkany1984@gmail.com"}
+               "bullpowersrtkennels@gmail.com", "rudolfsarkany1984@gmail.com"}
 
 def _is_private_email(email_addr: str) -> bool:
     if not email_addr or "@" not in email_addr:

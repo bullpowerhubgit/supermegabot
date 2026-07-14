@@ -75,12 +75,12 @@ GMAIL_ACCOUNTS = [
     {"user": _e("GMAIL_USER_1",         "dragonadnp@gmail.com"),
      "pass": _e("GMAIL_APP_PASSWORD_1"),
      "name": "Rudolf Sarkany"},
-    {"user": _e("GMAIL_USER_4",         "looopwave@gmail.com"),
-     "pass": _e("GMAIL_APP_PASSWORD_4"),
-     "name": "Rudolf Sarkany | AiiteC"},
     {"user": _e("GMAIL_USER_7",         "rudolf.sarkany.aiitec@gmail.com"),
      "pass": _e("GMAIL_APP_PASSWORD_7"),
      "name": "Rudolf Sarkany | AiiteC"},
+    {"user": _e("GMAIL_USER_8",         "rudolfsarkany1984@gmail.com"),
+     "pass": _e("GMAIL_APP_PASSWORD_8"),
+     "name": "Rudolf Sarkany"},
 ]
 
 STRIPE_LINKS = {
