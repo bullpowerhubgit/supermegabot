@@ -1,4 +1,4 @@
-name: Deploy to Railway
+name: CI — Syntax Check & Deploy
 
 on:
   push:
@@ -19,17 +19,6 @@ jobs:
         run: |
           python3 -m py_compile dashboard/server.py
           for f in modules/*.py core/*.py; do python3 -m py_compile "$f"; done
-          echo "All Python files OK"
-
-  deploy:
-    needs: syntax-check
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-      - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: railway up --detach --service supermegabot
+          echo "✅ Alle Python-Dateien OK"
+      - name: Notify success
+        run: echo "Syntax OK — Railway GitHub App deployt automatisch nach main push"
