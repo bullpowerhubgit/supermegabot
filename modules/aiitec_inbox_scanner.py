@@ -363,11 +363,10 @@ async def _run_self_repair() -> None:
     """Ruft health_check() aus outreach_machine auf — repariert automatisch."""
     try:
         # Lazy import um zirkuläre Importe zu vermeiden
-        import importlib
         import sys as _sys
-        mod_path = str(_BASE / "modules")
-        if mod_path not in _sys.path:
-            _sys.path.insert(0, str(_BASE))
+        base_str = str(_BASE)
+        if base_str not in _sys.path:
+            _sys.path.insert(0, base_str)
         from modules.aiitec_outreach_machine import health_check
         hc = await health_check()
         status_lines = [

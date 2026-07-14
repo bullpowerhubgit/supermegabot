@@ -277,6 +277,75 @@ def guarded(platform: str):
         return wrapper
     return decorator
 
+# ── Erweiterte Checks ─────────────────────────────────────────────────────────
+
+_WRONG_ACCOUNTS = {
+    "iwin":             "AiiteC ist das richtige Konto — niemals IWIN verwenden!",
+    "iwin_fitness":     "Falscher Account (IWIN Fitness) — AiiteC verwenden!",
+    "1135864516276500": "Das ist die IWIN Facebook-Page — AiiteC Page verwenden!",
+}
+
+_SECRET_PATTERNS = [
+    re.compile(r"\bsk_live_[A-Za-z0-9]{24,}\b"),
+    re.compile(r"\bsk_test_[A-Za-z0-9]{24,}\b"),
+    re.compile(r"\bANTH[A-Za-z0-9_-]{30,}\b"),
+    re.compile(r"\bAIza[A-Za-z0-9_-]{35,}\b"),
+    re.compile(r"(?i)password\s*[=:]\s*\S{6,}"),
+]
+
+
+async def check_post(platform: str, text: str,
+                     image_url: Optional[str] = None,
+                     account: Optional[str] = None) -> Dict:
+    """
+    Vollständige async Prüfung — kombiniert validate_post + erweiterte Checks.
+    Returns: {ok, errors, warnings, can_post}
+    """
+    ok, base_errors = validate_post(text, platform, image_url or "")
+    extra_errors: List[str] = []
+    warnings: List[str] = []
+
+    # Falsches-Konto-Check
+    check_str = (text + " " + (account or "")).lower()
+    for marker, msg in _WRONG_ACCOUNTS.items():
+        if marker.lower() in check_str:
+            extra_errors.append(f"Falsches Konto: {msg}")
+
+    # API-Key Leak
+    for pat in _SECRET_PATTERNS:
+        if pat.search(text):
+            extra_errors.append("Möglicher API-Key/Passwort im Post! Niemals secrets posten!")
+            break
+
+    # Nacht-Posting Warnung
+    hour = datetime.now().hour
+    if 0 <= hour < 6:
+        warnings.append(f"Nacht-Posting um {hour}:00 Uhr — schlechte Reichweite")
+
+    all_errors = base_errors + extra_errors
+    return {
+        "ok": len(all_errors) == 0,
+        "platform": platform,
+        "account": account,
+        "errors": all_errors,
+        "warnings": warnings,
+        "can_post": len(all_errors) == 0,
+        "error_count": len(all_errors),
+        "warning_count": len(warnings),
+    }
+
+
+def get_blocked_posts() -> List[Dict]:
+    """Alle blockierten Posts der letzten 24h."""
+    init_db()
+    with _db() as conn:
+        rows = conn.execute(
+            "SELECT platform, content_preview, reason, blocked_at FROM blocked "
+            "WHERE blocked_at > datetime('now', '-1 day') ORDER BY blocked_at DESC LIMIT 50"
+        ).fetchall()
+    return [dict(r) for r in rows]
+
+
 # ── CLI / Test ────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
     import sys, json

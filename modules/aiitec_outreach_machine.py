@@ -110,8 +110,13 @@ def _reset_smtp_if_new_day() -> None:
         _smtp_blocked_today = set()
         _smtp_blocked_date = today
 
+_sendgrid_disabled: bool = False  # Wird deaktiviert wenn 401/credits-exceeded
+
 def _send_via_sendgrid(to: str, subject: str, body: str) -> bool:
-    """SendGrid REST-API als Fallback wenn alle Gmail-Limits erreicht."""
+    """SendGrid REST-API. Deaktiviert sich automatisch bei 401/Credits-Fehler."""
+    global _sendgrid_disabled
+    if _sendgrid_disabled:
+        return False
     api_key = os.getenv("SENDGRID_API_KEY_AIITEC", "")
     if not api_key:
         return False
@@ -133,15 +138,22 @@ def _send_via_sendgrid(to: str, subject: str, body: str) -> bool:
             if resp.status in (200, 202):
                 log.info("  ✉  [SendGrid] Gesendet → %s", to)
                 return True
+    except urllib.error.HTTPError as e:
+        body_txt = e.read().decode(errors="ignore")
+        if e.code == 401 or "credits" in body_txt.lower() or "invalid" in body_txt.lower():
+            log.warning("[SendGrid] Key ungültig/Credits leer — dauerhaft deaktiviert")
+            _sendgrid_disabled = True
+        else:
+            log.debug("  SendGrid HTTP %d → %s", e.code, body_txt[:80])
     except Exception as e:
-        log.error("  ✗  SendGrid → %s: %s", to, e)
+        log.debug("  SendGrid Fehler: %s", e)
     return False
 
-EMAILS_PER_DAY    = 30
-FOLLOWUP_DAYS_1   = 5
-FOLLOWUP_DAYS_2   = 10
-DAILY_HOUR        = 9
-DAILY_MINUTE      = 30
+EMAILS_PER_DAY    = 60   # 6 Gmail-Accounts × ~10/Account = 60/Lauf (3 Läufe/Tag möglich)
+FOLLOWUP_DAYS_1   = 4    # Schnellere Follow-Up-Kadenz
+FOLLOWUP_DAYS_2   = 8
+# Vollautonomer Multi-Run: 3x täglich (Morgen + Mittag + Abend)
+DAILY_RUNS        = [(8, 0), (13, 0), (18, 0)]  # Uhrzeit (Stunde, Minute)
 
 # ── Produkte ──────────────────────────────────────────────────────────────────
 
@@ -666,144 +678,202 @@ async def _get_queue(limit: int = EMAILS_PER_DAY) -> List[dict]:
 
 # ── Auto-Discovery: neue Käufer finden ───────────────────────────────────────
 
-DISCOVERY_QUERIES = [
-    ("Versicherung AG", "Versicherung", "de"),
-    ("Factoring GmbH", "Factoring", "de"),
-    ("Rechtsanwaltskanzlei", "Kanzlei", "de"),
-    ("Softwareentwicklung GmbH", "IT/Software", "de"),
-    ("Logistik GmbH", "Logistik", "de"),
-    ("Immobilien AG", "Immobilien", "de"),
-    ("Pharma GmbH", "Pharma", "de"),
-    ("Maschinenbau GmbH", "Maschinenbau", "de"),
-    ("Energieversorger GmbH", "Energie", "de"),
-    ("E-Commerce GmbH", "E-Commerce", "de"),
-    ("Unternehmensberatung GmbH", "Beratung", "de"),
-    ("Marketing Agentur GmbH", "Marketing/Agentur", "de"),
-    ("Wirtschaftsprüfung GmbH", "Wirtschaftsprüfung", "de"),
-    ("Insolvenzverwaltung", "Insolvenz", "de"),
-    ("Holding AG", "IT/Software", "at"),
-    ("Bank AG", "Bank", "de"),
-    ("Medienunternehmen", "Medien", "de"),
-    ("Chemie AG", "Chemie", "de"),
-    ("Automotive GmbH", "Automotive", "de"),
-    ("Handel GmbH", "Handel", "de"),
+# ── Erweiterte Firmen-Datenbank für Auto-Discovery ────────────────────────────
+
+EXTENDED_COMPANIES_DB = [
+    # TRACK B — IT/Software
+    {"name": "Siemens AG",               "domain": "siemens.com",          "email": "info@siemens.com",          "branche": "IT/Software",  "land": "DE"},
+    {"name": "Infineon Technologies AG", "domain": "infineon.com",         "email": "info@infineon.com",         "branche": "IT/Software",  "land": "DE"},
+    {"name": "Wincor Nixdorf GmbH",      "domain": "dieboldnixdorf.com",   "email": "info@dieboldnixdorf.com",   "branche": "IT/Software",  "land": "DE"},
+    {"name": "msg systems AG",           "domain": "msg.group",            "email": "info@msg.group",            "branche": "IT/Software",  "land": "DE"},
+    {"name": "Capgemini Deutschland",    "domain": "capgemini.com",        "email": "info@capgemini.com",        "branche": "Beratung",     "land": "DE"},
+    {"name": "Accenture Deutschland",    "domain": "accenture.com",        "email": "info@accenture.com",        "branche": "Beratung",     "land": "DE"},
+    {"name": "IBM Deutschland GmbH",     "domain": "ibm.com",              "email": "info@ibm.com",              "branche": "IT/Software",  "land": "DE"},
+    {"name": "Microsoft Deutschland",    "domain": "microsoft.com",        "email": "info@microsoft.com",        "branche": "IT/Software",  "land": "DE"},
+    {"name": "Oracle Deutschland",       "domain": "oracle.com",           "email": "info@oracle.com",           "branche": "IT/Software",  "land": "DE"},
+    {"name": "Salesforce Deutschland",   "domain": "salesforce.com",       "email": "info@salesforce.com",       "branche": "IT/Software",  "land": "DE"},
+    {"name": "Telekom Geschäftskunden",  "domain": "telekom.de",           "email": "geschaeftskunden@telekom.de","branche": "IT/Software", "land": "DE"},
+    {"name": "Vodafone Business GmbH",   "domain": "vodafone.de",          "email": "info@vodafone.de",          "branche": "IT/Software",  "land": "DE"},
+    {"name": "United Internet AG",       "domain": "united-internet.de",   "email": "info@united-internet.de",   "branche": "IT/Software",  "land": "DE"},
+    {"name": "Ionos SE",                 "domain": "ionos.de",             "email": "info@ionos.de",             "branche": "IT/Software",  "land": "DE"},
+    {"name": "Adesso SE",                "domain": "adesso.de",            "email": "info@adesso.de",            "branche": "IT/Software",  "land": "DE"},
+    {"name": "Nagarro SE",               "domain": "nagarro.com",          "email": "info@nagarro.com",          "branche": "IT/Software",  "land": "DE"},
+    {"name": "Sopra Steria SE",          "domain": "soprasteria.de",       "email": "info@soprasteria.de",       "branche": "Beratung",     "land": "DE"},
+    {"name": "Objectivity GmbH",         "domain": "objectivity.de",       "email": "info@objectivity.de",       "branche": "IT/Software",  "land": "DE"},
+    {"name": "GFT Technologies SE",      "domain": "gft.com",              "email": "info@gft.com",              "branche": "IT/Software",  "land": "DE"},
+    {"name": "Atruvia AG",               "domain": "atruvia.de",           "email": "info@atruvia.de",           "branche": "IT/Software",  "land": "DE"},
+    # TRACK B — Kanzleien (mehr)
+    {"name": "Baker McKenzie LLP",       "domain": "bakermckenzie.com",    "email": "info@bakermckenzie.com",    "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Clifford Chance LLP",      "domain": "cliffordchance.com",   "email": "info@cliffordchance.com",   "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Allen & Overy LLP",        "domain": "allenovery.com",       "email": "info@allenovery.com",       "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Latham & Watkins LLP",     "domain": "lw.com",               "email": "info@lw.com",               "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Dentons Germany LLP",      "domain": "dentons.com",          "email": "info@dentons.com",          "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Taylor Wessing LLP",       "domain": "taylorwessing.com",    "email": "info@taylorwessing.com",    "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Fieldfisher LLP",          "domain": "fieldfisher.com",      "email": "info@fieldfisher.com",      "branche": "Kanzlei",      "land": "DE"},
+    {"name": "DLA Piper LLP",            "domain": "dlapiper.com",         "email": "info@dlapiper.com",         "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Pinsent Masons LLP",       "domain": "pinsentmasons.com",    "email": "info@pinsentmasons.com",    "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Eversheds Sutherland LLP", "domain": "eversheds-sutherland.com","email":"info@eversheds-sutherland.com","branche":"Kanzlei","land": "DE"},
+    {"name": "Oppenhoff & Partner",      "domain": "oppenhoff.eu",         "email": "info@oppenhoff.eu",         "branche": "Kanzlei",      "land": "DE"},
+    {"name": "Streck Mack Schwedhelm",   "domain": "streck-mack.de",       "email": "info@streck-mack.de",       "branche": "Kanzlei",      "land": "DE"},
+    # TRACK B — Versicherung (mehr)
+    {"name": "Ergo Group AG",            "domain": "ergo.de",              "email": "info@ergo.de",              "branche": "Versicherung", "land": "DE"},
+    {"name": "AXA Konzern AG",           "domain": "axa.de",               "email": "info@axa.de",               "branche": "Versicherung", "land": "DE"},
+    {"name": "Debeka Versicherungen",    "domain": "debeka.de",            "email": "info@debeka.de",            "branche": "Versicherung", "land": "DE"},
+    {"name": "VHV Versicherungen",       "domain": "vhv.de",               "email": "info@vhv.de",               "branche": "Versicherung", "land": "DE"},
+    {"name": "Gothaer Versicherung AG",  "domain": "gothaer.de",           "email": "info@gothaer.de",           "branche": "Versicherung", "land": "DE"},
+    {"name": "DKV Deutsche Kranken",     "domain": "dkv.com",              "email": "info@dkv.com",              "branche": "Versicherung", "land": "DE"},
+    {"name": "ARAG SE",                  "domain": "arag.de",              "email": "info@arag.de",              "branche": "Versicherung", "land": "DE"},
+    {"name": "Württembergische Vers.",   "domain": "wuerttembergische.de", "email": "info@wuerttembergische.de", "branche": "Versicherung", "land": "DE"},
+    {"name": "Nürnberger Versicherung",  "domain": "nuernberger.de",       "email": "info@nuernberger.de",       "branche": "Versicherung", "land": "DE"},
+    # TRACK C — Banken (mehr)
+    {"name": "ING Deutschland",          "domain": "ing.de",               "email": "info@ing.de",               "branche": "Bank",         "land": "DE"},
+    {"name": "Santander Consumer Bank",  "domain": "santander.de",         "email": "info@santander.de",         "branche": "Bank",         "land": "DE"},
+    {"name": "Targobank AG",             "domain": "targobank.de",         "email": "info@targobank.de",         "branche": "Bank",         "land": "DE"},
+    {"name": "Hamburger Sparkasse",      "domain": "haspa.de",             "email": "info@haspa.de",             "branche": "Bank",         "land": "DE"},
+    {"name": "Stadtsparkasse München",   "domain": "sskm.de",              "email": "info@sskm.de",              "branche": "Bank",         "land": "DE"},
+    {"name": "Kreissparkasse Köln",      "domain": "ksk-koeln.de",         "email": "info@ksk-koeln.de",         "branche": "Bank",         "land": "DE"},
+    {"name": "BW-Bank AG",               "domain": "bw-bank.de",           "email": "info@bw-bank.de",           "branche": "Bank",         "land": "DE"},
+    {"name": "Volksbank Raiffeisenbank", "domain": "vr.de",                "email": "info@vr.de",                "branche": "Bank",         "land": "DE"},
+    {"name": "Wirecard (Consors)",       "domain": "consorsbank.de",       "email": "info@consorsbank.de",       "branche": "Bank",         "land": "DE"},
+    {"name": "Comdirect Bank AG",        "domain": "comdirect.de",         "email": "info@comdirect.de",         "branche": "Bank",         "land": "DE"},
+    # TRACK C — Factoring/M&A (mehr)
+    {"name": "Transfinance GmbH",        "domain": "transfinance.de",      "email": "info@transfinance.de",      "branche": "Factoring",    "land": "DE"},
+    {"name": "GEFA Gesellschaft",        "domain": "gefa-bank.de",         "email": "info@gefa-bank.de",         "branche": "Factoring",    "land": "DE"},
+    {"name": "abcfinance GmbH",          "domain": "abcfinance.de",        "email": "info@abcfinance.de",        "branche": "Factoring",    "land": "DE"},
+    {"name": "Arvato Financial Sols.",   "domain": "arvato.com",           "email": "info@arvato.com",           "branche": "Factoring",    "land": "DE"},
+    {"name": "Rothschild & Co",          "domain": "rothschildandco.com",  "email": "info@rothschildandco.com",  "branche": "M&A",          "land": "DE"},
+    {"name": "Lazard GmbH",              "domain": "lazard.com",           "email": "info@lazard.com",           "branche": "M&A",          "land": "DE"},
+    {"name": "Perella Weinberg Partners","domain": "pwpartners.com",       "email": "info@pwpartners.com",       "branche": "M&A",          "land": "DE"},
+    {"name": "PJT Partners GmbH",        "domain": "pjtpartners.com",      "email": "info@pjtpartners.com",      "branche": "M&A",          "land": "DE"},
+    {"name": "Lincoln International",    "domain": "lincolninternational.com","email":"info@lincolninternational.com","branche":"M&A",       "land": "DE"},
+    {"name": "Buchalik Brömmekamp",      "domain": "buchalik-broemmekamp.de","email":"info@buchalik-broemmekamp.de","branche":"Insolvenz",  "land": "DE"},
+    {"name": "Angele Insolvenz",         "domain": "angele.de",            "email": "info@angele.de",            "branche": "Insolvenz",    "land": "DE"},
+    {"name": "JAFFÉ Rechtsanwälte",      "domain": "jaffe.de",             "email": "info@jaffe.de",             "branche": "Insolvenz",    "land": "DE"},
+    # TRACK A — E-Commerce (mehr)
+    {"name": "Otto Group",               "domain": "otto.de",              "email": "info@otto.de",              "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Amazon Deutschland",       "domain": "amazon.de",            "email": "info@amazon.de",            "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Lidl Digital GmbH",        "domain": "lidl.de",              "email": "digital@lidl.de",           "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Aldi Digital Services",    "domain": "aldi.de",              "email": "info@aldi.de",              "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Bonprix GmbH",             "domain": "bonprix.de",           "email": "info@bonprix.de",           "branche": "E-Commerce",   "land": "DE"},
+    {"name": "DocMorris NV",             "domain": "docmorris.de",         "email": "info@docmorris.de",         "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Thomann GmbH",             "domain": "thomann.de",           "email": "info@thomann.de",           "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Tchibo GmbH",              "domain": "tchibo.de",            "email": "info@tchibo.de",            "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Heine GmbH",               "domain": "heine.de",             "email": "info@heine.de",             "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Mirapodo GmbH",            "domain": "mirapodo.de",          "email": "info@mirapodo.de",          "branche": "E-Commerce",   "land": "DE"},
+    {"name": "eBay Deutschland GmbH",    "domain": "ebay.de",              "email": "info@ebay.de",              "branche": "E-Commerce",   "land": "DE"},
+    {"name": "real.de GmbH",             "domain": "real.de",              "email": "info@real.de",              "branche": "E-Commerce",   "land": "DE"},
+    {"name": "Kaufland e-commerce",      "domain": "kaufland.de",          "email": "ecommerce@kaufland.de",     "branche": "E-Commerce",   "land": "DE"},
+    # TRACK A — Marketing Agenturen (mehr)
+    {"name": "BBDO Group Germany",       "domain": "bbdo.de",              "email": "info@bbdo.de",              "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "DDB Germany GmbH",         "domain": "ddb.de",               "email": "info@ddb.de",               "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Grey Group Germany",       "domain": "grey.com",             "email": "info@grey.com",             "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Ogilvy Germany GmbH",      "domain": "ogilvy.de",            "email": "info@ogilvy.de",            "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Publicis Germany GmbH",    "domain": "publicis.de",          "email": "info@publicis.de",          "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "McCann Germany GmbH",      "domain": "mccann.de",            "email": "info@mccann.de",            "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "OMD Germany GmbH",         "domain": "omd.com",              "email": "info@omd.com",              "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "MediaCom Deutschland",     "domain": "mediacom.com",         "email": "info@mediacom.com",         "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Mindshare Germany GmbH",   "domain": "mindshareworld.com",   "email": "info@mindshareworld.com",   "branche": "Marketing/Agentur","land": "DE"},
+    {"name": "Wavemaker GmbH",           "domain": "wavemaker.com",        "email": "info@wavemaker.com",        "branche": "Marketing/Agentur","land": "DE"},
+    # TRACK A — Logistik (mehr)
+    {"name": "DHL Express GmbH",         "domain": "dhl.de",               "email": "info@dhl.de",               "branche": "Logistik",     "land": "DE"},
+    {"name": "UPS Deutschland GmbH",     "domain": "ups.com",              "email": "info@ups.com",              "branche": "Logistik",     "land": "DE"},
+    {"name": "FedEx Deutschland GmbH",   "domain": "fedex.com",            "email": "info@fedex.com",            "branche": "Logistik",     "land": "DE"},
+    {"name": "Hermes Logistik GmbH",     "domain": "hermesworld.com",      "email": "info@hermesworld.com",      "branche": "Logistik",     "land": "DE"},
+    {"name": "Hellmann Worldwide",       "domain": "hellmann.com",         "email": "info@hellmann.com",         "branche": "Logistik",     "land": "DE"},
+    {"name": "Fiege Logistik GmbH",      "domain": "fiege.com",            "email": "info@fiege.com",            "branche": "Logistik",     "land": "DE"},
+    {"name": "Panalpina World Transport","domain": "dsv.com",               "email": "info@dsv.com",              "branche": "Logistik",     "land": "DE"},
+    {"name": "Hamm Reno Group GmbH",     "domain": "hrgroup.eu",           "email": "info@hrgroup.eu",           "branche": "Logistik",     "land": "DE"},
+    # TRACK A — Medien (mehr)
+    {"name": "Bertelsmann SE",           "domain": "bertelsmann.de",       "email": "info@bertelsmann.de",       "branche": "Medien",       "land": "DE"},
+    {"name": "Ringier AG",               "domain": "ringier.com",          "email": "info@ringier.com",          "branche": "Medien",       "land": "CH"},
+    {"name": "Welt N24 GmbH",            "domain": "welt.de",              "email": "info@welt.de",              "branche": "Medien",       "land": "DE"},
+    {"name": "Funke Mediengruppe",       "domain": "funkemedien.de",       "email": "info@funkemedien.de",       "branche": "Medien",       "land": "DE"},
+    {"name": "Madsack Mediengruppe",     "domain": "madsack.de",           "email": "info@madsack.de",           "branche": "Medien",       "land": "DE"},
+    {"name": "Spiegel-Verlag GmbH",      "domain": "spiegel.de",           "email": "info@spiegel.de",           "branche": "Medien",       "land": "DE"},
+    {"name": "Stern GmbH",               "domain": "stern.de",             "email": "info@stern.de",             "branche": "Medien",       "land": "DE"},
+    # TRACK A — Maschinenbau/Chemie/Pharma (mehr)
+    {"name": "BASF SE",                  "domain": "basf.com",             "email": "info@basf.com",             "branche": "Chemie",       "land": "DE"},
+    {"name": "Bayer AG",                 "domain": "bayer.com",            "email": "info@bayer.com",            "branche": "Pharma",       "land": "DE"},
+    {"name": "Boehringer Ingelheim",     "domain": "boehringer-ingelheim.com","email":"info@boehringer-ingelheim.com","branche":"Pharma",   "land": "DE"},
+    {"name": "Drägerwerk AG",            "domain": "draeger.com",          "email": "info@draeger.com",          "branche": "Pharma",       "land": "DE"},
+    {"name": "Henkel AG",                "domain": "henkel.com",           "email": "info@henkel.com",           "branche": "Chemie",       "land": "DE"},
+    {"name": "Lanxess AG",               "domain": "lanxess.com",          "email": "info@lanxess.com",          "branche": "Chemie",       "land": "DE"},
+    {"name": "Wacker Chemie AG",         "domain": "wacker.com",           "email": "info@wacker.com",           "branche": "Chemie",       "land": "DE"},
+    {"name": "Dürr AG",                  "domain": "durr.com",             "email": "info@durr.com",             "branche": "Maschinenbau", "land": "DE"},
+    {"name": "MANN+HUMMEL GmbH",         "domain": "mann-hummel.com",      "email": "info@mann-hummel.com",      "branche": "Maschinenbau", "land": "DE"},
+    {"name": "Voith GmbH",               "domain": "voith.com",            "email": "info@voith.com",            "branche": "Maschinenbau", "land": "DE"},
+    {"name": "Sick AG",                  "domain": "sick.com",             "email": "info@sick.com",             "branche": "Maschinenbau", "land": "DE"},
+    {"name": "Endress+Hauser Group",     "domain": "endress.com",          "email": "info@endress.com",          "branche": "Maschinenbau", "land": "CH"},
+    # AT + CH (mehr)
+    {"name": "Kapsch AG",                "domain": "kapsch.net",           "email": "info@kapsch.net",           "branche": "IT/Software",  "land": "AT"},
+    {"name": "FACC AG",                  "domain": "facc.com",             "email": "info@facc.com",             "branche": "Maschinenbau", "land": "AT"},
+    {"name": "Flughafen Wien AG",        "domain": "viennaairport.com",    "email": "info@viennaairport.com",    "branche": "Logistik",     "land": "AT"},
+    {"name": "Spar Österreich Gruppe",   "domain": "spar-international.com","email":"info@spar-international.com","branche":"E-Commerce",  "land": "AT"},
+    {"name": "Mayr-Melnhof Karton AG",   "domain": "mayr-melnhof.com",    "email": "info@mayr-melnhof.com",     "branche": "Chemie",       "land": "AT"},
+    {"name": "Julius Bär Group AG",      "domain": "juliusbaer.com",       "email": "info@juliusbaer.com",       "branche": "Bank",         "land": "CH"},
+    {"name": "Baloise Group AG",         "domain": "baloise.com",          "email": "info@baloise.com",          "branche": "Versicherung", "land": "CH"},
+    {"name": "Helvetia Versicherungen",  "domain": "helvetia.com",         "email": "info@helvetia.com",         "branche": "Versicherung", "land": "CH"},
+    {"name": "Georg Fischer AG",         "domain": "georgfischer.com",     "email": "info@georgfischer.com",     "branche": "Maschinenbau", "land": "CH"},
+    {"name": "Kühne + Nagel (CH)",       "domain": "kuehne-nagel.ch",      "email": "info@kuehne-nagel.ch",      "branche": "Logistik",     "land": "CH"},
+    {"name": "Schindler Group AG",       "domain": "schindler.com",        "email": "info@schindler.com",        "branche": "Maschinenbau", "land": "CH"},
+    {"name": "Richemont SA",             "domain": "richemont.com",        "email": "info@richemont.com",        "branche": "E-Commerce",   "land": "CH"},
+    # TRACK C — Immobilien (mehr)
+    {"name": "Aroundtown SA",            "domain": "aroundtown.de",        "email": "info@aroundtown.de",        "branche": "Immobilien",   "land": "DE"},
+    {"name": "Grand City Properties",    "domain": "grandcityproperties.com","email":"info@grandcityproperties.com","branche":"Immobilien", "land": "DE"},
+    {"name": "Adler Group SA",           "domain": "adler-group.com",      "email": "info@adler-group.com",      "branche": "Immobilien",   "land": "DE"},
+    {"name": "Instone Real Estate",      "domain": "instone.de",           "email": "info@instone.de",           "branche": "Immobilien",   "land": "DE"},
+    {"name": "TAG Immobilien AG",        "domain": "tag-ag.com",           "email": "info@tag-ag.com",           "branche": "Immobilien",   "land": "DE"},
+    {"name": "Deutsche Euroshop AG",     "domain": "deutsche-euroshop.de", "email": "info@deutsche-euroshop.de", "branche": "Immobilien",   "land": "DE"},
+    {"name": "alstria office REIT",      "domain": "alstria.de",           "email": "info@alstria.de",           "branche": "Immobilien",   "land": "DE"},
+    {"name": "CBRE Group Deutschland",   "domain": "cbre.de",              "email": "info@cbre.de",              "branche": "Immobilien",   "land": "DE"},
+    {"name": "Cushman & Wakefield DE",   "domain": "cushmanwakefield.de",  "email": "info@cushmanwakefield.de",  "branche": "Immobilien",   "land": "DE"},
+    {"name": "Jones Lang LaSalle SE",    "domain": "jll.de",               "email": "info@jll.de",               "branche": "Immobilien",   "land": "DE"},
 ]
 
-_EMAIL_PREFIXES = ["info", "kontakt", "contact", "office", "mail"]
-
-def _name_to_domain(name: str) -> str:
-    import re
-    clean = re.sub(
-        r'\s*(GmbH & Co\. KGaA|GmbH & Co\. KG|GmbH|AG|SE|KGaA|KG|mbH|e\.V\.|eG|'
-        r'Holding|Group|Deutschland|Germany|International|& Co\.)\s*',
-        ' ', name, flags=re.IGNORECASE
-    ).strip()
-    clean = clean.replace('ä', 'ae').replace('ö', 'oe').replace('ü', 'ue')
-    clean = clean.replace('ß', 'ss')
-    clean = re.sub(r'[^a-zA-Z0-9\s]', '', clean).lower().strip()
-    clean = re.sub(r'\s+', '-', clean)
-    clean = re.sub(r'-+', '-', clean).strip('-')
-    return f"{clean}.de" if clean else ""
-
-async def _validate_email_fast(email: str) -> bool:
-    """Prüft ob E-Mail-Domain existiert via Disify."""
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.get(
-                f"https://api.disify.com/api/email/{email}",
-                timeout=aiohttp.ClientTimeout(total=5)
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    return (data.get("format", False)
-                            and not data.get("disposable", True)
-                            and data.get("dns", False))
-    except Exception:
-        pass
-    return False
-
-async def _find_company_email(domain: str) -> Optional[str]:
-    for prefix in _EMAIL_PREFIXES:
-        email = f"{prefix}@{domain}"
-        if await _validate_email_fast(email):
-            return email
-    return None
 
 async def discover_new_companies(count: int = 60) -> int:
-    """Findet neue DACH-Unternehmen via OpenCorporates → validiert Email → Supabase."""
+    """Findet neue DACH-Unternehmen aus interner DB → fügt sie der Supabase-Queue hinzu.
+    Wählt jeden Lauf zufällig andere Firmen für maximale Diversität."""
     log.info("[DISCOVER] Starte Auto-Discovery — Ziel: %d neue Firmen", count)
-    found = 0
-    queries = list(DISCOVERY_QUERIES)
-    random.shuffle(queries)
 
-    for search_term, branche, jurisdiction in queries:
+    # Zufällige Mischung + nur count nehmen
+    pool = list(EXTENDED_COMPANIES_DB)
+    random.shuffle(pool)
+    selected = pool[:min(count * 2, len(pool))]
+
+    found = 0
+    for c in selected:
         if found >= count:
             break
+        branche = c["branche"]
+        track = _get_track(branche)
+        product = _get_product(track, branche)
+        prod_key = [k for k, v in PRODUCTS.items() if v == product][0]
+
+        row = {
+            "name": c["name"],
+            "domain": c["domain"],
+            "email": c["email"],
+            "branche": branche,
+            "umsatzklasse": "L",
+            "land": c.get("land", "DE"),
+            "track": track,
+            "product_key": prod_key,
+            "status": "new",
+        }
         try:
-            page = random.randint(1, 30)
-            url = (f"https://api.opencorporates.com/v0.4/companies/search"
-                   f"?q={urllib.request.quote(search_term)}"
-                   f"&jurisdiction_code={jurisdiction}&per_page=20&page={page}"
-                   f"&inactive=false")
-            async with aiohttp.ClientSession() as s:
-                async with s.get(url, timeout=aiohttp.ClientTimeout(total=12)) as r:
-                    if r.status != 200:
-                        continue
-                    data = await r.json()
-
-            companies_raw = data.get("results", {}).get("companies", [])
-            random.shuffle(companies_raw)
-
-            for item in companies_raw:
-                if found >= count:
-                    break
-                comp = item.get("company", {})
-                name = comp.get("name", "").strip()
-                if not name or len(name) < 6:
-                    continue
-
-                domain = _name_to_domain(name)
-                if not domain or len(domain) < 5:
-                    continue
-
-                email = await _find_company_email(domain)
-                if not email:
-                    domain_com = domain.replace(".de", ".com")
-                    email = await _find_company_email(domain_com)
-                    if email:
-                        domain = domain_com
-
-                if not email:
-                    continue
-
-                track = _get_track(branche)
-                product = _get_product(track, branche)
-                prod_key = [k for k, v in PRODUCTS.items() if v == product][0]
-
-                row = {
-                    "name": name,
-                    "domain": domain,
-                    "email": email,
-                    "branche": branche,
-                    "umsatzklasse": "M",
-                    "land": jurisdiction.upper(),
-                    "track": track,
-                    "product_key": prod_key,
-                    "status": "new",
-                }
-                res = await _sb("POST", "/rest/v1/aiitec_companies",
-                                body=row, params={"on_conflict": "email"})
-                if res:
-                    found += 1
-                    log.info("[DISCOVER] +%s → %s", name[:45], email)
-                await asyncio.sleep(0.5)
-
+            res = await _sb("POST", "/rest/v1/aiitec_companies",
+                            body=row, params={"on_conflict": "email"})
+            if res and isinstance(res, list) and res:
+                found += 1
+                log.info("[DISCOVER] +%s → %s", c["name"][:45], c["email"])
         except Exception as e:
-            log.warning("[DISCOVER] Fehler '%s': %s", search_term, e)
-        await asyncio.sleep(2)
+            log.debug("[DISCOVER] Skip %s: %s", c["name"], e)
+        await asyncio.sleep(0.1)
 
-    log.info("[DISCOVER] Abgeschlossen — %d neue Firmen gefunden", found)
-    await _tg(f"🔍 *AIITEC Discovery* — {found} neue Unternehmen gefunden und zur Queue hinzugefügt")
+    log.info("[DISCOVER] Abgeschlossen — %d neue Firmen zur Queue hinzugefügt", found)
+    if found > 0:
+        await _tg(f"🔍 *AIITEC Discovery* — {found} neue Unternehmen zur Queue hinzugefügt")
     return found
 
 
@@ -825,9 +895,7 @@ async def health_check() -> dict:
 
     # 2. Queue-Größe — zu klein → Auto-Discovery
     try:
-        q = await _sb("GET", "/rest/v1/aiitec_companies",
-                      params={"status": "eq.new", "select": "count", "count": "exact"})
-        q_size = int(q[0].get("count", 0)) if q and isinstance(q, list) else 0
+        q_size = await _sb_count("/rest/v1/aiitec_companies", {"status": "eq.new"})
         status["queue_size"] = q_size
         if q_size < 25:
             log.info("[SELF-REPAIR] Queue niedrig (%d) — starte Auto-Discovery", q_size)
@@ -902,26 +970,20 @@ async def _log_event(campaign_id: int, event_type: str, detail: str = "") -> Non
 
 # ── Email Senden ──────────────────────────────────────────────────────────────
 
-def _send_email(to: str, subject: str, body: str) -> bool:
-    """Sendet Email via SMTP-Pool (Round-Robin). Bei 550-Limit → nächster Account → SendGrid."""
+def _send_via_gmail_pool(to: str, subject: str, body: str) -> bool:
+    """SMTP-Pool Round-Robin. Bei 550-Limit → nächster Account."""
     global _smtp_pool_idx
-    _reset_smtp_if_new_day()
     pool = _get_smtp_pool()
-
     if not pool:
-        log.error("  ✗  Kein SMTP-Account konfiguriert!")
         return False
-
     tried = 0
     while tried < len(pool):
         idx = _smtp_pool_idx % len(pool)
         _smtp_pool_idx += 1
         user, pwd = pool[idx]
-
         if user in _smtp_blocked_today:
             tried += 1
             continue
-
         try:
             msg = MIMEMultipart("alternative")
             msg["Subject"] = subject
@@ -932,21 +994,46 @@ def _send_email(to: str, subject: str, body: str) -> bool:
             with smtplib.SMTP_SSL("smtp.gmail.com", 465) as s:
                 s.login(user, pwd)
                 s.sendmail(user, [to], msg.as_string())
-            log.info("  ✉  Gesendet → %s [via %s]", to, user.split("@")[0])
+            log.info("  ✉  Gesendet → %s [Gmail:%s]", to, user.split("@")[0])
             return True
         except Exception as e:
             err = str(e)
+            short = user.split("@")[0]
+            # Permanente Account-Fehler → Account für heute sperren, nächsten probieren
             if "550" in err and "limit" in err.lower():
-                log.warning("  ⚠  Tageslimit erreicht für %s — weiter", user.split("@")[0])
+                log.warning("  ⚠  Tageslimit %s — weiter", short)
                 _smtp_blocked_today.add(user)
-                tried += 1
-                continue
-            log.error("  ✗  Fehler → %s: %s", to, e)
-            return False
+            elif "534" in err or "535" in err or "WebLogin" in err or "credentials" in err.lower():
+                log.warning("  ⚠  Auth-Fehler %s (App-Password ungültig?) — weiter", short)
+                _smtp_blocked_today.add(user)
+            elif "421" in err or "450" in err or "451" in err:
+                # Empfangs-Server temporär nicht verfügbar → Account OK, Empfänger überspringen
+                log.debug("  MX-Fehler %s: %s", short, err[:60])
+                return False
+            else:
+                # Unbekannter Fehler → Account für heute sperren, weiter versuchen
+                log.debug("  Gmail-Fehler %s: %s", short, err[:80])
+                _smtp_blocked_today.add(user)
+            tried += 1
+            continue
+    return False
 
-    # Alle Gmail-Accounts geblockt → SendGrid-Fallback
-    log.warning("  ↪  Alle Gmail-Accounts geblockt — Fallback auf SendGrid")
-    return _send_via_sendgrid(to, subject, body)
+
+def _send_email(to: str, subject: str, body: str) -> bool:
+    """Sendet Email: SendGrid primary (beste IP-Reputation) → Gmail-Pool Fallback."""
+    _reset_smtp_if_new_day()
+
+    # 1. SendGrid primary — beste Zustellrate bei Enterprise-Servern
+    if _send_via_sendgrid(to, subject, body):
+        return True
+
+    # 2. Gmail-Pool als Fallback
+    log.debug("  ↪  SendGrid n.v. — Gmail-Pool Versuch")
+    if _send_via_gmail_pool(to, subject, body):
+        return True
+
+    log.error("  ✗  Alle Sender fehlgeschlagen → %s", to)
+    return False
 
 # ── Personalisierung ──────────────────────────────────────────────────────────
 
@@ -1029,25 +1116,44 @@ async def run_outreach() -> dict:
 
 # ── Statistik ─────────────────────────────────────────────────────────────────
 
+async def _sb_count(path: str, params: dict = None) -> int:
+    """Zählt Zeilen via PostgREST HEAD + Content-Range."""
+    url = _SB_URL().rstrip("/") + path
+    headers = {
+        "apikey": _SB_KEY(),
+        "Authorization": f"Bearer {_SB_KEY()}",
+        "Prefer": "count=exact",
+    }
+    q = {"select": "id", "limit": "1"}
+    if params:
+        q.update(params)
+    async with aiohttp.ClientSession() as s:
+        async with s.get(url, headers=headers, params=q) as r:
+            cr = r.headers.get("Content-Range", "")
+            if "/" in cr:
+                try:
+                    return int(cr.split("/")[-1])
+                except ValueError:
+                    pass
+    return 0
+
 async def show_stats() -> None:
-    total   = await _sb("GET", "/rest/v1/aiitec_companies", params={"select": "count", "count": "exact"})
-    sent    = await _sb("GET", "/rest/v1/aiitec_email_events",
-                        params={"event_type": "eq.sent", "select": "count", "count": "exact"})
-    fu      = await _sb("GET", "/rest/v1/aiitec_email_events",
-                        params={"event_type": "eq.followup_sent", "select": "count", "count": "exact"})
-    new_q   = await _sb("GET", "/rest/v1/aiitec_companies",
-                        params={"status": "eq.new", "select": "count", "count": "exact"})
+    total  = await _sb_count("/rest/v1/aiitec_companies")
+    new_q  = await _sb_count("/rest/v1/aiitec_companies", {"status": "eq.new"})
+    done   = await _sb_count("/rest/v1/aiitec_companies", {"status": "eq.done"})
+    hot    = await _sb_count("/rest/v1/aiitec_companies", {"status": "eq.hot"})
+    sent   = await _sb_count("/rest/v1/aiitec_email_events", {"event_type": "eq.sent"})
+    fu     = await _sb_count("/rest/v1/aiitec_email_events", {"event_type": "eq.followup_sent"})
 
-    def _cnt(r):
-        if isinstance(r, list) and r:
-            return r[0].get("count", "?")
-        return "?"
-
+    pool = _get_smtp_pool()
     print("\n=== AIITEC Outreach Statistik ===")
-    print(f"  Unternehmen gesamt : {_cnt(total)}")
-    print(f"  In Queue (neu)     : {_cnt(new_q)}")
-    print(f"  Emails Stage-1     : {_cnt(sent)}")
-    print(f"  Follow-Ups gesendet: {_cnt(fu)}")
+    print(f"  Unternehmen gesamt : {total}")
+    print(f"  In Queue (neu)     : {new_q}")
+    print(f"  Hot Leads          : {hot}")
+    print(f"  Abgeschlossen      : {done}")
+    print(f"  Emails Stage-1     : {sent}")
+    print(f"  Follow-Ups gesendet: {fu}")
+    print(f"  SMTP-Pool          : {len(pool)} Accounts ({len(_smtp_blocked_today)} geblockt)")
     print(f"  Tool-URL           : {_TOOL_URL}")
     print()
 
@@ -1084,35 +1190,40 @@ async def _report(stats: dict) -> None:
 # ── Daemon ────────────────────────────────────────────────────────────────────
 
 async def daemon() -> None:
-    log.info("AIITEC Outreach Machine gestartet — täglich %02d:%02d Uhr",
-             DAILY_HOUR, DAILY_MINUTE)
+    """Vollautonomer Daemon: 3 Läufe täglich, Self-Repair, Auto-Discovery."""
+    runs_str = " | ".join(f"{h:02d}:{m:02d}" for h, m in DAILY_RUNS)
+    log.info("AIITEC Vollautonomer Daemon — %d Läufe/Tag: %s", len(DAILY_RUNS), runs_str)
     await _tg(
-        f"🚀 *AIITEC Outreach Machine* gestartet\n"
-        f"Läuft täglich {DAILY_HOUR:02d}:{DAILY_MINUTE:02d} Uhr\n"
-        f"SMTP-Pool: {len(_get_smtp_pool())} Accounts\n"
-        f"Tool: {_TOOL_URL}"
+        f"🚀 *AIITEC Vollautonomer Daemon* gestartet\n"
+        f"📧 {EMAILS_PER_DAY} Emails/Lauf × {len(DAILY_RUNS)} Läufe/Tag\n"
+        f"⏰ Läufe: {runs_str} Uhr\n"
+        f"🔧 SMTP: {len(_get_smtp_pool())} Accounts + SendGrid\n"
+        f"🔗 {_TOOL_URL}"
     )
 
-    # Initiale Health-Check + Discovery bei Start
     hc = await health_check()
     if hc["repairs"]:
         log.info("[START] Reparaturen: %s", hc["repairs"])
 
     while True:
         now = datetime.now()
-        target = now.replace(hour=DAILY_HOUR, minute=DAILY_MINUTE, second=0, microsecond=0)
-        if now >= target:
-            target += timedelta(days=1)
+        # Nächsten geplanten Lauf finden
+        next_targets = []
+        for h, m in DAILY_RUNS:
+            t = now.replace(hour=h, minute=m, second=0, microsecond=0)
+            if t <= now:
+                t += timedelta(days=1)
+            next_targets.append(t)
+        target = min(next_targets)
         wait = (target - now).total_seconds()
         log.info("Nächster Lauf: %s (in %.0f Min.)", target.strftime("%d.%m %H:%M"), wait / 60)
         await asyncio.sleep(wait)
 
-        # Tages-Reset + Health-Check vor jedem Lauf
         _reset_smtp_if_new_day()
         hc = await health_check()
         if not hc["ok"]:
             issues = " | ".join(hc["issues"])
-            log.warning("[SELF-REPAIR] Probleme erkannt: %s", issues)
+            log.warning("[SELF-REPAIR] %s", issues)
             await _tg(f"⚠️ *AIITEC Self-Repair*\n{issues}")
 
         try:
@@ -1120,7 +1231,7 @@ async def daemon() -> None:
             await _report(stats)
         except Exception as e:
             log.error("Lauf-Fehler: %s", e)
-            await _tg(f"⚠️ AIITEC Outreach Fehler: {e}")
+            await _tg(f"⚠️ AIITEC Fehler: {e}")
 
 # ── Klasse für Scheduler-Integration ─────────────────────────────────────────
 

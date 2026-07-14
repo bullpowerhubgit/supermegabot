@@ -774,6 +774,247 @@ class FreeAPIToolkit:
         return result
 
 
+# ── Auto-Discovery Engine ──────────────────────────────────────────────────────
+# Findet automatisch NEUE kostenlose APIs aus öffentlichen Quellen
+
+_DISCOVERED_FILE = _DATA / "free_api_discovered.json"
+
+# Kategorie-Mapping: API-Kategorie aus publicapis.org → unsere Kategorien
+_CATEGORY_MAP = {
+    "Artificial Intelligence": "ai_text",
+    "Machine Learning": "ai_text",
+    "Science & Math": "ai_text",
+    "Business": "b2b_company",
+    "Finance": "currency",
+    "Currency Exchange": "currency",
+    "Email": "email_lookup",
+    "Data Validation": "email_lookup",
+    "News": "b2b_news",
+    "Social": "social_data",
+    "Search": "web_search",
+    "Shopping": "ecommerce_data",
+    "eCommerce": "ecommerce_data",
+    "SEO": "seo_analytics",
+    "Analytics": "seo_analytics",
+    "Photography": "ai_image",
+    "Art & Design": "ai_image",
+}
+
+
+async def _discover_from_public_apis_io(session) -> list[dict]:
+    """Holt alle no-auth, HTTPS, CORS-freien APIs von publicapis.org."""
+    discovered = []
+    try:
+        async with session.get(
+            "https://api.publicapis.org/entries",
+            params={"https": "true", "cors": "yes", "auth": ""},
+            timeout=aiohttp.ClientTimeout(total=15),
+        ) as r:
+            if r.status == 200:
+                data = await r.json(content_type=None)
+                for entry in data.get("entries", []):
+                    cat = _CATEGORY_MAP.get(entry.get("Category", ""), "")
+                    if not cat:
+                        continue
+                    link = entry.get("Link", "")
+                    if not link or not link.startswith("https://"):
+                        continue
+                    discovered.append({
+                        "name": entry.get("API", "Unknown") + " (auto-discovered)",
+                        "url": link,
+                        "env_key": None,
+                        "free_limit": "public (no auth)",
+                        "auth_header": None,
+                        "test_endpoint": link,
+                        "description": entry.get("Description", "")[:120],
+                        "category": cat,
+                        "source": "publicapis.org",
+                    })
+    except Exception as e:
+        log.debug("publicapis.org fetch error: %s", e)
+    return discovered
+
+
+async def _discover_from_github_awesome(session) -> list[dict]:
+    """Parst das awesome-public-apis README auf GitHub für no-auth Endpoints."""
+    discovered = []
+    sources = [
+        ("https://raw.githubusercontent.com/public-apis/public-apis/master/README.md",
+         "public-apis/public-apis"),
+    ]
+    url_pat = __import__("re").compile(r'\[([^\]]+)\]\((https://[^\)]+)\)')
+    auth_pat = __import__("re").compile(r'\|\s*`?No`?\s*\|', __import__("re").IGNORECASE)
+    try:
+        for raw_url, source_name in sources:
+            async with session.get(raw_url, timeout=aiohttp.ClientTimeout(total=20)) as r:
+                if r.status != 200:
+                    continue
+                text = await r.text()
+                lines = text.splitlines()
+                for i, line in enumerate(lines):
+                    if "|" not in line:
+                        continue
+                    if not auth_pat.search(line):
+                        continue
+                    m = url_pat.search(line)
+                    if not m:
+                        continue
+                    api_name, api_url = m.group(1), m.group(2)
+                    if not api_url.startswith("https://"):
+                        continue
+                    # Bestimme Kategorie aus vorangehender Überschrift
+                    cat = "web_search"
+                    for j in range(max(0, i - 30), i):
+                        hl = lines[j]
+                        if hl.startswith("## "):
+                            heading = hl.lstrip("# ").strip()
+                            cat = _CATEGORY_MAP.get(heading, "web_search")
+                            break
+                    discovered.append({
+                        "name": f"{api_name} (auto-discovered)",
+                        "url": api_url,
+                        "env_key": None,
+                        "free_limit": "no-auth public",
+                        "auth_header": None,
+                        "test_endpoint": api_url,
+                        "category": cat,
+                        "source": source_name,
+                    })
+                    if len(discovered) >= 150:
+                        break
+    except Exception as e:
+        log.debug("GitHub awesome parse error: %s", e)
+    return discovered
+
+
+async def auto_discover_new_apis(test_limit: int = 40) -> dict:
+    """
+    Automatische API-Entdeckung aus dem Internet.
+    Findet neue kostenlose APIs, testet sie, speichert funktionierende.
+    """
+    import aiohttp as _aiohttp
+    log.info("🌐 Auto-Discovery: Suche nach neuen Free APIs...")
+
+    async with _aiohttp.ClientSession(
+        headers={"User-Agent": "SuperMegaBot-FreeAPIHunter/1.0"},
+    ) as session:
+        # Quellen parallel abrufen
+        results = await asyncio.gather(
+            _discover_from_public_apis_io(session),
+            _discover_from_github_awesome(session),
+            return_exceptions=True,
+        )
+
+    all_found: list[dict] = []
+    for r in results:
+        if isinstance(r, list):
+            all_found.extend(r)
+
+    # Dedupliziere nach URL
+    seen_urls: set[str] = set()
+    unique = []
+    for api in all_found:
+        u = api.get("url", "")
+        if u and u not in seen_urls:
+            seen_urls.add(u)
+            unique.append(api)
+
+    # Vergleiche mit bekanntem Katalog — nur wirklich neue aufnehmen
+    existing_urls: set[str] = set()
+    for cat_apis in FREE_API_CATALOG.values():
+        for a in cat_apis:
+            if a.get("url"):
+                existing_urls.add(a["url"])
+    novel = [a for a in unique if a["url"] not in existing_urls]
+
+    log.info("Discovery: %d gesamt, %d einzigartig, %d neu (noch nicht im Katalog)",
+             len(all_found), len(unique), len(novel))
+
+    # Teste max `test_limit` neue APIs
+    hunter = get_hunter()
+    tested_ok: list[dict] = []
+    tested_fail: list[dict] = []
+    import aiohttp as _aiohttp2
+    async with _aiohttp2.ClientSession() as sess:
+        for api in novel[:test_limit]:
+            try:
+                async with sess.get(
+                    api["test_endpoint"],
+                    timeout=_aiohttp2.ClientTimeout(total=6),
+                    headers={"User-Agent": "SuperMegaBot/1.0"},
+                    allow_redirects=True,
+                ) as r:
+                    ok = r.status in (200, 201, 202, 204)
+                    entry = {**api, "http_status": r.status, "tested_at": datetime.now().isoformat()}
+                    if ok:
+                        tested_ok.append(entry)
+                    else:
+                        tested_fail.append(entry)
+            except Exception as e:
+                tested_fail.append({**api, "error": str(e)[:80], "tested_at": datetime.now().isoformat()})
+
+    # Speichern
+    discovered_data = {
+        "last_discovery": datetime.now().isoformat(),
+        "total_found": len(all_found),
+        "total_unique": len(unique),
+        "total_novel": len(novel),
+        "total_tested": len(tested_ok) + len(tested_fail),
+        "working": tested_ok,
+        "broken": tested_fail[:20],
+    }
+    try:
+        _DISCOVERED_FILE.write_text(
+            json.dumps(discovered_data, indent=2, ensure_ascii=False)
+        )
+    except Exception as e:
+        log.debug("Save discovered failed: %s", e)
+
+    # Telegram-Meldung
+    try:
+        tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        tg_chat = os.getenv("TELEGRAM_CHAT_ID", "")
+        if tg_token and tg_chat and tested_ok:
+            import aiohttp as _aiohttp3
+            lines = [
+                f"<b>🌐 Auto-Discovery: {len(tested_ok)} neue Free APIs gefunden!</b>",
+                f"Quellen: publicapis.org + GitHub awesome-lists",
+                f"Getestet: {len(tested_ok) + len(tested_fail)}, OK: {len(tested_ok)}",
+            ]
+            for a in tested_ok[:5]:
+                lines.append(f"✅ {a['name'][:50]}")
+            if len(tested_ok) > 5:
+                lines.append(f"… und {len(tested_ok) - 5} weitere")
+            async with _aiohttp3.ClientSession() as s:
+                await s.post(
+                    f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                    json={"chat_id": tg_chat, "text": "\n".join(lines), "parse_mode": "HTML"},
+                    timeout=_aiohttp3.ClientTimeout(total=8),
+                )
+    except Exception:
+        pass
+
+    log.info("Auto-Discovery: %d neue funktionierende APIs gefunden", len(tested_ok))
+    return discovered_data
+
+
+def get_discovery_stats() -> dict:
+    """Liest gespeicherte Discovery-Ergebnisse."""
+    try:
+        if _DISCOVERED_FILE.exists():
+            data = json.loads(_DISCOVERED_FILE.read_text())
+            return {
+                "ok": True,
+                "last_discovery": data.get("last_discovery"),
+                "total_novel": data.get("total_novel", 0),
+                "working_count": len(data.get("working", [])),
+                "working": data.get("working", [])[:10],
+            }
+    except Exception:
+        pass
+    return {"ok": False, "last_discovery": None, "working_count": 0, "working": []}
+
+
 if __name__ == "__main__":
     import logging
     logging.basicConfig(level=logging.INFO)

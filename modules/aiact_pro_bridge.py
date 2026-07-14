@@ -206,6 +206,90 @@ async def batch_scan(urls: list[str], concurrency: int = 3) -> list[Dict[str, An
     return await asyncio.gather(*[_one(u) for u in urls], return_exceptions=False)
 
 
+# ── SuperMegaBot-System-Sync ──────────────────────────────────────────────────
+
+SUPERMEGABOT_AI_SYSTEMS = [
+    {"name": "Mass Outreach KI",    "purpose": "Automatisiertes B2B-Email-Marketing via KI", "data": "Firmenname, Email-Adressen, Branche", "context": "B2B-Vertrieb aiitec.de"},
+    {"name": "Email-Brain KI",      "purpose": "KI-Klassifizierung eingehender Emails, Auto-Antwort via Groq", "data": "Email-Inhalte, Absender", "context": "Kundenkommunikation"},
+    {"name": "RudiClone Agent-KI",  "purpose": "Autonomer Business-Strategie-Agent", "data": "Markt- und Revenue-Daten", "context": "Interne Business-Entscheidungen"},
+    {"name": "Post Guardian KI",    "purpose": "KI-Inhaltsmoderation für Social-Media-Posts", "data": "Post-Texte, Metadaten", "context": "Social-Media-Marketing"},
+    {"name": "Shopify Blog Auto-KI","purpose": "KI-generierte Blogartikel via Claude/Groq", "data": "Produkt-Daten, SEO-Keywords", "context": "Content-Marketing ineedit.com.co"},
+    {"name": "AI Trend Analyse",    "purpose": "KI-Produkt-Trend-Erkennung, Marktrecherche", "data": "Öffentliche Produktdaten, Preise", "context": "E-Commerce-Automatisierung"},
+    {"name": "Phone AI MAX",        "purpose": "KI-Telefon-Bot (OpenAI Realtime + Twilio)", "data": "Gesprächsinhalte, Telefonnummern", "context": "Automatisierter Vertrieb DACH"},
+]
+
+
+async def sync_systems() -> Dict[str, Any]:
+    """Registriert alle SuperMegaBot-KI-Systeme in AIACT-Pro."""
+    existing_data = await _get("/api/systems")
+    if existing_data.get("offline") or not isinstance(existing_data.get("systems"), list):
+        return {"ok": False, "error": "AIACT-Pro offline"}
+    existing_names = {s.get("name", "") for s in existing_data.get("systems", [])}
+    registered = 0
+    skipped = 0
+    for sys_def in SUPERMEGABOT_AI_SYSTEMS:
+        if sys_def["name"] in existing_names:
+            skipped += 1
+            continue
+        result = await _post("/api/systems", sys_def)
+        if result and not result.get("error"):
+            registered += 1
+            log.info("AIACT-Pro: registriert '%s'", sys_def["name"])
+    return {"ok": True, "registered": registered, "skipped": skipped, "total": len(SUPERMEGABOT_AI_SYSTEMS)}
+
+
+async def get_compliance_status() -> Dict[str, Any]:
+    """Holt Compliance-Status aller registrierten Systeme."""
+    cached = _cache_get("compliance_status")
+    if cached:
+        return {**cached, "from_cache": True}
+    data = await _get("/api/systems")
+    if data.get("offline"):
+        return {"ok": False, "error": "AIACT-Pro offline"}
+    systems = data.get("systems", [])
+    risk_summary: dict = {}
+    high_risk: list = []
+    for s in systems:
+        c = s.get("classification", {})
+        level = c.get("level", "minimal")
+        risk_summary[level] = risk_summary.get(level, 0) + 1
+        if level in ("high", "unacceptable"):
+            high_risk.append({"name": s.get("name"), "level": level, "label": c.get("label", ""), "fine": c.get("fine", "")})
+    result = {
+        "ok": True,
+        "total_systems": len(systems),
+        "risk_summary": risk_summary,
+        "high_risk_count": len(high_risk),
+        "high_risk_systems": high_risk,
+        "compliant": len(high_risk) == 0,
+        "timestamp": __import__("datetime").datetime.now().isoformat(),
+    }
+    _cache_set("compliance_status", result)
+    return result
+
+
+async def run_compliance_check() -> Dict[str, Any]:
+    """Vollständiger Check: Sync → Status → Telegram-Alert."""
+    sync_r = await sync_systems()
+    status = await get_compliance_status()
+    try:
+        from modules.notify_hub import async_send_telegram
+        high = status.get("high_risk_count", 0)
+        total = status.get("total_systems", 0)
+        if not status.get("ok"):
+            msg = f"ℹ️ <b>AIACT-Pro</b> offline — Cache-Stand genutzt"
+        elif high > 0:
+            msg = (f"⚠️ <b>AIACT-Pro: {high} Hochrisiko-Systeme!</b>\n"
+                   + "\n".join(f"⚠️ {s['name'][:40]}: {s['label']}" for s in status.get("high_risk_systems", [])[:3]))
+        else:
+            summary = " | ".join(f"{k}: {v}" for k, v in status.get("risk_summary", {}).items())
+            msg = f"✅ <b>AIACT-Pro Compliance OK</b>\n{total} Systeme — kein Hochrisiko\n{summary}"
+        await async_send_telegram(msg)
+    except Exception:
+        pass
+    return {"ok": True, "sync": sync_r, "compliance": status}
+
+
 # ── Standalone-Test ───────────────────────────────────────────────────────────
 
 if __name__ == "__main__":

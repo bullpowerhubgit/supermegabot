@@ -514,3 +514,186 @@ async def task_traffic_blast() -> str:
                 f"{r['platforms']} | Reach ~{r['estimated_reach']}")
     except Exception as e:
         return f"TrafficBlast Fehler: {e}"
+
+
+# ── VOLLBESCHLEUNIGER / DAEMON ─────────────────────────────────────────────────
+
+import subprocess as _sp, sys as _sys
+
+_LAUNCHAGENTS = {
+    "outreach":    "com.aiitec.outreach.plist",
+    "inbox":       "com.aiitec.inbox.plist",
+    "postmonitor": "com.aiitec.postmonitor.plist",
+    "apihunt":     "com.aiitec.apihunt.plist",
+}
+
+def _daemon_status(label: str) -> bool:
+    try:
+        out = _sp.check_output(["launchctl", "list", label],
+                                stderr=_sp.DEVNULL, text=True)
+        for line in out.splitlines():
+            if "PID" in line and "=" in line:
+                v = line.split("=")[1].strip().strip('";')
+                return v not in ("-", "0", "")
+    except _sp.CalledProcessError:
+        return False
+    return False
+
+def _restart_daemon(plist_name: str):
+    p = Path.home() / "Library" / "LaunchAgents" / plist_name
+    if p.exists():
+        _sp.run(["launchctl", "unload", str(p)], capture_output=True)
+        _sp.run(["launchctl", "load",   str(p)], capture_output=True)
+
+async def _run_outreach_blast():
+    """Startet sofortigen Outreach-Blast."""
+    try:
+        _BASE = Path(__file__).parent.parent
+        _sys.path.insert(0, str(_BASE))
+        from modules.aiitec_outreach_machine import (
+            init_db, run_outreach, _report, health_check, discover_new_companies
+        )
+        await init_db()
+        hc = await health_check()
+        if hc.get("queue_size", 99) < 50:
+            await discover_new_companies(count=80)
+        stats = await run_outreach()
+        await _report(stats)
+        return stats
+    except Exception as e:
+        log.error("[OUTREACH] %s", e)
+        return {}
+
+async def _run_api_hunt():
+    try:
+        from modules.free_api_hunt_daemon import hunt
+        return await hunt(report=True)
+    except Exception as e:
+        log.warning("[API-HUNT] %s", e)
+        return {}
+
+async def vollblast():
+    """Vollbeschleuniger: Discovery → Outreach → Social → API-Hunt in einem Lauf."""
+    log.info("=== VOLLBESCHLEUNIGER START ===")
+    _tg("🚀 *AIITEC Vollbeschleuniger* gestartet — alle Kanäle auf Maximum!")
+
+    # 1. Daemon-Check + Auto-Restart
+    restarted = []
+    for name, plist in _LAUNCHAGENTS.items():
+        label = plist.replace(".plist", "")
+        if not _daemon_status(label):
+            _restart_daemon(plist)
+            restarted.append(name)
+    if restarted:
+        log.info("↻ Neugestartet: %s", restarted)
+
+    # 2. B2B Outreach
+    log.info("[1/3] B2B Outreach-Blast ...")
+    out_stats = await _run_outreach_blast()
+    sent = out_stats.get("sent", 0) + out_stats.get("followup", 0)
+
+    # 3. Social Media / Content Traffic
+    log.info("[2/3] Social Traffic Blast ...")
+    try:
+        traffic_stats = await run_full_traffic_blast()
+        posts = traffic_stats.get("posts_sent", 0)
+        reach = traffic_stats.get("estimated_reach", 0)
+    except Exception as e:
+        log.warning("Traffic-Blast: %s", e)
+        posts, reach = 0, 0
+
+    # 4. API Hunt
+    log.info("[3/3] API Hunt ...")
+    api_stats = await _run_api_hunt()
+
+    running = sum(1 for n, pl in _LAUNCHAGENTS.items()
+                  if _daemon_status(pl.replace(".plist", "")))
+
+    _tg(
+        f"✅ *Vollbeschleuniger abgeschlossen!*\n\n"
+        f"📧 Emails gesendet: {sent}\n"
+        f"📱 Social Posts: {posts} (Reach ~{reach})\n"
+        f"🔍 APIs getestet: {api_stats.get('tested', 0)}\n"
+        f"🤖 Daemons aktiv: {running}/{len(_LAUNCHAGENTS)}\n"
+        f"↻ Neugestartet: {', '.join(restarted) if restarted else 'keine'}"
+    )
+    return {"sent": sent, "posts": posts, "reach": reach,
+            "apis": api_stats.get("tested", 0), "running": running}
+
+async def daemon_coordinator():
+    """
+    Vollautonomer Koordinations-Daemon:
+    - Alle 10 Min: Daemon-Health-Check + Auto-Restart
+    - Alle 60 Min: Stunden-Report
+    - Alle 6h: API-Hunt
+    Outreach läuft via eigenem LaunchAgent 3× täglich.
+    """
+    import logging as _log
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [TRAFFIC] %(levelname)s — %(message)s",
+        handlers=[logging.StreamHandler(_sys.stdout)],
+    )
+    log.info("Traffic-Koordinator Daemon gestartet — vollautomatisch 24/7")
+    _tg(
+        "🏎 *AIITEC Traffic-Koordinator* gestartet!\n\n"
+        "• B2B-Outreach: 3× täglich (08:00 / 13:00 / 18:00)\n"
+        "• Inbox-Monitor: alle 10 Min\n"
+        "• Post-Monitor: alle 2 Min\n"
+        "• API-Hunt: alle 6h\n"
+        "• Daemon-AutoRestart: alle 10 Min\n"
+        "_Keine manuellen Eingriffe nötig!_"
+    )
+
+    CHECK_INTERVAL = 600   # 10 Min
+    REPORT_EVERY   = 6     # × CHECK = 60 Min
+    API_EVERY      = 36    # × CHECK = 6h
+
+    counter = 0
+    total_sent = 0
+
+    while True:
+        await asyncio.sleep(CHECK_INTERVAL)
+        counter += 1
+
+        # Auto-Restart toter Daemons
+        restarted = []
+        for name, plist in _LAUNCHAGENTS.items():
+            label = plist.replace(".plist", "")
+            if not _daemon_status(label):
+                _restart_daemon(plist)
+                restarted.append(name)
+        if restarted:
+            log.warning("↻ Auto-Restart: %s", restarted)
+            _tg(f"↻ Auto-Repair: {', '.join(restarted)} neugestartet")
+
+        # API-Hunt alle 6h
+        if counter % API_EVERY == 0:
+            log.info("[API-HUNT] Scheduled Hunt ...")
+            await _run_api_hunt()
+
+        # Stunden-Report
+        if counter % REPORT_EVERY == 0:
+            running = sum(1 for n, pl in _LAUNCHAGENTS.items()
+                          if _daemon_status(pl.replace(".plist", "")))
+            stats = get_traffic_stats()
+            _tg(
+                f"📊 *Stunden-Report*\n"
+                f"🤖 Daemons: {running}/{len(_LAUNCHAGENTS)}\n"
+                f"📱 Posts heute: {stats.get('today_ok', 0)}\n"
+                f"_Traffic-Koordinator läuft autonom_"
+            )
+
+
+if __name__ == "__main__":
+    import sys
+    if "--blast" in sys.argv:
+        asyncio.run(vollblast())
+    elif "--daemon" in sys.argv:
+        asyncio.run(daemon_coordinator())
+    elif "--stats" in sys.argv:
+        stats = get_traffic_stats()
+        print(json := __import__("json"))
+        print(__import__("json").dumps(stats, indent=2))
+    else:
+        asyncio.run(daemon_coordinator())
