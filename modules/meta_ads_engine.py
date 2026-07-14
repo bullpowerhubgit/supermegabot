@@ -427,6 +427,31 @@ async def launch_retargeting_campaign() -> dict:
     return results
 
 
+async def sync_campaigns_from_api() -> dict:
+    """Synchronisiert Kampagnen von Meta API in lokale DB (überlebt Redeploys)."""
+    cfg = _cfg()
+    if not cfg.get("token"):
+        return {"synced": 0, "error": "no token"}
+    try:
+        async with aiohttp.ClientSession() as session:
+            res = await _api(session, "GET", cfg["ad_account"] + "/campaigns",
+                             params={"fields": "id,name,status,daily_budget,objective",
+                                     "limit": "100"})
+        campaigns = res.get("data", [])
+        with _db() as conn:
+            for c in campaigns:
+                conn.execute(
+                    "INSERT OR REPLACE INTO campaigns (id,name,objective,status,budget_eur,created_at) VALUES (?,?,?,?,?,?)",
+                    (c["id"], c.get("name",""), c.get("objective",""), c.get("status","PAUSED"),
+                     round(int(c.get("daily_budget", 0)) / 100, 2), time.time())
+                )
+        log.info("Synced %d campaigns from Meta API", len(campaigns))
+        return {"synced": len(campaigns)}
+    except Exception as e:
+        log.warning("sync_campaigns_from_api failed: %s", e)
+        return {"synced": 0, "error": str(e)}
+
+
 async def activate_campaigns() -> dict:
     """Alle PAUSED Kampagnen auf ACTIVE setzen."""
     cfg = _cfg()
@@ -579,8 +604,12 @@ async def _telegram_alert(msg: str) -> None:
 # ── Scheduler entry points ────────────────────────────────────────────────────
 
 async def run_meta_campaign_cycle() -> dict:
-    """Main orchestrator called by scheduler every 4h: activate + optimize campaigns."""
+    """Main orchestrator called by scheduler every 4h: sync + activate + optimize campaigns."""
     results: dict = {}
+    try:
+        results["sync"] = await sync_campaigns_from_api()
+    except Exception as e:
+        results["sync"] = {"error": str(e)}
     try:
         results["activate"] = await activate_campaigns()
     except Exception as e:
