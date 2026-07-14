@@ -5681,16 +5681,23 @@ async def task_email_daily_summary() -> str:
 
 
 async def task_email_blast_engine() -> str:
-    """Email Blast Engine: alle Email-Listen täglich mit Revenue-Content bespielen (alle 6h)."""
+    """Email Blast Engine: Klaviyo + Mailchimp + SMTP-Pool-Blast (6h)."""
     try:
-        from modules.task_guard import task_ran_recently, record_task_run
-        if await task_ran_recently("email_blast", min_interval_hours=24):
-            return "Email Blast: bereits heute gesendet — überspringe"
         from modules.email_blast_engine import run_email_cycle
         r = await run_email_cycle()
         return f"Email Blast: {r}"
     except Exception as e:
         return f"Email Blast Fehler: {e}"
+
+
+async def task_email_growth_engine() -> str:
+    """Email Growth: Shopify-Kunden → Klaviyo + SMTP-Pool-Blast an alle Profile (4h)."""
+    try:
+        from modules.email_growth_engine import run_email_growth_cycle
+        r = await run_email_growth_cycle()
+        return f"Email Growth: sent={r.get('total_sent',0)} list={r.get('list_size',0)}"
+    except Exception as e:
+        return f"Email Growth Fehler: {e}"
 
 
 async def task_email_sequence_engine() -> str:
@@ -7356,7 +7363,8 @@ TASKS = [
     ("printful_autonomy",      task_printful_autonomy,      28800, 1820),  # 8h  — Printful POD+Fulfillment
     ("printify_autonomy",      task_printify_autonomy,      28800, 1860),  # 8h  — Printify Trending→Shopify
     # ── EMAIL & CRM ───────────────────────────────────────────────────────────
-    ("email_blast",            task_email_blast_engine,     21600, 1900),  # 6h  — Alle Email-Listen bespielen
+    ("email_blast",            task_email_blast_engine,      7200, 1900),  # 2h  — Klaviyo+Mailchimp+SMTP Blast
+    ("email_growth",           task_email_growth_engine,   14400,  120),  # 4h  — Shopify→Klaviyo + SMTP-Pool 500/Tag
     ("email_sequences",        task_email_sequence_engine,  14400, 1940),  # 4h  — Neue Kunden in Sequenz einschreiben
     ("mailchimp_autonomy",     task_mailchimp_autonomy,     43200, 1980),  # 12h — Mailchimp Kampagnen+Welcome
     ("mailchimp_dragon",       task_mailchimp_dragon_1000,  86400, 2020),  # 24h — 1000-Artikel-Kampagne
