@@ -19,6 +19,20 @@
 
 ---
 
+## ✅ v41 — KLEINIGKEITEN FIXES + DISTRIBUTED LOCK ERWEITERUNG
+
+**Stand: 2026-07-14 (Session v41)**
+
+**Fixes (1a3c0ffc):**
+1. ✅ email_outreach_bulk.py: `run_outreach()` mit `acquire_lock` (TTL 90min) — kein Duplikat-Outreach mehr bei parallelen Agenten
+2. ✅ abandoned_cart_emails.py: `run_cart_recovery_cycle()` mit `acquire_lock` (TTL 20min)
+3. ✅ ds24_webhook.py: `_log_to_supabase()` nutzt `upsert+dedup_hash` — kein Doppelkauf-Eintrag bei Webhook-Retry
+4. ✅ autonomous_engine.py: `SUPERMEGABOT_INTERNAL_URL` statt hardcoded localhost
+5. ✅ revenue_watchdog.py: `SUPERMEGABOT_INTERNAL_URL` statt hardcoded localhost
+6. ✅ brutus_traffic_engine.py: Falschen Docstring (IWIN→AiiteC) korrigiert
+
+---
+
 ## ✅ v40 — MEGA COMMAND CENTER + CONVERSION OPTIMIZER
 
 **Stand: 2026-07-14 (Session)**
