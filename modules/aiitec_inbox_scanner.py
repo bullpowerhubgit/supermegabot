@@ -359,6 +359,34 @@ async def show_stats():
 
 # ── Daemon ────────────────────────────────────────────────────────────────────
 
+async def _run_self_repair() -> None:
+    """Ruft health_check() aus outreach_machine auf — repariert automatisch."""
+    try:
+        # Lazy import um zirkuläre Importe zu vermeiden
+        import importlib
+        import sys as _sys
+        mod_path = str(_BASE / "modules")
+        if mod_path not in _sys.path:
+            _sys.path.insert(0, str(_BASE))
+        from modules.aiitec_outreach_machine import health_check
+        hc = await health_check()
+        status_lines = [
+            f"🔧 *AIITEC Self-Repair Report*",
+            f"📊 Queue: {hc.get('queue_size', '?')} Firmen",
+            f"📧 SMTP: {hc.get('smtp_available', '?')}/{hc.get('smtp_total', '?')} verfügbar",
+        ]
+        if hc.get("repairs"):
+            status_lines.append("✅ Reparaturen: " + " | ".join(hc["repairs"]))
+        if hc.get("issues"):
+            status_lines.append("⚠️ Probleme: " + " | ".join(hc["issues"]))
+        if not hc["ok"] or hc.get("repairs"):
+            await _tg("\n".join(status_lines))
+        log.info("[SELF-REPAIR] Health OK=%s Queue=%s SMTP=%s/%s",
+                 hc["ok"], hc.get("queue_size"), hc.get("smtp_available"), hc.get("smtp_total"))
+    except Exception as e:
+        log.error("[SELF-REPAIR] Fehler: %s", e)
+
+
 async def daemon():
     log.info("AIITEC Inbox Scanner gestartet — alle %d Sek. (%d Min.)",
              _INTERVAL, _INTERVAL // 60)
@@ -370,9 +398,8 @@ async def daemon():
             check_count += 1
             if stats["total"] > 0:
                 log.info("Scan #%d: %d Emails verarbeitet", check_count, stats["total"])
-            # Stündlicher Status-Report
+            # Stündlicher Status-Report + Self-Repair
             if check_count % 6 == 0:
-                total_processed = sum(v for k, v in stats.items() if k != "errors")
                 await _tg(
                     f"📊 *AIITEC Inbox — Stunden-Report*\n"
                     f"Letzte Runde: {stats['total']} Emails\n"
@@ -380,6 +407,7 @@ async def daemon():
                     f"❌ Bounce: {stats.get('bounce',0)} | "
                     f"📩 Reply: {stats.get('reply',0)}"
                 )
+                await _run_self_repair()
         except Exception as e:
             log.error("Daemon-Fehler: %s", e)
         await asyncio.sleep(_INTERVAL)
