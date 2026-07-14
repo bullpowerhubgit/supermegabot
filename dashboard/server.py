@@ -11309,7 +11309,7 @@ async def create_app():
         except Exception as e:
             return web.json_response({"ok": False, "error": str(e)}, status=500)
 
-    async def handle_social_status(request):
+    async def handle_social_autopilot_status(request):
         try:
             from modules.social_media_autopilot import get_status
             result = await get_status()
@@ -11318,7 +11318,7 @@ async def create_app():
             return web.json_response({"ok": False, "error": str(e)}, status=500)
 
     app.router.add_post("/api/social/post-now", handle_social_post_now)
-    app.router.add_get("/api/social/autopilot-status", handle_social_status)
+    app.router.add_get("/api/social/autopilot-status", handle_social_autopilot_status)
     log.info("Social Autopilot routes registered (/api/social/*)")
 
     # ── YouTube Autopilot ──────────────────────────────────────────────────
@@ -11631,6 +11631,99 @@ async def create_app():
     app.router.add_get("/api/prospector/stats",   handle_prospector_stats)
     app.router.add_get("/api/prospector/niches",  handle_prospector_niches)
     log.info("Rotating Buyer Prospector routes registered (/api/prospector/*)")
+
+    # ── Auto-Repair Engine routes ─────────────────────────────────────────────
+    async def handle_repair_status(request):
+        """GET /api/repair/status — Letzter Repair-Zyklus Ergebnis."""
+        try:
+            from modules.auto_repair_engine import get_repair_status
+            data = await get_repair_status()
+            return web.json_response(data)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_repair_run(request):
+        """POST /api/repair/run — Repair-Zyklus sofort starten."""
+        try:
+            from modules.auto_repair_engine import run_repair_cycle
+            asyncio.create_task(run_repair_cycle())
+            return web.json_response({"ok": True, "message": "Repair-Zyklus gestartet"})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_get( "/api/repair/status", handle_repair_status)
+    app.router.add_post("/api/repair/run",    handle_repair_run)
+    log.info("Auto-Repair Engine routes registered (/api/repair/*)")
+
+    # ── Test-Verkauf & Inbound-Test routes ───────────────────────────────────
+    async def handle_test_purchase_run(request):
+        """POST /api/test-purchase/run — Vollständiger Funnel-Test."""
+        try:
+            from modules.test_purchase_engine import run_test_purchase
+            result = await run_test_purchase()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_test_purchase_results(request):
+        """GET /api/test-purchase/results — Letzte Test-Ergebnisse."""
+        try:
+            from modules.test_purchase_engine import get_test_results
+            data = get_test_results()
+            return web.json_response(data)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_inbound_test(request):
+        """POST /api/test-purchase/inbound — Nur Webhook-Inbound prüfen."""
+        try:
+            from modules.test_purchase_engine import run_inbound_test
+            result = await run_inbound_test()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/test-purchase/run",     handle_test_purchase_run)
+    app.router.add_get( "/api/test-purchase/results", handle_test_purchase_results)
+    app.router.add_post("/api/test-purchase/inbound", handle_inbound_test)
+    log.info("Test-Purchase Engine routes registered (/api/test-purchase/*)")
+
+    # ── Post-Guardian routes ──────────────────────────────────────────────────
+    async def handle_post_guardian_check(request):
+        """POST /api/post-guardian/check — Post vor Veröffentlichung prüfen."""
+        try:
+            body = await request.json()
+            from modules.post_guardian import check_post
+            result = await check_post(
+                platform  = body.get("platform", "instagram"),
+                text      = body.get("text", ""),
+                image_url = body.get("image_url"),
+                account   = body.get("account"),
+            )
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_post_guardian_stats(request):
+        """GET /api/post-guardian/stats — Statistiken: blocked/approved/posted."""
+        try:
+            from modules.post_guardian import get_stats
+            return web.json_response(get_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_post_guardian_blocked(request):
+        """GET /api/post-guardian/blocked — Blockierte Posts (letzte 24h)."""
+        try:
+            from modules.post_guardian import get_blocked_posts
+            return web.json_response({"blocked": get_blocked_posts()})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/post-guardian/check",   handle_post_guardian_check)
+    app.router.add_get( "/api/post-guardian/stats",   handle_post_guardian_stats)
+    app.router.add_get( "/api/post-guardian/blocked", handle_post_guardian_blocked)
+    log.info("Post-Guardian routes registered (/api/post-guardian/*)")
 
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
