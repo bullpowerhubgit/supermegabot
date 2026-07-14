@@ -538,11 +538,17 @@ class AutonomousPilot:
 
 # ── Scheduler-Entry ───────────────────────────────────────────────────────────
 async def run_pilot_cycle() -> str:
-    pilot = AutonomousPilot()
-    result = await pilot.run_autonomous_cycle()
-    healed = len([v for v in result.get("healed", {}).values() if "error" not in str(v)])
-    sched  = len(result.get("scheduled", []))
-    return f"AutonomousPilot: {healed} healed, {sched} scheduled tasks triggered"
+    from modules.agent_coordinator import run as coord_run
+    async with coord_run("pilot_cycle", "autonomous_pilot", ttl=240) as ctx:
+        if ctx.already_running:
+            return "AutonomousPilot: bereits aktiv — übersprungen"
+        pilot = AutonomousPilot()
+        result = await pilot.run_autonomous_cycle()
+        healed = len([v for v in result.get("healed", {}).values() if "error" not in str(v)])
+        sched  = len(result.get("scheduled", []))
+        summary = f"AutonomousPilot: {healed} healed, {sched} scheduled tasks triggered"
+        ctx.result = {"healed": healed, "scheduled": sched, "summary": summary}
+        return summary
 
 
 def get_pilot_stats() -> dict:

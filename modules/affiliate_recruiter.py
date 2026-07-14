@@ -333,6 +333,17 @@ async def send_affiliate_pitch(email: str, name: str, platform: str,
 
 async def run_affiliate_campaign(limit: int = DAILY_AFFILIATE_LIMIT) -> Dict:
     """Hauptfunktion: Findet Affiliates und sendet sofort Pitches."""
+    from modules.agent_coordinator import run as coord_run
+    async with coord_run("affiliate_campaign", "affiliate_recruiter", ttl=7200, reuse_result_age=3600) as ctx:
+        if ctx.already_running:
+            log.info("Affiliate Campaign läuft bereits — übersprungen")
+            return ctx.last_result.get("result", {}) if ctx.last_result else {}
+        result = await _run_affiliate_campaign_inner(limit)
+        ctx.result = result
+        return result
+
+
+async def _run_affiliate_campaign_inner(limit: int = DAILY_AFFILIATE_LIMIT) -> Dict:
     log.info("Affiliate-Recruiter startet — Ziel: %d Pitches", limit)
 
     # Targets finden
