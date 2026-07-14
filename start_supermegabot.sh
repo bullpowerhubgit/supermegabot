@@ -54,26 +54,31 @@ log ""
 log "💰 GELDGENERIERUNG STARTEN"
 log "──────────────────────────"
 
-trigger() {
-  local label="$1" url="$2"
-  RES=$(curl -sf -X POST --max-time 15 "$RAIL/$url" 2>/dev/null || echo '{}')
-  log "  $label → gestartet"
+fire() {
+  local url="$1"
+  curl -sf -X POST --max-time 10 "$RAIL/$url" \
+    -H "Content-Type: application/json" > /dev/null 2>&1 &
 }
 
-trigger "📣 DS24 Affiliate Blast"        "api/agents/broadcast"
-curl -sf -X POST "$RAIL/api/agents/broadcast" \
-  -H "Content-Type: application/json" \
-  -d '{"from":"desktop","type":"command","payload":{"action":"ds24_blast"}}' > /dev/null 2>&1 || true
+# Alle parallel feuern — kein Warten
+fire "api/agents/broadcast"
+fire "api/meta-ads/optimize"
+fire "api/pilot/run"
+fire "api/mass-outreach/research"
+fire "api/mass-outreach/send"
+fire "api/shopify/sync"
+fire "api/repair/run"
+fire "api/digistore/sync"
+fire "api/traffic/blast"
 
-trigger "📊 ROAS Optimizer"              "api/meta-ads/optimize"
-trigger "📧 Sales Funnel (Email Queue)"  "api/pilot/run"
-trigger "🔍 Mass-Outreach Research"      "api/mass-outreach/research"
-trigger "📤 Email Blast (1000)"          "api/mass-outreach/send"
-trigger "🛍️  Shopify Sync"               "api/shopify/sync"
-trigger "🔧 Auto-Repair"                 "api/repair/run"
-trigger "💳 Digistore24 Sync"            "api/digistore/sync"
-trigger "🚦 Traffic Blast"               "api/traffic/blast"
-trigger "🤖 Autonomous Pilot"            "api/pilot/run"
+# DS24 Broadcast mit Payload
+curl -sf -X POST --max-time 10 "$RAIL/api/agents/broadcast" \
+  -H "Content-Type: application/json" \
+  -d '{"from":"desktop","type":"command","payload":{"action":"ds24_blast"}}' \
+  > /dev/null 2>&1 &
+
+log "  📣 DS24 + ROAS + Funnel + Shopify + Traffic → alle gestartet (parallel)"
+wait  # kurz warten damit alle curl-Jobs laufen
 
 # ── 6. Revenue Check ─────────────────────────────
 log ""
