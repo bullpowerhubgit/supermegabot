@@ -35,7 +35,7 @@ git push origin main 2>/dev/null && log "✅ GitHub aktuell" || log "⚠️  Pus
 
 # ── 3. Railway Health prüfen ─────────────────────
 log "🔍 Railway-Status..."
-HEALTH=$(curl -sf --max-time 10 "$RAIL/health" 2>/dev/null || echo '{"status":"offline"}')
+HEALTH=$(curl -sf --max-time 20 "$RAIL/health" 2>/dev/null || echo '{"status":"offline"}')
 STATUS=$(echo "$HEALTH" | python3 -c "import sys,json;d=json.load(sys.stdin);print(d.get('status','?'))" 2>/dev/null || echo "?")
 
 if [ "$STATUS" = "ok" ]; then
