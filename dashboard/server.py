@@ -12518,7 +12518,7 @@ async def create_app():
         # Load watchdog stats
         try:
             from modules.revenue_watchdog import get_watchdog_stats
-            results["watchdog"] = get_watchdog_stats()
+            results["watchdog"] = await get_watchdog_stats()
         except Exception as e:
             results["watchdog"] = {"error": str(e)}
         # Load ROAS stats
@@ -12530,13 +12530,13 @@ async def create_app():
         # Load cart stats
         try:
             from modules.abandoned_cart_emails import get_cart_stats
-            results["abandoned_cart"] = get_cart_stats()
+            results["abandoned_cart"] = await get_cart_stats()
         except Exception as e:
             results["abandoned_cart"] = {"error": str(e)}
         # Load drip stats
         try:
             from modules.email_drip_followup import get_drip_stats
-            results["email_drip"] = get_drip_stats()
+            results["email_drip"] = await get_drip_stats()
         except Exception as e:
             results["email_drip"] = {"error": str(e)}
         results["ok"] = True
