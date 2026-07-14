@@ -456,6 +456,23 @@ async def task_system_health() -> str:
         return f"Fehler: {e}"
 
 
+async def task_auto_repair_10min() -> str:
+    """Alle 10 Min: System-Check + automatische Reparatur aller kaputten Sachen."""
+    try:
+        from modules.auto_repair_10min import run_repair_cycle
+        result = await run_repair_cycle()
+        fixes  = result.get("fixes", [])
+        errors = result.get("errors", [])
+        elapsed = result.get("elapsed_s", 0)
+        if fixes:
+            return f"🔧 Auto-Repair: {len(fixes)} Fixes in {elapsed}s — {'; '.join(fixes[:2])}"
+        if errors:
+            return f"⚠️ Auto-Repair: {len(errors)} Fehler — {errors[0]}"
+        return f"✅ Auto-Repair: Alles OK ({elapsed}s)"
+    except Exception as e:
+        return f"Auto-Repair Fehler: {e}"
+
+
 async def task_monitor_hub() -> str:
     """Monitor Hub: Gmail (beide Konten) + Telegram Posts + Scheduler-Fehler alle 30 Min."""
     try:
@@ -7029,7 +7046,8 @@ async def task_shopify_conversion_boost() -> str:
 ## LEAN MODE — essential monitoring + free traffic channels only
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
-    # ── Monitoring (kostenlos) ────────────────────────────────────────────────
+    # ── Monitoring & Self-Repair ──────────────────────────────────────────────
+    ("auto_repair",          task_auto_repair_10min,     600,   45),  # 10 min — AUTO-REPAIR: alles prüfen + reparieren
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
     ("monitor_hub",          task_monitor_hub,          1800,   60),  # 30 min — Gmail + Telegram + Scheduler
     ("email_inbox_monitor",  task_email_inbox_monitor,   300,   85),  # 5 min  — Gmail Eingang: Bestellungen/Anfragen → Telegram
