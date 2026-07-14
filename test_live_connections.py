@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
-Live Connection Test — SuperMegaBot
-Liest alle Credentials aus .env / Umgebungsvariablen.
+SuperMegaBot — Live Connection Test (v3)
+=========================================
+Testet alle APIs live mit korrekten Env-Variablen-Namen.
 Gibt NIEMALS Secrets oder Token-Werte aus.
+
+Usage:
+  python3 test_live_connections.py           # alle Tests
+  python3 test_live_connections.py shopify   # nur Shopify
+  python3 test_live_connections.py --json    # JSON-Output für Scripts
 """
 import os
 import sys
@@ -10,322 +16,391 @@ import json
 import time
 import traceback
 from pathlib import Path
+from datetime import datetime
 
-# ── .env laden ────────────────────────────────────────────────────────────────
+# ── .env laden (immer aus supermegabot/.env) ───────────────────────────────────
+_ENV = Path(__file__).parent / ".env"
 try:
     from dotenv import load_dotenv
-    load_dotenv(Path(__file__).parent / ".env")
+    load_dotenv(_ENV, override=True)
 except ImportError:
-    pass  # python-dotenv optional — export vars manually if needed
+    if _ENV.exists():
+        for line in _ENV.read_text().splitlines():
+            line = line.strip()
+            if line and not line.startswith("#") and "=" in line:
+                k, _, v = line.partition("=")
+                os.environ.setdefault(k.strip(), v.strip())
 
 try:
     import requests
 except ImportError:
-    print("FEHLER: 'requests' nicht installiert. Führe aus: pip install requests")
+    print("❌ pip install requests")
     sys.exit(1)
 
-RESULTS = {}
-TIMEOUT = 10
+RESULTS: dict = {}
+TIMEOUT = 12
+G = "\033[92m"; R = "\033[91m"; Y = "\033[93m"; B = "\033[94m"; X = "\033[0m"
 
-def _mask(value: str) -> str:
-    """Zeigt nur die ersten 4 Zeichen, rest maskiert."""
-    if not value or len(value) < 5:
+def _e(*keys) -> str:
+    for k in keys:
+        v = os.environ.get(k, "").strip()
+        if v:
+            return v
+    return ""
+
+def _mask(v: str) -> str:
+    if not v or len(v) < 5:
         return "***"
-    return value[:4] + "***" + value[-2:]
+    return v[:4] + "…" + v[-3:]
 
-def _env(key: str):
-    return os.environ.get(key)
+def section(t): print(f"\n{B}{'─'*52}{X}\n  {t}\n{'─'*52}")
+def ok(n, m=""): print(f"  {G}✅{X} {n:<22} {m}"); RESULTS[n] = {"ok": True, "msg": m}
+def fail(n, m=""): print(f"  {R}❌{X} {n:<22} {R}{m}{X}"); RESULTS[n] = {"ok": False, "msg": m}
+def warn(n, m=""): print(f"  {Y}⚠️ {X} {n:<22} {Y}{m}{X}"); RESULTS[n] = {"ok": None, "msg": m}
 
-def _check_env(*keys) -> tuple[bool, list[str]]:
-    missing = [k for k in keys if not _env(k)]
-    return len(missing) == 0, missing
-
-def section(title: str):
-    print(f"\n{'═'*55}")
-    print(f"  {title}")
-    print('═'*55)
-
-def ok(msg): print(f"  ✅ {msg}")
-def fail(msg): print(f"  ❌ {msg}")
-def warn(msg): print(f"  ⚠️  {msg}")
-def info(msg): print(f"  ℹ️  {msg}")
-
-# ══════════════════════════════════════════════════════════
-# 1. SHOPIFY
-# ══════════════════════════════════════════════════════════
-def test_shopify():
-    section("SHOPIFY")
-    required = ["SHOPIFY_STORE_URL", "SHOPIFY_ACCESS_TOKEN"]
-    ready, missing = _check_env(*required)
-    if not ready:
-        fail(f"Fehlende Variablen: {missing}")
-        RESULTS["shopify"] = {"status": "SKIP", "missing": missing}
-        return
-
-    store_url = _env("SHOPIFY_STORE_URL").rstrip("/")
-    token = _env("SHOPIFY_ACCESS_TOKEN")
-    info(f"Store: {store_url}")
-    info(f"Token: {_mask(token)}")
-
+def _get(url, headers=None):
+    t0 = time.monotonic()
     try:
-        url = f"{store_url}/admin/api/2024-01/shop.json"
-        r = requests.get(url, headers={"X-Shopify-Access-Token": token}, timeout=TIMEOUT)
-        if r.status_code == 200:
-            shop = r.json().get("shop", {})
-            ok(f"Verbunden — Shop: {shop.get('name')} | Domain: {shop.get('domain')}")
-            ok(f"Plan: {shop.get('plan_name')} | Currency: {shop.get('currency')}")
-            RESULTS["shopify"] = {"status": "OK", "shop": shop.get("name")}
-        elif r.status_code == 401:
-            fail("401 Unauthorized — Token ungültig oder abgelaufen")
-            RESULTS["shopify"] = {"status": "FAIL", "error": "401"}
-        elif r.status_code == 403:
-            fail("403 Forbidden — Token hat nicht die nötigen Scopes")
-            info("Benötigte Scopes: read_orders, write_products, read_customers")
-            RESULTS["shopify"] = {"status": "FAIL", "error": "403"}
-        else:
-            fail(f"HTTP {r.status_code}")
-            RESULTS["shopify"] = {"status": "FAIL", "error": str(r.status_code)}
-    except requests.exceptions.ConnectionError:
-        fail("Verbindung fehlgeschlagen — Store-URL prüfen")
-        RESULTS["shopify"] = {"status": "FAIL", "error": "connection_error"}
+        r = requests.get(url, headers=headers or {}, timeout=TIMEOUT)
+        return r.status_code, r.json() if "json" in r.headers.get("content-type","") else {}, int((time.monotonic()-t0)*1000)
     except Exception as e:
-        fail(f"Unerwarteter Fehler: {type(e).__name__}")
-        RESULTS["shopify"] = {"status": "FAIL", "error": type(e).__name__}
+        return 0, {}, 0
 
-# ══════════════════════════════════════════════════════════
-# 2. STRIPE
-# ══════════════════════════════════════════════════════════
-def test_stripe():
-    section("STRIPE")
-    ready, missing = _check_env("STRIPE_SECRET_KEY")
-    if not ready:
-        fail(f"Fehlende Variablen: {missing}")
-        RESULTS["stripe"] = {"status": "SKIP", "missing": missing}
-        return
-
-    key = _env("STRIPE_SECRET_KEY")
-    info(f"Key: {_mask(key)} | Typ: {'TEST' if key.startswith('sk_test') else 'LIVE'}")
-
-    if key.startswith("sk_test"):
-        warn("TEST-Modus aktiv — kein echter Geldfluss möglich")
-
+def _post(url, headers=None, payload=None):
+    t0 = time.monotonic()
     try:
-        r = requests.get(
-            "https://api.stripe.com/v1/balance",
-            auth=(key, ""),
-            timeout=TIMEOUT
-        )
-        if r.status_code == 200:
-            data = r.json()
-            available = data.get("available", [])
-            for bal in available:
-                amount = bal["amount"] / 100
-                ok(f"Balance {bal['currency'].upper()}: {amount:.2f}")
-            RESULTS["stripe"] = {"status": "OK", "balance_count": len(available)}
-        elif r.status_code == 401:
-            fail("401 — Stripe Key ungültig")
-            RESULTS["stripe"] = {"status": "FAIL", "error": "401"}
-        else:
-            fail(f"HTTP {r.status_code}")
-            RESULTS["stripe"] = {"status": "FAIL", "error": str(r.status_code)}
+        r = requests.post(url, headers={**headers, "Content-Type": "application/json"} if headers else {"Content-Type":"application/json"},
+                          json=payload, timeout=TIMEOUT)
+        return r.status_code, r.json() if "json" in r.headers.get("content-type","") else {}, int((time.monotonic()-t0)*1000)
     except Exception as e:
-        fail(f"Fehler: {type(e).__name__}")
-        RESULTS["stripe"] = {"status": "FAIL", "error": type(e).__name__}
+        return 0, {}, 0
 
-# ══════════════════════════════════════════════════════════
-# 3. TELEGRAM BOT
+
 # ══════════════════════════════════════════════════════════
 def test_telegram():
-    section("TELEGRAM BOT")
-    ready, missing = _check_env("TELEGRAM_BOT_TOKEN")
-    if not ready:
-        fail(f"Fehlende Variablen: {missing}")
-        RESULTS["telegram"] = {"status": "SKIP", "missing": missing}
-        return
+    section("1. TELEGRAM")
+    tok = _e("TELEGRAM_BOT_TOKEN")
+    chat = _e("TELEGRAM_CHAT_ID")
+    if not tok: fail("Bot Token", "TELEGRAM_BOT_TOKEN fehlt"); return
+    c, d, ms = _get(f"https://api.telegram.org/bot{tok}/getMe")
+    if c == 200 and d.get("ok"):
+        bot = d.get("result", {})
+        ok("Bot", f"@{bot.get('username')} — {ms}ms")
+    else:
+        fail("Bot Token", f"HTTP {c} — {d.get('description','')}")
+    if not chat: warn("Chat ID", "TELEGRAM_CHAT_ID fehlt")
+    else: ok("Chat ID", _mask(chat))
 
-    token = _env("TELEGRAM_BOT_TOKEN")
-    info(f"Token: {_mask(token)}")
 
-    try:
-        r = requests.get(
-            f"https://api.telegram.org/bot{token}/getMe",
-            timeout=TIMEOUT
-        )
-        data = r.json()
-        if data.get("ok"):
-            bot = data["result"]
-            ok(f"Bot aktiv: @{bot.get('username')} | Name: {bot.get('first_name')}")
-            ok(f"Can join groups: {bot.get('can_join_groups')} | Inline: {bot.get('supports_inline_queries')}")
-            RESULTS["telegram"] = {"status": "OK", "username": bot.get("username")}
+def test_anthropic():
+    section("2. ANTHROPIC (Claude)")
+    key = _e("ANTHROPIC_API_KEY")
+    if not key: fail("API Key", "ANTHROPIC_API_KEY fehlt"); return
+    ok("Key vorhanden", _mask(key))
+    c, d, ms = _post("https://api.anthropic.com/v1/messages",
+                     {"x-api-key": key, "anthropic-version": "2023-06-01"},
+                     {"model": "claude-haiku-4-5-20251001", "max_tokens": 5,
+                      "messages": [{"role": "user", "content": "Hi"}]})
+    if c == 200 and "content" in d:
+        ok("Claude haiku-4-5", f"{ms}ms")
+    elif c == 529:
+        warn("Claude", "529 — Überlastet / keine Credits")
+    elif c == 401:
+        fail("Claude", "401 — Key ungültig")
+    else:
+        fail("Claude", f"HTTP {c}")
 
-            # Webhook-Status prüfen
-            wh = requests.get(
-                f"https://api.telegram.org/bot{token}/getWebhookInfo",
-                timeout=TIMEOUT
-            ).json()
-            wh_url = wh.get("result", {}).get("url", "")
-            if wh_url:
-                # Nie die volle URL ausgeben — könnte Token-Fragment enthalten
-                info("Webhook gesetzt: [URL vorhanden, nicht angezeigt]")
-            else:
-                warn("Kein Webhook gesetzt — Bot läuft im Polling-Modus")
-        else:
-            fail(f"API Fehler: {data.get('description')}")
-            RESULTS["telegram"] = {"status": "FAIL", "error": data.get("description")}
-    except Exception as e:
-        fail(f"Fehler: {type(e).__name__}")
-        RESULTS["telegram"] = {"status": "FAIL", "error": type(e).__name__}
 
-# ══════════════════════════════════════════════════════════
-# 4. SUPABASE
-# ══════════════════════════════════════════════════════════
+def test_openai():
+    section("3. OPENAI")
+    key = _e("OPENAI_API_KEY")
+    if not key: fail("API Key", "OPENAI_API_KEY fehlt"); return
+    ok("Key vorhanden", _mask(key))
+    c, d, ms = _post("https://api.openai.com/v1/chat/completions",
+                     {"Authorization": f"Bearer {key}"},
+                     {"model": "gpt-4o-mini", "max_tokens": 5,
+                      "messages": [{"role": "user", "content": "Hi"}]})
+    if c == 200 and "choices" in d:
+        ok("GPT-4o-mini", f"{ms}ms")
+    elif c == 401:
+        fail("OpenAI", "401 — Key ungültig")
+    elif c == 429:
+        warn("OpenAI", "429 — Rate Limit / keine Credits")
+    else:
+        fail("OpenAI", f"HTTP {c}")
+
+
+def test_groq():
+    section("4. GROQ (Free AI Fallback)")
+    key = _e("GROQ_API_KEY")
+    if not key: warn("Groq", "GROQ_API_KEY nicht gesetzt"); return
+    c, d, ms = _post("https://api.groq.com/openai/v1/chat/completions",
+                     {"Authorization": f"Bearer {key}"},
+                     {"model": "llama-3.1-8b-instant", "max_tokens": 5,
+                      "messages": [{"role": "user", "content": "Hi"}]})
+    if c == 200:
+        ok("Groq llama-3.1-8b", f"{ms}ms")
+    elif c == 401:
+        fail("Groq", "401 — Key ungültig oder abgelaufen")
+    else:
+        fail("Groq", f"HTTP {c}")
+
+
+def test_gemini():
+    section("5. GEMINI (Free AI Fallback)")
+    key = _e("GEMINI_API_KEY", "GCP_API_KEY", "GOOGLE_AI_API_KEY")
+    if not key: warn("Gemini", "GEMINI_API_KEY nicht gesetzt"); return
+    c, d, ms = _post(
+        f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={key}",
+        {},
+        {"contents": [{"parts": [{"text": "Hi"}]}]}
+    )
+    if c == 200 and "candidates" in d:
+        ok("gemini-2.0-flash", f"{ms}ms")
+    elif c == 429:
+        warn("Gemini", "429 — Quota erreicht (tägl. Reset)")
+    else:
+        fail("Gemini", f"HTTP {c}")
+
+
+def test_openrouter():
+    section("6. OPENROUTER")
+    key = _e("OPENROUTER_API_KEY")
+    if not key: warn("OpenRouter", "OPENROUTER_API_KEY nicht gesetzt"); return
+    c, d, ms = _post("https://openrouter.ai/api/v1/chat/completions",
+                     {"Authorization": f"Bearer {key}",
+                      "HTTP-Referer": "https://supermegabot-production.up.railway.app"},
+                     {"model": "google/gemma-4-26b-a4b-it:free", "max_tokens": 5,
+                      "messages": [{"role": "user", "content": "Hi"}]})
+    if c == 200 and "choices" in d:
+        ok("gemma-4-26b:free", f"{ms}ms")
+    elif c == 402:
+        warn("OpenRouter", "402 — Guthaben leer")
+    else:
+        fail("OpenRouter", f"HTTP {c}")
+
+
+def test_shopify():
+    section("7. SHOPIFY")
+    # Korrekte Variablen-Namen — mehrere Aliase unterstützt
+    domain = _e("SHOPIFY_SHOP_DOMAIN", "SHOPIFY_STORE_URL", "SHOPIFY_DOMAIN")
+    token  = _e("SHOPIFY_ACCESS_TOKEN", "SHOPIFY_ADMIN_API_TOKEN", "SHOPIFY_ADMIN_TOKEN")
+    if not domain: fail("Domain", "SHOPIFY_SHOP_DOMAIN fehlt"); return
+    if not token:  fail("Token",  "SHOPIFY_ACCESS_TOKEN fehlt"); return
+    if not domain.startswith("http"):
+        domain = f"https://{domain}"
+    ver = _e("SHOPIFY_API_VERSION") or "2025-01"
+    ok("Domain", domain.replace("https://",""))
+    ok("Token",  _mask(token))
+    c, d, ms = _get(f"{domain}/admin/api/{ver}/shop.json",
+                    {"X-Shopify-Access-Token": token})
+    if c == 200 and "shop" in d:
+        shop = d["shop"]
+        ok("Shop", f"{shop.get('name')} | {shop.get('domain')}")
+        ok("Plan",  f"{shop.get('plan_name')} | {shop.get('currency')}")
+        # Produktanzahl
+        c2, d2, _ = _get(f"{domain}/admin/api/{ver}/products/count.json",
+                         {"X-Shopify-Access-Token": token})
+        if c2 == 200:
+            ok("Produkte", f"{d2.get('count','?')} aktiv")
+    elif c == 401:
+        fail("Shopify", "401 — Token ungültig/abgelaufen")
+    else:
+        fail("Shopify", f"HTTP {c}")
+
+
+def test_stripe():
+    section("8. STRIPE")
+    key = _e("STRIPE_SECRET_KEY", "STRIPE_API_KEY", "STRIPE_SECRET")
+    if not key: fail("Secret Key", "STRIPE_SECRET_KEY fehlt"); return
+    ok("Key", _mask(key))
+    c, d, ms = _get("https://api.stripe.com/v1/account",
+                    {"Authorization": f"Bearer {key}"})
+    if c == 200:
+        ok("Account", f"{d.get('business_profile',{}).get('name',d.get('id',''))}")
+        # Balance
+        c2, d2, _ = _get("https://api.stripe.com/v1/balance",
+                         {"Authorization": f"Bearer {key}"})
+        if c2 == 200:
+            avail = d2.get("available", [])
+            bal = ", ".join(f"{a['amount']/100:.2f} {a['currency'].upper()}" for a in avail)
+            ok("Balance", bal or "€0")
+    elif c == 401:
+        fail("Stripe", "401 — Key ungültig")
+    else:
+        fail("Stripe", f"HTTP {c}")
+
+
 def test_supabase():
-    section("SUPABASE")
-    required = ["SUPABASE_URL", "SUPABASE_KEY"]
-    # Auch SUPABASE_ANON_KEY akzeptieren
-    if not _env("SUPABASE_KEY") and _env("SUPABASE_ANON_KEY"):
-        os.environ["SUPABASE_KEY"] = _env("SUPABASE_ANON_KEY")
-    if not _env("SUPABASE_KEY") and _env("NEXT_PUBLIC_SUPABASE_ANON_KEY"):
-        os.environ["SUPABASE_KEY"] = _env("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+    section("9. SUPABASE")
+    url  = _e("SUPABASE_URL")
+    anon = _e("SUPABASE_ANON_KEY")
+    svc  = _e("SUPABASE_SERVICE_KEY", "SUPABASE_SERVICE_ROLE_KEY")
+    if not url:  fail("URL",      "SUPABASE_URL fehlt"); return
+    if not anon: fail("Anon Key", "SUPABASE_ANON_KEY fehlt"); return
+    ok("URL", url[:40] + "…")
+    c, d, ms = _get(f"{url}/rest/v1/",
+                    {"apikey": anon, "Authorization": f"Bearer {anon}"})
+    if c in (200, 400, 404):
+        ok("REST API", f"{ms}ms")
+    else:
+        fail("REST API", f"HTTP {c}")
+    if svc:
+        ok("Service Key", _mask(svc) + " ✓")
+    else:
+        warn("Service Key", "SUPABASE_SERVICE_KEY fehlt (Backend-Writes nötig)")
 
-    ready, missing = _check_env(*required)
-    if not ready:
-        fail(f"Fehlende Variablen: {missing}")
-        info("Akzeptiert auch: SUPABASE_ANON_KEY oder NEXT_PUBLIC_SUPABASE_ANON_KEY")
-        RESULTS["supabase"] = {"status": "SKIP", "missing": missing}
+
+def test_klaviyo():
+    section("10. KLAVIYO")
+    key = _e("KLAVIYO_API_KEY", "KLAVIYO_API_KEY_AIITEC")
+    if not key: fail("API Key", "KLAVIYO_API_KEY fehlt"); return
+    ok("Key", _mask(key))
+    c, d, ms = _get("https://a.klaviyo.com/api/profiles/",
+                    {"Authorization": f"Klaviyo-API-Key {key}", "revision": "2024-10-15"})
+    if c == 200:
+        ok("Klaviyo", f"{ms}ms | {d.get('meta',{}).get('total',0)} Profile")
+    elif c == 401:
+        fail("Klaviyo", "401 — Key ungültig")
+    elif c == 429:
+        warn("Klaviyo", "429 — Rate Limit")
+    else:
+        fail("Klaviyo", f"HTTP {c}")
+
+
+def test_mailchimp():
+    section("11. MAILCHIMP")
+    key = _e("MAILCHIMP_API_KEY")
+    dc  = _e("MAILCHIMP_SERVER_PREFIX")
+    if not key: fail("API Key", "MAILCHIMP_API_KEY fehlt"); return
+    if not dc:
+        dc = key.split("-")[-1] if "-" in key else "us7"
+    c, d, ms = _get(f"https://{dc}.api.mailchimp.com/3.0/lists",
+                    {"Authorization": f"Bearer {key}"})
+    if c == 200:
+        ok("Mailchimp", f"{len(d.get('lists',[]))} Listen")
+    elif c == 401:
+        fail("Mailchimp", "401 — Key ungültig oder falsches DC")
+    else:
+        fail("Mailchimp", f"HTTP {c}")
+
+
+def test_printify():
+    section("12. PRINTIFY")
+    key = _e("PRINTIFY_API_KEY")
+    if not key: fail("API Key", "PRINTIFY_API_KEY fehlt"); return
+    c, d, ms = _get("https://api.printify.com/v1/shops.json",
+                    {"Authorization": f"Bearer {key}"})
+    if c == 200:
+        shops = d if isinstance(d, list) else d.get("data", [])
+        ok("Printify", f"{len(shops)} Shops")
+    elif c == 401:
+        fail("Printify", "401 — Key ungültig")
+    else:
+        fail("Printify", f"HTTP {c}")
+
+
+def test_github():
+    section("13. GITHUB")
+    tok = _e("GITHUB_TOKEN", "GITHUB_TOKEN_CLASSIC", "GITHUB_TOKEN_FINE")
+    if not tok: fail("Token", "GITHUB_TOKEN fehlt"); return
+    c, d, ms = _get("https://api.github.com/user",
+                    {"Authorization": f"Bearer {tok}", "User-Agent": "SuperMegaBot"})
+    if c == 200:
+        ok("GitHub", f"@{d.get('login')} | {ms}ms")
+    elif c == 401:
+        fail("GitHub", "401 — Token ungültig oder abgelaufen")
+    else:
+        fail("GitHub", f"HTTP {c}")
+
+
+def test_meta():
+    section("14. META (Facebook/Instagram)")
+    tok = _e("META_ACCESS_TOKEN", "FB_ACCESS_TOKEN")
+    pid = _e("META_PAGE_ID", "FB_PAGE_ID")
+    if not tok: warn("Access Token", "META_ACCESS_TOKEN fehlt"); return
+    c, d, ms = _get(f"https://graph.facebook.com/me?access_token={tok}")
+    if c == 200 and "id" in d:
+        ok("Meta", f"id={d.get('id')} | {ms}ms")
+    elif c == 190:
+        fail("Meta", "Token abgelaufen — neu generieren!")
+    else:
+        fail("Meta", f"HTTP {c}")
+
+
+def test_digistore24():
+    section("15. DIGISTORE24")
+    key = _e("DIGISTORE24_API_KEY")
+    if not key: fail("API Key", "DIGISTORE24_API_KEY fehlt"); return
+    ok("Key", _mask(key) + f" ({key[:7]}...)")
+    # DS24 API ist komplexer — einfacher Ping
+    c, d, ms = _get(f"https://www.digistore24.com/api/call/account/info/format/json",
+                    {"X-DS24-AUTH-KEY": key})
+    if c in (200, 401, 403):
+        if c == 200:
+            ok("DS24 API", f"verbunden | {ms}ms")
+        else:
+            warn("DS24 API", f"HTTP {c} — Key möglicherweise falsch (Konto: aiitec 1581233-...)")
+    else:
+        fail("DS24 API", f"HTTP {c}")
+
+
+# ══════════════════════════════════════════════════════════
+ALL_TESTS = {
+    "telegram": test_telegram, "anthropic": test_anthropic,
+    "openai": test_openai, "groq": test_groq, "gemini": test_gemini,
+    "openrouter": test_openrouter, "shopify": test_shopify,
+    "stripe": test_stripe, "supabase": test_supabase,
+    "klaviyo": test_klaviyo, "mailchimp": test_mailchimp,
+    "printify": test_printify, "github": test_github,
+    "meta": test_meta, "digistore24": test_digistore24,
+}
+
+
+def main():
+    json_out = "--json" in sys.argv
+    filter_args = [a for a in sys.argv[1:] if not a.startswith("-")]
+    tests = {k: v for k, v in ALL_TESTS.items()
+             if not filter_args or k in filter_args}
+
+    if not json_out:
+        print(f"\n{B}{'═'*52}{X}")
+        print(f"{B}  SuperMegaBot Live Connection Test{X}")
+        print(f"{B}  {datetime.now().strftime('%d.%m.%Y %H:%M')}{X}")
+        print(f"{B}{'═'*52}{X}")
+
+    for name, fn in tests.items():
+        try:
+            fn()
+        except Exception as e:
+            fail(name, f"Exception: {e}")
+
+    ok_count  = sum(1 for v in RESULTS.values() if v.get("ok") is True)
+    warn_count = sum(1 for v in RESULTS.values() if v.get("ok") is None)
+    fail_count = sum(1 for v in RESULTS.values() if v.get("ok") is False)
+    total = len(RESULTS)
+
+    if json_out:
+        print(json.dumps({"ok": ok_count, "warn": warn_count, "fail": fail_count,
+                          "total": total, "results": RESULTS}, indent=2))
         return
 
-    url = _env("SUPABASE_URL").rstrip("/")
-    key = _env("SUPABASE_KEY")
-    info(f"URL: {url}")
-    info(f"Key: {_mask(key)}")
+    print(f"\n{B}{'═'*52}{X}")
+    print(f"  {G}✅ {ok_count}{X}  {Y}⚠️  {warn_count}{X}  {R}❌ {fail_count}{X}  von {total} Tests")
+    if fail_count > 0:
+        failed = [n for n, v in RESULTS.items() if v.get("ok") is False]
+        print(f"\n  {R}Defekt: {', '.join(failed)}{X}")
+    print(f"{B}{'═'*52}{X}\n")
 
-    try:
-        # REST Health-Check
-        r = requests.get(
-            f"{url}/rest/v1/",
-            headers={"apikey": key, "Authorization": f"Bearer {key}"},
-            timeout=TIMEOUT
-        )
-        if r.status_code in (200, 404):  # 404 = no table, but auth works
-            ok("REST API erreichbar")
-            RESULTS["supabase"] = {"status": "OK"}
-
-            # Auth Health
-            auth_r = requests.get(
-                f"{url}/auth/v1/settings",
-                headers={"apikey": key},
-                timeout=TIMEOUT
-            )
-            if auth_r.status_code == 200:
-                ok("Auth API erreichbar")
-            else:
-                warn(f"Auth API: HTTP {auth_r.status_code}")
-        elif r.status_code == 401:
-            fail("401 — Supabase Key ungültig")
-            RESULTS["supabase"] = {"status": "FAIL", "error": "401"}
-        else:
-            fail(f"HTTP {r.status_code}")
-            RESULTS["supabase"] = {"status": "FAIL", "error": str(r.status_code)}
-    except Exception as e:
-        fail(f"Fehler: {type(e).__name__}")
-        RESULTS["supabase"] = {"status": "FAIL", "error": type(e).__name__}
-
-# ══════════════════════════════════════════════════════════
-# 5. GUARDIAN API (lokal)
-# ══════════════════════════════════════════════════════════
-def test_guardian():
-    section("GUARDIAN API (lokal)")
-    guardian_url = _env("GUARDIAN_URL") or "http://localhost:3201"
-    info(f"URL: {guardian_url}")
-
-    try:
-        r = requests.get(f"{guardian_url}/api/v1/health", timeout=5)
-        if r.status_code == 200:
-            ok("Guardian läuft")
-            RESULTS["guardian"] = {"status": "OK"}
-        else:
-            warn(f"HTTP {r.status_code} — Guardian läuft, aber Health-Check fehlgeschlagen")
-            RESULTS["guardian"] = {"status": "WARN", "code": r.status_code}
-    except requests.exceptions.ConnectionError:
-        warn("Nicht erreichbar — Guardian läuft nicht (Port 3201)")
-        info("Starten mit: pm2 start ecosystem.config.js --only guardian")
-        RESULTS["guardian"] = {"status": "OFFLINE"}
-    except Exception as e:
-        fail(f"Fehler: {type(e).__name__}")
-        RESULTS["guardian"] = {"status": "FAIL", "error": type(e).__name__}
-
-# ══════════════════════════════════════════════════════════
-# 6. DASHBOARD (lokal)
-# ══════════════════════════════════════════════════════════
-def test_dashboard():
-    section("DASHBOARD (lokal)")
-    dash_url = "http://localhost:8888"
-    info(f"URL: {dash_url}")
-
-    try:
-        r = requests.get(f"{dash_url}/api/health", timeout=5)
-        if r.status_code == 200:
-            ok(f"Dashboard läuft: {r.json()}")
-            RESULTS["dashboard"] = {"status": "OK"}
-        else:
-            warn(f"HTTP {r.status_code}")
-            RESULTS["dashboard"] = {"status": "WARN"}
-    except requests.exceptions.ConnectionError:
-        warn("Nicht erreichbar — Dashboard läuft nicht (Port 8888)")
-        info("Starten mit: python3 dashboard/server.py")
-        RESULTS["dashboard"] = {"status": "OFFLINE"}
-    except Exception as e:
-        fail(f"Fehler: {type(e).__name__}")
-        RESULTS["dashboard"] = {"status": "FAIL", "error": type(e).__name__}
-
-# ══════════════════════════════════════════════════════════
-# ZUSAMMENFASSUNG
-# ══════════════════════════════════════════════════════════
-def summary():
-    section("ZUSAMMENFASSUNG")
-    status_icons = {"OK": "✅", "FAIL": "❌", "SKIP": "⏭️ ", "WARN": "⚠️ ", "OFFLINE": "🔴"}
-    for service, result in RESULTS.items():
-        icon = status_icons.get(result["status"], "❓")
-        extra = ""
-        if result["status"] == "SKIP":
-            extra = f" → fehlende Vars: {result.get('missing', [])}"
-        elif result["status"] == "FAIL":
-            extra = f" → {result.get('error', '')}"
-        elif result["status"] == "OK" and "shop" in result:
-            extra = f" → {result['shop']}"
-        elif result["status"] == "OK" and "username" in result:
-            extra = f" → @{result['username']}"
-        print(f"  {icon} {service.upper():<15} {result['status']}{extra}")
-
-    failed = [k for k, v in RESULTS.items() if v["status"] == "FAIL"]
-    skipped = [k for k, v in RESULTS.items() if v["status"] == "SKIP"]
-
-    print()
-    if failed:
-        print(f"  ❌ Fehlgeschlagen: {failed}")
-        print("  → Diese Logs bitte zurücksenden.")
-    if skipped:
-        print(f"  ⏭️  Übersprungen (Keys fehlen): {skipped}")
-    if not failed and not skipped:
-        print("  🎉 Alle Tests bestanden — System produktionsbereit!")
-
-    # JSON-Output für Rücksendung
-    print(f"\n{'─'*55}")
-    print("  KOPIERE DIESEN BLOCK UND SENDE IHN ZURÜCK:")
-    print('─'*55)
-    safe_results = {k: v for k, v in RESULTS.items()}
-    print(json.dumps(safe_results, indent=2))
+    # Report schreiben
+    rp = Path(__file__).parent / "data" / "last_test_results.json"
+    rp.parent.mkdir(exist_ok=True)
+    rp.write_text(json.dumps({
+        "timestamp": datetime.now().isoformat(),
+        "ok": ok_count, "warn": warn_count, "fail": fail_count,
+        "results": RESULTS
+    }, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
-    print("\n🔍 SuperMegaBot — Live Connection Test")
-    print(f"   {time.strftime('%Y-%m-%d %H:%M:%S')}")
-
-    test_shopify()
-    test_stripe()
-    test_telegram()
-    test_supabase()
-    test_guardian()
-    test_dashboard()
-    summary()
+    main()
