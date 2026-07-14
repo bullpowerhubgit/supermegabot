@@ -231,8 +231,8 @@ def _send_smtp(to_email: str, subject: str, html_body: str) -> bool:
         from modules.gmail_accounts import send_email as ga_send
         ok, _ = ga_send(to_email, subject, "", html=html_body)
         return ok
-    except Exception:
-        pass
+    except Exception as e:
+        log.debug("gmail_accounts send failed: %s", e)
     # Direct SMTP fallback
     host = os.getenv("SMTP_HOST", "smtp.gmail.com")
     port = int(os.getenv("SMTP_PORT", "587"))

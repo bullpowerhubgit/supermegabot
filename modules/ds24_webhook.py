@@ -25,7 +25,7 @@ DS24_DANKESEITE_KEY = os.getenv("DS24_DANKESEITE_KEY", "O5jqklqAcxTvkKHp0rvn")
 DS24_KEY = os.getenv("DS24_API_KEY", "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
-RAILWAY_URL    = "https://supermegabot-production.up.railway.app"
+RAILWAY_URL    = os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/")
 
 
 async def _telegram(msg: str) -> None:
