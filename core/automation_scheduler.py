@@ -7108,6 +7108,47 @@ async def task_full_revenue_expansion() -> str:
         return f"ExpansionCycle error: {e}"
 
 
+async def task_mega_self_healing() -> str:
+    """Mega Self-Healer — prüft alle APIs + Revenue + sendet Telegram Alert."""
+    try:
+        from modules.mega_self_healer import _get_healer
+        healer = _get_healer()
+        result = await healer.run_cycle()
+        healthy = result.get("healthy_apis", 0)
+        total   = result.get("total_apis", 15)
+        revenue = result.get("revenue_eur", 0)
+        return f"Healer: {healthy}/{total} APIs OK, Revenue: €{revenue:.2f}"
+    except Exception as e:
+        return f"Healer error: {e}"
+
+
+async def task_stripe_revenue_check() -> str:
+    """Stripe Revenue Activator — erstellt Payment Links + prüft Einnahmen."""
+    try:
+        from modules.stripe_revenue_activator import create_all_payment_links, get_revenue_24h
+        links  = await create_all_payment_links()
+        rev    = await get_revenue_24h()
+        created = len(links) if isinstance(links, list) else links.get("created", 0)
+        revenue = rev.get("total_eur", 0)
+        return f"Stripe: {created} Links erstellt, Revenue 24h: €{revenue:.2f}"
+    except Exception as e:
+        return f"Stripe check error: {e}"
+
+
+async def task_shopify_conversion_boost() -> str:
+    """Shopify Conversion Booster — optimiert Produkte + Checkout automatisch."""
+    try:
+        from modules.shopify_conversion_optimizer import run_full_optimization
+        result = await run_full_optimization(
+            fix_descriptions=True, setup_discounts=True, urgency=True, activate_products=False
+        )
+        fixed    = result.get("descriptions_fixed", result.get("products_fixed", 0))
+        discounts = result.get("discounts_created", 0)
+        return f"Shopify: {fixed} Produkte optimiert, {discounts} Rabatte"
+    except Exception as e:
+        return f"Shopify boost error: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7513,6 +7554,10 @@ TASKS = [
     ("roas_optimizer",            task_roas_optimizer,                14400, 9100),  # alle 4h — Meta/Google ROAS Auto-Pause/Scale
     ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
     ("full_expansion",            task_full_revenue_expansion,        28800,  150),  # 8h — Alle Revenue-Kanäle autonom
+    # ── MEGA Command Center Scheduler-Tasks ────────────────────────────────────
+    ("mega_self_healing",         task_mega_self_healing,              3600,   10),  # 1h — API Health + Revenue Alert
+    ("stripe_revenue",            task_stripe_revenue_check,          21600,   50),  # 6h — Stripe Links + Revenue
+    ("shopify_boost",             task_shopify_conversion_boost,      43200,   80),  # 12h — Conversion Optimizer
 ]
 
 
