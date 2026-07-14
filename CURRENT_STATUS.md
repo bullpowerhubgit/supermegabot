@@ -1,5 +1,5 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 v34 — META ADS VOLLSTÄNDIG VERBUNDEN ✅**
+**Stand: 2026-07-14 v35 — META ADS LIVE! 🎯**
 
 ## 🔴 RAILWAY DEPLOY MANUELL STARTEN (1x)
 
@@ -41,9 +41,21 @@ Railway läuft noch auf altem Stand (vor traffic_accelerator, trust_and_conversi
 - 2 Page-Token-Felder auf Page Access Token (never expires)
 - 4 neue Ad-Account-ID Einträge hinzugefügt
 
+### 🎯 META ADS — KAMPAGNE LIVE! (2026-07-14)
+| Objekt | ID | Status |
+|--------|-----|--------|
+| Kampagne | 23858745481070790 | ACTIVE ✅ |
+| Ad Set | 23858745531500790 | ACTIVE ✅ |
+| Ad | 23858745541190790 | ACTIVE ✅ |
+- **Budget**: €10/Tag
+- **Zielgruppe**: DE+AT+CH, 25-55 Jahre
+- **Creative**: Shopify-Automation Post von Aiitec Page
+- **Ad Account**: act_878505274898620 (Aiitec)
+
 ### Noch offen
 - Railway Deploy nötig damit neue .env live geht in Production
-- Meta Ads Kampagne erstellen (Budget, Zielgruppe, Creative für Bestseller-Produkt)
+- ineedit Ad Account (act_2215713609248740) ist von FB gesperrt → Rudolf muss FB Ads Manager Sperre aufheben
+- FB App noch im Entwicklungsmodus → für neue Creatives FB App auf Live stellen (developers.facebook.com)
 
 ---
 

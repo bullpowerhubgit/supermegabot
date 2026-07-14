@@ -20,7 +20,13 @@ import aiohttp
 log = logging.getLogger("MetaAds")
 
 _DB = Path(__file__).parent.parent / "data" / "meta_ads.db"
-_API = "https://graph.facebook.com/v18.0"
+_API = "https://graph.facebook.com/v20.0"
+
+# Live-Kampagnen (erstellt 2026-07-14)
+LIVE_CAMPAIGN_ID  = "23858745481070790"   # Aiitec — DACH E-Commerce 25-55
+LIVE_ADSET_ID     = "23858745531500790"
+LIVE_AD_ID        = "23858745541190790"
+LIVE_AD_ACCOUNT   = "act_878505274898620"
 
 AD_CREATIVES = [
     {
@@ -107,9 +113,9 @@ def _db() -> sqlite3.Connection:
 
 def _cfg() -> dict:
     return {
-        "token":       os.getenv("META_ACCESS_TOKEN", os.getenv("FACEBOOK_USER_TOKEN", "")),
+        "token":       os.getenv("META_ADS_TOKEN", os.getenv("META_ACCESS_TOKEN", os.getenv("FACEBOOK_USER_TOKEN", ""))),
         "ad_account":  os.getenv("META_AD_ACCOUNT_ID", "act_878505274898620"),
-        "pixel_id":    os.getenv("FACEBOOK_PIXEL_ID", "1224559653149864"),
+        "pixel_id":    os.getenv("FACEBOOK_PIXEL_ID", "4215456142051261"),
         "page_id":     os.getenv("META_PAGE_ID", os.getenv("FACEBOOK_PAGE_ID", "")),
         "business_id": os.getenv("FACEBOOK_BUSINESS_ID", "1328977765197849"),
         "shop_domain": os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com"),
