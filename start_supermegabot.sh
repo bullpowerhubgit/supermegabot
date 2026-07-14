@@ -20,7 +20,10 @@ log "═════════════════════════
 # ── 1. Env laden ─────────────────────────────────
 cd "$DIR"
 if [ -f "$DIR/.env" ]; then
-  export $(grep -v '^#' "$DIR/.env" | grep -v '^$' | grep '=' | grep -v '[(){}]' | xargs -d '\n') 2>/dev/null || true
+  set -a
+  # shellcheck disable=SC1090
+  source <(grep -v '^#' "$DIR/.env" | grep -v '^$' | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' | grep -v '[(){}]') 2>/dev/null || true
+  set +a
   log "✅ .env geladen"
 fi
 

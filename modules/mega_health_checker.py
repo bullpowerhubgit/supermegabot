@@ -1,385 +1,517 @@
-#!/usr/bin/env python3
 """
-BullPower MEGA Command Center — Platform Health Checker
-=======================================================
-Tests all 14 platform APIs in parallel, auto-heals failures, sends TG report.
+mega_health_checker.py — Platform Health Auto-Fixer for SuperMegaBot
+=====================================================================
+Checks Shopify, Stripe, Supabase, Telegram, SendGrid, Meta Ads, Railway.
+Sends Telegram alerts on failures. Saves results to data/health_stats.json.
+
+Dependencies: stdlib only (urllib.request, json, logging, asyncio, os, etc.)
 """
+
 from __future__ import annotations
 
 import asyncio
 import json
 import logging
 import os
-import time
+import urllib.error
+import urllib.parse
+import urllib.request
+from base64 import b64encode
 from datetime import datetime, timezone
 from pathlib import Path
 
-import aiohttp
-from dotenv import load_dotenv
+logger = logging.getLogger(__name__)
 
-load_dotenv(Path(__file__).parent.parent / ".env")
+# ---------------------------------------------------------------------------
+# Paths and constants
+# ---------------------------------------------------------------------------
 
-log = logging.getLogger("MegaHealthChecker")
+_DATA_DIR = Path(__file__).parent.parent / "data"
+HEALTH_STATS_PATH = _DATA_DIR / "health_stats.json"
 
-# ── paths ─────────────────────────────────────────────────────────────────────
-_DATA = Path(__file__).parent.parent / "data"
-HEALTH_REPORT = _DATA / "health_report.json"
-HEALTH_FAILURES = _DATA / "health_failures.json"
-
-# ── env helpers ───────────────────────────────────────────────────────────────
-def _e(key: str, default: str = "") -> str:
-    return os.getenv(key, default) or default
+_TIMEOUT = 10       # seconds — per check
+_RAILWAY_TIMEOUT = 5  # tighter for self-check
 
 
-def _reload_env() -> None:
-    load_dotenv(Path(__file__).parent.parent / ".env", override=True)
+# ---------------------------------------------------------------------------
+# Environment helpers
+# ---------------------------------------------------------------------------
+
+def _env(key: str) -> str:
+    return os.getenv(key, "")
 
 
-# ── individual check builders ─────────────────────────────────────────────────
-async def _get(session: aiohttp.ClientSession, url: str, headers: dict | None = None,
-               params: dict | None = None, timeout: int = 10) -> tuple[int, dict | str]:
+# ---------------------------------------------------------------------------
+# Low-level urllib helpers
+# ---------------------------------------------------------------------------
+
+def _json_get(
+    url: str,
+    headers: dict[str, str] | None = None,
+    timeout: int = _TIMEOUT,
+) -> tuple[int, dict | list]:
+    """
+    Perform a GET request and decode the JSON body.
+    Returns (http_status, parsed_body).
+    Raises on network/connection errors.
+    """
+    req = urllib.request.Request(url, headers=headers or {}, method="GET")
     try:
-        async with session.get(url, headers=headers or {}, params=params or {},
-                               timeout=aiohttp.ClientTimeout(total=timeout)) as r:
-            try:
-                body = await r.json(content_type=None)
-            except Exception:
-                body = await r.text()
-            return r.status, body
-    except asyncio.TimeoutError:
-        return 0, "timeout"
-    except Exception as exc:
-        return 0, str(exc)
-
-
-async def _post(session: aiohttp.ClientSession, url: str, headers: dict,
-                payload: dict, timeout: int = 10) -> tuple[int, dict | str]:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            status = resp.status
+            body = resp.read()
+    except urllib.error.HTTPError as exc:
+        status = exc.code
+        body = exc.read() or b""
+    # parse JSON
     try:
-        async with session.post(url, headers=headers, json=payload,
-                                timeout=aiohttp.ClientTimeout(total=timeout)) as r:
-            try:
-                body = await r.json(content_type=None)
-            except Exception:
-                body = await r.text()
-            return r.status, body
-    except asyncio.TimeoutError:
-        return 0, "timeout"
+        data = json.loads(body)
+    except Exception:
+        data = {"_raw": body.decode(errors="replace")}
+    return status, data
+
+
+def _json_post(
+    url: str,
+    payload: dict,
+    headers: dict[str, str] | None = None,
+    timeout: int = _TIMEOUT,
+) -> tuple[int, dict | list]:
+    """POST JSON payload, return (status, parsed_body)."""
+    data = json.dumps(payload).encode()
+    h = {"Content-Type": "application/json"}
+    if headers:
+        h.update(headers)
+    req = urllib.request.Request(url, data=data, headers=h, method="POST")
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            status = resp.status
+            body = resp.read()
+    except urllib.error.HTTPError as exc:
+        status = exc.code
+        body = exc.read() or b""
+    try:
+        parsed = json.loads(body)
+    except Exception:
+        parsed = {"_raw": body.decode(errors="replace")}
+    return status, parsed
+
+
+# ---------------------------------------------------------------------------
+# 1. check_shopify
+# ---------------------------------------------------------------------------
+
+def check_shopify() -> dict:
+    """
+    GET /admin/api/2024-01/shop.json
+    Returns {ok, name, plan, error}
+    """
+    domain = _env("SHOPIFY_SHOP_DOMAIN")
+    token = _env("SHOPIFY_ADMIN_API_TOKEN")
+    if not domain or not token:
+        msg = "Missing SHOPIFY_SHOP_DOMAIN or SHOPIFY_ADMIN_API_TOKEN"
+        logger.warning("check_shopify: %s", msg)
+        return {"ok": False, "error": msg}
+    url = f"https://{domain}/admin/api/2024-01/shop.json"
+    headers = {"X-Shopify-Access-Token": token}
+    try:
+        status, data = _json_get(url, headers=headers)
+        if status == 200 and isinstance(data, dict) and "shop" in data:
+            shop = data["shop"]
+            result = {
+                "ok": True,
+                "name": shop.get("name", ""),
+                "plan": shop.get("plan_name", ""),
+            }
+            logger.info("check_shopify OK: %s (%s)", result["name"], result["plan"])
+            return result
+        err = f"HTTP {status}: {str(data)[:120]}"
+        logger.error("check_shopify failed: %s", err)
+        return {"ok": False, "error": err}
     except Exception as exc:
-        return 0, str(exc)
+        logger.exception("check_shopify exception")
+        return {"ok": False, "error": str(exc)}
 
 
-def _result(platform: str, ok: bool, latency_ms: int, detail: str) -> dict:
-    return {
-        "platform": platform,
-        "ok": ok,
-        "latency_ms": latency_ms,
-        "detail": str(detail)[:200],
-        "timestamp": datetime.now(timezone.utc).isoformat(),
+# ---------------------------------------------------------------------------
+# 2. check_stripe
+# ---------------------------------------------------------------------------
+
+def check_stripe() -> dict:
+    """
+    GET https://api.stripe.com/v1/balance
+    Returns {ok, currency, error}
+    """
+    key = _env("STRIPE_SECRET_KEY")
+    if not key:
+        msg = "Missing STRIPE_SECRET_KEY"
+        logger.warning("check_stripe: %s", msg)
+        return {"ok": False, "error": msg}
+    credentials = b64encode(f"{key}:".encode()).decode()
+    headers = {"Authorization": f"Basic {credentials}"}
+    try:
+        status, data = _json_get("https://api.stripe.com/v1/balance", headers=headers)
+        if status == 200 and isinstance(data, dict) and "available" in data:
+            available = data["available"]
+            currency = available[0].get("currency", "?").upper() if available else "?"
+            result = {"ok": True, "currency": currency}
+            logger.info("check_stripe OK: currency=%s", currency)
+            return result
+        err_msg = ""
+        if isinstance(data, dict) and "error" in data:
+            err_msg = data["error"].get("message", "")
+        err = f"HTTP {status}: {err_msg or str(data)[:120]}"
+        logger.error("check_stripe failed: %s", err)
+        return {"ok": False, "error": err}
+    except Exception as exc:
+        logger.exception("check_stripe exception")
+        return {"ok": False, "error": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# 3. check_supabase
+# ---------------------------------------------------------------------------
+
+def check_supabase() -> dict:
+    """
+    GET {SUPABASE_URL}/rest/v1/scraped_products?limit=1 with apikey header
+    Returns {ok, error}
+    """
+    base_url = _env("SUPABASE_URL").rstrip("/")
+    service_key = _env("SUPABASE_SERVICE_KEY")
+    if not base_url or not service_key:
+        msg = "Missing SUPABASE_URL or SUPABASE_SERVICE_KEY"
+        logger.warning("check_supabase: %s", msg)
+        return {"ok": False, "error": msg}
+    url = f"{base_url}/rest/v1/scraped_products?limit=1"
+    headers = {
+        "apikey": service_key,
+        "Authorization": f"Bearer {service_key}",
     }
+    try:
+        status, data = _json_get(url, headers=headers)
+        if status in (200, 206):
+            logger.info("check_supabase OK: HTTP %s", status)
+            return {"ok": True}
+        err = f"HTTP {status}: {str(data)[:120]}"
+        logger.error("check_supabase failed: %s", err)
+        return {"ok": False, "error": err}
+    except Exception as exc:
+        logger.exception("check_supabase exception")
+        return {"ok": False, "error": str(exc)}
 
 
-# ── platform checks ───────────────────────────────────────────────────────────
-async def _check_shopify(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    domain = _e("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
-    token = _e("SHOPIFY_ADMIN_API_TOKEN") or _e("SHOPIFY_ACCESS_TOKEN")
-    url = f"https://{domain}/admin/api/2026-04/shop.json"
-    status, body = await _get(session, url, headers={"X-Shopify-Access-Token": token})
-    ok = status == 200 and isinstance(body, dict) and "shop" in body
-    detail = body.get("shop", {}).get("name", str(body)[:100]) if ok else str(body)[:100]
-    return _result("shopify", ok, int((time.monotonic() - t0) * 1000), detail)
+# ---------------------------------------------------------------------------
+# 4. check_telegram
+# ---------------------------------------------------------------------------
+
+def check_telegram() -> dict:
+    """
+    GET https://api.telegram.org/bot{token}/getMe
+    Returns {ok, username, error}
+    """
+    token = _env("TELEGRAM_BOT_TOKEN")
+    if not token:
+        msg = "Missing TELEGRAM_BOT_TOKEN"
+        logger.warning("check_telegram: %s", msg)
+        return {"ok": False, "error": msg}
+    url = f"https://api.telegram.org/bot{token}/getMe"
+    try:
+        status, data = _json_get(url)
+        if status == 200 and isinstance(data, dict) and data.get("ok"):
+            username = data.get("result", {}).get("username", "")
+            logger.info("check_telegram OK: @%s", username)
+            return {"ok": True, "username": username}
+        err = f"HTTP {status}: {data.get('description', str(data)[:120]) if isinstance(data, dict) else str(data)[:120]}"
+        logger.error("check_telegram failed: %s", err)
+        return {"ok": False, "error": err}
+    except Exception as exc:
+        logger.exception("check_telegram exception")
+        return {"ok": False, "error": str(exc)}
 
 
-async def _check_stripe(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    key = _e("STRIPE_SECRET_KEY")
-    status, body = await _get(session, "https://api.stripe.com/v1/balance",
-                              headers={"Authorization": f"Bearer {key}"})
-    ok = status == 200 and isinstance(body, dict) and "available" in body
-    detail = f"available={body.get('available', '?')}" if ok else str(body)[:100]
-    return _result("stripe", ok, int((time.monotonic() - t0) * 1000), detail)
+# ---------------------------------------------------------------------------
+# 5. check_sendgrid
+# ---------------------------------------------------------------------------
+
+def check_sendgrid() -> dict:
+    """
+    GET https://api.sendgrid.com/v3/user/credits with Bearer auth
+    Returns {ok, error}
+    """
+    api_key = _env("SENDGRID_API_KEY")
+    if not api_key:
+        msg = "Missing SENDGRID_API_KEY"
+        logger.warning("check_sendgrid: %s", msg)
+        return {"ok": False, "error": msg}
+    headers = {"Authorization": f"Bearer {api_key}"}
+    try:
+        status, data = _json_get("https://api.sendgrid.com/v3/user/credits", headers=headers)
+        if status == 200:
+            logger.info("check_sendgrid OK: remain=%s total=%s",
+                        data.get("remain") if isinstance(data, dict) else "?",
+                        data.get("total") if isinstance(data, dict) else "?")
+            return {"ok": True}
+        err_detail = ""
+        if isinstance(data, dict) and "errors" in data:
+            err_detail = str(data["errors"])[:100]
+        err = f"HTTP {status}: {err_detail or str(data)[:120]}"
+        logger.error("check_sendgrid failed: %s", err)
+        return {"ok": False, "error": err}
+    except Exception as exc:
+        logger.exception("check_sendgrid exception")
+        return {"ok": False, "error": str(exc)}
 
 
-async def _check_anthropic(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    key = _e("ANTHROPIC_API_KEY")
-    status, body = await _post(
-        session,
-        "https://api.anthropic.com/v1/messages",
-        headers={"x-api-key": key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
-        payload={"model": "claude-haiku-4-5-20251001", "max_tokens": 1, "messages": [{"role": "user", "content": "Hi"}]},
-    )
-    ok = status == 200 and isinstance(body, dict) and "content" in body
-    detail = body.get("model", str(body)[:100]) if ok else str(body)[:100]
-    return _result("anthropic", ok, int((time.monotonic() - t0) * 1000), detail)
+# ---------------------------------------------------------------------------
+# 6. check_meta_ads
+# ---------------------------------------------------------------------------
+
+def check_meta_ads() -> dict:
+    """
+    GET https://graph.facebook.com/v20.0/me?access_token={token}
+    Returns {ok, name, error}
+    """
+    token = _env("META_ADS_TOKEN")
+    if not token:
+        msg = "Missing META_ADS_TOKEN"
+        logger.warning("check_meta_ads: %s", msg)
+        return {"ok": False, "error": msg}
+    params = urllib.parse.urlencode({"access_token": token})
+    url = f"https://graph.facebook.com/v20.0/me?{params}"
+    try:
+        status, data = _json_get(url)
+        if status == 200 and isinstance(data, dict) and "id" in data:
+            name = data.get("name", "")
+            logger.info("check_meta_ads OK: %s", name)
+            return {"ok": True, "name": name}
+        err_msg = ""
+        if isinstance(data, dict) and "error" in data:
+            err_msg = data["error"].get("message", "")
+        err = f"HTTP {status}: {err_msg or str(data)[:120]}"
+        logger.error("check_meta_ads failed: %s", err)
+        return {"ok": False, "error": err}
+    except Exception as exc:
+        logger.exception("check_meta_ads exception")
+        return {"ok": False, "error": str(exc)}
 
 
-async def _check_openai(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    key = _e("OPENAI_API_KEY")
-    status, body = await _post(
-        session,
-        "https://api.openai.com/v1/chat/completions",
-        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-        payload={"model": "gpt-4o-mini", "max_tokens": 1, "messages": [{"role": "user", "content": "Hi"}]},
-    )
-    ok = status == 200 and isinstance(body, dict) and "choices" in body
-    detail = body.get("model", str(body)[:100]) if ok else str(body)[:100]
-    return _result("openai", ok, int((time.monotonic() - t0) * 1000), detail)
+# ---------------------------------------------------------------------------
+# 7. check_railway_self
+# ---------------------------------------------------------------------------
+
+def check_railway_self() -> dict:
+    """
+    GET https://supermegabot-production.up.railway.app/health with 5s timeout
+    Returns {ok, error}
+    """
+    url = "https://supermegabot-production.up.railway.app/health"
+    try:
+        status, data = _json_get(url, timeout=_RAILWAY_TIMEOUT)
+        status_val = data.get("status", "") if isinstance(data, dict) else ""
+        if status == 200 and status_val in ("ok", "healthy", "up"):
+            logger.info("check_railway_self OK")
+            return {"ok": True}
+        err = f"HTTP {status}: {str(data)[:120]}"
+        logger.error("check_railway_self failed: %s", err)
+        return {"ok": False, "error": err}
+    except Exception as exc:
+        logger.exception("check_railway_self exception")
+        return {"ok": False, "error": str(exc)}
 
 
-async def _check_facebook(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    token = _e("FACEBOOK_PAGE_TOKEN_AIITEC") or _e("META_ACCESS_TOKEN")
-    page_id = _e("FACEBOOK_PAGE_ID", "1016738738178786")
-    status, body = await _get(session,
-        f"https://graph.facebook.com/v19.0/{page_id}",
-        params={"fields": "name,fan_count", "access_token": token})
-    ok = status == 200 and isinstance(body, dict) and "name" in body
-    detail = body.get("name", str(body)[:100]) if ok else str(body)[:100]
-    return _result("facebook", ok, int((time.monotonic() - t0) * 1000), detail)
+# ---------------------------------------------------------------------------
+# 8. run_all_checks
+# ---------------------------------------------------------------------------
+
+_CHECK_REGISTRY: dict[str, callable] = {
+    "shopify":  check_shopify,
+    "stripe":   check_stripe,
+    "supabase": check_supabase,
+    "telegram": check_telegram,
+    "sendgrid": check_sendgrid,
+    "meta_ads": check_meta_ads,
+    "railway":  check_railway_self,
+}
 
 
-async def _check_instagram(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    token = _e("FACEBOOK_PAGE_TOKEN_AIITEC") or _e("META_ACCESS_TOKEN")
-    ig_id = _e("INSTAGRAM_ACCOUNT_ID", "17841478315197796")
-    status, body = await _get(session,
-        f"https://graph.facebook.com/v19.0/{ig_id}",
-        params={"fields": "username,followers_count", "access_token": token})
-    ok = status == 200 and isinstance(body, dict) and "username" in body
-    detail = f"@{body.get('username')} {body.get('followers_count',0)} followers" if ok else str(body)[:100]
-    return _result("instagram", ok, int((time.monotonic() - t0) * 1000), detail)
+def run_all_checks() -> dict:
+    """
+    Run every platform check sequentially.
+    Returns {timestamp, checks: {name: result}, failed: [names], ok_count, fail_count}
+    """
+    timestamp = datetime.now(timezone.utc).isoformat()
+    checks: dict[str, dict] = {}
 
-
-async def _check_telegram(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    token = _e("TELEGRAM_BOT_TOKEN")
-    status, body = await _get(session, f"https://api.telegram.org/bot{token}/getMe")
-    ok = status == 200 and isinstance(body, dict) and body.get("ok")
-    detail = body.get("result", {}).get("username", str(body)[:100]) if ok else str(body)[:100]
-    return _result("telegram", ok, int((time.monotonic() - t0) * 1000), detail)
-
-
-async def _check_supabase(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    url = _e("SUPABASE_URL", "").rstrip("/")
-    key = _e("SUPABASE_ANON_KEY")
-    if not url:
-        return _result("supabase", False, 0, "SUPABASE_URL not set")
-    status, body = await _get(session, f"{url}/rest/v1/scraped_products",
-        headers={"apikey": key, "Authorization": f"Bearer {key}"},
-        params={"limit": "1"})
-    ok = status in (200, 206)
-    detail = f"rows={len(body) if isinstance(body, list) else '?'}" if ok else str(body)[:100]
-    return _result("supabase", ok, int((time.monotonic() - t0) * 1000), detail)
-
-
-async def _check_klaviyo(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    key = _e("KLAVIYO_API_KEY_AIITEC") or _e("KLAVIYO_API_KEY")
-    status, body = await _get(session, "https://a.klaviyo.com/api/accounts/",
-        headers={"Authorization": f"Klaviyo-API-Key {key}", "revision": "2024-02-15"})
-    ok = status == 200 and isinstance(body, dict)
-    detail = str(body.get("data", {}))[: 80] if ok else str(body)[:100]
-    return _result("klaviyo", ok, int((time.monotonic() - t0) * 1000), detail)
-
-
-async def _check_youtube(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    api_key = _e("YOUTUBE_API_KEY")
-    channel = _e("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
-    status, body = await _get(session,
-        "https://www.googleapis.com/youtube/v3/channels",
-        params={"part": "statistics", "id": channel, "key": api_key})
-    ok = status == 200 and isinstance(body, dict) and body.get("items")
-    detail = f"subs={body['items'][0]['statistics'].get('subscriberCount','?')}" if ok else str(body)[:100]
-    return _result("youtube", ok, int((time.monotonic() - t0) * 1000), detail)
-
-
-async def _check_linkedin(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    token = _e("LINKEDIN_ACCESS_TOKEN")
-    status, body = await _get(session, "https://api.linkedin.com/v2/userinfo",
-        headers={"Authorization": f"Bearer {token}"})
-    ok = status == 200 and isinstance(body, dict) and "name" in body
-    detail = body.get("name", str(body)[:100]) if ok else str(body)[:100]
-    return _result("linkedin", ok, int((time.monotonic() - t0) * 1000), detail)
-
-
-async def _check_digistore24(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    ds_key = _e("DIGISTORE24_API_KEY")
-    status, body = await _get(session,
-        "https://www.digistore24.com/api/call/listProducts/JSON/",
-        headers={"X-DS-API-KEY": ds_key})
-    ok = status == 200 and isinstance(body, dict) and body.get("result") != "error"
-    detail = f"products={len(body.get('data', {}).get('products', []))}" if ok else str(body)[:100]
-    return _result("digistore24", ok, int((time.monotonic() - t0) * 1000), detail)
-
-
-async def _check_printify(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    token = _e("PRINTIFY_API_KEY") or _e("PRINTIFY_TOKEN")
-    status, body = await _get(session, "https://api.printify.com/v1/shops.json",
-        headers={"Authorization": f"Bearer {token}"})
-    ok = status == 200 and isinstance(body, list)
-    detail = f"shops={len(body)}" if ok else str(body)[:100]
-    return _result("printify", ok, int((time.monotonic() - t0) * 1000), detail)
-
-
-async def _check_railway(session: aiohttp.ClientSession) -> dict:
-    t0 = time.monotonic()
-    status, body = await _get(session,
-        os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/") + "/health", timeout=15)
-    ok = status == 200 and (
-        (isinstance(body, dict) and body.get("status") == "ok") or
-        (isinstance(body, str) and "ok" in body.lower())
-    )
-    detail = str(body)[:100]
-    return _result("railway", ok, int((time.monotonic() - t0) * 1000), detail)
-
-
-# ── orchestration ─────────────────────────────────────────────────────────────
-_CHECKERS = [
-    _check_shopify, _check_stripe, _check_anthropic, _check_openai,
-    _check_facebook, _check_instagram, _check_telegram, _check_supabase,
-    _check_klaviyo, _check_youtube, _check_linkedin, _check_digistore24,
-    _check_printify, _check_railway,
-]
-
-
-async def check_all() -> dict:
-    """Run all platform checks in parallel."""
-    async with aiohttp.ClientSession() as session:
-        results = await asyncio.gather(
-            *[fn(session) for fn in _CHECKERS], return_exceptions=True
-        )
-    cleaned: list[dict] = []
-    for r in results:
-        if isinstance(r, Exception):
-            cleaned.append(_result("unknown", False, 0, str(r)))
-        else:
-            cleaned.append(r)
-    ok_count = sum(1 for r in cleaned if r["ok"])
-    return {
-        "results": cleaned,
-        "ok_count": ok_count,
-        "total": len(cleaned),
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-    }
-
-
-async def auto_heal(results: list[dict]) -> list[dict]:
-    """Attempt platform-specific recovery for failed checks."""
-    failed = [r for r in results if not r["ok"]]
-    if not failed:
-        return results
-
-    # Log failures
-    _DATA.mkdir(parents=True, exist_ok=True)
-    failures_log: list = []
-    if HEALTH_FAILURES.exists():
+    for name, fn in _CHECK_REGISTRY.items():
+        logger.info("Running health check: %s", name)
         try:
-            failures_log = json.loads(HEALTH_FAILURES.read_text())
-        except Exception:
-            failures_log = []
-    failures_log.extend(failed)
-    failures_log = failures_log[-500:]  # keep last 500
-    HEALTH_FAILURES.write_text(json.dumps(failures_log, indent=2))
+            checks[name] = fn()
+        except Exception as exc:
+            logger.exception("Unhandled error in check %s", name)
+            checks[name] = {"ok": False, "error": f"Unhandled: {exc}"}
 
-    healed: list[dict] = []
-    async with aiohttp.ClientSession() as session:
-        for r in failed:
-            platform = r["platform"]
-            if platform == "shopify":
-                _reload_env()
-                new_r = await _check_shopify(session)
-                new_r["detail"] = "(healed) " + new_r["detail"]
-                healed.append(new_r)
-            elif platform == "supabase":
-                # Try with service key
-                url = _e("SUPABASE_URL", "").rstrip("/")
-                svc_key = _e("SUPABASE_SERVICE_KEY")
-                if url and svc_key:
-                    t0 = time.monotonic()
-                    status, body = await _get(session, f"{url}/rest/v1/scraped_products",
-                        headers={"apikey": svc_key, "Authorization": f"Bearer {svc_key}"},
-                        params={"limit": "1"})
-                    ok = status in (200, 206)
-                    healed.append(_result("supabase", ok,
-                        int((time.monotonic() - t0) * 1000),
-                        f"(svc-key) {str(body)[:80]}"))
-            elif platform == "telegram":
-                # Try reloading token
-                _reload_env()
-                new_r = await _check_telegram(session)
-                new_r["detail"] = "(healed) " + new_r["detail"]
-                healed.append(new_r)
+    failed = [name for name, result in checks.items() if not result.get("ok")]
+    ok_count = len(checks) - len(failed)
+    fail_count = len(failed)
 
-    # Merge healed results back
-    healed_map = {r["platform"]: r for r in healed}
-    final = []
-    for r in results:
-        if r["platform"] in healed_map:
-            final.append(healed_map[r["platform"]])
+    results = {
+        "timestamp": timestamp,
+        "checks": checks,
+        "failed": failed,
+        "ok_count": ok_count,
+        "fail_count": fail_count,
+    }
+
+    _save_health_stats(results)
+    logger.info(
+        "Health checks complete — %d OK, %d FAILED. Failed: %s",
+        ok_count, fail_count, failed,
+    )
+    return results
+
+
+# ---------------------------------------------------------------------------
+# 9. send_health_alert
+# ---------------------------------------------------------------------------
+
+def send_health_alert(results: dict) -> bool:
+    """
+    If any services failed, send a Telegram message listing every service
+    with ❌ (failed) or ✅ (ok).
+    Returns True if the message was sent, False otherwise.
+    """
+    bot_token = _env("TELEGRAM_BOT_TOKEN")
+    chat_id = _env("TELEGRAM_CHAT_ID")
+    if not bot_token or not chat_id:
+        logger.warning("send_health_alert: missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID")
+        return False
+
+    failed: list[str] = results.get("failed", [])
+    if not failed:
+        logger.info("send_health_alert: all services healthy — no alert sent")
+        return False
+
+    checks: dict[str, dict] = results.get("checks", {})
+    timestamp = results.get("timestamp", datetime.now(timezone.utc).isoformat())
+
+    lines: list[str] = [
+        "🚨 *SuperMegaBot Health Alert*",
+        f"🕐 `{timestamp}`",
+        "",
+    ]
+
+    for name, result in checks.items():
+        label = name.upper().replace("_", " ")
+        if result.get("ok"):
+            extra = ""
+            for field in ("name", "username", "currency", "plan"):
+                if field in result and result[field]:
+                    extra = f" — {result[field]}"
+                    break
+            lines.append(f"✅ {label}{extra}")
         else:
-            final.append(r)
-    return final
+            error = result.get("error", "unknown error")
+            if len(error) > 120:
+                error = error[:117] + "..."
+            lines.append(f"❌ {label}: `{error}`")
 
+    lines += [
+        "",
+        f"*{results.get('ok_count', 0)} OK* | *{results.get('fail_count', 0)} FAILED*",
+    ]
 
-async def send_telegram_report(results: list[dict]) -> None:
-    """Send formatted health report to Telegram."""
-    token = _e("TELEGRAM_BOT_TOKEN")
-    chat_id = _e("TELEGRAM_CHAT_ID")
-    if not token or not chat_id:
-        return
-
-    lines = ["🔍 *Platform Health Report*\n"]
-    for r in results:
-        icon = "✅" if r["ok"] else "❌"
-        plat = r["platform"].upper()
-        ms = r["latency_ms"]
-        detail = r["detail"][:60]
-        lines.append(f"{icon} `{plat}` ({ms}ms) — {detail}")
-
-    ok_count = sum(1 for r in results if r["ok"])
-    lines.append(f"\n*{ok_count}/{len(results)} OK* — {datetime.now(timezone.utc).strftime('%H:%M UTC')}")
-    msg = "\n".join(lines)
-
+    text = "\n".join(lines)
+    url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
+    payload = {
+        "chat_id": chat_id,
+        "text": text,
+        "parse_mode": "Markdown",
+        "disable_web_page_preview": True,
+    }
     try:
-        async with aiohttp.ClientSession() as s:
-            await s.post(
-                f"https://api.telegram.org/bot{token}/sendMessage",
-                json={"chat_id": chat_id, "text": msg, "parse_mode": "Markdown"},
-                timeout=aiohttp.ClientTimeout(total=10),
-            )
+        status, resp_data = _json_post(url, payload)
+        if isinstance(resp_data, dict) and resp_data.get("ok"):
+            logger.info("send_health_alert: Telegram alert sent successfully")
+            return True
+        logger.error("send_health_alert: Telegram returned non-ok: HTTP %s %s", status, resp_data)
+        return False
     except Exception as exc:
-        log.warning("TG report failed: %s", exc)
+        logger.exception("send_health_alert: failed to send Telegram alert")
+        return False
 
+
+# ---------------------------------------------------------------------------
+# 10. async run_health_cycle
+# ---------------------------------------------------------------------------
 
 async def run_health_cycle() -> dict:
-    """Full cycle: check → heal → report → save."""
-    log.info("Starting health cycle")
-    report = await check_all()
-    results = report["results"]
-    results = await auto_heal(results)
-    report["results"] = results
-    report["ok_count"] = sum(1 for r in results if r["ok"])
-
-    _DATA.mkdir(parents=True, exist_ok=True)
-    HEALTH_REPORT.write_text(json.dumps(report, indent=2))
-
-    await send_telegram_report(results)
-    log.info("Health cycle done: %d/%d OK", report["ok_count"], report["total"])
-    return report
+    """
+    Async entry point: run all checks in a thread-pool executor (keeps the
+    event loop free) and send a Telegram alert if any failures are found.
+    Returns the results dict.
+    """
+    loop = asyncio.get_event_loop()
+    results: dict = await loop.run_in_executor(None, run_all_checks)
+    if results.get("fail_count", 0) > 0:
+        await loop.run_in_executor(None, send_health_alert, results)
+    return results
 
 
-def get_status() -> dict:
-    """Return last saved health report for dashboard integration."""
-    if HEALTH_REPORT.exists():
-        try:
-            return json.loads(HEALTH_REPORT.read_text())
-        except Exception:
-            pass
-    return {"results": [], "ok_count": 0, "total": 0, "timestamp": None}
+# ---------------------------------------------------------------------------
+# 11. get_health_stats
+# ---------------------------------------------------------------------------
+
+def get_health_stats() -> dict:
+    """
+    Return the latest health check results previously saved to
+    data/health_stats.json.  Call run_all_checks() first to populate it.
+    """
+    if not HEALTH_STATS_PATH.exists():
+        logger.warning("get_health_stats: %s not found — run run_all_checks() first", HEALTH_STATS_PATH)
+        return {"error": "No health stats available. Run run_all_checks() first."}
+    try:
+        with open(HEALTH_STATS_PATH, "r", encoding="utf-8") as fh:
+            return json.load(fh)
+    except Exception as exc:
+        logger.exception("get_health_stats: failed to read %s", HEALTH_STATS_PATH)
+        return {"error": str(exc)}
+
+
+# ---------------------------------------------------------------------------
+# Internal: persist to data/health_stats.json
+# ---------------------------------------------------------------------------
+
+def _save_health_stats(results: dict) -> None:
+    try:
+        _DATA_DIR.mkdir(parents=True, exist_ok=True)
+        with open(HEALTH_STATS_PATH, "w", encoding="utf-8") as fh:
+            json.dump(results, fh, indent=2, ensure_ascii=False)
+        logger.debug("Health stats saved to %s", HEALTH_STATS_PATH)
+    except Exception:
+        logger.exception("_save_health_stats: could not write %s", HEALTH_STATS_PATH)
+
+
+# ---------------------------------------------------------------------------
+# Backward-compat aliases (for any existing callers using the old names)
+# ---------------------------------------------------------------------------
+
+def check_all_sync() -> dict:          # alias → run_all_checks
+    return run_all_checks()
+
+def get_status() -> dict:              # alias → get_health_stats
+    return get_health_stats()
+
+
+# ---------------------------------------------------------------------------
+# CLI entry-point: python -m modules.mega_health_checker
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    )
+    _results = run_all_checks()
+    send_health_alert(_results)
+    print(json.dumps(_results, indent=2, ensure_ascii=False))
