@@ -11810,6 +11810,92 @@ async def create_app():
     app.router.add_get( "/api/post-guardian/blocked", handle_post_guardian_blocked)
     log.info("Post-Guardian routes registered (/api/post-guardian/*)")
 
+    # ── LinkedIn DM Outreach ───────────────────────────────────────────────────
+    async def handle_linkedin_outreach(request):
+        """POST /api/linkedin/outreach — 50 LinkedIn DMs an DACH E-Commerce Entscheider."""
+        try:
+            from modules.linkedin_dm_outreach import run_daily_outreach
+            result = await run_daily_outreach(limit=50)
+            return web.json_response(result if isinstance(result, dict) else {"status": "started"})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_linkedin_stats(request):
+        """GET /api/linkedin/stats — LinkedIn DM Statistiken."""
+        try:
+            from modules.linkedin_dm_outreach import get_stats
+            return web.json_response(get_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/linkedin/outreach", handle_linkedin_outreach)
+    app.router.add_get( "/api/linkedin/stats",    handle_linkedin_stats)
+
+    # ── Affiliate Recruiter ────────────────────────────────────────────────────
+    async def handle_affiliate_recruit(request):
+        """POST /api/affiliate/recruit — 15 Affiliate-Pitches senden."""
+        try:
+            from modules.affiliate_recruiter import run_affiliate_campaign
+            result = await run_affiliate_campaign(limit=15)
+            return web.json_response(result if isinstance(result, dict) else {"status": "started"})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_affiliate_stats(request):
+        """GET /api/affiliate/stats — Affiliate Recruiter Statistiken."""
+        try:
+            from modules.affiliate_recruiter import get_stats
+            return web.json_response(get_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/affiliate/recruit", handle_affiliate_recruit)
+    app.router.add_get( "/api/affiliate/stats",   handle_affiliate_stats)
+
+    # ── Traffic Maximizer ──────────────────────────────────────────────────────
+    async def handle_traffic_blast(request):
+        """POST /api/traffic/blast — LinkedIn+FB+Shopify Blog gleichzeitig."""
+        try:
+            from modules.traffic_maximizer import run_full_traffic_blast
+            result = await run_full_traffic_blast()
+            return web.json_response(result if isinstance(result, dict) else {"status": "started"})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_traffic_stats(request):
+        """GET /api/traffic/stats — Traffic Maximizer Statistiken."""
+        try:
+            from modules.traffic_maximizer import get_traffic_stats
+            return web.json_response(get_traffic_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/traffic/blast", handle_traffic_blast)
+    app.router.add_get( "/api/traffic/stats", handle_traffic_stats)
+
+    # ── Autonomous Pilot ───────────────────────────────────────────────────────
+    async def handle_pilot_status(request):
+        """GET /api/pilot/status — Autonomous Pilot KPIs und letzter Zyklus."""
+        try:
+            from modules.autonomous_pilot import AutonomousPilot
+            pilot = AutonomousPilot()
+            return web.json_response(await pilot.get_status() if hasattr(pilot, 'get_status') else {"status": "active"})
+        except Exception as e:
+            return web.json_response({"status": "loading", "error": str(e)}, status=200)
+
+    async def handle_pilot_run(request):
+        """POST /api/pilot/run — Autonomous Pilot Zyklus sofort ausführen."""
+        try:
+            from modules.autonomous_pilot import run_pilot_cycle
+            result = await run_pilot_cycle()
+            return web.json_response({"status": "ok", "result": str(result)})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_get( "/api/pilot/status", handle_pilot_status)
+    app.router.add_post("/api/pilot/run",    handle_pilot_run)
+    log.info("Autonomous Pilot routes registered (/api/pilot/*, /api/linkedin/*, /api/affiliate/*, /api/traffic/*)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")
