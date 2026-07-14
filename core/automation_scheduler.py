@@ -6322,7 +6322,7 @@ async def task_mass_outreach_batch() -> str:
     try:
         from modules.mass_outreach_1000 import run_batch_only, init_db
         init_db()
-        result = await run_batch_only(batch_limit=333)
+        result = await run_batch_only(batch_size=333)
         sent = result.get("sent", 0)
         fu   = result.get("followups_sent", 0)
         today = result.get("total_today", 0)
