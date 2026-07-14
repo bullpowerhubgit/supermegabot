@@ -1172,18 +1172,6 @@ async def task_cro_run() -> str:
         return f"CRO error: {e}"
 
 
-async def task_auto_funnel() -> str:
-    """Auto Funnel — DS24 buyers → purchase sequence → upsell → discount."""
-    try:
-        from modules.auto_funnel import run_auto_funnel
-        result = await run_auto_funnel()
-        processed = result.get("daily_funnel", {}).get("processed", 0)
-        return f"AutoFunnel done: {processed} buyers processed, {result}"
-    except Exception as e:
-        return f"AutoFunnel error: {e}"
-
-
-
 async def task_mega_auto_post() -> str:
     """Mega Auto Poster — postet auf ALLE Kanäle gleichzeitig (alle 30 Min)."""
     try:
@@ -1539,44 +1527,6 @@ async def task_facebook_token_check() -> str:
         return f"FB token OK — pages_manage_posts: {has_post_scope}, scopes: {len(scopes)}"
     except Exception as e:
         return f"FB token check error: {e}"
-
-
-async def task_email_check() -> str:
-    """IMAP poll alle 5 Min — wichtige Mails → Telegram-Alert."""
-    try:
-        from modules.email_brain import check_and_process_emails
-        result = await check_and_process_emails()
-        checked = result.get("checked", 0)
-        replied = result.get("replied", 0)
-        return f"EmailBrain: {checked} emails checked, {replied} auto-replied"
-    except ImportError:
-        pass
-    except Exception as e:
-        log.warning("EmailBrain Fehler: %s", e)
-
-    # Fallback: email_monitor (Telegram-Alert bei wichtigen Mails)
-    try:
-        from modules.email_monitor import check_emails_once
-        result = await check_emails_once()
-        important = result.get("important", 0)
-        checked   = result.get("checked", 0)
-        alerts    = result.get("alerts", [])
-        detail = " | ".join(alerts[:3]) if alerts else "keine neuen"
-        return f"EmailMonitor: {checked} geprüft, {important} wichtig — {detail}"
-    except Exception as e:
-        return f"EmailMonitor Fehler: {e}"
-
-
-async def task_email_daily_summary() -> str:
-    """Daily email summary via Telegram."""
-    try:
-        from modules.email_brain import send_daily_summary
-        result = await send_daily_summary()
-        return f"EmailSummary: {result}"
-    except ImportError:
-        return "EmailSummary: module not available (skipped)"
-    except Exception as e:
-        return f"EmailSummary Fehler: {e}"
 
 
 async def task_email_seq_process() -> str:
@@ -2171,17 +2121,6 @@ async def task_backlink_bomber() -> str:
         return f"BacklinkBomber Fehler: {e}"
 
 
-async def task_viral_traffic_machine() -> str:
-    """ViralTrafficMachine: Reddit + Medium + LinkedIn + trending content every 4h."""
-    try:
-        from modules.viral_traffic_machine import run_viral_traffic_machine
-        result = await run_viral_traffic_machine()
-        posted = sum(1 for v in result.get("platforms", {}).values() if isinstance(v, dict) and v.get("ok"))
-        return f"ViralTraffic OK: {posted} platforms hit"
-    except Exception as e:
-        return f"ViralTraffic Fehler: {e}"
-
-
 async def task_content_velocity() -> str:
     """ContentVelocity: generate + publish 10-format content from trending topic every 2h."""
     try:
@@ -2191,18 +2130,6 @@ async def task_content_velocity() -> str:
         return f"ContentVelocity OK: '{topic}' published across all formats"
     except Exception as e:
         return f"ContentVelocity Fehler: {e}"
-
-
-async def task_revenue_maximizer() -> str:
-    """RevenueMaximizer: cart abandonment recovery + winback + urgency offers every 4h."""
-    try:
-        from modules.revenue_maximizer import run_revenue_maximizer
-        result = await run_revenue_maximizer()
-        recovered = result.get("results", {}).get("cart_recovery", {}).get("recovery_emails_sent", 0)
-        winback   = result.get("results", {}).get("winback", {}).get("winback_triggered", 0)
-        return f"RevenueMaximizer OK: {recovered} carts recovered, {winback} winback triggered"
-    except Exception as e:
-        return f"RevenueMaximizer Fehler: {e}"
 
 
 async def task_free_syndication() -> str:
@@ -2811,20 +2738,6 @@ async def task_ds24_traffic() -> str:
                 f"Mail:{r.get('emails_sent',0)}")
     except Exception as e:
         return f"DS24 Traffic error: {e}"
-
-async def task_ds24_auto_fill() -> str:
-    """DS24 Account prüfen + automatisch befüllen wenn leer"""
-    try:
-        from modules.ds24_auto_fill import run_ds24_auto_fill
-        r = await run_ds24_auto_fill()
-        status = r.get("account_status", {})
-        actions = r.get("actions", [])
-        return (f"DS24 AutoFill: {status.get('approved_products',0)} approved | "
-                f"affiliates:{r.get('affiliate_products',[]) and len(r.get('affiliate_products',[])) or 0} | "
-                f"packages:{r.get('generated_packages',0)} | actions:{','.join(actions)}")
-    except Exception as e:
-        return f"DS24 AutoFill error: {e}"
-
 
 # ── ADS ENGINE ────────────────────────────────────────────────────────────────
 
@@ -4713,15 +4626,6 @@ async def task_klaviyo_autonomy_cycle() -> str:
         return f"Klaviyo cycle error: {e}"
 
 
-async def task_product_generator() -> str:
-    try:
-        from modules.product_generator import run_generator_cycle
-        r = await run_generator_cycle(count=3, from_trends=True)
-        return f"ProductGen: {r.get('created',0)} created, {r.get('failed',0)} failed"
-    except Exception as e:
-        return f"ProductGen error: {e}"
-
-
 async def task_product_generator_niche() -> str:
     try:
         from modules.product_generator import run_niche_blast
@@ -4983,15 +4887,6 @@ async def task_traffic_mega_cycle() -> str:
         return f"TrafficMegaV2 error: {e}"
 
 
-async def task_affiliate_mega_blast() -> str:
-    try:
-        from modules.affiliate_mega_engine import run_affiliate_blast
-        r = await run_affiliate_blast()
-        return f"AffiliateMega: {r.get('total_blasted',0)} Posts | amazon+ds24+ebay"
-    except Exception as e:
-        return f"AffiliateMega error: {e}"
-
-
 async def task_email_blast_daily() -> str:
     try:
         from modules.email_blast_engine import run_daily_blast
@@ -5207,20 +5102,6 @@ async def task_bundle_creation_cycle() -> str:
         return f"BundleCycle Fehler: {e}"
 
 
-async def task_autonomous_pipeline() -> str:
-    """Täglich: vollautonome Pipeline — generieren → sortieren → bundeln → blasten → Stripe."""
-    try:
-        from modules.autonomous_pipeline import run_pipeline_cycle
-        r = await run_pipeline_cycle()
-        return (
-            f"Pipeline: {r.get('generated',0)} generiert, "
-            f"{r.get('sorted',0)} sortiert, {r.get('bundled',0)} Bundles, "
-            f"{r.get('blasted',0)} geblastet, {r.get('payment_links',0)} Stripe-Links"
-        )
-    except Exception as e:
-        return f"Pipeline Fehler: {e}"
-
-
 async def task_mailchimp_dragon_article() -> str:
     """Täglich: 1 neuen Artikel via Dragon Mailchimp senden (dragonadnp@gmail.com)."""
     try:
@@ -5255,18 +5136,6 @@ async def task_email_doctor() -> str:
                 f"Fixes: {r.get('fixes',0)}")
     except Exception as e:
         return f"EmailDoctor Fehler: {e}"
-
-
-async def task_mass_content_blaster() -> str:
-    """Alle 2h: 1000 Content-Pieces über alle Plattformen verteilen."""
-    try:
-        from modules.mass_content_blaster import run_mass_blast
-        r = await run_mass_blast()
-        return (f"MassBlast: {r.get('total_posted',0)} Posts | "
-                f"{r.get('platforms_hit',0)} Plattformen | "
-                f"{r.get('topics_used',0)} Themen")
-    except Exception as e:
-        return f"MassBlast Fehler: {e}"
 
 
 async def task_openclaw_blast() -> str:
@@ -5305,41 +5174,6 @@ async def task_customer_export() -> str:
                 f"Mailchimp:{r.get('mailchimp',{}).get('subscribed',0)}")
     except Exception as e:
         return f"CustomerExport Fehler: {e}"
-
-
-async def task_quantum_self_repair() -> str:
-    """Every 30min — scan recurring errors, apply auto-fixes, reset circuits."""
-    try:
-        from modules.quantum_self_repair import run_quantum_scan
-        result = await run_quantum_scan()
-        recurring = result.get("recurring_errors", 0)
-        fixes = result.get("fix_count", 0)
-        stats = result.get("error_stats", {})
-        total = stats.get("total_occurrences", 0)
-        return f"QuantumScan: {recurring} wiederkehrend | {fixes} Fixes | {total} Fehler gesamt"
-    except Exception as e:
-        # fallback to old fixer if new module not available
-        try:
-            from modules.quantum_self_fixer import scan_and_repair
-            result = await scan_and_repair()
-            return f"Quantum: {result.get('ok',0)}/{result.get('ok',0)+result.get('failed',0)} OK"
-        except Exception:
-            return f"Quantum Fehler: {e}"
-
-
-async def task_instagram_pipeline() -> str:
-    """Alle 3h: KI-Content generieren + auf Facebook AIITEC + Instagram @aaiitecc posten."""
-    try:
-        from modules.instagram_pipeline import run_pipeline
-        result = await run_pipeline()
-        fb_ok = result.get("facebook", {}).get("ok", False)
-        ig_ok = result.get("instagram", {}).get("ok", False)
-        err   = result.get("error", "")
-        if err:
-            return f"InstagramPipeline: {err[:80]}"
-        return f"InstagramPipeline: FB={'✅' if fb_ok else '❌'} IG={'✅' if ig_ok else '❌'} | {result.get('title','')[:40]}"
-    except Exception as e:
-        return f"InstagramPipeline Fehler: {e}"
 
 
 async def task_marketplace_poster() -> str:
@@ -7354,7 +7188,7 @@ TASKS = [
     # ── ULTRA ACQUISITION ENGINE ──────────────────────────────────────────────
     ("ultra_acq_research",     task_ultra_acquisition_research, 86400, 3925),  # 24h — Multi-Source Lead Research
     ("ultra_acq_morning",      task_ultra_acquisition_send,     28800, 3928),  # 8h  — 333 Emails (3 Batches/Tag)
-    ("ultra_acq_afternoon",    task_ultra_acquisition_send,     28800, 3932),  # 8h  — Nachmittags-Batch
+    # ultra_acq_afternoon removed: same function + 7h internal dedup guard = always blocked by morning slot
     ("industrie_outreach",     task_industrie_outreach,      86400,  620),  # 24h — Fabrik/Industrie 20 E-Mails täglich
     ("agent_teams_health",     task_agent_teams_health,      86400, 3930),  # 24h — Alle Agent-Teams Health Check
     ("tiktok_status",          task_tiktok_status_check,     21600, 3950),  # 6h  — TikTok Ads + Pixel Status
@@ -7449,7 +7283,7 @@ TASKS = [
     # seo_dominator duplicate removed (kept 2h/150s version above)
     # backlink_bomber duplicate removed (kept 2h/180s version above)
     # content_velocity duplicate removed (kept 6h/2460s version above)
-    ("viral_traffic_machine",   task_viral_traffic_machine,  14400,   76),   # 4h — Reddit + Medium + LinkedIn
+    # viral_traffic_machine duplicate removed (kept 4h/2300s version as 'viral_traffic' above)
     # revenue_maximizer duplicate removed (kept 4h/1380s version above)
     ("free_syndication",        task_free_syndication,       21600,  115),   # 6h — Dev.to + Hashnode + Medium + Discord
     # github_blog duplicate removed (kept 4h/60s version above)
