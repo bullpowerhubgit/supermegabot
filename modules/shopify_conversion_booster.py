@@ -35,7 +35,7 @@ log = logging.getLogger("ConversionBooster")
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
 DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 BASE    = f"https://{DOMAIN}/admin/api/{VERSION}"
 HEADERS = {"X-Shopify-Access-Token": TOKEN, "Content-Type": "application/json"}

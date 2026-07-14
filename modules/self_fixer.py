@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 SelfFixer — wird in alle Module importiert für autonome Selbstreparatur.
+import os
 from modules.self_fixer import auto_fix; auto_fix(__name__)
 """
 import logging, os

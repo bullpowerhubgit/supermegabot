@@ -24,8 +24,8 @@ log = logging.getLogger("IntentBridge")
 _BASE = Path(__file__).parent.parent
 _DB   = _BASE / "data" / "intent_bridge.db"
 
-SHOPIFY_DOMAIN  = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
-SHOPIFY_TOKEN   = lambda: os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_DOMAIN  = lambda: os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
+SHOPIFY_TOKEN   = lambda: os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VERSION = lambda: os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SHOPIFY_STORE   = lambda: os.getenv("SHOPIFY_STORE_URL", "https://ineedit.com.co")
 TELEGRAM_TOKEN  = lambda: os.getenv("TELEGRAM_BOT_TOKEN", "")

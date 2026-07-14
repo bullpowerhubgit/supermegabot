@@ -22,7 +22,7 @@ log = logging.getLogger("AutoProductPipeline")
 # ─── Credentials ──────────────────────────────────────────────────────────────
 ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 SHOP           = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOK    = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOK    = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 GUMROAD_TOKEN  = os.getenv("GUMROAD_ACCESS_TOKEN", "")
 PRINTIFY_TOKEN = os.getenv("PRINTIFY_API_TOKEN", "")
@@ -219,7 +219,7 @@ async def _create_bundle(ideas_today: list) -> Optional[str]:
 async def _blast_all_channels(idea: dict, urls: dict) -> dict:
     """Posts the new product to all available channels."""
     product_url = (urls.get("shopify") or urls.get("gumroad") or
-                   "https://autopilot-store-suite-fmbka.myshopify.com/collections/all")
+                   "https://ineedit.com.co/collections/all")
     price_str   = f"€{idea['price_eur']:.0f}"
 
     post_text = await _ai(

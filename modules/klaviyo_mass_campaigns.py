@@ -28,7 +28,7 @@ LIST_ID  = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
 BASE     = "https://a.klaviyo.com/api"
 REVISION = "2024-02-15"
 FROM_EMAIL = os.getenv("FROM_EMAIL", "aiitecbuuss@gmail.com")
-SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 
 
 def _headers() -> dict:

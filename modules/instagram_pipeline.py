@@ -9,6 +9,7 @@ Alle 3h via Scheduler. Generiert AI-Content + holt Shopify-Produktbild.
 Token: FACEBOOK_PAGE_TOKEN_AIITEC (gesetzt nach OAuth-Klick)
 """
 from __future__ import annotations
+import os
 import asyncio, logging, os, random
 from datetime import datetime
 from pathlib import Path
@@ -21,7 +22,7 @@ FB_BASE        = "https://graph.facebook.com/v19.0"
 PAGE_ID        = os.getenv("FACEBOOK_PAGE_ID_AIITEC", "1016738738178786")
 IG_USER_ID     = os.getenv("INSTAGRAM_ACCOUNT_ID", "17841478315197796")
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "8600739487:AAGhByAoKEpbsfco9swoaRYjU2HI_gSt718")
 TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")     # system alerts only

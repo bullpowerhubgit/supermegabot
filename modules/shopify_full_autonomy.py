@@ -30,7 +30,7 @@ import aiohttp
 log = logging.getLogger("ShopifyFullAuto")
 
 SHOP    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 VER     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 BASE    = lambda path: f"https://{SHOP}/admin/api/{VER}/{path}"
 HEADERS = {"X-Shopify-Access-Token": TOKEN, "Content-Type": "application/json"}
@@ -1356,7 +1356,7 @@ async def run_full_autonomy_cycle(quick: bool = False, restock: bool = True) -> 
         _asyncio.create_task(bc.fire(
             "Shopify Autonomy-Zyklus abgeschlossen",
             f"{ok_count} Schritte erfolgreich — Store vollautomatisch aktualisiert",
-            "https://autopilot-store-suite-fmbka.myshopify.com"
+            "https://ineedit.com.co"
         ))
     except Exception as _e:
         log.debug("skipped: %s", _e)
@@ -1385,7 +1385,7 @@ async def auto_create_affiliate_blog_posts(count: int = 3) -> dict:
     ds24_link = (
         os.getenv("DS24_AFFILIATE_LINK")
         or os.getenv("AIITEC_AFFILIATE_URL")
-        or os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+        or os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
     )
 
     topics = [

@@ -19,10 +19,10 @@ import aiohttp
 
 log = logging.getLogger("EmailBlastEngine")
 
-SHOP_URL    = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL    = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 FROM_EMAIL  = os.getenv("FROM_EMAIL", "hello@ineedit.com.co")
 SHOP        = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOK = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOK = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 KLAVIYO_KEY = os.getenv("KLAVIYO_API_KEY", "")

@@ -28,7 +28,7 @@ import aiohttp
 log = logging.getLogger("AutonomousPipeline")
 
 SHOPIFY_SHOP  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 DS24_KEY      = os.getenv("DS24_API_KEY", "")
 AFFILIATE_ID  = os.getenv("DS24_AFFILIATE_ID", "user37405262")

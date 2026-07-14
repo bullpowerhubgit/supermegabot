@@ -246,7 +246,7 @@ async def validate_klaviyo() -> dict:
 async def validate_shopify() -> dict:
     """Prüft Shopify Admin API Token."""
     shop  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-    token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
     ver   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not shop or not token:
         return {"ok": False, "platform": "shopify", "reason": "no credentials"}

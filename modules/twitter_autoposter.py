@@ -35,7 +35,7 @@ TELEGRAM_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TELEGRAM_CHAT    = _TG_CHANNEL or ""
 SHOPIFY_DOMAIN   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN    = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN    = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 
 DATA_DIR = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data" / "twitter"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)

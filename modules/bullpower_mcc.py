@@ -89,7 +89,7 @@ async def check_railway() -> Dict:
 
 async def check_shopify() -> Dict:
     domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-    token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
     version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not domain or not token:
         return {"platform": "shopify", "ok": False, "error": "credentials missing"}
@@ -362,7 +362,7 @@ async def run_full_cycle() -> Dict:
 async def get_shopify_metrics() -> Dict:
     """Holt Shopify Store-Metriken für das Dashboard."""
     domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-    token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    token  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
     version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not domain or not token:
         return {"ok": False, "error": "credentials missing"}
@@ -437,7 +437,7 @@ async def get_title_germanizer_status() -> Dict:
 async def get_collection_status() -> Dict:
     """Holt Smart Collection Statistiken."""
     domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-    token  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    token  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
     version = os.getenv("SHOPIFY_API_VERSION", "2026-04")
     if not domain or not token:
         return {"ok": False, "total": 0, "published": 0}

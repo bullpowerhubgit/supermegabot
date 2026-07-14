@@ -208,7 +208,7 @@ async def auto_publish_blog_post(keyword: str, shop_domain: str = "") -> dict:
     from modules.ai_client import ai_complete
     
     domain = shop_domain or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-    token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+    token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
     affiliate = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
     
     if not domain or not token:

@@ -18,7 +18,7 @@ log = logging.getLogger("QuantumSelfImprover")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 BASE_URL       = os.getenv("RAILWAY_PUBLIC_DOMAIN",
-                           "supermegabot-production.up.railway.app")
+                           os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/").replace("https://",""))
 
 
 async def _telegram(msg: str) -> None:

@@ -15,7 +15,7 @@ import aiohttp
 log = logging.getLogger("TitleGermanizer")
 
 SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOP_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOP_TOKEN  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 DATA_DIR    = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))

@@ -25,7 +25,7 @@ STATE = Path(__file__).parent.parent / 'data' / 'platform_fix_state.json'
 FB_TOKEN    = os.getenv("FACEBOOK_PAGE_TOKEN_AIITEC") or os.getenv("META_ACCESS_TOKEN", "")
 FB_PAGE_ID  = os.getenv("FACEBOOK_PAGE_ID", "1016738738178786")
 IG_ID       = os.getenv("INSTAGRAM_ACCOUNT_ID", "17841478315197796")
-SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
 SHOP_TOKEN  = os.getenv("SHOPIFY_ADMIN_API_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOP_VER    = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 STRIPE_KEY  = os.getenv("STRIPE_SECRET_KEY", "")
@@ -35,7 +35,7 @@ TG_CHAT     = os.getenv("TELEGRAM_CHAT_ID", "")
 KLAVIYO_KEY = os.getenv("KLAVIYO_API_KEY_AIITEC") or os.getenv("KLAVIYO_API_KEY", "")
 SUPA_URL    = os.getenv("SUPABASE_URL", "")
 SUPA_KEY    = os.getenv("SUPABASE_ANON_KEY", "")
-RAILWAY_URL = "https://supermegabot-production.up.railway.app"
+RAILWAY_URL = os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/")
 
 _FIX_LOG: list[dict] = []
 

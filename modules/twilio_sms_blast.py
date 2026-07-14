@@ -19,7 +19,7 @@ TO_NUMBER    = os.getenv("TWILIO_VERIFIED_TO", "+4917622890860")
 _TWILIO_URL  = f"https://api.twilio.com/2010-04-01/Accounts/{ACCOUNT_SID}/Messages.json"
 
 STORE_URL    = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
-PROD_URL     = "https://supermegabot-production.up.railway.app"
+PROD_URL = os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/")
 
 
 async def _send_sms(body: str, to: str = None) -> dict:
@@ -86,7 +86,7 @@ async def run_sms_promo_blast(promo_text: str = None) -> dict:
     """Send a promotional SMS."""
     if not promo_text:
         promo_text = (
-            f"🔥 DEAL ALERT von autopilot-store-suite-fmbka.myshopify.com!\n"
+            f"🔥 DEAL ALERT von ineedit.com.co!\n"
             f"Heute: Top-Produkte zu besten Preisen.\n"
             f"Schau jetzt rein: {STORE_URL}"
         )

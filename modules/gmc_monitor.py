@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # Config aus .env — read lazily inside functions so dotenv changes are always picked up
 GMC_MERCHANT_ID = os.getenv("GMC_MERCHANT_ID", "5813214419")
-SHOPIFY_SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+SHOPIFY_SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
 
 def _shopify_token() -> str:
     """Always read fresh from env so dotenv loaded after import is honoured."""

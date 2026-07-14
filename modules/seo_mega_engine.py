@@ -30,7 +30,7 @@ _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT         = _TG_CHANNEL or ""
 SITE_URL        = os.getenv("SITE_URL", "https://supermegabot-production.up.railway.app")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 INDEXNOW_KEY    = os.getenv("INDEXNOW_API_KEY", hashlib.md5(SITE_URL.encode()).hexdigest()[:32])
 

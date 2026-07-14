@@ -19,7 +19,7 @@ from typing import Optional
 
 log = logging.getLogger("BrutusCloneIntegrator")
 
-SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL     = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 TELEGRAM_ID  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 

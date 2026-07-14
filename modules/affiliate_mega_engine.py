@@ -21,7 +21,7 @@ DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/
 AFFILIATE_ID  = os.getenv("DS24_AFFILIATE_ID", "user37405262")
 EBAY_CAMPAIGN = os.getenv("EBAY_CAMPAIGN_ID", "")
 EBAY_AFFILIATE = os.getenv("EBAY_AFFILIATE_ID", "")
-SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 
 AMAZON_KEYWORDS = [
     "smart home starter kit", "wireless earbuds 2026", "usb c hub laptop",

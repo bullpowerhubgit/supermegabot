@@ -18,7 +18,7 @@ import aiohttp
 log = logging.getLogger("ShopifyBlogAuto")
 
 SHOP_DOMAIN   = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOP_TOKEN    = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOP_TOKEN    = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 API_VERSION   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 GEMINI_KEY    = os.getenv("GEMINI_API_KEY", "")

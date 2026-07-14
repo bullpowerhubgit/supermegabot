@@ -279,7 +279,7 @@ async def enroll_new_customers() -> dict:
     try:
         import aiohttp
         shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-        token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
         api_ver = os.getenv("SHOPIFY_API_VERSION", "2026-04")
         if not shop_domain:
             return {"enrolled": 0, "error": "SHOPIFY_SHOP_DOMAIN not set"}

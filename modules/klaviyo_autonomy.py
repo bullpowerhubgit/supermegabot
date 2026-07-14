@@ -21,7 +21,7 @@ BASE = "https://a.klaviyo.com/api"
 REVISION = "2024-02-15"
 
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 
@@ -219,7 +219,7 @@ async def send_product_blast(products: list) -> dict:
     if not products:
         return {"ok": False, "error": "no products"}
     try:
-        shop_url = f"https://{SHOP}" if SHOP else os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+        shop_url = f"https://{SHOP}" if SHOP else os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
         product_list = "\n".join(
             f"- {p.get('title', 'Product')}"
             for p in products[:5]

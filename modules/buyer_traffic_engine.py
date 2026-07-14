@@ -30,7 +30,7 @@ _DB = _DATA / "buyer_traffic.db"
 
 SHOP_URL = "https://ineedit.com.co"
 SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "").replace("https://", "")
-SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2024-04")
 
 ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")

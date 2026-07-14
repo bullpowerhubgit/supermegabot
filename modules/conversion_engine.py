@@ -37,7 +37,7 @@ _STATE_FILE = _DATA_DIR / "conversion_engine.json"
 def _shopify_cfg() -> Tuple[str, str, str]:
     """Gibt (token, domain, version) zurück oder wirft ValueError."""
     token = (
-        os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
         or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
     )
     domain = (

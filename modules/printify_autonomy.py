@@ -239,7 +239,7 @@ Antworte mit JSON-Array:
             created += 1
             try:
                 from modules.brutus_core import fire
-                shop_url = f"https://{SHOP}" if SHOP else os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+                shop_url = f"https://{SHOP}" if SHOP else os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
                 await fire(
                     f"Neues POD Produkt: {concept.get('title', 'T-Shirt')}",
                     f"{concept.get('description', '')} Jetzt im Shop erhältlich!",
@@ -257,7 +257,7 @@ Antworte mit JSON-Array:
         asyncio.create_task(bc.fire(
             "Printify Produkte erstellt",
             f"{created} neue POD-Produkte erstellt und zu Shopify publiziert",
-            f"https://autopilot-store-suite-fmbka.myshopify.com"
+            f"https://ineedit.com.co"
         ))
     except Exception as _e:
         log.debug("suppressed: %s", _e)

@@ -31,7 +31,7 @@ DRAGON_BASE    = f"https://{DRAGON_SERVER}.api.mailchimp.com/3.0"
 DRAGON_FROM    = os.getenv("MAILCHIMP_DRAGON_EMAIL", "dragonadnp@gmail.com")
 
 SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 
 
@@ -144,7 +144,7 @@ async def send_product_campaign(products: list) -> dict:
             f"- {p.get('title', p.get('name', 'Product'))}: €{p.get('price', p.get('amount', ''))}"
             for p in products[:5]
         )
-        shop_url = f"https://{SHOP}" if SHOP else "https://autopilot-store-suite-fmbka.myshopify.com"
+        shop_url = f"https://{SHOP}" if SHOP else "https://ineedit.com.co"
         prompt = f"""Schreibe einen HTML-Newsletter (Mailchimp-kompatibel) auf Deutsch für diese Produkte:
 
 {product_list}
@@ -192,7 +192,7 @@ async def send_weekly_digest() -> dict:
     """Shopify stats + DS24 revenue → AI email → send to list."""
     try:
         shopify = await _get_shopify_stats()
-        shop_url = f"https://{SHOP}" if SHOP else "https://autopilot-store-suite-fmbka.myshopify.com"
+        shop_url = f"https://{SHOP}" if SHOP else "https://ineedit.com.co"
 
         prompt = f"""Schreibe einen wöchentlichen HTML-Newsletter-Digest auf Deutsch für BullPowerHub:
 
@@ -323,7 +323,7 @@ async def run_dragon_campaign(topic: str = "") -> dict:
         return {"ok": False, "error": "Mailchimp automation disabled — TOS violation fix pending"}
     try:
         ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
-        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+        shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
         shop_url = f"https://{shop}"
         subject_topic = topic or "KI-Business Automatisierung 2026"
 

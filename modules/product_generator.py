@@ -28,7 +28,7 @@ import aiohttp
 log = logging.getLogger("ProductGenerator")
 
 SHOP    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 VER     = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 BASE    = lambda p: f"https://{SHOP}/admin/api/{VER}/{p}"
 HDR     = lambda: {"X-Shopify-Access-Token": TOKEN, "Content-Type": "application/json"}

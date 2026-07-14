@@ -26,9 +26,9 @@ log = logging.getLogger("MailchimpMassCampaigns")
 API_KEY    = os.getenv("MAILCHIMP_API_KEY", "")
 SERVER     = os.getenv("MAILCHIMP_SERVER", "us7")
 LIST_ID    = os.getenv("MAILCHIMP_LIST_ID", "")
-FROM_EMAIL = os.getenv("MAILCHIMP_FROM_EMAIL", os.getenv("FROM_EMAIL", "hello@autopilot-store-suite-fmbka.myshopify.com"))
+FROM_EMAIL = os.getenv("MAILCHIMP_FROM_EMAIL", os.getenv("FROM_EMAIL", "hello@ineedit.com.co"))
 FROM_NAME  = os.getenv("MAILCHIMP_FROM_NAME", "BullPowerHub")
-SHOP_URL   = os.getenv("SHOPIFY_SHOP_URL", "https://autopilot-store-suite-fmbka.myshopify.com")
+SHOP_URL   = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
 BASE       = f"https://{SERVER}.api.mailchimp.com/3.0"
 
 

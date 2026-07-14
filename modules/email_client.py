@@ -4,6 +4,7 @@ Zentraler Email-Client — Resend (primär) → Klaviyo → SMTP Fallback.
 Ersetzt Mailchimp (beide Konten disabled) und SendGrid (Credits erschöpft).
 """
 from __future__ import annotations
+import os
 import asyncio, logging, os
 import aiohttp
 

@@ -17,7 +17,7 @@ log = logging.getLogger("SEODominator")
 
 ANTHROPIC       = os.getenv("ANTHROPIC_API_KEY", "")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 TG_TOKEN        = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")

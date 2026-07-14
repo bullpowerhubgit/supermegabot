@@ -20,7 +20,7 @@ log = logging.getLogger("MassContentBlaster")
 
 DB_PATH = Path(os.getenv("DATA_DIR", "/tmp/supermegabot")) / "mass_content.db"
 DS24_LINK = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
-SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'autopilot-store-suite-fmbka.myshopify.com')}")
+SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'ineedit.com.co')}")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL    = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → must be public channel
 # SAFETY: never send to private chat - only to explicitly set public channel

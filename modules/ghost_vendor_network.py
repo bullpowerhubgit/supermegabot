@@ -109,7 +109,7 @@ class GhostVendorNetwork:
 
         # Quell-Shop (ineedit)
         self.source_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
-        self.source_token = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+        self.source_token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 
         # KI
         self.anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
