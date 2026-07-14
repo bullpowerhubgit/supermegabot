@@ -6999,6 +6999,60 @@ async def task_free_api_discovery() -> str:
         return f"FreeAPI-Discovery Fehler: {e}"
 
 
+async def task_traffic_accelerator() -> str:
+    """Traffic Accelerator: alle Traffic-Kanäle auf Maximale Leistung (alle 2h)."""
+    try:
+        from modules.traffic_accelerator import run_traffic_cycle
+        result = await run_traffic_cycle()
+        actions = result.get("total_actions", 0)
+        elapsed = result.get("elapsed_s", 0)
+        topics  = result.get("topics", [])
+        topic   = topics[0][:35] if topics else "?"
+        return f"TrafficAccelerator: {actions} Aktionen in {elapsed}s | {topic}"
+    except Exception as e:
+        return f"TrafficAccelerator Fehler: {e}"
+
+
+async def task_autonomous_engine() -> str:
+    """Autonomous Engine: analysiert KPIs + handelt autonom (alle 2h)."""
+    try:
+        from modules.autonomous_engine import run_autonomous_cycle
+        result = await run_autonomous_cycle()
+        actions = result.get("actions_taken", 0)
+        elapsed = result.get("elapsed_s", 0)
+        health  = result.get("diagnostics", {}).get("health", "?")
+        return f"AutonomousEngine: {actions} Entscheidungen in {elapsed}s | health={health}"
+    except Exception as e:
+        return f"AutonomousEngine Fehler: {e}"
+
+
+async def task_traffic_turbo() -> str:
+    """Traffic Turbo: nur direkte Revenue-Tasks, Wave 1 (tägl. Tagesstart)."""
+    try:
+        from modules.traffic_accelerator import run_traffic_turbo
+        result = await run_traffic_turbo()
+        ok = result.get("steps_ok", 0)
+        total = result.get("steps_total", 0)
+        return f"TrafficTurbo: {ok}/{total} OK"
+    except Exception as e:
+        return f"TrafficTurbo Fehler: {e}"
+
+
+async def task_aiact_compliance_check() -> str:
+    """AIACT-Pro EU AI Act Compliance Check für alle SuperMegaBot-Systeme (alle 6h)."""
+    try:
+        from modules.aiact_pro_bridge import run_compliance_check
+        result = await run_compliance_check()
+        compliance = result.get("compliance", {})
+        total = compliance.get("total_systems", 0)
+        high = compliance.get("high_risk_count", 0)
+        if not compliance.get("ok"):
+            return "AIACT-Pro offline (lokal starten für Compliance-Checks)"
+        return f"AIACT Compliance: {total} Systeme, {high} Hochrisiko"
+    except Exception as e:
+        return f"AIACT Compliance Fehler: {e}"
+
+
 async def task_rotating_buyer_prospector() -> str:
     """Rotating Buyer Prospector: jeder Lauf andere Nische, sucht Firmen + sendet Emails."""
     try:
@@ -7555,6 +7609,12 @@ TASKS = [
     ("traffic_maximizer_pm",      task_traffic_maximizer,            28800, 4500),  # 8h+offset — zweiter täglicher Slot (Nachmittag)
     ("meta_ads_launch",           task_meta_ads_launch,             604800, 1800),  # 1×/Woche — Meta Retargeting Kampagne starten
     ("meta_ads_optimize",         task_meta_ads_optimize,            14400, 2400),  # 4h   — Meta Ads: CTR prüfen + Budget anpassen
+    # ── TRAFFIC ACCELERATOR + AUTONOMOUS ENGINE ───────────────────────────────
+    ("traffic_accelerator",       task_traffic_accelerator,           7200,   60),  # 2h  — Alle Traffic-Quellen auf Maximum
+    ("autonomous_engine",         task_autonomous_engine,             7200,  120),  # 2h  — Autonome KPI-Analyse + Handlung
+    ("traffic_turbo_daily",       task_traffic_turbo,                86400,  180),  # tägl. — Turbo Wave 1 zum Tagesstart
+    # ── AIACT-PRO BRIDGE — Compliance Automation ─────────────────────────────
+    ("aiact_compliance_check",    task_aiact_compliance_check,       21600, 9500),  # 6h — EU AI Act Compliance Check
 ]
 
 
