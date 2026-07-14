@@ -1,5 +1,23 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-14 v35 — META ADS LIVE! 🎯**
+**Stand: 2026-07-14 v36 — VOLLAUTONOMES INCOME-SYSTEM LIVE!**
+
+## ✅ v36 — VOLLAUTONOMES INCOME-SYSTEM LIVE
+
+- money_cycle: 30min (höchste Priorität)
+- revenue_watchdog: 30min
+- sales_funnel_closer: 30min
+- roas_optimizer: 1h Live-API
+- ds24_income_blaster: 1h
+- email_drip_followup: 1h
+- income_master_engine: 1h
+- lead_capture_machine: 2h
+- google_shopping_feed: 6h
+- abandoned_cart_emails: 15min
+- Meta Ads: €20/Tag PURCHASE+Advantage+ DACH live
+- Telegram-Report alle 30min automatisch
+
+---
+
 
 ## 🔴 RAILWAY DEPLOY MANUELL STARTEN (1x)
 
