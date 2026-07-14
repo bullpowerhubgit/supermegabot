@@ -12504,7 +12504,7 @@ async def create_app():
     log.info("Agent Coordinator routes registered (/api/agents/coordinator, /api/agents/messages, /api/agents/broadcast)")
 
     # ── Mega Status ────────────────────────────────────────────────────────────
-    async def handle_mega_status(request):
+    async def handle_mega_command_status(request):
         import json as _json
         from pathlib import Path as _Path
         results = {}
@@ -12546,7 +12546,7 @@ async def create_app():
             content_type="application/json"
         )
 
-    app.router.add_get("/api/mega-status", handle_mega_status)
+    app.router.add_get("/api/mega-status", handle_mega_command_status)
     log.info("Mega Status route registered (/api/mega-status)")
 
     # Start hourly lead follow-up reminder background task
