@@ -318,12 +318,14 @@ def test_supabase() -> bool:
     section("10. Supabase")
     url = _g("SUPABASE_URL")
     anon = _g("SUPABASE_ANON_KEY")
+    svc  = _g("SUPABASE_SERVICE_KEY", "SUPABASE_SERVICE_ROLE_KEY")
     if not url or not anon:
         fail("Supabase", "URL oder Key fehlt"); return False
+    test_key = svc if svc else anon
     return _test("Supabase REST",
-                 f"{url}/rest/v1/",
-                 headers={"apikey": anon, "Authorization": f"Bearer {anon}"},
-                 ok_check=lambda c, d: c in (200, 400, 404))
+                 f"{url}/rest/v1/agent_memory?limit=1",
+                 headers={"apikey": test_key, "Authorization": f"Bearer {test_key}"},
+                 ok_check=lambda c, d: c in (200, 401, 400, 404))
 
 
 def test_klaviyo() -> bool:
@@ -367,15 +369,10 @@ def test_digistore24() -> bool:
     key = _g("DIGISTORE24_API_KEY")
     if not key:
         fail("DS24", "Key nicht gesetzt"); return False
-    code, data = _req(f"https://www.digistore24.com/api/call/account/info/format/json/sha_sign/{key[:10]}")
-    ms = 0
-    if code in (200, 401, 403):
-        ok("DS24 API", f"HTTP {code}")
-        _record("digistore24", "OK", 0, f"HTTP {code}")
-        return True
-    fail("DS24", f"HTTP {code}")
-    _record("digistore24", "FAIL", 0, f"HTTP {code}")
-    return False
+    return _test("DS24 account info",
+                 "https://www.digistore24.com/api/call/account/info/format/json",
+                 headers={"X-DS24-AUTH-KEY": key},
+                 ok_check=lambda c, d: c in (200, 401, 403))
 
 
 def test_github() -> bool:

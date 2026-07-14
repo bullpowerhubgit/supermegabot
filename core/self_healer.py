@@ -146,7 +146,7 @@ AUTO_FIXES = {
     "high_ram": {
         "detect": _detect_high_ram,
         "fix_fn": _free_ram,
-        "description": "RAM überlastet → sync ausgeführt",
+        "description": "RAM überlastet → GC + Linux page-cache drop versucht",
     },
     "zombie_processes": {
         "detect": _detect_zombies,

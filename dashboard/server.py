@@ -11584,6 +11584,54 @@ async def create_app():
     app.router.add_get("/api/free-apis/best-ai", handle_free_apis_best_ai)
     log.info("Free API Hunter routes registered (/api/free-apis/*)")
 
+    # Rotating Buyer Prospector routes
+    async def handle_prospector_run(request):
+        """POST /api/prospector/run — Startet sofort einen Prospecting-Lauf."""
+        try:
+            data = await request.json() if request.content_length else {}
+            emails_per_run = int(data.get("emails_per_run", 15))
+            from modules.rotating_buyer_prospector import run_prospecting_cycle
+            asyncio.create_task(_run_prospector_bg(emails_per_run))
+            return web.json_response({"ok": True, "status": "started", "emails_per_run": emails_per_run})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def _run_prospector_bg(emails_per_run: int):
+        try:
+            from modules.rotating_buyer_prospector import run_prospecting_cycle
+            await run_prospecting_cycle(emails_per_run=emails_per_run)
+        except Exception as e:
+            log.error("Prospector bg task failed: %s", e)
+
+    async def handle_prospector_stats(request):
+        """GET /api/prospector/stats — Zeigt Gesamt-Statistik."""
+        try:
+            from modules.rotating_buyer_prospector import get_stats
+            stats = await get_stats()
+            return web.json_response({"ok": True, **stats})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    async def handle_prospector_niches(request):
+        """GET /api/prospector/niches — Liste aller 60 Nischen + Status."""
+        try:
+            from modules.rotating_buyer_prospector import NICHES, _db
+            con = _db()
+            try:
+                rows = con.execute("SELECT niche_id, MAX(ran_at) as last FROM niche_rotation GROUP BY niche_id").fetchall()
+                used = {r["niche_id"]: r["last"] for r in rows}
+            finally:
+                con.close()
+            niches_out = [{"id": n["id"], "de": n["de"], "last_used": used.get(n["id"])} for n in NICHES]
+            return web.json_response({"ok": True, "niches": niches_out, "total": len(NICHES)})
+        except Exception as e:
+            return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+    app.router.add_post("/api/prospector/run",    handle_prospector_run)
+    app.router.add_get("/api/prospector/stats",   handle_prospector_stats)
+    app.router.add_get("/api/prospector/niches",  handle_prospector_niches)
+    log.info("Rotating Buyer Prospector routes registered (/api/prospector/*)")
+
     # Start hourly lead follow-up reminder background task
     asyncio.create_task(_run_followup_loop())
     log.info("Lead follow-up reminder task started")

@@ -48,8 +48,8 @@ OLLAMA_HOST        = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL       = os.getenv("OLLAMA_MODEL", "gemma4:latest")
 TELEGRAM_TOKEN     = os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1") or os.getenv("TELEGRAM_BOT_TOKEN_2") or ""
 TELEGRAM_CHAT_ID   = os.getenv("TELEGRAM_CHAT_ID", "")
-SHOPIFY_STORE_URL  = os.getenv("SHOPIFY_STORE_URL", "")
-SHOPIFY_ACCESS_TOK = os.getenv("SHOPIFY_ACCESS_TOKEN", "")
+SHOPIFY_STORE_URL  = os.getenv("SHOPIFY_SHOP_DOMAIN", os.getenv("SHOPIFY_STORE_URL", ""))
+SHOPIFY_ACCESS_TOK = os.getenv("SHOPIFY_ADMIN_API_TOKEN", os.getenv("SHOPIFY_ACCESS_TOKEN", ""))
 
 BACKUPS_DIR = HOME_DIR / "backups"
 BACKUPS_DIR.mkdir(exist_ok=True)
@@ -779,10 +779,14 @@ class RudiAgents:
 
         if not SHOPIFY_STORE_URL or not SHOPIFY_ACCESS_TOK:
             result["status"] = "skipped"
-            result["reason"] = "SHOPIFY_STORE_URL oder SHOPIFY_ACCESS_TOKEN nicht gesetzt"
+            result["reason"] = "SHOPIFY_SHOP_DOMAIN oder SHOPIFY_ADMIN_API_TOKEN nicht gesetzt"
             return result
 
-        url = SHOPIFY_STORE_URL.rstrip("/") + "/admin/api/2024-10/shop.json"
+        api_ver = os.getenv("SHOPIFY_API_VERSION", "2026-04")
+        shop_base = SHOPIFY_STORE_URL.rstrip("/")
+        if not shop_base.startswith("http"):
+            shop_base = "https://" + shop_base
+        url = shop_base + f"/admin/api/{api_ver}/shop.json"
         headers = {
             "X-Shopify-Access-Token": SHOPIFY_ACCESS_TOK,
             "Content-Type": "application/json",
