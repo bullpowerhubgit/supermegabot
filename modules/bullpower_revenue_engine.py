@@ -84,7 +84,11 @@ def _shopify_url(path: str) -> str:
 
 
 async def _shopify_get(session: aiohttp.ClientSession, path: str) -> dict:
-    async with session.get(_shopify_url(path), headers=_shopify_headers()) as r:
+    async with session.get(
+        _shopify_url(path),
+        headers=_shopify_headers(),
+        timeout=aiohttp.ClientTimeout(total=60, connect=15),
+    ) as r:
         return await r.json()
 
 
