@@ -12167,6 +12167,105 @@ async def create_app():
     app.router.add_post("/api/roas/run",      handle_roas_run)
     log.info("Meta ROAS Max routes registered (/api/roas/*)")
 
+    # ── Income Automation: Shopping Feed + Drip + Cart + Price Compare + Watchdog ──
+
+    async def handle_shopping_feed_xml(req: web.Request) -> web.Response:
+        try:
+            from modules.google_shopping_feed import generate_feed
+            xml = await generate_feed()
+            return web.Response(text=xml, content_type="application/xml", charset="utf-8")
+        except Exception as e:
+            return web.Response(text=f"<error>{e}</error>", content_type="application/xml", status=500)
+
+    async def handle_shopping_feed_stats(req: web.Request) -> web.Response:
+        try:
+            from modules.google_shopping_feed import get_feed_stats
+            return web.json_response(await get_feed_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_drip_run(req: web.Request) -> web.Response:
+        try:
+            from modules.email_drip_followup import run_drip_cycle
+            msg = await run_drip_cycle()
+            return web.json_response({"ok": True, "result": msg})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_drip_stats(req: web.Request) -> web.Response:
+        try:
+            from modules.email_drip_followup import get_drip_stats
+            return web.json_response(await get_drip_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_cart_recovery_run(req: web.Request) -> web.Response:
+        try:
+            from modules.abandoned_cart_emails import run_cart_recovery_cycle
+            msg = await run_cart_recovery_cycle()
+            return web.json_response({"ok": True, "result": msg})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_cart_recovery_stats(req: web.Request) -> web.Response:
+        try:
+            from modules.abandoned_cart_emails import get_cart_stats
+            return web.json_response(await get_cart_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_price_feeds_refresh(req: web.Request) -> web.Response:
+        try:
+            from modules.price_comparison_feeds import refresh_all_feeds
+            return web.json_response(await refresh_all_feeds())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_idealo_feed(req: web.Request) -> web.Response:
+        try:
+            from modules.price_comparison_feeds import generate_idealo_csv
+            csv_data = await generate_idealo_csv()
+            return web.Response(text=csv_data, content_type="text/csv", charset="utf-8",
+                                headers={"Content-Disposition": "attachment; filename=idealo_feed.csv"})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_pricerunner_feed(req: web.Request) -> web.Response:
+        try:
+            from modules.price_comparison_feeds import generate_pricerunner_xml
+            xml = await generate_pricerunner_xml()
+            return web.Response(text=xml, content_type="application/xml", charset="utf-8")
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_watchdog_run(req: web.Request) -> web.Response:
+        try:
+            from modules.revenue_watchdog import run_watchdog_cycle
+            msg = await run_watchdog_cycle()
+            return web.json_response({"ok": True, "result": msg})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_watchdog_stats(req: web.Request) -> web.Response:
+        try:
+            from modules.revenue_watchdog import get_watchdog_stats
+            return web.json_response(await get_watchdog_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_get( "/feed/google-shopping.xml",  handle_shopping_feed_xml)
+    app.router.add_get( "/api/shopping-feed/stats",   handle_shopping_feed_stats)
+    app.router.add_post("/api/email-drip/run",         handle_drip_run)
+    app.router.add_get( "/api/email-drip/stats",       handle_drip_stats)
+    app.router.add_post("/api/cart-recovery/run",      handle_cart_recovery_run)
+    app.router.add_get( "/api/cart-recovery/stats",    handle_cart_recovery_stats)
+    app.router.add_post("/api/price-feeds/refresh",    handle_price_feeds_refresh)
+    app.router.add_get( "/feed/idealo.csv",            handle_idealo_feed)
+    app.router.add_get( "/feed/pricerunner.xml",       handle_pricerunner_feed)
+    app.router.add_post("/api/watchdog/run",           handle_watchdog_run)
+    app.router.add_get( "/api/watchdog/stats",         handle_watchdog_stats)
+    log.info("Income Automation routes registered (shopping/drip/cart/price/watchdog)")
+
     # ── LinkedIn DM Outreach ───────────────────────────────────────────────────
     async def handle_linkedin_outreach(request):
         """POST /api/linkedin/outreach — 50 LinkedIn DMs an DACH E-Commerce Entscheider."""

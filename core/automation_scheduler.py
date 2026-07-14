@@ -6985,6 +6985,56 @@ async def task_zvg_hourly() -> str:
         return f"ZVG Fehler: {e}"
 
 
+async def task_google_shopping_feed() -> str:
+    """Google Shopping XML Feed aktualisieren (alle 6h)."""
+    try:
+        from modules.google_shopping_feed import generate_feed
+        xml = await generate_feed()
+        count = xml.count("<item>")
+        return f"Shopping Feed: {count} Produkte"
+    except Exception as e:
+        return f"Shopping Feed Fehler: {e}"
+
+
+async def task_email_drip() -> str:
+    """7-Tage B2B Drip-Sequenz — Enroll + Send (alle 3h)."""
+    try:
+        from modules.email_drip_followup import run_drip_cycle
+        return await run_drip_cycle()
+    except Exception as e:
+        return f"Email Drip Fehler: {e}"
+
+
+async def task_cart_recovery() -> str:
+    """Abandoned Cart Recovery Emails (stündlich)."""
+    try:
+        from modules.abandoned_cart_emails import run_cart_recovery_cycle
+        return await run_cart_recovery_cycle()
+    except Exception as e:
+        return f"Cart Recovery Fehler: {e}"
+
+
+async def task_price_feeds() -> str:
+    """Idealo / PriceRunner / Kelkoo Feeds aktualisieren (alle 6h)."""
+    try:
+        from modules.price_comparison_feeds import refresh_all_feeds
+        res = await refresh_all_feeds()
+        return (f"Price Feeds: Idealo {res.get('idealo',0)}, "
+                f"PriceRunner {res.get('pricerunner',0)}, "
+                f"Kelkoo {res.get('kelkoo',0)} Produkte")
+    except Exception as e:
+        return f"Price Feeds Fehler: {e}"
+
+
+async def task_revenue_watchdog() -> str:
+    """Revenue Watchdog: misst Einnahmen, triggert Korrekturen (alle 30min)."""
+    try:
+        from modules.revenue_watchdog import run_watchdog_cycle
+        return await run_watchdog_cycle()
+    except Exception as e:
+        return f"Revenue Watchdog Fehler: {e}"
+
+
 async def task_roas_optimizer() -> str:
     """ROAS Optimizer: Live Meta Insights, Auto-Pause/Scale (alle 4h)."""
     try:
@@ -7255,6 +7305,51 @@ async def task_meta_ads_launch() -> str:
         return f"MetaAds launch: {result.get('message', result)}"
     except Exception as e:
         return f"MetaAds launch error: {e}"
+
+
+# ── Income Master Tasks ───────────────────────────────────────────────────────
+
+async def task_income_master() -> str:
+    try:
+        from modules.income_master_engine import run_income_cycle
+        r = await run_income_cycle()
+        total = r.get("total_eur", 0) or r.get("total", 0)
+        return f"income_master: {total:.2f}€ heute"
+    except Exception as e:
+        return f"income_master error: {e}"
+
+async def task_lead_capture() -> str:
+    try:
+        from modules.lead_capture_machine import run_lead_capture_cycle
+        r = await run_lead_capture_cycle()
+        return f"lead_capture: {r.get('new_leads', 0)} neue Leads (gesamt {r.get('total_leads', 0)})"
+    except Exception as e:
+        return f"lead_capture error: {e}"
+
+async def task_sales_funnel() -> str:
+    try:
+        from modules.sales_funnel_closer import run_funnel_cycle
+        r = await run_funnel_cycle()
+        return f"sales_funnel: {r}"
+    except Exception as e:
+        return f"sales_funnel error: {e}"
+
+async def task_ds24_income_blast() -> str:
+    try:
+        from modules.ds24_income_blaster import run_ds24_blast
+        r = await run_ds24_blast()
+        posts = r.get("posts", 0) if isinstance(r, dict) else 0
+        return f"ds24_blast: {posts} Posts"
+    except Exception as e:
+        return f"ds24_blast error: {e}"
+
+async def task_roas_cycle() -> str:
+    try:
+        from modules.roas_optimizer import run_roas_cycle
+        r = await run_roas_cycle()
+        return f"roas: {r.get('roas', 0):.2f}x | {len(r.get('scaled', []))} skaliert | {len(r.get('paused', []))} pausiert"
+    except Exception as e:
+        return f"roas_cycle error: {e}"
 
 
 # ── Task registry ────────────────────────────────────────────────────────────
@@ -7665,7 +7760,12 @@ TASKS = [
     # vat_oss_engine: zusammengeführt mit vat_oss_cycle (non_eu_vat_oss.py)
     ("gpsr_scan",                 task_gpsr_scan,                     43200, 9002),  # alle 12h — GPSR Compliance: Shopify-Produkte prüfen
     ("zvg_hourly",                task_zvg_hourly,                     3600, 9003),  # stündl. — ZVG Radar: neue Leads (hourly scan)
-    ("roas_optimizer",            task_roas_optimizer,                 3600, 9100),  # stündl. — Meta ROAS Live-Pull, Auto-Scale/Pause
+    ("revenue_watchdog",          task_revenue_watchdog,               1800,   30),  # 30min — Revenue Monitor + Auto-Korrekturen
+    ("cart_recovery",             task_cart_recovery,                  3600,  700),  # 1h   — Abandoned Cart 3-Email Sequenz
+    ("email_drip",                task_email_drip,                    10800,  600),  # 3h   — 7-Tage B2B Drip Follow-Up
+    ("google_shopping_feed",      task_google_shopping_feed,          21600,  500),  # 6h   — Google Shopping XML Feed
+    ("price_feeds",               task_price_feeds,                   21600,  800),  # 6h   — Idealo/PriceRunner/Kelkoo
+    ("roas_optimizer",            task_roas_optimizer,                 3600, 9100),  # 1h   — Meta ROAS Live-Pull, Auto-Scale/Pause
     ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
     ("meta_ads_optimize",         task_meta_ads_optimize,            86400, 9195),  # 24h — Meta Ads CTR/CPC Auto-Optimize
     ("free_api_hunter",           task_free_api_hunter,              43200, 9200),  # 12h — Suche + Cache kostenlose APIs
@@ -7694,6 +7794,12 @@ TASKS = [
     ("outreach_evening",          task_outreach_blast_evening,       28800, 4200),  # 8h   — 333 Emails Abend (+1h Versatz)
     # ── AIACT-PRO BRIDGE — Compliance Automation ─────────────────────────────
     ("aiact_compliance_check",    task_aiact_compliance_check,       21600, 9500),  # 6h — EU AI Act Compliance Check
+
+    ("income_master",            task_income_master,                 1800,   10),  # 30min — Live Revenue + alle Streams koordinieren
+    ("lead_capture",             task_lead_capture,                 21600,   50),  # 6h   — Lead-Magnet + Klaviyo + Mailchimp
+    ("sales_funnel",             task_sales_funnel,                  1800,   55),  # 30min — Stripe Onboarding + Email Queue
+    ("ds24_income_blast",        task_ds24_income_blast,             3600,   58),  # 1h   — DS24 Affiliate Blast alle Kanäle
+    ("roas_cycle",               task_roas_cycle,                    3600,   62),  # 1h   — Meta ROAS: scale winners, pause losers
 ]
 
 
