@@ -316,8 +316,8 @@ https://dist-pi-jet-78.vercel.app/
 """
 
     # Sende über aiitecbuuss@gmail.com
-    gmail_user = os.getenv("GMAIL_USER_4", "aiitecbuuss@gmail.com")
-    gmail_pwd  = os.getenv("GMAIL_APP_PASSWORD_4", "")
+    gmail_user = os.getenv("GMAIL_USER_5", "aiitecbuuss@gmail.com")
+    gmail_pwd  = os.getenv("GMAIL_APP_PASSWORD_5", "")
     if not gmail_pwd:
         log.warning("[AUTO-RESPONDER] Kein Gmail-Passwort für %s", gmail_user)
         return False

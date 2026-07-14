@@ -69,7 +69,6 @@ def _smtp_pool() -> List[Dict]:
         ("GMAIL_USER_5",         "GMAIL_APP_PASSWORD_5"),
         ("GMAIL_USER_1",         "GMAIL_APP_PASSWORD_1"),
         ("GMAIL_USER_2",         "GMAIL_APP_PASSWORD_2"),
-        ("GMAIL_USER_4",         "GMAIL_APP_PASSWORD_4"),
         ("GMAIL_USER_6",         "GMAIL_APP_PASSWORD_6"),
         ("GMAIL_USER_7",         "GMAIL_APP_PASSWORD_7"),
         ("GMAIL_USER_8",         "GMAIL_APP_PASSWORD_8"),

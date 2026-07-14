@@ -689,7 +689,6 @@ class EmailConversationAI:
             ("GMAIL_USER_1",          "GMAIL_APP_PASSWORD_1"),
             ("GMAIL_USER_2",          "GMAIL_APP_PASSWORD_2"),
             ("GMAIL_USER_3",          "GMAIL_APP_PASSWORD_3"),
-            ("GMAIL_USER_4",          "GMAIL_APP_PASSWORD_4"),
             ("GMAIL_USER_5",          "GMAIL_APP_PASSWORD_5"),
             ("GMAIL_USER_6",          "GMAIL_APP_PASSWORD_6"),
             ("GMAIL_USER_7",          "GMAIL_APP_PASSWORD_7"),
