@@ -7435,6 +7435,36 @@ async def task_conversion_optimizer():
         log.warning("task_conversion_optimizer: %s", e)
 
 
+# ── BullPower Revenue Engine Tasks ───────────────────────────────────────────
+
+async def task_bp_product_curation() -> str:
+    try:
+        from modules.bullpower_revenue_engine import run_product_curation
+        r = await run_product_curation()
+        return f"ProductCuration: {r.get('archived',0)} archiviert, {r.get('activated',0)} aktiviert, {r.get('scanned',0)} gescannt"
+    except Exception as e:
+        return f"ProductCuration Fehler: {e}"
+
+
+async def task_bp_roas_watchdog() -> str:
+    try:
+        from modules.bullpower_revenue_engine import run_roas_watchdog
+        r = await run_roas_watchdog()
+        return f"ROAS: {len(r.get('paused',[]))} pausiert, {len(r.get('ok',[]))} OK"
+    except Exception as e:
+        return f"ROAS Watchdog Fehler: {e}"
+
+
+async def task_bp_revenue_health() -> str:
+    try:
+        from modules.bullpower_revenue_engine import run_revenue_health
+        r = await run_revenue_health()
+        failed = r.get("failed", [])
+        return f"RevenueHealth: {r.get('status','?')} — {len(failed)} Probleme" + (f" ({', '.join(failed)})" if failed else "")
+    except Exception as e:
+        return f"RevenueHealth Fehler: {e}"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7892,8 +7922,12 @@ TASKS = [
     # ── REVENUE MAX ENGINE — TikTok + Orchestrator ────────────────────────────
     ("tiktok_ads_engine",        task_tiktok_ads_cycle,            14400,  360),  # 4h   — TikTok Ads Kampagnen + Insights
     ("revenue_orchestrator",     task_revenue_orchestrator_cycle,  21600,  420),  # 6h   — ROAS + Budget-Optimierung + Report
-    ("webhook_registration", task_webhook_registration, 86400, 120),   # daily
-    ("conversion_optimizer", task_conversion_optimizer, 21600, 200),   # 6h
+    ("webhook_registration",    task_webhook_registration,   86400,  120),  # daily
+    ("conversion_optimizer",    task_conversion_optimizer,   21600,  200),  # 6h
+    # ── BullPower Revenue Engine ─────────────────────────────────────────────
+    ("bp_product_curation",     task_bp_product_curation,    14400,  300),  # 4h — Smart-Home Produkte kuratieren, Junk archivieren
+    ("bp_roas_watchdog",        task_bp_roas_watchdog,        3600,  400),  # 1h — Meta Ads ROAS, schlechte Campaigns pausieren
+    ("bp_revenue_health",       task_bp_revenue_health,       7200,  500),  # 2h — Revenue Health Check alle Streams
 ]
 
 

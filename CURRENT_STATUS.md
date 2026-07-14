@@ -1,6 +1,20 @@
 # SuperMegaBot — CURRENT STATUS
 **Stand: 2026-07-14 23:05 CEST**
 
+## ✅ v42 — CRASH FIX: UnboundLocalError handle_mega_status
+
+### Deployed: d63d5e6b (via railway up, ~22:00 CEST)
+
+**Fixes diese Session:**
+1. ✅ server.py: `handle_mega_status` lokale Funktion in `create_app()` umbenannt zu `handle_mega_command_status` — verhindert Python-Scoping-Crash beim Startup
+2. ✅ email_ai_conversations.py: System/Notification-Emails blockiert (github, stripe, noreply etc.)
+3. ✅ gmail_accounts.py: nikolestimi@gmail.com + rudolf.sarkany@aitec.de entfernt
+4. ✅ Railway MCP + Skill installiert — `railway.app` Infrastruktur jetzt über MCP verwaltbar
+
+**Health:** `/health` ✅ | `/api/mega-status` ✅ | uptime fresh
+
+---
+
 ## ✅ v41 — DESKTOP ICON + START-SCRIPT FERTIG
 
 ### Deployed: a2862ccf (23:05 CEST)
