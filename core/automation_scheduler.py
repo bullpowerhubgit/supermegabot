@@ -7031,9 +7031,9 @@ async def task_traffic_turbo() -> str:
     try:
         from modules.traffic_accelerator import run_traffic_turbo
         result = await run_traffic_turbo()
-        ok = result.get("steps_ok", 0)
-        total = result.get("steps_total", 0)
-        return f"TrafficTurbo: {ok}/{total} OK"
+        actions = result.get("total_actions", 0)
+        elapsed = result.get("elapsed_s", 0)
+        return f"TrafficTurbo: {actions} Aktionen in {elapsed}s"
     except Exception as e:
         return f"TrafficTurbo Fehler: {e}"
 
@@ -7722,7 +7722,7 @@ class AutomationScheduler:
             return "PAUSED"
         t0 = time.monotonic()
         try:
-            result = await fn()
+            result = await asyncio.wait_for(fn(), timeout=300)
             ms = int((time.monotonic() - t0) * 1000)
             _log_run(name, True, result or "", ms)
             self._fail_counts[name] = 0  # reset on success
@@ -7743,7 +7743,7 @@ class AutomationScheduler:
             log.info(f"[{name}] retry in {backoff}s (fail #{fails})")
             await asyncio.sleep(backoff)
             try:
-                retry_result = await fn()
+                retry_result = await asyncio.wait_for(fn(), timeout=300)
                 self._fail_counts[name] = 0
                 return f"RECOVERED: {retry_result or 'OK'}"
             except Exception as e2:
