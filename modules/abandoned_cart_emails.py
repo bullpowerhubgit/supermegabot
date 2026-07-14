@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 # Config
 # ---------------------------------------------------------------------------
 
-DB_PATH = Path("/Users/rudolfsarkany/supermegabot/data/abandoned_carts.db")
+DB_PATH = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")) / "abandoned_carts.db"
 
 STEP_DELAYS = {
     1: 1 * 3600,       # 1 hour
@@ -514,7 +514,11 @@ async def run_cart_recovery_cycle() -> str:
     """
     Convenience wrapper: runs one full send cycle and returns a human-readable summary.
     """
-    result = await send_due_cart_emails()
+    from modules.distributed_lock import acquire_lock
+    async with acquire_lock("cart_recovery_cycle", ttl=20 * 60) as locked:
+        if not locked:
+            return "Cart-Recovery läuft bereits in anderem Terminal — übersprungen."
+        result = await send_due_cart_emails()
     return (
         f"Cart-Recovery-Zyklus abgeschlossen: "
         f"{result['sent']} E-Mails gesendet, "

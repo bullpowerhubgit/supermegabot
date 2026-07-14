@@ -131,18 +131,6 @@ def _build_smtp_pool() -> List[Dict]:
             "sent_today": 0,
             "last_reset": "",
         })
-    # Account 6: looopwave@gmail.com (500/day)
-    if _e("GMAIL_APP_PASSWORD_4"):
-        accounts.append({
-            "name":     "Looopwave",
-            "user":     _e("GMAIL_USER_4", "looopwave@gmail.com"),
-            "password": _e("GMAIL_APP_PASSWORD_4",""),
-            "host":     "smtp.gmail.com",
-            "port":     587,
-            "daily_limit": 500,
-            "sent_today": 0,
-            "last_reset": "",
-        })
     # Account 7: rudolf.sarkany.aiitec@gmail.com (500/day)
     if _e("GMAIL_APP_PASSWORD_7"):
         accounts.append({
