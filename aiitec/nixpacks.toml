@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["python311"]
+
+[phases.install]
+cmds = ["pip install -r requirements.txt 2>/dev/null || pip install aiohttp python-dotenv aiofiles stripe requests anthropic supabase apscheduler cryptography psutil"]
+
+[start]
+cmd = "python3 server.py"
