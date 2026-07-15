@@ -8035,10 +8035,17 @@ class AutomationScheduler:
             log.info("[%s] SOCIAL_POSTING_PAUSED=true — Task übersprungen", name)
             return "PAUSED"
         t0 = time.monotonic()
-        await asyncio.sleep(0)  # yield to event loop before acquiring slot
+        await asyncio.sleep(0)  # yield before acquiring slot
         async with self._semaphore:
+            # Run each task in a thread with its own event loop so any blocking
+            # smtplib/IMAP/scraping calls don't stall the main aiohttp event loop.
+            def _run_in_thread() -> str:
+                return asyncio.run(fn())
+
             try:
-                result = await asyncio.wait_for(fn(), timeout=300)
+                result = await asyncio.wait_for(
+                    asyncio.to_thread(_run_in_thread), timeout=300
+                )
                 ms = int((time.monotonic() - t0) * 1000)
                 _log_run(name, True, result or "", ms)
                 self._fail_counts[name] = 0  # reset on success
@@ -8059,7 +8066,9 @@ class AutomationScheduler:
                 log.info(f"[{name}] retry in {backoff}s (fail #{fails})")
                 await asyncio.sleep(backoff)
                 try:
-                    retry_result = await asyncio.wait_for(fn(), timeout=300)
+                    retry_result = await asyncio.wait_for(
+                        asyncio.to_thread(_run_in_thread), timeout=300
+                    )
                     self._fail_counts[name] = 0
                     return f"RECOVERED: {retry_result or 'OK'}"
                 except Exception as e2:
