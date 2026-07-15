@@ -37,9 +37,10 @@ log = logging.getLogger("YouTubeAutopilot")
 # ─── Konfiguration ────────────────────────────────────────────────────────────
 YT_API_KEY        = os.getenv("YOUTUBE_API_KEY", "")
 YT_CHANNEL_ID     = os.getenv("YOUTUBE_CHANNEL_ID", "")
-YT_CLIENT_ID      = os.getenv("YOUTUBE_CLIENT_ID", "")
-YT_CLIENT_SECRET  = os.getenv("YOUTUBE_CLIENT_SECRET", "")
-YT_REFRESH_TOKEN  = os.getenv("YOUTUBE_REFRESH_TOKEN", "")
+# Fallback: YOUTUBE_* Vars → GOOGLE_* Vars (falls nur Google-OAuth konfiguriert)
+YT_CLIENT_ID      = os.getenv("YOUTUBE_CLIENT_ID", "") or os.getenv("GOOGLE_CLIENT_ID", "")
+YT_CLIENT_SECRET  = os.getenv("YOUTUBE_CLIENT_SECRET", "") or os.getenv("GOOGLE_CLIENT_SECRET", "")
+YT_REFRESH_TOKEN  = os.getenv("YOUTUBE_REFRESH_TOKEN", "") or os.getenv("GOOGLE_REFRESH_TOKEN", "")
 YT_SA_CREDS       = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "credentials/yt-tracker-sa.json")
 
 OPENAI_KEY        = os.getenv("OPENAI_API_KEY", "")
@@ -540,14 +541,36 @@ def _create_video(frames_dir: Path, audio_path: Path | None, out_path: Path) -> 
 
 # ─── YouTube OAuth2: Access Token ────────────────────────────────────────────
 def _get_access_token() -> str | None:
-    if not YT_CLIENT_ID or not YT_CLIENT_SECRET or not YT_REFRESH_TOKEN:
-        log.warning("YOUTUBE_CLIENT_ID/SECRET/REFRESH_TOKEN fehlen — kein Upload möglich")
+    client_id     = YT_CLIENT_ID
+    client_secret = YT_CLIENT_SECRET
+    refresh       = YT_REFRESH_TOKEN
+
+    # Letzter Fallback: Token aus google_oauth.py Datei (nach /api/youtube/auth Flow)
+    if not refresh:
+        try:
+            import json as _json
+            tf = Path(__file__).parent.parent / "data" / "google_tokens.json"
+            if tf.exists():
+                td = _json.loads(tf.read_text())
+                refresh = td.get("refresh_token", "")
+                if not client_id:
+                    client_id = os.getenv("GOOGLE_CLIENT_ID", "")
+                if not client_secret:
+                    client_secret = os.getenv("GOOGLE_CLIENT_SECRET", "")
+        except Exception:
+            pass
+
+    if not client_id or not client_secret or not refresh:
+        log.warning(
+            "YouTube-Upload nicht möglich: YOUTUBE_CLIENT_ID/SECRET/REFRESH_TOKEN fehlen. "
+            "OAuth2 starten: /api/youtube/auth"
+        )
         return None
     try:
         data = urllib.parse.urlencode({
-            "client_id": YT_CLIENT_ID,
-            "client_secret": YT_CLIENT_SECRET,
-            "refresh_token": YT_REFRESH_TOKEN,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "refresh_token": refresh,
             "grant_type": "refresh_token",
         }).encode()
         req = urllib.request.Request(

@@ -23,6 +23,7 @@ SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
+DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 
 TRENDING_HASHTAGS_DE = [
     "#GeldVerdienen", "#PassivesEinkommen", "#OnlineMarketing", "#Dropshipping",
@@ -53,6 +54,23 @@ async def _ai(prompt: str, max_tokens: int = 500) -> str:
         return await ai_complete(prompt, max_tokens=max_tokens)
     except Exception:
         return ""
+
+
+async def _tg_notify(text: str) -> None:
+    """Direkte Telegram-Nachricht ohne BRUTUS-Abhängigkeit."""
+    tg_token = os.getenv("TELEGRAM_BOT_TOKEN", "")
+    tg_chat  = os.getenv("TELEGRAM_CHAT_ID", "")
+    if not tg_token or not tg_chat:
+        return
+    try:
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                f"https://api.telegram.org/bot{tg_token}/sendMessage",
+                json={"chat_id": tg_chat, "text": text, "parse_mode": "Markdown"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            )
+    except Exception as exc:
+        log.debug("_tg_notify error: %s", exc)
 
 
 async def get_shopify_products(limit: int = 10) -> list:
@@ -145,17 +163,31 @@ Trennzeichen: ---"""
         scripts.append({"niche": target_niche, "format": fmt[:40], "script": script})
         await asyncio.sleep(1)
 
-    # Scripts an Telegram senden
+    # Scripts einzeln an Telegram senden (direkter Fallback ohne BRUTUS)
+    header = (
+        f"📱 *Neue TikTok Scripts bereit: {target_niche}*\n"
+        f"Nische: `{target_niche}` | Anzahl: {len(scripts)}\n\n"
+        f"Bitte manuell auf TikTok @aaiitecc posten:"
+    )
+    await _tg_notify(header)
+    for idx, sc in enumerate(scripts, 1):
+        msg = (
+            f"*Script {idx}/{len(scripts)} — {sc['format'][:40]}*\n\n"
+            f"{sc['script'][:1000]}"
+        )
+        await _tg_notify(msg)
+        await asyncio.sleep(0.5)
+
+    # Zusätzlich via BRUTUS (optionaler Kanal-Blast)
     try:
         from modules.brutus_core import fire
-        script_preview = scripts[0]["script"][:300] if scripts else ""
         await fire(
-            f"TikTok Scripts: {target_niche}",
-            f"📱 {count} neue TikTok Scripts generiert!\n\nNische: {target_niche}\n\n{script_preview}...",
+            f"TikTok Script: {target_niche}",
+            scripts[0]["script"][:500] if scripts else "",
             link=SHOP_URL, channels=["telegram"]
         )
     except Exception as _e:
-        log.debug("skipped: %s", _e)
+        log.debug("brutus blast skipped: %s", _e)
 
     return {"ok": True, "niche": target_niche, "scripts_generated": len(scripts), "scripts": scripts}
 
@@ -196,7 +228,7 @@ async def run_tiktok_autonomy(count: int = 3) -> dict:
         lambda n, ht: (
             f"🎵 Hook: Wusstest du das? {n} kann dir €{random.randint(200,1500)}/Monat bringen!\n\n"
             f"📖 Content: Mit dem richtigen System läuft alles automatisch. Kein Lager, kein Stress.\n\n"
-            f"🎯 CTA: Folge mir für mehr Business-Tipps! Link in Bio: {SHOP_URL}\n\n"
+            f"🎯 CTA: Folge mir! Shop: {SHOP_URL} | Digitales System: {DS24_LINK}\n\n"
             f"{ht}"
         ),
         lambda n, ht: (
@@ -204,14 +236,14 @@ async def run_tiktok_autonomy(count: int = 3) -> dict:
             f"Schritt 1: System aufsetzen (einmalig 2h)\n"
             f"Schritt 2: KI übernimmt alles\n"
             f"Schritt 3: Geld verdienen während du schläfst\n\n"
-            f"✅ Mein komplettes System: {SHOP_URL}\n{ht}"
+            f"✅ Shop: {SHOP_URL} | Komplettes System (Digistore24): {DS24_LINK}\n{ht}"
         ),
         lambda n, ht: (
             f"💰 {random.randint(3,7)} {n} Hacks die wirklich funktionieren:\n\n"
             f"#1 Automatisierung — spare 20h/Woche\n"
             f"#2 KI-Content — 100 Posts/Tag ohne Arbeit\n"
             f"#3 Passives Einkommen — 24/7 aktiv\n\n"
-            f"🔗 Alles erklärt: {SHOP_URL}\n{ht}"
+            f"🔗 Shop: {SHOP_URL} | Kurs & System: {DS24_LINK}\n{ht}"
         ),
     ]
 
