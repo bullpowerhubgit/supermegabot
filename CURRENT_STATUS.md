@@ -1,5 +1,24 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-15 ~12:30 CEST**
+**Stand: 2026-07-15 ~17:30 CEST**
+
+## ✅ GMC Feed Registrierung — ABGESCHLOSSEN (2026-07-15)
+
+**Google Merchant Center Account:** 5734366162
+**Feed:** PRODUCTS SOURCE 18
+**URL:** `https://supermegabot-production.up.railway.app/feed/google-shopping.xml`
+- ✅ Als Scheduled Fetch (täglich 00:00 Uhr) registriert
+- ✅ 250 Produkte verarbeitet, 66 neue Produkte in GMC aufgenommen
+- ✅ Deutschland als Zielland (+ 99 weitere, nicht kritisch)
+- ✅ Feed-Code: `google_shopping_feed.py` — `g:content_language=de` + `g:target_country=DE` hinzugefügt
+- ⚠️ Sprache in GMC-UI zeigt noch "English" (ℹ-Icon, kein Edit-Pencil sichtbar) — Feed-Items haben jetzt aber korrekte `de`-Tags
+- ⚠️ Schedule: 00:00 Uhr (nicht 06:00 wie gewollt — optional änderbar)
+
+**Noch offen:**
+- [ ] Twilio Webhooks: Voice=`/api/phone/incoming`, SMS=`/api/sms/incoming` für +17625685298
+- [ ] GitHub Actions RAILWAY_TOKEN erneuern (abgelaufen)
+- [ ] WhatsApp Token erneuern (abgelaufen)
+
+---
 
 ## ✅ v46 — HttpGuard + OpenClaw/Ollama + PostGuard + Connection Pool + MegaDash UI
 

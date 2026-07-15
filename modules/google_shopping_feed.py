@@ -231,6 +231,8 @@ def _build_xml(products: list[dict], shop_domain: str) -> str:
             _g(item, "price", f"{price_float:.2f} EUR")
             _g(item, "availability", "in stock")
             _g(item, "condition", "new")
+            _g(item, "content_language", "de")
+            _g(item, "target_country", "DE")
             if vendor:
                 _g(item, "brand", vendor)
             _g(item, "google_product_category", category)
