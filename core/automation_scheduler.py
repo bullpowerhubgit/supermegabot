@@ -2096,6 +2096,22 @@ async def task_google_automation_cycle() -> str:
         return f"Google Automation Fehler: {e}"
 
 
+async def task_income_maximizer() -> str:
+    """2h — Income Maximizer: DS24 Produkte → Klaviyo Kampagne → Revenue Report."""
+    try:
+        from modules.income_maximizer import run_income_maximizer_cycle
+        r = await run_income_maximizer_cycle()
+        return (
+            f"Income Cycle: DS24={r['ds24_products']} Produkte, "
+            f"€{r['ds24_revenue']:.2f} Revenue, "
+            f"Klaviyo={r['klaviyo_profiles']} Profile, "
+            f"Kampagne={'✅' if r['campaign_sent'] else '⏸'} | "
+            f"Top: {r['top_products'][0][:30] if r['top_products'] else 'keine'}..."
+        )
+    except Exception as e:
+        return f"Income Maximizer Fehler: {e}"
+
+
 async def task_push_notify_broadcast() -> str:
     """Attempt Web Push to all subscribers every 6h (requires pywebpush + VAPID keys)."""
     import aiohttp
@@ -8099,6 +8115,7 @@ TASKS = [
     # ── REVOLUTION PACK — SEO + Traffic + Automation Max ─────────────────
     ("google_index_submit",     task_google_index_submit,    86400,  540),   # daily — Google+Bing Indexierung
     ("google_automation_cycle", task_google_automation_cycle, 21600, 541),  # 6h — Trend+YT+Key-Pool (4 Google Keys)
+    ("income_maximizer",       task_income_maximizer,        7200,  542),  # 2h — DS24+Klaviyo+Revenue-Cycle
     ("push_notify_broadcast",   task_push_notify_broadcast,  21600,  550),   # 6h — Web Push an Subscriber
     ("shopify_seo_blog",        task_shopify_seo_blog,       43200,  560),   # 12h — 3x KI Shopify Blog Posts
     ("viral_referral_trigger",  task_viral_referral_trigger, 86400,  570),   # daily — Viral Referral Loop
