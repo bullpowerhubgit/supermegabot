@@ -438,6 +438,15 @@ async def task_claude_watchdog() -> str:
         return f"Watchdog Fehler: {e}"
 
 
+async def task_claude_agent_check() -> str:
+    """Claude KI-Agent: stündlicher Health-Check + Analyse + Telegram-Bericht."""
+    try:
+        from modules.claude_agent import run_agent_check
+        return await run_agent_check()
+    except Exception as exc:
+        return f"Claude Agent Fehler: {exc}"
+
+
 async def task_system_health() -> str:
     """Check system resources, alert on critical thresholds."""
     try:
@@ -7702,6 +7711,7 @@ async def task_klaviyo_sync() -> str:
 TASKS = [
     # (name, coroutine_fn, interval_seconds, initial_delay_seconds)
     # ── Monitoring & Self-Repair ──────────────────────────────────────────────
+    ("claude_agent",         task_claude_agent_check,   3600,  120),  # 1h — Claude KI-Agent: Health-Check + Selbstanalyse + Telegram
     ("auto_repair",          task_auto_repair_10min,     600,   45),  # 10 min — AUTO-REPAIR: alles prüfen + reparieren
     ("test_purchase",        task_test_purchase,        21600, 300),  # 6h — Funnel-Test: Stripe+Shopify+DS24+Email
     ("mac_watchdog",         task_mac_watchdog,          300,   30),  # 5 min — Mac + Railway + APIs + auto-repair
