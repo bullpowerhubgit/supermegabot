@@ -24,7 +24,7 @@ OWN_PRODUCTS: List[Dict[str, str]] = [
     {
         "id": "669750",
         "name": "AI Income Machine – 90-Day Blueprint",
-        "url": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"),
+        "url": os.getenv("DS24_AFFILIATE_LINK", ""),
         "price": "€37",
         "niche": "ai",
     },

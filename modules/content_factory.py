@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 BRAND_URL    = os.getenv("BRAND_URL", "https://bullpower-hub-portal.netlify.app")
 BRAND_NAME   = os.getenv("BRAND_NAME", "BullPower Hub")
-DS24_LINK    = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+DS24_LINK    = os.getenv("DS24_AFFILIATE_LINK", "")
 DATA_DIR = Path(os.getenv("DATA_DIR", "/tmp/content_factory"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 

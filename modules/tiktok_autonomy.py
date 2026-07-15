@@ -23,7 +23,7 @@ SHOP = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VER   = os.getenv("SHOPIFY_API_VERSION", "2026-04")
 SHOP_URL      = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
-DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+DS24_LINK     = os.getenv("DS24_AFFILIATE_LINK", "")
 
 TRENDING_HASHTAGS_DE = [
     "#GeldVerdienen", "#PassivesEinkommen", "#OnlineMarketing", "#Dropshipping",

@@ -11,7 +11,7 @@ REDDIT_CLIENT_ID     = os.getenv("REDDIT_CLIENT_ID", "")
 REDDIT_CLIENT_SECRET = os.getenv("REDDIT_CLIENT_SECRET", "")
 REDDIT_USERNAME      = os.getenv("REDDIT_USERNAME", "")
 REDDIT_PASSWORD      = os.getenv("REDDIT_PASSWORD", "")
-DS24_LINK            = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+DS24_LINK            = os.getenv("DS24_AFFILIATE_LINK", "")
 
 TARGET_SUBREDDITS = [
     # Verified working via cookie-auth (no flair req, no AI-block):

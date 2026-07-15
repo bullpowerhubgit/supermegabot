@@ -41,7 +41,7 @@ PEXELS_KEY = os.getenv("PEXELS_API_KEY", "")
 
 GRAPH      = "https://graph.facebook.com/v19.0"
 SHOP_URL   = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'ineedit.com.co')}"
-DS24_LINK  = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+DS24_LINK  = os.getenv("DS24_AFFILIATE_LINK", "")
 
 STATE_FILE = Path(__file__).parent.parent / "data" / "social_autoposter_state.json"
 

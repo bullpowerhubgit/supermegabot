@@ -49,7 +49,7 @@ DS24_KNOWN_PRODUCTS = [
         "price": "37",
         "niche": "ki",
         "emoji": "🤖",
-        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "")
     },
     # 704677 DEAKTIVIERT — DS24 Genehmigung ausstehend
     {

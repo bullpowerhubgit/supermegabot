@@ -23,7 +23,7 @@ DS24_API_KEY = os.getenv("DIGISTORE24_API_KEY", "")
 
 DS24_APPROVED_PRODUCTS = [
     {"id": "669750", "seller": "aiitec",
-     "link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"),
+     "link": os.getenv("DS24_AFFILIATE_LINK", ""),
      "niche": "ai", "category": "Digital", "title": "AI Income Machine – 90-Day Blueprint",
      "own_product": True, "price": "37"},
     # 704677 DEAKTIVIERT — DS24 Genehmigung ausstehend
