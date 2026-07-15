@@ -20,30 +20,13 @@ log = logging.getLogger("MegaAgentOrchestrator")
 
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
-ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
-OPENAI_KEY     = os.getenv("OPENAI_API_KEY", "")
 
 
 # ── AI Helper ──────────────────────────────────────────────────────────────────
 
 async def _ai(prompt: str, max_tokens: int = 400) -> str:
-    try:
-        import aiohttp
-        if ANTHROPIC_KEY:
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=20),
-                ) as r:
-                    d = await r.json(content_type=None)
-                    return d.get("content", [{}])[0].get("text", "").strip()
-    except Exception as e:
-        log.warning("AI error: %s", e)
-    return ""
+    from modules.ai_client import ai_complete
+    return await ai_complete(prompt, system="", max_tokens=max_tokens)
 
 
 async def _tg(msg: str) -> None:

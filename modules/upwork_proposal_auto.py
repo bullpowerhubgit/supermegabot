@@ -12,7 +12,6 @@ from pathlib import Path
 
 log = logging.getLogger("UpworkProposal")
 
-ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TELEGRAM_CHAT  = _TG_CHANNEL or ""
@@ -42,37 +41,27 @@ def _save_proposals(data: list):
 
 
 async def _generate_proposal(job: dict) -> str:
-    if not ANTHROPIC_KEY:
-        return (
-            f"Hallo,\n\n"
-            f"ich bin Rudolf Sarkany, Spezialist für {job['niche']}. "
-            f"Mit meinem SuperMegaBot-System habe ich bereits mehreren Kunden "
-            f"geholfen, ihre {job['niche'].split('&')[0].strip()}-Prozesse zu automatisieren. "
-            f"Mein Angebot liegt bei {job['budget']} je nach Umfang.\n\n"
-            f"Gerne bespreche ich Details in einem kurzen Call.\n\nBeste Grüße\nRudolf"
-        )
+    from modules.ai_client import ai_complete
+    prompt = (
+        f"Schreibe ein professionelles Upwork-Angebot auf Deutsch (max 150 Wörter) "
+        f"für diesen Job-Typ: '{job['niche']}'. Budget-Range: {job['budget']}. "
+        f"Absender: Rudolf Sarkany, Experte für KI-Automation, Shopify, Python. "
+        f"Überzeugend, konkret, kein Marketing-Bla. Ende mit 'Gerne in 15 Min. besprechen.'"
+    )
     try:
-        import aiohttp
-        prompt = (
-            f"Schreibe ein professionelles Upwork-Angebot auf Deutsch (max 150 Wörter) "
-            f"für diesen Job-Typ: '{job['niche']}'. Budget-Range: {job['budget']}. "
-            f"Absender: Rudolf Sarkany, Experte für KI-Automation, Shopify, Python. "
-            f"Überzeugend, konkret, kein Marketing-Bla. Ende mit 'Gerne in 15 Min. besprechen.'"
-        )
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 350,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                d = await r.json(content_type=None)
-        return (d.get("content") or [{"text": ""}])[0].get("text", "").strip()
+        text = await ai_complete(prompt, max_tokens=350)
+        if text:
+            return text
     except Exception as e:
         log.warning("Proposal gen error: %s", e)
-        return f"Proposal für {job['niche']} — Fehler bei Generierung: {e}"
+    return (
+        f"Hallo,\n\n"
+        f"ich bin Rudolf Sarkany, Spezialist für {job['niche']}. "
+        f"Mit meinem SuperMegaBot-System habe ich bereits mehreren Kunden "
+        f"geholfen, ihre {job['niche'].split('&')[0].strip()}-Prozesse zu automatisieren. "
+        f"Mein Angebot liegt bei {job['budget']} je nach Umfang.\n\n"
+        f"Gerne bespreche ich Details in einem kurzen Call.\n\nBeste Grüße\nRudolf"
+    )
 
 
 async def _send_telegram(text: str) -> bool:

@@ -238,29 +238,16 @@ async def _pinterest_pin(session: aiohttp.ClientSession, topic: str) -> Dict:
 # ── Kanal: SEO Blog Content ───────────────────────────────────────────────────
 
 async def _seo_content(session: aiohttp.ClientSession, topic: str) -> Dict:
-    groq_key = os.getenv("GROQ_API_KEY", "")
-    if not groq_key:
-        return {"skipped": True, "reason": "no GROQ_API_KEY"}
     if _is_topic_used(topic, "seo_blog", hours=48):
         return {"skipped": True}
+    from modules.ai_client import ai_complete
     try:
-        async with session.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-            json={
-                "model": "llama-3.1-8b-instant",
-                "messages": [{"role": "user", "content": (
-                    f"Schreibe einen deutschen SEO-Artikel (250 Wörter, Markdown) über '{topic}' "
-                    f"im Smart Home Kontext. Am Ende: 'Produkte findest du bei ineedit.com.co'. "
-                    f"Nur den Artikel, kein Vortext."
-                )}],
-                "max_tokens": 450,
-                "temperature": 0.7,
-            },
-            timeout=aiohttp.ClientTimeout(total=20),
-        ) as r:
-            data = await r.json(content_type=None)
-        content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+        prompt = (
+            f"Schreibe einen deutschen SEO-Artikel (250 Wörter, Markdown) über '{topic}' "
+            f"im Smart Home Kontext. Am Ende: 'Produkte findest du bei ineedit.com.co'. "
+            f"Nur den Artikel, kein Vortext."
+        )
+        content = await ai_complete(prompt, max_tokens=450)
         if content:
             _mark_topic_used(topic, "seo_blog")
             _log_action("seo_blog", "generated", SHOP_URL, topic, content[:80])

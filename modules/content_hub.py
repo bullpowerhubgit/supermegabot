@@ -17,11 +17,9 @@ import sqlite3
 from datetime import datetime
 
 import aiohttp
-import anthropic
 
 logger = logging.getLogger("ContentHub")
 
-ANTHROPIC_API_KEY          = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_BOT_TOKEN         = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID           = os.getenv("TELEGRAM_CHAT_ID", "")
 TWITTER_API_KEY            = os.getenv("TWITTER_API_KEY", "")
@@ -107,26 +105,15 @@ def _save_article(slug: str, title: str, content: str, keyword: str, excerpt: st
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
-def _haiku(prompt: str, max_tokens: int = 500) -> str:
-    """Sync AI wrapper — versucht OpenRouter direkt, dann Fallback-Templates."""
-    import requests as _req, random as _rnd
-    key = os.getenv("OPENROUTER_API_KEY", "")
-    if key:
-        try:
-            r = _req.post(
-                "https://openrouter.ai/api/v1/chat/completions",
-                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
-                json={"model": "liquid/lfm-2.5-1.2b-instruct:free",
-                      "messages": [{"role": "user", "content": prompt}],
-                      "max_tokens": max_tokens},
-                timeout=25,
-            )
-            d = r.json()
-            choices = d.get("choices", [])
-            if choices:
-                return choices[0].get("message", {}).get("content", "")
-        except Exception as e:
-            logger.warning("Ignored error: %s", e)
+async def _haiku(prompt: str, max_tokens: int = 500) -> str:
+    """Async AI wrapper via ai_complete (auto-fallback chain)."""
+    from modules.ai_client import ai_complete
+    try:
+        result = await ai_complete(prompt, max_tokens=max_tokens)
+        if result:
+            return result
+    except Exception as e:
+        logger.warning("ai_complete error: %s", e)
     _ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
     _templates = [
         f"🚀 E-Commerce Automation auf Autopilot! DS24 Affiliate aktiv. 👉 {_ds24}",
@@ -135,7 +122,7 @@ def _haiku(prompt: str, max_tokens: int = 500) -> str:
         f"📈 BRUTUS Traffic läuft — alle Kanäle werden bespielt. Jetzt starten: {_ds24}",
         f"🎯 DS24 Affiliate + BRUTUS = passive Einnahmen täglich! {_ds24}",
     ]
-    return _rnd.choice(_templates)
+    return random.choice(_templates)
 
 
 async def _tg(msg: str) -> None:
@@ -217,8 +204,8 @@ async def _post_discord(text: str) -> bool:
 
 # ── SEO Article generation ─────────────────────────────────────────────────
 
-def _generate_article(keyword: str, product: dict) -> dict:
-    raw = _haiku(f"""Schreibe einen SEO-optimierten Blog-Artikel auf Deutsch.
+async def _generate_article(keyword: str, product: dict) -> dict:
+    raw = await _haiku(f"""Schreibe einen SEO-optimierten Blog-Artikel auf Deutsch.
 
 Keyword: "{keyword}"
 Ziel-Link: {product['url']} ({product['name']})
@@ -259,7 +246,7 @@ SLUG: [url-slug-ohne-umlaute]
 
 # ── Social content generation ──────────────────────────────────────────────
 
-def _generate_social(article: dict, product: dict) -> dict:
+async def _generate_social(article: dict, product: dict) -> dict:
     prompt = f"""Erstelle Social-Media-Inhalte auf Deutsch für:
 Artikel: {article['title']}
 Produkt: {product['name']} — {product['url']}
@@ -274,7 +261,7 @@ Antworte NUR mit JSON:
   "pinterest": "TITEL:[max 100 chars] BESCHREIBUNG:[150 chars]"
 }}"""
     try:
-        raw = _haiku(prompt, max_tokens=1200)
+        raw = await _haiku(prompt, max_tokens=1200)
         start, end = raw.find("{"), raw.rfind("}") + 1
         if start >= 0:
             return json.loads(raw[start:end])
@@ -292,10 +279,9 @@ async def run_content_cycle() -> str:
     product = random.choice(PRODUCTS)
     logger.info("ContentHub cycle: keyword='%s' product='%s'", keyword, product["name"])
 
-    # Generate (sync calls, run in executor to avoid blocking event loop)
-    loop = asyncio.get_event_loop()
-    article = await loop.run_in_executor(None, _generate_article, keyword, product)
-    social  = await loop.run_in_executor(None, _generate_social, article, product)
+    # Generate
+    article = await _generate_article(keyword, product)
+    social  = await _generate_social(article, product)
 
     # Auto-post
     tweet   = f"📖 {article['title']}\n\n{article['meta']}\n\n{article['url']}"
@@ -336,11 +322,10 @@ async def run_freelance_cycle() -> str:
     service = random.choice(FREELANCE_SERVICES)
     logger.info("Freelance cycle: %s", service["title"])
 
-    loop = asyncio.get_event_loop()
-    gig = await loop.run_in_executor(None, _haiku,
+    gig = await _haiku(
         f"Fiverr Gig EN für: {service['title']}\n${service['price']}\nDemo: {service['url']}\n"
         "Title + Description (3 paragraphs) + 3 Packages + 5 Search Tags", 700)
-    proposal = await loop.run_in_executor(None, _haiku,
+    proposal = await _haiku(
         f"Upwork Proposal EN, max 150 words:\nService: {service['title']}\n"
         f"Bid: ${service['price']}\nDemo: {service['url']}\nNo clichés, direct value.", 350)
 

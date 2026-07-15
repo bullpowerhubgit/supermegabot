@@ -58,7 +58,6 @@ def _scan_base_url() -> str:
 
 
 BASE_URL      = _scan_base_url()
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TG_TOKEN      = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT       = os.getenv("TELEGRAM_CHAT_ID", "")
 SUPABASE_URL  = os.getenv("SUPABASE_URL", "")
@@ -73,7 +72,7 @@ GITHUB_REPO   = "supermegabot"
 
 def _refresh_runtime_config() -> None:
     """Env-Aliase anwenden und Modul-Konstanten aktualisieren."""
-    global BASE_URL, ANTHROPIC_KEY, TG_TOKEN, SUPABASE_URL, SUPABASE_KEY
+    global BASE_URL, TG_TOKEN, SUPABASE_URL, SUPABASE_KEY
     global SHOPIFY_DOM, SHOPIFY_TOK, STRIPE_KEY
     try:
         from modules.connect_all import normalize_env_aliases
@@ -81,7 +80,6 @@ def _refresh_runtime_config() -> None:
     except Exception:
         pass
     BASE_URL = _scan_base_url()
-    ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
     TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
     SUPABASE_URL = os.getenv("SUPABASE_URL", "")
     SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY") or os.getenv("SUPABASE_ANON_KEY", "")
@@ -399,48 +397,13 @@ async def scan_external_services() -> dict:
 
     async def _ping_anthropic():
         try:
-            from modules.claude_automation import ping as claude_ping, is_configured
-            if is_configured():
-                ok, detail = await asyncio.to_thread(claude_ping)
-                if ok:
-                    return True, detail
-        except Exception:
-            pass
-
-        openrouter = os.getenv("OPENROUTER_API_KEY", "")
-        groq = os.getenv("GROQ_API_KEY", "")
-        openai = os.getenv("OPENAI_API_KEY", "")
-
-        async def _fallback_detail() -> tuple[bool, str]:
-            if openrouter:
-                return True, "OpenRouter Fallback aktiv"
-            if groq:
-                return True, "Groq Fallback aktiv"
-            if openai:
-                return True, "OpenAI Fallback aktiv"
+            from modules.ai_client import ai_complete
+            text = await ai_complete("ping", max_tokens=5)
+            if text:
+                return True, "AI Provider verbunden"
             return False, "Kein AI Provider verfügbar"
-
-        if not ANTHROPIC_KEY:
-            return await _fallback_detail()
-
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1,
-                      "messages": [{"role": "user", "content": "ping"}]},
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01"},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                body = await r.text()
-                if r.status == 200:
-                    return True, "Verbunden"
-                if r.status == 400 and "credit balance" in body.lower():
-                    return True, "Key OK — Credits aufladen"
-                if r.status in (401, 402, 429, 529):
-                    ok, detail = await _fallback_detail()
-                    if ok:
-                        return True, detail
-                return False, f"HTTP {r.status}"
+        except Exception as exc:
+            return False, str(exc)[:120]
 
     async def _ping_amazon():
         tracking_id = os.getenv("AMAZON_TRACKING_ID", "bullpowerhub-21")
@@ -667,21 +630,11 @@ def scan_filesystem() -> dict:
 # ─────────────────────────────────────────────────────────────────────────────
 
 async def _ask_claude(prompt: str) -> str:
-    if not ANTHROPIC_KEY:
-        return "(ANTHROPIC_API_KEY fehlt — kein KI-Fix möglich)"
+    from modules.ai_client import ai_complete
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 512,
-                      "messages": [{"role": "user", "content": prompt}]},
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01"},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                d = await r.json()
-                return d.get("content", [{}])[0].get("text", "")
+        return await ai_complete(prompt, max_tokens=512) or "(Keine Antwort)"
     except Exception as exc:
-        return f"Claude-Fehler: {exc}"
+        return f"AI-Fehler: {exc}"
 
 
 async def _analyse_failures(category_results: list[dict]) -> list[dict]:

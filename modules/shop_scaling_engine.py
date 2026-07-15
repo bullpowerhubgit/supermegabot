@@ -31,6 +31,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import aiohttp
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("ShopScalingEngine")
 
 # ── Pfade ──────────────────────────────────────────────────────────────────────
@@ -52,7 +54,6 @@ if not SHOP_URL.startswith("http"):
 SHOP_NAME      = _e("SHOP_NAME", "I Need It")
 
 ANTHROPIC_KEY  = _e("ANTHROPIC_API_KEY")
-HAIKU_MODEL    = "claude-haiku-4-5-20251001"
 
 TG_TOKEN       = _e("TELEGRAM_BOT_TOKEN")
 TG_CHAT        = _e("TELEGRAM_CHAT_ID")
@@ -158,37 +159,14 @@ async def _shopify_post(session: aiohttp.ClientSession, endpoint: str, data: Dic
         return {}
 
 
-# ── Claude Haiku Helper ────────────────────────────────────────────────────────
+# ── AI Helper (multi-provider via ai_client) ───────────────────────────────────
 
 async def _claude(prompt: str, max_tokens: int = 600) -> str:
-    """Generates text via Claude Haiku. Returns empty string on failure."""
-    if not ANTHROPIC_KEY:
-        log.warning("ANTHROPIC_API_KEY fehlt — Claude-Generierung übersprungen")
-        return ""
+    """Generates text via ai_complete (multi-provider fallback). Returns empty string on failure."""
     try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={
-                    "x-api-key": ANTHROPIC_KEY,
-                    "anthropic-version": "2023-06-01",
-                    "Content-Type": "application/json",
-                },
-                json={
-                    "model": HAIKU_MODEL,
-                    "max_tokens": max_tokens,
-                    "messages": [{"role": "user", "content": prompt}],
-                },
-                timeout=aiohttp.ClientTimeout(total=45),
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    return data["content"][0]["text"].strip()
-                text = await r.text()
-                log.warning("Claude API %d: %s", r.status, text[:200])
-                return ""
+        return await ai_complete(prompt, max_tokens=max_tokens)
     except Exception as e:
-        log.warning("Claude API error: %s", e)
+        log.warning("ai_complete error: %s", e)
         return ""
 
 

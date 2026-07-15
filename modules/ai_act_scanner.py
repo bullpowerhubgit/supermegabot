@@ -36,6 +36,7 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import aiohttp
+from modules.ai_client import ai_complete
 
 logging.basicConfig(
     level=logging.INFO,
@@ -60,7 +61,6 @@ def _load_env():
 
 _load_env()
 
-def _anthropic() -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _gmail_user() -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
 def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
 def _tg_token()   -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
@@ -178,15 +178,6 @@ async def analyze_ai_risk(firma: str, branche: str, ort: str) -> Dict:
     risiko, detail = BRANCHE_RISIKO.get(branche, BRANCHE_RISIKO["Sonstige"])
     bussgelder = RISIKO_BUSSGELDER.get(risiko, RISIKO_BUSSGELDER["UNBEKANNT"])
 
-    if not _anthropic():
-        return {
-            "risiko_level": risiko,
-            "risiko_detail": detail,
-            "bussgelder":   bussgelder[0],
-            "ai_summary":   f"Für Unternehmen in der Branche '{branche}' gelten unter dem EU AI Act (Anhang III) erhöhte Anforderungen. Handlungsbedarf bis August 2026.",
-            "empfehlung":   "EU AI Act Compliance-Audit empfohlen",
-        }
-
     prompt = f"""Analysiere kurz das EU AI Act Risiko für dieses Unternehmen:
 
 Firma: {firma}
@@ -201,30 +192,17 @@ Schreibe 2 Sätze (max 80 Wörter) auf Deutsch:
 Antwort als JSON: {{"summary": "...", "empfehlung": "..."}}"""
 
     try:
-        async with aiohttp.ClientSession(
-            connector=aiohttp.TCPConnector(ssl=False),
-            timeout=aiohttp.ClientTimeout(total=15)
-        ) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 300,
-                      "messages": [{"role": "user", "content": prompt}]}
-            ) as r:
-                if r.status == 200:
-                    d    = await r.json()
-                    text = d.get("content", [{}])[0].get("text", "")
-                    m    = re.search(r"\{.*\}", text, re.DOTALL)
-                    if m:
-                        parsed = json.loads(m.group())
-                        return {
-                            "risiko_level":  risiko,
-                            "risiko_detail": detail,
-                            "bussgelder":    bussgelder[0],
-                            "ai_summary":    parsed.get("summary", ""),
-                            "empfehlung":    parsed.get("empfehlung", "Compliance-Audit empfohlen"),
-                        }
+        text = await ai_complete(prompt, system="", max_tokens=300)
+        m = re.search(r"\{.*\}", text, re.DOTALL)
+        if m:
+            parsed = json.loads(m.group())
+            return {
+                "risiko_level":  risiko,
+                "risiko_detail": detail,
+                "bussgelder":    bussgelder[0],
+                "ai_summary":    parsed.get("summary", ""),
+                "empfehlung":    parsed.get("empfehlung", "Compliance-Audit empfohlen"),
+            }
     except Exception as e:
         log.debug("AI: %s", e)
 

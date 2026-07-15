@@ -34,6 +34,7 @@ import time
 from datetime import datetime, timezone
 
 import aiohttp
+from modules.ai_client import ai_complete
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("ghost_vendor_network")
@@ -111,10 +112,6 @@ class GhostVendorNetwork:
         self.source_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
         self.source_token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 
-        # KI
-        self.anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
-        self.openai_key = os.getenv("OPENAI_API_KEY", "")
-
         # Stripe
         self.stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
 
@@ -164,7 +161,7 @@ class GhostVendorNetwork:
         return [p for _, p in scored]
 
     # ------------------------------------------------------------------
-    # SEO-Text generieren (Claude Haiku -> GPT-4o-mini Fallback)
+    # SEO-Text generieren (via ai_complete — automatischer Provider-Fallback)
     # ------------------------------------------------------------------
     async def generate_seo_text(self, title: str, niche: str) -> str:
         prompt = (
@@ -173,56 +170,9 @@ class GhostVendorNetwork:
             f"Auf Deutsch. Kein Markdown, nur reiner Text."
         )
 
-        # Versuch 1: Anthropic Claude Haiku
-        if self.anthropic_key:
-            try:
-                payload = {
-                    "model": "claude-haiku-20240307",
-                    "max_tokens": 400,
-                    "messages": [{"role": "user", "content": prompt}],
-                }
-                async with self.session.post(
-                    "https://api.anthropic.com/v1/messages",
-                    json=payload,
-                    headers={
-                        "x-api-key": self.anthropic_key,
-                        "anthropic-version": "2023-06-01",
-                        "Content-Type": "application/json",
-                    },
-                    timeout=aiohttp.ClientTimeout(total=30),
-                ) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        text = data.get("content", [{}])[0].get("text", "").strip()
-                        if text:
-                            return text
-            except Exception as exc:
-                log.warning("Claude Haiku fehlgeschlagen: %s", exc)
-
-        # Versuch 2: OpenAI GPT-4o-mini
-        if self.openai_key:
-            try:
-                payload = {
-                    "model": "gpt-4o-mini",
-                    "max_tokens": 400,
-                    "messages": [{"role": "user", "content": prompt}],
-                }
-                async with self.session.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    json=payload,
-                    headers={
-                        "Authorization": f"Bearer {self.openai_key}",
-                        "Content-Type": "application/json",
-                    },
-                    timeout=aiohttp.ClientTimeout(total=30),
-                ) as resp:
-                    if resp.status == 200:
-                        data = await resp.json()
-                        text = data["choices"][0]["message"]["content"].strip()
-                        if text:
-                            return text
-            except Exception as exc:
-                log.warning("GPT-4o-mini fehlgeschlagen: %s", exc)
+        text = await ai_complete(prompt, system="", max_tokens=400)
+        if text:
+            return text
 
         # Kein Fallback auf Demo-Text
         log.warning("SEO-Textgenerierung komplett fehlgeschlagen fuer '%s' — Original behalten", title)

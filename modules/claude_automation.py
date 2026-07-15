@@ -17,7 +17,10 @@ import logging
 from pathlib import Path
 from typing import Optional
 
-from anthropic import Anthropic
+try:
+    from modules.anthropic_compat import Anthropic
+except ImportError:
+    from anthropic import Anthropic
 
 log = logging.getLogger(__name__)
 

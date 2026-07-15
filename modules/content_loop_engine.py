@@ -24,7 +24,6 @@ log = logging.getLogger("ContentLoopEngine")
 SHOP_DOMAIN    = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOP_TOKEN     = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 API_VER        = os.getenv("SHOPIFY_API_VERSION", "2026-04")
-ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 TG_TOKEN       = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT        = os.getenv("TELEGRAM_CHAT_ID", "")
 LINKEDIN_TOKEN = os.getenv("LINKEDIN_ACCESS_TOKEN", "")
@@ -159,8 +158,7 @@ async def _get_or_create_blog(session: aiohttp.ClientSession) -> str | None:
 
 async def _generate_article(session: aiohttp.ClientSession, topic: str) -> dict | None:
     """AI-generierter SEO-Artikel (Smart Home Nische, Deutsch, HTML)."""
-    if not ANTHROPIC_KEY:
-        return None
+    from modules.ai_client import ai_complete
 
     prompt = (
         f"Schreibe einen professionellen deutschen SEO-Blogartikel über: '{topic}'\n\n"
@@ -174,21 +172,12 @@ async def _generate_article(session: aiohttp.ClientSession, topic: str) -> dict 
         f"- Keine Fake-Bewertungen, keine erfundenen Modellnamen"
     )
 
-    async with session.post(
-        "https://api.anthropic.com/v1/messages",
-        headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                 "Content-Type": "application/json"},
-        json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1200,
-              "messages": [{"role": "user", "content": prompt}]},
-        timeout=aiohttp.ClientTimeout(total=45)
-    ) as r:
-        if r.status == 200:
-            data = await r.json()
-            body = data["content"][0]["text"].strip()
-            title = f"{topic} — Ratgeber {datetime.now().year}"
-            tags = "Smart Home,Gadgets,Technik,Ratgeber"
-            return {"title": title, "body_html": body, "tags": tags}
-        log.error("Anthropic Fehler: %s", r.status)
+    body = await ai_complete(prompt, max_tokens=1200)
+    if body:
+        title = f"{topic} — Ratgeber {datetime.now().year}"
+        tags = "Smart Home,Gadgets,Technik,Ratgeber"
+        return {"title": title, "body_html": body.strip(), "tags": tags}
+    log.error("AI-Artikel-Generierung fehlgeschlagen")
     return None
 
 
@@ -344,8 +333,8 @@ async def run_content_loop() -> dict:
         "ok": False
     }
 
-    if not SHOP_DOMAIN or not SHOP_TOKEN or not ANTHROPIC_KEY:
-        result["errors"].append("Shopify oder Anthropic Credentials fehlen")
+    if not SHOP_DOMAIN or not SHOP_TOKEN:
+        result["errors"].append("Shopify Credentials fehlen")
         return result
 
     # Thema wählen (noch nicht veröffentlicht)

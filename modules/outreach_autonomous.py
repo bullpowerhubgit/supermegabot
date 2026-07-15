@@ -69,7 +69,6 @@ def _load_env():
 
 _load_env()
 
-def _anthropic() -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _gmail_user() -> str: return os.getenv("GMAIL_USER_AIITEC", "aiitecbuuss@gmail.com")
 def _gmail_pass() -> str: return os.getenv("GMAIL_APP_PASSWORD_AIITEC", "rqcd uzim npsl odgw")
 def _tg_token()   -> str: return os.getenv("TELEGRAM_BOT_TOKEN") or os.getenv("TELEGRAM_BOT_TOKEN_1", "")
@@ -511,9 +510,6 @@ AiiteC — Intelligente Geschäftslösungen
         )
         return {"subject": subject, "email_body": email_body, "li_msg": li_msg}
 
-    if not _anthropic():
-        return fallback()
-
     prompt = f"""Schreibe auf Deutsch eine kurze professionelle Kalt-Akquise-Email und eine LinkedIn-Nachricht.
 
 Empfänger: {target['name']} ({target['type']})
@@ -529,23 +525,11 @@ JSON-Antwort:
 {{"subject":"...", "email_body":"...", "li_msg":"..."}}"""
 
     try:
-        async with aiohttp.ClientSession(
-            timeout=aiohttp.ClientTimeout(total=20),
-            connector=aiohttp.TCPConnector(ssl=False)
-        ) as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 500,
-                      "messages": [{"role": "user", "content": prompt}]}
-            ) as r:
-                if r.status == 200:
-                    d    = await r.json()
-                    text = d.get("content", [{}])[0].get("text", "")
-                    m    = re.search(r"\{.*\}", text, re.DOTALL)
-                    if m:
-                        return json.loads(m.group())
+        from modules.ai_client import ai_complete
+        text = await ai_complete(prompt, system="", max_tokens=500)
+        m = re.search(r"\{.*\}", text, re.DOTALL)
+        if m:
+            return json.loads(m.group())
     except Exception as e:
         log.debug("AI: %s", e)
 

@@ -25,6 +25,7 @@ from urllib.parse import quote_plus, urljoin
 
 import aiohttp
 from dotenv import load_dotenv
+from modules.ai_client import ai_complete
 
 load_dotenv()
 log = logging.getLogger(__name__)
@@ -33,7 +34,6 @@ log = logging.getLogger(__name__)
 SHOP        = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 TOKEN       = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 API_VER     = os.getenv("SHOPIFY_API_VERSION", "2024-04")
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 HEADERS     = {"X-Shopify-Access-Token": TOKEN, "Content-Type": "application/json"}
 TIMEOUT     = aiohttp.ClientTimeout(total=30, connect=10)
 
@@ -94,14 +94,6 @@ def _ok() -> bool:
     return bool(SHOP and TOKEN)
 
 
-def _headers_ai() -> dict:
-    return {
-        "x-api-key": ANTHROPIC_KEY,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-    }
-
-
 def _product_hash(title: str) -> str:
     return hashlib.md5(title.lower().strip().encode()).hexdigest()[:12]
 
@@ -133,22 +125,15 @@ async def _exists_in_shop(session: aiohttp.ClientSession, title: str) -> bool:
 
 
 # ── KI-Qualitäts-Gate ────────────────────────────────────────────────────────
-async def _ai_validate(session: aiohttp.ClientSession, candidate: dict) -> Optional[dict]:
+async def _ai_validate(candidate: dict) -> Optional[dict]:
     """
-    Claude bewertet das Kandidat-Produkt:
+    KI bewertet das Kandidat-Produkt via ai_complete (multi-provider fallback):
     - Passt es in unsere Smart/Modern Nische?
     - Ist es ein echtes Produkt (kein Artikel/Fake)?
     - Welche Kategorie?
     - Deutschen Titel + SEO-Beschreibung generieren
     Returns None wenn abgelehnt.
     """
-    if not ANTHROPIC_KEY:
-        # Fallback: Keyword-basierte Prüfung
-        title = candidate.get("title", "")
-        if _is_blacklisted(title):
-            return None
-        return candidate
-
     title    = candidate.get("title", "")
     price    = candidate.get("price_eur", 0)
     source   = candidate.get("source", "")
@@ -174,30 +159,23 @@ Antworte NUR mit diesem JSON (kein Markdown):
 {{"ok": true/false, "reason": "...", "de_title": "...", "de_desc": "...", "niche": "..."}}"""
 
     try:
-        payload = {
-            "model": "claude-haiku-4-5-20251001",
-            "max_tokens": 600,
-            "messages": [{"role": "user", "content": prompt}]
+        text = await ai_complete(prompt, system="", max_tokens=600)
+        if not text:
+            if _is_blacklisted(title):
+                return None
+            return candidate
+        # Strip markdown if present
+        text = re.sub(r"^```json\s*|```$", "", text.strip(), flags=re.MULTILINE).strip()
+        result = json.loads(text)
+        if not result.get("ok"):
+            log.debug("KI abgelehnt: %s — %s", title[:40], result.get("reason", ""))
+            return None
+        return {
+            **candidate,
+            "title": result.get("de_title", title),
+            "description": result.get("de_desc", ""),
+            "niche": result.get("niche", category),
         }
-        async with session.post("https://api.anthropic.com/v1/messages",
-                                headers=_headers_ai(), json=payload,
-                                timeout=aiohttp.ClientTimeout(total=20)) as r:
-            if r.status != 200:
-                return None
-            data = await r.json()
-            text = data["content"][0]["text"].strip()
-            # Strip markdown if present
-            text = re.sub(r"^```json\s*|```$", "", text.strip(), flags=re.MULTILINE).strip()
-            result = json.loads(text)
-            if not result.get("ok"):
-                log.debug("KI abgelehnt: %s — %s", title[:40], result.get("reason", ""))
-                return None
-            return {
-                **candidate,
-                "title": result.get("de_title", title),
-                "description": result.get("de_desc", ""),
-                "niche": result.get("niche", category),
-            }
     except Exception as e:
         log.debug("KI-Validierung Fehler: %s", e)
         # Fallback: Keyword-Check
@@ -490,7 +468,7 @@ async def run_smart_product_cycle(
                 continue
 
             # KI-Qualitäts-Gate
-            result = await _ai_validate(session, candidate)
+            result = await _ai_validate(candidate)
             if result:
                 validated.append(result)
                 log.info("✅ Validiert: %s (%.2f€ VK)", result["title"][:60], result.get("price_vk", 0))

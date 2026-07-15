@@ -29,7 +29,10 @@ import time
 from pathlib import Path
 from typing import AsyncIterator, Iterator, Optional
 
-import anthropic as _anthlib
+try:
+    import modules.anthropic_compat as _anthlib
+except ImportError:
+    import anthropic as _anthlib
 
 log = logging.getLogger(__name__)
 

@@ -164,39 +164,13 @@ _PROMPTS = {
 async def generate_viral_content(
     session: aiohttp.ClientSession, topic: str, platform: str
 ) -> str:
+    from modules.ai_client import ai_complete
     prompt = _PROMPTS.get(platform, _PROMPTS["facebook"])
     prompt = prompt.replace("{topic}", topic).replace("{link}", STRIPE_STARTER)
 
-    providers = []
-    if os.getenv("GROQ_API_KEY"):
-        providers.append((
-            "https://api.groq.com/openai/v1/chat/completions",
-            f"Bearer {os.getenv('GROQ_API_KEY')}",
-            "llama-3.1-70b-versatile",
-        ))
-    if os.getenv("OPENROUTER_API_KEY"):
-        providers.append((
-            "https://openrouter.ai/api/v1/chat/completions",
-            f"Bearer {os.getenv('OPENROUTER_API_KEY')}",
-            "google/gemma-4-26b-a4b-it:free",
-        ))
-
-    for url, auth, model in providers:
-        try:
-            async with session.post(
-                url,
-                headers={"Authorization": auth, "Content-Type": "application/json"},
-                json={"model": model,
-                      "messages": [{"role": "user", "content": prompt}],
-                      "max_tokens": 1500, "temperature": 0.8},
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                if r.status == 200:
-                    d = await r.json()
-                    return d["choices"][0]["message"]["content"].strip()
-        except Exception as e:
-            log.debug("Content %s/%s: %s", platform, model, e)
-
+    text = await ai_complete(prompt, system="", max_tokens=1500)
+    if text:
+        return text.strip()
     return _fallback(platform, topic)
 
 

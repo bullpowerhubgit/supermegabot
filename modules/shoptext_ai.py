@@ -5,22 +5,21 @@ Generiert SEO-optimierte Texte via Claude API, Stripe-Checkout für Abo.
 """
 from __future__ import annotations
 
-import asyncio
 import json
 import logging
 import os
 import re
 import sqlite3
-import urllib.error
 import urllib.parse
 import urllib.request
 import base64
 from pathlib import Path
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("shoptext")
 
 DB_PATH = Path(__file__).parent.parent / "data" / "shoptext.db"
-ANTHROPIC_API_BASE = "https://api.anthropic.com/v1"
 STRIPE_API_BASE = "https://api.stripe.com/v1"
 
 FREE_LIMIT = 3  # free trial generations per identifier
@@ -181,141 +180,6 @@ def _parse_ai_response(raw: str) -> dict:
     raise ValueError("Kein JSON in KI-Antwort")
 
 
-async def _try_anthropic(prompt: str) -> dict:
-    api_key = os.getenv("ANTHROPIC_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("no key")
-    payload = json.dumps({
-        "model": os.getenv("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001"),
-        "max_tokens": 1200,
-        "messages": [{"role": "user", "content": prompt}],
-    }).encode()
-    req = urllib.request.Request(f"{ANTHROPIC_API_BASE}/messages", data=payload, method="POST")
-    req.add_header("x-api-key", api_key)
-    req.add_header("anthropic-version", "2023-06-01")
-    req.add_header("content-type", "application/json")
-    loop = asyncio.get_event_loop()
-    def _call():
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return json.loads(r.read())
-    try:
-        resp = await loop.run_in_executor(None, _call)
-    except urllib.error.HTTPError as e:
-        raise RuntimeError(f"Anthropic {e.code}: {e.read().decode()[:200]}")
-    return _parse_ai_response(resp["content"][0]["text"])
-
-
-async def _try_openai(prompt: str) -> dict:
-    api_key = os.getenv("OPENAI_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("no key")
-    payload = json.dumps({
-        "model": "gpt-4o-mini",
-        "max_tokens": 1200,
-        "messages": [{"role": "user", "content": prompt}],
-        "response_format": {"type": "json_object"},
-    }).encode()
-    req = urllib.request.Request("https://api.openai.com/v1/chat/completions", data=payload, method="POST")
-    req.add_header("Authorization", f"Bearer {api_key}")
-    req.add_header("Content-Type", "application/json")
-    loop = asyncio.get_event_loop()
-    def _call():
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return json.loads(r.read())
-    try:
-        resp = await loop.run_in_executor(None, _call)
-    except urllib.error.HTTPError as e:
-        raise RuntimeError(f"OpenAI {e.code}: {e.read().decode()[:200]}")
-    return _parse_ai_response(resp["choices"][0]["message"]["content"])
-
-
-async def _try_deepseek(prompt: str) -> dict:
-    api_key = os.getenv("DEEPSEEK_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("no key")
-    payload = json.dumps({
-        "model": "deepseek-chat",
-        "max_tokens": 1200,
-        "messages": [{"role": "user", "content": prompt}],
-        "response_format": {"type": "json_object"},
-    }).encode()
-    req = urllib.request.Request("https://api.deepseek.com/v1/chat/completions", data=payload, method="POST")
-    req.add_header("Authorization", f"Bearer {api_key}")
-    req.add_header("Content-Type", "application/json")
-    loop = asyncio.get_event_loop()
-    def _call():
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return json.loads(r.read())
-    try:
-        resp = await loop.run_in_executor(None, _call)
-    except urllib.error.HTTPError as e:
-        raise RuntimeError(f"DeepSeek {e.code}: {e.read().decode()[:200]}")
-    return _parse_ai_response(resp["choices"][0]["message"]["content"])
-
-
-async def _try_groq(prompt: str) -> dict:
-    """Groq Free Tier: 14.400 Anfragen/Tag kostenlos."""
-    api_key = os.getenv("GROQ_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("no key")
-    payload = json.dumps({
-        "model": "llama-3.1-8b-instant",
-        "max_tokens": 1200,
-        "messages": [
-            {"role": "system", "content": "Du antwortest immer mit einem validen JSON-Objekt ohne Erklärungen."},
-            {"role": "user", "content": prompt},
-        ],
-    }).encode()
-    req = urllib.request.Request("https://api.groq.com/openai/v1/chat/completions", data=payload, method="POST")
-    req.add_header("Authorization", f"Bearer {api_key}")
-    req.add_header("Content-Type", "application/json")
-    loop = asyncio.get_event_loop()
-    def _call():
-        with urllib.request.urlopen(req, timeout=30) as r:
-            return json.loads(r.read())
-    try:
-        resp = await loop.run_in_executor(None, _call)
-    except urllib.error.HTTPError as e:
-        raise RuntimeError(f"Groq {e.code}: {e.read().decode()[:200]}")
-    return _parse_ai_response(resp["choices"][0]["message"]["content"])
-
-
-async def _try_openrouter_free(prompt: str) -> dict:
-    """OpenRouter Free Models — mehrere Modelle versuchen."""
-    api_key = os.getenv("OPENROUTER_API_KEY", "")
-    if not api_key:
-        raise RuntimeError("no key")
-    free_models = [
-        "google/gemma-4-31b-it:free",
-        "google/gemma-4-26b-a4b-it:free",
-        "google/gemma-2-9b-it:free",
-        "nvidia/nemotron-3-ultra-550b-a55b:free",
-    ]
-    last_err: Exception = RuntimeError("no models tried")
-    for model in free_models:
-        payload = json.dumps({
-            "model": model,
-            "max_tokens": 1200,
-            "messages": [{"role": "user", "content": prompt}],
-        }).encode()
-        req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions", data=payload, method="POST")
-        req.add_header("Authorization", f"Bearer {api_key}")
-        req.add_header("Content-Type", "application/json")
-        req.add_header("HTTP-Referer", "https://supermegabot-production.up.railway.app")
-        loop = asyncio.get_event_loop()
-        def _make_call(p=payload, r=req):
-            with urllib.request.urlopen(r, timeout=45) as resp:
-                return json.loads(resp.read())
-        try:
-            resp = await loop.run_in_executor(None, _make_call)
-            content = resp["choices"][0]["message"]["content"]
-            return _parse_ai_response(content)
-        except Exception as e:
-            log.warning("OpenRouter model %s failed: %s", model, str(e)[:80])
-            last_err = e
-            continue
-    raise RuntimeError(f"Alle OpenRouter Free Models fehlgeschlagen: {last_err}")
-
 
 def _template_fallback(product_name: str, keywords: str, product_type: str, tone: str) -> dict:
     """Template-basierter Generator — funktioniert ohne AI-Credits, immer verfügbar."""
@@ -366,7 +230,7 @@ async def generate_product_text(
     product_type: str = "",
     tone: str = "professionell",
 ) -> dict:
-    """Generate SEO-optimized German product text — Anthropic → OpenAI → OpenRouter fallback."""
+    """Generate SEO-optimized German product text via ai_complete (auto-fallback chain)."""
     kw = ", ".join(k.strip() for k in keywords.split(",") if k.strip()) if keywords else "keine angegeben"
     ptype_hint = f" (Produktkategorie: {product_type})" if product_type else ""
     tone_map = {
@@ -377,22 +241,15 @@ async def generate_product_text(
     }
     tone_desc = tone_map.get(tone, "professionell und klar")
     prompt = _build_prompt(product_name, ptype_hint, kw, tone_desc)
+    system = "Du antwortest immer mit einem validen JSON-Objekt ohne Erklärungen."
 
-    providers = [
-        ("DeepSeek",       _try_deepseek),
-        ("OpenAI",         _try_openai),
-        ("Groq",           _try_groq),
-        ("OpenRouter",     _try_openrouter_free),
-        ("Anthropic",      _try_anthropic),
-    ]
-    for name, fn in providers:
-        try:
-            result = await fn(prompt)
-            log.info("ShopText generated via %s", name)
-            return result
-        except Exception as e:
-            log.warning("Provider %s failed: %s — trying next", name, str(e)[:120])
+    try:
+        raw = await ai_complete(prompt, system=system, max_tokens=1200)
+        result = _parse_ai_response(raw)
+        log.info("ShopText generated via ai_complete")
+        return result
+    except Exception as e:
+        log.warning("ai_complete failed: %s — Template-Fallback aktiv", str(e)[:120])
 
     # Template-Fallback — immer verfügbar, kein API-Key nötig
-    log.warning("Alle KI-Provider fehlgeschlagen — Template-Fallback aktiv")
     return _template_fallback(product_name, keywords, product_type, tone)

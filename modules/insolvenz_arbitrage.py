@@ -40,7 +40,6 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 SHOPIFY_SHOP_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_ADMIN_API_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 INSOLVENZ_DB = os.getenv("INSOLVENZ_DB", "data/insolvenz_radar.db")
 ARBITRAGE_DB = os.getenv("ARBITRAGE_DB", "data/arbitrage_capital.db")
 
@@ -191,20 +190,18 @@ class InsolvenzArbitrage:
         score_bonus = 1.0 + ((score - 90) / 100)
         heuristic_value = employees_est * multiplier * score_bonus
 
-        if ANTHROPIC_API_KEY:
-            try:
-                claude_value = await self._claude_inventory_estimate(row, heuristic_value)
-                final = round(heuristic_value * 0.6 + claude_value * 0.4, 2)
-            except Exception as e:
-                logger.warning("Claude-Schaetzung fehlgeschlagen: %s", e)
-                final = round(heuristic_value, 2)
-        else:
+        try:
+            claude_value = await self._claude_inventory_estimate(row, heuristic_value)
+            final = round(heuristic_value * 0.6 + claude_value * 0.4, 2)
+        except Exception as e:
+            logger.warning("KI-Schaetzung fehlgeschlagen: %s", e)
             final = round(heuristic_value, 2)
 
         final = max(5000.0, min(500000.0, final))
         return final
 
     async def _claude_inventory_estimate(self, row: dict, heuristic: float) -> float:
+        from modules.ai_client import ai_complete
         prompt = (
             f"Du bist Insolvenz-Experte. Schaetze den Lagerwert (EUR) fuer:\n"
             f"Firma: {row.get('company_name', 'n/a')}\n"
@@ -214,27 +211,10 @@ class InsolvenzArbitrage:
             f"Heuristik-Schaetzung: EUR {heuristic:.0f}\n\n"
             f"Antworte NUR mit einer Zahl (EUR-Betrag), z.B.: 45000"
         )
-        headers = {
-            "x-api-key": ANTHROPIC_API_KEY,
-            "anthropic-version": "2023-06-01",
-            "content-type": "application/json",
-        }
-        payload = {
-            "model": "claude-haiku-20240307",
-            "max_tokens": 50,
-            "messages": [{"role": "user", "content": prompt}],
-        }
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "https://api.anthropic.com/v1/messages",
-                headers=headers,
-                json=payload,
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as resp:
-                data = await resp.json()
-                text = data["content"][0]["text"].strip().replace(",", "")
-                digits = "".join(c for c in text if c.isdigit() or c == ".")
-                return float(digits) if digits else heuristic
+        text = await ai_complete(prompt, system="", max_tokens=50)
+        text = text.strip().replace(",", "")
+        digits = "".join(c for c in text if c.isdigit() or c == ".")
+        return float(digits) if digits else heuristic
 
     # -------------------------------------------------------------------------
     # 3. create_restposten_listing

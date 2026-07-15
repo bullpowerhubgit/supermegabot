@@ -8,9 +8,10 @@ import asyncio
 import logging
 from datetime import datetime, timezone
 
+from modules.ai_client import ai_complete
+
 log = logging.getLogger("FiverrPromoter")
 
-ANTHROPIC_KEY  = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 KLAVIYO_KEY    = os.getenv("KLAVIYO_API_KEY", "")
@@ -35,31 +36,18 @@ for _u in _env_gigs:
 
 
 async def _generate_promo(gig: dict) -> str:
-    if not ANTHROPIC_KEY:
-        return (f"🎯 {gig['title']}\n"
-                f"✅ Professionell | ⚡ Schnell | 💯 Garantiert\n"
-                f"Ab €{gig['price']} auf Fiverr: {gig['url']}")
     try:
-        import aiohttp
         prompt = (
             f"Schreibe einen knappen, viralen deutschen Social-Media-Post (max 3 Sätze) "
             f"für diesen Fiverr-Service: '{gig['title']}' (ab €{gig['price']}). "
             f"Nutzen betonen, Ende: {gig['url']} #Fiverr #Automatisierung"
         )
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                         "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 220,
-                      "messages": [{"role": "user", "content": prompt}]},
-                timeout=aiohttp.ClientTimeout(total=15),
-            ) as r:
-                d = await r.json(content_type=None)
-        return (d.get("content") or [{"text": ""}])[0].get("text", "").strip()
+        text = await ai_complete(prompt, system="", max_tokens=220)
+        if text:
+            return text.strip()
     except Exception as e:
         log.warning("Promo gen error: %s", e)
-        return f"🎯 {gig['title']} — ab €{gig['price']}\n{gig['url']}"
+    return f"🎯 {gig['title']} — ab €{gig['price']}\n{gig['url']}"
 
 
 async def _post_telegram(text: str) -> bool:

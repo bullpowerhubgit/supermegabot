@@ -34,7 +34,6 @@ except ImportError:
 
 OLLAMA_BASE = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 OLLAMA_MODEL = os.getenv("OLLAMA_SMART_MODEL", os.getenv("OLLAMA_DEFAULT_MODEL", "llama3.2:latest"))
-PERPLEXITY_KEY = os.getenv("PERPLEXITY_API_KEY", "")
 
 _TIMEOUT = aiohttp.ClientTimeout(total=120) if HAS_AIOHTTP else None
 
@@ -146,45 +145,28 @@ async def get_keyword_suggestions(niche: str) -> List[str]:
     """
     Generate keyword suggestions for a niche.
 
-    Uses Perplexity API (real-time web) if PERPLEXITY_API_KEY is set,
-    otherwise generates via Ollama locally.
+    Uses ai_complete() (automatic provider fallback: Ollama → Groq → DeepSeek →
+    OpenRouter → Gemini → Anthropic → OpenAI → Perplexity) for keyword generation.
 
     Args:
         niche: product niche or category (e.g. "fitness", "gaming")
 
     Returns list of keyword strings.
     """
-    if PERPLEXITY_KEY and HAS_AIOHTTP:
-        try:
-            headers = {
-                "Authorization": f"Bearer {PERPLEXITY_KEY}",
-                "Content-Type": "application/json",
-            }
-            payload = {
-                "model": "sonar-pro",
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": (
-                            f"Gib mir 20 SEO-Keywords mit hohem Suchvolumen für die Nische '{niche}' "
-                            f"im E-Commerce (Shopify/Etsy). Nur eine kommaseparierte Liste, kein weiterer Text."
-                        ),
-                    }
-                ],
-                "max_tokens": 400,
-                "temperature": 0.3,
-            }
-            async with _session(30) as s:
-                async with s.post("https://api.perplexity.ai/chat/completions",
-                                  headers=headers, json=payload) as r:
-                    if r.status == 200:
-                        data = await r.json()
-                        content = data["choices"][0]["message"]["content"]
-                        keywords = [k.strip() for k in content.split(",") if k.strip()]
-                        log.info("Perplexity Keywords: %d für '%s'", len(keywords), niche)
-                        return keywords
-        except Exception as e:
-            log.warning("Perplexity Keyword-Fehler: %s — Fallback zu Ollama", e)
+    try:
+        from modules.ai_client import ai_complete
+        prompt_kw = (
+            f"Gib mir 20 SEO-Keywords mit hohem Suchvolumen für die Nische '{niche}' "
+            f"im E-Commerce (Shopify/Etsy). Nur eine kommaseparierte Liste, kein weiterer Text."
+        )
+        content = await ai_complete(prompt_kw, max_tokens=400)
+        if content:
+            keywords = [k.strip() for k in content.split(",") if k.strip()]
+            if keywords:
+                log.info("AI Keywords: %d für '%s'", len(keywords), niche)
+                return keywords
+    except Exception as e:
+        log.warning("AI Keyword-Fehler: %s — Fallback zu Ollama", e)
 
     # Ollama fallback
     prompt = (

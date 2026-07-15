@@ -48,7 +48,6 @@ def _reddit_secret()   -> str: return os.getenv("REDDIT_CLIENT_SECRET", "")
 def _tg_token()        -> str: return os.getenv("TELEGRAM_BOT_TOKEN", "")
 def _tg_chat()         -> str: return os.getenv("TELEGRAM_CHAT_ID", "")
 def _gumroad_token()   -> str: return os.getenv("GUMROAD_ACCESS_TOKEN", "")
-def _anthropic_key()   -> str: return os.getenv("ANTHROPIC_API_KEY", "")
 def _ig_token()        -> str: return os.getenv("FACEBOOK_IG_ACCESS_TOKEN", os.getenv("FACEBOOK_META_TOKEN", ""))
 def _ig_account_id()   -> str: return os.getenv("INSTAGRAM_BUSINESS_ACCOUNT_ID", "17841478315197796")
 
@@ -167,24 +166,9 @@ Dashboard-Link: {SUBSCRIBE_URL}
 
 Gib NUR den fertigen Post-Text zurück, keine Erklärungen."""
 
-    key = _anthropic_key()
-    if not key:
-        return _fallback_content(platform, angle, top_products)
-
-    try:
-        async with _session() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                headers={"x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"},
-                json={"model": "claude-haiku-4-5-20251001", "max_tokens": 400,
-                      "messages": [{"role": "user", "content": prompt}]}
-            ) as r:
-                data = await r.json()
-                text = data.get("content", [{}])[0].get("text", "").strip()
-                return text if text else _fallback_content(platform, angle, top_products)
-    except Exception as e:
-        log.warning("AI generation failed: %s", e)
-        return _fallback_content(platform, angle, top_products)
+    from modules.ai_client import ai_complete
+    text = (await ai_complete(prompt, system="", max_tokens=400)).strip()
+    return text if text else _fallback_content(platform, angle, top_products)
 
 
 _SAFE_FALLBACK_PRODUCTS = [

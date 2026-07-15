@@ -66,49 +66,25 @@ def _process_reply(conv: dict, reply: str) -> str:
 
 
 async def _ai_response(call_sid: str, user_text: str) -> str:
-    """Generiert Sofia-Antwort: Groq (primär) → Claude (Fallback) → Default."""
+    """Generiert Sofia-Antwort über zentralen ai_client (Ollama → Groq → Anthropic)."""
     conv = _conversations.setdefault(call_sid, {"history": [], "buy_signal": False, "product": None})
     conv["history"].append({"role": "user", "content": user_text})
 
-    messages = [{"role": "system", "content": SOFIA_SYSTEM}] + conv["history"][-10:]
+    # Kontext auf letzte 8 Turns begrenzen (Latenz für Voice!)
+    history_text = "\n".join(
+        f"{'Kunde' if m['role']=='user' else 'Sofia'}: {m['content']}"
+        for m in conv["history"][-8:]
+    )
+    prompt = f"Gesprächsverlauf:\n{history_text}\n\nSofia antwortet jetzt (1-2 Sätze):"
 
-    # 1. Groq (llama-3.1-8b-instant — schnell, kostenlos)
-    groq_key = os.getenv("GROQ_API_KEY")
-    if groq_key:
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=6)) as s:
-                async with s.post(
-                    "https://api.groq.com/openai/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
-                    json={"model": "llama-3.1-8b-instant", "max_tokens": 120, "messages": messages},
-                ) as r:
-                    data = await r.json()
-            reply = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-            if reply:
-                return _process_reply(conv, reply)
-        except Exception as e:
-            log.warning("Sofia Groq: %s", e)
+    try:
+        from modules.ai_client import ai_complete
+        reply = await ai_complete(prompt, system=SOFIA_SYSTEM, model_hint="fast", max_tokens=120)
+        if reply:
+            return _process_reply(conv, reply.strip())
+    except Exception as e:
+        log.warning("Sofia ai_complete: %s", e)
 
-    # 2. Claude Haiku (Fallback)
-    if ANTHROPIC_KEY:
-        try:
-            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 120,
-                          "system": SOFIA_SYSTEM,
-                          "messages": [m for m in conv["history"][-8:] if m["role"] != "system"]},
-                ) as r:
-                    data = await r.json()
-            reply = (data.get("content") or [{"text": ""}])[0].get("text", "").strip()
-            if reply:
-                return _process_reply(conv, reply)
-        except Exception as e:
-            log.warning("Sofia Claude: %s", e)
-
-    # 3. Fallback
     fallback = "Entschuldigung, einen Moment bitte. Könnten Sie das wiederholen?"
     conv["history"].append({"role": "assistant", "content": fallback})
     return fallback

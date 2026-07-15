@@ -60,7 +60,6 @@ _DB   = _BASE / "data" / "email_conversations.db"
 # ── Env ───────────────────────────────────────────────────────────────────────
 def _e(k: str, d: str = "") -> str: return os.getenv(k, d)
 
-ANTHROPIC_KEY = lambda: _e("ANTHROPIC_API_KEY")
 TG_TOKEN      = lambda: _e("TELEGRAM_BOT_TOKEN")
 TG_CHAT       = lambda: _e("TELEGRAM_CHAT_ID")
 PUBLIC_URL    = lambda: _e("RAILWAY_PUBLIC_DOMAIN", "supermegabot-production.up.railway.app")
@@ -246,6 +245,7 @@ INTENT_PROMPTS = {
 async def generate_reply(incoming_email: str, company: str,
                           intent: str, thread_history: str = "") -> str:
     """Claude generiert lebhafte, personalisierte Antwort."""
+    from modules.ai_client import ai_complete
     intent_instruction = INTENT_PROMPTS.get(intent, INTENT_PROMPTS["general"])
     ctx = f"\nKonversationsverlauf:\n{thread_history}\n" if thread_history else ""
     prompt = (
@@ -255,25 +255,9 @@ async def generate_reply(incoming_email: str, company: str,
         f"Erkannter Intent: {intent}\n\n"
         f"Aufgabe: {intent_instruction}"
     )
-    try:
-        async with aiohttp.ClientSession() as s:
-            async with s.post(
-                "https://api.anthropic.com/v1/messages",
-                json={
-                    "model": "claude-haiku-4-5-20251001",
-                    "max_tokens": 300,
-                    "system": KONVERSATIONS_SYSTEM,
-                    "messages": [{"role": "user", "content": prompt}]
-                },
-                headers={"x-api-key": ANTHROPIC_KEY(),
-                          "anthropic-version": "2023-06-01"},
-                timeout=aiohttp.ClientTimeout(total=15)
-            ) as r:
-                if r.status == 200:
-                    data = await r.json()
-                    return data["content"][0]["text"].strip()
-    except Exception as e:
-        log.warning("Claude reply error: %s", e)
+    text = await ai_complete(prompt, system=KONVERSATIONS_SYSTEM, max_tokens=300)
+    if text:
+        return text.strip()
     return (
         f"Vielen Dank für Ihre Antwort!\n\n"
         f"Gerne helfe ich weiter. Hier ist der Link zur kostenlosen Demo:\n"

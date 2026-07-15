@@ -33,7 +33,6 @@ SHOPIFY_DOMAIN = os.getenv("SHOPIFY_SHOP_DOMAIN", "").replace("https://", "")
 SHOPIFY_TOKEN = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
 SHOPIFY_VER = os.getenv("SHOPIFY_API_VERSION", "2024-04")
 
-ANTHROPIC_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT = os.getenv("TELEGRAM_CHAT_ID", "")
 KLAVIYO_KEY = os.getenv("KLAVIYO_API_KEY", "")
@@ -116,60 +115,13 @@ def _product_price(product: Dict) -> str:
         return f"€{price}"
 
 
-# ── AI Content Generator (mit OpenRouter Fallback) ────────────────────────
-
-OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY", "")
+# ── AI Content Generator ──────────────────────────────────────────────────
 
 
 async def _ai(prompt: str, max_tokens: int = 600) -> str:
-    """Versucht Anthropic → OpenRouter → Template-Fallback."""
-    import aiohttp
-
-    # 1. Anthropic
-    if ANTHROPIC_KEY:
-        try:
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": max_tokens,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=30),
-                ) as r:
-                    d = await r.json()
-                    if d.get("error", {}).get("type") == "invalid_request_error" and "credit" in d.get("error", {}).get("message", ""):
-                        log.warning("Anthropic credits leer — OpenRouter Fallback")
-                    else:
-                        text = d.get("content", [{}])[0].get("text", "").strip()
-                        if text:
-                            return text
-        except Exception as e:
-            log.warning("Anthropic: %s", e)
-
-    # 2. OpenRouter (kostenlose Modelle: google/gemma-4-31b-it:free)
-    if OPENROUTER_KEY:
-        try:
-            async with aiohttp.ClientSession() as s:
-                async with s.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {OPENROUTER_KEY}",
-                             "Content-Type": "application/json",
-                             "HTTP-Referer": "https://ineedit.com.co"},
-                    json={"model": "google/gemma-4-31b-it:free",
-                          "max_tokens": max_tokens,
-                          "messages": [{"role": "user", "content": prompt}]},
-                    timeout=aiohttp.ClientTimeout(total=30),
-                ) as r:
-                    d = await r.json()
-                    text = d.get("choices", [{}])[0].get("message", {}).get("content", "").strip()
-                    if text:
-                        log.info("OpenRouter Fallback OK")
-                        return text
-        except Exception as e:
-            log.warning("OpenRouter: %s", e)
-
-    return ""  # Template-Fallback in den jeweiligen Funktionen
+    """Delegiert an ai_complete() mit vollautomatischem Provider-Fallback."""
+    from modules.ai_client import ai_complete
+    return await ai_complete(prompt, max_tokens=max_tokens)
 
 
 # ── Template-Fallbacks (kein AI nötig) ────────────────────────────────────

@@ -25,14 +25,12 @@ from pathlib import Path
 from typing import Dict, List, Optional
 
 import aiohttp
+from modules.ai_client import ai_complete
 
 log = logging.getLogger("ReviewGoldmine")
 
 _BASE    = Path(__file__).parent.parent
 _DB_PATH = _BASE / "data" / "review_goldmine.db"
-
-def _anthropic() -> str: return os.getenv("ANTHROPIC_API_KEY", "")
-def _openai()    -> str: return os.getenv("OPENAI_API_KEY", "")
 
 
 # ── DB ────────────────────────────────────────────────────────────────────────
@@ -178,50 +176,14 @@ Erstelle SOFORT einsetzbare Marketing-Assets. Antworte als JSON:
   "unique_selling_point": "1 Satz: Was macht dein Produkt besser als dieses?"
 }}"""
 
-    if _anthropic():
-        try:
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=30),
-                connector=aiohttp.TCPConnector(ssl=False)
-            ) as s:
-                async with s.post(
-                    "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": _anthropic(), "anthropic-version": "2023-06-01",
-                             "content-type": "application/json"},
-                    json={"model": "claude-haiku-4-5-20251001", "max_tokens": 1500,
-                          "messages": [{"role": "user", "content": prompt}]}
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json()
-                        text = d.get("content", [{}])[0].get("text", "")
-                        m = re.search(r"\{.*\}", text, re.DOTALL)
-                        if m:
-                            return json.loads(m.group())
-        except Exception as e:
-            log.warning("AI analyze error: %s", e)
-
-    if _openai():
-        try:
-            async with aiohttp.ClientSession(
-                timeout=aiohttp.ClientTimeout(total=30),
-                connector=aiohttp.TCPConnector(ssl=False)
-            ) as s:
-                async with s.post(
-                    "https://api.openai.com/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {_openai()}",
-                             "Content-Type": "application/json"},
-                    json={"model": "gpt-4o-mini",
-                          "messages": [{"role": "user", "content": prompt}],
-                          "max_tokens": 1500}
-                ) as r:
-                    if r.status == 200:
-                        d = await r.json()
-                        text = d["choices"][0]["message"]["content"]
-                        m = re.search(r"\{.*\}", text, re.DOTALL)
-                        if m:
-                            return json.loads(m.group())
-        except Exception as e:
-            log.warning("OpenAI error: %s", e)
+    try:
+        text = await ai_complete(prompt, max_tokens=1500)
+        if text:
+            m = re.search(r"\{.*\}", text, re.DOTALL)
+            if m:
+                return json.loads(m.group())
+    except Exception as e:
+        log.warning("AI analyze error: %s", e)
 
     # Fallback ohne AI
     return {
