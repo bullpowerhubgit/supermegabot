@@ -12919,8 +12919,93 @@ async def create_app():
     app.router.add_get( "/feed/pricerunner.xml",       handle_pricerunner_feed)
     app.router.add_post("/api/watchdog/run",           handle_watchdog_run)
     app.router.add_get( "/api/watchdog/stats",         handle_watchdog_stats)
+
+    # ── AI Follow-Up Sequenz ──────────────────────────────────────────────────
+    async def handle_ai_followup_run(req: web.Request) -> web.Response:
+        """POST /api/followup-ai/run — KI-Follow-Up Zyklus starten."""
+        try:
+            from modules.email_followup_ai import run_ai_followup_cycle
+            result = await run_ai_followup_cycle()
+            return web.json_response({"ok": True, "result": result})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_ai_followup_stats(req: web.Request) -> web.Response:
+        """GET /api/followup-ai/stats — Statistiken der AI Follow-Up Sequenz."""
+        try:
+            from modules.email_followup_ai import get_stats as followup_stats
+            return web.json_response(await followup_stats())
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_ai_followup_enroll(req: web.Request) -> web.Response:
+        """POST /api/followup-ai/enroll — Lead manuell eintragen.
+        Body: {email, company, first_name, segment, service_fit, source, notes}
+        """
+        try:
+            body = await req.json()
+        except Exception:
+            return web.json_response({"error": "invalid JSON"}, status=400)
+        email = (body.get("email") or "").strip().lower()
+        if not email or "@" not in email:
+            return web.json_response({"error": "valid email required"}, status=400)
+        try:
+            from modules.email_followup_ai import enroll_lead
+            result = await enroll_lead(
+                email=email,
+                company=body.get("company", ""),
+                first_name=body.get("first_name", ""),
+                segment=body.get("segment", ""),
+                service_fit=body.get("service_fit", ""),
+                source=body.get("source", "api"),
+                notes=body.get("notes", ""),
+            )
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_ai_followup_unsubscribe(req: web.Request) -> web.Response:
+        """GET /api/email/unsubscribe?email=...&token=... — Abmeldung."""
+        email = req.rel_url.query.get("email", "").strip().lower()
+        token = req.rel_url.query.get("token", "").strip()
+        if not email or not token:
+            return web.Response(text="Fehlende Parameter.", content_type="text/html")
+        try:
+            from modules.email_followup_ai import handle_unsubscribe
+            result = await handle_unsubscribe(email, token)
+            if result["ok"]:
+                html = (
+                    "<html><body style='font-family:sans-serif;text-align:center;padding:60px'>"
+                    f"<h2>Abmeldung erfolgreich</h2>"
+                    f"<p>{email} wurde aus allen Follow-Up Sequenzen abgemeldet.</p>"
+                    "</body></html>"
+                )
+            else:
+                html = (
+                    "<html><body style='font-family:sans-serif;text-align:center;padding:60px'>"
+                    f"<h2>Fehler</h2><p>{result['message']}</p>"
+                    "</body></html>"
+                )
+            return web.Response(text=html, content_type="text/html")
+        except Exception as e:
+            return web.Response(text=f"Fehler: {e}", content_type="text/html", status=500)
+
+    async def handle_ai_followup_reply_check(req: web.Request) -> web.Response:
+        """POST /api/followup-ai/check-replies — IMAP Reply-Detection laufen lassen."""
+        try:
+            from modules.email_followup_ai import check_replies
+            found = await check_replies()
+            return web.json_response({"ok": True, "replies_detected": found})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/followup-ai/run",           handle_ai_followup_run)
+    app.router.add_get( "/api/followup-ai/stats",         handle_ai_followup_stats)
+    app.router.add_post("/api/followup-ai/enroll",        handle_ai_followup_enroll)
+    app.router.add_get( "/api/email/unsubscribe",         handle_ai_followup_unsubscribe)
+    app.router.add_post("/api/followup-ai/check-replies", handle_ai_followup_reply_check)
     # /api/mac/watchdog (handle_mac_watchdog) oben separat registriert
-    log.info("Income Automation routes registered (shopping/drip/cart/price/watchdog)")
+    log.info("Income Automation routes registered (shopping/drip/cart/price/watchdog/followup-ai)")
 
     # ── LinkedIn DM Outreach ───────────────────────────────────────────────────
     async def handle_linkedin_outreach(request):

@@ -836,7 +836,14 @@ async def _run_outreach_inner(daily_limit: int = 100) -> Dict:
 # ── Follow-Up (nach 7 Tagen ohne Antwort) ────────────────────────────────────
 
 async def run_followup(daily_limit: int = 30) -> Dict:
-    now = int(time.time())
+    """
+    Sendet AI-personalisierte Follow-Up Emails an Leads die nicht geantwortet haben.
+    Nutzt email_followup_ai für KI-Content-Generierung und Reply-Detection.
+    """
+    from modules.ai_client import ai_complete
+    from modules.email_followup_ai import generate_followup_email, unsubscribe_link
+
+    now  = int(time.time())
     sent = 0
 
     with _db() as c:
@@ -852,31 +859,32 @@ async def run_followup(daily_limit: int = 30) -> Dict:
         """, (now, daily_limit)).fetchall()
 
     for row in dues:
-        subject = "Nachtrag: KI-Reseller Angebot für " + (row["name"] or "Ihr Unternehmen")
-        body = f"""Guten Tag,
+        email      = row["email"]
+        company    = row["name"] or "Ihr Unternehmen"
+        segment    = row["segment"] or "default"
+        service_fit = row["service_fit"] or ""
 
-ich wollte kurz nachfragen ob meine letzte E-Mail bei Ihnen ankam.
+        # KI-generierter Follow-Up (Step 1 = 7-Tage-Nachfasse)
+        subject, body = await generate_followup_email(
+            email=email,
+            company=company,
+            first_name="",          # kein Vorname in bulk_outreach
+            segment=segment,
+            service_fit=service_fit,
+            step=1,
+            tone="friendly",
+            prior_sends=1,
+        )
 
-Das Angebot in Kürze: Empfehlen Sie unsere KI-Services an Ihre Kunden — wir liefern, Sie erhalten 30% Provision ohne eigenen Aufwand.
-
-Falls das nichts für Sie ist, einfach kurz antworten — ich melde mich nicht mehr.
-
-Falls Interesse besteht: {PARTNER_CTA}
-
-Freundliche Grüße,
-Rudolf Sarkany | AIITEC
-
---
-Abmeldung: Antwort genügt."""
-
-        success = await asyncio.to_thread(_send_email, sent % len(_GMAIL_ACCOUNTS), row["email"], subject, body)
+        success = await asyncio.to_thread(_send_email, sent % len(_GMAIL_ACCOUNTS), email, subject, body)
         if success:
             with _db() as c:
                 c.execute("UPDATE bo_outreach SET status='followup_sent', follow_up_due=NULL WHERE id=?", (row["id"],))
             sent += 1
+            log.info("Follow-Up (AI) gesendet → %s [%s]", email, segment)
         await asyncio.sleep(random.uniform(60, 120))
 
-    log.info(f"Follow-Up: {sent} gesendet")
+    log.info("Follow-Up: %d gesendet", sent)
     return {"followup_sent": sent}
 
 

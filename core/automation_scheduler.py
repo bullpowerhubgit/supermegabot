@@ -7126,6 +7126,15 @@ async def task_email_drip() -> str:
         return f"Email Drip Fehler: {e}"
 
 
+async def task_ai_followup_cycle() -> str:
+    """KI-personalisierte Follow-Up Sequenz: Enroll + Reply-Check + AI-Emails (alle 6h)."""
+    try:
+        from modules.email_followup_ai import run_ai_followup_cycle
+        return await run_ai_followup_cycle()
+    except Exception as e:
+        return f"AI-FollowUp Fehler: {e}"
+
+
 async def task_cart_recovery() -> str:
     """Abandoned Cart Recovery Emails (stündlich)."""
     try:
@@ -7934,11 +7943,12 @@ TASKS = [
     ("revenue_watchdog",          task_revenue_watchdog,               1800,   30),  # 30min — Revenue Monitor + Auto-Korrekturen
     ("cart_recovery",             task_cart_recovery,                  3600,  700),  # 1h   — Abandoned Cart 3-Email Sequenz
     ("email_drip",                task_email_drip,                    10800,  600),  # 3h   — 7-Tage B2B Drip Follow-Up
+    ("ai_followup",              task_ai_followup_cycle,             21600,  650),  # 6h   — KI-personalisierte Follow-Up Sequenz
     ("google_shopping_feed",      task_google_shopping_feed,          21600,  500),  # 6h   — Google Shopping XML Feed
     ("price_feeds",               task_price_feeds,                   21600,  800),  # 6h   — Idealo/PriceRunner/Kelkoo
     ("roas_optimizer",            task_roas_optimizer,                 3600, 9100),  # 1h   — Meta ROAS Live-Pull, Auto-Scale/Pause
     ("env_validator",             task_env_validator,                 86400, 9101),  # tägl. — API-Key Health
-    ("meta_ads_optimize",         task_meta_ads_optimize,            86400, 9195),  # 24h — Meta Ads CTR/CPC Auto-Optimize
+    # meta_ads_optimize duplicate removed — kept as 4h slot in autonomous_pilot section below
     ("free_api_hunter",           task_free_api_hunter,              43200, 9200),  # 12h — Suche + Cache kostenlose APIs
     ("free_api_discovery",        task_free_api_discovery,           86400, 9250),  # 24h — Auto-Discovery neuer Free APIs
     ("rotating_prospector",       task_rotating_buyer_prospector,     3600, 9300),  # 1h  — Andere Branche pro Lauf, Emails senden
