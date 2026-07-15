@@ -119,13 +119,24 @@ async def generate_product_idea(niche: str, product_type: str) -> dict:
 
 async def create_shopify_product(idea: dict) -> Optional[str]:
     """Erstellt Shopify-Produkt aus Idee. Gibt product_id zurück."""
+    from modules.product_gatekeeper import validate_product
+    ok, reason = validate_product(
+        title=idea.get("name", ""),
+        vendor="BullPowerHub",
+        product_type=idea.get("category", ""),
+        price=float(idea.get("price", 0)),
+    )
+    if not ok:
+        log.warning("Gatekeeper blockiert Produkt: %s — %s", idea.get("name","")[:50], reason)
+        return None
+
     img_url = ""
     payload = {
         "product": {
             "title": idea["name"],
             "body_html": f"<p>{idea['description']}</p>",
-            "vendor": "BullPowerHub",
-            "product_type": idea.get("category", "Digital"),
+            "vendor": "iNeedit",
+            "product_type": idea.get("category", "Smart Gadget"),
             "tags": ",".join(idea.get("tags", [])),
             "status": "active",
             "variants": [{

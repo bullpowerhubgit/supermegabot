@@ -5617,13 +5617,25 @@ async def task_shopify_full_autonomy() -> str:
 
 
 async def task_shopify_mass_creator() -> str:
-    """Shopify Mass Creator: Massenimport + Produkterstellung aus allen Quellen (alle 12h)."""
+    """Shopify Mass Creator: DEAKTIVIERT — wurde durch smart_product_finder ersetzt."""
+    return "shopify_mass_creator deaktiviert (Fake-Produkte). Nutze smart_product_finder."
+
+
+async def task_smart_product_finder() -> str:
+    """Smart Product Finder: KI-recherchiert + validiert echte Trending-Produkte (alle 12h)."""
     try:
-        from modules.shopify_mass_creator import run_shopify_mass_cycle
-        r = await run_shopify_mass_cycle()
-        return f"Shopify Mass: {r}"
+        from modules.smart_product_finder import run_smart_product_cycle
+        r = await run_smart_product_cycle(
+            max_amazon_cats=4,
+            max_aliexpress_cats=6,
+            max_reddit_subs=3,
+            max_imports=15,
+        )
+        return (f"SmartFinder: {r.get('researched',0)} recherchiert → "
+                f"{r.get('validated',0)} validiert → "
+                f"{r.get('imported',0)} importiert")
     except Exception as e:
-        return f"Shopify Mass Creator Fehler: {e}"
+        return f"SmartFinder Fehler: {e}"
 
 
 async def task_autonomous_pipeline() -> str:
@@ -7592,6 +7604,7 @@ TASKS = [
     ("shopify_full_autonomy",  task_shopify_full_autonomy,  21600, 1620),  # 6h  — SEO+Collections+Restock+Titel
     # shopify_mass_creator DEAKTIVIERT — erstellt Fake-Produkte (vendor=SuperMegaBot, keine echten Lieferanten)
     # ("shopify_mass_creator",   task_shopify_mass_creator,   43200, 1660),
+    ("smart_product_finder",   task_smart_product_finder,   43200, 1665),  # 12h — KI-Trending-Research + Quality Gate
     ("autonomous_pipeline",    task_autonomous_pipeline,    21600, 1700),  # 6h  — Quelle→Shopify vollautomatisch
     ("auto_sorter",            task_auto_sorter,            14400, 1740),  # 4h  — Shopify Collections auto-sort
     ("gmc_fixer",              task_gmc_product_fixer,      21600, 1780),  # 6h  — Google Merchant Fehler fixen
