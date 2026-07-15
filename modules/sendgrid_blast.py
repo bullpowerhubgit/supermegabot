@@ -157,6 +157,41 @@ def build_welcome_html(first_name: str) -> Tuple[str, str]:
 
 # ── Core send ─────────────────────────────────────────────────────────────────
 
+async def _send_resend(to_email: str, to_name: str, subject: str, html: str,
+                       from_email: Optional[str] = None) -> bool:
+    """Resend.com — primärer Sender (kein IP-Problem, sofort aktiv)."""
+    key = os.getenv("RESEND_API_KEY", "")
+    if not key:
+        return False
+    sender_email = from_email or os.getenv("BREVO_FROM_EMAIL", SG_FROM_EMAIL)
+    sender_name  = os.getenv("BREVO_FROM_NAME", SG_FROM_NAME)
+    # Resend: onboarding@resend.dev funktioniert ohne Domain-Verifizierung
+    if "ineedit.com.co" not in sender_email and "resend.dev" not in sender_email:
+        sender_email = "onboarding@resend.dev"
+    payload = {
+        "from":    f"{sender_name} <{sender_email}>",
+        "to":      [to_email],
+        "subject": subject,
+        "html":    html,
+    }
+    try:
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+            async with s.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+                json=payload,
+            ) as r:
+                if r.status in (200, 201):
+                    log.info("Resend ✅ → %s", to_email)
+                    return True
+                body = await r.text()
+                log.warning("Resend %s %s: %s", r.status, to_email, body[:200])
+                return False
+    except Exception as e:
+        log.warning("Resend error %s: %s", to_email, e)
+        return False
+
+
 async def _send_brevo_rest(to_email: str, to_name: str, subject: str, html: str,
                            from_email: Optional[str] = None) -> bool:
     """Brevo REST API — primärer Sender."""
@@ -219,11 +254,15 @@ async def _send_brevo_smtp(to_email: str, to_name: str, subject: str, html: str,
 
 async def send_single(to_email: str, to_name: str, subject: str, html: str,
                       from_email: Optional[str] = None) -> Dict:
-    """Send via Brevo REST (primär) → Brevo SMTP → SendGrid (fallback)."""
+    """Send via Resend → Brevo REST → Brevo SMTP → SendGrid (fallback)."""
     if not to_email or "@" not in to_email:
         return {"ok": False, "error": "invalid to_email"}
 
-    # Brevo REST zuerst (kein IP-Problem mit SMTP)
+    # Resend (primär — kein IP-Problem, sofort aktiv)
+    if await _send_resend(to_email, to_name, subject, html, from_email):
+        return {"ok": True, "to": to_email, "via": "resend"}
+
+    # Brevo REST Fallback (wenn aktiviert)
     if await _send_brevo_rest(to_email, to_name, subject, html, from_email):
         return {"ok": True, "to": to_email, "via": "brevo_rest"}
 
