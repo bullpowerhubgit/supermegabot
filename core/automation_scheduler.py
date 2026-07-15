@@ -7848,7 +7848,7 @@ TASKS = [
     ("streetwear_email",     task_streetwear_email,    259200, 600),  # 3 Tage — Mailchimp+Klaviyo neue Produkte
     ("customer_export",      task_customer_export,      86400, 400),  # täglich — Shopify-Kunden → Klaviyo+MC
     ("klaviyo_mass",         task_klaviyo_mass_daily,   86400, 500),  # täglich — Klaviyo Mass Campaigns
-    ("mailchimp_mass",       task_mailchimp_mass_daily, 86400, 550),  # täglich — Mailchimp Mass Campaigns
+    # ("mailchimp_mass",       task_mailchimp_mass_daily, 86400, 550),  # DEAKTIVIERT — Konto gesperrt 2026-07-15
     # ── Content Loop Engine (Smart Home SEO → alle Kanäle gratis) ───────────
     ("content_loop_engine",  task_content_loop_engine, 21600, 600),  # 6h → 8h war zu langsam: SEO-Artikel + IndexNow + TG + LI
     # shopify_seo_blog (T-Shirt) deaktiviert — ersetzt durch content_loop_engine (Smart Home)
@@ -7947,8 +7947,8 @@ TASKS = [
     ("email_blast",            task_email_blast_engine,      7200, 1900),  # 2h  — Klaviyo+Mailchimp+SMTP Blast
     ("email_growth",           task_email_growth_engine,   14400,  120),  # 4h  — Shopify→Klaviyo + SMTP-Pool 500/Tag
     ("email_sequences",        task_email_sequence_engine,  14400, 1940),  # 4h  — Neue Kunden in Sequenz einschreiben
-    ("mailchimp_autonomy",     task_mailchimp_autonomy,     43200, 1980),  # 12h — Mailchimp Kampagnen+Welcome
-    ("mailchimp_dragon",       task_mailchimp_dragon_1000,  86400, 2020),  # 24h — 1000-Artikel-Kampagne
+    # ("mailchimp_autonomy",     task_mailchimp_autonomy,     43200, 1980),  # DEAKTIVIERT — Konto gesperrt 2026-07-15
+    # ("mailchimp_dragon",       task_mailchimp_dragon_1000,  86400, 2020),  # DEAKTIVIERT — Konto gesperrt 2026-07-15
     # ── TRAFFIC & SEO ─────────────────────────────────────────────────────────
     ("traffic_mega",           task_traffic_mega_engine,    21600, 2060),  # 6h  — Viral+Backlinks+Social
     ("traffic_swarm",          task_traffic_swarm,          28800, 2100),  # 8h  — Multi-Channel Traffic-Schwarm
@@ -8046,7 +8046,7 @@ TASKS = [
     ("digistore_products_check",task_digistore_products_check,1800,   85),   # 30 min
     # ── Marketing & Sync (hourly) ─────────────────────────────────────────────
     ("ds24_funnel_sync",         task_ds24_funnel_sync,        900,    35),   # 15 min — neue Käufer sofort
-    ("mailchimp_sync",          task_mailchimp_sync,          3600,   90),   # 1h
+    # ("mailchimp_sync",          task_mailchimp_sync,          3600,   90),   # DEAKTIVIERT — Konto gesperrt 2026-07-15
     ("shopify_sync",            task_shopify_sync,            1800,   120),  # 30min
     ("social_status",           task_social_status,           3600,   150),  # 1h
     ("social_autoposter",       task_social_autoposter,       3600,   180),  # 1h
@@ -8093,7 +8093,7 @@ TASKS = [
     ("klaviyo_sync",            task_klaviyo_sync,             3600,   95),  # 1h — Shopify+DS24 Käufer → Klaviyo upsert
     ("shopify_title_de",        task_shopify_title_germanizer, 1800,  62),   # 30min — 50 englische Titel → Deutsch
     ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
-    ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
+    # ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # DEAKTIVIERT — Konto gesperrt 2026-07-15
     ("twitter_auto_post",       task_twitter_auto_post,      3600,   600),  # 1h — Auto-Tweet
     ("shopify_blog_auto",       task_shopify_blog_auto,      7200,    46),   # 2h — Auto-Blog-Post
     # ── Email Sequences (drip processing) ────────────────────────────────
