@@ -36,6 +36,59 @@ ALIASES: List[Tuple[str, str, int]] = [
 _rr_idx = 0
 _GMAIL_DAILY_EXHAUSTED: set = set()  # Session-persistentes Set für 550-5.4.5-Accounts
 
+# ── Globaler Tages-Counter (verhindert 550-Overruns) ─────────────────────────
+import sqlite3 as _sqlite3
+import time as _time
+
+_COUNTER_DB = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")) / "email_guard.db"
+MAX_PER_ACCOUNT_PER_DAY = 80   # 5 Konten × 80 = 400/Tag Gesamt-Pool
+
+def _today() -> str:
+    import datetime
+    return datetime.date.today().isoformat()
+
+def _init_counter_db() -> None:
+    try:
+        _COUNTER_DB.parent.mkdir(parents=True, exist_ok=True)
+        c = _sqlite3.connect(_COUNTER_DB)
+        c.execute("""CREATE TABLE IF NOT EXISTS smtp_daily_counts (
+            account TEXT, date TEXT, count INTEGER DEFAULT 0,
+            PRIMARY KEY (account, date)
+        )""")
+        c.commit(); c.close()
+    except Exception:
+        pass
+
+try:
+    _init_counter_db()
+except Exception:
+    pass
+
+def _account_count_today(email: str) -> int:
+    try:
+        c = _sqlite3.connect(_COUNTER_DB)
+        row = c.execute(
+            "SELECT count FROM smtp_daily_counts WHERE account=? AND date=?",
+            (email.lower(), _today())
+        ).fetchone()
+        c.close()
+        return row[0] if row else 0
+    except Exception:
+        return 0
+
+def _increment_count(email: str) -> None:
+    try:
+        c = _sqlite3.connect(_COUNTER_DB)
+        c.execute("""INSERT INTO smtp_daily_counts(account,date,count) VALUES(?,?,1)
+                     ON CONFLICT(account,date) DO UPDATE SET count=count+1""",
+                  (email.lower(), _today()))
+        c.commit(); c.close()
+    except Exception:
+        pass
+
+def _is_account_at_limit(email: str) -> bool:
+    return _account_count_today(email) >= MAX_PER_ACCOUNT_PER_DAY
+
 
 def _load_secrets() -> Dict[str, str]:
     """Runtime-Passwörter aus data/gmail_secrets.json (nicht in Git)."""
@@ -233,29 +286,34 @@ def send_email(
     for acc in pool:
         if acc.email in _GMAIL_DAILY_EXHAUSTED:
             continue
+        if _is_account_at_limit(acc.email):
+            log.warning("SMTP %s Tages-Cap (%d) erreicht — übersprungen", acc.email, MAX_PER_ACCOUNT_PER_DAY)
+            continue
         try:
             msg = _build_message(acc, to_email, subject, body, html=html)
             _smtp_send(acc, msg, to_email)
-            log.info("SMTP → %s via %s", to_email, acc.email)
+            _increment_count(acc.email)
+            log.info("SMTP → %s via %s (%d/%d heute)", to_email, acc.email,
+                     _account_count_today(acc.email), MAX_PER_ACCOUNT_PER_DAY)
             return True, acc.email
         except smtplib.SMTPDataError as e:
             if e.smtp_code == 550 and b"5.4.5" in (e.smtp_error or b""):
                 _GMAIL_DAILY_EXHAUSTED.add(acc.email)
-                log.warning("SMTP %s Tageslimit — für heute deaktiviert", acc.email)
+                log.warning("SMTP %s Tageslimit (Gmail 550) — für heute deaktiviert", acc.email)
             else:
                 log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
         except smtplib.SMTPRecipientsRefused as e:
             codes = {str(v[0]) for v in e.recipients.values()}
             if "550" in codes:
                 _GMAIL_DAILY_EXHAUSTED.add(acc.email)
-                log.warning("SMTP %s Tageslimit (Recipients) — für heute deaktiviert", acc.email)
+                log.warning("SMTP %s Tageslimit (Recipients 550) — für heute deaktiviert", acc.email)
             else:
                 log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
         except Exception as e:
             err_str = str(e)
             if "5.4.5" in err_str or "Daily user sending limit" in err_str:
                 _GMAIL_DAILY_EXHAUSTED.add(acc.email)
-                log.warning("SMTP %s Tageslimit — für heute deaktiviert", acc.email)
+                log.warning("SMTP %s Tageslimit (Gmail 550) — für heute deaktiviert", acc.email)
             else:
                 log.warning("SMTP %s fehlgeschlagen: %s", acc.email, e)
     return False, ""

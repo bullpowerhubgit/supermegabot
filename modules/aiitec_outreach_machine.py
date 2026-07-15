@@ -149,7 +149,7 @@ def _send_via_sendgrid(to: str, subject: str, body: str) -> bool:
         log.debug("  SendGrid Fehler: %s", e)
     return False
 
-EMAILS_PER_DAY    = 450  # 6 Gmail-Accounts × 75/Account = 450/Lauf (Maximum-Modus)
+EMAILS_PER_DAY    = 60   # 5 Gmail-Accounts × 12/Run × 4 Runs = 240/Tag (Safe-Modus)
 FOLLOWUP_DAYS_1   = 3    # Schnellere Follow-Up-Kadenz
 FOLLOWUP_DAYS_2   = 7
 # Vollautonomer Multi-Run: 4x täglich (Maximum)
