@@ -69,6 +69,7 @@ DASHBOARD_URL = os.environ.get(
 ).rstrip("/")
 POLL_TIMEOUT = int(os.environ.get("TELEGRAM_POLL_TIMEOUT", "20"))
 ALLOWED_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID", "")
+DASHBOARD_SECRET = os.environ.get("DASHBOARD_SECRET", "")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -107,15 +108,20 @@ def dashboard_execute(command: str, session_id: str) -> str:
     """Forward a command to the dashboard CommandRouter."""
     url = f"{DASHBOARD_URL}/api/bot/execute"
     try:
-        resp = _http(
-            "POST",
-            url,
-            {"command": command, "session_id": session_id},
-            timeout=60,
-        )
+        body = json.dumps({"command": command, "session_id": session_id}).encode()
+        headers: dict[str, str] = {"Content-Type": "application/json"}
+        if DASHBOARD_SECRET:
+            headers["X-API-Key"] = DASHBOARD_SECRET
+        req = urllib.request.Request(url, data=body, headers=headers, method="POST")
+        with urllib.request.urlopen(req, timeout=60) as r:
+            resp = json.loads(r.read().decode(errors="replace"))
         if not resp.get("ok"):
             return f"Fehler vom Dashboard: {resp.get('error', 'unbekannt')}"
         return str(resp.get("response", ""))
+    except urllib.error.HTTPError as e:
+        body = e.read().decode(errors="replace")
+        log.error("dashboard_execute HTTPError %s: %s", e.code, body[:200])
+        return f"Dashboard-Fehler {e.code}: {body[:100]}"
     except urllib.error.URLError as e:
         return (
             f"Dashboard nicht erreichbar ({DASHBOARD_URL}): {e}\n"

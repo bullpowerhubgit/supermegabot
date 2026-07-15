@@ -5111,7 +5111,7 @@ async def handle_stripe_webhook(req):
         secrets = [s for s in [live_secret, test_secret] if s]
         if not secrets:
             log.error("[STRIPE-WEBHOOK] No webhook secret configured — rejecting request")
-            return web.json_response({"ok": False, "error": "STRIPE_WEBHOOK_SECRET not configured"}, status=500)
+            return web.json_response({"ok": False, "error": "STRIPE_WEBHOOK_SECRET not configured"}, status=400)
         verified = any(verify_webhook_signature(payload, sig_header, s) for s in secrets)
         if not verified:
             return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
@@ -9808,7 +9808,7 @@ async def handle_shopify_oauth_start(req: web.Request) -> web.Response:
               "read_price_rules,write_price_rules,read_inventory,write_inventory,"
               "read_locations,write_script_tags,read_analytics")
     _shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
-    _client_id   = os.getenv("SHOPIFY_API_KEY", "65d04d461e18f4661429ab02ce3418a0")
+    _client_id   = os.getenv("SHOPIFY_API_KEY", "")
     _base_url    = os.getenv("RAILWAY_PUBLIC_DOMAIN", os.getenv("RAILWAY_STATIC_URL", "https://supermegabot-production.up.railway.app")).rstrip("/")
     _redirect    = urllib.parse.quote(f"{_base_url}/api/shopify/callback")
     url = (f"https://{_shop_domain}/admin/oauth/authorize"
