@@ -2943,6 +2943,39 @@ async def handle_sendgrid_status(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_brevo_test(req: web.Request) -> web.Response:
+    """GET /api/email/brevo-test — Brevo REST direkt testen."""
+    import aiohttp as _aio, os as _os
+    key = _os.getenv("BREVO_API_KEY", "")
+    from_email = _os.getenv("BREVO_FROM_EMAIL", "aiitecbuuss@gmail.com")
+    from_name  = _os.getenv("BREVO_FROM_NAME", "AiiteC")
+    to_email   = req.rel_url.query.get("to", "bullpowersrtkennels@gmail.com")
+    payload = {
+        "sender": {"name": from_name, "email": from_email},
+        "to": [{"email": to_email, "name": "Test"}],
+        "subject": "✅ Brevo Test vom Railway-Server",
+        "htmlContent": "<p>Brevo REST API Test direkt vom Railway-Server ✅</p>",
+    }
+    try:
+        async with _aio.ClientSession(timeout=_aio.ClientTimeout(total=15)) as s:
+            async with s.post(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={"api-key": key, "Content-Type": "application/json"},
+                json=payload,
+            ) as r:
+                body = await r.text()
+                return web.json_response({
+                    "ok": r.status in (200, 201),
+                    "status": r.status,
+                    "response": body[:500],
+                    "from": from_email,
+                    "to": to_email,
+                    "key_set": bool(key),
+                })
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)})
+
+
 async def handle_seo_status(req):
     """SEO score for all Shopify products."""
     try:
@@ -10394,6 +10427,7 @@ async def create_app():
     # ── SendGrid Email ────────────────────────────────────────────────────────
     app.router.add_get("/api/email/sendgrid-status",  handle_sendgrid_status)
     app.router.add_post("/api/email/sendgrid-blast",  handle_sendgrid_blast)
+    app.router.add_get("/api/email/brevo-test",       handle_brevo_test)
     # ── SEO Autopilot ─────────────────────────────────────────────────────────
     app.router.add_get("/api/seo/status",             handle_seo_status)
     app.router.add_post("/api/seo/run",               handle_seo_run)
