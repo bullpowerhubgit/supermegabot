@@ -322,7 +322,7 @@ async def run_dragon_campaign(topic: str = "") -> dict:
     if os.getenv("MAILCHIMP_AUTOMATION_ENABLED", "true").lower() in ("false", "0", "off"):
         return {"ok": False, "error": "Mailchimp automation disabled — TOS violation fix pending"}
     try:
-        ds24 = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+        ds24 = os.getenv("DS24_AFFILIATE_LINK", "")
         shop = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
         shop_url = f"https://{shop}"
         subject_topic = topic or "KI-Business Automatisierung 2026"

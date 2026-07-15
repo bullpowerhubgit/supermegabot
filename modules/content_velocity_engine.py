@@ -23,7 +23,7 @@ _TG_CHANNEL = os.getenv("TELEGRAM_CHANNEL_ID", "")
 TG_CHAT         = _TG_CHANNEL or ""
 
 PRODUCT_NAME    = os.getenv("DS24_PRODUCT_NAME", "AI Income Machine")
-PRODUCT_URL     = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+PRODUCT_URL     = os.getenv("DS24_AFFILIATE_LINK", "")
 PRODUCT_PRICE   = os.getenv("DS24_PRODUCT_PRICE", "€37")
 
 DATA_DIR    = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data")) / "content_velocity"

@@ -338,7 +338,7 @@ Erstelle:
                                 await brutus_fire(
                                     title=f"🛒 Verbessert: {result['title'][:40]}",
                                     body=f"Dieses Produkt wurde frisch aktualisiert — bessere Beschreibung, optimierter Preis, neue Bilder.",
-                                    link=os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"),
+                                    link=os.getenv("DS24_AFFILIATE_LINK", ""),
                                     niche="shopify trending produkt",
                                     tags=["shopify", "neu", "deal"],
                                     channels=["telegram", "klaviyo"]  # Nur leise Kanäle für Updates

@@ -237,7 +237,7 @@ async def auto_publish_blog_post(keyword: str, shop_domain: str = "") -> dict:
     
     domain = shop_domain or os.getenv("SHOPIFY_SHOP_DOMAIN", "")
     token = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "") or os.getenv("SHOPIFY_ACCESS_TOKEN", "")
-    affiliate = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+    affiliate = os.getenv("DS24_AFFILIATE_LINK", "")
     
     if not domain or not token:
         return {"ok": False, "reason": "SHOPIFY_SHOP_DOMAIN or SHOPIFY_ADMIN_API_TOKEN not set"}

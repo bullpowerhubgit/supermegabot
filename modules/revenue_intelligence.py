@@ -329,7 +329,7 @@ async def revenue_autopilot() -> dict:
     # Proaktiv: DS24 Affiliate Blast wenn keine neuen Subs (immer Umsatz pushen)
     if not new_subs:
         try:
-            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
+            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "")
             shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
             promos = [
                 f"💰 Passives Einkommen mit KI-Automation? Starte jetzt → {ds24_link}",
