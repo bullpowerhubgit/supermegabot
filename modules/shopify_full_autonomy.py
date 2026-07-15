@@ -1300,16 +1300,16 @@ async def run_full_autonomy_cycle(quick: bool = False, restock: bool = True) -> 
     results["collections"] = await run_auto_collections()
 
     # Schritt 3: SEO-Fix (Batch)
-    results["seo_fix"] = await run_mass_seo_fix(batch_size=30)
+    results["seo_fix"] = await run_mass_seo_fix(batch_size=15)
 
     # Schritt 4: Schwache Produkte verbessern
-    results["weak_products"] = await audit_and_fix_weak_products(limit=15)
+    results["weak_products"] = await audit_and_fix_weak_products(limit=10)
 
     # Schritt 5: Image Alt-Texts
-    results["alt_texts"] = await fix_image_alt_texts(limit=50)
+    results["alt_texts"] = await fix_image_alt_texts(limit=25)
 
     # Schritt 6: CTAs injizieren
-    results["cta_injection"] = await inject_cta_snippets(limit=50)
+    results["cta_injection"] = await inject_cta_snippets(limit=25)
 
     # Schritt 7: Bilder für bildlose Produkte
     results["image_fix"] = await fix_missing_images(limit=20)
