@@ -11652,6 +11652,67 @@ async def create_app():
     app.router.add_post("/api/sms/incoming", handle_sms_incoming)
     log.info("SMS Incoming Handler registriert (/api/sms/incoming)")
 
+    # ── Sofia Voice Agent ─────────────────────────────────────────────────────
+    async def handle_voice_incoming(req: web.Request) -> web.Response:
+        """POST /api/voice/incoming — Twilio ruft hier an."""
+        try:
+            from modules.sofia_voice_agent import handle_incoming_call
+            data = await req.post()
+            call_sid = data.get("CallSid", "unknown")
+            from_num = data.get("From", "")
+            log.info("Sofia: Eingehender Anruf %s von %s", call_sid, from_num)
+            twiml = await handle_incoming_call(call_sid, from_num)
+            return web.Response(text=twiml, content_type="application/xml")
+        except Exception as e:
+            log.error("handle_voice_incoming: %s", e)
+            twiml = ('<?xml version="1.0" encoding="UTF-8"?><Response>'
+                     '<Say voice="Polly.Vicki" language="de-DE">Einen Moment bitte.</Say>'
+                     '</Response>')
+            return web.Response(text=twiml, content_type="application/xml")
+
+    async def handle_voice_respond(req: web.Request) -> web.Response:
+        """POST /api/voice/respond — Spracherkennung Callback."""
+        try:
+            from modules.sofia_voice_agent import handle_voice_response
+            data = await req.post()
+            call_sid  = req.rel_url.query.get("call_sid") or data.get("CallSid", "")
+            speech    = data.get("SpeechResult", "")
+            conf_raw  = data.get("Confidence", "1.0")
+            try:
+                confidence = float(conf_raw)
+            except Exception:
+                confidence = 1.0
+            twiml = await handle_voice_response(call_sid, speech, confidence)
+            return web.Response(text=twiml, content_type="application/xml")
+        except Exception as e:
+            log.error("handle_voice_respond: %s", e)
+            twiml = ('<?xml version="1.0" encoding="UTF-8"?><Response>'
+                     '<Say voice="Polly.Vicki" language="de-DE">Entschuldigung, bitte wiederholen.</Say>'
+                     '<Hangup/></Response>')
+            return web.Response(text=twiml, content_type="application/xml")
+
+    async def handle_voice_status(req: web.Request) -> web.Response:
+        """POST /api/voice/status — Anruf-Status Callback (Ende)."""
+        try:
+            from modules.sofia_voice_agent import handle_call_status
+            data       = await req.post()
+            call_sid   = data.get("CallSid", "")
+            status     = data.get("CallStatus", "")
+            try:
+                duration = int(data.get("CallDuration", "0"))
+            except Exception:
+                duration = 0
+            asyncio.create_task(handle_call_status(call_sid, status, duration))
+            return web.Response(text="OK")
+        except Exception as e:
+            log.error("handle_voice_status: %s", e)
+            return web.Response(text="OK")
+
+    app.router.add_post("/api/voice/incoming", handle_voice_incoming)
+    app.router.add_post("/api/voice/respond",  handle_voice_respond)
+    app.router.add_post("/api/voice/status",   handle_voice_status)
+    log.info("Sofia Voice Agent registriert (/api/voice/*)")
+
     # Email Conversation AI — beantwortet alle Inbox-Emails automatisch
     async def handle_email_ai_stats(req):
         try:
