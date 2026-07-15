@@ -10289,6 +10289,13 @@ async def _auto_register_brevo_ip() -> None:
 
 
 async def create_app():
+    # HttpGuard — permanenter Interceptor für ALLE ausgehenden Social/Email/SMS/Shopify-Posts
+    try:
+        from modules.http_guard import activate as _hg_activate
+        _hg_activate()
+    except Exception as _hg_err:
+        log.warning("HttpGuard konnte nicht aktiviert werden: %s", _hg_err)
+
     try:
         from modules.connect_all import normalize_env_aliases, reset_circuit_breakers
         applied = normalize_env_aliases()
