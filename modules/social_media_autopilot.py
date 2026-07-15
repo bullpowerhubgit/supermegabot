@@ -151,66 +151,19 @@ async def _generate_caption(product: dict, platform: str) -> str:
 # ── Facebook post ─────────────────────────────────────────────────────────────
 async def _post_facebook(session: aiohttp.ClientSession, caption: str,
                           image_url: str) -> dict:
-    if not FB_TOKEN or not FB_PAGE_ID:
-        return {"ok": False, "error": "no FB credentials"}
-    url = f"{GRAPH}/{FB_PAGE_ID}/photos"
-    payload = {"url": image_url, "caption": caption, "access_token": FB_TOKEN}
-    try:
-        async with session.post(url, data=payload,
-                                timeout=aiohttp.ClientTimeout(total=30)) as r:
-            data = await r.json()
-            if r.status == 200 and "id" in data:
-                return {"ok": True, "post_id": data["id"], "platform": "facebook"}
-            return {"ok": False, "error": data.get("error", {}).get("message", str(data))}
-    except Exception as ex:
-        return {"ok": False, "error": str(ex)}
+    """Facebook Post — via Post Gateway (5-Schicht-Prüfung)."""
+    from modules.post_gateway import safe_post
+    result = await safe_post("facebook", caption, image_url=image_url, source_module="social_media_autopilot")
+    return result
 
 
 # ── Instagram post ────────────────────────────────────────────────────────────
 async def _post_instagram(session: aiohttp.ClientSession, caption: str,
                            image_url: str) -> dict:
-    if not FB_TOKEN or not IG_ID:
-        return {"ok": False, "error": "no IG credentials"}
-    try:
-        # Step 1: create container
-        url1 = f"{GRAPH}/{IG_ID}/media"
-        payload1 = {"image_url": image_url, "caption": caption,
-                    "access_token": FB_TOKEN}
-        async with session.post(url1, data=payload1,
-                                timeout=aiohttp.ClientTimeout(total=30)) as r:
-            d = await r.json()
-            if r.status != 200 or "id" not in d:
-                return {"ok": False, "error": d.get("error", {}).get("message", str(d))}
-            container_id = d["id"]
-
-        # Warten bis Instagram Container-Processing abgeschlossen ist (max 60s)
-        for _attempt in range(6):
-            await asyncio.sleep(10)
-            async with session.get(
-                f"{GRAPH}/{container_id}",
-                params={"fields": "status_code", "access_token": FB_TOKEN},
-                timeout=aiohttp.ClientTimeout(total=10),
-            ) as r_status:
-                status_data = await r_status.json()
-            sc = status_data.get("status_code", "")
-            if sc == "FINISHED":
-                break
-            if sc == "ERROR":
-                log.warning("Instagram container processing error: %s", status_data)
-                return {"ok": False, "error": f"container_error: {status_data}"}
-            # IN_PROGRESS oder PUBLISHED — weiter warten
-
-        # Step 2: publish
-        url2 = f"{GRAPH}/{IG_ID}/media_publish"
-        payload2 = {"creation_id": container_id, "access_token": FB_TOKEN}
-        async with session.post(url2, data=payload2,
-                                timeout=aiohttp.ClientTimeout(total=30)) as r:
-            d2 = await r.json()
-            if r.status == 200 and "id" in d2:
-                return {"ok": True, "post_id": d2["id"], "platform": "instagram"}
-            return {"ok": False, "error": d2.get("error", {}).get("message", str(d2))}
-    except Exception as ex:
-        return {"ok": False, "error": str(ex)}
+    """Instagram Post — via Post Gateway (5-Schicht-Prüfung)."""
+    from modules.post_gateway import safe_post
+    result = await safe_post("instagram", caption, image_url=image_url, source_module="social_media_autopilot")
+    return result
 
 
 # ── Twitter/X OAuth 1.0a ──────────────────────────────────────────────────────
