@@ -196,6 +196,25 @@ async def handle_call_status(call_sid: str, call_status: str, duration: int) -> 
     # Telegram-Alert immer
     asyncio.create_task(_send_telegram_alert(from_number, duration, buy_signal, product, history))
 
+    # Multi-Agenten-Cascade
+    if duration >= 30:
+        try:
+            from modules.sofia_agent_hub import trigger_post_call_cascade
+            transcript = "\n".join(
+                f"{'Kunde' if m['role']=='user' else 'Sofia'}: {m['content']}"
+                for m in history
+            )
+            asyncio.create_task(trigger_post_call_cascade(
+                call_sid      = call_sid,
+                duration      = duration,
+                buying_signal = buy_signal,
+                transcript    = transcript,
+                from_number   = from_number,
+                product_id    = product,
+            ))
+        except Exception as e:
+            log.debug("Sofia Hub: %s", e)
+
 
 async def _post_call_actions(call_sid: str, sms_now: bool = False) -> None:
     """Sofort-SMS wenn Kunde im Gespräch 'Ja' sagt."""
