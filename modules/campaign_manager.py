@@ -28,10 +28,62 @@ async def get_campaigns() -> List[Dict]:
 
 
 async def _fetch_live_campaigns() -> List[Dict]:
-    """Fetch via Google Ads REST API (requires OAuth2 access token)."""
-    # Full implementation requires google-ads Python library or OAuth2 access token.
-    # Placeholder — raises so callers fall back to mock data.
-    raise NotImplementedError("Google Ads OAuth not configured yet")
+    """Fetch via Google Ads REST API (requires OAuth2 access token + developer token)."""
+    # Google Ads REST API needs a short-lived OAuth2 access token in addition to
+    # the developer token. Without it we cannot authenticate, so we return empty.
+    # To enable: set GOOGLE_ADS_ACCESS_TOKEN (refresh via google-auth or OAuth2 flow)
+    # alongside GOOGLE_ADS_CUSTOMER_ID and GOOGLE_ADS_DEVELOPER_TOKEN.
+    import aiohttp
+    access_token = os.getenv("GOOGLE_ADS_ACCESS_TOKEN", "")
+    if not access_token:
+        log.warning("Google Ads: GOOGLE_ADS_ACCESS_TOKEN fehlt — kein Zugriff möglich")
+        return []
+    customer_id = GOOGLE_ADS_CUSTOMER_ID.replace("-", "")
+    url = (
+        f"https://googleads.googleapis.com/v16/customers/{customer_id}/googleAds:searchStream"
+    )
+    query = (
+        "SELECT campaign.id, campaign.name, campaign.status, campaign.advertising_channel_type, "
+        "campaign_budget.amount_micros, metrics.impressions, metrics.clicks, "
+        "metrics.cost_micros, metrics.conversions "
+        "FROM campaign WHERE campaign.status != 'REMOVED' LIMIT 50"
+    )
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "developer-token": GOOGLE_ADS_DEVELOPER_TOKEN,
+        "Content-Type": "application/json",
+    }
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                url, json={"query": query}, headers=headers,
+                timeout=aiohttp.ClientTimeout(total=15),
+            ) as resp:
+                if resp.status != 200:
+                    log.warning("Google Ads API %s: %s", resp.status, await resp.text())
+                    return []
+                rows = await resp.json()
+    except Exception as e:
+        log.warning("Google Ads REST fetch error: %s", e)
+        return []
+    campaigns: List[Dict] = []
+    for batch in rows:
+        for row in batch.get("results", []):
+            c = row.get("campaign", {})
+            bgt = row.get("campaignBudget", {})
+            m = row.get("metrics", {})
+            campaigns.append({
+                "id": c.get("id"),
+                "name": c.get("name", ""),
+                "status": c.get("status", "UNKNOWN"),
+                "type": c.get("advertisingChannelType", ""),
+                "budget_eur": int(bgt.get("amountMicros", 0)) / 1_000_000,
+                "impressions": int(m.get("impressions", 0)),
+                "clicks": int(m.get("clicks", 0)),
+                "cost_eur": int(m.get("costMicros", 0)) / 1_000_000,
+                "conversions": float(m.get("conversions", 0)),
+            })
+    return campaigns
 
 
 def format_telegram_ads(campaigns: List[Dict] = None) -> str:
