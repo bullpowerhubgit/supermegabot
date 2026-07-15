@@ -557,7 +557,7 @@ async def _post_linkedin(content: dict) -> bool:
 
 async def post_to_all_channels(content: dict, product: dict = None) -> dict:
     """Post content to every available channel simultaneously."""
-    # ── QUALITY GATE: Schlechten Content blockieren ──────────────────────────
+    # ── QUALITY GATE Layer 1: Regel-Check ────────────────────────────────────
     try:
         from modules.content_quality_gate import sanitize_content, is_content_valid
         product_name = (product or {}).get("title", content.get("title", ""))
@@ -565,11 +565,22 @@ async def post_to_all_channels(content: dict, product: dict = None) -> dict:
         if problems:
             log.warning("ContentGate Probleme: %s", problems)
         if not is_content_valid(content, product_name):
-            log.error("ContentGate BLOCKIERT Post: body fehlerhaft — %s", problems)
+            log.error("ContentGate BLOCKIERT Post: %s", problems)
             return {"skipped": True, "reason": f"quality_gate: {problems}"}
     except ImportError:
         pass
-    # ────────────────────────────────────────────────────────────────────────
+
+    # ── QUALITY GATE Layer 2: AI-Score via PostGuard ─────────────────────────
+    try:
+        from modules.post_guard import guard
+        post_text = content.get("body") or content.get("title") or ""
+        ok, reason = await guard.check("social", text=post_text)
+        if not ok:
+            log.warning("PostGuard BLOCKIERT: %s", reason)
+            return {"skipped": True, "reason": f"post_guard: {reason}"}
+    except ImportError:
+        pass
+    # ─────────────────────────────────────────────────────────────────────────
 
     h = _content_hash(content)
     if h in _load_hashes():

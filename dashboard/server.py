@@ -3943,6 +3943,45 @@ async def handle_telegram_webhook(req):
 
         base_url = f"https://{os.getenv('RAILWAY_STATIC_URL', 'supermegabot-production.up.railway.app')}"
 
+        # ── PostGuard APPROVE/REJECT ───────────────────────────────────────────
+        if text and (text.startswith("APPROVE pg_") or text.startswith("REJECT pg_")):
+            try:
+                parts     = text.split()
+                verdict   = parts[0]        # "APPROVE" oder "REJECT"
+                appr_id   = parts[1]        # "pg_1234567890"
+                approved  = (verdict == "APPROVE")
+                from modules.post_guard import resolve_telegram_approval
+                resolved  = resolve_telegram_approval(appr_id, approved)
+                icon      = "✅" if approved else "🚫"
+                status    = "angenommen" if approved else "abgelehnt"
+                reply_msg = f"{icon} PostGuard: Post {status}." if resolved else "⚠️ Approval-ID nicht gefunden (bereits abgelaufen?)"
+                await _tg_send(bot_token, chat_id, reply_msg)
+            except Exception as _pg_e:
+                log.warning("PostGuard resolve: %s", _pg_e)
+            return web.Response(status=200)
+
+        # ── PostGuard Stats ──────────────────────────────────────────────────
+        if text == "/guard_stats":
+            try:
+                from modules.post_guard import guard
+                stats = await guard.stats()
+                msg = (
+                    f"🛡 <b>PostGuard Statistik</b>\n"
+                    f"Gesamt: {stats.get('total', 0)}\n"
+                    f"✅ Approved: {stats.get('approved', 0)}\n"
+                    f"🚫 Blockiert: {stats.get('blocked', 0)} ({stats.get('block_rate', '?')})\n"
+                    f"Heute: {stats.get('today', 0)}\n"
+                )
+                reasons = stats.get('top_block_reasons', [])
+                if reasons:
+                    msg += "\n<b>Top Blockier-Gründe:</b>\n"
+                    for r in reasons:
+                        msg += f"  • {r['reason'][:50]} ({r['count']}x)\n"
+                await _tg_send(bot_token, chat_id, msg)
+            except Exception as _gs_e:
+                await _tg_send(bot_token, chat_id, f"❌ {_gs_e}")
+            return web.Response(status=200)
+
         # --- Befehle ---
         if text in ("/start", "/menu", "/dashboard", "/hilfe", "/help"):
             from modules.telegram_control import send_main_menu
