@@ -784,7 +784,7 @@ async def _run_outreach_inner(daily_limit: int = 100) -> Dict:
             break
 
         subject, body = _build_email_body(dict(co))
-        success = _send_email(sender_idx, co["email"], subject, body)
+        success = await asyncio.to_thread(_send_email, sender_idx, co["email"], subject, body)
 
         with _db() as c:
             c.execute("""
@@ -863,7 +863,7 @@ Rudolf Sarkany | AIITEC
 --
 Abmeldung: Antwort genügt."""
 
-        success = _send_email(sent % len(_GMAIL_ACCOUNTS), row["email"], subject, body)
+        success = await asyncio.to_thread(_send_email, sent % len(_GMAIL_ACCOUNTS), row["email"], subject, body)
         if success:
             with _db() as c:
                 c.execute("UPDATE bo_outreach SET status='followup_sent', follow_up_due=NULL WHERE id=?", (row["id"],))

@@ -2,6 +2,7 @@
 """Zentrale Gmail/SMTP-Konten-Verwaltung — alle 8 Konten, Round-Robin, Fallback."""
 from __future__ import annotations
 
+import asyncio
 import logging
 import os
 import smtplib
@@ -273,6 +274,34 @@ def send_email_with_attachment(
         except Exception as e:
             log.warning("SMTP+Anhang %s fehlgeschlagen: %s", acc.email, e)
     return False, ""
+
+
+async def async_send_email(
+    to_email: str,
+    subject: str,
+    body: str,
+    html: Optional[str] = None,
+    account_index: Optional[int] = None,
+) -> Tuple[bool, str]:
+    """Async wrapper — runs blocking SMTP in thread pool so the event loop stays free."""
+    return await asyncio.to_thread(send_email, to_email, subject, body, html, account_index)
+
+
+async def async_send_email_with_attachment(
+    to_email: str,
+    subject: str,
+    body: str,
+    attachment_path: Optional[str] = None,
+    attachment_bytes: Optional[bytes] = None,
+    attachment_name: Optional[str] = None,
+    account_index: Optional[int] = None,
+) -> Tuple[bool, str]:
+    """Async wrapper for send_email_with_attachment."""
+    return await asyncio.to_thread(
+        send_email_with_attachment,
+        to_email, subject, body,
+        attachment_path, attachment_bytes, attachment_name, account_index,
+    )
 
 
 def get_status() -> Dict[str, Any]:
