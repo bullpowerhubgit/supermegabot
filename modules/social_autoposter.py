@@ -46,20 +46,20 @@ STATE_FILE = Path(__file__).parent.parent / "data" / "social_autoposter_state.js
 
 # ── Content Templates (DE + EN) ─────────────────────────────────────────────
 _TEMPLATES_DE = [
-    "🤖 KI automatisiert deinen Shopify-Shop: Produkte finden, Preise optimieren, überall posten — ohne manuellen Aufwand.\n\n👉 {shop}\n\n#ShopifyAutomation #KI #ECommerce #OnlineShop",
-    "💡 Spare 40h/Woche: KI übernimmt Produktrecherche, Email-Marketing und Social Media gleichzeitig.\n\n✅ Starte heute: {shop}\n\n#Automatisierung #PassivesEinkommen #Business",
-    "📊 +187% Umsatz in 90 Tagen durch KI-gesteuerte Shop-Optimierung.\n\nKein Einkommensversprechen — echte Automation.\n👉 {shop}\n\n#Shopify #ECommerce #KIBusiness",
-    "⚡ Smart Home Produkte automatisch in deinem Shop — KI findet Bestseller bevor sie viral gehen.\n\n{shop}\n\n#SmartHome #Dropshipping #Shopify",
-    "🔥 E-Commerce 2026: Wer nicht automatisiert, verliert. Wer automatisiert, gewinnt.\n\n→ {shop}\n\n#ECommerce #Automation #OnlineMarketing #Shopify",
-    "📦 Neue Smart Home Gadgets jetzt verfügbar! KI-kuratierte Bestseller für deinen Alltag.\n\n👉 {shop}\n\n#SmartHome #Gadgets #Tech #Innovation",
-    "💰 Digitale Produkte verkaufen mit System: KI schreibt, optimiert und verteilt alles automatisch.\n\n→ {ds24}\n\n#DigitaleProdukte #PassivesEinkommen #OnlineBusiness",
+    "🏠 Smart Home Produkte für deinen Alltag — ausgewählt von KI, geprüft auf Qualität.\n\n👉 {shop}\n\n#SmartHome #Gadgets #Tech #Innovation",
+    "⚡ Neue Smart-Home-Bestseller eingetroffen: Sicherheitskameras, Solar-Sets & mehr — alle unter einem Dach.\n\n{shop}\n\n#SmartHome #Solar #Technik",
+    "🔋 Balkonkraftwerk, Powerstation oder Smart Thermostat — KI-kuratierte Technik für Zuhause.\n\n👉 {shop}\n\n#Balkonkraftwerk #Solar #SmartHome",
+    "📦 Smart Home 2026: Die besten Gadgets für dein Zuhause — von Saugroboter bis KI-Kamera.\n\n{shop}\n\n#SmartHome #Technik #Gadgets",
+    "🔥 Trending Tech: Smart LED, Roboter-Rasenmäher, Sicherheitskameras — jetzt im Shop entdecken.\n\n→ {shop}\n\n#SmartHome #ECommerce #TrendTech",
+    "💡 Energie sparen mit Smart Home: Balkonkraftwerke & smarte Thermostate direkt bei AIITEC.\n\n👉 {shop}\n\n#Energiesparen #Solar #SmartHome",
+    "🤖 KI findet die besten Smart-Home-Produkte für dich — täglich aktualisiert, immer geprüft.\n\n→ {shop}\n\n#KI #SmartHome #Tech",
 ]
 
 _TEMPLATES_EN = [
-    "🤖 AI automates your Shopify store: find products, optimize prices, post everywhere — zero manual work.\n\n👉 {shop}\n\n#ShopifyAutomation #AI #ECommerce",
-    "⚡ Save 40h/week: AI handles product research, email marketing and social media simultaneously.\n\n✅ Start today: {shop}\n\n#Automation #PassiveIncome #OnlineBusiness",
-    "🔥 Smart Home products trending now — AI found them before they went viral.\n\n{shop}\n\n#SmartHome #Dropshipping #Shopify #Trending",
-    "📊 AI-powered shop optimization that actually works. No hype, just automation.\n\n→ {shop}\n\n#Shopify #ECommerce #AIBusiness",
+    "🏠 Smart Home essentials curated by AI — quality-checked, trending now.\n\n👉 {shop}\n\n#SmartHome #Gadgets #Tech",
+    "⚡ Top Smart Home picks: security cameras, solar kits, robot vacuums — all in one place.\n\n✅ Shop now: {shop}\n\n#SmartHome #Solar #Technology",
+    "🔥 Smart Home products trending in 2026 — solar kits, AI cameras, robot vacuums.\n\n{shop}\n\n#SmartHome #Tech #Gadgets",
+    "📦 Quality smart home gadgets — AI-curated, customer-approved.\n\n→ {shop}\n\n#SmartHome #Quality #Tech",
 ]
 
 
