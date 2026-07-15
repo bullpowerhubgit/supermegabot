@@ -36,6 +36,18 @@
 - **BounceWatcher**: smtp_email.py triggert 30s nach Send einen bounce_watcher scan; Bounce-Mails werden aus Gmail gelöscht (Trash+Expunge)
 - **SEO Scaler + APIHunt +4**: seo_scaler.py (Shopify AI-SEO alle 6h), ai_client.py (11 Provider)
 
+## ⚡ NEU (2026-07-15 — MONOREPO SERVICES FERTIG, GIT GEPUSHT)
+- **analytics-marketing** + **seo-turbo-tools** → als Subdirectories in supermegabot Monorepo integriert
+- Commits c37cc315 + 95b3217f → gepusht nach GitHub (main branch)
+- **analytics-marketing/**: TypeScript Service, Stripe Billing (€49/€99), /health, /api/analytics, /api/tracking
+  - Default Price IDs: AMS_PRICE_STARTER=price_1TjdqvRJECiV6vSmwaIdnSgW, AMS_PRICE_PRO=price_1TjdqvRJECiV6vSmVopeUjYM
+- **seo-turbo-tools/**: Python/aiohttp Service, ai_client Fallback (11 Provider), Stripe (€29/€79)
+  - Default Price IDs: STRIPE_PRICE_STARTER=price_1Thnt5RJECiV6vSmb4nBpi7W, STRIPE_PRICE_PRO=price_1Thnt6RJECiV6vSmRdEKjNc7
+- **⚠️ MANUELL ERFORDERLICH (2 Clicks pro Service in Railway Dashboard):**
+  1. railway.app → New Service → Deploy from GitHub → bullpowerhubgit/supermegabot → rootDirectory: `analytics-marketing`
+  2. railway.app → New Service → Deploy from GitHub → bullpowerhubgit/supermegabot → rootDirectory: `seo-turbo-tools`
+  3. Env Vars: STRIPE_SECRET_KEY + STRIPE_WEBHOOK_SECRET + TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID je Service setzen
+
 ## ⚡ NEU (2026-07-15 — BOUNCE AUTO-FIXER)
 - **BOUNCE AUTO-FIXER** — email_bounce_fixer.py (neu, läuft alle 5min):
   - IMAP-Scan Gmail auf Mailer-Daemon/Delivery-Failed/Undeliverable
@@ -134,10 +146,47 @@ Quantum Self-Improver, Quantum Self-Repair, Auto Token Refresher
 - ✅ Klaviyo: AIITEC aktiv
 - ⚠️ Mailchimp: alle Keys abgelaufen → neu holen auf mailchimp.com/account/api
 
-## ⏳ OFFENE PUNKTE
-1. Facebook Groups: Meta App Review ausstehend
-2. Meta Ad: "Wird bearbeitet" → auf "Aktiv" warten → ROAS prüfen
-3. Reddit Contributor Program: Earnings nach ~7 Tagen auf reddit.com/premium/contributor
+## 🔍 VOLLSTÄNDIGER PRODUKT-AUDIT (2026-07-15)
+
+### Services Status
+| Service | Railway | Checkout | Fehler |
+|---------|---------|----------|--------|
+| supermegabot | ✅ Online | – | 0 |
+| steuercockpit | ✅ Online | ✅ Stripe+PayPal | 0 |
+| icomeauto | ✅ Online | ✅ Stripe+PayPal | PayPal-URL gefixt (war icomeauto-saas-*) |
+| aiitec-saas | ✅ Online | ✅ Stripe | 0 |
+| shopify-acquisition | ✅ Online | ✅ GEFIXT | Stripe Price IDs als Defaults in config.ts |
+| seo-turbo-tools | ❌ OFFLINE | – | Kein aktiver Railway-Service |
+| analytics-marketing | ❌ OFFLINE | – | Kein aktiver Railway-Service |
+
+### API-Keys Status
+| Provider | Status |
+|---------|--------|
+| Shopify | ✅ ineedit.com.co verbunden |
+| Stripe | ✅ Verbunden |
+| Mailchimp | ✅ us5 aktiv |
+| Klaviyo | ✅ AIITEC aktiv |
+| Telegram | ✅ @DudiRudibot |
+| Facebook | ✅ AiiteC Page 1016738738178786 |
+| Supabase | ✅ qyrjeckzacjaazkpvnjk |
+| Groq | ✅ 17 Modelle (Anthropic Fallback) |
+| OpenRouter | ✅ 342 Modelle |
+| OpenAI | ✅ 123 Modelle |
+| **Anthropic** | **❌ CREDITS LEER** → console.anthropic.com aufladen! |
+
+### Fixes deployed (2026-07-15)
+- shopify-acquisition `src/config.ts`: Stripe Price IDs als Defaults
+- icomeauto `server.cjs`: PayPal Return-URL korrigiert
+- ai_client.py: Anthropic Credits-Erkennung → 24h CB + Telegram-Alert
+- email_bounce_fixer.py: IMAP-Scan + Mailchimp/Klaviyo Auto-Unsubscribe
+
+## ⏳ OFFENE PUNKTE (manuell)
+1. **Anthropic Credits aufladen** → console.anthropic.com (System läuft über Groq/OpenRouter Fallback)
+2. **seo-turbo-tools Railway deployen** — Repo vorhanden, Service fehlt
+3. **analytics-marketing Railway deployen** — Repo vorhanden, Service fehlt
+4. Facebook Groups: Meta App Review ausstehend
+5. Meta Ad: "Wird bearbeitet" → auf "Aktiv" warten → ROAS prüfen
+6. Reddit Contributor Program: Earnings nach ~7 Tagen auf reddit.com/premium/contributor
 4. Gmail aiitecbuuss@gmail.com: Passwort ändern (nach Hack 2026-07-09) — manuell!
 5. GMC Identitätsverifizierung: merchants.google.com → Banner "Identität bestätigen" → Personalausweis hochladen
 
