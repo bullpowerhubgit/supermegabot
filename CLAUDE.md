@@ -15,10 +15,25 @@ curl -s https://supermegabot-production.up.railway.app/health
 ## Project Overview
 SuperMegaBot is a production SaaS platform for e-commerce automation (Shopify, Digistore24, AI tools, Telegram subscription bots). Deployed on Railway. Owner: Rudolf Sarkany (@bullpowerhubgit).
 
-## Architecture
+## Architecture — EIN REPO, MEHRERE SERVER
+
+```
+supermegabot/
+  modules/          ← EINZIGE MODUL-QUELLE für ALLE Server (373+ Module)
+  dashboard/server.py      → MegaDash     (Port 8888, Railway: supermegabot)
+  aiitec_server.py         → AIITEC SaaS  (Port 8091, Railway: aiitec-saas)
+  eu-compliance-saas/server.py → EU Compliance (Railway: eu-compliance-saas)
+```
+
+⚠️ **KRITISCH — NIEMALS ein separates Modul-Repo anlegen!**
+- Alle neuen Module IMMER in `modules/` hier ablegen
+- `aiitec-saas` Repo ist ARCHIVIERT — dort nicht mehr arbeiten
+- GitHub Action `.github/workflows/verify_servers.yml` prüft alle Server automatisch
+
 - **Dashboard**: `dashboard/server.py` — aiohttp web server on port 8888, 93+ API routes
+- **AIITEC SaaS**: `aiitec_server.py` — B2B SaaS (Lead Agent, Compliance Wächter, Intelligence Suite)
 - **Core**: `core/mega_orchestrator.py` — MegaOrchestrator + CommandRouter, 110 bot commands
-- **Modules**: `modules/` — Shopify, Stripe, Supabase, Telegram, AI, marketing integrations
+- **Modules**: `modules/` — 373+ Module, gemeinsam für alle Server
 - **Scheduler**: `core/automation_scheduler.py` — periodic task runner (SQLite state)
 - **Bridge**: `modules/telegram_hub_bridge.py` → POST `/api/bot/execute` → MegaOrchestrator
 
