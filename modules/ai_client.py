@@ -71,13 +71,13 @@ _CB_BACKOFF_MAX = 3600   # 1h max
 _last_provider: str = ""
 _monitor_running: bool = False
 
-# Globales Semaphore: max. 5 gleichzeitige AI-Calls → kein Thundering-Herd bei 344 Tasks
+# Globales Semaphore: max. 3 gleichzeitige AI-Calls → kein Thundering-Herd bei 344 Tasks
 _AI_SEM: Optional[asyncio.Semaphore] = None
 
 def _get_sem() -> asyncio.Semaphore:
     global _AI_SEM
     if _AI_SEM is None:
-        _AI_SEM = asyncio.Semaphore(5)
+        _AI_SEM = asyncio.Semaphore(3)
     return _AI_SEM
 
 
@@ -664,7 +664,12 @@ async def _ai_complete_inner(
                                 return text
                         elif r.status == 429:
                             _cb_rate_limit("Perplexity", 90)
-                        elif r.status in (401, 403, 402):
+                        elif r.status in (401, 403):
+                            log.warning("Perplexity: Key ungültig (%s) — 24h deaktiviert", r.status)
+                            if "Perplexity" not in _CB:
+                                _CB["Perplexity"] = {"fails": 0, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                            _CB["Perplexity"]["until"] = time.time() + 86400
+                        elif r.status == 402:
                             _cb_fail("Perplexity")
                         else:
                             _cb_fail("Perplexity")
