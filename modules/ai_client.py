@@ -62,7 +62,7 @@ _GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/models"
 # {provider_name: {"fails": int, "until": float, "total_fails": int}}
 _CB: dict[str, dict] = {}
 
-_CB_THRESHOLD   = 3      # Fehler bis Deaktivierung
+_CB_THRESHOLD   = 5      # Fehler bis Deaktivierung (erhöht von 3)
 _CB_BACKOFF_1   = 600    # 10 min nach 1. Deaktivierung
 _CB_BACKOFF_2   = 1800   # 30 min nach 2. Deaktivierung
 _CB_BACKOFF_MAX = 3600   # 1h max
@@ -82,6 +82,17 @@ def _cb_ok(provider: str) -> bool:
     # Timeout abgelaufen → re-enable
     s["fails"] = 0
     return True
+
+
+def _cb_rate_limit(provider: str, seconds: int = 90) -> None:
+    """Rate-Limit-Pause OHNE CB-Threshold-Erhöhung (kein Ausfall, nur kurze Pause)."""
+    if provider not in _CB:
+        _CB[provider] = {"fails": 0, "until": 0.0, "total_fails": 0, "deactivations": 0}
+    s = _CB[provider]
+    new_until = time.time() + seconds
+    if new_until > s.get("until", 0):
+        s["until"] = new_until
+    log.debug("APIHunt: %s Rate-Limit-Pause für %ds", provider, seconds)
 
 
 def _cb_fail(provider: str) -> None:
@@ -434,8 +445,8 @@ async def ai_complete(
                         log.warning("Groq: Key ungültig (%s)", r.status)
                         _cb_fail("Groq")
                     elif r.status == 429:
-                        log.debug("Groq: Rate limit")
-                        _cb_fail("Groq")
+                        log.debug("Groq: Rate-Limit — 90s Pause")
+                        _cb_rate_limit("Groq", 90)
                     else:
                         log.debug("Groq: HTTP %s", r.status)
                         _cb_fail("Groq")
@@ -459,11 +470,13 @@ async def ai_complete(
                             _cb_success("DeepSeek")
                             return text
                     if r.status in (401, 403, 402):
-                        log.warning("DeepSeek: Key/Credits Problem (%s)", r.status)
-                        _cb_fail("DeepSeek")
+                        log.warning("DeepSeek: Key/Credits Problem (%s) — dauerhaft deaktiviert", r.status)
+                        if "DeepSeek" not in _CB:
+                            _CB["DeepSeek"] = {"fails": 0, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                        _CB["DeepSeek"]["until"] = time.time() + 3600
                     elif r.status == 429:
-                        log.debug("DeepSeek: Rate limit")
-                        _cb_fail("DeepSeek")
+                        log.debug("DeepSeek: Rate-Limit — 90s Pause")
+                        _cb_rate_limit("DeepSeek", 90)
                     else:
                         _cb_fail("DeepSeek")
         except Exception as e:
@@ -508,7 +521,7 @@ async def ai_complete(
     # ── 4. Gemini (3 kostenlose Modelle) ──────────────────────────────────────
     if _gemini() and _cb_ok("Gemini"):
         full_prompt = f"{system}\n\n{prompt}" if system else prompt
-        gemini_ok = False
+        gemini_hard_fail = False
         for model in _GEMINI_MODELS:
             try:
                 url = f"{_GEMINI_BASE}/{model}:generateContent?key={_gemini()}"
@@ -527,16 +540,20 @@ async def ai_complete(
                                 log.debug("Gemini OK: %s", model)
                                 return text
                         elif r.status in (400, 401, 403):
-                            log.warning("Gemini: Key ungültig (%s)", r.status)
-                            _cb_fail("Gemini")
-                            gemini_ok = False
+                            log.warning("Gemini: Key ungültig/gesperrt (%s) — 1h deaktiviert", r.status)
+                            if "Gemini" not in _CB:
+                                _CB["Gemini"] = {"fails": 0, "until": 0.0, "total_fails": 0, "deactivations": 0}
+                            _CB["Gemini"]["until"] = time.time() + 3600
+                            gemini_hard_fail = True
                             break
+                        elif r.status == 429:
+                            log.debug("Gemini Rate-Limit auf %s — nächstes Modell", model)
                         else:
                             log.debug("Gemini %s auf %s — nächstes Modell", r.status, model)
             except Exception as e:
                 log.debug("Gemini %s error: %s", model, e)
-        if not gemini_ok and "Gemini" not in _CB:
-            _cb_fail("Gemini")
+        if not gemini_hard_fail and not _cb_ok("Gemini"):
+            pass  # bereits gesetzt
 
     # ── 5. Anthropic Claude Haiku ─────────────────────────────────────────────
     if _anthropic() and _cb_ok("Anthropic"):
@@ -594,10 +611,8 @@ async def ai_complete(
                             _cb_success("OpenAI")
                             return text
                     if r.status == 429:
-                        log.warning("OpenAI: Quota überschritten — 30 min deaktiviert")
-                        if "OpenAI" not in _CB:
-                            _CB["OpenAI"] = {"fails": _CB_THRESHOLD, "until": 0.0, "total_fails": 0, "deactivations": 0}
-                        _CB["OpenAI"]["until"] = time.time() + 1800
+                        log.debug("OpenAI: Rate-Limit — 120s Pause")
+                        _cb_rate_limit("OpenAI", 120)
                     elif r.status in (401, 403):
                         _cb_fail("OpenAI")
                     else:
