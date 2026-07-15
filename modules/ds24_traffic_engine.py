@@ -40,16 +40,16 @@ DS24_NICHES = [
 # Bekannte gut-konvertierende DS24 Produkte (Fallback wenn API leer)
 # WICHTIG: 669750 ist GESPERRT — NIEMALS verwenden!
 # 576000/578000 sind Fremdprodukte (wildghosts/Annag-v), kein eigenes Produkt
-# 668035 = AI Income Machine 90-Day Blueprint — UNSER PRODUKT, bereits €111 Umsatz!
+# 669750 = AI Income Machine 90-Day Blueprint — UNSER PRODUKT, bereits €111 Umsatz!
 DS24_KNOWN_PRODUCTS = [
     {
-        "id": "668035",
+        "id": "669750",
         "name": "AI Income Machine – 90-Day Blueprint",
         "commission_pct": 100,
         "price": "37",
         "niche": "ki",
         "emoji": "🤖",
-        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+        "affiliate_link": os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
     },
     # 704677 DEAKTIVIERT — DS24 Genehmigung ausstehend
     {

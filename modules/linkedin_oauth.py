@@ -128,7 +128,7 @@ async def run_with_brutus_traffic(topic: str = "E-Commerce Automatisierung mit K
     try:
         from modules.ai_client import ai_complete
         ds24 = os.getenv("DS24_AFFILIATE_LINK",
-                         os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"))
+                         os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"))
         prompt = (
             f"Schreibe einen professionellen LinkedIn-Post auf Deutsch über: {topic}. "
             f"Max 1200 Zeichen. Erwähne am Ende: {ds24} (AI Income Machine). Nur Text."
@@ -140,7 +140,7 @@ async def run_with_brutus_traffic(topic: str = "E-Commerce Automatisierung mit K
     except Exception as e:
         logger.warning("LinkedIn AI content fallback: %s", e)
         ds24 = os.getenv("DS24_AFFILIATE_LINK",
-                         os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035"))
+                         os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750"))
         text = (f"🚀 E-Commerce Automatisierung mit KI — SuperMegaBot!\n\n"
                 f"Mehr unter: {ds24}\n\n#KI #Ecommerce #Automation")
 
@@ -152,7 +152,7 @@ async def run_with_brutus_traffic(topic: str = "E-Commerce Automatisierung mit K
         brutus_result = await run_brutus_swarm(
             niche=topic,
             affiliate_url=os.getenv("DS24_AFFILIATE_LINK",
-                                    os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")),
+                                    os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")),
         )
     except Exception as e:
         brutus_result = {"error": str(e)}

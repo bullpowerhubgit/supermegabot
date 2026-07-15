@@ -21,7 +21,7 @@ _DB = Path(__file__).parent.parent / "data" / "traffic_maximizer.db"
 
 STRIPE_STARTER  = "https://buy.stripe.com/7sYeVf53k5PQ7EA2Wq4F203"
 STRIPE_PRO      = "https://buy.stripe.com/bJecN7gM23HIgb6dB44F204"
-DS24_AFFILIATE  = "https://www.checkout-ds24.com/product/668035?affiliate=user37405262"
+DS24_AFFILIATE  = "https://www.checkout-ds24.com/product/669750?affiliate=user37405262"
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 
 

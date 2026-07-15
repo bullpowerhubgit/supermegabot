@@ -379,7 +379,7 @@ async def create_retargeting_campaign(segment: str = "cart_abandoners") -> dict:
 
     landing = os.getenv(
         "DS24_AFFILIATE_LINK_2",
-        "https://www.checkout-ds24.com/product/668035",
+        "https://www.checkout-ds24.com/product/669750",
     )
     names = {
         "visitors": "SuperMegaBot KI-Automation",

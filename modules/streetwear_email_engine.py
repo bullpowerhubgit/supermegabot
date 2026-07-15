@@ -95,7 +95,7 @@ def build_email_html(products: List[Dict], subject: str, campaign_type: str = "n
     }
     headline = headlines.get(campaign_type, headlines["new_arrivals"])
 
-    ds24_url = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+    ds24_url = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
 
     return f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"><title>{subject}</title></head>

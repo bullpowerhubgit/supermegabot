@@ -41,7 +41,8 @@ _FORBIDDEN = re.compile(
     r'\[INSERT\]|\[PLACEHOLDER\]|undefined|NoneType|None\b|'
     r'TODO|FIXME|LOREM IPSUM|lorem ipsum|<br>|'
     r'example\.com|yourstore\.com|YOUR_DOMAIN|http://localhost|'
-    r'your-shop\.myshopify\.com|'
+    r'your-shop\.myshopify\.com|supermegabot-production\.up\.railway\.app|'
+    r'checkout-ds24\.com/product/668035|'
     # ── Spam / Generic Life-Coach-Phrasen ──────────────────────────────────────
     r'nutzt? nur \d+\s*%\s*de\w*|'            # "nutzt nur 44% deines/des/dein"
     r'weniger als \d+\s*%\s*ihr|'             # "weniger als 30% ihres"
@@ -174,15 +175,52 @@ def check_spam_ratio(text: str) -> Tuple[bool, str]:
     return True, ""
 
 
+_URL_CACHE: dict = {}   # url → (ok, ts)
+_URL_CACHE_TTL = 600   # 10 Minuten
+
+_BAD_HOSTS = ["localhost", "127.0.0.1", "example.com", "yoursite",
+              "autopilot-store-suite-fmbka.myshopify.com"]  # myshopify nie in Posts
+
+
+def _check_url_live(url: str) -> Tuple[bool, int]:
+    """HEAD-Request — gibt (ok, status_code) zurück. Max 5s Timeout."""
+    import urllib.request
+    import urllib.error
+    clean = re.sub(r'[)\]>.,!?]+$', '', url)  # Trailing-Interpunktion entfernen
+    try:
+        req = urllib.request.Request(clean, method="HEAD",
+                                     headers={"User-Agent": "Mozilla/5.0"})
+        with urllib.request.urlopen(req, timeout=5) as r:
+            return r.status < 400, r.status
+    except urllib.error.HTTPError as e:
+        return e.code < 400, e.code
+    except urllib.error.URLError:
+        return False, 0  # DNS/Verbindungsfehler → blockieren (ineedit.com.co muss erreichbar sein)
+    except Exception:
+        return True, 0  # Sonstige Fehler (SSL etc.) → nicht blockieren
+
+
 def check_urls(text: str) -> Tuple[bool, str]:
-    """Prüft ob URLs korrekt formatiert sind."""
+    """Prüft URLs: Format + echte HTTP-Verifikation (HEAD). 404 → BLOCK."""
     urls = re.findall(r'https?://\S+', text)
-    bad = []
     for url in urls:
-        if any(bad_host in url for bad_host in ["localhost", "127.0.0.1", "example.com", "yoursite"]):
-            bad.append(url)
-    if bad:
-        return False, f"Ungültige URLs: {bad[:3]}"
+        clean = re.sub(r'[)\]>.,!?]+$', '', url)
+        # Schlechte Hosts (Format-Check)
+        if any(bad in clean for bad in _BAD_HOSTS):
+            return False, f"Ungültige/Interne URL: {clean[:80]}"
+        # Live-Check mit Cache
+        now = time.time()
+        if clean in _URL_CACHE:
+            ok, ts = _URL_CACHE[clean]
+            if now - ts < _URL_CACHE_TTL:
+                if not ok:
+                    return False, f"URL nicht erreichbar (cached): {clean[:80]}"
+                continue
+        ok, code = _check_url_live(clean)
+        _URL_CACHE[clean] = (ok, now)
+        if not ok:
+            log.warning("PostGuard URL-Check FAIL: %s → HTTP %d", clean[:80], code)
+            return False, f"URL liefert Fehler HTTP {code}: {clean[:80]}"
     return True, ""
 
 

@@ -118,7 +118,7 @@ def _cfg() -> dict:
         "pixel_id":    os.getenv("FACEBOOK_PIXEL_ID", "4215456142051261"),
         "page_id":     os.getenv("META_PAGE_ID", os.getenv("FACEBOOK_PAGE_ID", "")),
         "business_id": os.getenv("FACEBOOK_BUSINESS_ID", "1328977765197849"),
-        "shop_domain": os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com"),
+        "shop_domain": os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co"),
     }
 
 

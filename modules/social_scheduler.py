@@ -91,19 +91,19 @@ CONTENT_TEMPLATES = [
     },
     # Gumroad — LIVE, sofort kaufbar
     {
-        "text": "🚀 SuperMegaBot — Shopify auf KI-Autopilot\n\n✅ 10.500+ Produkte auto-importiert\n✅ Bestseller in Echtzeit\n✅ 9 Social-Kanäle automatisch\n✅ Revenue-Tracking vollautomatisch\n\n💶 €97 einmalig — kein Abo\n\n👉 https://www.checkout-ds24.com/product/668035\n\n#Shopify #KI #Automation",
+        "text": "🚀 SuperMegaBot — Shopify auf KI-Autopilot\n\n✅ 10.500+ Produkte auto-importiert\n✅ Bestseller in Echtzeit\n✅ 9 Social-Kanäle automatisch\n✅ Revenue-Tracking vollautomatisch\n\n💶 €97 einmalig — kein Abo\n\n👉 https://www.checkout-ds24.com/product/669750\n\n#Shopify #KI #Automation",
         "telegram_extra": "",
     },
     {
-        "text": "💰 40h/Woche Shopify → 0h manuell.\n\nSuperMegaBot übernimmt alles:\n→ Produktrecherche: 2h → 2min\n→ Beschreibungen: sofort\n→ Social Media: automatisch\n→ Emails: vollautomatisch\n\n€97 einmalig — läuft alleine.\n\n🔗 https://www.checkout-ds24.com/product/668035\n\n#ShopifyAutomation",
+        "text": "💰 40h/Woche Shopify → 0h manuell.\n\nSuperMegaBot übernimmt alles:\n→ Produktrecherche: 2h → 2min\n→ Beschreibungen: sofort\n→ Social Media: automatisch\n→ Emails: vollautomatisch\n\n€97 einmalig — läuft alleine.\n\n🔗 https://www.checkout-ds24.com/product/669750\n\n#ShopifyAutomation",
         "telegram_extra": "",
     },
     {
-        "text": "⚡ SuperMegaBot — der einzige Shopify-Bot den du brauchst.\n\n🤖 KI-gesteuerte Produktauswahl\n📊 Live Revenue-Dashboard\n📱 Facebook + Instagram + TikTok automatisch\n📧 Email-Sequenzen vollautomatisch\n\nEinmalig €97 (kein Abo!)\n\n👉 Jetzt sichern: https://www.checkout-ds24.com/product/668035",
+        "text": "⚡ SuperMegaBot — der einzige Shopify-Bot den du brauchst.\n\n🤖 KI-gesteuerte Produktauswahl\n📊 Live Revenue-Dashboard\n📱 Facebook + Instagram + TikTok automatisch\n📧 Email-Sequenzen vollautomatisch\n\nEinmalig €97 (kein Abo!)\n\n👉 Jetzt sichern: https://www.checkout-ds24.com/product/669750",
         "telegram_extra": "",
     },
     {
-        "text": "🎯 Stell dir vor: Morgen früh wachst du auf und dein Shopify-Shop hat über Nacht Bestellungen bekommen — automatisch.\n\nDas ist SuperMegaBot.\n\n💶 Einmalig €97 — kein monatliches Abo.\n\n👉 https://www.checkout-ds24.com/product/668035\n\n#Shopify #AutomatischGeldVerdienen #KI2026",
+        "text": "🎯 Stell dir vor: Morgen früh wachst du auf und dein Shopify-Shop hat über Nacht Bestellungen bekommen — automatisch.\n\nDas ist SuperMegaBot.\n\n💶 Einmalig €97 — kein monatliches Abo.\n\n👉 https://www.checkout-ds24.com/product/669750\n\n#Shopify #AutomatischGeldVerdienen #KI2026",
         "telegram_extra": "",
     },
 ]

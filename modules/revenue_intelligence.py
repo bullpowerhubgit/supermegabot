@@ -329,7 +329,7 @@ async def revenue_autopilot() -> dict:
     # Proaktiv: DS24 Affiliate Blast wenn keine neuen Subs (immer Umsatz pushen)
     if not new_subs:
         try:
-            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+            ds24_link = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
             shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
             promos = [
                 f"💰 Passives Einkommen mit KI-Automation? Starte jetzt → {ds24_link}",
@@ -346,7 +346,7 @@ async def revenue_autopilot() -> dict:
 
     # Proaktiv: Gumroad Digital Products bewerben
     try:
-        ds24_url = "https://www.checkout-ds24.com/product/668035"
+        ds24_url = "https://www.checkout-ds24.com/product/669750"
         ds24_promos = [
             f"📦 Digitale Produkte — sofort downloadbar: {gumroad_url}",
             f"💡 KI E-Commerce Autopilot 2026 — 50+ Templates: {gumroad_url}",

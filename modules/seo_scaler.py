@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional
 log = logging.getLogger("SEOScaler")
 
 SHOP_URL  = os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co")
-SHOP_DOM  = os.getenv("SHOPIFY_SHOP_DOMAIN", "autopilot-store-suite-fmbka.myshopify.com")
+SHOP_DOM  = os.getenv("SHOPIFY_SHOP_DOMAIN", "ineedit.com.co")
 
 # Top-Keywords für Smart-Home (nach Suchvolumen)
 TOP_KEYWORDS = [

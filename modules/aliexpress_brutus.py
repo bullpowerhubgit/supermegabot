@@ -18,7 +18,7 @@ log = logging.getLogger("AliBrutus")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 _TG_CHANNEL   = os.getenv("TELEGRAM_CHANNEL_ID", "")   # marketing → public channel
 TELEGRAM_CHAT  = _TG_CHANNEL or ""                        # no private spam
-DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+DS24_LINK      = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
 
 ALI_TRACKING_ID = os.getenv("ALIEXPRESS_TRACKING_ID", "")
 ALI_APP_KEY     = os.getenv("ALIEXPRESS_APP_KEY", "537346")

@@ -73,7 +73,7 @@ _YT_KEY      = lambda: os.getenv("YOUTUBE_API_KEY", "")
 
 GRAPH_URL    = "https://graph.facebook.com/v19.0"
 SHOP_URL     = lambda: f"https://{_SHOP_DOMAIN()}"
-DS24_LINK    = lambda: os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
+DS24_LINK    = lambda: os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")
 GUMROAD_124  = lambda: os.getenv("GUMROAD_124_URL", os.getenv("GUMROAD_PRODUCT_URL", ""))
 GUMROAD_UGS  = lambda: os.getenv("GUMROAD_UGS_URL", "")
 GUMROAD_VOR  = lambda: os.getenv("GUMROAD_VORSPRUNG_URL", "")
@@ -85,7 +85,7 @@ DIGITAL_PRODUCTS = [
         "price": "€27",
         "url_fn": lambda: (
             GUMROAD_124()
-            or os.getenv("DS24_124_URL", "https://www.checkout-ds24.com/product/668035")
+            or os.getenv("DS24_124_URL", "https://www.checkout-ds24.com/product/669750")
         ),
         "hook": "Entdecke 124 erprobte Geldquellen, die die meisten Menschen ignorieren.",
         "emoji": "💰",
@@ -95,7 +95,7 @@ DIGITAL_PRODUCTS = [
         "price": "€37",
         "url_fn": lambda: (
             GUMROAD_UGS()
-            or os.getenv("DS24_UGS_URL", "https://www.checkout-ds24.com/product/668035")
+            or os.getenv("DS24_UGS_URL", "https://www.checkout-ds24.com/product/669750")
         ),
         "hook": "Geldsysteme, über die niemand spricht — jetzt enthüllt.",
         "emoji": "🔑",
@@ -105,7 +105,7 @@ DIGITAL_PRODUCTS = [
         "price": "€47",
         "url_fn": lambda: (
             GUMROAD_VOR()
-            or os.getenv("DS24_VORSPRUNG_URL", "https://www.checkout-ds24.com/product/668035")
+            or os.getenv("DS24_VORSPRUNG_URL", "https://www.checkout-ds24.com/product/669750")
         ),
         "hook": "Wer früh handelt, gewinnt. Dein Vorsprung beginnt hier.",
         "emoji": "🚀",

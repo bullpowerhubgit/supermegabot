@@ -282,7 +282,7 @@ async def generate_shopify_product_tweet() -> Optional[str]:
                 product = random.choice(products)
                 title = product.get("title", "Produkt")
                 price = product.get("variants", [{}])[0].get("price", "?")
-                store_url = os.getenv("SHOPIFY_SHOP_URL", f"https://{SHOPIFY_DOMAIN}")
+                store_url = os.getenv("PUBLIC_SHOP_URL", os.getenv("SHOPIFY_SHOP_URL", "https://ineedit.com.co"))
                 tweet = (f"🛍️ NEU im Store: {title[:60]}\n\n"
                          f"💰 Preis: €{price}\n"
                          f"✅ Günstige Preise · Schnelle Lieferung\n\n"
@@ -417,7 +417,7 @@ async def run_with_brutus_traffic(topic: str = "Shopify Automation 2026") -> dic
         brutus_result = await run_brutus_swarm(
             niche=topic,
             affiliate_url=os.getenv("DS24_AFFILIATE_LINK",
-                                    os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")),
+                                    os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/669750")),
         )
     except Exception as e:
         brutus_result = {"error": str(e)}
