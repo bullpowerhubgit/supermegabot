@@ -83,11 +83,20 @@ GMAIL_ACCOUNTS = [
 ]
 
 STRIPE_LINKS = {
-    "starter":    os.getenv("STRIPE_LINK_STARTER",    "https://buy.stripe.com/plink_1Ti4nuRJECiV6vSmFVom8L5E"),
-    "pro":        os.getenv("STRIPE_LINK_PRO",        "https://buy.stripe.com/plink_1Ti4nvRJECiV6vSmFHKXWjbz"),
-    "enterprise": os.getenv("STRIPE_LINK_ENTERPRISE", "https://buy.stripe.com/plink_1Ti4nwRJECiV6vSmgL2lZ7uk"),
-    "demo":       "https://aiitec-saas-production.up.railway.app",
-    "cal":        "https://cal.com/aiitec",
+    # KI-Leasing
+    "leasing_basic":      os.getenv("PLINK_SYS_01_KI_LEASING_BASIC",      "https://buy.stripe.com/7sYaEZ53k2DE5wsdB44F40Or"),
+    "leasing_pro":        os.getenv("PLINK_SYS_01_KI_LEASING_PRO",        "https://buy.stripe.com/28E3cxeDUbaa2kg68C4F40Oq"),
+    "leasing_enterprise": os.getenv("PLINK_SYS_01_KI_LEASING_ENTERPRISE", "https://buy.stripe.com/9B6bJ33Zg6TU1gc68C4F40Op"),
+    # AIITEC SaaS
+    "compliance":    os.getenv("PLINK_COMPLIANCE_WAECHTER",   "https://buy.stripe.com/eVq28t67o3HIgb654y4F40Ox"),
+    "ai_act_report": os.getenv("PLINK_EU_AI_ACT_RISIKO_REPORT","https://buy.stripe.com/14AdRbanE0vw3ok68C4F40Ov"),
+    "nis2":          os.getenv("PLINK_NIS2_KMU_CHECK",         "https://buy.stripe.com/28E7sN3Zgfqq7EA2Wq4F40NY"),
+    # Marketing
+    "shopify_starter": os.getenv("PLINK_SHOPIFY_KI_SUITE_STARTER", "https://buy.stripe.com/00wdRb67oa667EAcx04F40OJ"),
+    "shopify_pro":     os.getenv("PLINK_SHOPIFY_KI_SUITE_PRO",     "https://buy.stripe.com/dRmeVfdzQemm5wsfJc4F40OI"),
+    # Allgemein
+    "demo": "https://aiitec-saas-production.up.railway.app",
+    "cal":  "https://cal.com/aiitec",
 }
 
 # ── DB ────────────────────────────────────────────────────────────────────────
@@ -157,7 +166,7 @@ def classify_intent(text: str) -> str:
     return best if scores[best] > 0 else "general"
 
 # ── KI-Antwort Generator ──────────────────────────────────────────────────────
-KONVERSATIONS_SYSTEM = """Du bist Rudolf Sarkanys persönlicher KI-Sales-Assistent für AiiteC.
+KONVERSATIONS_SYSTEM = f"""Du bist Rudolf Sarkanys persönlicher KI-Sales-Assistent für AiiteC.
 Du antwortest auf eingehende Business-Emails auf Deutsch — lebhaft, menschlich, überzeugend.
 
 Stil:
@@ -166,19 +175,19 @@ Stil:
 - Immer mit konkretem nächsten Schritt
 - Begeistert aber nicht übertrieben
 - Schreibe wie ein echter Mensch — NICHT wie Marketing-Text
-- KEINE Platzhalter wie [Name], [Produkt], {variable} verwenden
+- ABSOLUT KEINE Platzhalter: keine [Name], [Produkt], {{variable}}, keine Klammern die ein echtes Wort ersetzen
+- NIEMALS erfundene URLs — nur die unten genannten echten Links verwenden
 
-Produkte:
-- Starter €49/Monat: 1 Shop, Grundfunktionen, KI-Automatisierung
-- Pro €99/Monat: 3 Shops, alle KI-Features, Priorität-Support
-- Enterprise €299/Monat: Unlimited Shops, White-Label, dedizierter Account Manager
-- 14 Tage KOSTENLOS testen (keine Kreditkarte nötig)
-
-Kauf-Links:
-- Starter: https://buy.stripe.com/plink_1Ti4nuRJECiV6vSmFVom8L5E
-- Pro: https://buy.stripe.com/plink_1Ti4nvRJECiV6vSmFHKXWjbz
-- Enterprise: https://buy.stripe.com/plink_1Ti4nwRJECiV6vSmgL2lZ7uk
-- Demo buchen: https://cal.com/aiitec
+Produkte & echte Kauf-Links:
+- KI-Leasing Basic €499/Monat: {STRIPE_LINKS["leasing_basic"]}
+- KI-Leasing Pro €999/Monat: {STRIPE_LINKS["leasing_pro"]}
+- KI-Leasing Enterprise €2999/Monat: {STRIPE_LINKS["leasing_enterprise"]}
+- EU Compliance / AI Act Report: {STRIPE_LINKS["ai_act_report"]}
+- NIS2 KMU-Check: {STRIPE_LINKS["nis2"]}
+- Shopify KI Suite Starter: {STRIPE_LINKS["shopify_starter"]}
+- Shopify KI Suite Pro: {STRIPE_LINKS["shopify_pro"]}
+- Demo buchen: {STRIPE_LINKS["cal"]}
+- Demo-System: {STRIPE_LINKS["demo"]}
 
 Signatur IMMER am Ende (genauso):
 Mit freundlichen Grüßen,
