@@ -203,9 +203,21 @@ async def run_inbox_monitor() -> Dict:
     # Auto-Responder DEAKTIVIERT (per Rudolf Sarkany, 2026-07-13)
     responder_result: Dict = {}
 
+    # ── Bounce Auto-Fix: sofort nach Erkennen korrigieren ────────────────────
+    bounce_emails = [e for e in all_new if e["category"] == "bounce"]
+    bounce_fixed = 0
+    if bounce_emails:
+        try:
+            from modules.email_bounce_fixer import run_bounce_fix_cycle
+            fix_result = await run_bounce_fix_cycle()
+            bounce_fixed = fix_result.get("fixed", 0)
+            log.info("Bounce Auto-Fix: %d gefixed", bounce_fixed)
+        except Exception as exc:
+            log.error("Bounce Auto-Fix Fehler: %s", exc)
+
     log.info(
-        "Inbox Monitor: %d Konten, %d neu (%d Alerts)",
-        len(accounts), len(all_new), len(alert_emails)
+        "Inbox Monitor: %d Konten, %d neu (%d Alerts, %d Bounces gefixed)",
+        len(accounts), len(all_new), len(alert_emails), bounce_fixed
     )
     return {
         "ok":         True,
@@ -213,6 +225,7 @@ async def run_inbox_monitor() -> Dict:
         "new_total":  len(all_new),
         "alerted":    len(alert_emails),
         "auto_replied": responder_result.get("replied", 0),
+        "bounces_fixed": bounce_fixed,
         "by_category": {
             cat: sum(1 for e in all_new if e["category"] == cat)
             for cat in set(e["category"] for e in all_new)
