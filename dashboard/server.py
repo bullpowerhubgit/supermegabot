@@ -12840,6 +12840,29 @@ async def create_app():
     app.router.add_get( "/api/post-guardian/blocked", handle_post_guardian_blocked)
     log.info("Post-Guardian routes registered (/api/post-guardian/*)")
 
+    # ── Bounce Auto-Fixer routes ──────────────────────────────────────────────
+    async def handle_bounce_fix_run(request):
+        """POST /api/email/bounce-fix — Sofort Bounce-Scan + Auto-Fix ausführen."""
+        try:
+            from modules.email_bounce_fixer import run_bounce_fix_cycle
+            result = await run_bounce_fix_cycle()
+            return web.json_response(result)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    async def handle_bounce_blacklist(request):
+        """GET /api/email/bounce-blacklist — Alle bekannten Bounce-Adressen."""
+        try:
+            from modules.email_bounce_fixer import get_blacklist
+            limit = int(request.rel_url.query.get("limit", 100))
+            return web.json_response({"blacklist": get_blacklist(limit)})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    app.router.add_post("/api/email/bounce-fix",       handle_bounce_fix_run)
+    app.router.add_get( "/api/email/bounce-blacklist", handle_bounce_blacklist)
+    log.info("Bounce Auto-Fixer routes registered (/api/email/bounce-*)")
+
     # ── Traffic Accelerator routes ────────────────────────────────────────────
     async def handle_traffic_accelerate(request):
         """POST /api/traffic/accelerate — Maximale Leistung: alle Traffic-Quellen parallel."""
