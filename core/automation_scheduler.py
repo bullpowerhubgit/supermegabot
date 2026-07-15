@@ -2075,6 +2075,27 @@ async def task_google_index_submit() -> str:
         return f"Google Index Fehler: {e}"
 
 
+async def task_google_automation_cycle() -> str:
+    """6h — Google Automation Cycle: Trend-Research + YouTube Stats + Key-Pool Rotation."""
+    try:
+        from modules.google_automation import run_google_automation_cycle, get_status
+        status = await get_status()
+        if status["keys_loaded"] == 0:
+            return "Google Automation: Keine API Keys konfiguriert"
+        result = await run_google_automation_cycle()
+        trends_count = result.get("product_trends", {}).get("count", 0)
+        yt_count = len(result.get("youtube_trending", []))
+        ch = result.get("channel_stats", {})
+        subs = ch.get("subscribers", 0)
+        return (
+            f"Google Automation Cycle: {trends_count} Trends, "
+            f"{yt_count} YT-Trending, Channel {subs:,} Abos | "
+            f"Keys: {status['keys_loaded']}/4 geladen"
+        )
+    except Exception as e:
+        return f"Google Automation Fehler: {e}"
+
+
 async def task_push_notify_broadcast() -> str:
     """Attempt Web Push to all subscribers every 6h (requires pywebpush + VAPID keys)."""
     import aiohttp
@@ -8077,6 +8098,7 @@ TASKS = [
     ("revenue_optimize",        task_revenue_optimize,       43200,  530),   # 12h — Revenue-KI-Empfehlungen
     # ── REVOLUTION PACK — SEO + Traffic + Automation Max ─────────────────
     ("google_index_submit",     task_google_index_submit,    86400,  540),   # daily — Google+Bing Indexierung
+    ("google_automation_cycle", task_google_automation_cycle, 21600, 541),  # 6h — Trend+YT+Key-Pool (4 Google Keys)
     ("push_notify_broadcast",   task_push_notify_broadcast,  21600,  550),   # 6h — Web Push an Subscriber
     ("shopify_seo_blog",        task_shopify_seo_blog,       43200,  560),   # 12h — 3x KI Shopify Blog Posts
     ("viral_referral_trigger",  task_viral_referral_trigger, 86400,  570),   # daily — Viral Referral Loop
