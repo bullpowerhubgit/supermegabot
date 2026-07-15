@@ -31,6 +31,17 @@ FREE_API_CATALOG: dict[str, list[dict]] = {
 
     "ai_text": [
         {
+            "name": "Ollama (lokal — kostenlos, kein Rate-Limit)",
+            "url": "http://localhost:11434/api/chat",
+            "env_key": "OLLAMA_FAST_MODEL",
+            "model": "llama3.2:latest",
+            "free_limit": "unbegrenzt (lokal)",
+            "auth_header": "",
+            "auth_prefix": "",
+            "test_endpoint": "http://localhost:11434/api/tags",
+            "local": True,
+        },
+        {
             "name": "Groq (llama-3.1-8b)",
             "url": "https://api.groq.com/openai/v1/chat/completions",
             "env_key": "GROQ_API_KEY",
@@ -474,7 +485,23 @@ class FreeAPIHunter:
 
     def get_free_ai_client(self) -> dict | None:
         """Gibt den besten verfügbaren kostenlosen AI-Client zurück."""
-        # Groq zuerst (schnellstes free model)
+        # Ollama zuerst (lokal, kostenlos, kein Rate-Limit)
+        import urllib.request
+        try:
+            urllib.request.urlopen("http://localhost:11434/api/tags", timeout=1)
+            model = os.getenv("OLLAMA_FAST_MODEL", "llama3.2:latest")
+            return {
+                "name": "Ollama",
+                "url": "http://localhost:11434/api/chat",
+                "key": "local",
+                "model": model,
+                "headers": {"Content-Type": "application/json"},
+                "local": True,
+            }
+        except Exception:
+            pass
+
+        # Groq (schnellstes free cloud model)
         groq_key = os.getenv("GROQ_API_KEY")
         if groq_key:
             return {
