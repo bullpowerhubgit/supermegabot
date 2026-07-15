@@ -70,37 +70,39 @@ def PUBLIC_URL()    -> str:
 _active_bridges: Dict[str, "PhoneAIBridge"] = {}
 
 # ── Product contexts ──────────────────────────────────────────────────────────
-_MAX_BASE = (
-    "Du bist Max, ein freundlicher KI-Verkaufsassistent von BullPower. "
-    "Du sprichst lebhaft, natürlich und überzeugend auf Deutsch. "
-    "Dein Ziel ist es, den Anrufer von unserer Lösung zu begeistern, "
-    "seine Schmerzpunkte zu verstehen und eine Demo oder ein Folgegespräch zu vereinbaren. "
-    "\n\nGesprächsstruktur:\n"
-    "1. Begrüße dich freundlich und stell dich als Max von BullPower vor.\n"
-    "2. Erkläre kurz warum du anrufst oder was du anbieten kannst.\n"
-    "3. Stelle eine offene Frage zu den aktuellen Herausforderungen des Anrufers.\n"
-    "4. Höre aktiv zu und gehe auf die genannten Probleme ein.\n"
-    "5. Präsentiere die passende Lösung in 2-3 Sätzen — konkret und nutzenorientiert.\n"
-    "6. Behandle Einwände professionell und empathisch.\n"
-    "7. Schließe mit einem konkreten nächsten Schritt ab (Demo, Termin, Rückruf).\n"
-    "\nRegeln:\n"
+_SOFIA_BASE = (
+    "Du bist Sofia, die KI-Verkaufsassistentin von AIITEC. "
+    "Du sprichst natürlich, selbstbewusst und überzeugend auf Deutsch. "
+    "Dein Ziel: Bedarf erkennen, passendes Produkt empfehlen, Abschluss erzielen.\n\n"
+    "Gesprächsstruktur:\n"
+    "1. Begrüße: 'AIITEC, guten Tag, hier ist Sofia. Was kann ich für Sie tun?'\n"
+    "2. Stelle 1-2 gezielte Fragen zum konkreten Bedarf.\n"
+    "3. Empfehle das passende Produkt mit Preis — selbstbewusst, ohne zu zögern.\n"
+    "4. Behandle Einwände direkt:\n"
+    "   - 'zu teuer' → Nutzen betonen, ROI erklären, kleineres Paket anbieten\n"
+    "   - 'muss ich besprechen' → Entscheider einbeziehen, Termin vereinbaren\n"
+    "   - 'kein Vertrauen' → Referenzen nennen, Demo anbieten, Geld-zurück-Garantie\n"
+    "5. Abschluss: 'Soll ich Ihnen den Bestelllink direkt per SMS schicken?'\n"
+    "6. Bei Ja: Bestätige dass der Link kommt und verabschiede dich freundlich.\n\n"
+    "Regeln:\n"
     "- Maximal 3-4 Sätze pro Antwort (Telefon = kurz!)\n"
     "- Immer natürlich und menschlich klingen — kein Roboter-Tonfall\n"
-    "- Bei klar gezeigtem Desinteresse: höflich verabschieden\n"
-    "- Preise nur auf Nachfrage nennen\n"
-    "- Niemals lügen oder übertreiben — Vertrauen ist wichtiger als der Abschluss\n"
+    "- Preise selbstbewusst nennen — nicht zögern oder entschuldigen\n"
+    "- Bei klarem Desinteresse: höflich verabschieden\n"
+    "- Niemals lügen — Vertrauen ist wichtiger als der Abschluss\n"
+    "- Kaufsignale aktiv erkennen: 'wie viel kostet', 'wie bestelle ich', 'klingt gut', "
+    "'interessiert mich', 'schicken Sie mir' — dann sofort abschließen!\n"
 )
 
 PRODUCT_CONTEXTS: Dict[str, str] = {
     "general": (
-        _MAX_BASE +
-        "\nProdukt-Kontext: BullPower KI-Tools — Automatisierungslösungen für E-Commerce.\n"
-        "Wir helfen Online-Händlern und Unternehmern, mit KI-Automatisierung Zeit zu sparen, "
-        "Umsatz zu steigern und Prozesse zu optimieren. Von Shopify-Automatisierung bis hin zu "
-        "KI-gestützten Marketing-Kampagnen.\n"
+        _SOFIA_BASE +
+        "\nProdukt-Kontext: AIITEC KI-Automatisierungslösungen für Unternehmen.\n"
+        "Produkte: SuperMegaBot Starter (€49/Mo), Pro (€99/Mo), Enterprise (€299/Mo).\n"
+        "Wir helfen KMUs, mit KI Zeit zu sparen, Umsatz zu steigern und Prozesse zu automatisieren.\n"
         "USPs: Sofort einsatzbereit, keine technischen Kenntnisse nötig, "
-        "messbare Ergebnisse in 30 Tagen, persönlicher Support.\n"
-        "Nächster Schritt: Kostenlose 30-Minuten-Demo vereinbaren."
+        "messbare Ergebnisse in 30 Tagen, persönlicher Support, Geld-zurück-Garantie 14 Tage.\n"
+        "Nächster Schritt: Bestelllink per SMS schicken oder Demo vereinbaren."
     ),
     "shopify": (
         _MAX_BASE +
@@ -703,6 +705,8 @@ async def handle_phone_status(request: web.Request) -> web.Response:
         if status == "completed":
             _active_bridges.pop(call_sid, None)
             asyncio.create_task(_notify_telegram(call_sid, duration, status))
+            if duration >= 30:
+                asyncio.create_task(_send_sms_payment_link(call_sid, duration))
             log.info("Anruf beendet: %s (Dauer: %ds)", call_sid, duration)
 
     return web.Response(text="OK")
@@ -883,8 +887,64 @@ def record_appointment(
 
 
 # ── Telegram-Benachrichtigung ─────────────────────────────────────────────────
+_KAUFSIGNAL_KEYWORDS = (
+    "wie viel kostet", "wie bestelle", "klingt gut", "interessiert mich",
+    "schicken sie", "ja gerne", "machen wir", "einverstanden", "nehme ich",
+    "bestellen", "kaufen", "link schicken", "sms schicken", "payment",
+)
+
+
+async def _send_sms_payment_link(call_sid: str, duration: int) -> None:
+    """Schickt nach jedem Anruf >30s einen Stripe-Paymentlink per SMS."""
+    sid   = TWILIO_SID()
+    token = TWILIO_TOKEN()
+    if not sid or not token:
+        return
+    try:
+        with _db() as conn:
+            row = conn.execute(
+                "SELECT from_number, product_id FROM calls WHERE call_sid=?", (call_sid,)
+            ).fetchone()
+        if not row:
+            return
+        to_number  = row["from_number"]
+        product_id = row["product_id"] or "general"
+
+        # Passenden Stripe-Link aus DB holen (oder Fallback)
+        try:
+            import sqlite3 as _sqlite3
+            link_db = _BASE / "data" / "payment_links.db"
+            if link_db.exists():
+                with _sqlite3.connect(str(link_db)) as lc:
+                    lc.row_factory = _sqlite3.Row
+                    link_row = lc.execute(
+                        "SELECT link_url FROM payment_links ORDER BY RANDOM() LIMIT 1"
+                    ).fetchone()
+                    pay_url = link_row["link_url"] if link_row else "https://aiitec.de"
+            else:
+                pay_url = "https://aiitec.de"
+        except Exception:
+            pay_url = "https://aiitec.de"
+
+        body = (
+            f"Hallo! Hier ist Sofia von AIITEC. "
+            f"Wie versprochen — Ihr persönlicher Bestelllink: {pay_url} "
+            f"Bei Fragen einfach antworten. Viel Erfolg!"
+        )
+        async with aiohttp.ClientSession() as s:
+            await s.post(
+                f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+                data={"To": to_number, "From": TWILIO_NUMBER(), "Body": body},
+                auth=aiohttp.BasicAuth(sid, token),
+                timeout=aiohttp.ClientTimeout(total=10),
+            )
+        log.info("SMS-Paymentlink gesendet an %s nach %ds Anruf", to_number, duration)
+    except Exception as e:
+        log.warning("SMS-Paymentlink Fehler: %s", e)
+
+
 async def _notify_telegram(call_sid: str, duration: int, status: str) -> None:
-    """Sendet einen kurzen Anrufbericht an Telegram."""
+    """Sendet Anrufbericht an Telegram — 🔥 bei Kaufsignal."""
     token = TG_TOKEN()
     chat  = TG_CHAT()
     if not token or not chat:
@@ -892,28 +952,29 @@ async def _notify_telegram(call_sid: str, duration: int, status: str) -> None:
     try:
         with _db() as conn:
             row = conn.execute(
-                "SELECT direction, from_number, to_number, product_id "
+                "SELECT direction, from_number, to_number, product_id, transcript "
                 "FROM calls WHERE call_sid=?",
                 (call_sid,)
             ).fetchone()
         if not row:
             return
-        direction = row["direction"]
-        number    = row["to_number"] if direction == "outbound" else row["from_number"]
-        product   = row["product_id"]
-        appts     = conn.execute(
+        direction  = row["direction"]
+        number     = row["to_number"] if direction == "outbound" else row["from_number"]
+        product    = row["product_id"]
+        transcript = (row["transcript"] or "").lower()
+        appts      = conn.execute(
             "SELECT COUNT(*) FROM appointments WHERE call_sid=?", (call_sid,)
         ).fetchone()[0]
 
-        icon = "📞" if direction == "inbound" else "📲"
-        msg  = (
-            f"{icon} <b>Anruf beendet</b>\n"
-            f"SID: <code>{call_sid[:20]}</code>\n"
+        kaufsignal = any(kw in transcript for kw in _KAUFSIGNAL_KEYWORDS)
+        icon = "🔥" if kaufsignal else ("📞" if direction == "inbound" else "📲")
+        sms_hint = " — SMS-Link gesendet ✅" if duration >= 30 else ""
+        msg = (
+            f"{icon} <b>{'KAUFSIGNAL!' if kaufsignal else 'Anruf beendet'}</b>\n"
             f"Nummer: {number}\n"
             f"Produkt: {product}\n"
-            f"Dauer: {duration}s\n"
-            f"Status: {status}\n"
-            f"Termine gebucht: {'✅ ' + str(appts) if appts else '❌ keine'}"
+            f"Dauer: {duration}s{sms_hint}\n"
+            f"Termine: {'✅ ' + str(appts) if appts else '❌ keine'}"
         )
         async with aiohttp.ClientSession() as s:
             await s.post(
