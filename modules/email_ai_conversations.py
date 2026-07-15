@@ -84,10 +84,11 @@ GMAIL_ACCOUNTS = [
 ]
 
 STRIPE_LINKS = {
-    "starter": "https://buy.stripe.com/starter",
-    "pro":     "https://buy.stripe.com/pro",
-    "demo":    "https://bullpower-hub.vercel.app",
-    "cal":     "https://cal.com/aiitec",
+    "starter":    os.getenv("STRIPE_LINK_STARTER",    "https://buy.stripe.com/plink_1Ti4nuRJECiV6vSmFVom8L5E"),
+    "pro":        os.getenv("STRIPE_LINK_PRO",        "https://buy.stripe.com/plink_1Ti4nvRJECiV6vSmFHKXWjbz"),
+    "enterprise": os.getenv("STRIPE_LINK_ENTERPRISE", "https://buy.stripe.com/plink_1Ti4nwRJECiV6vSmgL2lZ7uk"),
+    "demo":       "https://aiitec-saas-production.up.railway.app",
+    "cal":        "https://cal.com/aiitec",
 }
 
 # ── DB ────────────────────────────────────────────────────────────────────────
