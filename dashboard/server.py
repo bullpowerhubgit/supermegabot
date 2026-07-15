@@ -846,7 +846,7 @@ async def handle_gmc_feed(req):
                             headers={"X-Shopify-Access-Token": shopify_token},
                             params={"limit": 50, "since_id": last_id,
                                     "status": "active",
-                                    "fields": "id,title,body_html,handle,images,variants,product_type,status"},
+                                    "fields": "id,title,body_html,handle,images,variants,product_type,status,vendor,tags"},
                             timeout=_aio.ClientTimeout(total=12),
                         ) as r:
                             if r.status != 200:
@@ -863,10 +863,15 @@ async def handle_gmc_feed(req):
                         log.warning("GMC feed fetch page error: %s", _fe)
                         break
 
+        # Vendor-Bereinigung: Shop-eigene Vendor-Namen → echte Marke
+        _VENDOR_SKIP = {"i want that! i need it!", "ineedit", "aiitec", "bullpowerhub",
+                        "supermegabot", "demo", "testvendor"}
+
         items = []
         for p in products:
             variant  = (p.get("variants") or [{}])[0]
             price    = variant.get("price", "0")
+            barcode  = variant.get("barcode", "") or ""
             sku      = variant.get("sku", "") or f"SMB-{p.get('id','')}"
             image    = (p.get("images") or [{}])[0].get("src", "") if p.get("images") else ""
             if not image:
@@ -880,6 +885,20 @@ async def handle_gmc_feed(req):
             desc     = _clean_desc(p.get("body_html", ""), title)
             cat_id   = _guess_category(title, p.get("product_type", ""))
             img_tag  = f"\n    <g:image_link>{_html.escape(image)}</g:image_link>"
+
+            # Brand: Shopify-Vendor bevorzugen, nur Shop-Namen überschreiben
+            raw_vendor = (p.get("vendor") or "").strip()
+            brand = raw_vendor if raw_vendor and raw_vendor.lower() not in _VENDOR_SKIP else "iNeedit"
+
+            # GTIN/MPN: Barcode als GTIN wenn vorhanden (EAN/UPC), sonst MPN via SKU
+            identifier_block = ""
+            if barcode and len(barcode) in (8, 12, 13, 14):
+                identifier_block = f"\n    <g:gtin>{_html.escape(barcode)}</g:gtin>"
+            elif sku and not sku.startswith("SMB-"):
+                identifier_block = f"\n    <g:mpn>{_html.escape(sku[:70])}</g:mpn>"
+            else:
+                identifier_block = "\n    <g:identifier_exists>no</g:identifier_exists>"
+
             items.append(f"""  <item>
     <title><![CDATA[{title}]]></title>
     <description><![CDATA[{desc}]]></description>
@@ -888,13 +907,22 @@ async def handle_gmc_feed(req):
     <g:price>{price} EUR</g:price>
     <g:availability>in stock</g:availability>
     <g:condition>new</g:condition>
-    <g:brand>I Want That! I Need It!</g:brand>
-    <g:google_product_category>{cat_id}</g:google_product_category>
-    <g:identifier_exists>no</g:identifier_exists>
+    <g:brand>{_html.escape(brand)}</g:brand>
+    <g:google_product_category>{cat_id}</g:google_product_category>{identifier_block}
     <g:shipping>
       <g:country>DE</g:country>
       <g:service>Standard</g:service>
       <g:price>4.99 EUR</g:price>
+    </g:shipping>
+    <g:shipping>
+      <g:country>AT</g:country>
+      <g:service>Standard</g:service>
+      <g:price>6.99 EUR</g:price>
+    </g:shipping>
+    <g:shipping>
+      <g:country>CH</g:country>
+      <g:service>Standard</g:service>
+      <g:price>9.99 EUR</g:price>
     </g:shipping>{img_tag}
   </item>""")
 
@@ -4739,8 +4767,8 @@ async def handle_tiktok_status(req):
 
 async def handle_whatsapp_status(req):
     try:
-        phone_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
-        wa_token = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+        phone_id = os.getenv("WHATSAPP_PHONE_NUMBER_ID") or os.getenv("WHATSAPP_PHONE_ID", "")
+        wa_token = os.getenv("WHATSAPP_ACCESS_TOKEN") or os.getenv("WHATSAPP_TOKEN", "")
         configured = bool(phone_id and wa_token)
         return web.json_response({
             "ok": configured,
@@ -12288,6 +12316,14 @@ async def create_app():
     app.router.add_post("/api/youtube/create-video", handle_yt_create)
     app.router.add_get("/api/youtube/stats",         handle_yt_stats)
     log.info("YouTube Autopilot routes registered (/api/youtube/*)")
+
+    # Startup-Warnung wenn YouTube OAuth nicht konfiguriert
+    _yt_refresh = os.getenv("YOUTUBE_REFRESH_TOKEN", "") or os.getenv("GOOGLE_REFRESH_TOKEN", "")
+    if not _yt_refresh:
+        log.warning(
+            "YouTube OAuth erforderlich: /api/youtube/auth aufrufen um YouTube-Upload zu aktivieren. "
+            "Ohne OAuth werden Videos erstellt aber NICHT hochgeladen."
+        )
 
     # ── MEGA Command Center ─────────────────────────────────────────────────
     async def handle_mega_dash(request):
