@@ -1,0 +1,86 @@
+name: DS24 Link Guardian Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'modules/**'
+      - 'core/**'
+      - 'dashboard/**'
+      - '.env.example'
+
+jobs:
+  ds24-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Check for hardcoded DS24 product IDs (blacklisted)
+        run: |
+          echo "🔍 Scanning for blacklisted DS24 product 668035..."
+          FOUND=$(grep -rn "668035" --include="*.py" --include="*.html" . \
+                  | grep -v "^Binary\|\.pyc\|#.*668035\|post_guard\.py" | wc -l | tr -d ' ')
+          if [ "$FOUND" -gt "0" ]; then
+            echo "❌ FEHLER: Blacklistetes Produkt 668035 gefunden in $FOUND Stellen:"
+            grep -rn "668035" --include="*.py" --include="*.html" . \
+              | grep -v "^Binary\|\.pyc\|#.*668035"
+            exit 1
+          fi
+          echo "✅ Kein blacklistetes Produkt gefunden"
+
+      - name: Check for hardcoded checkout URLs as getenv fallbacks
+        run: |
+          echo "🔍 Scanning for hardcoded DS24 URLs as fallbacks..."
+          FOUND=$(grep -rn 'os\.getenv.*DS24_AFFILIATE_LINK.*checkout-ds24' \
+                  --include="*.py" . | wc -l | tr -d ' ')
+          if [ "$FOUND" -gt "0" ]; then
+            echo "❌ FEHLER: Hardcodierte DS24-URL als getenv-Fallback in $FOUND Stellen:"
+            grep -rn 'os\.getenv.*DS24_AFFILIATE_LINK.*checkout-ds24' --include="*.py" .
+            echo ""
+            echo "FIX: Verwende os.getenv('DS24_AFFILIATE_LINK', '') ohne hardcodierten Fallback"
+            echo "     Der DS24 Guardian setzt den Link beim Start automatisch."
+            exit 1
+          fi
+          echo "✅ Keine hardcodierten Fallbacks gefunden"
+
+      - name: Verify DS24 Guardian module exists and is importable
+        run: |
+          echo "🔍 Guardian-Modul prüfen..."
+          python3 -c "
+          import ast, sys
+          with open('modules/ds24_link_guardian.py') as f:
+              source = f.read()
+          try:
+              ast.parse(source)
+              print('✅ ds24_link_guardian.py Syntax OK')
+          except SyntaxError as e:
+              print(f'❌ Syntax-Fehler: {e}')
+              sys.exit(1)
+          # Prüfe dass Guardian in server.py importiert wird
+          with open('dashboard/server.py') as f:
+              srv = f.read()
+          if 'ds24_link_guardian' not in srv:
+              print('❌ Guardian nicht in server.py importiert!')
+              sys.exit(1)
+          print('✅ Guardian in server.py importiert')
+          # Prüfe dass Guardian in automation_scheduler.py importiert wird
+          with open('core/automation_scheduler.py') as f:
+              sched = f.read()
+          if 'ds24_link_guardian' not in sched:
+              print('❌ Guardian nicht in automation_scheduler.py importiert!')
+              sys.exit(1)
+          print('✅ Guardian in automation_scheduler.py importiert')
+          "
+
+      - name: Summary
+        if: always()
+        run: |
+          echo ""
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+          echo "DS24 Link Guardian Check abgeschlossen"
+          echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
