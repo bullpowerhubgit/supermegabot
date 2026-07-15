@@ -52,24 +52,32 @@ async def _tg(msg: str):
         pass
 
 
-async def get_products_batch(page: int = 1, limit: int = 20) -> list:
-    """Fetch products from Shopify."""
+async def get_products_page(since_id: int = 0, limit: int = 250) -> tuple[list, int]:
+    """Fetch one page of products using since_id cursor. Returns (products, last_id)."""
     if not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
-        return []
+        return [], 0
     try:
         import aiohttp
+        params = {
+            "limit": limit,
+            "since_id": since_id,
+            "fields": "id,title,body_html,vendor,product_type,tags,status",
+            "status": "active",
+        }
         async with aiohttp.ClientSession() as s:
             async with s.get(
                 f"https://{SHOPIFY_DOMAIN}/admin/api/{SHOPIFY_VERSION}/products.json",
                 headers={"X-Shopify-Access-Token": SHOPIFY_TOKEN},
-                params={"limit": limit, "fields": "id,title,body_html,vendor,product_type,tags,status"},
-                timeout=aiohttp.ClientTimeout(total=20),
+                params=params,
+                timeout=aiohttp.ClientTimeout(total=30),
             ) as r:
                 data = await r.json(content_type=None)
-        return data.get("products", [])
+        products = data.get("products", [])
+        last_id = products[-1]["id"] if products else 0
+        return products, last_id
     except Exception as e:
         log.error("Shopify products fetch error: %s", e)
-        return []
+        return [], 0
 
 
 async def generate_seo_content(product: dict) -> dict | None:
@@ -139,25 +147,38 @@ async def update_shopify_product(product_id: int, seo: dict) -> bool:
         return False
 
 
-async def run_seo_batch(batch_size: int = 15) -> dict:
+async def run_seo_batch(batch_size: int = 100) -> dict:
     """
     Main entry: process next batch of un-optimized Shopify products.
-    Skips products already updated to avoid re-doing work.
+    Uses since_id cursor to iterate through ALL products (not just first 50).
+    Batch size 100 @ every 2h = 1200/day → all 10k products in ~8 days.
     """
     if not SHOPIFY_DOMAIN or not SHOPIFY_TOKEN:
         return {"ok": False, "error": "Shopify not configured"}
 
     updated_state = _load_updated()
-    products = await get_products_batch(limit=50)
+    # Resume from last cursor position
+    since_id = updated_state.get("__cursor__", 0)
+
+    products, last_id = await get_products_page(since_id=since_id, limit=250)
 
     if not products:
-        return {"ok": False, "error": "No products found"}
+        # Reached end — reset cursor for next full cycle
+        updated_state["__cursor__"] = 0
+        updated_state["__cycle_completed__"] = datetime.now().isoformat()
+        _save_updated(updated_state)
+        total = len([k for k in updated_state if not k.startswith("__")])
+        log.info("SEO cycle complete — %d products optimized total, restarting", total)
+        return {"ok": True, "message": f"Full cycle done ({total} products) — cursor reset", "count": 0}
 
-    # Filter out already updated
+    # Skip already updated in this cycle, take batch
     todo = [p for p in products if str(p["id"]) not in updated_state][:batch_size]
 
     if not todo:
-        return {"ok": True, "message": "All products already SEO-optimized", "count": 0}
+        # All on this page already done — advance cursor
+        updated_state["__cursor__"] = last_id
+        _save_updated(updated_state)
+        return {"ok": True, "message": "Page already done, cursor advanced", "count": 0}
 
     results = {"ok": True, "updated": 0, "failed": 0, "products": []}
 
@@ -179,20 +200,27 @@ async def run_seo_batch(batch_size: int = 15) -> dict:
             }
             results["updated"] += 1
             results["products"].append(title[:40])
-            log.info("SEO updated: %s", title)
         else:
             results["failed"] += 1
 
+    # Advance cursor past last processed product
+    updated_state["__cursor__"] = last_id
     _save_updated(updated_state)
+
+    total_done = len([k for k in updated_state if not k.startswith("__")])
+    log.info("SEO batch: %d updated, %d failed, cursor=%d, total=%d",
+             results["updated"], results["failed"], last_id, total_done)
 
     if results["updated"] > 0:
         product_list = "\n".join(f"• {p}" for p in results["products"][:10])
         await _tg(
-            f"🔍 *Shopify SEO Auto-Update*\n"
-            f"✅ {results['updated']} Produkte optimiert\n\n"
+            f"🔍 <b>Shopify SEO Auto-Update</b>\n"
+            f"✅ {results['updated']} Produkte optimiert\n"
+            f"📊 Gesamt: {total_done} | Cursor: {last_id}\n\n"
             f"{product_list}"
         )
 
+    results["total_done"] = total_done
     return results
 
 
