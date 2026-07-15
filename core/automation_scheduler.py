@@ -7938,6 +7938,7 @@ class AutomationScheduler:
         _init_db()
         self._running = False
         self._task_handles: List[asyncio.Task] = []
+        self._semaphore = asyncio.Semaphore(8)  # max 8 tasks concurrently — keeps event loop free for HTTP
 
     async def start(self):
         self._running = True
@@ -8034,33 +8035,35 @@ class AutomationScheduler:
             log.info("[%s] SOCIAL_POSTING_PAUSED=true — Task übersprungen", name)
             return "PAUSED"
         t0 = time.monotonic()
-        try:
-            result = await asyncio.wait_for(fn(), timeout=300)
-            ms = int((time.monotonic() - t0) * 1000)
-            _log_run(name, True, result or "", ms)
-            self._fail_counts[name] = 0  # reset on success
-            return result or "OK"
-        except Exception as e:
-            ms = int((time.monotonic() - t0) * 1000)
-            err = f"{type(e).__name__}: {e}"
-            _log_run(name, False, err, ms)
-            log.error(f"[{name}] {err}")
-            # Self-healing: track consecutive failures
-            self._fail_counts[name] = self._fail_counts.get(name, 0) + 1
-            fails = self._fail_counts[name]
-            if fails >= 3:
-                await self._send_healing_alert(name, err, fails)
-                self._fail_counts[name] = 0  # reset after alert
-            # Exponential backoff retry (max 5 min)
-            backoff = min(60 * fails, 300)
-            log.info(f"[{name}] retry in {backoff}s (fail #{fails})")
-            await asyncio.sleep(backoff)
+        await asyncio.sleep(0)  # yield to event loop before acquiring slot
+        async with self._semaphore:
             try:
-                retry_result = await asyncio.wait_for(fn(), timeout=300)
-                self._fail_counts[name] = 0
-                return f"RECOVERED: {retry_result or 'OK'}"
-            except Exception as e2:
-                return f"FAILED after retry: {e2}"
+                result = await asyncio.wait_for(fn(), timeout=300)
+                ms = int((time.monotonic() - t0) * 1000)
+                _log_run(name, True, result or "", ms)
+                self._fail_counts[name] = 0  # reset on success
+                return result or "OK"
+            except Exception as e:
+                ms = int((time.monotonic() - t0) * 1000)
+                err = f"{type(e).__name__}: {e}"
+                _log_run(name, False, err, ms)
+                log.error(f"[{name}] {err}")
+                # Self-healing: track consecutive failures
+                self._fail_counts[name] = self._fail_counts.get(name, 0) + 1
+                fails = self._fail_counts[name]
+                if fails >= 3:
+                    await self._send_healing_alert(name, err, fails)
+                    self._fail_counts[name] = 0  # reset after alert
+                # Exponential backoff retry (max 5 min)
+                backoff = min(60 * fails, 300)
+                log.info(f"[{name}] retry in {backoff}s (fail #{fails})")
+                await asyncio.sleep(backoff)
+                try:
+                    retry_result = await asyncio.wait_for(fn(), timeout=300)
+                    self._fail_counts[name] = 0
+                    return f"RECOVERED: {retry_result or 'OK'}"
+                except Exception as e2:
+                    return f"FAILED after retry: {e2}"
 
     def status(self) -> Dict:
         stats = get_task_stats()
