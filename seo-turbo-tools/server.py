@@ -11,8 +11,53 @@ import aiohttp
 import stripe
 from aiohttp import web
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-from modules.ai_client import ai_complete
+
+async def ai_complete(prompt: str, system: str = "Du bist ein SEO-Experte.", max_tokens: int = 800) -> str:
+    groq_key = os.getenv("GROQ_API_KEY", "")
+    or_key = os.getenv("OPENROUTER_API_KEY", "")
+    anthropic_key = os.getenv("ANTHROPIC_API_KEY", "")
+    msgs = [{"role": "user", "content": prompt}]
+    async with aiohttp.ClientSession() as session:
+        if groq_key:
+            try:
+                async with session.post(
+                    "https://api.groq.com/openai/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {groq_key}", "Content-Type": "application/json"},
+                    json={"model": "llama-3.1-8b-instant", "messages": msgs, "max_tokens": max_tokens, "temperature": 0.7},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        return d["choices"][0]["message"]["content"]
+            except Exception:
+                pass
+        if anthropic_key:
+            try:
+                async with session.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01", "Content-Type": "application/json"},
+                    json={"model": "claude-haiku-4-5-20251001", "messages": msgs, "max_tokens": max_tokens, "system": system},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        return d["content"][0]["text"]
+            except Exception:
+                pass
+        if or_key:
+            try:
+                async with session.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {or_key}", "Content-Type": "application/json"},
+                    json={"model": "meta-llama/llama-3.1-8b-instruct:free", "messages": msgs, "max_tokens": max_tokens},
+                    timeout=aiohttp.ClientTimeout(total=30),
+                ) as r:
+                    if r.status == 200:
+                        d = await r.json()
+                        return d["choices"][0]["message"]["content"]
+            except Exception:
+                pass
+    return ""
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
