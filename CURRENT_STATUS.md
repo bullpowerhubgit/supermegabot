@@ -1,5 +1,36 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-15 12:30 CEST**
+**Stand: 2026-07-15 ~11:00 CEST**
+
+## ✅ v45 — APIHunt CB-Fix + Gmail Tageslimit-Fix + Klaviyo Format + VaCYq3 Key
+
+### Deployed: Railway Redeploy mit neuen Env Vars (nach Commit e4b11e14)
+
+**Fixes diese Session (2026-07-15):**
+
+1. ✅ **modules/ai_client.py** — `_CB_THRESHOLD 3→5`, neue `_cb_rate_limit()` Funktion:
+   - Groq 429 → `_cb_rate_limit("Groq", 90)` statt `_cb_fail("Groq")` — zählt NICHT gegen CB-Threshold
+   - DeepSeek 402 → sofort 1h Block ohne Threshold-Increment
+   - OpenAI 429 → `_cb_rate_limit("OpenAI", 120)`
+   - Gemini 400/401/403 → sofort 1h Block (`gemini_hard_fail`-Flag statt `gemini_ok`-Bug)
+   - **Root cause behoben**: `ALLE Provider ausgefallen!` trat auf weil Groq 429s den CB öffneten
+
+2. ✅ **modules/mass_outreach_1000.py** — Gmail 550 5.4.5 Endlos-Retry-Fix:
+   - `_GMAIL_DAILY_EXHAUSTED: set` — Session-persistentes Set erschöpfter Accounts
+   - `_send_via_gmail()` gibt jetzt `"daily_limit"|"ok"|"auth_fail"|"error"` zurück
+   - Bei `daily_limit` → `_account_sends[daily_key] = PER_ACCOUNT` → Account heute übersprungen
+
+3. ✅ **Klaviyo Format-Fix** (3 Dateien) — `"included": [list_id]` statt `[{"type":"list","id":list_id}]`:
+   - modules/klaviyo_automation.py (Zeile 220)
+   - modules/email_revenue_engine.py (Zeile 510)
+   - modules/klaviyo_mass_campaigns.py (Zeile 312)
+
+4. ✅ **Klaviyo PRIMARY KEY** — `pk_VaCYq3_cf5a87a914f94f3f6ad6b12de8b8876722` in Railway + .env gesetzt
+   - `KLAVIYO_LIST_ID=Xwxq6V` (E-Mail-Liste im VaCYq3/AiiteC Account)
+   - HTTP 201 Profil-Import getestet ✅
+
+**Health nach Session:** `circuits_open: []` ✅ | Status ok ✅
+
+---
 
 ## ✅ v44 — OpenClaw/Ollama überall + ConnectionPool + anthropic_compat
 

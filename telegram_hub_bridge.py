@@ -171,7 +171,21 @@ def handle_message(message: dict[str, Any]) -> None:
     text      = (message.get("text") or "").strip()
     msg_id    = message.get("message_id")
 
-    if not chat_id or not text:
+    if not chat_id:
+        return
+    if not text:
+        # Nicht-Text-Nachrichten (Foto, Sprache, Dokument, …) quittieren
+        _NON_TEXT = (
+            "photo", "voice", "video", "document", "sticker",
+            "location", "audio", "animation", "video_note", "contact",
+        )
+        has_media = any(message.get(t) for t in _NON_TEXT)
+        if has_media and is_allowed(chat_id):
+            telegram_call(
+                "sendMessage",
+                chat_id=chat_id,
+                text="Entschuldigung, ich verarbeite nur Text-Nachrichten.",
+            )
         return
 
     # ── Intent Bridge: intercept all non-command group messages ──────────────
@@ -220,6 +234,40 @@ def handle_message(message: dict[str, Any]) -> None:
         )
 
 
+def handle_callback_query(callback: dict[str, Any]) -> None:
+    """Handle an inline-keyboard button press (callback_query update)."""
+    cb_id   = callback.get("id")
+    message = callback.get("message", {})
+    chat    = message.get("chat", {})
+    chat_id = chat.get("id")
+    data    = (callback.get("data") or "").strip()
+
+    # Always acknowledge the callback so Telegram removes the loading spinner
+    if cb_id:
+        telegram_call("answerCallbackQuery", callback_query_id=cb_id)
+
+    if not chat_id or not data:
+        return
+
+    if not is_allowed(chat_id):
+        telegram_call(
+            "sendMessage",
+            chat_id=chat_id,
+            text="Zugriff verweigert — dieser Chat ist nicht autorisiert.",
+        )
+        return
+
+    log.info("[callback chat=%s] data=%s", chat_id, data[:120])
+    response = dashboard_execute(data, f"tg-{chat_id}")
+    for chunk_start in range(0, len(response), 3800):
+        telegram_call(
+            "sendMessage",
+            chat_id=chat_id,
+            text=response[chunk_start : chunk_start + 3800] or "(leere Antwort)",
+            disable_web_page_preview=True,
+        )
+
+
 def main_loop() -> None:
     if not TELEGRAM_TOKEN:
         log.error("TELEGRAM_BOT_TOKEN not set — bridge cannot start.")
@@ -241,7 +289,10 @@ def main_loop() -> None:
     signal.signal(signal.SIGINT, _shutdown)
 
     while running:
-        params: dict[str, Any] = {"timeout": POLL_TIMEOUT, "allowed_updates": ["message"]}
+        params: dict[str, Any] = {
+            "timeout": POLL_TIMEOUT,
+            "allowed_updates": ["message", "callback_query", "edited_message", "channel_post"],
+        }
         if offset is not None:
             params["offset"] = offset
         try:
@@ -266,12 +317,24 @@ def main_loop() -> None:
 
         for update in resp.get("result", []):
             offset = update["update_id"] + 1
-            msg = update.get("message")
+            # Handle regular messages, edited messages, and channel posts uniformly
+            msg = (
+                update.get("message")
+                or update.get("edited_message")
+                or update.get("channel_post")
+            )
             if msg:
                 try:
                     handle_message(msg)
                 except Exception as e:
                     log.exception("handle_message error: %s", e)
+            # Handle inline keyboard button presses
+            cb = update.get("callback_query")
+            if cb:
+                try:
+                    handle_callback_query(cb)
+                except Exception as e:
+                    log.exception("handle_callback_query error: %s", e)
 
     log.info("Bridge stopped cleanly.")
 
