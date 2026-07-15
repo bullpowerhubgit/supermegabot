@@ -105,30 +105,46 @@ Antworte NUR mit JSON:
 
 
 _FALLBACK_ROTATION = [
-    ("🔥 Limitiert", "🚀 {n} — Dein Weg zu passivem Einkommen! Nur €{p}. Jetzt starten: {u}", "KI verdient für dich — 24/7 automatisch. Starte noch heute!"),
-    ("💡 KI-Einkommen", "💡 Mit KI-Automatisierung zu passivem Einkommen. {n} für nur €{p} 👉 {u}", "Das vollautomatische Business-System — starte sofort durch!"),
-    ("📈 Passiv verdienen", "📈 Während du schläfst verdient {n} für dich. €{p} — einmalig investieren: {u}", "Finanzielle Freiheit durch KI-Automatisierung. Jetzt testen!"),
-    ("🎯 Jetzt starten", "🎯 Stop working hard — start working smart! {n} für €{p}: {u}", "KI-gestütztes passives Einkommen. Bereits hunderte zufriedene Kunden."),
-    ("⚡ Vollautomatisch", "⚡ {n}: Das vollautomatische Einkommens-System. €{p}. Klick: {u}", "Nie wieder aktiv für Geld arbeiten müssen. KI macht alles."),
+    ("🏠 Smart Home Deal",
+     "🏠 {n} — Smarter wohnen ab €{p}. Einfache Installation, sofort nutzbar. 👉 {u}",
+     "Entdecke {n}: Dein Einstieg in Smart Home Technologie. Preis: nur €{p}."),
+    ("⚡ Tech-Highlight",
+     "⚡ {n} für €{p} — Modernste Technologie für dein Zuhause. Jetzt bestellen: {u}",
+     "{n} — Hochwertige Smart-Tech für jeden Haushalt. Jetzt für €{p} verfügbar."),
+    ("🔋 Energie sparen",
+     "🔋 Mit {n} Strom sparen und smart wohnen. Ab €{p}. Details: {u}",
+     "Energie effizienter nutzen mit {n}. Jetzt für €{p} erhältlich."),
+    ("🛡️ Qualitätsprodukt",
+     "🛡️ {n} — Geprüfte Qualität, faire Preise. €{p}. Direkt bestellen: {u}",
+     "{n}: Qualität die überzeugt. Für nur €{p} jetzt in deinem Smart Home einsetzen."),
+    ("📦 Neue Kollektion",
+     "📦 Neu bei iNeedit: {n} für €{p}. Smart leben, einfach bestellen. 🔗 {u}",
+     "Neu im Sortiment: {n}. Smart Home Technologie zum Preis von €{p}."),
 ]
 
 
 def _fallback_content(name: str, price: float, url: str) -> dict:
     import time
-    idx = int(time.time() // 1800) % len(_FALLBACK_ROTATION)  # rotates every 30min
+    idx = int(time.time() // 1800) % len(_FALLBACK_ROTATION)
     ttl, body_tmpl, email_tmpl = _FALLBACK_ROTATION[idx]
-    body = body_tmpl.format(n=name, p=f"{price:.2f}", u=url)
+    body  = body_tmpl.format(n=name, p=f"{price:.2f}", u=url)
+    email = email_tmpl.format(n=name, p=f"{price:.2f}", u=url)
     return {
-        "title": f"{ttl}: {name} — €{price:.2f}",
-        "body": body,
-        "email_subject": f"{ttl}: {name} für €{price:.2f}",
-        "email_body": f"{email_tmpl}\n\n{name} für nur €{price:.2f}. Klick jetzt: {url}",
-        "hashtags": ["PassivesEinkommen", "OnlineGeldVerdienen", "KI", "Ecommerce", "BullPower"],
-        "cta": f"Jetzt kaufen für €{price:.2f}",
-        "blog_title": f"{name} — Der komplette Guide 2026",
-        "blog_content": f"<p>{name} ist das ideale Tool für alle die online Geld verdienen wollen. Für nur €{price:.2f} erhältst du alles was du brauchst. <a href='{url}'>Jetzt starten</a></p>",
+        "title":         f"{ttl}: {name}",
+        "body":          body,
+        "email_subject": f"Neu: {name} für nur €{price:.2f}",
+        "email_body":    f"{email}\n\nJetzt bestellen: {url}",
+        "hashtags":      ["SmartHome", "Technologie", "Gadgets", "iNeedit", "Haustechnik"],
+        "cta":           f"Jetzt für €{price:.2f} kaufen",
+        "blog_title":    f"{name} — Testbericht und Kaufratgeber 2026",
+        "blog_content":  (
+            f"<p><strong>{name}</strong> ist ein hochwertiges Smart-Home-Produkt "
+            f"für €{price:.2f}. In diesem Artikel erfährst du alles über Funktionen, "
+            f"Installation und Praxiserfahrungen.</p>"
+            f"<p><a href='{url}'>➔ Jetzt {name} bestellen</a></p>"
+        ),
         "image_url": IG_PIXEL,
-        "url": url,
+        "url":       url,
     }
 
 
@@ -541,6 +557,20 @@ async def _post_linkedin(content: dict) -> bool:
 
 async def post_to_all_channels(content: dict, product: dict = None) -> dict:
     """Post content to every available channel simultaneously."""
+    # ── QUALITY GATE: Schlechten Content blockieren ──────────────────────────
+    try:
+        from modules.content_quality_gate import sanitize_content, is_content_valid
+        product_name = (product or {}).get("title", content.get("title", ""))
+        content, problems = sanitize_content(content, product_name)
+        if problems:
+            log.warning("ContentGate Probleme: %s", problems)
+        if not is_content_valid(content, product_name):
+            log.error("ContentGate BLOCKIERT Post: body fehlerhaft — %s", problems)
+            return {"skipped": True, "reason": f"quality_gate: {problems}"}
+    except ImportError:
+        pass
+    # ────────────────────────────────────────────────────────────────────────
+
     h = _content_hash(content)
     if h in _load_hashes():
         log.info("Skipping duplicate content: %s", h)

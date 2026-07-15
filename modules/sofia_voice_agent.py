@@ -52,6 +52,19 @@ PRODUKTE (empfehle je nach Bedarf):
 KAUFSIGNALE erkennen: "interessant", "klingt gut", "ja gerne", "wie viel", "bestellen" → markiere mit [KAUFSIGNAL]"""
 
 
+def _process_reply(conv: dict, reply: str) -> str:
+    """Kaufsignal erkennen, Marker entfernen, History speichern."""
+    if "[KAUFSIGNAL]" in reply or "[SMS_SENDEN]" in reply:
+        conv["buy_signal"] = True
+        for prod in ["Solar", "Kamera", "Thermostat", "Rasenmäher", "LED", "Starter"]:
+            if prod in reply:
+                conv["product"] = prod
+                break
+    clean = re.sub(r'\[KAUFSIGNAL\]|\[SMS_SENDEN\]', '', reply).strip()
+    conv["history"].append({"role": "assistant", "content": clean})
+    return clean
+
+
 async def _ai_response(call_sid: str, user_text: str) -> str:
     """Generiert Sofia-Antwort: Groq (primär) → Claude (Fallback) → Default."""
     conv = _conversations.setdefault(call_sid, {"history": [], "buy_signal": False, "product": None})
@@ -72,19 +85,17 @@ async def _ai_response(call_sid: str, user_text: str) -> str:
                     data = await r.json()
             reply = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             if reply:
-                conv["history"].append({"role": "assistant", "content": reply})
-                return reply.strip()
+                return _process_reply(conv, reply)
         except Exception as e:
             log.warning("Sofia Groq: %s", e)
 
     # 2. Claude Haiku (Fallback)
-    anthropic_key = ANTHROPIC_KEY
-    if anthropic_key:
+    if ANTHROPIC_KEY:
         try:
             async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=8)) as s:
                 async with s.post(
                     "https://api.anthropic.com/v1/messages",
-                    headers={"x-api-key": anthropic_key, "anthropic-version": "2023-06-01",
+                    headers={"x-api-key": ANTHROPIC_KEY, "anthropic-version": "2023-06-01",
                              "content-type": "application/json"},
                     json={"model": "claude-haiku-4-5-20251001", "max_tokens": 120,
                           "system": SOFIA_SYSTEM,
@@ -93,26 +104,14 @@ async def _ai_response(call_sid: str, user_text: str) -> str:
                     data = await r.json()
             reply = (data.get("content") or [{"text": ""}])[0].get("text", "").strip()
             if reply:
-                conv["history"].append({"role": "assistant", "content": reply})
-                return reply
+                return _process_reply(conv, reply)
         except Exception as e:
             log.warning("Sofia Claude: %s", e)
 
-    reply = "Entschuldigung, einen Moment bitte."
-
-    # Kaufsignal detektieren
-    if "[KAUFSIGNAL]" in reply or "[SMS_SENDEN]" in reply:
-        conv["buy_signal"] = True
-        # Produkt aus Text extrahieren
-        for prod in ["Solar", "Kamera", "Thermostat", "Rasenmäher", "LED", "Starter"]:
-            if prod in reply:
-                conv["product"] = prod
-                break
-
-    # Markers aus Antwort entfernen
-    clean = re.sub(r'\[KAUFSIGNAL\]|\[SMS_SENDEN\]', '', reply).strip()
-    conv["history"].append({"role": "assistant", "content": clean})
-    return clean
+    # 3. Fallback
+    fallback = "Entschuldigung, einen Moment bitte. Könnten Sie das wiederholen?"
+    conv["history"].append({"role": "assistant", "content": fallback})
+    return fallback
 
 
 def _twiml_gather(say_text: str, call_sid: str, timeout: int = 5) -> str:
