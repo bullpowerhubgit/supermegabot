@@ -9661,6 +9661,206 @@ async def handle_connect_status(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
+# ── Stripe Connect v2 ─────────────────────────────────────────────────────────
+
+async def handle_stripe_connect_create_account(req):
+    """POST /api/stripe/connect/accounts — verbundenes Konto anlegen (v2)."""
+    try:
+        body = await req.json()
+        from modules.stripe_connect_v2 import create_connected_account
+        result = create_connected_account(
+            email=body.get("email", ""),
+            display_name=body.get("display_name", body.get("email", "")),
+            country=body.get("country", "DE"),
+            entity_type=body.get("entity_type", "company"),
+            currency=body.get("currency", "eur"),
+        )
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        return web.json_response({"ok": True, "account": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_list_accounts(req):
+    """GET /api/stripe/connect/accounts — verbundene Konten auflisten."""
+    try:
+        from modules.stripe_connect_v2 import list_accounts
+        limit = int(req.rel_url.query.get("limit", 20))
+        page  = req.rel_url.query.get("page")
+        result = list_accounts(limit=limit, page_token=page)
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_account_status(req):
+    """GET /api/stripe/connect/accounts/{id}/status — Konto-Status."""
+    try:
+        account_id = req.match_info["account_id"]
+        from modules.stripe_connect_v2 import get_account_status
+        result = get_account_status(account_id)
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_onboarding(req):
+    """POST /api/stripe/connect/accounts/{id}/onboarding — Onboarding-Link."""
+    try:
+        account_id = req.match_info["account_id"]
+        from modules.stripe_connect_v2 import create_onboarding_link
+        result = create_onboarding_link(account_id)
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        url = (result.get("url") or "")
+        return web.json_response({"ok": True, "url": url, "expires_at": result.get("expires_at")})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_create_product(req):
+    """POST /api/stripe/connect/accounts/{id}/products — Produkt anlegen."""
+    try:
+        account_id = req.match_info["account_id"]
+        body = await req.json()
+        from modules.stripe_connect_v2 import create_product_for_account
+        result = create_product_for_account(
+            account_id=account_id,
+            name=body.get("name", ""),
+            description=body.get("description", ""),
+            price_cents=int(body.get("price_cents", 0)),
+            currency=body.get("currency", "eur"),
+            recurring_interval=body.get("interval"),
+        )
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        return web.json_response({"ok": True, **result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_list_products(req):
+    """GET /api/stripe/connect/accounts/{id}/products — Produkte auflisten."""
+    try:
+        account_id = req.match_info["account_id"]
+        from modules.stripe_connect_v2 import list_products_for_account
+        result = list_products_for_account(account_id)
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        products = [
+            {
+                "id": p.get("product", {}).get("id") if isinstance(p.get("product"), dict) else p.get("product"),
+                "name": p.get("product", {}).get("name", "") if isinstance(p.get("product"), dict) else "",
+                "description": p.get("product", {}).get("description", "") if isinstance(p.get("product"), dict) else "",
+                "price_cents": p.get("unit_amount"),
+                "currency": p.get("currency"),
+                "price_id": p.get("id"),
+                "recurring": p.get("recurring"),
+            }
+            for p in result.get("data", [])
+        ]
+        return web.json_response({"ok": True, "products": products, "count": len(products)})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_checkout(req):
+    """POST /api/stripe/connect/checkout — Checkout-Session für verbundenes Konto."""
+    try:
+        body = await req.json()
+        from modules.stripe_connect_v2 import create_checkout_session
+        result = create_checkout_session(
+            account_id=body.get("account_id", ""),
+            price_id=body.get("price_id", ""),
+            quantity=int(body.get("quantity", 1)),
+            application_fee_percent=float(body.get("fee_percent", 10.0)),
+        )
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        return web.json_response({"ok": True, "url": result.get("url"), "session_id": result.get("id")})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_event_destinations(req):
+    """GET /api/stripe/connect/event-destinations — Event Destinations auflisten."""
+    try:
+        from modules.stripe_connect_v2 import list_event_destinations
+        result = list_event_destinations()
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        return web.json_response({"ok": True, "destinations": result.get("data", [])})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_create_destination(req):
+    """POST /api/stripe/connect/event-destinations — Event Destination anlegen."""
+    try:
+        body = await req.json()
+        from modules.stripe_connect_v2 import create_event_destination
+        result = create_event_destination(
+            name=body.get("name", "SuperMegaBot Connect"),
+            webhook_url=body.get("webhook_url", ""),
+            events=body.get("events"),
+        )
+        if "error" in result:
+            return web.json_response({"ok": False, **result}, status=400)
+        return web.json_response({"ok": True, "destination": result})
+    except Exception as e:
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_webhook_v2(req):
+    """POST /api/connect/webhooks/v2 — v2 Thin Event Handler."""
+    try:
+        import os
+        payload   = await req.read()
+        signature = req.headers.get("Stripe-Signature", "")
+        secret    = os.getenv("STRIPE_CONNECT_WEBHOOK_SECRET", os.getenv("STRIPE_WEBHOOK_SECRET", ""))
+        from modules.stripe_connect_v2 import parse_v2_thin_event, fetch_v2_event_object
+        event = parse_v2_thin_event(payload, signature, secret)
+        if "error" in event:
+            log.warning("Connect Webhook v2 ungültig: %s", event["error"])
+            return web.json_response({"ok": False, **event}, status=400)
+        event_type = event.get("type", "")
+        log.info("Connect Webhook v2: %s | %s", event_type, event.get("id"))
+        if event_type == "v1.checkout.session.completed":
+            obj = await fetch_v2_event_object(event)
+            account_id = obj.get("metadata", {}).get("account_id", "")
+            amount = obj.get("amount_total", 0)
+            log.info("Checkout abgeschlossen: %s | €%.2f | Account: %s", obj.get("id"), amount / 100, account_id)
+        return web.json_response({"ok": True, "received": event_type})
+    except Exception as e:
+        log.error("Connect Webhook v2 Fehler: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
+async def handle_stripe_connect_return(req):
+    """GET /api/connect/return — Rückgabe nach Onboarding."""
+    account_id = req.rel_url.query.get("account_id", "")
+    raise web.HTTPFound(f"/connect/dashboard?account_id={account_id}&onboarded=1")
+
+
+async def handle_stripe_connect_refresh(req):
+    """GET /api/connect/refresh — Aktualisierungs-URL nach abgelaufenem Link."""
+    account_id = req.rel_url.query.get("account_id", "")
+    try:
+        from modules.stripe_connect_v2 import create_onboarding_link
+        result = create_onboarding_link(account_id)
+        url = result.get("url", "/connect")
+        raise web.HTTPFound(url)
+    except web.HTTPFound:
+        raise
+    except Exception as e:
+        raise web.HTTPFound(f"/connect?error={e}")
+
+
 # ── Quantum Self-Repair Engine ────────────────────────────────────────────────
 
 async def handle_quantum_status(req):
@@ -11568,6 +11768,19 @@ async def create_app():
     app.router.add_post("/api/connect/all",              handle_connect_all)
     app.router.add_get( "/api/connect/status",           handle_connect_status)
     app.router.add_get( "/api/setup/connect-all",       handle_connect_status)
+    # ── Stripe Connect v2 ─────────────────────────────────────────────────────
+    app.router.add_post("/api/stripe/connect/accounts",                      handle_stripe_connect_create_account)
+    app.router.add_get( "/api/stripe/connect/accounts",                      handle_stripe_connect_list_accounts)
+    app.router.add_get( "/api/stripe/connect/accounts/{account_id}/status",  handle_stripe_connect_account_status)
+    app.router.add_post("/api/stripe/connect/accounts/{account_id}/onboarding", handle_stripe_connect_onboarding)
+    app.router.add_post("/api/stripe/connect/accounts/{account_id}/products", handle_stripe_connect_create_product)
+    app.router.add_get( "/api/stripe/connect/accounts/{account_id}/products", handle_stripe_connect_list_products)
+    app.router.add_post("/api/stripe/connect/checkout",                      handle_stripe_connect_checkout)
+    app.router.add_get( "/api/stripe/connect/event-destinations",            handle_stripe_connect_event_destinations)
+    app.router.add_post("/api/stripe/connect/event-destinations",            handle_stripe_connect_create_destination)
+    app.router.add_post("/api/connect/webhooks/v2",                          handle_stripe_connect_webhook_v2)
+    app.router.add_get( "/api/connect/return",                               handle_stripe_connect_return)
+    app.router.add_get( "/api/connect/refresh",                              handle_stripe_connect_refresh)
     # ── MASTER CONTROL PANEL ─────────────────────────────────────────────────
     app.router.add_post("/api/master/start-all",         handle_master_start_all)
     app.router.add_get( "/api/master/status",            handle_master_status)
