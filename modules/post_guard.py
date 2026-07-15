@@ -43,7 +43,7 @@ _FORBIDDEN = re.compile(
     r'example\.com|yourstore\.com|YOUR_DOMAIN|http://localhost|'
     r'your-shop\.myshopify\.com|'
     # ── Spam / Generic Life-Coach-Phrasen ──────────────────────────────────────
-    r'nutzt? nur \d+\s*%\s*de[rs]|'          # "nutzt nur 44% deines"
+    r'nutzt? nur \d+\s*%\s*de\w*|'            # "nutzt nur 44% deines/des/dein"
     r'weniger als \d+\s*%\s*ihr|'             # "weniger als 30% ihres"
     r'finanziell\w+\s+Potenzials?|'           # "finanziellen Potenzials"
     r'90\s*%\s*der\s*Menschen|'               # "90% der Menschen"
@@ -186,36 +186,49 @@ def check_urls(text: str) -> Tuple[bool, str]:
     return True, ""
 
 
+_SOCIAL_PLATFORMS = {"instagram", "twitter", "linkedin", "pinterest"}
+
+
+def check_niche_relevance(text: str, platform: str = "default") -> Tuple[bool, str]:
+    """Social-Posts MÜSSEN mindestens 1 Nischen-Keyword enthalten (Smart Home / Tech / E-Com)."""
+    if platform not in _SOCIAL_PLATFORMS:
+        return True, ""
+    if _NICHE_REQUIRED.search(text):
+        return True, ""
+    return (
+        False,
+        "Kein Nischen-Keyword (Smart Home / Tech / E-Commerce / AI) — Post blockiert",
+    )
+
+
 async def check_ai_quality(text: str, platform: str = "default", context: str = "") -> Tuple[bool, str]:
-    """KI-Qualitätsprüfung via AI."""
+    """KI-Qualitätsprüfung via AI — BLOCKIERT bei Fehler (fail-safe)."""
     try:
         from modules.ai_client import ai_complete
-        prompt = f"""Prüfe diesen {platform}-Post auf Qualität. Antworte NUR mit "OK" oder "FEHLER: <Grund>".
+        prompt = (
+            f"Prüfe diesen {platform}-Post STRENG. "
+            "Antworte NUR mit 'OK' oder 'FEHLER: <Grund>'.\n\n"
+            "PFLICHT-Kriterien (einer Verletzung = FEHLER):\n"
+            "1. Thema: Smart Home, Technologie, E-Commerce, KI-Tools, Solar oder Online-Shop "
+            "(KEIN Life-Coach, KEIN Finanz-Motivations-Content, KEIN allgemeines Marketing)\n"
+            "2. Kein Placeholder-Text: keine [KLAMMERN], kein 'undefined', kein 'None'\n"
+            "3. Professionelles Deutsch, keine Tippfehler, kein Kauderwelsch\n"
+            "4. Konkreter Mehrwert für den Leser — KEIN leerer Hype\n"
+            "5. Kein Spam: keine übertriebenen Prozentangaben, keine Fake-Garantien\n\n"
+            f"Post:\n{text[:600]}\n\n"
+            "Antwort (NUR 'OK' oder 'FEHLER: ...'):"
+        )
 
-Kriterien:
-- Macht er inhaltlich Sinn?
-- Hat er einen klaren Nutzen für den Leser?
-- Ist er auf Deutsch (oder korrekt in der angegebenen Sprache)?
-- Keine offensichtlichen Fehler oder Unsinn?
-- Klingt professionell und nicht wie Spam?
-
-Post:
-{text[:500]}
-
-Antwort (NUR "OK" oder "FEHLER: ...")"""
-
-        result = await ai_complete(prompt, max_tokens=50)
+        result = await ai_complete(prompt, max_tokens=60)
         if result.upper().startswith("OK"):
             return True, ""
-        elif "FEHLER" in result.upper():
+        if "FEHLER" in result.upper():
             reason = result.split(":", 1)[-1].strip() if ":" in result else result
-            return False, f"KI-Qualitätsprüfung: {reason[:100]}"
-        # Unklare Antwort → BLOCKIEREN (fail-safe)
-        return False, f"KI-Qualitätsprüfung: unklare Antwort — BLOCK"
+            return False, f"KI: {reason[:120]}"
+        return False, "KI: unklare Antwort — BLOCK (fail-safe)"
     except Exception as e:
-        # KRITISCH: Bei Fehler BLOCKIEREN, nie durchlassen
         log.warning("AI-Qualitätsprüfung Fehler: %s — BLOCK", e)
-        return False, f"KI-Qualitätsprüfung nicht verfügbar — BLOCK"
+        return False, "KI-Qualitätsprüfung nicht verfügbar — BLOCK"
 
 
 # ── Haupt-Check-Funktion ──────────────────────────────────────────────────────
@@ -255,6 +268,10 @@ async def check_post(
         errors.append(r)
 
     ok, r = check_urls(text)
+    if not ok:
+        errors.append(r)
+
+    ok, r = check_niche_relevance(text, platform)
     if not ok:
         errors.append(r)
 
