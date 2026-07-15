@@ -223,16 +223,35 @@ async def blast_all_lists(subject: str, html: str) -> dict:
 
 
 async def run_daily_blast() -> dict:
-    """Täglich: Trend-Produkte → KI-Email → blast_all_lists."""
+    """Täglich: Trend-Produkte → KI-Email → Guardian-Check → blast_all_lists."""
     products = await _get_shopify_products(limit=4)
     email_data = await generate_revenue_email(products=products)
     if not email_data.get("ok"):
         return {"ok": False, "error": "email generation failed"}
 
-    blast = await blast_all_lists(email_data["subject"], email_data["html"])
+    subject = email_data["subject"]
+    html    = email_data["html"]
+
+    # Qualitäts-Gate vor dem Blast
+    try:
+        from modules.email_guardian import validate_email
+        ok, errors = validate_email(
+            to_email="test@example.com",  # nur Content-Check, nicht Empfänger
+            subject=subject,
+            html_body=html,
+            allow_private=True,  # Empfänger-Domain-Check überspringen (Massen-Mail)
+        )
+        if not ok:
+            log.error("EmailBlastEngine BLOCKIERT (Guardian): %s", errors)
+            return {"ok": False, "blocked": True, "errors": errors}
+    except Exception as eg:
+        log.error("EmailBlastEngine Guardian-Fehler — BLOCK: %s", eg)
+        return {"ok": False, "error": f"guardian_error: {eg}"}
+
+    blast = await blast_all_lists(subject, html)
     log.info("Daily email blast: klaviyo=%s mailchimp=%s",
              blast.get("klaviyo", {}).get("ok"), blast.get("mailchimp", {}).get("ok"))
-    return {"ok": True, "subject": email_data["subject"], "blast": blast}
+    return {"ok": True, "subject": subject, "blast": blast}
 
 
 async def get_email_stats() -> dict:

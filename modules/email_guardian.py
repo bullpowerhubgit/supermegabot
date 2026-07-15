@@ -33,22 +33,35 @@ log = logging.getLogger("EmailGuardian")
 _ROOT = Path(__file__).parent.parent
 _DB = _ROOT / "data" / "email_guardian.db"
 
-# ── Private/interne Domains — NIEMALS auto-antworten ──────────────────────────
+# ── System/Platform Domains — NIEMALS auto-antworten ─────────────────────────
+# WICHTIG: gmail.com hier NICHT drin — Kunden können Gmail-Adressen haben!
 _INTERNAL_DOMAINS = {
-    # Rudolf's eigene Adressen
-    "gmail.com", "googlemail.com",
-    # System/Platform Emails
-    "railway.app", "shopify.com", "stripe.com", "supabase.com",
+    # Hosting/Infrastructure (nie Kunden)
+    "railway.app", "netlify.com", "vercel.com", "heroku.com",
+    # Shop/Payment Platforms (nie Kunden)
+    "shopify.com", "myshopify.com", "stripe.com", "supabase.com",
+    "paypal.com", "paypalcorp.com",
+    # Email Marketing Systems
     "mailchimp.com", "klaviyo.com", "brevo.com", "sendgrid.com",
-    "github.com", "linkedin.com", "facebook.com",
+    "activecampaign.com", "sendinblue.com", "constantcontact.com",
+    # Dev-Platforms
+    "github.com", "githubusercontent.com", "gitlab.com",
+    # Social Media (System-Emails, nie Kunden)
+    "facebookmail.com", "linkedin.com", "bounce.twitter.com",
 }
 
-# Ausnahmen: Diese Adressen dürfen Emails bekommen (Whitelist)
-_WHITELIST_EMAILS = {
-    "bullpowersrtkennels@gmail.com",  # Rudolf's Haupt-Email
-    "aiitecbuuss@gmail.com",          # AiiteC Business
-    "rudolfsarkany1984@gmail.com",    # Rudolf LinkedIn/Mailchimp
+# Rudolf's eigene Adressen — NIEMALS auto-antworten (kein Loop!)
+_OWN_EMAILS = {
+    "bullpowersrtkennels@gmail.com",
+    "aiitecbuuss@gmail.com",
+    "rudolfsarkany1984@gmail.com",
+    "dragonadnp@gmail.com",
+    "rudolf.sarkany.aiitec@gmail.com",
+    "rudolfsarkany1984@gmail.com",
 }
+
+# Whitelist für explizit erlaubte Empfänger (für Tests, interne Reports)
+_WHITELIST_EMAILS: set = set()
 
 _PLACEHOLDER = re.compile(
     r'\{[a-z_]{2,}\}(?!\d)'   # {variable} aber nicht {0}
@@ -123,8 +136,12 @@ def validate_email(
 
     if not allow_private:
         domain = to_email.split("@")[-1].lower() if "@" in to_email else ""
-        if to_email not in _WHITELIST_EMAILS and domain in _INTERNAL_DOMAINS:
-            errors.append(f"Interne Domain blockiert: {domain}")
+        # Blockiere eigene Adressen (vermeidet Auto-Reply-Loops)
+        if to_email.lower() in _OWN_EMAILS:
+            errors.append(f"Eigene Adresse blockiert: {to_email}")
+        # Blockiere bekannte System/Platform-Domains
+        elif domain in _INTERNAL_DOMAINS:
+            errors.append(f"System-Domain blockiert: {domain}")
 
     # 2. Betreff-Check
     if not subject or len(subject.strip()) < 3:

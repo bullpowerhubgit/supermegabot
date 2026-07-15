@@ -517,6 +517,37 @@ async def process_all_inboxes(since_hours: int = 1) -> Dict:
             company    = reply["from_name"] or from_email.split("@")[0]
             thread_id  = reply["thread_ref"] or reply["msg_id"]
 
+            # ── Private / Spam / System Emails sofort überspringen ──────────────
+            try:
+                from modules.email_validator import classify_incoming_email
+                email_class = classify_incoming_email(from_email, subject, body)
+            except Exception:
+                email_class = "business"
+
+            if email_class == "private":
+                log.info("  [PRIVATE] %s — kein Auto-Reply (Rudolf manuell!)", from_email)
+                await _tg_notify_block(
+                    from_email, company, "private",
+                    "Private Email erkannt — kein Auto-Reply. Bitte manuell beantworten!"
+                )
+                continue
+            if email_class in ("spam", "inkasso"):
+                if email_class == "inkasso":
+                    await _tg_notify_block(
+                        from_email, company, "inkasso",
+                        "⚠️ INKASSO/RECHTLICH erkannt — Rudolf manuell beantworten!"
+                    )
+                log.info("  [%s] %s — übersprungen", email_class.upper(), from_email)
+                continue
+            if email_class == "unsubscribe":
+                log.info("  [UNSUBSCRIBE] %s", from_email)
+                try:
+                    from modules.mass_outreach_1000 import handle_unsubscribe
+                    handle_unsubscribe(from_email)
+                except Exception:
+                    pass
+                continue
+
             intent = classify_intent(body)
             log.info("  → %s | Intent: %s", from_email, intent)
 
@@ -540,12 +571,29 @@ async def process_all_inboxes(since_hours: int = 1) -> Dict:
             # Antwort generieren
             ai_reply = await generate_reply(body, company, intent, thread_history)
 
-            # Finale Qualitätsprüfung vor dem Senden
+            # Finale Qualitätsprüfung vor dem Senden (5-Layer)
             reply_ok, reply_err = _validate_email_reply(ai_reply)
             if not reply_ok:
-                log.error("Email-Reply BLOCKIERT [%s]: %s | Reply: %s...",
+                log.error("Email-Reply L1 BLOCKIERT [%s]: %s | Reply: %s...",
                           from_email, reply_err, ai_reply[:80])
                 await _tg_notify_block(from_email, company, intent, reply_err)
+                continue
+            # Erweiterte 5-Layer Prüfung via email_validator
+            try:
+                from modules.email_validator import validate_email_content
+                adv_ok, adv_reason = await validate_email_content(
+                    subject=f"Re: {subject}",
+                    body=ai_reply,
+                    recipient=from_email,
+                    require_signature=True,
+                )
+                if not adv_ok:
+                    log.error("Email-Reply VALIDATOR-BLOCK [%s]: %s", from_email, adv_reason)
+                    await _tg_notify_block(from_email, company, intent, adv_reason)
+                    continue
+            except Exception as ev:
+                log.error("email_validator Fehler — BLOCK: %s", ev)
+                await _tg_notify_block(from_email, company, intent, f"validator_error: {ev}")
                 continue
 
             # Unsubscribe verarbeiten
@@ -568,6 +616,15 @@ async def process_all_inboxes(since_hours: int = 1) -> Dict:
                         log.info("📞 Sofia-Queue: %s", phone)
                     except Exception:
                         pass
+
+            # Blocklist-Check vor dem Senden
+            try:
+                from modules.bounce_watcher import is_blocked
+                if is_blocked(from_email):
+                    log.info("BounceBlocklist: kein Reply an %s (gebounced)", from_email)
+                    continue
+            except Exception:
+                pass
 
             # Antwort senden
             sent = await asyncio.to_thread(_send_reply, account, from_email, subject, ai_reply,

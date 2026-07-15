@@ -921,6 +921,28 @@ def _send_via_gmail(user: str, password: str, to_email: str,
 
 async def send_email(to_email: str, subject: str, body: str) -> Tuple[bool, str]:
     global _pool_index, _account_sends
+
+    # Blocklist-Check: keine Emails an gebounced/blockierte Adressen
+    try:
+        from modules.bounce_watcher import is_blocked
+        if is_blocked(to_email):
+            log.info("BounceBlocklist: %s übersprungen (bereits gebounced)", to_email)
+            return False, "bounce_blocked"
+    except Exception:
+        pass
+
+    # Email-Validator-Check
+    try:
+        from modules.email_validator import validate_email_content
+        ok_val, reason_val = await validate_email_content(
+            subject=subject, body=body, recipient=to_email, require_signature=False
+        )
+        if not ok_val:
+            log.warning("MassOutreach Validator BLOCK [%s]: %s", to_email, reason_val)
+            return False, f"validator_blocked: {reason_val}"
+    except Exception:
+        pass
+
     pool = _smtp_pool()
     if not pool:
         log.error("Kein SMTP-Account konfiguriert!")
