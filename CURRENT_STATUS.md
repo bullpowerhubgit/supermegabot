@@ -1,5 +1,29 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-15 00:20 CEST**
+**Stand: 2026-07-15 12:30 CEST**
+
+## ✅ v44 — OpenClaw/Ollama überall + ConnectionPool + anthropic_compat
+
+### Deployed: 57ccf389 (via GitHub Actions)
+
+**Fixes diese Session (2026-07-15):**
+1. ✅ **modules/anthropic_compat.py** — Drop-in Shim: `from modules.anthropic_compat import Anthropic` statt direktem Anthropic SDK — routet durch ai_client.py → Fallback-Kette aktiv
+2. ✅ **modules/connection_pool.py** — Globaler aiohttp TCP-Pool (200 Connections, 30/Host, Keepalive 60s) — alle Module teilen dieselben TCP-Verbindungen
+3. ✅ **open_claw.py** — Response-Cache (LRU 256 Einträge, 10 min TTL) + nutzt connection_pool.py + ai_or_claw() Fallback
+4. ✅ **free_api_hunter.py** — Ollama als Provider #1 vor Groq eingetragen (lokal, kostenlos, kein Rate-Limit)
+5. ✅ **agent_teams.py, reply_monitor.py, dashboard/server.py** — Anthropic SDK → anthropic_compat (Fallback-Kette)
+6. ✅ **sofia_voice_agent.py, mass_outreach_1000.py** — Direkte Groq/Anthropic-Calls → ai_complete()
+7. ✅ **server.py** — connection_pool.close_pool() beim Shutdown (sauberes TCP-Teardown)
+
+**Aktuelle KI-Kette (überall gleich):**
+```
+OpenClaw (Ollama lokal, kostenlos) 
+  → Groq (llama-3.1-8b, schnell) 
+  → DeepSeek → OpenRouter → Gemini → Anthropic → OpenAI → Perplexity
+```
+
+**Health:** `/health` ✅ ok | uptime 62s | circuits_open: []
+
+---
 
 ## ✅ v43 — CRITICAL FIX: asyncio.run() + Meta Ads Live + Feed Clean
 
