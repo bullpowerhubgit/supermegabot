@@ -1,5 +1,23 @@
 # SuperMegaBot — CURRENT STATUS
-**Stand: 2026-07-15 19:00 UTC — SYSTEM-CHECK ABGESCHLOSSEN ✅**
+**Stand: 2026-07-16 00:30 UTC — 3 NEUE RAILWAY-SERVICES DEPLOYED ✅**
+
+## 🚀 NEU DEPLOYED (2026-07-16)
+| Service | URL | Status |
+|---------|-----|--------|
+| **seo-turbo-tools** | https://seo-turbo-tools-production.up.railway.app | ✅ DEPLOYING (inline ai_complete fix) |
+| **analytics-marketing** | https://analytics-marketing-production.up.railway.app | ✅ SUCCESS |
+| **stripe-connect-saas** | https://stripe-connect-saas-production.up.railway.app | ✅ SUCCESS |
+- Vendor Onboarding: https://stripe-connect-saas-production.up.railway.app/connect
+- Admin Dashboard: https://stripe-connect-saas-production.up.railway.app/
+- Alle ENV-Vars gesetzt (STRIPE_SECRET_KEY, WEBHOOK, TG, GROQ, OR, ANTHROPIC)
+- APP_URL gesetzt → Webhook auto-registriert beim ersten Start
+
+## ⏳ OFFENE PUNKTE (manuell)
+1. **Anthropic Credits aufladen** → console.anthropic.com (System läuft über Groq/OpenRouter Fallback)
+2. Facebook Groups: Meta App Review ausstehend
+3. GMC Identitätsverifizierung: merchants.google.com → Banner "Identität bestätigen" → Personalausweis
+4. Gmail aiitecbuuss@gmail.com: Passwort ändern (nach Hack 2026-07-09) — manuell!
+5. **Stripe Live Keys rotieren** → stripe.com/dashboard/apikeys → "Roll key" (Keys waren in git history)
 
 ## 🤖 AUTONOMER CHECK 2026-07-15 19:00 UTC
 | Fehler | Fix | Status |
