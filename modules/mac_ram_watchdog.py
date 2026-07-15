@@ -1,15 +1,15 @@
 """
 Mac RAM + Swap + Prozess Watchdog — Permanent immer aktiv
 ==========================================================
-• Swap-Auslastung überwachen → bei >80% auto-bereinigen
-• Runaway-Prozesse killen (Comet, Chrome-Renderer, etc.)
+• Swap-Auslastung überwachen → bei >60% auto-bereinigen
+• Runaway-Prozesse killen (Comet, grok, Streamlit, Chrome, Brave)
+• Browser NIEMALS killen — nur die echten RAM/CPU-Fresser
 • Disk-Cleaner triggern wenn <20 GB frei
 • TM-Snapshots auto-löschen wenn Disk <15 GB frei
 • Telegram-Alarm bei kritischen Zuständen
-• Läuft alle 10 Minuten via LaunchAgent
+• Läuft alle 60 Sekunden via LaunchAgent (KeepAlive)
 
-Dieser Watchdog ergänzt mac_watchdog.py (alle 5 Min) und
-mac_disk_cleaner.py (täglich 3:00 Uhr).
+Läuft als dauerhafter Daemon (KeepAlive=true, throtlle 60s).
 """
 
 import os
@@ -22,30 +22,38 @@ import shutil
 from datetime import datetime, timezone
 from pathlib import Path
 
-# Logging
 log = logging.getLogger("RamWatchdog")
 
 HOME = Path.home()
 PROJECT_DIR = HOME / "supermegabot"
 STATE_FILE  = PROJECT_DIR / "data" / "ram_watchdog_state.json"
 
-# Credentials
 TG_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT  = os.getenv("TELEGRAM_CHAT_ID", "")
 
 # Schwellenwerte
-SWAP_WARN_PCT      = 70   # % Swap belegt → Warnung + kill
-SWAP_CRIT_PCT      = 85   # % Swap belegt → kritisch + kill + alert
-RAM_WARN_PCT       = 80   # % RAM belegt → Warnung + kill
-DISK_CLEAN_GB      = 20   # GB frei → Disk-Cleaner triggern
-DISK_CRIT_GB       = 10   # GB frei → TM-Snapshots löschen
-COMET_MAX_PROCS    = 12   # Comet-Prozesse max (aggressiver)
-CHROME_MAX_PROCS   = 15   # Chrome Renderer max
-BRAVE_MAX_PROCS    = 15   # Brave Renderer max
-ALERT_COOLDOWN_MIN = 20   # Minuten zwischen gleichen Alerts
+SWAP_ACT_PCT       = 60   # % Swap → aktiv killen (war 70%)
+SWAP_CRIT_PCT      = 80   # % Swap → kritisch + Telegram-Alarm (war 85%)
+RAM_WARN_PCT       = 85   # % RAM belegt → killen
+DISK_CLEAN_GB      = 20
+DISK_CRIT_GB       = 10
+COMET_MAX_PROCS    = 10   # Comet-Renderer max (war 12)
+CHROME_MAX_PROCS   = 12   # Chrome Renderer max
+BRAVE_MAX_PROCS    = 12   # Brave Renderer max
+ALERT_COOLDOWN_MIN = 20
 
+# Prozesse die IMMER gekillt werden wenn Swap > SWAP_ACT_PCT
+# (nicht-kritische RAM/CPU-Fresser die sich von selbst neu starten können)
+ALWAYS_KILL_WHEN_HIGH = [
+    "grok",                           # X.ai Grok App — 101% CPU, 500 MB
+    "geldmaschine_skalieren_10k.py",  # Streamlit — 2.6 GB RAM
+]
 
-# ── State ──────────────────────────────────────────────────────────────────
+# Streamlit-Prozesse die gekillt werden (hängen oft nach Session)
+STREAMLIT_KILL_SCRIPTS = [
+    "geldmaschine",
+]
+
 
 def _load_state() -> dict:
     try:
@@ -71,8 +79,6 @@ def _mark_alerted(state: dict, key: str) -> None:
     state.setdefault("alerted", {})[key] = datetime.now(timezone.utc).isoformat()
 
 
-# ── Telegram ────────────────────────────────────────────────────────────────
-
 def _tg(text: str) -> None:
     if not TG_TOKEN or not TG_CHAT:
         log.info("TG (kein Token): %s", text[:80])
@@ -87,16 +93,12 @@ def _tg(text: str) -> None:
         log.debug("TG Fehler: %s", e)
 
 
-# ── RAM + Swap Monitoring ───────────────────────────────────────────────────
-
 def get_swap_usage() -> dict:
-    """Liefert Swap-Statistiken via sysctl."""
     try:
         import re
         out = subprocess.check_output(
             ["sysctl", "vm.swapusage"], text=True, timeout=5
         )
-        # Format: vm.swapusage: total = 50176,00M  used = 49017,00M  free = 1159,00M
         nums = re.findall(r"[\d,\.]+M", out)
         def parse_mb(s): return float(s.replace("M", "").replace(",", "."))
         total = parse_mb(nums[0]) if len(nums) > 0 else 0
@@ -111,7 +113,6 @@ def get_swap_usage() -> dict:
 
 
 def get_ram_usage() -> dict:
-    """Liefert RAM-Statistiken."""
     try:
         vm = psutil.virtual_memory()
         return {
@@ -120,8 +121,7 @@ def get_ram_usage() -> dict:
             "free_gb":  vm.available / 1024**3,
             "pct":      vm.percent,
         }
-    except Exception as e:
-        log.debug("ram_usage: %s", e)
+    except Exception:
         return {"total_gb": 48, "used_gb": 0, "free_gb": 48, "pct": 0}
 
 
@@ -132,13 +132,32 @@ def get_disk_free_gb() -> float:
         return 999.0
 
 
-# ── Prozess-Management ──────────────────────────────────────────────────────
+def kill_always_kill_list() -> dict:
+    """Killt Prozesse aus ALWAYS_KILL_WHEN_HIGH (grok, Streamlit etc.)"""
+    killed = {}
+    for p in psutil.process_iter(["pid", "name", "cmdline", "memory_info", "cpu_percent"]):
+        try:
+            name = p.info.get("name") or ""
+            cmd  = " ".join(p.info.get("cmdline") or [])
+            for pattern in ALWAYS_KILL_WHEN_HIGH:
+                if pattern.lower() in name.lower() or pattern.lower() in cmd.lower():
+                    rss_mb = (p.info.get("memory_info") or type("", (), {"rss": 0})()).rss / 1024**2
+                    log.info("Kill always-list: PID %d (%s, %.0f MB)", p.pid, pattern, rss_mb)
+                    try:
+                        psutil.Process(p.pid).terminate()
+                        killed[pattern] = killed.get(pattern, 0) + 1
+                    except Exception:
+                        pass
+                    break
+        except Exception:
+            pass
+    return killed
 
-def _count_and_kill_runaway(name_pattern: str, max_procs: int, keep_main: bool = True) -> int:
+
+def _count_and_kill_runaway(name_pattern: str, max_procs: int) -> int:
     """
     Findet alle Prozesse die name_pattern enthalten.
-    Wenn mehr als max_procs laufen, werden die ältesten Helper-Prozesse gekillt.
-    Gibt Anzahl der gekillten Prozesse zurück.
+    Wenn mehr als max_procs laufen, werden die RAM-intensivsten Helper gekillt.
     """
     procs = []
     for p in psutil.process_iter(["pid", "name", "cmdline", "create_time", "memory_info"]):
@@ -150,7 +169,8 @@ def _count_and_kill_runaway(name_pattern: str, max_procs: int, keep_main: bool =
                     "cmd": cmd[:80],
                     "age": p.info["create_time"],
                     "rss": p.info["memory_info"].rss if p.info.get("memory_info") else 0,
-                    "is_helper": any(x in cmd for x in ["Helper", "Renderer", "GPU", "Worker", "crashpad"]),
+                    "is_helper": any(x in cmd for x in
+                                     ["Helper", "Renderer", "GPU", "Worker", "crashpad"]),
                 })
         except Exception:
             pass
@@ -158,7 +178,6 @@ def _count_and_kill_runaway(name_pattern: str, max_procs: int, keep_main: bool =
     if len(procs) <= max_procs:
         return 0
 
-    # Nur Helper-Prozesse killen, nicht den Haupt-Prozess
     helpers = [p for p in procs if p["is_helper"]]
     to_kill = sorted(helpers, key=lambda x: x["rss"], reverse=True)
     to_kill = to_kill[:len(procs) - max_procs]
@@ -166,62 +185,39 @@ def _count_and_kill_runaway(name_pattern: str, max_procs: int, keep_main: bool =
     killed = 0
     for p in to_kill:
         try:
-            proc = psutil.Process(p["pid"])
-            proc.terminate()
+            psutil.Process(p["pid"]).terminate()
             killed += 1
-            log.info("Prozess gekillt: PID %d (%s, RSS %.0f MB)",
-                     p["pid"], p["cmd"][:40], p["rss"]/1024**2)
-        except Exception as e:
-            log.debug("Kill PID %d: %s", p["pid"], e)
-
+            log.info("Helper gekillt: PID %d (%.0f MB)", p["pid"], p["rss"]/1024**2)
+        except Exception:
+            pass
     return killed
 
 
-def kill_runaway_processes() -> dict:
-    """Killt überzählige Helper-Prozesse von bekannten RAM-Fressern."""
+def kill_runaway_browser_helpers() -> dict:
+    """Killt überzählige Helper-Prozesse — NIEMALS den Browser selbst."""
     killed = {}
-
-    # Comet-Browser (häufig 90+ Prozesse)
     n = _count_and_kill_runaway("Comet", COMET_MAX_PROCS)
     if n > 0:
         killed["Comet"] = n
-
-    # Chrome Renderer
     n = _count_and_kill_runaway("Google Chrome", CHROME_MAX_PROCS)
     if n > 0:
         killed["Chrome"] = n
-
-    # Brave Renderer
     n = _count_and_kill_runaway("Brave Browser", BRAVE_MAX_PROCS)
     if n > 0:
         killed["Brave"] = n
-
-    # Speicher-Purge wenn viel gekillt wurde
-    if sum(killed.values()) > 10:
-        try:
-            subprocess.run(["purge"], timeout=30, capture_output=True)
-            log.info("purge ausgeführt nach %d kills", sum(killed.values()))
-        except Exception:
-            pass
-
     return killed
 
 
-# ── Disk Cleanup ─────────────────────────────────────────────────────────────
-
-def trigger_disk_cleanup(force: bool = False) -> dict:
-    """Ruft mac_disk_cleaner.run_full_cleanup auf."""
+def purge_memory() -> None:
+    """Versucht Speicher-Purge (braucht ggf. sudo — schlägt still fehl)."""
     try:
-        sys.path.insert(0, str(PROJECT_DIR))
-        from modules.mac_disk_cleaner import run_full_cleanup
-        return run_full_cleanup(force=force)
-    except Exception as e:
-        log.error("Disk cleanup Fehler: %s", e)
-        return {"error": str(e)}
+        subprocess.run(["purge"], timeout=30, capture_output=True)
+        log.info("purge ausgeführt")
+    except Exception:
+        pass
 
 
 def delete_tm_snapshots() -> int:
-    """Löscht lokale Time Machine Snapshots."""
     try:
         result = subprocess.run(
             ["tmutil", "deletelocalsnapshots", "/"],
@@ -236,135 +232,120 @@ def delete_tm_snapshots() -> int:
         return 0
 
 
+def trigger_disk_cleanup(force: bool = False) -> dict:
+    try:
+        sys.path.insert(0, str(PROJECT_DIR))
+        from modules.mac_disk_cleaner import run_full_cleanup
+        return run_full_cleanup(force=force)
+    except Exception as e:
+        log.error("Disk cleanup Fehler: %s", e)
+        return {"error": str(e)}
+
+
 def evict_icloud_cache() -> None:
-    """Startet iCloud-Eviction im Hintergrund."""
     icloud = HOME / "Library" / "Mobile Documents" / "com~apple~CloudDocs"
     targets = [
         str(icloud / "ARCHIVES" / "MacOffload"),
-        str(icloud / "ARCHIVES" / ".git-home-backup-2026-07-12"),
         str(icloud / "Downloads"),
     ]
     for target in targets:
         if os.path.exists(target):
             subprocess.Popen(
-                f'find "{target}" -type f -size +0c | head -2000 | xargs -P 4 -n 50 brctl evict 2>/dev/null',
+                f'find "{target}" -type f -size +0c | head -2000 '
+                f'| xargs -P 4 -n 50 brctl evict 2>/dev/null',
                 shell=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             )
 
 
-# ── Haupt-Watchdog-Loop ─────────────────────────────────────────────────────
-
 def run_ram_watchdog() -> dict:
     """
     Vollständiger RAM/Swap/Prozess-Check.
-    Wird alle 10 Minuten via LaunchAgent aufgerufen.
+    Wird alle 60 Sekunden via LaunchAgent (KeepAlive+ThrottleInterval) aufgerufen.
     """
-    state   = _load_state()
-    result  = {"actions": [], "alerts": [], "ok": True}
-    now     = datetime.now(timezone.utc).isoformat()
+    import time
+    while True:
+        state  = _load_state()
+        result = {"actions": [], "alerts": [], "ok": True}
+        now    = datetime.now(timezone.utc).isoformat()
 
-    swap = get_swap_usage()
-    ram  = get_ram_usage()
-    disk_gb = get_disk_free_gb()
+        swap    = get_swap_usage()
+        ram     = get_ram_usage()
+        disk_gb = get_disk_free_gb()
 
-    log.info("Status: Swap %.1f%% (%.1f/%.1f GB) | RAM %.1f%% | Disk %.1f GB frei",
-             swap["pct"], swap["used_gb"], swap["total_gb"],
-             ram["pct"], disk_gb)
+        log.info("Swap %.1f%% (%.1f/%.1f GB) | RAM %.1f%% | Disk %.1f GB",
+                 swap["pct"], swap["used_gb"], swap["total_gb"], ram["pct"], disk_gb)
 
-    # ── 1. Swap-Überwachung ──────────────────────────────────────────────────
-    # Prozesse IMMER killen wenn Schwelle überschritten (kein Cooldown fürs Killen!)
-    if swap["pct"] >= SWAP_WARN_PCT or ram["pct"] >= RAM_WARN_PCT:
-        killed = kill_runaway_processes()
-        if killed:
-            result["actions"].append(f"Prozesse gekillt: {killed}")
-            log.info("Auto-Kill: %s", killed)
+        # ── 1. Always-Kill-Liste: grok, Streamlit etc. wenn Swap > Schwelle ──
+        if swap["pct"] >= SWAP_ACT_PCT or ram["pct"] >= RAM_WARN_PCT:
+            ak = kill_always_kill_list()
+            if ak:
+                result["actions"].append(f"always_kill: {ak}")
+                log.info("Always-Kill: %s", ak)
 
-    if swap["pct"] >= SWAP_CRIT_PCT:
-        result["ok"] = False
-        if _cooldown_ok(state, "swap_crit", 30):
-            killed_txt = ", ".join(f"{k}: {v}" for k, v in (killed if 'killed' in dir() else {}).items()) or "keine"
-            _tg(f"🔴 *Swap Kritisch: {swap['pct']:.0f}%* "
-                f"({swap['used_gb']:.1f}/{swap['total_gb']:.1f} GB)\n"
-                f"Prozesse gekillt: {killed_txt}")
-            _mark_alerted(state, "swap_crit")
-            result["alerts"].append(f"swap_crit:{swap['pct']:.0f}%")
+        # ── 2. Browser-Helper killen wenn zu viele Prozesse ──────────────────
+        bh = kill_runaway_browser_helpers()
+        if bh:
+            result["actions"].append(f"browser_helpers: {bh}")
 
-    elif swap["pct"] >= SWAP_WARN_PCT:
-        if _cooldown_ok(state, "swap_warn", 60):
-            _tg(f"⚠️ *Swap {swap['pct']:.0f}%* ({swap['used_gb']:.1f} GB) — Prozesse reduziert")
-            _mark_alerted(state, "swap_warn")
-            result["alerts"].append(f"swap_warn:{swap['pct']:.0f}%")
+        # ── 3. purge wenn Swap > 80% ──────────────────────────────────────────
+        if swap["pct"] >= SWAP_CRIT_PCT:
+            purge_memory()
+            result["actions"].append("purge")
 
-    # ── 2. RAM-Überwachung ───────────────────────────────────────────────────
-    if ram["pct"] >= RAM_WARN_PCT and _cooldown_ok(state, "ram_warn", 45):
-        _tg(f"⚠️ *RAM {ram['pct']:.0f}%* ({ram['used_gb']:.1f}/{ram['total_gb']:.1f} GB) — Auto-Kill aktiv")
-        _mark_alerted(state, "ram_warn")
-        result["alerts"].append(f"ram:{ram['pct']:.0f}%")
+        # ── 4. Swap-Alarm ─────────────────────────────────────────────────────
+        if swap["pct"] >= SWAP_CRIT_PCT:
+            result["ok"] = False
+            if _cooldown_ok(state, "swap_crit", 30):
+                ak_txt = str(result["actions"]) if result["actions"] else "—"
+                _tg(f"🔴 *Swap Kritisch: {swap['pct']:.0f}%* "
+                    f"({swap['used_gb']:.1f}/{swap['total_gb']:.1f} GB)\n"
+                    f"Aktionen: {ak_txt}")
+                _mark_alerted(state, "swap_crit")
+                result["alerts"].append(f"swap_crit:{swap['pct']:.0f}%")
 
-    # ── 3. TM-Snapshots: IMMER alle 2 Stunden löschen (bauen 30+ GB/Tag auf) ──
-    if _cooldown_ok(state, "tm_snapshots", 120):
-        snaps = delete_tm_snapshots()
-        if snaps > 0:
-            _mark_alerted(state, "tm_snapshots")
-            result["actions"].append(f"tm_snapshots_deleted: {snaps}")
-            log.info("TM-Snapshots regelmässig gelöscht: %d", snaps)
+        elif swap["pct"] >= SWAP_ACT_PCT:
+            if _cooldown_ok(state, "swap_warn", 60):
+                _tg(f"⚠️ *Swap {swap['pct']:.0f}%* — Auto-Cleanup aktiv")
+                _mark_alerted(state, "swap_warn")
+                result["alerts"].append(f"swap_warn:{swap['pct']:.0f}%")
 
-    # ── 4. Disk-Überwachung + Auto-Cleanup ──────────────────────────────────
-    if disk_gb < DISK_CRIT_GB:
-        result["ok"] = False
-        if _cooldown_ok(state, "disk_crit", 60):
-            _tg(f"🔴 *Disk Kritisch: nur {disk_gb:.1f} GB frei!*\nLösche TM-Snapshots + Cache...")
+        # ── 5. TM-Snapshots alle 2h löschen ──────────────────────────────────
+        if _cooldown_ok(state, "tm_snapshots", 120):
             snaps = delete_tm_snapshots()
-            cleanup = trigger_disk_cleanup(force=True)
-            evict_icloud_cache()
-            freed  = cleanup.get("freed_mb", 0)
-            after  = cleanup.get("free_after_gb", disk_gb)
-            _tg(f"🧹 Disk-Notfall-Cleanup:\n"
-                f"TM-Snapshots: {snaps}\n"
-                f"Caches: {freed:.0f} MB\n"
-                f"Jetzt frei: {after:.1f} GB")
-            _mark_alerted(state, "disk_crit")
-            result["actions"].append(f"disk_crit_cleanup: {freed:.0f}MB + {snaps}snap")
+            if snaps > 0:
+                _mark_alerted(state, "tm_snapshots")
+                result["actions"].append(f"tm_snapshots:{snaps}")
 
-    elif disk_gb < DISK_CLEAN_GB:
-        if _cooldown_ok(state, "disk_clean", 90):
-            cleanup = trigger_disk_cleanup(force=False)
-            if not cleanup.get("skipped"):
-                freed = cleanup.get("freed_mb", 0)
-                after = cleanup.get("free_after_gb", disk_gb)
-                _tg(f"🧹 *Auto Disk Cleanup* ({disk_gb:.1f} GB frei)\n"
-                    f"Befreit: {freed:.0f} MB → {after:.1f} GB frei")
-                _mark_alerted(state, "disk_clean")
-                result["actions"].append(f"disk_cleanup: {freed:.0f}MB")
+        # ── 6. Disk-Überwachung ───────────────────────────────────────────────
+        if disk_gb < DISK_CRIT_GB:
+            result["ok"] = False
+            if _cooldown_ok(state, "disk_crit", 60):
+                _tg(f"🔴 *Disk Kritisch: {disk_gb:.1f} GB frei!*")
+                delete_tm_snapshots()
+                trigger_disk_cleanup(force=True)
+                evict_icloud_cache()
+                _mark_alerted(state, "disk_crit")
+                result["actions"].append("disk_crit_cleanup")
 
-    # ── 4. Prozess-Watchdog (IMMER, kein Cooldown fürs Killen) ─────────────
-    comet_count = sum(1 for p in psutil.process_iter(["cmdline"])
-                      if any("Comet" in (c or "") for c in (p.info.get("cmdline") or [])))
-    # Brave separat prüfen
-    brave_count = sum(1 for p in psutil.process_iter(["cmdline"])
-                      if any("Brave Browser" in (c or "") for c in (p.info.get("cmdline") or [])))
-    if comet_count > COMET_MAX_PROCS or brave_count > BRAVE_MAX_PROCS:
-        extra_killed = kill_runaway_processes()
-        if extra_killed:
-            result["actions"].append(f"proc_kill: {extra_killed}")
-            if _cooldown_ok(state, "proc_kill", 15):
-                kill_txt = ", ".join(f"{k}: {v}" for k, v in extra_killed.items())
-                _tg(f"🤖 *Runaway-Prozesse gekillt*\n{kill_txt}\n"
-                    f"(Comet: {comet_count}, Brave: {brave_count})")
-                _mark_alerted(state, "proc_kill")
+        elif disk_gb < DISK_CLEAN_GB:
+            if _cooldown_ok(state, "disk_clean", 90):
+                cleanup = trigger_disk_cleanup(force=False)
+                if not cleanup.get("skipped"):
+                    _mark_alerted(state, "disk_clean")
+                    result["actions"].append(f"disk_cleanup:{cleanup.get('freed_mb',0):.0f}MB")
 
-    state["last_run"] = now
-    state.setdefault("actions", [])
-    state["actions"] = (result["actions"] + state["actions"])[:50]
-    _save_state(state)
+        state["last_run"] = now
+        state["actions"] = (result["actions"] + state.get("actions", []))[:50]
+        _save_state(state)
 
-    log.info("Watchdog fertig: %d Alerts, %d Aktionen",
-             len(result["alerts"]), len(result["actions"]))
-    return result
+        if result["actions"]:
+            log.info("Aktionen: %s", result["actions"])
+
+        # 60 Sekunden warten bis zum nächsten Check
+        time.sleep(60)
 
 
 if __name__ == "__main__":
-    # .env laden wenn vorhanden
     env_file = PROJECT_DIR / ".env"
     if env_file.exists():
         for line in env_file.read_text().splitlines():
@@ -376,6 +357,4 @@ if __name__ == "__main__":
         level=logging.INFO,
         format="%(asctime)s [%(name)s] %(levelname)s: %(message)s"
     )
-    import json as _json
-    r = run_ram_watchdog()
-    print(_json.dumps(r, indent=2, ensure_ascii=False))
+    run_ram_watchdog()
