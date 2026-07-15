@@ -139,6 +139,15 @@ def validate_email(
         if domain in _DISPOSABLE:
             errors.append(f"Wegwerf-Domain blockiert: {domain}")
 
+    # L3b: Bounce-Blocklist-Check
+    if to_email:
+        try:
+            from modules.bounce_watcher import is_blocked
+            if is_blocked(to_email):
+                errors.append(f"Adresse auf Bounce-Blocklist: {to_email}")
+        except Exception:
+            pass
+
     # L4: Duplikat-Check
     if not skip_dedup and to_email:
         is_dup, dup_msg = _is_duplicate(to_email, subject, body)
