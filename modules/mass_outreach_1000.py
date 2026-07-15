@@ -874,8 +874,13 @@ async def _send_via_sendgrid(api_key: str, from_email: str,
         log.error("SendGrid error: %s", e)
         return False
 
+_GMAIL_DAILY_EXHAUSTED: set = set()  # accounts that hit daily limit today
+
 def _send_via_gmail(user: str, password: str, to_email: str,
-                     subject: str, body: str) -> bool:
+                     subject: str, body: str) -> str:
+    """Returns 'ok', 'auth_fail', 'daily_limit', or 'error'."""
+    if user in _GMAIL_DAILY_EXHAUSTED:
+        return "daily_limit"
     try:
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
@@ -886,13 +891,33 @@ def _send_via_gmail(user: str, password: str, to_email: str,
         with smtplib.SMTP_SSL("smtp.gmail.com", 465, timeout=20) as s:
             s.login(user, password)
             s.sendmail(user, [to_email], msg.as_string())
-        return True
+        return "ok"
     except smtplib.SMTPAuthenticationError:
         log.warning("Gmail Auth fehlgeschlagen: %s", user)
-        return False
-    except Exception as e:
+        return "auth_fail"
+    except smtplib.SMTPDataError as e:
+        if e.smtp_code == 550 and b"5.4.5" in (e.smtp_error or b""):
+            log.warning("Gmail Tageslimit erreicht: %s — übersprungen bis Mitternacht", user)
+            _GMAIL_DAILY_EXHAUSTED.add(user)
+            return "daily_limit"
         log.error("Gmail error (%s): %s", user, e)
-        return False
+        return "error"
+    except smtplib.SMTPRecipientsRefused as e:
+        codes = {str(v[0]) for v in e.recipients.values()}
+        if "550" in codes:
+            _GMAIL_DAILY_EXHAUSTED.add(user)
+            log.warning("Gmail 550 Recipients refused (daily limit?): %s", user)
+            return "daily_limit"
+        log.error("Gmail error (%s): %s", user, e)
+        return "error"
+    except Exception as e:
+        err_str = str(e)
+        if "5.4.5" in err_str or "Daily user sending limit" in err_str:
+            log.warning("Gmail Tageslimit erreicht: %s", user)
+            _GMAIL_DAILY_EXHAUSTED.add(user)
+            return "daily_limit"
+        log.error("Gmail error (%s): %s", user, e)
+        return "error"
 
 async def send_email(to_email: str, subject: str, body: str) -> Tuple[bool, str]:
     global _pool_index, _account_sends
@@ -909,12 +934,19 @@ async def send_email(to_email: str, subject: str, body: str) -> Tuple[bool, str]
         if _account_sends.get(daily_key, 0) >= PER_ACCOUNT:
             continue
         if account["type"] == "gmail":
-            ok = _send_via_gmail(account["user"], account["pass"], to_email, subject, body)
+            result = _send_via_gmail(account["user"], account["pass"], to_email, subject, body)
+            if result == "ok":
+                _account_sends[daily_key] = _account_sends.get(daily_key, 0) + 1
+                return True, acct_key
+            elif result == "daily_limit":
+                _account_sends[daily_key] = PER_ACCOUNT  # diesen Account heute überspringen
+                continue
+            # auth_fail oder error: nächsten Account versuchen
         else:
             ok = await _send_via_sendgrid(account["key"], account["from"], to_email, subject, body.replace("{email}", to_email))
-        if ok:
-            _account_sends[daily_key] = _account_sends.get(daily_key, 0) + 1
-            return True, acct_key
+            if ok:
+                _account_sends[daily_key] = _account_sends.get(daily_key, 0) + 1
+                return True, acct_key
         await asyncio.sleep(1)
     return False, ""
 
