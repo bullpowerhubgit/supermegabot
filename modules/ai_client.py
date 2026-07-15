@@ -76,6 +76,8 @@ _MISTRAL_BASE   = "https://api.mistral.ai/v1/chat/completions"
 
 # ── Gemini Modelle (kostenlos) ─────────────────────────────────────────────────
 _GEMINI_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-pro",
     "gemini-2.0-flash",
     "gemini-2.0-flash-lite",
     "gemini-1.5-flash",
