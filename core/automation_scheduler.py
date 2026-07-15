@@ -1636,6 +1636,28 @@ async def task_ere_welcome_sequence() -> str:
         return f"EREWelcome Fehler: {e}"
 
 
+async def task_traffic_max_orchestrator() -> str:
+    """Traffic Max Orchestrator: IndexNow Bulk-Submit + Google Ping + Email Guardian parallel."""
+    try:
+        from modules.traffic_max_orchestrator import run_traffic_max_cycle
+        result = await run_traffic_max_cycle()
+        idx = result.get("indexnow", {})
+        return (f"TrafficMax: IndexNow {idx.get('submitted',0)}/{idx.get('urls_found',0)} URLs | "
+                f"Email OK: {result.get('email',{}).get('ok','?')}")
+    except Exception as e:
+        return f"TrafficMax Fehler: {e}"
+
+
+async def task_api_hunt_watchdog() -> str:
+    """APIHunt Watchdog: prüft alle 8 AI-Provider, Telegram-Alert falls < 2 aktiv."""
+    try:
+        from modules.traffic_max_orchestrator import api_hunt_watchdog
+        result = await api_hunt_watchdog()
+        return f"APIHunt: {result.get('active_providers',0)}/8 Provider aktiv"
+    except Exception as e:
+        return f"APIHunt Fehler: {e}"
+
+
 async def task_email_seq_enroll() -> str:
     """Auto-enroll new Shopify customers in welcome sequence."""
     try:
@@ -5944,10 +5966,10 @@ async def task_seo_keyword_discover() -> str:
 
 
 async def task_seo_content_factory() -> str:
-    """SEO Content Factory: generiert 2 Shopify-Blog-Artikel (alle 2h) — 24/Tag."""
+    """SEO Content Factory: generiert 5 Shopify-Blog-Artikel (stündlich) — 60/Tag max."""
     try:
         from modules.seo_mega_engine import run_content_factory
-        r = await run_content_factory(batch_size=2)
+        r = await run_content_factory(batch_size=5)
         return f"ContentFactory: {r.get('generated',0)} Artikel | Shopify: {r.get('published_shopify',0)}"
     except Exception as e:
         return f"ContentFactory Fehler: {e}"
@@ -7870,7 +7892,7 @@ TASKS = [
     ("traffic_swarm",          task_traffic_swarm,          28800, 2100),  # 8h  — Multi-Channel Traffic-Schwarm
     ("seo_mega",               task_seo_mega_engine,        21600, 2140),  # 6h  — Content-Factory+SEO-Zyklus
     ("seo_kw_discover",       task_seo_keyword_discover,   86400,   90),  # daily — befüllt Supabase-Keyword-Cache (1.5min startup)
-    ("seo_content_factory",   task_seo_content_factory,     7200,  180),  # 2h   — 5 Shopify-Blog-Artikel (3min startup)
+    ("seo_content_factory",   task_seo_content_factory,     3600,  180),  # 1h   — 5 Shopify-Blog-Artikel → 60/Tag
     ("seo_traffic_blitz",      task_seo_traffic_blitz,      28800, 2180),  # 8h  — Sitemap+Keywords+Backlinks
     ("ultra_seo",              task_ultra_seo_arsenal,      28800, 2220),  # 8h  — Ultra SEO alle Seiten
     ("omega_traffic",          task_omega_traffic_engine,   21600, 2260),  # 6h  — Multi-Channel viral traffic
@@ -8193,6 +8215,9 @@ TASKS = [
     ("ere_abandoned_cart",      task_ere_abandoned_cart,      7200,  130),  # 2h   — Abandoned Cart Recovery via SendGrid/SMTP
     ("ere_lead_blast",          task_ere_lead_blast,          3600,  145),  # 1h poll, läuft nur 10-12 Uhr — Lead-Email-Blast 200/Tag
     ("ere_welcome_sequence",    task_ere_welcome_sequence,   86400,  160),  # tägl. — Welcome für Subscriber ohne Kauf
+    # ── TRAFFIC MAX ORCHESTRATOR + APIHunt Watchdog ──────────────────────────
+    ("traffic_max",             task_traffic_max_orchestrator, 10800,  250),  # 3h — IndexNow+GMC+Email parallel
+    ("api_hunt_watchdog",       task_api_hunt_watchdog,        3600,   40),  # 1h — sichert AI-API-Verfügbarkeit
 ]
 
 
