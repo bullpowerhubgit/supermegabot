@@ -187,46 +187,24 @@ async def _post_call_actions(call_sid: str, sms_now: bool = False) -> None:
         await _send_post_call_sms(from_number, product, True)
 
 
-async def _get_stripe_payment_link(product_name: str) -> str:
-    """Erstellt Stripe Payment Link für Produkt."""
-    price_map = {
-        "Starter": 8900, "Kamera": 12900, "Solar": 44900,
-        "LED": 6900, "Rasenmäher": 34900, "Thermostat": 14900,
+def _get_stripe_payment_link(product_name: str) -> str:
+    """Gibt vorkonfigurierten Stripe Payment Link zurück (aus .env)."""
+    # Mapping Produktname → STRIPE_LINK_* env var
+    link_map = {
+        "Solar":      "STRIPE_PAYMENT_LINK_AUTOMATON_SUITE",
+        "Kamera":     "STRIPE_LINK_PRO",
+        "Thermostat": "STRIPE_LINK_PRO",
+        "Rasenmäher": "STRIPE_LINK_ENTERPRISE",
+        "LED":        "STRIPE_LINK_STARTER",
+        "Starter":    "STRIPE_LINK_STARTER",
     }
-    price_cents = price_map.get(product_name, 8900)
-
-    if not STRIPE_KEY:
-        return f"{SHOP_URL}/collections/smart-home"
-
-    try:
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
-            # Erstelle Stripe Price
-            async with s.post(
-                "https://api.stripe.com/v1/prices",
-                headers={"Authorization": f"Bearer {STRIPE_KEY}"},
-                data={
-                    "unit_amount": str(price_cents),
-                    "currency": "eur",
-                    "product_data[name]": f"AIITEC {product_name}",
-                },
-            ) as r:
-                price_data = await r.json()
-                price_id = price_data.get("id", "")
-
-            if not price_id:
-                return f"{SHOP_URL}/collections/smart-home"
-
-            # Erstelle Payment Link
-            async with s.post(
-                "https://api.stripe.com/v1/payment_links",
-                headers={"Authorization": f"Bearer {STRIPE_KEY}"},
-                data={"line_items[0][price]": price_id, "line_items[0][quantity]": "1"},
-            ) as r:
-                link_data = await r.json()
-                return link_data.get("url", f"{SHOP_URL}/collections/smart-home")
-    except Exception as e:
-        log.warning("Stripe payment link: %s", e)
-        return f"{SHOP_URL}/collections/smart-home"
+    for key_fragment, env_var in link_map.items():
+        if key_fragment in product_name:
+            link = os.getenv(env_var)
+            if link:
+                return link
+    # Fallback: Starter-Link oder Shop-URL
+    return os.getenv("STRIPE_LINK_STARTER") or f"{SHOP_URL}/collections/smart-home"
 
 
 async def _send_post_call_sms(to_number: str, product: str, buy_signal: bool) -> None:
@@ -235,7 +213,7 @@ async def _send_post_call_sms(to_number: str, product: str, buy_signal: bool) ->
         log.warning("Sofia SMS: Twilio nicht konfiguriert")
         return
 
-    payment_url = await _get_stripe_payment_link(product)
+    payment_url = _get_stripe_payment_link(product)
     sms_text = (
         f"Hallo! Hier ist Sofia von AIITEC 🏠\n"
         f"Ihr persönlicher Link für {product}:\n"
