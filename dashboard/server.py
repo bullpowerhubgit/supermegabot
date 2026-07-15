@@ -1224,15 +1224,6 @@ async def handle_logs_clear(req):
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
-async def handle_ai_status(req):
-    """GET /api/ai/status — APIHunt Provider-Status."""
-    try:
-        from modules.ai_client import api_status
-        return web.json_response(api_status())
-    except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
-
-
 async def handle_health(req):
     cached = _cache_get("system_health", 30)
     if cached is not None:
@@ -3883,6 +3874,65 @@ async def handle_mrr(req):
         return web.json_response({"ok": False, "error": str(e)})
 
 
+async def handle_upgrade(req):
+    """POST /api/upgrade — swap an existing Stripe subscription to a new plan (no double-billing)."""
+    try:
+        data = await req.json()
+        email      = data.get("email", "").strip()
+        new_price  = data.get("price_id", "").strip()
+        if not email or not new_price:
+            return web.json_response({"ok": False, "error": "email and price_id required"}, status=400)
+        stripe_key = os.getenv("STRIPE_SECRET_KEY", "")
+        if not stripe_key:
+            return web.json_response({"ok": False, "error": "Stripe not configured"}, status=500)
+        import urllib.request as _ur, urllib.parse as _up
+        _auth_hdr = {"Authorization": f"Bearer {stripe_key}"}
+        # 1. Find customer by email
+        _cust_url = f"https://api.stripe.com/v1/customers?email={_up.quote(email)}&limit=1"
+        _req = _ur.Request(_cust_url, headers=_auth_hdr)
+        with _ur.urlopen(_req, timeout=15) as _r:
+            _custs = json.loads(_r.read())
+        _cust_list = _custs.get("data", [])
+        if not _cust_list:
+            return web.json_response({"ok": False, "error": "No Stripe customer found for this email"}, status=404)
+        customer_id = _cust_list[0]["id"]
+        # 2. Find active subscription
+        _sub_url = f"https://api.stripe.com/v1/subscriptions?customer={customer_id}&status=active&limit=1"
+        _req2 = _ur.Request(_sub_url, headers=_auth_hdr)
+        with _ur.urlopen(_req2, timeout=15) as _r2:
+            _subs = json.loads(_r2.read())
+        _sub_list = _subs.get("data", [])
+        if not _sub_list:
+            return web.json_response({"ok": False, "error": "No active subscription found"}, status=404)
+        sub     = _sub_list[0]
+        sub_id  = sub["id"]
+        item_id = sub["items"]["data"][0]["id"]
+        # 3. Modify subscription in place (swap price, no new subscription)
+        _mod_data = _up.urlencode({
+            f"items[0][id]":    item_id,
+            f"items[0][price]": new_price,
+            "proration_behavior": "create_prorations",
+        }).encode()
+        _mod_req = _ur.Request(
+            f"https://api.stripe.com/v1/subscriptions/{sub_id}",
+            data=_mod_data,
+            headers={**_auth_hdr, "Content-Type": "application/x-www-form-urlencoded"},
+            method="POST",
+        )
+        with _ur.urlopen(_mod_req, timeout=15) as _r3:
+            updated = json.loads(_r3.read())
+        log.info("[UPGRADE] Subscription %s upgraded to price %s for %s", sub_id, new_price, email)
+        return web.json_response({
+            "ok": True,
+            "subscription_id": updated["id"],
+            "new_price": new_price,
+            "status": updated.get("status"),
+        })
+    except Exception as e:
+        log.error("[UPGRADE] Error: %s", e)
+        return web.json_response({"ok": False, "error": str(e)}, status=500)
+
+
 # ── Stripe ───────────────────────────────────────────────────────────────────
 
 async def handle_stripe_status(req):
@@ -4552,12 +4602,40 @@ async def handle_shopify_oauth_callback(req: web.Request) -> web.Response:
             log.info("[SHOPIFY-OAUTH] Token saved to Supabase")
         except Exception as e:
             log.warning("[SHOPIFY-OAUTH] Supabase save failed: %s", e)
+        # Update Railway env var so the new token is used immediately
+        try:
+            import subprocess as _sp
+            _sp.run(
+                ["railway", "variables", "set", f"SHOPIFY_ADMIN_API_TOKEN={token}", "--service", "supermegabot"],
+                capture_output=True, timeout=30
+            )
+            log.info("[SHOPIFY-OAUTH] Railway variable updated")
+        except Exception as _rv_err:
+            log.warning("[SHOPIFY-OAUTH] Railway variable update failed: %s", _rv_err)
+        # Telegram notification
+        tg_tok = os.getenv("TELEGRAM_BOT_TOKEN", "")
+        tg_ch  = os.getenv("TELEGRAM_CHAT_ID", "")
+        new_scope = data.get("scope", "")
+        if tg_tok and tg_ch:
+            try:
+                _msg = (f"✅ <b>SHOPIFY TOKEN ERNEUERT!</b>\n\nShop: {shop}\n"
+                        f"Scopes: {new_scope}\n"
+                        f"Blog: {'✅' if 'write_content' in new_scope else '❌'} | "
+                        f"Discounts: {'✅' if 'write_price_rules' in new_scope else '❌'}")
+                async with aiohttp.ClientSession() as _s2:
+                    await _s2.post(
+                        f"https://api.telegram.org/bot{tg_tok}/sendMessage",
+                        json={"chat_id": tg_ch, "text": _msg, "parse_mode": "HTML"}
+                    )
+            except Exception as _tg_err:
+                log.warning("[SHOPIFY-OAUTH] Telegram notify failed: %s", _tg_err)
         return web.Response(
             content_type="text/html",
-            text=f"""<html><body style="font-family:sans-serif;padding:40px;background:#f0fdf4">
-<h1 style="color:#16a34a">&#x2705; Shopify Token erhalten!</h1>
-<p>Token wurde gespeichert. Du kannst dieses Fenster schliessen.</p>
-<code style="background:#dcfce7;padding:8px;display:block;word-break:break-all">{token}</code>
+            text=f"""<html><body style="background:#0a0a1a;color:#fff;font-family:Arial;text-align:center;padding:60px">
+<h1 style="color:#4ade80">&#x2705; Shopify vollst&#228;ndig freigeschaltet!</h1>
+<p style="color:#aaa">Scopes: {new_scope}</p>
+<p style="color:#FFD700">Blog, Discounts, Inventory &#x2014; alles aktiv.</p>
+<p>Fenster schlie&#xDF;en &#x2014; fertig!</p>
 </body></html>""",
         )
     except Exception as e:
@@ -4732,6 +4810,13 @@ async def handle_shopify_checkout_create_webhook(req):
         data = await req.json()
         from modules.abandoned_cart_recovery import handle_checkout_webhook
         await handle_checkout_webhook(data, event_type="create")
+        # Also register into the email-recovery pipeline (abandoned_cart_emails.py)
+        try:
+            from modules.abandoned_cart_emails import register_cart
+            await register_cart(data)
+        except Exception as reg_err:
+            log.warning("abandoned_cart_emails: register_cart failed for checkout %s — %s",
+                        data.get("id", "?"), reg_err)
         return web.Response(status=200)
     except Exception as e:
         log.error("Checkout-create webhook error: %s", e)
@@ -4990,10 +5075,12 @@ async def handle_stripe_webhook(req):
         live_secret = os.getenv("STRIPE_WEBHOOK_SECRET", "")
         test_secret = os.getenv("STRIPE_TEST_WEBHOOK_SECRET", "")
         secrets = [s for s in [live_secret, test_secret] if s]
-        if secrets:
-            verified = any(verify_webhook_signature(payload, sig_header, s) for s in secrets)
-            if not verified:
-                return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
+        if not secrets:
+            log.error("[STRIPE-WEBHOOK] No webhook secret configured — rejecting request")
+            return web.json_response({"ok": False, "error": "STRIPE_WEBHOOK_SECRET not configured"}, status=500)
+        verified = any(verify_webhook_signature(payload, sig_header, s) for s in secrets)
+        if not verified:
+            return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
 
         event = json.loads(payload)
         result = await handle_webhook_event(event)
@@ -5954,13 +6041,25 @@ async def handle_whatsapp_webhook_verify(req):
 async def handle_whatsapp_webhook(req):
     """Meta webhook events (POST)."""
     try:
+        import hmac as _hmac
+        payload = await req.read()
+        # Verify X-Hub-Signature-256 (Meta requires this for security)
+        wa_app_secret = os.getenv("WHATSAPP_APP_SECRET", "")
+        sig_header = req.headers.get("X-Hub-Signature-256", "")
+        if wa_app_secret:
+            expected_sig = "sha256=" + _hmac.new(
+                wa_app_secret.encode(), payload, hashlib.sha256
+            ).hexdigest()
+            if not _hmac.compare_digest(expected_sig, sig_header):
+                log.warning("[WHATSAPP] Invalid X-Hub-Signature-256 — rejecting webhook")
+                return web.json_response({"ok": False, "error": "Invalid signature"}, status=403)
         from modules.whatsapp_automation import process_webhook
-        data = await req.json()
+        data = json.loads(payload)
         await process_webhook(data)
-        return web.json_response({"ok": True})
     except Exception as e:
+        # Meta requires HTTP 200 even on processing errors to avoid retry floods
         log.error("WhatsApp webhook error: %s", e)
-        return web.json_response({"ok": False, "error": str(e)}, status=500)
+    return web.json_response({"ok": True})
 
 
 async def handle_whatsapp_send(req):
@@ -6638,6 +6737,13 @@ _CORS_TRUSTED = {
     "https://supermegabot-production.up.railway.app",
     "http://localhost:8888",
     "http://127.0.0.1:8888",
+    # Netlify frontends
+    "https://cheery-beijinho-b74689.netlify.app",
+    "https://bullpower-hub-portal.netlify.app",
+    "https://bullpower-lead.netlify.app",
+    "https://shopify-automaton-suite.netlify.app",
+    "https://bullpower-steuercockpit.netlify.app",
+    "https://bullpower-icomeauto.netlify.app",
 }
 
 @web.middleware
@@ -6664,6 +6770,12 @@ async def cors_middleware(request, handler):
 # Auth Middleware — X-API-Key Validierung für alle /api/* Routen
 # ---------------------------------------------------------------------------
 _AUTH_EXEMPT_EXACT = {"/health", "/api/digistore24/ipn"}
+
+if not os.getenv("DASHBOARD_SECRET"):
+    log.warning(
+        "[SECURITY] DASHBOARD_SECRET is not set — all /api/* routes are publicly accessible! "
+        "Set DASHBOARD_SECRET in Railway environment to enable authentication."
+    )
 
 @web.middleware
 async def auth_middleware(request, handler):
@@ -9617,49 +9729,6 @@ async def handle_shopify_mass_status(request: web.Request) -> web.Response:
         return web.json_response({"ok": False, "error": str(e)}, status=500)
 
 
-# ─── Shopify OAuth Callback — neuer Token mit ALLEN Scopes ───────────────────
-
-async def handle_shopify_oauth_callback(req: web.Request) -> web.Response:
-    """GET /api/shopify/callback — tauscht OAuth-Code gegen Token mit allen Scopes."""
-    try:
-        code  = req.rel_url.query.get("code","")
-        shop  = req.rel_url.query.get("shop","autopilot-store-suite-fmbka.myshopify.com")
-        if not code:
-            return web.Response(text="Missing code", status=400)
-        client_id     = os.getenv("SHOPIFY_API_KEY", "65d04d461e18f4661429ab02ce3418a0")
-        client_secret = os.getenv("SHOPIFY_CLIENT_SECRET","")
-        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
-            r = await s.post(f"https://{shop}/admin/oauth/access_token",
-                json={"client_id": client_id, "client_secret": client_secret, "code": code})
-            d = await r.json()
-        new_token = d.get("access_token","")
-        new_scope = d.get("scope","")
-        if not new_token:
-            return web.Response(text=f"Fehler: {d}", status=400)
-        import subprocess
-        subprocess.run(["railway","variables","set",
-                        f"SHOPIFY_ADMIN_API_TOKEN={new_token}","--service","supermegabot"],
-                       capture_output=True, timeout=30)
-        tg_tok = os.getenv("TELEGRAM_BOT_TOKEN","")
-        tg_ch  = os.getenv("TELEGRAM_CHAT_ID","")
-        if tg_tok and tg_ch:
-            msg = (f"✅ <b>SHOPIFY TOKEN ERNEUERT!</b>\n\nScopes: {new_scope}\n"
-                   f"Blog: {'✅' if 'write_content' in new_scope else '❌'} | "
-                   f"Discounts: {'✅' if 'write_price_rules' in new_scope else '❌'}")
-            async with aiohttp.ClientSession() as s2:
-                await s2.post(f"https://api.telegram.org/bot{tg_tok}/sendMessage",
-                              json={"chat_id": tg_ch, "text": msg, "parse_mode": "HTML"})
-        html = (f"<html><body style=\'background:#0a0a1a;color:#fff;font-family:Arial;"
-                f"text-align:center;padding:60px\'>"
-                f"<h1 style=\'color:#4ade80\'>✅ Shopify vollständig freigeschaltet!</h1>"
-                f"<p style=\'color:#aaa\'>Scopes: {new_scope}</p>"
-                f"<p style=\'color:#FFD700\'>Blog, Discounts, Inventory — alles aktiv.</p>"
-                f"<p>Fenster schließen — fertig!</p></body></html>")
-        return web.Response(text=html, content_type="text/html")
-    except Exception as e:
-        return web.Response(text=f"Error: {e}", status=500)
-
-
 async def handle_shopify_oauth_start(req: web.Request) -> web.Response:
     """GET /api/shopify/oauth — leitet zu Shopify OAuth weiter (alle Scopes)."""
     import urllib.parse
@@ -10372,8 +10441,9 @@ async def handle_bpi_stripe_webhook(req: web.Request) -> web.Response:
                 from modules.stripe_automation import verify_webhook_signature
                 if not verify_webhook_signature(payload, sig_header, webhook_secret):
                     return web.json_response({"ok": False, "error": "Invalid signature"}, status=400)
-            except Exception:
-                pass  # Signatur-Check optional — Event trotzdem verarbeiten
+            except Exception as _sig_err:
+                log.error("[BPI-WEBHOOK] Signature verification error: %s", _sig_err)
+                return web.json_response({"ok": False, "error": f"Signature check failed: {_sig_err}"}, status=400)
         event = json.loads(payload)
         event_type = event.get("type", "")
         from modules.service_delivery import deliver_order
@@ -10772,6 +10842,7 @@ async def create_app():
     # ── Monetization ──────────────────────────────────────────────────────────
     app.router.add_get("/api/plans",                  handle_plans_list)
     app.router.add_post("/api/checkout",              handle_checkout_create)
+    app.router.add_post("/api/upgrade",               handle_upgrade)
     app.router.add_get("/api/mrr",                    handle_mrr)
 
     # ── Stripe ────────────────────────────────────────────────────────────────
@@ -12869,6 +12940,37 @@ async def create_app():
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
+    async def handle_cart_unsubscribe(req: web.Request) -> web.Response:
+        """GET /cart-unsub?email=<addr> — opt a customer out of abandoned-cart recovery emails."""
+        email = req.rel_url.query.get("email", "").strip()
+        if not email:
+            return web.Response(
+                text="<html><body><p>Kein E-Mail-Parameter angegeben.</p></body></html>",
+                content_type="text/html",
+                status=400,
+            )
+        try:
+            from modules.abandoned_cart_emails import mark_unsubscribed
+            updated = await mark_unsubscribed(email)
+            if updated:
+                msg = f"Die E-Mail-Adresse <b>{email}</b> wurde erfolgreich von Warenkorb-Erinnerungen abgemeldet."
+            else:
+                msg = "Diese E-Mail-Adresse war bereits abgemeldet oder wurde nicht gefunden."
+            html = (
+                "<html><body style='font-family:Arial,sans-serif;max-width:500px;margin:60px auto;text-align:center'>"
+                f"<h2>Abmeldung bestätigt</h2><p>{msg}</p>"
+                "<p><a href='https://ineedit.com.co'>Zurück zum Shop</a></p>"
+                "</body></html>"
+            )
+            return web.Response(text=html, content_type="text/html")
+        except Exception as e:
+            log.error("cart-unsub error for %s: %s", email, e)
+            return web.Response(
+                text="<html><body><p>Fehler bei der Abmeldung. Bitte versuche es später erneut.</p></body></html>",
+                content_type="text/html",
+                status=500,
+            )
+
     async def handle_price_feeds_refresh(req: web.Request) -> web.Response:
         try:
             from modules.price_comparison_feeds import refresh_all_feeds
@@ -12914,6 +13016,7 @@ async def create_app():
     app.router.add_get( "/api/email-drip/stats",       handle_drip_stats)
     app.router.add_post("/api/cart-recovery/run",      handle_cart_recovery_run)
     app.router.add_get( "/api/cart-recovery/stats",    handle_cart_recovery_stats)
+    app.router.add_get( "/cart-unsub",                 handle_cart_unsubscribe)
     app.router.add_post("/api/price-feeds/refresh",    handle_price_feeds_refresh)
     app.router.add_get( "/feed/idealo.csv",            handle_idealo_feed)
     app.router.add_get( "/feed/pricerunner.xml",       handle_pricerunner_feed)

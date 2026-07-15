@@ -103,6 +103,7 @@ def create_checkout_session(plan: str, customer_email: str, success_url: str, ca
         "cancel_url": cancel_url,
         "allow_promotion_codes": "true",
         "billing_address_collection": "auto",
+        "metadata[package]": plan,
     }
     if customer_email:
         data["customer_email"] = customer_email

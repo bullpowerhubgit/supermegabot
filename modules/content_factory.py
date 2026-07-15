@@ -111,8 +111,17 @@ Vary the angle each day: educational, emotional, promotional, storytelling, cont
             posts = [{"day": i + 1, "post": raw[i*50:(i+1)*50], "best_time": "09:00"} for i in range(count)]
         return key, posts
 
-    results = await asyncio.gather(*[gen_platform(k, n, s, c) for k, (n, s, c) in platforms.items()])
-    batch = {k: v for k, v in results}
+    results = await asyncio.gather(
+        *[gen_platform(k, n, s, c) for k, (n, s, c) in platforms.items()],
+        return_exceptions=True,
+    )
+    batch = {}
+    for item in results:
+        if isinstance(item, Exception):
+            log.warning(f"generate_social_batch: gen_platform failed: {item}")
+        else:
+            k, v = item
+            batch[k] = v
     batch["generated_at"] = datetime.utcnow().isoformat()
     batch["topic"] = core_message
     # Cache to disk
@@ -161,8 +170,18 @@ Return JSON:
         data["send_day"] = [0, 1, 3, 5, 7, 9, 11][index] if index < 7 else index * 2
         return data
 
-    emails = await asyncio.gather(*[gen_email(i, et, ins) for i, (et, ins) in enumerate(email_types[:sequence_length])])
-    return list(emails)
+    raw_emails = await asyncio.gather(
+        *[gen_email(i, et, ins) for i, (et, ins) in enumerate(email_types[:sequence_length])],
+        return_exceptions=True,
+    )
+    emails = []
+    for i, item in enumerate(raw_emails):
+        if isinstance(item, Exception):
+            log.warning(f"generate_email_sequence: gen_email #{i+1} failed: {item}")
+            emails.append({"subject": f"Email {i+1}", "body_plain": "", "sequence_position": i + 1, "send_day": i * 2})
+        else:
+            emails.append(item)
+    return emails
 
 
 # ── 4. MULTILINGUAL TRANSLATOR ────────────────────────────────────────────────
@@ -185,8 +204,18 @@ Return only the translated content, no explanation."""
         result = await _claude(prompt, max_tokens=2000)
         return lang, result
 
-    results = await asyncio.gather(*[translate_one(l) for l in langs])
-    return {"translations": dict(results), "source_length": len(content),
+    raw_results = await asyncio.gather(
+        *[translate_one(l) for l in langs],
+        return_exceptions=True,
+    )
+    translations = {}
+    for item in raw_results:
+        if isinstance(item, Exception):
+            log.warning(f"translate_content: translate_one failed: {item}")
+        else:
+            lang, result = item
+            translations[lang] = result
+    return {"translations": translations, "source_length": len(content),
             "languages": langs, "generated_at": datetime.utcnow().isoformat()}
 
 
@@ -220,8 +249,18 @@ Return JSON array: ["prompt 1", "prompt 2", ...]"""
             prompts = [raw]
         return plat, {"size": size, "style": style, "prompts": prompts}
 
-    results = await asyncio.gather(*[gen_for_platform(p, s, st) for p, (s, st) in target_specs.items()])
-    return {"topic": topic, "platforms": dict(results), "generated_at": datetime.utcnow().isoformat()}
+    raw_results = await asyncio.gather(
+        *[gen_for_platform(p, s, st) for p, (s, st) in target_specs.items()],
+        return_exceptions=True,
+    )
+    platforms_out = {}
+    for item in raw_results:
+        if isinstance(item, Exception):
+            log.warning(f"generate_image_prompts: gen_for_platform failed: {item}")
+        else:
+            plat, data = item
+            platforms_out[plat] = data
+    return {"topic": topic, "platforms": platforms_out, "generated_at": datetime.utcnow().isoformat()}
 
 
 # ── 6. AD COPY GENERATOR ─────────────────────────────────────────────────────
@@ -280,7 +319,16 @@ Write video ad scripts. Return JSON:
         except Exception:
             return {"raw": raw}
 
-    google, meta, video = await asyncio.gather(gen_google_ads(), gen_meta_ads(), gen_video_scripts())
+    ad_results = await asyncio.gather(
+        gen_google_ads(), gen_meta_ads(), gen_video_scripts(),
+        return_exceptions=True,
+    )
+    ad_names = ["gen_google_ads", "gen_meta_ads", "gen_video_scripts"]
+    google, meta, video = [
+        item if not isinstance(item, Exception)
+        else (log.warning(f"generate_ad_copy: {ad_names[i]} failed: {item}") or {})
+        for i, item in enumerate(ad_results)
+    ]
     return {
         "product": product, "audience": audience, "budget": budget_level,
         "google_ads": google, "meta_ads": meta, "video_scripts": video,
@@ -484,7 +532,17 @@ async def generate_content_package(topic: str, product_url: str = "", languages:
     t0 = time.monotonic()
 
     # Stage 1: Generate all base content in parallel
-    blog_de, blog_en, social_batch, emails, ad_copy, image_prompts, trending = await asyncio.gather(
+    _stage1_names = ["blog_de", "blog_en", "social_batch", "emails", "ad_copy", "image_prompts", "trending"]
+    _stage1_fallbacks = [
+        {"word_count": 0, "introduction": ""},  # blog_de
+        {"word_count": 0, "introduction": ""},  # blog_en
+        {},                                      # social_batch
+        [],                                      # emails
+        {},                                      # ad_copy
+        {},                                      # image_prompts
+        [],                                      # trending
+    ]
+    _stage1_raw = await asyncio.gather(
         generate_blog_post(topic, language="de"),
         generate_blog_post(topic, language="en"),
         generate_social_batch(topic),
@@ -492,7 +550,16 @@ async def generate_content_package(topic: str, product_url: str = "", languages:
         generate_ad_copy(topic, "Shopify store owners, 25-45, German-speaking"),
         generate_image_prompts(topic),
         find_trending_topics(topic),
+        return_exceptions=True,
     )
+    _stage1 = []
+    for i, item in enumerate(_stage1_raw):
+        if isinstance(item, Exception):
+            log.warning(f"Content Factory Stage 1 '{_stage1_names[i]}' failed: {item}")
+            _stage1.append(_stage1_fallbacks[i])
+        else:
+            _stage1.append(item)
+    blog_de, blog_en, social_batch, emails, ad_copy, image_prompts, trending = _stage1
 
     # Stage 2: Quick social-specific content
     async def gen_youtube_script() -> dict:
@@ -540,9 +607,20 @@ Product URL: {product_url}
 Include: benefit-led headline, 3 key benefits (bullet points), social proof placeholder, urgency CTA
 Length: 200 words. Language: German.""", max_tokens=500)
 
-    youtube, press_release, tiktok_scripts, product_desc = await asyncio.gather(
-        gen_youtube_script(), gen_press_release(), gen_tiktok_scripts(), gen_product_description()
+    _stage2_names = ["youtube", "press_release", "tiktok_scripts", "product_desc"]
+    _stage2_fallbacks = [{}, "", [], ""]
+    _stage2_raw = await asyncio.gather(
+        gen_youtube_script(), gen_press_release(), gen_tiktok_scripts(), gen_product_description(),
+        return_exceptions=True,
     )
+    _stage2 = []
+    for i, item in enumerate(_stage2_raw):
+        if isinstance(item, Exception):
+            log.warning(f"Content Factory Stage 2 '{_stage2_names[i]}' failed: {item}")
+            _stage2.append(_stage2_fallbacks[i])
+        else:
+            _stage2.append(item)
+    youtube, press_release, tiktok_scripts, product_desc = _stage2
 
     # Stage 3: Translate to additional languages
     blog_intro_de = blog_de.get("introduction", "")

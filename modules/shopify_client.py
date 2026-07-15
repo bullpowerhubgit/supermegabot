@@ -234,7 +234,7 @@ async def _get_best_token() -> Dict[str, str]:
 
 
 async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
-    """Admin GraphQL Anfrage mit Auto-Auth"""
+    """Admin GraphQL Anfrage mit Auto-Auth und 429-Retry (max 3 Versuche, exp. Backoff)"""
     if not HAS_AIOHTTP:
         return {"errors": "aiohttp not installed"}
 
@@ -245,36 +245,63 @@ async def graphql(query: str, variables: Optional[Dict] = None) -> Dict:
         payload["variables"] = variables
 
     url = f"{_store_url()}/admin/api/{_api_version()}/graphql.json"
-    try:
-        async with _client_session(15) as session:
-            async with session.post(url, json=payload, headers=headers) as resp:
-                data = await resp.json()
-                return data
-    except Exception as e:
-        logger.warning("Shopify GraphQL aiohttp fallback to urllib: %s", e)
+    _backoff = [4, 8, 16]
+
+    for attempt in range(3):
         try:
-            return await asyncio.to_thread(_sync_json_request, url, "POST", headers, payload, 20)
-        except Exception as ex:
-            return {"errors": str(ex)}
+            async with _client_session(15) as session:
+                async with session.post(url, json=payload, headers=headers) as resp:
+                    if resp.status == 429:
+                        wait = int(resp.headers.get("Retry-After", _backoff[attempt]))
+                        logger.warning(
+                            "Shopify GraphQL rate-limited (429), Versuch %d/3, warte %ds",
+                            attempt + 1, wait,
+                        )
+                        await asyncio.sleep(wait)
+                        continue
+                    return await resp.json()
+        except Exception as e:
+            logger.warning("Shopify GraphQL aiohttp fallback to urllib: %s", e)
+            try:
+                return await asyncio.to_thread(_sync_json_request, url, "POST", headers, payload, 20)
+            except Exception as ex:
+                return {"errors": str(ex)}
+
+    logger.error("Shopify GraphQL: Rate-Limit nach 3 Versuchen nicht aufgehoben")
+    return {"errors": "Shopify rate limit: max retries exceeded"}
 
 
 async def rest_get(endpoint: str) -> Dict:
-    """REST GET: endpoint z.B. 'products/count.json'"""
+    """REST GET: endpoint z.B. 'products/count.json' — mit 429-Retry (max 3 Versuche, exp. Backoff)"""
     if not HAS_AIOHTTP:
         return {"error": "aiohttp not installed"}
 
     auth = await _get_best_token()
     url = f"{_store_url()}/admin/api/{_api_version()}/{endpoint}"
-    try:
-        async with _client_session(15) as session:
-            async with session.get(url, headers=auth) as resp:
-                return await resp.json()
-    except Exception as e:
-        logger.warning("Shopify REST aiohttp fallback to urllib: %s", e)
+    _backoff = [4, 8, 16]
+
+    for attempt in range(3):
         try:
-            return await asyncio.to_thread(_sync_json_request, url, "GET", auth, None, 20)
-        except Exception as ex:
-            return {"error": str(ex)}
+            async with _client_session(15) as session:
+                async with session.get(url, headers=auth) as resp:
+                    if resp.status == 429:
+                        wait = int(resp.headers.get("Retry-After", _backoff[attempt]))
+                        logger.warning(
+                            "Shopify REST rate-limited (429), Versuch %d/3, warte %ds",
+                            attempt + 1, wait,
+                        )
+                        await asyncio.sleep(wait)
+                        continue
+                    return await resp.json()
+        except Exception as e:
+            logger.warning("Shopify REST aiohttp fallback to urllib: %s", e)
+            try:
+                return await asyncio.to_thread(_sync_json_request, url, "GET", auth, None, 20)
+            except Exception as ex:
+                return {"error": str(ex)}
+
+    logger.error("Shopify REST: Rate-Limit nach 3 Versuchen nicht aufgehoben")
+    return {"error": "Shopify rate limit: max retries exceeded"}
 
 
 # ─── Convenience Functions ────────────────────────────────────────────────────

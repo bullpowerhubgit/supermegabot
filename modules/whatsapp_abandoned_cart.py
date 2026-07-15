@@ -14,18 +14,13 @@ log = logging.getLogger(__name__)
 
 # ── Env vars ──────────────────────────────────────────────────────────────────
 WHATSAPP_PHONE_NUMBER_ID = os.getenv("WHATSAPP_PHONE_NUMBER_ID") or os.getenv("WHATSAPP_PHONE_ID", "")
-WHATSAPP_ACCESS_TOKEN    = (
-    os.getenv("WHATSAPP_ACCESS_TOKEN")
-    or os.getenv("WHATSAPP_TOKEN")
-    or os.getenv("META_ACCESS_TOKEN")
-    or os.getenv("FACEBOOK_ACCESS_TOKEN", "")
-)
+WHATSAPP_ACCESS_TOKEN    = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
 SHOPIFY_SHOP_DOMAIN      = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_ADMIN_API_TOKEN  = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_API_VERSION      = os.getenv("SHOPIFY_API_VERSION", "2024-01")
 
 DB_PATH = "data/whatsapp_carts.db"
-WA_BASE = "https://graph.facebook.com/v18.0"
+WA_BASE = "https://graph.facebook.com/" + os.getenv("WA_API_VERSION", "v21.0")
 
 
 # ── DB init ───────────────────────────────────────────────────────────────────

@@ -58,7 +58,8 @@ def _bootstrap_db() -> None:
                 status              TEXT DEFAULT 'new',
                 created_at          REAL,
                 emails_sent         INT  DEFAULT 0,
-                recovered_at        REAL
+                recovered_at        REAL,
+                unsubscribed        INT  DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS cart_emails (
@@ -74,6 +75,13 @@ def _bootstrap_db() -> None:
             """
         )
         conn.commit()
+        # Migrate existing databases that pre-date the unsubscribed column
+        try:
+            conn.execute("ALTER TABLE carts ADD COLUMN unsubscribed INT DEFAULT 0")
+            conn.commit()
+            logger.debug("abandoned_cart_emails: migrated carts table — added unsubscribed column")
+        except sqlite3.OperationalError:
+            pass  # Column already exists
         logger.debug("abandoned_cart_emails: DB schema ready at %s", DB_PATH)
     finally:
         conn.close()
@@ -87,7 +95,7 @@ _bootstrap_db()
 # Email templates
 # ---------------------------------------------------------------------------
 
-def _render_step1(name: str, items_summary: str, abandon_url: str) -> tuple[str, str, str]:
+def _render_step1(name: str, items_summary: str, abandon_url: str, to_email: str = "") -> tuple[str, str, str]:
     subject = "Du hast etwas vergessen 🛒"
     html = f"""
 <html><body style="font-family:Arial,sans-serif;color:#222;max-width:600px;margin:0 auto">
@@ -104,17 +112,21 @@ def _render_step1(name: str, items_summary: str, abandon_url: str) -> tuple[str,
   <p style="color:#888;font-size:12px">
     Du erhältst diese E-Mail, weil du einen Kauf begonnen, aber nicht abgeschlossen hast.
   </p>
+  <p style="color:#aaa;font-size:11px">
+    Keine weiteren Erinnerungen? <a href="https://ineedit.com.co/cart-unsub?email={to_email}" style="color:#aaa">Hier abmelden</a>.
+  </p>
 </body></html>
 """
     plain = (
         f"Hallo {name},\n\n"
         f"Du hattest folgende Artikel in deinem Warenkorb:\n{items_summary}\n\n"
-        f"Klicke hier, um deinen Kauf abzuschließen:\n{abandon_url}\n"
+        f"Klicke hier, um deinen Kauf abzuschließen:\n{abandon_url}\n\n"
+        f"Keine weiteren Erinnerungen? Hier abmelden: https://ineedit.com.co/cart-unsub?email={to_email}\n"
     )
     return subject, html, plain
 
 
-def _render_step2(name: str, items_summary: str, abandon_url: str) -> tuple[str, str, str]:
+def _render_step2(name: str, items_summary: str, abandon_url: str, to_email: str = "") -> tuple[str, str, str]:
     subject = "Noch 24h: dein Warenkorb wartet"
     html = f"""
 <html><body style="font-family:Arial,sans-serif;color:#222;max-width:600px;margin:0 auto">
@@ -135,17 +147,21 @@ def _render_step2(name: str, items_summary: str, abandon_url: str) -> tuple[str,
   <p style="color:#888;font-size:12px">
     Du erhältst diese E-Mail, weil du einen Kauf begonnen, aber nicht abgeschlossen hast.
   </p>
+  <p style="color:#aaa;font-size:11px">
+    Keine weiteren Erinnerungen? <a href="https://ineedit.com.co/cart-unsub?email={to_email}" style="color:#aaa">Hier abmelden</a>.
+  </p>
 </body></html>
 """
     plain = (
         f"Hallo {name},\n\n"
         f"Dein Warenkorb wartet noch:\n{items_summary}\n\n"
-        f"Tausende zufriedene Kunden vertrauen uns. Schließe jetzt ab:\n{abandon_url}\n"
+        f"Tausende zufriedene Kunden vertrauen uns. Schließe jetzt ab:\n{abandon_url}\n\n"
+        f"Keine weiteren Erinnerungen? Hier abmelden: https://ineedit.com.co/cart-unsub?email={to_email}\n"
     )
     return subject, html, plain
 
 
-def _render_step3(name: str, items_summary: str, abandon_url: str) -> tuple[str, str, str]:
+def _render_step3(name: str, items_summary: str, abandon_url: str, to_email: str = "") -> tuple[str, str, str]:
     subject = "Letzte Chance + 5€ Rabatt: CART5"
     html = f"""
 <html><body style="font-family:Arial,sans-serif;color:#222;max-width:600px;margin:0 auto">
@@ -173,13 +189,17 @@ def _render_step3(name: str, items_summary: str, abandon_url: str) -> tuple[str,
     Gutscheincode CART5 gibt 5€ Rabatt auf den Gesamtbetrag (Mindestbestellwert: 30€).
     Du erhältst diese E-Mail, weil du einen Kauf begonnen, aber nicht abgeschlossen hast.
   </p>
+  <p style="color:#aaa;font-size:11px">
+    Keine weiteren Erinnerungen? <a href="https://ineedit.com.co/cart-unsub?email={to_email}" style="color:#aaa">Hier abmelden</a>.
+  </p>
 </body></html>
 """
     plain = (
         f"Hallo {name},\n\n"
         f"Letzte Erinnerung an deinen Warenkorb:\n{items_summary}\n\n"
         f"Verwende Gutscheincode CART5 für 5€ Rabatt beim Checkout.\n"
-        f"Jetzt abschließen: {abandon_url}\n"
+        f"Jetzt abschließen: {abandon_url}\n\n"
+        f"Keine weiteren Erinnerungen? Hier abmelden: https://ineedit.com.co/cart-unsub?email={to_email}\n"
     )
     return subject, html, plain
 
@@ -216,6 +236,11 @@ def _send_email_sync(
     msg["Subject"] = subject
     msg["From"] = f"{from_name} <{user}>"
     msg["To"] = to_addr
+    msg["List-Unsubscribe"] = (
+        f"<https://ineedit.com.co/cart-unsub?email={to_addr}>,"
+        f" <mailto:unsub@ineedit.com.co?subject=unsub>"
+    )
+    msg["List-Unsubscribe-Post"] = "List-Unsubscribe=One-Click"
 
     msg.attach(MIMEText(plain_body, "plain", "utf-8"))
     msg.attach(MIMEText(html_body, "html", "utf-8"))
@@ -393,6 +418,35 @@ async def cancel_cart_recovery(checkout_id: str) -> bool:
     return await asyncio.get_event_loop().run_in_executor(None, _mark)
 
 
+async def mark_unsubscribed(email: str) -> bool:
+    """
+    Called from the /cart-unsub backend route.
+    Sets unsubscribed=1 for all carts belonging to this email address so no
+    further recovery emails are dispatched for this contact.
+    Returns True if at least one row was updated.
+    """
+    email = email.strip().lower()
+    if not email:
+        return False
+
+    def _mark():
+        conn = _get_conn()
+        try:
+            cursor = conn.execute(
+                "UPDATE carts SET unsubscribed = 1 WHERE email = ?",
+                (email,),
+            )
+            conn.commit()
+            found = cursor.rowcount > 0
+            if found:
+                logger.info("abandoned_cart_emails: unsubscribed %s from cart-recovery emails", email)
+            return found
+        finally:
+            conn.close()
+
+    return await asyncio.get_event_loop().run_in_executor(None, _mark)
+
+
 async def send_due_cart_emails(smtp_config: Optional[dict] = None) -> dict:
     """
     Checks all active carts, sends the next due email in the 3-step sequence.
@@ -411,7 +465,7 @@ async def send_due_cart_emails(smtp_config: Optional[dict] = None) -> dict:
         conn = _get_conn()
         try:
             rows = conn.execute(
-                "SELECT * FROM carts WHERE status='new' AND emails_sent < 3"
+                "SELECT * FROM carts WHERE status='new' AND emails_sent < 3 AND COALESCE(unsubscribed, 0) = 0"
             ).fetchall()
             return [dict(r) for r in rows]
         finally:
@@ -448,60 +502,69 @@ async def send_due_cart_emails(smtp_config: Optional[dict] = None) -> dict:
 
     for cart in candidates:
         checkout_id = cart["shopify_checkout_id"]
-        created_at = cart["created_at"] or now
-        elapsed = now - created_at
-        total_eur = cart["total_eur"] or 0.0
-        customer_name = cart["customer_name"] or cart["email"].split("@")[0]
-        items_summary = _items_summary(cart["items_json"])
-        abandon_url = cart["abandon_url"] or ""
+        try:
+            created_at = cart["created_at"] or now
+            elapsed = now - created_at
+            total_eur = cart["total_eur"] or 0.0
+            cart_email = cart["email"]
+            customer_name = cart["customer_name"] or cart_email.split("@")[0]
+            items_summary = _items_summary(cart["items_json"])
+            abandon_url = cart["abandon_url"] or ""
 
-        # Determine which step to send next
-        next_step = None
-        for step in [1, 2, 3]:
-            delay = STEP_DELAYS[step]
-            if elapsed < delay:
-                break  # too early for this step and all later ones
-            already = await asyncio.get_event_loop().run_in_executor(
-                None, _already_sent, checkout_id, step
-            )
-            if not already:
-                if step == 3 and total_eur <= STEP3_MIN_EUR:
-                    logger.debug(
-                        "abandoned_cart_emails: skip step-3 for %s (€%.2f <= €%.2f)",
-                        checkout_id, total_eur, STEP3_MIN_EUR,
-                    )
-                    skipped_count += 1
-                    # Artificially mark step-3 as sent so we don't re-evaluate forever
-                    await asyncio.get_event_loop().run_in_executor(
-                        None, _record_sent, checkout_id, step
-                    )
+            # Determine which step to send next
+            next_step = None
+            for step in [1, 2, 3]:
+                delay = STEP_DELAYS[step]
+                if elapsed < delay:
+                    break  # too early for this step and all later ones
+                already = await asyncio.get_event_loop().run_in_executor(
+                    None, _already_sent, checkout_id, step
+                )
+                if not already:
+                    if step == 3 and total_eur <= STEP3_MIN_EUR:
+                        logger.debug(
+                            "abandoned_cart_emails: skip step-3 for %s (€%.2f <= €%.2f)",
+                            checkout_id, total_eur, STEP3_MIN_EUR,
+                        )
+                        skipped_count += 1
+                        # Artificially mark step-3 as sent so we don't re-evaluate forever
+                        await asyncio.get_event_loop().run_in_executor(
+                            None, _record_sent, checkout_id, step
+                        )
+                        break
+                    next_step = step
                     break
-                next_step = step
-                break
 
-        if next_step is None:
-            continue
+            if next_step is None:
+                continue
 
-        renderer = STEP_RENDERERS[next_step]
-        subject, html_body, plain_body = renderer(customer_name, items_summary, abandon_url)
+            renderer = STEP_RENDERERS[next_step]
+            subject, html_body, plain_body = renderer(customer_name, items_summary, abandon_url, cart_email)
 
-        ok = await asyncio.get_event_loop().run_in_executor(
-            None,
-            _send_email_sync,
-            cart["email"],
-            subject,
-            html_body,
-            plain_body,
-            smtp_config,
-        )
-
-        if ok:
-            await asyncio.get_event_loop().run_in_executor(
-                None, _record_sent, checkout_id, next_step
+            ok = await asyncio.get_event_loop().run_in_executor(
+                None,
+                _send_email_sync,
+                cart_email,
+                subject,
+                html_body,
+                plain_body,
+                smtp_config,
             )
-            sent_count += 1
-        else:
+
+            if ok:
+                await asyncio.get_event_loop().run_in_executor(
+                    None, _record_sent, checkout_id, next_step
+                )
+                sent_count += 1
+            else:
+                skipped_count += 1
+
+        except Exception as err:
+            logger.error(
+                "abandoned_cart_emails: skipping cart %s due to error: %s", checkout_id, err
+            )
             skipped_count += 1
+            continue
 
     logger.info(
         "abandoned_cart_emails: cycle done — sent=%d recovered=%d skipped=%d",

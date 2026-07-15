@@ -15,8 +15,11 @@ log = logging.getLogger("WhatsAppAutomation")
 WA_PHONE_ID    = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
 WA_TOKEN       = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
 WA_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "bullpower_wa_verify_2026")
-WA_VERSION     = "v18.0"
+WA_VERSION     = os.getenv("WA_API_VERSION", "v21.0")
 WA_BASE        = f"https://graph.facebook.com/{WA_VERSION}"
+
+# Internal dashboard URL for routing incoming messages to the CommandRouter
+DASHBOARD_BASE_URL = os.getenv("DASHBOARD_BASE_URL", "http://localhost:8888")
 
 DATA_DIR       = Path(os.getenv("DATA_DIR", Path(__file__).parent.parent / "data"))
 STATS_FILE     = DATA_DIR / "whatsapp_stats.json"
@@ -45,19 +48,68 @@ async def verify_webhook(token: str, challenge: str) -> str | None:
     return None
 
 
+async def _route_to_command_router(sender: str, text: str) -> None:
+    """Forward an incoming WhatsApp text to the internal CommandRouter for auto-reply."""
+    try:
+        import aiohttp as _aiohttp
+        payload = {
+            "command": text.strip(),
+            "source": "whatsapp",
+            "sender": sender,
+        }
+        async with _aiohttp.ClientSession() as session:
+            async with session.post(
+                f"{DASHBOARD_BASE_URL}/api/bot/execute",
+                json=payload,
+                timeout=_aiohttp.ClientTimeout(total=10),
+            ) as resp:
+                result = await resp.json(content_type=None)
+                reply = result.get("result") or result.get("response") or result.get("message")
+                if reply:
+                    await send_message(sender, str(reply))
+                    log.info("WA auto-reply sent to %s", sender)
+                else:
+                    log.debug("WA CommandRouter returned no reply text for sender=%s", sender)
+    except Exception as exc:
+        log.warning("WA _route_to_command_router error (sender=%s): %s", sender, exc)
+
+
 async def process_webhook(data: dict) -> None:
-    """Handle incoming WhatsApp messages (status updates, texts)."""
+    """Handle incoming WhatsApp messages and delivery/read status updates."""
     stats = _load_stats()
     try:
         for entry in data.get("entry", []):
             for change in entry.get("changes", []):
                 value = change.get("value", {})
+
+                # ── Incoming messages ──────────────────────────────────────────
                 for msg in value.get("messages", []):
                     stats["received"] += 1
+                    sender = msg.get("from", "")
+                    msg_type = msg.get("type", "")
+                    log.info("WA incoming: from=%s type=%s", sender, msg_type)
+
+                    # Route text messages to CommandRouter for auto-reply
+                    if msg_type == "text" and sender:
+                        text_body = (msg.get("text") or {}).get("body", "").strip()
+                        if text_body:
+                            import asyncio
+                            asyncio.ensure_future(_route_to_command_router(sender, text_body))
+
+                # ── Delivery / read receipts (statuses) ───────────────────────
+                for status in value.get("statuses", []):
+                    msg_id = status.get("id", "")
+                    status_val = status.get("status", "")
+                    recipient = status.get("recipient_id", "")
                     log.info(
-                        "WA incoming: from=%s type=%s",
-                        msg.get("from"), msg.get("type"),
+                        "WA status update: msg_id=%s status=%s recipient=%s",
+                        msg_id, status_val, recipient,
                     )
+                    # Optionally track delivered/read per message in stats
+                    if status_val in ("delivered", "read"):
+                        stats.setdefault(f"status_{status_val}", 0)
+                        stats[f"status_{status_val}"] += 1
+
         _save_stats(stats)
     except Exception as e:
         log.warning("WhatsApp process_webhook error: %s", e)

@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import aiohttp
+from modules.content_quality_gate import validate_post, validate_hashtags
 
 log = logging.getLogger("ContentCalendar")
 
@@ -57,15 +58,45 @@ async def generate_daily_calendar(days: int = 7) -> dict:
                     "hashtags": ["#Shopify", "#eCommerce", "#KI", "#Automatisierung"],
                     "cta": "Jetzt starten →",
                     "image_prompt": "E-Commerce automation futuristic",
+                    "image_url": None,
                     "_error": str(exc)[:100],
                 }
+
+            # Fix 1: Quality Gate — Caption durch Layer-1-Regelcheck (synchron)
+            _ok, _reason = validate_post(content.get("caption", ""), platform="social")
+            if not _ok:
+                content["_blocked"] = _reason
+                log.warning(
+                    "ContentGate BLOCK [%s %s]: %s",
+                    ctype, day.strftime("%d.%m"), _reason,
+                )
+            # Verbotene Hashtags aus KI-Ausgabe entfernen
+            _raw_tags = content.get("hashtags", [])
+            if _raw_tags:
+                _approved_tags, _blocked_tags = validate_hashtags(_raw_tags)
+                if _blocked_tags:
+                    log.info("ContentGate: Hashtags entfernt: %s", _blocked_tags)
+                content["hashtags"] = _approved_tags
+
+            # Fix 2: image_url explizit als None markieren wenn kein Bildgenerator läuft
+            content.setdefault("image_url", None)
+
+            # Instagram-Kanal nur aktivieren wenn echte image_url vorhanden;
+            # blockierte Einträge (_blocked gesetzt) auf keinem Kanal posten.
+            if content.get("_blocked"):
+                _active_channels: list[str] = []
+            else:
+                _active_channels = [
+                    ch for ch in CHANNELS
+                    if not (ch == "instagram" and content.get("image_url") is None)
+                ]
 
             calendar.append({
                 "date": day.strftime("%Y-%m-%d"),
                 "day": day.strftime("%A"),
                 "type": ctype,
                 "content": content,
-                "channels": CHANNELS,
+                "channels": _active_channels,
                 "posted": False,
             })
 

@@ -3635,7 +3635,22 @@ Antworte NUR als JSON-Array:
                 f"<p><em>Nische: {niche} | Keywords: {', '.join(keywords[:3])}</em></p>"
             )
 
-            # 3. Shopify Produkt erstellen
+            # 3. Gatekeeper — Produkt validieren bevor Import
+            try:
+                from modules.product_gatekeeper import validate_product
+                _gk_ok, _gk_reason = validate_product(
+                    title=f"{emoji} {name}",
+                    vendor="iNeedit",
+                    product_type=niche,
+                    price=price,
+                )
+            except Exception as _gk_exc:
+                _gk_ok, _gk_reason = True, ""  # fail-open wenn Modul nicht erreichbar
+            if not _gk_ok:
+                log.info("Shopify TrendFill: Gatekeeper blocked '%s' — %s", name[:40], _gk_reason)
+                continue
+
+            # 4. Shopify Produkt erstellen
             try:
                 async with aiohttp.ClientSession() as s:
                     async with s.post(
@@ -3644,7 +3659,7 @@ Antworte NUR als JSON-Array:
                         json={"product": {
                             "title": f"{emoji} {name}",
                             "body_html": body_html,
-                            "vendor": "TrendShop 2026",
+                            "vendor": "iNeedit",
                             "product_type": niche,
                             "status": "active",
                             "tags": ",".join(keywords[:5]),
@@ -3703,6 +3718,31 @@ async def task_shopify_publish_drafts() -> str:
             drafts = data.get("products", [])
 
             for p in drafts[:20]:  # max 20 per run
+                # Gatekeeper: nur qualifizierte Produkte aktivieren
+                try:
+                    from modules.product_gatekeeper import validate_product
+                    _draft_price = 0.0
+                    try:
+                        _draft_price = float(
+                            ((p.get("variants") or [{}])[0].get("price") or 0)
+                        )
+                    except Exception:
+                        pass
+                    _gk_ok, _gk_reason = validate_product(
+                        title=p.get("title", ""),
+                        vendor=p.get("vendor", ""),
+                        product_type=p.get("product_type", ""),
+                        price=_draft_price,
+                    )
+                except Exception:
+                    _gk_ok, _gk_reason = True, ""  # fail-open
+                if not _gk_ok:
+                    log.info(
+                        "PublishDrafts: Gatekeeper blocked '%s' — %s",
+                        p.get("title", "")[:40],
+                        _gk_reason,
+                    )
+                    continue
                 try:
                     async with s.put(
                         f"{base}/admin/api/{shopify_ver}/products/{p['id']}.json",
@@ -7522,6 +7562,96 @@ async def task_bp_revenue_health() -> str:
         return f"RevenueHealth Fehler: {e}"
 
 
+async def task_klaviyo_sync() -> str:
+    """Stündliche Synchronisation: Shopify-Käufer + DS24-Kunden → Klaviyo List API (profile-import)."""
+    import aiohttp
+    klaviyo_key = os.getenv("KLAVIYO_API_KEY", "")
+    shopify_dom = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    shopify_tok = os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
+    shopify_ver = os.getenv("SHOPIFY_API_VERSION", "2024-10")
+    ds24_key    = os.getenv("DIGISTORE24_API_KEY", "")
+    if not klaviyo_key:
+        return "KLAVIYO_API_KEY fehlt"
+
+    synced = 0
+    errors = 0
+    kl_headers = {
+        "Authorization": f"Klaviyo-API-Key {klaviyo_key}",
+        "revision": "2024-10-15",
+        "Content-Type": "application/json",
+    }
+
+    async def _upsert(email: str, fname: str, lname: str, source: str) -> bool:
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=10)) as s:
+                async with s.post(
+                    "https://a.klaviyo.com/api/profile-import/",
+                    headers=kl_headers,
+                    json={"data": {"type": "profile", "attributes": {
+                        "email": email,
+                        "first_name": fname,
+                        "last_name": lname,
+                        "properties": {
+                            "source": source,
+                            "synced_at": datetime.now(timezone.utc).isoformat(),
+                        },
+                    }}},
+                ) as r:
+                    return r.status in (200, 201, 202)
+        except Exception:
+            return False
+
+    # 1. Shopify — letzte 24h Bestellungen
+    if shopify_dom and shopify_tok:
+        try:
+            since = (datetime.now(timezone.utc) - timedelta(hours=24)).strftime("%Y-%m-%dT%H:%M:%SZ")
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+                async with s.get(
+                    f"https://{shopify_dom}/admin/api/{shopify_ver}/orders.json",
+                    headers={"X-Shopify-Access-Token": shopify_tok},
+                    params={"status": "any", "created_at_min": since, "limit": 50,
+                            "fields": "id,email,customer"},
+                ) as r:
+                    data = await r.json(content_type=None)
+            for order in data.get("orders", []):
+                email = order.get("email", "")
+                if not email:
+                    continue
+                cust  = order.get("customer") or {}
+                ok = await _upsert(email, cust.get("first_name", ""), cust.get("last_name", ""), "shopify")
+                synced += int(ok)
+                errors += int(not ok)
+        except Exception as e:
+            log.warning("klaviyo_sync Shopify error: %s", e)
+
+    # 2. DS24 — IMMER Key 1581233-... (aiitec) verwenden
+    if ds24_key and ds24_key.startswith("1581233"):
+        try:
+            async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as s:
+                async with s.get(
+                    "https://www.digistore24.com/api/call/orders/list/page/1/per_page/50",
+                    headers={"X-DS24-AUTH-TOKEN": ds24_key, "Accept": "application/json"},
+                ) as r:
+                    ds_data = await r.json(content_type=None)
+            for order in (ds_data.get("data", {}).get("orders") or []):
+                buyer = order.get("billing", {})
+                email = buyer.get("email", "")
+                if not email:
+                    continue
+                ok = await _upsert(
+                    email,
+                    buyer.get("first_name", ""),
+                    buyer.get("last_name", ""),
+                    "ds24",
+                )
+                synced += int(ok)
+                errors += int(not ok)
+        except Exception as e:
+            log.warning("klaviyo_sync DS24 error: %s", e)
+
+    return f"klaviyo_sync: {synced} upserted, {errors} errors"
+
+
 # ── Task registry ────────────────────────────────────────────────────────────
 
 ## LEAN MODE — essential monitoring + free traffic channels only
@@ -7632,6 +7762,7 @@ TASKS = [
     # ── Facebook Groups Cookie-Posting (kein App Review, kein OAuth2 nötig) ──
     ("fb_cookies_refresh",     task_fb_cookies_refresh,     86400, 3750),  # täglich — FB Chrome Cookies erneuern
     ("fb_groups_post",         task_fb_groups_post,         21600, 3800),  # 6h — Posts in FB-Gruppen
+    ("whatsapp_daily_blast",   task_whatsapp_daily_blast,   86400, 3840),  # 24h — WhatsApp Broadcast
     # ══════════════════════════════════════════════════════════════════════════
     # ██ VOLLAUTOMATISIERUNGS-OFFENSIVE — 63 NEUE REVENUE-STREAMS ██
     # ══════════════════════════════════════════════════════════════════════════
@@ -7807,6 +7938,7 @@ TASKS = [
     # shopify_bulk_activate DEAKTIVIERT — würde bereinigte CJ-Produkte re-aktivieren
     # ("shopify_bulk_activate",   task_shopify_bulk_activate,   1800,    60),
     ("klaviyo_welcome_subs",    task_klaviyo_welcome_new_subs, 3600,   75),  # 1h — Welcome-Email + Code an neue Subscriber
+    ("klaviyo_sync",            task_klaviyo_sync,             3600,   95),  # 1h — Shopify+DS24 Käufer → Klaviyo upsert
     ("shopify_title_de",        task_shopify_title_germanizer, 1800,  62),   # 30min — 50 englische Titel → Deutsch
     ("klaviyo_auto_campaign",   task_klaviyo_auto_campaign,  86400,   390),  # täglich — Auto Klaviyo Campaign
     ("mailchimp_auto_campaign", task_mailchimp_auto_campaign,86400,   395),  # täglich — Auto Mailchimp Campaign
@@ -8039,8 +8171,16 @@ class AutomationScheduler:
     async def _run_loop(self, name: str, fn: Callable, interval: int, delay: int):
         await asyncio.sleep(delay)
         while self._running:
-            result = await self._execute(name, fn)
-            log.debug(f"[{name}] {result}")
+            try:
+                result = await self._execute(name, fn)
+                log.debug(f"[{name}] {result}")
+            except asyncio.CancelledError:
+                raise
+            except BaseException as e:
+                log.error("[%s] _run_loop crash: %s", name, e)
+                await self._send_healing_alert(name, f"loop crash: {e}", 99)
+                await asyncio.sleep(60)
+                continue
             await asyncio.sleep(interval)
 
     # Self-healing: consecutive fail counter per task
@@ -8185,18 +8325,43 @@ if __name__ == "__main__":
     )
 
     async def _standalone():
+        async def _tg_crash(msg: str) -> None:
+            token   = os.getenv("TELEGRAM_BOT_TOKEN", "")
+            chat_id = os.getenv("TELEGRAM_CHAT_ID", "")
+            if not token or not chat_id:
+                return
+            try:
+                import aiohttp as _ah
+                async with _ah.ClientSession() as _s:
+                    await _s.post(
+                        f"https://api.telegram.org/bot{token}/sendMessage",
+                        json={"chat_id": chat_id, "text": msg},
+                        timeout=_ah.ClientTimeout(total=10),
+                    )
+            except Exception:
+                pass
+
+        _clean_exit = False
         sched = get_scheduler()
-        await sched.start()
-        log.info("SuperMegaBot Scheduler gestartet — Ctrl+C zum Beenden")
-        stop_event = asyncio.Event()
+        try:
+            await sched.start()
+            log.info("SuperMegaBot Scheduler gestartet — Ctrl+C zum Beenden")
+            stop_event = asyncio.Event()
 
-        def _shutdown(sig, frame):  # noqa: ARG001
-            log.info("Signal %s — beende Scheduler...", sig)
-            stop_event.set()
+            def _shutdown(sig, frame):  # noqa: ARG001
+                log.info("Signal %s — beende Scheduler...", sig)
+                stop_event.set()
 
-        signal.signal(signal.SIGTERM, _shutdown)
-        signal.signal(signal.SIGINT, _shutdown)
-        await stop_event.wait()
-        await sched.stop()
+            signal.signal(signal.SIGTERM, _shutdown)
+            signal.signal(signal.SIGINT, _shutdown)
+            await stop_event.wait()
+            await sched.stop()
+            _clean_exit = True
+        finally:
+            if not _clean_exit:
+                log.critical("AutomationScheduler ABGESTUERZT — sende Telegram-Alert")
+                await _tg_crash(
+                    "KRITISCH: AutomationScheduler ABGESTUERZT — manueller Restart nötig!"
+                )
 
     asyncio.run(_standalone())
