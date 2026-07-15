@@ -239,8 +239,14 @@ async def process_due_emails() -> dict:
     db = _load_db()
     now = datetime.now(timezone.utc)
     sent_count = 0
-    shop_url = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'your-store.myshopify.com')}"
-    dashboard_url = os.getenv("DASHBOARD_URL", f"http://localhost:{os.getenv('PORT', '8888')}")
+    blocked_count = 0
+
+    # Sichere URLs — niemals localhost an Kunden senden
+    shop_domain = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
+    shop_url = f"https://{shop_domain}" if shop_domain and "myshopify" not in shop_domain else "https://ineedit.com.co"
+    dashboard_url = os.getenv("DASHBOARD_URL", "https://supermegabot-production.up.railway.app")
+    if "localhost" in dashboard_url or "127.0.0.1" in dashboard_url:
+        dashboard_url = "https://supermegabot-production.up.railway.app"
     review_url = os.getenv("REVIEW_URL", f"{shop_url}/pages/bewertung")
     sent_ids = {(s["enrollment_id"], s["step_day"]) for s in db.get("sent", [])}
 
@@ -256,17 +262,41 @@ async def process_due_emails() -> dict:
                 continue
             due_at = enrolled_at + timedelta(days=step["day"])
             if now >= due_at:
+                email_addr = enrollment.get("email", "")
+                if not email_addr or "@" not in email_addr:
+                    log.warning("Email-Sequenz: ungültige Adresse übersprungen")
+                    blocked_count += 1
+                    continue
+
+                # first_name: niemals leer — Fallback auf Vorname aus Email
+                raw_name = enrollment.get("first_name", "").strip()
+                first_name = raw_name if raw_name else email_addr.split("@")[0].split(".")[0].capitalize()
+
                 ctx = {
-                    "first_name": enrollment.get("first_name", ""),
-                    "email": enrollment["email"],
+                    "first_name": first_name,
+                    "email": email_addr,
                     "shop_url": shop_url,
                     "dashboard_url": dashboard_url,
                     "review_url": review_url,
-                    "order_id": enrollment.get("metadata", {}).get("order_id", ""),
+                    "order_id": enrollment.get("metadata", {}).get("order_id", "#---"),
                     "expiry_date": (now + timedelta(days=7)).strftime("%d.%m.%Y"),
                 }
                 html = _render(step["template"], ctx)
-                ok = await _send_via_klaviyo(enrollment["email"], ctx["first_name"], step["subject"], html)
+
+                # Email Guardian: kein Template-Rest senden
+                import re as _re
+                unfilled = _re.findall(r'\{[a-z_]+\}', html)
+                if unfilled:
+                    log.warning("Email-Sequenz blockiert [%s/%s]: unfilled vars: %s",
+                                sequence_name, step["template"], unfilled)
+                    blocked_count += 1
+                    continue
+                if "localhost" in html or "127.0.0.1" in html:
+                    log.warning("Email-Sequenz blockiert: localhost-URL im HTML")
+                    blocked_count += 1
+                    continue
+
+                ok = await _send_via_klaviyo(email_addr, first_name, step["subject"], html)
                 if ok:
                     sent_count += 1
                     db["sent"].append({
@@ -274,11 +304,17 @@ async def process_due_emails() -> dict:
                         "step_day": step["day"],
                         "template": step["template"],
                         "sent_at": now.isoformat(),
-                        "email": enrollment["email"],
+                        "email": email_addr,
                     })
-                    log.info("Sent %s day%d to %s", sequence_name, step["day"], enrollment["email"])
+                    log.info("Sent %s day%d to %s", sequence_name, step["day"], email_addr)
+                else:
+                    blocked_count += 1
     _save_db(db)
-    return {"sent": sent_count, "active_enrollments": sum(1 for e in db["enrollments"] if e.get("active", True))}
+    return {
+        "sent": sent_count,
+        "blocked": blocked_count,
+        "active_enrollments": sum(1 for e in db["enrollments"] if e.get("active", True)),
+    }
 
 
 async def enroll_new_customers() -> dict:
