@@ -5517,9 +5517,28 @@ async def task_tiktok_cycle() -> str:
     try:
         from modules.tiktok_autonomy import run_tiktok_cycle
         r = await run_tiktok_cycle()
-        return f"TikTok: {r.get('synced',0)} Produkte | {r.get('videos',0)} Videos | {r.get('shop_orders',0)} Shop Orders"
+        sync = r.get("sync", {})
+        synced = sync.get("synced", sync.get("products_ready", 0))
+        return (
+            f"TikTok: {synced} Produkte | "
+            f"{r.get('scripts', 0)} Scripts | "
+            f"Modus: {sync.get('mode', 'promo_only')}"
+        )
     except Exception as e:
         return f"TikTok Cycle Fehler: {e}"
+
+
+async def task_tiktok_video_scripts() -> str:
+    """TikTok: 3 Video-Scripts via KI generieren + Telegram-Alert (alle 6h)."""
+    try:
+        from modules.tiktok_autonomy import generate_video_scripts
+        r = await generate_video_scripts(count=3)
+        return (
+            f"TikTok Scripts: {r.get('scripts_generated', 0)} generiert | "
+            f"Nische: {r.get('niche', '')} | Telegram-Alert gesendet"
+        )
+    except Exception as e:
+        return f"TikTok Video Scripts Fehler: {e}"
 
 
 async def task_affiliate_mega_blast() -> str:
@@ -7766,6 +7785,7 @@ TASKS = [
     ("sendgrid_daily",           task_sendgrid_daily,           86400,  120),  # täglich — Revenue-Email via SendGrid
     # ── TikTok Shop Sync ──────────────────────────────────────────────────────
     ("tiktok_cycle",           task_tiktok_cycle,           14400, 900),   # 4h — TikTok Shop + Videos
+    ("tiktok_video_scripts",   task_tiktok_video_scripts,   21600, 920),   # 6h — KI Video-Scripts + Telegram-Alert
     # ── Affiliate Mega Engine ─────────────────────────────────────────────────
     ("affiliate_mega",         task_affiliate_mega_blast,   21600, 940),   # 6h — Amazon+eBay+DS24 Affiliate Blast
     # ── Revenue Fast Track ────────────────────────────────────────────────────
@@ -7909,7 +7929,7 @@ TASKS = [
     # ── Marketing & Sync (hourly) ─────────────────────────────────────────────
     ("ds24_funnel_sync",         task_ds24_funnel_sync,        900,    35),   # 15 min — neue Käufer sofort
     ("mailchimp_sync",          task_mailchimp_sync,          3600,   90),   # 1h
-    ("shopify_sync",            task_shopify_sync,            3600,   120),  # 1h
+    ("shopify_sync",            task_shopify_sync,            1800,   120),  # 30min
     ("social_status",           task_social_status,           3600,   150),  # 1h
     ("social_autoposter",       task_social_autoposter,       3600,   180),  # 1h
     # ── Growth & SEO (every 2-6 hours) ────────────────────────────────────────

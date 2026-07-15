@@ -37,12 +37,58 @@ YT_KEY     = os.getenv("YOUTUBE_API_KEY", "")
 YT_CHANNEL = os.getenv("YOUTUBE_CHANNEL_ID", "UCy5U7UGOMNkvUR2-5Qm4yiA")
 TG_TOKEN   = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TG_CHAT    = os.getenv("TELEGRAM_CHAT_ID", "")
+PEXELS_KEY = os.getenv("PEXELS_API_KEY", "")
 
 GRAPH      = "https://graph.facebook.com/v19.0"
 SHOP_URL   = f"https://{os.getenv('SHOPIFY_SHOP_DOMAIN', 'ineedit.com.co')}"
 DS24_LINK  = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 
 STATE_FILE = Path(__file__).parent.parent / "data" / "social_autoposter_state.json"
+
+
+# ── Pexels Bild-Fetch ────────────────────────────────────────────────────────
+_PEXELS_QUERIES = [
+    "smart home gadgets technology",
+    "solar energy home",
+    "robot vacuum cleaner",
+    "smart speaker home automation",
+    "security camera smart home",
+    "smart thermostat technology",
+    "electric vehicle charging",
+    "LED smart lighting interior",
+]
+
+async def _fetch_pexels_image(query: str = "") -> str:
+    """
+    Holt ein zufälliges Bild von Pexels für IG-Posts ohne eigenes Bild.
+    Benötigt PEXELS_API_KEY in .env.
+    Gibt leeren String zurück wenn kein Key gesetzt oder Fehler.
+    """
+    if not PEXELS_KEY:
+        log.warning("PEXELS_API_KEY nicht gesetzt — kein Auto-Bild für Instagram")
+        return ""
+    import random
+    q = query or random.choice(_PEXELS_QUERIES)
+    try:
+        async with aiohttp.ClientSession() as s:
+            async with s.get(
+                "https://api.pexels.com/v1/search",
+                headers={"Authorization": PEXELS_KEY},
+                params={"query": q, "per_page": 15, "orientation": "square"},
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as r:
+                data = await r.json(content_type=None)
+        photos = data.get("photos", [])
+        if not photos:
+            log.warning("Pexels: keine Bilder für '%s'", q)
+            return ""
+        photo = random.choice(photos)
+        url = photo.get("src", {}).get("large2x") or photo.get("src", {}).get("large", "")
+        log.info("Pexels Bild: %s (Query: %s)", url[:80], q)
+        return url
+    except Exception as e:
+        log.warning("Pexels Fehler: %s", e)
+        return ""
 
 
 # ── HTTP Helper: POST mit exponentiellem Backoff bei 429 ─────────────────────
@@ -238,47 +284,76 @@ async def post_to_instagram(caption: str, image_url: str) -> dict:
 
 
 async def post_reel_to_instagram(caption: str, video_url: str) -> dict:
-    """Postet ein Reel auf Instagram (video muss öffentlich erreichbar sein)."""
+    """
+    Postet ein Reel auf Instagram @aaiitecc.
+    video_url muss öffentlich erreichbar sein (MP4, min 720p empfohlen).
+    Post Guardian prüft vor dem Posten.
+    """
+    from modules.post_guardian import validate_post, register_posted
+    ok_guard, errors = validate_post(caption, "instagram", video_url)
+    if not ok_guard:
+        log.warning("Post Guardian blockiert IG-Reel: %s", errors)
+        return {"ok": False, "platform": "instagram_reel", "blocked": True, "errors": errors}
     if not FB_TOKEN or not IG_ID:
-        return {"ok": False, "platform": "instagram", "error": "Token/ID fehlt"}
+        return {"ok": False, "platform": "instagram_reel", "error": "INSTAGRAM_ACCOUNT_ID oder FACEBOOK_PAGE_TOKEN_AIITEC fehlt"}
+    if not video_url:
+        return {"ok": False, "platform": "instagram_reel", "error": "video_url ist erforderlich für Reels"}
     try:
         async with aiohttp.ClientSession() as s:
-            async with s.post(
+            # Schritt 1: Reel Container erstellen (mit Retry bei 429)
+            status1, container = await _post_with_retry(
+                s,
                 f"{GRAPH}/{IG_ID}/media",
-                data={
+                {
                     "media_type": "REELS",
                     "video_url": video_url,
                     "caption": caption,
                     "access_token": FB_TOKEN,
                 },
-                timeout=aiohttp.ClientTimeout(total=30),
-            ) as r:
-                container = await r.json(content_type=None)
+            )
+            if status1 == 429:
+                return {"ok": False, "platform": "instagram_reel", "error": "Rate Limit (429) — warte vor erneutem Post"}
             container_id = container.get("id")
             if not container_id:
-                return {"ok": False, "platform": "instagram", "error": container.get("error", {}).get("message", str(container))}
+                err = container.get("error", {}).get("message", str(container))
+                return {"ok": False, "platform": "instagram_reel", "error": f"Container: {err}"}
 
-            # Warten bis Video verarbeitet ist (max 60s)
-            for _ in range(6):
+            # Schritt 2: Warten bis Video verarbeitet ist (max 90s, 9x10s)
+            finished = False
+            for _ in range(9):
                 await asyncio.sleep(10)
                 async with s.get(
                     f"{GRAPH}/{container_id}",
                     params={"fields": "status_code", "access_token": FB_TOKEN},
+                    timeout=aiohttp.ClientTimeout(total=10),
                 ) as r:
-                    status = await r.json(content_type=None)
-                if status.get("status_code") == "FINISHED":
+                    poll = await r.json(content_type=None)
+                sc = poll.get("status_code", "")
+                log.debug("Reel Container Status: %s", sc)
+                if sc == "FINISHED":
+                    finished = True
                     break
+                if sc == "ERROR":
+                    return {"ok": False, "platform": "instagram_reel", "error": f"Video-Verarbeitung fehlgeschlagen: {poll}"}
 
-            async with s.post(
+            if not finished:
+                log.warning("Reel Container noch nicht FINISHED nach 90s — trotzdem publishen")
+
+            # Schritt 3: Container publishen (mit Retry bei 429)
+            status2, publish = await _post_with_retry(
+                s,
                 f"{GRAPH}/{IG_ID}/media_publish",
-                data={"creation_id": container_id, "access_token": FB_TOKEN},
-                timeout=aiohttp.ClientTimeout(total=20),
-            ) as r:
-                publish = await r.json(content_type=None)
+                {"creation_id": container_id, "access_token": FB_TOKEN},
+            )
+            if status2 == 429:
+                return {"ok": False, "platform": "instagram_reel", "error": "Rate Limit (429) beim Publish"}
 
         if "id" in publish:
+            log.info("IG Reel OK: %s", publish["id"])
+            register_posted(caption, "instagram")
             return {"ok": True, "platform": "instagram_reel", "post_id": publish["id"]}
-        return {"ok": False, "platform": "instagram_reel", "error": publish.get("error", {}).get("message", str(publish))}
+        err = publish.get("error", {}).get("message", str(publish))
+        return {"ok": False, "platform": "instagram_reel", "error": err}
     except Exception as e:
         return {"ok": False, "platform": "instagram_reel", "error": str(e)}
 
@@ -477,9 +552,14 @@ async def post_to_all(
         log.error("PostGuard (modules.post_guard) nicht importierbar — Post abgebrochen")
         return {"ok": False, "blocked": True, "reason": "PostGuard nicht verfügbar — Post abgebrochen"}
 
-    active = platforms or ["facebook"]
-    if image_url and "instagram" not in active:
-        active.append("instagram")
+    active = platforms or ["facebook", "instagram"]
+
+    # ── Auto-Bild via Pexels wenn kein image_url übergeben ───────────────────
+    if "instagram" in active and not image_url:
+        image_url = await _fetch_pexels_image(topic or "smart home gadgets technology")
+        if not image_url:
+            log.warning("Kein Pexels-Bild verfügbar — Instagram-Post wird übersprungen")
+            active = [p for p in active if p != "instagram"]
 
     tasks = []
     if "facebook" in active:
@@ -519,10 +599,12 @@ async def post_to_all(
 async def run_social_cycle() -> dict:
     """
     Wird vom Scheduler alle 6h aufgerufen.
-    Generiert Content und postet auf Facebook (+ Instagram wenn Bild verfügbar).
+    Generiert Content und postet auf Facebook + Instagram (Pexels-Bild automatisch).
     """
     message = await _ai_caption(topic="Smart Home & KI-E-Commerce")
-    result = await post_to_all(message=message, link=SHOP_URL)
+    # Pexels-Bild vorab holen damit FB-Photo + IG-Post beide ein Bild bekommen
+    image_url = await _fetch_pexels_image("smart home gadgets technology 2026")
+    result = await post_to_all(message=message, image_url=image_url, link=SHOP_URL)
 
     # Stats parallel holen
     fb_stats, ig_stats, yt_stats, li_stats = await asyncio.gather(

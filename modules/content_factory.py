@@ -17,8 +17,9 @@ import aiohttp
 
 log = logging.getLogger(__name__)
 
-BRAND_URL = os.getenv("BRAND_URL", "https://bullpower-hub-portal.netlify.app")
-BRAND_NAME = os.getenv("BRAND_NAME", "BullPower Hub")
+BRAND_URL    = os.getenv("BRAND_URL", "https://bullpower-hub-portal.netlify.app")
+BRAND_NAME   = os.getenv("BRAND_NAME", "BullPower Hub")
+DS24_LINK    = os.getenv("DS24_AFFILIATE_LINK", "https://www.checkout-ds24.com/product/668035")
 DATA_DIR = Path(os.getenv("DATA_DIR", "/tmp/content_factory"))
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -304,13 +305,14 @@ Return JSON:
 
     async def gen_video_scripts() -> dict:
         prompt = f"""Product: {product} | Audience: {audience}
+Affiliate/checkout link to include in CTAs: {DS24_LINK}
 Write video ad scripts. Return JSON:
 {{
-  "youtube_15s": "15-second pre-roll script (hook in first 5s)",
-  "youtube_30s": "30-second pre-roll script",
-  "youtube_60s": "60-second TrueView script with clear CTA",
-  "tiktok_15s": "TikTok 15s spark ad (trendy, native-feeling, strong hook)",
-  "tiktok_30s": "TikTok 30s with trend audio reference"
+  "youtube_15s": "15-second pre-roll script (hook in first 5s, end with CTA link)",
+  "youtube_30s": "30-second pre-roll script (include affiliate link in CTA)",
+  "youtube_60s": "60-second TrueView script with clear CTA pointing to {DS24_LINK}",
+  "tiktok_15s": "TikTok 15s spark ad (trendy, native-feeling, strong hook, link in bio)",
+  "tiktok_30s": "TikTok 30s with trend audio reference, CTA to link in bio: {DS24_LINK}"
 }}"""
         raw = await _claude(prompt, sys, max_tokens=1500)
         try:

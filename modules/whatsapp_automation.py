@@ -215,6 +215,10 @@ async def get_whatsapp_stats() -> dict:
     }
 
 
+# Alias for backward compatibility / test scripts
+wa_status = get_whatsapp_stats
+
+
 async def send_whatsapp_blast(message: str) -> dict:
     """Broadcast via Meta WhatsApp Cloud API; Twilio fallback if unconfigured."""
     numbers_raw = os.getenv("WHATSAPP_TO_NUMBERS", os.getenv("WHATSAPP_DEFAULT_TO",
