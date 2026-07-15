@@ -92,3 +92,37 @@ Configured in `.mcp.json`:
 - Environment variables via `os.getenv()` with sensible defaults
 - No hardcoded secrets, domains, or API versions
 - Log via `logging` module, not `print()`
+
+## Shop-Qualitätsregeln (NIEMALS verletzen!)
+Vollständige Regeln in `config/shop_rules.json`.
+
+### Erlaubte Vendors beim Produkt-Import
+`iNeedit`, `Printify`, `I Want That! I Need It!`, `AliExpress Import`, `Alibaba Import`, `eBay Import`, `AIITEC`, `Restposten`
+
+### NIEMALS diese Vendors verwenden
+`SuperMegaBot`, `BullPowerBot`, `BullPowerHub`, `TestVendor`, `Demo`
+
+### Shop-Nische: Smart & Modern
+- NUR Produkte mit Technologie-Bezug
+- Kein Alltags-Kram: Notizbücher, Babysachen, Besteck, Bettwäsche, Kugelschreiber
+- Kein Fake: Zeitungsartikel, HN-Posts, Blog-Inhalte als Produkte
+- Mindest-Qualität: 4.5★ / 100+ Bewertungen (wo prüfbar)
+- EK-Preis: €8–€300 (kein Billigschrott, keine Luxus-Exoten ohne Nachfrage)
+
+### Produkt-Import immer durch Gatekeeper
+```python
+from modules.product_gatekeeper import validate_product
+ok, reason = validate_product(title=..., vendor=..., product_type=..., price=...)
+if not ok: return  # NICHT importieren
+```
+`shopify_client.create_product()` hat den Gatekeeper bereits eingebaut.
+
+### Deaktivierte Tasks (NICHT reaktivieren)
+- `shopify_mass_creator` — erstellt Fake-Produkte (vendor=SuperMegaBot)
+- `shopify_bulk_activate` — würde gelöschte CJ-Produkte wieder aktivieren
+
+### Smart Product Finder (Ersatz für mass_creator)
+`modules/smart_product_finder.py` — läuft alle 12h:
+- Research: Amazon.de + AliExpress + Reddit
+- KI-Gate via Claude Haiku — nur echte Smart/Tech-Produkte
+- Duplikat-Check + vendor=iNeedit automatisch gesetzt

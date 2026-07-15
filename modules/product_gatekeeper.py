@@ -3,14 +3,27 @@ Product Gatekeeper — blockiert Fake/Junk-Produkte vor dem Shopify-Import.
 
 Wird aufgerufen von allen Modulen die Shopify-Produkte erstellen.
 Gibt True zurück wenn das Produkt OK ist, False wenn es blockiert wird.
+Liest Regeln aus config/shop_rules.json (persistente Quelle der Wahrheit).
 """
 import re
+import json
 import logging
+from pathlib import Path
 
 log = logging.getLogger(__name__)
 
+# Config laden
+_CONFIG_PATH = Path(__file__).parent.parent / "config" / "shop_rules.json"
+try:
+    _cfg = json.loads(_CONFIG_PATH.read_text())
+except Exception:
+    _cfg = {}
+
+def _cfg_get(key, default):
+    return _cfg.get(key, default)
+
 # Nischen die erlaubt sind
-ALLOWED_NICHES = {
+ALLOWED_NICHES = set(n.lower() for n in _cfg_get("allowed_niches", [])) or {
     "smart home", "solar", "powerstation", "e-bike", "e-mobility",
     "saugroboter", "smart lighting", "smart security", "grow light",
     "3d drucker", "laser engraver", "drone", "audio", "gaming",
@@ -21,8 +34,8 @@ ALLOWED_NICHES = {
     "elektronik", "camping", "outdoor", "sport", "fitness",
 }
 
-# Verbotene Vendor-Namen (generieren Fake-Produkte)
-BLOCKED_VENDORS = {
+# Verbotene Vendor-Namen aus Config
+BLOCKED_VENDORS = set(_cfg_get("blocked_vendors", [])) | {
     "SuperMegaBot", "supermegabot", "BullPowerBot", "AutoBot",
     "TestVendor", "Demo", "Fake",
 }
@@ -54,11 +67,12 @@ BLOCKED_PATTERNS = [
 
 _compiled = [re.compile(p, re.IGNORECASE) for p in BLOCKED_PATTERNS]
 
-# Mindest-Kriterien
-MIN_TITLE_LEN = 12
-MAX_TITLE_LEN = 250
-MIN_PRICE_EUR = 5.0
-MAX_PRICE_EUR = 2000.0
+# Mindest-Kriterien aus Config
+_qr = _cfg_get("quality_requirements", {})
+MIN_TITLE_LEN = _qr.get("min_title_length", 12)
+MAX_TITLE_LEN = _qr.get("max_title_length", 250)
+MIN_PRICE_EUR = _qr.get("min_price_ek_eur", 5.0)
+MAX_PRICE_EUR = _qr.get("max_price_ek_eur", 2000.0)
 
 
 def validate_product(
