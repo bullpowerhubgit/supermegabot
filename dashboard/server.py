@@ -10663,6 +10663,14 @@ async def create_app():
     except Exception as e:
         log.warning("APIHunt Monitor start failed: %s", e)
 
+    # RudiAgent — dauerhafter autonomer KI-Assistent (Telegram + Auto-Fix)
+    try:
+        from modules.rudi_agent import run as _rudi_run
+        asyncio.ensure_future(_rudi_run())
+        log.info("RudiAgent gestartet — 24/7 Telegram-Assistent aktiv")
+    except Exception as e:
+        log.warning("RudiAgent start failed: %s", e)
+
     app = web.Application(middlewares=[logging_middleware, cors_middleware, auth_middleware])
 
     # Connection-Pool Cleanup beim Shutdown
