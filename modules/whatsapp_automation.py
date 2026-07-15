@@ -12,8 +12,8 @@ from pathlib import Path
 
 log = logging.getLogger("WhatsAppAutomation")
 
-WA_PHONE_ID    = os.getenv("WHATSAPP_PHONE_NUMBER_ID", "")
-WA_TOKEN       = os.getenv("WHATSAPP_ACCESS_TOKEN", "")
+WA_PHONE_ID    = os.getenv("WHATSAPP_PHONE_NUMBER_ID") or os.getenv("WHATSAPP_PHONE_ID", "")
+WA_TOKEN       = os.getenv("WHATSAPP_ACCESS_TOKEN") or os.getenv("WHATSAPP_TOKEN", "")
 WA_VERIFY_TOKEN = os.getenv("WHATSAPP_VERIFY_TOKEN", "bullpower_wa_verify_2026")
 WA_VERSION     = os.getenv("WA_API_VERSION", "v21.0")
 WA_BASE        = f"https://graph.facebook.com/{WA_VERSION}"

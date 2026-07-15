@@ -4010,6 +4010,19 @@ async def task_whatsapp_daily_blast() -> str:
         return f"WhatsApp blast error: {e}"
 
 
+async def task_whatsapp_abandoned_cart() -> str:
+    """WhatsApp Abandoned Cart Recovery alle 2h — Shopify verlassene Warenkörbe → personalisierte WA-Nachricht."""
+    try:
+        from modules.whatsapp_abandoned_cart import run_recovery_campaign
+        result = await run_recovery_campaign()
+        sent    = result.get("sent", 0)
+        skipped = result.get("skipped", 0)
+        failed  = result.get("failed", 0)
+        return f"WA Cart Recovery: {sent} gesendet, {skipped} bereits kontaktiert, {failed} Fehler"
+    except Exception as e:
+        return f"WA Abandoned Cart Fehler: {e}"
+
+
 async def task_twilio_morning_brief() -> str:
     """Daily morning SMS briefing — Revenue + Tasks for the day."""
     import aiohttp
@@ -7762,7 +7775,8 @@ TASKS = [
     # ── Facebook Groups Cookie-Posting (kein App Review, kein OAuth2 nötig) ──
     ("fb_cookies_refresh",     task_fb_cookies_refresh,     86400, 3750),  # täglich — FB Chrome Cookies erneuern
     ("fb_groups_post",         task_fb_groups_post,         21600, 3800),  # 6h — Posts in FB-Gruppen
-    ("whatsapp_daily_blast",   task_whatsapp_daily_blast,   86400, 3840),  # 24h — WhatsApp Broadcast
+    ("whatsapp_daily_blast",      task_whatsapp_daily_blast,      86400, 3840),  # 24h — WhatsApp Broadcast
+    ("whatsapp_abandoned_cart",   task_whatsapp_abandoned_cart,    7200, 3845),  # 2h  — WhatsApp Abandoned Cart Recovery
     # ══════════════════════════════════════════════════════════════════════════
     # ██ VOLLAUTOMATISIERUNGS-OFFENSIVE — 63 NEUE REVENUE-STREAMS ██
     # ══════════════════════════════════════════════════════════════════════════

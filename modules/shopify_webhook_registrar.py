@@ -54,6 +54,7 @@ WEBHOOK_TOPICS = [
     ("orders/create",       "/api/webhooks/shopify/order-create"),
     ("orders/paid",         "/api/webhooks/shopify/order-paid"),
     ("orders/cancelled",    "/api/webhooks/shopify/order-cancelled"),
+    ("customers/create",    "/api/shopify/customer-webhook"),
 ]
 
 

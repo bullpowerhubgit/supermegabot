@@ -15,7 +15,7 @@ from pathlib import Path
 log = logging.getLogger("CRO")
 
 KLAVIYO_KEY     = os.getenv("KLAVIYO_API_KEY", "")
-KLAVIYO_LIST_ID = os.getenv("KLAVIYO_LIST_ID", "Xwxq6V")
+KLAVIYO_LIST_ID = os.getenv("KLAVIYO_LIST_ID", "bc5c7887cf")
 SHOPIFY_DOMAIN  = os.getenv("SHOPIFY_SHOP_DOMAIN", "")
 SHOPIFY_TOKEN   = os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ACCESS_TOKEN") or os.getenv("SHOPIFY_ADMIN_API_TOKEN", "")
 SHOPIFY_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-04")

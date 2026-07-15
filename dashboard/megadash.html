@@ -1037,6 +1037,81 @@ body {
     </div>
   </div>
 
+  <!-- ── TELEGRAM + WHATSAPP STATUS ── -->
+  <div class="grid-2 section">
+
+    <!-- TELEGRAM -->
+    <div>
+      <div class="section-title">✈️ Telegram Bot</div>
+      <div class="card" id="telegram-panel">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span id="tg-dot" style="width:10px;height:10px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0"></span>
+          <span id="tg-status-text" style="font-size:13px;font-weight:700">Prüfe...</span>
+          <span id="tg-badge" style="margin-left:auto;font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(0,191,255,.1);border:1px solid rgba(0,191,255,.2);color:var(--blue)">—</span>
+        </div>
+        <div class="seo-row">
+          <span class="seo-label">Chat ID</span>
+          <span class="seo-val" id="tg-chat-id" style="font-family:monospace">—</span>
+        </div>
+        <div class="seo-row">
+          <span class="seo-label">Bot Commands</span>
+          <span class="seo-val" id="tg-cmd-count">—</span>
+        </div>
+        <div class="seo-row">
+          <span class="seo-label">Slash Commands</span>
+          <span class="seo-val" id="tg-slash-count">—</span>
+        </div>
+        <div style="margin-top:10px;" id="tg-cmd-list" style="display:flex;flex-wrap:wrap;gap:4px;max-height:80px;overflow:hidden"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn btn-blue" style="padding:6px 12px;font-size:11px;" onclick="sendTestTelegram()">
+            <span>✈️ Test-Nachricht senden</span>
+          </button>
+          <button class="btn btn-dark" style="padding:6px 12px;font-size:11px;" onclick="loadTelegramPanel(true)">
+            <span>↺ Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WHATSAPP -->
+    <div>
+      <div class="section-title">💬 WhatsApp Business</div>
+      <div class="card" id="whatsapp-panel">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span id="wa-dot" style="width:10px;height:10px;border-radius:50%;background:var(--muted);display:inline-block;flex-shrink:0"></span>
+          <span id="wa-status-text" style="font-size:13px;font-weight:700">Prüfe...</span>
+          <span id="wa-badge" style="margin-left:auto;font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);color:var(--green)">—</span>
+        </div>
+        <div class="seo-row">
+          <span class="seo-label">Phone Number ID</span>
+          <span class="seo-val" id="wa-phone-id">—</span>
+        </div>
+        <div class="seo-row">
+          <span class="seo-label">Access Token</span>
+          <span class="seo-val" id="wa-token-set">—</span>
+        </div>
+        <div class="seo-row">
+          <span class="seo-label">Cart Recovery</span>
+          <span class="seo-val" style="color:var(--green)">Route aktiv ✓</span>
+        </div>
+        <div class="seo-row">
+          <span class="seo-label">Broadcast</span>
+          <span class="seo-val" style="color:var(--green)">Route aktiv ✓</span>
+        </div>
+        <div id="wa-note" style="margin-top:8px;font-size:11px;color:var(--orange);display:none"></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn btn-green" style="padding:6px 12px;font-size:11px;" onclick="triggerAction('/api/whatsapp/blast','GET','💬 WA Blast','WhatsApp Blast gesendet...')">
+            <span>📤 WA Blast</span>
+          </button>
+          <button class="btn btn-dark" style="padding:6px 12px;font-size:11px;" onclick="loadWhatsAppPanel()">
+            <span>↺ Refresh</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- ── LOG FEED ── -->
   <div class="section">
     <div class="section-title">📋 Live Activity Feed</div>
@@ -1115,27 +1190,23 @@ async function triggerAction(path, method, label, msg) {
 }
 
 // ─── Revenue ─────────────────────────────────────────────────────────────────
-// API response: {ds24:{stats:{total,orders_total,...}}, stripe:{available_eur,...}, shopify:{revenue_today_eur,...}}
+// API response (canonical flat): {total_eur, ds24_eur, stripe_eur, shopify_eur,
+//   ds24:{ok, today_eur, stats:{today,...}}, stripe:{ok, today_revenue, order_count},
+//   shopify:{ok, revenue_today_eur, orders_today}}
 async function loadRevenue() {
   try {
     const d = await api('GET', '/api/revenue/summary');
 
-    // DS24: nested under ds24.stats
-    const ds24stats = (d.ds24 || d.digistore24 || {}).stats || (d.ds24 || d.digistore24 || {});
-    const ds24Rev   = parseFloat(ds24stats.total || ds24stats.total_revenue || ds24stats.revenue || 0);
-    const ds24Ord   = parseInt(ds24stats.orders_total || ds24stats.orders || 0);
+    // Canonical flat fields — always prefer these
+    const ds24Rev = parseFloat(d.ds24_eur  ?? (d.ds24  || {}).today_eur       ?? 0);
+    const strRev  = parseFloat(d.stripe_eur ?? (d.stripe || {}).today_revenue  ?? 0);
+    const shopRev = parseFloat(d.shopify_eur ?? (d.shopify || {}).revenue_today_eur ?? 0);
+    const total   = parseFloat(d.total_eur  ?? (ds24Rev + strRev + shopRev));
 
-    // Stripe
-    const stripe  = d.stripe || {};
-    const strRev  = parseFloat(stripe.available_eur || stripe.mrr || stripe.total || 0);
-    const strSubs = parseInt(stripe.subscriptions || 0);
-
-    // Shopify
-    const shopify = d.shopify || {};
-    const shopRev = parseFloat(shopify.revenue_today_eur || shopify.revenue || 0);
-    const shopOrd = parseInt(shopify.orders_today || 0);
-
-    const total   = ds24Rev + strRev + shopRev;
+    // Order counts from detail objects
+    const ds24Ord = parseInt((d.ds24  || {})?.stats?.orders_today || (d.ds24  || {})?.stats?.orders_total || 0);
+    const strSubs = parseInt((d.stripe || {}).order_count || 0);
+    const shopOrd = parseInt((d.shopify || {}).orders_today || 0);
 
     setText('ds24-rev',    '€' + fmt(ds24Rev));
     setText('ds24-orders', ds24Ord + ' Bestellungen');
@@ -1328,10 +1399,53 @@ async function loadAIStatus(force = false) {
       renderAIStatus(_aiStatusCache);
       return;
     }
-    const d = await api('GET', '/api/ai/status');
-    _aiStatusCache = d;
+    const raw = await api('GET', '/api/ai/status');
+
+    // Transform API response (lowercase keys, {configured} bool)
+    // → renderAIStatus format (CamelCase keys, {status} string)
+    const mapped = { current_provider: null, monitor_running: false };
+
+    // Map: [apiKey, displayName]
+    const providerMap = [
+      ['anthropic',  'Anthropic'],
+      ['groq',       'Groq'],
+      ['deepseek',   'DeepSeek'],
+      ['gemini',     'Gemini'],
+      ['perplexity', 'Perplexity'],
+      ['openai',     'OpenAI'],
+    ];
+
+    for (const [key, name] of providerMap) {
+      const p = raw[key];
+      if (!p) { mapped[name] = {status: 'no_key', deactivations:0, total_fails:0}; continue; }
+      const configured = p.configured ?? false;
+      mapped[name] = {
+        status:       configured ? 'standby' : 'no_key',
+        deactivations: 0,
+        total_fails:   0,
+        model:         p.model || '',
+      };
+      if (configured && !mapped.current_provider) mapped.current_provider = name;
+    }
+
+    // OpenClaw (ollama)
+    const ol = raw.ollama || {};
+    mapped['OpenClaw'] = {
+      status:     ol.online ? 'ok' : 'no_key',
+      online:     !!ol.online,
+      fast_model: ol.model || 'llama3.2',
+      model:      ol.model || 'llama3.2',
+      deactivations: 0,
+      total_fails:   0,
+    };
+    if (ol.online) mapped.current_provider = 'OpenClaw';
+
+    // OpenRouter — not in base API, mark no_key
+    mapped['OpenRouter'] = {status: 'no_key', deactivations:0, total_fails:0};
+
+    _aiStatusCache = mapped;
     _aiStatusTs    = Date.now();
-    renderAIStatus(d);
+    renderAIStatus(mapped);
   } catch(e) {
     addLog('warn', 'AIHunt Status: ' + e.message);
   }
@@ -1563,6 +1677,89 @@ async function startOllamaPull() {
   }
 }
 
+// ─── Telegram Panel ──────────────────────────────────────────────────────────
+async function loadTelegramPanel(force) {
+  try {
+    const [tgStatus, cmds] = await Promise.all([
+      api('GET', '/api/telegram/status'),
+      api('GET', '/api/bot/commands').catch(() => ({total:0, slash:[], all:[]})),
+    ]);
+
+    const dot  = document.getElementById('tg-dot');
+    const stxt = document.getElementById('tg-status-text');
+    const badge= document.getElementById('tg-badge');
+    const chat = document.getElementById('tg-chat-id');
+    const cmdCnt = document.getElementById('tg-cmd-count');
+    const slashCnt = document.getElementById('tg-slash-count');
+    const cmdList  = document.getElementById('tg-cmd-list');
+
+    const ok = tgStatus.configured;
+    if (dot)   { dot.style.background = ok ? 'var(--green)' : 'var(--orange)'; dot.style.boxShadow = ok ? '0 0 6px var(--green)' : 'none'; }
+    if (stxt)  stxt.textContent = ok ? 'Bot konfiguriert ✓' : 'Kein Token';
+    if (badge) { badge.textContent = ok ? '● AKTIV' : '○ Nicht konfiguriert'; badge.style.color = ok ? 'var(--green)' : 'var(--orange)'; }
+    if (chat)  chat.textContent = tgStatus.chat_id ? tgStatus.chat_id.slice(0,12) + '...' : '—';
+
+    const total = cmds.total || (cmds.all || []).length;
+    const slashCount = (cmds.slash || []).length;
+    if (cmdCnt)   cmdCnt.textContent = total + ' Commands gesamt';
+    if (slashCnt) slashCnt.textContent = slashCount + ' Slash-Commands';
+
+    if (cmdList && cmds.slash && cmds.slash.length) {
+      const shown = cmds.slash.slice(0, 20);
+      cmdList.innerHTML = shown.map(c =>
+        `<span style="font-size:9px;padding:1px 5px;border-radius:3px;background:rgba(0,191,255,.1);color:var(--blue);border:1px solid rgba(0,191,255,.2);font-family:monospace">${escHtml(c)}</span>`
+      ).join('') + (cmds.slash.length > 20 ? `<span style="font-size:9px;color:var(--muted)">+${cmds.slash.length-20} mehr</span>` : '');
+    }
+
+    addLog('ok', `Telegram: ${ok ? 'konfiguriert' : 'kein Token'} — ${total} Commands`);
+  } catch(e) {
+    addLog('warn', 'Telegram Panel: ' + e.message);
+    const stxt = document.getElementById('tg-status-text');
+    if (stxt) stxt.textContent = 'Fehler — Server offline?';
+  }
+}
+
+async function sendTestTelegram() {
+  const btn = event.currentTarget;
+  btn.classList.add('loading');
+  try {
+    await api('POST', '/api/telegram/send', {message: '⚡ SuperMegaBot Dashboard Test-Nachricht — ' + new Date().toLocaleTimeString('de')});
+    toast('ok', 'Telegram', 'Test-Nachricht gesendet ✓');
+  } catch(e) {
+    toast('error', 'Telegram', e.message);
+  } finally {
+    setTimeout(() => btn.classList.remove('loading'), 2000);
+  }
+}
+
+// ─── WhatsApp Panel ───────────────────────────────────────────────────────────
+async function loadWhatsAppPanel() {
+  try {
+    const d = await api('GET', '/api/whatsapp/status');
+
+    const dot   = document.getElementById('wa-dot');
+    const stxt  = document.getElementById('wa-status-text');
+    const badge = document.getElementById('wa-badge');
+    const phone = document.getElementById('wa-phone-id');
+    const token = document.getElementById('wa-token-set');
+    const note  = document.getElementById('wa-note');
+
+    const ok = d.configured;
+    if (dot)   { dot.style.background = ok ? 'var(--green)' : 'var(--orange)'; dot.style.boxShadow = ok ? '0 0 6px var(--green)' : 'none'; }
+    if (stxt)  stxt.textContent = ok ? 'WhatsApp Business aktiv ✓' : 'Nicht konfiguriert';
+    if (badge) { badge.textContent = ok ? '● AKTIV' : '○ Setup erforderlich'; badge.style.color = ok ? 'var(--green)' : 'var(--orange)'; }
+    if (phone) { phone.textContent = d.phone_id_set ? 'Gesetzt ✓' : '— Fehlt'; phone.style.color = d.phone_id_set ? 'var(--green)' : 'var(--red)'; }
+    if (token) { token.textContent = d.token_set ? 'Gesetzt ✓' : '— Fehlt'; token.style.color = d.token_set ? 'var(--green)' : 'var(--red)'; }
+    if (note)  { note.style.display = d.note ? 'block' : 'none'; note.textContent = d.note || ''; }
+
+    addLog('ok', `WhatsApp: ${ok ? 'konfiguriert' : 'nicht konfiguriert (env fehlt)'}`);
+  } catch(e) {
+    addLog('warn', 'WhatsApp Panel: ' + e.message);
+    const stxt = document.getElementById('wa-status-text');
+    if (stxt) stxt.textContent = 'Fehler beim Laden';
+  }
+}
+
 // ─── Performance: Unified Refresh Scheduler ───────────────────────────────────
 // Statt 3 getrennter setIntervals — ein einziger koordinierter Tick
 const REFRESH_SCHEDULE = {
@@ -1574,6 +1771,8 @@ const REFRESH_SCHEDULE = {
   seo:       { fn: loadSeoMetrics,    interval: 300000, last: 0 },
   platform:  { fn: loadPlatformStatus,interval: 300000, last: 0 },
   mailchimp: { fn: loadMailchimp,     interval: 600000, last: 0 },
+  telegram:  { fn: loadTelegramPanel, interval: 120000, last: 0 },
+  whatsapp:  { fn: loadWhatsAppPanel, interval: 120000, last: 0 },
 };
 
 async function masterRefreshTick() {
@@ -1601,6 +1800,8 @@ async function init() {
     loadMailchimp(),
     loadAIStatus(),
     loadOllamaPanel(),
+    loadTelegramPanel(),
+    loadWhatsAppPanel(),
   ]);
 
   // Einziger Master-Tick alle 5s — ersetzt alle getrennten setIntervals
